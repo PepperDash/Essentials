@@ -80,6 +80,12 @@ namespace PepperDash.Essentials
 		}
 		EssentialsHuddleSpaceRoom _CurrentRoom;
 
+        /// <summary>
+        /// For hitting feedback
+        /// </summary>
+        BoolInputSig ShareButtonSig;
+        BoolInputSig EndMeetingButtonSig;
+
 		/// <summary>
 		/// Controls the extended period that the volume gauge shows on-screen,
 		/// as triggered by Volume up/down operations
@@ -279,8 +285,10 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 0, b => 
                 {
                     if (b) return; // ignore press
+                    ShareButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
                     if (!_CurrentRoom.OnFeedback.BoolValue)
                     {
+                        ShareButtonSig.BoolValue = true;
                         TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
                         TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
                     }
@@ -301,6 +309,7 @@ namespace PepperDash.Essentials
                 3, b => { if (!b) PowerButtonPressed(); }));
             ActivityFooterSrl.Count = 2;
             TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 1;
+            EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
         }
 
 		/// <summary>
@@ -406,14 +415,21 @@ namespace PepperDash.Essentials
 		{
 			if (!CurrentRoom.OnFeedback.BoolValue) 
                 return;
+            EndMeetingButtonSig.BoolValue = true;
+            ShareButtonSig.BoolValue = false;
             // Timeout or button 1 press will shut down
             var modal = new ModalDialog(TriList);
 			uint time = 60000;
             uint seconds = time / 1000;
             var message = string.Format("Meeting will end in {0} seconds", seconds);
-            modal.PresentModalTimerDialog(2, "End Meeting", "Info", message,
+            modal.PresentModalTimerDialog(2, "End Meeting", "Power", message,
                 "End Meeting Now", "Cancel", time, true,
-				but => { if (but != 2) CurrentRoom.RunRouteAction("roomOff"); });
+				but => 
+                { 
+                    if (but != 2) 
+                        CurrentRoom.RunRouteAction("roomOff");
+                    EndMeetingButtonSig.BoolValue = false;
+                });
 		}
 
 		void CancelPowerOffTimer()
