@@ -113,7 +113,7 @@ namespace PepperDash.Essentials
 				if (newDev == null)
 					newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
 				if (newDev == null)
-					newDev = PepperDash.Essentials.Displays.DeviceFactory.GetDevice(devConf);
+					newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
 
 				if (newDev != null)
 					DeviceManager.AddDevice(newDev);

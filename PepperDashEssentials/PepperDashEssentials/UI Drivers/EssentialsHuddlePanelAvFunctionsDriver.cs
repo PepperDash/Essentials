@@ -92,7 +92,17 @@ namespace PepperDash.Essentials
 		/// </summary>
 		BoolFeedbackPulseExtender VolumeButtonsPopupFeedback;
 
+        /// <summary>
+        /// The parent driver for this
+        /// </summary>
 		PanelDriverBase Parent;
+
+        SingleSubpageModalDriver VolumesPageDriver;
+
+        /// <summary>
+        /// All children attached to this driver.  For hiding and showing as a group.
+        /// </summary>
+        List<PanelDriverBase> ChildDrivers = new List<PanelDriverBase>();
 
 		List<BoolInputSig> CurrentDisplayModeSigsInUse = new List<BoolInputSig>();
 
@@ -176,6 +186,15 @@ namespace PepperDash.Essentials
 			// Attach actions
 			TriList.SetSigFalseAction(UIBoolJoin.VolumeButtonPopupPress, VolumeButtonsTogglePress);
 
+#warning Add press and hold to gear button here
+            TriList.SetSigFalseAction(UIBoolJoin.GearHeaderButtonPress, () =>
+                {
+                    if (VolumesPageDriver == null)
+                        VolumesPageDriver = 
+                            new SingleSubpageModalDriver(this, UIBoolJoin.VolumesPageVisible, UIBoolJoin.VolumesPageClosePress);
+                    VolumesPageDriver.Toggle();
+                });
+
 			// power-related functions
             // Note: some of these are not directly-related to the huddle space UI, but are held over
             // in case
@@ -207,6 +226,8 @@ namespace PepperDash.Essentials
 			HideAndClearCurrentDisplayModeSigsInUse();
 			TriList.BooleanInput[UIBoolJoin.TopBarVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = false;
+            TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
+            TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
 			VolumeButtonsPopupFeedback.ClearNow();
 			CancelPowerOff();
 
@@ -225,8 +246,12 @@ namespace PepperDash.Essentials
 			switch (mode)
 			{
 				case UiDisplayMode.PresentationMode:
-					CurrentDisplayModeSigsInUse.Add(TriList.BooleanInput[UIBoolJoin.StagingPageVisible]);
-					// Date/time
+                    // show start page or staging...
+                    if (!CurrentRoom.OnFeedback.BoolValue)
+                        TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
+                    else
+                        TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
+                    // Date/time
 					if (Config.ShowDate && Config.ShowTime)
 					{
 						TriList.BooleanInput[UIBoolJoin.DateAndTimeVisible].BoolValue = true;
@@ -251,7 +276,15 @@ namespace PepperDash.Essentials
         void SetupActivityFooterWhenRoomOff()
         {
             ActivityFooterSrl.Clear();
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 0, null));
+            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 0, b => 
+                {
+                    if (b) return; // ignore press
+                    if (!_CurrentRoom.OnFeedback.BoolValue)
+                    {
+                        TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
+                        TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
+                    }
+                }));
             ActivityFooterSrl.Count = 1;
             TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 0;
         }
@@ -347,12 +380,12 @@ namespace PepperDash.Essentials
 				CurrentSourcePageManager = pm;
 				pm.Show();
 			}
-			else // show some default thing
-			{
-				CurrentDisplayModeSigsInUse.Add(TriList.BooleanInput[12345]);
-			}
+            //else // show some default thing
+            //{
+            //    CurrentDisplayModeSigsInUse.Add(TriList.BooleanInput[12345]);
+            //}
 
-			ShowCurrentDisplayModeSigsInUse();
+            //ShowCurrentDisplayModeSigsInUse();
 		}
 
 		/// <summary>
@@ -529,9 +562,15 @@ namespace PepperDash.Essentials
             var value = _CurrentRoom.OnFeedback.BoolValue;
             TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
             if (value)
+            {
                 SetupActivityFooterWhenRoomOn();
+                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
+            }
             else
+            {
                 SetupActivityFooterWhenRoomOff();
+                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
+            }
         }
 
 		/// <summary>

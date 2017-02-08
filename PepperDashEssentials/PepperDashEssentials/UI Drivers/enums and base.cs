@@ -45,12 +45,14 @@ namespace PepperDash.Essentials
 	/// <summary>
 	/// 
 	/// </summary>
-	public abstract class PanelDriverBase// : IBasicTriListWithSmartObject
+	public abstract class PanelDriverBase
 	{
 		/// <summary>
 		/// 
 		/// </summary>
 		public bool IsVisible { get; private set; }
+
+        public bool WasVisibleWhenHidden { get; private set; }
 
 		/// <summary>
 		/// Makes sure you call this. 
@@ -62,13 +64,34 @@ namespace PepperDash.Essentials
 			TriList.SetSigFalseAction(15002, BackButtonPressed);
 		}
 
+        /// <summary>
+        /// Will show if this was visible when Hide was called (for group hiding/showing)
+        /// </summary>
+        public void Restore()
+        {
+            if (WasVisibleWhenHidden)
+                Show();
+        }
+
 		/// <summary>
 		/// Only sets IsVisible
 		/// </summary>
 		public virtual void Hide() 
 		{
+            WasVisibleWhenHidden = IsVisible;
 			IsVisible = false;
 		}
+
+        /// <summary>
+        /// Toggles visibility of this driver
+        /// </summary>
+        public void Toggle()
+        {
+            if (IsVisible)
+                Hide();
+            else
+                Show();
+        }
 
 		/// <summary>
 		/// Override with specific back button behavior. Default is empty

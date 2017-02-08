@@ -18,6 +18,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public PanelDriverBase AvDriver { get; set; }
 
+        SingleSubpageModalDriver HelpDriver;
+
 		public PanelDriverBase CurrentChildDriver { get; private set; }
 
 		CrestronTouchpanelPropertiesConfig Config;
@@ -41,21 +43,45 @@ namespace PepperDash.Essentials
 		public override void Show()
 		{
 			CurrentChildDriver = null;
-			if (Config.UsesSplashPage)
-				TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
-			else
-				ShowSubDriver(AvDriver);
-			TriList.SetSigFalseAction(UIBoolJoin.HelpButtonPress, () =>
+
+
+            //if (Config.UsesSplashPage)
+            //    TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
+            //else
+			ShowSubDriver(AvDriver);
+
+			TriList.SetSigFalseAction(UIBoolJoin.HelpPress, () =>
 			{
-				var modal = new ModalDialog(TriList);
-				var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey) 
-					as EssentialsHuddleSpaceRoom;
-				string message = "Sorry, no help message available. No room connected.";
-				if(room != null)
-					message = room.Config.HelpMessage;
-				modal.PresentModalTimerDialog(1, "Help", "Help", message,
-					"Done", null, 0, false, null);
+                //var modal = new ModalDialog(TriList);
+                //var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey) 
+                //    as EssentialsHuddleSpaceRoom;
+                //string message = "Sorry, no help message available. No room connected.";
+                //if(room != null)
+                //    message = room.Config.HelpMessage;
+                //modal.PresentModalTimerDialog(1, "Help", "Help", message,
+                //    "Done", null, 0, false, null);
+
+                string message = null;
+                var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
+                    as EssentialsHuddleSpaceRoom;
+                if (room != null)
+                    message = room.Config.HelpMessage;
+                else
+                    message = "Sorry, no help message available. No room connected.";
+
+                if (HelpDriver == null)
+                    HelpDriver = new SingleSubpageModalDriver(this, UIBoolJoin.HelpPageVisible, UIBoolJoin.HelpClosePress);
+                if (HelpDriver.IsVisible)
+                    HelpDriver.Hide();
+                else
+                    HelpDriver.Show();
+
 			});
+
+            TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>
+                {
+                    
+                });
 
 			base.Show();
 		}

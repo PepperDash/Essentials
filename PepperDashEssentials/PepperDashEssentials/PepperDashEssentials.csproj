@@ -92,10 +92,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\essentials-ssp-base\PepperDashEssentialsBase\PepperDashEssentialsBase\bin\PepperDash_Essentials_Core.dll</HintPath>
     </Reference>
-    <Reference Include="PepperDash_Essentials_Displays, Version=1.0.0.19741, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\essentials-displays\Essentials Displays\Essentials Displays\bin\PepperDash_Essentials_Displays.dll</HintPath>
-    </Reference>
     <Reference Include="PepperDash_Essentials_DM, Version=1.0.0.17590, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\essentials-dm\Essentials_DM\Essentials_DM\bin\PepperDash_Essentials_DM.dll</HintPath>
@@ -158,6 +154,7 @@
     <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
     <Compile Include="Room\VolumeAndSourceChangeArgs.cs" />
+    <Compile Include="UI Drivers\SingleSubpageModalDriver.cs" />
     <Compile Include="UI Drivers\EssentialsPresentationPanelAvFunctionsDriver.cs" />
     <Compile Include="UI Drivers\EssentialsPanelMainInterfaceDriver.cs" />
     <Compile Include="UI Drivers\enums and base.cs" />

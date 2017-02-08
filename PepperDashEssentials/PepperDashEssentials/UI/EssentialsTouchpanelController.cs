@@ -28,7 +28,6 @@ namespace PepperDash.Essentials
 			Panel = tsw;
 			tsw.LoadSmartObjects(sgdPath);
 			tsw.SigChange += new Crestron.SimplSharpPro.DeviceSupport.SigEventHandler(Tsw_SigChange);
-
 		}
 
 		/// <summary>
@@ -111,7 +110,7 @@ namespace PepperDash.Essentials
                                     var tsw = Panel as TswFt5ButtonSystem;
                                     // Wire up hard keys
                                     tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.PowerButtonPressed(); });
-                                    tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
+                                    //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
                                     tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
                                     tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
                                     tsw.ButtonStateChange += new ButtonEventHandler(Tsw_ButtonStateChange);
@@ -131,7 +130,7 @@ namespace PepperDash.Essentials
                                     var tsw = Panel as TswFt5ButtonSystem;
                                     // Wire up hard keys
                                     tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.PowerButtonPressed(); });
-                                    tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
+                                    //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
                                     tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
                                     tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
                                     tsw.ButtonStateChange += new ButtonEventHandler(Tsw_ButtonStateChange);
