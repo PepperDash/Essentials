@@ -18,8 +18,9 @@ namespace PepperDash.Essentials
 
         public Dictionary<int, IRoutingSinkWithSwitching> Displays { get; private set; }
 
-		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
-		public IRoutingSinkNoSwitching DefaultAudioDevice { get; private set; }
+        public IRoutingSinkWithSwitching Display1 { get; private set; }
+        public IRoutingSinkWithSwitching Display2 { get; private set; }
+        public IRoutingSinkNoSwitching DefaultAudioDevice { get; private set; }
 		public IBasicVolumeControls DefaultVolumeControls { get; private set; }
 
 		public bool ExcludeFromGlobalFunctions { get; set; }
@@ -101,13 +102,15 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="name"></param>
-        public EssentialsPresentationRoom(string key, string name, IRoutingSinkWithSwitching defaultDisplay, 
+        public EssentialsPresentationRoom(string key, string name,
+            IRoutingSinkWithSwitching display1, IRoutingSinkWithSwitching display2,
 			IRoutingSinkNoSwitching defaultAudio, EssentialsPresentationRoomPropertiesConfig config)
 			: base(key, name)
 		{
 			Config = config;
-			DefaultDisplay = defaultDisplay;
-			DefaultAudioDevice = defaultAudio;
+			Display1 = display1;
+            Display2 = display2;
+            DefaultAudioDevice = defaultAudio;
 			if (defaultAudio is IBasicVolumeControls)
 				DefaultVolumeControls = defaultAudio as IBasicVolumeControls;
 			else if (defaultAudio is IHasVolumeDevice)
