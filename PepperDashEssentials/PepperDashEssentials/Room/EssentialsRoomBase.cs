@@ -8,6 +8,18 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    public interface IHasCurrentSourceInfoChange
+    {
+        event SourceInfoChangeHandler CurrentSourceInfoChange;
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
     public class EssentialsRoomBase : Device
     {
         public EssentialsRoomBase(string key, string name) : base(key, name)

@@ -12,12 +12,29 @@ namespace PepperDash.Essentials
 {
     public class SubpageReferenceListSourceItem : SubpageReferenceListItem
     {
+        public SourceListItem SourceItem { get; private set; }
+
         public SubpageReferenceListSourceItem(uint index, SubpageReferenceList owner, 
-            string name, Action<bool> routeAction)
+            SourceListItem sourceItem, Action<bool> routeAction)
             : base(index, owner)
         {
+            SourceItem = sourceItem;
             owner.GetBoolFeedbackSig(index, 1).UserObject = new Action<bool>(routeAction);
-            owner.StringInputSig(index, 1).StringValue = name;
+            owner.StringInputSig(index, 1).StringValue = SourceItem.PreferredName;
+        }
+
+        public void RegisterForSourceChange(IHasCurrentSourceInfoChange room)
+        {
+            room.CurrentSourceInfoChange -= room_CurrentSourceInfoChange;
+            room.CurrentSourceInfoChange += room_CurrentSourceInfoChange;
+        }
+
+        void room_CurrentSourceInfoChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        {
+            if (type == ChangeType.WillChange && info == SourceItem)
+                Owner.BoolInputSig(Index, 1).BoolValue = false;
+            else if (type == ChangeType.DidChange && info == SourceItem)
+                Owner.BoolInputSig(Index, 1).BoolValue = true;
         }
 
         /// <summary>
@@ -28,10 +45,5 @@ namespace PepperDash.Essentials
             Owner.BoolInputSig(Index, 1).UserObject = null;
             Owner.StringInputSig(Index, 1).StringValue = "";
         }
-
-        //public override void Refresh() 
-        //{ 
-     
-        //}
     }
 }

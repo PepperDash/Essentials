@@ -494,9 +494,10 @@ namespace PepperDash.Essentials
                         //Debug.Console(0, "Adding source '{0}'", srcConfig.SourceKey);
                         //var s = srcConfig; // assign locals for scope in button lambda
 						var routeKey = kvp.Key;
-                        var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig.PreferredName,
+                        var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig,
                             b => { if (!b) UiSelectSource(routeKey); });
                         SourcesSrl.AddItem(item); // add to the SRL 
+                        item.RegisterForSourceChange(_CurrentRoom);
 					}
                     SourcesSrl.Count = (ushort)(i - 1);
 				}

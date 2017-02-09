@@ -21,8 +21,6 @@ namespace PepperDash.Essentials
 	{
 		public const uint VolumeUpPress = 901;
 		public const uint VolumeDownPress = 902;
-        //public const uint MuteTogglePress = 3813;
-        //public const uint MutedFeedback = 3813;
 
         public const uint VolumeSingleMute1Visible = 3811;
         public const uint VolumeSlider1Press = 3812;
@@ -51,22 +49,17 @@ namespace PepperDash.Essentials
         /// 3870
         /// </summary>
         public const uint VolumesPageVisible = 3870;
-        /// <summary>
-        /// 3871
-        /// </summary>
-        public const uint VolumesPageClosePress = 3871;
 
 		public const uint GenericModalVisible = 3999;
 
 		public const uint AvNoControlsSubVisible = 12345;
-		public const uint HomeVisible = 15001;
+        public const uint StartPageVisible = 15001;
         /// <summary>
         /// 15002 Shows the start page in the source controls area of the screen
         /// </summary>
-		public const uint StartPageVisible = 15002;
-		public const uint StartPagePress = 15003; // REMOVE -------------------------------------------------
+		public const uint TapToBeginVisible = 15002;
+		public const uint SelectASourceVisible = 15003;
 		public const uint RoomIsOn = 15004;
-        //public const uint SelectSourcePopupVisible = 15005;
         /// <summary>
         /// 15005 Shows always-on volume control subpage with only audio mute
         /// </summary>
@@ -99,6 +92,9 @@ namespace PepperDash.Essentials
         /// 15029 the room button in header
         /// </summary>
         public const uint RoomHeaderButtonPress = 15029;
+        /// <summary>
+        /// 15030 Visibility for room data popup
+        /// </summary>
         public const uint RoomHeaderPageVisible = 15030;
         public const uint AllRoomsOffPress = 15031;
 		public const uint DisplayPowerTogglePress = 15032;
@@ -109,6 +105,10 @@ namespace PepperDash.Essentials
 		public const uint VolumeGaugePopupVisbible = 15036;
         public const uint CallStatusPageVisible = 15040;
         public const uint LightsPageVisbible = 15041;
+        /// <summary>
+        /// 15042 Closes whichever interlocked modal is open
+        /// </summary>
+        public const uint InterlockedModalClosePress = 15042;
 
         /// <summary>
         /// 15085 Visibility join for help subpage
@@ -118,10 +118,7 @@ namespace PepperDash.Essentials
         /// 15086 Press for help header button
         /// </summary>
         public const uint HelpPress = 15086;
-        /// <summary>
-        /// 15087 Press to close help page
-        /// </summary>
-        public const uint HelpClosePress = 15087;
+
 		public const uint DateOnlyVisible = 15088;
 		public const uint TimeOnlyVisible = 15089;
 		public const uint DateAndTimeVisible = 15090;
@@ -160,6 +157,7 @@ namespace PepperDash.Essentials
 		public const uint CurrentSourceName = 3902;
 		public const uint CurrentSourceIcon = 3903;
 		public const uint PowerOffMessage = 3911;
+        public const uint StartPageMessage = 3912;
         public const uint HelpMessage = 3922;
-	}
+    }
 }

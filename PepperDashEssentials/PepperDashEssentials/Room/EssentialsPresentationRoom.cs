@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials
 {
-	public class EssentialsPresentationRoom : EssentialsRoomBase
+	public class EssentialsPresentationRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSourceInfoChange;
