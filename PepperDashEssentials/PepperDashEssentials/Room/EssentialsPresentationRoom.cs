@@ -16,14 +16,10 @@ namespace PepperDash.Essentials
 
         public EssentialsPresentationRoomPropertiesConfig Config { get; private set; }
 
-        public Dictionary<int, IRoutingSinkWithSwitching> Displays { get; private set; }
+        public Dictionary<uint, IRoutingSinkNoSwitching> Displays { get; private set; }
 
-        public IRoutingSinkWithSwitching Display1 { get; private set; }
-        public IRoutingSinkWithSwitching Display2 { get; private set; }
         public IRoutingSinkNoSwitching DefaultAudioDevice { get; private set; }
 		public IBasicVolumeControls DefaultVolumeControls { get; private set; }
-
-		public bool ExcludeFromGlobalFunctions { get; set; }
 
 		/// <summary>
 		/// The config name of the source list
@@ -35,6 +31,18 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public bool EnablePowerOnToLastSource { get; set; }
 		string LastSourceKey;
+
+        public enum eVideoRoutingMode
+        {
+            SelectSourceSelectDisplay, SourceToAllDisplays
+        }
+
+        public eVideoRoutingMode VideoRoutingMode { get; set; }
+
+        public enum eAudioRoutingMode
+        {
+            AudioFollowsLastVideo, SelectAudioFromDisplay
+        }
 
 		/// <summary>
 		/// 
@@ -103,13 +111,12 @@ namespace PepperDash.Essentials
 		/// <param name="key"></param>
 		/// <param name="name"></param>
         public EssentialsPresentationRoom(string key, string name,
-            IRoutingSinkWithSwitching display1, IRoutingSinkWithSwitching display2,
+            Dictionary<uint, IRoutingSinkNoSwitching> displays,
 			IRoutingSinkNoSwitching defaultAudio, EssentialsPresentationRoomPropertiesConfig config)
 			: base(key, name)
 		{
 			Config = config;
-			Display1 = display1;
-            Display2 = display2;
+			Displays = displays;
             DefaultAudioDevice = defaultAudio;
 			if (defaultAudio is IBasicVolumeControls)
 				DefaultVolumeControls = defaultAudio as IBasicVolumeControls;
@@ -122,6 +129,39 @@ namespace PepperDash.Essentials
 			SourceListKey = "default";
 			EnablePowerOnToLastSource = true;
 		}
+
+
+        public void DoSourceToAllDestinationsRoute(string sourceKey)
+        {
+            foreach (var display in Displays.Values)
+                DoVideoRoute(sourceKey, display.Key);
+
+        }
+
+        /// <summary>
+        /// Basic source -> destination routing
+        /// </summary>
+        void DoVideoRoute(string sourceKey, string destinationKey)
+        {
+            new CTimer(o =>
+                {
+                    var source = DeviceManager.GetDeviceForKey(sourceKey) as IRoutingSource;
+                    if (source == null)
+                    {
+                        Debug.Console(1, this, "Cannot route. Source '{0}' not found", sourceKey);
+                        return;
+                    }
+                    var dest = DeviceManager.GetDeviceForKey(destinationKey) as IRoutingSinkNoSwitching;
+                    if (dest == null)
+                    {
+                        Debug.Console(1, this, "Cannot route. Destination '{0}' not found", destinationKey);
+                        return;
+                    }
+
+                    dest.ReleaseAndMakeRoute(source, eRoutingSignalType.Video);
+                }, 0);
+        }
+
 
 		public void RunRouteAction(string routeKey)
 		{
@@ -194,8 +234,8 @@ namespace PepperDash.Essentials
 					if (string.IsNullOrEmpty(item.VolumeControlKey) 
 						|| item.VolumeControlKey.Equals("$defaultAudio", StringComparison.OrdinalIgnoreCase))
 						volDev = DefaultVolumeControls;
-					else if (item.VolumeControlKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
-						volDev = DefaultDisplay as IBasicVolumeControls;
+                    //else if (item.VolumeControlKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
+                    //    volDev = DefaultDisplay as IBasicVolumeControls;
 					// Or a specific device, probably rarely used.
 					else
 					{
@@ -242,8 +282,8 @@ namespace PepperDash.Essentials
 
 			if (route.DestinationKey.Equals("$defaultaudio", StringComparison.OrdinalIgnoreCase))
 				dest = DefaultAudioDevice;
-			else if (route.DestinationKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
-				dest = DefaultDisplay;
+            //else if (route.DestinationKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
+            //    dest = DefaultDisplay;
 			else
 				dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSinkNoSwitching;
 
@@ -270,17 +310,6 @@ namespace PepperDash.Essentials
 				dest.ReleaseAndMakeRoute(source, route.Type);
 			}
 			return true;
-		}
-
-		/// <summary>
-		/// Runs "roomOff" action on all rooms not set to ExcludeFromGlobalFunctions
-		/// </summary>
-		public static void AllRoomsOff()
-		{
-			var allRooms = DeviceManager.AllDevices.Where(d => 
-				d is EssentialsHuddleSpaceRoom && !(d as EssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
-			foreach (var room in allRooms)
-				(room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
 		}
 	}
 }

@@ -20,26 +20,32 @@ namespace PepperDash.Essentials
 		public Device GetRoomObject()
 		{
 			var typeName = Type.ToLower();
-			EssentialsHuddleSpaceRoom room = null;
 			if (typeName == "huddle")
 			{
                 var props = JsonConvert.DeserializeObject<EssentialsHuddleRoomPropertiesConfig>
                     (this.Properties.ToString());
 				var disp = DeviceManager.GetDeviceForKey(props.DefaultDisplayKey) as IRoutingSinkWithSwitching;
 				var audio = DeviceManager.GetDeviceForKey(props.DefaultAudioKey) as IRoutingSinkNoSwitching;
-				room = new EssentialsHuddleSpaceRoom(Key, Name, disp, audio, props);
-				room.SourceListKey = props.SourceListKey;
+				var huddle = new EssentialsHuddleSpaceRoom(Key, Name, disp, audio, props);
+                huddle.SourceListKey = props.SourceListKey;
+                return huddle;
 			}
 			else if (typeName == "presentation")
 			{
                 var props = JsonConvert.DeserializeObject<EssentialsPresentationRoomPropertiesConfig>
                     (this.Properties.ToString());
-                // assign displays
+                var displaysDict = new Dictionary<uint, IRoutingSinkNoSwitching>();
+                uint i = 1;
+                foreach (var dispKey in props.DisplayKeys) // read in the ordered displays list
+                {
+                    var disp = DeviceManager.GetDeviceForKey(dispKey) as IRoutingSinkWithSwitching;
+                    displaysDict.Add(i++, disp);
+                }
 
-                // assign audio. How??????
-
+                var presRoom = new EssentialsPresentationRoom(Key, Name, displaysDict, null, props);
+                return presRoom;
             }
-			return room;
+            return null;
 		}
 	}
 
