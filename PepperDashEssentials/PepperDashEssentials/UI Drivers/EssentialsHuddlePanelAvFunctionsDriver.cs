@@ -164,11 +164,11 @@ namespace PepperDash.Essentials
 			// One-second pulse extender for volume gauge
 			VolumeGaugeFeedback = new BoolFeedbackPulseExtender(1500);
 			VolumeGaugeFeedback.Feedback
-				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeGaugePopupVisbible]);
+				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeGaugePopupVisible]);
 
 			VolumeButtonsPopupFeedback = new BoolFeedbackPulseExtender(4000);
 			VolumeButtonsPopupFeedback.Feedback
-				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeButtonPopupVisbible]);
+				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeButtonPopupVisible]);
 
 			PowerOffTimeout = 30000;
 		}

@@ -103,6 +103,11 @@ namespace PepperDash.Essentials
 		PanelDriverBase Parent;
 
         /// <summary>
+        /// Driver that manages advanced sharing features
+        /// </summary>
+        DualDisplayRouting DualDisplayUiDriver;
+
+        /// <summary>
         /// All children attached to this driver.  For hiding and showing as a group.
         /// </summary>
         List<PanelDriverBase> ChildDrivers = new List<PanelDriverBase>();
@@ -141,6 +146,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		CTimer PowerOffTimer;
 
+        bool IsSharingModeAdvanced;
+
 		/// <summary>
 		/// Constructor
 		/// </summary>
@@ -160,11 +167,11 @@ namespace PepperDash.Essentials
 			// One-second pulse extender for volume gauge
 			VolumeGaugeFeedback = new BoolFeedbackPulseExtender(1500);
 			VolumeGaugeFeedback.Feedback
-				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeGaugePopupVisbible]);
+				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeGaugePopupVisible]);
 
 			VolumeButtonsPopupFeedback = new BoolFeedbackPulseExtender(4000);
 			VolumeButtonsPopupFeedback.Feedback
-				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeButtonPopupVisbible]);
+				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeButtonPopupVisible]);
 
 			PowerOffTimeout = 30000;
 		}
@@ -235,6 +242,7 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
+            TriList.BooleanInput[UIBoolJoin.ToggleSharingModeVisible].BoolValue = false;
 			VolumeButtonsPopupFeedback.ClearNow();
 			CancelPowerOff();
 
@@ -280,10 +288,58 @@ namespace PepperDash.Essentials
 						TriList.BooleanInput[UIBoolJoin.TimeOnlyVisible].BoolValue = Config.ShowTime;
 					}
 
+                    TriList.SetSigFalseAction(UIBoolJoin.ToggleSharingModePress, ToggleSharingModePressed);
+
 					ShowCurrentDisplayModeSigsInUse();
 					break;
 			}
 		}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void ToggleSharingModePressed()
+        {
+            HideSharingMode();
+            IsSharingModeAdvanced = !IsSharingModeAdvanced;
+            TriList.BooleanInput[UIBoolJoin.ToggleSharingModePress].BoolValue = IsSharingModeAdvanced;
+            RevealSharingMode();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void HideSharingMode()
+        {
+            TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
+            if (IsSharingModeAdvanced)
+            {
+                if (DualDisplayUiDriver != null)
+                    DualDisplayUiDriver.Hide();
+            }
+            else
+            {
+                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void RevealSharingMode()
+        {
+            TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
+            if (IsSharingModeAdvanced)
+            {
+                if(DualDisplayUiDriver == null)
+                    DualDisplayUiDriver = new DualDisplayRouting(TriList);
+                DualDisplayUiDriver.Show();
+            }
+            else
+            {
+                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
+            }
+        }
 
         /// <summary>
         /// When the room is off, set the footer SRL
@@ -326,8 +382,8 @@ namespace PepperDash.Essentials
             {
                 ShareButtonSig.BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
-                TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
-                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
+                TriList.BooleanInput[UIBoolJoin.ToggleSharingModeVisible].BoolValue = true;
+                RevealSharingMode();
             }
         }
 
@@ -433,7 +489,12 @@ namespace PepperDash.Essentials
 		/// <param name="key">The key name of the route to run</param>
 		void UiSelectSource(SourceListItem sourceItem)
 		{
-            CurrentRoom.DoSourceToAllDestinationsRoute(sourceItem);
+            if (IsSharingModeAdvanced)
+            {
+                DualDisplayUiDriver.SourceListButtonPress(sourceItem);
+            }
+            else 
+                CurrentRoom.DoSourceToAllDestinationsRoute(sourceItem);
 		}
 
 		/// <summary>

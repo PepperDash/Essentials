@@ -101,14 +101,34 @@ namespace PepperDash.Essentials
 		public const uint PowerOffCancelPress = 15033;
 		public const uint PowerOffConfirmPress = 15034;
 		public const uint VolumeButtonPopupPress = 15035;
-		public const uint VolumeButtonPopupVisbible = 15035;
-		public const uint VolumeGaugePopupVisbible = 15036;
+		public const uint VolumeButtonPopupVisible = 15035;
+		public const uint VolumeGaugePopupVisible = 15036;
         public const uint CallStatusPageVisible = 15040;
-        public const uint LightsPageVisbible = 15041;
+        public const uint LightsPageVisible = 15041;
         /// <summary>
         /// 15042 Closes whichever interlocked modal is open
         /// </summary>
         public const uint InterlockedModalClosePress = 15042;
+
+        public const uint Display1SelectPress = 15051;
+        public const uint Display1ControlButtonEnable = 15052;
+        public const uint Display1ControlButtonPress = 15053;
+        public const uint Display1AudioButtonEnable = 15054;
+        public const uint Display1AudioButtonPressAndFb = 15055;
+        public const uint Display2SelectPress = 15056;
+        public const uint Display2ControlButtonEnable = 15057;
+        public const uint Display2ControlButtonPress = 15058;
+        public const uint Display2AudioButtonEnable = 15059;
+        public const uint Display2AudioButtonPressAndFb = 15060;
+
+        /// <summary>
+        /// 15061 Reveals the dual-display subpage
+        /// </summary>
+        public const uint DualDisplayPageVisible = 15061;
+        public const uint ToggleSharingModeVisible = 15062;
+        public const uint ToggleSharingModePress = 15063;
+
+
 
         /// <summary>
         /// 15085 Visibility join for help subpage
@@ -159,5 +179,22 @@ namespace PepperDash.Essentials
 		public const uint PowerOffMessage = 3911;
         public const uint StartPageMessage = 3912;
         public const uint HelpMessage = 3922;
+
+        /// <summary>
+        /// 3961 Name of source on display 1
+        /// </summary>
+        public const uint Display1SourceLabel = 3961;
+        /// <summary>
+        /// 3962 Title above display 1
+        /// </summary>
+        public const uint Display1TitleLabel = 3962;
+        /// <summary>
+        /// 3964 Name of source on display 2
+        /// </summary>
+        public const uint Display2SourceLabel = 3964;
+        /// <summary>
+        /// 3965 Title above display 2
+        /// </summary>
+        public const uint Display2TitleLabel = 3965;
     }
 }

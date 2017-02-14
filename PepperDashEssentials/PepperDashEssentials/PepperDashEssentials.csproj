@@ -154,6 +154,7 @@
     <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
     <Compile Include="Room\VolumeAndSourceChangeArgs.cs" />
+    <Compile Include="UI Drivers\DualDisplayRouting.cs" />
     <Compile Include="UI Drivers\EssentialsPresentationPanelAvFunctionsDriver.cs" />
     <Compile Include="UI Drivers\SingleSubpageModalDriver.cs" />
     <Compile Include="UI Drivers\EssentialsPanelMainInterfaceDriver.cs" />
