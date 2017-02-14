@@ -88,9 +88,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\pepperdash-simplsharp-core\Pepperdash Core\Pepperdash Core\bin\PepperDash_Core.dll</HintPath>
     </Reference>
-    <Reference Include="PepperDash_Essentials_Core, Version=1.0.0.24312, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PepperDash_Essentials_Core, Version=1.0.0.30070, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\essentials-ssp-base\PepperDashEssentialsBase\PepperDashEssentialsBase\bin\PepperDash_Essentials_Core.dll</HintPath>
+      <HintPath>..\..\..\essentials-core\PepperDashEssentialsBase\PepperDashEssentialsBase\bin\PepperDash_Essentials_Core.dll</HintPath>
     </Reference>
     <Reference Include="PepperDash_Essentials_DM, Version=1.0.0.17590, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

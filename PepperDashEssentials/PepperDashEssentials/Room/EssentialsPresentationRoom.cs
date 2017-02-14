@@ -130,12 +130,22 @@ namespace PepperDash.Essentials
 			EnablePowerOnToLastSource = true;
 		}
 
-
-        public void DoSourceToAllDestinationsRoute(string sourceKey)
+        /// <summary>
+        /// Run the same source to all destinations
+        /// </summary>
+        /// <param name="sourceItem"></param>
+        public void DoSourceToAllDestinationsRoute(SourceListItem sourceItem)
         {
             foreach (var display in Displays.Values)
-                DoVideoRoute(sourceKey, display.Key);
-
+            {
+                if (sourceItem != null)
+                    DoVideoRoute(sourceItem.SourceKey, display.Key);
+                else
+                    DoVideoRoute("$off", display.Key);
+            }
+            
+            CurrentSourceInfo = sourceItem;
+            OnFeedback.FireUpdate();
         }
 
         /// <summary>
@@ -145,19 +155,27 @@ namespace PepperDash.Essentials
         {
             new CTimer(o =>
                 {
-                    var source = DeviceManager.GetDeviceForKey(sourceKey) as IRoutingSource;
-                    if (source == null)
-                    {
-                        Debug.Console(1, this, "Cannot route. Source '{0}' not found", sourceKey);
-                        return;
-                    }
                     var dest = DeviceManager.GetDeviceForKey(destinationKey) as IRoutingSinkNoSwitching;
                     if (dest == null)
                     {
                         Debug.Console(1, this, "Cannot route. Destination '{0}' not found", destinationKey);
                         return;
                     }
+                    // off is special case
+                    if (sourceKey.Equals("$off", StringComparison.OrdinalIgnoreCase))
+                    {
+                        dest.ReleaseRoute();
+                        if (dest is IPower)
+                            (dest as IPower).PowerOff();
+                        return;
+                    }
 
+                    var source = DeviceManager.GetDeviceForKey(sourceKey) as IRoutingOutputs;
+                    if (source == null)
+                    {
+                        Debug.Console(1, this, "Cannot route. Source '{0}' not found", sourceKey);
+                        return;
+                    }
                     dest.ReleaseAndMakeRoute(source, eRoutingSignalType.Video);
                 }, 0);
         }

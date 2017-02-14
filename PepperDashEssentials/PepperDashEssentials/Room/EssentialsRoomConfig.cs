@@ -62,7 +62,7 @@ namespace PepperDash.Essentials
         public string SourceListKey { get; set; }
     }
 
-    public class EssentialsPresentationRoomPropertiesConfig
+    public class EssentialsPresentationRoomPropertiesConfig : EssentialsRoomPropertiesConfig
     {
         public string DefaultAudioBehavior { get; set; }
         public string DefaultAudioKey { get; set; }

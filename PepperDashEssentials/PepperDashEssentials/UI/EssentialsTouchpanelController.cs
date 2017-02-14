@@ -98,9 +98,9 @@ namespace PepperDash.Essentials
                             var room = DeviceManager.GetDeviceForKey(props.DefaultRoomKey);
                             if (room is EssentialsHuddleSpaceRoom)
                             {
+                                Debug.Console(0, this, "Adding huddle space driver");
                                 var avDriver = new EssentialsHuddlePanelAvFunctionsDriver(mainDriver, props);
-                                avDriver.CurrentRoom = DeviceManager.GetDeviceForKey(props.DefaultRoomKey)
-                                    as EssentialsHuddleSpaceRoom;
+                                avDriver.CurrentRoom = room as EssentialsHuddleSpaceRoom;
                                 avDriver.DefaultRoomKey = props.DefaultRoomKey;
                                 mainDriver.AvDriver = avDriver;
                                 LoadAndShowDriver(mainDriver);  // This is a little convoluted.
@@ -118,9 +118,9 @@ namespace PepperDash.Essentials
                             }
                             else if (room is EssentialsPresentationRoom)
                             {
+                                Debug.Console(0, this, "Adding presentation room driver");
                                 var avDriver = new EssentialsPresentationPanelAvFunctionsDriver(mainDriver, props);
-                                avDriver.CurrentRoom = DeviceManager.GetDeviceForKey(props.DefaultRoomKey)
-                                    as EssentialsPresentationRoom;
+                                avDriver.CurrentRoom = room as EssentialsPresentationRoom;
                                 avDriver.DefaultRoomKey = props.DefaultRoomKey;
                                 mainDriver.AvDriver = avDriver;
                                 LoadAndShowDriver(mainDriver);

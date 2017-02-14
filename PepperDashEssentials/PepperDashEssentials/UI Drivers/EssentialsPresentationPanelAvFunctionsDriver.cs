@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
@@ -188,7 +189,7 @@ namespace PepperDash.Essentials
             {
                 string message = null;
                 var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
-                    as EssentialsHuddleSpaceRoom;
+                    as EssentialsPresentationRoom;
                 if (room != null)
                     message = room.Config.HelpMessage;
                 else
@@ -292,7 +293,9 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.Clear();
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 0, 
                 b => { if (!b) ShareButtonPressed(); }));
-            ActivityFooterSrl.Count = 1;
+            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 1,
+                b => { }));
+            ActivityFooterSrl.Count = 2;
             TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 0;
         }
 
@@ -304,9 +307,11 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.Clear();
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl,
                 0, null));
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl,
+            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 
+                1, b => { if (!b) ShareButtonPressed(); }));
+            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(3, ActivityFooterSrl,
                 3, b => { if (!b) PowerButtonPressed(); }));
-            ActivityFooterSrl.Count = 2;
+            ActivityFooterSrl.Count = 3;
             TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 1;
             EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
         }
@@ -426,9 +431,9 @@ namespace PepperDash.Essentials
 		/// to change to the proper screen.
 		/// </summary>
 		/// <param name="key">The key name of the route to run</param>
-		void UiSelectSource(string key)
+		void UiSelectSource(SourceListItem sourceItem)
 		{
-            CurrentRoom.DoSourceToAllDestinationsRoute(key);
+            CurrentRoom.DoSourceToAllDestinationsRoute(sourceItem);
 		}
 
 		/// <summary>
@@ -450,7 +455,7 @@ namespace PepperDash.Essentials
 				but => 
                 {
                     if (but != 2)
-                        CurrentRoom.RunRouteAction("roomOff");
+                        CurrentRoom.DoSourceToAllDestinationsRoute(null);
                     else
                         ShareButtonSig.BoolValue = true; // restore Share fb
                     EndMeetingButtonSig.BoolValue = false;
@@ -553,25 +558,26 @@ namespace PepperDash.Essentials
 				var config = ConfigReader.ConfigObject.SourceLists;
 				if (config.ContainsKey(_CurrentRoom.SourceListKey))
 				{
-					var srcList = config[_CurrentRoom.SourceListKey];
+                    var srcList = config[_CurrentRoom.SourceListKey]
+                        .Values.ToList().OrderBy(s => s.Order);
 					// Setup sources list			
 					uint i = 1; // counter for UI list
-					foreach (var kvp in srcList)
+                    foreach (var srcConfig in srcList)
 					{
-						var srcConfig = kvp.Value;
 						if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
 							continue;
 
-						var actualSource = DeviceManager.GetDeviceForKey(srcConfig.SourceKey) as Device;
+                        var sourceKey = srcConfig.SourceKey;
+						var actualSource = DeviceManager.GetDeviceForKey(sourceKey) as Device;
 						if (actualSource == null)
 						{
 							Debug.Console(0, "Cannot assign missing source '{0}' to source UI list",
 								srcConfig.SourceKey);
 							continue;
 						}
-                        var sourceKey = srcConfig.SourceKey;
+                        var localSrcConfig = srcConfig; // lambda scope below
                         var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig,
-                            b => { if (!b) UiSelectSource(sourceKey); });
+                            b => { if (!b) UiSelectSource(localSrcConfig); });
                         SourcesSrl.AddItem(item); // add to the SRL
                         item.RegisterForSourceChange(_CurrentRoom);
 					}

@@ -109,3 +109,4 @@ C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssen
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\SimplSharpReflectionInterface.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\Newtonsoft.Json.Compact.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\obj\Debug\PepperDashEssentials.pdb
+C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\PepperDash_Essentials_Core.dll

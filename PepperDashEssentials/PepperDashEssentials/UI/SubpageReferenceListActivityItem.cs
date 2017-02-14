@@ -12,6 +12,13 @@ namespace PepperDash.Essentials
 {
     public class SubpageReferenceListActivityItem : SubpageReferenceListItem
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="owner"></param>
+        /// <param name="buttonMode">0=Share, 1=Phone Call, 2=Video Call, 3=End Meeting</param>
+        /// <param name="pressAction"></param>
         public SubpageReferenceListActivityItem(uint index, SubpageReferenceList owner, 
             ushort buttonMode, Action<bool> pressAction)
             : base(index, owner)
