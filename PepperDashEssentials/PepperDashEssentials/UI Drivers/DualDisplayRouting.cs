@@ -12,12 +12,26 @@ using PepperDash.Essentials.Core.PageManagers;
 
 namespace PepperDash.Essentials
 {
-    public class DualDisplayRouting : PanelDriverBase
+    public class DualDisplaySimpleOrAdvancedRouting : PanelDriverBase
     {
+        EssentialsPresentationPanelAvFunctionsDriver Parent;
+
         CTimer SourceSelectedTimer;
 
-        public DualDisplayRouting(BasicTriListWithSmartObject trilist) : base(trilist)
+        /// <summary>
+        /// Smart Object 3200
+        /// </summary>
+        SubpageReferenceList SourcesSrl;
+
+        bool IsSharingModeAdvanced;
+
+        public DualDisplaySimpleOrAdvancedRouting(EssentialsPresentationPanelAvFunctionsDriver parent) : base(parent.TriList)
         {
+            Parent = parent;
+            SourcesSrl = new SubpageReferenceList(TriList, 3200, 3, 3, 3);
+
+            TriList.SetSigFalseAction(UIBoolJoin.ToggleSharingModePress, ToggleSharingModePressed);
+
             TriList.SetSigFalseAction(UIBoolJoin.Display1AudioButtonPressAndFb, Display1AudioPress);
             TriList.SetSigFalseAction(UIBoolJoin.Display1ControlButtonPress, Display1ControlPress);
             TriList.SetSigTrueAction(UIBoolJoin.Display1SelectPress, Display1Press);
@@ -27,23 +41,102 @@ namespace PepperDash.Essentials
             TriList.SetSigTrueAction(UIBoolJoin.Display2SelectPress, Display2Press);
         }
 
-        public void Enable()
-        {
-            // attach to the source list SRL
-        }
-
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Show()
         {
-            TriList.BooleanInput[UIBoolJoin.DualDisplayPageVisible].BoolValue = true;
+            TriList.BooleanInput[UIBoolJoin.ToggleSharingModeVisible].BoolValue = true;
+            TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
+            if(IsSharingModeAdvanced)
+                TriList.BooleanInput[UIBoolJoin.DualDisplayPageVisible].BoolValue = true;
+            else
+                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
             base.Show();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void Hide()
         {
-            TriList.BooleanInput[UIBoolJoin.DualDisplayPageVisible].BoolValue = false;
+            TriList.BooleanInput[UIBoolJoin.ToggleSharingModeVisible].BoolValue = false;
+            TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
+            if(IsSharingModeAdvanced)
+                TriList.BooleanInput[UIBoolJoin.DualDisplayPageVisible].BoolValue = false;
+            else
+                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
             base.Hide();
         }
 
+        public void SetCurrentRoomFromParent()
+        {
+            if (IsSharingModeAdvanced)
+                return; // add stuff here
+            else
+                SetupSourcesForSimpleRouting();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void SetupSourcesForSimpleRouting()
+        {
+            // get the source list config and set up the source list
+            var config = ConfigReader.ConfigObject.SourceLists;
+            if (config.ContainsKey(Parent.CurrentRoom.SourceListKey))
+            {
+                var srcList = config[Parent.CurrentRoom.SourceListKey]
+                    .Values.ToList().OrderBy(s => s.Order);
+                // Setup sources list			
+                uint i = 1; // counter for UI list
+                foreach (var srcConfig in srcList)
+                {
+                    if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
+                        continue;
+
+                    var sourceKey = srcConfig.SourceKey;
+                    var actualSource = DeviceManager.GetDeviceForKey(sourceKey) as Device;
+                    if (actualSource == null)
+                    {
+                        Debug.Console(0, "Cannot assign missing source '{0}' to source UI list",
+                            srcConfig.SourceKey);
+                        continue;
+                    }
+                    var localSrcConfig = srcConfig; // lambda scope below
+                    var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig,
+                        b => { if (!b) UiSelectSource(localSrcConfig); });
+                    SourcesSrl.AddItem(item); // add to the SRL
+                    item.RegisterForSourceChange(Parent.CurrentRoom);
+                }
+                SourcesSrl.Count = (ushort)(i - 1);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        void ToggleSharingModePressed()
+        {
+            Hide();
+            IsSharingModeAdvanced = !IsSharingModeAdvanced;
+            TriList.BooleanInput[UIBoolJoin.ToggleSharingModePress].BoolValue = IsSharingModeAdvanced;
+            Show();
+        }
+
+        /// <summary>
+        /// Called from button presses on source, where We can assume we want
+        /// to change to the proper screen.
+        /// </summary>
+        /// <param name="key">The key name of the route to run</param>
+        void UiSelectSource(SourceListItem sourceItem)
+        {
+            if (IsSharingModeAdvanced)
+            {
+                SourceListButtonPress(sourceItem);
+            }
+            else
+                Parent.CurrentRoom.DoSourceToAllDestinationsRoute(sourceItem);
+        }
 
         public void SourceListButtonPress(SourceListItem item)
         {

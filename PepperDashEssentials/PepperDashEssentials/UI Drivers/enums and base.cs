@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials
@@ -100,7 +100,7 @@ namespace PepperDash.Essentials
 		{
 		}
 
-		public PanelDriverBase(Crestron.SimplSharpPro.DeviceSupport.BasicTriListWithSmartObject triList)
+		public PanelDriverBase(BasicTriListWithSmartObject triList)
 		{
 			TriList = triList;
 		}
@@ -128,7 +128,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// The trilist object for the Crestron TP device
 		/// </summary>
-		public Crestron.SimplSharpPro.DeviceSupport.BasicTriListWithSmartObject TriList { get; private set; }
+		public BasicTriListWithSmartObject TriList { get; private set; }
 
 		/// <summary>
 		/// 
