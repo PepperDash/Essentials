@@ -163,6 +163,7 @@
     <Compile Include="UI Drivers\SingleSubpageModalAndBackDriver.cs" />
     <Compile Include="UI Drivers\SmartObjectRoomsList.cs" />
     <Compile Include="UI Drivers\UIJoins.cs" />
+    <Compile Include="UI\DualDisplaySourceSRLController.cs" />
     <Compile Include="UI\SubpageReferenceListActivityItem.cs" />
     <Compile Include="UI\CrestronTouchpanelPropertiesConfig.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\REMOVE UiCue.cs" />

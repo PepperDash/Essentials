@@ -32,9 +32,9 @@ namespace PepperDash.Essentials
         void room_CurrentSourceInfoChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
         {
             if (type == ChangeType.WillChange && info == SourceItem)
-                Owner.BoolInputSig(Index, 1).BoolValue = false;
+                ClearFeedback();
             else if (type == ChangeType.DidChange && info == SourceItem)
-                Owner.BoolInputSig(Index, 1).BoolValue = true;
+                SetFeedback();
         }
 
         /// <summary>
@@ -44,6 +44,22 @@ namespace PepperDash.Essentials
         {
             Owner.BoolInputSig(Index, 1).UserObject = null;
             Owner.StringInputSig(Index, 1).StringValue = "";
+        }
+
+        /// <summary>
+        /// Sets the selected feedback on the button
+        /// </summary>
+        public void SetFeedback()
+        {
+            Owner.BoolInputSig(Index, 1).BoolValue = true;
+        }
+
+        /// <summary>
+        /// Clears the selected feedback on the button
+        /// </summary>
+        public void ClearFeedback()
+        {
+            Owner.BoolInputSig(Index, 1).BoolValue = false;
         }
     }
 }

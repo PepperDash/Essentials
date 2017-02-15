@@ -615,36 +615,7 @@ namespace PepperDash.Essentials
 
 			if (_CurrentRoom != null)
 			{
-				// get the source list config and set up the source list
-				var config = ConfigReader.ConfigObject.SourceLists;
-				if (config.ContainsKey(_CurrentRoom.SourceListKey))
-				{
-                    var srcList = config[_CurrentRoom.SourceListKey]
-                        .Values.ToList().OrderBy(s => s.Order);
-					// Setup sources list			
-					uint i = 1; // counter for UI list
-                    foreach (var srcConfig in srcList)
-					{
-						if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
-							continue;
-
-                        var sourceKey = srcConfig.SourceKey;
-						var actualSource = DeviceManager.GetDeviceForKey(sourceKey) as Device;
-						if (actualSource == null)
-						{
-							Debug.Console(0, "Cannot assign missing source '{0}' to source UI list",
-								srcConfig.SourceKey);
-							continue;
-						}
-                        var localSrcConfig = srcConfig; // lambda scope below
-                        var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig,
-                            b => { if (!b) UiSelectSource(localSrcConfig); });
-                        SourcesSrl.AddItem(item); // add to the SRL
-                        item.RegisterForSourceChange(_CurrentRoom);
-					}
-                    SourcesSrl.Count = (ushort)(i - 1);
-				}
-
+                SetupSourcesForSimpleRouting();
 				TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
 
                 // Link up all the change events from the room
@@ -677,6 +648,39 @@ namespace PepperDash.Essentials
             {
                 SetupActivityFooterWhenRoomOff();
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
+            }
+        }
+
+        void SetupSourcesForSimpleRouting()
+        {
+            // get the source list config and set up the source list
+            var config = ConfigReader.ConfigObject.SourceLists;
+            if (config.ContainsKey(_CurrentRoom.SourceListKey))
+            {
+                var srcList = config[_CurrentRoom.SourceListKey]
+                    .Values.ToList().OrderBy(s => s.Order);
+                // Setup sources list			
+                uint i = 1; // counter for UI list
+                foreach (var srcConfig in srcList)
+                {
+                    if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
+                        continue;
+
+                    var sourceKey = srcConfig.SourceKey;
+                    var actualSource = DeviceManager.GetDeviceForKey(sourceKey) as Device;
+                    if (actualSource == null)
+                    {
+                        Debug.Console(0, "Cannot assign missing source '{0}' to source UI list",
+                            srcConfig.SourceKey);
+                        continue;
+                    }
+                    var localSrcConfig = srcConfig; // lambda scope below
+                    var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig,
+                        b => { if (!b) UiSelectSource(localSrcConfig); });
+                    SourcesSrl.AddItem(item); // add to the SRL
+                    item.RegisterForSourceChange(_CurrentRoom);
+                }
+                SourcesSrl.Count = (ushort)(i - 1);
             }
         }
 

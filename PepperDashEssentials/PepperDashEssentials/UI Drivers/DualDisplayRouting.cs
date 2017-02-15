@@ -14,44 +14,17 @@ namespace PepperDash.Essentials
 {
     public class DualDisplayRouting : PanelDriverBase
     {
-        //public BoolFeedback Display1AudioButtonEnable { get; private set; }
-        //bool _Display1AudioButtonEnable;
-        //public BoolFeedback Display1AudioButtonFeedback { get; private set; }
-        //bool _Display1AudioButtonFeedback;
-        //public BoolFeedback Display1ControlButtonEnable { get; private set; }
-        //bool _Display1ControlButtonEnable;
-        //public BoolFeedback Display2AudioButtonEnable { get; private set; }
-        //bool _Display2AudioButtonEnable;
-        //public BoolFeedback Display2AudioButtonFeedback { get; private set; }
-        //bool _Display2AudioButtonFeedback;
-        //public BoolFeedback Display2ControlButtonEnable { get; private set; }
-        //bool _Display2ControlButtonEnable;
-        //public BoolFeedback DualDisplayRoutingVisible { get; private set; }
-        //bool _DualDisplayRoutingVisible;
-
         CTimer SourceSelectedTimer;
 
         public DualDisplayRouting(BasicTriListWithSmartObject trilist) : base(trilist)
         {
-            //Display1AudioButtonEnable = new BoolFeedback(() => _Display1AudioButtonEnable);
-            //Display1AudioButtonFeedback = new BoolFeedback(() => _Display1AudioButtonFeedback);
             TriList.SetSigFalseAction(UIBoolJoin.Display1AudioButtonPressAndFb, Display1AudioPress);
-
-            //Display1ControlButtonEnable = new BoolFeedback(() => _Display1ControlButtonEnable);
             TriList.SetSigFalseAction(UIBoolJoin.Display1ControlButtonPress, Display1ControlPress);
+            TriList.SetSigTrueAction(UIBoolJoin.Display1SelectPress, Display1Press);
 
-            TriList.SetSigFalseAction(UIBoolJoin.Display1SelectPress, Display1Press);
-
-            //Display2AudioButtonEnable = new BoolFeedback(() => _Display2AudioButtonEnable);
-            //Display2AudioButtonFeedback = new BoolFeedback(() => _Display2AudioButtonFeedback);
             TriList.SetSigFalseAction(UIBoolJoin.Display2AudioButtonPressAndFb, Display2AudioPress);
-
-            //Display2ControlButtonEnable = new BoolFeedback(() => _Display2ControlButtonEnable);
             TriList.SetSigFalseAction(UIBoolJoin.Display2ControlButtonPress, Display2ControlPress);
-
-            TriList.SetSigFalseAction(UIBoolJoin.Display2SelectPress, Display2Press);
-
-            //DualDisplayRoutingVisible = new BoolFeedback(() => _DualDisplayRoutingVisible);
+            TriList.SetSigTrueAction(UIBoolJoin.Display2SelectPress, Display2Press);
         }
 
         public void Enable()
@@ -68,7 +41,6 @@ namespace PepperDash.Essentials
         public override void Hide()
         {
             TriList.BooleanInput[UIBoolJoin.DualDisplayPageVisible].BoolValue = false;
-
             base.Hide();
         }
 
