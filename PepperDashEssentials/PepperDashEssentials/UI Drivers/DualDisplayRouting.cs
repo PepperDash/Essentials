@@ -74,13 +74,13 @@ namespace PepperDash.Essentials
             if (IsSharingModeAdvanced)
                 return; // add stuff here
             else
-                SetupSourcesForSimpleRouting();
+                SetupSourceListForSimpleRouting();
         }
 
         /// <summary>
         /// 
         /// </summary>
-        void SetupSourcesForSimpleRouting()
+        void SetupSourceListForSimpleRouting()
         {
             // get the source list config and set up the source list
             var config = ConfigReader.ConfigObject.SourceLists;
@@ -112,6 +112,12 @@ namespace PepperDash.Essentials
                 SourcesSrl.Count = (ushort)(i - 1);
             }
         }
+
+        void SetupSourceListForAdvancedRouting()
+        {
+
+        }
+
         /// <summary>
         /// 
         /// </summary>
