@@ -104,29 +104,24 @@ namespace PepperDash.Essentials
                         continue;
                     }
                     var localSrcConfig = srcConfig; // lambda scope below
-                    var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig,
-                        b => { if (!b) UiSelectSource(localSrcConfig); });
-                    SourcesSrl.AddItem(item); // add to the SRL
-                    item.RegisterForSourceChange(Parent.CurrentRoom);
+                    SourcesSrl.GetBoolFeedbackSig(i, 1).UserObject = new Action<bool>(b =>
+                         { if (!b) UiSelectSource(localSrcConfig); });
+                    SourcesSrl.StringInputSig(i, 1).StringValue = srcConfig.PreferredName;
+                    i++;
+
+                    //var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig,
+                    //    b => { if (!b) UiSelectSource(localSrcConfig); });
+                    //SourcesSrl.AddItem(item); // add to the SRL
+                    //item.RegisterForSourceChange(Parent.CurrentRoom);
                 }
                 SourcesSrl.Count = (ushort)(i - 1);
+                Parent.CurrentRoom.CurrentSourceInfoChange += CurrentRoom_CurrentSourceInfoChange;
             }
         }
 
         void SetupSourceListForAdvancedRouting()
         {
 
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void ToggleSharingModePressed()
-        {
-            Hide();
-            IsSharingModeAdvanced = !IsSharingModeAdvanced;
-            TriList.BooleanInput[UIBoolJoin.ToggleSharingModePress].BoolValue = IsSharingModeAdvanced;
-            Show();
         }
 
         /// <summary>
@@ -142,6 +137,23 @@ namespace PepperDash.Essentials
             }
             else
                 Parent.CurrentRoom.DoSourceToAllDestinationsRoute(sourceItem);
+        }
+
+        void CurrentRoom_CurrentSourceInfoChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        {
+            
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void ToggleSharingModePressed()
+        {
+            Hide();
+            IsSharingModeAdvanced = !IsSharingModeAdvanced;
+            TriList.BooleanInput[UIBoolJoin.ToggleSharingModePress].BoolValue = IsSharingModeAdvanced;
+            Show();
         }
 
         public void SourceListButtonPress(SourceListItem item)

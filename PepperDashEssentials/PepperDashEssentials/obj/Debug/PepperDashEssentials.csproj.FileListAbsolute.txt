@@ -82,8 +82,6 @@ C:\Users\hvolmer\Desktop\working\essentials-ssp\PepperDashEssentials\PepperDashE
 C:\Users\hvolmer\Desktop\working\essentials-ssp\PepperDashEssentials\PepperDashEssentials\bin\PepperDashCorePortalSync.dll
 C:\Users\hvolmer\Desktop\working\essentials-ssp\PepperDashEssentials\PepperDashEssentials\bin\SimplSharpCWSHelperInterface.dll
 C:\Users\hvolmer\Desktop\working\essentials-ssp\PepperDashEssentials\PepperDashEssentials\bin\SimplSharpCryptographyInterface.dll
-C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\obj\Debug\ResolveAssemblyReference.cache
-C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\obj\Debug\PepperDashEssentials.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\PepperDashEssentials.dll.config
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\PepperDashEssentials.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\PepperDashEssentials.pdb
@@ -96,17 +94,17 @@ C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssen
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\Essentials Devices Common.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\EssentialsHttpServer.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\PepperDash_Core.dll
+C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\PepperDash_Essentials_Core.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\PepperDash_Essentials_DM.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\PepperDashCorePortalSync.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\SimplSharpCustomAttributesInterface.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\SimplSharpHelperInterface.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\SimplSharpNewtonsoft.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\SimplSharpPro.exe
-C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\SimplSharpCWSHelperInterface.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\SimplSharpSQLHelperInterface.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\SimplSharpCryptographyInterface.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\Crestron.SimplSharpPro.Gateways.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\SimplSharpReflectionInterface.dll
-C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\Newtonsoft.Json.Compact.dll
+C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\obj\Debug\PepperDashEssentials.dll
 C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\obj\Debug\PepperDashEssentials.pdb
-C:\Users\hvolmer\Desktop\working\essentials\PepperDashEssentials\PepperDashEssentials\bin\PepperDash_Essentials_Core.dll
