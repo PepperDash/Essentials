@@ -146,6 +146,11 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public BoolFeedback OnFeedback { get; private set; }
 
+        /// <summary>
+        /// If an audio dialer is available for this room
+        /// </summary>
+        public bool HasAudioDialer { get { return false; } }
+
 		/// <summary>
 		/// 
 		/// </summary>

@@ -6,6 +6,7 @@ using Crestron.SimplSharpPro;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
 
@@ -156,8 +157,6 @@ namespace PepperDash.Essentials
 		/// </summary>
 		CTimer PowerOffTimer;
 
-        //bool IsSharingModeAdvanced;
-
 		/// <summary>
 		/// Constructor
 		/// </summary>
@@ -169,7 +168,7 @@ namespace PepperDash.Essentials
 			Parent = parent;
 
             ActivityFooterSrl = new SubpageReferenceList(TriList, 15022, 3, 3, 3);
-            SetupActivityFooterWhenRoomOff();
+            //SetupActivityFooterWhenRoomOff();
 
 			ShowVolumeGauge = true;
 
@@ -254,6 +253,8 @@ namespace PepperDash.Essentials
 					EssentialsHuddleSpaceRoom.AllRoomsOff();
 					CancelPowerOff();
 				});
+
+            SetupActivityFooterWhenRoomOff();
 
 			base.Show();
 		}
@@ -394,7 +395,7 @@ namespace PepperDash.Essentials
                         {
                             if (LastSelectedSourceSig != null)
                                 LastSelectedSourceSig.BoolValue = false;
-                            SourceListButtonPress(localSrcItem);
+                            PendingSource = localSrcItem;
                             LastSelectedSourceSig = SourcesSrl.BoolInputSig(localIndex, 1);
                             LastSelectedSourceSig.BoolValue = true;
                         }
@@ -428,27 +429,8 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="item"></param>
-        public void SourceListButtonPress(SourceListItem item)
-        {
-            // start the timer
-            // show FB on potential source
-            TriList.BooleanInput[UIBoolJoin.Display1AudioButtonEnable].BoolValue = false;
-            TriList.BooleanInput[UIBoolJoin.Display1ControlButtonEnable].BoolValue = false;
-            TriList.BooleanInput[UIBoolJoin.Display2AudioButtonEnable].BoolValue = false;
-            TriList.BooleanInput[UIBoolJoin.Display2ControlButtonEnable].BoolValue = false;
-            PendingSource = item;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         void EnableAppropriateDisplayButtons()
         {
-            TriList.BooleanInput[UIBoolJoin.Display1AudioButtonEnable].BoolValue = true;
-            TriList.BooleanInput[UIBoolJoin.Display1ControlButtonEnable].BoolValue = true;
-            TriList.BooleanInput[UIBoolJoin.Display2AudioButtonEnable].BoolValue = true;
-            TriList.BooleanInput[UIBoolJoin.Display2ControlButtonEnable].BoolValue = true;
             if (LastSelectedSourceSig != null)
                 LastSelectedSourceSig.BoolValue = false;
         }
@@ -495,10 +477,12 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.Clear();
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 0, 
                 b => { if (!b) ShareButtonPressed(); }));
+            // only show phone call when there's a dialer present
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 1,
                 b => { }));
-            ActivityFooterSrl.Count = 2;
-            TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 1;
+            ActivityFooterSrl.Count = (ushort)(CurrentRoom.HasAudioDialer ? 2 : 1);
+            TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue =
+                (ushort)(CurrentRoom.HasAudioDialer ? 1 : 0);
         }
 
         /// <summary>
@@ -509,13 +493,24 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.Clear();
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl,
                 0, null));
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 
-                1, b => { if (!b) ShareButtonPressed(); }));
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(3, ActivityFooterSrl,
-                3, b => { if (!b) PowerButtonPressed(); }));
-            ActivityFooterSrl.Count = 3;
-            TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 2;
-            EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
+            if (CurrentRoom.HasAudioDialer)
+            {
+                ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl,
+                    1, b => { }));
+                ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(3, ActivityFooterSrl,
+                    3, b => { if (!b) PowerButtonPressed(); }));
+                ActivityFooterSrl.Count = 3;
+                TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 2;
+                EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
+            }
+            else
+            {
+                ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl,
+                    3, b => { if (!b) PowerButtonPressed(); }));
+                ActivityFooterSrl.Count = 2;
+                TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 1;
+                EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
+            }
         }
 
         /// <summary>
@@ -792,9 +787,21 @@ namespace PepperDash.Essentials
         /// </summary>
         void _CurrentRoom_CurrentDisplay1SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
         {
+            var isSource = info != null;
+            TriList.BooleanInput[UIBoolJoin.Display1SelectPress].BoolValue = isSource;
             if (type == ChangeType.DidChange)
-               TriList.StringInput[UIStringJoin.Display1SourceLabel].StringValue =
-                   info == null ? "" : info.PreferredName;
+            {
+                TriList.StringInput[UIStringJoin.Display1SourceLabel].StringValue =
+                    isSource ? info.PreferredName : "";
+                if (!isSource)
+                    return;
+                // enable audio and control buttons
+                var devConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key == info.SourceKey);
+                TriList.BooleanInput[UIBoolJoin.Display1AudioButtonEnable].BoolValue =
+                    ConfigPropertiesHelpers.GetHasAudio(devConfig);
+                TriList.BooleanInput[UIBoolJoin.Display1ControlButtonEnable].BoolValue =
+                    ConfigPropertiesHelpers.GetHasControls(devConfig);
+            }
         }
 
         /// <summary>
@@ -802,9 +809,21 @@ namespace PepperDash.Essentials
         /// </summary>
         void _CurrentRoom_CurrentDisplay2SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
         {
+            var isSource = info != null;
+            TriList.BooleanInput[UIBoolJoin.Display2SelectPress].BoolValue = isSource;
             if (type == ChangeType.DidChange)
+            {
                 TriList.StringInput[UIStringJoin.Display2SourceLabel].StringValue =
-                    info == null ? "" : info.PreferredName;
+                    isSource ? info.PreferredName : "";
+                if (!isSource)
+                    return;
+                // enable audio and control buttons
+                var devConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key == info.SourceKey);
+                TriList.BooleanInput[UIBoolJoin.Display2AudioButtonEnable].BoolValue =
+                    ConfigPropertiesHelpers.GetHasAudio(devConfig);
+                TriList.BooleanInput[UIBoolJoin.Display2ControlButtonEnable].BoolValue =
+                    ConfigPropertiesHelpers.GetHasControls(devConfig);
+            }
         }
 
 		/// <summary>
