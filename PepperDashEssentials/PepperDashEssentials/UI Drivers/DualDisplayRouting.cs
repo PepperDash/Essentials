@@ -16,12 +16,20 @@ namespace PepperDash.Essentials
     {
         EssentialsPresentationPanelAvFunctionsDriver Parent;
 
-        CTimer SourceSelectedTimer;
-
         /// <summary>
         /// Smart Object 3200
         /// </summary>
         SubpageReferenceList SourcesSrl;
+
+        /// <summary>
+        /// For tracking feedback on last selected
+        /// </summary>
+        BoolInputSig LastSelectedSourceSig;
+        
+        /// <summary>
+        ///  The source that has been selected and is awaiting assignment to a display
+        /// </summary>
+        SourceListItem PendingSource;
 
         bool IsSharingModeAdvanced;
 
@@ -58,16 +66,16 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        public override void Hide()
-        {
-            TriList.BooleanInput[UIBoolJoin.ToggleSharingModeVisible].BoolValue = false;
-            TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
-            if(IsSharingModeAdvanced)
-                TriList.BooleanInput[UIBoolJoin.DualDisplayPageVisible].BoolValue = false;
-            else
-                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
-            base.Hide();
-        }
+        //public override void Hide()
+        //{
+        //    TriList.BooleanInput[UIBoolJoin.ToggleSharingModeVisible].BoolValue = false;
+        //    TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
+        //    if(IsSharingModeAdvanced)
+        //        TriList.BooleanInput[UIBoolJoin.DualDisplayPageVisible].BoolValue = false;
+        //    else
+        //        TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
+        //    base.Hide();
+        //}
 
         public void SetCurrentRoomFromParent()
         {
@@ -103,9 +111,21 @@ namespace PepperDash.Essentials
                             srcConfig.SourceKey);
                         continue;
                     }
-                    var localSrcConfig = srcConfig; // lambda scope below
+                    var localSrcItem = srcConfig; // lambda scope below
+                    var localIndex = i;
                     SourcesSrl.GetBoolFeedbackSig(i, 1).UserObject = new Action<bool>(b =>
-                         { if (!b) UiSelectSource(localSrcConfig); });
+                         {
+                             if (IsSharingModeAdvanced)
+                             {
+                                 if (LastSelectedSourceSig != null)
+                                     LastSelectedSourceSig.BoolValue = false;
+                                 SourceListButtonPress(localSrcItem);
+                                 LastSelectedSourceSig = SourcesSrl.BoolInputSig(localIndex, 1);
+                                 LastSelectedSourceSig.BoolValue = true;
+                             }
+                             else
+                                 Parent.CurrentRoom.DoSourceToAllDestinationsRoute(localSrcItem);
+                         });
                     SourcesSrl.StringInputSig(i, 1).StringValue = srcConfig.PreferredName;
                     i++;
 
@@ -115,7 +135,9 @@ namespace PepperDash.Essentials
                     //item.RegisterForSourceChange(Parent.CurrentRoom);
                 }
                 SourcesSrl.Count = (ushort)(i - 1);
-                Parent.CurrentRoom.CurrentSourceInfoChange += CurrentRoom_CurrentSourceInfoChange;
+                Parent.CurrentRoom.CurrentSingleSourceChange += CurrentRoom_CurrentSourceInfoChange;
+                Parent.CurrentRoom.CurrentDisplay1SourceChange += CurrentRoom_CurrentDisplay1SourceChange;
+                Parent.CurrentRoom.CurrentDisplay2SourceChange += CurrentRoom_CurrentDisplay2SourceChange;
             }
         }
 
@@ -124,26 +146,21 @@ namespace PepperDash.Essentials
 
         }
 
-        /// <summary>
-        /// Called from button presses on source, where We can assume we want
-        /// to change to the proper screen.
-        /// </summary>
-        /// <param name="key">The key name of the route to run</param>
-        void UiSelectSource(SourceListItem sourceItem)
-        {
-            if (IsSharingModeAdvanced)
-            {
-                SourceListButtonPress(sourceItem);
-            }
-            else
-                Parent.CurrentRoom.DoSourceToAllDestinationsRoute(sourceItem);
-        }
-
         void CurrentRoom_CurrentSourceInfoChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
         {
             
         }
 
+        void CurrentRoom_CurrentDisplay1SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        {
+            TriList.StringInput[UIStringJoin.Display1SourceLabel].StringValue = PendingSource.PreferredName;
+
+        }
+
+        void CurrentRoom_CurrentDisplay2SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        {
+            TriList.StringInput[UIStringJoin.Display2SourceLabel].StringValue = PendingSource.PreferredName;
+        }
 
         /// <summary>
         /// 
@@ -164,6 +181,7 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.Display1ControlButtonEnable].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.Display2AudioButtonEnable].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.Display2ControlButtonEnable].BoolValue = false;
+            PendingSource = item;
         }
 
         void EnableAppropriateDisplayButtons()
@@ -172,17 +190,22 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.Display1ControlButtonEnable].BoolValue = true;
             TriList.BooleanInput[UIBoolJoin.Display2AudioButtonEnable].BoolValue = true;
             TriList.BooleanInput[UIBoolJoin.Display2ControlButtonEnable].BoolValue = true;
+            if (LastSelectedSourceSig != null)
+                LastSelectedSourceSig.BoolValue = false;
         }
 
         public void Display1Press()
         {
             EnableAppropriateDisplayButtons();
+            Parent.CurrentRoom.SourceToDisplay1(PendingSource);
+            // Enable end meeting
         }
 
         public void Display1AudioPress()
         {
 
         }
+
 
         public void Display1ControlPress()
         {
@@ -192,6 +215,7 @@ namespace PepperDash.Essentials
         public void Display2Press()
         {
             EnableAppropriateDisplayButtons();
+            Parent.CurrentRoom.SourceToDisplay2(PendingSource);
         }
 
         public void Display2AudioPress()

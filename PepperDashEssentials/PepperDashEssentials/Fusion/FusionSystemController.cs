@@ -62,7 +62,7 @@ namespace PepperDash.Essentials.Fusion
 			Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
 			SourceNameSig = FusionRoom.CreateOffsetStringSig(50, "Source - Name", eSigIoMask.InputSigOnly);
 			// Don't think we need to get current status of this as nothing should be alive yet. 
-			Room.CurrentSourceInfoChange += new SourceInfoChangeHandler(Room_CurrentSourceInfoChange);
+			Room.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSourceInfoChange);
 
 
 			FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction(Room.PowerOnToDefaultOrLastSource);

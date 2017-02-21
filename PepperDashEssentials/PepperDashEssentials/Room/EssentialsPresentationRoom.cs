@@ -12,7 +12,9 @@ namespace PepperDash.Essentials
 	public class EssentialsPresentationRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
-		public event SourceInfoChangeHandler CurrentSourceInfoChange;
+		public event SourceInfoChangeHandler CurrentSingleSourceChange;
+        public event SourceInfoChangeHandler CurrentDisplay1SourceChange;
+        public event SourceInfoChangeHandler CurrentDisplay2SourceChange;
 
         public EssentialsPresentationRoomPropertiesConfig Config { get; private set; }
 
@@ -72,33 +74,72 @@ namespace PepperDash.Essentials
 		IBasicVolumeControls _CurrentAudioDevice;
 
 		/// <summary>
-		/// The SourceListItem last run - containing names and icons 
+		/// The SourceListItem last run - containing names and icons. The complex setter is 
+        /// to add/remove this room to the source's InUseTracking, if it is capable
 		/// </summary>
-		public SourceListItem CurrentSourceInfo
+		public SourceListItem CurrentSingleSourceInfo
 		{
-			get { return _CurrentSourceInfo; }
+			get { return _CurrentSingleSourceInfo; }
 			private set
 			{
-				if (value == _CurrentSourceInfo) return;
+				if (value == _CurrentSingleSourceInfo) return;
 
-				var handler = CurrentSourceInfoChange;
+				var handler = CurrentSingleSourceChange;
 				// remove from in-use tracker, if so equipped
-				if(_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
-					(_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
+				if(_CurrentSingleSourceInfo != null && _CurrentSingleSourceInfo.SourceDevice is IInUseTracking)
+					(_CurrentSingleSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
 
 				if (handler != null)
-					handler(this, _CurrentSourceInfo, ChangeType.WillChange);
+					handler(this, _CurrentSingleSourceInfo, ChangeType.WillChange);
 
-				_CurrentSourceInfo = value;
+				_CurrentSingleSourceInfo = value;
 
 				// add to in-use tracking
-				if (_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
-					(_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
+				if (_CurrentSingleSourceInfo != null && _CurrentSingleSourceInfo.SourceDevice is IInUseTracking)
+					(_CurrentSingleSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
 				if (handler != null)
-					handler(this, _CurrentSourceInfo, ChangeType.DidChange);
+					handler(this, _CurrentSingleSourceInfo, ChangeType.DidChange);
 			}
 		}
-		SourceListItem _CurrentSourceInfo;
+		SourceListItem _CurrentSingleSourceInfo;
+
+        public SourceListItem Display1SourceInfo
+        {
+            get { return _Display1SourceInfo; }
+            set
+            {
+                if (value == _Display1SourceInfo) return;
+
+                var handler = CurrentDisplay1SourceChange;
+                if (handler != null)
+                    handler(this, _Display1SourceInfo, ChangeType.WillChange);
+
+                _Display1SourceInfo = value;
+
+                if (handler != null)
+                    handler(this, _Display1SourceInfo, ChangeType.DidChange);
+            }
+        }
+        SourceListItem _Display1SourceInfo;
+
+        public SourceListItem Display2SourceInfo
+        {
+            get { return _Display2SourceInfo; }
+            set
+            {
+                if (value == _Display2SourceInfo) return;
+
+                var handler = CurrentDisplay2SourceChange;
+                if (handler != null)
+                    handler(this, _Display2SourceInfo, ChangeType.WillChange);
+
+                _Display2SourceInfo = value;
+
+                if (handler != null)
+                    handler(this, _Display2SourceInfo, ChangeType.DidChange);
+            }
+        }
+        SourceListItem _Display2SourceInfo;
 
 		/// <summary>
 		/// 
@@ -124,8 +165,14 @@ namespace PepperDash.Essentials
 				DefaultVolumeControls = (defaultAudio as IHasVolumeDevice).VolumeDevice;
 
 			OnFeedback = new BoolFeedback(() =>
-				{ return CurrentSourceInfo != null 
-					&& CurrentSourceInfo.Type == eSourceListItemType.Route; });
+				{ return (CurrentSingleSourceInfo != null 
+					&& CurrentSingleSourceInfo.Type != eSourceListItemType.Off)
+                    || (Display1SourceInfo != null 
+                    && Display1SourceInfo.Type != eSourceListItemType.Off)
+                    || (Display2SourceInfo != null
+                    && Display2SourceInfo.Type != eSourceListItemType.Off); 
+                
+                });
 			SourceListKey = "default";
 			EnablePowerOnToLastSource = true;
 		}
@@ -143,10 +190,26 @@ namespace PepperDash.Essentials
                 else
                     DoVideoRoute("$off", display.Key);
             }
-            
-            CurrentSourceInfo = sourceItem;
+            Display1SourceInfo = sourceItem;
+            Display2SourceInfo = sourceItem;
+            CurrentSingleSourceInfo = sourceItem;
             OnFeedback.FireUpdate();
         }
+
+        public void SourceToDisplay1(SourceListItem sourceItem)
+        {
+            DoVideoRoute(sourceItem.SourceKey, Displays[1].Key);
+            Display1SourceInfo = sourceItem;
+            OnFeedback.FireUpdate();
+        }
+
+        public void SourceToDisplay2(SourceListItem sourceItem)
+        {
+            DoVideoRoute(sourceItem.SourceKey, Displays[2].Key);
+            Display2SourceInfo = sourceItem;
+            OnFeedback.FireUpdate();
+        }
+
 
         /// <summary>
         /// Basic source -> destination routing
@@ -267,7 +330,7 @@ namespace PepperDash.Essentials
 
 					// store the name and UI info for routes
 					if (item.SourceKey != null)
-						CurrentSourceInfo = item;
+						CurrentSingleSourceInfo = item;
 					// And finally, set the "control".  This will trigger event
 					//CurrentControlDevice = DeviceManager.GetDeviceForKey(item.SourceKey) as Device;
 

@@ -16,6 +16,23 @@ namespace PepperDash.Essentials
 	/// </summary>
     public class EssentialsPresentationPanelAvFunctionsDriver : PanelDriverBase
 	{
+        /// <summary>
+        /// Smart Object 3200
+        /// </summary>
+        SubpageReferenceList SourcesSrl;
+
+        /// <summary>
+        /// For tracking feedback on last selected
+        /// </summary>
+        BoolInputSig LastSelectedSourceSig;
+        
+        /// <summary>
+        ///  The source that has been selected and is awaiting assignment to a display
+        /// </summary>
+        SourceListItem PendingSource;
+
+        bool IsSharingModeAdvanced;
+
 		CrestronTouchpanelPropertiesConfig Config;
 
 		public enum UiDisplayMode
@@ -102,10 +119,10 @@ namespace PepperDash.Essentials
         /// </summary>
 		PanelDriverBase Parent;
 
-        /// <summary>
-        /// Driver that manages advanced sharing features
-        /// </summary>
-        DualDisplaySimpleOrAdvancedRouting DualDisplayUiDriver;
+        ///// <summary>
+        ///// Driver that manages advanced sharing features
+        ///// </summary>
+        //DualDisplaySimpleOrAdvancedRouting DualDisplayUiDriver;
 
         /// <summary>
         /// All children attached to this driver.  For hiding and showing as a group.
@@ -113,13 +130,6 @@ namespace PepperDash.Essentials
         List<PanelDriverBase> ChildDrivers = new List<PanelDriverBase>();
 
 		List<BoolInputSig> CurrentDisplayModeSigsInUse = new List<BoolInputSig>();
-
-		//// Important smart objects
-
-        ///// <summary>
-        ///// Smart Object 3200
-        ///// </summary>
-        //SubpageReferenceList SourcesSrl;
 
         /// <summary>
         /// Smart Object 15022
@@ -158,10 +168,7 @@ namespace PepperDash.Essentials
 			Config = config;
 			Parent = parent;
 
-
-            //SourcesSrl = new SubpageReferenceList(TriList, 3200, 3, 3, 3);
             ActivityFooterSrl = new SubpageReferenceList(TriList, 15022, 3, 3, 3);
-            DualDisplayUiDriver = new DualDisplaySimpleOrAdvancedRouting(this);
             SetupActivityFooterWhenRoomOff();
 
 			ShowVolumeGauge = true;
@@ -176,6 +183,22 @@ namespace PepperDash.Essentials
 				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeButtonPopupVisible]);
 
 			PowerOffTimeout = 30000;
+
+            SourcesSrl = new SubpageReferenceList(TriList, 3200, 3, 3, 3);
+
+            TriList.StringInput[UIStringJoin.StartActivityText].StringValue =
+                "Tap an activity to begin";
+
+            // Sharing mode things
+            TriList.SetSigFalseAction(UIBoolJoin.ToggleSharingModePress, ToggleSharingModePressed);
+
+            TriList.SetSigFalseAction(UIBoolJoin.Display1AudioButtonPressAndFb, Display1AudioPress);
+            TriList.SetSigFalseAction(UIBoolJoin.Display1ControlButtonPress, Display1ControlPress);
+            TriList.SetSigTrueAction(UIBoolJoin.Display1SelectPress, Display1Press);
+
+            TriList.SetSigFalseAction(UIBoolJoin.Display2AudioButtonPressAndFb, Display2AudioPress);
+            TriList.SetSigFalseAction(UIBoolJoin.Display2ControlButtonPress, Display2ControlPress);
+            TriList.SetSigTrueAction(UIBoolJoin.Display2SelectPress, Display2Press);
 		}
 
 		/// <summary>
@@ -235,20 +258,61 @@ namespace PepperDash.Essentials
 			base.Show();
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
 		public override void Hide()
 		{
-			HideAndClearCurrentDisplayModeSigsInUse();
-			TriList.BooleanInput[UIBoolJoin.TopBarVisible].BoolValue = false;
-            TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = false;
-            TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
-            TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = false;
-            TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
-            //TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
+            var tl = TriList.BooleanInput;
+            HideAndClearCurrentDisplayModeSigsInUse();
+			tl[UIBoolJoin.TopBarVisible].BoolValue = false;
+            tl[UIBoolJoin.ActivityFooterVisible].BoolValue = false;
+            tl[UIBoolJoin.StartPageVisible].BoolValue = false;
+            tl[UIBoolJoin.TapToBeginVisible].BoolValue = false;
+            tl[UIBoolJoin.ToggleSharingModeVisible].BoolValue = false;
+            tl[UIBoolJoin.StagingPageVisible].BoolValue = false;
+            if (IsSharingModeAdvanced)
+                tl[UIBoolJoin.DualDisplayPageVisible].BoolValue = false;
+            else
+                tl[UIBoolJoin.SelectASourceVisible].BoolValue = false;
+
 			VolumeButtonsPopupFeedback.ClearNow();
 			CancelPowerOff();
 
 			base.Hide();
-		}		
+		}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void ShowCurrentSharingMode()
+        {
+            var tlb = TriList.BooleanInput;
+            tlb[UIBoolJoin.ToggleSharingModeVisible].BoolValue = true;
+            tlb[UIBoolJoin.StagingPageVisible].BoolValue = true;
+            if (IsSharingModeAdvanced)
+            {
+                tlb[UIBoolJoin.DualDisplayPageVisible].BoolValue = true;
+                TriList.StringInput[UIStringJoin.Display1TitleLabel].StringValue =
+                    (CurrentRoom.Displays[1] as IKeyName).Name;
+                TriList.StringInput[UIStringJoin.Display2TitleLabel].StringValue =
+                   (CurrentRoom.Displays[2] as IKeyName).Name;
+            }
+            else
+                tlb[UIBoolJoin.SelectASourceVisible].BoolValue = true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void HideCurrentSharingMode()
+        {
+            var tl = TriList.BooleanInput;
+            tl[UIBoolJoin.ToggleSharingModeVisible].BoolValue = false;
+            tl[UIBoolJoin.StagingPageVisible].BoolValue = false;
+            tl[UIBoolJoin.DualDisplayPageVisible].BoolValue = false;
+            tl[UIBoolJoin.SelectASourceVisible].BoolValue = false;
+        }
 
         /// <summary>
         /// Shows the various "modes" that this driver controls.  Presentation, Setup page
@@ -296,51 +360,132 @@ namespace PepperDash.Essentials
 			}
 		}
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //void ToggleSharingModePressed()
-        //{
-        //    HideSharingMode();
-        //    IsSharingModeAdvanced = !IsSharingModeAdvanced;
-        //    TriList.BooleanInput[UIBoolJoin.ToggleSharingModePress].BoolValue = IsSharingModeAdvanced;
-        //    RevealSharingMode();
-        //}
+        /// <summary>
+        /// 
+        /// </summary>
+        void SetupSourceList()
+        {
+            // get the source list config and set up the source list
+            var config = ConfigReader.ConfigObject.SourceLists;
+            if (config.ContainsKey(CurrentRoom.SourceListKey))
+            {
+                var srcList = config[CurrentRoom.SourceListKey]
+                    .Values.ToList().OrderBy(s => s.Order);
+                // Setup sources list			
+                uint i = 1; // counter for UI list
+                foreach (var srcConfig in srcList)
+                {
+                    if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
+                        continue;
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //void HideSharingMode()
-        //{
-        //    TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
-        //    if (IsSharingModeAdvanced)
-        //    {
-        //        if (DualDisplayUiDriver != null)
-        //            DualDisplayUiDriver.Hide();
-        //    }
-        //    else
-        //    {
-        //        TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
-        //    }
-        //}
+                    var sourceKey = srcConfig.SourceKey;
+                    var actualSource = DeviceManager.GetDeviceForKey(sourceKey) as Device;
+                    if (actualSource == null)
+                    {
+                        Debug.Console(0, "Cannot assign missing source '{0}' to source UI list",
+                            srcConfig.SourceKey);
+                        continue;
+                    }
+                    var localSrcItem = srcConfig; // lambda scope below
+                    var localIndex = i;
+                    SourcesSrl.GetBoolFeedbackSig(i, 1).UserObject = new Action<bool>(b =>
+                    {
+                        if (IsSharingModeAdvanced)
+                        {
+                            if (LastSelectedSourceSig != null)
+                                LastSelectedSourceSig.BoolValue = false;
+                            SourceListButtonPress(localSrcItem);
+                            LastSelectedSourceSig = SourcesSrl.BoolInputSig(localIndex, 1);
+                            LastSelectedSourceSig.BoolValue = true;
+                        }
+                        else
+                            CurrentRoom.DoSourceToAllDestinationsRoute(localSrcItem);
+                    });
+                    SourcesSrl.StringInputSig(i, 1).StringValue = srcConfig.PreferredName;
+                    i++;
+                }
+                var count = (ushort)(i-1);
+                SourcesSrl.Count = count;
+                TriList.BooleanInput[UIBoolJoin.StagingPageAdditionalArrowsVisible].BoolValue =
+                    count >= Config.SourcesOverflowCount;
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //void RevealSharingMode()
-        //{
-        //    TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
-        //    if (IsSharingModeAdvanced)
-        //    {
-        //        if(DualDisplayUiDriver == null)
-        //            DualDisplayUiDriver = new DualDisplaySimpleOrAdvancedRouting(this);
-        //        DualDisplayUiDriver.Show();
-        //    }
-        //    else
-        //    {
-        //        TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
-        //    }
-        //}
+                _CurrentRoom.CurrentDisplay1SourceChange += _CurrentRoom_CurrentDisplay1SourceChange;
+                _CurrentRoom.CurrentDisplay2SourceChange += _CurrentRoom_CurrentDisplay2SourceChange;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void ToggleSharingModePressed()
+        {
+            HideCurrentSharingMode();
+            IsSharingModeAdvanced = !IsSharingModeAdvanced;
+            TriList.BooleanInput[UIBoolJoin.ToggleSharingModePress].BoolValue = IsSharingModeAdvanced;
+            ShowCurrentSharingMode();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        public void SourceListButtonPress(SourceListItem item)
+        {
+            // start the timer
+            // show FB on potential source
+            TriList.BooleanInput[UIBoolJoin.Display1AudioButtonEnable].BoolValue = false;
+            TriList.BooleanInput[UIBoolJoin.Display1ControlButtonEnable].BoolValue = false;
+            TriList.BooleanInput[UIBoolJoin.Display2AudioButtonEnable].BoolValue = false;
+            TriList.BooleanInput[UIBoolJoin.Display2ControlButtonEnable].BoolValue = false;
+            PendingSource = item;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void EnableAppropriateDisplayButtons()
+        {
+            TriList.BooleanInput[UIBoolJoin.Display1AudioButtonEnable].BoolValue = true;
+            TriList.BooleanInput[UIBoolJoin.Display1ControlButtonEnable].BoolValue = true;
+            TriList.BooleanInput[UIBoolJoin.Display2AudioButtonEnable].BoolValue = true;
+            TriList.BooleanInput[UIBoolJoin.Display2ControlButtonEnable].BoolValue = true;
+            if (LastSelectedSourceSig != null)
+                LastSelectedSourceSig.BoolValue = false;
+        }
+
+        public void Display1Press()
+        {
+            EnableAppropriateDisplayButtons();
+            CurrentRoom.SourceToDisplay1(PendingSource);
+            // Enable end meeting
+        }
+
+        public void Display1AudioPress()
+        {
+
+        }
+
+
+        public void Display1ControlPress()
+        {
+
+        }
+
+        public void Display2Press()
+        {
+            EnableAppropriateDisplayButtons();
+            CurrentRoom.SourceToDisplay2(PendingSource);
+        }
+
+        public void Display2AudioPress()
+        {
+
+        }
+
+        public void Display2ControlPress()
+        {
+
+        }
 
         /// <summary>
         /// When the room is off, set the footer SRL
@@ -370,7 +515,7 @@ namespace PepperDash.Essentials
                 3, b => { if (!b) PowerButtonPressed(); }));
             ActivityFooterSrl.Count = 3;
             TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 2;
-            EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
+            EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
         }
 
         /// <summary>
@@ -383,9 +528,7 @@ namespace PepperDash.Essentials
             {
                 ShareButtonSig.BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
-                DualDisplayUiDriver.Show();
-                //TriList.BooleanInput[UIBoolJoin.ToggleSharingModeVisible].BoolValue = true;
-                //RevealSharingMode();
+                ShowCurrentSharingMode();
             }
         }
 
@@ -457,10 +600,10 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void ShowCurrentSource()
 		{
-			if (CurrentRoom.CurrentSourceInfo == null)
+			if (CurrentRoom.CurrentSingleSourceInfo == null)
 				return;
 
-			var uiDev = CurrentRoom.CurrentSourceInfo.SourceDevice as IUiDisplayInfo;
+			var uiDev = CurrentRoom.CurrentSingleSourceInfo.SourceDevice as IUiDisplayInfo;
 			PageManager pm = null;
 			// If we need a page manager, get an appropriate one
 			if (uiDev != null)
@@ -483,21 +626,6 @@ namespace PepperDash.Essentials
 			}
 		}
 
-        ///// <summary>
-        ///// Called from button presses on source, where We can assume we want
-        ///// to change to the proper screen.
-        ///// </summary>
-        ///// <param name="key">The key name of the route to run</param>
-        //void UiSelectSource(SourceListItem sourceItem)
-        //{
-        //    if (IsSharingModeAdvanced)
-        //    {
-        //        DualDisplayUiDriver.SourceListButtonPress(sourceItem);
-        //    }
-        //    else 
-        //        CurrentRoom.DoSourceToAllDestinationsRoute(sourceItem);
-        //}
-
 		/// <summary>
 		/// 
 		/// </summary>
@@ -517,7 +645,9 @@ namespace PepperDash.Essentials
 				but => 
                 {
                     if (but != 2)
+                    {
                         CurrentRoom.DoSourceToAllDestinationsRoute(null);
+                    }
                     else
                         ShareButtonSig.BoolValue = true; // restore Share fb
                     EndMeetingButtonSig.BoolValue = false;
@@ -609,22 +739,25 @@ namespace PepperDash.Essentials
                 _CurrentRoom.OnFeedback.OutputChange -= _CurrentRoom_OnFeedback_OutputChange;
 				_CurrentRoom.CurrentVolumeDeviceChange -= this._CurrentRoom_CurrentAudioDeviceChange;
 				ClearAudioDeviceConnections();
-				_CurrentRoom.CurrentSourceInfoChange -= this._CurrentRoom_SourceInfoChange;
-				DisconnectSource(_CurrentRoom.CurrentSourceInfo);
+				_CurrentRoom.CurrentSingleSourceChange -= this._CurrentRoom_SourceInfoChange;
+				DisconnectSource(_CurrentRoom.CurrentSingleSourceInfo);
 			}
 			_CurrentRoom = room;
 
 			if (_CurrentRoom != null)
 			{
-                DualDisplayUiDriver.SetCurrentRoomFromParent();
-                //SetupSourcesForSimpleRouting();
+                if (IsSharingModeAdvanced)
+                {} // add stuff here
+                else
+                    SetupSourceList();
+
 				TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
 
                 // Link up all the change events from the room
                 _CurrentRoom.OnFeedback.OutputChange += _CurrentRoom_OnFeedback_OutputChange;
 				_CurrentRoom.CurrentVolumeDeviceChange += _CurrentRoom_CurrentAudioDeviceChange;
 				RefreshAudioDeviceConnections();
-				_CurrentRoom.CurrentSourceInfoChange += _CurrentRoom_SourceInfoChange;
+				_CurrentRoom.CurrentSingleSourceChange += _CurrentRoom_SourceInfoChange;
 				RefreshSourceInfo();
 			}
 			else
@@ -648,44 +781,31 @@ namespace PepperDash.Essentials
             }
             else
             {
-                DualDisplayUiDriver.Hide();
+                HideCurrentSharingMode();
                 SetupActivityFooterWhenRoomOff();
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
             }
         }
 
-        //void SetupSourcesForSimpleRouting()
-        //{
-        //    // get the source list config and set up the source list
-        //    var config = ConfigReader.ConfigObject.SourceLists;
-        //    if (config.ContainsKey(_CurrentRoom.SourceListKey))
-        //    {
-        //        var srcList = config[_CurrentRoom.SourceListKey]
-        //            .Values.ToList().OrderBy(s => s.Order);
-        //        // Setup sources list			
-        //        uint i = 1; // counter for UI list
-        //        foreach (var srcConfig in srcList)
-        //        {
-        //            if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
-        //                continue;
+        /// <summary>
+        /// 
+        /// </summary>
+        void _CurrentRoom_CurrentDisplay1SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        {
+            if (type == ChangeType.DidChange)
+               TriList.StringInput[UIStringJoin.Display1SourceLabel].StringValue =
+                   info == null ? "" : info.PreferredName;
+        }
 
-        //            var sourceKey = srcConfig.SourceKey;
-        //            var actualSource = DeviceManager.GetDeviceForKey(sourceKey) as Device;
-        //            if (actualSource == null)
-        //            {
-        //                Debug.Console(0, "Cannot assign missing source '{0}' to source UI list",
-        //                    srcConfig.SourceKey);
-        //                continue;
-        //            }
-        //            var localSrcConfig = srcConfig; // lambda scope below
-        //            var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig,
-        //                b => { if (!b) UiSelectSource(localSrcConfig); });
-        //            SourcesSrl.AddItem(item); // add to the SRL
-        //            item.RegisterForSourceChange(_CurrentRoom);
-        //        }
-        //        SourcesSrl.Count = (ushort)(i - 1);
-        //    }
-        //}
+        /// <summary>
+        /// 
+        /// </summary>
+        void _CurrentRoom_CurrentDisplay2SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        {
+            if (type == ChangeType.DidChange)
+                TriList.StringInput[UIStringJoin.Display2SourceLabel].StringValue =
+                    info == null ? "" : info.PreferredName;
+        }
 
 		/// <summary>
 		/// Hides source for provided source info
@@ -735,7 +855,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void RefreshSourceInfo()
 		{
-			var routeInfo = CurrentRoom.CurrentSourceInfo;
+			var routeInfo = CurrentRoom.CurrentSingleSourceInfo;
 			// This will show off popup too
 			if (this.IsVisible)
 				ShowCurrentSource();
@@ -749,7 +869,7 @@ namespace PepperDash.Essentials
 				Parent.Show();
 				return;
 			}
-			else if (CurrentRoom.CurrentSourceInfo != null)
+			else if (CurrentRoom.CurrentSingleSourceInfo != null)
 			{
 				TriList.StringInput[UIStringJoin.CurrentSourceName].StringValue = routeInfo.PreferredName;
 				TriList.StringInput[UIStringJoin.CurrentSourceIcon].StringValue = routeInfo.Icon; // defaults to "blank"

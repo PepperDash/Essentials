@@ -12,7 +12,7 @@ namespace PepperDash.Essentials
 	public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
-		public event SourceInfoChangeHandler CurrentSourceInfoChange;
+		public event SourceInfoChangeHandler CurrentSingleSourceChange;
 
 		public EssentialsRoomPropertiesConfig Config { get; private set; }
 
@@ -70,7 +70,7 @@ namespace PepperDash.Essentials
 			{
 				if (value == _CurrentSourceInfo) return;
 
-				var handler = CurrentSourceInfoChange;
+				var handler = CurrentSingleSourceChange;
 				// remove from in-use tracker, if so equipped
 				if(_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
 					(_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");

@@ -178,6 +178,7 @@ namespace PepperDash.Essentials
 		public const uint CurrentSourceIcon = 3903;
 		public const uint PowerOffMessage = 3911;
         public const uint StartPageMessage = 3912;
+        public const uint StartActivityText = 3913;
         public const uint HelpMessage = 3922;
 
         /// <summary>

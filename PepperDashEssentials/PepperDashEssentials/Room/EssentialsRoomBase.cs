@@ -13,7 +13,7 @@ namespace PepperDash.Essentials
     /// </summary>
     public interface IHasCurrentSourceInfoChange
     {
-        event SourceInfoChangeHandler CurrentSourceInfoChange;
+        event SourceInfoChangeHandler CurrentSingleSourceChange;
     }
 
 

@@ -11,5 +11,15 @@
 		public bool UsesSplashPage { get; set; }
 		public bool ShowDate { get; set; }
 		public bool ShowTime { get; set; }
+        /// <summary>
+        /// The count of sources that will trigger the "additional" arrows to show on the SRL.
+        /// Defaults to 5
+        /// </summary>
+        public int SourcesOverflowCount { get; set; }
+
+        public CrestronTouchpanelPropertiesConfig()
+        {
+            SourcesOverflowCount = 5;
+        }
 	}
 }

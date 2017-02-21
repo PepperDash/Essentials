@@ -171,6 +171,9 @@ namespace PepperDash.Essentials
 				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeButtonPopupVisible]);
 
 			PowerOffTimeout = 30000;
+
+            TriList.StringInput[UIStringJoin.StartActivityText].StringValue =
+                "Tap Share to begin";
 		}
 
 		/// <summary>
@@ -553,7 +556,7 @@ namespace PepperDash.Essentials
                 _CurrentRoom.OnFeedback.OutputChange -= _CurrentRoom_OnFeedback_OutputChange;
 				_CurrentRoom.CurrentVolumeDeviceChange -= this._CurrentRoom_CurrentAudioDeviceChange;
 				ClearAudioDeviceConnections();
-				_CurrentRoom.CurrentSourceInfoChange -= this._CurrentRoom_SourceInfoChange;
+				_CurrentRoom.CurrentSingleSourceChange -= this._CurrentRoom_SourceInfoChange;
 				DisconnectSource(_CurrentRoom.CurrentSourceInfo);
 			}
 			_CurrentRoom = room;
@@ -595,7 +598,7 @@ namespace PepperDash.Essentials
                 _CurrentRoom.OnFeedback.OutputChange += _CurrentRoom_OnFeedback_OutputChange;
 				_CurrentRoom.CurrentVolumeDeviceChange += _CurrentRoom_CurrentAudioDeviceChange;
 				RefreshAudioDeviceConnections();
-				_CurrentRoom.CurrentSourceInfoChange += _CurrentRoom_SourceInfoChange;
+				_CurrentRoom.CurrentSingleSourceChange += _CurrentRoom_SourceInfoChange;
 				RefreshSourceInfo();
 			}
 			else
