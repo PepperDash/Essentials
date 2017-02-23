@@ -193,11 +193,11 @@ namespace PepperDash.Essentials
 
             TriList.SetSigFalseAction(UIBoolJoin.Display1AudioButtonPressAndFb, Display1AudioPress);
             TriList.SetSigFalseAction(UIBoolJoin.Display1ControlButtonPress, Display1ControlPress);
-            TriList.SetSigTrueAction(UIBoolJoin.Display1SelectPress, Display1Press);
+            TriList.SetSigTrueAction(UIBoolJoin.Display1SelectPressAndFb, Display1Press);
 
             TriList.SetSigFalseAction(UIBoolJoin.Display2AudioButtonPressAndFb, Display2AudioPress);
             TriList.SetSigFalseAction(UIBoolJoin.Display2ControlButtonPress, Display2ControlPress);
-            TriList.SetSigTrueAction(UIBoolJoin.Display2SelectPress, Display2Press);
+            TriList.SetSigTrueAction(UIBoolJoin.Display2SelectPressAndFb, Display2Press);
 		}
 
 		/// <summary>
@@ -391,16 +391,19 @@ namespace PepperDash.Essentials
                     var localIndex = i;
                     SourcesSrl.GetBoolFeedbackSig(i, 1).UserObject = new Action<bool>(b =>
                     {
+                        if (b) return;
+                        if (LastSelectedSourceSig != null)
+                            LastSelectedSourceSig.BoolValue = false;
+                        LastSelectedSourceSig = SourcesSrl.BoolInputSig(localIndex, 1);
+                        LastSelectedSourceSig.BoolValue = true;
                         if (IsSharingModeAdvanced)
                         {
-                            if (LastSelectedSourceSig != null)
-                                LastSelectedSourceSig.BoolValue = false;
                             PendingSource = localSrcItem;
-                            LastSelectedSourceSig = SourcesSrl.BoolInputSig(localIndex, 1);
-                            LastSelectedSourceSig.BoolValue = true;
                         }
                         else
+                        {
                             CurrentRoom.DoSourceToAllDestinationsRoute(localSrcItem);
+                        }
                     });
                     SourcesSrl.StringInputSig(i, 1).StringValue = srcConfig.PreferredName;
                     i++;
@@ -420,26 +423,26 @@ namespace PepperDash.Essentials
         /// </summary>
         void ToggleSharingModePressed()
         {
+            if (CurrentSourcePageManager != null)
+                CurrentSourcePageManager.Hide();
             HideCurrentSharingMode();
             IsSharingModeAdvanced = !IsSharingModeAdvanced;
             TriList.BooleanInput[UIBoolJoin.ToggleSharingModePress].BoolValue = IsSharingModeAdvanced;
             ShowCurrentSharingMode();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        void EnableAppropriateDisplayButtons()
-        {
-            if (LastSelectedSourceSig != null)
-                LastSelectedSourceSig.BoolValue = false;
-        }
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        //void EnableAppropriateDisplayButtons()
+        //{
+        //    if (LastSelectedSourceSig != null)
+        //        LastSelectedSourceSig.BoolValue = false;
+        //}
 
         public void Display1Press()
         {
-            EnableAppropriateDisplayButtons();
             CurrentRoom.SourceToDisplay1(PendingSource);
-            // Enable end meeting
         }
 
         public void Display1AudioPress()
@@ -450,12 +453,12 @@ namespace PepperDash.Essentials
 
         public void Display1ControlPress()
         {
-
+            var uiDev = CurrentRoom.Display1SourceInfo.SourceDevice as IUiDisplayInfo;
+            ShowSource(uiDev);
         }
 
         public void Display2Press()
         {
-            EnableAppropriateDisplayButtons();
             CurrentRoom.SourceToDisplay2(PendingSource);
         }
 
@@ -466,7 +469,8 @@ namespace PepperDash.Essentials
 
         public void Display2ControlPress()
         {
-
+            var uiDev = CurrentRoom.Display2SourceInfo.SourceDevice as IUiDisplayInfo;
+            ShowSource(uiDev);
         }
 
         /// <summary>
@@ -597,19 +601,34 @@ namespace PepperDash.Essentials
 		{
 			if (CurrentRoom.CurrentSingleSourceInfo == null)
 				return;
-
 			var uiDev = CurrentRoom.CurrentSingleSourceInfo.SourceDevice as IUiDisplayInfo;
-			PageManager pm = null;
+			ShowSource(uiDev);
+		}
+
+        void ShowSource(IUiDisplayInfo uiDev)
+        {
+            PageManager pm = null;
 			// If we need a page manager, get an appropriate one
 			if (uiDev != null)
 			{
                 TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
+                if (IsSharingModeAdvanced)
+                {
+                    TriList.BooleanInput[UIBoolJoin.SourceBackgroundOverlayVisible].BoolValue = true;
+                    TriList.SetSigFalseAction(UIBoolJoin.SourceBackgroundOverlayClosePress, new Action(() =>
+                    {
+                        TriList.BooleanInput[UIBoolJoin.SourceBackgroundOverlayVisible].BoolValue = false;
+                        if (CurrentSourcePageManager != null)
+                            CurrentSourcePageManager.Hide();
+                    }));
+                }
+
+
 				// Got an existing page manager, get it
 				if (PageManagers.ContainsKey(uiDev))
 					pm = PageManagers[uiDev];
 				// Otherwise make an apporiate one
 				else if (uiDev is ISetTopBoxControls)
-					//pm = new SetTopBoxMediumPageManager(uiDev as ISetTopBoxControls, TriList);
 					pm = new SetTopBoxThreePanelPageManager(uiDev as ISetTopBoxControls, TriList);
 				else if (uiDev is IDiscPlayerControls)
 					pm = new DiscPlayerMediumPageManager(uiDev as IDiscPlayerControls, TriList);
@@ -619,7 +638,7 @@ namespace PepperDash.Essentials
 				CurrentSourcePageManager = pm;
 				pm.Show();
 			}
-		}
+        }
 
 		/// <summary>
 		/// 
@@ -639,13 +658,13 @@ namespace PepperDash.Essentials
                 "End Meeting Now", "Cancel", time, true,
 				but => 
                 {
+                    EndMeetingButtonSig.BoolValue = false;
                     if (but != 2)
                     {
                         CurrentRoom.DoSourceToAllDestinationsRoute(null);
                     }
                     else
                         ShareButtonSig.BoolValue = true; // restore Share fb
-                    EndMeetingButtonSig.BoolValue = false;
                 });
 		}
 
@@ -745,7 +764,6 @@ namespace PepperDash.Essentials
                 {} // add stuff here
                 else
                     SetupSourceList();
-
 				TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
 
                 // Link up all the change events from the room
@@ -761,70 +779,6 @@ namespace PepperDash.Essentials
 				TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = "Select a room";
 			}
 		}
-
-        /// <summary>
-        /// For room on/off changes
-        /// </summary>
-        void _CurrentRoom_OnFeedback_OutputChange(object sender, EventArgs e)
-        {
-            var value = _CurrentRoom.OnFeedback.BoolValue;
-            TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
-            if (value)
-            {
-                SetupActivityFooterWhenRoomOn();
-                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
-            }
-            else
-            {
-                HideCurrentSharingMode();
-                SetupActivityFooterWhenRoomOff();
-                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void _CurrentRoom_CurrentDisplay1SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
-        {
-            var isSource = info != null;
-            TriList.BooleanInput[UIBoolJoin.Display1SelectPress].BoolValue = isSource;
-            if (type == ChangeType.DidChange)
-            {
-                TriList.StringInput[UIStringJoin.Display1SourceLabel].StringValue =
-                    isSource ? info.PreferredName : "";
-                if (!isSource)
-                    return;
-                // enable audio and control buttons
-                var devConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key == info.SourceKey);
-                TriList.BooleanInput[UIBoolJoin.Display1AudioButtonEnable].BoolValue =
-                    ConfigPropertiesHelpers.GetHasAudio(devConfig);
-                TriList.BooleanInput[UIBoolJoin.Display1ControlButtonEnable].BoolValue =
-                    ConfigPropertiesHelpers.GetHasControls(devConfig);
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void _CurrentRoom_CurrentDisplay2SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
-        {
-            var isSource = info != null;
-            TriList.BooleanInput[UIBoolJoin.Display2SelectPress].BoolValue = isSource;
-            if (type == ChangeType.DidChange)
-            {
-                TriList.StringInput[UIStringJoin.Display2SourceLabel].StringValue =
-                    isSource ? info.PreferredName : "";
-                if (!isSource)
-                    return;
-                // enable audio and control buttons
-                var devConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key == info.SourceKey);
-                TriList.BooleanInput[UIBoolJoin.Display2AudioButtonEnable].BoolValue =
-                    ConfigPropertiesHelpers.GetHasAudio(devConfig);
-                TriList.BooleanInput[UIBoolJoin.Display2ControlButtonEnable].BoolValue =
-                    ConfigPropertiesHelpers.GetHasControls(devConfig);
-            }
-        }
 
 		/// <summary>
 		/// Hides source for provided source info
@@ -990,6 +944,43 @@ namespace PepperDash.Essentials
 				RefreshAudioDeviceConnections();
 		}
 
+        /// <summary>
+        /// For room on/off changes
+        /// </summary>
+        void _CurrentRoom_OnFeedback_OutputChange(object sender, EventArgs e)
+        {
+            var value = _CurrentRoom.OnFeedback.BoolValue;
+            TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
+            if (value)
+            {
+                SetupActivityFooterWhenRoomOn();
+                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
+            }
+            else
+            {
+                HideCurrentSharingMode();
+                SetupActivityFooterWhenRoomOff();
+                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
+                if (LastSelectedSourceSig != null)
+                {
+                    LastSelectedSourceSig.BoolValue = false;
+                    LastSelectedSourceSig = null;
+                }
+                PendingSource = null;
+            }
+
+            if (_CurrentRoom.HasAudioDialer)
+            {
+                TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = value;
+                TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = false;
+            }
+            else
+            {
+                TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
+                TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = value;
+            }
+        }
+
 		/// <summary>
 		/// Handles source change
 		/// </summary>
@@ -1001,5 +992,50 @@ namespace PepperDash.Essentials
 			else
 				RefreshSourceInfo();
 		}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void _CurrentRoom_CurrentDisplay1SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        {
+            if (type == ChangeType.DidChange)
+            {
+                var isSource = info != null;
+                TriList.BooleanInput[UIBoolJoin.Display1SelectPressAndFb].BoolValue = isSource;
+                TriList.StringInput[UIStringJoin.Display1SourceLabel].StringValue =
+                    isSource ? info.PreferredName : "";
+                if (!isSource)
+                    return;
+                // enable audio and control buttons
+                var devConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key == info.SourceKey);
+                TriList.BooleanInput[UIBoolJoin.Display1AudioButtonEnable].BoolValue =
+                    ConfigPropertiesHelpers.GetHasAudio(devConfig);
+                TriList.BooleanInput[UIBoolJoin.Display1ControlButtonEnable].BoolValue =
+                    ConfigPropertiesHelpers.GetHasControls(devConfig);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void _CurrentRoom_CurrentDisplay2SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        {
+            if (type == ChangeType.DidChange)
+            {
+                var isSource = info != null;
+                TriList.BooleanInput[UIBoolJoin.Display2SelectPressAndFb].BoolValue = isSource;
+                TriList.StringInput[UIStringJoin.Display2SourceLabel].StringValue =
+                    isSource ? info.PreferredName : "";
+                if (!isSource)
+                    return;
+                // enable audio and control buttons
+                var devConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key == info.SourceKey);
+                TriList.BooleanInput[UIBoolJoin.Display2AudioButtonEnable].BoolValue =
+                    ConfigPropertiesHelpers.GetHasAudio(devConfig);
+                TriList.BooleanInput[UIBoolJoin.Display2ControlButtonEnable].BoolValue =
+                    ConfigPropertiesHelpers.GetHasControls(devConfig);
+            }
+        }
+
 	}
 }
