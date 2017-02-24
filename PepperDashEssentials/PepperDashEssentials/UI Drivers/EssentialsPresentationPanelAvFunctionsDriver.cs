@@ -833,7 +833,7 @@ namespace PepperDash.Essentials
 			if (this.IsVisible)
 				ShowCurrentSource();
 
-			if (routeInfo == null || !CurrentRoom.OnFeedback.BoolValue)
+			if (routeInfo == null)// || !CurrentRoom.OnFeedback.BoolValue)
 			{
 				// Check for power off and insert "Room is off"
 				TriList.StringInput[UIStringJoin.CurrentSourceName].StringValue = "Room is off";
