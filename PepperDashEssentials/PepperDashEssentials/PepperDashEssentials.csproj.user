@@ -3,11 +3,9 @@
     <DeployDeviceID>E282E6BE-C7C3-4ece-916A-88FB1CF8AF3C</DeployDeviceID>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <RemoteDebugEnabled>false</RemoteDebugEnabled>
-    <StartAction>Project</StartAction>
-    <StartProgram>
-    </StartProgram>
-    <StartArguments>
-    </StartArguments>
+    <RemoteDebugEnabled>true</RemoteDebugEnabled>
+    <StartAction>Program</StartAction>
+    <StartProgram>\Simpl\App01\SimplSharpPro.exe</StartProgram>
+    <StartArguments>01 PepperDashEssentials</StartArguments>
   </PropertyGroup>
 </Project>

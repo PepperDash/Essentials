@@ -186,8 +186,17 @@ namespace PepperDash.Essentials
         /// Run the same source to all destinations
         /// </summary>
         /// <param name="sourceItem"></param>
-        public void DoSourceToAllDestinationsRoute(SourceListItem sourceItem)
+        public void RouteSourceToAllDestinations(SourceListItem sourceItem)
         {
+            if (Config.Volumes.ContainsKey("master"))
+            {
+                var audioDev = DeviceManager.GetDeviceForKey(Config.Volumes["master"].DeviceKey);
+                if (audioDev is IBasicVolumeWithFeedback)
+                {
+
+                }
+            }
+
             foreach (var display in Displays.Values)
             {
                 if (sourceItem != null)

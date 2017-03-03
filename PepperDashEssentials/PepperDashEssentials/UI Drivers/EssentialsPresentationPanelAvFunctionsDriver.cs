@@ -402,7 +402,7 @@ namespace PepperDash.Essentials
                         }
                         else
                         {
-                            CurrentRoom.DoSourceToAllDestinationsRoute(localSrcItem);
+                            CurrentRoom.RouteSourceToAllDestinations(localSrcItem);
                         }
                     });
                     SourcesSrl.StringInputSig(i, 1).StringValue = srcConfig.PreferredName;
@@ -661,7 +661,7 @@ namespace PepperDash.Essentials
                     EndMeetingButtonSig.BoolValue = false;
                     if (but != 2)
                     {
-                        CurrentRoom.DoSourceToAllDestinationsRoute(null);
+                        CurrentRoom.RouteSourceToAllDestinations(null);
                     }
                     else
                         ShareButtonSig.BoolValue = true; // restore Share fb
@@ -1004,8 +1004,12 @@ namespace PepperDash.Essentials
                 TriList.BooleanInput[UIBoolJoin.Display1SelectPressAndFb].BoolValue = isSource;
                 TriList.StringInput[UIStringJoin.Display1SourceLabel].StringValue =
                     isSource ? info.PreferredName : "";
-                if (!isSource)
+                if (!isSource) // return if no source
+                {
+                    TriList.BooleanInput[UIBoolJoin.Display1AudioButtonEnable].BoolValue = false;
+                    TriList.BooleanInput[UIBoolJoin.Display1ControlButtonEnable].BoolValue = false;
                     return;
+                }
                 // enable audio and control buttons
                 var devConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key == info.SourceKey);
                 TriList.BooleanInput[UIBoolJoin.Display1AudioButtonEnable].BoolValue =
@@ -1027,7 +1031,11 @@ namespace PepperDash.Essentials
                 TriList.StringInput[UIStringJoin.Display2SourceLabel].StringValue =
                     isSource ? info.PreferredName : "";
                 if (!isSource)
+                {
+                    TriList.BooleanInput[UIBoolJoin.Display2AudioButtonEnable].BoolValue = false;
+                    TriList.BooleanInput[UIBoolJoin.Display2ControlButtonEnable].BoolValue = false;
                     return;
+                }
                 // enable audio and control buttons
                 var devConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key == info.SourceKey);
                 TriList.BooleanInput[UIBoolJoin.Display2AudioButtonEnable].BoolValue =

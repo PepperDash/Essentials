@@ -33,6 +33,13 @@ namespace PepperDash.Essentials
             //    ConsoleAccessLevelEnum.AccessOperator);
             //CrestronConsole.AddNewConsoleCommand(s => TearDown(), "ungo", "Reloads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s =>
+            {
+                foreach (var tl in TieLineCollection.Default)
+                    CrestronConsole.ConsoleCommandResponse("  {0}\r", tl);
+            },
+            "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
+
             GoWithLoad();
 		}
 
@@ -49,7 +56,6 @@ namespace PepperDash.Essentials
                         ConsoleAccessLevelEnum.AccessOperator);
 
                     //PortalSync = new PepperDashPortalSyncClient();
-                    //GoWithLoad();
 
 					Debug.Console(0, "Starting Essentials load from configuration");
 					ConfigReader.LoadConfig2();

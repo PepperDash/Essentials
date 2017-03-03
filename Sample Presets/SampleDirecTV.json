@@ -1,0 +1,35 @@
+{
+  "name": "Sample DirecTV List",
+  "channels": [
+    {
+      "name": "HBO",
+      "IconUrl": "HBO",
+      "Channel": "501"
+    },
+    {
+      "name": "HBO",
+      "IconUrl": "HBO",
+      "Channel": "501"
+    },
+    {
+      "name": "HBO",
+      "IconUrl": "HBO",
+      "Channel": "501"
+    },
+    {
+      "name": "HBO",
+      "IconUrl": "HBO",
+      "Channel": "501"
+    },
+    {
+      "name": "HBO",
+      "IconUrl": "HBO",
+      "Channel": "501"
+    },
+    {
+      "name": "HBO",
+      "IconUrl": "HBO",
+      "Channel": "501"
+    }
+  ]
+}
