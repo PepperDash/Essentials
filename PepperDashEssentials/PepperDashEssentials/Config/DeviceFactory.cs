@@ -23,34 +23,38 @@ namespace PepperDash.Essentials
 
 			var typeName = dc.Type.ToLower();
 
-			if (dc.Group.ToLower() == "touchpanel") //  typeName.StartsWith("tsw"))
-			{
-				var comm = CommFactory.GetControlPropertiesConfig(dc);
+            if (typeName == "amplifier")
+            {
+                return new Amplifier(dc.Key, dc.Name);
+            } 
+            else if (dc.Group.ToLower() == "touchpanel") //  typeName.StartsWith("tsw"))
+            {
+                var comm = CommFactory.GetControlPropertiesConfig(dc);
 
-				var props = JsonConvert.DeserializeObject<CrestronTouchpanelPropertiesConfig>(
-					properties.ToString());
-				return new EssentialsTouchpanelController(key, name, typeName, props, comm.IpIdInt);
-			}
-			else if (typeName == "mockdisplay")
-			{
-				return new MockDisplay(key, name);
-			}
+                var props = JsonConvert.DeserializeObject<CrestronTouchpanelPropertiesConfig>(
+                    properties.ToString());
+                return new EssentialsTouchpanelController(key, name, typeName, props, comm.IpIdInt);
+            }
+            else if (typeName == "mockdisplay")
+            {
+                return new MockDisplay(key, name);
+            }
 
-			// MOVE into something else???
-			else if (typeName == "basicirdisplay")
-			{
-				var ir = IRPortHelper.GetIrPort(properties);
-				if (ir != null)
-					return new BasicIrDisplay(key, name, ir.Port, ir.FileName);
-			}
+            // MOVE into something else???
+            else if (typeName == "basicirdisplay")
+            {
+                var ir = IRPortHelper.GetIrPort(properties);
+                if (ir != null)
+                    return new BasicIrDisplay(key, name, ir.Port, ir.FileName);
+            }
 
-			else if (typeName == "commmock")
-			{
-				var comm = CommFactory.CreateCommForDevice(dc);
-				var props = JsonConvert.DeserializeObject<ConsoleCommMockDevicePropertiesConfig>(
-					properties.ToString());
-				return new ConsoleCommMockDevice(key, name, props, comm);
-			}
+            else if (typeName == "commmock")
+            {
+                var comm = CommFactory.CreateCommForDevice(dc);
+                var props = JsonConvert.DeserializeObject<ConsoleCommMockDevicePropertiesConfig>(
+                    properties.ToString());
+                return new ConsoleCommMockDevice(key, name, props, comm);
+            }
 
 			return null;
 		}

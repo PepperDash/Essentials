@@ -42,7 +42,16 @@ namespace PepperDash.Essentials
                     displaysDict.Add(i++, disp);
                 }
 
-                var presRoom = new EssentialsPresentationRoom(Key, Name, displaysDict, null, props);
+                // Need to assign the volume control point and also audio routing endpoint, if routing
+                // is required: For DSP, typically no.  
+                IRoutingSinkNoSwitching masterAudioDev = null;
+                if (props.Volumes.ContainsKey("master"))
+                {
+                    var audioKey = props.Volumes["master"];
+
+                }
+
+                var presRoom = new EssentialsPresentationRoom(Key, Name, displaysDict, masterAudioDev, props);
                 return presRoom;
             }
             return null;
@@ -70,6 +79,12 @@ namespace PepperDash.Essentials
         public List<string> DisplayKeys { get; set; }
         public string SourceListKey { get; set; }
         public Dictionary<string, EssentialsVolumeLevelConfig> Volumes { get; set; }
+
+        public EssentialsPresentationRoomPropertiesConfig()
+        {
+            DisplayKeys = new List<string>();
+            Volumes = new Dictionary<string, EssentialsVolumeLevelConfig>();
+        }
     }
 
     public class EssentialsVolumeLevelConfig

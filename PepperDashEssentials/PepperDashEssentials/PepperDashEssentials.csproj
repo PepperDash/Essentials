@@ -134,6 +134,7 @@
     <Compile Include="Config\ConfigReader.cs" />
     <Compile Include="Config\EssentialsConfig.cs" />
     <Compile Include="Config\DeviceFactory.cs" />
+    <Compile Include="Devices\Amplifier.cs" />
     <Compile Include="Devices\DiscPlayer\OppoExtendedBdp.cs" />
     <Compile Include="Devices\NUMERIC AppleTV.cs" />
     <Compile Include="ControlSystem.cs" />
