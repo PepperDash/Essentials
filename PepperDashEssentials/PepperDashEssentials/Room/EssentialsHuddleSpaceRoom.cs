@@ -110,6 +110,7 @@ namespace PepperDash.Essentials
 				DefaultVolumeControls = defaultAudio as IBasicVolumeControls;
 			else if (defaultAudio is IHasVolumeDevice)
 				DefaultVolumeControls = (defaultAudio as IHasVolumeDevice).VolumeDevice;
+            CurrentVolumeControls = DefaultVolumeControls;
 
 			OnFeedback = new BoolFeedback(() =>
 				{ return CurrentSourceInfo != null 

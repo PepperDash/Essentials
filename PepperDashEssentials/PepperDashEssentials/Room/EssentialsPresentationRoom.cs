@@ -158,16 +158,20 @@ namespace PepperDash.Essentials
 		/// <param name="name"></param>
         public EssentialsPresentationRoom(string key, string name,
             Dictionary<uint, IRoutingSinkNoSwitching> displays,
-			IRoutingSinkNoSwitching defaultAudio, EssentialsPresentationRoomPropertiesConfig config)
+            IBasicVolumeWithFeedback defaultVolume, EssentialsPresentationRoomPropertiesConfig config)
 			: base(key, name)
 		{
 			Config = config;
 			Displays = displays;
-            DefaultAudioDevice = defaultAudio;
-			if (defaultAudio is IBasicVolumeControls)
-				DefaultVolumeControls = defaultAudio as IBasicVolumeControls;
-			else if (defaultAudio is IHasVolumeDevice)
-				DefaultVolumeControls = (defaultAudio as IHasVolumeDevice).VolumeDevice;
+
+            DefaultVolumeControls = defaultVolume;
+            CurrentVolumeControls = defaultVolume;
+
+            //DefaultAudioDevice = defaultAudio;
+            //if (defaultAudio is IBasicVolumeControls)
+            //    DefaultVolumeControls = defaultAudio as IBasicVolumeControls;
+            //else if (defaultAudio is IHasVolumeDevice)
+            //    DefaultVolumeControls = (defaultAudio as IHasVolumeDevice).VolumeDevice;
 
 			OnFeedback = new BoolFeedback(() =>
 				{ return (CurrentSingleSourceInfo != null 
