@@ -192,9 +192,9 @@ namespace PepperDash.Essentials
         /// <param name="sourceItem"></param>
         public void RouteSourceToAllDestinations(SourceListItem sourceItem)
         {
-            if (Config.Volumes.ContainsKey("master"))
+            if (Config.Volumes.Master != null)
             {
-                var audioDev = DeviceManager.GetDeviceForKey(Config.Volumes["master"].DeviceKey);
+                var audioDev = DeviceManager.GetDeviceForKey(Config.Volumes.Master.DeviceKey);
                 if (audioDev is IBasicVolumeWithFeedback)
                 {
 

@@ -1,4 +1,4 @@
-﻿MainAssembly=PepperDashEssentials.dll:bfe94f76112b33e310c0f6e4484463e2
+﻿MainAssembly=PepperDashEssentials.dll:36b68cb2a41be892b66878dfa5284633
 MainAssemblyMinFirmwareVersion=1.009.0029
 MainAssemblyResource=SimplSharpData.dat:820b61c48c8a2cace82957eed4cc377c
 ü
@@ -30,9 +30,9 @@ DependencySource=Crestron.SimplSharpPro.UI.dll:089312a0cb0b4537072d4eb234e71e0e
 DependencyPath=PepperDashEssentials.cpz:Crestron.SimplSharpPro.UI.dll
 DependencyMainAssembly=Crestron.SimplSharpPro.UI.dll:089312a0cb0b4537072d4eb234e71e0e
 ü
-DependencySource=Essentials Devices Common.dll:22c2d648cf02d3bf28b6c42f461c927f
+DependencySource=Essentials Devices Common.dll:8c62479abf8cd36d922665ee540cdd85
 DependencyPath=PepperDashEssentials.cpz:Essentials Devices Common.dll
-DependencyMainAssembly=Essentials Devices Common.dll:22c2d648cf02d3bf28b6c42f461c927f
+DependencyMainAssembly=Essentials Devices Common.dll:8c62479abf8cd36d922665ee540cdd85
 ü
 DependencySource=EssentialsHttpServer.dll:0666085bdb0856c1d117699c7859bb8c
 DependencyPath=PepperDashEssentials.cpz:EssentialsHttpServer.dll
@@ -42,9 +42,9 @@ DependencySource=PepperDashCorePortalSync.dll:815e608cb8a8808dab167837cf89b15a
 DependencyPath=PepperDashEssentials.cpz:PepperDashCorePortalSync.dll
 DependencyMainAssembly=PepperDashCorePortalSync.dll:815e608cb8a8808dab167837cf89b15a
 ü
-DependencySource=PepperDash_Core.dll:598033e01568965c3bd67b29e5993374
+DependencySource=PepperDash_Core.dll:49fe0d78cb676a902c692056067fef4b
 DependencyPath=PepperDashEssentials.cpz:PepperDash_Core.dll
-DependencyMainAssembly=PepperDash_Core.dll:598033e01568965c3bd67b29e5993374
+DependencyMainAssembly=PepperDash_Core.dll:49fe0d78cb676a902c692056067fef4b
 ü
 DependencySource=PepperDash_Essentials_Core.dll:a3ae2c4b5d2e1890a5788cf717d1b579
 DependencyPath=PepperDashEssentials.cpz:PepperDash_Essentials_Core.dll

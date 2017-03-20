@@ -117,6 +117,7 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
     <Compile Include="Configuration ORIGINAL\Builders\TPConfig.cs" />
     <Compile Include="Configuration ORIGINAL\Configuration.cs" />
     <Compile Include="Configuration ORIGINAL\ConfigurationHelpers.cs" />
