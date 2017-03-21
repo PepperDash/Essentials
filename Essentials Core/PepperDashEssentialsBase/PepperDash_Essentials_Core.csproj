@@ -1,0 +1,225 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PepperDash.Essentials.Core</RootNamespace>
+    <AssemblyName>PepperDash_Essentials_Core</AssemblyName>
+    <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92300};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PlatformFamilyName>WindowsCE</PlatformFamilyName>
+    <PlatformID>E2BECB1F-8C8C-41ba-B736-9BE7D946A398</PlatformID>
+    <OSVersion>5.0</OSVersion>
+    <DeployDirSuffix>SmartDeviceProject1</DeployDirSuffix>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <NativePlatformName>Windows CE</NativePlatformName>
+    <FormFactorID>
+    </FormFactorID>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Crestron.SimplSharpPro.DeviceSupport, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DeviceSupport.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.DM, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DM.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.EthernetCommunications, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.EthernetCommunications.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.Remotes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Remotes.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="PepperDash_Core, Version=1.0.0.16459, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\pepperdash-simplsharp-core\Pepperdash Core\Pepperdash Core\bin\PepperDash_Core.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SimplSharpNewtonsoft, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpNewtonsoft.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpPro, Version=1.5.0.7, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Comm and IR\CommFactory.cs" />
+    <Compile Include="Comm and IR\CommunicationExtras.cs" />
+    <Compile Include="Comm and IR\REMOVE ComPortConfig.cs" />
+    <Compile Include="Comm and IR\ComSpecJsonConverter.cs" />
+    <Compile Include="Comm and IR\ConsoleCommMockDevice.cs" />
+    <Compile Include="Comm and IR\IRPortHelper.cs" />
+    <Compile Include="Config\BasicConfig.cs" />
+    <Compile Include="Config\ConfigPropertiesHelpers.cs" />
+    <Compile Include="Config\InfoConfig.cs" />
+    <Compile Include="Config\DeviceConfig.cs" />
+    <Compile Include="Constants\CommonCues.cs" />
+    <Compile Include="Devices\DisplayUiConstants.cs" />
+    <Compile Include="Devices\REMOVE DeviceConfig.cs" />
+    <Compile Include="Devices\DeviceJsonApi.cs" />
+    <Compile Include="Devices\SourceListItem.cs" />
+    <Compile Include="DeviceTypeInterfaces\IDisplayBasic.cs" />
+    <Compile Include="DeviceTypeInterfaces\IDumbSource.cs" />
+    <Compile Include="DeviceTypeInterfaces\IWarmingCooling.cs" />
+    <Compile Include="DeviceTypeInterfaces\IDiscPlayerControls.cs" />
+    <Compile Include="DeviceTypeInterfaces\IPower.cs" />
+    <Compile Include="DeviceTypeInterfaces\IUiDisplayInfo.cs" />
+    <Compile Include="DeviceTypeInterfaces\ISetTopBoxControls.cs" />
+    <Compile Include="DeviceTypeInterfaces\IChannel.cs" />
+    <Compile Include="DeviceTypeInterfaces\IColorFunctions.cs" />
+    <Compile Include="DeviceTypeInterfaces\IDPad.cs" />
+    <Compile Include="DeviceTypeInterfaces\IDvr.cs" />
+    <Compile Include="DeviceTypeInterfaces\Template.cs" />
+    <Compile Include="DeviceTypeInterfaces\ITransport.cs" />
+    <Compile Include="Devices\GenericMonitoredTcpDevice.cs" />
+    <Compile Include="DeviceTypeInterfaces\INumeric.cs" />
+    <Compile Include="Devices\IVolumeAndAudioInterfaces.cs" />
+    <Compile Include="Display\BasicIrDisplay.cs" />
+    <Compile Include="Feedbacks\BoolFeedbackOneShot.cs" />
+    <Compile Include="Routing\ICardPortsDevice.cs" />
+    <Compile Include="InUseTracking\IInUseTracking.cs" />
+    <Compile Include="InUseTracking\InUseTracking.cs" />
+    <Compile Include="Routing\IRoutingInputsExtensions.cs" />
+    <Compile Include="Monitoring\StatusMonitorCollection.cs" />
+    <Compile Include="Monitoring\CrestronGenericBaseCommunicationMonitor.cs" />
+    <Compile Include="Monitoring\StatusMonitorBase.cs" />
+    <Compile Include="Monitoring\Interfaces and things.cs" />
+    <Compile Include="Monitoring\GenericCommunicationMonitor.cs" />
+    <Compile Include="Devices\REPLACE IrSetTopBoxBase.cs" />
+    <Compile Include="Devices\REPLACE IrDvdBase.cs" />
+    <Compile Include="Devices\NewInterfaces.cs" />
+    <Compile Include="Devices\REPLACE DvdDeviceBase.cs" />
+    <Compile Include="Devices\IAttachVideoStatusExtensions.cs" />
+    <Compile Include="Devices\IHasFeedbacks.cs" />
+    <Compile Include="Devices\SmartObjectBaseTypes.cs" />
+    <Compile Include="Devices\PresentationDeviceType.cs" />
+    <Compile Include="Display\DELETE IRDisplayBase.cs" />
+    <Compile Include="Display\MockDisplay.cs" />
+    <Compile Include="Ethernet\EthernetStatistics.cs" />
+    <Compile Include="Fusion\MOVED FusionSystemController.cs" />
+    <Compile Include="Global.cs" />
+    <Compile Include="License\EssentialsLicenseManager.cs" />
+    <Compile Include="Feedbacks\BoolOutputLogicals.cs" />
+    <Compile Include="Presets\Interfaces.cs" />
+    <Compile Include="Presets\PresetsListSubpageReferenceListItem.cs" />
+    <Compile Include="Presets\DevicePresetsView.cs" />
+    <Compile Include="Presets\PresetChannel.cs" />
+    <Compile Include="Presets\DevicePresets.cs" />
+    <Compile Include="Routing\RoutingInterfaces.cs" />
+    <Compile Include="Routing\RoutingPort.cs" />
+    <Compile Include="Routing\RoutingPortCollection.cs" />
+    <Compile Include="Feedbacks\BoolFeedbackPulseExtender.cs" />
+    <Compile Include="Routing\RoutingPortNames.cs" />
+    <Compile Include="Routing\TieLineConfig.cs" />
+    <Compile Include="SmartObjects\SmartObjectNumeric.cs" />
+    <Compile Include="SmartObjects\SmartObjectDynamicList.cs" />
+    <Compile Include="SmartObjects\SmartObjectDPad.cs" />
+    <Compile Include="SmartObjects\SmartObjectHelper.cs" />
+    <Compile Include="SmartObjects\SmartObjectHelperBase.cs" />
+    <Compile Include="Routing\TieLine.cs" />
+    <Compile Include="Touchpanels\MOVED LargeTouchpanelControllerBase.cs" />
+    <Compile Include="Touchpanels\TriListExtensions.cs" />
+    <Compile Include="Touchpanels\MOVED UIControllers\DevicePageControllerBase.cs" />
+    <Compile Include="UI PageManagers\BlurayPageManager.cs" />
+    <Compile Include="UI PageManagers\SetTopBoxThreePanelPageManager.cs" />
+    <Compile Include="UI PageManagers\SinglePageManager.cs" />
+    <Compile Include="UI PageManagers\PageManager.cs" />
+    <Compile Include="UI PageManagers\SetTopBoxTwoPanelPageManager.cs" />
+    <Compile Include="VideoStatus\VideoStatusOutputs.cs" />
+    <Compile Include="VideoStatus\VideoStatusCues.cs" />
+    <Compile Include="Cues and DevAction\Cues.cs" />
+    <Compile Include="Comm and IR\ComPortController.cs" />
+    <Compile Include="Crestron\CrestronGenericBaseDevice.cs" />
+    <Compile Include="Debug\Debug.cs" />
+    <Compile Include="DeviceControlsParentInterfaces\IPresentationSource.cs" />
+    <Compile Include="Devices\REMOVE DefaultDevice.cs" />
+    <Compile Include="Devices\MOVED TO CORE Device.cs" />
+    <Compile Include="Devices\DeviceManager.cs" />
+    <Compile Include="Devices\IrOutputPortController.cs" />
+    <Compile Include="Display\DisplayBase.cs" />
+    <Compile Include="Feedbacks\Feedbacks.cs" />
+    <Compile Include="Room\Room.cs" />
+    <Compile Include="Room\RoomCues.cs" />
+    <Compile Include="Room\MOVED RoomEventArgs.cs" />
+    <Compile Include="SubpageReferencList\SourceListSubpageReferenceList.cs" />
+    <Compile Include="Touchpanels\ModalDialog.cs" />
+    <Compile Include="Touchpanels\SmartGraphicsTouchpanelControllerBase.cs" />
+    <Compile Include="TriListBridges\HandlerBridge.cs" />
+    <Compile Include="Devices\FIND HOMES Interfaces.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SigHelper.cs" />
+    <Compile Include="REMOVE SigId.cs" />
+    <Compile Include="SubpageReferencList\DeviceStatusListController.cs" />
+    <Compile Include="SubpageReferencList\SubpageReferenceList.cs" />
+    <Compile Include="SubpageReferencList\SubpageReferenceListItem.cs" />
+    <None Include="app.config" />
+    <None Include="Properties\ControlSystem.cfg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>rem S# Pro preparation will execute after these operations</PostBuildEvent>
+  </PropertyGroup>
+</Project>
