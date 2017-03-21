@@ -75,10 +75,6 @@
       <HintPath>..\..\..\essentials-devices-common\Essentials Devices Common\Essentials Devices Common\bin\Essentials Devices Common.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="EssentialsHttpServer, Version=1.0.0.21365, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\essentials-http-server\EssentialsHttpServer\bin\EssentialsHttpServer.dll</HintPath>
-    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="PepperDashCorePortalSync, Version=1.0.0.27069, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
