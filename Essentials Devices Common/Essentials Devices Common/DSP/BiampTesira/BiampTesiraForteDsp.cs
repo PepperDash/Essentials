@@ -21,33 +21,37 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 	// ! "myLevelName" -77
 
 
-	public class BiampTesiraForteDsp : DspBase
-	{
-		public IBasicCommunication Communication { get; private set; }
-		public CommunicationGather PortGather { get; private set; }
-		public StatusMonitorBase CommunicationMonitor { get; private set; }
+    public class BiampTesiraForteDsp : DspBase
+    {
+        public IBasicCommunication Communication { get; private set; }
+        public CommunicationGather PortGather { get; private set; }
+        public StatusMonitorBase CommunicationMonitor { get; private set; }
 
         new public Dictionary<string, TesiraForteLevelControl> LevelControlPoints { get; private set; }
 
         public bool isSubscribed;
 
+        private CTimer SubscriptionTimer;
+
         CrestronQueue CommandQueue;
+
+        bool CommandQueueInProgress = false;
 
         //new public Dictionary<string, DspControlPoint> DialerControlPoints { get; private set; }
 
         //new public Dictionary<string, DspControlPoint> SwitcherControlPoints { get; private set; }
 
-		/// <summary>
-		/// Shows received lines as hex
-		/// </summary>
-		public bool ShowHexResponse { get; set; }
+        /// <summary>
+        /// Shows received lines as hex
+        /// </summary>
+        public bool ShowHexResponse { get; set; }
 
-		public BiampTesiraForteDsp(string key, string name, IBasicCommunication comm, BiampTesiraFortePropertiesConfig props) :
-			base(key, name)
-		{
-            CommandQueue = new CrestronQueue(20);
+        public BiampTesiraForteDsp(string key, string name, IBasicCommunication comm, BiampTesiraFortePropertiesConfig props) :
+            base(key, name)
+        {
+            CommandQueue = new CrestronQueue(100);
 
-			Communication = comm;
+            Communication = comm;
             var socket = comm as ISocketStatus;
             if (socket != null)
             {
@@ -58,8 +62,8 @@ namespace PepperDash.Essentials.Devices.Common.DSP
             {
                 // This instance uses RS-232 control
             }
-			PortGather = new CommunicationGather(Communication, '\x0a');
-			PortGather.LineReceived += this.Port_LineReceived;
+            PortGather = new CommunicationGather(Communication, "\x0d\x0a");
+            PortGather.LineReceived += this.Port_LineReceived;
             if (props.CommunicationMonitorProperties != null)
             {
                 CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, props.CommunicationMonitorProperties);
@@ -67,35 +71,50 @@ namespace PepperDash.Essentials.Devices.Common.DSP
             else
             {
 #warning Need to deal with this poll string
-                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 120000, 120000, 300000, "");
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 120000, 120000, 300000, "SESSION get aliases\x0d\x0a");
             }
 
             LevelControlPoints = new Dictionary<string, TesiraForteLevelControl>();
 
             foreach (KeyValuePair<string, BiampTesiraForteLevelControlBlockConfig> block in props.LevelControlBlocks)
             {
-                this.LevelControlPoints.Add(block.Key, new TesiraForteLevelControl(block.Value, this));    
+                this.LevelControlPoints.Add(block.Key, new TesiraForteLevelControl(block.Key, block.Value, this));
             }
 
-		}
+        }
 
-		public override bool CustomActivate()
-		{
-			Communication.Connect();
-			CommunicationMonitor.StatusChange += (o, a) => { Debug.Console(2, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
-			CommunicationMonitor.Start();
+        public override bool CustomActivate()
+        {
+            Communication.Connect();
+            CommunicationMonitor.StatusChange += (o, a) => { Debug.Console(2, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
+            CommunicationMonitor.Start();
 
-			CrestronConsole.AddNewConsoleCommand(SendLine, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
-			CrestronConsole.AddNewConsoleCommand(s => Communication.Connect(), "con" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
-			return true;
-		}
+            CrestronConsole.AddNewConsoleCommand(SendLine, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s => Communication.Connect(), "con" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
+            return true;
+        }
 
         void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
         {
+            Debug.Console(2, this, "Socket Status Change: {0}", e.Client.ClientStatus.ToString());
+
             if (e.Client.IsConnected)
             {
-                Debug.Console(2, this, "Socket Status Change: {0}", e.Client.ClientStatus.ToString());
-                // Maybe wait for message indicating valid TTP session
+                // Tasks on connect
+            }
+            else
+            {
+                // Cleanup items from this session
+
+                if (SubscriptionTimer != null)
+                {
+                    SubscriptionTimer.Stop();
+                    SubscriptionTimer = null;
+                }
+
+                isSubscribed = false;
+                CommandQueue.Clear();
+                CommandQueueInProgress = false;
             }
         }
 
@@ -104,25 +123,32 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// </summary>
         void SubscribeToAttributes()
         {
-            EnqueueCommand("SESSION set verbose true");
+            SendLine("SESSION set verbose true");
 
             foreach (KeyValuePair<string, TesiraForteLevelControl> level in LevelControlPoints)
             {
                 level.Value.Subscribe();
             }
 
+            if (!CommandQueue.IsEmpty)
+                SendNextQueuedCommand();
+
             ResetSubscriptionTimer();
         }
 
-        
-
+        /// <summary>
+        /// Resets or Sets the subscription timer
+        /// </summary>
         void ResetSubscriptionTimer()
         {
-#warning Add code to create/reset a CTimer to periodically check for subscribtion status
-
             isSubscribed = true;
 
-            //CTimer SubscribtionTimer = new CTimer(
+            if (SubscriptionTimer != null)
+            {
+                SubscriptionTimer = new CTimer(o => SubscribeToAttributes(), 30000);
+                SubscriptionTimer.Reset();
+
+            }
         }
 
         /// <summary>
@@ -130,121 +156,127 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// </summary>
         /// <param name="dev"></param>
         /// <param name="args"></param>
-		void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
-		{
-			if (Debug.Level == 2)
-				Debug.Console(2, this, "RX: '{0}'",
-					ShowHexResponse ? ComTextHelper.GetEscapedText(args.Text) : args.Text);               
+        void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
+        {
+            if (Debug.Level == 2)
+                Debug.Console(2, this, "RX: '{0}'",
+                    ShowHexResponse ? ComTextHelper.GetEscapedText(args.Text) : args.Text);
 
-                try
+            try
+            {
+                if (args.Text.IndexOf("Welcome to the Tesira Text Protocol Server...") > -1)
                 {
-                    if (args.Text.IndexOf("Welcome to the Tesira Text Protocol Server...") > -1)    
+                    // Indicates a new TTP session
+
+                    SubscribeToAttributes();
+                }
+                else if (args.Text.IndexOf("publishToken") > -1)
+                {
+                    // response is from a subscribed attribute
+
+                    string pattern = "! \"publishToken\":[\"](.*)[\"] \"value\":(.*)";
+
+                    Match match = Regex.Match(args.Text, pattern);
+
+                    if (match.Success)
                     {
-                        // Indicates a new TTP session
 
-                        SubscribeToAttributes();
-                    }
-                    else if (args.Text.IndexOf("publishToken") > -1)
-                    {
-                        // response is from a subscribed attribute
+                        string key;
 
-                        string pattern = "! \"publishToken\":[\"](.*)[\"] \"value\":(.*)";
+                        string customName;
 
-                        Match match = Regex.Match(args.Text, pattern);
+                        string value;
 
-                        if (match.Success)
+                        customName = match.Groups[1].Value;
+
+                        // Finds the key (everything before the '~' character
+                        key = customName.Substring(0, customName.IndexOf("~", 0) - 1);
+
+                        value = match.Groups[2].Value;
+
+                        foreach (KeyValuePair<string, TesiraForteLevelControl> controlPoint in LevelControlPoints)
                         {
-
-                            string key;
-
-                            string customName;
-
-                            string value;
-
-                            customName = match.Groups[1].Value;
-
-                            // Finds the key (everything before the '~' character
-                            key = customName.Substring(0, customName.IndexOf("~", 0) - 1);
-
-                            value = match.Groups[2].Value;
-
-                            foreach (KeyValuePair<string, TesiraForteLevelControl> controlPoint in LevelControlPoints)
+                            if (customName == controlPoint.Value.LevelCustomName || customName == controlPoint.Value.MuteCustomName)
                             {
-                                if (customName == controlPoint.Value.LevelCustomName || customName == controlPoint.Value.MuteCustomName)
-                                {
-                                    controlPoint.Value.ParseSubscriptionMessage(customName, value);
-                                    return;
-                                }
-
+                                controlPoint.Value.ParseSubscriptionMessage(customName, value);
+                                return;
                             }
-                        }
-
-                        /// same for dialers
-                        /// same for switchers
-
-                    }
-                    else if (args.Text.IndexOf("+OK") > -1)
-                    {
-                        if (args.Text.Length > 4)       // Check for a simple "+OK" only 'ack' repsonse
-                            return;
-
-                        // response is not from a subscribed attribute.  From a get/set/toggle/increment/decrement command
-
-                        if (!CommandQueue.IsEmpty)
-                        {
-                            if(CommandQueue.Peek() is QueuedCommand)
-                            {
-                                // Expected response belongs to a child class
-                                QueuedCommand tempCommand = (QueuedCommand)CommandQueue.Dequeue();
-
-                                tempCommand.ControlPoint.ParseGetMessage(tempCommand.AttributeCode, args.Text);
-                            }
-                            else
-                            {
-                                // Expected response belongs to this class
-                                string temp = (string)CommandQueue.Dequeue();
-
-                            }
-
-                            SendNextQueuedCommand();
 
                         }
-
-
                     }
-                    else if (args.Text.IndexOf("-ERR") > -1)
-                    {
-                        // Error response
 
-                        if (args.Text == "-ERR ALREADY_SUBSCRIBED")
+                    /// same for dialers
+                    /// same for switchers
+
+                }
+                else if (args.Text.IndexOf("+OK") > -1)
+                {
+                    if (args.Text == "+OK" || args.Text.IndexOf("list\":") > -1 )       // Check for a simple "+OK" only 'ack' repsonse or a list response and ignore
+                        return;
+
+                    // response is not from a subscribed attribute.  From a get/set/toggle/increment/decrement command
+                    
+                    if (!CommandQueue.IsEmpty)
+                    {
+                        if (CommandQueue.Peek() is QueuedCommand)
                         {
-                            // Subscription still valid
-                            ResetSubscriptionTimer();
+                            // Expected response belongs to a child class
+                            QueuedCommand tempCommand = (QueuedCommand)CommandQueue.Dequeue();
+                            Debug.Console(2, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
+
+                            tempCommand.ControlPoint.ParseGetMessage(tempCommand.AttributeCode, args.Text);
                         }
                         else
                         {
-                            SubscribeToAttributes();
+                            // Expected response belongs to this class
+                            string temp = (string)CommandQueue.Dequeue();
+                            Debug.Console(2, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
+
                         }
 
+
+                        //if (CommandQueue.IsEmpty)
+                        //    CommandQueueInProgress = false;
+                        //else
+                            SendNextQueuedCommand();
+
                     }
+
+
                 }
-                catch (Exception e)
+                else if (args.Text.IndexOf("-ERR") > -1)
                 {
-                    if (Debug.Level == 2)
-                        Debug.Console(2, this, "Error parsing response: '{0}'\n{1}", args.Text, e);
+                    // Error response
+
+                    if (args.Text == "-ERR ALREADY_SUBSCRIBED")
+                    {
+                        // Subscription still valid
+                        ResetSubscriptionTimer();
+                    }
+                    else
+                    {
+                        SubscribeToAttributes();
+                    }
+
                 }
-            
-		}
+            }
+            catch (Exception e)
+            {
+                if (Debug.Level == 2)
+                    Debug.Console(2, this, "Error parsing response: '{0}'\n{1}", args.Text, e);
+            }
+
+        }
 
         /// <summary>
         /// Sends a command to the DSP (with delimiter appended)
         /// </summary>
         /// <param name="s">Command to send</param>
-		public void SendLine(string s)
-		{
+        public void SendLine(string s)
+        {
             Debug.Console(2, this, "TX: '{0}'", s);
-			Communication.SendText(s + "\x0a");
-		}
+            Communication.SendText(s + "\x0a");
+        }
 
         /// <summary>
         /// Adds a command from a child module to the queue
@@ -252,7 +284,8 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// <param name="command">Command object from child module</param>
         public void EnqueueCommand(QueuedCommand commandToEnqueue)
         {
-            CommandQueue.Enqueue(commandToEnqueue);         
+            CommandQueue.Enqueue(commandToEnqueue);
+            SendNextQueuedCommand();
         }
 
         /// <summary>
@@ -262,6 +295,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         public void EnqueueCommand(string command)
         {
             CommandQueue.Enqueue(command);
+            SendNextQueuedCommand();
         }
 
         /// <summary>
@@ -269,19 +303,44 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// </summary>
         void SendNextQueuedCommand()
         {
-            if (CommandQueue.Peek() is QueuedCommand)
+            Debug.Console(2, this, "Attempting to send next queued command. CommandQueueInProgress: {0}  Communication isConnected: {1}", CommandQueueInProgress, Communication.IsConnected);
+            if (!CommandQueueInProgress)
             {
-                QueuedCommand nextCommand = new QueuedCommand();
+                if (CommandQueue.IsEmpty)
+                    CommandQueueInProgress = false;
 
-                nextCommand = (QueuedCommand)CommandQueue.Peek();
+                Debug.Console(2, this, "CommandQueue has {0} Elements", CommandQueue.Count);
 
-                SendLine(nextCommand.Command);
-            }
-            else
-            {
-                string nextCommand = (string)CommandQueue.Peek();
+                foreach (object o in CommandQueue)
+                {
+                    if (o is string)
+                        Debug.Console(2, this, "{0}", o);
+                    else if(o is QueuedCommand)
+                    {
+                        var item = (QueuedCommand)o;
+                        Debug.Console(2, this, "{0}", item.Command);
+                    }
+                }
 
-                SendLine(nextCommand);
+                if (Communication.IsConnected && !CommandQueue.IsEmpty)
+                {
+                    CommandQueueInProgress = true;
+
+                    if (CommandQueue.Peek() is QueuedCommand)
+                    {
+                        QueuedCommand nextCommand = new QueuedCommand();
+
+                        nextCommand = (QueuedCommand)CommandQueue.Peek();
+
+                        SendLine(nextCommand.Command);
+                    }
+                    else
+                    {
+                        string nextCommand = (string)CommandQueue.Peek();
+
+                        SendLine(nextCommand);
+                    }
+                }
             }
         }
 
@@ -289,10 +348,10 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// Sends a command to execute a preset
         /// </summary>
         /// <param name="name">Preset Name</param>
-		public override void RunPreset(string name)
-		{
+        public override void RunPreset(string name)
+        {
             SendLine(string.Format("DEVICE recallPreset {0}", name));
-		}
+        }
 
         public class QueuedCommand
         {
@@ -300,5 +359,5 @@ namespace PepperDash.Essentials.Devices.Common.DSP
             public string AttributeCode { get; set; }
             public TesiraForteControlPoint ControlPoint { get; set; }
         }
-	}
+    }
 }

@@ -84,25 +84,25 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
         bool LevelIsSubscribed;
 
-        public TesiraForteLevelControl(string label, string id, int index1, int index2, bool hasMute, bool hasLevel, BiampTesiraForteDsp parent)
-            : base(id, index1, index2, parent)
-        {
-            Initialize(label, hasMute, hasLevel);
-        }
+        //public TesiraForteLevelControl(string label, string id, int index1, int index2, bool hasMute, bool hasLevel, BiampTesiraForteDsp parent)
+        //    : base(id, index1, index2, parent)
+        //{
+        //    Initialize(label, hasMute, hasLevel);
+        //}
 
-        public TesiraForteLevelControl(BiampTesiraForteLevelControlBlockConfig config, BiampTesiraForteDsp parent)
+        public TesiraForteLevelControl(string key, BiampTesiraForteLevelControlBlockConfig config, BiampTesiraForteDsp parent)
             : base(config.InstanceTag, config.Index1, config.Index2, parent)
         {
-            Initialize(config.Label, config.HasMute, config.HasLevel);
+            Initialize(key, config.Label, config.HasMute, config.HasLevel);
         }
 
 
         /// <summary>
         /// Initializes this attribute based on config values and generates subscriptions commands and adds commands to the parent's queue.
         /// </summary>
-        public void Initialize(string label, bool hasMute, bool hasLevel)
+        public void Initialize(string key, string label, bool hasMute, bool hasLevel)
         {
-            Key = string.Format("{0}-{1}", Parent.Key, label);
+            Key = string.Format("{0}--{1}", Parent.Key, key);
 
             DeviceManager.AddDevice(this);
 
@@ -210,20 +210,20 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         {
             try
             {
-                // Parse a "+OK" message
-                string pattern = "+OK \"value\":(.*)";
+                // Parse an "+OK" message
+                string pattern = @"\+OK ""value"":(.*)";
 
                 Match match = Regex.Match(message, pattern);
 
                 if (match.Success)
                 {
 
-                    string value;
+                    string value = match.Groups[1].Value;
+
+                    Debug.Console(2, this, "{0} is {1}", attributeCode, value);
 
                     if (message.IndexOf("\"value\":") > -1)
                     {
-                        value = message.Substring(message.IndexOf(":"), message.Length - message.IndexOf(":"));
-
                         switch (attributeCode)
                         {
                             case "minLevel":
@@ -277,6 +277,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// <param name="level"></param>
         public void SetVolume(ushort level)
         {
+            Debug.Console(2, this, "volume: {0}", level);
             // Unmute volume if new level is higher than existing
             if (level > _VolumeLevel && AutomaticUnmuteOnVolumeUp)
                 if(!_IsMuted)
@@ -284,7 +285,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
             double volumeLevel = Scale(level, 0, 65535, MinLevel, MaxLevel);
 
-            SendFullCommand("Set", "level", volumeLevel.ToString());          
+            SendFullCommand("set", "level", volumeLevel.ToString());          
         }
 
         /// <summary>
