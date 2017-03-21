@@ -8,14 +8,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PepperDashEssentials", "Pep
 		{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5} = {A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PepperDash_Essentials_Core", "..\..\essentials-core\PepperDashEssentialsBase\PepperDashEssentialsBase\PepperDash_Essentials_Core.csproj", "{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PepperDash_Essentials_Core", "..\Essentials Core\PepperDashEssentialsBase\PepperDash_Essentials_Core.csproj", "{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Essentials Devices Common", "..\..\essentials-devices-common\Essentials Devices Common\Essentials Devices Common\Essentials Devices Common.csproj", "{892B761C-E479-44CE-BD74-243E9214AF13}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Essentials Devices Common", "..\Essentials Devices Common\Essentials Devices Common\Essentials Devices Common.csproj", "{892B761C-E479-44CE-BD74-243E9214AF13}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5} = {A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Essentials_DM", "..\..\essentials-dm\Essentials_DM\Essentials_DM\Essentials_DM.csproj", "{9199CE8A-0C9F-4952-8672-3EED798B284F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Essentials_DM", "..\Essentials DM\Essentials_DM\Essentials_DM.csproj", "{9199CE8A-0C9F-4952-8672-3EED798B284F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5} = {A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}
 	EndProjectSection
