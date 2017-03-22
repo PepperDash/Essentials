@@ -220,7 +220,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
                     string value = match.Groups[1].Value;
 
-                    //Debug.Console(1, this, "{0} is {1}", attributeCode, value);
+                    Debug.Console(1, this, "Response: '{0}' Value: '{1}'", attributeCode, value);
 
                     if (message.IndexOf("\"value\":") > -1)
                     {
@@ -238,7 +238,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                                 {
                                     MaxLevel = Double.Parse(value);
 
-                                    Debug.Console(1, this, "MaxLevel is '{0}'", MinLevel);
+                                    Debug.Console(1, this, "MaxLevel is '{0}'", MaxLevel);
 
                                     break;
                                 }

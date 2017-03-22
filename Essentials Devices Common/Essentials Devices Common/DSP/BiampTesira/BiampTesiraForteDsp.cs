@@ -290,7 +290,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         public void EnqueueCommand(QueuedCommand commandToEnqueue)
         {
             CommandQueue.Enqueue(commandToEnqueue);
-            Debug.Console(1, this, "Command (QueuedCommand) Enqueued '{0}'.  CommandQueue has '{1}' Elements.", commandToEnqueue.Command, CommandQueue.Count);
+            //Debug.Console(1, this, "Command (QueuedCommand) Enqueued '{0}'.  CommandQueue has '{1}' Elements.", commandToEnqueue.Command, CommandQueue.Count);
 
             if(!CommandQueueInProgress)
                 SendNextQueuedCommand();
@@ -303,7 +303,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         public void EnqueueCommand(string command)
         {
             CommandQueue.Enqueue(command);
-            Debug.Console(1, this, "Command (string) Enqueued '{0}'.  CommandQueue has '{1}' Elements.", command, CommandQueue.Count);
+            //Debug.Console(1, this, "Command (string) Enqueued '{0}'.  CommandQueue has '{1}' Elements.", command, CommandQueue.Count);
 
             if (!CommandQueueInProgress)
                 SendNextQueuedCommand();
@@ -314,25 +314,25 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// </summary>
         void SendNextQueuedCommand()
         {
-            Debug.Console(2, this, "Attempting to send next queued command. CommandQueueInProgress: {0}  Communication isConnected: {1}", CommandQueueInProgress, Communication.IsConnected);
+            //Debug.Console(2, this, "Attempting to send next queued command. CommandQueueInProgress: {0}  Communication isConnected: {1}", CommandQueueInProgress, Communication.IsConnected);
 
                 //if (CommandQueue.IsEmpty)
                 //    CommandQueueInProgress = false;
 
                 Debug.Console(1, this, "CommandQueue has {0} Elements:\n", CommandQueue.Count);
 
-                foreach (object o in CommandQueue)
-                {
-                    if (o is string)
-                        Debug.Console(1, this, "{0}", o);
-                    else if(o is QueuedCommand)
-                    {
-                        var item = (QueuedCommand)o;
-                        Debug.Console(1, this, "{0}", item.Command);
-                    }
-                }
+                //foreach (object o in CommandQueue)
+                //{
+                //    if (o is string)
+                //        Debug.Console(1, this, "{0}", o);
+                //    else if(o is QueuedCommand)
+                //    {
+                //        var item = (QueuedCommand)o;
+                //        Debug.Console(1, this, "{0}", item.Command);
+                //    }
+                //}
 
-                Debug.Console(1, this, "End of CommandQueue");
+                //Debug.Console(1, this, "End of CommandQueue");
 
                 if (Communication.IsConnected && !CommandQueue.IsEmpty)
                 {
