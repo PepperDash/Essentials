@@ -71,9 +71,18 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                     cmd = string.Format("{0} {1} {2}", InstanceTag, command, attributeCode);
                 }
             }
-               
 
-			Parent.EnqueueCommand(new BiampTesiraForteDsp.QueuedCommand{ Command = cmd, AttributeCode = attributeCode, ControlPoint = this });
+            if (command == "get")
+            {
+                // This command will generate a return value response so it needs to be queued
+                Parent.EnqueueCommand(new BiampTesiraForteDsp.QueuedCommand{ Command = cmd, AttributeCode = attributeCode, ControlPoint = this });
+            }
+            else
+            {
+                // This command will generate a simple "+OK" response and doesn't need to be queued
+                Parent.SendLine(cmd);
+            }
+
 		}
 
         virtual public void ParseGetMessage(string attributeCode, string message)

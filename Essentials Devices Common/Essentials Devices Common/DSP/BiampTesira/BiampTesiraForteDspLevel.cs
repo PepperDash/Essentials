@@ -192,7 +192,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
                 var _value = Double.Parse(value);
 
-                _VolumeLevel = (ushort)Scale(_value, MinLevel, MaxLevel, 0, 65536);
+                _VolumeLevel = (ushort)Scale(_value, MinLevel, MaxLevel, 0, 65535);
 
                 LevelIsSubscribed = true;
 
@@ -220,7 +220,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
                     string value = match.Groups[1].Value;
 
-                    Debug.Console(2, this, "{0} is {1}", attributeCode, value);
+                    //Debug.Console(1, this, "{0} is {1}", attributeCode, value);
 
                     if (message.IndexOf("\"value\":") > -1)
                     {
@@ -230,11 +230,15 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                                 {
                                     MinLevel = Double.Parse(value);
 
+                                    Debug.Console(1, this, "MinLevel is '{0}'", MinLevel);
+
                                     break;
                                 }
                             case "maxLevel":
                                 {
                                     MaxLevel = Double.Parse(value);
+
+                                    Debug.Console(1, this, "MaxLevel is '{0}'", MinLevel);
 
                                     break;
                                 }
@@ -277,7 +281,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// <param name="level"></param>
         public void SetVolume(ushort level)
         {
-            Debug.Console(2, this, "volume: {0}", level);
+            Debug.Console(1, this, "volume: {0}", level);
             // Unmute volume if new level is higher than existing
             if (level > _VolumeLevel && AutomaticUnmuteOnVolumeUp)
                 if(!_IsMuted)
@@ -285,7 +289,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
             double volumeLevel = Scale(level, 0, 65535, MinLevel, MaxLevel);
 
-            SendFullCommand("set", "level", volumeLevel.ToString());          
+            SendFullCommand("set", "level", string.Format("{0:0.000000}", volumeLevel));          
         }
 
         /// <summary>
@@ -318,25 +322,29 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                     MuteOff();
         }
 
-        /// <summary>
-        /// Scales the input from the input range to the output range
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="inMin"></param>
-        /// <param name="inMax"></param>
-        /// <param name="outMin"></param>
-        /// <param name="outMax"></param>
-        /// <returns></returns>
-        int Scale(int input, int inMin, int inMax, int outMin, int outMax)
-        {
-            int inputRange = inMax - inMin;
+        ///// <summary>
+        ///// Scales the input from the input range to the output range
+        ///// </summary>
+        ///// <param name="input"></param>
+        ///// <param name="inMin"></param>
+        ///// <param name="inMax"></param>
+        ///// <param name="outMin"></param>
+        ///// <param name="outMax"></param>
+        ///// <returns></returns>
+        //int Scale(int input, int inMin, int inMax, int outMin, int outMax)
+        //{
+        //    Debug.Console(1, this, "Scaling (int) input '{0}' with min '{1}'/max '{2}' to output range min '{3}'/max '{4}'", input, inMin, inMax, outMin, outMax);
 
-            int outputRange = outMax - outMin;
+        //    int inputRange = inMax - inMin;
 
-            var output = (((input-inMin) * outputRange) / inputRange ) - outMin;
+        //    int outputRange = outMax - outMin;
 
-            return output;
-        }
+        //    var output = (((input-inMin) * outputRange) / inputRange ) - outMin;
+
+        //    Debug.Console(1, this, "Scaled output '{0}'", output);
+
+        //    return output;
+        //}
 
         /// <summary>
         /// Scales the input from the input range to the output range
@@ -349,11 +357,20 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// <returns></returns>
         double Scale(double input, double inMin, double inMax, double outMin, double outMax)
         {
+            Debug.Console(1, this, "Scaling (double) input '{0}' with min '{1}'/max '{2}' to output range min '{3}'/max '{4}'",input ,inMin ,inMax ,outMin, outMax);
+
             double inputRange = inMax - inMin;
+
+            if (inputRange <= 0)
+            {
+                throw new ArithmeticException(string.Format("Invalid Input Range '{0}' for Scaling.  Min '{1}' Max '{2}'.", inputRange, inMin, inMax));
+            }
 
             double outputRange = outMax - outMin;
 
-            var output = (((input - inMin) * outputRange) / inputRange) - outMin;
+            var output = (((input - inMin) * outputRange) / inputRange) + outMin;
+
+            Debug.Console(1, this, "Scaled output '{0}'", output);
 
             return output;
         }

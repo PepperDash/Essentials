@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
             }
             else
             {
-#warning Need to deal with this poll string
+//#warning Need to deal with this poll string
                 CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 120000, 120000, 300000, "SESSION get aliases\x0d\x0a");
             }
 
@@ -130,7 +130,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                 level.Value.Subscribe();
             }
 
-            if (!CommandQueue.IsEmpty)
+            if (!CommandQueueInProgress)
                 SendNextQueuedCommand();
 
             ResetSubscriptionTimer();
@@ -161,6 +161,8 @@ namespace PepperDash.Essentials.Devices.Common.DSP
             if (Debug.Level == 2)
                 Debug.Console(2, this, "RX: '{0}'",
                     ShowHexResponse ? ComTextHelper.GetEscapedText(args.Text) : args.Text);
+
+            Debug.Console(1, this, "RX: '{0}'", args.Text);
 
             try
             {
@@ -221,23 +223,22 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                         if (CommandQueue.Peek() is QueuedCommand)
                         {
                             // Expected response belongs to a child class
-                            QueuedCommand tempCommand = (QueuedCommand)CommandQueue.Dequeue();
-                            Debug.Console(2, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
+                            QueuedCommand tempCommand = (QueuedCommand)CommandQueue.TryToDequeue();
+                            Debug.Console(1, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
 
                             tempCommand.ControlPoint.ParseGetMessage(tempCommand.AttributeCode, args.Text);
                         }
                         else
                         {
                             // Expected response belongs to this class
-                            string temp = (string)CommandQueue.Dequeue();
-                            Debug.Console(2, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
+                            string temp = (string)CommandQueue.TryToDequeue();
+                            Debug.Console(1, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
 
                         }
 
-
-                        //if (CommandQueue.IsEmpty)
-                        //    CommandQueueInProgress = false;
-                        //else
+                        if (CommandQueue.IsEmpty)
+                            CommandQueueInProgress = false;
+                        else
                             SendNextQueuedCommand();
 
                     }
@@ -248,14 +249,18 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                 {
                     // Error response
 
-                    if (args.Text == "-ERR ALREADY_SUBSCRIBED")
+                    switch (args.Text)
                     {
-                        // Subscription still valid
-                        ResetSubscriptionTimer();
-                    }
-                    else
-                    {
-                        SubscribeToAttributes();
+                        case "-ERR ALREADY_SUBSCRIBED":
+                            {
+                                ResetSubscriptionTimer();
+                                break;
+                            }
+                        default:
+                            {
+                                Debug.Console(0, this, "Error From DSP: '{0}'", args.Text);
+                                break;
+                            }
                     }
 
                 }
@@ -274,7 +279,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// <param name="s">Command to send</param>
         public void SendLine(string s)
         {
-            Debug.Console(2, this, "TX: '{0}'", s);
+            Debug.Console(1, this, "TX: '{0}'", s);
             Communication.SendText(s + "\x0a");
         }
 
@@ -285,7 +290,10 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         public void EnqueueCommand(QueuedCommand commandToEnqueue)
         {
             CommandQueue.Enqueue(commandToEnqueue);
-            SendNextQueuedCommand();
+            Debug.Console(1, this, "Command (QueuedCommand) Enqueued '{0}'.  CommandQueue has '{1}' Elements.", commandToEnqueue.Command, CommandQueue.Count);
+
+            if(!CommandQueueInProgress)
+                SendNextQueuedCommand();
         }
 
         /// <summary>
@@ -295,7 +303,10 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         public void EnqueueCommand(string command)
         {
             CommandQueue.Enqueue(command);
-            SendNextQueuedCommand();
+            Debug.Console(1, this, "Command (string) Enqueued '{0}'.  CommandQueue has '{1}' Elements.", command, CommandQueue.Count);
+
+            if (!CommandQueueInProgress)
+                SendNextQueuedCommand();
         }
 
         /// <summary>
@@ -304,23 +315,24 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         void SendNextQueuedCommand()
         {
             Debug.Console(2, this, "Attempting to send next queued command. CommandQueueInProgress: {0}  Communication isConnected: {1}", CommandQueueInProgress, Communication.IsConnected);
-            if (!CommandQueueInProgress)
-            {
-                if (CommandQueue.IsEmpty)
-                    CommandQueueInProgress = false;
 
-                Debug.Console(2, this, "CommandQueue has {0} Elements", CommandQueue.Count);
+                //if (CommandQueue.IsEmpty)
+                //    CommandQueueInProgress = false;
+
+                Debug.Console(1, this, "CommandQueue has {0} Elements:\n", CommandQueue.Count);
 
                 foreach (object o in CommandQueue)
                 {
                     if (o is string)
-                        Debug.Console(2, this, "{0}", o);
+                        Debug.Console(1, this, "{0}", o);
                     else if(o is QueuedCommand)
                     {
                         var item = (QueuedCommand)o;
-                        Debug.Console(2, this, "{0}", item.Command);
+                        Debug.Console(1, this, "{0}", item.Command);
                     }
                 }
+
+                Debug.Console(1, this, "End of CommandQueue");
 
                 if (Communication.IsConnected && !CommandQueue.IsEmpty)
                 {
@@ -341,7 +353,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                         SendLine(nextCommand);
                     }
                 }
-            }
+            
         }
 
         /// <summary>
