@@ -224,7 +224,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                         {
                             // Expected response belongs to a child class
                             QueuedCommand tempCommand = (QueuedCommand)CommandQueue.TryToDequeue();
-                            Debug.Console(1, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
+                            //Debug.Console(1, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
 
                             tempCommand.ControlPoint.ParseGetMessage(tempCommand.AttributeCode, args.Text);
                         }
@@ -232,7 +232,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                         {
                             // Expected response belongs to this class
                             string temp = (string)CommandQueue.TryToDequeue();
-                            Debug.Console(1, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
+                            //Debug.Console(1, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
 
                         }
 
@@ -319,7 +319,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                 //if (CommandQueue.IsEmpty)
                 //    CommandQueueInProgress = false;
 
-                Debug.Console(1, this, "CommandQueue has {0} Elements:\n", CommandQueue.Count);
+                //Debug.Console(1, this, "CommandQueue has {0} Elements:\n", CommandQueue.Count);
 
                 //foreach (object o in CommandQueue)
                 //{
