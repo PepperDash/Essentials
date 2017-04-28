@@ -28,7 +28,7 @@ namespace PepperDash.Essentials.Fusion
 
 		StringSigData SourceNameSig;
 
-		public EssentialsHuddleSpaceFusionSystemController(EssentialsHuddleSpaceRoom room, uint ipId)
+        public EssentialsHuddleSpaceFusionSystemController(EssentialsHuddleSpaceRoom room, uint ipId)
 			: base(room.Key + "-fusion")
 		{
 			Room = room;

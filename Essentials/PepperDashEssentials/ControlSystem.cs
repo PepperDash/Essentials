@@ -57,6 +57,11 @@ namespace PepperDash.Essentials
 
                     //PortalSync = new PepperDashPortalSyncClient();
 
+                    //Temp Cotija testing
+                    //CotijaInterfaceController CotijaInterface = new CotijaInterfaceController("WebClient1");
+
+                    //CotijaInterface.InitializeClient("http://192.168.1.105");
+
 					Debug.Console(0, "Starting Essentials load from configuration");
 					ConfigReader.LoadConfig2();
 					LoadDevices();
@@ -155,8 +160,17 @@ namespace PepperDash.Essentials
 				var room = roomConfig.GetRoomObject();
 				if (room != null)
 				{
-					DeviceManager.AddDevice(room);
-					//DeviceManager.AddDevice(new EssentialsHuddleSpaceFusionSystemController(room, 0xf1));
+                    if (room is EssentialsHuddleSpaceRoom)
+                    {
+                        Debug.Console(1, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
+                        DeviceManager.AddDevice(new EssentialsHuddleSpaceFusionSystemController((EssentialsHuddleSpaceRoom)room, 0xf1));
+                    }
+                    else
+                    {
+                        Debug.Console(1, "Room is NOT EssentialsHuddleSpaceRoom, attempting to add to DeviceManager w/o Fusion");
+                        DeviceManager.AddDevice(room);
+                    }
+
 #warning Add Fusion connector to room factory?
 
 				}
