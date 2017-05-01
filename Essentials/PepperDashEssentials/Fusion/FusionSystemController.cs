@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharp.CrestronXml;
+using Crestron.SimplSharp.CrestronXml.Serialization;
+using Crestron.SimplSharp.CrestronXmlLinq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.Fusion;
@@ -28,10 +32,14 @@ namespace PepperDash.Essentials.Fusion
 
 		StringSigData SourceNameSig;
 
+        string GUID;
+
         public EssentialsHuddleSpaceFusionSystemController(EssentialsHuddleSpaceRoom room, uint ipId)
 			: base(room.Key + "-fusion")
 		{
 			Room = room;
+
+            GUID = "awesomeGuid-" + Room.Key;
 
 			CreateSymbolAndBasicSigs(ipId);
 			SetUpSources();
@@ -53,10 +61,16 @@ namespace PepperDash.Essentials.Fusion
 
 		void CreateSymbolAndBasicSigs(uint ipId)
 		{
-			FusionRoom = new FusionRoom(ipId, Global.ControlSystem, Room.Name, "awesomeGuid-" + Room.Key);
+            FusionRoom = new FusionRoom(ipId, Global.ControlSystem, Room.Name, GUID);
+            FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.Use();
+
 			FusionRoom.Register();
 
 			FusionRoom.FusionStateChange += new FusionStateEventHandler(FusionRoom_FusionStateChange);
+
+            FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.DeviceExtenderSigChange += new DeviceExtenderJoinChangeEventHandler(FusionRoomSchedule_DeviceExtenderSigChange);
+
+            CrestronConsole.AddNewConsoleCommand(RequestFullRoomSchedule, "FusReqRoomSchedule", "Requests schedule of the room for the next 24 hours", ConsoleAccessLevelEnum.AccessOperator);
 
 			// Room to fusion room
 			Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
@@ -72,6 +86,94 @@ namespace PepperDash.Essentials.Fusion
 				"3: 7 Errors: This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;";
 
 		}
+
+        /// <summary>
+        /// Generates a room schedule request for this room for the next 24 hours.
+        /// </summary>
+        /// <param name="requestID">string identifying this request. Used with a corresponding ScheduleResponse value</param>
+        public void RequestFullRoomSchedule(string requestID)
+        {
+            // Need to see if we can omit the XML declaration 
+
+            //XmlWriterSettings settings = new XmlWriterSettings();
+            //settings.OmitXmlDeclaration = true;
+
+            //StringBuilder builder = new StringBuilder();
+
+            //XmlWriter xmlWriter = new XmlWriter(builder, settings);
+
+            //RequestSchedule request = new RequestSchedule(requestID, GUID);
+
+            //CrestronXMLSerialization.SerializeObject(xmlWriter, request);
+
+            string requestTest =
+                string.Format("<RequestSchedule><RequestID>{0}</RequestID><RoomID>{1}</RoomID><Start>2017-05-01T12:45:39</Start><HourSpan>24</HourSpan></RequestSchedule>", requestID, GUID);
+
+            Debug.Console(1, this, "Sending Fusion ScheduleQuery: \n{0}", requestTest);
+
+            FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleQuery.StringValue = requestTest;
+        }
+
+        /// <summary>
+        /// Ends or Extends a meeting by the specified number of minutes.
+        /// </summary>
+        /// <param name="extendMinutes">Number of minutes to extend the meeting.  A value of 0 will end the meeting.</param>
+        public void ModifyMeetingEndTime(string requestID, Event meeting, int extendMinutes)
+        {
+            //StringWriter stringWriter = new StringWriter();
+
+            //List<Parameter> parameters = new List<Parameter>();
+
+            //parameters.Add( new Parameter { ID = "MeetingID", Value = meeting.MeetingID });
+
+            //parameters.Add( new Parameter { ID = "EndTime", Value = extendMinutes.ToString()});
+
+            //RequestAction request = new RequestAction(GUID, "MeetingChange", parameters);
+
+            //CrestronXMLSerialization.SerializeObject(stringWriter, request);
+
+            string requestTest = string.Format(
+                "<RequestAction><RequestID>{0}</RequestID><RoomID>{1}</RoomID><ActionID>MeetingChange</ActionID><Parameters><Parameter ID = \"MeetingID\" Value = \"\" /><Parameter ID = \"EndTime\" Value = \"{2}\"/></Parameters></RequestAction>"
+                , requestID, meeting.MeetingID, extendMinutes);
+
+            Debug.Console(1, this, "Sending MeetingChange Request: \n{0}", requestTest);
+
+            FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleQuery.StringValue = requestTest;
+        }
+
+        void FusionRoomSchedule_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
+        {
+            Debug.Console(1, this, "Sig: {0} FusionResponse: {1}", args.Sig, args.Sig.StringValue);
+
+            try
+            {
+                XmlReader reader = new XmlReader(args.Sig.StringValue);
+
+                ScheduleResponse scheduleResponse = new ScheduleResponse();
+
+                scheduleResponse = CrestronXMLSerialization.DeSerializeObject<ScheduleResponse>(reader);
+
+                Debug.Console(1, this, "ScheduleResponse DeSerialization Successfull for Room: '{0}'", scheduleResponse.RoomName);
+
+                if (scheduleResponse.Events.Count > 0)
+                {
+                    Debug.Console(1, this, "Meetings Count: {0}\n", scheduleResponse.Events.Count);
+
+                    foreach (Event e in scheduleResponse.Events)
+                    {
+                        Debug.Console(1, this, "Subject: {0}", e.Subject);
+                        Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
+                        Debug.Console(1, this, "Start Time: {0}", e.DtStart);
+                        Debug.Console(1, this, "End Time: {0}\n", e.DtEnd);
+                    }
+                }
+                
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "Error parsing ScheduleResponse: {0}", e);
+            }
+        }
 
 		void SetUpSources()
 		{
@@ -111,75 +213,7 @@ namespace PepperDash.Essentials.Fusion
 						break;
 				}
 
-				// REMOVE THIS PROCESS:
-				//foreach (var kvp in dict)
-				//{
-				//    var src = kvp.Value;
-				//    //var srcNum = src.Key;
-				//    var pSrc = src.SourceDevice;
-				//    if (pSrc == null)
-				//        continue;
-
-				//    var keyNum = ExtractNumberFromKey(pSrc.Key);
-				//    if (keyNum == -1)
-				//    {
-				//        Debug.Console(1, this, "WARNING: Cannot link source '{0}' to numbered Fusion attributes", pSrc.Key);
-				//        continue;
-				//    }
-				//    string attrName = null;
-				//    uint attrNum = Convert.ToUInt32(keyNum);
-
-				//    if (pSrc is ISetTopBoxControls)
-				//    {
-				//        attrName = "Source - TV " + keyNum;
-				//        attrNum += 115;	// TV starts at 116
-				//    }
-				//    else if (pSrc is IDiscPlayerControls)
-				//    {
-				//        attrName = "Source - DVD " + keyNum;
-				//        attrNum += 120; // DVD starts at 121
-				//    }
-				//    //else if (pSrc is Pc)
-				//    //{
-				//    //    attrName = "Source - PC " + keyNum;
-				//    //    attrNum += 110; // PC starts at 111
-				//    //}
-				//    else if (pSrc is Laptop)
-				//    {
-				//        attrName = "Source - Laptop " + keyNum;
-				//        attrNum += 100; // Laptops start at 101
-				//    }
-				//    //else if (pSrc is IVCR)
-				//    //{
-				//    //    attrName = "Source - VCR " + keyNum;
-				//    //    attrNum += 125; // VCRs start at 126
-				//    //}
-
-
-				//    if (attrName == null)
-				//    {
-				//        Debug.Console(1, this,
-				//            "Source '{0}' does not have corresponsing Fusion attribute type, skipping",
-				//            src.SourceKey);
-				//        continue;
-				//    }
-				//    Debug.Console(2, this, "Creating attribute '{0}' with join {1} for source {2}",
-				//        attrName, attrNum, pSrc.Key);
-				//    try
-				//    {
-				//        var sigD = FusionRoom.CreateOffsetBoolSig(attrNum, attrName, eSigIoMask.InputOutputSig);
-				//        // Need feedback when this source is selected
-				//        // Event handler, added below, will compare source changes with this sig dict
-				//        SourceToFeedbackSigs.Add(pSrc, sigD.InputSig);
-
-				//        // And respond to selection in Fusion
-				//        sigD.OutputSig.SetSigFalseAction(() => Room.RunRouteAction(kvp.Key));
-				//    }
-				//    catch (Exception)
-				//    {
-				//        Debug.Console(2, this, "Error creating Fusion signal {0} {1} for device '{2}'. THIS NEEDS REWORKING", attrNum, attrName, pSrc.Key);
-				//    }
-				//}
+				
 			}
 			else
 			{
@@ -502,4 +536,177 @@ namespace PepperDash.Essentials.Fusion
 		}
 	}
 
+    //****************************************************************************************************
+    // Helper Classes for XML API
+
+
+
+
+    /// <summary>
+    /// All the data needed for a full schedule request in a room
+    /// </summary>
+    /// //[XmlRoot(ElementName = "RequestSchedule")]
+    public class RequestSchedule
+    {
+        //[XmlElement(ElementName = "RequestID")]
+        public string RequestID { get; set; }
+        //[XmlElement(ElementName = "RoomID")]
+        public string RoomID { get; set; }
+        //[XmlElement(ElementName = "Start")]
+        public DateTime Start { get; set; }
+        //[XmlElement(ElementName = "HourSpan")]
+        public double HourSpan { get; set; }
+
+        public RequestSchedule(string requestID, string roomID)
+        {
+            RequestID = requestID;
+            RoomID = roomID;
+            Start = DateTime.Now;
+            HourSpan = 24;
+        }
+    }
+
+
+    //[XmlRoot(ElementName = "RequestAction")]
+    public class RequestAction
+    {
+        //[XmlElement(ElementName = "RequestID")]
+        public string RequestID { get; set; }
+        //[XmlElement(ElementName = "RoomID")]
+        public string RoomID { get; set; }
+        //[XmlElement(ElementName = "ActionID")]
+        public string ActionID { get; set; }
+        //[XmlElement(ElementName = "Parameters")]
+        public List<Parameter> Parameters { get; set; }
+
+        public RequestAction(string roomID, string actionID, List<Parameter> parameters)
+        {
+            RoomID = roomID;
+            ActionID = actionID;
+            Parameters = parameters;
+        }
+    }
+
+    //[XmlRoot(ElementName = "Parameter")]
+    public class Parameter
+    {
+        //[XmlAttribute(AttributeName = "ID")]
+        public string ID { get; set; }
+        //[XmlAttribute(AttributeName = "Value")]
+        public string Value { get; set; }
+    }
+
+    ////[XmlRoot(ElementName = "Parameters")]
+    //public class Parameters
+    //{
+    //    //[XmlElement(ElementName = "Parameter")]
+    //    public List<Parameter> Parameter { get; set; }
+    //}  
+    
+    /// <summary>
+    /// Data structure for a ScheduleResponse from Fusion
+    /// </summary>
+    /// //[XmlRoot(ElementName = "ScheduleResponse")]
+    public class ScheduleResponse
+    {
+        //[XmlElement(ElementName = "RequestID")]
+        public string RequestID { get; set; }
+        //[XmlElement(ElementName = "RoomID")]
+        public string RoomID { get; set; }
+        //[XmlElement(ElementName = "RoomName")]
+        public string RoomName { get; set; }
+        //[XmlElement(ElementName = "Event")]
+        public List<Event> Events { get; set; }
+    }
+
+    //[XmlRoot(ElementName = "Event")]
+    /// <summary>
+    /// Data structure for a Fusion Event
+    /// </summary>
+    public class Event
+    {
+        //[XmlElement(ElementName = "MeetingID")]
+        public string MeetingID { get; set; }
+        //[XmlElement(ElementName = "RVMeetingID")]
+        public string RVMeetingID { get; set; }
+        //[XmlElement(ElementName = "Recurring")]
+        public string Recurring { get; set; }
+        //[XmlElement(ElementName = "InstanceID")]
+        public string InstanceID { get; set; }
+        //[XmlElement(ElementName = "dtStart")]
+        public string DtStart { get; set; }
+        //[XmlElement(ElementName = "dtEnd")]
+        public string DtEnd { get; set; }
+        //[XmlElement(ElementName = "Organizer")]
+        public string Organizer { get; set; }
+        //[XmlElement(ElementName = "Attendees")]
+        public Attendees Attendees { get; set; }
+        //[XmlElement(ElementName = "IsEvent")]
+        public string IsEvent { get; set; }
+        //[XmlElement(ElementName = "IsRoomViewMeeting")]
+        public string IsRoomViewMeeting { get; set; }
+        //[XmlElement(ElementName = "IsPrivate")]
+        public string IsPrivate { get; set; }
+        //[XmlElement(ElementName = "IsExchangePrivate")]
+        public string IsExchangePrivate { get; set; }
+        //[XmlElement(ElementName = "MeetingTypes")]
+        public string MeetingTypes { get; set; }
+        //[XmlElement(ElementName = "ParticipantCode")]
+        public string ParticipantCode { get; set; }
+        //[XmlElement(ElementName = "PhoneNo")]
+        public string PhoneNo { get; set; }
+        //[XmlElement(ElementName = "WelcomeMsg")]
+        public string WelcomeMsg { get; set; }
+        //[XmlElement(ElementName = "Subject")]
+        public string Subject { get; set; }
+        //[XmlElement(ElementName = "LiveMeetingURL")]
+        public LiveMeetingURL LiveMeetingURL { get; set; }
+        //[XmlElement(ElementName = "ShareDocPath")]
+        public string ShareDocPath { get; set; }
+        //[XmlElement(ElementName = "Location")]
+        public string Location { get; set; }
+        //[XmlElement(ElementName = "OrganizerSMTP")]
+        public string OrganizerSMTP { get; set; }
+
+        public List<Room> Resources { get; set; }
+    }
+
+    public class Room
+    {
+        public string Name { get; set; }
+        public string ID { get; set; }
+        public string MPType { get; set; }
+    }
+
+    //[XmlRoot(ElementName="Attendees")]
+    public class Attendees
+    {
+        //[XmlElement(ElementName="Required")]
+        public List<Attendee> Required { get; set; }
+        //[XmlElement(ElementName="Optional")]
+        public List<Attendee> Optional { get; set; }
+    }
+
+    public class Attendee
+    {
+        public string Attendee { get; set; }    
+    }
+
+    //[XmlRoot(ElementName = "LiveMeeting")]
+    public class LiveMeeting
+    {
+        //[XmlElement(ElementName = "URL")]
+        public string URL { get; set; }
+        //[XmlElement(ElementName = "ID")]
+        public string ID { get; set; }
+        //[XmlElement(ElementName = "Key")]
+        public string Key { get; set; }
+    }
+
+    //[XmlRoot(ElementName = "LiveMeetingURL")]
+    public class LiveMeetingURL
+    {
+        //[XmlElement(ElementName = "LiveMeeting")]
+        public LiveMeeting LiveMeeting { get; set; }
+    }
 }
