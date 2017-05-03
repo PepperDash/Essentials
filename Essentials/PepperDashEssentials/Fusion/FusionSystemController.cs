@@ -34,6 +34,8 @@ namespace PepperDash.Essentials.Fusion
 
         string GUID;
 
+        Event NextMeeting;
+
         public EssentialsHuddleSpaceFusionSystemController(EssentialsHuddleSpaceRoom room, uint ipId)
 			: base(room.Key + "-fusion")
 		{
@@ -106,8 +108,12 @@ namespace PepperDash.Essentials.Fusion
 
             //CrestronXMLSerialization.SerializeObject(xmlWriter, request);
 
+            DateTime now = DateTime.UtcNow;
+
+            Debug.Console(1, this, "Current time: {0}", now.ToString());
+
             string requestTest =
-                string.Format("<RequestSchedule><RequestID>{0}</RequestID><RoomID>{1}</RoomID><Start>2017-05-01T12:45:39</Start><HourSpan>24</HourSpan></RequestSchedule>", requestID, GUID);
+                string.Format("<RequestSchedule><RequestID>{0}</RequestID><RoomID>{1}</RoomID><Start>2017-05-02T00:00:00</Start><HourSpan>24</HourSpan></RequestSchedule>", requestID, GUID);
 
             Debug.Console(1, this, "Sending Fusion ScheduleQuery: \n{0}", requestTest);
 
@@ -143,7 +149,7 @@ namespace PepperDash.Essentials.Fusion
 
         void FusionRoomSchedule_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
         {
-            Debug.Console(1, this, "Sig: {0} FusionResponse: {1}", args.Sig, args.Sig.StringValue);
+            Debug.Console(1, this, "Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
 
             try
             {
@@ -155,11 +161,11 @@ namespace PepperDash.Essentials.Fusion
 
                 Debug.Console(1, this, "ScheduleResponse DeSerialization Successfull for Room: '{0}'", scheduleResponse.RoomName);
 
-                if (scheduleResponse.Events.Count > 0)
+                if (scheduleResponse.Event.Count > 0)
                 {
-                    Debug.Console(1, this, "Meetings Count: {0}\n", scheduleResponse.Events.Count);
+                    Debug.Console(1, this, "Meetings Count: {0}\n", scheduleResponse.Event.Count);
 
-                    foreach (Event e in scheduleResponse.Events)
+                    foreach (Event e in scheduleResponse.Event)
                     {
                         Debug.Console(1, this, "Subject: {0}", e.Subject);
                         Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
@@ -616,13 +622,10 @@ namespace PepperDash.Essentials.Fusion
         //[XmlElement(ElementName = "RoomName")]
         public string RoomName { get; set; }
         //[XmlElement(ElementName = "Event")]
-        public List<Event> Events { get; set; }
+        public List<Event> Event { get; set; }
     }
 
     //[XmlRoot(ElementName = "Event")]
-    /// <summary>
-    /// Data structure for a Fusion Event
-    /// </summary>
     public class Event
     {
         //[XmlElement(ElementName = "MeetingID")]
@@ -641,6 +644,8 @@ namespace PepperDash.Essentials.Fusion
         public string Organizer { get; set; }
         //[XmlElement(ElementName = "Attendees")]
         public Attendees Attendees { get; set; }
+        //[XmlElement(ElementName = "Resources")]
+        public Resources Resources { get; set; }
         //[XmlElement(ElementName = "IsEvent")]
         public string IsEvent { get; set; }
         //[XmlElement(ElementName = "IsRoomViewMeeting")]
@@ -650,7 +655,7 @@ namespace PepperDash.Essentials.Fusion
         //[XmlElement(ElementName = "IsExchangePrivate")]
         public string IsExchangePrivate { get; set; }
         //[XmlElement(ElementName = "MeetingTypes")]
-        public string MeetingTypes { get; set; }
+        public MeetingTypes MeetingTypes { get; set; }
         //[XmlElement(ElementName = "ParticipantCode")]
         public string ParticipantCode { get; set; }
         //[XmlElement(ElementName = "PhoneNo")]
@@ -659,37 +664,78 @@ namespace PepperDash.Essentials.Fusion
         public string WelcomeMsg { get; set; }
         //[XmlElement(ElementName = "Subject")]
         public string Subject { get; set; }
-        //[XmlElement(ElementName = "LiveMeetingURL")]
-        public LiveMeetingURL LiveMeetingURL { get; set; }
+        //[XmlElement(ElementName = "LiveMeeting")]
+        public LiveMeeting LiveMeeting { get; set; }
         //[XmlElement(ElementName = "ShareDocPath")]
         public string ShareDocPath { get; set; }
-        //[XmlElement(ElementName = "Location")]
-        public string Location { get; set; }
-        //[XmlElement(ElementName = "OrganizerSMTP")]
-        public string OrganizerSMTP { get; set; }
-
-        public List<Room> Resources { get; set; }
+        //[XmlElement(ElementName = "HaveAttendees")]
+        public string HaveAttendees { get; set; }
+        //[XmlElement(ElementName = "HaveResources")]
+        public string HaveResources { get; set; }
     }
 
+    //[XmlRoot(ElementName = "Resources")]
+    public class Resources
+    {
+        //[XmlElement(ElementName = "Rooms")]
+        public Rooms Rooms { get; set; }
+    }
+
+    //[XmlRoot(ElementName = "Rooms")]
+    public class Rooms
+    {
+        //[XmlElement(ElementName = "Room")]
+        public List<Room> Room { get; set; }
+    }
+
+    //[XmlRoot(ElementName = "Room")]
     public class Room
     {
+        //[XmlElement(ElementName = "Name")]
         public string Name { get; set; }
+        //[XmlElement(ElementName = "ID")]
         public string ID { get; set; }
+        //[XmlElement(ElementName = "MPType")]
         public string MPType { get; set; }
     }
 
-    //[XmlRoot(ElementName="Attendees")]
+    //[XmlRoot(ElementName = "Attendees")]
     public class Attendees
     {
-        //[XmlElement(ElementName="Required")]
-        public List<Attendee> Required { get; set; }
-        //[XmlElement(ElementName="Optional")]
-        public List<Attendee> Optional { get; set; }
+        //[XmlElement(ElementName = "Required")]
+        public Required Required { get; set; }
+        //[XmlElement(ElementName = "Optional")]
+        public Optional Optional { get; set; }
     }
 
-    public class Attendee
+    //[XmlRoot(ElementName = "Required")]
+    public class Required
     {
-        public string Attendee { get; set; }    
+        //[XmlElement(ElementName = "Attendee")]
+        public List<string> Attendee { get; set; }
+    }
+
+    //[XmlRoot(ElementName = "Optional")]
+    public class Optional
+    {
+        //[XmlElement(ElementName = "Attendee")]
+        public List<string> Attendee { get; set; }
+    }
+
+    //[XmlRoot(ElementName = "MeetingType")]
+    public class MeetingType
+    {
+        //[XmlAttribute(AttributeName = "ID")]
+        public string ID { get; set; }
+        //[XmlAttribute(AttributeName = "Value")]
+        public string Value { get; set; }
+    }
+
+    //[XmlRoot(ElementName = "MeetingTypes")]
+    public class MeetingTypes
+    {
+        //[XmlElement(ElementName = "MeetingType")]
+        public List<MeetingType> MeetingType { get; set; }
     }
 
     //[XmlRoot(ElementName = "LiveMeeting")]
@@ -701,6 +747,8 @@ namespace PepperDash.Essentials.Fusion
         public string ID { get; set; }
         //[XmlElement(ElementName = "Key")]
         public string Key { get; set; }
+        //[XmlElement(ElementName = "Subject")]
+        public string Subject { get; set; }
     }
 
     //[XmlRoot(ElementName = "LiveMeetingURL")]
