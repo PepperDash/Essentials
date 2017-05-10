@@ -21,7 +21,7 @@ namespace PepperDash.Essentials
 		{
 			Thread.MaxNumberOfUserThreads = 400;
 			Global.ControlSystem = this;
-			DeviceManager.Initialize(this);
+			DeviceManager.Initialize(this);        
 		}
 
 		/// <summary>

@@ -32,16 +32,24 @@ namespace PepperDash.Essentials.Fusion
 
 		StringSigData SourceNameSig;
 
+        ScheduleResponse CurrentSchedule;
+
         string GUID;
 
-        Event NextMeeting;
+        //ScheduleResponseEvent NextMeeting;
 
         public EssentialsHuddleSpaceFusionSystemController(EssentialsHuddleSpaceRoom room, uint ipId)
 			: base(room.Key + "-fusion")
 		{
 			Room = room;
 
-            GUID = "awesomeGuid-" + Room.Key;
+            var mac = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
+
+            var slot = Global.ControlSystem.ProgramNumber;
+
+            //adminvar guid = new Guid();
+
+            GUID = string.Format("{0}-{1}-{2}", slot, mac, Room.Name.Replace(" ", String.Empty));
 
 			CreateSymbolAndBasicSigs(ipId);
 			SetUpSources();
@@ -63,6 +71,8 @@ namespace PepperDash.Essentials.Fusion
 
 		void CreateSymbolAndBasicSigs(uint ipId)
 		{
+            Debug.Console(1, this, "Creating Fusion Room symbol with GUID: {0}", GUID);
+
             FusionRoom = new FusionRoom(ipId, Global.ControlSystem, Room.Name, GUID);
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.Use();
 
@@ -73,6 +83,7 @@ namespace PepperDash.Essentials.Fusion
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.DeviceExtenderSigChange += new DeviceExtenderJoinChangeEventHandler(FusionRoomSchedule_DeviceExtenderSigChange);
 
             CrestronConsole.AddNewConsoleCommand(RequestFullRoomSchedule, "FusReqRoomSchedule", "Requests schedule of the room for the next 24 hours", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(ModifyMeetingEndTimeConsoleHelper, "FusReqRoomSchMod", "Ends or extends a meeting by the specified time", ConsoleAccessLevelEnum.AccessOperator);
 
 			// Room to fusion room
 			Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
@@ -95,7 +106,7 @@ namespace PepperDash.Essentials.Fusion
         /// <param name="requestID">string identifying this request. Used with a corresponding ScheduleResponse value</param>
         public void RequestFullRoomSchedule(string requestID)
         {
-            // Need to see if we can omit the XML declaration 
+            //Need to see if we can omit the XML declaration 
 
             //XmlWriterSettings settings = new XmlWriterSettings();
             //settings.OmitXmlDeclaration = true;
@@ -110,7 +121,7 @@ namespace PepperDash.Essentials.Fusion
 
             DateTime now = DateTime.UtcNow;
 
-            Debug.Console(1, this, "Current time: {0}", now.ToString());
+            Debug.Console(1, this, "Current time: {0}-{1}-{2}T{3}:{4}:{5}", now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second);
 
             string requestTest =
                 string.Format("<RequestSchedule><RequestID>{0}</RequestID><RoomID>{1}</RoomID><Start>2017-05-02T00:00:00</Start><HourSpan>24</HourSpan></RequestSchedule>", requestID, GUID);
@@ -120,11 +131,44 @@ namespace PepperDash.Essentials.Fusion
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleQuery.StringValue = requestTest;
         }
 
+        public void ModifyMeetingEndTimeConsoleHelper(string command)
+        {
+            string requestID;
+            string meetingID = null;
+            int extendMinutes = -1;
+
+            requestID = "ModifyMeetingTest12345";
+
+            try
+            {
+                var tokens = command.Split(' ');
+
+                meetingID = tokens[0];
+                extendMinutes = Int32.Parse(tokens[1]);
+
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "Error parsing console command: {0}", e);
+            }
+
+            Event tempEvent = CurrentSchedule.Events.FirstOrDefault(e => e.MeetingID.Equals(meetingID));
+
+            if (tempEvent != null && extendMinutes > -1)
+            {
+                ModifyMeetingEndTime(requestID, tempEvent, extendMinutes);
+            }
+            else
+            {
+                Debug.Console(1, this, "No matching MeetingID found in CurrentSchedule.Events or invalid time specified");
+            }
+        }
+
         /// <summary>
         /// Ends or Extends a meeting by the specified number of minutes.
         /// </summary>
         /// <param name="extendMinutes">Number of minutes to extend the meeting.  A value of 0 will end the meeting.</param>
-        public void ModifyMeetingEndTime(string requestID, Event meeting, int extendMinutes)
+        public void ModifyMeetingEndTime(string requestID, PepperDash.Essentials.Fusion.Event meeting, int extendMinutes)
         {
             //StringWriter stringWriter = new StringWriter();
 
@@ -139,8 +183,8 @@ namespace PepperDash.Essentials.Fusion
             //CrestronXMLSerialization.SerializeObject(stringWriter, request);
 
             string requestTest = string.Format(
-                "<RequestAction><RequestID>{0}</RequestID><RoomID>{1}</RoomID><ActionID>MeetingChange</ActionID><Parameters><Parameter ID = \"MeetingID\" Value = \"\" /><Parameter ID = \"EndTime\" Value = \"{2}\"/></Parameters></RequestAction>"
-                , requestID, meeting.MeetingID, extendMinutes);
+                "<RequestAction><RequestID>{0}</RequestID><RoomID>{1}</RoomID><ActionID>MeetingChange</ActionID><Parameters><Parameter ID = \"MeetingID\" Value = \"{2}\" /><Parameter ID = \"EndTime\" Value = \"{3}\"/></Parameters></RequestAction>"
+                , requestID, GUID, meeting.MeetingID, extendMinutes);
 
             Debug.Console(1, this, "Sending MeetingChange Request: \n{0}", requestTest);
 
@@ -151,33 +195,75 @@ namespace PepperDash.Essentials.Fusion
         {
             Debug.Console(1, this, "Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
 
-            try
+
+            if (args.Sig == FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleResponse)
             {
-                XmlReader reader = new XmlReader(args.Sig.StringValue);
+                try
+                {                   
+                    ScheduleResponse scheduleResponse = new ScheduleResponse();
 
-                ScheduleResponse scheduleResponse = new ScheduleResponse();
+                    XmlDocument message = new XmlDocument();
 
-                scheduleResponse = CrestronXMLSerialization.DeSerializeObject<ScheduleResponse>(reader);
+                    message.LoadXml(args.Sig.StringValue);
 
-                Debug.Console(1, this, "ScheduleResponse DeSerialization Successfull for Room: '{0}'", scheduleResponse.RoomName);
-
-                if (scheduleResponse.Event.Count > 0)
-                {
-                    Debug.Console(1, this, "Meetings Count: {0}\n", scheduleResponse.Event.Count);
-
-                    foreach (Event e in scheduleResponse.Event)
+                    if (message.FirstChild.Name == "ScheduleResponse")
                     {
-                        Debug.Console(1, this, "Subject: {0}", e.Subject);
-                        Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
-                        Debug.Console(1, this, "Start Time: {0}", e.DtStart);
-                        Debug.Console(1, this, "End Time: {0}\n", e.DtEnd);
+                        foreach (XmlElement element in message.FirstChild.ChildNodes)
+                        {
+                            if (element.Name == "RequestID")
+                            {
+                                scheduleResponse.RequestID = element.InnerText;
+                            }
+                            else if (element.Name == "RoomID")
+                            {
+                                scheduleResponse.RoomID = element.InnerText;
+                            }
+                            else if (element.Name == "RoomName")
+                            {
+                                scheduleResponse.RoomName = element.InnerText;
+                            }
+                            else if (element.Name == "Event")
+                            {
+                                Debug.Console(1, this, "Event Found:\n{0}", element.OuterXml);
+
+                                XmlReader reader = new XmlReader(element.OuterXml);
+
+                                Event tempEvent = new Event();
+
+                                tempEvent = CrestronXMLSerialization.DeSerializeObject<Event>(reader);
+
+                                scheduleResponse.Events.Add(tempEvent);
+                            }
+
+                        }
                     }
+
+                    //XmlReader reader = new XmlReader(args.Sig.StringValue);
+
+                    //scheduleResponse = CrestronXMLSerialization.DeSerializeObject<ScheduleResponse>(reader);
+
+                    //Debug.Console(1, this, "ScheduleResponse DeSerialization Successful for Room: '{0}'", scheduleResponse.RoomName);
+
+                    if (scheduleResponse.Events.Count > 0)
+                    {
+                        Debug.Console(1, this, "Meetings Count: {0}\n", scheduleResponse.Events.Count);
+
+                        foreach (Event e in scheduleResponse.Events)
+                        {
+                            Debug.Console(1, this, "Subject: {0}", e.Subject);
+                            Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
+                            Debug.Console(1, this, "Start Time: {0}", e.dtStart);
+                            Debug.Console(1, this, "End Time: {0}\n", e.dtEnd);
+                        }
+                    }
+
+                    CurrentSchedule = scheduleResponse;
+
                 }
-                
-            }
-            catch (Exception e)
-            {
-                Debug.Console(1, this, "Error parsing ScheduleResponse: {0}", e);
+                catch (Exception e)
+                {
+                    Debug.Console(1, this, "Error parsing ScheduleResponse: {0}", e);
+                }
             }
         }
 
@@ -621,8 +707,13 @@ namespace PepperDash.Essentials.Fusion
         public string RoomID { get; set; }
         //[XmlElement(ElementName = "RoomName")]
         public string RoomName { get; set; }
-        //[XmlElement(ElementName = "Event")]
-        public List<Event> Event { get; set; }
+        //[XmlElement("Event")]
+        public List<Event> Events { get; set; }
+
+        public ScheduleResponse()
+        {
+            Events = new List<Event>();
+        }
     }
 
     //[XmlRoot(ElementName = "Event")]
@@ -637,9 +728,9 @@ namespace PepperDash.Essentials.Fusion
         //[XmlElement(ElementName = "InstanceID")]
         public string InstanceID { get; set; }
         //[XmlElement(ElementName = "dtStart")]
-        public string DtStart { get; set; }
+        public DateTime dtStart { get; set; }
         //[XmlElement(ElementName = "dtEnd")]
-        public string DtEnd { get; set; }
+        public DateTime dtEnd { get; set; }
         //[XmlElement(ElementName = "Organizer")]
         public string Organizer { get; set; }
         //[XmlElement(ElementName = "Attendees")]
