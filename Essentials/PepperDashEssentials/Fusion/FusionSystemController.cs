@@ -11,12 +11,15 @@ using Crestron.SimplSharp.CrestronXmlLinq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.Fusion;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using PepperDash.Essentials.Core;
 
 using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Devices.Common;
+
 
 
 namespace PepperDash.Essentials.Fusion
@@ -34,7 +37,17 @@ namespace PepperDash.Essentials.Fusion
 
         ScheduleResponse CurrentSchedule;
 
-        string GUID;
+        Event NextMeeting;
+
+        Event CurrentMeeting;
+
+        string RoomGuid;
+
+        uint IpId;
+
+        bool GuidFileExists;
+
+        List<StaticAsset> StaticAssets;
 
         //ScheduleResponseEvent NextMeeting;
 
@@ -43,44 +56,189 @@ namespace PepperDash.Essentials.Fusion
 		{
 			Room = room;
 
+            IpId = ipId;
+
+            StaticAssets = new List<StaticAsset>();
+
             var mac = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
 
             var slot = Global.ControlSystem.ProgramNumber;
 
-            //adminvar guid = new Guid();
+            string guidFilePath = string.Format(@"\NVRAM\Program{0}\{1}-FusionGuids.json", Global.ControlSystem.ProgramNumber, InitialParametersClass.ProgramIDTag);
 
-            GUID = string.Format("{0}-{1}-{2}", slot, mac, Room.Name.Replace(" ", String.Empty));
+            GuidFileExists = File.Exists(guidFilePath);
 
-			CreateSymbolAndBasicSigs(ipId);
+            if (GuidFileExists)
+            {
+                ReadGuidFile(guidFilePath);
+            }
+            else
+            {
+                IpId = ipId;
+
+                Guid roomGuid = Guid.NewGuid();
+
+                RoomGuid = string.Format("{0}-{1}-{2}", slot, mac, roomGuid.ToString());
+            }
+
+			CreateSymbolAndBasicSigs(IpId);
 			SetUpSources();
 			SetUpCommunitcationMonitors();
 			SetUpDisplay();
 			SetUpError();
 
 			// test assets --- THESE ARE BOTH WIRED TO AssetUsage somewhere internally.
-			var ta1 = FusionRoom.CreateStaticAsset(1, "Test asset 1", "Awesome Asset", "Awesome123");
-			ta1.AssetError.InputSig.StringValue = "This should be error";
+            var tempAsset1 = new StaticAsset();
+            var tempAsset2 = new StaticAsset();
 
 
-			var ta2 = FusionRoom.CreateStaticAsset(2, "Test asset 2", "Awesome Asset", "Awesome1232");
-			ta2.AssetUsage.InputSig.StringValue = "This should be usage";
+            //Check for existing GUID
+            if (GuidFileExists)
+            {
+                tempAsset1 = StaticAssets.FirstOrDefault(a => a.Number.Equals(1));
 
-			// Make it so!
-			FusionRVI.GenerateFileForAllFusionDevices();
+                tempAsset2 = StaticAssets.FirstOrDefault(a => a.Number.Equals(2));
+            }
+            else
+            {
+                tempAsset1 = new StaticAsset(1, "Test Asset 1", "Test Asset 1", "");
+                StaticAssets.Add(tempAsset1);
+
+                tempAsset2 = new StaticAsset(2, "Test Asset 2", "Test Asset 2", "");
+                StaticAssets.Add(tempAsset2);
+            }
+
+            var ta1 = FusionRoom.CreateStaticAsset(tempAsset1.Number, tempAsset1.Name, tempAsset1.Type, tempAsset1.InstanceID);
+            ta1.AssetError.InputSig.StringValue = "This should be error";
+
+            var ta2 = FusionRoom.CreateStaticAsset(tempAsset2.Number, tempAsset2.Name, tempAsset2.Type, tempAsset2.InstanceID);
+            ta2.AssetUsage.InputSig.StringValue = "This should be usage";
+            
+            // Make it so!   
+            FusionRVI.GenerateFileForAllFusionDevices();
+
+            GenerateGuidFile(guidFilePath);      
 		}
+
+        /// <summary>
+        /// Generates the guid file in NVRAM
+        /// </summary>
+        /// <param name="filePath">path for the file</param>
+        void GenerateGuidFile(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                Debug.Console(0, this, "Error writing guid file.  No path specified.");
+                return;
+            }
+
+            CCriticalSection _fileLock = new CCriticalSection();
+
+            try
+            {
+                if (_fileLock == null || _fileLock.Disposed)
+                    return;
+
+                _fileLock.Enter();
+
+                Debug.Console(1, this, "Writing GUIDs to file");
+
+                var GUIDs = new FusionRoomGuids(Room.Name, IpId, RoomGuid, StaticAssets);
+
+                var JSON = JsonConvert.SerializeObject(GUIDs, Newtonsoft.Json.Formatting.Indented);
+
+                using (StreamWriter sw = new StreamWriter(filePath))
+                {
+                    sw.Write(JSON);
+                    sw.Flush();
+                }
+
+                Debug.Console(1, this, "Guids successfully written to file '{0}'", filePath);
+
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, this, "Error writing guid file: {0}", e);
+            }
+            finally
+            {
+                if (_fileLock != null && !_fileLock.Disposed)
+                    _fileLock.Leave();
+            }
+        }
+
+        /// <summary>
+        /// Reads the guid file from NVRAM
+        /// </summary>
+        /// <param name="filePath">path for te file</param>
+        void ReadGuidFile(string filePath)
+        {
+            if(string.IsNullOrEmpty(filePath))
+            {
+                Debug.Console(0, this, "Error reading guid file.  No path specified.");
+                return;
+            }
+
+            CCriticalSection _fileLock = new CCriticalSection();
+
+            try
+            {
+                if(_fileLock == null || _fileLock.Disposed)
+                    return;
+
+                _fileLock.Enter();
+
+                if(File.Exists(filePath))
+                {
+                    var JSON = File.ReadToEnd(filePath, Encoding.ASCII);
+
+                    var GUIDs = JsonConvert.DeserializeObject<FusionRoomGuids>(JSON);
+
+                    IpId = GUIDs.IpId;
+
+                    RoomGuid = GUIDs.RoomGuid;
+
+                    StaticAssets = GUIDs.StaticAssets;
+
+                }
+
+                Debug.Console(0, this, "Fusion Guids successfully read from file:");
+
+                Debug.Console(1, this, "\nRoom Name: {0}\nIPID: {1}\n RoomGuid: {2}", Room.Name, IpId, RoomGuid);
+
+                foreach (StaticAsset asset in StaticAssets)
+                {
+                    Debug.Console(1, this, "\nAsset Name: {0}\nAsset No: {1}\n Guid: {2}", asset.Name, asset.Number, asset.InstanceID);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, this, "Error reading guid file: {0}", e);
+            }
+            finally
+            {
+                if(_fileLock != null && !_fileLock.Disposed)
+                   _fileLock.Leave();
+            }
+
+        }
+
 
 		void CreateSymbolAndBasicSigs(uint ipId)
 		{
-            Debug.Console(1, this, "Creating Fusion Room symbol with GUID: {0}", GUID);
+            Debug.Console(1, this, "Creating Fusion Room symbol with GUID: {0}", RoomGuid);
 
-            FusionRoom = new FusionRoom(ipId, Global.ControlSystem, Room.Name, GUID);
+            FusionRoom = new FusionRoom(ipId, Global.ControlSystem, Room.Name, RoomGuid);
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.Use();
+            FusionRoom.ExtenderFusionRoomDataReservedSigs.Use();
 
 			FusionRoom.Register();
 
-			FusionRoom.FusionStateChange += new FusionStateEventHandler(FusionRoom_FusionStateChange);
+            FusionRoom.FusionStateChange += new FusionStateEventHandler(FusionRoom_FusionStateChange);
 
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.DeviceExtenderSigChange += new DeviceExtenderJoinChangeEventHandler(FusionRoomSchedule_DeviceExtenderSigChange);
+            FusionRoom.ExtenderFusionRoomDataReservedSigs.DeviceExtenderSigChange += new DeviceExtenderJoinChangeEventHandler(ExtenderFusionRoomDataReservedSigs_DeviceExtenderSigChange);
+            FusionRoom.OnlineStatusChange += new OnlineStatusChangeEventHandler(FusionRoom_OnlineStatusChange);
 
             CrestronConsole.AddNewConsoleCommand(RequestFullRoomSchedule, "FusReqRoomSchedule", "Requests schedule of the room for the next 24 hours", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(ModifyMeetingEndTimeConsoleHelper, "FusReqRoomSchMod", "Ends or extends a meeting by the specified time", ConsoleAccessLevelEnum.AccessOperator);
@@ -98,7 +256,35 @@ namespace PepperDash.Essentials.Fusion
 			FusionRoom.ErrorMessage.InputSig.StringValue =
 				"3: 7 Errors: This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;";
 
+
 		}
+
+        void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        {
+            if (args.DeviceOnLine)
+            {
+                // Send Push Notification Action request:
+
+                string requestID = "InitialPushRequest";
+
+
+                string actionRequest =           
+                    string.Format("<RequestAction><RequestID>{0}</RequestID><RoomID>{1}</RoomID>", requestID, RoomGuid) +
+                "<ActionID>RegisterPushModel</ActionID>" +
+                "<Parameters><Parameter ID='Enabled' Value='1' /><Parameter ID='RequestID' Value='PushNotification' /><Parameter ID='Start' Value='00:00:00' />" +
+                "<Parameter ID='HourSpan' Value='24' /><Parameter ID='Field' Value='MeetingID' /><Parameter ID='Field' Value='RVMeetingID' />" +
+                "<Parameter ID='Field' Value='InstanceID' /><Parameter ID='Field' Value='Recurring' /><Parameter ID='Field' Value='dtStart' />" +
+                "<Parameter ID='Field' Value='dtEnd' /><Parameter ID='Field' Value='Subject' /><Parameter ID='Field' Value='Organizer' />" +
+                "<Parameter ID='Field' Value='IsEvent' /><Parameter ID='Field' Value='IsPrivate' /><Parameter ID='Field' Value='IsExchangePrivate' />" +
+                "<Parameter ID='Field' Value='LiveMeeting' /><Parameter ID='Field' Value='ShareDocPath' /><Parameter ID='Field' Value='PhoneNo' /><Parameter ID='Field' Value='ParticipantCode' /></Parameters></RequestAction>'";
+
+                Debug.Console(1, this, "Sending Fusion ScheduleQuery: \n{0}", actionRequest);
+
+                FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = actionRequest;
+            }
+
+        }
+
 
         /// <summary>
         /// Generates a room schedule request for this room for the next 24 hours.
@@ -106,25 +292,21 @@ namespace PepperDash.Essentials.Fusion
         /// <param name="requestID">string identifying this request. Used with a corresponding ScheduleResponse value</param>
         public void RequestFullRoomSchedule(string requestID)
         {
-            //Need to see if we can omit the XML declaration 
+            DateTime now = DateTime.Today;
 
-            //XmlWriterSettings settings = new XmlWriterSettings();
-            //settings.OmitXmlDeclaration = true;
+            //string currentTime = string.Format("Current time: {0:D4}-{1:D2}-{2:D2}T{3:D2}:{4:D2}:{5:D2}", now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second);
 
-            //StringBuilder builder = new StringBuilder();
+            string currentTime = now.ToString("s");
 
-            //XmlWriter xmlWriter = new XmlWriter(builder, settings);
+            Debug.Console(1, this, "Current time: {0}", currentTime);
 
-            //RequestSchedule request = new RequestSchedule(requestID, GUID);
+            //Debug.Console(1, this, "Current time: {0}", now.ToString("d"));
 
-            //CrestronXMLSerialization.SerializeObject(xmlWriter, request);
-
-            DateTime now = DateTime.UtcNow;
-
-            Debug.Console(1, this, "Current time: {0}-{1}-{2}T{3}:{4}:{5}", now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second);
+            //string requestTest =
+            //    string.Format("<RequestSchedule><RequestID>{0}</RequestID><RoomID>{1}</RoomID><Start>2017-05-02T00:00:00</Start><HourSpan>24</HourSpan></RequestSchedule>", requestID, GUID);
 
             string requestTest =
-                string.Format("<RequestSchedule><RequestID>{0}</RequestID><RoomID>{1}</RoomID><Start>2017-05-02T00:00:00</Start><HourSpan>24</HourSpan></RequestSchedule>", requestID, GUID);
+                string.Format("<RequestSchedule><RequestID>{0}</RequestID><RoomID>{1}</RoomID><Start>{2}</Start><HourSpan>24</HourSpan></RequestSchedule>", requestID, RoomGuid, currentTime);
 
             Debug.Console(1, this, "Sending Fusion ScheduleQuery: \n{0}", requestTest);
 
@@ -170,101 +352,112 @@ namespace PepperDash.Essentials.Fusion
         /// <param name="extendMinutes">Number of minutes to extend the meeting.  A value of 0 will end the meeting.</param>
         public void ModifyMeetingEndTime(string requestID, PepperDash.Essentials.Fusion.Event meeting, int extendMinutes)
         {
-            //StringWriter stringWriter = new StringWriter();
-
-            //List<Parameter> parameters = new List<Parameter>();
-
-            //parameters.Add( new Parameter { ID = "MeetingID", Value = meeting.MeetingID });
-
-            //parameters.Add( new Parameter { ID = "EndTime", Value = extendMinutes.ToString()});
-
-            //RequestAction request = new RequestAction(GUID, "MeetingChange", parameters);
-
-            //CrestronXMLSerialization.SerializeObject(stringWriter, request);
-
             string requestTest = string.Format(
-                "<RequestAction><RequestID>{0}</RequestID><RoomID>{1}</RoomID><ActionID>MeetingChange</ActionID><Parameters><Parameter ID = \"MeetingID\" Value = \"{2}\" /><Parameter ID = \"EndTime\" Value = \"{3}\"/></Parameters></RequestAction>"
-                , requestID, GUID, meeting.MeetingID, extendMinutes);
+                "<RequestAction><RequestID>{0}</RequestID><RoomID>{1}</RoomID><ActionID>MeetingChange</ActionID><Parameters><Parameter ID = 'MeetingID' Value = '{2}' /><Parameter ID = 'EndTime' Value = '{3}' /></Parameters></RequestAction>"
+                , requestID, RoomGuid, meeting.MeetingID, extendMinutes);
 
             Debug.Console(1, this, "Sending MeetingChange Request: \n{0}", requestTest);
 
-            FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleQuery.StringValue = requestTest;
+            //FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleQuery.StringValue = requestTest;
+
+            FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = requestTest;
         }
 
-        void FusionRoomSchedule_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
+
+        void ExtenderFusionRoomDataReservedSigs_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
         {
             Debug.Console(1, this, "Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
 
 
-            if (args.Sig == FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleResponse)
+            if (args.Sig == FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQueryResponse)
             {
                 try
-                {                   
-                    ScheduleResponse scheduleResponse = new ScheduleResponse();
-
-                    XmlDocument message = new XmlDocument();
-
-                    message.LoadXml(args.Sig.StringValue);
-
-                    if (message.FirstChild.Name == "ScheduleResponse")
-                    {
-                        foreach (XmlElement element in message.FirstChild.ChildNodes)
-                        {
-                            if (element.Name == "RequestID")
-                            {
-                                scheduleResponse.RequestID = element.InnerText;
-                            }
-                            else if (element.Name == "RoomID")
-                            {
-                                scheduleResponse.RoomID = element.InnerText;
-                            }
-                            else if (element.Name == "RoomName")
-                            {
-                                scheduleResponse.RoomName = element.InnerText;
-                            }
-                            else if (element.Name == "Event")
-                            {
-                                Debug.Console(1, this, "Event Found:\n{0}", element.OuterXml);
-
-                                XmlReader reader = new XmlReader(element.OuterXml);
-
-                                Event tempEvent = new Event();
-
-                                tempEvent = CrestronXMLSerialization.DeSerializeObject<Event>(reader);
-
-                                scheduleResponse.Events.Add(tempEvent);
-                            }
-
-                        }
-                    }
-
-                    //XmlReader reader = new XmlReader(args.Sig.StringValue);
-
-                    //scheduleResponse = CrestronXMLSerialization.DeSerializeObject<ScheduleResponse>(reader);
-
-                    //Debug.Console(1, this, "ScheduleResponse DeSerialization Successful for Room: '{0}'", scheduleResponse.RoomName);
-
-                    if (scheduleResponse.Events.Count > 0)
-                    {
-                        Debug.Console(1, this, "Meetings Count: {0}\n", scheduleResponse.Events.Count);
-
-                        foreach (Event e in scheduleResponse.Events)
-                        {
-                            Debug.Console(1, this, "Subject: {0}", e.Subject);
-                            Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
-                            Debug.Console(1, this, "Start Time: {0}", e.dtStart);
-                            Debug.Console(1, this, "End Time: {0}\n", e.dtEnd);
-                        }
-                    }
-
-                    CurrentSchedule = scheduleResponse;
+                {
 
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(1, this, "Error parsing ScheduleResponse: {0}", e);
+                    Debug.Console(1, this, "Error parsing ActionQueryResponse: {0}", e);
                 }
             }
+        }
+
+        void FusionRoomSchedule_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
+        {
+           Debug.Console(1, this, "Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
+
+
+           if (args.Sig == FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleResponse)
+           {
+               try
+               {
+                   ScheduleResponse scheduleResponse = new ScheduleResponse();
+
+                   XmlDocument message = new XmlDocument();
+
+                   message.LoadXml(args.Sig.StringValue);
+
+                   if (message.FirstChild.Name == "ScheduleResponse")
+                   {
+                       foreach (XmlElement element in message.FirstChild.ChildNodes)
+                       {
+                           if (element.Name == "RequestID")
+                           {
+                               scheduleResponse.RequestID = element.InnerText;
+                           }
+                           else if (element.Name == "RoomID")
+                           {
+                               scheduleResponse.RoomID = element.InnerText;
+                           }
+                           else if (element.Name == "RoomName")
+                           {
+                               scheduleResponse.RoomName = element.InnerText;
+                           }
+                           else if (element.Name == "Event")
+                           {
+                               Debug.Console(1, this, "Event Found:\n{0}", element.OuterXml);
+
+                               XmlReader reader = new XmlReader(element.OuterXml);
+
+                               Event tempEvent = new Event();
+
+                               tempEvent = CrestronXMLSerialization.DeSerializeObject<Event>(reader);
+
+                               scheduleResponse.Events.Add(tempEvent);
+                           }
+
+                       }
+                   }
+
+                   //XmlReader reader = new XmlReader(args.Sig.StringValue);
+
+                   //scheduleResponse = CrestronXMLSerialization.DeSerializeObject<ScheduleResponse>(reader);
+
+                   //Debug.Console(1, this, "ScheduleResponse DeSerialization Successful for Room: '{0}'", scheduleResponse.RoomName);
+
+                   if (scheduleResponse.Events.Count > 0)
+                   {
+                       Debug.Console(1, this, "Meetings Count: {0}\n", scheduleResponse.Events.Count);
+
+                       foreach (Event e in scheduleResponse.Events)
+                       {
+                           Debug.Console(1, this, "Subject: {0}", e.Subject);
+                           Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
+                           Debug.Console(1, this, "Start Time: {0}", e.dtStart);
+                           Debug.Console(1, this, "End Time: {0}\n", e.dtEnd);
+                           var duration = e.dtEnd.Subtract(e.dtStart);
+                           Debug.Console(1, this, "Duration: {0} minutes", duration.Minutes);
+                       }
+                   }
+
+                   CurrentSchedule = scheduleResponse;
+
+               }
+               catch (Exception e)
+               {
+                   Debug.Console(1, this, "Error parsing ScheduleResponse: {0}", e);
+               }
+           }
         }
 
 		void SetUpSources()
@@ -420,7 +613,16 @@ namespace PepperDash.Essentials.Fusion
 
 			// static assets --------------- testing
 			// Make a display asset
-			var dispAsset = FusionRoom.CreateStaticAsset(3, display.Name, "Display", "awesomeDisplayId" + Room.Key);
+            string dispAssetInstanceId;
+
+            //Check for existing GUID
+            var tempAsset = StaticAssets.FirstOrDefault(a => a.Number.Equals(3));
+            if(tempAsset != null)
+			    dispAssetInstanceId = tempAsset.InstanceID;
+            else
+                dispAssetInstanceId = "";
+
+            var dispAsset = FusionRoom.CreateStaticAsset(3, display.Name, "Display", dispAssetInstanceId);
 			dispAsset.PowerOn.OutputSig.UserObject = dispPowerOnAction;
 			dispAsset.PowerOff.OutputSig.UserObject = dispPowerOffAction;
 			display.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
@@ -576,7 +778,12 @@ namespace PepperDash.Essentials.Fusion
 		/// </summary>
 		/// <returns>the new asset</returns>
 		public static FusionStaticAsset CreateStaticAsset(this FusionRoom fr, uint number, string name, string type, string instanceId)
-		{
+		{            
+            //if(string.IsNullOrEmpty(instanceId))
+            //    instanceId = Guid.NewGuid().ToString();
+
+            Debug.Console(0, "Creating Fusion Static Asset '{0}' with GUID: '{1}'", name, instanceId);
+
 			fr.AddAsset(eAssetType.StaticAsset, number, name, type, instanceId);
 			return fr.UserConfigurableAssetDetails[number].Asset as FusionStaticAsset;
 		}
@@ -627,6 +834,56 @@ namespace PepperDash.Essentials.Fusion
 			}
 		}
 	}
+
+    // Helper Classes for GUIDs
+
+    /// <summary>
+    /// Stores GUIDs to be written to a file in NVRAM 
+    /// </summary>
+    public class FusionRoomGuids
+    {
+        public string RoomName { get; set; }
+        public uint IpId { get; set; }
+        public string RoomGuid { get; set; }
+        public List<StaticAsset> StaticAssets { get; set; }
+
+        public FusionRoomGuids(string roomName, uint ipId, string roomGuid, List<StaticAsset> staticAssets)
+        {
+            RoomName = roomName;
+            IpId = ipId;
+            RoomGuid = roomGuid;
+
+            StaticAssets = new List<StaticAsset>(staticAssets);
+        }
+    }
+
+    public class StaticAsset
+    {
+        public uint Number { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string InstanceID { get; set; }
+
+        public StaticAsset()
+        {
+
+        }
+
+        public StaticAsset(uint slotNum, string assetName, string type, string instanceID)
+        {
+            Number = slotNum;
+            Name = assetName;
+            Type = type;
+            if(string.IsNullOrEmpty(instanceID))
+            {
+                InstanceID = Guid.NewGuid().ToString();
+            }
+            else
+            {
+                InstanceID = instanceID;
+            }
+        }
+    }
 
     //****************************************************************************************************
     // Helper Classes for XML API
