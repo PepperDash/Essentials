@@ -40,7 +40,7 @@ namespace PepperDash.Essentials
             },
             "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
 
-            //GoWithLoad();
+            GoWithLoad();
 		}
 
 		/// <summary>

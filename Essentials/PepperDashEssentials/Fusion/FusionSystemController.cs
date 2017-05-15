@@ -47,6 +47,11 @@ namespace PepperDash.Essentials.Fusion
 
         bool GuidFileExists;
 
+        bool IsRegisteredForSchedulePushNotifications = false;
+
+        // Default poll time is 5 min unless overridden by config value
+        int SchedulePollInterval = 300000;
+
         List<StaticAsset> StaticAssets;
 
         //ScheduleResponseEvent NextMeeting;
@@ -263,22 +268,40 @@ namespace PepperDash.Essentials.Fusion
         {
             if (args.DeviceOnLine)
             {
+                CrestronEnvironment.Sleep(200);
+
                 // Send Push Notification Action request:
 
                 string requestID = "InitialPushRequest";
 
 
-                string actionRequest =           
-                    string.Format("<RequestAction><RequestID>{0}</RequestID><RoomID>{1}</RoomID>", requestID, RoomGuid) +
-                "<ActionID>RegisterPushModel</ActionID>" +
-                "<Parameters><Parameter ID='Enabled' Value='1' /><Parameter ID='RequestID' Value='PushNotification' /><Parameter ID='Start' Value='00:00:00' />" +
-                "<Parameter ID='HourSpan' Value='24' /><Parameter ID='Field' Value='MeetingID' /><Parameter ID='Field' Value='RVMeetingID' />" +
-                "<Parameter ID='Field' Value='InstanceID' /><Parameter ID='Field' Value='Recurring' /><Parameter ID='Field' Value='dtStart' />" +
-                "<Parameter ID='Field' Value='dtEnd' /><Parameter ID='Field' Value='Subject' /><Parameter ID='Field' Value='Organizer' />" +
-                "<Parameter ID='Field' Value='IsEvent' /><Parameter ID='Field' Value='IsPrivate' /><Parameter ID='Field' Value='IsExchangePrivate' />" +
-                "<Parameter ID='Field' Value='LiveMeeting' /><Parameter ID='Field' Value='ShareDocPath' /><Parameter ID='Field' Value='PhoneNo' /><Parameter ID='Field' Value='ParticipantCode' /></Parameters></RequestAction>'";
+                string actionRequest =
+                    string.Format("<RequestAction>\n<RequestID>{0}</RequestID>\n", requestID) +
+                    "<ActionID>RegisterPushModel</ActionID>\n" +
+                    "<Parameters>\n" +
+                        "<Parameter ID='Enabled' Value='1' />\n" +
+                        "<Parameter ID='RequestID' Value='PushNotification' />\n" +
+                        "<Parameter ID='Start' Value='00:00:00' />\n" +
+                        "<Parameter ID='HourSpan' Value='24' />\n" +
+                        "<Parameter ID='Field' Value='MeetingID' />\n" +
+                        "<Parameter ID='Field' Value='RVMeetingID' />\n" +
+                        "<Parameter ID='Field' Value='InstanceID' />\n" +
+                        //"<Parameter ID='Field' Value='Recurring' />\n" +
+                        "<Parameter ID='Field' Value='dtStart' />\n" +
+                        "<Parameter ID='Field' Value='dtEnd' />\n" +
+                        "<Parameter ID='Field' Value='Subject' />\n" +
+                        "<Parameter ID='Field' Value='Organizer' />\n" +
+                        "<Parameter ID='Field' Value='IsEvent' />\n" +
+                        "<Parameter ID='Field' Value='IsPrivate' />\n" +
+                        "<Parameter ID='Field' Value='IsExchangePrivate' />\n" +
+                        "<Parameter ID='Field' Value='LiveMeeting' />\n" +
+                        "<Parameter ID='Field' Value='ShareDocPath' />\n" +
+                        "<Parameter ID='Field' Value='PhoneNo' />\n" +
+                        "<Parameter ID='Field' Value='ParticipantCode' />\n" +
+                    "</Parameters>\n" +
+                "</RequestAction>\n";
 
-                Debug.Console(1, this, "Sending Fusion ScheduleQuery: \n{0}", actionRequest);
+                Debug.Console(1, this, "Sending Fusion ActionRequest: \n{0}", actionRequest);
 
                 FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = actionRequest;
             }
@@ -373,6 +396,27 @@ namespace PepperDash.Essentials.Fusion
             {
                 try
                 {
+                    ActionResponse actionResponse = new ActionResponse();
+
+                    TextReader reader = new StringReader(args.Sig.StringValue);
+                   
+                    actionResponse = CrestronXMLSerialization.DeSerializeObject<ActionResponse>(reader);
+
+                    if (actionResponse.RequestID == "InitialPushRequest")
+                    {
+                        var tempParam = actionResponse.Parameters.FirstOrDefault(p => p.ID.Equals("Registered"));
+
+                        if (tempParam != null)
+                        {
+                            if (tempParam.Value = 1)
+                                IsRegisteredForSchedulePushNotifications = true;
+                            else
+                            {
+                                IsRegisteredForSchedulePushNotifications = false;
+                            }
+                        }
+                    }
+
 
                 }
                 catch (Exception e)
@@ -397,60 +441,57 @@ namespace PepperDash.Essentials.Fusion
 
                    message.LoadXml(args.Sig.StringValue);
 
-                   if (message.FirstChild.Name == "ScheduleResponse")
+                   var scheuldResponse = message["ScheduleRespones"];
+
+                   if (scheuldResponse != null)
                    {
-                       foreach (XmlElement element in message.FirstChild.ChildNodes)
+                       // Check for push notification
+                       if (scheuldResponse["RequestID"].InnerText == "RVRequest")
                        {
-                           if (element.Name == "RequestID")
+                           var action = scheuldResponse["Action"];
+
+                           if (action.InnerText.IndexOf("RequestSchedule") > -1)
                            {
-                               scheduleResponse.RequestID = element.InnerText;
+                               RequestFullRoomSchedule("PushScheduleRefresh");
                            }
-                           else if (element.Name == "RoomID")
-                           {
-                               scheduleResponse.RoomID = element.InnerText;
-                           }
-                           else if (element.Name == "RoomName")
-                           {
-                               scheduleResponse.RoomName = element.InnerText;
-                           }
-                           else if (element.Name == "Event")
-                           {
-                               Debug.Console(1, this, "Event Found:\n{0}", element.OuterXml);
-
-                               XmlReader reader = new XmlReader(element.OuterXml);
-
-                               Event tempEvent = new Event();
-
-                               tempEvent = CrestronXMLSerialization.DeSerializeObject<Event>(reader);
-
-                               scheduleResponse.Events.Add(tempEvent);
-                           }
-
                        }
-                   }
-
-                   //XmlReader reader = new XmlReader(args.Sig.StringValue);
-
-                   //scheduleResponse = CrestronXMLSerialization.DeSerializeObject<ScheduleResponse>(reader);
-
-                   //Debug.Console(1, this, "ScheduleResponse DeSerialization Successful for Room: '{0}'", scheduleResponse.RoomName);
-
-                   if (scheduleResponse.Events.Count > 0)
-                   {
-                       Debug.Console(1, this, "Meetings Count: {0}\n", scheduleResponse.Events.Count);
-
-                       foreach (Event e in scheduleResponse.Events)
+                       else    // Not a push notification
                        {
-                           Debug.Console(1, this, "Subject: {0}", e.Subject);
-                           Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
-                           Debug.Console(1, this, "Start Time: {0}", e.dtStart);
-                           Debug.Console(1, this, "End Time: {0}\n", e.dtEnd);
-                           var duration = e.dtEnd.Subtract(e.dtStart);
-                           Debug.Console(1, this, "Duration: {0} minutes", duration.Minutes);
+
+                           foreach (XmlElement element in message.FirstChild.ChildNodes)
+                           {
+                               if (element.Name == "RequestID")
+                               {
+                                   scheduleResponse.RequestID = element.InnerText;
+                               }
+                               else if (element.Name == "RoomID")
+                               {
+                                   scheduleResponse.RoomID = element.InnerText;
+                               }
+                               else if (element.Name == "RoomName")
+                               {
+                                   scheduleResponse.RoomName = element.InnerText;
+                               }
+                               else if (element.Name == "Event")
+                               {
+                                   Debug.Console(1, this, "Event Found:\n{0}", element.OuterXml);
+
+                                   XmlReader reader = new XmlReader(element.OuterXml);
+
+                                   Event tempEvent = new Event();
+
+                                   tempEvent = CrestronXMLSerialization.DeSerializeObject<Event>(reader);
+
+                                   scheduleResponse.Events.Add(tempEvent);
+                               }
+
+                           }
                        }
                    }
 
                    CurrentSchedule = scheduleResponse;
+
+                   PrintTodaysSchedule();
 
                }
                catch (Exception e)
@@ -458,6 +499,25 @@ namespace PepperDash.Essentials.Fusion
                    Debug.Console(1, this, "Error parsing ScheduleResponse: {0}", e);
                }
            }
+        }
+
+        void PrintTodaysSchedule()
+        {
+            if (CurrentSchedule.Events.Count > 0)
+            {
+                Debug.Console(1, this, "Today's Schedule for '{0}'\n", Room.Name);
+
+                foreach (Event e in CurrentSchedule.Events)
+                {
+                    Debug.Console(1, this, "Subject: {0}", e.Subject);
+                    Debug.Console(1, this, "Organizer: {0}", e.Organizer);
+                    Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
+                    Debug.Console(1, this, "Start Time: {0}", e.dtStart);
+                    Debug.Console(1, this, "End Time: {0}", e.dtEnd);
+                    var duration = e.dtEnd.Subtract(e.dtStart);
+                    Debug.Console(1, this, "Duration: {0}\n", e.DurationInMinutes);
+                }
+            }
         }
 
 		void SetUpSources()
@@ -936,6 +996,17 @@ namespace PepperDash.Essentials.Fusion
         }
     }
 
+    //[XmlRoot(ElementName = "ActionResponse")]
+    public class ActionResponse
+    {
+        //[XmlElement(ElementName = "RequestID")]
+        public string RequestID { get; set; }
+        //[XmlElement(ElementName = "ActionID")]
+        public string ActionID { get; set; }
+        //[XmlElement(ElementName = "Parameters")]
+        public List<Parameter> Parameters { get; set; }
+    }
+
     //[XmlRoot(ElementName = "Parameter")]
     public class Parameter
     {
@@ -1020,6 +1091,93 @@ namespace PepperDash.Essentials.Fusion
         public string HaveAttendees { get; set; }
         //[XmlElement(ElementName = "HaveResources")]
         public string HaveResources { get; set; }
+
+        /// <summary>
+        /// Gets the duration of the meeting
+        /// </summary>
+        public string DurationInMinutes
+        {
+            get
+            {
+                string duration;
+
+                var timeSpan = dtEnd.Subtract(dtStart);
+                int hours = timeSpan.Hours;
+                double minutes = timeSpan.Minutes;
+                double roundedMinutes = Math.Round(minutes);
+                if(hours > 0)
+                {
+                    duration = string.Format("{0} hours {1} minutes", hours, roundedMinutes);
+                }
+                else
+                {
+                    duration = string.Format("{0} minutes", roundedMinutes);
+                }
+
+                return duration;
+            }
+        }
+
+        /// <summary>
+        /// Gets the remaining time in the meeting.  Returns null if the meeting is not currently in progress.
+        /// </summary>
+        public string RemainingTime
+        {
+            get
+            {
+                var now = DateTime.Now;
+
+                string remainingTime;
+
+                if (GetInProgress())
+                {
+                    var timeSpan = dtEnd.Subtract(now);
+                    int hours = timeSpan.Hours;
+                    double minutes = timeSpan.Minutes;
+                    double roundedMinutes = Math.Round(minutes);
+                    if (hours > 0)
+                    {
+                        remainingTime = string.Format("{0} hours {1} minutes", hours, roundedMinutes);
+                    }
+                    else
+                    {
+                        remainingTime = string.Format("{0} minutes", roundedMinutes);
+                    }
+
+                    return remainingTime;
+                }
+                else
+                    return null;
+            }
+
+        }
+
+        /// <summary>
+        /// Indicates that the meeting is in progress
+        /// </summary>
+        public bool isInProgress
+        {
+            get
+            {
+                return GetInProgress();
+            }
+        }
+
+        /// <summary>
+        /// Determines if the meeting is in progress
+        /// </summary>
+        /// <returns>Returns true if in progress</returns>
+        bool GetInProgress()
+        {
+            var now = DateTime.Now;
+
+            if (now > dtStart && now < dtEnd)
+            {
+                return true;
+            }
+            else
+                return false;
+        }
     }
 
     //[XmlRoot(ElementName = "Resources")]
