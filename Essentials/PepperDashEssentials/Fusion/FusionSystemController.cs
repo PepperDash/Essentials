@@ -45,9 +45,18 @@ namespace PepperDash.Essentials.Fusion
 
         Event CurrentMeeting;
 
-        string RoomGuid;
+        string RoomGuid
+        {
+            get
+            {
+                return GUIDs.RoomGuid;
+            }
+  
+        }
 
         uint IpId;
+
+        FusionRoomGuids GUIDs;
 
         bool GuidFileExists;
 
@@ -75,6 +84,7 @@ namespace PepperDash.Essentials.Fusion
 
             StaticAssets = new List<StaticAsset>();
 
+            GUIDs = new FusionRoomGuids();
 
             var mac = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
 
@@ -94,7 +104,7 @@ namespace PepperDash.Essentials.Fusion
 
                 Guid roomGuid = Guid.NewGuid();
 
-                RoomGuid = string.Format("{0}-{1}-{2}", slot, mac, roomGuid.ToString());
+                GUIDs.RoomGuid = string.Format("{0}-{1}-{2}", slot, mac, roomGuid.ToString());
             }
 
 			CreateSymbolAndBasicSigs(IpId);
@@ -159,7 +169,7 @@ namespace PepperDash.Essentials.Fusion
 
                 Debug.Console(1, this, "Writing GUIDs to file");
 
-                var GUIDs = new FusionRoomGuids(Room.Name, IpId, RoomGuid, StaticAssets);
+                GUIDs = new FusionRoomGuids(Room.Name, IpId, RoomGuid, StaticAssets);
 
                 var JSON = JsonConvert.SerializeObject(GUIDs, Newtonsoft.Json.Formatting.Indented);
 
@@ -208,11 +218,9 @@ namespace PepperDash.Essentials.Fusion
                 {
                     var JSON = File.ReadToEnd(filePath, Encoding.ASCII);
 
-                    var GUIDs = JsonConvert.DeserializeObject<FusionRoomGuids>(JSON);
+                    GUIDs = JsonConvert.DeserializeObject<FusionRoomGuids>(JSON);
 
                     IpId = GUIDs.IpId;
-
-                    RoomGuid = GUIDs.RoomGuid;
 
                     StaticAssets = GUIDs.StaticAssets;
 
@@ -452,13 +460,17 @@ namespace PepperDash.Essentials.Fusion
                         string.Format("<dtEnd>{0}</dtEnd>", dtEnd.ToString("s")) +
                         "<Subject>AdHoc Meeting</Subject>" +
                         "<Organizer>Room User</Organizer>" +
-                        "<Body></Body>" +
+                        "<WelcomMsg>Example Message</WelcomMsg>" +
                     "</Event>" +
                 "</CreateSchedule>";
 
             Debug.Console(1, this, "Sending CreateMeeting Request: \n{0}", createMeetingRequest);
 
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.CreateMeeting.StringValue = createMeetingRequest;
+
+            //Debug.Console(1, this, "Sending CreateMeeting Request: \n{0}", command);
+
+            //FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.CreateMeeting.StringValue = command;
 
         }
 
@@ -616,7 +628,7 @@ namespace PepperDash.Essentials.Fusion
                                }
                                else if (element.Name == "Event")
                                {
-                                   Debug.Console(1, this, "Event Found:\n{0}", element.OuterXml);
+                                   Debug.Console(2, this, "Event Found:\n{0}", element.OuterXml);
 
                                    XmlReader reader = new XmlReader(element.OuterXml);
 
@@ -1070,6 +1082,11 @@ namespace PepperDash.Essentials.Fusion
         public uint IpId { get; set; }
         public string RoomGuid { get; set; }
         public List<StaticAsset> StaticAssets { get; set; }
+
+        public FusionRoomGuids()
+        {
+            StaticAssets = new List<StaticAsset>();
+        }
 
         public FusionRoomGuids(string roomName, uint ipId, string roomGuid, List<StaticAsset> staticAssets)
         {
