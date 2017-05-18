@@ -26,6 +26,10 @@ namespace PepperDash.Essentials.Fusion
 {
 	public class EssentialsHuddleSpaceFusionSystemController : Device
 	{
+        public event EventHandler<ScheduleChangeEventArgs> ScheduleChange;
+        public event EventHandler<MeetingChangeEventArgs> MeetingEndWarning;
+        public event EventHandler<MeetingChangeEventArgs> NextMeetingBeginWarning;
+
 		FusionRoom FusionRoom;
 		EssentialsHuddleSpaceRoom Room;
 		Dictionary<Device, BoolInputSig> SourceToFeedbackSigs = 
@@ -35,7 +39,7 @@ namespace PepperDash.Essentials.Fusion
 
 		StringSigData SourceNameSig;
 
-        ScheduleResponse CurrentSchedule;
+        RoomSchedule CurrentSchedule;
 
         Event NextMeeting;
 
@@ -49,8 +53,14 @@ namespace PepperDash.Essentials.Fusion
 
         bool IsRegisteredForSchedulePushNotifications = false;
 
+        CTimer PollTimer = null;
+
+        CTimer PushNotificationTimer = null;
+
         // Default poll time is 5 min unless overridden by config value
-        int SchedulePollInterval = 300000;
+        public long SchedulePollInterval = 300000;
+
+        public long PushNotificationTimeout = 5000;
 
         List<StaticAsset> StaticAssets;
 
@@ -64,6 +74,7 @@ namespace PepperDash.Essentials.Fusion
             IpId = ipId;
 
             StaticAssets = new List<StaticAsset>();
+
 
             var mac = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
 
@@ -209,7 +220,7 @@ namespace PepperDash.Essentials.Fusion
 
                 Debug.Console(0, this, "Fusion Guids successfully read from file:");
 
-                Debug.Console(1, this, "\nRoom Name: {0}\nIPID: {1}\n RoomGuid: {2}", Room.Name, IpId, RoomGuid);
+                Debug.Console(1, this, "\nRoom Name: {0}\nIPID: {1:x}\n RoomGuid: {2}", Room.Name, IpId, RoomGuid);
 
                 foreach (StaticAsset asset in StaticAssets)
                 {
@@ -227,7 +238,6 @@ namespace PepperDash.Essentials.Fusion
             }
 
         }
-
 
 		void CreateSymbolAndBasicSigs(uint ipId)
 		{
@@ -247,6 +257,7 @@ namespace PepperDash.Essentials.Fusion
 
             CrestronConsole.AddNewConsoleCommand(RequestFullRoomSchedule, "FusReqRoomSchedule", "Requests schedule of the room for the next 24 hours", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(ModifyMeetingEndTimeConsoleHelper, "FusReqRoomSchMod", "Ends or extends a meeting by the specified time", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(CreateAsHocMeeting, "FusCreateMeeting", "Creates and Ad Hoc meeting for on hour or until the next meeting", ConsoleAccessLevelEnum.AccessOperator);
 
 			// Room to fusion room
 			Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
@@ -308,12 +319,11 @@ namespace PepperDash.Essentials.Fusion
 
         }
 
-
         /// <summary>
         /// Generates a room schedule request for this room for the next 24 hours.
         /// </summary>
         /// <param name="requestID">string identifying this request. Used with a corresponding ScheduleResponse value</param>
-        public void RequestFullRoomSchedule(string requestID)
+        public void RequestFullRoomSchedule(object callbackObject)
         {
             DateTime now = DateTime.Today;
 
@@ -329,13 +339,20 @@ namespace PepperDash.Essentials.Fusion
             //    string.Format("<RequestSchedule><RequestID>{0}</RequestID><RoomID>{1}</RoomID><Start>2017-05-02T00:00:00</Start><HourSpan>24</HourSpan></RequestSchedule>", requestID, GUID);
 
             string requestTest =
-                string.Format("<RequestSchedule><RequestID>{0}</RequestID><RoomID>{1}</RoomID><Start>{2}</Start><HourSpan>24</HourSpan></RequestSchedule>", requestID, RoomGuid, currentTime);
+                string.Format("<RequestSchedule><RequestID>FullSchedleRequest</RequestID><RoomID>{0}</RoomID><Start>{1}</Start><HourSpan>24</HourSpan></RequestSchedule>", RoomGuid, currentTime);
 
             Debug.Console(1, this, "Sending Fusion ScheduleQuery: \n{0}", requestTest);
 
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleQuery.StringValue = requestTest;
-        }
 
+            if (IsRegisteredForSchedulePushNotifications)
+                PushNotificationTimer.Stop();
+        }
+        
+        /// <summary>
+        /// Wrapper method to allow console commands to modify the current meeting end time
+        /// </summary>
+        /// <param name="command">meetingID extendTime</param>
         public void ModifyMeetingEndTimeConsoleHelper(string command)
         {
             string requestID;
@@ -357,36 +374,99 @@ namespace PepperDash.Essentials.Fusion
                 Debug.Console(1, this, "Error parsing console command: {0}", e);
             }
 
-            Event tempEvent = CurrentSchedule.Events.FirstOrDefault(e => e.MeetingID.Equals(meetingID));
+            ModifyMeetingEndTime(requestID, extendMinutes);
 
-            if (tempEvent != null && extendMinutes > -1)
-            {
-                ModifyMeetingEndTime(requestID, tempEvent, extendMinutes);
-            }
-            else
-            {
-                Debug.Console(1, this, "No matching MeetingID found in CurrentSchedule.Events or invalid time specified");
-            }
         }
 
         /// <summary>
-        /// Ends or Extends a meeting by the specified number of minutes.
+        /// Ends or Extends the current meeting by the specified number of minutes.
         /// </summary>
         /// <param name="extendMinutes">Number of minutes to extend the meeting.  A value of 0 will end the meeting.</param>
-        public void ModifyMeetingEndTime(string requestID, PepperDash.Essentials.Fusion.Event meeting, int extendMinutes)
+        public void ModifyMeetingEndTime(string requestID, int extendMinutes)
         {
-            string requestTest = string.Format(
-                "<RequestAction><RequestID>{0}</RequestID><RoomID>{1}</RoomID><ActionID>MeetingChange</ActionID><Parameters><Parameter ID = 'MeetingID' Value = '{2}' /><Parameter ID = 'EndTime' Value = '{3}' /></Parameters></RequestAction>"
-                , requestID, RoomGuid, meeting.MeetingID, extendMinutes);
+            if(CurrentMeeting == null)
+            {
+                Debug.Console(1, this, "No meeting in progress.  Unable to modify end time.");
+                return;
+            }            
+#warning Need to add logic to properly extend from the current time.  See S+ module for reference.
+            if (extendMinutes > -1)
+            {
+                if(extendMinutes > 0)
+                {
+                    var extendTime = CurrentMeeting.dtEnd - DateTime.Now;
+                    double extendMinutesRaw = extendTime.TotalMinutes;
 
-            Debug.Console(1, this, "Sending MeetingChange Request: \n{0}", requestTest);
+                    extendMinutes = extendMinutes + (int)Math.Round(extendMinutesRaw);
+                }
 
-            //FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleQuery.StringValue = requestTest;
 
-            FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = requestTest;
+                string requestTest = string.Format(
+                    "<RequestAction><RequestID>{0}</RequestID><RoomID>{1}</RoomID><ActionID>MeetingChange</ActionID><Parameters><Parameter ID = 'MeetingID' Value = '{2}' /><Parameter ID = 'EndTime' Value = '{3}' /></Parameters></RequestAction>"
+                    , requestID, RoomGuid, CurrentMeeting.MeetingID, extendMinutes);
+
+                Debug.Console(1, this, "Sending MeetingChange Request: \n{0}", requestTest);
+
+                FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = requestTest;
+            }
+            else
+            {
+                Debug.Console(1, this, "Invalid time specified");
+            }
+
+
         }
 
+        /// <summary>
+        /// Creates and Ad Hoc meeting with a duration of 1 hour, or until the next meeting if in less than 1 hour.
+        /// </summary>
+        public void CreateAsHocMeeting(string command)
+        {
+            string requestID = "CreateAdHocMeeting";
 
+            DateTime now = DateTime.Now.AddMinutes(1);
+
+            now.AddSeconds(-now.Second);
+
+            // Assume 1 hour meeting if possible
+            DateTime dtEnd = now.AddHours(1);
+
+            // Check if room is available for 1 hour before next meeting
+            if (NextMeeting != null)
+            {
+                var roomAvailable = NextMeeting.dtEnd.Subtract(dtEnd);
+
+                if (roomAvailable.TotalMinutes < 60)
+                {
+                    /// Room not available for full hour, book until next meeting starts
+                    dtEnd = NextMeeting.dtEnd;
+                }
+            }
+
+            string createMeetingRequest = 
+                "<CreateSchedule>" +
+                    string.Format("<RequestID>{0}</RequestID>", requestID) +
+                    string.Format("<RoomID>{0}</RoomID>", RoomGuid) +
+                    "<Event>" +
+                        string.Format("<dtStart>{0}</dtStart>", now.ToString("s")) +
+                        string.Format("<dtEnd>{0}</dtEnd>", dtEnd.ToString("s")) +
+                        "<Subject>AdHoc Meeting</Subject>" +
+                        "<Organizer>Room User</Organizer>" +
+                        "<Body></Body>" +
+                    "</Event>" +
+                "</CreateSchedule>";
+
+            Debug.Console(1, this, "Sending CreateMeeting Request: \n{0}", createMeetingRequest);
+
+            FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.CreateMeeting.StringValue = createMeetingRequest;
+
+        }
+
+        /// <summary>
+        /// Event handler method for Device Extender sig changes
+        /// </summary>
+        /// <param name="currentDeviceExtender"></param>
+        /// <param name="args"></param>
         void ExtenderFusionRoomDataReservedSigs_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
         {
             Debug.Console(1, this, "Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
@@ -396,28 +476,80 @@ namespace PepperDash.Essentials.Fusion
             {
                 try
                 {
-                    ActionResponse actionResponse = new ActionResponse();
+                    //ActionResponse actionResponse = new ActionResponse();
 
-                    TextReader reader = new StringReader(args.Sig.StringValue);
-                   
-                    actionResponse = CrestronXMLSerialization.DeSerializeObject<ActionResponse>(reader);
+                    //TextReader reader = new StringReader(args.Sig.StringValue);
 
-                    if (actionResponse.RequestID == "InitialPushRequest")
+                    //actionResponse = CrestronXMLSerialization.DeSerializeObject<ActionResponse>(reader);
+
+                    //if (actionResponse != null)
+                    //{
+                    //    if (actionResponse.RequestID == "InitialPushRequest")
+                    //    {
+                    //        if (actionResponse.Parameters != null)
+                    //        {
+                    //            var tempParam = actionResponse.Parameters.FirstOrDefault(p => p.ID.Equals("Registered"));
+
+                    XmlDocument message = new XmlDocument();
+
+                    message.LoadXml(args.Sig.StringValue);
+
+                    var actionResponse = message["ActionResponse"];
+
+                    if (actionResponse != null)
                     {
-                        var tempParam = actionResponse.Parameters.FirstOrDefault(p => p.ID.Equals("Registered"));
+                        var requestID = actionResponse["RequestID"];
 
-                        if (tempParam != null)
+                        if (requestID.InnerText == "InitialPushRequest")
                         {
-                            if (tempParam.Value = 1)
-                                IsRegisteredForSchedulePushNotifications = true;
-                            else
+                            if (actionResponse["ActionID"].InnerText == "RegisterPushModel")
                             {
-                                IsRegisteredForSchedulePushNotifications = false;
+                                var parameters = actionResponse["Parameters"];
+
+                                foreach (XmlElement parameter in parameters)
+                                {
+                                    if (parameter.HasAttributes)
+                                    {
+                                        var attributes = parameter.Attributes;
+
+                                        if (attributes["ID"].Value == "Registered")
+                                        {
+                                            var isRegistered = Int32.Parse(attributes["Value"].Value);
+
+                                            if (isRegistered == 1)
+                                            {
+                                                IsRegisteredForSchedulePushNotifications = true;
+
+                                                if (PollTimer != null && !PollTimer.Disposed)
+                                                {
+                                                    PollTimer.Stop();
+                                                    PollTimer.Dispose();
+                                                }
+
+                                                PushNotificationTimer = new CTimer(RequestFullRoomSchedule, null, PushNotificationTimeout, PushNotificationTimeout);
+
+                                                PushNotificationTimer.Reset(PushNotificationTimeout, PushNotificationTimeout);
+                                            }
+                                            else if (isRegistered == 0)
+                                            {
+                                                IsRegisteredForSchedulePushNotifications = false;
+
+                                                if (PushNotificationTimer != null && !PushNotificationTimer.Disposed)
+                                                {
+                                                    PushNotificationTimer.Stop();
+                                                    PushNotificationTimer.Dispose();
+                                                }
+
+                                                PollTimer = new CTimer(RequestFullRoomSchedule, null, SchedulePollInterval, SchedulePollInterval);
+
+                                                PollTimer.Reset(SchedulePollInterval, SchedulePollInterval);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-
-
                 }
                 catch (Exception e)
                 {
@@ -426,9 +558,14 @@ namespace PepperDash.Essentials.Fusion
             }
         }
 
+        /// <summary>
+        /// Event handler method for Device Extender sig changes
+        /// </summary>
+        /// <param name="currentDeviceExtender"></param>
+        /// <param name="args"></param>
         void FusionRoomSchedule_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
         {
-           Debug.Console(1, this, "Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
+           Debug.Console(1, this, "Scehdule Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
 
 
            if (args.Sig == FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleResponse)
@@ -441,22 +578,27 @@ namespace PepperDash.Essentials.Fusion
 
                    message.LoadXml(args.Sig.StringValue);
 
-                   var scheuldResponse = message["ScheduleRespones"];
+                   var response = message["ScheduleResponse"];
 
-                   if (scheuldResponse != null)
+                   if (response != null)
                    {
                        // Check for push notification
-                       if (scheuldResponse["RequestID"].InnerText == "RVRequest")
+                       if (response["RequestID"].InnerText == "RVRequest")
                        {
-                           var action = scheuldResponse["Action"];
+                           var action = response["Action"];
 
-                           if (action.InnerText.IndexOf("RequestSchedule") > -1)
+                           if (action.OuterXml.IndexOf("RequestSchedule") > -1)
                            {
-                               RequestFullRoomSchedule("PushScheduleRefresh");
+                               PushNotificationTimer.Reset(PushNotificationTimeout, PushNotificationTimeout);
                            }
                        }
                        else    // Not a push notification
                        {
+                           CurrentSchedule = new RoomSchedule();  // Clear Current Schedule
+                           CurrentMeeting = null;   // Clear Current Meeting
+                           NextMeeting = null;      // Clear Next Meeting
+
+                           bool isNextMeeting = false;
 
                            foreach (XmlElement element in message.FirstChild.ChildNodes)
                            {
@@ -483,15 +625,33 @@ namespace PepperDash.Essentials.Fusion
                                    tempEvent = CrestronXMLSerialization.DeSerializeObject<Event>(reader);
 
                                    scheduleResponse.Events.Add(tempEvent);
+
+                                   // Check is this is the current event
+                                   if (tempEvent.dtStart <= DateTime.Now && tempEvent.dtEnd >= DateTime.Now)
+                                   {
+                                       CurrentMeeting = tempEvent;  // Set Current Meeting
+                                       isNextMeeting = true;        // Flag that next element is next meeting
+                                   }
+
+                                   if (isNextMeeting)
+                                   {
+                                       NextMeeting = tempEvent; // Set Next Meeting
+                                       isNextMeeting = false;
+                                   }
+
+                                   CurrentSchedule.Meetings.Add(tempEvent);
                                }
 
                            }
+
+                           PrintTodaysSchedule();
+
+                           if (!IsRegisteredForSchedulePushNotifications)
+                               PollTimer.Reset(SchedulePollInterval, SchedulePollInterval);
                        }
                    }
 
-                   CurrentSchedule = scheduleResponse;
-
-                   PrintTodaysSchedule();
+                   
 
                }
                catch (Exception e)
@@ -499,22 +659,26 @@ namespace PepperDash.Essentials.Fusion
                    Debug.Console(1, this, "Error parsing ScheduleResponse: {0}", e);
                }
            }
+           else if (args.Sig == FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.CreateResponse)
+           {
+               Debug.Console(1, this, "Create Meeting Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
+           }
+
         }
 
         void PrintTodaysSchedule()
         {
-            if (CurrentSchedule.Events.Count > 0)
+            if (CurrentSchedule.Meetings.Count > 0)
             {
                 Debug.Console(1, this, "Today's Schedule for '{0}'\n", Room.Name);
 
-                foreach (Event e in CurrentSchedule.Events)
+                foreach (Event e in CurrentSchedule.Meetings)
                 {
                     Debug.Console(1, this, "Subject: {0}", e.Subject);
                     Debug.Console(1, this, "Organizer: {0}", e.Organizer);
                     Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
                     Debug.Console(1, this, "Start Time: {0}", e.dtStart);
                     Debug.Console(1, this, "End Time: {0}", e.dtEnd);
-                    var duration = e.dtEnd.Subtract(e.dtStart);
                     Debug.Console(1, this, "Duration: {0}\n", e.DurationInMinutes);
                 }
             }
@@ -945,11 +1109,20 @@ namespace PepperDash.Essentials.Fusion
         }
     }
 
+    //***************************************************************************************************
+
+    public class RoomSchedule
+    {
+        public List<Event> Meetings { get; set; }
+
+        public RoomSchedule()
+        {
+            Meetings = new List<Event>();
+        }
+    }
+
     //****************************************************************************************************
     // Helper Classes for XML API
-
-
-
 
     /// <summary>
     /// All the data needed for a full schedule request in a room
