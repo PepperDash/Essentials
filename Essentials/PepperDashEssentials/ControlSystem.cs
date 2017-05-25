@@ -48,8 +48,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public void GoWithLoad()
 		{
-			var thread = new Thread(o =>
-			{
+//			var thread = new Thread(o =>
+//			{
     			try
 				{
                     CrestronConsole.AddNewConsoleCommand(EnablePortalSync, "portalsync", "Loads Portal Sync",
@@ -58,9 +58,9 @@ namespace PepperDash.Essentials
                     //PortalSync = new PepperDashPortalSyncClient();
 
                     //Temp Cotija testing
-                    //CotijaInterfaceController CotijaInterface = new CotijaInterfaceController("WebClient1");
+                    CotijaInterfaceController CotijaInterface = new CotijaInterfaceController("WebClient1");
 
-                    //CotijaInterface.InitializeClient("http://192.168.1.105");
+                    //CotijaInterface.InitializeClientAndEventStream("http://localhost:3000/api/system/stream/abcdefgh");
 
 					Debug.Console(0, "Starting Essentials load from configuration");
 					ConfigReader.LoadConfig2();
@@ -77,8 +77,8 @@ namespace PepperDash.Essentials
 				{
 					Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r{0}", e);
 				}
-				return null;
-			}, null);
+//				return null;
+//			}, null);
 		}
 
         public void EnablePortalSync(string s)

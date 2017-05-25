@@ -78,6 +78,7 @@ namespace PepperDash.Essentials.Fusion
         public EssentialsHuddleSpaceFusionSystemController(EssentialsHuddleSpaceRoom room, uint ipId)
 			: base(room.Key + "-fusion")
 		{
+
 			Room = room;
 
             IpId = ipId;
