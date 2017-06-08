@@ -5,6 +5,7 @@ using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using System.Text.RegularExpressions;
 
 namespace PepperDash.Essentials
 {
@@ -13,6 +14,33 @@ namespace PepperDash.Essentials
 	/// </summary>
 	public class EssentialsConfig : BasicConfig
 	{
+        public string SystemUrl { get; set; }
+        public string TemplateUrl { get; set; }
+
+        public string SystemUuid
+        {
+            get
+            {
+                var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/templates\/(.*)#.*");
+
+                string uuid = result.Groups[1].Value;
+
+                return uuid;
+            }
+        }
+
+        public string TemplateUuid
+        {
+            get
+            {
+                var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/templates\/(.*)#.*");
+
+                string uuid = result.Groups[1].Value;
+
+                return uuid;
+            }
+        }
+
 		[JsonProperty("rooms")]
 		public List<EssentialsRoomConfig> Rooms { get; private set; }
 	}

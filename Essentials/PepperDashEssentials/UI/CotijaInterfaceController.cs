@@ -14,77 +14,134 @@ namespace PepperDash.Essentials
 {
     public class CotijaInterfaceController : Device
     {
-        StreamReader Reader;
+        GenericHttpSseClient SseClient;
 
-        Crestron.SimplSharp.Net.Connection Connection;
+        CCriticalSection FileLock;
+
+        string ServerUrl;
 
         public CotijaInterfaceController(string key) : base(key)
         {
-            CrestronConsole.AddNewConsoleCommand(InitializeClientAndEventStream, "InitializeHttpClient", "Initializes a new HTTP client connection to a specified URL", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(RegisterRoomToServer, "InitializeHttpClient", "Initializes a new HTTP client connection to a specified URL", ConsoleAccessLevelEnum.AccessOperator);
         }
 
-        public void InitializeClientAndEventStream(string url)
+        /// <summary>
+        /// Registers the room with the server 
+        /// </summary>
+        /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
+        void RegisterRoomToServer(string url)
         {
             try
             {
-                HttpClient webClient = new HttpClient();
-                webClient.Verbose = true;
-                HttpClientRequest request = new HttpClientRequest();
-                request.Url = new UrlParser(url);
-                request.Header.AddHeader(new HttpHeader("Accept", "text/event-stream"));
-                request.KeepAlive = true;
+                ServerUrl = url;
 
-                /// Experimenting with grabbing connection before the request
-                Connection = webClient.ConnectNew("192.168.1.120", 3000);
-                Debug.Console(1, this, "Connection Port: {0}", Connection.LocalEndPointPort);
-                Reader = new StreamReader(Connection);
-                Connection.OnBytesReceived += new EventHandler(DataConnection_OnBytesReceived);
+                string filePath = string.Format(@"\NVRAM\Program{0}\configurationFile.json", Global.ControlSystem.ProgramNumber);
+                string postBody = null;
 
-                /// Not sure if this is starting a new connection
-                webClient.DispatchAsync(request, StreamConnectionCallback);
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    Debug.Console(0, this, "Error reading file.  No path specified.");
+                    return;
+                }
+
+                FileLock = new CCriticalSection();
+
+                if (FileLock.TryEnter())
+                {
+                    Debug.Console(1, this, "Reading Configuration File");
+
+                    postBody = File.ReadToEnd(filePath, Encoding.ASCII);
+
+                    Debug.Console(2, this, "{0}", postBody);
+
+                    FileLock.Leave();
+                }
+
+                if (string.IsNullOrEmpty(postBody))
+                {
+                    Debug.Console(1, "Post Body is null or empty");
+                }
+                else
+                {
+                    HttpClient Client = new HttpClient();
+
+                    HttpClientRequest Request = new HttpClientRequest();
+
+                    Client.Verbose = true;
+                    Client.KeepAlive = true;
+
+                    string uuid = Essentials.ConfigReader.ConfigObject.SystemUuid;
+
+                    url = string.Format("http://{0}/api/system/join/{1}", ServerUrl, uuid);
+
+                    Request.Url.Parse(url);
+                    Request.RequestType = RequestType.Post;
+                    Request.Header.SetHeaderValue("Content-Type", "application/json");
+                    Request.ContentString = postBody;
+
+                    Client.DispatchAsync(Request, PostConnectionCallback);
+                }
 
             }
             catch (Exception e)
             {
-                Debug.Console(1, this, "Error Initializing Cotija client:\n{0}", e);
+                Debug.Console(0, this, "Error Initilizing Room: {0}", e);
+            }
+
+        }
+        
+        /// <summary>
+        /// The callback that fires when we get a response from our registration attempt
+        /// </summary>
+        /// <param name="resp"></param>
+        /// <param name="err"></param>
+        void PostConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
+        {
+            try
+            {
+                if (resp.Code == 200)
+                {
+                    Debug.Console(0, this, "Initializing SSE Client.");
+
+                    if (SseClient == null)
+                    {
+                        SseClient = new GenericHttpSseClient(string.Format("{0}-SseClient", Key), Name);
+                    }
+                    else
+                    {
+                        if (SseClient.IsConnected)
+                        {
+                            SseClient.Disconnect();
+                        }
+
+                        string uuid = Essentials.ConfigReader.ConfigObject.SystemUuid;
+
+                        SseClient.Url = string.Format("http://{0}/api/system/stream/{1}", ServerUrl, uuid);
+
+                        SseClient.Connect();
+                    }
+
+                    CommunicationGather LineGathered = new CommunicationGather(SseClient, "\x0d\x0a");
+
+                    LineGathered.LineReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(LineGathered_LineReceived);
+
+
+                }
+                else
+                {
+                    Debug.Console(0, this, "Unable to initialize SSE Client");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "Error Initializeing SSE Client: {0}", e);
             }
         }
 
-        // This callback happens but none of the events would fire (when not commented out)
-        void StreamConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
+        void LineGathered_LineReceived(object sender, GenericCommMethodReceiveTextArgs e)
         {
-            Debug.Console(1, this, "Connection Port: {0}", resp.DataConnection.LocalEndPointPort);
-            Debug.Console(1, this, "Connections are equal {0}", resp.DataConnection == Connection);
-            Debug.Console(1, this, "Callback Fired");
-            //resp.DataConnection.OnBytesReceived += new EventHandler(DataConnection_OnBytesReceived);
-            //Debug.Console(1, this, "Received: '{0}'", resp.ContentString);
-            //resp.OnTransferEnd += new Crestron.SimplSharp.Net.TransferEndEventHandler(resp_OnTransferEnd);
-            //resp.OnTransferProgress += new Crestron.SimplSharp.Net.TransferProgressEventHandler(resp_OnTransferProgress);
-            //resp.OnTransferStart += new Crestron.SimplSharp.Net.TransferStartEventHandler(resp_OnTransferStart);
+            Debug.Console(1, this, "Received from Node Server: '{0}'", e.Text);
         }
 
-        // We could never get this event handler to fire
-        void DataConnection_OnBytesReceived(object sender, EventArgs e)
-        {
-            Debug.Console(1, this, "OnBytesReceived Event Fired.");
-            Debug.Console(1, this, "Event: Received: '{0}'", Reader.ReadToEnd());
-        }
-
-        //void resp_OnTransferStart(object sender, Crestron.SimplSharp.Net.TransferStartEventArgs e)
-        //{
-        //    Debug.Console(1, this, "OnTransferStart");
-        //}
-
-        //void resp_OnTransferProgress(object sender, Crestron.SimplSharp.Net.TransferProgressEventArgs e)
-        //{
-        //    Debug.Console(1, this, "OnTransferProgress");
-        //}
-
- 
-
-        //void resp_OnTransferEnd(object sender, Crestron.SimplSharp.Net.TransferEndEventArgs e)
-        //{
-        //    Debug.Console(1, this, "OnTransferEnd");
-        //}
     }
 }

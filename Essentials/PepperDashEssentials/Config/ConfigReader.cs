@@ -25,6 +25,18 @@ namespace PepperDash.Essentials
 				{
 					var doubleObj = JObject.Parse(fs.ReadToEnd());
 					ConfigObject = MergeConfigs(doubleObj).ToObject<EssentialsConfig>();
+
+                    // Extract SystemUrl and TemplateUrl
+
+                    if (doubleObj["system_url"] != null)
+                    {
+                        ConfigObject.SystemUrl = doubleObj["system_url"].Value<string>();
+                    }
+
+                    if (doubleObj["template_url"] != null)
+                    {
+                        ConfigObject.TemplateUrl= doubleObj["template_url"].Value<string>();
+                    }
 				}
 			}
 			catch (Exception e)

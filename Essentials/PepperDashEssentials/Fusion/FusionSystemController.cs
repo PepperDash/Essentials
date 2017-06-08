@@ -321,7 +321,7 @@ namespace PepperDash.Essentials.Fusion
                     "</Parameters>\n" +
                 "</RequestAction>\n";
 
-                Debug.Console(1, this, "Sending Fusion ActionRequest: \n{0}", actionRequest);
+                Debug.Console(2, this, "Sending Fusion ActionRequest: \n{0}", actionRequest);
 
                 FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = actionRequest;
             }
@@ -336,21 +336,12 @@ namespace PepperDash.Essentials.Fusion
         {
             DateTime now = DateTime.Today;
 
-            //string currentTime = string.Format("Current time: {0:D4}-{1:D2}-{2:D2}T{3:D2}:{4:D2}:{5:D2}", now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second);
-
             string currentTime = now.ToString("s");
-
-            Debug.Console(1, this, "Current time: {0}", currentTime);
-
-            //Debug.Console(1, this, "Current time: {0}", now.ToString("d"));
-
-            //string requestTest =
-            //    string.Format("<RequestSchedule><RequestID>{0}</RequestID><RoomID>{1}</RoomID><Start>2017-05-02T00:00:00</Start><HourSpan>24</HourSpan></RequestSchedule>", requestID, GUID);
 
             string requestTest =
                 string.Format("<RequestSchedule><RequestID>FullSchedleRequest</RequestID><RoomID>{0}</RoomID><Start>{1}</Start><HourSpan>24</HourSpan></RequestSchedule>", RoomGuid, currentTime);
 
-            Debug.Console(1, this, "Sending Fusion ScheduleQuery: \n{0}", requestTest);
+            Debug.Console(2, this, "Sending Fusion ScheduleQuery: \n{0}", requestTest);
 
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleQuery.StringValue = requestTest;
 
@@ -465,7 +456,7 @@ namespace PepperDash.Essentials.Fusion
                     "</Event>" +
                 "</CreateSchedule>";
 
-            Debug.Console(1, this, "Sending CreateMeeting Request: \n{0}", createMeetingRequest);
+            Debug.Console(2, this, "Sending CreateMeeting Request: \n{0}", createMeetingRequest);
 
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.CreateMeeting.StringValue = createMeetingRequest;
 
@@ -482,7 +473,7 @@ namespace PepperDash.Essentials.Fusion
         /// <param name="args"></param>
         void ExtenderFusionRoomDataReservedSigs_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
         {
-            Debug.Console(1, this, "Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
+            Debug.Console(2, this, "Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
 
 
             if (args.Sig == FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQueryResponse)
@@ -578,7 +569,7 @@ namespace PepperDash.Essentials.Fusion
         /// <param name="args"></param>
         void FusionRoomSchedule_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
         {
-           Debug.Console(1, this, "Scehdule Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
+           Debug.Console(2, this, "Scehdule Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
 
 
            if (args.Sig == FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.ScheduleResponse)
@@ -674,7 +665,7 @@ namespace PepperDash.Essentials.Fusion
            }
            else if (args.Sig == FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.CreateResponse)
            {
-               Debug.Console(1, this, "Create Meeting Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
+               Debug.Console(2, this, "Create Meeting Response Event: {0}\n Sig: {1}\nFusionResponse:\n{2}", args.Event, args.Sig.Name, args.Sig.StringValue);
            }
 
         }
