@@ -29,8 +29,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void InitializeSystem()
 		{
-            CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Reloads configuration file", 
-                ConsoleAccessLevelEnum.AccessOperator);
+            //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Reloads configuration file",
+            //    ConsoleAccessLevelEnum.AccessOperator);
             //CrestronConsole.AddNewConsoleCommand(s => TearDown(), "ungo", "Reloads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(s =>
@@ -57,11 +57,6 @@ namespace PepperDash.Essentials
 
                     //PortalSync = new PepperDashPortalSyncClient();
 
-                    //Temp Cotija testing
-                    CotijaInterfaceController CotijaInterface = new CotijaInterfaceController("WebClient1");
-
-                    //CotijaInterface.InitializeClientAndEventStream("http://localhost:3000/api/system/stream/abcdefgh");
-
 					Debug.Console(0, "Starting Essentials load from configuration");
 					ConfigReader.LoadConfig2();
 					LoadDevices();
@@ -69,6 +64,10 @@ namespace PepperDash.Essentials
 					LoadRooms();
 					// FUSION - should go per room I believe.  See CreateSystems in original Configuration.cs
 					// ???
+
+                    //Temp Cotija testing
+                    //CotijaSystemController CotijaInterface = new CotijaSystemController("WebClient1");
+
 					DeviceManager.ActivateAll();
 					Debug.Console(0, "Essentials load complete\r" +
                         "-------------------------------------------------------------");
@@ -102,6 +101,7 @@ namespace PepperDash.Essentials
 
 			Debug.Console(0, "Tear down COMPLETE");
 		}
+
 
 		/// <summary>
 		/// Reads all devices from config and adds them to DeviceManager
@@ -164,6 +164,13 @@ namespace PepperDash.Essentials
                     {
                         Debug.Console(1, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(new EssentialsHuddleSpaceFusionSystemController((EssentialsHuddleSpaceRoom)room, 0xf1));
+
+                        var cotija = DeviceManager.GetDeviceForKey("cotijaServer") as CotijaSystemController;
+
+                        if (cotija != null)
+                        {
+                            cotija.CotijaRooms.Add(new CotijaEssentialsHuddleSpaceRoomBridge(cotija, room as EssentialsHuddleSpaceRoom));
+                        }
                     }
                     else
                     {

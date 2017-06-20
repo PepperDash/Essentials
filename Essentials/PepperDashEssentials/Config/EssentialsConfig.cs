@@ -17,6 +17,8 @@ namespace PepperDash.Essentials
         public string SystemUrl { get; set; }
         public string TemplateUrl { get; set; }
 
+        public CotijaConfig Cotija { get; private set; }
+
         public string SystemUuid
         {
             get
@@ -53,5 +55,7 @@ namespace PepperDash.Essentials
 		public EssentialsConfig System { get; set; }
 
 		public EssentialsConfig Template { get; set; }
+
+        //public CotijaConfig Cotija { get; set; }
 	}
 }

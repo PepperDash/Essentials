@@ -56,6 +56,12 @@ namespace PepperDash.Essentials
                 return new ConsoleCommMockDevice(key, name, props, comm);
             }
 
+            else if (typeName == "webserver")
+            {
+                var props = JsonConvert.DeserializeObject<CotijaConfig>(properties.ToString());
+                return new CotijaSystemController(key, name, props);
+            }
+
 			return null;
 		}
 	}

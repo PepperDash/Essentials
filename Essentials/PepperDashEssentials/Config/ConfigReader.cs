@@ -37,6 +37,8 @@ namespace PepperDash.Essentials
                     {
                         ConfigObject.TemplateUrl= doubleObj["template_url"].Value<string>();
                     }
+
+                    
 				}
 			}
 			catch (Exception e)
