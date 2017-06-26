@@ -40,6 +40,11 @@ namespace PepperDash.Essentials
                 return new MockDisplay(key, name);
             }
 
+            else if (typeName == "generic")
+            {
+                return new Device(key, name);
+            }
+
             // MOVE into something else???
             else if (typeName == "basicirdisplay")
             {

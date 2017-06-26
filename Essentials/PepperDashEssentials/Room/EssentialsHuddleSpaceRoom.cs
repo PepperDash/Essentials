@@ -89,6 +89,8 @@ namespace PepperDash.Essentials
 		}
 		SourceListItem _CurrentSourceInfo;
 
+        public string CurrentSourceInfoKey { get; private set; }
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -155,8 +157,14 @@ namespace PepperDash.Essentials
 						item.SourceKey, item.RouteList.Count);
 
 					// Let's run it
-					if (routeKey.ToLower() != "roomoff")
-						LastSourceKey = routeKey;
+                    if (routeKey.ToLower() != "roomoff")
+                    {
+                        LastSourceKey = routeKey;
+                    }
+                    else
+                    {
+                        CurrentSourceInfoKey = null;
+                    }
 
 					foreach (var route in item.RouteList)
 					{
@@ -204,8 +212,11 @@ namespace PepperDash.Essentials
 					CurrentVolumeControls = volDev;
 
 					// store the name and UI info for routes
-					if (item.SourceKey != null)
-						CurrentSourceInfo = item;
+                    if (item.SourceKey != null)
+                    {
+                        CurrentSourceInfoKey = routeKey;
+                        CurrentSourceInfo = item;
+                    }
 					// And finally, set the "control".  This will trigger event
 					//CurrentControlDevice = DeviceManager.GetDeviceForKey(item.SourceKey) as Device;
 

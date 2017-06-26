@@ -42,18 +42,33 @@ namespace PepperDash.Essentials
 
             CotijaRooms = new List<CotijaEssentialsHuddleSpaceRoomBridge>();
 
-            CrestronConsole.AddNewConsoleCommand(ConnectSseClient, "InitializeHttpClient", "Initializes a new HTTP client connection to a specified URL", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(RegisterSystemToServer, "InitializeHttpClient", "Initializes a new HTTP client connection to a specified URL", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(DisconnectSseClient, "CloseHttpClient", "Closes the active HTTP client", ConsoleAccessLevelEnum.AccessOperator);
 
             AddPostActivationAction(() => RegisterSystemToServer(null));
         }
 
+        /// <summary>
+        /// Adds an action to the dictionary
+        /// </summary>
+        /// <param name="key">The path of the API command</param>
+        /// <param name="action">The action to be triggered by the commmand</param>
         public void AddAction(string key, object action)
         {
-            // This might blow up if an action with that key already exists
-            ActionDictionary.Add(key, action);
+            if (!ActionDictionary.ContainsKey(key))
+            {
+                ActionDictionary.Add(key, action);
+            }
+            else
+            {
+                Debug.Console(1, this, "Cannot add action with key '{0}' because key already exists in ActionDictionary.");
+            }
         }
 
+        /// <summary>
+        /// Removes and action from the dictionary
+        /// </summary>
+        /// <param name="key"></param>
         public void RemoveAction(string key)
         {
             if (ActionDictionary.ContainsKey(key))
@@ -135,22 +150,39 @@ namespace PepperDash.Essentials
         /// <param name="o">object to be serialized and sent in post body</param>
         public void PostToServer(EssentialsRoomBase room, JObject o)
         {
-            if(Client == null)
-                Client = new HttpClient();
+            try
+            {
+                if (Client == null)
+                    Client = new HttpClient();
 
-            HttpClientRequest request = new HttpClientRequest();
+                //HttpClient client = new HttpClient();
 
-            Client.Verbose = true;
-            Client.KeepAlive = true;
+                HttpClientRequest request = new HttpClientRequest();
 
-            string url = string.Format("http://{0}/api/room/{1}", Config.serverUrl, string.Format("{0}-{1}", SystemUuid, room.Key));
+                Client.Verbose = true;
+                Client.KeepAlive = true;
 
-            request.Url.Parse(url);
-            request.RequestType = RequestType.Post;
-            request.Header.SetHeaderValue("Content-Type", "application/json");
-            request.ContentString = o.ToString();
+                string url = string.Format("http://{0}/api/room/{1}/status", Config.serverUrl, string.Format("{0}--{1}", SystemUuid, room.Key));
 
-            Client.DispatchAsync(request, PostConnectionCallback);
+                request.Url.Parse(url);
+                request.RequestType = RequestType.Post;
+                request.Header.SetHeaderValue("Content-Type", "application/json");
+                request.KeepAlive = true;
+
+                // Ignore any null objects when serializing and remove formatting
+                string ignored = JsonConvert.SerializeObject(o, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                request.ContentString = ignored;
+
+                Debug.Console(1, this, "Posting to '{0}':\n{1}", url, request.ContentString);
+
+                Client.DispatchAsync(request, (r, err) => { if (r != null) { Debug.Console(1, this, "Status Response Code: {0}", r.Code); } });
+
+                StartReconnectTimer(5000, 5000);
+            }
+            catch(Exception e)
+            {
+                Debug.Console(1, this, "Error Posting to Server: {0}", e);
+            }
         }
 
         /// <summary>
@@ -181,6 +213,13 @@ namespace PepperDash.Essentials
             {
                 if (resp != null && resp.Code == 200)
                 {
+                    if(Reconnect != null)
+                    {
+                        Reconnect.Stop();
+
+                        Reconnect = null;
+                    }
+
                     if (SseClient == null)
                     {
                         ConnectSseClient(null);
@@ -188,12 +227,12 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
-                    Debug.Console(0, this, "Unable to initialize SSE Client");
+                    Debug.Console(0, this, "Response from server: {0}\n{1}", resp.Code, err);
                 }
             }
             catch (Exception e)
             {
-                Debug.Console(1, this, "Error Initializeing SSE Client: {0}", e);
+                Debug.Console(1, this, "Error Initializing SSE Client: {0}", e);
             }
         }
 
@@ -205,15 +244,22 @@ namespace PepperDash.Essentials
         {
              if (Heartbeat != null)
             {
+                Debug.Console(1, this, "Heartbeat Timer Expired.");
+
                 Heartbeat.Stop();
 
                 Heartbeat = null;
             }
 
-            // Start the reconnect timer
-            Reconnect = new CTimer(ReconnectToServer, null, 5000, 5000);
+             StartReconnectTimer(5000, 5000);
+        }
 
-            Reconnect.Reset(5000, 5000);
+        void StartReconnectTimer(long dueTime, long repeatTime)
+        {
+            // Start the reconnect timer
+            Reconnect = new CTimer(ReconnectToServer, null, dueTime, repeatTime);
+
+            Reconnect.Reset(dueTime, repeatTime);
         }
 
 
@@ -246,11 +292,8 @@ namespace PepperDash.Essentials
             SseClient.Url = string.Format("http://{0}/api/system/stream/{1}", Config.serverUrl, uuid);
 
             SseClient.Connect();
-
-            //Heartbeat = new CTimer(HeartbeatExpired, null, 20000, 20000);
-
-            //Heartbeat.Reset(20000, 20000);
         }
+            
 
         void LineGathered_LineReceived(object sender, GenericCommMethodReceiveTextArgs e)
         {
@@ -260,8 +303,6 @@ namespace PepperDash.Essentials
             {
                 var message = e.Text.Substring(6);
 
-                string roomId = null;
-
                 Debug.Console(1, this, "Message: '{0}'", message);
 
                 try
@@ -270,11 +311,21 @@ namespace PepperDash.Essentials
 
                     var type = messageObj["type"].Value<string>();
 
-                    if(type == "/system/hearbeat")
+                    if (type == "hello")
                     {
-                        //Heartbeat.Reset(20000, 20000);
+                        Heartbeat = new CTimer(HeartbeatExpired, null, 20000, 20000);
+
+                        Debug.Console(2, this, "Heartbeat Timer Started.");
+
+                        Heartbeat.Reset(20000, 20000);
                     }
-                    else if(type == "close")
+                    else if (type == "/system/heartbeat")
+                    {
+                        Heartbeat.Reset(20000, 20000);
+
+                        Debug.Console(2, this, "Heartbeat Timer Reset.");
+                    }
+                    else if (type == "close")
                     {
                         SseClient.Disconnect();
 
@@ -285,19 +336,21 @@ namespace PepperDash.Essentials
                     }
                     else
                     {
-
-
                         // Check path against Action dictionary
                         if (ActionDictionary.ContainsKey(type))
                         {
                             var action = ActionDictionary[type];
 
-                            if (action is Action<bool>)
+                            if (action is Action)
+                            {
+                                (action as Action)();
+                            }
+                            else if (action is Action<bool>)
                             {
                                 var stateString = messageObj["content"]["state"].Value<string>();
 
                                 // Look for a button press event
-                                if(!string.IsNullOrEmpty(stateString))
+                                if (!string.IsNullOrEmpty(stateString))
                                 {
 #warning deal with held state later
                                     if (stateString == "held")
@@ -320,7 +373,7 @@ namespace PepperDash.Essentials
                                     .ToObject<SourceSelectMessageContent>());
                             }
                         }
-                        
+
                     }
 
                 }

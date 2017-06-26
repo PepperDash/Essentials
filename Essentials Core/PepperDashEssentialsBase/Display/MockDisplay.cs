@@ -138,12 +138,22 @@ namespace PepperDash.Essentials.Core
 
 		public void VolumeUp(bool pressRelease)
 		{
-			Debug.Console(0, this, "Volume Down {0}", pressRelease);
+			Debug.Console(2, this, "Volume Down {0}", pressRelease);
+            if (pressRelease)
+            {
+                var newLevel = _FakeVolumeLevel + 655;
+                SetVolume((ushort)newLevel);
+            }
 		}
 
 		public void VolumeDown(bool pressRelease)
 		{
-			Debug.Console(0, this, "Volume Up {0}", pressRelease);
+			Debug.Console(2, this, "Volume Up {0}", pressRelease);
+            if (pressRelease)
+            {
+                var newLevel = _FakeVolumeLevel - 655;
+                SetVolume((ushort)newLevel);
+            }
 		}
 
 		public void MuteToggle()

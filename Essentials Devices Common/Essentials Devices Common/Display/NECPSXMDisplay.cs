@@ -338,15 +338,15 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		public void VolumeDown(bool pressRelease)
 		{
-			throw new NotImplementedException();
-#warning need incrementer for these
-			//Send(VolumeDownCmd);
+			//throw new NotImplementedException();
+//#warning need incrementer for these
+			SetVolume(_VolumeLevel++);
 		}
 
 		public void VolumeUp(bool pressRelease)
 		{
-			throw new NotImplementedException();
-			//Send(VolumeUpCmd);
+			//throw new NotImplementedException();
+            SetVolume(_VolumeLevel--);
 		}
 
 		#endregion
