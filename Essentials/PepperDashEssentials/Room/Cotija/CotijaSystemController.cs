@@ -24,21 +24,27 @@ namespace PepperDash.Essentials
 
         HttpClient Client;
 
-        Dictionary<string, Object> ActionDictionary;
+        Dictionary<string, Object> ActionDictionary = new Dictionary<string, Object>();
 
-        CTimer Heartbeat;
+        Dictionary<string, CTimer> PushedActions = new Dictionary<string, CTimer>();
 
-        CTimer Reconnect;
+        CTimer ServerHeartbeat;
+
+        long ServerHeartbeatInterval = 20000;
+
+        CTimer ServerReconnect;
+
+        long ServerReconnectInterval = 5000;
 
         string SystemUuid;
 
         public List<CotijaEssentialsHuddleSpaceRoomBridge> CotijaRooms { get; private set; }
 
+        long ButtonHeartbeatInterval = 1000;
+
         public CotijaSystemController(string key, string name, CotijaConfig config) : base(key, name)
         {
             Config = config;
-
-            ActionDictionary = new Dictionary<string, Object>();
 
             CotijaRooms = new List<CotijaEssentialsHuddleSpaceRoomBridge>();
 
@@ -177,7 +183,7 @@ namespace PepperDash.Essentials
 
                 Client.DispatchAsync(request, (r, err) => { if (r != null) { Debug.Console(1, this, "Status Response Code: {0}", r.Code); } });
 
-                StartReconnectTimer(5000, 5000);
+                StartReconnectTimer(ServerReconnectInterval, ServerReconnectInterval);
             }
             catch(Exception e)
             {
@@ -194,11 +200,11 @@ namespace PepperDash.Essentials
             if(SseClient != null)
                 SseClient.Disconnect();
 
-            if (Heartbeat != null)
+            if (ServerHeartbeat != null)
             {
-                Heartbeat.Stop();
+                ServerHeartbeat.Stop();
 
-                Heartbeat = null;
+                ServerHeartbeat = null;
             }
         }
         
@@ -213,11 +219,11 @@ namespace PepperDash.Essentials
             {
                 if (resp != null && resp.Code == 200)
                 {
-                    if(Reconnect != null)
+                    if(ServerReconnect != null)
                     {
-                        Reconnect.Stop();
+                        ServerReconnect.Stop();
 
-                        Reconnect = null;
+                        ServerReconnect = null;
                     }
 
                     if (SseClient == null)
@@ -242,24 +248,24 @@ namespace PepperDash.Essentials
         /// <param name="o"></param>
         void HeartbeatExpired(object o)
         {
-             if (Heartbeat != null)
+             if (ServerHeartbeat != null)
             {
                 Debug.Console(1, this, "Heartbeat Timer Expired.");
 
-                Heartbeat.Stop();
+                ServerHeartbeat.Stop();
 
-                Heartbeat = null;
+                ServerHeartbeat = null;
             }
 
-             StartReconnectTimer(5000, 5000);
+             StartReconnectTimer(ServerReconnectInterval, ServerReconnectInterval);
         }
 
         void StartReconnectTimer(long dueTime, long repeatTime)
         {
             // Start the reconnect timer
-            Reconnect = new CTimer(ReconnectToServer, null, dueTime, repeatTime);
+            ServerReconnect = new CTimer(ReconnectToServer, null, dueTime, repeatTime);
 
-            Reconnect.Reset(dueTime, repeatTime);
+            ServerReconnect.Reset(dueTime, repeatTime);
         }
 
 
@@ -313,15 +319,15 @@ namespace PepperDash.Essentials
 
                     if (type == "hello")
                     {
-                        Heartbeat = new CTimer(HeartbeatExpired, null, 20000, 20000);
+                        ServerHeartbeat = new CTimer(HeartbeatExpired, null, ServerHeartbeatInterval, ServerHeartbeatInterval);
 
                         Debug.Console(2, this, "Heartbeat Timer Started.");
 
-                        Heartbeat.Reset(20000, 20000);
+                        ServerHeartbeat.Reset(ServerHeartbeatInterval, ServerHeartbeatInterval);
                     }
                     else if (type == "/system/heartbeat")
                     {
-                        Heartbeat.Reset(20000, 20000);
+                        ServerHeartbeat.Reset(ServerHeartbeatInterval, ServerHeartbeatInterval);
 
                         Debug.Console(2, this, "Heartbeat Timer Reset.");
                     }
@@ -330,9 +336,9 @@ namespace PepperDash.Essentials
                         SseClient.Disconnect();
 
                         // Start the reconnect timer
-                        Reconnect = new CTimer(ConnectSseClient, null, 5000, 5000);
+                        ServerReconnect = new CTimer(ConnectSseClient, null, ServerReconnectInterval, ServerReconnectInterval);
 
-                        Reconnect.Reset(5000, 5000);
+                        ServerReconnect.Reset(ServerReconnectInterval, ServerReconnectInterval);
                     }
                     else
                     {
@@ -345,17 +351,56 @@ namespace PepperDash.Essentials
                             {
                                 (action as Action)();
                             }
-                            else if (action is Action<bool>)
+                            else if (action is PressAndHoldAction)
                             {
                                 var stateString = messageObj["content"]["state"].Value<string>();
 
                                 // Look for a button press event
                                 if (!string.IsNullOrEmpty(stateString))
                                 {
-#warning deal with held state later
-                                    if (stateString == "held")
-                                        return;
+                                    switch (stateString)
+                                    {
+                                        case "true":
+                                            {
+                                                if (!PushedActions.ContainsKey(type))
+                                                {
+                                                    PushedActions.Add(type, new CTimer(o => 
+                                                    {
+                                                       (action as Action<bool>)(false);
+                                                       PushedActions.Remove(type);
+                                                    }, null, ButtonHeartbeatInterval, ButtonHeartbeatInterval));
+                                                }
+                                                // Maybe add an else to reset the timer
+                                                break;
+                                            }
+                                        case "held":
+                                            {
+                                                if (!PushedActions.ContainsKey(type))
+                                                {
+                                                    PushedActions[type].Reset(ButtonHeartbeatInterval, ButtonHeartbeatInterval);
+                                                }
+                                                return;
+                                            }
+                                        case "false":
+                                            {
+                                                if (!PushedActions.ContainsKey(type))
+                                                {
+                                                    PushedActions[type].Stop();
+                                                    PushedActions.Remove(type);
+                                                }
+                                                break;
+                                            }
+                                    }
 
+                                    (action as Action<bool>)(stateString == "true");
+                                }
+                            }
+                            else if (action is Action<bool>)
+                            {
+                                var stateString = messageObj["content"]["state"].Value<string>();
+
+                                if (!string.IsNullOrEmpty(stateString))
+                                {
                                     (action as Action<bool>)(stateString == "true");
                                 }
                             }

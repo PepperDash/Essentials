@@ -23,8 +23,8 @@ namespace PepperDash.Essentials
             // Source Changes and room off
             Parent.AddAction(string.Format(@"/room/{0}/status",Room.Key), new Action(() => Room_RoomFullStatus(Room)));
             Parent.AddAction(string.Format(@"/room/{0}/source", Room.Key), new Action<SourceSelectMessageContent>(c => room.RunRouteAction(c.SourceSelect)));
-            Parent.AddAction(string.Format(@"/room/{0}/event/masterVolumeUpBtn", Room.Key), new Action<bool>(b => room.CurrentVolumeControls.VolumeUp(b)));
-            Parent.AddAction(string.Format(@"/room/{0}/event/masterVolumeDownBtn", Room.Key), new Action<bool>(b => room.CurrentVolumeControls.VolumeDown(b)));
+            Parent.AddAction(string.Format(@"/room/{0}/event/masterVolumeUpBtn", Room.Key), new PressAndHoldAction(b => room.CurrentVolumeControls.VolumeUp(b)));
+            Parent.AddAction(string.Format(@"/room/{0}/event/masterVolumeDownBtn", Room.Key), new PressAndHoldAction(b => room.CurrentVolumeControls.VolumeDown(b)));
             Parent.AddAction(string.Format(@"/room/{0}/event/muteToggle", Room.Key), new Action(() => room.CurrentVolumeControls.MuteToggle()));
 
             Room.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSingleSourceChange);
@@ -202,25 +202,6 @@ namespace PepperDash.Essentials
         public string SourceSelect { get; set; }
     }
 
-    //public class PostMessage
-    //{
-    //    [JsonProperty("type")]
-    //    public string Type { get; set; }
-
-    //    [JsonProperty("content")]
-    //    public JToken Content { get; set; }
-    //}
-
-    //public class RoomStatusMessageContent
-    //{
-    //    [JsonProperty("selectedSourceKey")]
-    //    public string SelectedSourceKey { get; set; }
-    //    [JsonProperty("isOn")]
-    //    public bool? IsOn { get; set; }
-    //    [JsonProperty("masterVolumeLevel")]
-    //    public int? MasterVolumeLevel { get; set; }
-    //    [JsonProperty("masterVolumeMuteState")]
-    //    public bool? MasterVolumeMuteState { get; set; }
-    //}
+    public delegate void PressAndHoldAction(bool b);
 
 }
