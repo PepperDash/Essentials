@@ -34,6 +34,8 @@ namespace PepperDash.Essentials.Core
 		protected override Func<bool> IsCoolingDownFeedbackFunc { get { return () => _IsCoolingDown; } }
 		protected override Func<bool> IsWarmingUpFeedbackFunc { get { return () => _IsWarmingUp; } }
 
+        int VolumeHeldRepeatInterval = 200;
+        ushort VolumeInterval = 655;
 		ushort _FakeVolumeLevel = 31768;
 		bool _IsMuted;
 
@@ -138,22 +140,30 @@ namespace PepperDash.Essentials.Core
 
 		public void VolumeUp(bool pressRelease)
 		{
-			Debug.Console(2, this, "Volume Down {0}", pressRelease);
-            if (pressRelease)
-            {
-                var newLevel = _FakeVolumeLevel + 655;
-                SetVolume((ushort)newLevel);
-            }
+            //while (pressRelease)
+            //{
+                Debug.Console(2, this, "Volume Down {0}", pressRelease);
+                if (pressRelease)
+                {
+                    var newLevel = _FakeVolumeLevel + VolumeInterval;
+                    SetVolume((ushort)newLevel);
+                    CrestronEnvironment.Sleep(VolumeHeldRepeatInterval);
+                }
+            //}
 		}
 
 		public void VolumeDown(bool pressRelease)
 		{
-			Debug.Console(2, this, "Volume Up {0}", pressRelease);
-            if (pressRelease)
-            {
-                var newLevel = _FakeVolumeLevel - 655;
-                SetVolume((ushort)newLevel);
-            }
+            //while (pressRelease)
+            //{
+                Debug.Console(2, this, "Volume Up {0}", pressRelease);
+                if (pressRelease)
+                {
+                    var newLevel = _FakeVolumeLevel - VolumeInterval;
+                    SetVolume((ushort)newLevel);
+                    CrestronEnvironment.Sleep(VolumeHeldRepeatInterval);
+                }
+            //}
 		}
 
 		public void MuteToggle()

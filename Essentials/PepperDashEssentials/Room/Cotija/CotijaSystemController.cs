@@ -107,7 +107,7 @@ namespace PepperDash.Essentials
 
                 if (FileLock.TryEnter())
                 {
-                    Debug.Console(1, this, "Reading Configuration File");
+                    Debug.Console(1, this, "Reading configuration file to extract system UUID...");
 
                     postBody = File.ReadToEnd(filePath, Encoding.ASCII);
 
@@ -268,6 +268,20 @@ namespace PepperDash.Essentials
             ServerReconnect.Reset(dueTime, repeatTime);
         }
 
+        void StartHearbeatTimer(long dueTime, long repeatTime)
+        {
+            if (ServerHeartbeat == null)
+            {
+                ServerHeartbeat = new CTimer(HeartbeatExpired, null, dueTime, repeatTime);
+
+                Debug.Console(2, this, "Heartbeat Timer Started.");
+            }
+
+            ServerHeartbeat.Reset(dueTime, repeatTime);
+
+            Debug.Console(2, this, "Heartbeat Timer Reset.");
+        }
+
 
         /// <summary>
         /// Connects the SSE Client
@@ -319,17 +333,11 @@ namespace PepperDash.Essentials
 
                     if (type == "hello")
                     {
-                        ServerHeartbeat = new CTimer(HeartbeatExpired, null, ServerHeartbeatInterval, ServerHeartbeatInterval);
-
-                        Debug.Console(2, this, "Heartbeat Timer Started.");
-
-                        ServerHeartbeat.Reset(ServerHeartbeatInterval, ServerHeartbeatInterval);
+                        StartHearbeatTimer(ServerHeartbeatInterval, ServerHeartbeatInterval);
                     }
                     else if (type == "/system/heartbeat")
                     {
-                        ServerHeartbeat.Reset(ServerHeartbeatInterval, ServerHeartbeatInterval);
-
-                        Debug.Console(2, this, "Heartbeat Timer Reset.");
+                        StartHearbeatTimer(ServerHeartbeatInterval, ServerHeartbeatInterval);
                     }
                     else if (type == "close")
                     {
@@ -366,7 +374,7 @@ namespace PepperDash.Essentials
                                                 {
                                                     PushedActions.Add(type, new CTimer(o => 
                                                     {
-                                                       (action as Action<bool>)(false);
+                                                        (action as PressAndHoldAction)(false);
                                                        PushedActions.Remove(type);
                                                     }, null, ButtonHeartbeatInterval, ButtonHeartbeatInterval));
                                                 }
@@ -383,7 +391,7 @@ namespace PepperDash.Essentials
                                             }
                                         case "false":
                                             {
-                                                if (!PushedActions.ContainsKey(type))
+                                                if (PushedActions.ContainsKey(type))
                                                 {
                                                     PushedActions[type].Stop();
                                                     PushedActions.Remove(type);
@@ -392,7 +400,7 @@ namespace PepperDash.Essentials
                                             }
                                     }
 
-                                    (action as Action<bool>)(stateString == "true");
+                                    (action as PressAndHoldAction)(stateString == "true");
                                 }
                             }
                             else if (action is Action<bool>)

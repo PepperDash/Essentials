@@ -135,22 +135,73 @@ namespace PepperDash.Essentials
                   }
                 }
              */
+            if (type == ChangeType.WillChange)
+            {
+                // Disconnect from previous source
 
-            if (type != ChangeType.DidChange)
-                return;
+                if (info != null)
+                {
+                    var previousDev = info.SourceDevice;
 
-            JObject roomStatus = new JObject();
+                    // device type interfaces
+                    //if (previousDev is ISetTopBoxControls)
+                    //    (previousDev as ISetTopBoxControls).UnlinkButtons(TriList);
+                    //// common interfaces
+                    //if (previousDev is IChannel)
+                    //    (previousDev as IChannel).UnlinkButtons(TriList);
+                    //if (previousDev is IColor)
+                    //    (previousDev as IColor).UnlinkButtons(TriList);
+                    if (previousDev is IDPad)
+                        (previousDev as IDPad).UnlinkActions(Parent);
+                    //if (previousDev is IDvr)
+                    //    (previousDev as IDvr).UnlinkButtons(TriList);
+                    //if (previousDev is INumericKeypad)
+                    //    (previousDev as INumericKeypad).UnlinkButtons(TriList);
+                    //if (previousDev is IPower)
+                    //    (previousDev as IPower).UnlinkButtons(TriList);
+                    //if (previousDev is ITransport)
+                    //    (previousDev as ITransport).UnlinkButtons(TriList);
+                }
 
-            var huddleRoom = room as EssentialsHuddleSpaceRoom;
-            //roomStatus.Add("isOn", huddleRoom.OnFeedback.BoolValue);
-            roomStatus.Add("selectedSourceKey", huddleRoom.CurrentSourceInfoKey);
+                JObject roomStatus = new JObject();
 
-            JObject message = new JObject();
+                var huddleRoom = room as EssentialsHuddleSpaceRoom;
+                //roomStatus.Add("isOn", huddleRoom.OnFeedback.BoolValue);
+                roomStatus.Add("selectedSourceKey", huddleRoom.CurrentSourceInfoKey);
 
-            message.Add("type", "/room/status/");
-            message.Add("content", roomStatus);
+                JObject message = new JObject();
 
-            Parent.PostToServer(Room, message);
+                message.Add("type", "/room/status/");
+                message.Add("content", roomStatus);
+
+                Parent.PostToServer(Room, message);
+            }
+            else 
+            {
+                if (info != null)
+                {
+                    var dev = info.SourceDevice;
+
+                    //if (dev is ISetTopBoxControls)
+                    //    (dev as ISetTopBoxControls).LinkButtons(TriList);
+                    //if (dev is IChannel)
+                    //    (dev as IChannel).LinkButtons(TriList);
+                    //if (dev is IColor)
+                    //    (dev as IColor).LinkButtons(TriList);
+                    if (dev is IDPad)
+                        (dev as IDPad).LinkActions(Parent);
+                    //if (dev is IDvr)
+                    //    (dev as IDvr).LinkButtons(TriList);
+                    //if (dev is INumericKeypad)
+                    //    (dev as INumericKeypad).LinkButtons(TriList);
+                    //if (dev is IPower)
+                    //    (dev as IPower).LinkButtons(TriList);
+                    //if (dev is ITransport)
+                    //    (dev as ITransport).LinkButtons(TriList);
+                }
+            }
+
+            
         }
 
         /// <summary>
