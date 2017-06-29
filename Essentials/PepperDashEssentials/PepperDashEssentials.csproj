@@ -142,7 +142,14 @@
     <Compile Include="FOR REFERENCE Room\EssentialsRoom.cs" />
     <Compile Include="Room\Cotija\CotijaConfig.cs" />
     <Compile Include="Room\Cotija\CotijaRoomBridge.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IChannelExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IColorExtensions.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\IDPadExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IDvrExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\INumericExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IPowerExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\ISetTopBoxControlsExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\ITransportExtensions.cs" />
     <Compile Include="Room\EssentialsPresentationRoom.cs" />
     <Compile Include="Room\EssentialsRoomBase.cs" />
     <Compile Include="Room\EssentialsRoomConfig.cs" />

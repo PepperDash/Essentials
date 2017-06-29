@@ -173,8 +173,8 @@ namespace PepperDash.Essentials
 			//}
 		}
 
-		static void AddSourcesToSystem(Room system, ConfigSourceList configList)
-		{
+		//static void AddSourcesToSystem(Room system, ConfigSourceList configList)
+		//{
 			//foreach (var configItem in configList.PresentationSources)
 			//{
 			//    var src = (IPresentationSource)DeviceManager.GetDeviceForKey(configItem.SourceKey);
@@ -184,7 +184,7 @@ namespace PepperDash.Essentials
 			//        Debug.Console(0, system, "cannot find source '{0}' from list {1}", 
 			//            configItem.SourceKey, configList.Name);
 			//}
-		}
+		//}
 
 		/// <summary>
 		/// Links up routing, creates tie lines

@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.Room.Cotija
 {
     public static class IDPadExtensions
     {
@@ -14,13 +14,13 @@ namespace PepperDash.Essentials
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
-            controller.AddAction(prefix + "up", new Action<bool>(dev.Up));
-            controller.AddAction(prefix + "down", new Action<bool>(dev.Down));
-            controller.AddAction(prefix + "left", new Action<bool>(dev.Left));
-            controller.AddAction(prefix + "right", new Action<bool>(dev.Right));
-            controller.AddAction(prefix + "select", new Action<bool>(dev.Select));
-            controller.AddAction(prefix + "menu", new Action<bool>(dev.Menu));
-            controller.AddAction(prefix + "exit", new Action<bool>(dev.Exit));
+            controller.AddAction(prefix + "up", new PressAndHoldAction(dev.Up));
+            controller.AddAction(prefix + "down", new PressAndHoldAction(dev.Down));
+            controller.AddAction(prefix + "left", new PressAndHoldAction(dev.Left));
+            controller.AddAction(prefix + "right", new PressAndHoldAction(dev.Right));
+            controller.AddAction(prefix + "select", new PressAndHoldAction(dev.Select));
+            controller.AddAction(prefix + "menu", new PressAndHoldAction(dev.Menu));
+            controller.AddAction(prefix + "exit", new PressAndHoldAction(dev.Exit));
         }
 
         public static void UnlinkActions(this IDPad dev, CotijaSystemController controller)

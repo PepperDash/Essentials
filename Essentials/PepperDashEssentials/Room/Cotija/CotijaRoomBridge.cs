@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Room.Cotija;
 
 namespace PepperDash.Essentials
 {
@@ -144,29 +145,28 @@ namespace PepperDash.Essentials
                     var previousDev = info.SourceDevice;
 
                     // device type interfaces
-                    //if (previousDev is ISetTopBoxControls)
-                    //    (previousDev as ISetTopBoxControls).UnlinkButtons(TriList);
-                    //// common interfaces
-                    //if (previousDev is IChannel)
-                    //    (previousDev as IChannel).UnlinkButtons(TriList);
-                    //if (previousDev is IColor)
-                    //    (previousDev as IColor).UnlinkButtons(TriList);
+                    if (previousDev is ISetTopBoxControls)
+                        (previousDev as ISetTopBoxControls).UnlinkActions(Parent);
+                    // common interfaces
+                    if (previousDev is IChannel)
+                        (previousDev as IChannel).UnlinkActions(Parent);
+                    if (previousDev is IColor)
+                        (previousDev as IColor).UnlinkActions(Parent);
                     if (previousDev is IDPad)
                         (previousDev as IDPad).UnlinkActions(Parent);
-                    //if (previousDev is IDvr)
-                    //    (previousDev as IDvr).UnlinkButtons(TriList);
-                    //if (previousDev is INumericKeypad)
-                    //    (previousDev as INumericKeypad).UnlinkButtons(TriList);
-                    //if (previousDev is IPower)
-                    //    (previousDev as IPower).UnlinkButtons(TriList);
-                    //if (previousDev is ITransport)
-                    //    (previousDev as ITransport).UnlinkButtons(TriList);
+                    if (previousDev is IDvr)
+                        (previousDev as IDvr).UnlinkActions(Parent);
+                    if (previousDev is INumericKeypad)
+                        (previousDev as INumericKeypad).UnlinkActions(Parent);
+                    if (previousDev is IPower)
+                        (previousDev as IPower).UnlinkActions(Parent);
+                    if (previousDev is ITransport)
+                        (previousDev as ITransport).UnlinkActions(Parent);
                 }
 
                 JObject roomStatus = new JObject();
 
                 var huddleRoom = room as EssentialsHuddleSpaceRoom;
-                //roomStatus.Add("isOn", huddleRoom.OnFeedback.BoolValue);
                 roomStatus.Add("selectedSourceKey", huddleRoom.CurrentSourceInfoKey);
 
                 JObject message = new JObject();
@@ -182,26 +182,24 @@ namespace PepperDash.Essentials
                 {
                     var dev = info.SourceDevice;
 
-                    //if (dev is ISetTopBoxControls)
-                    //    (dev as ISetTopBoxControls).LinkButtons(TriList);
-                    //if (dev is IChannel)
-                    //    (dev as IChannel).LinkButtons(TriList);
-                    //if (dev is IColor)
-                    //    (dev as IColor).LinkButtons(TriList);
+                    if (dev is ISetTopBoxControls)
+                        (dev as ISetTopBoxControls).LinkActions(Parent);
+                    if (dev is IChannel)
+                        (dev as IChannel).LinkActions(Parent);
+                    if (dev is IColor)
+                        (dev as IColor).LinkActions(Parent);
                     if (dev is IDPad)
                         (dev as IDPad).LinkActions(Parent);
-                    //if (dev is IDvr)
-                    //    (dev as IDvr).LinkButtons(TriList);
-                    //if (dev is INumericKeypad)
-                    //    (dev as INumericKeypad).LinkButtons(TriList);
-                    //if (dev is IPower)
-                    //    (dev as IPower).LinkButtons(TriList);
-                    //if (dev is ITransport)
-                    //    (dev as ITransport).LinkButtons(TriList);
+                    if (dev is IDvr)
+                        (dev as IDvr).LinkActions(Parent);
+                    if (dev is INumericKeypad)
+                        (dev as INumericKeypad).LinkActions(Parent);
+                    if (dev is IPower)
+                        (dev as IPower).LinkActions(Parent);
+                    if (dev is ITransport)
+                        (dev as ITransport).LinkActions(Parent);
                 }
             }
-
-            
         }
 
         /// <summary>

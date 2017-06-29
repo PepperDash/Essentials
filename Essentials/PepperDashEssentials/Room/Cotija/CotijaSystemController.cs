@@ -24,7 +24,7 @@ namespace PepperDash.Essentials
 
         HttpClient Client;
 
-        Dictionary<string, Object> ActionDictionary = new Dictionary<string, Object>();
+        Dictionary<string, Object> ActionDictionary = new Dictionary<string, Object>(StringComparer.InvariantCultureIgnoreCase);
 
         Dictionary<string, CTimer> PushedActions = new Dictionary<string, CTimer>();
 
@@ -233,7 +233,10 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
-                    Debug.Console(0, this, "Response from server: {0}\n{1}", resp.Code, err);
+                    if (resp != null)
+                        Debug.Console(1, this, "Response from server: {0}\n{1}", resp.Code, err);
+                    else
+                        Debug.Console(1, this, "Null response received from server.");
                 }
             }
             catch (Exception e)
