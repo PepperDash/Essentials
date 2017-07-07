@@ -181,6 +181,9 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void Show()
 		{
+            if(CurrentRoom != null)
+                CurrentRoom.OnFeedback.OutputChange += new EventHandler<EventArgs>(OnFeedback_OutputChange);
+
 			TriList.BooleanInput[UIBoolJoin.TopBarVisible].BoolValue = true;
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = true;
 
@@ -238,15 +241,32 @@ namespace PepperDash.Essentials
 			base.Show();
 		}
 
+        void OnFeedback_OutputChange(object sender, EventArgs e)
+        {
+            if (CurrentRoom.OnFeedback.BoolValue)
+            {
+                TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = true;
+                //TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
+            }
+            else
+            {
+                TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = false;
+                TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
+            }
+        }
+
 		public override void Hide()
 		{
+            if (CurrentRoom != null)
+                CurrentRoom.OnFeedback.OutputChange -= OnFeedback_OutputChange;
+
 			HideAndClearCurrentDisplayModeSigsInUse();
 			TriList.BooleanInput[UIBoolJoin.TopBarVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
-            TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
+            //TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
 			VolumeButtonsPopupFeedback.ClearNow();
 			CancelPowerOff();
 
