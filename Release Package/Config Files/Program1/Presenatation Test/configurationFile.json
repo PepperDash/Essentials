@@ -1,0 +1,388 @@
+{
+  "template": {
+    "info": {
+      "comment": "",
+      "lastUid": 9,
+      "requiredControlSofwareVersion": "",
+      "processorType": "rmc3",
+      "lastModifiedDate": "2017-07-07T16:58:43.621Z",
+      "systemType": "presentation"
+    },
+    "devices": [
+      {
+        "type": "dmMd8x8",
+        "properties": {
+          "inputNames": {},
+          "control": {
+            "params": {
+              "deviceReadyResponsePattern": ".*>",
+              "endOfLineString": "\n"
+            },
+            "method": "ipid",
+            "ipid": "04"
+          },
+          "inputSlots": {
+            "1": "dmc4kHd",
+            "2": "dmc4kHd",
+            "3": "dmc4kHd"
+          },
+          "volumeControls": {
+            "1": {
+              "outLevel": 65535,
+              "isVolumeControlPoint": false
+            },
+            "2": {
+              "outLevel": 65535,
+              "isVolumeControlPoint": false
+            }
+          },
+          "outputSlots": {
+            "1": "dmc4kHdo"
+          }
+        },
+        "key": "dmMd8x8-1",
+        "name": "DM-MD8x8 Chassis 1",
+        "uid": 4,
+        "group": "dmChassis"
+      },
+      {
+        "supportsCompliance": true,
+        "key": "processor",
+        "properties": {
+          "numberOfComPorts": 1,
+          "numberOfIrPorts": 2
+        },
+        "supportedSystemTypes": [
+          "hudType",
+          "presType",
+          "vtcType",
+          "custom"
+        ],
+        "type": "rmc3",
+        "supportedConfigModes": [
+          "compliance",
+          "essentials"
+        ],
+        "uid": 0,
+        "name": "RMC3",
+        "group": "processor"
+      },
+      {
+        "type": "sonyBdp-generic",
+        "properties": {
+          "control": {
+            "irFile": "Sony BDP Series.ir",
+            "method": "ir",
+            "controlPortDevKey": "processor",
+            "controlPortNumber": 1
+          },
+          "hasAudio": true,
+          "hasControls": true,
+          "hasTransport": true,
+          "hasDpad": true
+        },
+        "key": "sonyBdp-generic-1",
+        "group": "discPlayer",
+        "uid": 1,
+        "name": "Sony Bluray 1"
+      },
+      {
+        "type": "comcastMotorola-generic",
+        "properties": {
+          "control": {
+            "irFile": "Comcast Motorola DVR.ir",
+            "method": "ir",
+            "controlPortDevKey": "processor",
+            "controlPortNumber": 2
+          },
+          "hasAudio": true,
+          "hasControls": true,
+          "hasDvr": true,
+          "hasDpad": true,
+          "hasNumeric": true
+        },
+        "key": "comcastMotorola-generic-1",
+        "group": "setTopBox",
+        "uid": 2,
+        "name": "Comcast Motorola DVR 1"
+      },
+      {
+        "type": "laptop",
+        "properties": {
+          "hasAudio": true,
+          "hasControls": false
+        },
+        "key": "laptop-1",
+        "group": "pc",
+        "uid": 3,
+        "name": "Laptop 1"
+      },
+      {
+        "type": "biampTesira",
+        "properties": {
+          "control": {
+            "deviceReadyResponsePattern": "Welcome to the Tesira Text Protocol Server.*",
+            "tcpSshProperties": {
+              "port": 22,
+              "address": "0.0.0.0",
+              "username": "default"
+            },
+            "endOfLineString": "\r\n",
+            "method": "ssh"
+          },
+          "levelControlBlocks": {
+            "audioCallRx": {
+              "label": "Audio Call Receive",
+              "index1": 1,
+              "instanceTag": "VoIPRxLevel",
+              "hasMute": true,
+              "hasLevel": true,
+              "index2": 0
+            },
+            "audioCallTx": {
+              "label": "Audio Call Transmit",
+              "index1": 1,
+              "instanceTag": "VoIPTxLevel",
+              "hasMute": true,
+              "hasLevel": false,
+              "index2": 0
+            },
+            "master": {
+              "label": "Master",
+              "index1": 1,
+              "instanceTag": "RoomLevel",
+              "hasMute": true,
+              "hasLevel": true,
+              "index2": 0
+            },
+            "program": {
+              "label": "Program",
+              "index1": 1,
+              "instanceTag": "ProgramLevel",
+              "hasMute": true,
+              "hasLevel": true,
+              "index2": 0
+            }
+          },
+          "presenterMic": {
+            "enabled": false
+          }
+        },
+        "key": "biampTesira-1",
+        "name": "Biamp Tesira 1",
+        "uid": 5,
+        "group": "dsp"
+      },
+      {
+        "type": "NecMPSX",
+        "properties": {
+          "control": {
+            "tcpSshProperties": {
+              "address": "0.0.0.0",
+              "port": 23
+            },
+            "method": "tcpIp"
+          }
+        },
+        "key": "display-1",
+        "name": "Left Display",
+        "uid": 6,
+        "group": "display"
+      },
+      {
+        "type": "NecMPSX",
+        "properties": {
+          "control": {
+            "tcpSshProperties": {
+              "address": "0.0.0.0",
+              "port": 23
+            },
+            "method": "tcpIp"
+          }
+        },
+        "key": "display-2",
+        "name": "Right Display",
+        "uid": 7,
+        "group": "display"
+      },
+      {
+        "type": "tsw1052",
+        "properties": {
+          "defaultRoomKey": "room1",
+          "roomListKey": "",
+          "sourcesOverflowCount": 5,
+          "sgdFile": "Essentials TSW.sgd",
+          "control": {
+            "params": {
+              "deviceReadyResponsePattern": ".*>",
+              "endOfLineString": "\n"
+            },
+            "method": "ipid",
+            "ipid": "03"
+          },
+          "showTime": true,
+          "showVolumeGauge": true,
+          "showDate": true,
+          "usesSplashPage": true
+        },
+        "key": "tsw1052-1",
+        "name": "TSW 1050/1052 1",
+        "uid": 8,
+        "group": "touchpanel"
+      },
+      {
+        "type": "amplifier",
+        "key": "amplifier-1",
+        "uid": 9,
+        "name": "Amplifier"
+      }
+    ],
+    "rooms": [
+      {
+        "properties": {
+          "defaultAudioBehavior": "audioFollowVideo",
+          "defaultVideoBehavior": "advanced",
+          "description": "",
+          "displayKeys": [
+            "display-1"
+          ],
+          "hasDsp": true,
+          "defaultAudioKey": "biampTesira-1",
+          "volumes": {
+            "master": {
+              "label": "Volume",
+              "level": -10,
+              "deviceKey": "biampTesira-1--master"
+            },
+            "program": {
+              "label": "Volume",
+              "level": -10,
+              "deviceKey": "biampTesira-1--program"
+            }
+          },
+          "helpMessage": "",
+          "sourceListKey": "default"
+        },
+        "key": "room1",
+        "type": "presentation",
+        "name": "Neil's Test Presentation Template"
+      }
+    ],
+    "sourceLists": {
+      "default": {
+        "roomOff": {
+          "routeList": [
+            {
+              "sourceKey": "$off",
+              "type": "audioVideo",
+              "destinationKey": "$defaultAll"
+            }
+          ],
+          "sourceKey": "$off",
+          "type": "off"
+        },
+        "source-1": {
+          "sourceKey": "laptop-1",
+          "includeInSourceList": true,
+          "volumeControlKey": "$defaultAudio",
+          "routeList": [
+            {
+              "sourceKey": "laptop-1",
+              "type": "audioVideo",
+              "destinationKey": "$defaultAll"
+            }
+          ],
+          "icon": "",
+          "order": 1,
+          "type": "route",
+          "altIcon": "Blank"
+        },
+        "source-2": {
+          "sourceKey": "sonyBdp-generic-1",
+          "includeInSourceList": true,
+          "volumeControlKey": "$defaultAudio",
+          "routeList": [
+            {
+              "sourceKey": "sonyBdp-generic-1",
+              "type": "audioVideo",
+              "destinationKey": "$defaultAll"
+            }
+          ],
+          "icon": "",
+          "order": 3,
+          "type": "route",
+          "altIcon": "Blank"
+        },
+        "source-3": {
+          "sourceKey": "comcastMotorola-generic-1",
+          "includeInSourceList": true,
+          "volumeControlKey": "$defaultAudio",
+          "routeList": [
+            {
+              "sourceKey": "comcastMotorola-generic-1",
+              "type": "audioVideo",
+              "destinationKey": "$defaultAll"
+            }
+          ],
+          "icon": "",
+          "order": 3,
+          "type": "route",
+          "altIcon": "Blank"
+        }
+      }
+    },
+    "tieLines": [
+      {
+        "sourceKey": "sonyBdp-generic-1",
+        "destinationKey": "dmMd8x8-1",
+        "sourcePort": "HdmiOut",
+        "destinationPort": "card1--hdmiIn",
+        "type": "audioVideo"
+      },
+      {
+        "sourceKey": "comcastMotorola-generic-1",
+        "destinationKey": "dmMd8x8-1",
+        "sourcePort": "anyVideoOut",
+        "destinationPort": "card2--hdmiIn",
+        "type": "audioVideo"
+      },
+      {
+        "sourceKey": "laptop-1",
+        "destinationKey": "dmMd8x8-1",
+        "sourcePort": "anyOut",
+        "destinationPort": "card3--hdmiIn",
+        "type": "audioVideo"
+      },
+      {
+        "sourceKey": "dmMd8x8-1",
+        "destinationKey": "display-1",
+        "sourcePort": "card1--hdmiOut1",
+        "destinationPort": "HdmiIn1",
+        "type": "audioVideo"
+      },
+      {
+        "sourceKey": "dmMd8x8-1",
+        "destinationKey": "display-2",
+        "sourcePort": "card1--hdmiOut2",
+        "destinationPort": "HdmiIn1",
+        "type": "audioVideo"
+      },
+      {
+        "sourceKey": "dmMd8x8-1",
+        "destinationKey": "biampTesira-1",
+        "sourcePort": "card1--audioOut1",
+        "destinationPort": "anyAudioIn",
+        "type": "audio"
+      },
+      {
+        "sourceKey": "biampTesira-1",
+        "destinationKey": "amplifier-1",
+        "sourcePort": "anyAudioOut",
+        "destinationPort": "anyAudioIn",
+        "type": "audio"
+      }
+    ]
+  },
+  "system": {},
+  "system_url": "http://portal-QA.devcloud.pepperdash.com/templates/0f50640b-bc89-42d5-998f-81d137d3fc98#/template_summary"
+}

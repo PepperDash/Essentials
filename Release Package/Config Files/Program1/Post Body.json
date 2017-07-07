@@ -1,0 +1,355 @@
+{
+  "system": {},
+  "system_url": "http://example.com/systems/55bc5f25-1122-4a85-9ae1-9be21b95a7dc#/system_summary",
+  "template": {
+    "info": {
+      "lastModifiedDate": "2017-03-22T17:32:17.800Z",
+      "comment": "",
+      "lastUid": 13,
+      "processorType": "mc3",
+      "systemType": "presentation",
+      "requiredControlSofwareVersion": ""
+    },
+    "rooms": [
+      {
+        "properties": {
+          "helpMessage": "Help!!",
+          "volumes": {
+            "master": {
+              "label": "Volume",
+              "level": 50,
+              "deviceKey": "biampTesira-1--master"
+            },
+            "program": {
+              "label": "Volume",
+              "level": 50,
+              "deviceKey": "biampTesira-1--program"
+            }
+          },
+          "defaultVideoBehavior": "basic",
+          "defaultAudioKey": "amplifier-1",
+          "displayKeys": [
+            "display-1",
+            "display-2"
+          ],
+          "hasDsp": true,
+          "defaultAudioBehavior": "audioFollowVideo",
+          "sourceListKey": "default",
+          "description": ""
+        },
+        "key": "room1",
+        "type": "presentation",
+        "name": "West Dungeon"
+      }
+    ],
+    "sourceLists": {
+      "default": {
+        "source-2": {
+          "sourceKey": "laptop-2",
+          "includeInSourceList": true,
+          "volumeControlKey": "$defaultAudio",
+          "routeList": [
+            {
+              "sourceKey": "laptop-2",
+              "type": "audioVideo",
+              "destinationKey": "$defaultAll"
+            }
+          ],
+          "icon": "",
+          "order": 2,
+          "type": "route",
+          "altIcon": "Blank"
+        },
+        "roomOff": {
+          "routeList": [
+            {
+              "sourceKey": "$off",
+              "type": "audioVideo",
+              "destinationKey": "$defaultAll"
+            }
+          ],
+          "sourceKey": "$off",
+          "type": "off"
+        },
+        "source-1": {
+          "sourceKey": "laptop-1",
+          "includeInSourceList": true,
+          "volumeControlKey": "$defaultAudio",
+          "routeList": [
+            {
+              "sourceKey": "laptop-1",
+              "type": "audioVideo",
+              "destinationKey": "$defaultAll"
+            }
+          ],
+          "icon": "",
+          "order": 1,
+          "type": "route",
+          "altIcon": "Blank"
+        },
+        "source-3": {
+          "sourceKey": "sonyBdp-generic-1",
+          "includeInSourceList": true,
+          "volumeControlKey": "$defaultAudio",
+          "routeList": [
+            {
+              "sourceKey": "sonyBdp-generic-1",
+              "type": "audioVideo",
+              "destinationKey": "$defaultAll"
+            }
+          ],
+          "icon": "",
+          "order": 3,
+          "type": "route",
+          "altIcon": "Blank"
+        }
+      }
+    },
+    "tieLines": [
+      {
+        "destinationPort": "card2--hdmiIn",
+        "sourcePort": "HdmiOut",
+        "sourceKey": "sonyBdp-generic-1",
+        "type": "audioVideo",
+        "destinationKey": "dmMd8x8-1"
+      },
+      {
+        "destinationPort": "anyAudioIn",
+        "sourcePort": "card1--audioOut1",
+        "sourceKey": "dmMd8x8-1",
+        "type": "audio",
+        "destinationKey": "amplifier-1"
+      }
+    ],
+    "devices": [
+      {
+        "group": "dmChassis",
+        "properties": {
+          "outputSlots": {
+            "1": "dmc4kHdo"
+          },
+          "inputNames": {},
+          "volumeControls": {
+            "1": {
+              "outLevel": -1,
+              "isVolumeControlPoint": true
+            },
+            "2": {
+              "outLevel": 65535,
+              "isVolumeControlPoint": false
+            }
+          },
+          "control": {
+            "method": "ipid",
+            "ipid": "03",
+            "params": {
+              "endOfLineString": "\n",
+              "deviceReadyResponsePattern": ".*>"
+            }
+          },
+          "inputSlots": {
+            "1": "dmc4kC",
+            "2": "dmc4kHd"
+          }
+        },
+        "uid": 9,
+        "key": "dmMd8x8-1",
+        "name": "DM-MD8x8",
+        "type": "dmMd8x8"
+      },
+      {
+        "group": "amplifier",
+        "properties": {},
+        "uid": 0,
+        "key": "amplifier-1",
+        "name": "Audio endpoint/Amplifier",
+        "type": "amplifier"
+      },
+      {
+        "group": "display",
+        "properties": {
+          "control": {
+            "method": "tcpIp",
+            "tcpSshProperties": {
+              "port": 123,
+              "address": "123"
+            }
+          }
+        },
+        "uid": 2,
+        "key": "display-1",
+        "name": "Display 1",
+        "type": "NecMPSX"
+      },
+      {
+        "group": "pc",
+        "properties": {
+          "hasAudio": true,
+          "hasControls": false
+        },
+        "uid": 3,
+        "key": "laptop-1",
+        "name": "Laptop AAA",
+        "type": "laptop"
+      },
+      {
+        "group": "pc",
+        "properties": {
+          "hasAudio": true,
+          "hasControls": false
+        },
+        "uid": 4,
+        "key": "laptop-2",
+        "name": "Laptop BBB",
+        "type": "laptop"
+      },
+      {
+        "group": "discPlayer",
+        "properties": {
+          "hasControls": true,
+          "hasTransport": true,
+          "control": {
+            "method": "ir",
+            "controlPortNumber": 1,
+            "controlPortDevKey": "processor",
+            "irFile": "Sony BDP Series.ir"
+          },
+          "hasAudio": true,
+          "hasNumeric": true,
+          "hasDpad": true
+        },
+        "uid": 5,
+        "key": "sonyBdp-generic-1",
+        "name": "LaserDisc player",
+        "type": "sonyBdp-generic"
+      },
+      {
+        "group": "processor",
+        "properties": {
+          "numberOfIrPorts": 5,
+          "numberOfComPorts": 2
+        },
+        "uid": 6,
+        "supportsCompliance": true,
+        "type": "mc3",
+        "name": "MC3",
+        "supportedSystemTypes": [
+          "custom",
+          "hudType",
+          "presType"
+        ],
+        "key": "processor"
+      },
+      {
+        "group": "display",
+        "properties": {
+          "control": {
+            "method": "tcpIp",
+            "tcpSshProperties": {
+              "port": 123,
+              "address": "123"
+            }
+          }
+        },
+        "uid": 7,
+        "key": "display-2",
+        "name": "Display 2",
+        "type": "NecMPSX"
+      },
+      {
+        "group": "touchpanel",
+        "properties": {
+          "sourcesOverflowCount": 5,
+          "defaultRoomKey": "room1",
+          "control": {
+            "method": "ipid",
+            "ipid": "A1",
+            "params": {
+              "endOfLineString": "\n",
+              "deviceReadyResponsePattern": ".*>"
+            }
+          },
+          "showTime": true,
+          "roomListKey": "",
+          "showDate": true,
+          "sgdFile": "Essentials TSW.sgd",
+          "usesSplashPage": true,
+          "showVolumeGauge": true
+        },
+        "uid": 8,
+        "key": "tsw1052-1",
+        "name": "TSW 1050/1052 1",
+        "type": "tsw1052"
+      },
+      {
+        "group": "dsp",
+        "properties": {
+          "levelControlBlocks": {
+            "audioCallRx": {
+              "index1": 1,
+              "index2": 0,
+              "label": "Audio Call Receive",
+              "hasLevel": true,
+              "instanceTag": "VoIPRxLevel",
+              "hasMute": true
+            },
+            "audioCallTx": {
+              "index1": 1,
+              "index2": 0,
+              "label": "Audio Call Transmit",
+              "hasLevel": false,
+              "instanceTag": "VoIPTxLevel",
+              "hasMute": true
+            },
+            "master": {
+              "index1": 1,
+              "index2": 0,
+              "label": "Master",
+              "hasLevel": true,
+              "instanceTag": "RoomLevel",
+              "hasMute": true
+            },
+            "program": {
+              "index1": 1,
+              "index2": 0,
+              "label": "Program",
+              "hasLevel": true,
+              "instanceTag": "ProgramLevel",
+              "hasMute": true
+            }
+          },
+          "presenterMic": {
+            "enabled": false
+          },
+          "control": {
+            "method": "ssh",
+            "tcpSshProperties": {
+              "port": 22,
+              "address": "10.11.50.191",
+              "ipAutoReconnectInterval": 1000,
+              "username": "default"
+            },
+            "comParams": {
+              "stopBits": 1,
+              "hardwareHandshake": "None",
+              "baudRate": 38400,
+              "dataBits": 8,
+              "parity": "None",
+              "softwareHandshake": "None",
+              "protocol": "RS232"
+            },
+            "params": {
+              "endOfLineString": "\n",
+              "deviceReadyResponsePattern": "Welcome to the Tesira Text Protocol Server.*"
+            }
+          }
+        },
+        "uid": 12,
+        "type": "biampTesira",
+        "name": "Biamp Tesira 1",
+        "key": "biampTesira-1"
+      }
+    ]
+  },
+  "template_url": "http://example.com/templates/9f143a56-a160-453a-a7cb-5854857fd220#/template_summary"
+}
