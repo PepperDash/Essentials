@@ -93,6 +93,7 @@
   <ItemGroup>
     <Compile Include="Crestron\Gateways\CenRfgwController.cs" />
     <Compile Include="Display\ComTcpDisplayBase.cs" />
+    <Compile Include="Display\SamsungMDCDisplay.cs" />
     <Compile Include="Display\DeviceFactory.cs" />
     <Compile Include="Display\NecPaSeriesProjector.cs" />
     <Compile Include="Display\NECPSXMDisplay.cs" />
