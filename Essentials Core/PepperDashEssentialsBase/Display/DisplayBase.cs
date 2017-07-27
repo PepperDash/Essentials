@@ -32,6 +32,7 @@ namespace PepperDash.Essentials.Core
 		abstract protected Func<bool> PowerIsOnFeedbackFunc { get; }
 		abstract protected Func<bool> IsCoolingDownFeedbackFunc { get; }
 		abstract protected Func<bool> IsWarmingUpFeedbackFunc { get; }
+        
 
 		protected CTimer WarmupTimer;
 		protected CTimer CooldownTimer;
@@ -78,7 +79,13 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public abstract class TwoWayDisplayBase : DisplayBase
 	{
-		public static MockDisplay DefaultDisplay { 
+        public StringFeedback CurrentInputFeedback { get; private set; }
+
+        abstract protected Func<string> CurrentInputFeedbackFunc { get; }
+
+
+        public static MockDisplay DefaultDisplay
+        { 
 			get 
 			{
 				if (_DefaultDisplay == null)
@@ -91,8 +98,12 @@ namespace PepperDash.Essentials.Core
 		public TwoWayDisplayBase(string key, string name)
 			: base(key, name)
 		{
+            CurrentInputFeedback = new StringFeedback(CurrentInputFeedbackFunc);
+
 			WarmupTime = 7000;
 			CooldownTime = 15000;
+
+            Feedbacks.Add(CurrentInputFeedback);
 		}
 
 	}

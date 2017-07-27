@@ -42,7 +42,7 @@ namespace PepperDash.Essentials.Devices.Displays
                 {
                     var comm = CommFactory.CreateCommForDevice(dc);
                     if (comm != null)
-                        return new SamsungMDC(dc.Key, dc.Name, comm, Convert.ToByte(dc.Properties["byte"]));
+                        return new SamsungMDC(dc.Key, dc.Name, comm, dc.Properties["id"].Value<string>());
                 }
                    
 			}

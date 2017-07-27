@@ -33,6 +33,7 @@ namespace PepperDash.Essentials.Core
 		protected override Func<bool> PowerIsOnFeedbackFunc { get { return () => _PowerIsOn; } }
 		protected override Func<bool> IsCoolingDownFeedbackFunc { get { return () => _IsCoolingDown; } }
 		protected override Func<bool> IsWarmingUpFeedbackFunc { get { return () => _IsWarmingUp; } }
+        protected override Func<string> CurrentInputFeedbackFunc { get { return () => "Not Implemented"; } }
 
         int VolumeHeldRepeatInterval = 200;
         ushort VolumeInterval = 655;

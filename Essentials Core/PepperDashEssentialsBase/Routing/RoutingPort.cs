@@ -16,6 +16,7 @@ namespace PepperDash.Essentials.Core
 		public eRoutingPortConnectionType ConnectionType { get; private set; }
 		public readonly object Selector;
 		public bool IsInternal { get; private set; }
+        public object FeedbackMatchObject { get; set; }
 
 		public RoutingPort(string key, eRoutingSignalType type, eRoutingPortConnectionType connType, object selector, bool isInternal)
 		{

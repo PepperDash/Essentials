@@ -30,7 +30,8 @@ namespace PepperDash.Essentials.Core.Routing
 		public const string DmIn = "dmIn";
 		public const string DmOut = "dmOut";
 		public const string DviIn = "dviIn";
-		public const string DviOut = "dviOut";
+        public const string DviIn1 = "dviIn1";
+        public const string DviOut = "dviOut";
 		public const string HdmiIn = "hdmiIn";
 		public const string HdmiIn1 = "hdmiIn1";
 		public const string HdmiIn2 = "hdmiIn2";
@@ -40,6 +41,8 @@ namespace PepperDash.Essentials.Core.Routing
 		public const string HdmiIn6 = "hdmiIn6";
 		public const string HdmiOut = "hdmiOut";
 		public const string RgbIn = "rgbIn";
+        public const string RgbIn1 = "rgbIn1";
+        public const string RgbIn2 = "rgbIn2";
 		public const string VgaIn = "vgaIn";
 		public const string VgaOut = "vgaOut";
 	}
