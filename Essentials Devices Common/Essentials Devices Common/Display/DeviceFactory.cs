@@ -38,6 +38,13 @@ namespace PepperDash.Essentials.Devices.Displays
 					if (comm != null)
 						return new NecPSXMDisplay(dc.Key, dc.Name, comm);
 				}
+                else if(typeName == "samsungmdc")
+                {
+                    var comm = CommFactory.CreateCommForDevice(dc);
+                    if (comm != null)
+                        return new SamsungMDC(dc.Key, dc.Name, comm, Convert.ToByte(dc.Properties["byte"]));
+                }
+                   
 			}
 			catch (Exception e)
 			{

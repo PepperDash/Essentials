@@ -89,7 +89,7 @@ namespace PepperDash.Essentials.Devices.Displays
             get { return AssembleCommand(string.Format("\x14{0}\x01\x1E", ID)); }
         }
 
-        public string CompCmd
+        public string Video1Cmd
         {
             get { return AssembleCommand(string.Format("\x14{0}\x01\x08", ID)); }
         }
@@ -119,14 +119,10 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <summary>
         /// To be appended with the requested volume level.  Does not include checksum calculation
         /// </summary>
-        public string VolumeLevelCmd
+        public string VolumeLevelPartialCmd
         {
-            get { return string.Format("\x1s{0}\x01", ID); }
+            get { return string.Format("\x12{0}\x01", ID); }
         }
-
-
-
-
 
         //public string InputGetCmd = "";
         //public const string Hdmi1Cmd = "";
@@ -173,16 +169,18 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <returns></returns>
         private string AssembleCommand(string command)
         {
-            double checksum = 0;
+            int checksum = 0;
 
             var bytes = command.ToCharArray();
 
             for (int i = 1; i < bytes.Length; i++)
             {
-                checksum = checksum + Char.GetNumericValue(bytes[i]);
+                checksum = checksum + Convert.ToByte(bytes[i]);
             }
 
-            string result = string.Format("{0}{1}", command, checksum);
+            var checksumByte = Convert.ToByte(checksum);
+
+            string result = string.Format("{0}{1}", command, (char)checksumByte);
 
             return result;
 
@@ -193,6 +191,8 @@ namespace PepperDash.Essentials.Devices.Displays
 		bool _IsCoolingDown;
 		ushort _VolumeLevel;
 		bool _IsMuted;
+        object _CurrentInputPort;
+#warning Add Input FeedbackFunc object
 
 		protected override Func<bool> PowerIsOnFeedbackFunc { get { return () => _PowerIsOn; } }
 		protected override Func<bool> IsCoolingDownFeedbackFunc { get { return () => _IsCoolingDown; } }
@@ -201,10 +201,11 @@ namespace PepperDash.Essentials.Devices.Displays
 		/// <summary>
 		/// Constructor for IBasicCommunication
 		/// </summary>
-		public SamsungMDC(string key, string name, IBasicCommunication comm)
+		public SamsungMDC(string key, string name, IBasicCommunication comm, byte id)
 			: base(key, name)
 		{
 			Communication = comm;
+            ID = id;
 			Init();
 		}
 		/// <summary>
@@ -214,6 +215,7 @@ namespace PepperDash.Essentials.Devices.Displays
 			: base(key, name)
 		{
 			Communication = new GenericTcpIpClient(key + "-tcp", hostname, port, 5000);
+            ID = id;
 			Init();
 		}
 
@@ -225,6 +227,7 @@ namespace PepperDash.Essentials.Devices.Displays
 			: base(key, name)
 		{
 			Communication = new ComPortController(key + "-com", port, spec);
+            ID = id;
 			Init();
 		}
 
@@ -240,20 +243,18 @@ namespace PepperDash.Essentials.Devices.Displays
 				eRoutingPortConnectionType.Hdmi, new Action(InputHdmi2), this));
 			InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, new Action(InputHdmi3), this));
-			InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn4, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi4), this));
 			InputPorts.Add(new RoutingInputPort(RoutingPortNames.DisplayPortIn1, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.DisplayPort, new Action(InputDisplayPort1), this));
-			InputPorts.Add(new RoutingInputPort(RoutingPortNames.DisplayPortIn2, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.DisplayPort, new Action(InputDisplayPort2), this));
 			InputPorts.Add(new RoutingInputPort(RoutingPortNames.DviIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Dvi, new Action(InputDvi1), this));
 			InputPorts.Add(new RoutingInputPort(RoutingPortNames.CompositeIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Composite, new Action(InputVideo1), this));
 			InputPorts.Add(new RoutingInputPort(RoutingPortNames.VgaIn, eRoutingSignalType.Video,
-                eRoutingPortConnectionType.Vga, new Action(InputVga), this));
+                eRoutingPortConnectionType.Vga, new Action(InputRgb1), this));
 			InputPorts.Add(new RoutingInputPort(RoutingPortNames.RgbIn, eRoutingSignalType.Video,
-                eRoutingPortConnectionType.Rgb, new Action(new Action(InputRgb)), this));
+                eRoutingPortConnectionType.Rgb, new Action(new Action(InputRgb2)), this));
+
+#warning Add missing input ports
 
 			VolumeLevelFeedback = new IntFeedback(() => { return _VolumeLevel; });
 			MuteFeedback = new BoolFeedback(() => _IsMuted);
@@ -299,22 +300,98 @@ namespace PepperDash.Essentials.Devices.Displays
 			if (Debug.Level == 2)
 				Debug.Console(2, this, "Received: '{0}'", ComTextHelper.GetEscapedText(args.Text));
 
-			if (args.Text=="DO SOMETHING HERE EVENTUALLY")
+			if (args.Text.IndexOf(Ack) > -1)
 			{
-				_IsMuted = true;
-				MuteFeedback.FireUpdate();
+                var bytes = args.Text.ToCharArray();
+
+                var commandByte = bytes[5];
+
+                var dataByte = bytes[6];
+
+                switch (commandByte)
+                {
+                    case '\x11':    // Power State
+                        {
+                            if (dataByte == '\x00')
+                            {
+                                if (_PowerIsOn)
+                                {
+                                    _IsWarmingUp = false;
+                                    _IsCoolingDown = true;
+                                    IsCoolingDownFeedback.FireUpdate();
+                                    IsWarmingUpFeedback.FireUpdate();
+                                    _PowerIsOn = false;
+                                }
+                            }
+                            else if (dataByte == '\x01')
+                            {
+                                if (!_PowerIsOn)
+                                {
+                                    _IsCoolingDown = false;
+                                    _IsWarmingUp = true;
+                                    IsCoolingDownFeedback.FireUpdate();
+                                    IsWarmingUpFeedback.FireUpdate();
+                                    _PowerIsOn = true;
+                                }
+                            }
+
+                            PowerIsOnFeedback.FireUpdate();
+                            break;
+                        }
+                    case '\x12':    // Volume Level
+                        {
+                            _VolumeLevel = (ushort)Scale(dataByte, 0, 100, 0, 65535);
+
+                            VolumeLevelFeedback.FireUpdate();
+                            break;
+                        }
+                    case '\x13':    // Mute State
+                        {
+                            if (dataByte == '\x00')
+                            {
+                                _IsMuted = false;
+                            }
+                            else if (dataByte == '\x01')
+                            {
+                                _IsMuted = true;
+                            }
+
+
+                            MuteFeedback.FireUpdate();
+                            break;
+                        }
+                    case '\x14':    // Input State
+                        {
+                            switch (dataByte)
+                            {
+                                case '\x25':    // DisplayPort
+                                    {
+#warning Handle input port types
+
+                                        //_CurrentInputPort = 
+                                        break;
+                                    }
+                            }
+                            
+                            break;
+                        }
+                    case '\x15':    // Aspect Ratio
+                        {
+
+                            break;
+                        }
+                    default:
+                        {
+                            Debug.Console(2, this, "Unreckocnized Response Command Type: {0}", commandByte);
+                            break;
+                        }
+                }
 			}
+            else if (args.Text.IndexOf(Nak) > -1)
+            {
+                Debug.Console(2, this, "Nak received");
+            }
 		}
-
-        //void AppendChecksumAndSend(string s)
-        //{
-        //    int x = 0;
-        //    for (int i = 1; i < s.Length; i++)
-        //        x = x ^ s[i];
-
-        //    string send = s + (char)x + '\x0d';
-        //    Send(send);
-        //}
 
 		void Send(string s)
 		{
@@ -386,19 +463,9 @@ namespace PepperDash.Essentials.Devices.Displays
 			Send(Hdmi3Cmd);
 		}
 
-		public void InputHdmi4()
-		{
-			Send(Hdmi4Cmd);
-		}
-
 		public void InputDisplayPort1()
 		{
 			Send(Dp1Cmd);
-		}
-
-		public void InputDisplayPort2()
-		{
-			Send(Dp2Cmd);
 		}
 
 		public void InputDvi1()
@@ -411,15 +478,15 @@ namespace PepperDash.Essentials.Devices.Displays
 			Send(Video1Cmd);
 		}
 
-		public void InputVga()
+		public void InputRgb1()
 		{
-			Send(VgaCmd);
+			Send(Rgb1Cmd);
 		}
 
-		public void InputRgb()
-		{
-			Send(RgbCmd);
-		}
+        public void InputRgb2()
+        {
+            Send(Rgb2Cmd);
+        }
 
 		public override void ExecuteSwitch(object selector)
 		{
@@ -430,14 +497,41 @@ namespace PepperDash.Essentials.Devices.Displays
 			//Send((string)selector);
 		}
 
+        /// <summary>
+        /// Scales the level to the range of the display and sends the command
+        /// </summary>
+        /// <param name="level"></param>
 		void SetVolume(ushort level)
 		{
-			var levelString = string.Format("{0}{1:X4}\x03", VolumeLevelPartialCmd, level);
-			AppendChecksumAndSend(levelString);
-			//Debug.Console(2, this, "Volume:{0}", ComTextHelper.GetEscapedText(levelString));
-			_VolumeLevel = level;
+            var scaledLevel = Scale(level, 0, 65535, 0, 100);
+
+            var levelString = string.Format("{0}{1}", VolumeLevelPartialCmd, Convert.ToByte(scaledLevel));
+            var command = AssembleCommand(levelString);
+            Debug.Console(2, this, "Volume:{0}", ComTextHelper.GetEscapedText(command));
+            Send(command);
+            _VolumeLevel = level;
 			VolumeLevelFeedback.FireUpdate();
 		}
+
+        double Scale(double input, double inMin, double inMax, double outMin, double outMax)
+        {
+            Debug.Console(2, this, "Scaling (double) input '{0}' with min '{1}'/max '{2}' to output range min '{3}'/max '{4}'", input, inMin, inMax, outMin, outMax);
+
+            double inputRange = inMax - inMin;
+
+            if (inputRange <= 0)
+            {
+                throw new ArithmeticException(string.Format("Invalid Input Range '{0}' for Scaling.  Min '{1}' Max '{2}'.", inputRange, inMin, inMax));
+            }
+
+            double outputRange = outMax - outMin;
+
+            var output = (((input - inMin) * outputRange) / inputRange) + outMin;
+
+            Debug.Console(2, this, "Scaled output '{0}'", output);
+
+            return output;
+        }
 
 		#region IBasicVolumeWithFeedback Members
 	
@@ -466,7 +560,14 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		public void MuteToggle()
 		{
-			Send(MuteToggleIrCmd);
+            if (_IsMuted)
+            {
+                Send(MuteOffCmd);
+            }
+            else
+            {
+                Send(MuteOnCmd);
+            }
 		}
 
 		public void VolumeDown(bool pressRelease)
