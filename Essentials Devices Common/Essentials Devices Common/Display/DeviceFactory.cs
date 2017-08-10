@@ -48,7 +48,8 @@ namespace PepperDash.Essentials.Devices.Displays
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, "Displays factory: Exception creating device type {0}, key {1}: {2}", dc.Type, dc.Key, e.Message);
+				Debug.Console(0, "Displays factory: Exception creating device type {0}, key {1}: \nCONFIG JSON: {2} \nERROR: {3}\n\n", 
+                    dc.Type, dc.Key, JsonConvert.SerializeObject(dc), e);
 				return null;
 			}
 
