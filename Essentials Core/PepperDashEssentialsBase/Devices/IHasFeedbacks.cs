@@ -21,32 +21,39 @@ namespace PepperDash.Essentials.Core
 	{
 		public static void DumpFeedbacksToConsole(this IHasFeedback source, bool getCurrentStates)
 		{
-			var outputs = source.Feedbacks.OrderBy(x => x.Type);
-			if (outputs != null)
+			var feedbacks = source.Feedbacks.OrderBy(x => x.Type);
+			if (feedbacks != null)
 			{
-				Debug.Console(0, source, "\n\nAvailable outputs:");
-				foreach (var o in outputs)
+				Debug.Console(0, source, "\n\nAvailable feedbacks:");
+				foreach (var f in feedbacks)
 				{
 					string val = "";
 					if (getCurrentStates)
 					{
-						switch (o.Type)
-						{
-							case eCueType.Bool:
-								val = " = " + o.BoolValue;
-								break;
-							case eCueType.Int:
-								val = " = " + o.IntValue;
-								break;
-							case eCueType.String:
-								val = " = " + o.StringValue;
-								break;
-							//case eOutputType.Other:
-							//    break;
-						}
+                        if (f is BoolFeedback)
+                            val = " = " + f.BoolValue;
+                        else if(f is IntFeedback)
+                            val = " = " + f.IntValue;
+                        else if(f is StringFeedback)
+                            val = " = " + f.StringValue;
+
+                        //switch (f.Type)
+                        //{
+                        //    case eCueType.Bool:
+                        //        val = " = " + f.BoolValue;
+                        //        break;
+                        //    case eCueType.Int:
+                        //        val = " = " + f.IntValue;
+                        //        break;
+                        //    case eCueType.String:
+                        //        val = " = " + f.StringValue;
+                        //        break;
+                        //    //case eOutputType.Other:
+                        //    //    break;
+                        //}
 					}
-					Debug.Console(0, "{0,-8} {1,5} {2}{3}", o.Type, o.Cue.Number,
-						(string.IsNullOrEmpty(o.Cue.Name) ? "-none-" : o.Cue.Name), val);
+					Debug.Console(0, "{0,-8} {1}{2}", f.GetType(),
+						(string.IsNullOrEmpty(f.Cue.Name) ? "-none-" : f.Cue.Name), val);
 				}
 			}
 			else

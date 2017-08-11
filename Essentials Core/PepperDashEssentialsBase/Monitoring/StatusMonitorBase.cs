@@ -29,7 +29,6 @@ namespace PepperDash.Essentials.Core
 					_Status = value;
 					OnStatusChange(value);
 				}
-
 			}
 		}
 		MonitorStatus _Status;
@@ -96,5 +95,12 @@ namespace PepperDash.Essentials.Core
 			ErrorTimer = null;
 		}
 
+        public void ResetErrorTimers()
+        {
+            if(WarningTimer != null)
+                WarningTimer.Reset(WarningTime, WarningTime);
+            if(ErrorTimer != null)
+                ErrorTimer.Reset(ErrorTime, ErrorTime);
+        }
 	}
 }

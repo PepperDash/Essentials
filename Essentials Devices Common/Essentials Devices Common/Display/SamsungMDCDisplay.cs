@@ -16,65 +16,10 @@ namespace PepperDash.Essentials.Devices.Displays
 	public class SamsungMDC : TwoWayDisplayBase, IBasicVolumeWithFeedback, ICommunicationMonitor
 	{
 		public IBasicCommunication Communication { get; private set; }
-		public CommunicationGather PortGather { get; private set; }
-		public StatusMonitorBase CommunicationMonitor { get; private set; }
-
-        private StringBuilder Buffer = new StringBuilder();
-
-		#region Command constants
-
-        public string Ack { get; private set; }
-        public string Nak { get; private set; }
-
-        // Volume Commands
-
-        //public string MuteGetCmd { get; private set; }
-
-        //public string MuteOnCmd { get; private set; }
-
-        //public string MuteOffCmd { get; private set; }
-
-        //public string VolumeGetCmd { get; private set; }
-
-        /// <summary>
-        /// To be appended with the requested volume level.  Does not include checksum calculation
-        /// </summary>
-        public string VolumeLevelPartialCmd { get; private set; }
-
-		#endregion
-
+				
+        public StatusMonitorBase CommunicationMonitor { get; private set; }
 
         public byte ID { get; private set; }
-
-        /// <summary>
-        /// Builds the command by including the ID of the display and calculating the checksum
-        /// </summary>
-        /// <param name="command"></param>
-        /// <returns></returns>
-        private string AppendChecksum(string command)
-        {
-            int checksum = 0;
-
-            //var bytes = command.ToCharArray();
-
-            byte[] bytes = Encoding.ASCII.GetBytes(command);
-
-            for (int i = 1; i < bytes.Length; i++)   /*Convert.ToByte(bytes[i]*/
-            {
-                checksum = checksum + bytes[i];
-            }
-
-            if (checksum >= 0x100)            // Check if value is greater than 0x100 and if so, remove the first digit by subtracting 0x100
-                checksum = checksum - 0x100;
-
-            var checksumByte = Convert.ToByte(checksum);
-            Debug.Console(2, "Append checksum: command={0}, checksum={1}", ComTextHelper.GetEscapedText(command), checksumByte);
-
-            string result = string.Format("{0}{1}", command, (char)checksumByte);
-
-            return result;
-
-        }
 
 		bool _PowerIsOn;
 		bool _IsWarmingUp;
@@ -82,6 +27,7 @@ namespace PepperDash.Essentials.Devices.Displays
 		ushort _VolumeLevel;
 		bool _IsMuted;
         RoutingInputPort _CurrentInputPort;
+        //CTimer StatusTimer;
 
 		protected override Func<bool> PowerIsOnFeedbackFunc { get { return () => _PowerIsOn; } }
 		protected override Func<bool> IsCoolingDownFeedbackFunc { get { return () => _IsCoolingDown; } }
@@ -96,13 +42,12 @@ namespace PepperDash.Essentials.Devices.Displays
 			: base(key, name)
 		{
 			Communication = comm;
-            Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
+            //Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
+            Communication.BytesReceived += new EventHandler<GenericCommMethodReceiveBytesArgs>(Communication_BytesReceived);
+
             ID = id == null ? (byte)0x01 : Convert.ToByte(id, 16); // If id is null, set default value of 0x01, otherwise assign value passed in constructor
             Init();
 		}
-
-
-
 
 		/// <summary>
 		/// Constructor for TCP
@@ -111,7 +56,7 @@ namespace PepperDash.Essentials.Devices.Displays
 			: base(key, name)
 		{
 			Communication = new GenericTcpIpClient(key + "-tcp", hostname, port, 5000);
-            Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
+            //Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
             ID = id == null ? (byte)0x01 : Convert.ToByte(id, 16); // If id is null, set default value of 0x01, otherwise assign value passed in constructor
             Init();
 		}
@@ -124,90 +69,58 @@ namespace PepperDash.Essentials.Devices.Displays
 			: base(key, name)
 		{
 			Communication = new ComPortController(key + "-com", port, spec);
-            Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
+            //Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
+
             ID = id == null ? (byte)0x01 : Convert.ToByte(id, 16); // If id is null, set default value of 0x01, otherwise assign value passed in constructor
             Init();
 		}
 
-        void AddRoutingInputPort(RoutingInputPort port, string cmdPrefix, byte fbMatch)
+        void AddRoutingInputPort(RoutingInputPort port, byte fbMatch)
         {
             port.FeedbackMatchObject = fbMatch;
             InputPorts.Add(port);
-
         }
 
 		void Init()
 		{
-
-            CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, AppendChecksum(string.Format("\x11{0}\x01\x01", ID)));
-
-            // Build Command Strings
-
-            Ack = AppendChecksum(string.Format("\xAA\xFF{0}\x03A", ID));
-
-            Nak = AppendChecksum(string.Format("\xAA\xFF{0}\x03N", ID));
-
-            string cmdPrefix = string.Format("\x14{0}\x01", ID);
+            WarmupTime = 10000;
+            CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, StatusGet);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi1), this), cmdPrefix, 0x21);
+                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi1), this), 0x21);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi2), this), cmdPrefix, 0x23);
+                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi2), this), 0x23);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi3), this), cmdPrefix, 0x32);
+                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi3), this), 0x32);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.DisplayPortIn1, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.DisplayPort, new Action(InputDisplayPort1), this), cmdPrefix, 0x25);
+                eRoutingPortConnectionType.DisplayPort, new Action(InputDisplayPort1), this), 0x25);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.DviIn, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Dvi, new Action(InputDvi1), this), cmdPrefix, 0x18);
+                eRoutingPortConnectionType.Dvi, new Action(InputDvi1), this), 0x18);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.CompositeIn, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Composite, new Action(InputVideo1), this), cmdPrefix, 0x08);
+                eRoutingPortConnectionType.Composite, new Action(InputVideo1), this), 0x08);
 
 			AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.RgbIn1, eRoutingSignalType.Video,
-                eRoutingPortConnectionType.Vga, new Action(InputRgb1), this), cmdPrefix, 0x14);
+                eRoutingPortConnectionType.Vga, new Action(InputRgb1), this), 0x14);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.RgbIn2, eRoutingSignalType.Video,
-                eRoutingPortConnectionType.Rgb, new Action(new Action(InputRgb2)), this), cmdPrefix, 0x1E);
-
-            // Mute Commands
-
-            //MuteGetCmd = AppendChecksum(string.Format("\x13{0}\x00", ID));
-
-            //MuteOnCmd = AppendChecksum(string.Format("\x13{0}\x01\x01", ID));
-
-            //MuteOffCmd = AppendChecksum(string.Format("\x13{0}\x01\x00", ID));
-
-            // Volume Commands
-
-            //VolumeGetCmd = AppendChecksum(string.Format("\x12{0}\x00", ID));
-
-            VolumeLevelPartialCmd = string.Format("\x12{0}\x01", ID);
+                eRoutingPortConnectionType.Rgb, new Action(new Action(InputRgb2)), this), 0x1E);
 
 			VolumeLevelFeedback = new IntFeedback(() => { return _VolumeLevel; });
 			MuteFeedback = new BoolFeedback(() => _IsMuted);
 
-            // Query initial device status
-
-            //Send(PowerGetCmd);
-            PowerGet();
-
-            InputGet();
-            //Send(InputGetCmd);
-
-            VolumeGet();
-
-            MuteGet();
+            StatusGet();
+            //StatusTimer = new CTimer(o => StatusGet(), null, 0, 30000);
 		}
 
-		~SamsungMDC()
-		{
-			PortGather = null;
-		}
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public override bool CustomActivate()
 		{
 			Communication.Connect();
@@ -223,136 +136,105 @@ namespace PepperDash.Essentials.Devices.Displays
 				var list = base.Feedbacks;
 				list.AddRange(new List<Feedback>
 				{
-
+                    VolumeLevelFeedback,
+                    MuteFeedback,
+                    CurrentInputFeedback
 				});
 				return list;
 			}
 		}
 
-        void Communication_TextReceived(object sender, GenericCommMethodReceiveTextArgs e)
+        /// <summary>
+        /// /
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Communication_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
         {
-            Buffer.Append(e.Text);
-
-            if (Debug.Level == 2)
-                Debug.Console(2, this, "Received: '{0}'", ComTextHelper.GetEscapedText(e.Text));
-
-            ParseData();
-        }
-
-        void ParseData()
-        {
-            if(Buffer.Length < 8)       // Message length must be > 8 bytes
-                return;
-
-            var sample = Buffer.ToString();
-
-            var messageStart = sample.IndexOf("\xAA\xFF");
-
-            if (messageStart > -1)
+            var b = e.Bytes;
+            Debug.Console(0, this, "Parsing: {0}", ComTextHelper.GetEscapedText(b));
+            if (b[0] == 0xAA && b[1] == 0xFF)
             {
-                StringBuilder garbage;
-
-                if(messageStart > 0)        // Check for leftover bytes before first full message and remove
-                     garbage = Buffer.Remove(0, messageStart - 1);
-
-                var chunk = Buffer.Remove(messageStart, 8);     // Remove first message
-
-                var message = chunk.ToString();
-
-                if (message.IndexOf(Ack) > -1)                  // Check to see if Ack message
+                if (b[4] == 0x41)
                 {
-                    var bytes = message.ToCharArray();
-
-                    var commandByte = bytes[5];
-
-                    var dataByte = bytes[6];
-
-                    switch (commandByte)
+                    var typeByte = b[5];
+                    switch (typeByte)
                     {
-                        case '\x11':    // Power State
-                            {
-                                var currentState = _PowerIsOn;
+                        case 0x00: // General status
+                            UpdatePowerFB(b[6]);
+                            UpdateVolumeFB(b[7]);
+                            UpdateMuteFb(b[8]);
+                            UpdateInputFb(b[9]);
+                            break;
 
-                                if (dataByte == '\x00')
-                                    _PowerIsOn = false;
+                        case 0x11:
+                            UpdatePowerFB(b[6]);
+                            break;
 
-                                else if (dataByte == '\x01')
-                                    _PowerIsOn = true;
+                        case 0x12:
+                            UpdateVolumeFB(b[6]);
+                            break;
+                            
+                        case 0x13:
+                            UpdateMuteFb(b[6]);
+                            break;
 
-                                if(currentState != _PowerIsOn)
-                                    PowerIsOnFeedback.FireUpdate();
+                        case 0x14:
+                            UpdateInputFb(b[6]);
+                            break;
 
-                                break;
-                            }
-                        case '\x12':    // Volume Level
-                            {
-                                _VolumeLevel = (ushort)Scale(dataByte, 0, 100, 0, 65535);
-
-                                VolumeLevelFeedback.FireUpdate();
-                                break;
-                            }
-                        case '\x13':    // Mute State
-                            {
-                                if (dataByte == '\x00')
-                                {
-                                    _IsMuted = false;
-                                }
-                                else if (dataByte == '\x01')
-                                {
-                                    _IsMuted = true;
-                                }
-
-
-                                MuteFeedback.FireUpdate();
-                                break;
-                            }
-                        case '\x14':    // Input State
-                            {
-                                var currentInput = InputPorts.FirstOrDefault(i => i.FeedbackMatchObject.Equals(dataByte));
-
-                                if (currentInput != null)
-                                {
-                                    _CurrentInputPort = currentInput;
-
-                                    CurrentInputFeedback.FireUpdate();
-                                }
-
-                                break;
-                            }
-                        case '\x15':    // Aspect Ratio
-                            {
-                                // Not implemented yet
-
-                                break;
-                            }
                         default:
-                            {
-                                Debug.Console(2, this, "Unreckocnized Response Command Type: {0}", commandByte);
-                                break;
-                            }
+                            break;
                     }
                 }
-                else if (message.IndexOf(Nak) > -1)
-                {
-                    Debug.Console(2, this, "Nak received");
-                }
+            }
+        }
 
+        void UpdatePowerFB(byte b)
+        {
+            var newVal = b == 1;
+            if (newVal != _PowerIsOn)
+            {
+                _PowerIsOn = newVal;
+                PowerIsOnFeedback.FireUpdate();
+            }
+
+        }
+
+        void UpdateVolumeFB(byte b)
+        {
+            var newVol = (ushort)Scale((double)b, 0, 100, 0, 65535);
+            if (newVol != _VolumeLevel)
+            {
+                _VolumeLevel = newVol;
+                VolumeLevelFeedback.FireUpdate();
+            }
+        }
+
+        void UpdateMuteFb(byte b)
+        {
+            var newMute = b == 1;
+            if (newMute != _IsMuted)
+            {
+                _IsMuted = newMute;
+                MuteFeedback.FireUpdate();
+            }
+        }
+
+        void UpdateInputFb(byte b)
+        {
+            var newInput = InputPorts.FirstOrDefault(i => i.FeedbackMatchObject.Equals(b));
+            if (newInput != null && newInput != _CurrentInputPort)
+            {
+                _CurrentInputPort = newInput;
+                CurrentInputFeedback.FireUpdate();
             }
         }
 
         /// <summary>
-        /// Append checksup and send command to device
+        /// Formats an outgoing message. Replaces third byte with ID and replaces last byte with checksum
         /// </summary>
-        /// <param name="s"></param>
-		void Send(string s)
-		{
-            var cmd = AppendChecksum(s);
-
-			if (Debug.Level == 2)
-                Debug.Console(2, this, "Send: '{0}'", ComTextHelper.GetEscapedText(cmd));
-            Communication.SendText(cmd);
-		}
-
+        /// <param name="b"></param>
         void SendBytes(byte[] b)
         {
             b[2] = ID;
@@ -366,13 +248,22 @@ namespace PepperDash.Essentials.Devices.Displays
             b[b.Length - 1] = (byte)checksum;
             if(Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
                 Debug.Console(2, this, "Sending:{0}", ComTextHelper.GetEscapedText(b));
+            CommunicationMonitor.ResetErrorTimers(); // Helps prevent message collisions
             Communication.SendBytes(b);
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public void StatusGet()
+        {
+            SendBytes(new byte[] { 0xAA, 0x00, 0x00, 0x00, 0x00 });
+        }
 
-
-
+        /// <summary>
+        /// 
+        /// </summary>
         public override void PowerOn()
 		{
             //Send(PowerOnCmd);
@@ -429,12 +320,12 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		public void InputHdmi1()
 		{
-            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x21, 0x00 });
+            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x22, 0x00 });
 		}
 
 		public void InputHdmi2()
 		{
-            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x23, 0x00 });
+            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x24, 0x00 });
         }
 
 		public void InputHdmi3()
@@ -450,6 +341,11 @@ namespace PepperDash.Essentials.Devices.Displays
 		public void InputDisplayPort1()
 		{
             SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x25, 0x00 });
+        }
+
+        public void InputDisplayPort2()
+        {
+            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x26, 0x00 });
         }
 
 		public void InputDvi1()
@@ -477,35 +373,56 @@ namespace PepperDash.Essentials.Devices.Displays
             SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x00, 0x00 });
         }
 
+        /// <summary>
+        /// Executes a switch, turning on display if necessary.
+        /// </summary>
+        /// <param name="selector"></param>
 		public override void ExecuteSwitch(object selector)
 		{
-            if (selector is Action)
-                (selector as Action).Invoke();
-            else
+            if (!(selector is Action))
                 Debug.Console(1, this, "WARNING: ExecuteSwitch cannot handle type {0}", selector.GetType());
-			//Send((string)selector);
+         
+            if (_PowerIsOn)
+                (selector as Action)();
+            else // if power is off, wait until we get on FB to send it. 
+            {
+                // One-time event handler to wait for power on before executing switch
+                EventHandler<EventArgs> handler = null; // necessary to allow reference inside lambda to handler
+                handler = (o, a) =>
+                {
+                    if (!_IsWarmingUp) // Done warming
+                    {
+                        IsWarmingUpFeedback.OutputChange -= handler;
+                        (selector as Action)();
+                    }
+                };
+                IsWarmingUpFeedback.OutputChange += handler; // attach and wait for on FB
+                PowerOn();
+            }
 		}
 
         /// <summary>
         /// Scales the level to the range of the display and sends the command
         /// </summary>
         /// <param name="level"></param>
-		void SetVolume(ushort level)
+		public void SetVolume(ushort level)
 		{
-            var scaledLevel = Scale(level, 0, 65535, 0, 100);
-
-            var levelString = string.Format("{0}{1}", VolumeLevelPartialCmd, Convert.ToByte(scaledLevel));
-            Debug.Console(2, this, "Volume:{0}", ComTextHelper.GetEscapedText(levelString));
-
-            var volByte = BitConverter.GetBytes(scaledLevel) FIX THIS HERE!!!!!!!!!!!
-            Send(levelString);
-            _VolumeLevel = level;
-			VolumeLevelFeedback.FireUpdate();
+            var volByte = Convert.ToByte(Scale(level, 0, 65535, 0, 100)); // The inputs to Scale ensures it won't overflow
+            SendBytes(new byte[] { 0xAA, 0x12, 0x00, 0x01, volByte, 0x00 });
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="inMin"></param>
+        /// <param name="inMax"></param>
+        /// <param name="outMin"></param>
+        /// <param name="outMax"></param>
+        /// <returns></returns>
         double Scale(double input, double inMin, double inMax, double outMin, double outMax)
         {
-            Debug.Console(2, this, "Scaling (double) input '{0}' with min '{1}'/max '{2}' to output range min '{3}'/max '{4}'", input, inMin, inMax, outMin, outMax);
+            //Debug.Console(2, this, "Scaling (double) input '{0}' with min '{1}'/max '{2}' to output range min '{3}'/max '{4}'", input, inMin, inMax, outMin, outMax);
 
             double inputRange = inMax - inMin;
 
@@ -518,13 +435,13 @@ namespace PepperDash.Essentials.Devices.Displays
 
             var output = (((input - inMin) * outputRange) / inputRange) + outMin;
 
-            Debug.Console(2, this, "Scaled output '{0}'", output);
+           // Debug.Console(2, this, "Scaled output '{0}'", output);
 
             return output;
         }
 
 		#region IBasicVolumeWithFeedback Members
-	
+	    
 		public IntFeedback VolumeLevelFeedback { get; private set; }
 
 		public BoolFeedback MuteFeedback { get; private set; }
@@ -553,15 +470,6 @@ namespace PepperDash.Essentials.Devices.Displays
             SendBytes(new byte[] { 0xAA, 0x13, 0x00, 0x00, 0x00 });
         }
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="level"></param>
-        //void SetVolume(ushort level)
-        //{
-        //    SetVolume(level);
-        //}
-
 		#endregion
 
 		#region IBasicVolumeControls Members
@@ -583,19 +491,16 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <param name="pressRelease"></param>
 		public void VolumeDown(bool pressRelease)
 		{
-			//throw new NotImplementedException();
-//#warning need incrementer for these
-			SetVolume(_VolumeLevel++);
+			throw new NotImplementedException();
 		}
 
         /// <summary>
-        /// /
+        /// 
         /// </summary>
         /// <param name="pressRelease"></param>
 		public void VolumeUp(bool pressRelease)
 		{
-			//throw new NotImplementedException();
-            SetVolume(_VolumeLevel--);
+			throw new NotImplementedException();
 		}
 
         public void VolumeGet()

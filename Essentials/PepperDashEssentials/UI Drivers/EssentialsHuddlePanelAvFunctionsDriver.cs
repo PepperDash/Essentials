@@ -212,6 +212,7 @@ namespace PepperDash.Essentials
                 ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
 
 #warning Add press and hold to gear button here
+            TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = false;
             TriList.SetSigFalseAction(UIBoolJoin.GearHeaderButtonPress, () =>
                 ShowInterlockedModal(UIBoolJoin.VolumesPageVisible));
 
@@ -700,7 +701,7 @@ namespace PepperDash.Essentials
 			if (this.IsVisible)
 				ShowCurrentSource();
 
-			if (routeInfo == null || !CurrentRoom.OnFeedback.BoolValue)
+			if (routeInfo == null)// || !CurrentRoom.OnFeedback.BoolValue)
 			{
 				// Check for power off and insert "Room is off"
 				TriList.StringInput[UIStringJoin.CurrentSourceName].StringValue = "Room is off";

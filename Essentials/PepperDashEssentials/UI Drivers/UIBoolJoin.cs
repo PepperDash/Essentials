@@ -249,6 +249,10 @@ namespace PepperDash.Essentials
         /// </summary>
 		public const uint VolumeGaugePopupVisible = 15036;
         /// <summary>
+        /// 15037
+        /// </summary>
+        public const uint GearButtonVisible = 15037;
+        /// <summary>
         /// 15040
         /// </summary>
         public const uint CallStatusPageVisible = 15040;

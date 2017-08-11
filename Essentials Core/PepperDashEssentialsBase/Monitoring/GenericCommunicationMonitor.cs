@@ -24,6 +24,7 @@ namespace PepperDash.Essentials.Core
 		long PollTime;
 		CTimer PollTimer;
 		string PollString;
+        Action PollAction;
 		
 		/// <summary>
 		/// 
@@ -46,6 +47,30 @@ namespace PepperDash.Essentials.Core
 			PollTime = pollTime;
 			PollString = pollString;
 		}
+
+        /// <summary>
+        /// Poll is a provided action instead of string
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="client"></param>
+        /// <param name="pollTime"></param>
+        /// <param name="warningTime"></param>
+        /// <param name="errorTime"></param>
+        /// <param name="pollBytes"></param>
+        public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, long pollTime,
+            long warningTime, long errorTime, Action pollAction) :
+            base(parent, warningTime, errorTime)
+        {
+            if (pollTime > warningTime || pollTime > errorTime)
+                throw new ArgumentException("pollTime must be less than warning or errorTime");
+            if (pollTime < 5000)
+                throw new ArgumentException("pollTime cannot be less than 5000 ms");
+
+            Client = client;
+            PollTime = pollTime;
+            PollAction = pollAction;
+        }
+
 
 		/// <summary>
 		/// Build the monitor from a config object
@@ -88,7 +113,10 @@ namespace PepperDash.Essentials.Core
 			if (Client.IsConnected)
 			{
 				Debug.Console(2, Client, "Monitor, Polling");
-				Client.SendText(PollString);
+                if(PollAction != null)
+                    PollAction.Invoke();
+                else
+                    Client.SendText(PollString);
 			}
 			else
 			{
