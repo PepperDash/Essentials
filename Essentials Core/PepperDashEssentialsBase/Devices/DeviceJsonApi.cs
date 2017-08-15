@@ -73,7 +73,7 @@ namespace PepperDash.Essentials.Core
 
 			CType t = obj.GetType();
 			// get the properties and set them into a new collection of NameType wrappers
-			var props = t.GetProperties().Select(p => new PropertyNameType(p));
+			var props = t.GetProperties().Select(p => new PropertyNameType(p, obj));
 			return JsonConvert.SerializeObject(props, Formatting.Indented);
 		}
 
@@ -197,6 +197,27 @@ namespace PepperDash.Essentials.Core
 			}
 			return obj;
 		}
+
+        /// <summary>
+        /// Sets a property on an object.
+        /// </summary>
+        /// <param name="deviceObjectPath"></param>
+        /// <returns></returns>
+        public static string SetProperty(string deviceObjectPath)
+        {
+            throw new NotImplementedException("This could be really useful. Finish it please");
+
+            //var obj = FindObjectOnPath(deviceObjectPath);
+            //if (obj == null)
+            //    return "{\"error\":\"No object found\"}";
+
+            //CType t = obj.GetType();
+
+
+            //// get the properties and set them into a new collection of NameType wrappers
+            //var props = t.GetProperties().Select(p => new PropertyNameType(p, obj));
+            //return JsonConvert.SerializeObject(props, Formatting.Indented);
+        }
 	}
 
 	public class DeviceActionWrapper
@@ -208,14 +229,26 @@ namespace PepperDash.Essentials.Core
 
 	public class PropertyNameType
 	{
+        object Parent;
+
 		[JsonIgnore]
 		public PropertyInfo PropInfo { get; private set; }
 		public string Name { get { return PropInfo.Name; } }
 		public string Type { get { return PropInfo.PropertyType.Name; } }
+        public string Value { get {
+            if (PropInfo.CanRead)
+                return PropInfo.GetValue(Parent, null).ToString();
+            else
+                return "-";
+        } }
+        public bool CanRead { get { return PropInfo.CanRead; } }
+        public bool CanWrite { get { return PropInfo.CanWrite; } }
 
-		public PropertyNameType(PropertyInfo info)
+
+		public PropertyNameType(PropertyInfo info, object parent)
 		{
 			PropInfo = info;
+            Parent = parent;
 		}
 	}
 

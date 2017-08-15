@@ -29,10 +29,10 @@ namespace PepperDash.Essentials.Core
 
 		public static void Initialize(CrestronControlSystem cs)
 		{
-			CrestronConsole.AddNewConsoleCommand(ListDeviceCommands, "devcmdlist", "Lists commands", 
-				ConsoleAccessLevelEnum.AccessOperator);
-			CrestronConsole.AddNewConsoleCommand(DoDeviceCommand, "devcmd", "Runs a command on device - key Name value", 
-				ConsoleAccessLevelEnum.AccessOperator);
+            //CrestronConsole.AddNewConsoleCommand(ListDeviceCommands, "devcmdlist", "Lists commands", 
+            //    ConsoleAccessLevelEnum.AccessOperator);
+            //CrestronConsole.AddNewConsoleCommand(DoDeviceCommand, "devcmd", "Runs a command on device - key Name value", 
+            //    ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(ListDeviceCommStatuses, "devcommstatus", "Lists the communication status of all devices",
 				ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(ListDeviceFeedbacks, "devfb", "Lists current feedbacks", 
@@ -105,7 +105,6 @@ namespace PepperDash.Essentials.Core
 			Debug.Console(0, "{0} Devices registered with Device Mangager:",Devices.Count);
 			var sorted = Devices.Values.ToList();
 			sorted.Sort((a, b) => a.Key.CompareTo(b.Key));
-			//var devs = Devices.Values.Where(d => d is IKeyed).Select(d => d as IKeyed);
 
 			foreach (var d in sorted)
 			{
@@ -131,16 +130,16 @@ namespace PepperDash.Essentials.Core
 			statusDev.DumpFeedbacksToConsole(true);
 		}
 
-		static void ListDeviceCommands(string devKey)
-		{
-			var dev = GetDeviceForKey(devKey);
-			if (dev == null)
-			{
-				Debug.Console(0, "Device '{0}' not found", devKey);
-				return;
-			}
-			Debug.Console(0, "This needs to be reworked.  Stay tuned.", devKey);
-		}
+        //static void ListDeviceCommands(string devKey)
+        //{
+        //    var dev = GetDeviceForKey(devKey);
+        //    if (dev == null)
+        //    {
+        //        Debug.Console(0, "Device '{0}' not found", devKey);
+        //        return;
+        //    }
+        //    Debug.Console(0, "This needs to be reworked.  Stay tuned.", devKey);
+        //}
 
 		static void ListDeviceCommStatuses(string input)
 		{
@@ -154,10 +153,10 @@ namespace PepperDash.Essentials.Core
 		}
 
 
-		static void DoDeviceCommand(string command)
-		{
-			Debug.Console(0, "Not yet implemented.  Stay tuned");
-		}
+        //static void DoDeviceCommand(string command)
+        //{
+        //    Debug.Console(0, "Not yet implemented.  Stay tuned");
+        //}
 
 		public static void AddDevice(IKeyed newDev)
 		{
@@ -167,7 +166,7 @@ namespace PepperDash.Essentials.Core
 			//if (existingDevice != null)
 			if(Devices.ContainsKey(newDev.Key))
 			{
-				Debug.Console(0, newDev, "A device with this key already exists.  Not added to manager");
+				Debug.Console(0, newDev, "WARNING: A device with this key already exists.  Not added to manager");
 				return;
 			}
 			Devices.Add(newDev.Key, newDev);

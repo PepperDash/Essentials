@@ -103,6 +103,11 @@ namespace PepperDash.Essentials.Core
 			LinkedComplementInputSigs.Remove(sig);
 		}
 
+        public override string ToString()
+        {
+            return BoolValue.ToString();
+        }
+
 		void UpdateSig(BoolInputSig sig)
 		{
 			sig.BoolValue = _BoolValue;
@@ -160,6 +165,11 @@ namespace PepperDash.Essentials.Core
 			LinkedInputSigs.Remove(sig);
 		}
 
+        public override string ToString()
+        {
+            return IntValue.ToString();
+        }
+
 		void UpdateSig(UShortInputSig sig)
 		{
             sig.UShortValue = UShortValue;
@@ -211,6 +221,11 @@ namespace PepperDash.Essentials.Core
 		{
 			LinkedInputSigs.Remove(sig);
 		}
+
+        public override string ToString()
+        {
+            return StringValue;    
+        }
 
 		void UpdateSig(StringInputSig sig)
 		{

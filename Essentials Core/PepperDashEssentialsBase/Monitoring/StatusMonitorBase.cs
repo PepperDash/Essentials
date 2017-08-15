@@ -13,9 +13,16 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
-	public abstract class StatusMonitorBase : IStatusMonitor
+	public abstract class StatusMonitorBase : IStatusMonitor, IKeyName
 	{
 		public event EventHandler<MonitorStatusChangeEventArgs> StatusChange;
+
+        /// <summary>
+        /// Format returned: "parentdevkey-comMonitor"
+        /// </summary>
+        public string Key { get { return Parent.Key + "-comMonitor"; } }
+
+        public string Name { get { return "Comm. monitor"; } }
 
 		public IKeyed Parent { get; private set; }
 
@@ -101,6 +108,11 @@ namespace PepperDash.Essentials.Core
                 WarningTimer.Reset(WarningTime, WarningTime);
             if(ErrorTimer != null)
                 ErrorTimer.Reset(ErrorTime, ErrorTime);
+        }
+
+        public void PrintStatus()
+        {
+            CrestronConsole.PrintLine("Status={0}", Status);
         }
 	}
 }

@@ -36,7 +36,6 @@ namespace PepperDash.Essentials.Devices.Common
 
 				var irCont = IRPortHelper.GetIrOutputPortController(dc);
 				return new AppleTV(key, name, irCont);
-
 			}
 
 			else if (typeName == "basicirdisplay")
@@ -45,6 +44,14 @@ namespace PepperDash.Essentials.Devices.Common
 				if (ir != null)
 					return new BasicIrDisplay(key, name, ir.Port, ir.FileName);
 			}
+
+            else if (typeName == "biamptesira")
+            {
+                var comm = CommFactory.CreateCommForDevice(dc);
+                var props = JsonConvert.DeserializeObject<BiampTesiraFortePropertiesConfig>(
+                    properties.ToString());
+                return new BiampTesiraForteDsp(key, name, comm, props);
+            }
 
 			else if (typeName == "cenrfgwex")
 			{
@@ -58,6 +65,19 @@ namespace PepperDash.Essentials.Devices.Common
 					properties.Value<string>("id"), properties.Value<string>("gatewayType"));
 			}
 
+            else if (groupName == "discplayer") // (typeName == "irbluray")
+            {
+                if (properties["control"]["method"].Value<string>() == "ir")
+                {
+                    var irCont = IRPortHelper.GetIrOutputPortController(dc);
+                    return new IRBlurayBase(key, name, irCont);
+                }
+                else if (properties["control"]["method"].Value<string>() == "com")
+                {
+                    Debug.Console(0, "[{0}] COM Device type not implemented YET!", key);
+                }
+            }
+
 			else if (typeName == "genericaudiooutwithvolume")
 			{
 				var zone = dc.Properties.Value<uint>("zone");
@@ -65,63 +85,39 @@ namespace PepperDash.Essentials.Devices.Common
 					dc.Properties.Value<string>("volumeDeviceKey"), zone);
 			}
 
-			else if (groupName == "discplayer") // (typeName == "irbluray")
-			{
-				if (properties["control"]["method"].Value<string>() == "ir")
-				{
-					var irCont = IRPortHelper.GetIrOutputPortController(dc);
-					return new IRBlurayBase(key, name, irCont);
+            else if (groupName == "genericsource")
+            {
+                return new GenericSource(key, name);
+            }
 
-					//var ir = IRPortHelper.GetIrPort(properties);
-					//if (ir != null)
-					//    return new IRBlurayBase(key, name, ir.Port, ir.FileName);
-				}
-				else if (properties["control"]["method"].Value<string>() == "com")
-				{
-					Debug.Console(0, "[{0}] COM Device type not implemented YET!", key);
-				}
-			}
+            else if (typeName == "inroompc")
+            {
+                return new InRoomPc(key, name);
+            }
 
-			else if (groupName == "settopbox") //(typeName == "irstbbase")
-			{
-				var irCont = IRPortHelper.GetIrOutputPortController(dc);
+            else if (typeName == "laptop")
+            {
+                return new Laptop(key, name);
+            }
+
+            else if (groupName == "settopbox") //(typeName == "irstbbase")
+            {
+                var irCont = IRPortHelper.GetIrOutputPortController(dc);
                 var config = dc.Properties.ToObject<SetTopBoxPropertiesConfig>();
-				var stb = new IRSetTopBoxBase(key, name, irCont, config);
+                var stb = new IRSetTopBoxBase(key, name, irCont, config);
 
-				//stb.HasDvr = properties.Value<bool>("hasDvr");
-				var listName = properties.Value<string>("presetsList");
-				if (listName != null)
-					stb.LoadPresets(listName);
-				return stb;
-			}
+                //stb.HasDvr = properties.Value<bool>("hasDvr");
+                var listName = properties.Value<string>("presetsList");
+                if (listName != null)
+                    stb.LoadPresets(listName);
+                return stb;
+            }
 
-			else if (typeName == "laptop")
-			{
-				return new Laptop(key, name);
-			}
-
-			else if (typeName == "inroompc")
-			{
-				return new InRoomPc(key, name);
-			}
-
-			else if (typeName == "roku")
-			{
-				var irCont = IRPortHelper.GetIrOutputPortController(dc);
-				return new Roku2(key, name, irCont);
-
-				//var ir = IRPortHelper.GetIrPort(properties);
-				//if (ir != null)
-				//    return new Roku2(key, name, ir.Port, ir.FileName);
-			}
-
-			else if (typeName == "biamptesira")
-			{
-				var comm = CommFactory.CreateCommForDevice(dc);
-				var props = JsonConvert.DeserializeObject<BiampTesiraFortePropertiesConfig>(
-					properties.ToString());
-				return new BiampTesiraForteDsp(key, name, comm, props);
-			}
+            else if (typeName == "roku")
+            {
+                var irCont = IRPortHelper.GetIrOutputPortController(dc);
+                return new Roku2(key, name, irCont);
+            }
 
 			return null;
 		}

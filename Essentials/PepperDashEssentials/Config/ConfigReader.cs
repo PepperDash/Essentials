@@ -21,7 +21,8 @@ namespace PepperDash.Essentials
 			Debug.Console(0, "Using unmerged system/template configs.");
 			try
 			{
-				using (StreamReader fs = new StreamReader(string.Format(@"\NVRAM\program{0}\ConfigurationFile.json", InitialParametersClass.ApplicationNumber)))
+				using (StreamReader fs = new StreamReader(string.Format(@"\NVRAM\program{0}\ConfigurationFile.json", 
+                    InitialParametersClass.ApplicationNumber)))
 				{
 					var doubleObj = JObject.Parse(fs.ReadToEnd());
 					ConfigObject = MergeConfigs(doubleObj).ToObject<EssentialsConfig>();
@@ -60,19 +61,22 @@ namespace PepperDash.Essentials
 			else
 				merged.Add("info", template["info"]);
 
-			merged.Add("devices", MergeArraysOnTopLevelProperty(template["devices"] as JArray, system["devices"] as JArray, "uid"));
+			merged.Add("devices", MergeArraysOnTopLevelProperty(template["devices"] as JArray, 
+                system["devices"] as JArray, "uid"));
 
 			if (system["rooms"] == null)
 				merged.Add("rooms", template["rooms"]);
 			else
-				merged.Add("rooms", MergeArraysOnTopLevelProperty(template["rooms"] as JArray, system["rooms"] as JArray, "key"));
+				merged.Add("rooms", MergeArraysOnTopLevelProperty(template["rooms"] as JArray, 
+                    system["rooms"] as JArray, "key"));
 
 			if (system["sourceLists"] == null)
 				merged.Add("sourceLists", template["sourceLists"]);
 			else
 				merged.Add("sourceLists", Merge(template["sourceLists"], system["sourceLists"]));
 
-#warning Make tie lines merge appropriately
+            // Template tie lines take precdence.  Config tool probably can't do them at system
+            // level anyway...
 			if (template["tieLines"] != null)
 				merged.Add("tieLines", template["tieLines"]);
 			else if (system["tieLines"] != null)
@@ -80,7 +84,7 @@ namespace PepperDash.Essentials
 			else
 				merged.Add("tieLines", new JArray());
 
-			Debug.Console(0, "MERGED RESULT: \x0d\x0a{0}", merged);
+			//Debug.Console(0, "MERGED RESULT: \x0d\x0a{0}", merged);
 			return merged;
 		}
 

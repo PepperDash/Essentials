@@ -22,13 +22,6 @@ namespace PepperDash.Essentials.Devices.Displays
 			var properties = dc.Properties;
 
 			var typeName = dc.Type.ToLower();
-			//if (typeName == "dmmd8x8")
-			//{
-			//    var props = JsonConvert.DeserializeObject
-			//        <PepperDash.Essentials.DM.Config.DMChassisPropertiesConfig>(properties.ToString());
-			//    return PepperDash.Essentials.DM.DmChassisController.
-			//        GetDmChassisController(key, name, type, props);
-			//}
 
 			try
 			{

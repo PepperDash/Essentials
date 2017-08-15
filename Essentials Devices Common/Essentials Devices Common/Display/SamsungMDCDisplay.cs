@@ -27,6 +27,7 @@ namespace PepperDash.Essentials.Devices.Displays
 		ushort _VolumeLevel;
 		bool _IsMuted;
         RoutingInputPort _CurrentInputPort;
+        byte[] IncomingBuffer = new byte[]{};
         //CTimer StatusTimer;
 
 		protected override Func<bool> PowerIsOnFeedbackFunc { get { return () => _PowerIsOn; } }
@@ -85,6 +86,7 @@ namespace PepperDash.Essentials.Devices.Displays
 		{
             WarmupTime = 10000;
             CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, StatusGet);
+            DeviceManager.AddDevice(CommunicationMonitor);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, new Action(InputHdmi1), this), 0x21);
@@ -151,45 +153,75 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <param name="e"></param>
         void Communication_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
         {
-            var b = e.Bytes;
-            Debug.Console(0, this, "Parsing: {0}", ComTextHelper.GetEscapedText(b));
-            if (b[0] == 0xAA && b[1] == 0xFF)
+            Debug.Console(2, this, "Socket in: {0}", ComTextHelper.GetEscapedText(e.Bytes));
+            // This is probably not thread-safe buffering
+            // Append the incoming bytes with whatever is in the buffer
+            var newBytes = new byte[IncomingBuffer.Length + e.Bytes.Length];
+            IncomingBuffer.CopyTo(newBytes, 0);
+            e.Bytes.CopyTo(newBytes, IncomingBuffer.Length);
+            Debug.Console(2, this, "Buffer+new: {0}", ComTextHelper.GetEscapedText(newBytes));
+
+            ADD A while HERE TOMORROW.
+            // If it's at least got the header, then process it, 
+            if (newBytes.Length > 4 && newBytes[0] == 0xAA && newBytes[1] == 0xFF)
             {
-                if (b[4] == 0x41)
+                var msgLen = newBytes[3];
+                // if the buffer is shorter than the header (3) + message (msgLen) + checksum (1),
+                // give and save it for next time 
+                if (newBytes.Length < msgLen + 4)
                 {
-                    var typeByte = b[5];
-                    switch (typeByte)
+                    IncomingBuffer = newBytes;
+                    return;
+                }
+
+                // Good length, grab the message
+                var message = newBytes.Skip(4).Take(msgLen).ToArray();
+                Debug.Console(0, this, "Parsing: {0}", ComTextHelper.GetEscapedText(message));
+
+                // At this point, the ack/nak is the first byte
+                if (message[0] == 0x41)
+                {
+                    switch (message[1]) // type byte
                     {
                         case 0x00: // General status
-                            UpdatePowerFB(b[6]);
-                            UpdateVolumeFB(b[7]);
-                            UpdateMuteFb(b[8]);
-                            UpdateInputFb(b[9]);
+                            UpdatePowerFB(message[2]);
+                            UpdateVolumeFB(message[3]);
+                            UpdateMuteFb(message[4]);
+                            UpdateInputFb(message[5]);
                             break;
 
                         case 0x11:
-                            UpdatePowerFB(b[6]);
+                            UpdatePowerFB(message[2]);
                             break;
 
                         case 0x12:
-                            UpdateVolumeFB(b[6]);
+                            UpdateVolumeFB(message[2]);
                             break;
-                            
+
                         case 0x13:
-                            UpdateMuteFb(b[6]);
+                            UpdateMuteFb(message[2]);
                             break;
 
                         case 0x14:
-                            UpdateInputFb(b[6]);
+                            UpdateInputFb(message[2]);
                             break;
 
                         default:
                             break;
                     }
                 }
+                // Skip over what we've used and save the rest for next time
+                IncomingBuffer = newBytes.Skip(5 + msgLen).ToArray();
             }
+            // there's not even a full header in the event.  Save it for next time.
+            else
+                IncomingBuffer = newBytes;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="b"></param>
         void UpdatePowerFB(byte b)
         {
             var newVal = b == 1;
@@ -201,6 +233,10 @@ namespace PepperDash.Essentials.Devices.Displays
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="b"></param>
         void UpdateVolumeFB(byte b)
         {
             var newVol = (ushort)Scale((double)b, 0, 100, 0, 65535);

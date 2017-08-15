@@ -105,6 +105,7 @@
     <Compile Include="DSP\BiampTesira\BiampTesiraFortePropertiesConfig.cs" />
     <Compile Include="DSP\PolycomSoundStructure\SoundStructureBasics.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
+    <Compile Include="Generic\GenericSource.cs" />
     <Compile Include="PC\InRoomPc.cs" />
     <Compile Include="PC\Laptop.cs" />
     <Compile Include="SetTopBox\SetTopBoxPropertiesConfig.cs" />
