@@ -153,13 +153,13 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <param name="e"></param>
         void Communication_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
         {
-            Debug.Console(2, this, "Socket in: {0}", ComTextHelper.GetEscapedText(e.Bytes));
+            //Debug.Console(2, this, "Socket in: {0}", ComTextHelper.GetEscapedText(e.Bytes));
             // This is probably not thread-safe buffering
             // Append the incoming bytes with whatever is in the buffer
             var newBytes = new byte[IncomingBuffer.Length + e.Bytes.Length];
             IncomingBuffer.CopyTo(newBytes, 0);
             e.Bytes.CopyTo(newBytes, IncomingBuffer.Length);
-            Debug.Console(2, this, "Buffer+new: {0}", ComTextHelper.GetEscapedText(newBytes));
+            //Debug.Console(2, this, "Buffer+new: {0}", ComTextHelper.GetEscapedText(newBytes));
 
             // Need to find AA FF and have 
             for (int i = 0; i < newBytes.Length; i++)
@@ -180,7 +180,7 @@ namespace PepperDash.Essentials.Devices.Displays
 
                         // Good length, grab the message
                         var message = newBytes.Skip(4).Take(msgLen).ToArray();
-                        Debug.Console(0, this, "Parsing: {0}", ComTextHelper.GetEscapedText(message));
+                        Debug.Console(0, this, "Parsing input: {0}", ComTextHelper.GetEscapedText(message));
 
                         // At this point, the ack/nak is the first byte
                         if (message[0] == 0x41)
@@ -292,7 +292,6 @@ namespace PepperDash.Essentials.Devices.Displays
             b[b.Length - 1] = (byte)checksum;
             if(Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
                 Debug.Console(2, this, "Sending:{0}", ComTextHelper.GetEscapedText(b));
-            CommunicationMonitor.ResetErrorTimers(); // Helps prevent message collisions
             Communication.SendBytes(b);
         }
 

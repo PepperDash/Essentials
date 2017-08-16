@@ -102,17 +102,12 @@ namespace PepperDash.Essentials.Core
 			ErrorTimer = null;
 		}
 
-        public void ResetErrorTimers()
+        protected void ResetErrorTimers()
         {
             if(WarningTimer != null)
                 WarningTimer.Reset(WarningTime, WarningTime);
             if(ErrorTimer != null)
                 ErrorTimer.Reset(ErrorTime, ErrorTime);
-        }
-
-        public void PrintStatus()
-        {
-            CrestronConsole.PrintLine("Status={0}", Status);
         }
 	}
 }

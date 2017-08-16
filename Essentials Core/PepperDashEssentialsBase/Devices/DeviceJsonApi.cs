@@ -235,12 +235,23 @@ namespace PepperDash.Essentials.Core
 		public PropertyInfo PropInfo { get; private set; }
 		public string Name { get { return PropInfo.Name; } }
 		public string Type { get { return PropInfo.PropertyType.Name; } }
-        public string Value { get {
+        public string Value { get 
+        {
             if (PropInfo.CanRead)
-                return PropInfo.GetValue(Parent, null).ToString();
+            {
+                try
+                {
+                    return PropInfo.GetValue(Parent, null).ToString();
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
+            }
             else
-                return "-";
+                return null;    
         } }
+
         public bool CanRead { get { return PropInfo.CanRead; } }
         public bool CanWrite { get { return PropInfo.CanWrite; } }
 

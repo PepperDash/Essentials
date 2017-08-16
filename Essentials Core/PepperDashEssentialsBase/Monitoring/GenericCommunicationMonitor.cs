@@ -104,7 +104,7 @@ namespace PepperDash.Essentials.Core
 		void Client_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
 		{
 			Status = MonitorStatus.IsOk;
-			StopErrorTimers();
+			ResetErrorTimers();
 		}
 
 		void Poll()
