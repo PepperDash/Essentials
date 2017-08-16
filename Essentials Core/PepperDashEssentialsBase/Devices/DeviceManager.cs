@@ -53,6 +53,8 @@ namespace PepperDash.Essentials.Core
 			{
 				CrestronConsole.ConsoleCommandResponse(DeviceJsonApi.GetApiMethods(s));
 			}, "apimethods", "", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(SimulateComReceiveOnDevice, "devsimreceive",
+                "Simulates incoming data on a com device", ConsoleAccessLevelEnum.AccessOperator);
 		}
 
 		/// <summary>
@@ -206,5 +208,29 @@ namespace PepperDash.Essentials.Core
 
 			return null;
 		}
+
+        /// <summary>
+        /// Console handler that simulates com port data receive 
+        /// </summary>
+        /// <param name="s"></param>
+        public static void SimulateComReceiveOnDevice(string s)
+        {
+            // devcomsim:1 xyzabc
+            var match = Regex.Match(s, @"(\S*)\s*(.*)");
+            if (match.Groups.Count < 3)
+            {
+                CrestronConsole.ConsoleCommandResponse("  Format: devsimreceive:P <device key> <string to send>");
+                return;
+            }
+            //Debug.Console(2, "**** {0} - {1} ****", match.Groups[1].Value, match.Groups[2].Value);
+
+            ComPortController com = GetDeviceForKey(match.Groups[1].Value) as ComPortController;
+            if (com == null)
+            {
+                CrestronConsole.ConsoleCommandResponse("'{0}' is not a comm port device", match.Groups[1].Value);
+                return;
+            }
+            com.SimulateReceive(match.Groups[2].Value);
+        }
 	}
 }

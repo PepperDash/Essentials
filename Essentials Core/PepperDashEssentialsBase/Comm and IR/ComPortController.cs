@@ -105,11 +105,18 @@ namespace PepperDash.Essentials.Core
         /// <param name="s"></param>
         public void SimulateReceive(string s)
         {
-            var split = Regex.Split(s, @"(\\{Xx}{0-9a-fA-F}{0-9a-fA-F})");
-            Debug.Console(2, this, "Tokens: {0}", string.Join("--", split));
-                
+            // split out hex chars and build string
+            var split = Regex.Split(s, @"(\\[Xx][0-9a-fA-F][0-9a-fA-F])");
+            StringBuilder b = new StringBuilder();
+            foreach (var t in split)
+            {
+                if (t.StartsWith(@"\") && t.Length == 4)
+                    b.Append((char)(Convert.ToByte(t.Substring(2, 2), 16)));
+                else
+                    b.Append(t);
+            }
 
-            //OnDataReceived(s);
+            OnDataReceived(b.ToString());
         }
 	}
 }
