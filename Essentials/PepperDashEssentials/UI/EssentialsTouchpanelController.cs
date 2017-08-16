@@ -48,6 +48,8 @@ namespace PepperDash.Essentials
                             app.ParameterProjectName.Value = props.ProjectName;
                             Panel = app;
                         }
+                        else if (type == "tsw560")
+                            Panel = new Tsw560(id, Global.ControlSystem);
                         else if (type == "tsw752")
                             Panel = new Tsw752(id, Global.ControlSystem);
                         else if (type == "tsw1052")
