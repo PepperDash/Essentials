@@ -1,1 +1,3 @@
 devjson:1 {"deviceKey":"display-1-comMonitor","methodName":"PrintStatus"}
+
+devjson:1 {"deviceKey":"display-1-com","methodName":"SimulateReceive", "params": ["taco"]}

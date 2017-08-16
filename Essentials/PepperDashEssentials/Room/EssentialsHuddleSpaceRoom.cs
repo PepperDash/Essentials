@@ -114,9 +114,14 @@ namespace PepperDash.Essentials
 				DefaultVolumeControls = (defaultAudio as IHasVolumeDevice).VolumeDevice;
             CurrentVolumeControls = DefaultVolumeControls;
 
+            var disp = DefaultDisplay as DisplayBase;
 			OnFeedback = new BoolFeedback(() =>
-				{ return CurrentSourceInfo != null 
-					&& CurrentSourceInfo.Type == eSourceListItemType.Route; });
+                {
+                    return CurrentSourceInfo != null
+                      && CurrentSourceInfo.Type == eSourceListItemType.Route
+                      && disp != null
+                      && disp.PowerIsOnFeedback.BoolValue;
+                });
 			SourceListKey = "default";
 			EnablePowerOnToLastSource = true;
 		}

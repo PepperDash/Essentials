@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
@@ -54,16 +55,21 @@ namespace PepperDash.Essentials.Core
 
 		void Port_SerialDataReceived(ComPort ReceivingComPort, ComPortSerialDataEventArgs args)
 		{
-			var bytesHandler = BytesReceived;
-			if (bytesHandler != null)
-			{
-				var bytes = Encoding.GetEncoding(28591).GetBytes(args.SerialData);
-				bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
-			}
-			var textHandler = TextReceived;
-			if (textHandler != null)
-				textHandler(this, new GenericCommMethodReceiveTextArgs(args.SerialData));
+            OnDataReceived(args.SerialData);
 		}
+
+        void OnDataReceived(string s)
+        {
+            var bytesHandler = BytesReceived;
+            if (bytesHandler != null)
+            {
+                var bytes = Encoding.GetEncoding(28591).GetBytes(s);
+                bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
+            }
+            var textHandler = TextReceived;
+            if (textHandler != null)
+                textHandler(this, new GenericCommMethodReceiveTextArgs(s));
+        }
 
 		public override bool Deactivate()
 		{
@@ -83,8 +89,6 @@ namespace PepperDash.Essentials.Core
 			Port.Send(text);
 		}
 
-		//public BoolFeedback IsConnected { get; private set; }
-
 		public void Connect()
 		{		
 		}
@@ -94,5 +98,18 @@ namespace PepperDash.Essentials.Core
 		}
 
 		#endregion
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        public void SimulateReceive(string s)
+        {
+            var split = Regex.Split(s, @"(\\{Xx}{0-9a-fA-F}{0-9a-fA-F})");
+            Debug.Console(2, this, "Tokens: {0}", string.Join("--", split));
+                
+
+            //OnDataReceived(s);
+        }
 	}
 }

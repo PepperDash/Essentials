@@ -161,61 +161,69 @@ namespace PepperDash.Essentials.Devices.Displays
             e.Bytes.CopyTo(newBytes, IncomingBuffer.Length);
             Debug.Console(2, this, "Buffer+new: {0}", ComTextHelper.GetEscapedText(newBytes));
 
-            ADD A while HERE TOMORROW.
-            // If it's at least got the header, then process it, 
-            if (newBytes.Length > 4 && newBytes[0] == 0xAA && newBytes[1] == 0xFF)
+            // Need to find AA FF and have 
+            for (int i = 0; i < newBytes.Length; i++)
             {
-                var msgLen = newBytes[3];
-                // if the buffer is shorter than the header (3) + message (msgLen) + checksum (1),
-                // give and save it for next time 
-                if (newBytes.Length < msgLen + 4)
+                if (newBytes[i] == 0xAA && newBytes[i + 1] == 0xFF)
                 {
-                    IncomingBuffer = newBytes;
-                    return;
-                }
+                    newBytes = newBytes.Skip(i).ToArray(); // Trim off junk if there's "dirt" in the buffer
 
-                // Good length, grab the message
-                var message = newBytes.Skip(4).Take(msgLen).ToArray();
-                Debug.Console(0, this, "Parsing: {0}", ComTextHelper.GetEscapedText(message));
-
-                // At this point, the ack/nak is the first byte
-                if (message[0] == 0x41)
-                {
-                    switch (message[1]) // type byte
+                    // parse it
+                    // If it's at least got the header, then process it, 
+                    while (newBytes.Length > 4 && newBytes[0] == 0xAA && newBytes[1] == 0xFF)
                     {
-                        case 0x00: // General status
-                            UpdatePowerFB(message[2]);
-                            UpdateVolumeFB(message[3]);
-                            UpdateMuteFb(message[4]);
-                            UpdateInputFb(message[5]);
+                        var msgLen = newBytes[3];
+                        // if the buffer is shorter than the header (3) + message (msgLen) + checksum (1),
+                        // give and save it for next time 
+                        if (newBytes.Length < msgLen + 4)
                             break;
 
-                        case 0x11:
-                            UpdatePowerFB(message[2]);
-                            break;
+                        // Good length, grab the message
+                        var message = newBytes.Skip(4).Take(msgLen).ToArray();
+                        Debug.Console(0, this, "Parsing: {0}", ComTextHelper.GetEscapedText(message));
 
-                        case 0x12:
-                            UpdateVolumeFB(message[2]);
-                            break;
+                        // At this point, the ack/nak is the first byte
+                        if (message[0] == 0x41)
+                        {
+                            switch (message[1]) // type byte
+                            {
+                                case 0x00: // General status
+                                    UpdatePowerFB(message[2]);
+                                    UpdateVolumeFB(message[3]);
+                                    UpdateMuteFb(message[4]);
+                                    UpdateInputFb(message[5]);
+                                    break;
 
-                        case 0x13:
-                            UpdateMuteFb(message[2]);
-                            break;
+                                case 0x11:
+                                    UpdatePowerFB(message[2]);
+                                    break;
 
-                        case 0x14:
-                            UpdateInputFb(message[2]);
-                            break;
+                                case 0x12:
+                                    UpdateVolumeFB(message[2]);
+                                    break;
 
-                        default:
-                            break;
+                                case 0x13:
+                                    UpdateMuteFb(message[2]);
+                                    break;
+
+                                case 0x14:
+                                    UpdateInputFb(message[2]);
+                                    break;
+
+                                default:
+                                    break;
+                            }
+                        }
+                        // Skip over what we've used and save the rest for next time
+                        newBytes = newBytes.Skip(5 + msgLen).ToArray();
                     }
+       
+                    break; // parsing will mean we can stop looking for header in loop
                 }
-                // Skip over what we've used and save the rest for next time
-                IncomingBuffer = newBytes.Skip(5 + msgLen).ToArray();
             }
-            // there's not even a full header in the event.  Save it for next time.
-            else
-                IncomingBuffer = newBytes;
+
+            // Save whatever partial message is here
+            IncomingBuffer = newBytes;
         }
 
         /// <summary>
