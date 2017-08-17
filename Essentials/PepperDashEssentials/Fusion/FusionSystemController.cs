@@ -39,6 +39,21 @@ namespace PepperDash.Essentials.Fusion
 
 		StringSigData SourceNameSig;
 
+        //ProcessorEthernet Info
+#region 
+        StringSigData Ip1;
+        StringSigData Ip2;
+        StringSigData Gateway;
+        StringSigData Hostname;
+        StringSigData Domain;
+        StringSigData Dns1;
+        StringSigData Dns2;
+        StringSigData Mac1;
+        StringSigData Mac2;
+        StringSigData NetMask1;
+        StringSigData NetMask2;
+#endregion
+
         RoomSchedule CurrentSchedule;
 
         Event NextMeeting;
@@ -270,7 +285,7 @@ namespace PepperDash.Essentials.Fusion
 
 			// Room to fusion room
 			Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
-			SourceNameSig = FusionRoom.CreateOffsetStringSig(50, "Source - Name", eSigIoMask.InputSigOnly);
+			SourceNameSig = FusionRoom.CreateOffsetStringSig(84, "Source - Name", eSigIoMask.InputSigOnly);
 			// Don't think we need to get current status of this as nothing should be alive yet. 
 			Room.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSourceInfoChange);
 
@@ -281,8 +296,54 @@ namespace PepperDash.Essentials.Fusion
 			FusionRoom.ErrorMessage.InputSig.StringValue =
 				"3: 7 Errors: This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;";
 
+            // Processor Info
 
-		}
+            FusionRoom.CreateOffsetStringSig(50, "Info - Processor - System Name", eSigIoMask.InputSigOnly);
+            FusionRoom.CreateOffsetStringSig(51, "Info - Processor - Model", eSigIoMask.InputSigOnly);
+            FusionRoom.CreateOffsetStringSig(52, "Info - Processor - Serial Number", eSigIoMask.InputSigOnly);
+            FusionRoom.CreateOffsetStringSig(53, "Info - Processor - Uptime", eSigIoMask.InputSigOnly);
+            Ip1 = FusionRoom.CreateOffsetStringSig(54, "Info - Processor - IP 1", eSigIoMask.InputSigOnly);
+            Ip2 = FusionRoom.CreateOffsetStringSig(55, "Info - Processor - IP 2", eSigIoMask.InputSigOnly);
+            Gateway = FusionRoom.CreateOffsetStringSig(56, "Info - Processor - Gateway", eSigIoMask.InputSigOnly);
+            Hostname = FusionRoom.CreateOffsetStringSig(57, "Info - Processor - Hostname", eSigIoMask.InputSigOnly);
+            Domain = FusionRoom.CreateOffsetStringSig(58, "Info - Processor - Domain", eSigIoMask.InputSigOnly);
+            Dns1 = FusionRoom.CreateOffsetStringSig(59, "Info - Processor - DNS 1", eSigIoMask.InputSigOnly);
+            Dns2 = FusionRoom.CreateOffsetStringSig(60, "Info - Processor - DNS 2", eSigIoMask.InputSigOnly);
+            Mac1 = FusionRoom.CreateOffsetStringSig(61, "Info - Processor - MAC 1", eSigIoMask.InputSigOnly);
+            Mac2 = FusionRoom.CreateOffsetStringSig(62, "Info - Processor - MAC 2", eSigIoMask.InputSigOnly);
+            NetMask1 = FusionRoom.CreateOffsetStringSig(63, "Info - Processor - Net Mask 1", eSigIoMask.InputSigOnly);
+            NetMask2 = FusionRoom.CreateOffsetStringSig(64, "Info - Processor - Net Mask 2", eSigIoMask.InputSigOnly);
+
+
+            CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
+        }
+
+        void CrestronEnvironment_EthernetEventHandler(EthernetEventArgs ethernetEventArgs)
+        {
+            if (ethernetEventArgs.EthernetEventType == eEthernetEventType.LinkUp)
+            {
+                SetProcessorEthernetValues();
+            }
+        }
+
+        void SetProcessorEthernetValues()
+        {
+            Ip1.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
+            Ip2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1);
+            Gateway.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_ROUTER, 0);
+            Hostname.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
+            Domain.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, 0);
+
+            var dnsServers = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DNS_SERVER, 0).Split(',');
+            Dns1.InputSig.StringValue = dnsServers[0];
+            if (dnsServers.Length > 1)
+                Dns2.InputSig.StringValue = dnsServers[1];
+
+            Mac1.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
+            Mac2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 1);
+            NetMask1.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, 0);
+            NetMask2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, 1);
+        }
 
         void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
         {
@@ -306,7 +367,6 @@ namespace PepperDash.Essentials.Fusion
                         "<Parameter ID='Field' Value='MeetingID' />\n" +
                         "<Parameter ID='Field' Value='RVMeetingID' />\n" +
                         "<Parameter ID='Field' Value='InstanceID' />\n" +
-                        //"<Parameter ID='Field' Value='Recurring' />\n" +
                         "<Parameter ID='Field' Value='dtStart' />\n" +
                         "<Parameter ID='Field' Value='dtEnd' />\n" +
                         "<Parameter ID='Field' Value='Subject' />\n" +
@@ -777,22 +837,35 @@ namespace PepperDash.Essentials.Fusion
 				string attrName = null;
 				uint attrNum = Convert.ToUInt32(keyNum);
 
-				//if (dev is SmartGraphicsTouchpanelControllerBase)
-				//{
-				//    if (attrNum > 10)
-				//        continue;
-				//    attrName = "Device Ok - Touch Panel " + attrNum;
-				//    attrNum += 200;
-				//}
-				//// add xpanel here
+
+
+                if (dev is BasicTriListWithSmartObject)
+                {
+                    if (attrNum > 10)
+                        continue;
+                    attrName = "Online - Touch Panel " + attrNum;
+                    attrNum += 200;
+#warning should this be 150
+                }
+                // add xpanel here
+
+                if (dev is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
+                {
+                    if (attrNum > 10)
+                        continue;
+                    attrName = "Online - Touch Panel " + attrNum;
+                    attrNum += 160;
+#warning should this be 160
+                }
 
 				//else 
 				if (dev is DisplayBase)
 				{
 					if (attrNum > 10)
 						continue;
-					attrName = "Device Ok - Display " + attrNum;
+					attrName = "Online - Display " + attrNum;
 					attrNum += 240;
+#warning should this be 170
 				}
 				//else if (dev is DvdDeviceBase)
 				//{
@@ -1063,386 +1136,5 @@ namespace PepperDash.Essentials.Fusion
 		}
 	}
 
-    // Helper Classes for GUIDs
-
-    /// <summary>
-    /// Stores GUIDs to be written to a file in NVRAM 
-    /// </summary>
-    public class FusionRoomGuids
-    {
-        public string RoomName { get; set; }
-        public uint IpId { get; set; }
-        public string RoomGuid { get; set; }
-        public List<StaticAsset> StaticAssets { get; set; }
-
-        public FusionRoomGuids()
-        {
-            StaticAssets = new List<StaticAsset>();
-        }
-
-        public FusionRoomGuids(string roomName, uint ipId, string roomGuid, List<StaticAsset> staticAssets)
-        {
-            RoomName = roomName;
-            IpId = ipId;
-            RoomGuid = roomGuid;
-
-            StaticAssets = new List<StaticAsset>(staticAssets);
-        }
-    }
-
-    public class StaticAsset
-    {
-        public uint Number { get; set; }
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public string InstanceID { get; set; }
-
-        public StaticAsset()
-        {
-
-        }
-
-        public StaticAsset(uint slotNum, string assetName, string type, string instanceID)
-        {
-            Number = slotNum;
-            Name = assetName;
-            Type = type;
-            if(string.IsNullOrEmpty(instanceID))
-            {
-                InstanceID = Guid.NewGuid().ToString();
-            }
-            else
-            {
-                InstanceID = instanceID;
-            }
-        }
-    }
-
-    //***************************************************************************************************
-
-    public class RoomSchedule
-    {
-        public List<Event> Meetings { get; set; }
-
-        public RoomSchedule()
-        {
-            Meetings = new List<Event>();
-        }
-    }
-
-    //****************************************************************************************************
-    // Helper Classes for XML API
-
-    /// <summary>
-    /// All the data needed for a full schedule request in a room
-    /// </summary>
-    /// //[XmlRoot(ElementName = "RequestSchedule")]
-    public class RequestSchedule
-    {
-        //[XmlElement(ElementName = "RequestID")]
-        public string RequestID { get; set; }
-        //[XmlElement(ElementName = "RoomID")]
-        public string RoomID { get; set; }
-        //[XmlElement(ElementName = "Start")]
-        public DateTime Start { get; set; }
-        //[XmlElement(ElementName = "HourSpan")]
-        public double HourSpan { get; set; }
-
-        public RequestSchedule(string requestID, string roomID)
-        {
-            RequestID = requestID;
-            RoomID = roomID;
-            Start = DateTime.Now;
-            HourSpan = 24;
-        }
-    }
-
-
-    //[XmlRoot(ElementName = "RequestAction")]
-    public class RequestAction
-    {
-        //[XmlElement(ElementName = "RequestID")]
-        public string RequestID { get; set; }
-        //[XmlElement(ElementName = "RoomID")]
-        public string RoomID { get; set; }
-        //[XmlElement(ElementName = "ActionID")]
-        public string ActionID { get; set; }
-        //[XmlElement(ElementName = "Parameters")]
-        public List<Parameter> Parameters { get; set; }
-
-        public RequestAction(string roomID, string actionID, List<Parameter> parameters)
-        {
-            RoomID = roomID;
-            ActionID = actionID;
-            Parameters = parameters;
-        }
-    }
-
-    //[XmlRoot(ElementName = "ActionResponse")]
-    public class ActionResponse
-    {
-        //[XmlElement(ElementName = "RequestID")]
-        public string RequestID { get; set; }
-        //[XmlElement(ElementName = "ActionID")]
-        public string ActionID { get; set; }
-        //[XmlElement(ElementName = "Parameters")]
-        public List<Parameter> Parameters { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Parameter")]
-    public class Parameter
-    {
-        //[XmlAttribute(AttributeName = "ID")]
-        public string ID { get; set; }
-        //[XmlAttribute(AttributeName = "Value")]
-        public string Value { get; set; }
-    }
-
-    ////[XmlRoot(ElementName = "Parameters")]
-    //public class Parameters
-    //{
-    //    //[XmlElement(ElementName = "Parameter")]
-    //    public List<Parameter> Parameter { get; set; }
-    //}  
-    
-    /// <summary>
-    /// Data structure for a ScheduleResponse from Fusion
-    /// </summary>
-    /// //[XmlRoot(ElementName = "ScheduleResponse")]
-    public class ScheduleResponse
-    {
-        //[XmlElement(ElementName = "RequestID")]
-        public string RequestID { get; set; }
-        //[XmlElement(ElementName = "RoomID")]
-        public string RoomID { get; set; }
-        //[XmlElement(ElementName = "RoomName")]
-        public string RoomName { get; set; }
-        //[XmlElement("Event")]
-        public List<Event> Events { get; set; }
-
-        public ScheduleResponse()
-        {
-            Events = new List<Event>();
-        }
-    }
-
-    //[XmlRoot(ElementName = "Event")]
-    public class Event
-    {
-        //[XmlElement(ElementName = "MeetingID")]
-        public string MeetingID { get; set; }
-        //[XmlElement(ElementName = "RVMeetingID")]
-        public string RVMeetingID { get; set; }
-        //[XmlElement(ElementName = "Recurring")]
-        public string Recurring { get; set; }
-        //[XmlElement(ElementName = "InstanceID")]
-        public string InstanceID { get; set; }
-        //[XmlElement(ElementName = "dtStart")]
-        public DateTime dtStart { get; set; }
-        //[XmlElement(ElementName = "dtEnd")]
-        public DateTime dtEnd { get; set; }
-        //[XmlElement(ElementName = "Organizer")]
-        public string Organizer { get; set; }
-        //[XmlElement(ElementName = "Attendees")]
-        public Attendees Attendees { get; set; }
-        //[XmlElement(ElementName = "Resources")]
-        public Resources Resources { get; set; }
-        //[XmlElement(ElementName = "IsEvent")]
-        public string IsEvent { get; set; }
-        //[XmlElement(ElementName = "IsRoomViewMeeting")]
-        public string IsRoomViewMeeting { get; set; }
-        //[XmlElement(ElementName = "IsPrivate")]
-        public string IsPrivate { get; set; }
-        //[XmlElement(ElementName = "IsExchangePrivate")]
-        public string IsExchangePrivate { get; set; }
-        //[XmlElement(ElementName = "MeetingTypes")]
-        public MeetingTypes MeetingTypes { get; set; }
-        //[XmlElement(ElementName = "ParticipantCode")]
-        public string ParticipantCode { get; set; }
-        //[XmlElement(ElementName = "PhoneNo")]
-        public string PhoneNo { get; set; }
-        //[XmlElement(ElementName = "WelcomeMsg")]
-        public string WelcomeMsg { get; set; }
-        //[XmlElement(ElementName = "Subject")]
-        public string Subject { get; set; }
-        //[XmlElement(ElementName = "LiveMeeting")]
-        public LiveMeeting LiveMeeting { get; set; }
-        //[XmlElement(ElementName = "ShareDocPath")]
-        public string ShareDocPath { get; set; }
-        //[XmlElement(ElementName = "HaveAttendees")]
-        public string HaveAttendees { get; set; }
-        //[XmlElement(ElementName = "HaveResources")]
-        public string HaveResources { get; set; }
-
-        /// <summary>
-        /// Gets the duration of the meeting
-        /// </summary>
-        public string DurationInMinutes
-        {
-            get
-            {
-                string duration;
-
-                var timeSpan = dtEnd.Subtract(dtStart);
-                int hours = timeSpan.Hours;
-                double minutes = timeSpan.Minutes;
-                double roundedMinutes = Math.Round(minutes);
-                if(hours > 0)
-                {
-                    duration = string.Format("{0} hours {1} minutes", hours, roundedMinutes);
-                }
-                else
-                {
-                    duration = string.Format("{0} minutes", roundedMinutes);
-                }
-
-                return duration;
-            }
-        }
-
-        /// <summary>
-        /// Gets the remaining time in the meeting.  Returns null if the meeting is not currently in progress.
-        /// </summary>
-        public string RemainingTime
-        {
-            get
-            {
-                var now = DateTime.Now;
-
-                string remainingTime;
-
-                if (GetInProgress())
-                {
-                    var timeSpan = dtEnd.Subtract(now);
-                    int hours = timeSpan.Hours;
-                    double minutes = timeSpan.Minutes;
-                    double roundedMinutes = Math.Round(minutes);
-                    if (hours > 0)
-                    {
-                        remainingTime = string.Format("{0} hours {1} minutes", hours, roundedMinutes);
-                    }
-                    else
-                    {
-                        remainingTime = string.Format("{0} minutes", roundedMinutes);
-                    }
-
-                    return remainingTime;
-                }
-                else
-                    return null;
-            }
-
-        }
-
-        /// <summary>
-        /// Indicates that the meeting is in progress
-        /// </summary>
-        public bool isInProgress
-        {
-            get
-            {
-                return GetInProgress();
-            }
-        }
-
-        /// <summary>
-        /// Determines if the meeting is in progress
-        /// </summary>
-        /// <returns>Returns true if in progress</returns>
-        bool GetInProgress()
-        {
-            var now = DateTime.Now;
-
-            if (now > dtStart && now < dtEnd)
-            {
-                return true;
-            }
-            else
-                return false;
-        }
-    }
-
-    //[XmlRoot(ElementName = "Resources")]
-    public class Resources
-    {
-        //[XmlElement(ElementName = "Rooms")]
-        public Rooms Rooms { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Rooms")]
-    public class Rooms
-    {
-        //[XmlElement(ElementName = "Room")]
-        public List<Room> Room { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Room")]
-    public class Room
-    {
-        //[XmlElement(ElementName = "Name")]
-        public string Name { get; set; }
-        //[XmlElement(ElementName = "ID")]
-        public string ID { get; set; }
-        //[XmlElement(ElementName = "MPType")]
-        public string MPType { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Attendees")]
-    public class Attendees
-    {
-        //[XmlElement(ElementName = "Required")]
-        public Required Required { get; set; }
-        //[XmlElement(ElementName = "Optional")]
-        public Optional Optional { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Required")]
-    public class Required
-    {
-        //[XmlElement(ElementName = "Attendee")]
-        public List<string> Attendee { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Optional")]
-    public class Optional
-    {
-        //[XmlElement(ElementName = "Attendee")]
-        public List<string> Attendee { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "MeetingType")]
-    public class MeetingType
-    {
-        //[XmlAttribute(AttributeName = "ID")]
-        public string ID { get; set; }
-        //[XmlAttribute(AttributeName = "Value")]
-        public string Value { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "MeetingTypes")]
-    public class MeetingTypes
-    {
-        //[XmlElement(ElementName = "MeetingType")]
-        public List<MeetingType> MeetingType { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "LiveMeeting")]
-    public class LiveMeeting
-    {
-        //[XmlElement(ElementName = "URL")]
-        public string URL { get; set; }
-        //[XmlElement(ElementName = "ID")]
-        public string ID { get; set; }
-        //[XmlElement(ElementName = "Key")]
-        public string Key { get; set; }
-        //[XmlElement(ElementName = "Subject")]
-        public string Subject { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "LiveMeetingURL")]
-    public class LiveMeetingURL
-    {
-        //[XmlElement(ElementName = "LiveMeeting")]
-        public LiveMeeting LiveMeeting { get; set; }
-    }
+   
 }

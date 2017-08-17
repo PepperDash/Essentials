@@ -135,6 +135,7 @@
     <Compile Include="Devices\NUMERIC AppleTV.cs" />
     <Compile Include="ControlSystem.cs" />
     <Compile Include="Fusion\FusionEventHandlers.cs" />
+    <Compile Include="Fusion\FusionRviDataClasses.cs" />
     <Compile Include="REMOVE EssentialsApp.cs" />
     <Compile Include="Fusion\FusionSystemController.cs" />
     <Compile Include="HttpApiHandler.cs" />

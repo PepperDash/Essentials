@@ -60,4 +60,9 @@ namespace PepperDash.Essentials.Core
 				Debug.Console(0, source, "No available outputs:");
 		}
 	}
+
+    public static class IHasFeedbackFusionExtensions
+    {
+
+    }
 }

@@ -62,11 +62,6 @@ namespace PepperDash.Essentials
 					LoadDevices();
 					LoadTieLines();
 					LoadRooms();
-					// FUSION - should go per room I believe.  See CreateSystems in original Configuration.cs
-					// ???
-
-                    //Temp Cotija testing
-                    //CotijaSystemController CotijaInterface = new CotijaSystemController("WebClient1");
 
 					DeviceManager.ActivateAll();
 					Debug.Console(0, "Essentials load complete\r" +
