@@ -319,19 +319,32 @@ namespace PepperDash.Essentials
         /// 15061 Reveals the dual-display subpage
         /// </summary>
         public const uint DualDisplayPageVisible = 15061;
+
         /// <summary>
         /// 15062 Reveals the toggle switch for the sharing mode
         /// </summary>
         public const uint ToggleSharingModeVisible = 15062;
+
         /// <summary>
         /// 15063 Press for the toggle mode switch
         /// </summary>
         public const uint ToggleSharingModePress = 15063;
 
         /// <summary>
+        /// 15064
+        /// </summary>
+        public const uint LogoDefaultVisible = 15064;
+
+        /// <summary>
+        /// 15065
+        /// </summary>
+        public const uint LogoUrlVisible = 15065;
+
+        /// <summary>
         /// 15085 Visibility join for help subpage
         /// </summary>
         public const uint HelpPageVisible = 15085;
+
         /// <summary>
         /// 15086 Press for help header button
         /// </summary>

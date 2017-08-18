@@ -73,6 +73,11 @@ namespace PepperDash.Essentials
         public const uint HelpMessage = 3922;
 
         /// <summary>
+        /// 3923
+        /// </summary>
+        public const uint LogoUrl = 3923;
+
+        /// <summary>
         /// 3961 Name of source on display 1
         /// </summary>
         public const uint Display1SourceLabel = 3961;

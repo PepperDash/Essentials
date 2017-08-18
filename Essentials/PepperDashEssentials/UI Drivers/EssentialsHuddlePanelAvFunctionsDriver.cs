@@ -168,6 +168,8 @@ namespace PepperDash.Essentials
 
             TriList.StringInput[UIStringJoin.StartActivityText].StringValue =
                 "Tap Share to begin";
+
+            TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = true;
 		}
 
 		/// <summary>

@@ -175,6 +175,7 @@
     <Compile Include="SmartObjects\SmartObjectHelper.cs" />
     <Compile Include="SmartObjects\SmartObjectHelperBase.cs" />
     <Compile Include="Routing\TieLine.cs" />
+    <Compile Include="Timers\CountdownTimer.cs" />
     <Compile Include="Touchpanels\MOVED LargeTouchpanelControllerBase.cs" />
     <Compile Include="Touchpanels\TriListExtensions.cs" />
     <Compile Include="Touchpanels\MOVED UIControllers\DevicePageControllerBase.cs" />

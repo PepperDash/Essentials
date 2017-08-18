@@ -162,8 +162,6 @@ namespace PepperDash.Essentials.Core
 				return true;
 			}
 
-			// Dialog is busy
-			//Debug.Console(2, "Modal is already visible");
 			return false;
 		}
 

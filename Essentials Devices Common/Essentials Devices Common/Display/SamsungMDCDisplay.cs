@@ -45,7 +45,6 @@ namespace PepperDash.Essentials.Devices.Displays
 			: base(key, name)
 		{
 			Communication = comm;
-            //Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
             Communication.BytesReceived += new EventHandler<GenericCommMethodReceiveBytesArgs>(Communication_BytesReceived);
 
             ID = id == null ? (byte)0x01 : Convert.ToByte(id, 16); // If id is null, set default value of 0x01, otherwise assign value passed in constructor
@@ -59,7 +58,6 @@ namespace PepperDash.Essentials.Devices.Displays
 			: base(key, name)
 		{
 			Communication = new GenericTcpIpClient(key + "-tcp", hostname, port, 5000);
-            //Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
             ID = id == null ? (byte)0x01 : Convert.ToByte(id, 16); // If id is null, set default value of 0x01, otherwise assign value passed in constructor
             Init();
 		}
@@ -186,7 +184,7 @@ namespace PepperDash.Essentials.Devices.Displays
 
                         // Good length, grab the message
                         var message = newBytes.Skip(4).Take(msgLen).ToArray();
-                        Debug.Console(0, this, "Parsing input: {0}", ComTextHelper.GetEscapedText(message));
+                        Debug.Console(2, this, "Parsing input: {0}", ComTextHelper.GetEscapedText(message));
 
                         // At this point, the ack/nak is the first byte
                         if (message[0] == 0x41)
@@ -194,7 +192,7 @@ namespace PepperDash.Essentials.Devices.Displays
                             switch (message[1]) // type byte
                             {
                                 case 0x00: // General status
-                                    UpdatePowerFB(message[2]);
+                                    UpdatePowerFBWithSource(message[2], message[3]); // "power" can be misrepresented when the display sleeps
                                     UpdateVolumeFB(message[3]);
                                     UpdateMuteFb(message[4]);
                                     UpdateInputFb(message[5]);
@@ -233,12 +231,23 @@ namespace PepperDash.Essentials.Devices.Displays
         }
 
         /// <summary>
+        /// Checks power feedback AND that source >0x10
         /// 
         /// </summary>
         /// <param name="b"></param>
-        void UpdatePowerFB(byte b)
+        void UpdatePowerFBWithSource(byte pb, byte ib)
         {
-            var newVal = b == 1;
+            var newVal = pb == 1 && ib > 0x10;
+            if (newVal != _PowerIsOn)
+            {
+                _PowerIsOn = newVal;
+                PowerIsOnFeedback.FireUpdate();
+            }
+        }
+
+        void UpdatePowerFB(byte pb)
+        {
+            var newVal = pb == 1;
             if (newVal != _PowerIsOn)
             {
                 _PowerIsOn = newVal;
@@ -419,9 +428,10 @@ namespace PepperDash.Essentials.Devices.Displays
         }
 
         public void InputGet()
-        {   
+        {
             SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x00, 0x00 });
         }
+
 
         /// <summary>
         /// Executes a switch, turning on display if necessary.
