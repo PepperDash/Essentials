@@ -77,6 +77,14 @@ namespace PepperDash.Essentials.Fusion
     // Helper Classes for XML API
 
     /// <summary>
+    /// Data needed to request the local time from the Fusion server
+    /// </summary>
+    public class LocalTimeRequest
+    {
+        public string RequestID { get; set; }
+    }
+
+    /// <summary>
     /// All the data needed for a full schedule request in a room
     /// </summary>
     /// //[XmlRoot(ElementName = "RequestSchedule")]

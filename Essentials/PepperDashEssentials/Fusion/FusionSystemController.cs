@@ -384,6 +384,15 @@ namespace PepperDash.Essentials.Fusion
                 Debug.Console(2, this, "Sending Fusion ActionRequest: \n{0}", actionRequest);
 
                 FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = actionRequest;
+
+
+                // Request current Fusion Server Time
+
+                string timeRequestID = "TimeRequest";
+
+                string timeRequest = string.Format("<LocalTimeRequest><RequestID>{0}</RequestID></LocalTimeRequest>", timeRequestID);
+
+                FusionRoom.ExtenderFusionRoomDataReservedSigs.LocalDateTimeQuery.StringValue = timeRequest;
             }
 
         }
@@ -540,20 +549,6 @@ namespace PepperDash.Essentials.Fusion
             {
                 try
                 {
-                    //ActionResponse actionResponse = new ActionResponse();
-
-                    //TextReader reader = new StringReader(args.Sig.StringValue);
-
-                    //actionResponse = CrestronXMLSerialization.DeSerializeObject<ActionResponse>(reader);
-
-                    //if (actionResponse != null)
-                    //{
-                    //    if (actionResponse.RequestID == "InitialPushRequest")
-                    //    {
-                    //        if (actionResponse.Parameters != null)
-                    //        {
-                    //            var tempParam = actionResponse.Parameters.FirstOrDefault(p => p.ID.Equals("Registered"));
-
                     XmlDocument message = new XmlDocument();
 
                     message.LoadXml(args.Sig.StringValue);
@@ -618,6 +613,40 @@ namespace PepperDash.Essentials.Fusion
                 catch (Exception e)
                 {
                     Debug.Console(1, this, "Error parsing ActionQueryResponse: {0}", e);
+                }
+            }
+            else if (args.Sig == FusionRoom.ExtenderFusionRoomDataReservedSigs.LocalDateTimeQueryResponse)
+            {
+                try
+                {
+                    XmlDocument message = new XmlDocument();
+
+                    message.LoadXml(args.Sig.StringValue);
+
+                    var localDateTimeResponse = message["LocalTimeResponse"];
+
+                    if (localDateTimeResponse != null)
+                    {
+                        var localDateTime = localDateTimeResponse["LocalDateTime"];
+
+                        if (localDateTime != null)
+                        {
+                            var tempLocalDateTime = localDateTime.InnerText;
+                         
+                            DateTime currentTime = DateTime.Parse(tempLocalDateTime);
+
+                            Debug.Console(1, this, "DateTime from Fusion Server: {0}", currentTime);
+
+                            // Parse time and date from response and insert values
+                            CrestronEnvironment.SetTimeAndDate((ushort)currentTime.Hour, (ushort)currentTime.Minute, (ushort)currentTime.Second, (ushort)currentTime.Month, (ushort)currentTime.Day, (ushort)currentTime.Year);
+
+                            Debug.Console(1, this, "Processor time set to {0}", CrestronEnvironment.GetLocalTime());
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(1, this, "Error parsing LocalDateTimeQueryResponse: {0}", e);
                 }
             }
         }
