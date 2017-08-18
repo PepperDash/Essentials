@@ -16,6 +16,14 @@ namespace PepperDash.Essentials
         public event SourceInfoChangeHandler CurrentDisplay1SourceChange;
         public event SourceInfoChangeHandler CurrentDisplay2SourceChange;
 
+        protected override Func<bool> OnFeedbackFunc { get {
+			return () => (CurrentSingleSourceInfo != null 
+				&& CurrentSingleSourceInfo.Type != eSourceListItemType.Off)
+                || (Display1SourceInfo != null 
+                && Display1SourceInfo.Type != eSourceListItemType.Off)
+                || (Display2SourceInfo != null
+                && Display2SourceInfo.Type != eSourceListItemType.Off); } } 
+
         public EssentialsPresentationRoomPropertiesConfig Config { get; private set; }
 
         public Dictionary<uint, IRoutingSinkNoSwitching> Displays { get; private set; }
@@ -141,16 +149,10 @@ namespace PepperDash.Essentials
         }
         SourceListItem _Display2SourceInfo;
 
-		/// <summary>
-		/// 
-		/// </summary>
-		public BoolFeedback OnFeedback { get; private set; }
-
         /// <summary>
         /// If an audio dialer is available for this room
         /// </summary>
         public bool HasAudioDialer { get { return false; } }
-
 		/// <summary>
 		/// 
 		/// </summary>
@@ -173,15 +175,7 @@ namespace PepperDash.Essentials
             //else if (defaultAudio is IHasVolumeDevice)
             //    DefaultVolumeControls = (defaultAudio as IHasVolumeDevice).VolumeDevice;
 
-			OnFeedback = new BoolFeedback(() =>
-				{ return (CurrentSingleSourceInfo != null 
-					&& CurrentSingleSourceInfo.Type != eSourceListItemType.Off)
-                    || (Display1SourceInfo != null 
-                    && Display1SourceInfo.Type != eSourceListItemType.Off)
-                    || (Display2SourceInfo != null
-                    && Display2SourceInfo.Type != eSourceListItemType.Off); 
-                
-                });
+			
 			SourceListKey = "default";
 			EnablePowerOnToLastSource = true;
 		}

@@ -14,6 +14,23 @@ namespace PepperDash.Essentials
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSingleSourceChange;
 
+        protected override Func<bool> OnFeedbackFunc
+        {
+            get
+            {
+                return () =>
+                {
+                    var disp = DefaultDisplay as DisplayBase;
+                    var val = CurrentSourceInfo != null
+                      && CurrentSourceInfo.Type == eSourceListItemType.Route
+                      && disp != null
+                      && disp.PowerIsOnFeedback.BoolValue;
+                    Debug.Console(2, this, "************** ROOM POWER {0}", val);
+                    return val;
+                };
+            }
+        }
+
 		public EssentialsRoomPropertiesConfig Config { get; private set; }
 
 		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
@@ -94,11 +111,6 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 
 		/// </summary>
-		public BoolFeedback OnFeedback { get; private set; }
-
-		/// <summary>
-		/// 
-		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="name"></param>
 		public EssentialsHuddleSpaceRoom(string key, string name, IRoutingSinkWithSwitching defaultDisplay, 
@@ -115,13 +127,19 @@ namespace PepperDash.Essentials
             CurrentVolumeControls = DefaultVolumeControls;
 
             var disp = DefaultDisplay as DisplayBase;
-			OnFeedback = new BoolFeedback(() =>
-                {
-                    return CurrentSourceInfo != null
-                      && CurrentSourceInfo.Type == eSourceListItemType.Route
-                      && disp != null
-                      && disp.PowerIsOnFeedback.BoolValue;
-                });
+            if (disp != null)
+            {
+                disp.PowerIsOnFeedback.OutputChange += (o, a) =>
+                    {
+                        if (disp.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
+                        {
+                            if (!disp.PowerIsOnFeedback.BoolValue)
+                                CurrentSourceInfo = null;
+                            OnFeedback.FireUpdate();
+                        }
+                    };
+            }
+          
 			SourceListKey = "default";
 			EnablePowerOnToLastSource = true;
 		}

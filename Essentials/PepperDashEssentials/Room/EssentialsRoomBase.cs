@@ -20,11 +20,23 @@ namespace PepperDash.Essentials
     /// <summary>
     /// 
     /// </summary>
-    public class EssentialsRoomBase : Device
+    public abstract class EssentialsRoomBase : Device
     {
+        /// <summary>
+        ///
+        /// </summary>
+        public BoolFeedback OnFeedback { get; private set; }
+
+        public BoolFeedback IsWarmingFeedback { get; private set; }
+        public BoolFeedback IsCoolingFeedback { get; private set; }
+        public BoolFeedback ShutdownPendingFeedback { get; private set; }
+
+        protected abstract Func<bool> OnFeedbackFunc { get; }
+
+
         public EssentialsRoomBase(string key, string name) : base(key, name)
         {
-
+            OnFeedback = new BoolFeedback(OnFeedbackFunc);
         }
     }
 }

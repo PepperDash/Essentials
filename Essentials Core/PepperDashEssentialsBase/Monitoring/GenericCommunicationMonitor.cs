@@ -40,8 +40,8 @@ namespace PepperDash.Essentials.Core
 		{
 			if (pollTime > warningTime || pollTime > errorTime)
 				throw new ArgumentException("pollTime must be less than warning or errorTime");
-			if (pollTime < 5000)
-				throw new ArgumentException("pollTime cannot be less than 5000 ms");
+            //if (pollTime < 5000)
+            //    throw new ArgumentException("pollTime cannot be less than 5000 ms");
 
 			Client = client;
 			PollTime = pollTime;
@@ -63,8 +63,8 @@ namespace PepperDash.Essentials.Core
         {
             if (pollTime > warningTime || pollTime > errorTime)
                 throw new ArgumentException("pollTime must be less than warning or errorTime");
-            if (pollTime < 5000)
-                throw new ArgumentException("pollTime cannot be less than 5000 ms");
+            //if (pollTime < 5000)
+            //    throw new ArgumentException("pollTime cannot be less than 5000 ms");
 
             Client = client;
             PollTime = pollTime;
@@ -112,7 +112,7 @@ namespace PepperDash.Essentials.Core
 			StartErrorTimers();
 			if (Client.IsConnected)
 			{
-				Debug.Console(2, Client, "Monitor, Polling");
+				Debug.Console(2, this, "Polling");
                 if(PollAction != null)
                     PollAction.Invoke();
                 else
@@ -120,7 +120,7 @@ namespace PepperDash.Essentials.Core
 			}
 			else
 			{
-				Debug.Console(2, Client, "Monitor, Comm not connected");
+				Debug.Console(2, this, "Comm not connected");
 			}
 		}
 
@@ -132,7 +132,7 @@ namespace PepperDash.Essentials.Core
 			if (Client.IsConnected)
 			{
 				//Client.IsConnected -= OneTimeConnectHandler;
-				Debug.Console(2, Client, "Monitor, Comm connected");
+				Debug.Console(2, this, "Comm connected");
 				Poll();
 			}
 		}

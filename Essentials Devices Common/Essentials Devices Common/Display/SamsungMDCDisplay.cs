@@ -24,11 +24,13 @@ namespace PepperDash.Essentials.Devices.Displays
 		bool _PowerIsOn;
 		bool _IsWarmingUp;
 		bool _IsCoolingDown;
-		ushort _VolumeLevel;
+		ushort _VolumeLevelForSig;
+        int _LastVolumeSent;
 		bool _IsMuted;
         RoutingInputPort _CurrentInputPort;
         byte[] IncomingBuffer = new byte[]{};
-        //CTimer StatusTimer;
+        ActionIncrementer VolumeIncrementer;
+        bool VolumeIsRamping;
 
 		protected override Func<bool> PowerIsOnFeedbackFunc { get { return () => _PowerIsOn; } }
 		protected override Func<bool> IsCoolingDownFeedbackFunc { get { return () => _IsCoolingDown; } }
@@ -85,8 +87,12 @@ namespace PepperDash.Essentials.Devices.Displays
 		void Init()
 		{
             WarmupTime = 10000;
-            CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, StatusGet);
+            CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 2000, 120000, 300000, StatusGet);
             DeviceManager.AddDevice(CommunicationMonitor);
+
+            VolumeIncrementer = new ActionIncrementer(655, 0, 65535, 800, 80, 
+                v => SetVolume((ushort)v), 
+                () => _LastVolumeSent);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, new Action(InputHdmi1), this), 0x21);
@@ -112,7 +118,7 @@ namespace PepperDash.Essentials.Devices.Displays
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.RgbIn2, eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Rgb, new Action(new Action(InputRgb2)), this), 0x1E);
 
-			VolumeLevelFeedback = new IntFeedback(() => { return _VolumeLevel; });
+			VolumeLevelFeedback = new IntFeedback(() => { return _VolumeLevelForSig; });
 			MuteFeedback = new BoolFeedback(() => _IsMuted);
 
             StatusGet();
@@ -238,7 +244,6 @@ namespace PepperDash.Essentials.Devices.Displays
                 _PowerIsOn = newVal;
                 PowerIsOnFeedback.FireUpdate();
             }
-
         }
 
         /// <summary>
@@ -246,11 +251,13 @@ namespace PepperDash.Essentials.Devices.Displays
         /// </summary>
         /// <param name="b"></param>
         void UpdateVolumeFB(byte b)
-        {
+        {            
             var newVol = (ushort)Scale((double)b, 0, 100, 0, 65535);
-            if (newVol != _VolumeLevel)
+            if (!VolumeIsRamping)
+                _LastVolumeSent = newVol;
+            if (newVol != _VolumeLevelForSig)
             {
-                _VolumeLevel = newVol;
+                _VolumeLevelForSig = newVol;
                 VolumeLevelFeedback.FireUpdate();
             }
         }
@@ -450,8 +457,10 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <param name="level"></param>
 		public void SetVolume(ushort level)
 		{
-            var volByte = Convert.ToByte(Scale(level, 0, 65535, 0, 100)); // The inputs to Scale ensures it won't overflow
-            SendBytes(new byte[] { 0xAA, 0x12, 0x00, 0x01, volByte, 0x00 });
+            _LastVolumeSent = level;
+            var scaled = (int)Scale(level, 0, 65535, 0, 100);
+            // The inputs to Scale ensure that byte won't overflow
+            SendBytes(new byte[] { 0xAA, 0x12, 0x00, 0x01, Convert.ToByte(scaled), 0x00 });
 		}
 
         /// <summary>
@@ -534,7 +543,16 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <param name="pressRelease"></param>
 		public void VolumeDown(bool pressRelease)
 		{
-			throw new NotImplementedException();
+            if (pressRelease)
+            {
+                VolumeIncrementer.StartDown();
+                VolumeIsRamping = true;
+            }
+            else
+            {
+                VolumeIsRamping = false;
+                VolumeIncrementer.Stop();
+            }
 		}
 
         /// <summary>
@@ -543,9 +561,21 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <param name="pressRelease"></param>
 		public void VolumeUp(bool pressRelease)
 		{
-			throw new NotImplementedException();
-		}
+            if (pressRelease)
+            {
+                VolumeIncrementer.StartUp();
+                VolumeIsRamping = true;
+            }
+            else
+            {
+                VolumeIsRamping = false;
+                VolumeIncrementer.Stop();
+            }
+        }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void VolumeGet()
         {
             SendBytes(new byte[] { 0xAA, 0x12, 0x00, 0x00, 0x00 });

@@ -147,13 +147,7 @@ namespace PepperDash.Essentials
 			: base(parent.TriList)
 		{
 			Config = config;
-			Parent = parent;
-
-            //SelectASourceVisibleFeedback = new BoolFeedback(() =>
-            //    CurrentRoom != null && !CurrentRoom.OnFeedback.BoolValue && this.IsVisible);
-
-            //SourcesDynamicList = new SmartObjectDynamicList(
-            //    TriList.SmartObjects[UISmartObjectJoin.SourceList], true, 3200);
+            Parent = parent;
 
             SourcesSrl = new SubpageReferenceList(TriList, 3200, 3, 3, 3);
             ActivityFooterSrl = new SubpageReferenceList(TriList, 15022, 3, 3, 3);
@@ -242,12 +236,16 @@ namespace PepperDash.Essentials
 			base.Show();
 		}
 
+        /// <summary>
+        /// Handler for room on/off feedback
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void OnFeedback_OutputChange(object sender, EventArgs e)
         {
             if (CurrentRoom.OnFeedback.BoolValue)
             {
                 TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = true;
-                //TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
             }
             else
             {
