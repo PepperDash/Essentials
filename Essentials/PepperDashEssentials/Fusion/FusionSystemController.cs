@@ -14,10 +14,9 @@ using Crestron.SimplSharpPro.Fusion;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using PepperDash.Essentials.Core;
-
 using PepperDash.Core;
 using PepperDash.Essentials;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common;
 
 
@@ -314,6 +313,7 @@ namespace PepperDash.Essentials.Fusion
             NetMask1 = FusionRoom.CreateOffsetStringSig(63, "Info - Processor - Net Mask 1", eSigIoMask.InputSigOnly);
             NetMask2 = FusionRoom.CreateOffsetStringSig(64, "Info - Processor - Net Mask 2", eSigIoMask.InputSigOnly);
 
+            SetProcessorEthernetValues();
 
             CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
         }
@@ -815,6 +815,18 @@ namespace PepperDash.Essentials.Fusion
 						break;
 				}
 
+
+                foreach (var kvp in dict)
+                {
+                    var usageDevice = kvp.Value.SourceDevice as IUsageTracking;
+
+                    if (usageDevice != null)
+                    {
+                        usageDevice.UsageTracker = new UsageTracking();
+
+                        usageDevice.UsageTracker.DeviceUsageEnded += new EventHandler<DeviceUsageEventArgs>(UsageTracker_SourceUsageEnded);
+                    }
+                }
 				
 			}
 			else
@@ -823,6 +835,31 @@ namespace PepperDash.Essentials.Fusion
 					Room.SourceListKey, Room.Key);
 			}
 		}
+
+
+        /// <summary>
+        /// Collects usage data from source and sends to Fusion
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void UsageTracker_SourceUsageEnded(object sender, DeviceUsageEventArgs e)
+        {          
+            var device = sender as Device;
+
+            var configDevice = ConfigReader.ConfigObject.Devices.Where(d => d.Key.Equals(device.Key));
+
+            string group = "";
+
+#warning Figure out how to get the group value from the device config
+
+
+            //Double check my time and date formatting in the ToString() methods
+            string deviceUsage = string.Format("USAGE||{0}||{1}||TIME||{2}||{3}||{4}||{5}||{6})", e.UsageEndTime.ToString("YYYY-MM-DD"), e.UsageEndTime.ToString("HH-mm-ss"),
+                group, device.Name, e.MinutesUsed, "asset_id", CurrentMeeting.MeetingID); 
+
+
+            FusionRoom.DeviceUsage.InputSig.StringValue = deviceUsage;
+        }
 
 		void TryAddRouteActionSigs(string attrName, uint attrNum, string routeKey, Device pSrc)
 		{
@@ -924,6 +961,10 @@ namespace PepperDash.Essentials.Fusion
 
 		void SetUpDisplay()
 		{
+            //Setup Display Usage Monitoring
+
+#warning Somehow get list of room's displays and activate Usage tracking and subscribe to event            
+
 			var display = Room.DefaultDisplay as DisplayBase;
 			if (display == null)
 			{
@@ -983,9 +1024,6 @@ namespace PepperDash.Essentials.Fusion
 			};
 
 		}
-
-
-
 
 		/// <summary>
 		/// Helper to get the number from the end of a device's key string

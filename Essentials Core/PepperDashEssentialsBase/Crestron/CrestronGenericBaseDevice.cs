@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// A bridge class to cover the basic features of GenericBase hardware
 	/// </summary>
-	public class CrestronGenericBaseDevice : Device, IOnline, IHasFeedback, ICommunicationMonitor
+	public class CrestronGenericBaseDevice : Device, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking
 	{
 		public virtual GenericBase Hardware { get; protected set; }
 
@@ -88,6 +88,12 @@ namespace PepperDash.Essentials.Core
 
 		public StatusMonitorBase CommunicationMonitor { get; private set; }
 		#endregion
+
+        #region IUsageTracking Members
+
+        public UsageTracking UsageTracker { get; set; }
+
+        #endregion
 	}
 
 	//***********************************************************************************

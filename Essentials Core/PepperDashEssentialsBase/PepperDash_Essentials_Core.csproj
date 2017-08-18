@@ -115,6 +115,7 @@
     <Compile Include="Config\DeviceConfig.cs" />
     <Compile Include="Constants\CommonCues.cs" />
     <Compile Include="Devices\DisplayUiConstants.cs" />
+    <Compile Include="Devices\IUsageTracking.cs" />
     <Compile Include="Devices\REMOVE DeviceConfig.cs" />
     <Compile Include="Devices\DeviceJsonApi.cs" />
     <Compile Include="Devices\SourceListItem.cs" />

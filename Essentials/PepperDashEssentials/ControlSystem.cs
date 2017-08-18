@@ -175,8 +175,6 @@ namespace PepperDash.Essentials
                         DeviceManager.AddDevice(room);
                     }
 
-#warning Add Fusion connector to room factory?
-
 				}
 				else
 					Debug.Console(0, "WARNING: Cannot create room from config, key '{0}'", roomConfig.Key);

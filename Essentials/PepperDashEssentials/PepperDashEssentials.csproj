@@ -83,7 +83,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\pepperdash-simplsharp-core\Pepperdash Core\CLZ Builds\PepperDash_Core.dll</HintPath>
     </Reference>
-    <Reference Include="PepperDash_Essentials_Core, Version=1.0.0.12925, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PepperDash_Essentials_Core, Version=1.0.0.18243, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Essentials Core\PepperDashEssentialsBase\bin\PepperDash_Essentials_Core.dll</HintPath>
     </Reference>
