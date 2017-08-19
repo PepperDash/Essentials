@@ -255,7 +255,18 @@ namespace PepperDash.Essentials
                 }, 0);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public override void Shutdown()
+        {
+            RunRouteAction("roomoff");
+        }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="routeKey"></param>
 		public void RunRouteAction(string routeKey)
 		{
 			RunRouteAction(routeKey, null);

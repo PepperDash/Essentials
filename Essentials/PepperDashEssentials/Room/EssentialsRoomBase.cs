@@ -30,33 +30,79 @@ namespace PepperDash.Essentials
         public BoolFeedback IsWarmingFeedback { get; private set; }
         public BoolFeedback IsCoolingFeedback { get; private set; }
 
-        public BoolFeedback PowerOffPendingFeedback { get; private set; }
-        public IntFeedback PowerOffPendingTimerPercentFeedback { get; private set; }
-        public StringFeedback PowerOffPendingTimeStringFeedback { get; private set; }
-        bool _PowerOffPending;
-        public int PowerOffDelaySeconds { get; set; }
+        //public BoolFeedback PowerOffPendingFeedback { get; private set; }
+        //bool _PowerOffPending;
+        //public IntFeedback PowerOffPendingTimerPercentFeedback { get; private set; }
+        //public StringFeedback PowerOffPendingTimeStringFeedback { get; private set; }
 
-        public BoolFeedback VacancyPowerDownFeedback { get; private set; }
+        /// <summary>
+        /// Timer used for informing the UIs of a shutdown
+        /// </summary>        
+        public SecondsCountdownTimer ShutdownPromptTimer { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public int ShutdownPromptSeconds { get; set; }
+        public int ShutdownVacancySeconds { get; set; }
+        public ShutdownType ShutdownType { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         protected abstract Func<bool> OnFeedbackFunc { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="name"></param>
         public EssentialsRoomBase(string key, string name) : base(key, name)
         {
+            ShutdownPromptTimer = new SecondsCountdownTimer(Key + "-offTimer");
+            ShutdownPromptTimer.IsRunningFeedback.OutputChange += (o, a) =>
+            {
+                if (!ShutdownPromptTimer.IsRunningFeedback.BoolValue)
+                    ShutdownType = ShutdownType.None;
+            };
+
+            ShutdownPromptSeconds = 60;
+            ShutdownVacancySeconds = 120;
+
             OnFeedback = new BoolFeedback(OnFeedbackFunc);
-            PowerOffPendingFeedback = new BoolFeedback(() => _PowerOffPending);
         }
 
 
         /// <summary>
-        /// Triggers the shutdown timer
+        /// 
         /// </summary>
-        public void StartShutdown()
+        /// <param name="type"></param>
+        public void StartShutdown(ShutdownType type)
         {
-            if (!_PowerOffPending)
-            {
-                _PowerOffPending = true;
-                PowerOffPendingFeedback.FireUpdate();
-            }
+            // Check for shutdowns running. Manual should override other shutdowns
+
+            if (type == ShutdownType.Manual)
+                ShutdownPromptTimer.SecondsToCount = ShutdownPromptSeconds;
+            else if (type == ShutdownType.Vacancy)
+                ShutdownPromptTimer.SecondsToCount = ShutdownVacancySeconds;
+            ShutdownType = type;
+            ShutdownPromptTimer.Start();
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public abstract void Shutdown();
+    }
+
+    /// <summary>
+    /// To describe the various ways a room may be shutting down
+    /// </summary>
+    public enum ShutdownType
+    {
+        None,
+        External,
+        Manual,
+        Vacancy
     }
 }

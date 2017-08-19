@@ -144,6 +144,18 @@ namespace PepperDash.Essentials
 			EnablePowerOnToLastSource = true;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public override void Shutdown()
+        {
+            RunRouteAction("roomoff");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="routeKey"></param>
 		public void RunRouteAction(string routeKey)
 		{
 			RunRouteAction(routeKey, null);

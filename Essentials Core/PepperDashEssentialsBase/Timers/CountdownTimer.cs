@@ -10,6 +10,8 @@ namespace PepperDash.Essentials.Core
 {
     public class SecondsCountdownTimer: IKeyed
     {
+        public event EventHandler<EventArgs> WasCancelled;
+
         public string Key { get; private set; }
 
         public BoolFeedback IsRunningFeedback { get; private set; }
@@ -21,12 +23,10 @@ namespace PepperDash.Essentials.Core
         public bool CountsDown { get; set; }
         public int SecondsToCount { get; set; }
         
-        public Action CompletionAction { get; set; }
-        public Action CancelAction { get; set; }
-
-        CTimer SecondTimer;
         public DateTime StartTime { get; private set; }
         public DateTime FinishTime { get; private set; }
+ 
+        CTimer SecondTimer;
 
         /// <summary>
         /// 
@@ -78,10 +78,10 @@ namespace PepperDash.Essentials.Core
 
         public void Cancel()
         {
-            CleanUp();
-            var a = CancelAction;
+            Finish();
+            var a = WasCancelled;
             if (a != null)
-                a();
+                a(this, new EventArgs());
         }
 
         public void Reset()
@@ -91,14 +91,6 @@ namespace PepperDash.Essentials.Core
         }
 
         public void Finish()
-        {
-            CleanUp();
-            var a = CompletionAction;
-            if (a != null)
-                a();
-        }
-
-        void CleanUp()
         {
             if (SecondTimer != null)
                 SecondTimer.Stop();

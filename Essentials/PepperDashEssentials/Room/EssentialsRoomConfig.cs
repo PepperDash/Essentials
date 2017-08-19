@@ -63,7 +63,19 @@ namespace PepperDash.Essentials
 	{
 		public string HelpMessage { get; set; }
         public string Description { get; set; }
+        public int ShutdownVacancySeconds { get; set; }
+        public int ShutdownPromptSeconds { get; set; }
+        public EssentialsRoomOccSensorConfig OccupancySensors { get; set; }
 	}
+
+    /// <summary>
+    /// Represents occupancy sensor(s) setup for a room
+    /// </summary>
+    public class EssentialsRoomOccSensorConfig
+    {
+        public string Mode { get; set; }
+        public List<string> Types { get; set; }
+    }
 
     /// <summary>
     /// 

@@ -3,3 +3,7 @@ devjson:1 {"deviceKey":"display-1-comMonitor","methodName":"PrintStatus"}
 devjson:1 {"deviceKey":"display-1-com","methodName":"SimulateReceive", "params": ["\\x05\\x06taco\\xAA"]}
 
 devjson:1 {"deviceKey":"timer","methodName":"Start" }
+
+devjson:1 {"deviceKey":"timer","methodName":"Cancel" }
+
+devjson:1 {"deviceKey":"timer","methodName":"Reset" }
