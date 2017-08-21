@@ -46,8 +46,8 @@ namespace PepperDash.Essentials
 			{
 				Debug.Console(0, "Config failed: \r{0}", e);
 			}
-
 		}
+
 
 		static JObject MergeConfigs(JObject doubleConfig)
 		{

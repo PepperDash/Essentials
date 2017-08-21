@@ -10,6 +10,8 @@ namespace PepperDash.Essentials.Core
 {
     public class SecondsCountdownTimer: IKeyed
     {
+        public event EventHandler<EventArgs> HasStarted;
+        public event EventHandler<EventArgs> HasFinished;
         public event EventHandler<EventArgs> WasCancelled;
 
         public string Key { get; private set; }
@@ -74,28 +76,50 @@ namespace PepperDash.Essentials.Core
             _IsRunning = true;
             IsRunningFeedback.FireUpdate();
 
+            var handler = HasStarted;
+            if (handler != null)
+                handler(this, new EventArgs());
         }
 
-        public void Cancel()
-        {
-            Finish();
-            var a = WasCancelled;
-            if (a != null)
-                a(this, new EventArgs());
-        }
-
+        /// <summary>
+        /// 
+        /// </summary>
         public void Reset()
         {
             _IsRunning = false;
             Start();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Cancel()
+        {
+            StopHelper();
+            
+            var handler = WasCancelled;
+            if (handler != null)
+                handler(this, new EventArgs());
+        }
+
+        /// <summary>
+        /// Called upon expiration, or calling this will force timer to finish.
+        /// </summary>
         public void Finish()
+        {
+            StopHelper();
+
+            var handler = HasFinished;
+            if (handler != null)
+                handler(this, new EventArgs());
+        }
+
+        void StopHelper()
         {
             if (SecondTimer != null)
                 SecondTimer.Stop();
             _IsRunning = false;
-            IsRunningFeedback.FireUpdate();
+            IsRunningFeedback.FireUpdate(); 
         }
 
         void SecondElapsedTimerCallback(object o)

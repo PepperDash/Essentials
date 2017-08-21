@@ -151,6 +151,8 @@ namespace PepperDash.Essentials
 
             SourcesSrl = new SubpageReferenceList(TriList, 3200, 3, 3, 3);
             ActivityFooterSrl = new SubpageReferenceList(TriList, 15022, 3, 3, 3);
+            ShareButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
+
             SetupActivityFooterWhenRoomOff();
 
 			ShowVolumeGauge = true;
@@ -350,7 +352,6 @@ namespace PepperDash.Essentials
         /// </summary>
         void ShareButtonPressed()
         {
-            ShareButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
             if (!_CurrentRoom.OnFeedback.BoolValue)
             {
                 ShareButtonSig.BoolValue = true;
@@ -471,7 +472,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public void PowerButtonPressed()
 		{
-			if (!CurrentRoom.OnFeedback.BoolValue) 
+            var room = CurrentRoom;
+			if (!room.OnFeedback.BoolValue || room.ShutdownPromptTimer.IsRunningFeedback.BoolValue) 
                 return;
 
             //EndMeetingButtonSig.BoolValue = true;
@@ -512,36 +514,88 @@ namespace PepperDash.Essentials
         //          Fire shutdown cancelled event?
         //
 
-        void Shutdown_IsRunningFeedback_OutputChange(object sender, EventArgs e)
+        //void Shutdown_IsRunningFeedback_OutputChange(object sender, EventArgs e)
+        //{
+        //    var timer = CurrentRoom.ShutdownPromptTimer;
+        //    if (timer.IsRunningFeedback.BoolValue)
+        //    {
+        //        EndMeetingButtonSig.BoolValue = true;
+        //        ShareButtonSig.BoolValue = false;
+
+        //        if (CurrentRoom.ShutdownType == ShutdownType.Manual)
+        //        {
+        //            var modal = new ModalDialog(TriList);
+        //            var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);
+        //            modal.PresentModalTimerDialog(2, "End Meeting", "Power", message,
+        //                "End Meeting Now", "Cancel", 0, true,
+        //                but =>
+        //                {
+        //                    if (but != 2) // any button except for End cancels
+        //                        timer.Cancel();
+        //                    else
+        //                        ShareButtonSig.BoolValue = true; // restore Share fb
+        //                    EndMeetingButtonSig.BoolValue = false;
+        //                });
+        //        }
+        //    }
+        //    else // Timer stopped. 
+        //    {
+
+        //    }
+        //}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ShutdownPromptTimer_HasStarted(object sender, EventArgs e)
         {
+            // Do we need to check where the UI is? No?
             var timer = CurrentRoom.ShutdownPromptTimer;
-            if (timer.IsRunningFeedback.BoolValue)
-            {
-                EndMeetingButtonSig.BoolValue = true;
-                ShareButtonSig.BoolValue = false;
+            EndMeetingButtonSig.BoolValue = true;
+            ShareButtonSig.BoolValue = false;
 
-                if (CurrentRoom.ShutdownType == ShutdownType.Manual)
-                {
-                    var modal = new ModalDialog(TriList);
-                    var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);
-                    modal.PresentModalTimerDialog(2, "End Meeting", "Power", message,
-                        "End Meeting Now", "Cancel", 0, true,
-                        but =>
-                        {
-                            if (but != 2) // any button except for End cancels
-                                timer.Cancel();
-                            else
-                                ShareButtonSig.BoolValue = true; // restore Share fb
-                            EndMeetingButtonSig.BoolValue = false;
-                        });
-                }
-            }
-            else
+            if (CurrentRoom.ShutdownType == ShutdownType.Manual)
             {
-
+                var modal = new ModalDialog(TriList);
+                var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);
+                modal.PresentModalTimerDialog(2, "End Meeting", "Power", message,
+                    "End Meeting Now", "Cancel", 0, true,
+                    but =>
+                    {
+                        if (but != 2) // any button except for End cancels
+                            timer.Cancel();
+                        else
+                            timer.Finish();
+                    });
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ShutdownPromptTimer_HasFinished(object sender, EventArgs e)
+        {
+            ShareButtonSig.BoolValue = true; // restore Share fb
+            EndMeetingButtonSig.BoolValue = false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ShutdownPromptTimer_WasCancelled(object sender, EventArgs e)
+        {
+            EndMeetingButtonSig.BoolValue = false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
 		void CancelPowerOffTimer()
 		{
 			if (PowerOffTimer != null)
@@ -666,7 +720,10 @@ namespace PepperDash.Essentials
 				TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
 
                 // Shutdown timer
-                _CurrentRoom.ShutdownPromptTimer.IsRunningFeedback.OutputChange += Shutdown_IsRunningFeedback_OutputChange;
+                //_CurrentRoom.ShutdownPromptTimer.IsRunningFeedback.OutputChange += Shutdown_IsRunningFeedback_OutputChange;
+                _CurrentRoom.ShutdownPromptTimer.HasStarted += ShutdownPromptTimer_HasStarted;
+                _CurrentRoom.ShutdownPromptTimer.HasFinished += ShutdownPromptTimer_HasFinished;
+                _CurrentRoom.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
 
                 // Link up all the change events from the room
                 _CurrentRoom.OnFeedback.OutputChange += _CurrentRoom_OnFeedback_OutputChange;

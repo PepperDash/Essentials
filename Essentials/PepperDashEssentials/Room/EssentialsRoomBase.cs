@@ -30,11 +30,6 @@ namespace PepperDash.Essentials
         public BoolFeedback IsWarmingFeedback { get; private set; }
         public BoolFeedback IsCoolingFeedback { get; private set; }
 
-        //public BoolFeedback PowerOffPendingFeedback { get; private set; }
-        //bool _PowerOffPending;
-        //public IntFeedback PowerOffPendingTimerPercentFeedback { get; private set; }
-        //public StringFeedback PowerOffPendingTimeStringFeedback { get; private set; }
-
         /// <summary>
         /// Timer used for informing the UIs of a shutdown
         /// </summary>        
@@ -68,6 +63,7 @@ namespace PepperDash.Essentials
 
             ShutdownPromptSeconds = 60;
             ShutdownVacancySeconds = 120;
+            ShutdownType = ShutdownType.None;
 
             OnFeedback = new BoolFeedback(OnFeedbackFunc);
         }
@@ -104,5 +100,15 @@ namespace PepperDash.Essentials
         External,
         Manual,
         Vacancy
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum WarmingCoolingMode
+    {
+        None,
+        Warming,
+        Cooling
     }
 }
