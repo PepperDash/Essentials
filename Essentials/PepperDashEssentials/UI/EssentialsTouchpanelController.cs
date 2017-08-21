@@ -175,6 +175,32 @@ namespace PepperDash.Essentials
 			}
 		}
 
+        public void PulseBool(uint join)
+        {
+            var act = Panel.BooleanInput[join].UserObject as Action<bool>;
+            if (act != null)
+            {
+                act(true);
+                act(false);
+            }
+        }
+
+        public void SetBoolSig(uint join, bool value)
+        {
+            var act = Panel.BooleanInput[join].UserObject as Action<bool>;
+            if (act != null)
+                act(value);
+        }
+
+        public void SetIntSig(uint join, ushort value)
+        {
+            var act = Panel.BooleanInput[join].UserObject as Action<ushort>;
+            if (act != null)
+            {
+                act(value);
+            }
+        }
+
 		void Tsw_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
 		{
 			if (Debug.Level == 2)

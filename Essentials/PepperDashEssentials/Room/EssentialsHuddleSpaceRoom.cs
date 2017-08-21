@@ -149,7 +149,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public override void Shutdown()
         {
-            RunRouteAction("roomoff");
+            RunRouteAction("roomOff");
         }
 
         /// <summary>
@@ -260,8 +260,6 @@ namespace PepperDash.Essentials
 					// report back when done
 					if (successCallback != null)
 						successCallback();
-
-#warning Need to again handle special commands in here.
 
 				}, 0); // end of CTimer
 		}

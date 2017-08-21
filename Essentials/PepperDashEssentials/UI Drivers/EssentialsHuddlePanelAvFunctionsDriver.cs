@@ -476,73 +476,8 @@ namespace PepperDash.Essentials
 			if (!room.OnFeedback.BoolValue || room.ShutdownPromptTimer.IsRunningFeedback.BoolValue) 
                 return;
 
-            //EndMeetingButtonSig.BoolValue = true;
-            //ShareButtonSig.BoolValue = false;
-
             CurrentRoom.StartShutdown(ShutdownType.Manual);
-
-            //// Timeout or button 1 press will shut down
-            //var modal = new ModalDialog(TriList);
-            //uint time = 60000;
-            //uint seconds = time / 1000;
-            //var message = string.Format("Meeting will end in {0} seconds", seconds);
-            //modal.PresentModalTimerDialog(2, "End Meeting", "Power", message,
-            //    "End Meeting Now", "Cancel", time, true,
-            //    but => 
-            //    {
-            //        if (but != 2)
-            //            CurrentRoom.RunRouteAction("roomOff");
-            //        else
-            //            ShareButtonSig.BoolValue = true; // restore Share fb
-            //        EndMeetingButtonSig.BoolValue = false;
-            //    });
 		}
-
-#warning WHAT I'M TRYING TO DO WITH SHUTDOWN PROMPTS.  SEE COMMENT
-        // UI should ask room to shutdown
-        // UI should be attached to room's shutdown timer
-        // When timer starts, the UI should present a corresponding modal, with the right text
-        // the modal bar will decrement depending on the timer's percent
-        // If the user selects "end now"
-        //      Cancel the modal
-        //      Call shutdown on the room (which should cancel any timers)
-        //      Room cancels timer
-        //      Room fires Shutdown event?
-        // If the UI cancels shutdown
-        //      Call cancel shutdown on room
-        //          Timer will go low
-        //          Fire shutdown cancelled event?
-        //
-
-        //void Shutdown_IsRunningFeedback_OutputChange(object sender, EventArgs e)
-        //{
-        //    var timer = CurrentRoom.ShutdownPromptTimer;
-        //    if (timer.IsRunningFeedback.BoolValue)
-        //    {
-        //        EndMeetingButtonSig.BoolValue = true;
-        //        ShareButtonSig.BoolValue = false;
-
-        //        if (CurrentRoom.ShutdownType == ShutdownType.Manual)
-        //        {
-        //            var modal = new ModalDialog(TriList);
-        //            var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);
-        //            modal.PresentModalTimerDialog(2, "End Meeting", "Power", message,
-        //                "End Meeting Now", "Cancel", 0, true,
-        //                but =>
-        //                {
-        //                    if (but != 2) // any button except for End cancels
-        //                        timer.Cancel();
-        //                    else
-        //                        ShareButtonSig.BoolValue = true; // restore Share fb
-        //                    EndMeetingButtonSig.BoolValue = false;
-        //                });
-        //        }
-        //    }
-        //    else // Timer stopped. 
-        //    {
-
-        //    }
-        //}
 
         /// <summary>
         /// 
@@ -560,8 +495,7 @@ namespace PepperDash.Essentials
             {
                 var modal = new ModalDialog(TriList);
                 var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);
-                modal.PresentModalTimerDialog(2, "End Meeting", "Power", message,
-                    "End Meeting Now", "Cancel", 0, true,
+                modal.PresentModalDialog(2, "End Meeting", "Power", message, "Cancel", "End Meeting Now", true,
                     but =>
                     {
                         if (but != 2) // any button except for End cancels

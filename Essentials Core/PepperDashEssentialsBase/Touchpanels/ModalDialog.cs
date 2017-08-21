@@ -14,6 +14,10 @@ namespace PepperDash.Essentials.Core
 		/// Bool press 3992
 		/// </summary>
 		public const uint Button2Join = 3992;
+        /// <summary>
+        /// 3993
+        /// </summary>
+        public const uint CancelButtonJoin = 3993;
 		/// <summary>
 		///For visibility of single button.  Bool feedback 3994
 		/// </summary>
@@ -34,7 +38,7 @@ namespace PepperDash.Essentials.Core
 		/// <summary>
 		/// The seconds value of the countdown timer. Ushort join 3991
 		/// </summary>
-		public const uint TimerSecondsJoin = 3991;
+        //public const uint TimerSecondsJoin = 3991;
 		/// <summary>
 		/// The full ushort value of the countdown timer for a gauge. Ushort join 3992
 		/// </summary>
@@ -73,7 +77,7 @@ namespace PepperDash.Essentials.Core
 		BasicTriList TriList;
 
 		Action<uint> ModalCompleteAction;
-		CTimer Timer;
+        //CTimer Timer;
 
 		static object CompleteActionLock = new object();
 
@@ -85,8 +89,9 @@ namespace PepperDash.Essentials.Core
 		{
 			TriList = triList;
 			// Attach actions to buttons
-			triList.SetSigFalseAction(Button1Join, () => OnModalComplete(1, true));
-			triList.SetSigFalseAction(Button2Join, () => OnModalComplete(2, true));
+			triList.SetSigFalseAction(Button1Join, () => OnModalComplete(1));
+			triList.SetSigFalseAction(Button2Join, () => OnModalComplete(2));
+            triList.SetSigFalseAction(CancelButtonJoin, () => CancelDialog());
 		}
 
 		/// <summary>
@@ -97,9 +102,9 @@ namespace PepperDash.Essentials.Core
 		/// <param name="decreasingGauge">If the progress bar gauge needs to count down instead of up</param>
 		/// <param name="completeAction">The action to run when the dialog is dismissed. Parameter will be 1 or 2 if button pressed, or 0 if dialog times out</param>
 		/// <returns>True when modal is created.</returns>
-		public bool PresentModalTimerDialog(uint numberOfButtons, string title, string iconName, 
+		public bool PresentModalDialog(uint numberOfButtons, string title, string iconName, 
 			string message, string button1Text,
-			string button2Text, uint timeMs, bool decreasingGauge, Action<uint> completeAction)
+			string button2Text, bool showGauge, Action<uint> completeAction)
 		{
 			//Debug.Console(0, "Present dialog");
 			// Don't reset dialog if visible now
@@ -131,66 +136,35 @@ namespace PepperDash.Essentials.Core
 					TriList.StringInput[Button1TextJoin].StringValue = button1Text;
 					TriList.StringInput[Button2TextJoin].StringValue = button2Text;
 				}
-				// Show/hide timer
-				TriList.BooleanInput[TimerVisibleJoin].BoolValue = timeMs > 0;
+				// Show/hide guage
+                TriList.BooleanInput[TimerVisibleJoin].BoolValue = showGauge;
 
 				//Reveal and activate
 				TriList.BooleanInput[ModalVisibleJoin].BoolValue = true;
-
-				// Start ramp timers if visible
-				if (timeMs > 0)
-				{
-					TriList.UShortInput[TimerSecondsJoin].UShortValue = (ushort)(timeMs / 1000); // Seconds display
-					TriList.UShortInput[TimerSecondsJoin].CreateRamp(0, (uint)(timeMs / 10));
-					if (decreasingGauge)
-					{
-						// Gauge
-						TriList.UShortInput[TimerGaugeJoin].UShortValue = ushort.MaxValue; 
-						// Text
-						TriList.UShortInput[TimerGaugeJoin].CreateRamp(0, (uint)(timeMs / 10));
-					}
-					else
-					{
-						TriList.UShortInput[TimerGaugeJoin].UShortValue = 0; // Gauge
-						TriList.UShortInput[TimerGaugeJoin].
-							CreateRamp(ushort.MaxValue, (uint)(timeMs / 10));
-					}
-					Timer = new CTimer(o => OnModalComplete(0, false), timeMs);
-				}
-
-				// Start a timer and fire action with no button on timeout.
 				return true;
 			}
 
 			return false;
 		}
 
+        /// <summary>
+        /// Hide dialog from elsewhere, fires no actions^
+        /// </summary>
 		public void CancelDialog()
 		{
-			if (ModalIsVisible)
-			{
-				TriList.UShortInput[TimerSecondsJoin].StopRamp();
-				TriList.UShortInput[TimerGaugeJoin].StopRamp();
-				if (Timer != null) Timer.Stop();
-				TriList.BooleanInput[ModalVisibleJoin].BoolValue = false;
-			}
+            OnModalComplete(0);
 		}
 
 		// When the modal is cleared or times out, clean up the various bits
-		void OnModalComplete(uint buttonNum, bool cancelled)
+		void OnModalComplete(uint buttonNum)
 		{
-			//Debug.Console(2, "OnModalComplete {0}, {1}", buttonNum, cancelled);
 			TriList.BooleanInput[ModalVisibleJoin].BoolValue = false;
-			if (cancelled)
-			{
-				TriList.UShortInput[TimerSecondsJoin].StopRamp();
-				TriList.UShortInput[TimerGaugeJoin].StopRamp();
-				Timer.Stop();
-			}
-			if (ModalCompleteAction != null)
+
+            var action = ModalCompleteAction;
+            if (action != null)
 			{
 				//Debug.Console(2, "Modal complete action");
-				ModalCompleteAction(buttonNum);
+                action(buttonNum);
 			}
 		}
 	}
