@@ -179,9 +179,6 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void Show()
 		{
-            if(CurrentRoom != null)
-                CurrentRoom.OnFeedback.OutputChange += new EventHandler<EventArgs>(OnFeedback_OutputChange);
-
 			TriList.BooleanInput[UIBoolJoin.TopBarVisible].BoolValue = true;
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = true;
 
@@ -218,18 +215,11 @@ namespace PepperDash.Essentials
             // Note: some of these are not directly-related to the huddle space UI, but are held over
             // in case
 			TriList.SetSigFalseAction(UIBoolJoin.ShowPowerOffPress, PowerButtonPressed);
-			TriList.SetSigFalseAction(UIBoolJoin.PowerOffCancelPress, CancelPowerOff);
-			TriList.SetSigFalseAction(UIBoolJoin.PowerOffConfirmPress, FinishPowerOff); 
 			TriList.SetSigFalseAction(UIBoolJoin.PowerOffMorePress, () =>
 				{
 					CancelPowerOffTimer();
 					TriList.BooleanInput[UIBoolJoin.PowerOffStep1Visible].BoolValue = false;
 					TriList.BooleanInput[UIBoolJoin.PowerOffStep2Visible].BoolValue = true;
-				});
-			TriList.SetSigFalseAction(UIBoolJoin.AllRoomsOffPress, () =>
-				{
-					EssentialsHuddleSpaceRoom.AllRoomsOff();
-					CancelPowerOff();
 				});
 			TriList.SetSigFalseAction(UIBoolJoin.DisplayPowerTogglePress, () =>
 				{ 
@@ -245,24 +235,13 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void OnFeedback_OutputChange(object sender, EventArgs e)
-        {
-            if (CurrentRoom.OnFeedback.BoolValue)
-            {
-                TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = true;
-            }
-            else
-            {
-                TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = false;
-                TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
-            }
-        }
+        //void OnFeedback_OutputChange(object sender, EventArgs e)
+        //{
+
+        //}
 
 		public override void Hide()
 		{
-            if (CurrentRoom != null)
-                CurrentRoom.OnFeedback.OutputChange -= OnFeedback_OutputChange;
-
 			HideAndClearCurrentDisplayModeSigsInUse();
 			TriList.BooleanInput[UIBoolJoin.TopBarVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = false;
@@ -271,7 +250,7 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
             //TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
 			VolumeButtonsPopupFeedback.ClearNow();
-			CancelPowerOff();
+            //CancelPowerOff();
 
 			base.Hide();
 		}		
@@ -330,6 +309,7 @@ namespace PepperDash.Essentials
                 b => { if (!b) ShareButtonPressed(); }));
             ActivityFooterSrl.Count = 1;
             TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 0;
+            ShareButtonSig.BoolValue = false;
         }
 
         /// <summary>
@@ -352,13 +332,13 @@ namespace PepperDash.Essentials
         /// </summary>
         void ShareButtonPressed()
         {
-            if (!_CurrentRoom.OnFeedback.BoolValue)
-            {
+            //if (!_CurrentRoom.OnFeedback.BoolValue)
+            //{
                 ShareButtonSig.BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
-            }
+            //}
         }
 
         uint CurrentInterlockedModalJoin;
@@ -486,6 +466,7 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_HasStarted(object sender, EventArgs e)
         {
+            
             // Do we need to check where the UI is? No?
             var timer = CurrentRoom.ShutdownPromptTimer;
             EndMeetingButtonSig.BoolValue = true;
@@ -495,6 +476,29 @@ namespace PepperDash.Essentials
             {
                 var modal = new ModalDialog(TriList);
                 var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);
+
+                // figure out a cleaner way to update gauge
+                var gauge = CurrentRoom.ShutdownPromptTimer.PercentFeedback;
+                EventHandler<EventArgs> gaugeHandler = null;
+                gaugeHandler = (o, a) => TriList.UShortInput[ModalDialog.TimerGaugeJoin].UShortValue =
+                    (ushort)(gauge.UShortValue * 65535 / 100);
+                gauge.OutputChange += gaugeHandler;
+
+                // respond to offs by cancelling dialog
+                var onFb = CurrentRoom.OnFeedback;
+                EventHandler<EventArgs> offHandler = null;
+                offHandler = (o, a) =>
+                {
+                    if (!onFb.BoolValue)
+                    {
+                        EndMeetingButtonSig.BoolValue = false;
+                        modal.HideDialog();
+                        onFb.OutputChange -= offHandler;
+                        gauge.OutputChange -= gaugeHandler;
+                    }
+                };
+                onFb.OutputChange += offHandler;
+
                 modal.PresentModalDialog(2, "End Meeting", "Power", message, "Cancel", "End Meeting Now", true,
                     but =>
                     {
@@ -513,7 +517,8 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_HasFinished(object sender, EventArgs e)
         {
-            ShareButtonSig.BoolValue = true; // restore Share fb
+
+            Debug.Console(2, "UI shutdown prompt finished");
             EndMeetingButtonSig.BoolValue = false;
         }
 
@@ -524,6 +529,8 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_WasCancelled(object sender, EventArgs e)
         {
+            Debug.Console(2, "UI shutdown prompt cancelled");
+            ShareButtonSig.BoolValue = true; // restore Share fb
             EndMeetingButtonSig.BoolValue = false;
         }
 
@@ -542,23 +549,23 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// Runs the power off function on the current room
 		/// </summary>
-		public void FinishPowerOff()
-		{
-			if (CurrentRoom == null)
-				return;
-			CurrentRoom.RunRouteAction("roomOff");
-			CancelPowerOff();
-		}
+        //public void FinishPowerOff()
+        //{
+        //    if (CurrentRoom == null)
+        //        return;
+        //    CurrentRoom.RunRouteAction("roomOff");
+        //    CancelPowerOff();
+        //}
 
 		/// <summary>
 		/// Hides power off pages and stops timer
 		/// </summary>
-		void CancelPowerOff()
-		{
-			CancelPowerOffTimer();
-			TriList.BooleanInput[UIBoolJoin.PowerOffStep1Visible].BoolValue = false;
-			TriList.BooleanInput[UIBoolJoin.PowerOffStep2Visible].BoolValue = false;
-		}
+        //void CancelPowerOff()
+        //{
+        //    CancelPowerOffTimer();
+        //    TriList.BooleanInput[UIBoolJoin.PowerOffStep1Visible].BoolValue = false;
+        //    TriList.BooleanInput[UIBoolJoin.PowerOffStep2Visible].BoolValue = false;
+        //}
 
 		/// <summary>
 		/// 
@@ -612,11 +619,14 @@ namespace PepperDash.Essentials
 			if (_CurrentRoom != null)
 			{
 				// Disconnect current room
-                _CurrentRoom.OnFeedback.OutputChange -= _CurrentRoom_OnFeedback_OutputChange;
-				_CurrentRoom.CurrentVolumeDeviceChange -= this._CurrentRoom_CurrentAudioDeviceChange;
+                _CurrentRoom.OnFeedback.OutputChange -= CurrentRoom_OnFeedback_OutputChange;
+				_CurrentRoom.CurrentVolumeDeviceChange -= this.CurrentRoom_CurrentAudioDeviceChange;
 				ClearAudioDeviceConnections();
-				_CurrentRoom.CurrentSingleSourceChange -= this._CurrentRoom_SourceInfoChange;
+				_CurrentRoom.CurrentSingleSourceChange -= this.CurrentRoom_SourceInfoChange;
 				DisconnectSource(_CurrentRoom.CurrentSourceInfo);
+                _CurrentRoom.ShutdownPromptTimer.HasStarted -= ShutdownPromptTimer_HasStarted;
+                _CurrentRoom.ShutdownPromptTimer.HasFinished -= ShutdownPromptTimer_HasFinished;
+                _CurrentRoom.ShutdownPromptTimer.WasCancelled -= ShutdownPromptTimer_WasCancelled;
 			}
 			_CurrentRoom = room;
 
@@ -654,16 +664,15 @@ namespace PepperDash.Essentials
 				TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
 
                 // Shutdown timer
-                //_CurrentRoom.ShutdownPromptTimer.IsRunningFeedback.OutputChange += Shutdown_IsRunningFeedback_OutputChange;
                 _CurrentRoom.ShutdownPromptTimer.HasStarted += ShutdownPromptTimer_HasStarted;
                 _CurrentRoom.ShutdownPromptTimer.HasFinished += ShutdownPromptTimer_HasFinished;
                 _CurrentRoom.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
 
                 // Link up all the change events from the room
-                _CurrentRoom.OnFeedback.OutputChange += _CurrentRoom_OnFeedback_OutputChange;
-				_CurrentRoom.CurrentVolumeDeviceChange += _CurrentRoom_CurrentAudioDeviceChange;
+                _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
+				_CurrentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
 				RefreshAudioDeviceConnections();
-				_CurrentRoom.CurrentSingleSourceChange += _CurrentRoom_SourceInfoChange;
+				_CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
 				RefreshSourceInfo();
 			}
 			else
@@ -676,19 +685,22 @@ namespace PepperDash.Essentials
         /// <summary>
         /// For room on/off changes
         /// </summary>
-        void _CurrentRoom_OnFeedback_OutputChange(object sender, EventArgs e)
+        void CurrentRoom_OnFeedback_OutputChange(object sender, EventArgs e)
         {
             var value = _CurrentRoom.OnFeedback.BoolValue;
             TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
-            if (value)
+            if (value) //ON
             {
                 SetupActivityFooterWhenRoomOn();
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
+                TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = true;
             }
             else
             {
                 SetupActivityFooterWhenRoomOff();
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
+                TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = false;
+                TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
             }
         }
 
@@ -848,7 +860,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// Handler for when the room's volume control device changes
 		/// </summary>
-		void _CurrentRoom_CurrentAudioDeviceChange(object sender, VolumeDeviceChangeEventArgs args)
+		void CurrentRoom_CurrentAudioDeviceChange(object sender, VolumeDeviceChangeEventArgs args)
 		{
 			if (args.Type == ChangeType.WillChange)
 				ClearAudioDeviceConnections();
@@ -859,7 +871,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// Handles source change
 		/// </summary>
-		void _CurrentRoom_SourceInfoChange(EssentialsRoomBase room, 
+		void CurrentRoom_SourceInfoChange(EssentialsRoomBase room, 
 			SourceListItem info, ChangeType change)
 		{
 			if (change == ChangeType.WillChange)

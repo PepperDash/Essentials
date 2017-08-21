@@ -77,7 +77,6 @@ namespace PepperDash.Essentials.Core
 		BasicTriList TriList;
 
 		Action<uint> ModalCompleteAction;
-        //CTimer Timer;
 
 		static object CompleteActionLock = new object();
 
@@ -148,12 +147,20 @@ namespace PepperDash.Essentials.Core
 		}
 
         /// <summary>
-        /// Hide dialog from elsewhere, fires no actions^
+        /// Hide dialog from elsewhere, fires CompleteAction
         /// </summary>
 		public void CancelDialog()
 		{
             OnModalComplete(0);
 		}
+
+        /// <summary>
+        /// Hides dialog. Fires no action
+        /// </summary>
+        public void HideDialog()
+        {
+            TriList.BooleanInput[ModalVisibleJoin].BoolValue = false;
+        }
 
 		// When the modal is cleared or times out, clean up the various bits
 		void OnModalComplete(uint buttonNum)
@@ -162,10 +169,7 @@ namespace PepperDash.Essentials.Core
 
             var action = ModalCompleteAction;
             if (action != null)
-			{
-				//Debug.Console(2, "Modal complete action");
                 action(buttonNum);
-			}
 		}
 	}
 
