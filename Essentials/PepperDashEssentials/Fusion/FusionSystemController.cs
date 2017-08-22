@@ -34,8 +34,6 @@ namespace PepperDash.Essentials.Fusion
 		Dictionary<Device, BoolInputSig> SourceToFeedbackSigs = 
 			new Dictionary<Device, BoolInputSig>();
 
-        FusionOccupancySensor OccSensor;
-
         BooleanSigData OccupancyStatusSig;
 
 		StatusMonitorCollection ErrorMessageRollUp;
@@ -1072,7 +1070,7 @@ namespace PepperDash.Essentials.Fusion
 
                 FusionRoom.AddAsset(eAssetType.OccupancySensor, tempAsset.Number, tempAsset.Name, tempAsset.Type, tempAsset.InstanceID);
 
-                ((FusionOccupancySensor)FusionRoom.UserConfigurableAssetDetails[tempAsset.Number].Asset).RoomOccupied.InputSig = OccupancyStatusSig;
+                ((FusionOccupancySensor)FusionRoom.UserConfigurableAssetDetails[tempAsset.Number].Asset).RoomOccupied.InputSig.BoolValue = OccupancyStatusSig.InputSig.BoolValue;
             //}
         }
 
