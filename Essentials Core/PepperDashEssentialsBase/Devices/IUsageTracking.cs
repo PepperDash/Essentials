@@ -31,6 +31,8 @@ namespace PepperDash.Essentials.Core
 
         public UsageTracking()
         {
+            InUseTracker = new InUseTracking();
+
             InUseTracker.InUseFeedback.OutputChange +=new EventHandler<EventArgs>(InUseFeedback_OutputChange);
         }
 

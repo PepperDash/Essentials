@@ -34,6 +34,10 @@ namespace PepperDash.Essentials.Fusion
 		Dictionary<Device, BoolInputSig> SourceToFeedbackSigs = 
 			new Dictionary<Device, BoolInputSig>();
 
+        FusionOccupancySensor OccSensor;
+
+        BooleanSigData OccupancyStatusSig;
+
 		StatusMonitorCollection ErrorMessageRollUp;
 
 		StringSigData SourceNameSig;
@@ -85,7 +89,7 @@ namespace PepperDash.Essentials.Fusion
 
         public long PushNotificationTimeout = 5000;
 
-        List<StaticAsset> StaticAssets;
+        List<FusionAsset> FusionAssets;
 
         //ScheduleResponseEvent NextMeeting;
 
@@ -97,7 +101,7 @@ namespace PepperDash.Essentials.Fusion
 
             IpId = ipId;
 
-            StaticAssets = new List<StaticAsset>();
+            FusionAssets = new List<FusionAsset>();
 
             GUIDs = new FusionRoomGuids();
 
@@ -127,33 +131,34 @@ namespace PepperDash.Essentials.Fusion
 			SetUpCommunitcationMonitors();
 			SetUpDisplay();
 			SetUpError();
-
+            SetUpOccupancy();
+            
 			// test assets --- THESE ARE BOTH WIRED TO AssetUsage somewhere internally.
-            var tempAsset1 = new StaticAsset();
-            var tempAsset2 = new StaticAsset();
+            //var tempAsset1 = new StaticAsset();
+            //var tempAsset2 = new StaticAsset();
 
 
-            //Check for existing GUID
-            if (GuidFileExists)
-            {
-                tempAsset1 = StaticAssets.FirstOrDefault(a => a.Number.Equals(1));
+            ////Check for existing GUID
+            //if (GuidFileExists)
+            //{
+            //    tempAsset1 = StaticAssets.FirstOrDefault(a => a.Number.Equals(1));
 
-                tempAsset2 = StaticAssets.FirstOrDefault(a => a.Number.Equals(2));
-            }
-            else
-            {
-                tempAsset1 = new StaticAsset(1, "Test Asset 1", "Test Asset 1", "");
-                StaticAssets.Add(tempAsset1);
+            //    tempAsset2 = StaticAssets.FirstOrDefault(a => a.Number.Equals(2));
+            //}
+            //else
+            //{
+            //    tempAsset1 = new StaticAsset(1, "Test Asset 1", "Test Asset 1", "");
+            //    StaticAssets.Add(tempAsset1);
 
-                tempAsset2 = new StaticAsset(2, "Test Asset 2", "Test Asset 2", "");
-                StaticAssets.Add(tempAsset2);
-            }
+            //    tempAsset2 = new StaticAsset(2, "Test Asset 2", "Test Asset 2", "");
+            //    StaticAssets.Add(tempAsset2);
+            //}
 
-            var ta1 = FusionRoom.CreateStaticAsset(tempAsset1.Number, tempAsset1.Name, tempAsset1.Type, tempAsset1.InstanceID);
-            ta1.AssetError.InputSig.StringValue = "This should be error";
+            //var ta1 = FusionRoom.CreateStaticAsset(tempAsset1.Number, tempAsset1.Name, tempAsset1.Type, tempAsset1.InstanceID);
+            //ta1.AssetError.InputSig.StringValue = "This should be error";
 
-            var ta2 = FusionRoom.CreateStaticAsset(tempAsset2.Number, tempAsset2.Name, tempAsset2.Type, tempAsset2.InstanceID);
-            ta2.AssetUsage.InputSig.StringValue = "This should be usage";
+            //var ta2 = FusionRoom.CreateStaticAsset(tempAsset2.Number, tempAsset2.Name, tempAsset2.Type, tempAsset2.InstanceID);
+            //ta2.AssetUsage.InputSig.StringValue = "This should be usage";
             
             // Make it so!   
             FusionRVI.GenerateFileForAllFusionDevices();
@@ -184,7 +189,7 @@ namespace PepperDash.Essentials.Fusion
 
                 Debug.Console(1, this, "Writing GUIDs to file");
 
-                GUIDs = new FusionRoomGuids(Room.Name, IpId, RoomGuid, StaticAssets);
+                GUIDs = new FusionRoomGuids(Room.Name, IpId, RoomGuid, FusionAssets);
 
                 var JSON = JsonConvert.SerializeObject(GUIDs, Newtonsoft.Json.Formatting.Indented);
 
@@ -237,7 +242,7 @@ namespace PepperDash.Essentials.Fusion
 
                     IpId = GUIDs.IpId;
 
-                    StaticAssets = GUIDs.StaticAssets;
+                    FusionAssets = GUIDs.StaticAssets;
 
                 }
 
@@ -245,7 +250,7 @@ namespace PepperDash.Essentials.Fusion
 
                 Debug.Console(1, this, "\nRoom Name: {0}\nIPID: {1:x}\n RoomGuid: {2}", Room.Name, IpId, RoomGuid);
 
-                foreach (StaticAsset asset in StaticAssets)
+                foreach (FusionAsset asset in FusionAssets)
                 {
                     Debug.Console(1, this, "\nAsset Name: {0}\nAsset No: {1}\n Guid: {2}", asset.Name, asset.Number, asset.InstanceID);
                 }
@@ -823,8 +828,8 @@ namespace PepperDash.Essentials.Fusion
                     if (usageDevice != null)
                     {
                         usageDevice.UsageTracker = new UsageTracking();
-
-                        usageDevice.UsageTracker.DeviceUsageEnded += new EventHandler<DeviceUsageEventArgs>(UsageTracker_SourceUsageEnded);
+                        usageDevice.UsageTracker.UsageIsTracked = true;
+                        usageDevice.UsageTracker.DeviceUsageEnded += new EventHandler<DeviceUsageEventArgs>(UsageTracker_DeviceUsageEnded);
                     }
                 }
 				
@@ -842,24 +847,28 @@ namespace PepperDash.Essentials.Fusion
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void UsageTracker_SourceUsageEnded(object sender, DeviceUsageEventArgs e)
+        void UsageTracker_DeviceUsageEnded(object sender, DeviceUsageEventArgs e)
         {          
             var device = sender as Device;
 
             var configDevice = ConfigReader.ConfigObject.Devices.Where(d => d.Key.Equals(device.Key));
 
-            string group = "";
+            string group = ConfigReader.GetGroupForDeviceKey(device.Key);
 
-#warning Figure out how to get the group value from the device config
+            string currentMeetingId = "";
 
+            if (CurrentMeeting != null)
+                currentMeetingId = CurrentMeeting.MeetingID;
 
-            //Double check my time and date formatting in the ToString() methods
+            //String Format:  "USAGE||[Date YYYY-MM-DD]||[Time HH-mm-ss]||TIME||[Asset_Type]||[Asset_Name]||[Minutes_used]||[Asset_ID]||[Meeting_ID]"
+            // [Asset_ID] property does not appear to be used in Crestron SSI examples.  They are sending "-" instead so that's what is replicated here
             string deviceUsage = string.Format("USAGE||{0}||{1}||TIME||{2}||{3}||{4}||{5}||{6})", e.UsageEndTime.ToString("YYYY-MM-DD"), e.UsageEndTime.ToString("HH-mm-ss"),
-                group, device.Name, e.MinutesUsed, "asset_id", CurrentMeeting.MeetingID); 
+                group, device.Name, e.MinutesUsed, "-", currentMeetingId); 
 
 
             FusionRoom.DeviceUsage.InputSig.StringValue = deviceUsage;
         }
+
 
 		void TryAddRouteActionSigs(string attrName, uint attrNum, string routeKey, Device pSrc)
 		{
@@ -963,44 +972,59 @@ namespace PepperDash.Essentials.Fusion
 		{
             //Setup Display Usage Monitoring
 
-#warning Somehow get list of room's displays and activate Usage tracking and subscribe to event            
+            var displays = DeviceManager.AllDevices.Where(d => d is DisplayBase);
 
-			var display = Room.DefaultDisplay as DisplayBase;
-			if (display == null)
+#warning should work for now in single room systems but will grab all devices regardless of room assignment.  In multi-room systems, this will need to be handled differently.
+
+            foreach (DisplayBase display in displays)
+            {
+                display.UsageTracker = new UsageTracking();
+                display.UsageTracker.UsageIsTracked = true;
+                display.UsageTracker.DeviceUsageEnded += new EventHandler<DeviceUsageEventArgs>(UsageTracker_DeviceUsageEnded);
+            }
+
+			var defaultDisplay = Room.DefaultDisplay as DisplayBase;
+            if (defaultDisplay == null)
 			{
 				Debug.Console(1, this, "Cannot link null display to Fusion");
 				return;
 			}
 
-			var dispPowerOnAction = new Action<bool>(b => { if (!b) display.PowerOn(); });
-			var dispPowerOffAction = new Action<bool>(b => { if (!b) display.PowerOff(); });
+            var dispPowerOnAction = new Action<bool>(b => { if (!b) defaultDisplay.PowerOn(); });
+            var dispPowerOffAction = new Action<bool>(b => { if (!b) defaultDisplay.PowerOff(); });
 
 			// Display to fusion room sigs
 			FusionRoom.DisplayPowerOn.OutputSig.UserObject = dispPowerOnAction;
 			FusionRoom.DisplayPowerOff.OutputSig.UserObject = dispPowerOffAction;
-			display.PowerIsOnFeedback.LinkInputSig(FusionRoom.DisplayPowerOn.InputSig);
-			if (display is IDisplayUsage)
-				(display as IDisplayUsage).LampHours.LinkInputSig(FusionRoom.DisplayUsage.InputSig);
+            defaultDisplay.PowerIsOnFeedback.LinkInputSig(FusionRoom.DisplayPowerOn.InputSig);
+            if (defaultDisplay is IDisplayUsage)
+                (defaultDisplay as IDisplayUsage).LampHours.LinkInputSig(FusionRoom.DisplayUsage.InputSig);
 
 			// static assets --------------- testing
 			// Make a display asset
             string dispAssetInstanceId;
 
             //Check for existing GUID
-            var tempAsset = StaticAssets.FirstOrDefault(a => a.Number.Equals(3));
+            var tempAsset = FusionAssets.FirstOrDefault(a => a.Name.Equals("Display"));
             if(tempAsset != null)
 			    dispAssetInstanceId = tempAsset.InstanceID;
             else
-                dispAssetInstanceId = "";
+            {
+                var nextSlotNum = FusionAssets.Count + 1;
 
-            var dispAsset = FusionRoom.CreateStaticAsset(3, display.Name, "Display", dispAssetInstanceId);
+                tempAsset = new FusionAsset((uint)nextSlotNum, defaultDisplay.Name, "Display", "");
+                FusionAssets.Add(tempAsset);
+                dispAssetInstanceId = tempAsset.InstanceID;
+            }
+
+            var dispAsset = FusionRoom.CreateStaticAsset(3, defaultDisplay.Name, "Display", dispAssetInstanceId);
 			dispAsset.PowerOn.OutputSig.UserObject = dispPowerOnAction;
 			dispAsset.PowerOff.OutputSig.UserObject = dispPowerOffAction;
-			display.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
+            defaultDisplay.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
 			// NO!! display.PowerIsOn.LinkComplementInputSig(dispAsset.PowerOff.InputSig);
 			// Use extension methods
-			dispAsset.TrySetMakeModel(display);
-			dispAsset.TryLinkAssetErrorToCommunication(display);
+            dispAsset.TrySetMakeModel(defaultDisplay);
+            dispAsset.TryLinkAssetErrorToCommunication(defaultDisplay);
 		}
 
 		void SetUpError()
@@ -1024,6 +1048,33 @@ namespace PepperDash.Essentials.Fusion
 			};
 
 		}
+
+
+        void SetUpOccupancy()
+        {
+#warning Add actual object logic check here
+            //if (Room.OccupancyObj != null)
+            //{
+                string occAssetId;
+
+                var tempAsset = FusionAssets.FirstOrDefault(a => a.Type.Equals("Occupancy Sensor"));
+                
+                if(tempAsset != null)
+                    occAssetId = tempAsset.InstanceID;
+                else
+                {
+                    var nextAssetNum = FusionAssets.Count + 1;
+
+                    tempAsset = new FusionAsset((uint)nextAssetNum, "Occupancy Sensor", "Occupancy Sensor", "");
+                    FusionAssets.Add(tempAsset);
+                    occAssetId = tempAsset.InstanceID;
+                }
+
+                FusionRoom.AddAsset(eAssetType.OccupancySensor, tempAsset.Number, tempAsset.Name, tempAsset.Type, tempAsset.InstanceID);
+
+                ((FusionOccupancySensor)FusionRoom.UserConfigurableAssetDetails[tempAsset.Number].Asset).RoomOccupied.InputSig = OccupancyStatusSig;
+            //}
+        }
 
 		/// <summary>
 		/// Helper to get the number from the end of a device's key string

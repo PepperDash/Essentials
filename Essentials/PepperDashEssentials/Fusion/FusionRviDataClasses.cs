@@ -16,36 +16,36 @@ namespace PepperDash.Essentials.Fusion
         public string RoomName { get; set; }
         public uint IpId { get; set; }
         public string RoomGuid { get; set; }
-        public List<StaticAsset> StaticAssets { get; set; }
+        public List<FusionAsset> StaticAssets { get; set; }
 
         public FusionRoomGuids()
         {
-            StaticAssets = new List<StaticAsset>();
+            StaticAssets = new List<FusionAsset>();
         }
 
-        public FusionRoomGuids(string roomName, uint ipId, string roomGuid, List<StaticAsset> staticAssets)
+        public FusionRoomGuids(string roomName, uint ipId, string roomGuid, List<FusionAsset> staticAssets)
         {
             RoomName = roomName;
             IpId = ipId;
             RoomGuid = roomGuid;
 
-            StaticAssets = new List<StaticAsset>(staticAssets);
+            StaticAssets = new List<FusionAsset>(staticAssets);
         }
     }
 
-    public class StaticAsset
+    public class FusionAsset
     {
         public uint Number { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
         public string InstanceID { get; set; }
 
-        public StaticAsset()
+        public FusionAsset()
         {
 
         }
 
-        public StaticAsset(uint slotNum, string assetName, string type, string instanceID)
+        public FusionAsset(uint slotNum, string assetName, string type, string instanceID)
         {
             Number = slotNum;
             Name = assetName;
