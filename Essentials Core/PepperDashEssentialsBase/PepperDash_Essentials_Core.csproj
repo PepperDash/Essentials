@@ -58,6 +58,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.EthernetCommunications.dll</HintPath>
     </Reference>
+    <Reference Include="Crestron.SimplSharpPro.Fusion, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Fusion.dll</HintPath>
+    </Reference>
     <Reference Include="Crestron.SimplSharpPro.Remotes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Remotes.dll</HintPath>
@@ -112,6 +116,7 @@
     <Compile Include="Config\DeviceConfig.cs" />
     <Compile Include="Constants\CommonCues.cs" />
     <Compile Include="Devices\DisplayUiConstants.cs" />
+    <Compile Include="Devices\IUsageTracking.cs" />
     <Compile Include="Devices\REMOVE DeviceConfig.cs" />
     <Compile Include="Devices\DeviceJsonApi.cs" />
     <Compile Include="Devices\SourceListItem.cs" />

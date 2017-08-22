@@ -29,8 +29,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void InitializeSystem()
 		{
-            //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Reloads configuration file",
-            //    ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Reloads configuration file",
+                ConsoleAccessLevelEnum.AccessOperator);
             //CrestronConsole.AddNewConsoleCommand(s => TearDown(), "ungo", "Reloads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(s =>
@@ -40,7 +40,7 @@ namespace PepperDash.Essentials
             },
             "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
 
-            GoWithLoad();
+            //GoWithLoad();
 		}
 
 		/// <summary>
@@ -62,11 +62,6 @@ namespace PepperDash.Essentials
 					LoadDevices();
 					LoadTieLines();
 					LoadRooms();
-					// FUSION - should go per room I believe.  See CreateSystems in original Configuration.cs
-					// ???
-
-                    //Temp Cotija testing
-                    //CotijaSystemController CotijaInterface = new CotijaSystemController("WebClient1");
 
 					DeviceManager.ActivateAll();
 					Debug.Console(0, "Essentials load complete\r" +
@@ -191,8 +186,6 @@ namespace PepperDash.Essentials
                         Debug.Console(1, "Room is NOT EssentialsHuddleSpaceRoom, attempting to add to DeviceManager w/o Fusion");
                         DeviceManager.AddDevice(room);
                     }
-
-#warning Add Fusion connector to room factory?
 
 				}
 				else

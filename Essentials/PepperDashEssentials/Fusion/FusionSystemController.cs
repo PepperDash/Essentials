@@ -14,10 +14,9 @@ using Crestron.SimplSharpPro.Fusion;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using PepperDash.Essentials.Core;
-
 using PepperDash.Core;
 using PepperDash.Essentials;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common;
 
 
@@ -35,9 +34,26 @@ namespace PepperDash.Essentials.Fusion
 		Dictionary<Device, BoolInputSig> SourceToFeedbackSigs = 
 			new Dictionary<Device, BoolInputSig>();
 
+        BooleanSigData OccupancyStatusSig;
+
 		StatusMonitorCollection ErrorMessageRollUp;
 
 		StringSigData SourceNameSig;
+
+        //ProcessorEthernet Info
+#region 
+        StringSigData Ip1;
+        StringSigData Ip2;
+        StringSigData Gateway;
+        StringSigData Hostname;
+        StringSigData Domain;
+        StringSigData Dns1;
+        StringSigData Dns2;
+        StringSigData Mac1;
+        StringSigData Mac2;
+        StringSigData NetMask1;
+        StringSigData NetMask2;
+#endregion
 
         RoomSchedule CurrentSchedule;
 
@@ -71,7 +87,7 @@ namespace PepperDash.Essentials.Fusion
 
         public long PushNotificationTimeout = 5000;
 
-        List<StaticAsset> StaticAssets;
+        List<FusionAsset> FusionAssets;
 
         //ScheduleResponseEvent NextMeeting;
 
@@ -83,7 +99,7 @@ namespace PepperDash.Essentials.Fusion
 
             IpId = ipId;
 
-            StaticAssets = new List<StaticAsset>();
+            FusionAssets = new List<FusionAsset>();
 
             GUIDs = new FusionRoomGuids();
 
@@ -113,33 +129,34 @@ namespace PepperDash.Essentials.Fusion
 			SetUpCommunitcationMonitors();
 			SetUpDisplay();
 			SetUpError();
-
+            SetUpOccupancy();
+            
 			// test assets --- THESE ARE BOTH WIRED TO AssetUsage somewhere internally.
-            var tempAsset1 = new StaticAsset();
-            var tempAsset2 = new StaticAsset();
+            //var tempAsset1 = new StaticAsset();
+            //var tempAsset2 = new StaticAsset();
 
 
-            //Check for existing GUID
-            if (GuidFileExists)
-            {
-                tempAsset1 = StaticAssets.FirstOrDefault(a => a.Number.Equals(1));
+            ////Check for existing GUID
+            //if (GuidFileExists)
+            //{
+            //    tempAsset1 = StaticAssets.FirstOrDefault(a => a.Number.Equals(1));
 
-                tempAsset2 = StaticAssets.FirstOrDefault(a => a.Number.Equals(2));
-            }
-            else
-            {
-                tempAsset1 = new StaticAsset(1, "Test Asset 1", "Test Asset 1", "");
-                StaticAssets.Add(tempAsset1);
+            //    tempAsset2 = StaticAssets.FirstOrDefault(a => a.Number.Equals(2));
+            //}
+            //else
+            //{
+            //    tempAsset1 = new StaticAsset(1, "Test Asset 1", "Test Asset 1", "");
+            //    StaticAssets.Add(tempAsset1);
 
-                tempAsset2 = new StaticAsset(2, "Test Asset 2", "Test Asset 2", "");
-                StaticAssets.Add(tempAsset2);
-            }
+            //    tempAsset2 = new StaticAsset(2, "Test Asset 2", "Test Asset 2", "");
+            //    StaticAssets.Add(tempAsset2);
+            //}
 
-            var ta1 = FusionRoom.CreateStaticAsset(tempAsset1.Number, tempAsset1.Name, tempAsset1.Type, tempAsset1.InstanceID);
-            ta1.AssetError.InputSig.StringValue = "This should be error";
+            //var ta1 = FusionRoom.CreateStaticAsset(tempAsset1.Number, tempAsset1.Name, tempAsset1.Type, tempAsset1.InstanceID);
+            //ta1.AssetError.InputSig.StringValue = "This should be error";
 
-            var ta2 = FusionRoom.CreateStaticAsset(tempAsset2.Number, tempAsset2.Name, tempAsset2.Type, tempAsset2.InstanceID);
-            ta2.AssetUsage.InputSig.StringValue = "This should be usage";
+            //var ta2 = FusionRoom.CreateStaticAsset(tempAsset2.Number, tempAsset2.Name, tempAsset2.Type, tempAsset2.InstanceID);
+            //ta2.AssetUsage.InputSig.StringValue = "This should be usage";
             
             // Make it so!   
             FusionRVI.GenerateFileForAllFusionDevices();
@@ -170,7 +187,7 @@ namespace PepperDash.Essentials.Fusion
 
                 Debug.Console(1, this, "Writing GUIDs to file");
 
-                GUIDs = new FusionRoomGuids(Room.Name, IpId, RoomGuid, StaticAssets);
+                GUIDs = new FusionRoomGuids(Room.Name, IpId, RoomGuid, FusionAssets);
 
                 var JSON = JsonConvert.SerializeObject(GUIDs, Newtonsoft.Json.Formatting.Indented);
 
@@ -223,7 +240,7 @@ namespace PepperDash.Essentials.Fusion
 
                     IpId = GUIDs.IpId;
 
-                    StaticAssets = GUIDs.StaticAssets;
+                    FusionAssets = GUIDs.StaticAssets;
 
                 }
 
@@ -231,7 +248,7 @@ namespace PepperDash.Essentials.Fusion
 
                 Debug.Console(1, this, "\nRoom Name: {0}\nIPID: {1:x}\n RoomGuid: {2}", Room.Name, IpId, RoomGuid);
 
-                foreach (StaticAsset asset in StaticAssets)
+                foreach (FusionAsset asset in FusionAssets)
                 {
                     Debug.Console(1, this, "\nAsset Name: {0}\nAsset No: {1}\n Guid: {2}", asset.Name, asset.Number, asset.InstanceID);
                 }
@@ -270,7 +287,7 @@ namespace PepperDash.Essentials.Fusion
 
 			// Room to fusion room
 			Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
-			SourceNameSig = FusionRoom.CreateOffsetStringSig(50, "Source - Name", eSigIoMask.InputSigOnly);
+			SourceNameSig = FusionRoom.CreateOffsetStringSig(84, "Source - Name", eSigIoMask.InputSigOnly);
 			// Don't think we need to get current status of this as nothing should be alive yet. 
 			Room.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSourceInfoChange);
 
@@ -281,8 +298,55 @@ namespace PepperDash.Essentials.Fusion
 			FusionRoom.ErrorMessage.InputSig.StringValue =
 				"3: 7 Errors: This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;";
 
+            // Processor Info
 
-		}
+            FusionRoom.CreateOffsetStringSig(50, "Info - Processor - System Name", eSigIoMask.InputSigOnly);
+            FusionRoom.CreateOffsetStringSig(51, "Info - Processor - Model", eSigIoMask.InputSigOnly);
+            FusionRoom.CreateOffsetStringSig(52, "Info - Processor - Serial Number", eSigIoMask.InputSigOnly);
+            FusionRoom.CreateOffsetStringSig(53, "Info - Processor - Uptime", eSigIoMask.InputSigOnly);
+            Ip1 = FusionRoom.CreateOffsetStringSig(54, "Info - Processor - IP 1", eSigIoMask.InputSigOnly);
+            Ip2 = FusionRoom.CreateOffsetStringSig(55, "Info - Processor - IP 2", eSigIoMask.InputSigOnly);
+            Gateway = FusionRoom.CreateOffsetStringSig(56, "Info - Processor - Gateway", eSigIoMask.InputSigOnly);
+            Hostname = FusionRoom.CreateOffsetStringSig(57, "Info - Processor - Hostname", eSigIoMask.InputSigOnly);
+            Domain = FusionRoom.CreateOffsetStringSig(58, "Info - Processor - Domain", eSigIoMask.InputSigOnly);
+            Dns1 = FusionRoom.CreateOffsetStringSig(59, "Info - Processor - DNS 1", eSigIoMask.InputSigOnly);
+            Dns2 = FusionRoom.CreateOffsetStringSig(60, "Info - Processor - DNS 2", eSigIoMask.InputSigOnly);
+            Mac1 = FusionRoom.CreateOffsetStringSig(61, "Info - Processor - MAC 1", eSigIoMask.InputSigOnly);
+            Mac2 = FusionRoom.CreateOffsetStringSig(62, "Info - Processor - MAC 2", eSigIoMask.InputSigOnly);
+            NetMask1 = FusionRoom.CreateOffsetStringSig(63, "Info - Processor - Net Mask 1", eSigIoMask.InputSigOnly);
+            NetMask2 = FusionRoom.CreateOffsetStringSig(64, "Info - Processor - Net Mask 2", eSigIoMask.InputSigOnly);
+
+            SetProcessorEthernetValues();
+
+            CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
+        }
+
+        void CrestronEnvironment_EthernetEventHandler(EthernetEventArgs ethernetEventArgs)
+        {
+            if (ethernetEventArgs.EthernetEventType == eEthernetEventType.LinkUp)
+            {
+                SetProcessorEthernetValues();
+            }
+        }
+
+        void SetProcessorEthernetValues()
+        {
+            Ip1.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
+            Ip2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1);
+            Gateway.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_ROUTER, 0);
+            Hostname.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
+            Domain.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, 0);
+
+            var dnsServers = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DNS_SERVER, 0).Split(',');
+            Dns1.InputSig.StringValue = dnsServers[0];
+            if (dnsServers.Length > 1)
+                Dns2.InputSig.StringValue = dnsServers[1];
+
+            Mac1.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
+            Mac2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 1);
+            NetMask1.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, 0);
+            NetMask2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, 1);
+        }
 
         void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
         {
@@ -306,7 +370,6 @@ namespace PepperDash.Essentials.Fusion
                         "<Parameter ID='Field' Value='MeetingID' />\n" +
                         "<Parameter ID='Field' Value='RVMeetingID' />\n" +
                         "<Parameter ID='Field' Value='InstanceID' />\n" +
-                        //"<Parameter ID='Field' Value='Recurring' />\n" +
                         "<Parameter ID='Field' Value='dtStart' />\n" +
                         "<Parameter ID='Field' Value='dtEnd' />\n" +
                         "<Parameter ID='Field' Value='Subject' />\n" +
@@ -324,6 +387,15 @@ namespace PepperDash.Essentials.Fusion
                 Debug.Console(2, this, "Sending Fusion ActionRequest: \n{0}", actionRequest);
 
                 FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = actionRequest;
+
+
+                // Request current Fusion Server Time
+
+                string timeRequestID = "TimeRequest";
+
+                string timeRequest = string.Format("<LocalTimeRequest><RequestID>{0}</RequestID></LocalTimeRequest>", timeRequestID);
+
+                FusionRoom.ExtenderFusionRoomDataReservedSigs.LocalDateTimeQuery.StringValue = timeRequest;
             }
 
         }
@@ -480,20 +552,6 @@ namespace PepperDash.Essentials.Fusion
             {
                 try
                 {
-                    //ActionResponse actionResponse = new ActionResponse();
-
-                    //TextReader reader = new StringReader(args.Sig.StringValue);
-
-                    //actionResponse = CrestronXMLSerialization.DeSerializeObject<ActionResponse>(reader);
-
-                    //if (actionResponse != null)
-                    //{
-                    //    if (actionResponse.RequestID == "InitialPushRequest")
-                    //    {
-                    //        if (actionResponse.Parameters != null)
-                    //        {
-                    //            var tempParam = actionResponse.Parameters.FirstOrDefault(p => p.ID.Equals("Registered"));
-
                     XmlDocument message = new XmlDocument();
 
                     message.LoadXml(args.Sig.StringValue);
@@ -558,6 +616,40 @@ namespace PepperDash.Essentials.Fusion
                 catch (Exception e)
                 {
                     Debug.Console(1, this, "Error parsing ActionQueryResponse: {0}", e);
+                }
+            }
+            else if (args.Sig == FusionRoom.ExtenderFusionRoomDataReservedSigs.LocalDateTimeQueryResponse)
+            {
+                try
+                {
+                    XmlDocument message = new XmlDocument();
+
+                    message.LoadXml(args.Sig.StringValue);
+
+                    var localDateTimeResponse = message["LocalTimeResponse"];
+
+                    if (localDateTimeResponse != null)
+                    {
+                        var localDateTime = localDateTimeResponse["LocalDateTime"];
+
+                        if (localDateTime != null)
+                        {
+                            var tempLocalDateTime = localDateTime.InnerText;
+                         
+                            DateTime currentTime = DateTime.Parse(tempLocalDateTime);
+
+                            Debug.Console(1, this, "DateTime from Fusion Server: {0}", currentTime);
+
+                            // Parse time and date from response and insert values
+                            CrestronEnvironment.SetTimeAndDate((ushort)currentTime.Hour, (ushort)currentTime.Minute, (ushort)currentTime.Second, (ushort)currentTime.Month, (ushort)currentTime.Day, (ushort)currentTime.Year);
+
+                            Debug.Console(1, this, "Processor time set to {0}", CrestronEnvironment.GetLocalTime());
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(1, this, "Error parsing LocalDateTimeQueryResponse: {0}", e);
                 }
             }
         }
@@ -726,6 +818,18 @@ namespace PepperDash.Essentials.Fusion
 						break;
 				}
 
+
+                foreach (var kvp in dict)
+                {
+                    var usageDevice = kvp.Value.SourceDevice as IUsageTracking;
+
+                    if (usageDevice != null)
+                    {
+                        usageDevice.UsageTracker = new UsageTracking();
+                        usageDevice.UsageTracker.UsageIsTracked = true;
+                        usageDevice.UsageTracker.DeviceUsageEnded += new EventHandler<DeviceUsageEventArgs>(UsageTracker_DeviceUsageEnded);
+                    }
+                }
 				
 			}
 			else
@@ -734,6 +838,35 @@ namespace PepperDash.Essentials.Fusion
 					Room.SourceListKey, Room.Key);
 			}
 		}
+
+
+        /// <summary>
+        /// Collects usage data from source and sends to Fusion
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void UsageTracker_DeviceUsageEnded(object sender, DeviceUsageEventArgs e)
+        {          
+            var device = sender as Device;
+
+            var configDevice = ConfigReader.ConfigObject.Devices.Where(d => d.Key.Equals(device.Key));
+
+            string group = ConfigReader.GetGroupForDeviceKey(device.Key);
+
+            string currentMeetingId = "";
+
+            if (CurrentMeeting != null)
+                currentMeetingId = CurrentMeeting.MeetingID;
+
+            //String Format:  "USAGE||[Date YYYY-MM-DD]||[Time HH-mm-ss]||TIME||[Asset_Type]||[Asset_Name]||[Minutes_used]||[Asset_ID]||[Meeting_ID]"
+            // [Asset_ID] property does not appear to be used in Crestron SSI examples.  They are sending "-" instead so that's what is replicated here
+            string deviceUsage = string.Format("USAGE||{0}||{1}||TIME||{2}||{3}||{4}||{5}||{6})", e.UsageEndTime.ToString("YYYY-MM-DD"), e.UsageEndTime.ToString("HH-mm-ss"),
+                group, device.Name, e.MinutesUsed, "-", currentMeetingId); 
+
+
+            FusionRoom.DeviceUsage.InputSig.StringValue = deviceUsage;
+        }
+
 
 		void TryAddRouteActionSigs(string attrName, uint attrNum, string routeKey, Device pSrc)
 		{
@@ -777,22 +910,35 @@ namespace PepperDash.Essentials.Fusion
 				string attrName = null;
 				uint attrNum = Convert.ToUInt32(keyNum);
 
-				//if (dev is SmartGraphicsTouchpanelControllerBase)
-				//{
-				//    if (attrNum > 10)
-				//        continue;
-				//    attrName = "Device Ok - Touch Panel " + attrNum;
-				//    attrNum += 200;
-				//}
-				//// add xpanel here
+
+
+                if (dev is BasicTriListWithSmartObject)
+                {
+                    if (attrNum > 10)
+                        continue;
+                    attrName = "Online - Touch Panel " + attrNum;
+                    attrNum += 200;
+#warning should this be 150
+                }
+                // add xpanel here
+
+                if (dev is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
+                {
+                    if (attrNum > 10)
+                        continue;
+                    attrName = "Online - Touch Panel " + attrNum;
+                    attrNum += 160;
+#warning should this be 160
+                }
 
 				//else 
 				if (dev is DisplayBase)
 				{
 					if (attrNum > 10)
 						continue;
-					attrName = "Device Ok - Display " + attrNum;
+					attrName = "Online - Display " + attrNum;
 					attrNum += 240;
+#warning should this be 170
 				}
 				//else if (dev is DvdDeviceBase)
 				//{
@@ -822,42 +968,61 @@ namespace PepperDash.Essentials.Fusion
 
 		void SetUpDisplay()
 		{
-			var display = Room.DefaultDisplay as DisplayBase;
-			if (display == null)
+            //Setup Display Usage Monitoring
+
+            var displays = DeviceManager.AllDevices.Where(d => d is DisplayBase);
+
+#warning should work for now in single room systems but will grab all devices regardless of room assignment.  In multi-room systems, this will need to be handled differently.
+
+            foreach (DisplayBase display in displays)
+            {
+                display.UsageTracker = new UsageTracking();
+                display.UsageTracker.UsageIsTracked = true;
+                display.UsageTracker.DeviceUsageEnded += new EventHandler<DeviceUsageEventArgs>(UsageTracker_DeviceUsageEnded);
+            }
+
+			var defaultDisplay = Room.DefaultDisplay as DisplayBase;
+            if (defaultDisplay == null)
 			{
 				Debug.Console(1, this, "Cannot link null display to Fusion");
 				return;
 			}
 
-			var dispPowerOnAction = new Action<bool>(b => { if (!b) display.PowerOn(); });
-			var dispPowerOffAction = new Action<bool>(b => { if (!b) display.PowerOff(); });
+            var dispPowerOnAction = new Action<bool>(b => { if (!b) defaultDisplay.PowerOn(); });
+            var dispPowerOffAction = new Action<bool>(b => { if (!b) defaultDisplay.PowerOff(); });
 
 			// Display to fusion room sigs
 			FusionRoom.DisplayPowerOn.OutputSig.UserObject = dispPowerOnAction;
 			FusionRoom.DisplayPowerOff.OutputSig.UserObject = dispPowerOffAction;
-			display.PowerIsOnFeedback.LinkInputSig(FusionRoom.DisplayPowerOn.InputSig);
-			if (display is IDisplayUsage)
-				(display as IDisplayUsage).LampHours.LinkInputSig(FusionRoom.DisplayUsage.InputSig);
+            defaultDisplay.PowerIsOnFeedback.LinkInputSig(FusionRoom.DisplayPowerOn.InputSig);
+            if (defaultDisplay is IDisplayUsage)
+                (defaultDisplay as IDisplayUsage).LampHours.LinkInputSig(FusionRoom.DisplayUsage.InputSig);
 
 			// static assets --------------- testing
 			// Make a display asset
             string dispAssetInstanceId;
 
             //Check for existing GUID
-            var tempAsset = StaticAssets.FirstOrDefault(a => a.Number.Equals(3));
+            var tempAsset = FusionAssets.FirstOrDefault(a => a.Name.Equals("Display"));
             if(tempAsset != null)
 			    dispAssetInstanceId = tempAsset.InstanceID;
             else
-                dispAssetInstanceId = "";
+            {
+                var nextSlotNum = FusionAssets.Count + 1;
 
-            var dispAsset = FusionRoom.CreateStaticAsset(3, display.Name, "Display", dispAssetInstanceId);
+                tempAsset = new FusionAsset((uint)nextSlotNum, defaultDisplay.Name, "Display", "");
+                FusionAssets.Add(tempAsset);
+                dispAssetInstanceId = tempAsset.InstanceID;
+            }
+
+            var dispAsset = FusionRoom.CreateStaticAsset(3, defaultDisplay.Name, "Display", dispAssetInstanceId);
 			dispAsset.PowerOn.OutputSig.UserObject = dispPowerOnAction;
 			dispAsset.PowerOff.OutputSig.UserObject = dispPowerOffAction;
-			display.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
+            defaultDisplay.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
 			// NO!! display.PowerIsOn.LinkComplementInputSig(dispAsset.PowerOff.InputSig);
 			// Use extension methods
-			dispAsset.TrySetMakeModel(display);
-			dispAsset.TryLinkAssetErrorToCommunication(display);
+            dispAsset.TrySetMakeModel(defaultDisplay);
+            dispAsset.TryLinkAssetErrorToCommunication(defaultDisplay);
 		}
 
 		void SetUpError()
@@ -883,7 +1048,31 @@ namespace PepperDash.Essentials.Fusion
 		}
 
 
+        void SetUpOccupancy()
+        {
+#warning Add actual object logic check here
+            //if (Room.OccupancyObj != null)
+            //{
+                string occAssetId;
 
+                var tempAsset = FusionAssets.FirstOrDefault(a => a.Type.Equals("Occupancy Sensor"));
+                
+                if(tempAsset != null)
+                    occAssetId = tempAsset.InstanceID;
+                else
+                {
+                    var nextAssetNum = FusionAssets.Count + 1;
+
+                    tempAsset = new FusionAsset((uint)nextAssetNum, "Occupancy Sensor", "Occupancy Sensor", "");
+                    FusionAssets.Add(tempAsset);
+                    occAssetId = tempAsset.InstanceID;
+                }
+
+                FusionRoom.AddAsset(eAssetType.OccupancySensor, tempAsset.Number, tempAsset.Name, tempAsset.Type, tempAsset.InstanceID);
+
+                ((FusionOccupancySensor)FusionRoom.UserConfigurableAssetDetails[tempAsset.Number].Asset).RoomOccupied.InputSig.BoolValue = OccupancyStatusSig.InputSig.BoolValue;
+            //}
+        }
 
 		/// <summary>
 		/// Helper to get the number from the end of a device's key string
@@ -1063,386 +1252,5 @@ namespace PepperDash.Essentials.Fusion
 		}
 	}
 
-    // Helper Classes for GUIDs
-
-    /// <summary>
-    /// Stores GUIDs to be written to a file in NVRAM 
-    /// </summary>
-    public class FusionRoomGuids
-    {
-        public string RoomName { get; set; }
-        public uint IpId { get; set; }
-        public string RoomGuid { get; set; }
-        public List<StaticAsset> StaticAssets { get; set; }
-
-        public FusionRoomGuids()
-        {
-            StaticAssets = new List<StaticAsset>();
-        }
-
-        public FusionRoomGuids(string roomName, uint ipId, string roomGuid, List<StaticAsset> staticAssets)
-        {
-            RoomName = roomName;
-            IpId = ipId;
-            RoomGuid = roomGuid;
-
-            StaticAssets = new List<StaticAsset>(staticAssets);
-        }
-    }
-
-    public class StaticAsset
-    {
-        public uint Number { get; set; }
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public string InstanceID { get; set; }
-
-        public StaticAsset()
-        {
-
-        }
-
-        public StaticAsset(uint slotNum, string assetName, string type, string instanceID)
-        {
-            Number = slotNum;
-            Name = assetName;
-            Type = type;
-            if(string.IsNullOrEmpty(instanceID))
-            {
-                InstanceID = Guid.NewGuid().ToString();
-            }
-            else
-            {
-                InstanceID = instanceID;
-            }
-        }
-    }
-
-    //***************************************************************************************************
-
-    public class RoomSchedule
-    {
-        public List<Event> Meetings { get; set; }
-
-        public RoomSchedule()
-        {
-            Meetings = new List<Event>();
-        }
-    }
-
-    //****************************************************************************************************
-    // Helper Classes for XML API
-
-    /// <summary>
-    /// All the data needed for a full schedule request in a room
-    /// </summary>
-    /// //[XmlRoot(ElementName = "RequestSchedule")]
-    public class RequestSchedule
-    {
-        //[XmlElement(ElementName = "RequestID")]
-        public string RequestID { get; set; }
-        //[XmlElement(ElementName = "RoomID")]
-        public string RoomID { get; set; }
-        //[XmlElement(ElementName = "Start")]
-        public DateTime Start { get; set; }
-        //[XmlElement(ElementName = "HourSpan")]
-        public double HourSpan { get; set; }
-
-        public RequestSchedule(string requestID, string roomID)
-        {
-            RequestID = requestID;
-            RoomID = roomID;
-            Start = DateTime.Now;
-            HourSpan = 24;
-        }
-    }
-
-
-    //[XmlRoot(ElementName = "RequestAction")]
-    public class RequestAction
-    {
-        //[XmlElement(ElementName = "RequestID")]
-        public string RequestID { get; set; }
-        //[XmlElement(ElementName = "RoomID")]
-        public string RoomID { get; set; }
-        //[XmlElement(ElementName = "ActionID")]
-        public string ActionID { get; set; }
-        //[XmlElement(ElementName = "Parameters")]
-        public List<Parameter> Parameters { get; set; }
-
-        public RequestAction(string roomID, string actionID, List<Parameter> parameters)
-        {
-            RoomID = roomID;
-            ActionID = actionID;
-            Parameters = parameters;
-        }
-    }
-
-    //[XmlRoot(ElementName = "ActionResponse")]
-    public class ActionResponse
-    {
-        //[XmlElement(ElementName = "RequestID")]
-        public string RequestID { get; set; }
-        //[XmlElement(ElementName = "ActionID")]
-        public string ActionID { get; set; }
-        //[XmlElement(ElementName = "Parameters")]
-        public List<Parameter> Parameters { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Parameter")]
-    public class Parameter
-    {
-        //[XmlAttribute(AttributeName = "ID")]
-        public string ID { get; set; }
-        //[XmlAttribute(AttributeName = "Value")]
-        public string Value { get; set; }
-    }
-
-    ////[XmlRoot(ElementName = "Parameters")]
-    //public class Parameters
-    //{
-    //    //[XmlElement(ElementName = "Parameter")]
-    //    public List<Parameter> Parameter { get; set; }
-    //}  
-    
-    /// <summary>
-    /// Data structure for a ScheduleResponse from Fusion
-    /// </summary>
-    /// //[XmlRoot(ElementName = "ScheduleResponse")]
-    public class ScheduleResponse
-    {
-        //[XmlElement(ElementName = "RequestID")]
-        public string RequestID { get; set; }
-        //[XmlElement(ElementName = "RoomID")]
-        public string RoomID { get; set; }
-        //[XmlElement(ElementName = "RoomName")]
-        public string RoomName { get; set; }
-        //[XmlElement("Event")]
-        public List<Event> Events { get; set; }
-
-        public ScheduleResponse()
-        {
-            Events = new List<Event>();
-        }
-    }
-
-    //[XmlRoot(ElementName = "Event")]
-    public class Event
-    {
-        //[XmlElement(ElementName = "MeetingID")]
-        public string MeetingID { get; set; }
-        //[XmlElement(ElementName = "RVMeetingID")]
-        public string RVMeetingID { get; set; }
-        //[XmlElement(ElementName = "Recurring")]
-        public string Recurring { get; set; }
-        //[XmlElement(ElementName = "InstanceID")]
-        public string InstanceID { get; set; }
-        //[XmlElement(ElementName = "dtStart")]
-        public DateTime dtStart { get; set; }
-        //[XmlElement(ElementName = "dtEnd")]
-        public DateTime dtEnd { get; set; }
-        //[XmlElement(ElementName = "Organizer")]
-        public string Organizer { get; set; }
-        //[XmlElement(ElementName = "Attendees")]
-        public Attendees Attendees { get; set; }
-        //[XmlElement(ElementName = "Resources")]
-        public Resources Resources { get; set; }
-        //[XmlElement(ElementName = "IsEvent")]
-        public string IsEvent { get; set; }
-        //[XmlElement(ElementName = "IsRoomViewMeeting")]
-        public string IsRoomViewMeeting { get; set; }
-        //[XmlElement(ElementName = "IsPrivate")]
-        public string IsPrivate { get; set; }
-        //[XmlElement(ElementName = "IsExchangePrivate")]
-        public string IsExchangePrivate { get; set; }
-        //[XmlElement(ElementName = "MeetingTypes")]
-        public MeetingTypes MeetingTypes { get; set; }
-        //[XmlElement(ElementName = "ParticipantCode")]
-        public string ParticipantCode { get; set; }
-        //[XmlElement(ElementName = "PhoneNo")]
-        public string PhoneNo { get; set; }
-        //[XmlElement(ElementName = "WelcomeMsg")]
-        public string WelcomeMsg { get; set; }
-        //[XmlElement(ElementName = "Subject")]
-        public string Subject { get; set; }
-        //[XmlElement(ElementName = "LiveMeeting")]
-        public LiveMeeting LiveMeeting { get; set; }
-        //[XmlElement(ElementName = "ShareDocPath")]
-        public string ShareDocPath { get; set; }
-        //[XmlElement(ElementName = "HaveAttendees")]
-        public string HaveAttendees { get; set; }
-        //[XmlElement(ElementName = "HaveResources")]
-        public string HaveResources { get; set; }
-
-        /// <summary>
-        /// Gets the duration of the meeting
-        /// </summary>
-        public string DurationInMinutes
-        {
-            get
-            {
-                string duration;
-
-                var timeSpan = dtEnd.Subtract(dtStart);
-                int hours = timeSpan.Hours;
-                double minutes = timeSpan.Minutes;
-                double roundedMinutes = Math.Round(minutes);
-                if(hours > 0)
-                {
-                    duration = string.Format("{0} hours {1} minutes", hours, roundedMinutes);
-                }
-                else
-                {
-                    duration = string.Format("{0} minutes", roundedMinutes);
-                }
-
-                return duration;
-            }
-        }
-
-        /// <summary>
-        /// Gets the remaining time in the meeting.  Returns null if the meeting is not currently in progress.
-        /// </summary>
-        public string RemainingTime
-        {
-            get
-            {
-                var now = DateTime.Now;
-
-                string remainingTime;
-
-                if (GetInProgress())
-                {
-                    var timeSpan = dtEnd.Subtract(now);
-                    int hours = timeSpan.Hours;
-                    double minutes = timeSpan.Minutes;
-                    double roundedMinutes = Math.Round(minutes);
-                    if (hours > 0)
-                    {
-                        remainingTime = string.Format("{0} hours {1} minutes", hours, roundedMinutes);
-                    }
-                    else
-                    {
-                        remainingTime = string.Format("{0} minutes", roundedMinutes);
-                    }
-
-                    return remainingTime;
-                }
-                else
-                    return null;
-            }
-
-        }
-
-        /// <summary>
-        /// Indicates that the meeting is in progress
-        /// </summary>
-        public bool isInProgress
-        {
-            get
-            {
-                return GetInProgress();
-            }
-        }
-
-        /// <summary>
-        /// Determines if the meeting is in progress
-        /// </summary>
-        /// <returns>Returns true if in progress</returns>
-        bool GetInProgress()
-        {
-            var now = DateTime.Now;
-
-            if (now > dtStart && now < dtEnd)
-            {
-                return true;
-            }
-            else
-                return false;
-        }
-    }
-
-    //[XmlRoot(ElementName = "Resources")]
-    public class Resources
-    {
-        //[XmlElement(ElementName = "Rooms")]
-        public Rooms Rooms { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Rooms")]
-    public class Rooms
-    {
-        //[XmlElement(ElementName = "Room")]
-        public List<Room> Room { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Room")]
-    public class Room
-    {
-        //[XmlElement(ElementName = "Name")]
-        public string Name { get; set; }
-        //[XmlElement(ElementName = "ID")]
-        public string ID { get; set; }
-        //[XmlElement(ElementName = "MPType")]
-        public string MPType { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Attendees")]
-    public class Attendees
-    {
-        //[XmlElement(ElementName = "Required")]
-        public Required Required { get; set; }
-        //[XmlElement(ElementName = "Optional")]
-        public Optional Optional { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Required")]
-    public class Required
-    {
-        //[XmlElement(ElementName = "Attendee")]
-        public List<string> Attendee { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "Optional")]
-    public class Optional
-    {
-        //[XmlElement(ElementName = "Attendee")]
-        public List<string> Attendee { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "MeetingType")]
-    public class MeetingType
-    {
-        //[XmlAttribute(AttributeName = "ID")]
-        public string ID { get; set; }
-        //[XmlAttribute(AttributeName = "Value")]
-        public string Value { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "MeetingTypes")]
-    public class MeetingTypes
-    {
-        //[XmlElement(ElementName = "MeetingType")]
-        public List<MeetingType> MeetingType { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "LiveMeeting")]
-    public class LiveMeeting
-    {
-        //[XmlElement(ElementName = "URL")]
-        public string URL { get; set; }
-        //[XmlElement(ElementName = "ID")]
-        public string ID { get; set; }
-        //[XmlElement(ElementName = "Key")]
-        public string Key { get; set; }
-        //[XmlElement(ElementName = "Subject")]
-        public string Subject { get; set; }
-    }
-
-    //[XmlRoot(ElementName = "LiveMeetingURL")]
-    public class LiveMeetingURL
-    {
-        //[XmlElement(ElementName = "LiveMeeting")]
-        public LiveMeeting LiveMeeting { get; set; }
-    }
+   
 }

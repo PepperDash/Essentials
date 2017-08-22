@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Devices.Common
 	/// <summary>
 	/// This DVD class should cover most IR, one-way DVD and Bluray fuctions
 	/// </summary>
-	public class InRoomPc : Device, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo
+	public class InRoomPc : Device, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
 		public string IconName { get; set; }
@@ -51,5 +51,11 @@ namespace PepperDash.Essentials.Devices.Common
 		}
 
 		#endregion
+
+        #region IUsageTracking Members
+
+        public UsageTracking UsageTracker { get; set; }
+
+        #endregion
 	}
 }

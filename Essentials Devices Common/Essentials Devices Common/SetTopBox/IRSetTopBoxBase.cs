@@ -12,7 +12,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class IRSetTopBoxBase : Device, ISetTopBoxControls, IUiDisplayInfo, IRoutingOutputs
+	public class IRSetTopBoxBase : Device, ISetTopBoxControls, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
 	{
 		public IrOutputPortController IrPort { get; private set; }
 
@@ -333,5 +333,11 @@ namespace PepperDash.Essentials.Devices.Common
 		}
 
 		#endregion
+
+        #region IUsageTracking Members
+
+        public UsageTracking UsageTracker { get; set; }
+
+        #endregion
 	}
 }

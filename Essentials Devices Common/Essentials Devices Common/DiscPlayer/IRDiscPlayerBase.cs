@@ -11,7 +11,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class IRBlurayBase : Device, IDiscPlayerControls, IUiDisplayInfo, IRoutingOutputs
+	public class IRBlurayBase : Device, IDiscPlayerControls, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
 	{
 		public IrOutputPortController IrPort { get; private set; }
 
@@ -304,5 +304,11 @@ namespace PepperDash.Essentials.Devices.Common
 		}
 
 		#endregion
-	}
+
+        #region IUsageTracking Members
+
+        public UsageTracking UsageTracker { get; set; }
+
+        #endregion
+    }
 }

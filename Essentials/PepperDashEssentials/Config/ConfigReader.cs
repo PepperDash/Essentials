@@ -152,5 +152,11 @@ namespace PepperDash.Essentials
 			return o1;
 		}
 
+        public static string GetGroupForDeviceKey(string key)
+        {
+            var dev = ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+            return dev == null ? null : dev.Group;
+        }
+
 	}
 }

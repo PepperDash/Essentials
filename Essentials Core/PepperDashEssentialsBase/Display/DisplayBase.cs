@@ -16,11 +16,13 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// 
 	/// </summary>
-	public abstract class DisplayBase : Device, IHasFeedback, IRoutingSinkWithSwitching, IPower, IWarmingCooling
+	public abstract class DisplayBase : Device, IHasFeedback, IRoutingSinkWithSwitching, IPower, IWarmingCooling, IUsageTracking
 	{
 		public BoolFeedback PowerIsOnFeedback { get; protected set; }
 		public BoolFeedback IsCoolingDownFeedback { get; protected set; }
 		public BoolFeedback IsWarmingUpFeedback { get; private set; }
+
+        public UsageTracking UsageTracker { get; set; }
 
 		public uint WarmupTime { get; set; }
 		public uint CooldownTime { get; set; }
@@ -77,7 +79,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// 
 	/// </summary>
-	public abstract class TwoWayDisplayBase : DisplayBase
+    public abstract class TwoWayDisplayBase : DisplayBase
 	{
         public StringFeedback CurrentInputFeedback { get; private set; }
 
@@ -104,6 +106,8 @@ namespace PepperDash.Essentials.Core
 			CooldownTime = 15000;
 
             Feedbacks.Add(CurrentInputFeedback);
+
+            
 		}
 
 	}
