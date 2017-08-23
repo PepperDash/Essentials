@@ -1,6 +1,7 @@
 ﻿using System;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
+using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
@@ -97,7 +98,7 @@ namespace PepperDash.Essentials.Core
 		{
 			TriList = triList;
 			// Attach actions to buttons
-			triList.SetSigFalseAction(Button1Join, () => OnModalComplete(1));
+            triList.SetSigFalseAction(Button1Join, () => OnModalComplete(1));
 			triList.SetSigFalseAction(Button2Join, () => OnModalComplete(2));
             triList.SetSigFalseAction(CancelButtonJoin, () => { if (CanCancel) CancelDialog(); });
             CanCancel = true;

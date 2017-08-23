@@ -60,7 +60,7 @@ namespace PepperDash.Essentials
 			set
 			{
 				_DefaultRoomKey = value;
-				CurrentRoom = DeviceManager.GetDeviceForKey(value) as EssentialsHuddleSpaceRoom;
+				//CurrentRoom = DeviceManager.GetDeviceForKey(value) as EssentialsHuddleSpaceRoom;
 			}	
 		}
 		string _DefaultRoomKey;
@@ -523,7 +523,6 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_HasFinished(object sender, EventArgs e)
         {
-
             Debug.Console(2, "UI shutdown prompt finished");
             EndMeetingButtonSig.BoolValue = false;
         }
@@ -638,6 +637,7 @@ namespace PepperDash.Essentials
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange -= CurrentRoom_IsWarmingFeedback_OutputChange;
                 _CurrentRoom.IsCoolingDownFeedback.OutputChange -= IsCoolingDownFeedback_OutputChange;
             }
+
 			_CurrentRoom = room;
 
 			if (_CurrentRoom != null)
@@ -679,7 +679,9 @@ namespace PepperDash.Essentials
                 _CurrentRoom.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
 
                 // Link up all the change events from the room
+                Debug.Console(2, "UI -- Room is already on={0} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", _CurrentRoom.OnFeedback.BoolValue);
                 _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
+                CurrentRoom_SyncOnFeedback();
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange += CurrentRoom_IsWarmingFeedback_OutputChange;
                 _CurrentRoom.IsCoolingDownFeedback.OutputChange += IsCoolingDownFeedback_OutputChange;
 
@@ -699,6 +701,11 @@ namespace PepperDash.Essentials
         /// For room on/off changes
         /// </summary>
         void CurrentRoom_OnFeedback_OutputChange(object sender, EventArgs e)
+        {
+            CurrentRoom_SyncOnFeedback();
+        }
+
+        void CurrentRoom_SyncOnFeedback()
         {
             var value = _CurrentRoom.OnFeedback.BoolValue;
             Debug.Console(2, CurrentRoom, "UI: Is on event={0}", value);

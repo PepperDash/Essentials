@@ -22,10 +22,10 @@ namespace PepperDash.Essentials
                 {
                     var disp = DefaultDisplay as DisplayBase;
                     var val = CurrentSourceInfo != null
-                      && CurrentSourceInfo.Type == eSourceListItemType.Route
-                      && disp != null
-                      && disp.PowerIsOnFeedback.BoolValue;
-                    Debug.Console(2, this, "************** ROOM POWER {0}", val);
+                        && CurrentSourceInfo.Type == eSourceListItemType.Route
+                        && disp != null
+                        && disp.PowerIsOnFeedback.BoolValue;
+                    Debug.Console(2, this, "Display power={0}, has CurrentSource={1}", disp.PowerIsOnFeedback, CurrentSourceInfo != null);
                     return val;
                 };
             }
@@ -58,14 +58,9 @@ namespace PepperDash.Essentials
                 {
                     var disp = DefaultDisplay as DisplayBase;
                     if (disp != null)
-                    {
-                        Debug.Console(2, this, "IS COOLING FUNC-- Display cooling={0}", disp.IsCoolingDownFeedback.BoolValue);
                         return disp.IsCoolingDownFeedback.BoolValue;
-                    }
                     else
-                    {
                         return false;
-                    }
                 };
             }
         }

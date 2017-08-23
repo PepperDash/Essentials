@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -233,11 +234,16 @@ namespace PepperDash.Essentials.Devices.Displays
             Debug.Console(2, this, "NEW POWER STATE={0}, CURRENT={1}", newVal, _PowerIsOn);
             if (newVal != _PowerIsOn)
             {
-                _PowerIsOn = newVal;
-                CrestronEnvironment.Sleep(1500);
-                Debug.Console(2, this, "NEW POWER STATE AFTER PAUSE={0} CURRENT={1}", newVal, _PowerIsOn);
-                if (newVal != _PowerIsOn)
-                    PowerIsOnFeedback.FireUpdate();
+                CrestronInvoke.BeginInvoke(o =>
+                {
+                    CrestronEnvironment.Sleep(1500);
+                    Debug.Console(2, this, "NEW POWER STATE AFTER PAUSE={0} CURRENT={1}", newVal, _PowerIsOn);
+                    if (newVal != _PowerIsOn)
+                    {
+                        _PowerIsOn = newVal;
+                        PowerIsOnFeedback.FireUpdate();
+                    }
+                });
             }
         }
 
