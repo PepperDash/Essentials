@@ -30,6 +30,10 @@ namespace PepperDash.Essentials.Core
 		/// Shows the timer guage if in use. Bool feedback 3996
 		/// </summary>
 		public const uint TimerVisibleJoin = 3996;
+        /// <summary>
+        /// Visibility join to show "X" button 3997
+        /// </summary>
+        public const uint CancelVisibleJoin = 3997;
 		/// <summary>
 		/// Shows the modal subpage. Boolean feeback join 3999
 		/// </summary>
@@ -73,6 +77,11 @@ namespace PepperDash.Essentials.Core
 			get { return TriList.BooleanInput[ModalVisibleJoin].BoolValue; } 
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool CanCancel { get; private set; }
+
 
 		BasicTriList TriList;
 
@@ -90,7 +99,8 @@ namespace PepperDash.Essentials.Core
 			// Attach actions to buttons
 			triList.SetSigFalseAction(Button1Join, () => OnModalComplete(1));
 			triList.SetSigFalseAction(Button2Join, () => OnModalComplete(2));
-            triList.SetSigFalseAction(CancelButtonJoin, () => CancelDialog());
+            triList.SetSigFalseAction(CancelButtonJoin, () => { if (CanCancel) CancelDialog(); });
+            CanCancel = true;
 		}
 
 		/// <summary>
@@ -103,9 +113,8 @@ namespace PepperDash.Essentials.Core
 		/// <returns>True when modal is created.</returns>
 		public bool PresentModalDialog(uint numberOfButtons, string title, string iconName, 
 			string message, string button1Text,
-			string button2Text, bool showGauge, Action<uint> completeAction)
+			string button2Text, bool showGauge, bool showCancel, Action<uint> completeAction)
 		{
-			//Debug.Console(0, "Present dialog");
 			// Don't reset dialog if visible now
 			if (!ModalIsVisible)
 			{
@@ -137,9 +146,13 @@ namespace PepperDash.Essentials.Core
 				}
 				// Show/hide guage
                 TriList.BooleanInput[TimerVisibleJoin].BoolValue = showGauge;
+                
+                CanCancel = showCancel;
+                TriList.BooleanInput[CancelVisibleJoin].BoolValue = showCancel;
 
 				//Reveal and activate
 				TriList.BooleanInput[ModalVisibleJoin].BoolValue = true;
+
 				return true;
 			}
 

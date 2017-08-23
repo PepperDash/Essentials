@@ -22,7 +22,10 @@ namespace PepperDash.Essentials
                 || (Display1SourceInfo != null 
                 && Display1SourceInfo.Type != eSourceListItemType.Off)
                 || (Display2SourceInfo != null
-                && Display2SourceInfo.Type != eSourceListItemType.Off); } } 
+                && Display2SourceInfo.Type != eSourceListItemType.Off); } }
+
+        protected override Func<bool> IsWarmingFeedbackFunc { get { return () =>false;; } }
+        protected override Func<bool> IsCoolingFeedbackFunc { get { return () => false; } }
 
         public EssentialsPresentationRoomPropertiesConfig Config { get; private set; }
 

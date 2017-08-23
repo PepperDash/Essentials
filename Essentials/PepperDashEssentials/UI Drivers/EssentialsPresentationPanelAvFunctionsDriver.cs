@@ -655,7 +655,7 @@ namespace PepperDash.Essentials
             uint seconds = time / 1000;
             var message = string.Format("Meeting will end in {0} seconds", seconds);
             modal.PresentModalDialog(2, "End Meeting", "Power", message,
-                "End Meeting Now", "Cancel", true,
+                "End Meeting Now", "Cancel", true, true,
 				but => 
                 {
                     EndMeetingButtonSig.BoolValue = false;

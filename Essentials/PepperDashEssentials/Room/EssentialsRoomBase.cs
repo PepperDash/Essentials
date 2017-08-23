@@ -27,8 +27,11 @@ namespace PepperDash.Essentials
         /// </summary>
         public BoolFeedback OnFeedback { get; private set; }
 
-        public BoolFeedback IsWarmingFeedback { get; private set; }
-        public BoolFeedback IsCoolingFeedback { get; private set; }
+        public BoolFeedback IsWarmingUpFeedback { get; private set; }
+        public BoolFeedback IsCoolingDownFeedback { get; private set; }
+
+        protected abstract Func<bool> IsWarmingFeedbackFunc { get; }
+        protected abstract Func<bool> IsCoolingFeedbackFunc { get; }
 
         /// <summary>
         /// Timer used for informing the UIs of a shutdown
@@ -67,8 +70,10 @@ namespace PepperDash.Essentials
             ShutdownType = ShutdownType.None;
 
             OnFeedback = new BoolFeedback(OnFeedbackFunc);
-        }
 
+            IsWarmingUpFeedback = new BoolFeedback(IsWarmingFeedbackFunc);
+            IsCoolingDownFeedback = new BoolFeedback(IsCoolingFeedbackFunc);
+        }
 
         /// <summary>
         /// 

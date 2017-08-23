@@ -1050,6 +1050,10 @@ namespace PepperDash.Essentials.Fusion
 
         void SetUpOccupancy()
         {
+
+            return;
+
+
 #warning Add actual object logic check here
             //if (Room.OccupancyObj != null)
             //{

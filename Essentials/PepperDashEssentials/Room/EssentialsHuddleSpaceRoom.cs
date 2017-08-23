@@ -30,6 +30,45 @@ namespace PepperDash.Essentials
                 };
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override Func<bool> IsWarmingFeedbackFunc
+        {
+            get
+            {
+                return () =>
+                {
+                    var disp = DefaultDisplay as DisplayBase;
+                    if (disp != null)
+                        return disp.IsWarmingUpFeedback.BoolValue;
+                    else
+                        return false;
+                };
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override Func<bool> IsCoolingFeedbackFunc
+        {
+            get
+            {
+                return () =>
+                {
+                    var disp = DefaultDisplay as DisplayBase;
+                    if (disp != null)
+                    {
+                        Debug.Console(2, this, "IS COOLING FUNC-- Display cooling={0}", disp.IsCoolingDownFeedback.BoolValue);
+                        return disp.IsCoolingDownFeedback.BoolValue;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                };
+            }
+        }
 
 		public EssentialsRoomPropertiesConfig Config { get; private set; }
 
@@ -129,6 +168,7 @@ namespace PepperDash.Essentials
             var disp = DefaultDisplay as DisplayBase;
             if (disp != null)
             {
+                // Link power, warming, cooling to display
                 disp.PowerIsOnFeedback.OutputChange += (o, a) =>
                     {
                         if (disp.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
@@ -138,11 +178,15 @@ namespace PepperDash.Essentials
                             OnFeedback.FireUpdate();
                         }
                     };
+
+                disp.IsWarmingUpFeedback.OutputChange += (o, a) => { IsWarmingUpFeedback.FireUpdate(); };
+                disp.IsCoolingDownFeedback.OutputChange += (o, a) => { IsCoolingDownFeedback.FireUpdate(); };
             }
           
 			SourceListKey = "default";
 			EnablePowerOnToLastSource = true;
-		}
+   		}
+
 
         /// <summary>
         /// 

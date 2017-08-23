@@ -140,6 +140,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		CTimer PowerOffTimer;
 
+        ModalDialog WarmingCoolingModal;
+
 		/// <summary>
 		/// Constructor
 		/// </summary>
@@ -203,13 +205,17 @@ namespace PepperDash.Essentials
                 ShowInterlockedModal(UIBoolJoin.HelpPageVisible);
             });
 
-            TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>
-                ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
+            //TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>
+            //    ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
 
 #warning Add press and hold to gear button here
-            TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = false;
+#warning Hide Gear on ipad for now
+            TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = true;
             TriList.SetSigFalseAction(UIBoolJoin.GearHeaderButtonPress, () =>
-                ShowInterlockedModal(UIBoolJoin.VolumesPageVisible));
+                ShowInterlockedModal(UIBoolJoin.TechPanelSetupVisible));
+                //ShowInterlockedModal(UIBoolJoin.VolumesPageVisible));
+            TriList.SetSigFalseAction(UIBoolJoin.TechPagesExitButton, () =>
+                HideCurrentInterlockedModal());
 
 			// power-related functions
             // Note: some of these are not directly-related to the huddle space UI, but are held over
@@ -499,7 +505,7 @@ namespace PepperDash.Essentials
                 };
                 onFb.OutputChange += offHandler;
 
-                modal.PresentModalDialog(2, "End Meeting", "Power", message, "Cancel", "End Meeting Now", true,
+                modal.PresentModalDialog(2, "End Meeting", "Power", message, "Cancel", "End Meeting Now", true, true,
                     but =>
                     {
                         if (but != 2) // any button except for End cancels
@@ -616,10 +622,10 @@ namespace PepperDash.Essentials
 		void SetCurrentRoom(EssentialsHuddleSpaceRoom room)
 		{
 			if (_CurrentRoom == room) return;
+            // Disconnect current (probably never called)
 			if (_CurrentRoom != null)
 			{
 				// Disconnect current room
-                _CurrentRoom.OnFeedback.OutputChange -= CurrentRoom_OnFeedback_OutputChange;
 				_CurrentRoom.CurrentVolumeDeviceChange -= this.CurrentRoom_CurrentAudioDeviceChange;
 				ClearAudioDeviceConnections();
 				_CurrentRoom.CurrentSingleSourceChange -= this.CurrentRoom_SourceInfoChange;
@@ -627,7 +633,11 @@ namespace PepperDash.Essentials
                 _CurrentRoom.ShutdownPromptTimer.HasStarted -= ShutdownPromptTimer_HasStarted;
                 _CurrentRoom.ShutdownPromptTimer.HasFinished -= ShutdownPromptTimer_HasFinished;
                 _CurrentRoom.ShutdownPromptTimer.WasCancelled -= ShutdownPromptTimer_WasCancelled;
-			}
+
+                _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
+                _CurrentRoom.IsWarmingUpFeedback.OutputChange -= CurrentRoom_IsWarmingFeedback_OutputChange;
+                _CurrentRoom.IsCoolingDownFeedback.OutputChange -= IsCoolingDownFeedback_OutputChange;
+            }
 			_CurrentRoom = room;
 
 			if (_CurrentRoom != null)
@@ -670,6 +680,9 @@ namespace PepperDash.Essentials
 
                 // Link up all the change events from the room
                 _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
+                _CurrentRoom.IsWarmingUpFeedback.OutputChange += CurrentRoom_IsWarmingFeedback_OutputChange;
+                _CurrentRoom.IsCoolingDownFeedback.OutputChange += IsCoolingDownFeedback_OutputChange;
+
 				_CurrentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
 				RefreshAudioDeviceConnections();
 				_CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
@@ -688,6 +701,7 @@ namespace PepperDash.Essentials
         void CurrentRoom_OnFeedback_OutputChange(object sender, EventArgs e)
         {
             var value = _CurrentRoom.OnFeedback.BoolValue;
+            Debug.Console(2, CurrentRoom, "UI: Is on event={0}", value);
             TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
             if (value) //ON
             {
@@ -701,6 +715,46 @@ namespace PepperDash.Essentials
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void CurrentRoom_IsWarmingFeedback_OutputChange(object sender, EventArgs e)
+        {
+            var value = CurrentRoom.IsWarmingUpFeedback.BoolValue;
+            Debug.Console(2, CurrentRoom, "UI: WARMING event={0}", value);
+
+            if (value)
+            {
+                WarmingCoolingModal = new ModalDialog(TriList);
+                WarmingCoolingModal.PresentModalDialog(0, "Powering up", "Power", "Room is warming up.  Please wait.",
+                    "", "", false, false, null);
+            }
+            else
+            {
+                if (WarmingCoolingModal != null)
+                    WarmingCoolingModal.CancelDialog();
+            }
+        }
+
+
+        void IsCoolingDownFeedback_OutputChange(object sender, EventArgs e)
+        {
+            var value = CurrentRoom.IsCoolingDownFeedback.BoolValue;
+            Debug.Console(2, CurrentRoom, "UI: Cooldown event={0}", value);
+
+            if (value)
+            {
+                WarmingCoolingModal = new ModalDialog(TriList);
+                WarmingCoolingModal.PresentModalDialog(0, "Shutting down", "Power", "Room is shutting down.  Please wait.",
+                    "", "", false, false, null);
+            }
+            else
+            {
+                if (WarmingCoolingModal != null)
+                    WarmingCoolingModal.CancelDialog();
             }
         }
 

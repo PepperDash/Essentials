@@ -21,6 +21,7 @@ namespace PepperDash.Essentials.Devices.Displays
 
         public byte ID { get; private set; }
 
+
 		bool _PowerIsOn;
 		bool _IsWarmingUp;
 		bool _IsCoolingDown;
@@ -35,8 +36,7 @@ namespace PepperDash.Essentials.Devices.Displays
 		protected override Func<bool> PowerIsOnFeedbackFunc { get { return () => _PowerIsOn; } }
 		protected override Func<bool> IsCoolingDownFeedbackFunc { get { return () => _IsCoolingDown; } }
 		protected override Func<bool> IsWarmingUpFeedbackFunc { get { return () => _IsWarmingUp; } }
-        protected override Func<string> CurrentInputFeedbackFunc { get { return () => _CurrentInputPort.Key; } }
-        
+        protected override Func<string> CurrentInputFeedbackFunc { get { return () => _CurrentInputPort.Key; } }    
 
 		/// <summary>
 		/// Constructor for IBasicCommunication
@@ -61,7 +61,6 @@ namespace PepperDash.Essentials.Devices.Displays
             ID = id == null ? (byte)0x01 : Convert.ToByte(id, 16); // If id is null, set default value of 0x01, otherwise assign value passed in constructor
             Init();
 		}
-
 
 		/// <summary>
 		/// Constructor for COM
@@ -120,7 +119,6 @@ namespace PepperDash.Essentials.Devices.Displays
 			MuteFeedback = new BoolFeedback(() => _IsMuted);
 
             StatusGet();
-            //StatusTimer = new CTimer(o => StatusGet(), null, 0, 30000);
 		}
 
         /// <summary>
@@ -157,13 +155,11 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <param name="e"></param>
         void Communication_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
         {
-            //Debug.Console(2, this, "Socket in: {0}", ComTextHelper.GetEscapedText(e.Bytes));
             // This is probably not thread-safe buffering
             // Append the incoming bytes with whatever is in the buffer
             var newBytes = new byte[IncomingBuffer.Length + e.Bytes.Length];
             IncomingBuffer.CopyTo(newBytes, 0);
             e.Bytes.CopyTo(newBytes, IncomingBuffer.Length);
-            //Debug.Console(2, this, "Buffer+new: {0}", ComTextHelper.GetEscapedText(newBytes));
 
             // Need to find AA FF and have 
             for (int i = 0; i < newBytes.Length; i++)
@@ -192,7 +188,8 @@ namespace PepperDash.Essentials.Devices.Displays
                             switch (message[1]) // type byte
                             {
                                 case 0x00: // General status
-                                    UpdatePowerFBWithSource(message[2], message[3]); // "power" can be misrepresented when the display sleeps
+                                    UpdatePowerFB(message[2]); // "power" can be misrepresented when the display sleeps
+                                    UpdateInputFb(message[5]);
                                     UpdateVolumeFB(message[3]);
                                     UpdateMuteFb(message[4]);
                                     UpdateInputFb(message[5]);
@@ -230,28 +227,17 @@ namespace PepperDash.Essentials.Devices.Displays
             IncomingBuffer = newBytes;
         }
 
-        /// <summary>
-        /// Checks power feedback AND that source >0x10
-        /// 
-        /// </summary>
-        /// <param name="b"></param>
-        void UpdatePowerFBWithSource(byte pb, byte ib)
-        {
-            var newVal = pb == 1 && ib > 0x10;
-            if (newVal != _PowerIsOn)
-            {
-                _PowerIsOn = newVal;
-                PowerIsOnFeedback.FireUpdate();
-            }
-        }
-
         void UpdatePowerFB(byte pb)
         {
             var newVal = pb == 1;
+            Debug.Console(2, this, "NEW POWER STATE={0}, CURRENT={1}", newVal, _PowerIsOn);
             if (newVal != _PowerIsOn)
             {
                 _PowerIsOn = newVal;
-                PowerIsOnFeedback.FireUpdate();
+                CrestronEnvironment.Sleep(1500);
+                Debug.Console(2, this, "NEW POWER STATE AFTER PAUSE={0} CURRENT={1}", newVal, _PowerIsOn);
+                if (newVal != _PowerIsOn)
+                    PowerIsOnFeedback.FireUpdate();
             }
         }
 
@@ -260,7 +246,7 @@ namespace PepperDash.Essentials.Devices.Displays
         /// </summary>
         /// <param name="b"></param>
         void UpdateVolumeFB(byte b)
-        {            
+        {
             var newVol = (ushort)Scale((double)b, 0, 100, 0, 65535);
             if (!VolumeIsRamping)
                 _LastVolumeSent = newVol;
@@ -346,7 +332,7 @@ namespace PepperDash.Essentials.Devices.Displays
 		{
 			// If a display has unreliable-power off feedback, just override this and
 			// remove this check.
-			if (PowerIsOnFeedback.BoolValue && !_IsWarmingUp && !_IsCoolingDown)
+            if (!_IsWarmingUp && !_IsCoolingDown) // PowerIsOnFeedback.BoolValue &&
 			{
                 //Send(PowerOffCmd);
                 SendBytes(new byte[] { 0xAA, 0x11, 0x00, 0x01, 0x00, 0x00 });

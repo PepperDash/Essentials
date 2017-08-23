@@ -113,6 +113,14 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint VolumesPageVisible = 3870;
         /// <summary>
+        /// 3901
+        /// </summary>
+        public const uint TechPagesExitButton = 3901;
+        /// <summary>
+        /// 3902
+        /// </summary>
+        public const uint TechPanelSetupVisible = 3902;
+        /// <summary>
         /// 3999
         /// </summary>
 		public const uint GenericModalVisible = 3999;
