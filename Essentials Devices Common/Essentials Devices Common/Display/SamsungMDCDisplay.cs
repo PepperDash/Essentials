@@ -228,6 +228,7 @@ namespace PepperDash.Essentials.Devices.Displays
             IncomingBuffer = newBytes;
         }
 
+
         /// <summary>
         /// 
         /// </summary>
