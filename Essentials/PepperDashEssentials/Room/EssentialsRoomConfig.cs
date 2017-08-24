@@ -29,6 +29,7 @@ namespace PepperDash.Essentials
 				var disp = DeviceManager.GetDeviceForKey(props.DefaultDisplayKey) as IRoutingSinkWithSwitching;
 				var audio = DeviceManager.GetDeviceForKey(props.DefaultAudioKey) as IRoutingSinkNoSwitching;
 				var huddle = new EssentialsHuddleSpaceRoom(Key, Name, disp, audio, props);
+                huddle.LogoUrl = props.Logo.GetUrl();
                 huddle.SourceListKey = props.SourceListKey;
                 huddle.DefaultSourceItem = props.DefaultSourceItem;
                 return huddle;
@@ -48,7 +49,6 @@ namespace PepperDash.Essentials
                 // Get the master volume control
                 IBasicVolumeWithFeedback masterVolumeControlDev = props.Volumes.Master.GetDevice();
 
-#warning Will need to define audio routing somewhere as well
                 
                 var presRoom = new EssentialsPresentationRoom(Key, Name, displaysDict, masterVolumeControlDev, props);
                 return presRoom;
@@ -67,7 +67,27 @@ namespace PepperDash.Essentials
         public int ShutdownVacancySeconds { get; set; }
         public int ShutdownPromptSeconds { get; set; }
         public EssentialsRoomOccSensorConfig OccupancySensors { get; set; }
+        public EssentialsLogoPropertiesConfig Logo { get; set; }
 	}
+
+
+    public class EssentialsLogoPropertiesConfig
+    {
+        public string Type { get; set; }
+        public string Url { get; set; }
+        /// <summary>
+        /// Gets either the custom URL, a local-to-processor URL, or null if it's a default logo
+        /// </summary>
+        public string GetUrl()
+        {
+            if (Type == "url")
+                return Url;
+            if (Type == "system")
+                return string.Format("http://{0}:5646/logo", 
+                    CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0));
+            return null;
+        }
+    }
 
     /// <summary>
     /// Represents occupancy sensor(s) setup for a room

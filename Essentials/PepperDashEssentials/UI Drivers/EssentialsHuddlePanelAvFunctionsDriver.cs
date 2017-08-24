@@ -179,8 +179,6 @@ namespace PepperDash.Essentials
 
             TriList.StringInput[UIStringJoin.StartActivityText].StringValue =
                 "Tap Share to begin";
-
-            TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = true;
 		}
 
 		/// <summary>
@@ -677,8 +675,21 @@ namespace PepperDash.Essentials
 					}
                     SourcesSrl.Count = (ushort)(i - 1);
 				}
-
+                // Name and logo
 				TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
+                if (_CurrentRoom.LogoUrl == null)
+                {
+                    Debug.Console(2, _CurrentRoom, "Using default logo");
+                    TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = true;
+                    TriList.BooleanInput[UIBoolJoin.LogoUrlVisible].BoolValue = false;
+                }
+                else
+                {
+                    Debug.Console(2, _CurrentRoom, "Using logo at URL: {0}", _CurrentRoom.LogoUrl);
+                    TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = false;
+                    TriList.BooleanInput[UIBoolJoin.LogoUrlVisible].BoolValue = true;
+                    TriList.StringInput[UIStringJoin.LogoUrl].StringValue = _CurrentRoom.LogoUrl;
+                }
 
                 // Shutdown timer
                 _CurrentRoom.ShutdownPromptTimer.HasStarted += ShutdownPromptTimer_HasStarted;

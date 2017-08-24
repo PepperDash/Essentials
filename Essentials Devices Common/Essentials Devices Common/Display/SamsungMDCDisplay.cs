@@ -24,6 +24,7 @@ namespace PepperDash.Essentials.Devices.Displays
 
 
 		bool _PowerIsOn;
+        bool _PowerValueIncomingWaitingForCheck;
 		bool _IsWarmingUp;
 		bool _IsCoolingDown;
 		ushort _VolumeLevelForSig;
@@ -232,17 +233,18 @@ namespace PepperDash.Essentials.Devices.Displays
         /// </summary>
         void UpdatePowerFB(byte pb)
         {
-            var newVal = pb == 1;
-            Debug.Console(2, this, "*#* NEW POWER STATE={0}, CURRENT={1}", newVal, _PowerIsOn);
-            if (newVal != _PowerIsOn)
+            _PowerValueIncomingWaitingForCheck = pb == 1;
+            Debug.Console(2, this, "*#* NEW POWER STATE={0}, CURRENT={1}", 
+                _PowerValueIncomingWaitingForCheck, _PowerIsOn);
+            if (_PowerValueIncomingWaitingForCheck != _PowerIsOn)
             {
                 CrestronInvoke.BeginInvoke(o =>
                 {
                     CrestronEnvironment.Sleep(2500);
-                    Debug.Console(2, this, "*#* NEW POWER STATE AFTER PAUSE={0} CURRENT={1}", newVal, _PowerIsOn);
-                    if (newVal != _PowerIsOn)
+                    Debug.Console(2, this, "*#* NEW POWER STATE AFTER PAUSE={0} CURRENT={1}", _PowerValueIncomingWaitingForCheck, _PowerIsOn);
+                    if (_PowerValueIncomingWaitingForCheck != _PowerIsOn)
                     {
-                        _PowerIsOn = newVal;
+                        _PowerIsOn = _PowerValueIncomingWaitingForCheck;
                         PowerIsOnFeedback.FireUpdate();
                     }
                 });

@@ -45,6 +45,8 @@ namespace PepperDash.Essentials
         public int ShutdownVacancySeconds { get; set; }
         public ShutdownType ShutdownType { get; private set; }
 
+        public string LogoUrl { get; set; }
+
         /// <summary>
         /// 
         /// </summary>
