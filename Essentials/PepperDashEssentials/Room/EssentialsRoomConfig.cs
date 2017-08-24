@@ -30,6 +30,7 @@ namespace PepperDash.Essentials
 				var audio = DeviceManager.GetDeviceForKey(props.DefaultAudioKey) as IRoutingSinkNoSwitching;
 				var huddle = new EssentialsHuddleSpaceRoom(Key, Name, disp, audio, props);
                 huddle.SourceListKey = props.SourceListKey;
+                huddle.DefaultSourceItem = props.DefaultSourceItem;
                 return huddle;
 			}
 			else if (typeName == "presentation")
@@ -85,6 +86,7 @@ namespace PepperDash.Essentials
         public string DefaultDisplayKey { get; set; }
         public string DefaultAudioKey { get; set; }
         public string SourceListKey { get; set; }
+        public string DefaultSourceItem { get; set; }
     }
 
     /// <summary>

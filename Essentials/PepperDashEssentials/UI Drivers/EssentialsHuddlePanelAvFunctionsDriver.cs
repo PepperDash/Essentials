@@ -349,6 +349,9 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
+            // Run default source when room is off and share is pressed
+            if (!CurrentRoom.OnFeedback.BoolValue)
+                CurrentRoom.RunDefaultRoute();
         }
 
         void ShowInterlockedModal(uint join)
@@ -486,13 +489,17 @@ namespace PepperDash.Essentials
                 PowerDownModal = new ModalDialog(TriList);
                 var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);
 
-                // figure out a cleaner way to update gauge
-                var gauge = CurrentRoom.ShutdownPromptTimer.PercentFeedback;
-                EventHandler<EventArgs> gaugeHandler = null;
-                gaugeHandler = (o, a) => TriList.UShortInput[ModalDialog.TimerGaugeJoin].UShortValue =
-                    (ushort)(gauge.UShortValue * 65535 / 100);
-                gauge.OutputChange += gaugeHandler;
+                //// figure out a cleaner way to update gauge
+                //var gauge = CurrentRoom.ShutdownPromptTimer.PercentFeedback;
+                //EventHandler<EventArgs> gaugeHandler = null;
+                //gaugeHandler = (o, a) => TriList.UShortInput[ModalDialog.TimerGaugeJoin].UShortValue =
+                //    (ushort)(gauge.UShortValue * 65535 / 100);
+                //gauge.OutputChange += gaugeHandler;
 
+                // Attach timer things to modal
+                CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange += ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
+                CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange += ShutdownPromptTimer_PercentFeedback_OutputChange;
+               
                 // respond to offs by cancelling dialog
                 var onFb = CurrentRoom.OnFeedback;
                 EventHandler<EventArgs> offHandler = null;
@@ -503,7 +510,7 @@ namespace PepperDash.Essentials
                         EndMeetingButtonSig.BoolValue = false;
                         PowerDownModal.HideDialog();
                         onFb.OutputChange -= offHandler;
-                        gauge.OutputChange -= gaugeHandler;
+                        //gauge.OutputChange -= gaugeHandler;
                     }
                 };
                 onFb.OutputChange += offHandler;
@@ -528,6 +535,9 @@ namespace PepperDash.Essentials
         {
             Debug.Console(2, "*#*UI shutdown prompt finished");
             EndMeetingButtonSig.BoolValue = false;
+            CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange -= ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
+            CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange -= ShutdownPromptTimer_PercentFeedback_OutputChange;
+
         }
 
         /// <summary>
@@ -541,6 +551,22 @@ namespace PepperDash.Essentials
             if (PowerDownModal != null)
                 PowerDownModal.HideDialog();
             EndMeetingButtonSig.BoolValue = false;
+
+            CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange += ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
+            CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange -= ShutdownPromptTimer_PercentFeedback_OutputChange;
+        }
+
+        void ShutdownPromptTimer_TimeRemainingFeedback_OutputChange(object sender, EventArgs e)
+        {
+
+            var message = string.Format("Meeting will end in {0} seconds", (sender as StringFeedback).StringValue);
+            TriList.StringInput[ModalDialog.MessageTextJoin].StringValue = message;
+        }
+
+        void ShutdownPromptTimer_PercentFeedback_OutputChange(object sender, EventArgs e)
+        {
+            var value = (ushort)((sender as IntFeedback).UShortValue * 65535 / 100);
+            TriList.UShortInput[ModalDialog.TimerGaugeJoin].UShortValue = value;
         }
 
         /// <summary>

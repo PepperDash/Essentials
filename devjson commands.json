@@ -7,3 +7,5 @@ devjson:1 {"deviceKey":"timer","methodName":"Start" }
 devjson:1 {"deviceKey":"timer","methodName":"Cancel" }
 
 devjson:1 {"deviceKey":"timer","methodName":"Reset" }
+
+devjson:1 {"deviceKey":"room1","methodName":"Shutdown" }

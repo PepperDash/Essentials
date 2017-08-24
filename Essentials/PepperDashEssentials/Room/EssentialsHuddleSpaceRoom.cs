@@ -78,6 +78,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public string SourceListKey { get; set; }
 
+        public string DefaultSourceItem { get; set; }
+
 		/// <summary>
 		/// If room is off, enables power on to last source. Default true
 		/// </summary>
@@ -189,6 +191,15 @@ namespace PepperDash.Essentials
         public override void Shutdown()
         {
             RunRouteAction("roomOff");
+        }
+
+        /// <summary>
+        /// Routes the default source item, if any
+        /// </summary>
+        public void RunDefaultRoute()
+        {
+            if (DefaultSourceItem != null)
+                RunRouteAction(DefaultSourceItem);
         }
 
         /// <summary>
