@@ -215,9 +215,7 @@ namespace PepperDash.Essentials
             //TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>
             //    ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
 
-#warning CHANGE BACK THIS JOIN NUMBER to GearHeaderButtonPress!!!!!!
-
-            TriList.SetSigHeldAction(UIBoolJoin.GearButtonVisible, 2000,
+            TriList.SetSigHeldAction(UIBoolJoin.GearHeaderButtonPress, 2000,
                 () => ShowInterlockedModal(UIBoolJoin.TechPanelSetupVisible));
 
             TriList.SetSigFalseAction(UIBoolJoin.TechPagesExitButton, () =>
