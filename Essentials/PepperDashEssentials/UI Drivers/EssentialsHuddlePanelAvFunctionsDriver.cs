@@ -215,20 +215,11 @@ namespace PepperDash.Essentials
             //TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>
             //    ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
 
-#warning Add press and hold to gear button here
 #warning CHANGE BACK THIS JOIN NUMBER to GearHeaderButtonPress!!!!!!
-            // Hold button
-            CTimer GearButtonHoldTimer = null;
-            TriList.SetBoolSigAction(UIBoolJoin.GearButtonVisible, b => { //GearHeaderButtonPress
-                if (b)
-                    GearButtonHoldTimer = new CTimer(o =>
-                    {
-                        if (TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue) //GearHeaderButtonPress
-                            ShowInterlockedModal(UIBoolJoin.TechPanelSetupVisible);
-                    }, 2000);
-                else if (GearButtonHoldTimer != null)
-                    GearButtonHoldTimer.Stop();
-            });
+
+            TriList.SetSigHeldAction(UIBoolJoin.GearButtonVisible, 2000,
+                () => ShowInterlockedModal(UIBoolJoin.TechPanelSetupVisible));
+
             TriList.SetSigFalseAction(UIBoolJoin.TechPagesExitButton, () =>
                 HideCurrentInterlockedModal());
             TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = true;

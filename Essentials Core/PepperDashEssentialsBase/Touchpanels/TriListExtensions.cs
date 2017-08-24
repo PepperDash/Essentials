@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
@@ -58,6 +60,36 @@ namespace PepperDash.Essentials.Core
 		{
 			return sig.SetBoolSigAction(b => { if (!b) a(); });
 		}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tl"></param>
+        /// <param name="sigNum"></param>
+        /// <param name="heldAction"></param>
+        /// <returns></returns>
+        public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction)
+        {
+            CTimer heldTimer = null;
+            return tl.SetBoolSigAction(sigNum, press =>
+            {
+                if (press)
+                {
+                    // Could insert a pressed action here
+                    heldTimer = new CTimer(o =>
+                    {
+                        // if still held and there's an action
+                        if (tl.BooleanInput[sigNum].BoolValue && heldAction != null)
+                            // Hold action here
+                            heldAction();
+                    }, heldMs);
+                }
+
+                else if (heldTimer != null) // released
+                    heldTimer.Stop();
+                // could also revise this else to fire a released action as well as cancel the timer
+            });
+        }
 
 
 		/// <summary>
