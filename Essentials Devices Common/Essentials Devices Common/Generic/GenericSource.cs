@@ -12,7 +12,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class GenericSource : Device, IUiDisplayInfo, IRoutingOutputs
+	public class GenericSource : Device, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
 	{
 
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeNoControls; } }
@@ -32,5 +32,11 @@ namespace PepperDash.Essentials.Devices.Common
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
 		#endregion
+
+        #region IUsageTracking Members
+
+        public UsageTracking UsageTracker { get; set; }
+
+        #endregion
 	}
 }

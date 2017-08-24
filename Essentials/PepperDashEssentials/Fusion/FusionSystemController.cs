@@ -38,10 +38,17 @@ namespace PepperDash.Essentials.Fusion
 
 		StatusMonitorCollection ErrorMessageRollUp;
 
-		StringSigData SourceNameSig;
+		StringSigData CurrentRoomSourceNameSig;
 
-        //ProcessorEthernet Info
-#region 
+        #region System Info Sigs
+        StringSigData SystemName;
+        StringSigData Model;
+        StringSigData SerialNumber;
+        StringSigData Uptime;
+        #endregion
+
+
+        #region Processor Info Sigs
         StringSigData Ip1;
         StringSigData Ip2;
         StringSigData Gateway;
@@ -53,7 +60,16 @@ namespace PepperDash.Essentials.Fusion
         StringSigData Mac2;
         StringSigData NetMask1;
         StringSigData NetMask2;
-#endregion
+        StringSigData Firmware;
+
+        StringSigData[] Program = new StringSigData[10];
+        #endregion
+
+        #region Default Display Source Sigs
+
+        BooleanSigData[] Source = new BooleanSigData[10];
+
+        #endregion
 
         RoomSchedule CurrentSchedule;
 
@@ -130,33 +146,6 @@ namespace PepperDash.Essentials.Fusion
 			SetUpDisplay();
 			SetUpError();
             SetUpOccupancy();
-            
-			// test assets --- THESE ARE BOTH WIRED TO AssetUsage somewhere internally.
-            //var tempAsset1 = new StaticAsset();
-            //var tempAsset2 = new StaticAsset();
-
-
-            ////Check for existing GUID
-            //if (GuidFileExists)
-            //{
-            //    tempAsset1 = StaticAssets.FirstOrDefault(a => a.Number.Equals(1));
-
-            //    tempAsset2 = StaticAssets.FirstOrDefault(a => a.Number.Equals(2));
-            //}
-            //else
-            //{
-            //    tempAsset1 = new StaticAsset(1, "Test Asset 1", "Test Asset 1", "");
-            //    StaticAssets.Add(tempAsset1);
-
-            //    tempAsset2 = new StaticAsset(2, "Test Asset 2", "Test Asset 2", "");
-            //    StaticAssets.Add(tempAsset2);
-            //}
-
-            //var ta1 = FusionRoom.CreateStaticAsset(tempAsset1.Number, tempAsset1.Name, tempAsset1.Type, tempAsset1.InstanceID);
-            //ta1.AssetError.InputSig.StringValue = "This should be error";
-
-            //var ta2 = FusionRoom.CreateStaticAsset(tempAsset2.Number, tempAsset2.Name, tempAsset2.Type, tempAsset2.InstanceID);
-            //ta2.AssetUsage.InputSig.StringValue = "This should be usage";
             
             // Make it so!   
             FusionRVI.GenerateFileForAllFusionDevices();
@@ -287,7 +276,9 @@ namespace PepperDash.Essentials.Fusion
 
 			// Room to fusion room
 			Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
-			SourceNameSig = FusionRoom.CreateOffsetStringSig(84, "Source - Name", eSigIoMask.InputSigOnly);
+
+            // Moved to 
+			CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(84, "Display 1 - Current Source", eSigIoMask.InputSigOnly);
 			// Don't think we need to get current status of this as nothing should be alive yet. 
 			Room.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSourceInfoChange);
 
@@ -298,25 +289,9 @@ namespace PepperDash.Essentials.Fusion
 			FusionRoom.ErrorMessage.InputSig.StringValue =
 				"3: 7 Errors: This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;";
 
-            // Processor Info
+            GetProcessorEthernetValues();
 
-            FusionRoom.CreateOffsetStringSig(50, "Info - Processor - System Name", eSigIoMask.InputSigOnly);
-            FusionRoom.CreateOffsetStringSig(51, "Info - Processor - Model", eSigIoMask.InputSigOnly);
-            FusionRoom.CreateOffsetStringSig(52, "Info - Processor - Serial Number", eSigIoMask.InputSigOnly);
-            FusionRoom.CreateOffsetStringSig(53, "Info - Processor - Uptime", eSigIoMask.InputSigOnly);
-            Ip1 = FusionRoom.CreateOffsetStringSig(54, "Info - Processor - IP 1", eSigIoMask.InputSigOnly);
-            Ip2 = FusionRoom.CreateOffsetStringSig(55, "Info - Processor - IP 2", eSigIoMask.InputSigOnly);
-            Gateway = FusionRoom.CreateOffsetStringSig(56, "Info - Processor - Gateway", eSigIoMask.InputSigOnly);
-            Hostname = FusionRoom.CreateOffsetStringSig(57, "Info - Processor - Hostname", eSigIoMask.InputSigOnly);
-            Domain = FusionRoom.CreateOffsetStringSig(58, "Info - Processor - Domain", eSigIoMask.InputSigOnly);
-            Dns1 = FusionRoom.CreateOffsetStringSig(59, "Info - Processor - DNS 1", eSigIoMask.InputSigOnly);
-            Dns2 = FusionRoom.CreateOffsetStringSig(60, "Info - Processor - DNS 2", eSigIoMask.InputSigOnly);
-            Mac1 = FusionRoom.CreateOffsetStringSig(61, "Info - Processor - MAC 1", eSigIoMask.InputSigOnly);
-            Mac2 = FusionRoom.CreateOffsetStringSig(62, "Info - Processor - MAC 2", eSigIoMask.InputSigOnly);
-            NetMask1 = FusionRoom.CreateOffsetStringSig(63, "Info - Processor - Net Mask 1", eSigIoMask.InputSigOnly);
-            NetMask2 = FusionRoom.CreateOffsetStringSig(64, "Info - Processor - Net Mask 2", eSigIoMask.InputSigOnly);
-
-            SetProcessorEthernetValues();
+            GetProcessorInfo();
 
             CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
         }
@@ -325,14 +300,33 @@ namespace PepperDash.Essentials.Fusion
         {
             if (ethernetEventArgs.EthernetEventType == eEthernetEventType.LinkUp)
             {
-                SetProcessorEthernetValues();
+                GetProcessorEthernetValues();
             }
         }
 
-        void SetProcessorEthernetValues()
+        void GetSystemInfo()
         {
+            SystemName.InputSig.StringValue = Room.Name;
+            Model.InputSig.StringValue = InitialParametersClass.ControllerPromptName;
+            //SerialNumber.InputSig.StringValue = InitialParametersClass.
+        }
+
+        void GetProcessorEthernetValues()
+        {
+            Ip1 = FusionRoom.CreateOffsetStringSig(50, "Info - Processor - IP 1", eSigIoMask.InputSigOnly);
+            Ip2 = FusionRoom.CreateOffsetStringSig(51, "Info - Processor - IP 2", eSigIoMask.InputSigOnly);
+            Gateway = FusionRoom.CreateOffsetStringSig(52, "Info - Processor - Gateway", eSigIoMask.InputSigOnly);
+            Hostname = FusionRoom.CreateOffsetStringSig(53, "Info - Processor - Hostname", eSigIoMask.InputSigOnly);
+            Domain = FusionRoom.CreateOffsetStringSig(54, "Info - Processor - Domain", eSigIoMask.InputSigOnly);
+            Dns1 = FusionRoom.CreateOffsetStringSig(55, "Info - Processor - DNS 1", eSigIoMask.InputSigOnly);
+            Dns2 = FusionRoom.CreateOffsetStringSig(56, "Info - Processor - DNS 2", eSigIoMask.InputSigOnly);
+            Mac1 = FusionRoom.CreateOffsetStringSig(57, "Info - Processor - MAC 1", eSigIoMask.InputSigOnly);
+            Mac2 = FusionRoom.CreateOffsetStringSig(58, "Info - Processor - MAC 2", eSigIoMask.InputSigOnly);
+            NetMask1 = FusionRoom.CreateOffsetStringSig(59, "Info - Processor - Net Mask 1", eSigIoMask.InputSigOnly);
+            NetMask2 = FusionRoom.CreateOffsetStringSig(60, "Info - Processor - Net Mask 2", eSigIoMask.InputSigOnly);
+
+            // Interface =0
             Ip1.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
-            Ip2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1);
             Gateway.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_ROUTER, 0);
             Hostname.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
             Domain.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, 0);
@@ -343,9 +337,51 @@ namespace PepperDash.Essentials.Fusion
                 Dns2.InputSig.StringValue = dnsServers[1];
 
             Mac1.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
-            Mac2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 1);
             NetMask1.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, 0);
-            NetMask2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, 1);
+
+            // Interface 1
+
+            if (InitialParametersClass.NumberOfEthernetInterfaces > 1)      // Only get these values if the processor has more than 1 NIC
+            {
+                Ip2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 1);
+                Mac2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 1);
+                NetMask2.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, 1);
+            }
+        }
+
+        void GetProcessorInfo()
+        {
+            //SystemName = FusionRoom.CreateOffsetStringSig(50, "Info - Processor - System Name", eSigIoMask.InputSigOnly);
+            //Model = FusionRoom.CreateOffsetStringSig(51, "Info - Processor - Model", eSigIoMask.InputSigOnly);
+            //SerialNumber = FusionRoom.CreateOffsetStringSig(52, "Info - Processor - Serial Number", eSigIoMask.InputSigOnly);
+            //Uptime = FusionRoom.CreateOffsetStringSig(53, "Info - Processor - Uptime", eSigIoMask.InputSigOnly);
+
+            Firmware = FusionRoom.CreateOffsetStringSig(61, "Info - Processor - Firmware", eSigIoMask.InputSigOnly);
+
+            for (int i = 0; i < Global.ControlSystem.NumProgramsSupported; i++)
+            {
+                var join = 62 + i;
+                var progNum = i + 1;
+                Program[i] = FusionRoom.CreateOffsetStringSig((uint)join, string.Format("Info - Processor - Program {0}", progNum), eSigIoMask.InputSigOnly);
+            }
+
+            Firmware.InputSig.StringValue = InitialParametersClass.FirmwareVersion;
+
+            var programs = ProcessorProgReg.GetProcessorProgReg();
+
+            for (int i = 1; i < Global.ControlSystem.NumProgramsSupported; i++)
+            {
+                var join = 62 + i;
+                var progNum = i + 1;
+                if (programs[i].Exists)
+                    Program[i].InputSig.StringValue = programs[i].Name;
+            }
+            
+        }
+
+        void GetTouchpanelInfo()
+        {
+            // TODO Get IP and Project Name from TP
         }
 
         void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
@@ -818,7 +854,6 @@ namespace PepperDash.Essentials.Fusion
 						break;
 				}
 
-
                 foreach (var kvp in dict)
                 {
                     var usageDevice = kvp.Value.SourceDevice as IUsageTracking;
@@ -838,7 +873,6 @@ namespace PepperDash.Essentials.Fusion
 					Room.SourceListKey, Room.Key);
 			}
 		}
-
 
         /// <summary>
         /// Collects usage data from source and sends to Fusion
@@ -861,8 +895,9 @@ namespace PepperDash.Essentials.Fusion
             //String Format:  "USAGE||[Date YYYY-MM-DD]||[Time HH-mm-ss]||TIME||[Asset_Type]||[Asset_Name]||[Minutes_used]||[Asset_ID]||[Meeting_ID]"
             // [Asset_ID] property does not appear to be used in Crestron SSI examples.  They are sending "-" instead so that's what is replicated here
             string deviceUsage = string.Format("USAGE||{0}||{1}||TIME||{2}||{3}||{4}||{5}||{6})", e.UsageEndTime.ToString("YYYY-MM-DD"), e.UsageEndTime.ToString("HH-mm-ss"),
-                group, device.Name, e.MinutesUsed, "-", currentMeetingId); 
+                group, device.Name, e.MinutesUsed, "-", currentMeetingId);
 
+            Debug.Console(1, this, "Device usage for: {0} ended at {1}. In use for {2} minutes", device.Name, e.UsageEndTime, e.MinutesUsed);
 
             FusionRoom.DeviceUsage.InputSig.StringValue = deviceUsage;
         }
@@ -926,7 +961,7 @@ namespace PepperDash.Essentials.Fusion
                 {
                     if (attrNum > 10)
                         continue;
-                    attrName = "Online - Touch Panel " + attrNum;
+                    attrName = "Online - XPanel " + attrNum;
                     attrNum += 160;
 #warning should this be 160
                 }
@@ -998,6 +1033,12 @@ namespace PepperDash.Essentials.Fusion
             if (defaultDisplay is IDisplayUsage)
                 (defaultDisplay as IDisplayUsage).LampHours.LinkInputSig(FusionRoom.DisplayUsage.InputSig);
 
+
+
+            MapDisplayToRoomJoins(1, 158, defaultDisplay);
+
+            //Room.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSingleSourceChange);
+
 			// static assets --------------- testing
 			// Make a display asset
             string dispAssetInstanceId;
@@ -1008,14 +1049,14 @@ namespace PepperDash.Essentials.Fusion
 			    dispAssetInstanceId = tempAsset.InstanceID;
             else
             {
-                var nextSlotNum = FusionAssets.Count + 1;
+                var nextSlotNum = FusionAssets.Count + 3;   //Account for slot number offset
 
                 tempAsset = new FusionAsset((uint)nextSlotNum, defaultDisplay.Name, "Display", "");
                 FusionAssets.Add(tempAsset);
                 dispAssetInstanceId = tempAsset.InstanceID;
             }
 
-            var dispAsset = FusionRoom.CreateStaticAsset(3, defaultDisplay.Name, "Display", dispAssetInstanceId);
+            var dispAsset = FusionRoom.CreateStaticAsset(tempAsset.Number, defaultDisplay.Name, "Display", dispAssetInstanceId);
 			dispAsset.PowerOn.OutputSig.UserObject = dispPowerOnAction;
 			dispAsset.PowerOff.OutputSig.UserObject = dispPowerOffAction;
             defaultDisplay.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
@@ -1023,7 +1064,62 @@ namespace PepperDash.Essentials.Fusion
 			// Use extension methods
             dispAsset.TrySetMakeModel(defaultDisplay);
             dispAsset.TryLinkAssetErrorToCommunication(defaultDisplay);
+
+            
 		}
+
+        /// <summary>
+        /// Maps room attributes to a display at a specified index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="display"></param>
+        void MapDisplayToRoomJoins(int displayIndex, int joinOffset, DisplayBase display)
+        {
+            string displayName = string.Format("Display {0} - ", displayIndex);
+
+            var defaultDisplayPowerOn = FusionRoom.CreateOffsetBoolSig((uint)joinOffset, displayIndex + "Power On", eSigIoMask.InputOutputSig);
+            defaultDisplayPowerOn.OutputSig.UserObject = new Action<bool>(b => { if (!b) display.PowerOn(); });
+            display.PowerIsOnFeedback.LinkInputSig(defaultDisplayPowerOn.InputSig);
+
+            var defaultDisplayPowerOff = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 1, displayIndex + "Power Off", eSigIoMask.InputOutputSig);
+            defaultDisplayPowerOn.OutputSig.UserObject = new Action<bool>(b => { if (!b) display.PowerOff(); }); ;
+            display.PowerIsOnFeedback.LinkInputSig(defaultDisplayPowerOn.InputSig);
+
+            if(display == Room.DefaultDisplay)
+            {
+                var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 8, displayIndex + "Source None", eSigIoMask.InputOutputSig);
+                defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b => { if (!b) Room.RunRouteAction("$off"); }); ;
+                display.PowerIsOnFeedback.LinkInputSig(defaultDisplaySourceNone.InputSig);
+
+                var dict = ConfigReader.ConfigObject.GetSourceListForKey(Room.SourceListKey);
+
+                foreach (var item in dict)
+                {
+                    if(item.Key != "roomOff")
+                    {
+                        var defaultDisplaySource = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + (uint)item.Value.Order + 9 , string.Format("{0}Source {1}", displayIndex, item.Value.Order), eSigIoMask.InputOutputSig);
+                        defaultDisplaySource.OutputSig.UserObject = new Action<bool>(b => { if (!b) Room.RunRouteAction(item.Value.SourceKey); }); ;
+
+#warning Figure out how to link these sigs together
+                        //defaultDisplaySource.InputSig = Source[item.Value.Order].InputSig;
+                    }
+
+                }
+            }
+        }
+
+        //void Room_CurrentSingleSourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        //{
+        //    for (int i = 1; i <= Source.Length; i++)
+        //    {
+        //        Source[i].InputSig.BoolValue = false;
+        //    }
+
+        //    Source[info.Order].InputSig.BoolValue = true;
+
+        //    // Need to check for current source key against source list and update Source[] BooleanSigData as appropriate
+
+        //}
 
 		void SetUpError()
 		{
@@ -1047,16 +1143,12 @@ namespace PepperDash.Essentials.Fusion
 
 		}
 
-
         void SetUpOccupancy()
         {
 
-            return;
-
-
 #warning Add actual object logic check here
             //if (Room.OccupancyObj != null)
-            //{
+            //{ 
                 string occAssetId;
 
                 var tempAsset = FusionAssets.FirstOrDefault(a => a.Type.Equals("Occupancy Sensor"));
@@ -1065,16 +1157,19 @@ namespace PepperDash.Essentials.Fusion
                     occAssetId = tempAsset.InstanceID;
                 else
                 {
-                    var nextAssetNum = FusionAssets.Count + 1;
+                    var nextAssetNum = FusionAssets.Count + 3; //Account for slot number offset
 
                     tempAsset = new FusionAsset((uint)nextAssetNum, "Occupancy Sensor", "Occupancy Sensor", "");
                     FusionAssets.Add(tempAsset);
                     occAssetId = tempAsset.InstanceID;
                 }
 
-                FusionRoom.AddAsset(eAssetType.OccupancySensor, tempAsset.Number, tempAsset.Name, tempAsset.Type, tempAsset.InstanceID);
+                var occSensorAsset = FusionRoom.CreateOccupancySensorAsset(tempAsset.Number, tempAsset.Name, tempAsset.Type, occAssetId);
+                //FusionRoom.AddAsset(eAssetType.OccupancySensor, tempAsset.Number, tempAsset.Name, tempAsset.Type, tempAsset.InstanceID);
 
-                ((FusionOccupancySensor)FusionRoom.UserConfigurableAssetDetails[tempAsset.Number].Asset).RoomOccupied.InputSig.BoolValue = OccupancyStatusSig.InputSig.BoolValue;
+                occSensorAsset.RoomOccupied.AddSigToRVIFile = true;
+
+                // use Room.OccObject.RoomOccupiedFeedback.LinkInputSig(occSensorAsset.InputSig);
             //}
         }
 
@@ -1110,7 +1205,7 @@ namespace PepperDash.Essentials.Fusion
 				if (SourceToFeedbackSigs.ContainsKey(dev))
 					SourceToFeedbackSigs[dev].BoolValue = true;
 				var name = (room == null ? "" : room.Name);
-				SourceNameSig.InputSig.StringValue = name;
+				CurrentRoomSourceNameSig.InputSig.StringValue = info.SourceDevice.Name;
 			}
 		}
 
@@ -1200,14 +1295,19 @@ namespace PepperDash.Essentials.Fusion
 		/// <returns>the new asset</returns>
 		public static FusionStaticAsset CreateStaticAsset(this FusionRoom fr, uint number, string name, string type, string instanceId)
 		{            
-            //if(string.IsNullOrEmpty(instanceId))
-            //    instanceId = Guid.NewGuid().ToString();
-
-            Debug.Console(0, "Creating Fusion Static Asset '{0}' with GUID: '{1}'", name, instanceId);
+            Debug.Console(0, "Adding Fusion Static Asset '{0}' to slot {1} with GUID: '{2}'", name, number, instanceId);
 
 			fr.AddAsset(eAssetType.StaticAsset, number, name, type, instanceId);
 			return fr.UserConfigurableAssetDetails[number].Asset as FusionStaticAsset;
 		}
+
+        public static FusionOccupancySensor CreateOccupancySensorAsset(this FusionRoom fr, uint number, string name, string type, string instanceId)
+        {
+            Debug.Console(0, "Adding Fusion Occupancy Sensor Asset '{0}' to slot {1} with GUID: '{2}'", name, number, instanceId);
+
+            fr.AddAsset(eAssetType.OccupancySensor, number, name, type, instanceId);
+            return fr.UserConfigurableAssetDetails[number].Asset as FusionOccupancySensor;
+        }
 	}
 
 	//************************************************************************************************
