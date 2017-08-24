@@ -191,6 +191,15 @@ namespace PepperDash.Essentials
 					Debug.Console(2, this, "Action {0} has {1} steps",
 						item.SourceKey, item.RouteList.Count);
 
+                    // End usage timer on last source
+                    if (!string.IsNullOrEmpty(LastSourceKey))
+                    {
+                        var lastSource = dict[LastSourceKey].SourceDevice;
+
+                        if (lastSource != null && lastSource is IUsageTracking)
+                            (lastSource as IUsageTracking).UsageTracker.EndDeviceUsage();
+                    }
+
 					// Let's run it
                     if (routeKey.ToLower() != "roomoff")
                     {
@@ -226,6 +235,13 @@ namespace PepperDash.Essentials
 						else
 							DoRoute(route);
 					}
+
+                    // Start usage timer on routed source
+                    if (item.SourceDevice is IUsageTracking)
+                    {
+                        (item.SourceDevice as IUsageTracking).UsageTracker.StartDeviceUsage();
+                    }
+
 
 					// Set volume control on room, using default if non provided
 					IBasicVolumeControls volDev = null;
