@@ -79,6 +79,11 @@ namespace PepperDash.Essentials
 		EssentialsHuddleSpaceRoom _CurrentRoom;
 
         /// <summary>
+        /// 
+        /// </summary>
+        uint CurrentInterlockedModalJoin;
+
+        /// <summary>
         /// For hitting feedback
         /// </summary>
         BoolInputSig ShareButtonSig;
@@ -139,6 +144,8 @@ namespace PepperDash.Essentials
 		/// Will auto-timeout a power off
 		/// </summary>
 		CTimer PowerOffTimer;
+
+        ModalDialog PowerDownModal;
 
         ModalDialog WarmingCoolingModal;
 
@@ -338,16 +345,11 @@ namespace PepperDash.Essentials
         /// </summary>
         void ShareButtonPressed()
         {
-            //if (!_CurrentRoom.OnFeedback.BoolValue)
-            //{
-                ShareButtonSig.BoolValue = true;
-                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
-                TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
-                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
-            //}
+            ShareButtonSig.BoolValue = true;
+            TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
+            TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
+            TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
         }
-
-        uint CurrentInterlockedModalJoin;
 
         void ShowInterlockedModal(uint join)
         {
@@ -458,8 +460,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public void PowerButtonPressed()
 		{
-            var room = CurrentRoom;
-			if (!room.OnFeedback.BoolValue || room.ShutdownPromptTimer.IsRunningFeedback.BoolValue) 
+			if (!CurrentRoom.OnFeedback.BoolValue 
+                || CurrentRoom.ShutdownPromptTimer.IsRunningFeedback.BoolValue) 
                 return;
 
             CurrentRoom.StartShutdown(ShutdownType.Manual);
@@ -472,7 +474,6 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_HasStarted(object sender, EventArgs e)
         {
-            
             // Do we need to check where the UI is? No?
             var timer = CurrentRoom.ShutdownPromptTimer;
             EndMeetingButtonSig.BoolValue = true;
@@ -480,7 +481,7 @@ namespace PepperDash.Essentials
 
             if (CurrentRoom.ShutdownType == ShutdownType.Manual)
             {
-                var modal = new ModalDialog(TriList);
+                PowerDownModal = new ModalDialog(TriList);
                 var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);
 
                 // figure out a cleaner way to update gauge
@@ -498,14 +499,14 @@ namespace PepperDash.Essentials
                     if (!onFb.BoolValue)
                     {
                         EndMeetingButtonSig.BoolValue = false;
-                        modal.HideDialog();
+                        PowerDownModal.HideDialog();
                         onFb.OutputChange -= offHandler;
                         gauge.OutputChange -= gaugeHandler;
                     }
                 };
                 onFb.OutputChange += offHandler;
 
-                modal.PresentModalDialog(2, "End Meeting", "Power", message, "Cancel", "End Meeting Now", true, true,
+                PowerDownModal.PresentModalDialog(2, "End Meeting", "Power", message, "Cancel", "End Meeting Now", true, true,
                     but =>
                     {
                         if (but != 2) // any button except for End cancels
@@ -535,7 +536,10 @@ namespace PepperDash.Essentials
         void ShutdownPromptTimer_WasCancelled(object sender, EventArgs e)
         {
             Debug.Console(2, "UI shutdown prompt cancelled");
-            ShareButtonSig.BoolValue = true; // restore Share fb
+            if (PowerDownModal != null)
+                PowerDownModal.HideDialog();
+            //CurrentRoom_SyncOnFeedback();
+            //ShareButtonSig.BoolValue = true; // restore Share fb
             EndMeetingButtonSig.BoolValue = false;
         }
 
@@ -550,27 +554,6 @@ namespace PepperDash.Essentials
 				PowerOffTimer = null;
 			}
 		}
-
-		/// <summary>
-		/// Runs the power off function on the current room
-		/// </summary>
-        //public void FinishPowerOff()
-        //{
-        //    if (CurrentRoom == null)
-        //        return;
-        //    CurrentRoom.RunRouteAction("roomOff");
-        //    CancelPowerOff();
-        //}
-
-		/// <summary>
-		/// Hides power off pages and stops timer
-		/// </summary>
-        //void CancelPowerOff()
-        //{
-        //    CancelPowerOffTimer();
-        //    TriList.BooleanInput[UIBoolJoin.PowerOffStep1Visible].BoolValue = false;
-        //    TriList.BooleanInput[UIBoolJoin.PowerOffStep2Visible].BoolValue = false;
-        //}
 
 		/// <summary>
 		/// 
@@ -710,9 +693,12 @@ namespace PepperDash.Essentials
             var value = _CurrentRoom.OnFeedback.BoolValue;
             Debug.Console(2, CurrentRoom, "UI: Is on event={0}", value);
             TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
+
             if (value) //ON
             {
                 SetupActivityFooterWhenRoomOn();
+                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
+                TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = true;
             }
