@@ -153,7 +153,6 @@ namespace PepperDash.Essentials.Devices.Displays
         /// /
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="e"></param>
         void Communication_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
         {
             // This is probably not thread-safe buffering
@@ -228,16 +227,19 @@ namespace PepperDash.Essentials.Devices.Displays
             IncomingBuffer = newBytes;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void UpdatePowerFB(byte pb)
         {
             var newVal = pb == 1;
-            Debug.Console(2, this, "NEW POWER STATE={0}, CURRENT={1}", newVal, _PowerIsOn);
+            Debug.Console(2, this, "*#* NEW POWER STATE={0}, CURRENT={1}", newVal, _PowerIsOn);
             if (newVal != _PowerIsOn)
             {
                 CrestronInvoke.BeginInvoke(o =>
                 {
-                    CrestronEnvironment.Sleep(1500);
-                    Debug.Console(2, this, "NEW POWER STATE AFTER PAUSE={0} CURRENT={1}", newVal, _PowerIsOn);
+                    CrestronEnvironment.Sleep(2500);
+                    Debug.Console(2, this, "*#* NEW POWER STATE AFTER PAUSE={0} CURRENT={1}", newVal, _PowerIsOn);
                     if (newVal != _PowerIsOn)
                     {
                         _PowerIsOn = newVal;
@@ -250,7 +252,6 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="b"></param>
         void UpdateVolumeFB(byte b)
         {
             var newVol = (ushort)Scale((double)b, 0, 100, 0, 65535);
@@ -263,6 +264,9 @@ namespace PepperDash.Essentials.Devices.Displays
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void UpdateMuteFb(byte b)
         {
             var newMute = b == 1;
@@ -273,6 +277,9 @@ namespace PepperDash.Essentials.Devices.Displays
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void UpdateInputFb(byte b)
         {
             var newInput = InputPorts.FirstOrDefault(i => i.FeedbackMatchObject.Equals(b));
@@ -334,6 +341,9 @@ namespace PepperDash.Essentials.Devices.Displays
 			}
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
 		public override void PowerOff()
 		{
 			// If a display has unreliable-power off feedback, just override this and

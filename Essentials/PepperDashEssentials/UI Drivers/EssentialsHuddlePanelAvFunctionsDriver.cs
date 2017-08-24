@@ -216,13 +216,17 @@ namespace PepperDash.Essentials
             //    ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
 
 #warning Add press and hold to gear button here
-#warning Hide Gear on ipad for now
-            TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = true;
-            TriList.SetSigFalseAction(UIBoolJoin.GearHeaderButtonPress, () =>
-                ShowInterlockedModal(UIBoolJoin.TechPanelSetupVisible));
-                //ShowInterlockedModal(UIBoolJoin.VolumesPageVisible));
+#warning CHANGE BACK THIS JOIN NUMBER to GearHeaderButtonPress!!!!!!
+            // Hold button
+            TriList.SetSigTrueAction(UIBoolJoin.GearButtonVisible, () => { //GearHeaderButtonPress
+                new CTimer(o => {
+                    if (TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue) //GearHeaderButtonPress
+                        ShowInterlockedModal(UIBoolJoin.TechPanelSetupVisible);
+                }, 2000);
+            });
             TriList.SetSigFalseAction(UIBoolJoin.TechPagesExitButton, () =>
                 HideCurrentInterlockedModal());
+            TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = true;
 
 			// power-related functions
             // Note: some of these are not directly-related to the huddle space UI, but are held over
@@ -357,9 +361,11 @@ namespace PepperDash.Essentials
                 HideCurrentInterlockedModal();
             else
             {
+                // sets the sig true if the join is right
                 TriList.BooleanInput[UIBoolJoin.HelpPageVisible].BoolValue = join == UIBoolJoin.HelpPageVisible;
                 TriList.BooleanInput[UIBoolJoin.RoomHeaderPageVisible].BoolValue = join == UIBoolJoin.RoomHeaderPageVisible;
                 TriList.BooleanInput[UIBoolJoin.VolumesPageVisible].BoolValue = join == UIBoolJoin.VolumesPageVisible;
+                TriList.BooleanInput[UIBoolJoin.TechPanelSetupVisible].BoolValue = join == UIBoolJoin.TechPanelSetupVisible;
                 CurrentInterlockedModalJoin = join;
             }
         }
@@ -524,7 +530,7 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_HasFinished(object sender, EventArgs e)
         {
-            Debug.Console(2, "UI shutdown prompt finished");
+            Debug.Console(2, "*#*UI shutdown prompt finished");
             EndMeetingButtonSig.BoolValue = false;
         }
 
@@ -535,11 +541,9 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_WasCancelled(object sender, EventArgs e)
         {
-            Debug.Console(2, "UI shutdown prompt cancelled");
+            Debug.Console(2, "*#*UI shutdown prompt cancelled");
             if (PowerDownModal != null)
                 PowerDownModal.HideDialog();
-            //CurrentRoom_SyncOnFeedback();
-            //ShareButtonSig.BoolValue = true; // restore Share fb
             EndMeetingButtonSig.BoolValue = false;
         }
 
