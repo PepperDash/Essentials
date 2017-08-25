@@ -138,6 +138,7 @@
     <Compile Include="Devices\IVolumeAndAudioInterfaces.cs" />
     <Compile Include="Display\BasicIrDisplay.cs" />
     <Compile Include="Feedbacks\BoolFeedbackOneShot.cs" />
+    <Compile Include="Ramps and Increments\NumericalHelpers.cs" />
     <Compile Include="Ramps and Increments\UshortSigIncrementer.cs" />
     <Compile Include="Routing\ICardPortsDevice.cs" />
     <Compile Include="InUseTracking\IInUseTracking.cs" />

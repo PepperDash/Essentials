@@ -334,6 +334,7 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.Count = 2;
             TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 1;
             EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
+            ShareButtonSig.BoolValue = CurrentRoom.OnFeedback.BoolValue;
         }
 
         /// <summary>
@@ -529,7 +530,7 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_HasFinished(object sender, EventArgs e)
         {
-            Debug.Console(2, "*#*UI shutdown prompt finished");
+            //Debug.Console(2, "*#*UI shutdown prompt finished");
             EndMeetingButtonSig.BoolValue = false;
             CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange -= ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
             CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange -= ShutdownPromptTimer_PercentFeedback_OutputChange;
@@ -543,10 +544,11 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_WasCancelled(object sender, EventArgs e)
         {
-            Debug.Console(2, "*#*UI shutdown prompt cancelled");
+            //Debug.Console(2, "*#*UI shutdown prompt cancelled");
             if (PowerDownModal != null)
                 PowerDownModal.HideDialog();
             EndMeetingButtonSig.BoolValue = false;
+            ShareButtonSig.BoolValue = CurrentRoom.OnFeedback.BoolValue;
 
             CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange += ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
             CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange -= ShutdownPromptTimer_PercentFeedback_OutputChange;
@@ -663,7 +665,7 @@ namespace PepperDash.Essentials
 						var actualSource = DeviceManager.GetDeviceForKey(srcConfig.SourceKey) as Device;
 						if (actualSource == null)
 						{
-							Debug.Console(0, "Cannot assign missing source '{0}' to source UI list",
+							Debug.Console(1, "Cannot assign missing source '{0}' to source UI list",
 								srcConfig.SourceKey);
 							continue;
 						}
@@ -679,13 +681,11 @@ namespace PepperDash.Essentials
 				TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
                 if (_CurrentRoom.LogoUrl == null)
                 {
-                    Debug.Console(2, _CurrentRoom, "Using default logo");
                     TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = true;
                     TriList.BooleanInput[UIBoolJoin.LogoUrlVisible].BoolValue = false;
                 }
                 else
                 {
-                    Debug.Console(2, _CurrentRoom, "Using logo at URL: {0}", _CurrentRoom.LogoUrl);
                     TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = false;
                     TriList.BooleanInput[UIBoolJoin.LogoUrlVisible].BoolValue = true;
                     TriList.StringInput[UIStringJoin.LogoUrl].StringValue = _CurrentRoom.LogoUrl;
@@ -697,7 +697,6 @@ namespace PepperDash.Essentials
                 _CurrentRoom.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
 
                 // Link up all the change events from the room
-                Debug.Console(2, "UI -- Room is already on={0} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", _CurrentRoom.OnFeedback.BoolValue);
                 _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
                 CurrentRoom_SyncOnFeedback();
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange += CurrentRoom_IsWarmingFeedback_OutputChange;
@@ -726,7 +725,7 @@ namespace PepperDash.Essentials
         void CurrentRoom_SyncOnFeedback()
         {
             var value = _CurrentRoom.OnFeedback.BoolValue;
-            Debug.Console(2, CurrentRoom, "UI: Is on event={0}", value);
+            //Debug.Console(2, CurrentRoom, "UI: Is on event={0}", value);
             TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
 
             if (value) //ON
@@ -736,6 +735,7 @@ namespace PepperDash.Essentials
                 TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = true;
+
             }
             else
             {
@@ -752,7 +752,7 @@ namespace PepperDash.Essentials
         void CurrentRoom_IsWarmingFeedback_OutputChange(object sender, EventArgs e)
         {
             var value = CurrentRoom.IsWarmingUpFeedback.BoolValue;
-            Debug.Console(2, CurrentRoom, "UI: WARMING event={0}", value);
+            //Debug.Console(2, CurrentRoom, "UI: WARMING event={0}", value);
 
             if (value)
             {
@@ -771,7 +771,7 @@ namespace PepperDash.Essentials
         void IsCoolingDownFeedback_OutputChange(object sender, EventArgs e)
         {
             var value = CurrentRoom.IsCoolingDownFeedback.BoolValue;
-            Debug.Console(2, CurrentRoom, "UI: Cooldown event={0}", value);
+            //Debug.Console(2, CurrentRoom, "UI: Cooldown event={0}", value);
 
             if (value)
             {

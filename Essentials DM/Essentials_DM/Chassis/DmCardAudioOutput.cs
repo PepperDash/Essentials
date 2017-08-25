@@ -89,8 +89,10 @@ namespace PepperDash.Essentials.DM
         public void VolumeDown(bool pressRelease)
         {
             if (pressRelease)
-                Output.Volume.CreateRamp(0, 400);
-#warning SCALE THIS RAMP
+            {
+                var remainingRatio = Output.Volume.UShortValue / 65535;
+                Output.Volume.CreateRamp(0, (uint)(400 * remainingRatio));
+            }
             else
                 Output.Volume.StopRamp();
         }
@@ -101,7 +103,10 @@ namespace PepperDash.Essentials.DM
         public void VolumeUp(bool pressRelease)
         {
             if (pressRelease)
+            {
+                var remainingRatio = (65535 - Output.Volume.UShortValue) / 65535;
                 Output.Volume.CreateRamp(65535, 400);
+            }
             else
                 Output.Volume.StopRamp();
         }

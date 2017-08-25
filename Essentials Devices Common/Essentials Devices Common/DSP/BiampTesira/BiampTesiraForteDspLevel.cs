@@ -10,18 +10,6 @@ using System.Text.RegularExpressions;
 
 namespace PepperDash.Essentials.Devices.Common.DSP
 {
-
-    // QUESTIONS:
-    // 
-    // When subscribing, just use the Instance ID for Custom Name?
-
-    // Verbose on subscriptions?
-
-    // ! "publishToken":"name" "value":-77.0
-    // ! "myLevelName" -77
-
-#warning Working here when set aside for config editor work
-
     public class TesiraForteLevelControl : TesiraForteControlPoint, IDspLevelControl, IKeyed
     {
         bool _IsMuted;
