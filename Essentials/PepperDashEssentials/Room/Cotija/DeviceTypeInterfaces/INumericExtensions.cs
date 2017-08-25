@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.Room.Cotija
             controller.AddAction(prefix + "num9", new PressAndHoldAction(dev.Digit0));
             controller.AddAction(prefix + "dash", new PressAndHoldAction(dev.KeypadAccessoryButton1));
             controller.AddAction(prefix + "enter", new PressAndHoldAction(dev.KeypadAccessoryButton2));
-#warning Deal with the Accessory functions on the numpad later
+            // Deal with the Accessory functions on the numpad later
         }
 
         public static void UnlinkActions(this INumericKeypad dev, CotijaSystemController controller)

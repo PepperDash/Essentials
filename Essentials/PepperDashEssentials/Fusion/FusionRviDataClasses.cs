@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.Fusion;
+
+using PepperDash.Core;
 
 namespace PepperDash.Essentials.Fusion
 {
@@ -16,47 +19,144 @@ namespace PepperDash.Essentials.Fusion
         public string RoomName { get; set; }
         public uint IpId { get; set; }
         public string RoomGuid { get; set; }
-        public List<FusionAsset> StaticAssets { get; set; }
+        public FusionOccupancySensorAsset OccupancyAsset { get; set; }
+        public Dictionary<int, FusionAsset> StaticAssets { get; set; }
 
         public FusionRoomGuids()
         {
-            StaticAssets = new List<FusionAsset>();
+            StaticAssets = new Dictionary<int, FusionAsset>();
+            OccupancyAsset = new FusionOccupancySensorAsset();
         }
 
-        public FusionRoomGuids(string roomName, uint ipId, string roomGuid, List<FusionAsset> staticAssets)
+        public FusionRoomGuids(string roomName, uint ipId, string roomGuid, Dictionary<int, FusionAsset> staticAssets)
         {
             RoomName = roomName;
             IpId = ipId;
             RoomGuid = roomGuid;
 
-            StaticAssets = new List<FusionAsset>(staticAssets);
+            StaticAssets = staticAssets;
+            OccupancyAsset = new FusionOccupancySensorAsset();
+        }
+
+        public FusionRoomGuids(string roomName, uint ipId, string roomGuid, Dictionary<int, FusionAsset> staticAssets, FusionOccupancySensorAsset occAsset)
+        {
+            RoomName = roomName;
+            IpId = ipId;
+            RoomGuid = roomGuid;
+
+            StaticAssets = staticAssets;
+            OccupancyAsset = occAsset;
+        }
+
+        /// <summary>
+        /// Generates a new room GUID prefixed by the program slot number and NIC MAC address
+        /// </summary>
+        /// <param name="progSlot"></param>
+        /// <param name="mac"></param>
+        public string GenerateNewRoomGuid(uint progSlot, string mac)
+        {
+            Guid roomGuid = Guid.NewGuid();
+
+            return string.Format("{0}-{1}-{2}", progSlot, mac, roomGuid.ToString());
+        }
+
+
+        /// <summary>
+        /// Adds an asset to the StaticAssets collection and returns the new asset
+        /// </summary>
+        /// <param name="room"></param>
+        /// <param name="uid"></param>
+        /// <param name="assetName"></param>
+        /// <param name="type"></param>
+        /// <param name="instanceId"></param>
+        /// <returns></returns>
+        public FusionAsset AddStaticAsset(FusionRoom room, int uid, string assetName, string type, string instanceId)
+        {
+            var slotNum = GetNextAvailableAssetNumber(room);
+
+            Debug.Console(2, "Adding Fusion Asset: {0} of Type: {1} at Slot Number: {2} with GUID: {3}", assetName, type, slotNum, instanceId);
+
+            var tempAsset = new FusionAsset(slotNum, assetName, type, instanceId);
+
+            StaticAssets.Add(uid, tempAsset);
+
+            return tempAsset;
+        }
+
+        /// <summary>
+        /// Returns the next available slot number in the Fusion UserConfigurableAssetDetails collection
+        /// </summary>
+        /// <param name="room"></param>
+        /// <returns></returns>
+        public static uint GetNextAvailableAssetNumber(FusionRoom room)
+        {
+            uint slotNum = 0;
+
+            foreach (var item in room.UserConfigurableAssetDetails)
+            {
+                if(item.Number > slotNum)
+                    slotNum = item.Number;
+            }
+
+            if (slotNum < 5)
+            {
+                slotNum = 5;
+            }
+            else
+                slotNum = slotNum + 1;
+
+            Debug.Console(2, "#Next available fusion asset number is: {0}", slotNum);
+
+            return slotNum;
+        }
+
+    }
+
+    public class FusionOccupancySensorAsset
+    {
+        // SlotNumber fixed at 4
+
+        public uint SlotNumber { get { return 4; } }
+        public string Name { get { return "Occupancy Sensor"; } }
+        public eAssetType Type { get; set; }
+        public string InstanceId { get; set; }
+
+        public FusionOccupancySensorAsset()
+        {
+        }
+
+        public FusionOccupancySensorAsset(eAssetType type)
+        {
+            Type = type;
+
+            InstanceId = Guid.NewGuid().ToString();
         }
     }
 
     public class FusionAsset
     {
-        public uint Number { get; set; }
+        public uint SlotNumber { get; set; }
         public string Name { get; set; }
-        public string Type { get; set; }
-        public string InstanceID { get; set; }
+        public string Type { get;  set; }
+        public string InstanceId { get;set; }
 
         public FusionAsset()
         {
 
         }
 
-        public FusionAsset(uint slotNum, string assetName, string type, string instanceID)
+        public FusionAsset(uint slotNum, string assetName, string type, string instanceId)
         {
-            Number = slotNum;
+            SlotNumber = slotNum;
             Name = assetName;
             Type = type;
-            if (string.IsNullOrEmpty(instanceID))
+            if (string.IsNullOrEmpty(instanceId))
             {
-                InstanceID = Guid.NewGuid().ToString();
+                InstanceId = Guid.NewGuid().ToString();
             }
             else
             {
-                InstanceID = instanceID;
+                InstanceId = instanceId;
             }
         }
     }

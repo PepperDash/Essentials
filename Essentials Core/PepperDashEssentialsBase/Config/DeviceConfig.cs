@@ -16,6 +16,9 @@ namespace PepperDash.Essentials.Core.Config
         [JsonProperty("key")]
         public string Key { get; set; }
 
+        [JsonProperty("uid")]
+        public int Uid { get; set; }
+
         [JsonProperty("name")]
         public string Name { get; set; }
 

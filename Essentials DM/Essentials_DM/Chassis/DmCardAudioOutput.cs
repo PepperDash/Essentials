@@ -90,7 +90,6 @@ namespace PepperDash.Essentials.DM
         {
             if (pressRelease)
                 Output.Volume.CreateRamp(0, 400);
-#warning SCALE THIS RAMP
             else
                 Output.Volume.StopRamp();
         }

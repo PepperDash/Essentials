@@ -30,8 +30,12 @@ namespace PepperDash.Essentials.Core
         public DateTime UsageStartTime { get; protected set; }
         public DateTime UsageEndTime { get; protected set; }
 
-        public UsageTracking()
+        public Device Parent { get; private set; }
+
+        public UsageTracking(Device parent)
         {
+            Parent = parent;
+   
             InUseTracker = new InUseTracking();
 
             InUseTracker.InUseFeedback.OutputChange +=new EventHandler<EventArgs>(InUseFeedback_OutputChange);
@@ -63,16 +67,26 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void EndDeviceUsage()
         {
-            UsageEndTime = DateTime.Now;
-
-            var timeUsed = UsageEndTime - UsageStartTime;
-
-            var handler = DeviceUsageEnded;
-
-            if (handler != null)
+            try
             {
-                Debug.Console(1, "Device Usage Ended at {1}.  In use for {2} minutes.", UsageEndTime, timeUsed.Minutes);
-                handler(this, new DeviceUsageEventArgs() { UsageEndTime = UsageEndTime, MinutesUsed = timeUsed.Minutes });
+                UsageEndTime = DateTime.Now;
+
+                if (UsageStartTime != null)
+                {
+                    var timeUsed = UsageEndTime - UsageStartTime;
+
+                    var handler = DeviceUsageEnded;
+
+                    if (handler != null)
+                    {
+                        Debug.Console(1, "Device Usage Ended for: {0} at {1}.  In use for {2} minutes.", Parent.Name, UsageEndTime, timeUsed.Minutes);
+                        handler(this, new DeviceUsageEventArgs() { UsageEndTime = UsageEndTime, MinutesUsed = timeUsed.Minutes });
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, "Error ending device usage: {0}", e);
             }
         }
     }
