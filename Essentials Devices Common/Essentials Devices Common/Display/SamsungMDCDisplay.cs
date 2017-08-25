@@ -244,12 +244,12 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <summary>
         /// Updates power status from general updates where source is included.
         /// Compensates for errant standby / power off hiccups by ignoring 
-        /// power off states with input 03
+        /// power off states with input < 0x10
         /// </summary>
         void UpdatePowerFB(byte powerByte, byte inputByte)
         {
             // This should reject errant power feedbacks when switching away from input on standby.
-            if (powerByte == 0x00 && inputByte == 0x03)
+            if (powerByte == 0x00 && inputByte < 0x10)
                 return;
             UpdatePowerFB(powerByte);
         }
