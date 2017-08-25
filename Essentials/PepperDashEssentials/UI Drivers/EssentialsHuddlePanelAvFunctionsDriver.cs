@@ -757,7 +757,7 @@ namespace PepperDash.Essentials
             if (value)
             {
                 WarmingCoolingModal = new ModalDialog(TriList);
-                WarmingCoolingModal.PresentModalDialog(0, "Powering up", "Power", "Room is warming up.  Please wait.",
+                WarmingCoolingModal.PresentModalDialog(0, "Powering Up", "Power", "<p>Room is powering up</p><p>Please wait</p>",
                     "", "", false, false, null);
             }
             else
@@ -776,7 +776,7 @@ namespace PepperDash.Essentials
             if (value)
             {
                 WarmingCoolingModal = new ModalDialog(TriList);
-                WarmingCoolingModal.PresentModalDialog(0, "Shutting down", "Power", "Room is shutting down.  Please wait.",
+                WarmingCoolingModal.PresentModalDialog(0, "Shut Down", "Power", "<p>Room is shutting down</p><p>Please wait</p>",
                     "", "", false, false, null);
             }
             else
