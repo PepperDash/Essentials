@@ -7,6 +7,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
+using PepperDash.Core;
+
 namespace PepperDash.Essentials.Core
 {
 	/// <summary>
@@ -75,11 +77,12 @@ namespace PepperDash.Essentials.Core
             {
                 if (press)
                 {
+
                     // Could insert a pressed action here
                     heldTimer = new CTimer(o =>
                     {
                         // if still held and there's an action
-                        if (tl.BooleanInput[sigNum].BoolValue && heldAction != null)
+                        if (tl.BooleanOutput[sigNum].BoolValue && heldAction != null)
                             // Hold action here
                             heldAction();
                     }, heldMs);

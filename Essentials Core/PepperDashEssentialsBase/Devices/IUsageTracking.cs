@@ -71,7 +71,7 @@ namespace PepperDash.Essentials.Core
 
             if (handler != null)
             {
-                Debug.Console(1, "Device Usage Ended at {1}.  In use for {2} minutes.", UsageEndTime, timeUsed.Minutes);
+                Debug.Console(1, "Device Usage Ended at {0}.  In use for {1} minutes.", UsageEndTime, timeUsed.Minutes);
                 handler(this, new DeviceUsageEventArgs() { UsageEndTime = UsageEndTime, MinutesUsed = timeUsed.Minutes });
             }
         }

@@ -66,18 +66,6 @@ namespace PepperDash.Essentials
 					DeviceManager.ActivateAll();
 					Debug.Console(0, "Essentials load complete\r" +
                         "-------------------------------------------------------------");
-
-                    //********************************************************************
-#warning Remove these test things:
-
-                    var cdt = new SecondsCountdownTimer("timer") { SecondsToCount = 20 };
-                    cdt.WasCancelled += (o,a) => Debug.Console(0, "TIMER CANCELLED FOOLS!");
-                    cdt.IsRunningFeedback.OutputChange += (o, a) => Debug.Console(0, "TIMER Running={0}", cdt.IsRunningFeedback);
-                    cdt.PercentFeedback.OutputChange += (o, a) => Debug.Console(0, "TIMER {0}%", cdt.PercentFeedback);
-                    cdt.TimeRemainingFeedback.OutputChange += (o,a) => Debug.Console(0, "TIMER time: {0}", cdt.TimeRemainingFeedback);
-                    DeviceManager.AddDevice(cdt);
-
-                    //********************************************************************
                 }
 				catch (Exception e)
 				{

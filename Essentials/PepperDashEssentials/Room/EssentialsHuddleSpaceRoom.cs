@@ -246,8 +246,16 @@ namespace PepperDash.Essentials
                     {
                         var lastSource = dict[LastSourceKey].SourceDevice;
 
-                        if (lastSource != null && lastSource is IUsageTracking)
-                            (lastSource as IUsageTracking).UsageTracker.EndDeviceUsage();
+                        try
+                        {
+                            if (lastSource != null && lastSource is IUsageTracking)
+                                (lastSource as IUsageTracking).UsageTracker.EndDeviceUsage();
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.Console(1, this, "EXCEPTION in end usage tracking (257):\r{0}", e); 
+                        }
+
                     }
 
 					// Let's run it

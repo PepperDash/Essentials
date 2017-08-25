@@ -880,7 +880,7 @@ namespace PepperDash.Essentials.Fusion
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void UsageTracker_DeviceUsageEnded(object sender, DeviceUsageEventArgs e)
-        {          
+        {       
             var device = sender as Device;
 
             var configDevice = ConfigReader.ConfigObject.Devices.Where(d => d.Key.Equals(device.Key));

@@ -242,7 +242,8 @@ namespace PepperDash.Essentials.Devices.Displays
                 CrestronInvoke.BeginInvoke(o =>
                 {
                     CrestronEnvironment.Sleep(2500);
-                    Debug.Console(2, this, "*#* NEW POWER STATE AFTER PAUSE={0} CURRENT={1}", _PowerValueIncomingWaitingForCheck, _PowerIsOn);
+                    Debug.Console(2, this, "*#* NEW POWER STATE AFTER PAUSE={0} CURRENT={1}", 
+                        _PowerValueIncomingWaitingForCheck, _PowerIsOn);
                     if (_PowerValueIncomingWaitingForCheck != _PowerIsOn)
                     {
                         _PowerIsOn = _PowerValueIncomingWaitingForCheck;
