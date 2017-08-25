@@ -189,7 +189,7 @@ namespace PepperDash.Essentials.Devices.Displays
                             switch (message[1]) // type byte
                             {
                                 case 0x00: // General status
-                                    UpdatePowerFB(message[2]); // "power" can be misrepresented when the display sleeps
+                                    UpdatePowerFB(message[2], message[5]); // "power" can be misrepresented when the display sleeps
                                     UpdateInputFb(message[5]);
                                     UpdateVolumeFB(message[3]);
                                     UpdateMuteFb(message[4]);
@@ -228,29 +228,30 @@ namespace PepperDash.Essentials.Devices.Displays
             IncomingBuffer = newBytes;
         }
 
-
         /// <summary>
         /// 
         /// </summary>
-        void UpdatePowerFB(byte pb)
+        void UpdatePowerFB(byte powerByte)
         {
-            _PowerValueIncomingWaitingForCheck = pb == 1;
-            Debug.Console(2, this, "*#* NEW POWER STATE={0}, CURRENT={1}", 
-                _PowerValueIncomingWaitingForCheck, _PowerIsOn);
-            if (_PowerValueIncomingWaitingForCheck != _PowerIsOn)
+            var newVal = powerByte == 1;
+            if (newVal != _PowerIsOn)
             {
-                CrestronInvoke.BeginInvoke(o =>
-                {
-                    CrestronEnvironment.Sleep(2500);
-                    Debug.Console(2, this, "*#* NEW POWER STATE AFTER PAUSE={0} CURRENT={1}", 
-                        _PowerValueIncomingWaitingForCheck, _PowerIsOn);
-                    if (_PowerValueIncomingWaitingForCheck != _PowerIsOn)
-                    {
-                        _PowerIsOn = _PowerValueIncomingWaitingForCheck;
-                        PowerIsOnFeedback.FireUpdate();
-                    }
-                });
+                _PowerIsOn = newVal;
+                PowerIsOnFeedback.FireUpdate();
             }
+        }
+
+        /// <summary>
+        /// Updates power status from general updates where source is included.
+        /// Compensates for errant standby / power off hiccups by ignoring 
+        /// power off states with input 03
+        /// </summary>
+        void UpdatePowerFB(byte powerByte, byte inputByte)
+        {
+            // This should reject errant power feedbacks when switching away from input on standby.
+            if (powerByte == 0x00 && inputByte == 0x03)
+                return;
+            UpdatePowerFB(powerByte);
         }
 
         /// <summary>
