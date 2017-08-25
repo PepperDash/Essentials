@@ -24,7 +24,6 @@ namespace PepperDash.Essentials.Devices.Displays
 
 
 		bool _PowerIsOn;
-        bool _PowerValueIncomingWaitingForCheck;
 		bool _IsWarmingUp;
 		bool _IsCoolingDown;
 		ushort _VolumeLevelForSig;
@@ -34,6 +33,7 @@ namespace PepperDash.Essentials.Devices.Displays
         byte[] IncomingBuffer = new byte[]{};
         ActionIncrementer VolumeIncrementer;
         bool VolumeIsRamping;
+        public bool IsInStandby { get; private set; }
 
 		protected override Func<bool> PowerIsOnFeedbackFunc { get { return () => _PowerIsOn; } }
 		protected override Func<bool> IsCoolingDownFeedbackFunc { get { return () => _IsCoolingDown; } }
@@ -181,7 +181,7 @@ namespace PepperDash.Essentials.Devices.Displays
 
                         // Good length, grab the message
                         var message = newBytes.Skip(4).Take(msgLen).ToArray();
-                        Debug.Console(2, this, "Parsing input: {0}", ComTextHelper.GetEscapedText(message));
+                        Debug.Console(2, this, "*#* Parsing input: {0}", ComTextHelper.GetEscapedText(message));
 
                         // At this point, the ack/nak is the first byte
                         if (message[0] == 0x41)
@@ -244,13 +244,20 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <summary>
         /// Updates power status from general updates where source is included.
         /// Compensates for errant standby / power off hiccups by ignoring 
-        /// power off states with input < 0x10
+        /// power off states with input < 0x10 
         /// </summary>
         void UpdatePowerFB(byte powerByte, byte inputByte)
         {
             // This should reject errant power feedbacks when switching away from input on standby.
-            if (powerByte == 0x00 && inputByte < 0x10)
+            if (powerByte == 0x01 && inputByte < 0x10)
+                IsInStandby = true;
+            if (powerByte == 0x00 && IsInStandby) // Ignore power off if coming from standby - glitch
+            {
+                Debug.Console(2, this, "*#* STANDBY GLITCH - IGNORING");
+                IsInStandby = false;
                 return;
+            }
+        
             UpdatePowerFB(powerByte);
         }
 
@@ -311,7 +318,7 @@ namespace PepperDash.Essentials.Devices.Displays
             checksum = checksum & 0x000000FF; // mask off MSBs
             b[b.Length - 1] = (byte)checksum;
             if(Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
-                Debug.Console(2, this, "Sending:{0}", ComTextHelper.GetEscapedText(b));
+                Debug.Console(2, this, "*#* Sending:{0}", ComTextHelper.GetEscapedText(b));
             Communication.SendBytes(b);
         }
 
@@ -364,7 +371,7 @@ namespace PepperDash.Essentials.Devices.Displays
 				// Fake cool-down cycle
 				CooldownTimer = new CTimer(o =>
 					{
-						Debug.Console(2, this, "Cooldown timer ending");
+						Debug.Console(2, this, "*#* Cooldown timer ending");
 						_IsCoolingDown = false;
 						IsCoolingDownFeedback.FireUpdate();
 					}, CooldownTime);
@@ -446,8 +453,8 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <param name="selector"></param>
 		public override void ExecuteSwitch(object selector)
 		{
-            if (!(selector is Action))
-                Debug.Console(1, this, "WARNING: ExecuteSwitch cannot handle type {0}", selector.GetType());
+            //if (!(selector is Action))
+            //    Debug.Console(1, this, "WARNING: ExecuteSwitch cannot handle type {0}", selector.GetType());
          
             if (_PowerIsOn)
                 (selector as Action)();

@@ -302,8 +302,8 @@ namespace PepperDash.Essentials
 					}
 
 					var item = dict[routeKey];
-					Debug.Console(2, this, "Action {0} has {1} steps",
-						item.SourceKey, item.RouteList.Count);
+                    //Debug.Console(2, this, "Action {0} has {1} steps",
+                    //    item.SourceKey, item.RouteList.Count);
 
 					// Let's run it
 					if (routeKey.ToLower() != "roomoff")

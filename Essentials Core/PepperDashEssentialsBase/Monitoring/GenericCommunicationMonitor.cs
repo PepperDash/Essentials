@@ -112,7 +112,7 @@ namespace PepperDash.Essentials.Core
 			StartErrorTimers();
 			if (Client.IsConnected)
 			{
-				Debug.Console(2, this, "Polling");
+				//Debug.Console(2, this, "Polling");
                 if(PollAction != null)
                     PollAction.Invoke();
                 else

@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core
 			var newRoute = destination.GetRouteToSource(source, signalType);
 			if (newRoute == null) return;
 			RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(newRoute);
-			Debug.Console(1, destination, "Executing new route");
+            //Debug.Console(1, destination, "Executing new route");
 			newRoute.ExecuteRoutes();
 		}
 
@@ -80,7 +80,7 @@ namespace PepperDash.Essentials.Core
 					routeDescr = null;
 			}
 
-			Debug.Console(1, destination, "Route{0} discovered", routeDescr == null ? " NOT" : "");
+            //Debug.Console(1, destination, "Route{0} discovered", routeDescr == null ? " NOT" : "");
 			return routeDescr;
 		}
 
@@ -102,7 +102,7 @@ namespace PepperDash.Essentials.Core
 				eRoutingSignalType signalType, int cycle, RouteDescriptor routeTable)
 		{
 			cycle++;
-			Debug.Console(2, destination, "SelectInput-cycle {1}. Finding {2} route back to {0}", source.Key, cycle, signalType);
+			Debug.Console(2, destination, "*#* SelectInput-cycle {1}. Finding {2} route back to {0}", source.Key, cycle, signalType);
 			var destDevInputTies = TieLineCollection.Default.Where(t =>
 				t.DestinationPort.ParentDevice == destination && (t.Type == signalType || t.Type == eRoutingSignalType.AudioVideo));
 
@@ -114,7 +114,7 @@ namespace PepperDash.Essentials.Core
 			RoutingInputPort goodInputPort = null;
 			if (directTie != null) // Found a tie directly to the source
 			{
-				Debug.Console(2, destination, "Found direct tie to {0}**", source.Key);
+				Debug.Console(2, destination, "*#* Found direct tie to {0}**", source.Key);
 				goodInputPort = directTie.DestinationPort;
 			}
 			else // no direct-connect.  Walk back devices.
@@ -149,7 +149,7 @@ namespace PepperDash.Essentials.Core
 			// we have a route on corresponding inputPort. *** Do the route ***
 			if (goodInputPort != null) 
 			{
-				Debug.Console(2, destination, "adding RouteDescriptor");
+                //Debug.Console(2, destination, "adding RouteDescriptor");
 				if (outputPortToUse == null)
 				{
 					// it's a sink device
@@ -161,7 +161,7 @@ namespace PepperDash.Essentials.Core
 				}
 				else // device is merely IRoutingInputOutputs
 					Debug.Console(2, destination, "    No routing. Passthrough device");
-				Debug.Console(2, destination, "Exiting cycle {0}", cycle);
+                //Debug.Console(2, destination, "Exiting cycle {0}", cycle);
 				return true;
 			}
 	

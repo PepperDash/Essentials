@@ -25,7 +25,6 @@ namespace PepperDash.Essentials
                         && CurrentSourceInfo.Type == eSourceListItemType.Route
                         && disp != null
                         && disp.PowerIsOnFeedback.BoolValue;
-                    Debug.Console(2, this, "Display power={0}, has CurrentSource={1}", disp.PowerIsOnFeedback, CurrentSourceInfo != null);
                     return val;
                 };
             }
@@ -221,7 +220,7 @@ namespace PepperDash.Essentials
 			// Run this on a separate thread
 			new CTimer(o =>
 				{
-					Debug.Console(1, this, "Run room action '{0}'", routeKey);
+					Debug.Console(1, this, "Run route action '{0}'", routeKey);
 					var dict = ConfigReader.ConfigObject.GetSourceListForKey(SourceListKey);
 					if(dict == null)
 					{
@@ -238,8 +237,8 @@ namespace PepperDash.Essentials
 					}
 
 					var item = dict[routeKey];
-					Debug.Console(2, this, "Action {0} has {1} steps",
-						item.SourceKey, item.RouteList.Count);
+                    //Debug.Console(2, this, "Action {0} has {1} steps",
+                    //    item.SourceKey, item.RouteList.Count);
 
                     // End usage timer on last source
                     if (!string.IsNullOrEmpty(LastSourceKey))
@@ -253,7 +252,7 @@ namespace PepperDash.Essentials
                         }
                         catch (Exception e)
                         {
-                            Debug.Console(1, this, "EXCEPTION in end usage tracking (257):\r{0}", e); 
+                            Debug.Console(1, this, "*#* EXCEPTION in end usage tracking (257):\r{0}", e); 
                         }
 
                     }
@@ -273,22 +272,23 @@ namespace PepperDash.Essentials
 						// if there is a $defaultAll on route, run two separate
 						if (route.DestinationKey.Equals("$defaultAll", StringComparison.OrdinalIgnoreCase))
 						{
-							var tempAudio = new SourceRouteListItem
+                            // Going to assume a single-path route for now
+							var tempVideo = new SourceRouteListItem
 							{
 								DestinationKey = "$defaultDisplay",
 								SourceKey = route.SourceKey,
 								Type = eRoutingSignalType.Video
 							};
-							DoRoute(tempAudio);
+                            DoRoute(tempVideo);
 
-							var tempVideo = new SourceRouteListItem
-							{
-								DestinationKey = "$defaultAudio",
-								SourceKey = route.SourceKey,
-								Type = eRoutingSignalType.Audio
-							};
-							DoRoute(tempVideo);
-							continue;
+                            //var tempAudio = new SourceRouteListItem
+                            //{
+                            //    DestinationKey = "$defaultAudio",
+                            //    SourceKey = route.SourceKey,
+                            //    Type = eRoutingSignalType.Audio
+                            //};
+                            //DoRoute(tempAudio);
+                            //continue; -- not sure why this was here
 						}
 						else
 							DoRoute(route);
@@ -321,7 +321,12 @@ namespace PepperDash.Essentials
 					CurrentVolumeControls = volDev;
 
 					// store the name and UI info for routes
-                    if (item.SourceKey != null)
+                    if (item.SourceKey == "$off")
+                    {
+                        CurrentSourceInfoKey = routeKey;
+                        CurrentSourceInfo = null;
+                    }
+                    else if (item.SourceKey != null)
                     {
                         CurrentSourceInfoKey = routeKey;
                         CurrentSourceInfo = item;
