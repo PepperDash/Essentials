@@ -888,19 +888,21 @@ namespace PepperDash.Essentials.Fusion
 
             string group = ConfigReader.GetGroupForDeviceKey(deviceTracker.Parent.Key);
 
-            string currentMeetingId = "";
+            string currentMeetingId = "-";
 
             if (CurrentMeeting != null)
                 currentMeetingId = CurrentMeeting.MeetingID;
 
             //String Format:  "USAGE||[Date YYYY-MM-DD]||[Time HH-mm-ss]||TIME||[Asset_Type]||[Asset_Name]||[Minutes_used]||[Asset_ID]||[Meeting_ID]"
             // [Asset_ID] property does not appear to be used in Crestron SSI examples.  They are sending "-" instead so that's what is replicated here
-            string deviceUsage = string.Format("USAGE||{0}||{1}||TIME||{2}||{3}||{4}||{5}||{6})", e.UsageEndTime.ToString("yyyy-MM-dd"), e.UsageEndTime.ToString("HH-mm-ss"),
+            string deviceUsage = string.Format("USAGE||{0}||{1}||TIME||{2}||{3}||-||{4}||-||{5}||{6}||\r\n", e.UsageEndTime.ToString("yyyy-MM-dd"), e.UsageEndTime.ToString("HH:mm:ss"),
                 group, deviceTracker.Parent.Name, e.MinutesUsed, "-", currentMeetingId);
 
             Debug.Console(1, this, "Device usage for: {0} ended at {1}. In use for {2} minutes", deviceTracker.Parent.Name, e.UsageEndTime, e.MinutesUsed);
 
             FusionRoom.DeviceUsage.InputSig.StringValue = deviceUsage;
+
+            Debug.Console(1, this, "Device usage string: {0}", deviceUsage);
         }
 
 
@@ -1094,7 +1096,6 @@ namespace PepperDash.Essentials.Fusion
 
                 var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 8, displayIndex + "Source None", eSigIoMask.InputOutputSig);
                 defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b => { if (!b) Room.RunRouteAction("roomOff"); }); ;
-                display.PowerIsOnFeedback.LinkInputSig(defaultDisplaySourceNone.InputSig);
 
                 var dict = ConfigReader.ConfigObject.GetSourceListForKey(Room.SourceListKey);
 
