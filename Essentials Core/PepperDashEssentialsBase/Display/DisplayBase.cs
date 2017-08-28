@@ -53,7 +53,20 @@ namespace PepperDash.Essentials.Core
 			IsWarmingUpFeedback = new BoolFeedback(CommonBoolCue.IsWarmingUp, IsWarmingUpFeedbackFunc);
 
 			InputPorts = new RoutingPortCollection<RoutingInputPort>();
+
+            PowerIsOnFeedback.OutputChange += new EventHandler<EventArgs>(PowerIsOnFeedback_OutputChange);
 		}
+
+        void PowerIsOnFeedback_OutputChange(object sender, EventArgs e)
+        {
+            if (UsageTracker != null)
+            {
+                if (PowerIsOnFeedback.BoolValue)
+                    UsageTracker.StartDeviceUsage();
+                else
+                    UsageTracker.EndDeviceUsage();
+            }
+        }
 
 		public abstract void PowerOn();
 		public abstract void PowerOff();
