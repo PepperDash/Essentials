@@ -32,6 +32,7 @@ namespace PepperDash.Essentials
                 huddle.LogoUrl = props.Logo.GetUrl();
                 huddle.SourceListKey = props.SourceListKey;
                 huddle.DefaultSourceItem = props.DefaultSourceItem;
+                huddle.DefaultVolume = (ushort)(props.Volumes.Master.Level * 65535 / 100);
                 return huddle;
 			}
 			else if (typeName == "presentation")
@@ -68,6 +69,7 @@ namespace PepperDash.Essentials
         public int ShutdownPromptSeconds { get; set; }
         public EssentialsRoomOccSensorConfig OccupancySensors { get; set; }
         public EssentialsLogoPropertiesConfig Logo { get; set; }
+        public EssentialsRoomVolumesConfig Volumes { get; set; }
 	}
 
 
@@ -120,7 +122,6 @@ namespace PepperDash.Essentials
         public List<string> DisplayKeys { get; set; }
         public string SourceListKey { get; set; }
         public bool HasDsp { get; set; }
-        public EssentialsPresentationVolumesConfig Volumes { get; set; }
 
         public EssentialsPresentationRoomPropertiesConfig()
         {

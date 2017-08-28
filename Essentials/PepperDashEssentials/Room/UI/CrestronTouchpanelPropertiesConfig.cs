@@ -11,6 +11,8 @@
 		public bool UsesSplashPage { get; set; }
 		public bool ShowDate { get; set; }
 		public bool ShowTime { get; set; }
+        public UiSetupPropertiesConfig Setup { get; set; }
+
         /// <summary>
         /// The count of sources that will trigger the "additional" arrows to show on the SRL.
         /// Defaults to 5
@@ -22,4 +24,10 @@
             SourcesOverflowCount = 5;
         }
 	}
+
+    public class UiSetupPropertiesConfig
+    {
+        public bool IsVisible { get; set; }
+    }
+
 }

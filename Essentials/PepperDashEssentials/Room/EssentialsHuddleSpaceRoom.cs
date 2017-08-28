@@ -79,6 +79,8 @@ namespace PepperDash.Essentials
 
         public string DefaultSourceItem { get; set; }
 
+        public ushort DefaultVolume { get; set; }
+
 		/// <summary>
 		/// If room is off, enables power on to last source. Default true
 		/// </summary>
@@ -175,8 +177,18 @@ namespace PepperDash.Essentials
                         }
                     };
 
-                disp.IsWarmingUpFeedback.OutputChange += (o, a) => { IsWarmingUpFeedback.FireUpdate(); };
-                disp.IsCoolingDownFeedback.OutputChange += (o, a) => { IsCoolingDownFeedback.FireUpdate(); };
+                disp.IsWarmingUpFeedback.OutputChange += (o, a) => 
+                { 
+                    IsWarmingUpFeedback.FireUpdate();
+                    if (!IsWarmingUpFeedback.BoolValue)
+                        (DefaultDisplay as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
+                };
+                disp.IsCoolingDownFeedback.OutputChange += (o, a) => 
+                {
+                    IsCoolingDownFeedback.FireUpdate(); 
+                    if (IsCoolingDownFeedback.BoolValue)
+                        (DefaultDisplay as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
+                };
             }
           
 			SourceListKey = "default";
@@ -254,7 +266,6 @@ namespace PepperDash.Essentials
                         {
                             Debug.Console(1, this, "*#* EXCEPTION in end usage tracking (257):\r{0}", e); 
                         }
-
                     }
 
 					// Let's run it

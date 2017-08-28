@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.UI;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -213,12 +214,16 @@ namespace PepperDash.Essentials
             //TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>
             //    ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
 
+            // Setup button
             TriList.SetSigHeldAction(UIBoolJoin.GearHeaderButtonPress, 2000,
                 () => ShowInterlockedModal(UIBoolJoin.TechPanelSetupVisible));
-
             TriList.SetSigFalseAction(UIBoolJoin.TechPagesExitButton, () =>
                 HideCurrentInterlockedModal());
-            TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = true;
+#warning This gets overridden by config after NYU demo
+            if(TriList is CrestronApp)
+                TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = false;
+            else
+                TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = true;
 
 			// power-related functions
             // Note: some of these are not directly-related to the huddle space UI, but are held over
