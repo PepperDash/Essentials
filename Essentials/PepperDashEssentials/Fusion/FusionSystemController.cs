@@ -292,6 +292,8 @@ namespace PepperDash.Essentials.Fusion
 
             GetProcessorEthernetValues();
 
+            GetSystemInfo();
+
             GetProcessorInfo();
 
             CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
@@ -307,9 +309,14 @@ namespace PepperDash.Essentials.Fusion
 
         void GetSystemInfo()
         {
-            SystemName.InputSig.StringValue = Room.Name;
-            Model.InputSig.StringValue = InitialParametersClass.ControllerPromptName;
+            //SystemName.InputSig.StringValue = Room.Name;
+            //Model.InputSig.StringValue = InitialParametersClass.ControllerPromptName;
             //SerialNumber.InputSig.StringValue = InitialParametersClass.
+
+            string response = string.Empty;
+
+            var systemReboot = FusionRoom.CreateOffsetBoolSig(74, "Processor - Reboot", eSigIoMask.OutputSigOnly);
+            systemReboot.OutputSig.SetSigFalseAction(() => CrestronConsole.SendControlSystemCommand("reboot", ref response));
         }
 
         void GetProcessorEthernetValues()
@@ -829,7 +836,7 @@ namespace PepperDash.Essentials.Fusion
 				uint i = 1;
 				foreach (var kvp in setTopBoxes)
 				{
-					TryAddRouteActionSigs("Source - TV " + i, 115 + i, kvp.Key, kvp.Value.SourceDevice);
+					TryAddRouteActionSigs("Display 1 - Source TV " + i, 188 + i, kvp.Key, kvp.Value.SourceDevice);
 					i++;
 					if (i > 5) // We only have five spots
 						break;
@@ -839,7 +846,7 @@ namespace PepperDash.Essentials.Fusion
 				i = 1;
 				foreach (var kvp in discPlayers)
 				{
-					TryAddRouteActionSigs("Source - DVD " + i, 120 + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs("Display 1 - Source DVD " + i, 181 + i, kvp.Key, kvp.Value.SourceDevice);
 					i++;
 					if (i > 5) // We only have five spots
 						break;
@@ -849,7 +856,7 @@ namespace PepperDash.Essentials.Fusion
 				i = 1;
 				foreach (var kvp in laptops)
 				{
-					TryAddRouteActionSigs("Source - Laptop " + i, 100 + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs("Display 1 - Source Laptop " + i, 166 + i, kvp.Key, kvp.Value.SourceDevice);
 					i++;
 					if (i > 10) // We only have ten spots???
 						break;
@@ -1085,31 +1092,38 @@ namespace PepperDash.Essentials.Fusion
 
             if(display == Room.DefaultDisplay)
             {
-                var defaultDisplayPowerOn = FusionRoom.CreateOffsetBoolSig((uint)joinOffset, displayIndex + "Power On", eSigIoMask.InputOutputSig);
+                // Display volume
+                var defaultDisplayVolume = FusionRoom.CreateOffsetUshortSig(50, "Volume - Fader01", eSigIoMask.InputOutputSig);
+                defaultDisplayVolume.OutputSig.UserObject = new Action<ushort>(b => (display as IBasicVolumeWithFeedback).SetVolume(b));
+                (display as IBasicVolumeWithFeedback).VolumeLevelFeedback.LinkInputSig(defaultDisplayVolume.InputSig);
+
+                // Power on
+                var defaultDisplayPowerOn = FusionRoom.CreateOffsetBoolSig((uint)joinOffset, displayName + "Power On", eSigIoMask.InputOutputSig);
                 defaultDisplayPowerOn.OutputSig.UserObject = new Action<bool>(b => { if (!b) display.PowerOn(); });
                 display.PowerIsOnFeedback.LinkInputSig(defaultDisplayPowerOn.InputSig);
 
-                var defaultDisplayPowerOff = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 1, displayIndex + "Power Off", eSigIoMask.InputOutputSig);
+                // Power Off
+                var defaultDisplayPowerOff = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 1, displayName + "Power Off", eSigIoMask.InputOutputSig);
                 defaultDisplayPowerOn.OutputSig.UserObject = new Action<bool>(b => { if (!b) display.PowerOff(); }); ;
                 display.PowerIsOnFeedback.LinkInputSig(defaultDisplayPowerOn.InputSig);
 
-
-                var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 8, displayIndex + "Source None", eSigIoMask.InputOutputSig);
+                // Current Source
+                var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 8, displayName + "Source None", eSigIoMask.InputOutputSig);
                 defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b => { if (!b) Room.RunRouteAction("roomOff"); }); ;
 
-                var dict = ConfigReader.ConfigObject.GetSourceListForKey(Room.SourceListKey);
+                //var dict = ConfigReader.ConfigObject.GetSourceListForKey(Room.SourceListKey);
 
-                foreach (var item in dict)
-                {
-                    if(item.Key != "roomOff")
-                    {
-                        var defaultDisplaySource = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + (uint)item.Value.Order + 9 , string.Format("{0}Source {1}", displayIndex, item.Value.Order), eSigIoMask.InputOutputSig);
-                        defaultDisplaySource.OutputSig.UserObject = new Action<bool>(b => { if (!b) Room.RunRouteAction(item.Key); }); 
+                //foreach (var item in dict)
+                //{
+                //    if(item.Key != "roomOff")
+                //    {
+                //        var defaultDisplaySource = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + (uint)item.Value.Order + 9 , string.Format("{0}Source {1}", displayIndex, item.Value.Order), eSigIoMask.InputOutputSig);
+                //        defaultDisplaySource.OutputSig.UserObject = new Action<bool>(b => { if (!b) Room.RunRouteAction(item.Key); }); 
 
-                        //defaultDisplaySource.InputSig = Source[item.Value.Order].InputSig;
-                    }
+                //        //defaultDisplaySource.InputSig = Source[item.Value.Order].InputSig;
+                //    }
 
-                }
+                //}
             }
         }
 
@@ -1168,6 +1182,12 @@ namespace PepperDash.Essentials.Fusion
                 var occSensorAsset = FusionRoom.CreateOccupancySensorAsset(tempOccAsset.SlotNumber, tempOccAsset.Name, "Occupancy Sensor", tempOccAsset.InstanceId);
 
                 occSensorAsset.RoomOccupied.AddSigToRVIFile = true;
+
+                var occSensorShutdownMinutes = FusionRoom.CreateOffsetUshortSig(70, "Occ Shutdown - Minutes", eSigIoMask.InputOutputSig);
+                
+                // Tie to method on occupancy object
+                //occSensorShutdownMinutes.OutputSig.UserObject(new Action(ushort)(b => Room.OccupancyObj.SetShutdownMinutes(b));
+                
 
                 // use Room.OccObject.RoomOccupiedFeedback.LinkInputSig(occSensorAsset.InputSig);
             //}
