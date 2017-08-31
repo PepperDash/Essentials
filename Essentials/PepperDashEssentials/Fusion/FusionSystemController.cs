@@ -955,24 +955,23 @@ namespace PepperDash.Essentials.Fusion
 				string attrName = null;
 				uint attrNum = Convert.ToUInt32(keyNum);
 
-
-
-                if (dev is BasicTriListWithSmartObject)
+                if (dev is EssentialsTouchpanelController)
                 {
-                    if (attrNum > 10)
-                        continue;
-                    attrName = "Online - Touch Panel " + attrNum;
-                    attrNum += 150;
-                }
-                // add xpanel here
-
-                if (dev is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
-                {
-                    if (attrNum > 10)
-                        continue;
-                    attrName = "Online - XPanel " + attrNum;
-                    attrNum += 160;
-                }
+                    if ((dev as EssentialsTouchpanelController).Panel is Crestron.SimplSharpPro.DeviceSupport.TswFt5Button)
+                    {
+                        if (attrNum > 10)
+                            continue;
+                        attrName = "Online - Touch Panel " + attrNum;
+                        attrNum += 150;
+                    }
+                    else if (dev is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
+                    {
+                        if (attrNum > 10)
+                            continue;
+                        attrName = "Online - XPanel " + attrNum;
+                        attrNum += 160;
+                    }
+                }                
 
 				//else 
 				if (dev is DisplayBase)
