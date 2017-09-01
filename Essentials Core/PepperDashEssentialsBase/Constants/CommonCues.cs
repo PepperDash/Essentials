@@ -54,7 +54,6 @@ namespace PepperDash.Essentials.Core
 		public static readonly Cue SmartApps = new Cue("SmartApps", 143, eCueType.Bool);
 		public static readonly Cue Dvr = new Cue("Dvr", 144, eCueType.Bool);
 
-
 		public static readonly Cue Play = new Cue("Play", 145, eCueType.Bool);
 		public static readonly Cue Pause = new Cue("Pause", 146, eCueType.Bool);
 		public static readonly Cue Stop = new Cue("Stop", 147, eCueType.Bool);
@@ -83,8 +82,8 @@ namespace PepperDash.Essentials.Core
 		public static readonly Cue InWarning = new Cue("InWarning", 283, eCueType.Bool);
 		public static readonly Cue InError = new Cue("InError", 284, eCueType.Bool);
 		public static readonly Cue StatusUnknown = new Cue("StatusUnknown", 285, eCueType.Bool);
-
-		public static readonly Cue VolumeUp = new Cue("VolumeUp", 401, eCueType.Bool);
+        
+        public static readonly Cue VolumeUp = new Cue("VolumeUp", 401, eCueType.Bool);
 		public static readonly Cue VolumeDown = new Cue("VolumeDown", 402, eCueType.Bool);
 		public static readonly Cue MuteOn = new Cue("MuteOn", 403, eCueType.Bool);
 		public static readonly Cue MuteOff = new Cue("MuteOff", 404, eCueType.Bool);
@@ -112,7 +111,7 @@ namespace PepperDash.Essentials.Core
 		public static readonly Cue Rgb2 = new Cue("Rgb2", 468, eCueType.Bool);
 		public static readonly Cue Antenna = new Cue("Antenna", 469, eCueType.Bool);
 
-
+        public static readonly Cue InCall = new Cue("InCall", 501, eCueType.Bool);
 	}
 
 	public static class CommonIntCue

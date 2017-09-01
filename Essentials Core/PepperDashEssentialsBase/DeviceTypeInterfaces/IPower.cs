@@ -45,24 +45,4 @@ namespace PepperDash.Essentials.Core
 			dev.PowerIsOnFeedback.UnlinkInputSig(triList.BooleanInput[101]);
 		}
 	}
-/*
-    public static class IFusionPowerExtensions
-    {
-        public static void LinkAttributes(this IPower dev, FusionRoom room)
-        {
-            dev.PowerIsOnFeedback.LinkInputSig(room.DisplayPowerOn.InputSig);
-
-            room.DisplayPowerOn.OutputSig.SetSigFalseAction(dev.PowerOn);
-            room.DisplayPowerOff.OutputSig.SetSigFalseAction(dev.PowerOff);            
-        }
-
-        public static void UnlinkAttributes(this IPower dev, FusionRoom room)
-        {
-            dev.PowerIsOnFeedback.UnlinkInputSig(room.DisplayPowerOn.InputSig);
-
-            room.DisplayPowerOn.OutputSig.SetSigFalseAction(null);
-            room.DisplayPowerOff.OutputSig.SetSigFalseAction(null);
-        }
-    }
-*/
 }

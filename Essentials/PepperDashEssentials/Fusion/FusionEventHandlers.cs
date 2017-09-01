@@ -8,7 +8,7 @@ namespace PepperDash.Essentials.Fusion
 {
     public class ScheduleChangeEventArgs : EventArgs
     {
-        public RoomSchedule MyProperty { get; set; }
+        public RoomSchedule Schedule { get; set; }
     }
 
     public class MeetingChangeEventArgs : EventArgs
