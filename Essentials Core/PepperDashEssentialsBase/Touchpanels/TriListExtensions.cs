@@ -64,13 +64,20 @@ namespace PepperDash.Essentials.Core
 		}
 
         /// <summary>
-        /// 
+        /// Sets an action to a held sig
         /// </summary>
-        /// <param name="tl"></param>
-        /// <param name="sigNum"></param>
-        /// <param name="heldAction"></param>
-        /// <returns></returns>
+        /// <returns>The sig</returns>
         public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction)
+        {
+            return SetSigHeldAction(tl, sigNum, heldMs, heldAction, null);
+        }
+
+
+        /// <summary>
+        /// Sets an action to a held sig as well as a released-without-hold action
+        /// </summary>
+        /// <returns>The sig</returns>
+        public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction, Action releaseAction)
         {
             CTimer heldTimer = null;
             return tl.SetBoolSigAction(sigNum, press =>
@@ -87,10 +94,12 @@ namespace PepperDash.Essentials.Core
                             heldAction();
                     }, heldMs);
                 }
-
                 else if (heldTimer != null) // released
+                {
                     heldTimer.Stop();
-                // could also revise this else to fire a released action as well as cancel the timer
+                    if (releaseAction != null)
+                        releaseAction();
+                }
             });
         }
 
@@ -143,5 +152,13 @@ namespace PepperDash.Essentials.Core
 		{
 			return ClearSigAction(tl.StringOutput[sigNum]) as StringOutputSig;
 		}
+
+        /// <summary>
+        /// Helper method to set the value of a bool Sig on tri list
+        /// </summary>
+        public static void SetBool(this BasicTriList tl, uint sigNum, bool value)
+        {
+            tl.BooleanInput[sigNum].BoolValue = value;
+        }
 	}
 }

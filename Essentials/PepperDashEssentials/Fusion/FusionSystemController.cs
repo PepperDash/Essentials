@@ -41,10 +41,10 @@ namespace PepperDash.Essentials.Fusion
 		StringSigData CurrentRoomSourceNameSig;
 
         #region System Info Sigs
-        StringSigData SystemName;
-        StringSigData Model;
-        StringSigData SerialNumber;
-        StringSigData Uptime;
+        //StringSigData SystemName;
+        //StringSigData Model;
+        //StringSigData SerialNumber;
+        //StringSigData Uptime;
         #endregion
 
 
@@ -966,13 +966,13 @@ namespace PepperDash.Essentials.Fusion
                 }
                 // add xpanel here
 
-                if (dev is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
-                {
-                    if (attrNum > 10)
-                        continue;
-                    attrName = "Online - XPanel " + attrNum;
-                    attrNum += 160;
-                }
+                //if (dev is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
+                //{
+                //    if (attrNum > 10)
+                //        continue;
+                //    attrName = "Online - XPanel " + attrNum;
+                //    attrNum += 160;
+                //}
 
 				//else 
 				if (dev is DisplayBase)

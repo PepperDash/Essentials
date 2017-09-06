@@ -160,19 +160,21 @@
     <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLargeSetTopBoxGeneric.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
-    <Compile Include="UI Drivers\VolumeAndSourceChangeArgs.cs" />
-    <Compile Include="UI Drivers\UISmartObjectJoin.cs" />
-    <Compile Include="UI Drivers\UIStringlJoin.cs" />
-    <Compile Include="UI Drivers\UIUshortJoin.cs" />
-    <Compile Include="UI Drivers\DualDisplayRouting.cs" />
-    <Compile Include="UI Drivers\EssentialsPresentationPanelAvFunctionsDriver.cs" />
-    <Compile Include="UI Drivers\SingleSubpageModalDriver.cs" />
-    <Compile Include="UI Drivers\EssentialsPanelMainInterfaceDriver.cs" />
-    <Compile Include="UI Drivers\enums and base.cs" />
-    <Compile Include="UI Drivers\EssentialsHuddlePanelAvFunctionsDriver.cs" />
-    <Compile Include="UI Drivers\SingleSubpageModalAndBackDriver.cs" />
-    <Compile Include="UI Drivers\SmartObjectRoomsList.cs" />
-    <Compile Include="UI Drivers\UIBoolJoin.cs" />
+    <Compile Include="UIDrivers\JoinedSigInterlock.cs" />
+    <Compile Include="UIDrivers\NYU\NyuHuddleVTCPanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\VolumeAndSourceChangeArgs.cs" />
+    <Compile Include="UIDrivers\UISmartObjectJoin.cs" />
+    <Compile Include="UIDrivers\UIStringlJoin.cs" />
+    <Compile Include="UIDrivers\UIUshortJoin.cs" />
+    <Compile Include="UIDrivers\DualDisplayRouting.cs" />
+    <Compile Include="UIDrivers\Essentials\EssentialsPresentationPanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalDriver.cs" />
+    <Compile Include="UIDrivers\Essentials\EssentialsPanelMainInterfaceDriver.cs" />
+    <Compile Include="UIDrivers\enums and base.cs" />
+    <Compile Include="UIDrivers\Essentials\EssentialsHuddlePanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalAndBackDriver.cs" />
+    <Compile Include="UIDrivers\SmartObjectRoomsList.cs" />
+    <Compile Include="UIDrivers\UIBoolJoin.cs" />
     <Compile Include="Room\Cotija\CotijaSystemController.cs" />
     <Compile Include="Room\UI\DualDisplaySourceSRLController.cs" />
     <Compile Include="Room\UI\SubpageReferenceListActivityItem.cs" />
@@ -187,6 +189,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="OTHER\" />
+    <Folder Include="Room\Nyu\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

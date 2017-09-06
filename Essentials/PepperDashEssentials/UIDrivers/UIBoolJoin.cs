@@ -35,19 +35,6 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint Volume1ProgramMutePressAndFB = 3813;
         /// <summary>
-        /// 3871
-        /// </summary>
-        public const uint VolumeDualMute1Visible = 3871;
-        /// <summary>
-        /// 3874
-        /// </summary>
-        public const uint Volume1SpeechMutePressAndFB = 3874;
-        /// <summary>
-        /// 3875
-        /// </summary>
-        public const uint Volume1BackerVisibility = 3875;
-
-        /// <summary>
         /// 3821
         /// </summary>
         public const uint Volume2Visible = 3821;
@@ -112,6 +99,22 @@ namespace PepperDash.Essentials
         /// 3870
         /// </summary>
         public const uint VolumesPageVisible = 3870;
+        /// <summary>
+        /// 3871
+        /// </summary>
+        public const uint VolumeDualMute1Visible = 3871;
+        /// <summary>
+        /// 3874
+        /// </summary>
+        public const uint Volume1SpeechMutePressAndFB = 3874;
+        /// <summary>
+        /// 3875
+        /// </summary>
+        public const uint Volume1BackerVisibility = 3875;
+        /// <summary>
+        /// 3891
+        /// </summary>
+        public const uint VolumeDefaultPress = 3891;
         /// <summary>
         /// 3901
         /// </summary>
