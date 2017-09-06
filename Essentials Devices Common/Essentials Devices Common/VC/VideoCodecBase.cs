@@ -7,9 +7,9 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Devices.VC
+namespace PepperDash.Essentials.Devices.VideoCodec
 {
-    public abstract class VcCodecBase : Device, IHasFeedback, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer//, ICodecAudio
+    public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer //, ICodecAudio
     {
         #region IUsageTracking Members
 
@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Devices.VC
         abstract protected Func<bool> ReceiveMuteFeedbackFunc { get; }
         abstract protected Func<bool> PrivacyModeFeedbackFunc { get; }
 
-        public VcCodecBase(string key, string name)
+        public VideoCodecBase(string key, string name)
             : base(key, name)
         {
             InCallFeedback = new BoolFeedback(InCallFeedbackFunc);

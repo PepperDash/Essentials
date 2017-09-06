@@ -104,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Devices\IHasDialer.cs" />
+    <Compile Include="Devices\IHasSharing.cs" />
     <Compile Include="Ramps and Increments\ActionIncrementer.cs" />
     <Compile Include="Comm and IR\CommFactory.cs" />
     <Compile Include="Comm and IR\CommunicationExtras.cs" />

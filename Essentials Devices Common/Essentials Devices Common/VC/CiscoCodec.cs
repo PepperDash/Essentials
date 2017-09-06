@@ -6,9 +6,9 @@ using Crestron.SimplSharp;
 using Cisco_One_Button_To_Push;
 using Cisco_SX80_Corporate_Phone_Book;
 
-namespace PepperDash.Essentials.Devices.VC
+namespace PepperDash.Essentials.Devices.VideoCodec
 {
-    public class CiscoCodec : VcCodecBase
+    public class CiscoCodec : VideoCodecBase
     {
         private CiscoOneButtonToPush Codec;
 
@@ -23,12 +23,8 @@ namespace PepperDash.Essentials.Devices.VC
 
             Codec.Initialize();
 
-            Codec.GetMeetings();
-
-            
+            Codec.GetMeetings();           
         }
-
-
 
         public override void ExecuteSwitch(object selector)
         {
