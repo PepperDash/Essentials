@@ -73,6 +73,8 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface ICodecAudio
     {
+        // ICodecReceiveVolume
+        // Break this out into 3 interfaces
         void SetReceiveVolume(ushort level);
         void ReceiveMuteOn();
         void ReceiveMuteOff();
@@ -80,6 +82,7 @@ namespace PepperDash.Essentials.Core
         IntFeedback ReceiveLevelFeedback { get; }
         BoolFeedback ReceiveMuteIsOnFeedback { get; }
 
+        // ICodecTransmitVolume
         void SetTransmitVolume(ushort level);
         void TransmitMuteOn();
         void TransmitMuteOff();
@@ -87,6 +90,7 @@ namespace PepperDash.Essentials.Core
         IntFeedback TransmitLevelFeedback { get; }
         BoolFeedback TransmitMuteIsOnFeedback { get; }
 
+        // ICodecPrivacy
         void PrivacyModeOn();
         void PrivacyModeOff();
         void PrivacyModeToggle();
