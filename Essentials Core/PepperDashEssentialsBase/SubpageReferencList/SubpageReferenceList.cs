@@ -53,7 +53,7 @@ namespace PepperDash.Essentials.Core
 			// Fail cleanly if not defined
 			if (triList.SmartObjects == null || triList.SmartObjects.Count == 0)
 			{
-				Debug.Console(0, "TriList {0:X2} Smart objects not loaded", triList.ID, smartObjectId);
+				Debug.Console(0, "TriList {0:X2} Smart objects have not been loaded", triList.ID, smartObjectId);
 				return;
 			}
 			if (triList.SmartObjects.TryGetValue(smartObjectId, out obj))
@@ -74,7 +74,8 @@ namespace PepperDash.Essentials.Core
 				SRL.SigChange += new SmartObjectSigChangeEventHandler(SRL_SigChange);
 			}
 			else
-				Debug.Console(0, "TriList 0x{0:X2} Cannot load smart object {1}", triList.ID, smartObjectId);
+				Debug.Console(0, "ERROR: TriList 0x{0:X2} Cannot load smart object {1}. Verify correct SGD file is loaded", 
+                    triList.ID, smartObjectId);
 		}
 
 		/// <summary>

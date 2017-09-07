@@ -154,11 +154,19 @@ namespace PepperDash.Essentials.Core
 		}
 
         /// <summary>
-        /// Helper method to set the value of a bool Sig on tri list
+        /// Helper method to set the value of a bool Sig on TriList
         /// </summary>
         public static void SetBool(this BasicTriList tl, uint sigNum, bool value)
         {
             tl.BooleanInput[sigNum].BoolValue = value;
         }
-	}
+
+        /// <summary>
+        /// Helper method to set the value of a string Sig on TriList
+        /// </summary>
+        public static void SetString(this BasicTriList tl, uint sigNum, string value)
+        {
+            tl.StringInput[sigNum].StringValue = value;
+        }
+    }
 }

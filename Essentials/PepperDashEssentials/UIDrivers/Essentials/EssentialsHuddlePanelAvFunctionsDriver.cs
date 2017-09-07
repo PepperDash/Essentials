@@ -190,7 +190,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void Show()
 		{
-			TriList.BooleanInput[UIBoolJoin.TopBarVisible].BoolValue = true;
+			TriList.BooleanInput[UIBoolJoin.TopBarHabaneroVisible].BoolValue = true;
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = true;
 
 			// Default to showing rooms/sources now.
@@ -253,7 +253,7 @@ namespace PepperDash.Essentials
 		public override void Hide()
 		{
 			HideAndClearCurrentDisplayModeSigsInUse();
-			TriList.BooleanInput[UIBoolJoin.TopBarVisible].BoolValue = false;
+			TriList.BooleanInput[UIBoolJoin.TopBarHabaneroVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = false;
@@ -280,7 +280,7 @@ namespace PepperDash.Essentials
                     // show start page or staging...
                     if (CurrentRoom.OnFeedback.BoolValue)
                     {
-                        TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
+                        TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = true;
                         TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = false;
                         TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
                     }
@@ -345,7 +345,7 @@ namespace PepperDash.Essentials
         {
             ShareButtonSig.BoolValue = true;
             TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
-            TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
+            TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = true;
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
@@ -740,7 +740,7 @@ namespace PepperDash.Essentials
             {
                 SetupActivityFooterWhenRoomOn();
                 TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
-                TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
+                TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = true;
 
@@ -750,7 +750,7 @@ namespace PepperDash.Essentials
                 SetupActivityFooterWhenRoomOff();
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = false;
-                TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
+                TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
             }
         }
 

@@ -160,13 +160,13 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint ShowPanelSetupPress = 15010;
         /// <summary>
-        /// 15011
+        /// 15011 - Top bar with room name and button that pops up dialog with room data
         /// </summary>
-		public const uint TopBarVisible = 15011;
+		public const uint TopBarHabaneroVisible = 15011;
         /// <summary>
         /// 15012
         /// </summary>
-		public const uint StagingPageVisible = 15012;
+		public const uint SourceStagingBarVisible = 15012;
         /// <summary>
         /// 15013
         /// </summary>
@@ -215,7 +215,7 @@ namespace PepperDash.Essentials
         /// 15026
         /// </summary>
         public const uint LightsHeaderButtonPress = 15026;
-        /// <summary>
+        /// <summary>[-
         /// 15027
         /// </summary>
         public const uint CallHeaderButtonPress = 15027;
@@ -264,6 +264,14 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint GearButtonVisible = 15037;
         /// <summary>
+        /// 15038
+        /// </summary>
+        public const uint CalendarHeaderButtonVisible = 15038;
+        /// <summary>
+        /// 15039
+        /// </summary>
+        public const uint CalendarHeaderButtonPress = 15039;
+        /// <summary>
         /// 15040
         /// </summary>
         public const uint CallStatusPageVisible = 15040;
@@ -283,8 +291,10 @@ namespace PepperDash.Essentials
         /// 15044 Close button for source modal overlay
         /// </summary>
         public const uint SourceBackgroundOverlayClosePress = 15044;
-
-
+        /// <summary>
+        /// 15045 - Visibility for the bar containing call navigation button list
+        /// </summary>
+        public const uint CallStagingBarVisible = 15045;
         /// <summary>
         /// 15051
         /// </summary>
@@ -350,17 +360,22 @@ namespace PepperDash.Essentials
         /// 15065
         /// </summary>
         public const uint LogoUrlVisible = 15065;
-
+        /// <summary>
+        /// 15083 - Press for Call help desk on AC/VC
+        /// </summary>
+        public const uint HelpPageShowCallButtonPress = 15083;
+        /// <summary>
+        /// 15084 - Show the "call help desk" button on help page
+        /// </summary>
+        public const uint HelpPageShowCallButtonVisible = 15084;
         /// <summary>
         /// 15085 Visibility join for help subpage
         /// </summary>
         public const uint HelpPageVisible = 15085;
-
         /// <summary>
         /// 15086 Press for help header button
         /// </summary>
         public const uint HelpPress = 15086;
-
         /// <summary>
         /// 15088
         /// </summary>

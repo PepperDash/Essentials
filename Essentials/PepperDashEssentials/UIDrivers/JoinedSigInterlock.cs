@@ -19,10 +19,12 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Hides CurrentJoin and shows join
+        /// Hides CurrentJoin and shows join. Does nothing when resending CurrentJoin
         /// </summary>
         public void ShowInterlocked(uint join)
         {
+            if (CurrentJoin == join)
+                return;
             if (CurrentJoin > 0)
                 TriList.BooleanInput[CurrentJoin].BoolValue = false;
             CurrentJoin = join;

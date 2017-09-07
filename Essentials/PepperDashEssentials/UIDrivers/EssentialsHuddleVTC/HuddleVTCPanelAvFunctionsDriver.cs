@@ -14,13 +14,13 @@ namespace PepperDash.Essentials
     /// <summary>
     /// 
     /// </summary>
-    public class NyuHuddleVtcPanelAvFunctionsDriver : PanelDriverBase
+    public class HuddleVtcPanelAvFunctionsDriver : PanelDriverBase
     {
         CrestronTouchpanelPropertiesConfig Config;
 
         public enum UiDisplayMode
         {
-            PresentationMode, AudioSetup
+            Presentation, AudioSetup, Call, Start
         }
 
         /// <summary>
@@ -38,14 +38,6 @@ namespace PepperDash.Essentials
         /// 
         /// </summary>
         public string DefaultRoomKey { get; set; }
-        //{
-        //    get { return _DefaultRoomKey; }
-        //    set
-        //    {
-        //        _DefaultRoomKey = value;
-        //    }
-        //}
-        //string _DefaultRoomKey;
 
         /// <summary>
         /// 
@@ -59,11 +51,6 @@ namespace PepperDash.Essentials
             }
         }
         EssentialsHuddleSpaceRoom _CurrentRoom;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        //uint CurrentInterlockedModalJoin;
 
         /// <summary>
         /// For hitting feedback
@@ -89,12 +76,18 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Smart Object 3200
         /// </summary>
-        SubpageReferenceList SourcesSrl;
+        SubpageReferenceList SourceStagingSrl;
 
         /// <summary>
         /// Smart Object 15022
         /// </summary>
         SubpageReferenceList ActivityFooterSrl;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        SubpageReferenceList CallStagingSrl;
+
 
         /// <summary>
         /// Tracks which audio page group the UI is in
@@ -132,28 +125,38 @@ namespace PepperDash.Essentials
         JoinedSigInterlock PopupInterlock;
 
         /// <summary>
+        /// Interlock for various source, camera, call control bars. The bar above the activity footer.  This is also 
+        /// used to show start page
+        /// </summary>
+        JoinedSigInterlock StagingBarInterlock;
+
+        JoinedSigInterlock CallPagesInterlock;
+
+        /// <summary>
         /// Constructor
         /// </summary>
-        public NyuHuddleVtcPanelAvFunctionsDriver(PanelDriverBase parent, CrestronTouchpanelPropertiesConfig config)
+        public HuddleVtcPanelAvFunctionsDriver(PanelDriverBase parent, CrestronTouchpanelPropertiesConfig config)
             : base(parent.TriList)
         {
             Config = config;
             Parent = parent;
             PopupInterlock = new JoinedSigInterlock(TriList);
+            StagingBarInterlock = new JoinedSigInterlock(TriList);
+            CallPagesInterlock = new JoinedSigInterlock(TriList);
 
-            SourcesSrl = new SubpageReferenceList(TriList, 3200, 3, 3, 3);
+            SourceStagingSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.SourceStagingSRL, 3, 3, 3);
 
-            ActivityFooterSrl = new SubpageReferenceList(TriList, 15022, 3, 3, 3);
+            ActivityFooterSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.ActivityFooterSRL, 3, 3, 3);
             CallButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
             ShareButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
+
 
             SetupActivityFooterWhenRoomOff();
 
             ShowVolumeGauge = true;
-            PowerOffTimeout = 30000;
+            //PowerOffTimeout = 30000;
 
-            TriList.StringInput[UIStringJoin.StartActivityText].StringValue =
-                "Tap Share to begin";
+            //TriList.StringInput[UIStringJoin.StartActivityText].StringValue = "Tap an activity below";
         }
 
         /// <summary>
@@ -161,17 +164,46 @@ namespace PepperDash.Essentials
         /// </summary>
         public override void Show()
         {
+            if (CurrentRoom == null)
+            {
+                Debug.Console(1, "ERROR: AVUIFunctionsDriver, Cannot show. No room assigned");
+                return;
+            }
+
+            var roomConf = CurrentRoom.Config;
+
+            if (Config.HeaderStyle == null || Config.HeaderStyle == UiHeaderStyle.Habanero)
+            {
+                TriList.SetString(UIStringJoin.CurrentRoomName, CurrentRoom.Name);
+                TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>
+                    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderPageVisible));
+            }
+            else if (Config.HeaderStyle == UiHeaderStyle.Verbose)
+            {
+                // room name on join 1, concat phone and sip on join 2, no button method
+                TriList.SetString(UIStringJoin.CurrentRoomName, CurrentRoom.Name);
+                var addr = roomConf.Addresses;
+                if (addr == null) // protect from missing values by using default empties
+                    addr = new EssentialsRoomAddressPropertiesConfig();
+                // empty string when either missing, pipe when both showing
+                TriList.SetString(UIStringJoin.RoomAddressPipeText, 
+                    (string.IsNullOrEmpty(addr.PhoneNumber.Trim())
+                    || string.IsNullOrEmpty(addr.SipAddress.Trim())) ? "" : " | ");
+                TriList.SetString(UIStringJoin.RoomPhoneText, addr.PhoneNumber);
+                TriList.SetString(UIStringJoin.RoomSipText, addr.SipAddress);
+            }
+
             TriList.SetBool(UIBoolJoin.DateAndTimeVisible, Config.ShowDate && Config.ShowTime);
             TriList.SetBool(UIBoolJoin.DateOnlyVisible, Config.ShowDate && !Config.ShowTime);
             TriList.SetBool(UIBoolJoin.TimeOnlyVisible, !Config.ShowDate && Config.ShowTime);
-            TriList.SetBool(UIBoolJoin.TopBarVisible, true);
+            TriList.SetBool(UIBoolJoin.TopBarHabaneroVisible, true);
             TriList.SetBool(UIBoolJoin.ActivityFooterVisible, true);
 
             // Default to showing rooms/sources now.
             //ShowMode(UiDisplayMode.PresentationMode);
             if (CurrentRoom.OnFeedback.BoolValue)
             {
-                TriList.SetBool(UIBoolJoin.StagingPageVisible, true);
+                TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
                 TriList.SetBool(UIBoolJoin.TapToBeginVisible, false);
                 TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
             }
@@ -188,7 +220,24 @@ namespace PepperDash.Essentials
             // Generic "close" button for these modals
             TriList.SetSigFalseAction(UIBoolJoin.InterlockedModalClosePress, PopupInterlock.HideAndClear);
             
-            // Help button
+            // Help button and popup
+            if (CurrentRoom.Config.Help != null)
+            {
+                TriList.SetString(UIStringJoin.HelpMessage, roomConf.Help.Message);
+                TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, roomConf.Help.ShowCallButton);
+                TriList.SetString(UIStringJoin.HelpPageCallButtonText, roomConf.Help.CallButtonText);
+                if(roomConf.Help.ShowCallButton)
+                    TriList.SetSigFalseAction(UIBoolJoin.HelpPageShowCallButtonPress, () => { }); // ************ FILL IN
+                else
+                    TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
+            }
+            else // older config
+            {
+                TriList.SetString(UIStringJoin.HelpMessage, CurrentRoom.Config.HelpMessage);
+                TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, false);
+                TriList.SetString(UIStringJoin.HelpPageCallButtonText, null);
+                TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
+            }
             TriList.SetSigFalseAction(UIBoolJoin.HelpPress, () =>
             {
                 string message = null;
@@ -198,22 +247,22 @@ namespace PepperDash.Essentials
                     message = room.Config.HelpMessage;
                 else
                     message = "Sorry, no help message available. No room connected.";
-                TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
+                //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
                 PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
             });
             
             // Lights button
-            TriList.SetSigFalseAction(UIBoolJoin.LightsHeaderButtonPress, () => 
+            TriList.SetSigFalseAction(UIBoolJoin.LightsHeaderButtonPress, () => // ******************** FILL IN
                 { });
             
             // Call header button
-            TriList.SetSigFalseAction(UIBoolJoin.CallHeaderButtonPress, () =>
+            if(roomConf.OneButtonMeeting != null && roomConf.OneButtonMeeting.Enable)
+            {
+                TriList.SetBool(UIBoolJoin.CalendarHeaderButtonVisible, true);
+                TriList.SetSigFalseAction(UIBoolJoin.CallHeaderButtonPress, () =>
                 { });
+            }            
             
-            // Room name button
-            //TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>
-            //    ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
-
             // Setup button - shows volumes with default button OR hold for tech page
             TriList.SetSigHeldAction(UIBoolJoin.GearHeaderButtonPress, 2000,
                 () => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.TechPanelSetupVisible),
@@ -246,12 +295,58 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
+        /// Puts the UI into the "start" mode. System is off.  Logo shows. Activity SRL is clear
+        /// </summary>
+        void ShowStartMode()
+        {
+            SetupActivityFooterWhenRoomOff();
+            
+            ShareButtonSig.BoolValue = false;
+            CallButtonSig.BoolValue = false;
+            ShowLogo();
+            StagingBarInterlock.ShowInterlocked(UIBoolJoin.StartPageVisible);
+            StagingBarInterlock.HideAndClear();
+        }
+
+        void ShowShareMode()
+        {
+            ShareButtonSig.BoolValue = true;
+            CallButtonSig.BoolValue = false;
+            StagingBarInterlock.ShowInterlocked(UIBoolJoin.SourceStagingBarVisible);
+        }
+
+        void ShowVideoCallMode()
+        {
+            ShareButtonSig.BoolValue = false;
+            CallButtonSig.BoolValue = true;
+            StagingBarInterlock.ShowInterlocked(UIBoolJoin.CallStagingBarVisible);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void ShowLogo()
+        {
+            if (CurrentRoom.LogoUrl == null)
+            {
+                TriList.SetBool(UIBoolJoin.LogoDefaultVisible, true);
+                TriList.SetBool(UIBoolJoin.LogoUrlVisible, false);
+            }
+            else
+            {
+                TriList.SetBool(UIBoolJoin.LogoDefaultVisible, false);
+                TriList.SetBool(UIBoolJoin.LogoUrlVisible, true);
+                TriList.SetString(UIStringJoin.LogoUrl, _CurrentRoom.LogoUrl);
+            }
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         public override void Hide()
         {
             HideAndClearCurrentDisplayModeSigsInUse();
-            TriList.BooleanInput[UIBoolJoin.TopBarVisible].BoolValue = false;
+            TriList.BooleanInput[UIBoolJoin.TopBarHabaneroVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = false;
@@ -266,9 +361,9 @@ namespace PepperDash.Essentials
         {
             ActivityFooterSrl.Clear();
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 1,
-                b => { if (!b) CallButtonPressed(); }));
+                b => { if (!b) ActivityCallButtonPressed(); }));
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 0,
-                b => { if (!b) ShareButtonPressed(); }));
+                b => { if (!b) ActivityShareButtonPressed(); }));
             ActivityFooterSrl.Count = 2;
             TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 0;
             ShareButtonSig.BoolValue = false;
@@ -280,10 +375,10 @@ namespace PepperDash.Essentials
         void SetupActivityFooterWhenRoomOn()
         {
             ActivityFooterSrl.Clear();
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl,
-                1, null));
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl,
-                0, null));
+            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 1, 
+                b => { if (!b) ActivityCallButtonPressed(); }));
+            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 0, 
+                b => { if (!b) ActivityShareButtonPressed(); }));
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(3, ActivityFooterSrl,
                 3, b => { if (!b) PowerButtonPressed(); }));
             ActivityFooterSrl.Count = 2;
@@ -293,11 +388,45 @@ namespace PepperDash.Essentials
             ShareButtonSig.BoolValue = CurrentRoom.OnFeedback.BoolValue;
         }
 
-        void CallButtonPressed()
+        ///// <summary>
+        ///// Builds the call stage
+        ///// </summary>
+        //void SetupCallStagingSrl()
+        //{            
+        //    CallStagingSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.CallStagingSrl, 3, 3, 3);
+        //    var c = CallStagingSrl;
+        //    c.AddItem(new SubpageReferenceListButtonAndModeItem(1, c, 1, b => { if (!b) { } })); //************ Camera
+        //    c.AddItem(new SubpageReferenceListButtonAndModeItem(2, c, 2, b => { if (!b) { } })); //************ Directory
+        //    c.AddItem(new SubpageReferenceListButtonAndModeItem(3, c, 3, b => { if (!b) { } })); //************ Keypad
+        //    c.AddItem(new SubpageReferenceListButtonAndModeItem(4, c, 4, b => { if (!b) { } })); //************ End Call
+        //    c.Count = 3;
+        //}
+
+        /// <summary>
+        /// This may need to be part of an event handler routine from codec feedback. 
+        /// Adds End Call to Call Staging list
+        /// </summary>
+        void SetupEndCall()
+        {
+            CallStagingSrl.Count = 4;
+        }
+
+        /// <summary>
+        /// Part of event handler?  Removes End Call from Call Staging
+        /// </summary>
+        void HideEndCall()
+        {
+            CallStagingSrl.Count = 3;
+        }   
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void ActivityCallButtonPressed()
         {
             CallButtonSig.BoolValue = true;
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
-            TriList.SetBool(UIBoolJoin.StagingPageVisible, false);
+            TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
             // Call "page"? Or separate UI driver?
         }
@@ -305,11 +434,11 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Attached to activity list share button
         /// </summary>
-        void ShareButtonPressed()
+        void ActivityShareButtonPressed()
         {
             ShareButtonSig.BoolValue = true;
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
-            TriList.SetBool(UIBoolJoin.StagingPageVisible, true);
+            TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
             TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
@@ -355,7 +484,6 @@ namespace PepperDash.Essentials
                     pm = PageManagers[uiDev];
                 // Otherwise make an apporiate one
                 else if (uiDev is ISetTopBoxControls)
-                    //pm = new SetTopBoxMediumPageManager(uiDev as ISetTopBoxControls, TriList);
                     pm = new SetTopBoxThreePanelPageManager(uiDev as ISetTopBoxControls, TriList);
                 else if (uiDev is IDiscPlayerControls)
                     pm = new DiscPlayerMediumPageManager(uiDev as IDiscPlayerControls, TriList);
@@ -560,26 +688,16 @@ namespace PepperDash.Essentials
                             continue;
                         }
                         var routeKey = kvp.Key;
-                        var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig,
+                        var item = new SubpageReferenceListSourceItem(i++, SourceStagingSrl, srcConfig,
                             b => { if (!b) UiSelectSource(routeKey); });
-                        SourcesSrl.AddItem(item); // add to the SRL
+                        SourceStagingSrl.AddItem(item); // add to the SRL
                         item.RegisterForSourceChange(_CurrentRoom);
                     }
-                    SourcesSrl.Count = (ushort)(i - 1);
+                    SourceStagingSrl.Count = (ushort)(i - 1);
                 }
                 // Name and logo
                 TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
-                if (_CurrentRoom.LogoUrl == null)
-                {
-                    TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = true;
-                    TriList.BooleanInput[UIBoolJoin.LogoUrlVisible].BoolValue = false;
-                }
-                else
-                {
-                    TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = false;
-                    TriList.BooleanInput[UIBoolJoin.LogoUrlVisible].BoolValue = true;
-                    TriList.StringInput[UIStringJoin.LogoUrl].StringValue = _CurrentRoom.LogoUrl;
-                }
+                ShowLogo();
 
                 // Shutdown timer
                 _CurrentRoom.ShutdownPromptTimer.HasStarted += ShutdownPromptTimer_HasStarted;
@@ -622,7 +740,7 @@ namespace PepperDash.Essentials
             {
                 SetupActivityFooterWhenRoomOn();
                 TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
-                TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = true;
+                TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = true;
 
@@ -632,7 +750,7 @@ namespace PepperDash.Essentials
                 SetupActivityFooterWhenRoomOff();
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = false;
-                TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
+                TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
             }
         }
 

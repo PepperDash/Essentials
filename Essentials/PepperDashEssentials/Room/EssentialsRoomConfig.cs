@@ -67,12 +67,50 @@ namespace PepperDash.Essentials
         public string Description { get; set; }
         public int ShutdownVacancySeconds { get; set; }
         public int ShutdownPromptSeconds { get; set; }
+        public EssentialsHelpPropertiesConfig Help { get; set; }
+        public EssentialsOneButtonMeetingPropertiesConfig OneButtonMeeting { get; set; }
+        public EssentialsRoomAddressPropertiesConfig Addresses { get; set; }
         public EssentialsRoomOccSensorConfig OccupancySensors { get; set; }
         public EssentialsLogoPropertiesConfig Logo { get; set; }
         public EssentialsRoomVolumesConfig Volumes { get; set; }
 	}
 
+    /// <summary>
+    /// Properties for the help text box
+    /// </summary>
+    public class EssentialsHelpPropertiesConfig
+    {
+        public string Message { get; set; }
+        public bool ShowCallButton { get; set; }
+        /// <summary>
+        /// Defaults to "Call Help Desk"
+        /// </summary>
+        public string CallButtonText { get; set; }
 
+        public EssentialsHelpPropertiesConfig()
+        {
+            CallButtonText = "Call Help Desk";
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class EssentialsOneButtonMeetingPropertiesConfig
+    {
+        public bool Enable { get; set; }
+    }
+
+    public class EssentialsRoomAddressPropertiesConfig
+    {
+        public string PhoneNumber { get; set; }
+        public string SipAddress { get; set; }
+    }
+
+
+    /// <summary>
+    /// Properties for the room's logo on panels
+    /// </summary>
     public class EssentialsLogoPropertiesConfig
     {
         public string Type { get; set; }

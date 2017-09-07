@@ -160,8 +160,10 @@
     <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLargeSetTopBoxGeneric.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
+    <Compile Include="Room\UI\SubpageReferenceListCallStagingItem.cs" />
+    <Compile Include="UIDrivers\EssentialsCiscoSpark\EssentialsCiscoSparkUiDriver.cs" />
     <Compile Include="UIDrivers\JoinedSigInterlock.cs" />
-    <Compile Include="UIDrivers\NYU\NyuHuddleVTCPanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddleVTC\HuddleVTCPanelAvFunctionsDriver.cs" />
     <Compile Include="UIDrivers\VolumeAndSourceChangeArgs.cs" />
     <Compile Include="UIDrivers\UISmartObjectJoin.cs" />
     <Compile Include="UIDrivers\UIStringlJoin.cs" />
