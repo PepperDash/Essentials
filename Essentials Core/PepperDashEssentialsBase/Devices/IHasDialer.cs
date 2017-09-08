@@ -15,8 +15,11 @@ namespace PepperDash.Essentials.Core
 
         void Dial();
         void EndCall();
+        void AcceptCall();
+        void RejectCall();
 
         BoolFeedback InCallFeedback { get; }
+        BoolFeedback IncomingCallFeedback { get; }
 
     }
 }

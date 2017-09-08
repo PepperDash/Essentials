@@ -24,8 +24,10 @@ namespace PepperDash.Essentials.Devices.VideoCodec
         #endregion
 
         public BoolFeedback InCallFeedback { get; protected set; }
+        public BoolFeedback IncomingCallFeedback { get; protected set; }
 
         abstract protected Func<bool> InCallFeedbackFunc { get; }
+        abstract protected Func<bool> IncomingCallFeedbackFunc { get; }
         abstract protected Func<bool> TransmitMuteFeedbackFunc { get; }
         abstract protected Func<bool> ReceiveMuteFeedbackFunc { get; }
         abstract protected Func<bool> PrivacyModeFeedbackFunc { get; }
@@ -34,6 +36,7 @@ namespace PepperDash.Essentials.Devices.VideoCodec
             : base(key, name)
         {
             InCallFeedback = new BoolFeedback(InCallFeedbackFunc);
+            IncomingCallFeedback = new BoolFeedback(IncomingCallFeedbackFunc);
             ReceiveMuteIsOnFeedback = new BoolFeedback(ReceiveMuteFeedbackFunc);
             TransmitMuteIsOnFeedback = new BoolFeedback(TransmitMuteFeedbackFunc);
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeFeedbackFunc);
@@ -56,6 +59,8 @@ namespace PepperDash.Essentials.Devices.VideoCodec
 
         public abstract void Dial();
         public abstract void EndCall();
+        public abstract void AcceptCall();
+        public abstract void RejectCall();
 
         public virtual List<Feedback> Feedbacks
         {
@@ -64,6 +69,7 @@ namespace PepperDash.Essentials.Devices.VideoCodec
                 return new List<Feedback>
 				{
 					InCallFeedback,
+                    IncomingCallFeedback,
                     ReceiveMuteIsOnFeedback,
                     TransmitMuteIsOnFeedback,
                     PrivacyModeIsOnFeedback

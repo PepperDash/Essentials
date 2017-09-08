@@ -61,7 +61,7 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
 				if (a == eProgramStatusEventType.Stopping)
 				{
 					HttpServer.Close();
-					Debug.Console(1, "Shutting down HTTP, port {0}", HttpServer.Port);
+					Debug.Console(1, "Shutting down HTTP Server on port {0}", HttpServer.Port);
 				}
 			};
 		}
@@ -78,7 +78,7 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
 
 			string path = Uri.UnescapeDataString(args.Request.Path);
 			var host = args.Request.DataConnection.RemoteEndPointAddress;
-			string authToken;
+			//string authToken;
 
 			Debug.Console(2, "HTTP Request: {2}: Path='{0}' ?'{1}'", path, args.Request.QueryString, host);
 
@@ -88,27 +88,6 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
 				var handler = ApiRequest;
 				if (ApiRequest != null)
 					ApiRequest(this, args);
-			}
-			// Basic file handling
-			else
-			{
-				// Default path
-                //if (path.EndsWith("/")) path = path + "index.html";
-                //if (string.IsNullOrEmpty(Path.GetExtension(path))) path = path + "/index.html";
-
-                //string filePath = path.Replace('/', '\\');
-                //string localPath = string.Format(@"{0}{1}", HtmlRoot, filePath);
-                //if (File.Exists(localPath))
-                //{
-                //    args.Response.Header.ContentType = GetContentType(new FileInfo(localPath).Extension);
-                //    args.Response.ContentStream = new FileStream(localPath, FileMode.Open, FileAccess.Read);
-                //    //args.Response.CloseStream = true;
-                //}
-                //else
-                //{
-                //    args.Response.ContentString = string.Format("Not found: '{0}'", filePath);
-                //    args.Response.Code = 404;
-                //}
 			}
 		}
 
