@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Crestron.SimplSharp.CrestronIO;
+using System.Text.RegularExpressions;
 
+using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
-using System.Text.RegularExpressions;
+using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials
 {

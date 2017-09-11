@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
+
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
 
 using PepperDash.Core;
+using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.DM;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.Room.Config
 {
 	public class EssentialsRoomConfig : DeviceConfig
 	{
@@ -54,6 +54,15 @@ namespace PepperDash.Essentials
                 var presRoom = new EssentialsPresentationRoom(Key, Name, displaysDict, masterVolumeControlDev, props);
                 return presRoom;
             }
+            else if (typeName == "huddlevtc1")
+            {
+                var props = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
+                    (this.Properties.ToString());
+
+                var vtcRoom = new EssentialsHuddleVtc1Room(Key, Name, null, null, props);
+                return vtcRoom;
+            }
+
             return null;
 		}
 	}
@@ -138,32 +147,4 @@ namespace PepperDash.Essentials
         public List<string> Types { get; set; }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public class EssentialsHuddleRoomPropertiesConfig : EssentialsRoomPropertiesConfig
-    {
-        public string DefaultDisplayKey { get; set; }
-        public string DefaultAudioKey { get; set; }
-        public string SourceListKey { get; set; }
-        public string DefaultSourceItem { get; set; }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class EssentialsPresentationRoomPropertiesConfig : EssentialsRoomPropertiesConfig
-    {
-        public string DefaultAudioBehavior { get; set; }
-        public string DefaultAudioKey { get; set; }
-        public string DefaultVideoBehavior { get; set; }
-        public List<string> DisplayKeys { get; set; }
-        public string SourceListKey { get; set; }
-        public bool HasDsp { get; set; }
-
-        public EssentialsPresentationRoomPropertiesConfig()
-        {
-            DisplayKeys = new List<string>();
-        }
-    }    
 }

@@ -48,6 +48,12 @@ namespace PepperDash.Essentials.UIDrivers.EssentialsCiscoSpark
         {
             Codec = codec;
             SetupCallStagingSrl();
+
+            InCall = new BoolFeedback(() => false);
+            LocalPrivacyIsMuted = new BoolFeedback(() => false);
+
+            CallQuickDialList = new SmartObjectDynamicList(triList.SmartObjects[UISmartObjectJoin.CallQuickDialList], true, 1);
+            DirectorySrl = new SubpageReferenceList(triList, UISmartObjectJoin.DirectorySrl, 3, 3, 3);
         }
 
         /// <summary>

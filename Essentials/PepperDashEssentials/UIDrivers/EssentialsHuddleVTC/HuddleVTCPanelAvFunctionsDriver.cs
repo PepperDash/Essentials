@@ -8,6 +8,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
+using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials
 {
@@ -88,7 +89,6 @@ namespace PepperDash.Essentials
         /// </summary>
         SubpageReferenceList CallStagingSrl;
 
-
         /// <summary>
         /// Tracks which audio page group the UI is in
         /// </summary>
@@ -150,6 +150,7 @@ namespace PepperDash.Essentials
             CallButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
             ShareButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
 
+            CallStagingSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.CallStagingSrl, 3, 3, 3);
 
             SetupActivityFooterWhenRoomOff();
 
@@ -172,7 +173,7 @@ namespace PepperDash.Essentials
 
             var roomConf = CurrentRoom.Config;
 
-            if (Config.HeaderStyle == null || Config.HeaderStyle == UiHeaderStyle.Habanero)
+            if (Config.HeaderStyle == UiHeaderStyle.Habanero)
             {
                 TriList.SetString(UIStringJoin.CurrentRoomName, CurrentRoom.Name);
                 TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>

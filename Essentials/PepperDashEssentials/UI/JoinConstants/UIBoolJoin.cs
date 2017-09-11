@@ -22,6 +22,131 @@ namespace PepperDash.Essentials
         /// </summary>
 		public const uint VolumeDownPress = 902;
 
+        //******************************************************
+        // Audio Conference
+        /// <summary>
+        /// 1001
+        /// </summary>
+        public const uint ACKeypadVisible = 1001;
+        /// <summary>
+        /// 1002
+        /// </summary>
+        public const uint ACStagingPopoverVisible = 1002;
+        /// <summary>
+        /// 1011
+        /// </summary>
+        public const uint ACSpeedDial1Press = 1011;
+        /// <summary>
+        /// 1012
+        /// </summary>
+        public const uint ACSpeedDial2Press = 1012;
+        /// <summary>
+        /// 1013
+        /// </summary>
+        public const uint ACSpeedDial3Press = 1013;
+        /// <summary>
+        /// 1014
+        /// </summary>
+        public const uint ACSpeedDial4Press = 1014;
+        /// <summary>
+        /// 1021
+        /// </summary>
+        public const uint ACSpeedDial1Press = 1021;
+        /// <summary>
+        /// 1022
+        /// </summary>
+        public const uint ACSpeedDial2Press = 1022;
+        /// <summary>
+        /// 1023
+        /// </summary>
+        public const uint ACSpeedDial3Press = 1023;
+        /// <summary>
+        /// 1024
+        /// </summary>
+        public const uint ACSpeedDial4Press = 1024;
+
+        //******************************************************
+        // Video Conference
+        /// <summary>
+        /// 1201
+        /// </summary>
+        public const uint VCKeypadVisible = 1201;
+        /// <summary>
+        /// 1202
+        /// </summary>
+        public const uint VCStagingInactivePopoverVisible = 1202;
+        /// <summary>
+        /// 
+        /// </summary>
+        public const uint VCStagingActivePopoverVisible = 1203;
+        /// <summary>
+        /// 1205
+        /// </summary>
+        public const uint VCDirectoryVisible = 1205;
+        /// <summary>
+        /// 1211
+        /// </summary>
+        public const uint VCSpeedDial1Press = 1211;
+        /// <summary>
+        /// 1212
+        /// </summary>
+        public const uint VCSpeedDial2Press = 1212;
+        /// <summary>
+        /// 1213
+        /// </summary>
+        public const uint VCSpeedDial3Press = 1213;
+        /// <summary>
+        /// 1214
+        /// </summary>
+        public const uint VCSpeedDial4Press = 1214;
+        /// <summary>
+        /// 1221
+        /// </summary>
+        public const uint VCSpeedDial1Press = 1221;
+        /// <summary>
+        /// 1222
+        /// </summary>
+        public const uint VCSpeedDial2Press = 1222;
+        /// <summary>
+        /// 1223
+        /// </summary>
+        public const uint VCSpeedDial3Press = 1223;
+        /// <summary>
+        /// 1224
+        /// </summary>
+        public const uint VCSpeedDial4Press = 1224;
+        /// <summary>
+        /// 1231
+        /// </summary>
+        public const uint VCStagingRecentsPress = 1231;
+        /// <summary>
+        /// 1232
+        /// </summary>
+        public const uint VCStagingDirectoryPress = 1232;
+        /// <summary>
+        /// 1233
+        /// </summary>
+        public const uint VCStagingKeypadPress = 1233;
+        /// <summary>
+        /// 1234
+        /// </summary>
+        public const uint VCStagingConnectPress = 1234;
+
+        //******************************************************
+        // Keyboard
+        /// <summary>
+        /// 2901
+        /// </summary>
+        public const uint KeyboardVisible = 2901; 
+        /// <summary>
+        /// 2910
+        /// </summary>
+        public const uint KeyboardClearPress = 2910;
+        /// <summary>
+        /// 2911
+        /// </summary>
+        public const uint KeyboardClearVisible = 2911;
+
         /// <summary>
         /// 3811
         /// </summary>

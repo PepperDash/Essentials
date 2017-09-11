@@ -141,6 +141,9 @@
     <Compile Include="Fusion\FusionSystemController.cs" />
     <Compile Include="HttpApiHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Room\Config\EssentialsPresentationPropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsHuddleRoomPropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsHuddleVtc1PropertiesConfig.cs" />
     <Compile Include="Room\Cotija\CotijaConfig.cs" />
     <Compile Include="Room\Cotija\CotijaRoomBridge.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\IChannelExtensions.cs" />
@@ -151,23 +154,24 @@
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\IPowerExtensions.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\ISetTopBoxControlsExtensions.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\ITransportExtensions.cs" />
-    <Compile Include="Room\EssentialsPresentationRoom.cs" />
-    <Compile Include="Room\EssentialsRoomBase.cs" />
-    <Compile Include="Room\EssentialsRoomConfig.cs" />
+    <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
+    <Compile Include="Room\Types\EssentialsPresentationRoom.cs" />
+    <Compile Include="Room\Types\EssentialsRoomBase.cs" />
+    <Compile Include="Room\Config\EssentialsRoomConfig.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\DevicePageControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLaptop.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLargeDvd.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLargeSetTopBoxGeneric.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
-    <Compile Include="Room\UI\SubpageReferenceListCallStagingItem.cs" />
+    <Compile Include="UI\SubpageReferenceListCallStagingItem.cs" />
     <Compile Include="UIDrivers\EssentialsCiscoSpark\EssentialsCiscoSparkUiDriver.cs" />
     <Compile Include="UIDrivers\JoinedSigInterlock.cs" />
     <Compile Include="UIDrivers\EssentialsHuddleVTC\HuddleVTCPanelAvFunctionsDriver.cs" />
     <Compile Include="UIDrivers\VolumeAndSourceChangeArgs.cs" />
-    <Compile Include="UIDrivers\UISmartObjectJoin.cs" />
-    <Compile Include="UIDrivers\UIStringlJoin.cs" />
-    <Compile Include="UIDrivers\UIUshortJoin.cs" />
+    <Compile Include="UI\JoinConstants\UISmartObjectJoin.cs" />
+    <Compile Include="UI\JoinConstants\UIStringlJoin.cs" />
+    <Compile Include="UI\JoinConstants\UIUshortJoin.cs" />
     <Compile Include="UIDrivers\DualDisplayRouting.cs" />
     <Compile Include="UIDrivers\Essentials\EssentialsPresentationPanelAvFunctionsDriver.cs" />
     <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalDriver.cs" />
@@ -176,22 +180,21 @@
     <Compile Include="UIDrivers\Essentials\EssentialsHuddlePanelAvFunctionsDriver.cs" />
     <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalAndBackDriver.cs" />
     <Compile Include="UIDrivers\SmartObjectRoomsList.cs" />
-    <Compile Include="UIDrivers\UIBoolJoin.cs" />
+    <Compile Include="UI\JoinConstants\UIBoolJoin.cs" />
     <Compile Include="Room\Cotija\CotijaSystemController.cs" />
-    <Compile Include="Room\UI\DualDisplaySourceSRLController.cs" />
-    <Compile Include="Room\UI\SubpageReferenceListActivityItem.cs" />
-    <Compile Include="Room\UI\CrestronTouchpanelPropertiesConfig.cs" />
+    <Compile Include="UI\DualDisplaySourceSRLController.cs" />
+    <Compile Include="UI\SubpageReferenceListActivityItem.cs" />
+    <Compile Include="UI\CrestronTouchpanelPropertiesConfig.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\REMOVE UiCue.cs" />
     <Compile Include="FOR REFERENCE UI\SRL\SourceListSubpageReferenceList.cs" />
-    <Compile Include="Room\EssentialsHuddleSpaceRoom.cs" />
-    <Compile Include="Room\UI\EssentialsTouchpanelController.cs" />
-    <Compile Include="Room\UI\SubpageReferenceListSourceItem.cs" />
+    <Compile Include="Room\Types\EssentialsHuddleSpaceRoom.cs" />
+    <Compile Include="UI\EssentialsTouchpanelController.cs" />
+    <Compile Include="UI\SubpageReferenceListSourceItem.cs" />
     <None Include="app.config" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="OTHER\" />
-    <Folder Include="Room\Nyu\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

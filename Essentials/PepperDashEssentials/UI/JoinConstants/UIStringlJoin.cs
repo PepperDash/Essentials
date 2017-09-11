@@ -13,6 +13,13 @@ namespace PepperDash.Essentials
 	/// </summary>
 	public class UIStringJoin
 	{
+        //******************************************************
+        // Keyboard
+        /// <summary>
+        /// 1901
+        /// </summary>
+        public const uint KeyboardText = 2901;
+
         /// <summary>
         /// 3812
         /// </summary>
