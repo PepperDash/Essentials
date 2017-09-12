@@ -46,9 +46,9 @@
     <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Cisco One Button To Push, Version=1.0.0.30876, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Cisco One Button To Push, Version=1.0.0.29558, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\CodeBlue\libraries\Cisco CODEC\Cisco One Button To Push\Cisco One Button To Push\bin\Cisco One Button To Push.dll</HintPath>
+      <HintPath>..\..\..\Crestron Cisco OBTP\OBTP\bin\Cisco One Button To Push.dll</HintPath>
     </Reference>
     <Reference Include="Cisco SX80 Corporate Phone Book, Version=1.0.0.15355, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

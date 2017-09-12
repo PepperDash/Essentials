@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.Net.Http;
+using Crestron.SimplSharp.Net.Https;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXml.Serialization;
 using Newtonsoft.Json;
@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
 
         private CiscoCodecStatus.Status CodecStatus;
 
-        private HttpClient Client;
+        private HttpsClient Client;
 
         private HttpApiServer Server;
 
@@ -60,7 +60,7 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
 
             CodecStatus = new CiscoCodecStatus.Status();
 
-            Client = new HttpClient();
+            Client = new HttpsClient();
 
             Server = new HttpApiServer();
       
@@ -83,7 +83,7 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
             CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 2000, 120000, 300000, "xStatus SystemUnit Software Version\r");
             DeviceManager.AddDevice(CommunicationMonitor);
 
-            Client = new HttpClient();
+            Client = new HttpsClient();
 
             Client.Verbose = true;
             Client.KeepAlive = true;
@@ -108,7 +108,7 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
 
             //CodecObtp.GetMeetings();
 
-            PhoneBook.DownloadPhoneBook(Corporate_Phone_Book.ePhoneBookLocation.Corporate);         
+            //PhoneBook.DownloadPhoneBook(Corporate_Phone_Book.ePhoneBookLocation.Corporate);         
 
             return base.CustomActivate();
         }
@@ -125,12 +125,15 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
 
         private void SendHttpCommand(string command, eCommandType commandType)
         {
-            HttpClientRequest request = new HttpClientRequest();
+            HttpsClientRequest request = new HttpsClientRequest();
 
             string urlSuffix = null;
 
             Client.UserName = null;
             Client.Password = null;
+
+            Client.PeerVerification = false;
+            Client.HostVerification = false;
 
             request.RequestType = RequestType.Post;
 
@@ -165,13 +168,15 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
                 case eCommandType.GetStatus:
                     {
                         request.RequestType = RequestType.Get;
-                        urlSuffix = "/status.xml";
+                        request.Header.SetHeaderValue("Content-Type", "text/xml");
+                        urlSuffix = "/getxml?location=/Status";
                         break;
                     }
                 case eCommandType.GetConfiguration:
                     {
                         request.RequestType = RequestType.Get;
-                        urlSuffix = "/configuration.xml";
+                        request.Header.SetHeaderValue("Content-Type", "text/xml");
+                        urlSuffix = "/getxml?location=/Configuration";
                         break;
                     }
             }
@@ -185,7 +190,7 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
             Client.DispatchAsync(request, PostConnectionCallback);
         }
 
-        void PostConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
+        void PostConnectionCallback(HttpsClientResponse resp, HTTP_CALLBACK_ERROR err)
         {
             try
             {
@@ -199,9 +204,6 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
                         {
                             // Get the initial configruation for sync purposes
                             SendHttpCommand("", eCommandType.GetConfiguration);
-
-                            // Get the initial status for sync purposes
-                            SendHttpCommand("", eCommandType.GetStatus);
                         }
                         else
                         {
@@ -209,20 +211,31 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
                             {                               
                                 if (resp.ContentString.IndexOf("</Configuration>") > -1)
                                 {
-                                    CodecConfiguration =  CrestronXMLSerialization.DeSerializeObject<CiscoCodecConfiguration.Configuration>(resp.ContentString);
+                                    XmlReaderSettings settings = new XmlReaderSettings();
+
+                                    XmlReader reader = new XmlReader(resp.ContentString, settings);
+
+                                    CodecConfiguration = CrestronXMLSerialization.DeSerializeObject<CiscoCodecConfiguration.Configuration>(reader);
 
                                     Debug.Console(1, this, "Product Name: {0} Software Version: {1} ApiVersion: {2}", CodecConfiguration.Product, CodecConfiguration.Version, CodecConfiguration.ApiVersion);
+
+                                    // Get the initial status for sync purposes
+                                    SendHttpCommand("", eCommandType.GetStatus);
                                 }
                                 else if (resp.ContentString.IndexOf("</Status>") > -1)
                                 {
-                                    CodecStatus = CrestronXMLSerialization.DeSerializeObject<CiscoCodecStatus.Status>(resp.ContentString);
+                                    XmlReaderSettings settings = new XmlReaderSettings();
+
+                                    XmlReader reader = new XmlReader(resp.ContentString, settings);
+
+                                    CodecStatus = CrestronXMLSerialization.DeSerializeObject<CiscoCodecStatus.Status>(reader);
 
                                     Debug.Console(1, this, "Product Name: {0} Software Version: {1} ApiVersion: {2} Volume: {3}", CodecStatus.Product, CodecStatus.Version, CodecStatus.ApiVersion, CodecStatus.Audio.Volume);
                                 }
                             }
                             catch (Exception ex)
                             {
-                                Debug.Console(1, this, "Error Deserializing feedback from codec: {0}", ex);
+                                Debug.Console(1, this, "Error Deserializing XML document from codec: {0}", ex);
                             }
                         }
                     }

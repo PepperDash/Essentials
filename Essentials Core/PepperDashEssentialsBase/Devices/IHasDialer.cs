@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Core
     {
         // Add requirements for Dialer functionality
 
-        void Dial();
+        void Dial(string number);
         void EndCall();
         void AcceptCall();
         void RejectCall();
