@@ -57,6 +57,17 @@ namespace PepperDash.Essentials
 
                     //PortalSync = new PepperDashPortalSyncClient();
 
+
+                    // CODEC TESTING
+                    GenericSshClient TestCodecClient = new GenericSshClient("TestCodec-1--SshClient", "10.11.50.135", 22, "crestron", "2H3Zu&OvgXp6");
+
+                    PepperDash.Essentials.Devices.VideoCodec.Cisco.CiscoCodec TestCodec = 
+                        new PepperDash.Essentials.Devices.VideoCodec.Cisco.CiscoCodec("TestCodec-1", "Cisco Spark Room Kit", TestCodecClient, 8080);
+
+                    TestCodec.CustomActivate();
+
+                    // CODEC TESTING
+
 					Debug.Console(0, "Starting Essentials load from configuration");
 					ConfigReader.LoadConfig2();
 					LoadDevices();

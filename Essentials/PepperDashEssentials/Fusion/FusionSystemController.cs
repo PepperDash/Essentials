@@ -25,9 +25,9 @@ namespace PepperDash.Essentials.Fusion
 {
 	public class EssentialsHuddleSpaceFusionSystemController : Device
 	{
-        //public event EventHandler<ScheduleChangeEventArgs> ScheduleChange;
-        //public event EventHandler<MeetingChangeEventArgs> MeetingEndWarning;
-        //public event EventHandler<MeetingChangeEventArgs> NextMeetingBeginWarning;
+        public event EventHandler<ScheduleChangeEventArgs> ScheduleChange;
+        public event EventHandler<MeetingChangeEventArgs> MeetingEndWarning;
+        public event EventHandler<MeetingChangeEventArgs> NextMeetingBeginWarning;
 
 		FusionRoom FusionRoom;
 		EssentialsHuddleSpaceRoom Room;
@@ -788,6 +788,15 @@ namespace PepperDash.Essentials.Fusion
 
                            if (!IsRegisteredForSchedulePushNotifications)
                                PollTimer.Reset(SchedulePollInterval, SchedulePollInterval);
+
+                           // Fire Schedule Change Event 
+                           var handler = ScheduleChange;
+
+                           if (handler != null)
+                           {
+                               handler(this, new ScheduleChangeEventArgs() { Schedule = CurrentSchedule });
+                           }
+                           
                        }
                    }
 
@@ -806,20 +815,26 @@ namespace PepperDash.Essentials.Fusion
 
         }
 
+        /// <summary>
+        /// Prints today's schedule to console for debugging
+        /// </summary>
         void PrintTodaysSchedule()
         {
-            if (CurrentSchedule.Meetings.Count > 0)
+            if (Debug.Level > 1)
             {
-                Debug.Console(1, this, "Today's Schedule for '{0}'\n", Room.Name);
-
-                foreach (Event e in CurrentSchedule.Meetings)
+                if (CurrentSchedule.Meetings.Count > 0)
                 {
-                    Debug.Console(1, this, "Subject: {0}", e.Subject);
-                    Debug.Console(1, this, "Organizer: {0}", e.Organizer);
-                    Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
-                    Debug.Console(1, this, "Start Time: {0}", e.dtStart);
-                    Debug.Console(1, this, "End Time: {0}", e.dtEnd);
-                    Debug.Console(1, this, "Duration: {0}\n", e.DurationInMinutes);
+                    Debug.Console(1, this, "Today's Schedule for '{0}'\n", Room.Name);
+
+                    foreach (Event e in CurrentSchedule.Meetings)
+                    {
+                        Debug.Console(1, this, "Subject: {0}", e.Subject);
+                        Debug.Console(1, this, "Organizer: {0}", e.Organizer);
+                        Debug.Console(1, this, "MeetingID: {0}", e.MeetingID);
+                        Debug.Console(1, this, "Start Time: {0}", e.dtStart);
+                        Debug.Console(1, this, "End Time: {0}", e.dtEnd);
+                        Debug.Console(1, this, "Duration: {0}\n", e.DurationInMinutes);
+                    }
                 }
             }
         }
@@ -955,24 +970,23 @@ namespace PepperDash.Essentials.Fusion
 				string attrName = null;
 				uint attrNum = Convert.ToUInt32(keyNum);
 
-
-
-                if (dev is BasicTriListWithSmartObject)
+                if (dev is EssentialsTouchpanelController)
                 {
-                    if (attrNum > 10)
-                        continue;
-                    attrName = "Online - Touch Panel " + attrNum;
-                    attrNum += 150;
-                }
-                // add xpanel here
-
-                //if (dev is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
-                //{
-                //    if (attrNum > 10)
-                //        continue;
-                //    attrName = "Online - XPanel " + attrNum;
-                //    attrNum += 160;
-                //}
+                    if ((dev as EssentialsTouchpanelController).Panel is Crestron.SimplSharpPro.DeviceSupport.TswFt5Button)
+                    {
+                        if (attrNum > 10)
+                            continue;
+                        attrName = "Online - Touch Panel " + attrNum;
+                        attrNum += 150;
+                    }
+                    else if ((dev as EssentialsTouchpanelController).Panel is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
+                    {
+                        if (attrNum > 10)
+                            continue;
+                        attrName = "Online - XPanel " + attrNum;
+                        attrNum += 160;
+                    }
+                }                
 
 				//else 
 				if (dev is DisplayBase)

@@ -46,6 +46,14 @@
     <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Cisco One Button To Push, Version=1.0.0.29558, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Crestron Cisco OBTP\OBTP\bin\Cisco One Button To Push.dll</HintPath>
+    </Reference>
+    <Reference Include="Cisco SX80 Corporate Phone Book, Version=1.0.0.15355, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\CodeBlue\libraries\Cisco CODEC\Cisco SX80 Corporate Phone Book\Cisco SX80 Corporate Phone Book\bin\Cisco SX80 Corporate Phone Book.dll</HintPath>
+    </Reference>
     <Reference Include="Crestron.SimplSharpPro.DeviceSupport, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DeviceSupport.dll</HintPath>
@@ -119,6 +127,11 @@
     <Compile Include="SetTopBox\IRSetTopBoxBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Streaming\Roku.cs" />
+    <Compile Include="VC\Cisco\Configuration.cs" />
+    <Compile Include="VC\Cisco\HttpApiServer.cs" />
+    <Compile Include="VC\Cisco\Status.cs" />
+    <Compile Include="VC\Cisco\CiscoCodec.cs" />
+    <Compile Include="VC\VideoCodecBase.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
