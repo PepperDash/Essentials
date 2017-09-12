@@ -44,6 +44,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         JoinedSigInterlock StagingBarInterlock;
 
+        /// <summary>
+        /// For the staging button feedbacks
+        /// </summary>
+        JoinedSigInterlock StagingButtonFeedbackInterlock;
+
         SmartObjectNumeric DialKeypad;
 
         /// <summary>
@@ -65,8 +70,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             VCControlsInterlock = new JoinedSigInterlock(triList);
             VCControlsInterlock.SetButDontShow(UIBoolJoin.VCRecentsVisible);
+
             StagingBarInterlock = new JoinedSigInterlock(triList);
-            VCControlsInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverVisible);
+            StagingBarInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverVisible);
+
+            StagingButtonFeedbackInterlock = new JoinedSigInterlock(triList);
+            StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCRecentsVisible);
         }
 
         /// <summary>
@@ -118,7 +127,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 DialKeypad.Digit7.SetBoolSigAction(b => ___DialPlaceholder___(7));
                 DialKeypad.Digit8.SetBoolSigAction(b => ___DialPlaceholder___(8));
                 DialKeypad.Digit9.SetBoolSigAction(b => ___DialPlaceholder___(9));
+                DialKeypad.Misc1SigName = "*";
                 DialKeypad.Misc1.SetBoolSigAction(b => { });
+                DialKeypad.Misc2SigName = "#";
                 DialKeypad.Misc2.SetBoolSigAction(b => { });
             }
             else
@@ -132,21 +143,27 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void ShowCameraControls()
         {
             VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCCameraVisible);
+            StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingCameraPress);
         }
 
         void ShowKeypad()
         {
             VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
+            StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
         }
 
         void ShowDirectory()
         {
+            // populate directory
             VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCDirectoryVisible);
+            StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingDirectoryPress);
         }
 
         void ShowRecents()
         {
-            VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCRecentsVisible);
+            //populate recents
+            VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCDirectoryVisible);
+            StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingRecentsPress);
         }
 
         void CallHasStarted()
@@ -166,20 +183,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         void ___DialPlaceholder___(int i)
         {
-
-        }
-
-
-
-        public class BoolJoin
-        {
-            public const uint CameraControlsVisible = 3001;
-
-            public const uint KeypadVisbile = 3002;
-
-            public const uint DirectoryVisible = 3003;
-
-           
+            throw new NotImplementedException();
         }
     }
 }

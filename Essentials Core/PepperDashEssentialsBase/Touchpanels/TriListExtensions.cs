@@ -17,7 +17,8 @@ namespace PepperDash.Essentials.Core
 	public static class SigAndTriListExtensions
 	{
 		/// <summary>
-		/// Attaches Action to Sig's user object and returns the same Sig.
+		/// Attaches Action to Sig's user object and returns the same Sig. This provides no protection
+        /// from null sigs
 		/// </summary>
 		/// <param name="sig">The BoolOutputSig to attach the Action to</param>
 		/// <param name="a">An action to run when sig is pressed and when released</param>

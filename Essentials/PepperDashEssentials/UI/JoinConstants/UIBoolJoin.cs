@@ -139,6 +139,10 @@ namespace PepperDash.Essentials
         /// 1234
         /// </summary>
         public const uint VCStagingConnectPress = 1234;
+        /// <summary>
+        /// 1235
+        /// </summary>
+        public const uint VCStagingCameraPress = 1235;
 
         //******************************************************
         // Keyboard

@@ -385,36 +385,7 @@ namespace PepperDash.Essentials
             EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
 
             ShareButtonSig.BoolValue = CurrentRoom.OnFeedback.BoolValue;
-        }
-
-        ///// <summary>
-        ///// Builds the call stage
-        ///// </summary>
-        //void SetupCallStagingSrl()
-        //{            
-        //    CallStagingSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.CallStagingSrl, 3, 3, 3);
-        //    var c = CallStagingSrl;
-        //    c.AddItem(new SubpageReferenceListButtonAndModeItem(1, c, 1, b => { if (!b) { } })); //************ Camera
-        //    c.AddItem(new SubpageReferenceListButtonAndModeItem(2, c, 2, b => { if (!b) { } })); //************ Directory
-        //    c.AddItem(new SubpageReferenceListButtonAndModeItem(3, c, 3, b => { if (!b) { } })); //************ Keypad
-        //    c.AddItem(new SubpageReferenceListButtonAndModeItem(4, c, 4, b => { if (!b) { } })); //************ End Call
-        //    c.Count = 3;
-        //}
-
-        /// <summary>
-        /// This may need to be part of an event handler routine from codec feedback. 
-        /// Adds End Call to Call Staging list
-        /// </summary>
-        void SetupEndCall()
-        {
-        }
-
-        /// <summary>
-        /// Part of event handler?  Removes End Call from Call Staging
-        /// </summary>
-        void HideEndCall()
-        {
-        }   
+        } 
 
         /// <summary>
         /// 
@@ -424,6 +395,7 @@ namespace PepperDash.Essentials
             if (VCDriver.IsVisible)
                 return;
             CallButtonSig.BoolValue = true;
+            ShareButtonSig.BoolValue = false;
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
@@ -438,6 +410,7 @@ namespace PepperDash.Essentials
             if (VCDriver.IsVisible)
                 VCDriver.Hide();
             ShareButtonSig.BoolValue = true;
+            CallButtonSig.BoolValue = false;
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
             TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
