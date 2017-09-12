@@ -10,6 +10,8 @@
         /// </summary>
         public const uint VCDialKeypad = 1201;
 
+        public const uint VCDirectoryList = 1202;
+
         //******************************************************
         // General
 
@@ -21,18 +23,6 @@
         /// 15022 The main activity footer
         /// </summary>
         public const uint ActivityFooterSRL = 15022;
-        /// <summary>
-        /// 15045
-        /// </summary>
-        public const uint CallStagingSrl = 15045;
-        /// <summary>
-        /// 3002
-        /// </summary>
-        public const uint CallQuickDialList = 15046;
-        /// <summary>
-        /// 3003
-        /// </summary>
-        public const uint DirectorySrl = 15047;
 
 	}
 }

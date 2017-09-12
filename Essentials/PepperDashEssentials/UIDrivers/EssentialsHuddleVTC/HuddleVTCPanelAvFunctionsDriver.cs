@@ -15,7 +15,7 @@ namespace PepperDash.Essentials
     /// <summary>
     /// 
     /// </summary>
-    public class HuddleVtcPanelAvFunctionsDriver : PanelDriverBase
+    public class EssentialsHuddleVtc1PanelAvFunctionsDriver : PanelDriverBase
     {
         CrestronTouchpanelPropertiesConfig Config;
 
@@ -43,7 +43,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        public EssentialsHuddleSpaceRoom CurrentRoom
+        public EssentialsHuddleVtc1Room CurrentRoom
         {
             get { return _CurrentRoom; }
             set
@@ -51,7 +51,7 @@ namespace PepperDash.Essentials
                 SetCurrentRoom(value);
             }
         }
-        EssentialsHuddleSpaceRoom _CurrentRoom;
+        EssentialsHuddleVtc1Room _CurrentRoom;
 
         /// <summary>
         /// For hitting feedback
@@ -83,11 +83,6 @@ namespace PepperDash.Essentials
         /// Smart Object 15022
         /// </summary>
         SubpageReferenceList ActivityFooterSrl;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        SubpageReferenceList CallStagingSrl;
 
         /// <summary>
         /// Tracks which audio page group the UI is in
@@ -132,14 +127,19 @@ namespace PepperDash.Essentials
 
         JoinedSigInterlock CallPagesInterlock;
 
+        PepperDash.Essentials.UIDrivers.VC.EssentialsCiscoSparkUiDriver VCDriver;
+
         /// <summary>
         /// Constructor
         /// </summary>
-        public HuddleVtcPanelAvFunctionsDriver(PanelDriverBase parent, CrestronTouchpanelPropertiesConfig config)
+        public EssentialsHuddleVtc1PanelAvFunctionsDriver(PanelDriverBase parent, CrestronTouchpanelPropertiesConfig config)
             : base(parent.TriList)
         {
             Config = config;
             Parent = parent;
+
+            VCDriver = new PepperDash.Essentials.UIDrivers.VC.EssentialsCiscoSparkUiDriver(Parent.TriList, null);
+
             PopupInterlock = new JoinedSigInterlock(TriList);
             StagingBarInterlock = new JoinedSigInterlock(TriList);
             CallPagesInterlock = new JoinedSigInterlock(TriList);
@@ -149,8 +149,6 @@ namespace PepperDash.Essentials
             ActivityFooterSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.ActivityFooterSRL, 3, 3, 3);
             CallButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
             ShareButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
-
-            CallStagingSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.CallStagingSrl, 3, 3, 3);
 
             SetupActivityFooterWhenRoomOff();
 
@@ -409,7 +407,6 @@ namespace PepperDash.Essentials
         /// </summary>
         void SetupEndCall()
         {
-            CallStagingSrl.Count = 4;
         }
 
         /// <summary>
@@ -417,7 +414,6 @@ namespace PepperDash.Essentials
         /// </summary>
         void HideEndCall()
         {
-            CallStagingSrl.Count = 3;
         }   
 
         /// <summary>
@@ -425,11 +421,13 @@ namespace PepperDash.Essentials
         /// </summary>
         void ActivityCallButtonPressed()
         {
+            if (VCDriver.IsVisible)
+                return;
             CallButtonSig.BoolValue = true;
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
-            // Call "page"? Or separate UI driver?
+            VCDriver.Show();
         }
 
         /// <summary>
@@ -437,6 +435,8 @@ namespace PepperDash.Essentials
         /// </summary>
         void ActivityShareButtonPressed()
         {
+            if (VCDriver.IsVisible)
+                VCDriver.Hide();
             ShareButtonSig.BoolValue = true;
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
@@ -644,7 +644,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Helper for property setter. Sets the panel to the given room, latching up all functionality
         /// </summary>
-        void SetCurrentRoom(EssentialsHuddleSpaceRoom room)
+        void SetCurrentRoom(EssentialsHuddleVtc1Room room)
         {
             if (_CurrentRoom == room) return;
             // Disconnect current (probably never called)

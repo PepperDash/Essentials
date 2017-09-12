@@ -165,7 +165,7 @@
     <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
     <Compile Include="UI\SubpageReferenceListCallStagingItem.cs" />
-    <Compile Include="UIDrivers\EssentialsCiscoSpark\EssentialsCiscoSparkUiDriver.cs" />
+    <Compile Include="UIDrivers\VC\EssentialsCiscoSparkUiDriver.cs" />
     <Compile Include="UIDrivers\JoinedSigInterlock.cs" />
     <Compile Include="UIDrivers\EssentialsHuddleVTC\HuddleVTCPanelAvFunctionsDriver.cs" />
     <Compile Include="UIDrivers\VolumeAndSourceChangeArgs.cs" />

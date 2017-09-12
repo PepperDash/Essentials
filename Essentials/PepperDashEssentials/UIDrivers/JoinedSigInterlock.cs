@@ -25,9 +25,7 @@ namespace PepperDash.Essentials
         {
             if (CurrentJoin == join)
                 return;
-            if (CurrentJoin > 0)
-                TriList.BooleanInput[CurrentJoin].BoolValue = false;
-            CurrentJoin = join;
+            SetButDontShow(join);
             TriList.BooleanInput[CurrentJoin].BoolValue = true;
         }
 
@@ -73,6 +71,17 @@ namespace PepperDash.Essentials
         {
             if (CurrentJoin > 0)
                 TriList.BooleanInput[CurrentJoin].BoolValue = true;
+        }
+
+        /// <summary>
+        /// Useful for pre-setting the interlock but not enabling it.
+        /// </summary>
+        /// <param name="join"></param>
+        public void SetButDontShow(uint join)
+        {
+            if (CurrentJoin > 0)
+                TriList.BooleanInput[CurrentJoin].BoolValue = false;
+            CurrentJoin = join;
         }
 
     }

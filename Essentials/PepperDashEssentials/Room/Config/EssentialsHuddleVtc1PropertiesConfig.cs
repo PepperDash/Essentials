@@ -7,7 +7,7 @@ using Crestron.SimplSharp;
 namespace PepperDash.Essentials.Room.Config
 {
 
-    public class EssentialsHuddleVtc1PropertiesConfig
+    public class EssentialsHuddleVtc1PropertiesConfig : EssentialsRoomPropertiesConfig
     {
 
 

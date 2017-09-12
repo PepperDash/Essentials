@@ -38,7 +38,7 @@ namespace PepperDash.Essentials
 		{
 			AddPostActivationAction(() =>
 				{
-					Debug.Console(0, this, "post-activation linking");
+					Debug.Console(0, this, "Creating hardware...");
 					type = type.ToLower();
 					try
 					{
@@ -48,12 +48,24 @@ namespace PepperDash.Essentials
                             app.ParameterProjectName.Value = props.ProjectName;
                             Panel = app;
                         }
+                        else if (type == "tsw550")
+                            Panel = new Tsw550(id, Global.ControlSystem);
+                        else if (type == "tsw552")
+                            Panel = new Tsw552(id, Global.ControlSystem);
                         else if (type == "tsw560")
                             Panel = new Tsw560(id, Global.ControlSystem);
+                        else if (type == "tsw750")
+                            Panel = new Tsw750(id, Global.ControlSystem);
                         else if (type == "tsw752")
                             Panel = new Tsw752(id, Global.ControlSystem);
+                        else if (type == "tsw760")
+                            Panel = new Tsw760(id, Global.ControlSystem);
+                        else if (type == "tsw1050")
+                            Panel = new Tsw1050(id, Global.ControlSystem);
                         else if (type == "tsw1052")
                             Panel = new Tsw1052(id, Global.ControlSystem);
+                        else if (type == "tsw1060")
+                            Panel = new Tsw1060(id, Global.ControlSystem);
                         else
                         {
                             Debug.Console(0, this, "WARNING: Cannot create TSW controller with type '{0}'", type);
@@ -127,6 +139,26 @@ namespace PepperDash.Essentials
                                 mainDriver.AvDriver = avDriver;
                                 LoadAndShowDriver(mainDriver);
                                 
+                                if (Panel is TswFt5ButtonSystem)
+                                {
+                                    var tsw = Panel as TswFt5ButtonSystem;
+                                    // Wire up hard keys
+                                    tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.PowerButtonPressed(); });
+                                    //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
+                                    tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
+                                    tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
+                                    tsw.ButtonStateChange += new ButtonEventHandler(Tsw_ButtonStateChange);
+                                }
+                            }
+                            else if (room is EssentialsHuddleVtc1Room)
+                            {
+                                Debug.Console(0, this, "Adding huddle space driver");
+                                var avDriver = new EssentialsHuddleVtc1PanelAvFunctionsDriver(mainDriver, props);
+                                avDriver.CurrentRoom = room as EssentialsHuddleVtc1Room;
+                                avDriver.DefaultRoomKey = props.DefaultRoomKey;
+                                mainDriver.AvDriver = avDriver;
+                                LoadAndShowDriver(mainDriver);  // This is a little convoluted.
+
                                 if (Panel is TswFt5ButtonSystem)
                                 {
                                     var tsw = Panel as TswFt5ButtonSystem;

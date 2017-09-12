@@ -51,19 +51,19 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 1021
         /// </summary>
-        public const uint ACSpeedDial1Press = 1021;
+        public const uint ACSpeedDial1Visible = 1021;
         /// <summary>
         /// 1022
         /// </summary>
-        public const uint ACSpeedDial2Press = 1022;
+        public const uint ACSpeedDial2Visible = 1022;
         /// <summary>
         /// 1023
         /// </summary>
-        public const uint ACSpeedDial3Press = 1023;
+        public const uint ACSpeedDial3Visible = 1023;
         /// <summary>
         /// 1024
         /// </summary>
-        public const uint ACSpeedDial4Press = 1024;
+        public const uint ACSpeedDial4Visible = 1024;
 
         //******************************************************
         // Video Conference
@@ -84,6 +84,14 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint VCDirectoryVisible = 1205;
         /// <summary>
+        /// 1206
+        /// </summary>
+        public const uint VCRecentsVisible = 1206;
+        /// <summary>
+        /// 1207
+        /// </summary>
+        public const uint VCCameraVisible = 1207;
+        /// <summary>
         /// 1211
         /// </summary>
         public const uint VCSpeedDial1Press = 1211;
@@ -102,19 +110,19 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 1221
         /// </summary>
-        public const uint VCSpeedDial1Press = 1221;
+        public const uint VCSpeedDial1Visible = 1221;
         /// <summary>
         /// 1222
         /// </summary>
-        public const uint VCSpeedDial2Press = 1222;
+        public const uint VCSpeedDial2Visible = 1222;
         /// <summary>
         /// 1223
         /// </summary>
-        public const uint VCSpeedDial3Press = 1223;
+        public const uint VCSpeedDial3Visible = 1223;
         /// <summary>
         /// 1224
         /// </summary>
-        public const uint VCSpeedDial4Press = 1224;
+        public const uint VCSpeedDial4Visible = 1224;
         /// <summary>
         /// 1231
         /// </summary>
