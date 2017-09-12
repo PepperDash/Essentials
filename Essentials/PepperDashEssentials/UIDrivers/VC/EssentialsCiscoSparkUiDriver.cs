@@ -9,6 +9,7 @@ using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.UIDrivers.VC
 {
@@ -20,7 +21,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
     /// </summary>
     public class EssentialsCiscoSparkUiDriver : PanelDriverBase
     {
-        object Codec;
+        VideoCodecBase Codec;
 
         /// <summary>
         /// 
@@ -51,12 +52,17 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         SmartObjectNumeric DialKeypad;
 
+        // These are likely temp until we get a keyboard built
+        StringFeedback DialStringFeedback;
+        StringBuilder DialStringBuilder = new StringBuilder();
+        BoolFeedback DialStringBackspaceVisibleFeedback;
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="triList"></param>
         /// <param name="codec"></param>
-        public EssentialsCiscoSparkUiDriver(BasicTriListWithSmartObject triList, object codec)
+        public EssentialsCiscoSparkUiDriver(BasicTriListWithSmartObject triList, VideoCodecBase codec)
             : base(triList)
         {
             Codec = codec;
@@ -76,6 +82,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             StagingButtonFeedbackInterlock = new JoinedSigInterlock(triList);
             StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCRecentsVisible);
+
+            DialStringFeedback = new StringFeedback(() => DialStringBuilder.ToString());
+            DialStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.KeyboardText]);
+
+            DialStringBackspaceVisibleFeedback = new BoolFeedback(() => DialStringBuilder.Length > 0);
+            DialStringBackspaceVisibleFeedback
+                .LinkInputSig(TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible]);
+
+            Codec.InCallFeedback.OutputChange += new EventHandler<EventArgs>(InCallFeedback_OutputChange);
         }
 
         /// <summary>
@@ -104,7 +119,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void SetupCallStagingPopover()
         {
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingDirectoryPress, ShowDirectory);
-            TriList.SetSigFalseAction(UIBoolJoin.VCStagingConnectPress, () => { });
+            TriList.SetSigFalseAction(UIBoolJoin.VCStagingConnectPress, ConnectPress);
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingKeypadPress, ShowKeypad);
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingRecentsPress, ShowRecents);
         }
@@ -117,20 +132,20 @@ namespace PepperDash.Essentials.UIDrivers.VC
             if(TriList.SmartObjects.Contains(UISmartObjectJoin.VCDialKeypad))
             {
                 DialKeypad = new SmartObjectNumeric(TriList.SmartObjects[UISmartObjectJoin.VCDialKeypad], true);
-                DialKeypad.Digit0.SetSigFalseAction(() => ___DialPlaceholder___(0));
-                DialKeypad.Digit1.SetSigFalseAction(() => ___DialPlaceholder___(1));
-                DialKeypad.Digit2.SetSigFalseAction(() => ___DialPlaceholder___(2));
-                DialKeypad.Digit3.SetSigFalseAction(() => ___DialPlaceholder___(3));
-                DialKeypad.Digit4.SetSigFalseAction(() => ___DialPlaceholder___(4));
-                DialKeypad.Digit5.SetSigFalseAction(() => ___DialPlaceholder___(5));
-                DialKeypad.Digit6.SetSigFalseAction(() => ___DialPlaceholder___(6));
-                DialKeypad.Digit7.SetSigFalseAction(() => ___DialPlaceholder___(7));
-                DialKeypad.Digit8.SetSigFalseAction(() => ___DialPlaceholder___(8));
-                DialKeypad.Digit9.SetSigFalseAction(() => ___DialPlaceholder___(9));
+                DialKeypad.Digit0.SetSigFalseAction(() => DialKeypadPress("0"));
+                DialKeypad.Digit1.SetSigFalseAction(() => DialKeypadPress("1"));
+                DialKeypad.Digit2.SetSigFalseAction(() => DialKeypadPress("2"));
+                DialKeypad.Digit3.SetSigFalseAction(() => DialKeypadPress("3"));
+                DialKeypad.Digit4.SetSigFalseAction(() => DialKeypadPress("4"));
+                DialKeypad.Digit5.SetSigFalseAction(() => DialKeypadPress("5"));
+                DialKeypad.Digit6.SetSigFalseAction(() => DialKeypadPress("6"));
+                DialKeypad.Digit7.SetSigFalseAction(() => DialKeypadPress("7"));
+                DialKeypad.Digit8.SetSigFalseAction(() => DialKeypadPress("8"));
+                DialKeypad.Digit9.SetSigFalseAction(() => DialKeypadPress("9"));
                 DialKeypad.Misc1SigName = "*";
-                DialKeypad.Misc1.SetSigFalseAction(() => { });
+                DialKeypad.Misc1.SetSigFalseAction(() => DialKeypadPress("*"));
                 DialKeypad.Misc2SigName = "#";
-                DialKeypad.Misc2.SetSigFalseAction(() => { });
+                DialKeypad.Misc2.SetSigFalseAction(() => DialKeypadPress("#"));
             }
             else
                 Debug.Console(0, "Trilist {0:x2}, VC dial keypad object {1} not found. Check SGD file or VTP",
@@ -166,24 +181,55 @@ namespace PepperDash.Essentials.UIDrivers.VC
             StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingRecentsPress);
         }
 
-        void CallHasStarted()
+        /// <summary>
+        ///
+        /// </summary>
+        void ConnectPress()
         {
-
-            // Header icon
-            // Add end call button to stage
-            // Volume bar needs to have mic mute
+            if (Codec.InCallFeedback.BoolValue)
+                Codec.EndCall();
+            else
+                Codec.Dial(DialStringBuilder.ToString());
         }
 
-        void CallHasEnded()
+        /// <summary>
+        /// 
+        /// </summary>
+
+        void InCallFeedback_OutputChange(object sender, EventArgs e)
         {
-            // Header icon
-            // Remove end call
-            // Volume bar no mic mute (or hidden if no source?)
+            if (Codec.InCallFeedback.BoolValue) // Call is starting
+            {
+                // Header icon
+                // Add end call button to stage
+                // Volume bar needs to have mic mute
+            }
+            else // ending
+            {
+                // Header icon
+                // Remove end call
+                // Volume bar no mic mute (or hidden if no source?)
+            }
         }
 
-        void ___DialPlaceholder___(int i)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        void DialKeypadPress(string i)
         {
-            throw new NotImplementedException();
+            DialStringBuilder.Append(i);
+            DialStringFeedback.FireUpdate();
+            TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible].BoolValue = 
+                DialStringBuilder.Length > 0;
+        }
+
+        void DialKeypadBackspacePress()
+        {
+            DialStringBuilder.Remove(DialStringBuilder.Length - 1, 1);
+            DialStringFeedback.FireUpdate();
+            TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible].BoolValue =
+                DialStringBuilder.Length > 0;
         }
     }
 }

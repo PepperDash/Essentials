@@ -7,9 +7,9 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Devices.VideoCodec
+namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
-    public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer //, ICodecAudio
+    public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer, ICodecAudio
     {
         #region IUsageTracking Members
 
@@ -57,7 +57,7 @@ namespace PepperDash.Essentials.Devices.VideoCodec
             }
         }
 
-        public abstract void Dial();
+        public abstract void Dial(string s);
         public abstract void EndCall();
         public abstract void AcceptCall();
         public abstract void RejectCall();
