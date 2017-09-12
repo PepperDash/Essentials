@@ -250,8 +250,6 @@ namespace PepperDash.Essentials
 					}
 
 					var item = dict[routeKey];
-                    //Debug.Console(2, this, "Action {0} has {1} steps",
-                    //    item.SourceKey, item.RouteList.Count);
 
                     // End usage timer on last source
                     if (!string.IsNullOrEmpty(LastSourceKey))
@@ -292,15 +290,6 @@ namespace PepperDash.Essentials
 								Type = eRoutingSignalType.Video
 							};
                             DoRoute(tempVideo);
-
-                            //var tempAudio = new SourceRouteListItem
-                            //{
-                            //    DestinationKey = "$defaultAudio",
-                            //    SourceKey = route.SourceKey,
-                            //    Type = eRoutingSignalType.Audio
-                            //};
-                            //DoRoute(tempAudio);
-                            //continue; -- not sure why this was here
 						}
 						else
 							DoRoute(route);
@@ -343,8 +332,6 @@ namespace PepperDash.Essentials
                         CurrentSourceInfoKey = routeKey;
                         CurrentSourceInfo = item;
                     }
-					// And finally, set the "control".  This will trigger event
-					//CurrentControlDevice = DeviceManager.GetDeviceForKey(item.SourceKey) as Device;
 
 					OnFeedback.FireUpdate();
 

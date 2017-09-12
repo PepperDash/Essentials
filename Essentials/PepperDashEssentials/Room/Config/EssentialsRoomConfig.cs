@@ -58,9 +58,14 @@ namespace PepperDash.Essentials.Room.Config
             {
                 var props = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
                     (this.Properties.ToString());
+                var disp = DeviceManager.GetDeviceForKey(props.DefaultDisplayKey) as IRoutingSinkWithSwitching;
+                var rm = new EssentialsHuddleVtc1Room(Key, Name, disp, disp, props);
+                rm.LogoUrl = props.Logo.GetUrl();
+                rm.SourceListKey = props.SourceListKey;
+                rm.DefaultSourceItem = props.DefaultSourceItem;
+                rm.DefaultVolume = (ushort)(props.Volumes.Master.Level * 65535 / 100);
 
-                var vtcRoom = new EssentialsHuddleVtc1Room(Key, Name, null, null, props);
-                return vtcRoom;
+                return rm;
             }
 
             return null;

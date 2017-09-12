@@ -69,7 +69,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             //DirectorySrl = new SubpageReferenceList(triList, UISmartObjectJoin.VCDirectoryList, 3, 3, 3);
 
             VCControlsInterlock = new JoinedSigInterlock(triList);
-            VCControlsInterlock.SetButDontShow(UIBoolJoin.VCRecentsVisible);
+            VCControlsInterlock.SetButDontShow(UIBoolJoin.VCDirectoryVisible);
 
             StagingBarInterlock = new JoinedSigInterlock(triList);
             StagingBarInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverVisible);
@@ -117,20 +117,20 @@ namespace PepperDash.Essentials.UIDrivers.VC
             if(TriList.SmartObjects.Contains(UISmartObjectJoin.VCDialKeypad))
             {
                 DialKeypad = new SmartObjectNumeric(TriList.SmartObjects[UISmartObjectJoin.VCDialKeypad], true);
-                DialKeypad.Digit0.SetBoolSigAction(b => ___DialPlaceholder___(0));
-                DialKeypad.Digit1.SetBoolSigAction(b => ___DialPlaceholder___(1));
-                DialKeypad.Digit2.SetBoolSigAction(b => ___DialPlaceholder___(2));
-                DialKeypad.Digit3.SetBoolSigAction(b => ___DialPlaceholder___(3));
-                DialKeypad.Digit4.SetBoolSigAction(b => ___DialPlaceholder___(4));
-                DialKeypad.Digit5.SetBoolSigAction(b => ___DialPlaceholder___(5));
-                DialKeypad.Digit6.SetBoolSigAction(b => ___DialPlaceholder___(6));
-                DialKeypad.Digit7.SetBoolSigAction(b => ___DialPlaceholder___(7));
-                DialKeypad.Digit8.SetBoolSigAction(b => ___DialPlaceholder___(8));
-                DialKeypad.Digit9.SetBoolSigAction(b => ___DialPlaceholder___(9));
+                DialKeypad.Digit0.SetSigFalseAction(() => ___DialPlaceholder___(0));
+                DialKeypad.Digit1.SetSigFalseAction(() => ___DialPlaceholder___(1));
+                DialKeypad.Digit2.SetSigFalseAction(() => ___DialPlaceholder___(2));
+                DialKeypad.Digit3.SetSigFalseAction(() => ___DialPlaceholder___(3));
+                DialKeypad.Digit4.SetSigFalseAction(() => ___DialPlaceholder___(4));
+                DialKeypad.Digit5.SetSigFalseAction(() => ___DialPlaceholder___(5));
+                DialKeypad.Digit6.SetSigFalseAction(() => ___DialPlaceholder___(6));
+                DialKeypad.Digit7.SetSigFalseAction(() => ___DialPlaceholder___(7));
+                DialKeypad.Digit8.SetSigFalseAction(() => ___DialPlaceholder___(8));
+                DialKeypad.Digit9.SetSigFalseAction(() => ___DialPlaceholder___(9));
                 DialKeypad.Misc1SigName = "*";
-                DialKeypad.Misc1.SetBoolSigAction(b => { });
+                DialKeypad.Misc1.SetSigFalseAction(() => { });
                 DialKeypad.Misc2SigName = "#";
-                DialKeypad.Misc2.SetBoolSigAction(b => { });
+                DialKeypad.Misc2.SetSigFalseAction(() => { });
             }
             else
                 Debug.Console(0, "Trilist {0:x2}, VC dial keypad object {1} not found. Check SGD file or VTP",
