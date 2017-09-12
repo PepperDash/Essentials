@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.VideoCodec
 {
-    public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer //, ICodecAudio
+    public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer, IHasSharing //, ICodecAudio
     {
         #region IUsageTracking Members
 
@@ -99,6 +99,12 @@ namespace PepperDash.Essentials.Devices.VideoCodec
         public abstract void PrivacyModeOff();
         public abstract void PrivacyModeToggle();
         public BoolFeedback PrivacyModeIsOnFeedback { get; private set; }
+
+        #endregion
+
+        #region IHasSharing Members
+
+        public BoolFeedback SharingSourceFeedback { get; private set; }
 
         #endregion
     }

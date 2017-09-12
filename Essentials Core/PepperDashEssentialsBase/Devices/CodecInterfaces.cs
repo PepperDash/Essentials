@@ -18,8 +18,28 @@ namespace PepperDash.Essentials.Core
         void AcceptCall();
         void RejectCall();
 
+        void SendDtmf();
+
         BoolFeedback InCallFeedback { get; }
         BoolFeedback IncomingCallFeedback { get; }
 
+
+        
+    }
+
+    public interface IHasCallHistory
+    {
+        // Add recent calls list
+    }
+
+    public interface IHasDirectory
+    {
+
+    }
+
+    public interface IHasObtp
+    {
+
+        // Upcoming Meeting warning event
     }
 }

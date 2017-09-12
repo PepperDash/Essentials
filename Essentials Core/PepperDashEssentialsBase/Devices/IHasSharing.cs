@@ -11,7 +11,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IHasSharing
     {
+        void StartSharing();
+        void StopSharing();
 
-        BoolFeedback SharingSourceFeedback { get; }
+        StringFeedback SharingSourceFeedback { get; }
     }
 }
