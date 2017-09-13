@@ -7,7 +7,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Devices.VideoCodec
+namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
     public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer, IHasSharing //, ICodecAudio
     {
@@ -56,11 +56,15 @@ namespace PepperDash.Essentials.Devices.VideoCodec
                     UsageTracker.EndDeviceUsage();
             }
         }
+        #region IHasDialer Members
 
-        public abstract void Dial();
+        public abstract void Dial(string s);
         public abstract void EndCall();
         public abstract void AcceptCall();
         public abstract void RejectCall();
+        public abstract void SendDtmf(string s);
+
+        #endregion
 
         public virtual List<Feedback> Feedbacks
         {
@@ -104,7 +108,10 @@ namespace PepperDash.Essentials.Devices.VideoCodec
 
         #region IHasSharing Members
 
-        public BoolFeedback SharingSourceFeedback { get; private set; }
+        public abstract void StartSharing();
+        public abstract void StopSharing();
+
+        public StringFeedback SharingSourceFeedback { get; private set; }
 
         #endregion
     }

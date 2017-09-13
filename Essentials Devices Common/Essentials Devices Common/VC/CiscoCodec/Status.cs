@@ -5,7 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronXml.Serialization;
 
-namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
+namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     public class CiscoCodecStatus
     {

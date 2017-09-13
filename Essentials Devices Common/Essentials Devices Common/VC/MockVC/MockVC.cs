@@ -61,11 +61,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// Makes horrible tones go out on the wire!
         /// </summary>
         /// <param name="s"></param>
-        public void SendDTMF(string s)
+        public override void SendDtmf(string s)
         {
-
+            
         }
-
 
         public override void EndCall()
         {
@@ -89,7 +88,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             
         }
 
+        public override void StartSharing()
+        {
+            
+        }
 
+        public override void StopSharing()
+        {
+
+        }
 
         public override void ExecuteSwitch(object selector)
         {

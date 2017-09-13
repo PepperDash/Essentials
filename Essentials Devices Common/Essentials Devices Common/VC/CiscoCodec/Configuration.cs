@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
+namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     public class CiscoCodecConfiguration
     {

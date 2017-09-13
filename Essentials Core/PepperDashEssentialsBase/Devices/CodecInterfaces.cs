@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Core
         void AcceptCall();
         void RejectCall();
 
-        void SendDtmf();
+        void SendDtmf(string digit);
 
         BoolFeedback InCallFeedback { get; }
         BoolFeedback IncomingCallFeedback { get; }

@@ -13,13 +13,14 @@ using Cisco_SX80_Corporate_Phone_Book;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
+namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 
     public class CiscoCodec : VideoCodecBase
     {
         public IBasicCommunication Communication { get; private set; }
+        public CommunicationGather PortGather { get; private set; }
 
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
@@ -48,6 +49,10 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
             : base(key, name)
         {
             Communication = comm;
+
+            PortGather = new CommunicationGather(Communication, "\x0d\x0a");
+            PortGather.LineReceived += this.Port_LineReceived;
+  
             Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
 
             ServerPort = serverPort;
@@ -66,12 +71,18 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
       
         }
 
+
+
         /// <summary>
         /// Starts the HTTP feedback server and syncronizes state of codec
         /// </summary>
         /// <returns></returns>
         public override bool CustomActivate()
         {
+            CrestronConsole.AddNewConsoleCommand(SendText, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
+
+            Communication.Connect();
+
             Debug.Console(1, this, "Starting Cisco API Server");
 
             Server.Start(ServerPort);
@@ -111,6 +122,19 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
             //PhoneBook.DownloadPhoneBook(Corporate_Phone_Book.ePhoneBookLocation.Corporate);         
 
             return base.CustomActivate();
+        }
+
+        void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
+        {
+            if (Debug.Level == 1)
+                Debug.Console(1, this, "RX: '{0}'",
+                    ComTextHelper.GetEscapedText(args.Text));
+        }
+
+        public void SendText(string command)
+        {
+            Debug.Console(1, this, "Sending: '{{0}'", command);
+            Communication.SendText(command + "\0xd\0xa");
         }
 
         private void StartHttpsSession()
@@ -190,7 +214,7 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
             Client.DispatchAsync(request, PostConnectionCallback);
         }
 
-        void PostConnectionCallback(HttpsClientResponse resp, HTTP_CALLBACK_ERROR err)
+        void PostConnectionCallback(HttpsClientResponse resp, HTTPS_CALLBACK_ERROR err)
         {
             try
             {
@@ -310,11 +334,11 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
 
         protected override Func<bool> PrivacyModeFeedbackFunc { get { return () => false; } }
 
-        public override void Dial()
+        public override void  Dial(string s)
         {
-            
-        }
-
+         	
+        }  
+ 
         public override void EndCall()
         {
             
@@ -326,6 +350,21 @@ namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
         }
 
         public override void RejectCall()
+        {
+
+        }
+
+        public override void SendDtmf(string s)
+        {
+            
+        }
+
+        public override void StartSharing()
+        {
+
+        }
+
+        public override void StopSharing()
         {
 
         }
