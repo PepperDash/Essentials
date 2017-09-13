@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
@@ -127,7 +128,7 @@ namespace PepperDash.Essentials
 
         JoinedSigInterlock CallPagesInterlock;
 
-        PepperDash.Essentials.UIDrivers.VC.EssentialsCiscoSparkUiDriver VCDriver;
+        PepperDash.Essentials.UIDrivers.VC.EssentialsVideoCodecUiDriver VCDriver;
 
         /// <summary>
         /// Constructor
@@ -137,8 +138,6 @@ namespace PepperDash.Essentials
         {
             Config = config;
             Parent = parent;
-
-            VCDriver = new PepperDash.Essentials.UIDrivers.VC.EssentialsCiscoSparkUiDriver(Parent.TriList, null);
 
             PopupInterlock = new JoinedSigInterlock(TriList);
             StagingBarInterlock = new JoinedSigInterlock(TriList);
@@ -156,6 +155,15 @@ namespace PepperDash.Essentials
             //PowerOffTimeout = 30000;
 
             //TriList.StringInput[UIStringJoin.StartActivityText].StringValue = "Tap an activity below";
+        }
+
+        /// <summary>
+        /// Add a video codec driver to this
+        /// </summary>
+        /// <param name="vcd"></param>
+        public void SetVideoCodecDriver(PepperDash.Essentials.UIDrivers.VC.EssentialsVideoCodecUiDriver vcd)
+        {
+            VCDriver = vcd;
         }
 
         /// <summary>

@@ -59,7 +59,11 @@ namespace PepperDash.Essentials.Room.Config
                 var props = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
                     (this.Properties.ToString());
                 var disp = DeviceManager.GetDeviceForKey(props.DefaultDisplayKey) as IRoutingSinkWithSwitching;
-                var rm = new EssentialsHuddleVtc1Room(Key, Name, disp, disp, props);
+
+                var codec = DeviceManager.GetDeviceForKey(props.VideoCodecKey) as
+                    PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
+
+                var rm = new EssentialsHuddleVtc1Room(Key, Name, disp, disp, codec, props);
                 rm.LogoUrl = props.Logo.GetUrl();
                 rm.SourceListKey = props.SourceListKey;
                 rm.DefaultSourceItem = props.DefaultSourceItem;

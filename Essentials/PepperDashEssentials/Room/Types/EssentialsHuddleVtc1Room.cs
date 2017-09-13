@@ -7,6 +7,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials
 {
@@ -70,6 +71,8 @@ namespace PepperDash.Essentials
 		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
 		public IRoutingSinkNoSwitching DefaultAudioDevice { get; private set; }
 		public IBasicVolumeControls DefaultVolumeControls { get; private set; }
+
+        public VideoCodecBase VideoCodec { get; private set; }
 
 		public bool ExcludeFromGlobalFunctions { get; set; }
 
@@ -152,11 +155,12 @@ namespace PepperDash.Essentials
 		/// <param name="key"></param>
 		/// <param name="name"></param>
         public EssentialsHuddleVtc1Room(string key, string name, IRoutingSinkWithSwitching defaultDisplay, 
-			IRoutingSinkNoSwitching defaultAudio, EssentialsHuddleVtc1PropertiesConfig config)
+			IRoutingSinkNoSwitching defaultAudio, VideoCodecBase vc, EssentialsHuddleVtc1PropertiesConfig config)
 			: base(key, name)
 		{
 			Config = config;
 			DefaultDisplay = defaultDisplay;
+            VideoCodec = vc;
 			DefaultAudioDevice = defaultAudio;
 			if (defaultAudio is IBasicVolumeControls)
 				DefaultVolumeControls = defaultAudio as IBasicVolumeControls;

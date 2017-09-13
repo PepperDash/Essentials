@@ -13,5 +13,6 @@ namespace PepperDash.Essentials.Room.Config
         public string DefaultAudioKey { get; set; }
         public string SourceListKey { get; set; }
         public string DefaultSourceItem { get; set; }
+        public string VideoCodecKey { get; set; }
     }
 }
