@@ -205,7 +205,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void Show()
 		{
-			TriList.BooleanInput[UIBoolJoin.TopBarVisible].BoolValue = true;
+			TriList.BooleanInput[UIBoolJoin.TopBarHabaneroVisible].BoolValue = true;
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = true;
 
 			// Default to showing rooms/sources now.
@@ -266,12 +266,12 @@ namespace PepperDash.Essentials
 		{
             var tl = TriList.BooleanInput;
             HideAndClearCurrentDisplayModeSigsInUse();
-			tl[UIBoolJoin.TopBarVisible].BoolValue = false;
+			tl[UIBoolJoin.TopBarHabaneroVisible].BoolValue = false;
             tl[UIBoolJoin.ActivityFooterVisible].BoolValue = false;
             tl[UIBoolJoin.StartPageVisible].BoolValue = false;
             tl[UIBoolJoin.TapToBeginVisible].BoolValue = false;
             tl[UIBoolJoin.ToggleSharingModeVisible].BoolValue = false;
-            tl[UIBoolJoin.StagingPageVisible].BoolValue = false;
+            tl[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
             if (IsSharingModeAdvanced)
                 tl[UIBoolJoin.DualDisplayPageVisible].BoolValue = false;
             else
@@ -290,7 +290,7 @@ namespace PepperDash.Essentials
         {
             var tlb = TriList.BooleanInput;
             tlb[UIBoolJoin.ToggleSharingModeVisible].BoolValue = true;
-            tlb[UIBoolJoin.StagingPageVisible].BoolValue = true;
+            tlb[UIBoolJoin.SourceStagingBarVisible].BoolValue = true;
             if (IsSharingModeAdvanced)
             {
                 tlb[UIBoolJoin.DualDisplayPageVisible].BoolValue = true;
@@ -310,7 +310,7 @@ namespace PepperDash.Essentials
         {
             var tl = TriList.BooleanInput;
             tl[UIBoolJoin.ToggleSharingModeVisible].BoolValue = false;
-            tl[UIBoolJoin.StagingPageVisible].BoolValue = false;
+            tl[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
             tl[UIBoolJoin.DualDisplayPageVisible].BoolValue = false;
             tl[UIBoolJoin.SelectASourceVisible].BoolValue = false;
         }

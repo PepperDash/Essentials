@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
+
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
 
 using PepperDash.Core;
+using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.DM;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.Room.Config
 {
 	public class EssentialsRoomConfig : DeviceConfig
 	{
@@ -54,6 +54,20 @@ namespace PepperDash.Essentials
                 var presRoom = new EssentialsPresentationRoom(Key, Name, displaysDict, masterVolumeControlDev, props);
                 return presRoom;
             }
+            else if (typeName == "huddlevtc1")
+            {
+                var props = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
+                    (this.Properties.ToString());
+                var disp = DeviceManager.GetDeviceForKey(props.DefaultDisplayKey) as IRoutingSinkWithSwitching;
+                var rm = new EssentialsHuddleVtc1Room(Key, Name, disp, disp, props);
+                rm.LogoUrl = props.Logo.GetUrl();
+                rm.SourceListKey = props.SourceListKey;
+                rm.DefaultSourceItem = props.DefaultSourceItem;
+                rm.DefaultVolume = (ushort)(props.Volumes.Master.Level * 65535 / 100);
+
+                return rm;
+            }
+
             return null;
 		}
 	}
@@ -67,12 +81,50 @@ namespace PepperDash.Essentials
         public string Description { get; set; }
         public int ShutdownVacancySeconds { get; set; }
         public int ShutdownPromptSeconds { get; set; }
+        public EssentialsHelpPropertiesConfig Help { get; set; }
+        public EssentialsOneButtonMeetingPropertiesConfig OneButtonMeeting { get; set; }
+        public EssentialsRoomAddressPropertiesConfig Addresses { get; set; }
         public EssentialsRoomOccSensorConfig OccupancySensors { get; set; }
         public EssentialsLogoPropertiesConfig Logo { get; set; }
         public EssentialsRoomVolumesConfig Volumes { get; set; }
 	}
 
+    /// <summary>
+    /// Properties for the help text box
+    /// </summary>
+    public class EssentialsHelpPropertiesConfig
+    {
+        public string Message { get; set; }
+        public bool ShowCallButton { get; set; }
+        /// <summary>
+        /// Defaults to "Call Help Desk"
+        /// </summary>
+        public string CallButtonText { get; set; }
 
+        public EssentialsHelpPropertiesConfig()
+        {
+            CallButtonText = "Call Help Desk";
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class EssentialsOneButtonMeetingPropertiesConfig
+    {
+        public bool Enable { get; set; }
+    }
+
+    public class EssentialsRoomAddressPropertiesConfig
+    {
+        public string PhoneNumber { get; set; }
+        public string SipAddress { get; set; }
+    }
+
+
+    /// <summary>
+    /// Properties for the room's logo on panels
+    /// </summary>
     public class EssentialsLogoPropertiesConfig
     {
         public string Type { get; set; }
@@ -100,32 +152,4 @@ namespace PepperDash.Essentials
         public List<string> Types { get; set; }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public class EssentialsHuddleRoomPropertiesConfig : EssentialsRoomPropertiesConfig
-    {
-        public string DefaultDisplayKey { get; set; }
-        public string DefaultAudioKey { get; set; }
-        public string SourceListKey { get; set; }
-        public string DefaultSourceItem { get; set; }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class EssentialsPresentationRoomPropertiesConfig : EssentialsRoomPropertiesConfig
-    {
-        public string DefaultAudioBehavior { get; set; }
-        public string DefaultAudioKey { get; set; }
-        public string DefaultVideoBehavior { get; set; }
-        public List<string> DisplayKeys { get; set; }
-        public string SourceListKey { get; set; }
-        public bool HasDsp { get; set; }
-
-        public EssentialsPresentationRoomPropertiesConfig()
-        {
-            DisplayKeys = new List<string>();
-        }
-    }    
 }

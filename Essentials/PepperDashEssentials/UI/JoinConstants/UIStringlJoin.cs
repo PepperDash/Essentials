@@ -9,10 +9,17 @@ using Crestron.SimplSharpPro.DeviceSupport;
 namespace PepperDash.Essentials
 {
 	/// <summary>
-	/// 
+	/// Common string join number constants
 	/// </summary>
 	public class UIStringJoin
 	{
+        //******************************************************
+        // Keyboard
+        /// <summary>
+        /// 1901
+        /// </summary>
+        public const uint KeyboardText = 2901;
+
         /// <summary>
         /// 3812
         /// </summary>
@@ -51,6 +58,18 @@ namespace PepperDash.Essentials
         /// </summary>
 		public const uint CurrentSourceIcon = 3903;
         /// <summary>
+        /// 3904 - Phone number for room header
+        /// </summary>
+        public const uint RoomPhoneText = 3904;
+        /// <summary>
+        /// 3905 - SIP address for room header
+        /// </summary>
+        public const uint RoomSipText = 3905;
+        /// <summary>
+        /// 3906 - The separator for verbose-header text on addresses
+        /// </summary>
+        public const uint RoomAddressPipeText = 3906;
+        /// <summary>
         /// 3911
         /// </summary>
 		public const uint PowerOffMessage = 3911;
@@ -71,11 +90,14 @@ namespace PepperDash.Essentials
         /// 3922
         /// </summary>
         public const uint HelpMessage = 3922;
-
         /// <summary>
         /// 3923
         /// </summary>
         public const uint LogoUrl = 3923;
+        /// <summary>
+        /// 3924 - the text on the "call help desk" button
+        /// </summary>
+        public const uint HelpPageCallButtonText = 3924;
 
         /// <summary>
         /// 3961 Name of source on display 1

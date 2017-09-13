@@ -22,6 +22,143 @@ namespace PepperDash.Essentials
         /// </summary>
 		public const uint VolumeDownPress = 902;
 
+        //******************************************************
+        // Audio Conference
+        /// <summary>
+        /// 1001
+        /// </summary>
+        public const uint ACKeypadVisible = 1001;
+        /// <summary>
+        /// 1002
+        /// </summary>
+        public const uint ACStagingPopoverVisible = 1002;
+        /// <summary>
+        /// 1011
+        /// </summary>
+        public const uint ACSpeedDial1Press = 1011;
+        /// <summary>
+        /// 1012
+        /// </summary>
+        public const uint ACSpeedDial2Press = 1012;
+        /// <summary>
+        /// 1013
+        /// </summary>
+        public const uint ACSpeedDial3Press = 1013;
+        /// <summary>
+        /// 1014
+        /// </summary>
+        public const uint ACSpeedDial4Press = 1014;
+        /// <summary>
+        /// 1021
+        /// </summary>
+        public const uint ACSpeedDial1Visible = 1021;
+        /// <summary>
+        /// 1022
+        /// </summary>
+        public const uint ACSpeedDial2Visible = 1022;
+        /// <summary>
+        /// 1023
+        /// </summary>
+        public const uint ACSpeedDial3Visible = 1023;
+        /// <summary>
+        /// 1024
+        /// </summary>
+        public const uint ACSpeedDial4Visible = 1024;
+
+        //******************************************************
+        // Video Conference
+        /// <summary>
+        /// 1201
+        /// </summary>
+        public const uint VCKeypadVisible = 1201;
+        /// <summary>
+        /// 1202
+        /// </summary>
+        public const uint VCStagingInactivePopoverVisible = 1202;
+        /// <summary>
+        /// 
+        /// </summary>
+        public const uint VCStagingActivePopoverVisible = 1203;
+        /// <summary>
+        /// 1205
+        /// </summary>
+        public const uint VCDirectoryVisible = 1205;
+        /// <summary>
+        /// 1206
+        /// </summary>
+        public const uint VCRecentsVisible = 1206;
+        /// <summary>
+        /// 1207
+        /// </summary>
+        public const uint VCCameraVisible = 1207;
+        /// <summary>
+        /// 1211
+        /// </summary>
+        public const uint VCSpeedDial1Press = 1211;
+        /// <summary>
+        /// 1212
+        /// </summary>
+        public const uint VCSpeedDial2Press = 1212;
+        /// <summary>
+        /// 1213
+        /// </summary>
+        public const uint VCSpeedDial3Press = 1213;
+        /// <summary>
+        /// 1214
+        /// </summary>
+        public const uint VCSpeedDial4Press = 1214;
+        /// <summary>
+        /// 1221
+        /// </summary>
+        public const uint VCSpeedDial1Visible = 1221;
+        /// <summary>
+        /// 1222
+        /// </summary>
+        public const uint VCSpeedDial2Visible = 1222;
+        /// <summary>
+        /// 1223
+        /// </summary>
+        public const uint VCSpeedDial3Visible = 1223;
+        /// <summary>
+        /// 1224
+        /// </summary>
+        public const uint VCSpeedDial4Visible = 1224;
+        /// <summary>
+        /// 1231
+        /// </summary>
+        public const uint VCStagingRecentsPress = 1231;
+        /// <summary>
+        /// 1232
+        /// </summary>
+        public const uint VCStagingDirectoryPress = 1232;
+        /// <summary>
+        /// 1233
+        /// </summary>
+        public const uint VCStagingKeypadPress = 1233;
+        /// <summary>
+        /// 1234
+        /// </summary>
+        public const uint VCStagingConnectPress = 1234;
+        /// <summary>
+        /// 1235
+        /// </summary>
+        public const uint VCStagingCameraPress = 1235;
+
+        //******************************************************
+        // Keyboard
+        /// <summary>
+        /// 2901
+        /// </summary>
+        public const uint KeyboardVisible = 2901; 
+        /// <summary>
+        /// 2910
+        /// </summary>
+        public const uint KeyboardClearPress = 2910;
+        /// <summary>
+        /// 2911
+        /// </summary>
+        public const uint KeyboardClearVisible = 2911;
+
         /// <summary>
         /// 3811
         /// </summary>
@@ -34,19 +171,6 @@ namespace PepperDash.Essentials
         /// 3813
         /// </summary>
         public const uint Volume1ProgramMutePressAndFB = 3813;
-        /// <summary>
-        /// 3871
-        /// </summary>
-        public const uint VolumeDualMute1Visible = 3871;
-        /// <summary>
-        /// 3874
-        /// </summary>
-        public const uint Volume1SpeechMutePressAndFB = 3874;
-        /// <summary>
-        /// 3875
-        /// </summary>
-        public const uint Volume1BackerVisibility = 3875;
-
         /// <summary>
         /// 3821
         /// </summary>
@@ -113,6 +237,22 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint VolumesPageVisible = 3870;
         /// <summary>
+        /// 3871
+        /// </summary>
+        public const uint VolumeDualMute1Visible = 3871;
+        /// <summary>
+        /// 3874
+        /// </summary>
+        public const uint Volume1SpeechMutePressAndFB = 3874;
+        /// <summary>
+        /// 3875
+        /// </summary>
+        public const uint Volume1BackerVisibility = 3875;
+        /// <summary>
+        /// 3891
+        /// </summary>
+        public const uint VolumeDefaultPress = 3891;
+        /// <summary>
         /// 3901
         /// </summary>
         public const uint TechPagesExitButton = 3901;
@@ -157,13 +297,13 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint ShowPanelSetupPress = 15010;
         /// <summary>
-        /// 15011
+        /// 15011 - Top bar with room name and button that pops up dialog with room data
         /// </summary>
-		public const uint TopBarVisible = 15011;
+		public const uint TopBarHabaneroVisible = 15011;
         /// <summary>
         /// 15012
         /// </summary>
-		public const uint StagingPageVisible = 15012;
+		public const uint SourceStagingBarVisible = 15012;
         /// <summary>
         /// 15013
         /// </summary>
@@ -212,7 +352,7 @@ namespace PepperDash.Essentials
         /// 15026
         /// </summary>
         public const uint LightsHeaderButtonPress = 15026;
-        /// <summary>
+        /// <summary>[-
         /// 15027
         /// </summary>
         public const uint CallHeaderButtonPress = 15027;
@@ -261,6 +401,14 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint GearButtonVisible = 15037;
         /// <summary>
+        /// 15038
+        /// </summary>
+        public const uint CalendarHeaderButtonVisible = 15038;
+        /// <summary>
+        /// 15039
+        /// </summary>
+        public const uint CalendarHeaderButtonPress = 15039;
+        /// <summary>
         /// 15040
         /// </summary>
         public const uint CallStatusPageVisible = 15040;
@@ -280,8 +428,10 @@ namespace PepperDash.Essentials
         /// 15044 Close button for source modal overlay
         /// </summary>
         public const uint SourceBackgroundOverlayClosePress = 15044;
-
-
+        /// <summary>
+        /// 15045 - Visibility for the bar containing call navigation button list
+        /// </summary>
+        public const uint CallStagingBarVisible = 15045;
         /// <summary>
         /// 15051
         /// </summary>
@@ -347,17 +497,22 @@ namespace PepperDash.Essentials
         /// 15065
         /// </summary>
         public const uint LogoUrlVisible = 15065;
-
+        /// <summary>
+        /// 15083 - Press for Call help desk on AC/VC
+        /// </summary>
+        public const uint HelpPageShowCallButtonPress = 15083;
+        /// <summary>
+        /// 15084 - Show the "call help desk" button on help page
+        /// </summary>
+        public const uint HelpPageShowCallButtonVisible = 15084;
         /// <summary>
         /// 15085 Visibility join for help subpage
         /// </summary>
         public const uint HelpPageVisible = 15085;
-
         /// <summary>
         /// 15086 Press for help header button
         /// </summary>
         public const uint HelpPress = 15086;
-
         /// <summary>
         /// 15088
         /// </summary>

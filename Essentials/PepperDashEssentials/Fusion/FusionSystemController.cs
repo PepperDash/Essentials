@@ -41,10 +41,10 @@ namespace PepperDash.Essentials.Fusion
 		StringSigData CurrentRoomSourceNameSig;
 
         #region System Info Sigs
-        StringSigData SystemName;
-        StringSigData Model;
-        StringSigData SerialNumber;
-        StringSigData Uptime;
+        //StringSigData SystemName;
+        //StringSigData Model;
+        //StringSigData SerialNumber;
+        //StringSigData Uptime;
         #endregion
 
 
