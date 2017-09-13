@@ -52,7 +52,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void Dial(string s)
         {
-            
+            Debug.Console(1, this, "Dial: {0}", s);
+
             _InCall = true;
             InCallFeedback.FireUpdate();
         }
@@ -63,12 +64,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <param name="s"></param>
         public void SendDTMF(string s)
         {
-
+            Debug.Console(1, this, "SendDTMF: {0}", s);
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
         public override void EndCall()
         {
+            Debug.Console(1, this, "EndCall");
             _InCall = false;
             InCallFeedback.FireUpdate();
         }
@@ -78,7 +82,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void AcceptCall()
         {
-            
+            Debug.Console(1, this, "AcceptCall");
         }
 
         /// <summary>
@@ -86,52 +90,84 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void RejectCall()
         {
-            
+            Debug.Console(1, this, "RejectCall");
         }
 
 
-
+        /// <summary>
+        /// Called by routing to make it happen
+        /// </summary>
+        /// <param name="selector"></param>
         public override void ExecuteSwitch(object selector)
         {
-            
+            Debug.Console(1, this, "ExecuteSwitch");
+
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void ReceiveMuteOff()
         {
+            Debug.Console(1, this, "ReceiveMuteOff");
+
             if (!_ReceiveMute)
                 return;
             _ReceiveMute = false;
             ReceiveMuteIsOnFeedback.FireUpdate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void ReceiveMuteOn()
         {
+            Debug.Console(1, this, "ReceiveMuteOn");
             if (_ReceiveMute)
                 return;
             ReceiveMuteIsOnFeedback.FireUpdate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void ReceiveMuteToggle()
         {
+            Debug.Console(1, this, "ReceiveMuteToggle");
+
             _ReceiveMute = !_ReceiveMute;
             ReceiveMuteIsOnFeedback.FireUpdate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="level"></param>
         public override void SetReceiveVolume(ushort level)
         {
-            
+            Debug.Console(1, this, "SetReceiveVolume: {0}", level);
+
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void TransmitMuteOff()
         {
+            Debug.Console(1, this, "TransmitMuteOff");
+
             if (!_TransmitMute)
                 return;
             _TransmitMute = false;
             TransmitMuteIsOnFeedback.FireUpdate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void TransmitMuteOn()
         {
+            Debug.Console(1, this, "TransmitMuteOn");
             if (_TransmitMute)
                 return;
             TransmitMuteIsOnFeedback.FireUpdate();
@@ -140,16 +176,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void TransmitMuteToggle()
         {
             _TransmitMute = !_TransmitMute;
+            Debug.Console(1, this, "TransmitMuteToggle: {0}", _TransmitMute);
             TransmitMuteIsOnFeedback.FireUpdate();
         }
 
         public override void SetTransmitVolume(ushort level)
         {
-            
+            Debug.Console(1, this, "SetTransmitVolume: {0}", level);
         }
 
         public override void PrivacyModeOn()
         {
+            Debug.Console(1, this, "PrivacyMuteOn");
             if (_PrivacyModeIsOn)
                 return;
             _PrivacyModeIsOn = true;
@@ -159,6 +197,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public override void PrivacyModeOff()
         {
+            Debug.Console(1, this, "PrivacyMuteOff");
             if (!_PrivacyModeIsOn)
                 return;
             _PrivacyModeIsOn = false;
@@ -168,7 +207,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void PrivacyModeToggle()
         {
             _PrivacyModeIsOn = !_PrivacyModeIsOn;
-            PrivacyModeIsOnFeedback.FireUpdate();
+             Debug.Console(1, this, "PrivacyMuteToggle: {0}", _PrivacyModeIsOn);
+           PrivacyModeIsOnFeedback.FireUpdate();
         }
 
         //********************************************************
@@ -176,16 +216,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public void TestIncomingCall(string url)
         {
+            Debug.Console(1, this, "TestIncomingCall");
+
             _IncomingCall = true;
             IncomingCallFeedback.FireUpdate();
         }
 
         public void TestFarEndHangup()
         {
+            Debug.Console(1, this, "TestFarEndHangup");
 
         }
-
-
-
     }
 }

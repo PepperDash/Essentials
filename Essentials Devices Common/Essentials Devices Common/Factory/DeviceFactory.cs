@@ -100,6 +100,12 @@ namespace PepperDash.Essentials.Devices.Common
                 return new Laptop(key, name);
             }
 
+            else if (typeName == "mockvc")
+            {
+                return new PepperDash.Essentials.Devices.Common.VideoCodec
+                    .MockVC(key, name);
+            }
+
             else if (groupName == "settopbox") //(typeName == "irstbbase")
             {
                 var irCont = IRPortHelper.GetIrOutputPortController(dc);

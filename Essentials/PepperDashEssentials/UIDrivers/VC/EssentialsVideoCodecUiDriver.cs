@@ -19,8 +19,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
     /// Probably needs event or FB to feed AV driver - to show two-mute volume when appropriate.
     /// 
     /// </summary>
-    public class EssentialsCiscoSparkUiDriver : PanelDriverBase
+    public class EssentialsVideoCodecUiDriver : PanelDriverBase
     {
+        /// <summary>
+        /// 
+        /// </summary>
         VideoCodecBase Codec;
 
         /// <summary>
@@ -62,7 +65,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         /// <param name="triList"></param>
         /// <param name="codec"></param>
-        public EssentialsCiscoSparkUiDriver(BasicTriListWithSmartObject triList, VideoCodecBase codec)
+        public EssentialsVideoCodecUiDriver(BasicTriListWithSmartObject triList, VideoCodecBase codec)
             : base(triList)
         {
             Codec = codec;
@@ -146,6 +149,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 DialKeypad.Misc1.SetSigFalseAction(() => DialKeypadPress("*"));
                 DialKeypad.Misc2SigName = "#";
                 DialKeypad.Misc2.SetSigFalseAction(() => DialKeypadPress("#"));
+                TriList.SetSigFalseAction(UIBoolJoin.KeyboardClearPress, DialKeypadBackspacePress);
             }
             else
                 Debug.Console(0, "Trilist {0:x2}, VC dial keypad object {1} not found. Check SGD file or VTP",
@@ -198,6 +202,13 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         void InCallFeedback_OutputChange(object sender, EventArgs e)
         {
+#warning mode does not change!
+            var inCall = Codec.InCallFeedback.BoolValue;
+            Debug.Console(2, "*#* Codec Driver InCallFeedback change={0}", InCall);
+            TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(inCall ? 1 : 0);
+            StagingBarInterlock.ShowInterlocked(
+                inCall ? UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
+           
             if (Codec.InCallFeedback.BoolValue) // Call is starting
             {
                 // Header icon
@@ -224,12 +235,16 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 DialStringBuilder.Length > 0;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void DialKeypadBackspacePress()
         {
             DialStringBuilder.Remove(DialStringBuilder.Length - 1, 1);
             DialStringFeedback.FireUpdate();
             TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible].BoolValue =
                 DialStringBuilder.Length > 0;
+            TriList.SetBool(UIBoolJoin.VCStagingConnectEnable, DialStringBuilder.Length > 0);
         }
     }
 }

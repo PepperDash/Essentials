@@ -134,11 +134,11 @@
     <Compile Include="Devices\DiscPlayer\OppoExtendedBdp.cs" />
     <Compile Include="Devices\NUMERIC AppleTV.cs" />
     <Compile Include="ControlSystem.cs" />
-    <Compile Include="Fusion\FusionEventHandlers.cs" />
-    <Compile Include="Fusion\FusionProcessorQueries.cs" />
-    <Compile Include="Fusion\FusionRviDataClasses.cs" />
+    <Compile Include="OTHER\Fusion\FusionEventHandlers.cs" />
+    <Compile Include="OTHER\Fusion\FusionProcessorQueries.cs" />
+    <Compile Include="OTHER\Fusion\FusionRviDataClasses.cs" />
     <Compile Include="REMOVE EssentialsApp.cs" />
-    <Compile Include="Fusion\FusionSystemController.cs" />
+    <Compile Include="OTHER\Fusion\FusionSystemController.cs" />
     <Compile Include="HttpApiHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Room\Config\EssentialsPresentationPropertiesConfig.cs" />
@@ -165,7 +165,7 @@
     <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
     <Compile Include="UI\SubpageReferenceListCallStagingItem.cs" />
-    <Compile Include="UIDrivers\VC\EssentialsCiscoSparkUiDriver.cs" />
+    <Compile Include="UIDrivers\VC\EssentialsVideoCodecUiDriver.cs" />
     <Compile Include="UIDrivers\JoinedSigInterlock.cs" />
     <Compile Include="UIDrivers\EssentialsHuddleVTC\HuddleVTCPanelAvFunctionsDriver.cs" />
     <Compile Include="UIDrivers\VolumeAndSourceChangeArgs.cs" />
@@ -192,9 +192,6 @@
     <Compile Include="UI\SubpageReferenceListSourceItem.cs" />
     <None Include="app.config" />
     <None Include="Properties\ControlSystem.cfg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="OTHER\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

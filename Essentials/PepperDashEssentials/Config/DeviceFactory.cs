@@ -35,6 +35,7 @@ namespace PepperDash.Essentials
                     properties.ToString());
                 return new EssentialsTouchpanelController(key, name, typeName, props, comm.IpIdInt);
             }
+
             else if (typeName == "mockdisplay")
             {
                 return new MockDisplay(key, name);

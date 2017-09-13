@@ -5,6 +5,12 @@
 	/// </summary>
 	public class UIUshortJoin
 	{
+        // Video Codec
+        /// <summary>
+        /// 1234 - 0 = Connect, 1 = End
+        /// </summary>
+        public const uint VCStagingConnectButtonMode = 1234;
+
         /// <summary>
         /// 3812
         /// </summary>
