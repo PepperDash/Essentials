@@ -9,6 +9,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     public class CiscoCodecStatus
     {
+        // Helper Classes for Proerties
+        public abstract class ValueProperty
+        {
+            /// <summary>
+            /// Triggered when Value is set
+            /// </summary>
+            public Action ValueChangedAction { get; set; }
+
+            protected void OnValueChanged()
+            {
+                var a = ValueChangedAction;
+                if (a != null)
+                    a();
+            }
+
+        }
 
         public class ConnectionStatus
         {
@@ -31,9 +47,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Connectors Connectors { get; set; }
         }
 
-        public class Mute
+        public class Mute : ValueProperty
         {
-            public string Value { get; set; }
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                set
+                {
+                    // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "On";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class Microphones
@@ -68,23 +94,68 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Connectors2 Connectors { get; set; }
         }
 
-        public class Volume
+        public class Volume : ValueProperty
         {
-            public string Value { get; set; }
+            string _Value;
+
+            /// <summary>
+            /// Sets Value and triggers the action when set
+            /// </summary>
+            public string Value 
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    OnValueChanged();
+                }
+            }
+
+            /// <summary>
+            /// Converted value of _Value for use as feedback
+            /// </summary>
+            public int IntValue
+            {
+                get
+                {
+                    if (!string.IsNullOrEmpty(_Value))
+                        return Convert.ToInt32(_Value);
+                    else
+                        return 0;
+                }
+            }
         }
 
-        public class VolumeMute
+        public class VolumeMute : ValueProperty
         {
-            public string Value { get; set; }
+            public bool BoolValue { get; private set; }
+
+            public string Value 
+            {
+                set
+                {
+                    // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "On";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class Audio
         {
             public Input Input { get; set; }
-            public Microphones Microphones { get; set; }
+            public Microphones Microphones { get; set; } // Can we have this setter fire the update on the CiscoCodec feedback?
             public Output Output { get; set; }
-            public Volume Volume { get; set; }
-            public VolumeMute VolumeMute { get; set; }
+            public Volume Volume { get; set; }  
+            public VolumeMute VolumeMute { get; set; } 
+
+            public Audio()
+            {
+                Volume = new Volume();
+            }
         }
 
         public class Id
@@ -1438,11 +1509,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Time Time { get; set; }
             public UserInterface UserInterface { get; set; }
             public Video Video { get; set; }
+
+            public Status()
+            {
+                Audio = new Audio();
+            }
         }
 
         public class RootObject
         {
             public Status Status { get; set; }
+
+            public RootObject()
+            {
+                Status = new Status();
+            }
         }
     }
 }

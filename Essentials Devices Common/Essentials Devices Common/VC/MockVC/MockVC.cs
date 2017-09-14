@@ -47,6 +47,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
         bool _PrivacyModeIsOn;
 
+        protected override Func<int> VolumeLevelFeedbackFunc
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         /// <summary>
         /// Dials, yo!
         /// </summary>

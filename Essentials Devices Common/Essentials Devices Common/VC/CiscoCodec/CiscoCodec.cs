@@ -33,6 +33,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         private CiscoCodecStatus.RootObject CodecStatus;
 
+        protected override Func<int> VolumeLevelFeedbackFunc
+        {
+            get
+            {
+                return () => CodecStatus.Status.Audio.Volume.IntValue;
+            }
+        }
+
         //private HttpsClient Client;
 
         //private HttpApiServer Server;
@@ -82,6 +90,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecConfiguration = new CiscoCodecConfiguration.RootObject();
 
             CodecStatus = new CiscoCodecStatus.RootObject();
+
+            CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
 
             //Client = new HttpsClient();
 
@@ -162,7 +172,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 SyncState.CodecDisconnected();
         }
 
-
+        /// <summary>
+        /// Gathers responses from the codec (including the delimiter.  Responses are checked to see if they contain JSON data and if so, the data is collected until a complete JSON
+        /// message is received before forwarding the message to be deserialized.
+        /// </summary>
+        /// <param name="dev"></param>
+        /// <param name="args"></param>
         void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
         {
             if (Debug.Level == 1)
@@ -215,7 +230,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                 SendText("xStatus");
                             break;
                         }
-                    case "xFeedback Register":
+                    case "xFeedback register":
                         {
                             SyncState.FeedbackRegistered();
                             break;
@@ -473,12 +488,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public override void  Dial(string s)
         {
-         	
+         	SendText(string.Format("xCommand Dial Number: {0}", s));
         }  
  
         public override void EndCall()
         {
-            
+            //SendText(string.Format("xCommand Accept CallId: {0}", CodecStatus.Status.));
+
         }
 
         public override void AcceptCall()
