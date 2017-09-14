@@ -8,7 +8,7 @@ using Crestron.SimplSharp.Net.Http;
 using PepperDash.Core;
 
 
-namespace PepperDash.Essentials.Devices.VideoCodec.Cisco
+namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     public class HttpApiServer
     {

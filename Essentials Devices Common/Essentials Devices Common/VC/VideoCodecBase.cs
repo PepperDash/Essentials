@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
-    public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer, ICodecAudio
+    public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer, IHasSharing, IBasicVolumeWithFeedback //, ICodecAudio
     {
         #region IUsageTracking Members
 
@@ -32,6 +32,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         abstract protected Func<bool> ReceiveMuteFeedbackFunc { get; }
         abstract protected Func<bool> PrivacyModeFeedbackFunc { get; }
 
+        abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
+
         public VideoCodecBase(string key, string name)
             : base(key, name)
         {
@@ -40,6 +42,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             ReceiveMuteIsOnFeedback = new BoolFeedback(ReceiveMuteFeedbackFunc);
             TransmitMuteIsOnFeedback = new BoolFeedback(TransmitMuteFeedbackFunc);
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeFeedbackFunc);
+
+            VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
@@ -56,11 +60,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     UsageTracker.EndDeviceUsage();
             }
         }
+        #region IHasDialer Members
 
         public abstract void Dial(string s);
         public abstract void EndCall();
         public abstract void AcceptCall();
         public abstract void RejectCall();
+        public abstract void SendDtmf(string s);
+
+        #endregion
 
         public virtual List<Feedback> Feedbacks
         {
@@ -99,6 +107,57 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public abstract void PrivacyModeOff();
         public abstract void PrivacyModeToggle();
         public BoolFeedback PrivacyModeIsOnFeedback { get; private set; }
+
+        #endregion
+
+        #region IHasSharing Members
+
+        public abstract void StartSharing();
+        public abstract void StopSharing();
+
+        public StringFeedback SharingSourceFeedback { get; private set; }
+
+        #endregion
+
+        #region IBasicVolumeWithFeedback Members
+
+        public BoolFeedback MuteFeedback { get; private set; }
+
+        public void MuteOff()
+        {
+            
+        }
+
+        public void MuteOn()
+        {
+            
+        }
+
+        public void SetVolume(ushort level)
+        {
+            
+        }
+
+        public IntFeedback VolumeLevelFeedback { get; private set; }
+
+        #endregion
+
+        #region IBasicVolumeControls Members
+
+        public void MuteToggle()
+        {
+            
+        }
+
+        public void VolumeDown(bool pressRelease)
+        {
+            
+        }
+
+        public void VolumeUp(bool pressRelease)
+        {
+            
+        }
 
         #endregion
     }

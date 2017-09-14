@@ -47,6 +47,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
         bool _PrivacyModeIsOn;
 
+        protected override Func<int> VolumeLevelFeedbackFunc
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         /// <summary>
         /// Dials, yo!
         /// </summary>
@@ -56,15 +61,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             _InCall = true;
             InCallFeedback.FireUpdate();
-        }
-
-        /// <summary>
-        /// Makes horrible tones go out on the wire!
-        /// </summary>
-        /// <param name="s"></param>
-        public void SendDTMF(string s)
-        {
-            Debug.Console(1, this, "SendDTMF: {0}", s);
         }
 
         /// <summary>
@@ -93,6 +89,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             Debug.Console(1, this, "RejectCall");
         }
 
+        /// <summary>
+        /// Makes horrible tones go out on the wire!
+        /// </summary>
+        /// <param name="s"></param>
+        public override void SendDtmf(string s)
+        {
+            Debug.Console(1, this, "SendDTMF: {0}", s);
+        }
+
+        public override void StartSharing()
+        {
+            
+        }
+
+        public override void StopSharing()
+        {
+            
+        }
 
         /// <summary>
         /// Called by routing to make it happen
