@@ -10,863 +10,1439 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
     public class CiscoCodecStatus
     {
 
-	    //[XmlRoot(ElementName="Microphone")]
-	    public class Microphone {
-		    //[XmlElement(ElementName="ConnectionStatus")]
-		    public string ConnectionStatus { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Connectors")]
-	    public class Connectors {
-		    //[XmlElement(ElementName="Microphone")]
-		    public List<Microphone> Microphone { get; set; }
-		    //[XmlElement(ElementName="Line")]
-		    public Line Line { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Input")]
-	    public class Input {
-		    //[XmlElement(ElementName="Connectors")]
-		    public Connectors Connectors { get; set; }
-		    //[XmlElement(ElementName="Connector")]
-		    public List<Connector> Connector { get; set; }
-		    //[XmlElement(ElementName="MainVideoSource")]
-		    public string MainVideoSource { get; set; }
-		    //[XmlElement(ElementName="Source")]
-		    public List<Source> Source { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Microphones")]
-	    public class Microphones {
-		    //[XmlElement(ElementName="Mute")]
-		    public string Mute { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Line")]
-	    public class Line {
-		    //[XmlElement(ElementName="ConnectionStatus")]
-		    public string ConnectionStatus { get; set; }
-		    //[XmlElement(ElementName="DelayMs")]
-		    public string DelayMs { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Output")]
-	    public class Output {
-		    //[XmlElement(ElementName="Connectors")]
-		    public Connectors Connectors { get; set; }
-		    //[XmlElement(ElementName="Connector")]
-		    public List<Connector> Connector { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Audio")]
-	    public class Audio {
-		    //[XmlElement(ElementName="Input")]
-		    public Input Input { get; set; }
-		    //[XmlElement(ElementName="Microphones")]
-		    public Microphones Microphones { get; set; }
-		    //[XmlElement(ElementName="Output")]
-		    public Output Output { get; set; }
-		    //[XmlElement(ElementName="Volume")]
-		    public string Volume { get; set; }
-		    //[XmlElement(ElementName="VolumeMute")]
-		    public string VolumeMute { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Current")]
-	    public class Current {
-		    //[XmlElement(ElementName="Id")]
-		    public string Id { get; set; }
-		    //[XmlElement(ElementName="CompletedAt")]
-		    public string CompletedAt { get; set; }
-		    //[XmlElement(ElementName="URL")]
-		    public string URL { get; set; }
-		    //[XmlElement(ElementName="VersionId")]
-		    public string VersionId { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Bookings")]
-	    public class Bookings {
-		    //[XmlElement(ElementName="Current")]
-		    public Current Current { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Capabilities")]
-	    public class Capabilities {
-		    //[XmlElement(ElementName="Options")]
-		    public string Options { get; set; }
-		    //[XmlElement(ElementName="Conference")]
-		    public Conference Conference { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Position")]
-	    public class Position {
-		    //[XmlElement(ElementName="Pan")]
-		    public string Pan { get; set; }
-		    //[XmlElement(ElementName="Tilt")]
-		    public string Tilt { get; set; }
-		    //[XmlElement(ElementName="Zoom")]
-		    public string Zoom { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Camera")]
-	    public class Camera {
-		    //[XmlElement(ElementName="Capabilities")]
-		    public Capabilities Capabilities { get; set; }
-		    //[XmlElement(ElementName="Connected")]
-		    public string Connected { get; set; }
-		    //[XmlElement(ElementName="Framerate")]
-		    public string Framerate { get; set; }
-		    //[XmlElement(ElementName="Manufacturer")]
-		    public string Manufacturer { get; set; }
-		    //[XmlElement(ElementName="Model")]
-		    public string Model { get; set; }
-		    //[XmlElement(ElementName="Position")]
-		    public Position Position { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="SpeakerTrack")]
-	    public class SpeakerTrack {
-		    //[XmlElement(ElementName="Availability")]
-		    public string Availability { get; set; }
-		    //[XmlElement(ElementName="Status")]
-		    public string Status { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Cameras")]
-	    public class Cameras {
-		    //[XmlElement(ElementName="Camera")]
-		    public Camera Camera { get; set; }
-		    //[XmlElement(ElementName="SpeakerTrack")]
-		    public SpeakerTrack SpeakerTrack { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Conference")]
-	    public class Conference {
-		    //[XmlElement(ElementName="MaxActiveCalls")]
-		    public string MaxActiveCalls { get; set; }
-		    //[XmlElement(ElementName="MaxAudioCalls")]
-		    public string MaxAudioCalls { get; set; }
-		    //[XmlElement(ElementName="MaxCalls")]
-		    public string MaxCalls { get; set; }
-		    //[XmlElement(ElementName="MaxVideoCalls")]
-		    public string MaxVideoCalls { get; set; }
-		    //[XmlElement(ElementName="ActiveSpeaker")]
-		    public ActiveSpeaker ActiveSpeaker { get; set; }
-		    //[XmlElement(ElementName="DoNotDisturb")]
-		    public string DoNotDisturb { get; set; }
-		    //[XmlElement(ElementName="Multipoint")]
-		    public Multipoint Multipoint { get; set; }
-		    //[XmlElement(ElementName="Presentation")]
-		    public Presentation Presentation { get; set; }
-		    //[XmlElement(ElementName="SpeakerLock")]
-		    public SpeakerLock SpeakerLock { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="ActiveSpeaker")]
-	    public class ActiveSpeaker {
-		    //[XmlElement(ElementName="CallId")]
-		    public string CallId { get; set; }
-		    //[XmlElement(ElementName="PIPPosition")]
-		    public string PIPPosition { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Multipoint")]
-	    public class Multipoint {
-		    //[XmlElement(ElementName="Mode")]
-		    public string Mode { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Whiteboard")]
-	    public class Whiteboard {
-		    //[XmlElement(ElementName="Mode")]
-		    public string Mode { get; set; }
-		    //[XmlElement(ElementName="ReleaseFloorAvailability")]
-		    public string ReleaseFloorAvailability { get; set; }
-		    //[XmlElement(ElementName="RequestFloorAvailability")]
-		    public string RequestFloorAvailability { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Presentation")]
-	    public class Presentation {
-		    //[XmlElement(ElementName="CallId")]
-		    public string CallId { get; set; }
-		    //[XmlElement(ElementName="Mode")]
-		    public string Mode { get; set; }
-		    //[XmlElement(ElementName="Whiteboard")]
-		    public Whiteboard Whiteboard { get; set; }
-		    //[XmlElement(ElementName="PIPPosition")]
-		    public string PIPPosition { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="SpeakerLock")]
-	    public class SpeakerLock {
-		    //[XmlElement(ElementName="CallId")]
-		    public string CallId { get; set; }
-		    //[XmlElement(ElementName="Mode")]
-		    public string Mode { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Message")]
-	    public class Message {
-		    //[XmlElement(ElementName="Description")]
-		    public string Description { get; set; }
-		    //[XmlElement(ElementName="Level")]
-		    public string Level { get; set; }
-		    //[XmlElement(ElementName="References")]
-		    public string References { get; set; }
-		    //[XmlElement(ElementName="Type")]
-		    public string Type { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Diagnostics")]
-	    public class Diagnostics {
-		    //[XmlElement(ElementName="Message")]
-		    public List<Message> Message { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Experimental")]
-	    public class Experimental {
-		    //[XmlElement(ElementName="Conference")]
-		    public string Conference { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Gatekeeper")]
-	    public class Gatekeeper {
-		    //[XmlElement(ElementName="Address")]
-		    public string Address { get; set; }
-		    //[XmlElement(ElementName="Port")]
-		    public string Port { get; set; }
-		    //[XmlElement(ElementName="Reason")]
-		    public string Reason { get; set; }
-		    //[XmlElement(ElementName="Status")]
-		    public string Status { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Mode")]
-	    public class Mode {
-		    //[XmlElement(ElementName="Reason")]
-		    public string Reason { get; set; }
-		    //[XmlElement(ElementName="Status")]
-		    public string Status { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="H323")]
-	    public class H323 {
-		    //[XmlElement(ElementName="Gatekeeper")]
-		    public Gatekeeper Gatekeeper { get; set; }
-		    //[XmlElement(ElementName="Mode")]
-		    public Mode Mode { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Expression")]
-	    public class Expression {
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-		    //[XmlText]
-		    public string Text { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="HttpFeedback")]
-	    public class HttpFeedback {
-		    //[XmlElement(ElementName="Expression")]
-		    public List<Expression> Expression { get; set; }
-		    //[XmlElement(ElementName="Format")]
-		    public string Format { get; set; }
-		    //[XmlElement(ElementName="URL")]
-		    public string URL { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="CDP")]
-	    public class CDP {
-		    //[XmlElement(ElementName="Address")]
-		    public string Address { get; set; }
-		    //[XmlElement(ElementName="Capabilities")]
-		    public string Capabilities { get; set; }
-		    //[XmlElement(ElementName="DeviceId")]
-		    public string DeviceId { get; set; }
-		    //[XmlElement(ElementName="Duplex")]
-		    public string Duplex { get; set; }
-		    //[XmlElement(ElementName="Platform")]
-		    public string Platform { get; set; }
-		    //[XmlElement(ElementName="PortID")]
-		    public string PortID { get; set; }
-		    //[XmlElement(ElementName="PrimaryMgmtAddress")]
-		    public string PrimaryMgmtAddress { get; set; }
-		    //[XmlElement(ElementName="SysName")]
-		    public string SysName { get; set; }
-		    //[XmlElement(ElementName="SysObjectID")]
-		    public string SysObjectID { get; set; }
-		    //[XmlElement(ElementName="VTPMgmtDomain")]
-		    public string VTPMgmtDomain { get; set; }
-		    //[XmlElement(ElementName="Version")]
-		    public string Version { get; set; }
-		    //[XmlElement(ElementName="VoIPApplianceVlanID")]
-		    public string VoIPApplianceVlanID { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Domain")]
-	    public class Domain {
-		    //[XmlElement(ElementName="Name")]
-		    public string Name { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Server")]
-	    public class Server {
-		    //[XmlElement(ElementName="Address")]
-		    public string Address { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="DNS")]
-	    public class DNS {
-		    //[XmlElement(ElementName="Domain")]
-		    public Domain Domain { get; set; }
-		    //[XmlElement(ElementName="Server")]
-		    public List<Server> Server { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Ethernet")]
-	    public class Ethernet {
-		    //[XmlElement(ElementName="MacAddress")]
-		    public string MacAddress { get; set; }
-		    //[XmlElement(ElementName="Speed")]
-		    public string Speed { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="IPv4")]
-	    public class IPv4 {
-		    //[XmlElement(ElementName="Address")]
-		    public string Address { get; set; }
-		    //[XmlElement(ElementName="Gateway")]
-		    public string Gateway { get; set; }
-		    //[XmlElement(ElementName="SubnetMask")]
-		    public string SubnetMask { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="IPv6")]
-	    public class IPv6 {
-		    //[XmlElement(ElementName="Address")]
-		    public string Address { get; set; }
-		    //[XmlElement(ElementName="Gateway")]
-		    public string Gateway { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Voice")]
-	    public class Voice {
-		    //[XmlElement(ElementName="VlanId")]
-		    public string VlanId { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="VLAN")]
-	    public class VLAN {
-		    //[XmlElement(ElementName="Voice")]
-		    public Voice Voice { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Network")]
-	    public class Network {
-		    //[XmlElement(ElementName="CDP")]
-		    public CDP CDP { get; set; }
-		    //[XmlElement(ElementName="DNS")]
-		    public DNS DNS { get; set; }
-		    //[XmlElement(ElementName="Ethernet")]
-		    public Ethernet Ethernet { get; set; }
-		    //[XmlElement(ElementName="IPv4")]
-		    public IPv4 IPv4 { get; set; }
-		    //[XmlElement(ElementName="IPv6")]
-		    public IPv6 IPv6 { get; set; }
-		    //[XmlElement(ElementName="VLAN")]
-		    public VLAN VLAN { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="NTP")]
-	    public class NTP {
-		    //[XmlElement(ElementName="CurrentAddress")]
-		    public string CurrentAddress { get; set; }
-		    //[XmlElement(ElementName="Server")]
-		    public List<Server> Server { get; set; }
-		    //[XmlElement(ElementName="Status")]
-		    public string Status { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="NetworkServices")]
-	    public class NetworkServices {
-		    //[XmlElement(ElementName="NTP")]
-		    public NTP NTP { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="ConnectedDevice")]
-	    public class ConnectedDevice {
-		    //[XmlElement(ElementName="HardwareInfo")]
-		    public string HardwareInfo { get; set; }
-		    //[XmlElement(ElementName="ID")]
-		    public string ID { get; set; }
-		    //[XmlElement(ElementName="Name")]
-		    public string Name { get; set; }
-		    //[XmlElement(ElementName="SoftwareInfo")]
-		    public string SoftwareInfo { get; set; }
-		    //[XmlElement(ElementName="Status")]
-		    public string Status { get; set; }
-		    //[XmlElement(ElementName="Type")]
-		    public string Type { get; set; }
-		    //[XmlElement(ElementName="UpgradeStatus")]
-		    public string UpgradeStatus { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-		    //[XmlElement(ElementName="PreferredFormat")]
-		    public string PreferredFormat { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Peripherals")]
-	    public class Peripherals {
-		    //[XmlElement(ElementName="ConnectedDevice")]
-		    public ConnectedDevice ConnectedDevice { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="ExtensionMobility")]
-	    public class ExtensionMobility {
-		    //[XmlElement(ElementName="Enabled")]
-		    public string Enabled { get; set; }
-		    //[XmlElement(ElementName="LastLoggedInUserId")]
-		    public string LastLoggedInUserId { get; set; }
-		    //[XmlElement(ElementName="LoggedIn")]
-		    public string LoggedIn { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="CUCM")]
-	    public class CUCM {
-		    //[XmlElement(ElementName="ExtensionMobility")]
-		    public ExtensionMobility ExtensionMobility { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="UpgradeStatus")]
-	    public class UpgradeStatus {
-		    //[XmlElement(ElementName="LastChange")]
-		    public string LastChange { get; set; }
-		    //[XmlElement(ElementName="Message")]
-		    public string Message { get; set; }
-		    //[XmlElement(ElementName="Phase")]
-		    public string Phase { get; set; }
-		    //[XmlElement(ElementName="SessionId")]
-		    public string SessionId { get; set; }
-		    //[XmlElement(ElementName="Status")]
-		    public string Status { get; set; }
-		    //[XmlElement(ElementName="URL")]
-		    public string URL { get; set; }
-		    //[XmlElement(ElementName="VersionId")]
-		    public string VersionId { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Software")]
-	    public class Software {
-		    //[XmlElement(ElementName="Current")]
-		    public Current Current { get; set; }
-		    //[XmlElement(ElementName="UpgradeStatus")]
-		    public UpgradeStatus UpgradeStatus { get; set; }
-		    //[XmlElement(ElementName="DisplayName")]
-		    public string DisplayName { get; set; }
-		    //[XmlElement(ElementName="Name")]
-		    public string Name { get; set; }
-		    //[XmlElement(ElementName="OptionKeys")]
-		    public OptionKeys OptionKeys { get; set; }
-		    //[XmlElement(ElementName="ReleaseDate")]
-		    public string ReleaseDate { get; set; }
-		    //[XmlElement(ElementName="Version")]
-		    public string Version { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Provisioning")]
-	    public class Provisioning {
-		    //[XmlElement(ElementName="CUCM")]
-		    public CUCM CUCM { get; set; }
-		    //[XmlElement(ElementName="Software")]
-		    public Software Software { get; set; }
-		    //[XmlElement(ElementName="Status")]
-		    public string Status { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Services")]
-	    public class Services {
-		    //[XmlElement(ElementName="Availability")]
-		    public string Availability { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Proximity")]
-	    public class Proximity {
-		    //[XmlElement(ElementName="Services")]
-		    public Services Services { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="PeopleCount")]
-	    public class PeopleCount {
-		    //[XmlElement(ElementName="Current")]
-		    public string Current { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="RoomAnalytics")]
-	    public class RoomAnalytics {
-		    //[XmlElement(ElementName="PeopleCount")]
-		    public PeopleCount PeopleCount { get; set; }
-		    //[XmlElement(ElementName="PeoplePresence")]
-		    public string PeoplePresence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="CallForward")]
-	    public class CallForward {
-		    //[XmlElement(ElementName="DisplayName")]
-		    public string DisplayName { get; set; }
-		    //[XmlElement(ElementName="Mode")]
-		    public string Mode { get; set; }
-		    //[XmlElement(ElementName="URI")]
-		    public string URI { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Mailbox")]
-	    public class Mailbox {
-		    //[XmlElement(ElementName="MessagesWaiting")]
-		    public string MessagesWaiting { get; set; }
-		    //[XmlElement(ElementName="URI")]
-		    public string URI { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Proxy")]
-	    public class Proxy {
-		    //[XmlElement(ElementName="Address")]
-		    public string Address { get; set; }
-		    //[XmlElement(ElementName="Status")]
-		    public string Status { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Registration")]
-	    public class Registration {
-		    //[XmlElement(ElementName="Reason")]
-		    public string Reason { get; set; }
-		    //[XmlElement(ElementName="Status")]
-		    public string Status { get; set; }
-		    //[XmlElement(ElementName="URI")]
-		    public string URI { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="SIP")]
-	    public class SIP {
-		    //[XmlElement(ElementName="Authentication")]
-		    public string Authentication { get; set; }
-		    //[XmlElement(ElementName="CallForward")]
-		    public CallForward CallForward { get; set; }
-		    //[XmlElement(ElementName="Mailbox")]
-		    public Mailbox Mailbox { get; set; }
-		    //[XmlElement(ElementName="Proxy")]
-		    public Proxy Proxy { get; set; }
-		    //[XmlElement(ElementName="Registration")]
-		    public Registration Registration { get; set; }
-		    //[XmlElement(ElementName="Secure")]
-		    public string Secure { get; set; }
-		    //[XmlElement(ElementName="Verified")]
-		    public string Verified { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="FIPS")]
-	    public class FIPS {
-		    //[XmlElement(ElementName="Mode")]
-		    public string Mode { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Persistency")]
-	    public class Persistency {
-		    //[XmlElement(ElementName="CallHistory")]
-		    public string CallHistory { get; set; }
-		    //[XmlElement(ElementName="Configurations")]
-		    public string Configurations { get; set; }
-		    //[XmlElement(ElementName="DHCP")]
-		    public string DHCP { get; set; }
-		    //[XmlElement(ElementName="InternalLogging")]
-		    public string InternalLogging { get; set; }
-		    //[XmlElement(ElementName="LocalPhonebook")]
-		    public string LocalPhonebook { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Security")]
-	    public class Security {
-		    //[XmlElement(ElementName="FIPS")]
-		    public FIPS FIPS { get; set; }
-		    //[XmlElement(ElementName="Persistency")]
-		    public Persistency Persistency { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Standby")]
-	    public class Standby {
-		    //[XmlElement(ElementName="State")]
-		    public string State { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Module")]
-	    public class Module {
-		    //[XmlElement(ElementName="CompatibilityLevel")]
-		    public string CompatibilityLevel { get; set; }
-		    //[XmlElement(ElementName="SerialNumber")]
-		    public string SerialNumber { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Hardware")]
-	    public class Hardware {
-		    //[XmlElement(ElementName="Module")]
-		    public Module Module { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="OptionKeys")]
-	    public class OptionKeys {
-		    //[XmlElement(ElementName="Encryption")]
-		    public string Encryption { get; set; }
-		    //[XmlElement(ElementName="MultiSite")]
-		    public string MultiSite { get; set; }
-		    //[XmlElement(ElementName="RemoteMonitoring")]
-		    public string RemoteMonitoring { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="State")]
-	    public class State {
-		    //[XmlElement(ElementName="NumberOfActiveCalls")]
-		    public string NumberOfActiveCalls { get; set; }
-		    //[XmlElement(ElementName="NumberOfInProgressCalls")]
-		    public string NumberOfInProgressCalls { get; set; }
-		    //[XmlElement(ElementName="NumberOfSuspendedCalls")]
-		    public string NumberOfSuspendedCalls { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="SystemUnit")]
-	    public class SystemUnit {
-		    //[XmlElement(ElementName="Hardware")]
-		    public Hardware Hardware { get; set; }
-		    //[XmlElement(ElementName="ProductId")]
-		    public string ProductId { get; set; }
-		    //[XmlElement(ElementName="ProductPlatform")]
-		    public string ProductPlatform { get; set; }
-		    //[XmlElement(ElementName="ProductType")]
-		    public string ProductType { get; set; }
-		    //[XmlElement(ElementName="Software")]
-		    public Software Software { get; set; }
-		    //[XmlElement(ElementName="State")]
-		    public State State { get; set; }
-		    //[XmlElement(ElementName="Uptime")]
-		    public string Uptime { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Time")]
-	    public class Time {
-		    //[XmlElement(ElementName="SystemTime")]
-		    public string SystemTime { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="ContactMethod")]
-	    public class ContactMethod {
-		    //[XmlElement(ElementName="Number")]
-		    public string Number { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="ContactInfo")]
-	    public class ContactInfo {
-		    //[XmlElement(ElementName="ContactMethod")]
-		    public List<ContactMethod> ContactMethod { get; set; }
-		    //[XmlElement(ElementName="Name")]
-		    public string Name { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="UserInterface")]
-	    public class UserInterface {
-		    //[XmlElement(ElementName="ContactInfo")]
-		    public ContactInfo ContactInfo { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Connector")]
-	    public class Connector {
-		    //[XmlElement(ElementName="Connected")]
-		    public string Connected { get; set; }
-		    //[XmlElement(ElementName="SignalState")]
-		    public string SignalState { get; set; }
-		    //[XmlElement(ElementName="SourceId")]
-		    public string SourceId { get; set; }
-		    //[XmlElement(ElementName="Type")]
-		    public string Type { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-		    //[XmlElement(ElementName="ConnectedDevice")]
-		    public ConnectedDevice ConnectedDevice { get; set; }
-		    //[XmlElement(ElementName="MonitorRole")]
-		    public string MonitorRole { get; set; }
-		    //[XmlElement(ElementName="Resolution")]
-		    public Resolution Resolution { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Resolution")]
-	    public class Resolution {
-		    //[XmlElement(ElementName="Height")]
-		    public string Height { get; set; }
-		    //[XmlElement(ElementName="RefreshRate")]
-		    public string RefreshRate { get; set; }
-		    //[XmlElement(ElementName="Width")]
-		    public string Width { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Source")]
-	    public class Source {
-		    //[XmlElement(ElementName="ConnectorId")]
-		    public string ConnectorId { get; set; }
-		    //[XmlElement(ElementName="FormatStatus")]
-		    public string FormatStatus { get; set; }
-		    //[XmlElement(ElementName="FormatType")]
-		    public string FormatType { get; set; }
-		    //[XmlElement(ElementName="MediaChannelId")]
-		    public string MediaChannelId { get; set; }
-		    //[XmlElement(ElementName="Resolution")]
-		    public Resolution Resolution { get; set; }
-		    //[XmlAttribute(AttributeName="item")]
-		    public string Item { get; set; }
-		    //[XmlAttribute(AttributeName="maxOccurrence")]
-		    public string MaxOccurrence { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="LayoutFamily")]
-	    public class LayoutFamily {
-		    //[XmlElement(ElementName="Local")]
-		    public string Local { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Layout")]
-	    public class Layout {
-		    //[XmlElement(ElementName="LayoutFamily")]
-		    public LayoutFamily LayoutFamily { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Selfview")]
-	    public class Selfview {
-		    //[XmlElement(ElementName="FullscreenMode")]
-		    public string FullscreenMode { get; set; }
-		    //[XmlElement(ElementName="Mode")]
-		    public string Mode { get; set; }
-		    //[XmlElement(ElementName="OnMonitorRole")]
-		    public string OnMonitorRole { get; set; }
-		    //[XmlElement(ElementName="PIPPosition")]
-		    public string PIPPosition { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Video")]
-	    public class Video {
-		    //[XmlElement(ElementName="ActiveSpeaker")]
-		    public ActiveSpeaker ActiveSpeaker { get; set; }
-		    //[XmlElement(ElementName="Input")]
-		    public Input Input { get; set; }
-		    //[XmlElement(ElementName="Layout")]
-		    public Layout Layout { get; set; }
-		    //[XmlElement(ElementName="Monitors")]
-		    public string Monitors { get; set; }
-		    //[XmlElement(ElementName="Output")]
-		    public Output Output { get; set; }
-		    //[XmlElement(ElementName="Presentation")]
-		    public Presentation Presentation { get; set; }
-		    //[XmlElement(ElementName="Selfview")]
-		    public Selfview Selfview { get; set; }
-	    }
-
-	    //[XmlRoot(ElementName="Status")]
-	    public class Status {
-		    //[XmlElement(ElementName="Audio")]
-		    public Audio Audio { get; set; }
-		    //[XmlElement(ElementName="Bookings")]
-		    public Bookings Bookings { get; set; }
-		    //[XmlElement(ElementName="Cameras")]
-		    public Cameras Cameras { get; set; }
-		    //[XmlElement(ElementName="Capabilities")]
-		    public Capabilities Capabilities { get; set; }
-		    //[XmlElement(ElementName="Conference")]
-		    public Conference Conference { get; set; }
-		    //[XmlElement(ElementName="Diagnostics")]
-		    public Diagnostics Diagnostics { get; set; }
-		    //[XmlElement(ElementName="Experimental")]
-		    public Experimental Experimental { get; set; }
-		    //[XmlElement(ElementName="H323")]
-		    public H323 H323 { get; set; }
-		    //[XmlElement(ElementName="HttpFeedback")]
-		    public HttpFeedback HttpFeedback { get; set; }
-		    //[XmlElement(ElementName="MediaChannels")]
-		    public string MediaChannels { get; set; }
-		    //[XmlElement(ElementName="Network")]
-		    public Network Network { get; set; }
-		    //[XmlElement(ElementName="NetworkServices")]
-		    public NetworkServices NetworkServices { get; set; }
-		    //[XmlElement(ElementName="Peripherals")]
-		    public Peripherals Peripherals { get; set; }
-		    //[XmlElement(ElementName="Provisioning")]
-		    public Provisioning Provisioning { get; set; }
-		    //[XmlElement(ElementName="Proximity")]
-		    public Proximity Proximity { get; set; }
-		    //[XmlElement(ElementName="RoomAnalytics")]
-		    public RoomAnalytics RoomAnalytics { get; set; }
-		    //[XmlElement(ElementName="SIP")]
-		    public SIP SIP { get; set; }
-		    //[XmlElement(ElementName="Security")]
-		    public Security Security { get; set; }
-		    //[XmlElement(ElementName="Standby")]
-		    public Standby Standby { get; set; }
-		    //[XmlElement(ElementName="SystemUnit")]
-		    public SystemUnit SystemUnit { get; set; }
-		    //[XmlElement(ElementName="Time")]
-		    public Time Time { get; set; }
-		    //[XmlElement(ElementName="UserInterface")]
-		    public UserInterface UserInterface { get; set; }
-		    //[XmlElement(ElementName="Video")]
-		    public Video Video { get; set; }
-		    //[XmlAttribute(AttributeName="product")]
-		    public string Product { get; set; }
-		    //[XmlAttribute(AttributeName="version")]
-		    public string Version { get; set; }
-		    //[XmlAttribute(AttributeName="apiVersion")]
-		    public string ApiVersion { get; set; }
-	    }
-
+        public class ConnectionStatus
+        {
+            public string Value { get; set; }
+        }
+
+        public class Microphone
+        {
+            public string id { get; set; }
+            public ConnectionStatus ConnectionStatus { get; set; }
+        }
+
+        public class Connectors
+        {
+            public List<Microphone> Microphone { get; set; }
+        }
+
+        public class Input
+        {
+            public Connectors Connectors { get; set; }
+        }
+
+        public class Mute
+        {
+            public string Value { get; set; }
+        }
+
+        public class Microphones
+        {
+            public Mute Mute { get; set; }
+        }
+
+        public class ConnectionStatus2
+        {
+            public string Value { get; set; }
+        }
+
+        public class DelayMs
+        {
+            public string Value { get; set; }
+        }
+
+        public class Line
+        {
+            public string id { get; set; }
+            public ConnectionStatus2 ConnectionStatus { get; set; }
+            public DelayMs DelayMs { get; set; }
+        }
+
+        public class Connectors2
+        {
+            public List<Line> Line { get; set; }
+        }
+
+        public class Output
+        {
+            public Connectors2 Connectors { get; set; }
+        }
+
+        public class Volume
+        {
+            public string Value { get; set; }
+        }
+
+        public class VolumeMute
+        {
+            public string Value { get; set; }
+        }
+
+        public class Audio
+        {
+            public Input Input { get; set; }
+            public Microphones Microphones { get; set; }
+            public Output Output { get; set; }
+            public Volume Volume { get; set; }
+            public VolumeMute VolumeMute { get; set; }
+        }
+
+        public class Id
+        {
+            public string Value { get; set; }
+        }
+
+        public class Current
+        {
+            public Id Id { get; set; }
+        }
+
+        public class Bookings
+        {
+            public Current Current { get; set; }
+        }
+
+        public class Options
+        {
+            public string Value { get; set; }
+        }
+
+        public class Capabilities
+        {
+            public Options Options { get; set; }
+        }
+
+        public class Connected
+        {
+            public string Value { get; set; }
+        }
+
+        public class Framerate
+        {
+            public string Value { get; set; }
+        }
+
+        public class Manufacturer
+        {
+            public string Value { get; set; }
+        }
+
+        public class Model
+        {
+            public string Value { get; set; }
+        }
+
+        public class Pan
+        {
+            public string Value { get; set; }
+        }
+
+        public class Tilt
+        {
+            public string Value { get; set; }
+        }
+
+        public class Zoom
+        {
+            public string Value { get; set; }
+        }
+
+        public class Position
+        {
+            public Pan Pan { get; set; }
+            public Tilt Tilt { get; set; }
+            public Zoom Zoom { get; set; }
+        }
+
+        public class Camera
+        {
+            public string id { get; set; }
+            public Capabilities Capabilities { get; set; }
+            public Connected Connected { get; set; }
+            public Framerate Framerate { get; set; }
+            public Manufacturer Manufacturer { get; set; }
+            public Model Model { get; set; }
+            public Position Position { get; set; }
+        }
+
+        public class Availability
+        {
+            public string Value { get; set; }
+        }
+
+        public class Status2
+        {
+            public string Value { get; set; }
+        }
+
+        public class SpeakerTrack
+        {
+            public Availability Availability { get; set; }
+            public Status2 Status { get; set; }
+        }
+
+        public class Cameras
+        {
+            public List<Camera> Camera { get; set; }
+            public SpeakerTrack SpeakerTrack { get; set; }
+        }
+
+        public class MaxActiveCalls
+        {
+            public string Value { get; set; }
+        }
+
+        public class MaxAudioCalls
+        {
+            public string Value { get; set; }
+        }
+
+        public class MaxCalls
+        {
+            public string Value { get; set; }
+        }
+
+        public class MaxVideoCalls
+        {
+            public string Value { get; set; }
+        }
+
+        public class Conference
+        {
+            public MaxActiveCalls MaxActiveCalls { get; set; }
+            public MaxAudioCalls MaxAudioCalls { get; set; }
+            public MaxCalls MaxCalls { get; set; }
+            public MaxVideoCalls MaxVideoCalls { get; set; }
+        }
+
+        public class Capabilities2
+        {
+            public Conference Conference { get; set; }
+        }
+
+        public class CallId
+        {
+            public string Value { get; set; }
+        }
+
+        public class ActiveSpeaker
+        {
+            public CallId CallId { get; set; }
+        }
+
+        public class DoNotDisturb
+        {
+            public string Value { get; set; }
+        }
+
+        public class Mode
+        {
+            public string Value { get; set; }
+        }
+
+        public class Multipoint
+        {
+            public Mode Mode { get; set; }
+        }
+
+        public class CallId2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Mode2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Mode3
+        {
+            public string Value { get; set; }
+        }
+
+        public class ReleaseFloorAvailability
+        {
+            public string Value { get; set; }
+        }
+
+        public class RequestFloorAvailability
+        {
+            public string Value { get; set; }
+        }
+
+        public class Whiteboard
+        {
+            public Mode3 Mode { get; set; }
+            public ReleaseFloorAvailability ReleaseFloorAvailability { get; set; }
+            public RequestFloorAvailability RequestFloorAvailability { get; set; }
+        }
+
+        public class Presentation
+        {
+            public CallId2 CallId { get; set; }
+            public Mode2 Mode { get; set; }
+            public Whiteboard Whiteboard { get; set; }
+        }
+
+        public class CallId3
+        {
+            public string Value { get; set; }
+        }
+
+        public class Mode4
+        {
+            public string Value { get; set; }
+        }
+
+        public class SpeakerLock
+        {
+            public CallId3 CallId { get; set; }
+            public Mode4 Mode { get; set; }
+        }
+
+        public class Conference2
+        {
+            public ActiveSpeaker ActiveSpeaker { get; set; }
+            public DoNotDisturb DoNotDisturb { get; set; }
+            public Multipoint Multipoint { get; set; }
+            public Presentation Presentation { get; set; }
+            public SpeakerLock SpeakerLock { get; set; }
+        }
+
+        public class Description
+        {
+            public string Value { get; set; }
+        }
+
+        public class Level
+        {
+            public string Value { get; set; }
+        }
+
+        public class References
+        {
+            public string Value { get; set; }
+        }
+
+        public class Type
+        {
+            public string Value { get; set; }
+        }
+
+        public class Message
+        {
+            public string id { get; set; }
+            public Description Description { get; set; }
+            public Level Level { get; set; }
+            public References References { get; set; }
+            public Type Type { get; set; }
+        }
+
+        public class Diagnostics
+        {
+            public List<Message> Message { get; set; }
+        }
+
+        public class Conference3
+        {
+        }
+
+        public class Experimental
+        {
+            public Conference3 Conference { get; set; }
+        }
+
+        public class Address
+        {
+            public string Value { get; set; }
+        }
+
+        public class Port
+        {
+            public string Value { get; set; }
+        }
+
+        public class Reason
+        {
+            public string Value { get; set; }
+        }
+
+        public class Status3
+        {
+            public string Value { get; set; }
+        }
+
+        public class Gatekeeper
+        {
+            public Address Address { get; set; }
+            public Port Port { get; set; }
+            public Reason Reason { get; set; }
+            public Status3 Status { get; set; }
+        }
+
+        public class Reason2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Status4
+        {
+            public string Value { get; set; }
+        }
+
+        public class Mode5
+        {
+            public Reason2 Reason { get; set; }
+            public Status4 Status { get; set; }
+        }
+
+        public class H323
+        {
+            public Gatekeeper Gatekeeper { get; set; }
+            public Mode5 Mode { get; set; }
+        }
+
+        public class Expression
+        {
+            public string id { get; set; }
+            public string Value { get; set; }
+        }
+
+        public class Format
+        {
+            public string Value { get; set; }
+        }
+
+        public class URL
+        {
+            public string Value { get; set; }
+        }
+
+        public class HttpFeedback
+        {
+            public string id { get; set; }
+            public List<Expression> Expression { get; set; }
+            public Format Format { get; set; }
+            public URL URL { get; set; }
+        }
+
+        public class MediaChannels
+        {
+        }
+
+        public class Address2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Capabilities3
+        {
+            public string Value { get; set; }
+        }
+
+        public class DeviceId
+        {
+            public string Value { get; set; }
+        }
+
+        public class Duplex
+        {
+            public string Value { get; set; }
+        }
+
+        public class Platform
+        {
+            public string Value { get; set; }
+        }
+
+        public class PortID
+        {
+            public string Value { get; set; }
+        }
+
+        public class PrimaryMgmtAddress
+        {
+            public string Value { get; set; }
+        }
+
+        public class SysName
+        {
+            public string Value { get; set; }
+        }
+
+        public class SysObjectID
+        {
+            public string Value { get; set; }
+        }
+
+        public class VTPMgmtDomain
+        {
+            public string Value { get; set; }
+        }
+
+        public class Version
+        {
+            public string Value { get; set; }
+        }
+
+        public class VoIPApplianceVlanID
+        {
+            public string Value { get; set; }
+        }
+
+        public class CDP
+        {
+            public Address2 Address { get; set; }
+            public Capabilities3 Capabilities { get; set; }
+            public DeviceId DeviceId { get; set; }
+            public Duplex Duplex { get; set; }
+            public Platform Platform { get; set; }
+            public PortID PortID { get; set; }
+            public PrimaryMgmtAddress PrimaryMgmtAddress { get; set; }
+            public SysName SysName { get; set; }
+            public SysObjectID SysObjectID { get; set; }
+            public VTPMgmtDomain VTPMgmtDomain { get; set; }
+            public Version Version { get; set; }
+            public VoIPApplianceVlanID VoIPApplianceVlanID { get; set; }
+        }
+
+        public class Name
+        {
+            public string Value { get; set; }
+        }
+
+        public class Domain
+        {
+            public Name Name { get; set; }
+        }
+
+        public class Address3
+        {
+            public string Value { get; set; }
+        }
+
+        public class Server
+        {
+            public string id { get; set; }
+            public Address3 Address { get; set; }
+        }
+
+        public class DNS
+        {
+            public Domain Domain { get; set; }
+            public List<Server> Server { get; set; }
+        }
+
+        public class MacAddress
+        {
+            public string Value { get; set; }
+        }
+
+        public class Speed
+        {
+            public string Value { get; set; }
+        }
+
+        public class Ethernet
+        {
+            public MacAddress MacAddress { get; set; }
+            public Speed Speed { get; set; }
+        }
+
+        public class Address4
+        {
+            public string Value { get; set; }
+        }
+
+        public class Gateway
+        {
+            public string Value { get; set; }
+        }
+
+        public class SubnetMask
+        {
+            public string Value { get; set; }
+        }
+
+        public class IPv4
+        {
+            public Address4 Address { get; set; }
+            public Gateway Gateway { get; set; }
+            public SubnetMask SubnetMask { get; set; }
+        }
+
+        public class Address5
+        {
+            public string Value { get; set; }
+        }
+
+        public class Gateway2
+        {
+            public string Value { get; set; }
+        }
+
+        public class IPv6
+        {
+            public Address5 Address { get; set; }
+            public Gateway2 Gateway { get; set; }
+        }
+
+        public class VlanId
+        {
+            public string Value { get; set; }
+        }
+
+        public class Voice
+        {
+            public VlanId VlanId { get; set; }
+        }
+
+        public class VLAN
+        {
+            public Voice Voice { get; set; }
+        }
+
+        public class Network
+        {
+            public string id { get; set; }
+            public CDP CDP { get; set; }
+            public DNS DNS { get; set; }
+            public Ethernet Ethernet { get; set; }
+            public IPv4 IPv4 { get; set; }
+            public IPv6 IPv6 { get; set; }
+            public VLAN VLAN { get; set; }
+        }
+
+        public class CurrentAddress
+        {
+            public string Value { get; set; }
+        }
+
+        public class Address6
+        {
+            public string Value { get; set; }
+        }
+
+        public class Server2
+        {
+            public string id { get; set; }
+            public Address6 Address { get; set; }
+        }
+
+        public class Status5
+        {
+            public string Value { get; set; }
+        }
+
+        public class NTP
+        {
+            public CurrentAddress CurrentAddress { get; set; }
+            public List<Server2> Server { get; set; }
+            public Status5 Status { get; set; }
+        }
+
+        public class NetworkServices
+        {
+            public NTP NTP { get; set; }
+        }
+
+        public class HardwareInfo
+        {
+            public string Value { get; set; }
+        }
+
+        public class ID2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Name2
+        {
+            public string Value { get; set; }
+        }
+
+        public class SoftwareInfo
+        {
+            public string Value { get; set; }
+        }
+
+        public class Status6
+        {
+            public string Value { get; set; }
+        }
+
+        public class Type2
+        {
+            public string Value { get; set; }
+        }
+
+        public class UpgradeStatus
+        {
+            public string Value { get; set; }
+        }
+
+        public class ConnectedDevice
+        {
+            public string id { get; set; }
+            public HardwareInfo HardwareInfo { get; set; }
+            public ID2 ID { get; set; }
+            public Name2 Name { get; set; }
+            public SoftwareInfo SoftwareInfo { get; set; }
+            public Status6 Status { get; set; }
+            public Type2 Type { get; set; }
+            public UpgradeStatus UpgradeStatus { get; set; }
+        }
+
+        public class Peripherals
+        {
+            public List<ConnectedDevice> ConnectedDevice { get; set; }
+        }
+
+        public class Enabled
+        {
+            public string Value { get; set; }
+        }
+
+        public class LastLoggedInUserId
+        {
+            public string Value { get; set; }
+        }
+
+        public class LoggedIn
+        {
+            public string Value { get; set; }
+        }
+
+        public class ExtensionMobility
+        {
+            public Enabled Enabled { get; set; }
+            public LastLoggedInUserId LastLoggedInUserId { get; set; }
+            public LoggedIn LoggedIn { get; set; }
+        }
+
+        public class CUCM
+        {
+            public ExtensionMobility ExtensionMobility { get; set; }
+        }
+
+        public class CompletedAt
+        {
+            public string Value { get; set; }
+        }
+
+        public class URL2
+        {
+            public string Value { get; set; }
+        }
+
+        public class VersionId
+        {
+            public string Value { get; set; }
+        }
+
+        public class Current2
+        {
+            public CompletedAt CompletedAt { get; set; }
+            public URL2 URL { get; set; }
+            public VersionId VersionId { get; set; }
+        }
+
+        public class LastChange
+        {
+            public string Value { get; set; }
+        }
+
+        public class Message2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Phase
+        {
+            public string Value { get; set; }
+        }
+
+        public class SessionId
+        {
+            public string Value { get; set; }
+        }
+
+        public class Status7
+        {
+            public string Value { get; set; }
+        }
+
+        public class URL3
+        {
+            public string Value { get; set; }
+        }
+
+        public class VersionId2
+        {
+            public string Value { get; set; }
+        }
+
+        public class UpgradeStatus2
+        {
+            public LastChange LastChange { get; set; }
+            public Message2 Message { get; set; }
+            public Phase Phase { get; set; }
+            public SessionId SessionId { get; set; }
+            public Status7 Status { get; set; }
+            public URL3 URL { get; set; }
+            public VersionId2 VersionId { get; set; }
+        }
+
+        public class Software
+        {
+            public Current2 Current { get; set; }
+            public UpgradeStatus2 UpgradeStatus { get; set; }
+        }
+
+        public class Status8
+        {
+            public string Value { get; set; }
+        }
+
+        public class Provisioning
+        {
+            public CUCM CUCM { get; set; }
+            public Software Software { get; set; }
+            public Status8 Status { get; set; }
+        }
+
+        public class Availability2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Services
+        {
+            public Availability2 Availability { get; set; }
+        }
+
+        public class Proximity
+        {
+            public Services Services { get; set; }
+        }
+
+        public class Current3
+        {
+            public string Value { get; set; }
+        }
+
+        public class PeopleCount
+        {
+            public Current3 Current { get; set; }
+        }
+
+        public class PeoplePresence
+        {
+            public string Value { get; set; }
+        }
+
+        public class RoomAnalytics
+        {
+            public PeopleCount PeopleCount { get; set; }
+            public PeoplePresence PeoplePresence { get; set; }
+        }
+
+        public class Authentication
+        {
+            public string Value { get; set; }
+        }
+
+        public class DisplayName
+        {
+            public string Value { get; set; }
+        }
+
+        public class Mode6
+        {
+            public string Value { get; set; }
+        }
+
+        public class URI
+        {
+            public string Value { get; set; }
+        }
+
+        public class CallForward
+        {
+            public DisplayName DisplayName { get; set; }
+            public Mode6 Mode { get; set; }
+            public URI URI { get; set; }
+        }
+
+        public class MessagesWaiting
+        {
+            public string Value { get; set; }
+        }
+
+        public class URI2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Mailbox
+        {
+            public MessagesWaiting MessagesWaiting { get; set; }
+            public URI2 URI { get; set; }
+        }
+
+        public class Address7
+        {
+            public string Value { get; set; }
+        }
+
+        public class Status9
+        {
+            public string Value { get; set; }
+        }
+
+        public class Proxy
+        {
+            public string id { get; set; }
+            public Address7 Address { get; set; }
+            public Status9 Status { get; set; }
+        }
+
+        public class Reason3
+        {
+            public string Value { get; set; }
+        }
+
+        public class Status10
+        {
+            public string Value { get; set; }
+        }
+
+        public class URI3
+        {
+            public string Value { get; set; }
+        }
+
+        public class Registration
+        {
+            public string id { get; set; }
+            public Reason3 Reason { get; set; }
+            public Status10 Status { get; set; }
+            public URI3 URI { get; set; }
+        }
+
+        public class Secure
+        {
+            public string Value { get; set; }
+        }
+
+        public class Verified
+        {
+            public string Value { get; set; }
+        }
+
+        public class SIP
+        {
+            public Authentication Authentication { get; set; }
+            public CallForward CallForward { get; set; }
+            public Mailbox Mailbox { get; set; }
+            public List<Proxy> Proxy { get; set; }
+            public List<Registration> Registration { get; set; }
+            public Secure Secure { get; set; }
+            public Verified Verified { get; set; }
+        }
+
+        public class Mode7
+        {
+            public string Value { get; set; }
+        }
+
+        public class FIPS
+        {
+            public Mode7 Mode { get; set; }
+        }
+
+        public class CallHistory
+        {
+            public string Value { get; set; }
+        }
+
+        public class Configurations
+        {
+            public string Value { get; set; }
+        }
+
+        public class DHCP
+        {
+            public string Value { get; set; }
+        }
+
+        public class InternalLogging
+        {
+            public string Value { get; set; }
+        }
+
+        public class LocalPhonebook
+        {
+            public string Value { get; set; }
+        }
+
+        public class Persistency
+        {
+            public CallHistory CallHistory { get; set; }
+            public Configurations Configurations { get; set; }
+            public DHCP DHCP { get; set; }
+            public InternalLogging InternalLogging { get; set; }
+            public LocalPhonebook LocalPhonebook { get; set; }
+        }
+
+        public class Security
+        {
+            public FIPS FIPS { get; set; }
+            public Persistency Persistency { get; set; }
+        }
+
+        public class State
+        {
+            public string Value { get; set; }
+        }
+
+        public class Standby
+        {
+            public State State { get; set; }
+        }
+
+        public class CompatibilityLevel
+        {
+            public string Value { get; set; }
+        }
+
+        public class SerialNumber
+        {
+            public string Value { get; set; }
+        }
+
+        public class Module
+        {
+            public CompatibilityLevel CompatibilityLevel { get; set; }
+            public SerialNumber SerialNumber { get; set; }
+        }
+
+        public class Hardware
+        {
+            public Module Module { get; set; }
+        }
+
+        public class ProductId
+        {
+            public string Value { get; set; }
+        }
+
+        public class ProductPlatform
+        {
+            public string Value { get; set; }
+        }
+
+        public class ProductType
+        {
+            public string Value { get; set; }
+        }
+
+        public class DisplayName2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Name3
+        {
+            public string Value { get; set; }
+        }
+
+        public class Encryption
+        {
+            public string Value { get; set; }
+        }
+
+        public class MultiSite
+        {
+            public string Value { get; set; }
+        }
+
+        public class RemoteMonitoring
+        {
+            public string Value { get; set; }
+        }
+
+        public class OptionKeys
+        {
+            public Encryption Encryption { get; set; }
+            public MultiSite MultiSite { get; set; }
+            public RemoteMonitoring RemoteMonitoring { get; set; }
+        }
+
+        public class ReleaseDate
+        {
+            public string Value { get; set; }
+        }
+
+        public class Version2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Software2
+        {
+            public DisplayName2 DisplayName { get; set; }
+            public Name3 Name { get; set; }
+            public OptionKeys OptionKeys { get; set; }
+            public ReleaseDate ReleaseDate { get; set; }
+            public Version2 Version { get; set; }
+        }
+
+        public class NumberOfActiveCalls
+        {
+            public string Value { get; set; }
+        }
+
+        public class NumberOfInProgressCalls
+        {
+            public string Value { get; set; }
+        }
+
+        public class NumberOfSuspendedCalls
+        {
+            public string Value { get; set; }
+        }
+
+        public class State2
+        {
+            public NumberOfActiveCalls NumberOfActiveCalls { get; set; }
+            public NumberOfInProgressCalls NumberOfInProgressCalls { get; set; }
+            public NumberOfSuspendedCalls NumberOfSuspendedCalls { get; set; }
+        }
+
+        public class Uptime
+        {
+            public string Value { get; set; }
+        }
+
+        public class SystemUnit
+        {
+            public Hardware Hardware { get; set; }
+            public ProductId ProductId { get; set; }
+            public ProductPlatform ProductPlatform { get; set; }
+            public ProductType ProductType { get; set; }
+            public Software2 Software { get; set; }
+            public State2 State { get; set; }
+            public Uptime Uptime { get; set; }
+        }
+
+        public class SystemTime
+        {
+            public DateTime Value { get; set; }
+        }
+
+        public class Time
+        {
+            public SystemTime SystemTime { get; set; }
+        }
+
+        public class Number
+        {
+            public string Value { get; set; }
+        }
+
+        public class ContactMethod
+        {
+            public string id { get; set; }
+            public Number Number { get; set; }
+        }
+
+        public class Name4
+        {
+            public string Value { get; set; }
+        }
+
+        public class ContactInfo
+        {
+            public List<ContactMethod> ContactMethod { get; set; }
+            public Name4 Name { get; set; }
+        }
+
+        public class UserInterface
+        {
+            public ContactInfo ContactInfo { get; set; }
+        }
+
+        public class PIPPosition
+        {
+            public string Value { get; set; }
+        }
+
+        public class ActiveSpeaker2
+        {
+            public PIPPosition PIPPosition { get; set; }
+        }
+
+        public class Connected2
+        {
+            public string Value { get; set; }
+        }
+
+        public class SignalState
+        {
+            public string Value { get; set; }
+        }
+
+        public class SourceId
+        {
+            public string Value { get; set; }
+        }
+
+        public class Type3
+        {
+            public string Value { get; set; }
+        }
+
+        public class Connector
+        {
+            public string id { get; set; }
+            public Connected2 Connected { get; set; }
+            public SignalState SignalState { get; set; }
+            public SourceId SourceId { get; set; }
+            public Type3 Type { get; set; }
+        }
+
+        public class MainVideoSource
+        {
+            public string Value { get; set; }
+        }
+
+        public class ConnectorId
+        {
+            public string Value { get; set; }
+        }
+
+        public class FormatStatus
+        {
+            public string Value { get; set; }
+        }
+
+        public class FormatType
+        {
+            public string Value { get; set; }
+        }
+
+        public class MediaChannelId
+        {
+            public string Value { get; set; }
+        }
+
+        public class Height
+        {
+            public string Value { get; set; }
+        }
+
+        public class RefreshRate
+        {
+            public string Value { get; set; }
+        }
+
+        public class Width
+        {
+            public string Value { get; set; }
+        }
+
+        public class Resolution
+        {
+            public Height Height { get; set; }
+            public RefreshRate RefreshRate { get; set; }
+            public Width Width { get; set; }
+        }
+
+        public class Source
+        {
+            public string id { get; set; }
+            public ConnectorId ConnectorId { get; set; }
+            public FormatStatus FormatStatus { get; set; }
+            public FormatType FormatType { get; set; }
+            public MediaChannelId MediaChannelId { get; set; }
+            public Resolution Resolution { get; set; }
+        }
+
+        public class Input2
+        {
+            public List<Connector> Connector { get; set; }
+            public MainVideoSource MainVideoSource { get; set; }
+            public List<Source> Source { get; set; }
+        }
+
+        public class Local
+        {
+            public string Value { get; set; }
+        }
+
+        public class LayoutFamily
+        {
+            public Local Local { get; set; }
+        }
+
+        public class Layout
+        {
+            public LayoutFamily LayoutFamily { get; set; }
+        }
+
+        public class Monitors
+        {
+            public string Value { get; set; }
+        }
+
+        public class Connected3
+        {
+            public string Value { get; set; }
+        }
+
+        public class Name5
+        {
+            public string Value { get; set; }
+        }
+
+        public class PreferredFormat
+        {
+            public string Value { get; set; }
+        }
+
+        public class ConnectedDevice2
+        {
+            public Name5 Name { get; set; }
+            public PreferredFormat PreferredFormat { get; set; }
+        }
+
+        public class MonitorRole
+        {
+            public string Value { get; set; }
+        }
+
+        public class Height2
+        {
+            public string Value { get; set; }
+        }
+
+        public class RefreshRate2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Width2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Resolution2
+        {
+            public Height2 Height { get; set; }
+            public RefreshRate2 RefreshRate { get; set; }
+            public Width2 Width { get; set; }
+        }
+
+        public class Type4
+        {
+            public string Value { get; set; }
+        }
+
+        public class Connector2
+        {
+            public string id { get; set; }
+            public Connected3 Connected { get; set; }
+            public ConnectedDevice2 ConnectedDevice { get; set; }
+            public MonitorRole MonitorRole { get; set; }
+            public Resolution2 Resolution { get; set; }
+            public Type4 Type { get; set; }
+        }
+
+        public class Output2
+        {
+            public List<Connector2> Connector { get; set; }
+        }
+
+        public class PIPPosition2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Presentation2
+        {
+            public PIPPosition2 PIPPosition { get; set; }
+        }
+
+        public class FullscreenMode
+        {
+            public string Value { get; set; }
+        }
+
+        public class Mode8
+        {
+            public string Value { get; set; }
+        }
+
+        public class OnMonitorRole
+        {
+            public string Value { get; set; }
+        }
+
+        public class PIPPosition3
+        {
+            public string Value { get; set; }
+        }
+
+        public class Selfview
+        {
+            public FullscreenMode FullscreenMode { get; set; }
+            public Mode8 Mode { get; set; }
+            public OnMonitorRole OnMonitorRole { get; set; }
+            public PIPPosition3 PIPPosition { get; set; }
+        }
+
+        public class Video
+        {
+            public ActiveSpeaker2 ActiveSpeaker { get; set; }
+            public Input2 Input { get; set; }
+            public Layout Layout { get; set; }
+            public Monitors Monitors { get; set; }
+            public Output2 Output { get; set; }
+            public Presentation2 Presentation { get; set; }
+            public Selfview Selfview { get; set; }
+        }
+
+        public class Status
+        {
+            public Audio Audio { get; set; }
+            public Bookings Bookings { get; set; }
+            public Cameras Cameras { get; set; }
+            public Capabilities2 Capabilities { get; set; }
+            public Conference2 Conference { get; set; }
+            public Diagnostics Diagnostics { get; set; }
+            public Experimental Experimental { get; set; }
+            public H323 H323 { get; set; }
+            public List<HttpFeedback> HttpFeedback { get; set; }
+            public MediaChannels MediaChannels { get; set; }
+            public List<Network> Network { get; set; }
+            public NetworkServices NetworkServices { get; set; }
+            public Peripherals Peripherals { get; set; }
+            public Provisioning Provisioning { get; set; }
+            public Proximity Proximity { get; set; }
+            public RoomAnalytics RoomAnalytics { get; set; }
+            public SIP SIP { get; set; }
+            public Security Security { get; set; }
+            public Standby Standby { get; set; }
+            public SystemUnit SystemUnit { get; set; }
+            public Time Time { get; set; }
+            public UserInterface UserInterface { get; set; }
+            public Video Video { get; set; }
+        }
+
+        public class RootObject
+        {
+            public Status Status { get; set; }
+        }
     }
 }

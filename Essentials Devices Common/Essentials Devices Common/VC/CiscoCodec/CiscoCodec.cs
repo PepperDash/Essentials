@@ -21,6 +21,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
     {
         public IBasicCommunication Communication { get; private set; }
         public CommunicationGather PortGather { get; private set; }
+        public CommunicationGather JsonGather { get; private set; }
 
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
@@ -28,21 +29,31 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         private Corporate_Phone_Book PhoneBook;
 
-        private CiscoCodecConfiguration.Configuration CodecConfiguration;
+        private CiscoCodecConfiguration.RootObject CodecConfiguration;
 
-        private CiscoCodecStatus.Status CodecStatus;
+        private CiscoCodecStatus.RootObject CodecStatus;
 
-        private HttpsClient Client;
+        //private HttpsClient Client;
 
-        private HttpApiServer Server;
+        //private HttpApiServer Server;
 
-        private int ServerPort;
+        //private int ServerPort;
 
-        private string CodecUrl;
+        //private string CodecUrl;
 
-        private string HttpSessionId;
+        //private string HttpSessionId;
 
-        private string FeedbackRegistrationExpression;
+        //private string FeedbackRegistrationExpression;
+
+        private string CliFeedbackRegistrationExpression;
+
+        private CodecSyncState SyncState;
+
+        private StringBuilder JsonMessage;
+
+        private bool JsonFeedbackMessageIsIncoming;
+
+        string Delimiter = "\r\n";
 
         // Constructor for IBasicCommunication
         public CiscoCodec(string key, string name, IBasicCommunication comm, int serverPort)
@@ -50,28 +61,32 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             Communication = comm;
 
-            PortGather = new CommunicationGather(Communication, "\x0d\x0a");
+            SyncState = new CodecSyncState(key + "--sync");
+
+            PortGather = new CommunicationGather(Communication, "\r\n");
+            PortGather.IncludeDelimiter = true;
             PortGather.LineReceived += this.Port_LineReceived;
+
+            //JsonGather = new CommunicationGather(Communication, "}\r\n\r\n");
+            //JsonGather.IncludeDelimiter = true;
+            //JsonGather.LineReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(JsonGather_LineReceived);
   
             Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
 
-            ServerPort = serverPort;
+            //ServerPort = serverPort;
 
             CodecObtp = new CiscoOneButtonToPush();
 
             PhoneBook = new Corporate_Phone_Book();
 
-            CodecConfiguration = new CiscoCodecConfiguration.Configuration();
+            CodecConfiguration = new CiscoCodecConfiguration.RootObject();
 
-            CodecStatus = new CiscoCodecStatus.Status();
+            CodecStatus = new CiscoCodecStatus.RootObject();
 
-            Client = new HttpsClient();
+            //Client = new HttpsClient();
 
-            Server = new HttpApiServer();
-      
+            //Server = new HttpApiServer();      
         }
-
-
 
         /// <summary>
         /// Starts the HTTP feedback server and syncronizes state of codec
@@ -82,38 +97,54 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CrestronConsole.AddNewConsoleCommand(SendText, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
 
             Communication.Connect();
-
+            var socket = Communication as ISocketStatus;
+            if (socket != null)
+            {
+                socket.ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
+            }
             Debug.Console(1, this, "Starting Cisco API Server");
 
-            Server.Start(ServerPort);
+            //Server.Start(ServerPort);
 
-            Server.ApiRequest += new EventHandler<Crestron.SimplSharp.Net.Http.OnHttpRequestArgs>(Server_ApiRequest);
+            //Server.ApiRequest += new EventHandler<Crestron.SimplSharp.Net.Http.OnHttpRequestArgs>(Server_ApiRequest);
 
-            CodecUrl = string.Format("http://{0}", (Communication as GenericSshClient).Hostname);
+            //CodecUrl = string.Format("http://{0}", (Communication as GenericSshClient).Hostname);
 
             CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 2000, 120000, 300000, "xStatus SystemUnit Software Version\r");
             DeviceManager.AddDevice(CommunicationMonitor);
 
-            Client = new HttpsClient();
+            //Client = new HttpsClient();
 
-            Client.Verbose = true;
-            Client.KeepAlive = true;
+            //Client.Verbose = true;
+            //Client.KeepAlive = true;
 
 
             // Temp feedback registration
 
-            FeedbackRegistrationExpression =
-                "<Command><HttpFeedback><Register command=\"True\"><FeedbackSlot>1</FeedbackSlot>" +
-                string.Format("<ServerUrl>http://{0}:{1}/cisco/api</ServerUrl>", CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0), ServerPort) +
-                "<Format>JSON</Format>" +
-                "<Expression item=\"1\">/Configuration</Expression>" +
-                "<Expression item=\"2\">/Event/CallDisconnect</Expression>" +
-                "<Expression item=\"3\">/Status/Call</Expression>" +
-                "</Register>" +
-                "</HttpFeedback>" +
-                "</Command>";
+            //FeedbackRegistrationExpression =
+            //    "<Command><HttpFeedback><Register command=\"True\"><FeedbackSlot>1</FeedbackSlot>" +
+            //    string.Format("<ServerUrl>http://{0}:{1}/cisco/api</ServerUrl>", CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0), ServerPort) +
+            //    "<Format>JSON</Format>" +
+            //    "<Expression item=\"1\">/Configuration</Expression>" +
+            //    "<Expression item=\"2\">/Event/CallDisconnect</Expression>" +
+            //    "<Expression item=\"3\">/Status/Call</Expression>" +
+            //    "</Register>" +
+            //    "</HttpFeedback>" +
+            //    "</Command>";
 
-            StartHttpsSession();
+                string prefix = "xFeedback register ";
+            CliFeedbackRegistrationExpression =
+                prefix + "/Configuration" + Delimiter +
+                prefix + "/Status/Audio" + Delimiter +
+                prefix + "/Status/Call" + Delimiter +
+                prefix + "/Status/Cameras/SpeakerTrack" + Delimiter +
+                prefix + "/Status/RoomAnalytics" + Delimiter +
+                prefix + "/Status/Standby" + Delimiter +
+                prefix + "/Status/Video/Selfview" + Delimiter +
+                prefix + "/Bookings" + Delimiter +
+                prefix + "/Event/CallDisconnect" + Delimiter;
+
+            //StartHttpsSession();
 
             //CodecObtp.Initialize();
 
@@ -124,189 +155,295 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             return base.CustomActivate();
         }
 
+        void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+        {
+            // Reset sync status on disconnect
+            if (!e.Client.IsConnected)
+                SyncState.CodecDisconnected();
+        }
+
+
         void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
         {
             if (Debug.Level == 1)
-                Debug.Console(1, this, "RX: '{0}'",
-                    ComTextHelper.GetEscapedText(args.Text));
+            {
+                if(!JsonFeedbackMessageIsIncoming)
+                    Debug.Console(1, this, "RX: '{0}'", args.Text);
+            }
+
+            if (args.Text == "{" + Delimiter)        // Check for the beginning of a new JSON message
+            {
+                JsonFeedbackMessageIsIncoming = true;
+
+                Debug.Console(1, this, "Incoming JSON message...");
+
+                JsonMessage = new StringBuilder();
+            }
+            else if (args.Text == "}" + Delimiter)  // Check for the end of a JSON message
+            {
+                JsonFeedbackMessageIsIncoming = false;
+
+                JsonMessage.Append(args.Text);
+
+                Debug.Console(1, this, "Complete JSON Received:\n{0}", JsonMessage.ToString());
+
+                // Forward the complete message to be deserialized
+                DeserializeResponse(JsonMessage.ToString());
+                return;
+            }
+
+            if(JsonFeedbackMessageIsIncoming)
+            {
+                JsonMessage.Append(args.Text);
+
+                //Debug.Console(1, this, "Building JSON:\n{0}", JsonMessage.ToString());
+                return;
+            }
+
+            if (!SyncState.InitialSyncComplete)
+            {
+                switch (args.Text.Trim())
+                {
+                    case "*r Login successful":
+                        {
+                            SendText("xPreferences outputmode json");
+                            break;
+                        }
+                    case "xPreferences outputmode json":
+                        {
+                            if(!SyncState.InitialStatusMessageWasReceived)
+                                SendText("xStatus");
+                            break;
+                        }
+                    case "xFeedback Register":
+                        {
+                            SyncState.FeedbackRegistered();
+                            break;
+                        }
+                }
+            }
+        }
+
+        void JsonGather_LineReceived(object sender, GenericCommMethodReceiveTextArgs e)
+        {
+            //Debug.Console(1, this, "JSON repsonse length: {0}", e.Text.Length);
+
+            var startPos = e.Text.IndexOf("{");
+            var json = e.Text.Substring(startPos, e.Text.Length - startPos);
+            
+            //Debug.Console(1, this, "First curly brace found at position {0}.  Substring will start at position {1} and continue for {2} characters", startPos, startPos, e.Text.Length - startPos);
+
+            Debug.Console(1, this, "JSON received:\n{0}", json);
+
+
+            DeserializeResponse(json);
+            
+            
         }
 
         public void SendText(string command)
         {
-            Debug.Console(1, this, "Sending: '{{0}'", command);
-            Communication.SendText(command + "\0xd\0xa");
+            Debug.Console(1, this, "Sending: '{0}'", command);
+            Communication.SendText(command + "\x0d\x0a");
         }
 
-        private void StartHttpsSession()
-        {
-            SendHttpCommand("", eCommandType.SessionStart);
-        }
+        //private void StartHttpsSession()
+        //{
+        //    SendHttpCommand("", eCommandType.SessionStart);
+        //}
 
-        private void EndHttpsSession()
-        {
-            SendHttpCommand("", eCommandType.SessionEnd);
-        }
+        //private void EndHttpsSession()
+        //{
+        //    SendHttpCommand("", eCommandType.SessionEnd);
+        //}
 
-        private void SendHttpCommand(string command, eCommandType commandType)
-        {
-            HttpsClientRequest request = new HttpsClientRequest();
+        //private void SendHttpCommand(string command, eCommandType commandType)
+        //{
+        //    //HttpsClientRequest request = new HttpsClientRequest();
 
-            string urlSuffix = null;
+        //    //string urlSuffix = null;
 
-            Client.UserName = null;
-            Client.Password = null;
+        //    //Client.UserName = null;
+        //    //Client.Password = null;
 
-            Client.PeerVerification = false;
-            Client.HostVerification = false;
+        //    //Client.PeerVerification = false;
+        //    //Client.HostVerification = false;
 
-            request.RequestType = RequestType.Post;
+        //    //request.RequestType = RequestType.Post;
 
-            if(!string.IsNullOrEmpty(HttpSessionId))
-                request.Header.SetHeaderValue("Cookie", HttpSessionId);
+        //    //if(!string.IsNullOrEmpty(HttpSessionId))
+        //    //    request.Header.SetHeaderValue("Cookie", HttpSessionId);
 
-            switch (commandType)
-            {
-                case eCommandType.Command:
-                    {
-                        urlSuffix = "/putxml";
-                        request.ContentString = command;
-                        request.Header.SetHeaderValue("Content-Type", "text/xml");
-                        break;
-                    }
-                case eCommandType.SessionStart:
-                    {
+        //    //switch (commandType)
+        //    //{
+        //    //    case eCommandType.Command:
+        //    //        {
+        //    //            urlSuffix = "/putxml";
+        //    //            request.ContentString = command;
+        //    //            request.Header.SetHeaderValue("Content-Type", "text/xml");
+        //    //            break;
+        //    //        }
+        //    //    case eCommandType.SessionStart:
+        //    //        {
                         
-                        urlSuffix = "/xmlapi/session/begin";
+        //    //            urlSuffix = "/xmlapi/session/begin";
 
-                        Client.UserName = (Communication as GenericSshClient).Username;
-                        Client.Password = (Communication as GenericSshClient).Password;
+        //    //            Client.UserName = (Communication as GenericSshClient).Username;
+        //    //            Client.Password = (Communication as GenericSshClient).Password;
 
-                        break;
-                    }
-                case eCommandType.SessionEnd:
-                    {
-                        urlSuffix = "/xmlapi/session/end";
-                        request.Header.SetHeaderValue("Cookie", HttpSessionId);
-                        break;
-                    }
-                case eCommandType.GetStatus:
-                    {
-                        request.RequestType = RequestType.Get;
-                        request.Header.SetHeaderValue("Content-Type", "text/xml");
-                        urlSuffix = "/getxml?location=/Status";
-                        break;
-                    }
-                case eCommandType.GetConfiguration:
-                    {
-                        request.RequestType = RequestType.Get;
-                        request.Header.SetHeaderValue("Content-Type", "text/xml");
-                        urlSuffix = "/getxml?location=/Configuration";
-                        break;
-                    }
-            }
+        //    //            break;
+        //    //        }
+        //    //    case eCommandType.SessionEnd:
+        //    //        {
+        //    //            urlSuffix = "/xmlapi/session/end";
+        //    //            request.Header.SetHeaderValue("Cookie", HttpSessionId);
+        //    //            break;
+        //    //        }
+        //    //    case eCommandType.GetStatus:
+        //    //        {
+        //    //            request.RequestType = RequestType.Get;
+        //    //            request.Header.SetHeaderValue("Content-Type", "text/xml");
+        //    //            urlSuffix = "/getxml?location=/Status";
+        //    //            break;
+        //    //        }
+        //    //    case eCommandType.GetConfiguration:
+        //    //        {
+        //    //            request.RequestType = RequestType.Get;
+        //    //            request.Header.SetHeaderValue("Content-Type", "text/xml");
+        //    //            urlSuffix = "/getxml?location=/Configuration";
+        //    //            break;
+        //    //        }
+        //    //}
 
-            var requestUrl = CodecUrl + urlSuffix;
-            request.Header.RequestVersion = "HTTP/1.1";
-            request.Url.Parse(requestUrl);
+        //    //var requestUrl = CodecUrl + urlSuffix;
+        //    //request.Header.RequestVersion = "HTTP/1.1";
+        //    //request.Url.Parse(requestUrl);
 
-            Debug.Console(1, this, "Sending HTTP request to Cisco Codec at {0}\nHeader:\n{1}\nContent:\n{2}", requestUrl, request.Header, request.ContentString);
+        //    //Debug.Console(1, this, "Sending HTTP request to Cisco Codec at {0}\nHeader:\n{1}\nContent:\n{2}", requestUrl, request.Header, request.ContentString);
 
-            Client.DispatchAsync(request, PostConnectionCallback);
-        }
+        //    //Client.DispatchAsync(request, PostConnectionCallback);
+        //}
 
-        void PostConnectionCallback(HttpsClientResponse resp, HTTPS_CALLBACK_ERROR err)
+        //void PostConnectionCallback(HttpsClientResponse resp, HTTPS_CALLBACK_ERROR err)
+        //{
+        //    //try
+        //    //{
+        //    //    if (resp != null)
+        //    //    {
+        //    //        if (resp.Code == 200)
+        //    //        {
+        //    //            Debug.Console(1, this, "Http Post to Cisco Codec Successful. Code: {0}\nContent: {1}", resp.Code, resp.ContentString);
+
+        //    //            if (resp.ContentString.IndexOf("<HttpFeedbackRegisterResult status=\"OK\">") > 1)
+        //    //            {
+        //    //                // Get the initial configruation for sync purposes
+        //    //                SendHttpCommand("", eCommandType.GetConfiguration);
+        //    //            }
+        //    //            else
+        //    //            {
+        //    //                try
+        //    //                {                               
+        //    //                    if (resp.ContentString.IndexOf("</Configuration>") > -1)
+        //    //                    {
+        //    //                        XmlReaderSettings settings = new XmlReaderSettings();
+
+        //    //                        XmlReader reader = new XmlReader(resp.ContentString, settings);
+
+        //    //                        CodecConfiguration = CrestronXMLSerialization.DeSerializeObject<CiscoCodecConfiguration.RootObject>(reader);
+
+        //    //                        //Debug.Console(1, this, "Product Name: {0} Software Version: {1} ApiVersion: {2}", CodecConfiguration.Configuration.Product, CodecConfiguration.Version, CodecConfiguration.ApiVersion);
+
+        //    //                        // Get the initial status for sync purposes
+        //    //                        SendHttpCommand("", eCommandType.GetStatus);
+        //    //                    }
+        //    //                    else if (resp.ContentString.IndexOf("</Status>") > -1)
+        //    //                    {
+        //    //                        XmlReaderSettings settings = new XmlReaderSettings();
+
+        //    //                        XmlReader reader = new XmlReader(resp.ContentString, settings);
+
+        //    //                        CodecStatus = CrestronXMLSerialization.DeSerializeObject<CiscoCodecStatus.RootObject>(reader);
+        //    //                        //Debug.Console(1, this, "Product Name: {0} Software Version: {1} ApiVersion: {2} Volume: {3}", CodecStatus.Product, CodecStatus.Version, CodecStatus.ApiVersion, CodecStatus.Audio.Volume);
+        //    //                    }
+        //    //                }
+        //    //                catch (Exception ex)
+        //    //                {
+        //    //                    Debug.Console(1, this, "Error Deserializing XML document from codec: {0}", ex);
+        //    //                }
+        //    //            }
+        //    //        }
+        //    //        else if (resp.Code == 204)
+        //    //        {
+        //    //            Debug.Console(1, this, "Response Code: {0}\nHeader:\n{1}Content:\n{1}", resp.Code, resp.Header, resp.ContentString);
+
+        //    //            HttpSessionId = resp.Header.GetHeaderValue("Set-Cookie");
+        //    //            //var chunks = HttpSessionId.Split(';');
+        //    //            //HttpSessionId = chunks[0];
+        //    //            //HttpSessionId = HttpSessionId.Substring(HttpSessionId.IndexOf("=") + 1);
+
+
+        //    //            // Register for feedbacks once we have a valid session
+        //    //            SendHttpCommand(FeedbackRegistrationExpression, eCommandType.Command);
+        //    //        }
+        //    //        else
+        //    //        {
+        //    //            Debug.Console(1, this, "Response Code: {0}\nHeader:\n{1}Content:\n{1}Err:\n{2}", resp.Code, resp.Header, resp.ContentString, err);
+        //    //        }
+        //    //    }
+        //    //    else
+        //    //        Debug.Console(1, this, "Null response received from server");
+        //    //}
+        //    //catch (Exception e)
+        //    //{
+        //    //    Debug.Console(1, this, "Error Initializing HTTPS Client: {0}", e);
+        //    //}
+        //}
+
+        //void Server_ApiRequest(object sender, Crestron.SimplSharp.Net.Http.OnHttpRequestArgs e)
+        //{
+        //    Debug.Console(1, this, "Api Reqeust from Codec: {0}", e.Request.ContentString);
+        //    e.Response.Code = 200;
+        //    e.Response.ContentString = "OK";
+
+        //    DeserializeResponse(e.Request.ContentString);        
+        //}
+
+        void DeserializeResponse(string response)
         {
             try
             {
-                if (resp != null)
+            // Serializer settings.  We want to ignore null values and mising members
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            settings.NullValueHandling = NullValueHandling.Ignore;
+            settings.MissingMemberHandling = MissingMemberHandling.Ignore;
+            settings.ObjectCreationHandling = ObjectCreationHandling.Auto;
+
+                if (response.IndexOf("\"Status\":{") > -1)
                 {
-                    if (resp.Code == 200)
+                    JsonConvert.PopulateObject(response, CodecStatus);
+
+                    if (!SyncState.InitialStatusMessageWasReceived)
                     {
-                        Debug.Console(1, this, "Http Post to Cisco Codec Successful. Code: {0}\nContent: {1}", resp.Code, resp.ContentString);
-
-                        if (resp.ContentString.IndexOf("<HttpFeedbackRegisterResult status=\"OK\">") > 1)
-                        {
-                            // Get the initial configruation for sync purposes
-                            SendHttpCommand("", eCommandType.GetConfiguration);
-                        }
-                        else
-                        {
-                            try
-                            {                               
-                                if (resp.ContentString.IndexOf("</Configuration>") > -1)
-                                {
-                                    XmlReaderSettings settings = new XmlReaderSettings();
-
-                                    XmlReader reader = new XmlReader(resp.ContentString, settings);
-
-                                    CodecConfiguration = CrestronXMLSerialization.DeSerializeObject<CiscoCodecConfiguration.Configuration>(reader);
-
-                                    Debug.Console(1, this, "Product Name: {0} Software Version: {1} ApiVersion: {2}", CodecConfiguration.Product, CodecConfiguration.Version, CodecConfiguration.ApiVersion);
-
-                                    // Get the initial status for sync purposes
-                                    SendHttpCommand("", eCommandType.GetStatus);
-                                }
-                                else if (resp.ContentString.IndexOf("</Status>") > -1)
-                                {
-                                    XmlReaderSettings settings = new XmlReaderSettings();
-
-                                    XmlReader reader = new XmlReader(resp.ContentString, settings);
-
-                                    CodecStatus = CrestronXMLSerialization.DeSerializeObject<CiscoCodecStatus.Status>(reader);
-
-                                    Debug.Console(1, this, "Product Name: {0} Software Version: {1} ApiVersion: {2} Volume: {3}", CodecStatus.Product, CodecStatus.Version, CodecStatus.ApiVersion, CodecStatus.Audio.Volume);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Debug.Console(1, this, "Error Deserializing XML document from codec: {0}", ex);
-                            }
-                        }
-                    }
-                    else if (resp.Code == 204)
-                    {
-                        Debug.Console(1, this, "Response Code: {0}\nHeader:\n{1}Content:\n{1}", resp.Code, resp.Header, resp.ContentString);
-
-                        HttpSessionId = resp.Header.GetHeaderValue("Set-Cookie");
-                        //var chunks = HttpSessionId.Split(';');
-                        //HttpSessionId = chunks[0];
-                        //HttpSessionId = HttpSessionId.Substring(HttpSessionId.IndexOf("=") + 1);
-
-
-                        // Register for feedbacks once we have a valid session
-                        SendHttpCommand(FeedbackRegistrationExpression, eCommandType.Command);
-                    }
-                    else
-                    {
-                        Debug.Console(1, this, "Response Code: {0}\nHeader:\n{1}Content:\n{1}Err:\n{2}", resp.Code, resp.Header, resp.ContentString, err);
+                        SyncState.InitialStatusMessageReceived();
+                        if(!SyncState.InitialConfigurationMessageWasReceived)
+                            SendText("xConfiguration");
                     }
                 }
-                else
-                    Debug.Console(1, this, "Null response received from server");
-            }
-            catch (Exception e)
-            {
-                Debug.Console(1, this, "Error Initializing HTTPS Client: {0}", e);
-            }
-        }
+                else if (response.IndexOf("\"Configuration\":{") > -1)
+                {
+                    JsonConvert.PopulateObject(response, CodecConfiguration);
 
-        void Server_ApiRequest(object sender, Crestron.SimplSharp.Net.Http.OnHttpRequestArgs e)
-        {
-            Debug.Console(1, this, "Api Reqeust from Codec: {0}", e.Request.ContentString);
-            e.Response.Code = 200;
-            e.Response.ContentString = "OK";
+                    if (!SyncState.InitialConfigurationMessageWasReceived)
+                    {
+                        SyncState.InitialConfigurationMessageReceived();
+                        if (!SyncState.FeedbackWasRegistered)
+                        {
+                            SendText(CliFeedbackRegistrationExpression);
+                        }
+                    }
 
-            try
-            {
-                // Serializer settings.  We want to ignore null values and mising members
-                JsonSerializerSettings settings = new JsonSerializerSettings();
-                settings.NullValueHandling = NullValueHandling.Ignore;
-                settings.MissingMemberHandling = MissingMemberHandling.Ignore;
-
-                if (e.Request.ContentString.IndexOf("\"Configuration\":{") > -1)
-                    CodecConfiguration = JsonConvert.DeserializeObject<CiscoCodecConfiguration.Configuration>(e.Request.ContentString, settings);
-                else if (e.Request.ContentString.IndexOf("\"Status\":{") > -1)
-                    CodecStatus = JsonConvert.DeserializeObject<CiscoCodecStatus.Status>(e.Request.ContentString, settings);
+                }
+                
             }
             catch (Exception ex)
             {
@@ -422,6 +559,68 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public override void PrivacyModeToggle()
         {
             
+        }
+    }
+
+    /// <summary>
+    /// Tracks the initial sycnronization state of the codec when making a connection
+    /// </summary>
+    public class CodecSyncState : IKeyed
+    {
+        public string Key { get; private set; }
+
+        public bool InitialSyncComplete { get; private set; }
+
+        public bool InitialStatusMessageWasReceived { get; private set; }
+
+        public bool InitialConfigurationMessageWasReceived { get; private set; }
+
+        public bool FeedbackWasRegistered { get; private set; }
+
+        public CodecSyncState(string key)
+        {
+            Key = key;
+            CodecDisconnected();
+        }
+
+        public void InitialStatusMessageReceived()
+        {
+            InitialStatusMessageWasReceived = true;
+            Debug.Console(1, this, "Initial Codec Status Message Received.");
+            CheckSyncStatus();
+        }
+
+        public void InitialConfigurationMessageReceived()
+        {
+            InitialConfigurationMessageWasReceived = true;
+            Debug.Console(1, this, "Initial Codec Configuration Message Received.");
+            CheckSyncStatus();
+        }
+
+        public void FeedbackRegistered()
+        {
+            FeedbackWasRegistered = true;
+            Debug.Console(1, this, "Initial Codec Feedback Registration Successful.");
+            CheckSyncStatus();
+        }
+
+        public void CodecDisconnected()
+        {
+            InitialConfigurationMessageWasReceived = false;
+            InitialStatusMessageWasReceived = false;
+            FeedbackWasRegistered = false;
+            InitialSyncComplete = false;
+        }
+
+        void CheckSyncStatus()
+        {
+            if (InitialConfigurationMessageWasReceived && InitialStatusMessageWasReceived && FeedbackWasRegistered)
+            {
+                InitialSyncComplete = true;
+                Debug.Console(1, this, "Initial Codec Sync Complete!");
+            }
+            else
+                InitialSyncComplete = false;
         }
     }
 }
