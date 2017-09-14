@@ -48,11 +48,11 @@
   <ItemGroup>
     <Reference Include="Cisco One Button To Push, Version=1.0.0.26373, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\PTD_Cisco_One_Button_To_Push\bin\Cisco One Button To Push.dll</HintPath>
+      <HintPath>References\Cisco One Button To Push.dll</HintPath>
     </Reference>
     <Reference Include="Cisco SX80 Corporate Phone Book, Version=1.0.0.15355, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\CodeBlue\libraries\Cisco CODEC\Cisco SX80 Corporate Phone Book\Cisco SX80 Corporate Phone Book\bin\Cisco SX80 Corporate Phone Book.dll</HintPath>
+      <HintPath>References\Cisco SX80 Corporate Phone Book.dll</HintPath>
     </Reference>
     <Reference Include="Crestron.SimplSharpPro.DeviceSupport, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
