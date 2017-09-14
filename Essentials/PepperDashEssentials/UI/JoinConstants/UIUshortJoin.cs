@@ -7,7 +7,7 @@
 	{
         // Video Codec
         /// <summary>
-        /// 1234 - 0 = Connect, 1 = End
+        /// 1234: values 0 = Connect, 1 = End
         /// </summary>
         public const uint VCStagingConnectButtonMode = 1234;
 
