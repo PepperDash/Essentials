@@ -26,6 +26,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
+        public BoolFeedback StandbyIsOnFeedback { get; private set; }
+
         private CiscoOneButtonToPush CodecObtp;
 
         private Corporate_Phone_Book PhoneBook;
@@ -92,15 +94,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         int PresentationSource;
 
+        public bool CommDebuggingIsOn;
+
         // Constructor for IBasicCommunication
         public CiscoCodec(string key, string name, IBasicCommunication comm, int serverPort)
             : base(key, name)
         {
+            StandbyIsOnFeedback = new BoolFeedback(StandbyStateFeedbackFunc);
+
             Communication = comm;
 
             SyncState = new CodecSyncState(key + "--sync");
 
             PortGather = new CommunicationGather(Communication, Delimiter);
+            PortGather.IncludeDelimiter = true;
             PortGather.LineReceived += this.Port_LineReceived;
 
             //ServerPort = serverPort;
@@ -116,6 +123,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecEvent = new CiscoCodecEvents.RootObject();
 
             CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
+            CodecStatus.Status.Audio.VolumeMute.ValueChangedAction = MuteFeedback.FireUpdate;
+            CodecStatus.Status.Audio.Microphones.Mute.ValueChangedAction = PrivacyModeIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Standby.State.ValueChangedAction = StandbyIsOnFeedback.FireUpdate;
 
             //Client = new HttpsClient();
 
@@ -129,6 +139,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public override bool CustomActivate()
         {
             CrestronConsole.AddNewConsoleCommand(SendText, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(SetCommDebug, "SetCiscoCommDebug", "0 for Off, 1 for on", ConsoleAccessLevelEnum.AccessOperator);
+
+            
 
             Communication.Connect();
             var socket = Communication as ISocketStatus;
@@ -193,6 +206,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             return base.CustomActivate();
         }
 
+        public void SetCommDebug(string s)
+        {
+            if (s == "1")
+            {
+                CommDebuggingIsOn = true;
+                Debug.Console(0, this, "Comm Debug Enabled.");
+            }
+            else
+            {
+                CommDebuggingIsOn = false;
+                Debug.Console(0, this, "Comm Debug Disabled.");
+            }
+        }
+
         void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
         {
             // Reset sync status on disconnect
@@ -208,17 +235,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="args"></param>
         void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
         {
-            if (Debug.Level == 2)
+            if (CommDebuggingIsOn)
             {
                 if(!JsonFeedbackMessageIsIncoming)
-                    Debug.Console(2, this, "RX: '{0}'", args.Text);
+                    Debug.Console(1, this, "RX: '{0}'", args.Text);
             }
 
             if (args.Text == "{" + Delimiter)        // Check for the beginning of a new JSON message
             {
                 JsonFeedbackMessageIsIncoming = true;
 
-                Debug.Console(2, this, "Incoming JSON message...");
+                if (CommDebuggingIsOn)
+                    Debug.Console(1, this, "Incoming JSON message...");
 
                 JsonMessage = new StringBuilder();
             }
@@ -228,7 +256,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                 JsonMessage.Append(args.Text);
 
-                Debug.Console(2, this, "Complete JSON Received:\n{0}", JsonMessage.ToString());
+                if (CommDebuggingIsOn)
+                    Debug.Console(1, this, "Complete JSON Received:\n{0}", JsonMessage.ToString());
 
                 // Forward the complete message to be deserialized
                 DeserializeResponse(JsonMessage.ToString());
@@ -269,7 +298,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void SendText(string command)
         {
-            Debug.Console(1, this, "Sending: '{0}'", command);
+            if (CommDebuggingIsOn)
+                Debug.Console(1, this, "Sending: '{0}'", command);
+
             Communication.SendText(command + Delimiter);
         }
 
