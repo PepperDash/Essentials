@@ -235,82 +235,87 @@ namespace PepperDash.Essentials
 		public void RunRouteAction(string routeKey, Action successCallback)
 		{
 			// Run this on a separate thread
-            //new CTimer(o =>
-            //    {
-                    try
+            new CTimer(o =>
+            {
+                try
+                {
+
+                    Debug.Console(1, this, "Run route action '{0}'", routeKey);
+                    var dict = ConfigReader.ConfigObject.GetSourceListForKey(SourceListKey);
+                    if (dict == null)
                     {
+                        Debug.Console(1, this, "WARNING: Config source list '{0}' not found", SourceListKey);
+                        return;
+                    }
 
-                        Debug.Console(1, this, "Run route action '{0}'", routeKey);
-                        var dict = ConfigReader.ConfigObject.GetSourceListForKey(SourceListKey);
-                        if (dict == null)
+                    // Try to get the list item by it's string key
+                    if (!dict.ContainsKey(routeKey))
+                    {
+                        Debug.Console(1, this, "WARNING: No item '{0}' found on config list '{1}'",
+                            routeKey, SourceListKey);
+                        return;
+                    }
+
+                    // End usage timer on last source
+                    if (!string.IsNullOrEmpty(LastSourceKey))
+                    {
+                        var usageLastSource = dict[LastSourceKey].SourceDevice as IUsageTracking;
+                        if (usageLastSource != null && usageLastSource.UsageTracker != null)
                         {
-                            Debug.Console(1, this, "WARNING: Config source list '{0}' not found", SourceListKey);
-                            return;
-                        }
-
-                        // Try to get the list item by it's string key
-                        if (!dict.ContainsKey(routeKey))
-                        {
-                            Debug.Console(1, this, "WARNING: No item '{0}' found on config list '{1}'",
-                                routeKey, SourceListKey);
-                            return;
-                        }
-
-                        // End usage timer on last source
-                        if (!string.IsNullOrEmpty(LastSourceKey))
-                        {
-                            var lastSource = dict[LastSourceKey].SourceDevice;
-
                             try
                             {
-                                if (lastSource != null && lastSource is IUsageTracking)
-                                    (lastSource as IUsageTracking).UsageTracker.EndDeviceUsage();
+                                // There MAY have been failures in here.  Protect
+                                usageLastSource.UsageTracker.EndDeviceUsage();
                             }
                             catch (Exception e)
                             {
                                 Debug.Console(1, this, "*#* EXCEPTION in end usage tracking:\r{0}", e);
                             }
                         }
-
-                        // Let's run it
-                        var item = dict[routeKey];
-                        if (routeKey.ToLower() != "roomoff")
-                            LastSourceKey = routeKey;
-                        else
-                            CurrentSourceInfoKey = null;
-
-                        // hand off the individual routes to this helper
-                        foreach (var route in item.RouteList)
-                            DoRouteItem(route);
-
-                        // Start usage timer on routed source
-                        if (item.SourceDevice is IUsageTracking)
-                            (item.SourceDevice as IUsageTracking).UsageTracker.StartDeviceUsage();
-
-                        // store the name and UI info for routes
-                        if (item.SourceKey == "$off")
-                        {
-                            CurrentSourceInfoKey = routeKey;
-                            CurrentSourceInfo = null;
-                        }
-                        else if (item.SourceKey != null)
-                        {
-                            CurrentSourceInfoKey = routeKey;
-                            CurrentSourceInfo = item;
-                        }
-
-                        OnFeedback.FireUpdate();
-
-                        // report back when done
-                        if (successCallback != null)
-                            successCallback();
                     }
-                    catch (Exception e)
+
+                    // Let's run it
+                    var item = dict[routeKey];
+                    if (routeKey.ToLower() != "roomoff")
+                        LastSourceKey = routeKey;
+                    else
+                        CurrentSourceInfoKey = null;
+
+                    // hand off the individual routes to this helper
+                    foreach (var route in item.RouteList)
+                        DoRouteItem(route);
+
+                    // Start usage timer on routed source
+                    var usageNewSource = item.SourceDevice as IUsageTracking;
+                    if (usageNewSource != null && usageNewSource.UsageTracker != null) // Have to make sure there is a usage tracker!
                     {
-                        Debug.Console(1, this, "ERROR in routing: {0}", e);
+                        (item.SourceDevice as IUsageTracking).UsageTracker.StartDeviceUsage();
                     }
 
-                //}, 0); // end of CTimer
+                    // store the name and UI info for routes
+                    if (item.SourceKey == "$off")
+                    {
+                        CurrentSourceInfoKey = routeKey;
+                        CurrentSourceInfo = null;
+                    }
+                    else if (item.SourceKey != null)
+                    {
+                        CurrentSourceInfoKey = routeKey;
+                        CurrentSourceInfo = item;
+                    }
+
+                    OnFeedback.FireUpdate();
+
+                    // report back when done
+                    if (successCallback != null)
+                        successCallback();
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(1, this, "ERROR in routing: {0}", e);
+                }
+
+            }, 0); // end of CTimer
 		}
 
         /// <summary>

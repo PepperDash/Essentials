@@ -388,7 +388,7 @@ namespace PepperDash.Essentials
                 b => { if (!b) ActivityShareButtonPressed(); }));
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(3, ActivityFooterSrl,
                 3, b => { if (!b) PowerButtonPressed(); }));
-            ActivityFooterSrl.Count = 2;
+            ActivityFooterSrl.Count = 3;
             TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 1;
             EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
 
@@ -757,7 +757,11 @@ namespace PepperDash.Essentials
             }
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void IsCoolingDownFeedback_OutputChange(object sender, EventArgs e)
         {
             var value = CurrentRoom.IsCoolingDownFeedback.BoolValue;
