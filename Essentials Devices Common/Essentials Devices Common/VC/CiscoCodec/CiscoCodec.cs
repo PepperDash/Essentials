@@ -12,6 +12,7 @@ using Cisco_SX80_Corporate_Phone_Book;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
@@ -33,11 +34,32 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         private CiscoCodecStatus.RootObject CodecStatus;
 
+        private CiscoCodecEvents.RootObject CodecEvent;
+
+        /// <summary>
+        /// Gets and returns the scaled volume of the codec
+        /// </summary>
         protected override Func<int> VolumeLevelFeedbackFunc
         {
             get
             {
-                return () => CodecStatus.Status.Audio.Volume.IntValue;
+                return () => CrestronEnvironment.ScaleWithLimits(CodecStatus.Status.Audio.Volume.IntValue, 100, 0, 65535, 0);
+            }
+        }
+
+        protected override Func<bool> PrivacyModeFeedbackFunc
+        {
+            get
+            {
+                return () => CodecStatus.Status.Audio.Microphones.Mute.BoolValue;
+            }
+        }
+
+        protected Func<bool> StandbyStateFeedbackFunc
+        {
+            get
+            {
+                return () => CodecStatus.Status.Standby.State.BoolValue;
             }
         }
 
@@ -63,6 +85,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         string Delimiter = "\r\n";
 
+        int PresentationSource;
+
         // Constructor for IBasicCommunication
         public CiscoCodec(string key, string name, IBasicCommunication comm, int serverPort)
             : base(key, name)
@@ -71,15 +95,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             SyncState = new CodecSyncState(key + "--sync");
 
-            PortGather = new CommunicationGather(Communication, "\r\n");
-            PortGather.IncludeDelimiter = true;
+            PortGather = new CommunicationGather(Communication, Delimiter);
             PortGather.LineReceived += this.Port_LineReceived;
-
-            //JsonGather = new CommunicationGather(Communication, "}\r\n\r\n");
-            //JsonGather.IncludeDelimiter = true;
-            //JsonGather.LineReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(JsonGather_LineReceived);
-  
-            Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
 
             //ServerPort = serverPort;
 
@@ -90,6 +107,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecConfiguration = new CiscoCodecConfiguration.RootObject();
 
             CodecStatus = new CiscoCodecStatus.RootObject();
+
+            CodecEvent = new CiscoCodecEvents.RootObject();
 
             CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
 
@@ -112,7 +131,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 socket.ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
             }
-            Debug.Console(1, this, "Starting Cisco API Server");
+
+            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource(1)), this));
+            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource(2)), this));
+
+            //Debug.Console(1, this, "Starting Cisco API Server");
 
             //Server.Start(ServerPort);
 
@@ -217,20 +240,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             if (!SyncState.InitialSyncComplete)
             {
-                switch (args.Text.Trim())
+                switch (args.Text.Trim().ToLower()) // remove the whitespace
                 {
-                    case "*r Login successful":
+                    case "*r login successful":
                         {
                             SendText("xPreferences outputmode json");
                             break;
                         }
-                    case "xPreferences outputmode json":
+                    case "xpreferences outputmode json":
                         {
                             if(!SyncState.InitialStatusMessageWasReceived)
                                 SendText("xStatus");
                             break;
                         }
-                    case "xFeedback register":
+                    case "xfeedback register":
                         {
                             SyncState.FeedbackRegistered();
                             break;
@@ -239,27 +262,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        void JsonGather_LineReceived(object sender, GenericCommMethodReceiveTextArgs e)
-        {
-            //Debug.Console(1, this, "JSON repsonse length: {0}", e.Text.Length);
-
-            var startPos = e.Text.IndexOf("{");
-            var json = e.Text.Substring(startPos, e.Text.Length - startPos);
-            
-            //Debug.Console(1, this, "First curly brace found at position {0}.  Substring will start at position {1} and continue for {2} characters", startPos, startPos, e.Text.Length - startPos);
-
-            Debug.Console(1, this, "JSON received:\n{0}", json);
-
-
-            DeserializeResponse(json);
-            
-            
-        }
-
         public void SendText(string command)
         {
             Debug.Console(1, this, "Sending: '{0}'", command);
-            Communication.SendText(command + "\x0d\x0a");
+            Communication.SendText(command + Delimiter);
         }
 
         //private void StartHttpsSession()
@@ -458,6 +464,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     }
 
                 }
+                else if (response.IndexOf("\"Event\":{") > -1)
+                {
+                    JsonConvert.PopulateObject(response, CodecEvent);
+                }
                 
             }
             catch (Exception ex)
@@ -466,14 +476,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        void Communication_TextReceived(object sender, GenericCommMethodReceiveTextArgs e)
-        {
-            //CodecObtp.
-        }
-
         public override void ExecuteSwitch(object selector)
         {
-            throw new NotImplementedException();
+            (selector as Action)();
         }
 
         protected override Func<bool> InCallFeedbackFunc { get { return () => false; } }
@@ -486,40 +491,66 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         protected override Func<bool> PrivacyModeFeedbackFunc { get { return () => false; } }
 
+        /// <summary>
+        /// Gets the first CallId or returns null
+        /// </summary>
+        /// <returns></returns>
+        private string GetCallId()
+        {
+            string callId = null;
+
+            if (CodecStatus.Status.Call.Count > 0)
+                callId = CodecStatus.Status.Call[0].id;
+
+            return callId;
+
+        }
+
         public override void  Dial(string s)
         {
-         	SendText(string.Format("xCommand Dial Number: {0}", s));
-        }  
+         	SendText(string.Format("xCommand Dial Number: \"{0}\"", s));
+        }
+
+        public void DialBookingId(string s)
+        {
+            SendText(string.Format("xCommand Dial BookingId: {0}", s));
+        }
  
         public override void EndCall()
         {
-            //SendText(string.Format("xCommand Accept CallId: {0}", CodecStatus.Status.));
-
+            SendText(string.Format("xCommand Call Disconnect CallId: {0}", GetCallId()));
         }
 
         public override void AcceptCall()
         {
-
+            SendText("xCommand Call Accept");
         }
 
         public override void RejectCall()
         {
-
+            SendText("xCommand Call Reject");
         }
 
         public override void SendDtmf(string s)
         {
-            
+            SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
+        }
+
+        public void SelectPresentationSource(int source)
+        {
+            PresentationSource = source;
+
+            StartSharing();
         }
 
         public override void StartSharing()
         {
-
+            SendText(string.Format("xCommand Presentation Start PresentationSource: {0}", PresentationSource));
         }
 
         public override void StopSharing()
         {
-
+            SendText(string.Format("xCommand Presentation Stop PresentationSource: {0}", PresentationSource));
         }
 
         public override void ReceiveMuteOff()
@@ -564,17 +595,92 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public override void PrivacyModeOn()
         {
-            
+            SendText("xCommand Audio Microphones Mute");
         }
 
         public override void PrivacyModeOff()
         {
-            
+            SendText("xCommand Audio Microphones Unmute");
         }
 
         public override void PrivacyModeToggle()
         {
-            
+            SendText("xCommand Audio Microphones ToggleMute");
+        }
+
+        public override void MuteOff()
+        {
+            SendText("xCommand Audio Volume Unmute");
+        }
+
+        public override void MuteOn()
+        {
+            SendText("xCommand Audio Volume Mute");
+        }
+
+        public override void MuteToggle()
+        {
+            SendText("xCommand Audio Volume ToggleMute");
+        }
+
+        /// <summary>
+        /// Increments the voluem
+        /// </summary>
+        /// <param name="pressRelease"></param>
+        public override void VolumeUp(bool pressRelease)
+        {
+            SendText("xCommand Audio Volume Increase");
+        }
+
+        /// <summary>
+        /// Decrements the volume
+        /// </summary>
+        /// <param name="pressRelease"></param>
+        public override void VolumeDown(bool pressRelease)
+        {
+            SendText("xCommand Audio Volume Decrease");
+        }
+
+        /// <summary>
+        /// Scales the level and sets the codec to the specified level within its range
+        /// </summary>
+        /// <param name="level">level from slider (0-65535 range)</param>
+        public override void SetVolume(ushort level)
+        {
+            var scaledLevel = CrestronEnvironment.ScaleWithLimits(level, 65535, 0, 100, 0); 
+            SendText(string.Format("xCommand Audio Volume Set Level: {0}", scaledLevel));
+        }
+
+        /// <summary>
+        /// Recalls the default volume on the codec
+        /// </summary>
+        public void VolumeSetToDefault()
+        {
+            SendText("xCommand Audio Volume SetToDefault");
+        }
+
+        /// <summary>
+        /// Puts the codec in standby mode
+        /// </summary>
+        public void StandbyActivate()
+        {
+            SendText("xCommand Standby Activate");
+        }
+
+        /// <summary>
+        /// Wakes the codec from standby
+        /// </summary>
+        public void StandbyDeactivate()
+        {
+            SendText("xCommand Standby Deactivate");
+        }
+
+        /// <summary>
+        /// Reboots the codec
+        /// </summary>
+        public void Reboot()
+        {
+            SendText("xCommand SystemUnit Boot Action: Restart");
         }
     }
 

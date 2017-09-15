@@ -123,20 +123,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public BoolFeedback MuteFeedback { get; private set; }
 
-        public void MuteOff()
-        {
-            
-        }
+        public abstract void MuteOff();
 
-        public void MuteOn()
-        {
-            
-        }
+        public abstract void MuteOn();
 
-        public void SetVolume(ushort level)
-        {
-            
-        }
+        public abstract void SetVolume(ushort level);
 
         public IntFeedback VolumeLevelFeedback { get; private set; }
 
@@ -144,20 +135,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #region IBasicVolumeControls Members
 
-        public void MuteToggle()
-        {
-            
-        }
+        public abstract void MuteToggle();
 
-        public void VolumeDown(bool pressRelease)
-        {
-            
-        }
+        public abstract void VolumeDown(bool pressRelease);
 
-        public void VolumeUp(bool pressRelease)
-        {
-            
-        }
+
+        public abstract void VolumeUp(bool pressRelease);
+
 
         #endregion
     }
