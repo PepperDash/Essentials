@@ -1072,14 +1072,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Persistency Persistency { get; set; }
         }
 
-        public class State
+        public class State : ValueProperty
         {
-            public string Value { get; set; }
+            public bool BoolValue { get; private set; }
+
+            public string Value // Valid values are Standby/EnteringStandby/Halfwake/Off
+            {
+                set
+                {
+                    // If the incoming value is "Of" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "Off";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class Standby
         {
             public State State { get; set; }
+
+            public Standby()
+            {
+                State = new State();
+            }
         }
 
         public class CompatibilityLevel
@@ -1484,10 +1499,118 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Selfview Selfview { get; set; }
         }
 
+        public class AnswerState
+        {
+            public string Value { get; set; }
+        }
+
+        public class CallType
+        {
+            public string Value { get; set; }
+        }
+
+        public class CallbackNumber
+        {
+            public string Value { get; set; }
+        }
+
+        public class DeviceType
+        {
+            public string Value { get; set; }
+        }
+
+        public class Direction
+        {
+            public string Value { get; set; }
+        }
+
+        public class DisplayName
+        {
+            public string Value { get; set; }
+        }
+
+        public class Duration
+        {
+            public string Value { get; set; }
+        }
+
+        public class Type
+        {
+            public string Value { get; set; }
+        }
+
+        public class Encryption
+        {
+            public string id { get; set; }
+            public Type Type { get; set; }
+        }
+
+        public class FacilityServiceId
+        {
+            public string Value { get; set; }
+        }
+
+        public class HoldReason
+        {
+            public string Value { get; set; }
+        }
+
+        public class PlacedOnHold
+        {
+            public string Value { get; set; }
+        }
+
+        public class Protocol
+        {
+            public string Value { get; set; }
+        }
+
+        public class ReceiveCallRate
+        {
+            public string Value { get; set; }
+        }
+
+        public class RemoteNumber
+        {
+            public string Value { get; set; }
+        }
+
+        public class Status2
+        {
+            public string Value { get; set; }
+        }
+
+        public class TransmitCallRate
+        {
+            public string Value { get; set; }
+        }
+
+        public class Call
+        {
+            public string id { get; set; }
+            public AnswerState AnswerState { get; set; }
+            public CallType CallType { get; set; }
+            public CallbackNumber CallbackNumber { get; set; }
+            public DeviceType DeviceType { get; set; }
+            public Direction Direction { get; set; }
+            public DisplayName DisplayName { get; set; }
+            public Duration Duration { get; set; }
+            public Encryption Encryption { get; set; }
+            public FacilityServiceId FacilityServiceId { get; set; }
+            public HoldReason HoldReason { get; set; }
+            public PlacedOnHold PlacedOnHold { get; set; }
+            public Protocol Protocol { get; set; }
+            public ReceiveCallRate ReceiveCallRate { get; set; }
+            public RemoteNumber RemoteNumber { get; set; }
+            public Status2 Status { get; set; }
+            public TransmitCallRate TransmitCallRate { get; set; }
+        }
+
         public class Status
         {
             public Audio Audio { get; set; }
             public Bookings Bookings { get; set; }
+            public List<Call> Call { get; set; }
             public Cameras Cameras { get; set; }
             public Capabilities2 Capabilities { get; set; }
             public Conference2 Conference { get; set; }
@@ -1513,7 +1636,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Status()
             {
                 Audio = new Audio();
+                Call = new List<Call>();
+                Standby = new Standby();
             }
+#warning Figure out how to flag codec as InCall if Call.Count > 0
         }
 
         public class RootObject

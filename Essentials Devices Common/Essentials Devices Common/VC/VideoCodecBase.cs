@@ -141,15 +141,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public abstract void MuteToggle();
 
-        public virtual void VolumeDown(bool pressRelease)
-        {
-            
-        }
+        public abstract void VolumeDown(bool pressRelease);
 
-        public virtual void VolumeUp(bool pressRelease)
-        {
-            
-        }
+
+        public abstract void VolumeUp(bool pressRelease);
+
 
         #endregion
     }
