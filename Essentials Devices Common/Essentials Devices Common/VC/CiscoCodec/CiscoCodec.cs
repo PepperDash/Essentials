@@ -63,6 +63,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+        protected override Func<bool> MuteFeedbackFunc
+        {
+            get { return () => false; }
+        }
+
         //private HttpsClient Client;
 
         //private HttpApiServer Server;
@@ -702,6 +707,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public void Reboot()
         {
             SendText("xCommand SystemUnit Boot Action: Restart");
+        }
+
+        public override void MuteOff()
+        {
+        }
+
+        public override void MuteOn()
+        {
+        }
+
+        public override void SetVolume(ushort level)
+        {
+        }
+
+        public override void MuteToggle()
+        {
         }
     }
 

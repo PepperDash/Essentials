@@ -199,12 +199,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <summary>
         /// 
         /// </summary>
-
         void InCallFeedback_OutputChange(object sender, EventArgs e)
         {
-#warning mode does not change!
             var inCall = Codec.InCallFeedback.BoolValue;
-            Debug.Console(2, "*#* Codec Driver InCallFeedback change={0}", InCall);
+            Debug.Console(1, "*#* Codec Driver InCallFeedback change={0}", InCall);
             TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(inCall ? 1 : 0);
             StagingBarInterlock.ShowInterlocked(
                 inCall ? UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
@@ -212,13 +210,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
             if (Codec.InCallFeedback.BoolValue) // Call is starting
             {
                 // Header icon
-                // Add end call button to stage
                 // Volume bar needs to have mic mute
             }
             else // ending
             {
                 // Header icon
-                // Remove end call
                 // Volume bar no mic mute (or hidden if no source?)
             }
         }

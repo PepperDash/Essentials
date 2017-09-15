@@ -14,7 +14,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public MockVC(string key, string name)
             : base(key, name)
         {
-
+            MuteFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Mute={0}", _IsMuted);
+            VolumeLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Volume={0}", _VolumeLevel);
+            InCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "InCall={0}", _InCall);
+            IncomingCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "IncomingCall={0}", _IncomingCall);
+            TransmitLevelFeedback.OutputChange += (o,a)=> Debug.Console(1, this, "TransmitLevel={0}", _tra
         }
 
         protected override Func<bool> InCallFeedbackFunc
@@ -28,6 +32,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             get { return () => _IncomingCall; }
         }
         bool _IncomingCall;
+
+        
 
         protected override Func<bool> TransmitMuteFeedbackFunc
         {
@@ -49,8 +55,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         protected override Func<int> VolumeLevelFeedbackFunc
         {
-            get { throw new NotImplementedException(); }
+            get { return () => _VolumeLevel; }
         }
+        int _VolumeLevel;
+
+        protected override Func<bool> MuteFeedbackFunc
+        {
+            get { return () => _IsMuted; }
+        }
+        bool _IsMuted;
 
         /// <summary>
         /// Dials, yo!
@@ -117,6 +130,31 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             Debug.Console(1, this, "ExecuteSwitch");
 
         }
+
+        public override void MuteOff()
+        {
+            _IsMuted = false;
+            MuteFeedback.FireUpdate();
+        }
+
+        public override void MuteOn()
+        {
+            _IsMuted = true;
+            MuteFeedback.FireUpdate();
+        }
+
+        public override void MuteToggle()
+        {
+            _IsMuted = !_IsMuted;
+            MuteFeedback.FireUpdate();
+        }
+        
+        public override void SetVolume(ushort level)
+        {
+            _VolumeLevel = level;
+            VolumeLevelFeedback.FireUpdate();
+        }
+
 
         /// <summary>
         /// 
@@ -241,5 +279,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             Debug.Console(1, this, "TestFarEndHangup");
 
         }
+
     }
 }

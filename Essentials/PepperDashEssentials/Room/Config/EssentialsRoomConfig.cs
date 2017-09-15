@@ -63,7 +63,7 @@ namespace PepperDash.Essentials.Room.Config
                 var codec = DeviceManager.GetDeviceForKey(props.VideoCodecKey) as
                     PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
 
-                var rm = new EssentialsHuddleVtc1Room(Key, Name, disp, disp, codec, props);
+                var rm = new EssentialsHuddleVtc1Room(Key, Name, disp, codec, codec, props);
                 rm.LogoUrl = props.Logo.GetUrl();
                 rm.SourceListKey = props.SourceListKey;
                 rm.DefaultSourceItem = props.DefaultSourceItem;

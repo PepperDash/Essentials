@@ -32,7 +32,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         abstract protected Func<bool> ReceiveMuteFeedbackFunc { get; }
         abstract protected Func<bool> PrivacyModeFeedbackFunc { get; }
 
+#warning WILL ADD TRANSMIT AND REVEICE LEVEL FUNCS AFTER MERGE
         abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
+        abstract protected Func<bool> MuteFeedbackFunc { get; }
 
         public VideoCodecBase(string key, string name)
             : base(key, name)
@@ -42,8 +44,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             ReceiveMuteIsOnFeedback = new BoolFeedback(ReceiveMuteFeedbackFunc);
             TransmitMuteIsOnFeedback = new BoolFeedback(TransmitMuteFeedbackFunc);
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeFeedbackFunc);
+#warning ADDING TX/RX FEEDBACKS HERE
 
             VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
+            MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
