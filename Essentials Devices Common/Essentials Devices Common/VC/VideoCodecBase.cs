@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
-    public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer, IHasSharing, IBasicVolumeWithFeedback //, ICodecAudio
+    public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer, IHasSharing, ICodecAudio
     {
         #region IUsageTracking Members
 
@@ -28,8 +28,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         abstract protected Func<bool> InCallFeedbackFunc { get; }
         abstract protected Func<bool> IncomingCallFeedbackFunc { get; }
-        abstract protected Func<bool> TransmitMuteFeedbackFunc { get; }
-        abstract protected Func<bool> ReceiveMuteFeedbackFunc { get; }
         abstract protected Func<bool> PrivacyModeFeedbackFunc { get; }
 
 #warning WILL ADD TRANSMIT AND REVEICE LEVEL FUNCS AFTER MERGE
@@ -41,8 +39,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             InCallFeedback = new BoolFeedback(InCallFeedbackFunc);
             IncomingCallFeedback = new BoolFeedback(IncomingCallFeedbackFunc);
-            ReceiveMuteIsOnFeedback = new BoolFeedback(ReceiveMuteFeedbackFunc);
-            TransmitMuteIsOnFeedback = new BoolFeedback(TransmitMuteFeedbackFunc);
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeFeedbackFunc);
 #warning ADDING TX/RX FEEDBACKS HERE
 
@@ -82,8 +78,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				{
 					InCallFeedback,
                     IncomingCallFeedback,
-                    ReceiveMuteIsOnFeedback,
-                    TransmitMuteIsOnFeedback,
                     PrivacyModeIsOnFeedback
 				};
             }
@@ -93,24 +87,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #region ICodecAudio Members
 
-        public IntFeedback ReceiveLevelFeedback { get; private set; }
-        public BoolFeedback ReceiveMuteIsOnFeedback { get; private set; }
-        public abstract void ReceiveMuteOff();
-        public abstract void ReceiveMuteOn();
-        public abstract void ReceiveMuteToggle();
-        public abstract void SetReceiveVolume(ushort level);
-
-        public IntFeedback TransmitLevelFeedback { get; private set; }
-        public BoolFeedback TransmitMuteIsOnFeedback { get; private set; }
-        public abstract void TransmitMuteOff();
-        public abstract void TransmitMuteOn();
-        public abstract void TransmitMuteToggle();
-        public abstract void SetTransmitVolume(ushort level);
-
         public abstract void PrivacyModeOn();
         public abstract void PrivacyModeOff();
         public abstract void PrivacyModeToggle();
         public BoolFeedback PrivacyModeIsOnFeedback { get; private set; }
+
+
+        public BoolFeedback MuteFeedback { get; private set; }
+
+        public abstract void MuteOff();
+
+        public abstract void MuteOn();
+
+        public abstract void SetVolume(ushort level);
+
+        public IntFeedback VolumeLevelFeedback { get; private set; }
+
+        public abstract void MuteToggle();
+
+        public abstract void VolumeDown(bool pressRelease);
+
+
+        public abstract void VolumeUp(bool pressRelease);
 
         #endregion
 
@@ -123,30 +121,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #endregion
 
-        #region IBasicVolumeWithFeedback Members
 
-        public BoolFeedback MuteFeedback { get; private set; }
-
-        public abstract void MuteOff();
-
-        public abstract void MuteOn();
-
-        public abstract void SetVolume(ushort level);
-
-        public IntFeedback VolumeLevelFeedback { get; private set; }
-
-        #endregion
-
-        #region IBasicVolumeControls Members
-
-        public abstract void MuteToggle();
-
-        public abstract void VolumeDown(bool pressRelease);
-
-
-        public abstract void VolumeUp(bool pressRelease);
-
-
-        #endregion
     }
 }

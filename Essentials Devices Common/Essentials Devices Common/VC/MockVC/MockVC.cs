@@ -18,7 +18,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             VolumeLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Volume={0}", _VolumeLevel);
             InCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "InCall={0}", _InCall);
             IncomingCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "IncomingCall={0}", _IncomingCall);
-            TransmitLevelFeedback.OutputChange += (o,a)=> Debug.Console(1, this, "TransmitLevel={0}", _tra
         }
 
         protected override Func<bool> InCallFeedbackFunc
@@ -33,19 +32,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
         bool _IncomingCall;
 
-        
-
-        protected override Func<bool> TransmitMuteFeedbackFunc
-        {
-            get { return () => _TransmitMute; }
-        }
-        bool _TransmitMute;
-
-        protected override Func<bool> ReceiveMuteFeedbackFunc
-        {
-            get { return () => _ReceiveMute; }
-        }
-        bool _ReceiveMute;
 
         protected override Func<bool> PrivacyModeFeedbackFunc
         {
@@ -155,86 +141,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             VolumeLevelFeedback.FireUpdate();
         }
 
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override void ReceiveMuteOff()
+        public override void VolumeDown(bool pressRelease)
         {
-            Debug.Console(1, this, "ReceiveMuteOff");
-
-            if (!_ReceiveMute)
-                return;
-            _ReceiveMute = false;
-            ReceiveMuteIsOnFeedback.FireUpdate();
+           
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public override void ReceiveMuteOn()
+        public override void  VolumeUp(bool pressRelease)
         {
-            Debug.Console(1, this, "ReceiveMuteOn");
-            if (_ReceiveMute)
-                return;
-            ReceiveMuteIsOnFeedback.FireUpdate();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override void ReceiveMuteToggle()
-        {
-            Debug.Console(1, this, "ReceiveMuteToggle");
-
-            _ReceiveMute = !_ReceiveMute;
-            ReceiveMuteIsOnFeedback.FireUpdate();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="level"></param>
-        public override void SetReceiveVolume(ushort level)
-        {
-            Debug.Console(1, this, "SetReceiveVolume: {0}", level);
-
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override void TransmitMuteOff()
-        {
-            Debug.Console(1, this, "TransmitMuteOff");
-
-            if (!_TransmitMute)
-                return;
-            _TransmitMute = false;
-            TransmitMuteIsOnFeedback.FireUpdate();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override void TransmitMuteOn()
-        {
-            Debug.Console(1, this, "TransmitMuteOn");
-            if (_TransmitMute)
-                return;
-            TransmitMuteIsOnFeedback.FireUpdate();
-        }
-
-        public override void TransmitMuteToggle()
-        {
-            _TransmitMute = !_TransmitMute;
-            Debug.Console(1, this, "TransmitMuteToggle: {0}", _TransmitMute);
-            TransmitMuteIsOnFeedback.FireUpdate();
-        }
-
-        public override void SetTransmitVolume(ushort level)
-        {
-            Debug.Console(1, this, "SetTransmitVolume: {0}", level);
+ 	        
         }
 
         public override void PrivacyModeOn()

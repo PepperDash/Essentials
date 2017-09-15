@@ -490,10 +490,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         protected override Func<bool> IncomingCallFeedbackFunc { get { return () => false; } }
 
-        protected override Func<bool> TransmitMuteFeedbackFunc { get { return () => false; } }
-
-        protected override Func<bool> ReceiveMuteFeedbackFunc { get { return () => false; } }
-
         /// <summary>
         /// Gets the first CallId or returns null
         /// </summary>
@@ -577,46 +573,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public override void StopSharing()
         {
             SendText(string.Format("xCommand Presentation Stop PresentationSource: {0}", PresentationSource));
-        }
-
-        public override void ReceiveMuteOff()
-        {
-            
-        }
-
-        public override void ReceiveMuteOn()
-        {
-            
-        }
-
-        public override void ReceiveMuteToggle()
-        {
-            
-        }
-
-        public override void SetReceiveVolume(ushort level)
-        {
-            
-        }
-
-        public override void TransmitMuteOff()
-        {
-            
-        }
-
-        public override void TransmitMuteOn()
-        {
-            
-        }
-
-        public override void TransmitMuteToggle()
-        {
-            
-        }
-
-        public override void SetTransmitVolume(ushort level)
-        {
-            
         }
 
         public override void PrivacyModeOn()
@@ -707,22 +663,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public void Reboot()
         {
             SendText("xCommand SystemUnit Boot Action: Restart");
-        }
-
-        public override void MuteOff()
-        {
-        }
-
-        public override void MuteOn()
-        {
-        }
-
-        public override void SetVolume(ushort level)
-        {
-        }
-
-        public override void MuteToggle()
-        {
         }
     }
 
