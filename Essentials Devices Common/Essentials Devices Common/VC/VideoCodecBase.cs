@@ -33,6 +33,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         abstract protected Func<bool> PrivacyModeFeedbackFunc { get; }
 
         abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
+        abstract protected Func<bool> MuteFeedbackFunc { get; }
 
         public VideoCodecBase(string key, string name)
             : base(key, name)
@@ -44,6 +45,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeFeedbackFunc);
 
             VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
+            MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
@@ -123,20 +125,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public BoolFeedback MuteFeedback { get; private set; }
 
-        public void MuteOff()
-        {
-            
-        }
+        public abstract void MuteOff();
 
-        public void MuteOn()
-        {
-            
-        }
+        public abstract void MuteOn();
 
-        public void SetVolume(ushort level)
-        {
-            
-        }
+        public abstract void SetVolume(ushort level);
 
         public IntFeedback VolumeLevelFeedback { get; private set; }
 
@@ -144,17 +137,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #region IBasicVolumeControls Members
 
-        public void MuteToggle()
+        public abstract void MuteToggle();
+
+        public virtual void VolumeDown(bool pressRelease)
         {
             
         }
 
-        public void VolumeDown(bool pressRelease)
-        {
-            
-        }
-
-        public void VolumeUp(bool pressRelease)
+        public virtual void VolumeUp(bool pressRelease)
         {
             
         }

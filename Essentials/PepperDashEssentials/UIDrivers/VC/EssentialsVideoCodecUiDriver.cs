@@ -199,7 +199,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <summary>
         /// 
         /// </summary>
-
         void InCallFeedback_OutputChange(object sender, EventArgs e)
         {
             var inCall = Codec.InCallFeedback.BoolValue;

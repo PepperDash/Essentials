@@ -235,126 +235,105 @@ namespace PepperDash.Essentials
 		public void RunRouteAction(string routeKey, Action successCallback)
 		{
 			// Run this on a separate thread
-			new CTimer(o =>
-				{
-					Debug.Console(1, this, "Run route action '{0}'", routeKey);
-					var dict = ConfigReader.ConfigObject.GetSourceListForKey(SourceListKey);
-					if(dict == null)
-					{
-						Debug.Console(1, this, "WARNING: Config source list '{0}' not found", SourceListKey);
-						return;
-					}
-
-					// Try to get the list item by it's string key
-					if (!dict.ContainsKey(routeKey))
-					{
-						Debug.Console(1, this, "WARNING: No item '{0}' found on config list '{1}'", 
-							routeKey, SourceListKey);
-						return;
-					}
-
-					var item = dict[routeKey];
-
-                    // End usage timer on last source
-                    if (!string.IsNullOrEmpty(LastSourceKey))
+            //new CTimer(o =>
+            //    {
+                    try
                     {
-                        var lastSource = dict[LastSourceKey].SourceDevice;
 
-                        try
+                        Debug.Console(1, this, "Run route action '{0}'", routeKey);
+                        var dict = ConfigReader.ConfigObject.GetSourceListForKey(SourceListKey);
+                        if (dict == null)
                         {
-                            if (lastSource != null && lastSource is IUsageTracking)
-                                (lastSource as IUsageTracking).UsageTracker.EndDeviceUsage();
+                            Debug.Console(1, this, "WARNING: Config source list '{0}' not found", SourceListKey);
+                            return;
                         }
-                        catch (Exception e)
+
+                        // Try to get the list item by it's string key
+                        if (!dict.ContainsKey(routeKey))
                         {
-                            Debug.Console(1, this, "*#* EXCEPTION in end usage tracking (257):\r{0}", e); 
+                            Debug.Console(1, this, "WARNING: No item '{0}' found on config list '{1}'",
+                                routeKey, SourceListKey);
+                            return;
                         }
-                    }
 
-					// Let's run it
-                    if (routeKey.ToLower() != "roomoff")
+                        // End usage timer on last source
+                        if (!string.IsNullOrEmpty(LastSourceKey))
+                        {
+                            var lastSource = dict[LastSourceKey].SourceDevice;
+
+                            try
+                            {
+                                if (lastSource != null && lastSource is IUsageTracking)
+                                    (lastSource as IUsageTracking).UsageTracker.EndDeviceUsage();
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.Console(1, this, "*#* EXCEPTION in end usage tracking:\r{0}", e);
+                            }
+                        }
+
+                        // Let's run it
+                        var item = dict[routeKey];
+                        if (routeKey.ToLower() != "roomoff")
+                            LastSourceKey = routeKey;
+                        else
+                            CurrentSourceInfoKey = null;
+
+                        // hand off the individual routes to this helper
+                        foreach (var route in item.RouteList)
+                            DoRouteItem(route);
+
+                        // Start usage timer on routed source
+                        if (item.SourceDevice is IUsageTracking)
+                            (item.SourceDevice as IUsageTracking).UsageTracker.StartDeviceUsage();
+
+                        // store the name and UI info for routes
+                        if (item.SourceKey == "$off")
+                        {
+                            CurrentSourceInfoKey = routeKey;
+                            CurrentSourceInfo = null;
+                        }
+                        else if (item.SourceKey != null)
+                        {
+                            CurrentSourceInfoKey = routeKey;
+                            CurrentSourceInfo = item;
+                        }
+
+                        OnFeedback.FireUpdate();
+
+                        // report back when done
+                        if (successCallback != null)
+                            successCallback();
+                    }
+                    catch (Exception e)
                     {
-                        LastSourceKey = routeKey;
-                    }
-                    else
-                    {
-                        CurrentSourceInfoKey = null;
+                        Debug.Console(1, this, "ERROR in routing: {0}", e);
                     }
 
-					foreach (var route in item.RouteList)
-					{
-						// if there is a $defaultAll on route, run two separate
-						if (route.DestinationKey.Equals("$defaultAll", StringComparison.OrdinalIgnoreCase))
-						{
-                            // Going to assume a single-path route for now
-							var tempVideo = new SourceRouteListItem
-							{
-								DestinationKey = "$defaultDisplay",
-								SourceKey = route.SourceKey,
-								Type = eRoutingSignalType.Video
-							};
-                            DoRoute(tempVideo);
-						}
-						else
-							DoRoute(route);
-					}
-
-                    // Start usage timer on routed source
-                    if (item.SourceDevice is IUsageTracking)
-                    {
-                        (item.SourceDevice as IUsageTracking).UsageTracker.StartDeviceUsage();
-                    }
-
-
-					// Set volume control on room, using default if non provided
-					IBasicVolumeControls volDev = null;
-					// Handle special cases for volume control
-					if (string.IsNullOrEmpty(item.VolumeControlKey) 
-						|| item.VolumeControlKey.Equals("$defaultAudio", StringComparison.OrdinalIgnoreCase))
-						volDev = DefaultVolumeControls;
-					else if (item.VolumeControlKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
-						volDev = DefaultDisplay as IBasicVolumeControls;
-					// Or a specific device, probably rarely used.
-					else
-					{
-						var dev = DeviceManager.GetDeviceForKey(item.VolumeControlKey);
-						if (dev is IBasicVolumeControls)
-							volDev = dev as IBasicVolumeControls;
-						else if (dev is IHasVolumeDevice)
-							volDev = (dev as IHasVolumeDevice).VolumeDevice;
-					}
-					CurrentVolumeControls = volDev;
-
-					// store the name and UI info for routes
-                    if (item.SourceKey == "$off")
-                    {
-                        CurrentSourceInfoKey = routeKey;
-                        CurrentSourceInfo = null;
-                    }
-                    else if (item.SourceKey != null)
-                    {
-                        CurrentSourceInfoKey = routeKey;
-                        CurrentSourceInfo = item;
-                    }
-
-					OnFeedback.FireUpdate();
-
-					// report back when done
-					if (successCallback != null)
-						successCallback();
-
-				}, 0); // end of CTimer
+                //}, 0); // end of CTimer
 		}
 
-		/// <summary>
-		/// Will power the room on with the last-used source
-		/// </summary>
-		public void PowerOnToDefaultOrLastSource()
-		{
-			if (!EnablePowerOnToLastSource || LastSourceKey == null)
-				return;
-			RunRouteAction(LastSourceKey);
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="route"></param>
+        void DoRouteItem(SourceRouteListItem route)
+        {
+            // if there is a $defaultAll on route, run two separate
+            if (route.DestinationKey.Equals("$defaultAll", StringComparison.OrdinalIgnoreCase))
+            {
+                // Going to assume a single-path route for now
+                var tempVideo = new SourceRouteListItem
+                {
+                    DestinationKey = "$defaultDisplay",
+                    SourceKey = route.SourceKey,
+                    Type = eRoutingSignalType.Video
+                };
+                DoRoute(tempVideo);
+            }
+            else
+                DoRoute(route);
+        }
 
 		/// <summary>
 		/// 
@@ -396,6 +375,16 @@ namespace PepperDash.Essentials
 			}
 			return true;
 		}
+
+        /// <summary>
+        /// Will power the room on with the last-used source
+        /// </summary>
+        public void PowerOnToDefaultOrLastSource()
+        {
+            if (!EnablePowerOnToLastSource || LastSourceKey == null)
+                return;
+            RunRouteAction(LastSourceKey);
+        }
 
 		/// <summary>
 		/// Runs "roomOff" action on all rooms not set to ExcludeFromGlobalFunctions
