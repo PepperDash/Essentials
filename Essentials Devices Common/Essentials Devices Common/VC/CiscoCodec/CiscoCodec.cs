@@ -132,8 +132,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 socket.ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
             }
 
-            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource(1)), this));
-            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource(2)), this));
+            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this));
+            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource2), this));
 
             //Debug.Console(1, this, "Starting Cisco API Server");
 
@@ -203,17 +203,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="args"></param>
         void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
         {
-            if (Debug.Level == 1)
+            if (Debug.Level == 2)
             {
                 if(!JsonFeedbackMessageIsIncoming)
-                    Debug.Console(1, this, "RX: '{0}'", args.Text);
+                    Debug.Console(2, this, "RX: '{0}'", args.Text);
             }
 
             if (args.Text == "{" + Delimiter)        // Check for the beginning of a new JSON message
             {
                 JsonFeedbackMessageIsIncoming = true;
 
-                Debug.Console(1, this, "Incoming JSON message...");
+                Debug.Console(2, this, "Incoming JSON message...");
 
                 JsonMessage = new StringBuilder();
             }
@@ -223,7 +223,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                 JsonMessage.Append(args.Text);
 
-                Debug.Console(1, this, "Complete JSON Received:\n{0}", JsonMessage.ToString());
+                Debug.Console(2, this, "Complete JSON Received:\n{0}", JsonMessage.ToString());
 
                 // Forward the complete message to be deserialized
                 DeserializeResponse(JsonMessage.ToString());
@@ -489,8 +489,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         protected override Func<bool> ReceiveMuteFeedbackFunc { get { return () => false; } }
 
-        protected override Func<bool> PrivacyModeFeedbackFunc { get { return () => false; } }
-
         /// <summary>
         /// Gets the first CallId or returns null
         /// </summary>
@@ -543,8 +541,31 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             StartSharing();
         }
 
+        /// <summary>
+        /// Select source 1 as the presetnation source
+        /// </summary>
+        public void SelectPresentationSource1()
+        {
+            SelectPresentationSource(1);
+        }
+
+        /// <summary>
+        /// Select source 2 as the presetnation source
+        /// </summary>
+        public void SelectPresentationSource2()
+        {
+            SelectPresentationSource(2);
+        }
+
         public override void StartSharing()
         {
+            string sendingMode = string.Empty;
+
+            if (InCallFeedback.BoolValue)
+                sendingMode = "LocalRemote";
+            else
+                sendingMode = "LocalOnly";
+
             SendText(string.Format("xCommand Presentation Start PresentationSource: {0}", PresentationSource));
         }
 
