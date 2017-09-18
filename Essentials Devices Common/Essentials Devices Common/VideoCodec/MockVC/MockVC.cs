@@ -71,11 +71,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <summary>
         /// 
         /// </summary>
-        public override void EndCall(string s)
+        public override void EndCall(CodecActiveCallItem activeCall)
         {
             Debug.Console(1, this, "EndCall");
             ActiveCalls.RemoveAll(i => i.Name == s);
             ActiveCallCountFeedback.FireUpdate();
+            //_InCall = false;
+            //IsInCall.FireUpdate();
+        }
+
+        public override void EndAllCalls()
+        {
+            
         }
 
         /// <summary>

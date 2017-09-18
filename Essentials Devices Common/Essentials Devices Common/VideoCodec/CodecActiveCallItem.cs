@@ -9,22 +9,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
     public class CodecActiveCallItem
     {
-        public string Name { get; private set; }
+        public string Name { get; set; }
 
-        public string Number { get; private set; }
+        public string Number { get; set; }
 
-        public eCodecCallType Type { get; private set; }
+        public eCodecCallType Type { get; set; }
 
-        public CodecActiveCallItem(string name, string number, eCodecCallType type)
-        {
-            Name = name;
-            Number = number;
-            Type = type;
-        }
+        public eCodecCallStatus Status { get; set; }
+
+        public string Id { get; set; }
     }
 
     public enum eCodecCallType
     {
         None, Audio, Video
+    }
+
+    public enum eCodecCallStatus
+    {
+        Dialing, Established, Incoming
     }
 }

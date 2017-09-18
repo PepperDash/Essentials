@@ -551,9 +551,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SendText(string.Format("xCommand Dial BookingId: {0}", s));
         }
  
-        public override void EndCall(string s)
+        public override void EndCall(CodecActiveCallItem activeCall)
         {
-            SendText(string.Format("xCommand Call Disconnect CallId: {0}", GetCallId()));
+            SendText(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
+        }
+
+        public override void EndAllCalls()
+        {
+            foreach (CodecActiveCallItem activeCall in ActiveCalls)
+            {
+                SendText(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
+            }
         }
 
         public override void AcceptCall()
