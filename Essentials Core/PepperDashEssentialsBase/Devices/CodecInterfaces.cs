@@ -27,6 +27,52 @@ namespace PepperDash.Essentials.Core
         
     }
 
+    /// <summary>
+    /// Defines minimum volume controls for a codec device with dialing capabilities
+    /// </summary>
+    public interface ICodecAudio : IBasicVolumeWithFeedback, ICodecPrivacy
+    {
+
+    }
+
+    /// <summary>
+    /// Adds control of codec receive volume
+    /// </summary>
+    public interface ICodecReceiveVolume
+    {
+        // Break this out into 3 interfaces
+        void SetReceiveVolume(ushort level);
+        void ReceiveMuteOn();
+        void ReceiveMuteOff();
+        void ReceiveMuteToggle();
+        IntFeedback ReceiveLevelFeedback { get; }
+        BoolFeedback ReceiveMuteIsOnFeedback { get; }
+    }
+
+    /// <summary>
+    /// Adds control of codec transmit volume
+    /// </summary>
+    public interface ICodecTransmitVolume
+    {
+        void SetTransmitVolume(ushort level);
+        void TransmitMuteOn();
+        void TransmitMuteOff();
+        void TransmitMuteToggle();
+        IntFeedback TransmitLevelFeedback { get; }
+        BoolFeedback TransmitMuteIsOnFeedback { get; }
+    }
+
+    /// <summary>
+    /// Adds control of codec privacy function (microphone mute)
+    /// </summary>
+    public interface ICodecPrivacy
+    {
+        void PrivacyModeOn();
+        void PrivacyModeOff();
+        void PrivacyModeToggle();
+        BoolFeedback PrivacyModeIsOnFeedback { get; }
+    }
+
     public interface IHasCallHistory
     {
         // Add recent calls list

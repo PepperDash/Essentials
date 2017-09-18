@@ -255,14 +255,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public override void TransmitMuteToggle()
         {
-            _TransmitMute = !_TransmitMute;
-            Debug.Console(1, this, "TransmitMuteToggle: {0}", _TransmitMute);
-            TransmitMuteIsOnFeedback.FireUpdate();
+           
         }
 
-        public override void SetTransmitVolume(ushort level)
+        public override void  VolumeUp(bool pressRelease)
         {
-            Debug.Console(1, this, "SetTransmitVolume: {0}", level);
+ 	        
         }
 
         public override void PrivacyModeOn()

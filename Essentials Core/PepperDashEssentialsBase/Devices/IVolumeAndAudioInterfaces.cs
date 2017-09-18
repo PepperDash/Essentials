@@ -68,37 +68,6 @@ namespace PepperDash.Essentials.Core
 		IntFeedback DefaultVolumeFeedback { get; }
 	}
 
-    /// <summary>
-    /// Defines minimum volume controls for a codec device with dialing capabilities
-    /// </summary>
-    public interface ICodecAudio
-    {
-        // ICodecReceiveVolume
-        // Break this out into 3 interfaces
-        void SetReceiveVolume(ushort level);
-        void ReceiveMuteOn();
-        void ReceiveMuteOff();
-        void ReceiveMuteToggle();
-        IntFeedback ReceiveLevelFeedback { get; }
-        BoolFeedback ReceiveMuteIsOnFeedback { get; }
-
-        // ICodecTransmitVolume
-        void SetTransmitVolume(ushort level);
-        void TransmitMuteOn();
-        void TransmitMuteOff();
-        void TransmitMuteToggle();
-        IntFeedback TransmitLevelFeedback { get; }
-        BoolFeedback TransmitMuteIsOnFeedback { get; }
-
-        // ICodecPrivacy
-        void PrivacyModeOn();
-        void PrivacyModeOff();
-        void PrivacyModeToggle();
-        BoolFeedback PrivacyModeIsOnFeedback { get; }
-    }
-
-
-
 	/// <summary>
 	/// A class that implements this, contains a reference to an IBasicVolumeControls device.
 	/// For example, speakers attached to an audio zone.  The speakers can provide reference

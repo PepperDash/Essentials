@@ -1524,26 +1524,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class DisplayName
-        {
-            public string Value { get; set; }
-        }
-
         public class Duration
         {
             public string Value { get; set; }
         }
 
-        public class Type
-        {
-            public string Value { get; set; }
-        }
-
-        public class Encryption
-        {
-            public string id { get; set; }
-            public Type Type { get; set; }
-        }
 
         public class FacilityServiceId
         {
@@ -1571,11 +1556,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         }
 
         public class RemoteNumber
-        {
-            public string Value { get; set; }
-        }
-
-        public class Status2
         {
             public string Value { get; set; }
         }

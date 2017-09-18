@@ -26,6 +26,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
+        public BoolFeedback StandbyIsOnFeedback { get; private set; }
+
         private CiscoOneButtonToPush CodecObtp;
 
         private Corporate_Phone_Book PhoneBook;
@@ -92,15 +94,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         int PresentationSource;
 
+        public bool CommDebuggingIsOn;
+
         // Constructor for IBasicCommunication
         public CiscoCodec(string key, string name, IBasicCommunication comm, int serverPort)
             : base(key, name)
         {
+            StandbyIsOnFeedback = new BoolFeedback(StandbyStateFeedbackFunc);
+
             Communication = comm;
 
             SyncState = new CodecSyncState(key + "--sync");
 
             PortGather = new CommunicationGather(Communication, Delimiter);
+            PortGather.IncludeDelimiter = true;
             PortGather.LineReceived += this.Port_LineReceived;
 
             //ServerPort = serverPort;
@@ -116,6 +123,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecEvent = new CiscoCodecEvents.RootObject();
 
             CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
+            CodecStatus.Status.Audio.VolumeMute.ValueChangedAction = MuteFeedback.FireUpdate;
+            CodecStatus.Status.Audio.Microphones.Mute.ValueChangedAction = PrivacyModeIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Standby.State.ValueChangedAction = StandbyIsOnFeedback.FireUpdate;
 
             //Client = new HttpsClient();
 
@@ -129,6 +139,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public override bool CustomActivate()
         {
             CrestronConsole.AddNewConsoleCommand(SendText, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(SetCommDebug, "SetCiscoCommDebug", "0 for Off, 1 for on", ConsoleAccessLevelEnum.AccessOperator);
+
+            
 
             Communication.Connect();
             var socket = Communication as ISocketStatus;
@@ -137,8 +150,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 socket.ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
             }
 
-            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource(1)), this));
-            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource(2)), this));
+            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this));
+            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource2), this));
 
             //Debug.Console(1, this, "Starting Cisco API Server");
 
@@ -193,6 +206,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             return base.CustomActivate();
         }
 
+        public void SetCommDebug(string s)
+        {
+            if (s == "1")
+            {
+                CommDebuggingIsOn = true;
+                Debug.Console(0, this, "Comm Debug Enabled.");
+            }
+            else
+            {
+                CommDebuggingIsOn = false;
+                Debug.Console(0, this, "Comm Debug Disabled.");
+            }
+        }
+
         void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
         {
             // Reset sync status on disconnect
@@ -208,7 +235,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="args"></param>
         void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
         {
-            if (Debug.Level == 1)
+            if (CommDebuggingIsOn)
             {
                 if(!JsonFeedbackMessageIsIncoming)
                     Debug.Console(1, this, "RX: '{0}'", args.Text);
@@ -218,7 +245,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 JsonFeedbackMessageIsIncoming = true;
 
-                Debug.Console(1, this, "Incoming JSON message...");
+                if (CommDebuggingIsOn)
+                    Debug.Console(1, this, "Incoming JSON message...");
 
                 JsonMessage = new StringBuilder();
             }
@@ -228,7 +256,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                 JsonMessage.Append(args.Text);
 
-                Debug.Console(1, this, "Complete JSON Received:\n{0}", JsonMessage.ToString());
+                if (CommDebuggingIsOn)
+                    Debug.Console(1, this, "Complete JSON Received:\n{0}", JsonMessage.ToString());
 
                 // Forward the complete message to be deserialized
                 DeserializeResponse(JsonMessage.ToString());
@@ -269,7 +298,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void SendText(string command)
         {
-            Debug.Console(1, this, "Sending: '{0}'", command);
+            if (CommDebuggingIsOn)
+                Debug.Console(1, this, "Sending: '{0}'", command);
+
             Communication.SendText(command + Delimiter);
         }
 
@@ -490,12 +521,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         protected override Func<bool> IncomingCallFeedbackFunc { get { return () => false; } }
 
-        protected override Func<bool> TransmitMuteFeedbackFunc { get { return () => false; } }
-
-        protected override Func<bool> ReceiveMuteFeedbackFunc { get { return () => false; } }
-
-        protected override Func<bool> PrivacyModeFeedbackFunc { get { return () => false; } }
-
         /// <summary>
         /// Gets the first CallId or returns null
         /// </summary>
@@ -548,54 +573,37 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             StartSharing();
         }
 
+        /// <summary>
+        /// Select source 1 as the presetnation source
+        /// </summary>
+        public void SelectPresentationSource1()
+        {
+            SelectPresentationSource(1);
+        }
+
+        /// <summary>
+        /// Select source 2 as the presetnation source
+        /// </summary>
+        public void SelectPresentationSource2()
+        {
+            SelectPresentationSource(2);
+        }
+
         public override void StartSharing()
         {
+            string sendingMode = string.Empty;
+
+            if (InCallFeedback.BoolValue)
+                sendingMode = "LocalRemote";
+            else
+                sendingMode = "LocalOnly";
+
             SendText(string.Format("xCommand Presentation Start PresentationSource: {0}", PresentationSource));
         }
 
         public override void StopSharing()
         {
             SendText(string.Format("xCommand Presentation Stop PresentationSource: {0}", PresentationSource));
-        }
-
-        public override void ReceiveMuteOff()
-        {
-            
-        }
-
-        public override void ReceiveMuteOn()
-        {
-            
-        }
-
-        public override void ReceiveMuteToggle()
-        {
-            
-        }
-
-        public override void SetReceiveVolume(ushort level)
-        {
-            
-        }
-
-        public override void TransmitMuteOff()
-        {
-            
-        }
-
-        public override void TransmitMuteOn()
-        {
-            
-        }
-
-        public override void TransmitMuteToggle()
-        {
-            
-        }
-
-        public override void SetTransmitVolume(ushort level)
-        {
-            
         }
 
         public override void PrivacyModeOn()
@@ -686,22 +694,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public void Reboot()
         {
             SendText("xCommand SystemUnit Boot Action: Restart");
-        }
-
-        public override void MuteOff()
-        {
-        }
-
-        public override void MuteOn()
-        {
-        }
-
-        public override void SetVolume(ushort level)
-        {
-        }
-
-        public override void MuteToggle()
-        {
         }
     }
 
