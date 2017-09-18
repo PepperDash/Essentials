@@ -13,6 +13,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     {
         #region IUsageTracking Members
 
+        /// <summary>
+        /// This object can be added by outside users of this class to provide usage tracking
+        /// for various services
+        /// </summary>
         public UsageTracking UsageTracker { get; set; }
 
         #endregion
@@ -23,15 +27,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #endregion
 
-        public BoolFeedback InCallFeedback { get; protected set; }
-        public BoolFeedback IncomingCallFeedback { get; protected set; }
+        public BoolFeedback InCallFeedback { get; private set; }
+        public BoolFeedback IncomingCallFeedback { get; private set; }
 
         abstract protected Func<bool> InCallFeedbackFunc { get; }
         abstract protected Func<bool> IncomingCallFeedbackFunc { get; }
-        abstract protected Func<bool> TransmitMuteFeedbackFunc { get; }
-        abstract protected Func<int> TransmitLevelFeedbackFunc { get; }
-        abstract protected Func<bool> ReceiveMuteFeedbackFunc { get; }
-        abstract protected Func<int> ReceiveLevelFeedbackFunc { get; }
         abstract protected Func<bool> PrivacyModeFeedbackFunc { get; }
         abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
         abstract protected Func<bool> MuteFeedbackFunc { get; }
@@ -42,10 +42,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             InCallFeedback = new BoolFeedback(InCallFeedbackFunc);
             IncomingCallFeedback = new BoolFeedback(IncomingCallFeedbackFunc);
-            ReceiveLevelFeedback = new IntFeedback(ReceiveLevelFeedbackFunc);
-            ReceiveMuteIsOnFeedback = new BoolFeedback(ReceiveMuteFeedbackFunc);
-            TransmitMuteIsOnFeedback = new BoolFeedback(TransmitMuteFeedbackFunc);
-            TransmitLevelFeedback = new IntFeedback(TransmitLevelFeedbackFunc);
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeFeedbackFunc);
             VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
             MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
@@ -56,6 +52,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             InCallFeedback.OutputChange += new EventHandler<EventArgs>(InCallFeedback_OutputChange);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void InCallFeedback_OutputChange(object sender, EventArgs e)
         {
             if (UsageTracker != null)
@@ -84,7 +85,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				{
 					InCallFeedback,
                     IncomingCallFeedback,
-                    PrivacyModeIsOnFeedback
+                    PrivacyModeIsOnFeedback,
+                    SharingSourceFeedback
 				};
             }
         }

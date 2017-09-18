@@ -65,6 +65,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+        protected override Func<string> SharingSourceFeedbackFunc
+        {
+            get { return () => "Fix me fuckers";  }
+        }
+
         protected override Func<bool> MuteFeedbackFunc
         {
             get { return () => false; }
