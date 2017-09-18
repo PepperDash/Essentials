@@ -191,7 +191,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void ConnectPress()
         {
             if (Codec.IsInCall)
-                Codec.EndCall();
+                Codec.EndAllCalls();
             else
                 Codec.Dial(DialStringBuilder.ToString());
         }

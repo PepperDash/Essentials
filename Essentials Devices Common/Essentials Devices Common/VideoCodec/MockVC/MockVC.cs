@@ -99,11 +99,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <summary>
         /// 
         /// </summary>
-        public override void EndCall()
+        public override void EndCall(CodecActiveCallItem activeCall)
         {
             Debug.Console(1, this, "EndCall");
             //_InCall = false;
             //IsInCall.FireUpdate();
+        }
+
+        public override void EndAllCalls()
+        {
+            
         }
 
         /// <summary>

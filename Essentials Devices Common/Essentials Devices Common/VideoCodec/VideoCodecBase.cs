@@ -77,7 +77,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         #region IHasDialer Members
 
         public abstract void Dial(string s);
-        public abstract void EndCall();
+        public void EndCall(object activeCall)
+        {
+
+        }
+        public abstract void EndCall(CodecActiveCallItem activeCall);
+        public abstract void EndAllCalls();
         public abstract void AcceptCall();
         public abstract void RejectCall();
         public abstract void SendDtmf(string s);
