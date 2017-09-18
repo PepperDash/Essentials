@@ -14,22 +14,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public MockVC(string key, string name)
             : base(key, name)
         {
-            MuteFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Mute={0}", _IsMuted);
-            VolumeLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Volume={0}", _VolumeLevel);
-            ActiveCallCountFeedback.OutputChange += (o, a) => Debug.Console(1, this, "InCall={0}", _ActiveCallCount);
+            // Debug helpers
+            ActiveCallCountFeedback.OutputChange += (o, a) => Debug.Console(1, this, "InCall={0}", ActiveCallCountFeedback.IntValue);
             IncomingCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "IncomingCall={0}", _IncomingCall);
-            //ReceiveLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "ReceiveLevel={0}", _ReceiveLevel);
-            //ReceiveMuteIsOnFeedback.OutputChange += (o, a) => Debug.Console(1, this, "ReceiveMute={0}", _ReceiveMute);
-            //TransmitLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "TransmitLevel={0}", _TransmitLevel);
-            //TransmitMuteIsOnFeedback.OutputChange += (o, a) => Debug.Console(1, this, "TransmitMute={0}", _TransmitMute);
+            MuteFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Mute={0}", _IsMuted);
+            PrivacyModeIsOnFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Privacy={0}", _PrivacyModeIsOn);
             SharingSourceFeedback.OutputChange += (o, a) => Debug.Console(1, this, "SharingSource={0}", _SharingSource);   
-        }
+            VolumeLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Volume={0}", _VolumeLevel);
+       }
 
         protected override Func<int> ActiveCallCountFeedbackFunc
         {
-            get { return () => _ActiveCallCount; }
+            get { return () => ActiveCalls.Count; }
         }
-        int _ActiveCallCount;
 
         protected override Func<bool> IncomingCallFeedbackFunc
         {
@@ -37,35 +34,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
         bool _IncomingCall;
 
-        //protected override Func<int> TransmitLevelFeedbackFunc
-        //{
-        //    get { return () => _TransmitLevel; }
-        //}
-        //int _TransmitLevel;
-
-        //protected override Func<bool> TransmitMuteFeedbackFunc
-        //{
-        //    get { return () => _TransmitMute; }
-        //}
-        //bool _TransmitMute;
-
-        //protected override Func<int> ReceiveLevelFeedbackFunc
-        //{
-        //    get { return () => _ReceiveLevel; }
-        //}
-        //int _ReceiveLevel;
-
-        //protected override Func<bool> ReceiveMuteFeedbackFunc
-        //{
-        //    get { return () => _ReceiveMute; }
-        //}
-        //bool _ReceiveMute;
+        protected override Func<bool> MuteFeedbackFunc
+        {
+            get { return () => _IsMuted; }
+        }
+        bool _IsMuted;
 
         protected override Func<bool> PrivacyModeIsOnFeedbackFunc
         {
             get { return () => _PrivacyModeIsOn; }
         }
         bool _PrivacyModeIsOn;
+        
+        protected override Func<string> SharingSourceFeedbackFunc
+        {
+            get { return () => _SharingSource; }
+        }
+        string _SharingSource;
 
         protected override Func<int> VolumeLevelFeedbackFunc
         {
@@ -73,37 +58,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
         int _VolumeLevel;
 
-        protected override Func<bool> MuteFeedbackFunc
-        {
-            get { return () => _IsMuted; }
-        }
-        bool _IsMuted;
-
-        protected override Func<string> SharingSourceFeedbackFunc
-        {
-            get { return () => _SharingSource; }
-        }
-        string _SharingSource;
-
         /// <summary>
         /// Dials, yo!
         /// </summary>
         public override void Dial(string s)
         {
             Debug.Console(1, this, "Dial: {0}", s);
-
-            //_InCall = true;
-            //IsInCall.FireUpdate();
+            ActiveCalls.Add(new CodecActiveCallItem(s,s, eCodecCallType.Video));
+            ActiveCallCountFeedback.FireUpdate();
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public override void EndCall()
+        public override void EndCall(string s)
         {
             Debug.Console(1, this, "EndCall");
-            //_InCall = false;
-            //IsInCall.FireUpdate();
+            ActiveCalls.RemoveAll(i => i.Name == s);
+            ActiveCallCountFeedback.FireUpdate();
         }
 
         /// <summary>
@@ -131,14 +103,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             Debug.Console(1, this, "SendDTMF: {0}", s);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void StartSharing()
         {
-            
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void StopSharing()
         {
-            
         }
 
         /// <summary>
@@ -152,113 +128,62 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void MuteOff()
         {
             _IsMuted = false;
             MuteFeedback.FireUpdate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void MuteOn()
         {
             _IsMuted = true;
             MuteFeedback.FireUpdate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void MuteToggle()
         {
             _IsMuted = !_IsMuted;
             MuteFeedback.FireUpdate();
         }
         
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="level"></param>
         public override void SetVolume(ushort level)
         {
             _VolumeLevel = level;
             VolumeLevelFeedback.FireUpdate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pressRelease"></param>
         public override void VolumeDown(bool pressRelease)
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pressRelease"></param>
         public override void VolumeUp(bool pressRelease)
         {
         }
 
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //public override void ReceiveMuteOff()
-        //{
-        //    Debug.Console(1, this, "ReceiveMuteOff");
-
-        //    if (!_ReceiveMute)
-        //        return;
-        //    _ReceiveMute = false;
-        //    ReceiveMuteIsOnFeedback.FireUpdate();
-        //}
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //public override void ReceiveMuteOn()
-        //{
-        //    Debug.Console(1, this, "ReceiveMuteOn");
-        //    if (_ReceiveMute)
-        //        return;
-        //    ReceiveMuteIsOnFeedback.FireUpdate();
-        //}
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //public override void ReceiveMuteToggle()
-        //{
-        //    Debug.Console(1, this, "ReceiveMuteToggle");
-
-        //    _ReceiveMute = !_ReceiveMute;
-        //    ReceiveMuteIsOnFeedback.FireUpdate();
-        //}
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="level"></param>
-        //public override void SetReceiveVolume(ushort level)
-        //{
-        //    Debug.Console(1, this, "SetReceiveVolume: {0}", level);
-
-        //}
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //public override void TransmitMuteOff()
-        //{
-        //    Debug.Console(1, this, "TransmitMuteOff");
-
-        //    if (!_TransmitMute)
-        //        return;
-        //    _TransmitMute = false;
-        //    TransmitMuteIsOnFeedback.FireUpdate();
-        //}
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //public override void TransmitMuteOn()
-        //{
-        //    Debug.Console(1, this, "TransmitMuteOn");
-        //    if (_TransmitMute)
-        //        return;
-        //    TransmitMuteIsOnFeedback.FireUpdate();
-        //}
-
-        //public override void TransmitMuteToggle()
-        //{
-           
-        //}
-
+        /// <summary>
+        /// 
+        /// </summary>
         public override void PrivacyModeOn()
         {
             Debug.Console(1, this, "PrivacyMuteOn");
@@ -269,6 +194,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void PrivacyModeOff()
         {
             Debug.Console(1, this, "PrivacyMuteOff");
@@ -278,6 +206,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             PrivacyModeIsOnFeedback.FireUpdate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void PrivacyModeToggle()
         {
             _PrivacyModeIsOn = !_PrivacyModeIsOn;
@@ -288,6 +219,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         //********************************************************
         // SIMULATION METHODS
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="url"></param>
         public void TestIncomingCall(string url)
         {
             Debug.Console(1, this, "TestIncomingCall");
@@ -296,11 +231,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             IncomingCallFeedback.FireUpdate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void TestFarEndHangup()
         {
             Debug.Console(1, this, "TestFarEndHangup");
 
         }
-
     }
 }

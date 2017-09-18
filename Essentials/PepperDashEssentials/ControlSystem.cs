@@ -128,15 +128,21 @@ namespace PepperDash.Essentials
 			}
 
             // CODEC TESTING
-            GenericSshClient TestCodecClient = new GenericSshClient("TestCodec-1--SshClient", "10.11.50.135", 22, "crestron", "2H3Zu&OvgXp6");
+            try
+            {
+                GenericSshClient TestCodecClient = new GenericSshClient("TestCodec-1--SshClient", "10.11.50.135", 22, "crestron", "2H3Zu&OvgXp6");
 
-            PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodec TestCodec =
-                new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodec("TestCodec-1", "Cisco Spark Room Kit", TestCodecClient, 8080);
+                PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodec TestCodec =
+                    new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodec("TestCodec-1", "Cisco Spark Room Kit", TestCodecClient, 8080);
 
-            TestCodec.CommDebuggingIsOn = true;
+                TestCodec.CommDebuggingIsOn = true;
 
-            TestCodec.CustomActivate();
-
+                TestCodec.CustomActivate();
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, "Error in something Neil is working on ;) \r{0}", e);
+            }
             // CODEC TESTING
 		}
 

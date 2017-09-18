@@ -27,6 +27,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #endregion
 
+        /// <summary>
+        /// Returns true when ActiveCallCountFeedback is > 0
+        /// </summary>
         public bool IsInCall { get { return ActiveCallCountFeedback.IntValue > 0; } }
 
         public BoolFeedback IncomingCallFeedback { get; private set; }
@@ -77,7 +80,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         #region IHasDialer Members
 
         public abstract void Dial(string s);
-        public abstract void EndCall();
+        public abstract void EndCall(string s);
         public abstract void AcceptCall();
         public abstract void RejectCall();
         public abstract void SendDtmf(string s);

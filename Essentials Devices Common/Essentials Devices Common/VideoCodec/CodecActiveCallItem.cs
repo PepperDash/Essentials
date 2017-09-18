@@ -14,6 +14,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public string Number { get; private set; }
 
         public eCodecCallType Type { get; private set; }
+
+        public CodecActiveCallItem(string name, string number, eCodecCallType type)
+        {
+            Name = name;
+            Number = number;
+            Type = type;
+        }
     }
 
     public enum eCodecCallType

@@ -14,17 +14,14 @@ namespace PepperDash.Essentials.Core
         // Add requirements for Dialer functionality
 
         void Dial(string number);
-        void EndCall();
+        void EndCall(string number);
         void AcceptCall();
         void RejectCall();
 
         void SendDtmf(string digit);
 
         IntFeedback ActiveCallCountFeedback { get; }
-        BoolFeedback IncomingCallFeedback { get; }
-
-
-        
+        BoolFeedback IncomingCallFeedback { get; }   
     }
 
     /// <summary>

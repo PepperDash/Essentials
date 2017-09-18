@@ -551,7 +551,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SendText(string.Format("xCommand Dial BookingId: {0}", s));
         }
  
-        public override void EndCall()
+        public override void EndCall(string s)
         {
             SendText(string.Format("xCommand Call Disconnect CallId: {0}", GetCallId()));
         }
@@ -703,7 +703,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         protected override Func<int> ActiveCallCountFeedbackFunc
         {
-            get { throw new NotImplementedException(); }
+            get { return () => 0; }
         }
     }
 
