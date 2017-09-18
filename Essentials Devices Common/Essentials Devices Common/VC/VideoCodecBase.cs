@@ -29,25 +29,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         abstract protected Func<bool> InCallFeedbackFunc { get; }
         abstract protected Func<bool> IncomingCallFeedbackFunc { get; }
         abstract protected Func<bool> TransmitMuteFeedbackFunc { get; }
+        abstract protected Func<int> TransmitLevelFeedbackFunc { get; }
         abstract protected Func<bool> ReceiveMuteFeedbackFunc { get; }
+        abstract protected Func<int> ReceiveLevelFeedbackFunc { get; }
         abstract protected Func<bool> PrivacyModeFeedbackFunc { get; }
-
-#warning WILL ADD TRANSMIT AND REVEICE LEVEL FUNCS AFTER MERGE
         abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
         abstract protected Func<bool> MuteFeedbackFunc { get; }
+        abstract protected Func<string> SharingSourceFeedbackFunc { get; }
 
         public VideoCodecBase(string key, string name)
             : base(key, name)
         {
             InCallFeedback = new BoolFeedback(InCallFeedbackFunc);
             IncomingCallFeedback = new BoolFeedback(IncomingCallFeedbackFunc);
+            ReceiveLevelFeedback = new IntFeedback(ReceiveLevelFeedbackFunc);
             ReceiveMuteIsOnFeedback = new BoolFeedback(ReceiveMuteFeedbackFunc);
             TransmitMuteIsOnFeedback = new BoolFeedback(TransmitMuteFeedbackFunc);
+            TransmitLevelFeedback = new IntFeedback(TransmitLevelFeedbackFunc);
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeFeedbackFunc);
-#warning ADDING TX/RX FEEDBACKS HERE
-
             VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
             MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
+            SharingSourceFeedback = new StringFeedback(SharingSourceFeedbackFunc);
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
 

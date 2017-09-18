@@ -18,7 +18,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             VolumeLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Volume={0}", _VolumeLevel);
             InCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "InCall={0}", _InCall);
             IncomingCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "IncomingCall={0}", _IncomingCall);
-            TransmitLevelFeedback.OutputChange += (o,a)=> Debug.Console(1, this, "TransmitLevel={0}", _tra
+            ReceiveLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "ReceiveLevel={0}", _ReceiveLevel);
+            ReceiveMuteIsOnFeedback.OutputChange += (o, a) => Debug.Console(1, this, "ReceiveMute={0}", _ReceiveMute);
+            TransmitLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "TransmitLevel={0}", _TransmitLevel);
+            TransmitMuteIsOnFeedback.OutputChange += (o, a) => Debug.Console(1, this, "TransmitMute={0}", _TransmitMute);
+            SharingSourceFeedback.OutputChange += (o, a) => Debug.Console(1, this, "SharingSource={0}", _SharingSource);   
         }
 
         protected override Func<bool> InCallFeedbackFunc
@@ -33,13 +37,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
         bool _IncomingCall;
 
-        
+        protected override Func<int> TransmitLevelFeedbackFunc
+        {
+            get { return () => _TransmitLevel; }
+        }
+        int _TransmitLevel;
 
         protected override Func<bool> TransmitMuteFeedbackFunc
         {
             get { return () => _TransmitMute; }
         }
         bool _TransmitMute;
+
+        protected override Func<int> ReceiveLevelFeedbackFunc
+        {
+            get { return () => _ReceiveLevel; }
+        }
+        int _ReceiveLevel;
 
         protected override Func<bool> ReceiveMuteFeedbackFunc
         {
@@ -64,6 +78,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             get { return () => _IsMuted; }
         }
         bool _IsMuted;
+
+        protected override Func<string> SharingSourceFeedbackFunc
+        {
+            get { return () => _SharingSource; }
+        }
+        string _SharingSource;
 
         /// <summary>
         /// Dials, yo!
@@ -153,6 +173,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             _VolumeLevel = level;
             VolumeLevelFeedback.FireUpdate();
+        }
+
+        public override void VolumeDown(bool pressRelease)
+        {
+        }
+
+        public override void VolumeUp(bool pressRelease)
+        {
         }
 
 
