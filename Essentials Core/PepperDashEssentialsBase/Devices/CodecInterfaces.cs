@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core
 
         void SendDtmf(string digit);
 
-        BoolFeedback InCallFeedback { get; }
+        IntFeedback ActiveCallCountFeedback { get; }
         BoolFeedback IncomingCallFeedback { get; }
 
 
@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Defines minimum volume controls for a codec device with dialing capabilities
     /// </summary>
-    public interface ICodecAudio : IBasicVolumeWithFeedback, ICodecPrivacy
+    public interface ICodecAudio : IBasicVolumeWithFeedback, IPrivacy
     {
 
     }
@@ -38,7 +38,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Adds control of codec receive volume
     /// </summary>
-    public interface ICodecReceiveVolume
+    public interface IReceiveVolume
     {
         // Break this out into 3 interfaces
         void SetReceiveVolume(ushort level);
@@ -52,7 +52,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Adds control of codec transmit volume
     /// </summary>
-    public interface ICodecTransmitVolume
+    public interface ITransmitVolume
     {
         void SetTransmitVolume(ushort level);
         void TransmitMuteOn();
@@ -65,7 +65,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Adds control of codec privacy function (microphone mute)
     /// </summary>
-    public interface ICodecPrivacy
+    public interface IPrivacy
     {
         void PrivacyModeOn();
         void PrivacyModeOff();

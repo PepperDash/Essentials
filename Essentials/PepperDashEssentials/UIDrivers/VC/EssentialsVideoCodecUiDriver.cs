@@ -93,7 +93,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             DialStringBackspaceVisibleFeedback
                 .LinkInputSig(TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible]);
 
-            Codec.InCallFeedback.OutputChange += new EventHandler<EventArgs>(InCallFeedback_OutputChange);
+            Codec.ActiveCallCountFeedback.OutputChange += new EventHandler<EventArgs>(InCallFeedback_OutputChange);
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void ConnectPress()
         {
-            if (Codec.InCallFeedback.BoolValue)
+            if (Codec.IsInCall)
                 Codec.EndCall();
             else
                 Codec.Dial(DialStringBuilder.ToString());
@@ -201,13 +201,13 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void InCallFeedback_OutputChange(object sender, EventArgs e)
         {
-            var inCall = Codec.InCallFeedback.BoolValue;
+            var inCall = Codec.IsInCall;
             Debug.Console(1, "*#* Codec Driver InCallFeedback change={0}", InCall);
             TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(inCall ? 1 : 0);
             StagingBarInterlock.ShowInterlocked(
                 inCall ? UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
-           
-            if (Codec.InCallFeedback.BoolValue) // Call is starting
+
+            if (Codec.IsInCall) // Call is starting
             {
                 // Header icon
                 // Volume bar needs to have mic mute

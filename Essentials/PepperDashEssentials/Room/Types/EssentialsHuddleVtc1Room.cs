@@ -11,10 +11,39 @@ using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials
 {
-	public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange
+	public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange, IPrivacy
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSingleSourceChange;
+
+
+        //************************
+        // Call-related stuff
+
+        public BoolFeedback InCallFeedback { get; private set; }
+
+        /// <summary>
+        /// Make this more specific
+        /// </summary>
+        public List<CodecActiveCallItem> ActiveCalls { get; private set; }
+
+        /// <summary>
+        /// States: 0 for on hook, 1 for video, 2 for audio, 3 for telekenesis
+        /// </summary>
+        public IntFeedback CallTypeFeedback { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public BoolFeedback PrivacyModeIsOnFeedback { get; private set; }
+
+        /// <summary>
+        /// When something in the room is sharing with the far end or through other means
+        /// </summary>
+        public BoolFeedback IsSharingFeedback { get; private set; }
+
+        //************************
+
 
         protected override Func<bool> OnFeedbackFunc
         {
@@ -162,6 +191,7 @@ namespace PepperDash.Essentials
 			DefaultDisplay = defaultDisplay;
             VideoCodec = vc;
 			DefaultAudioDevice = defaultAudio;
+
 			if (defaultAudio is IBasicVolumeControls)
 				DefaultVolumeControls = defaultAudio as IBasicVolumeControls;
 			else if (defaultAudio is IHasVolumeDevice)
@@ -195,6 +225,12 @@ namespace PepperDash.Essentials
                         (DefaultDisplay as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
                 };
             }
+
+            InCallFeedback = new BoolFeedback(() => false); //###################################################
+            IsSharingFeedback = new BoolFeedback(() => false); //##########################################################
+            PrivacyModeIsOnFeedback = new BoolFeedback(() => false); //####################################################
+            CallTypeFeedback = new IntFeedback(() => 0); //######################################################
+
           
 			SourceListKey = "default";
 			EnablePowerOnToLastSource = true;
@@ -401,5 +437,25 @@ namespace PepperDash.Essentials
 			foreach (var room in allRooms)
 				(room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
 		}
-	}
+
+        #region IPrivacy Members
+
+
+        public void PrivacyModeOff()
+        {
+            // Turn off privacy on all things (codec only for now)
+        }
+
+        public void PrivacyModeOn()
+        {
+            // Turn on ...
+        }
+
+        public void PrivacyModeToggle()
+        {
+           
+        }
+
+        #endregion
+    }
 }
