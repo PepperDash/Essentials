@@ -241,21 +241,42 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Status2
+        public class Status2 : ValueProperty
         {
-            public string Value { get; set; }
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                set
+                {
+                    // If the incoming value is "Active" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "Active";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class SpeakerTrack
         {
             public Availability Availability { get; set; }
             public Status2 Status { get; set; }
+
+            public SpeakerTrack()
+            {
+                Status = new Status2();
+            }
         }
 
         public class Cameras
         {
             public List<Camera> Camera { get; set; }
             public SpeakerTrack SpeakerTrack { get; set; }
+
+            public Cameras()
+            {
+                Camera = new List<Camera>();
+                SpeakerTrack = new SpeakerTrack();
+            }
         }
 
         public class MaxActiveCalls
@@ -897,25 +918,76 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Services Services { get; set; }
         }
 
-        public class Current3
+        public class Current3 : ValueProperty
         {
-            public string Value { get; set; }
+            string _Value;
+
+            /// <summary>
+            /// Sets Value and triggers the action when set
+            /// </summary>
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    OnValueChanged();
+                }
+            }
+
+            /// <summary>
+            /// Converted value of _Value for use as feedback
+            /// </summary>
+            public int IntValue
+            {
+                get
+                {
+                    if (!string.IsNullOrEmpty(_Value))
+                        return Convert.ToInt32(_Value);
+                    else
+                        return 0;
+                }
+            }
         }
 
         public class PeopleCount
         {
             public Current3 Current { get; set; }
+
+            public PeopleCount()
+            {
+                Current = new Current3();
+            }
         }
 
-        public class PeoplePresence
+        public class PeoplePresence : ValueProperty
         {
-            public string Value { get; set; }
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                set
+                {
+                    // If the incoming value is "Yes" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "Yes";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class RoomAnalytics
         {
             public PeopleCount PeopleCount { get; set; }
             public PeoplePresence PeoplePresence { get; set; }
+
+            public RoomAnalytics()
+            {
+                PeopleCount = new PeopleCount();
+                PeoplePresence = new PeoplePresence();
+            }
         }
 
         public class Authentication
@@ -1618,6 +1690,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Audio = new Audio();
                 Call = new List<Call>();
                 Standby = new Standby();
+                Cameras = new Cameras();
+                RoomAnalytics = new RoomAnalytics();
             }
 #warning Figure out how to flag codec as InCall if Call.Count > 0
         }

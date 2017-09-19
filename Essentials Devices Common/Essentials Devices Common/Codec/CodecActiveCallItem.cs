@@ -18,6 +18,8 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         public eCodecCallStatus Status { get; set; }
 
         public string Id { get; set; }
+
+        public object CallMetaData { get; set; }
     }
 
     public enum eCodecCallType
