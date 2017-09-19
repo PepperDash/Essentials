@@ -7,6 +7,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
@@ -65,8 +66,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void Dial(string s)
         {
             Debug.Console(1, this, "Dial: {0}", s);
-            ActiveCalls.Add(new CodecActiveCallItem() { Name = s, Number = s });
+            var item = new CodecActiveCallItem() { Name = s, Number = s, Id = s, Status = eCodecCallStatus.Dialing };
+            ActiveCalls.Add(item);
+            OnCallStatusChange(eCodecCallStatus.Unknown, item.Status, item);
             ActiveCallCountFeedback.FireUpdate();
+            // Simulate 2-second ring
+            new CTimer(o =>
+            {
+                var prevStatus = item.Status;
+                item.Status = eCodecCallStatus.Connected;
+                item.Type = eCodecCallType.Video;
+                OnCallStatusChange(prevStatus, item.Status, item);
+            }, 2000);
         }
 
         /// <summary>
@@ -76,6 +87,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             Debug.Console(1, this, "EndCall");
             ActiveCalls.Remove(activeCall);
+            var prevStatus = activeCall.Status;
+            activeCall.Status = eCodecCallStatus.Disconnected;
+            OnCallStatusChange(prevStatus, activeCall.Status, activeCall);
             ActiveCallCountFeedback.FireUpdate();
         }
 
@@ -92,15 +106,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <summary>
         /// For a call from the test methods below
         /// </summary>
-        public override void AcceptCall()
+        public override void AcceptCall(CodecActiveCallItem item)
         {
             Debug.Console(1, this, "AcceptCall");
+            
         }
 
         /// <summary>
         /// For a call from the test methods below
         /// </summary>
-        public override void RejectCall()
+        public override void RejectCall(CodecActiveCallItem item)
         {
             Debug.Console(1, this, "RejectCall");
         }
@@ -234,10 +249,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <param name="url"></param>
         public void TestIncomingCall(string url)
         {
-            Debug.Console(1, this, "TestIncomingCall");
-
+            Debug.Console(1, this, "TestIncomingCall from {0}", url);
+            var item = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Status = eCodecCallStatus.Incoming, Type= eCodecCallType.Unknown };
+            ActiveCalls.Add(item);
             _IncomingCall = true;
             IncomingCallFeedback.FireUpdate();
+            
         }
 
         /// <summary>
@@ -248,5 +265,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             Debug.Console(1, this, "TestFarEndHangup");
 
         }
+
+        public void ListCalls()
+        {
+            var sb = new StringBuilder();
+            foreach (var c in ActiveCalls)
+                sb.AppendFormat("{0} {1} -- {2}\r", c.Id, c.Number, c.Name);
+            Debug.Console(1, "{0}", sb.ToString());
+        }
+
+        #region IRoutingOutputs Members
+
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        #endregion
     }
 }

@@ -11,12 +11,6 @@ using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
 using PepperDash.Essentials.Room.Config;
 
-
-
-#warning END MEETING on call page doesn't clear call mode
-#warning END MEETING doesn't restore logo page
-
-
 namespace PepperDash.Essentials
 {
     /// <summary>

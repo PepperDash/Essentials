@@ -13,6 +13,7 @@ using Cisco_SX80_Corporate_Phone_Book;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
@@ -564,12 +565,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        public override void AcceptCall()
+        public override void AcceptCall(CodecActiveCallItem item)
         {
             SendText("xCommand Call Accept");
         }
 
-        public override void RejectCall()
+        public override void RejectCall(CodecActiveCallItem item)
         {
             SendText("xCommand Call Reject");
         }
