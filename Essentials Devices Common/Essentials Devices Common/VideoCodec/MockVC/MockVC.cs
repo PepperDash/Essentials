@@ -6,10 +6,11 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
-    public class MockVC : VideoCodecBase
+    public class MockVC : VideoCodecBase, IRoutingOutputs
     {
         public MockVC(string key, string name)
             : base(key, name)
@@ -64,7 +65,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void Dial(string s)
         {
             Debug.Console(1, this, "Dial: {0}", s);
-            ActiveCalls.Add(new CodecActiveCallItem(s,s, eCodecCallType.Video));
+            ActiveCalls.Add(new CodecActiveCallItem() { Name = s, Number = s });
             ActiveCallCountFeedback.FireUpdate();
         }
 
@@ -74,15 +75,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void EndCall(CodecActiveCallItem activeCall)
         {
             Debug.Console(1, this, "EndCall");
-            ActiveCalls.RemoveAll(i => i.Name == s);
+            ActiveCalls.Remove(activeCall);
             ActiveCallCountFeedback.FireUpdate();
-            //_InCall = false;
-            //IsInCall.FireUpdate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void EndAllCalls()
         {
-            
+            Debug.Console(1, this, "EndAllCalls");
+            ActiveCalls.Clear();
+            ActiveCallCountFeedback.FireUpdate();
         }
 
         /// <summary>
@@ -132,7 +136,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             Debug.Console(1, this, "ExecuteSwitch");
             _SharingSource = selector.ToString();
-
         }
 
         /// <summary>
@@ -198,7 +201,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 return;
             _PrivacyModeIsOn = true;
             PrivacyModeIsOnFeedback.FireUpdate();
-            
         }
 
         /// <summary>

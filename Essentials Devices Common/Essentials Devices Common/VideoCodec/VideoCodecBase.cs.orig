@@ -13,6 +13,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     {
         #region IUsageTracking Members
 
+        /// <summary>
+        /// This object can be added by outside users of this class to provide usage tracking
+        /// for various services
+        /// </summary>
         public UsageTracking UsageTracker { get; set; }
 
         #endregion
@@ -23,50 +27,51 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #endregion
 
-        public BoolFeedback InCallFeedback { get; protected set; }
-        public BoolFeedback IncomingCallFeedback { get; protected set; }
+        /// <summary>
+        /// Returns true when ActiveCallCountFeedback is > 0
+        /// </summary>
+        public bool IsInCall { get { return ActiveCallCountFeedback.IntValue > 0; } }
 
-        abstract protected Func<bool> InCallFeedbackFunc { get; }
+        public BoolFeedback IncomingCallFeedback { get; private set; }
+
+        public IntFeedback ActiveCallCountFeedback { get; private set; }
+
+        abstract protected Func<int> ActiveCallCountFeedbackFunc { get; }
         abstract protected Func<bool> IncomingCallFeedbackFunc { get; }
-<<<<<<< HEAD
-        abstract protected Func<bool> TransmitMuteFeedbackFunc { get; }
-        abstract protected Func<int> TransmitLevelFeedbackFunc { get; }
-        abstract protected Func<bool> ReceiveMuteFeedbackFunc { get; }
-        abstract protected Func<int> ReceiveLevelFeedbackFunc { get; }
-=======
->>>>>>> origin/feature/cisco-spark
-        abstract protected Func<bool> PrivacyModeFeedbackFunc { get; }
+        abstract protected Func<bool> PrivacyModeIsOnFeedbackFunc { get; }
         abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
         abstract protected Func<bool> MuteFeedbackFunc { get; }
         abstract protected Func<string> SharingSourceFeedbackFunc { get; }
 
+        public List<CodecActiveCallItem> ActiveCalls { get; set; }
+
         public VideoCodecBase(string key, string name)
             : base(key, name)
         {
-            InCallFeedback = new BoolFeedback(InCallFeedbackFunc);
+            ActiveCallCountFeedback = new IntFeedback(ActiveCallCountFeedbackFunc);
             IncomingCallFeedback = new BoolFeedback(IncomingCallFeedbackFunc);
-<<<<<<< HEAD
-            ReceiveLevelFeedback = new IntFeedback(ReceiveLevelFeedbackFunc);
-            ReceiveMuteIsOnFeedback = new BoolFeedback(ReceiveMuteFeedbackFunc);
-            TransmitMuteIsOnFeedback = new BoolFeedback(TransmitMuteFeedbackFunc);
-            TransmitLevelFeedback = new IntFeedback(TransmitLevelFeedbackFunc);
-=======
->>>>>>> origin/feature/cisco-spark
-            PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeFeedbackFunc);
+            PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeIsOnFeedbackFunc);
             VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
             MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
             SharingSourceFeedback = new StringFeedback(SharingSourceFeedbackFunc);
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-            InCallFeedback.OutputChange += new EventHandler<EventArgs>(InCallFeedback_OutputChange);
+            ActiveCallCountFeedback.OutputChange += new EventHandler<EventArgs>(ActiveCallCountFeedback_OutputChange);
+
+            ActiveCalls = new List<CodecActiveCallItem>();
         }
 
-        void InCallFeedback_OutputChange(object sender, EventArgs e)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ActiveCallCountFeedback_OutputChange(object sender, EventArgs e)
         {
             if (UsageTracker != null)
             {
-                if (InCallFeedback.BoolValue)
+                if (IsInCall)
                     UsageTracker.StartDeviceUsage();
                 else
                     UsageTracker.EndDeviceUsage();
@@ -75,7 +80,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         #region IHasDialer Members
 
         public abstract void Dial(string s);
-        public abstract void EndCall();
+<<<<<<< HEAD
+        public abstract void EndCall(string s);
+=======
+        public void EndCall(object activeCall)
+        {
+
+        }
+        public abstract void EndCall(CodecActiveCallItem activeCall);
+        public abstract void EndAllCalls();
+>>>>>>> origin/feature/cisco-spark-2
         public abstract void AcceptCall();
         public abstract void RejectCall();
         public abstract void SendDtmf(string s);
@@ -88,9 +102,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 return new List<Feedback>
 				{
-					InCallFeedback,
                     IncomingCallFeedback,
-                    PrivacyModeIsOnFeedback
+                    PrivacyModeIsOnFeedback,
+                    SharingSourceFeedback
 				};
             }
         }

@@ -164,6 +164,7 @@
     <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLargeSetTopBoxGeneric.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddlePresentationUiDriver.cs" />
     <Compile Include="UI\SubpageReferenceListCallStagingItem.cs" />
     <Compile Include="UIDrivers\VC\EssentialsVideoCodecUiDriver.cs" />
     <Compile Include="UIDrivers\JoinedSigInterlock.cs" />
