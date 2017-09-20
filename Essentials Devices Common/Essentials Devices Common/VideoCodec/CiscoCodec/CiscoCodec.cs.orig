@@ -13,7 +13,6 @@ using Cisco_SX80_Corporate_Phone_Book;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
-using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
@@ -29,12 +28,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public BoolFeedback StandbyIsOnFeedback { get; private set; }
 
-        public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
-
-        public BoolFeedback PeopleCountFeedback { get; private set; }
-
-        public BoolFeedback SpeakerTrackIsOnFeedback { get; private set; }
-
         private CiscoOneButtonToPush CodecObtp;
 
         private Corporate_Phone_Book PhoneBook;
@@ -43,7 +36,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         private CiscoCodecStatus.RootObject CodecStatus;
 
-        //private CiscoCodecEvents.RootObject CodecEvent;
+        private CiscoCodecEvents.RootObject CodecEvent;
 
         /// <summary>
         /// Gets and returns the scaled volume of the codec
@@ -74,42 +67,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         protected override Func<string> SharingSourceFeedbackFunc
         {
-            get 
-            { 
-                return () => "Todo";  
-            }
+            get { return () => "Fix me fuckers";  }
         }
 
         protected override Func<bool> MuteFeedbackFunc
         {
-            get 
-            { 
-                return () => CodecStatus.Status.Audio.VolumeMute.BoolValue; 
-            }
-        }
-
-        protected Func<bool> RoomIsOccupiedFeedbackFunc
-        {
-            get
-            {
-                return () => CodecStatus.Status.RoomAnalytics.PeoplePresence.BoolValue;
-            }
-        }
-
-        protected Func<int> PeopleCountFeedbackFunc
-        {
-            get
-            {
-                return () => CodecStatus.Status.RoomAnalytics.PeopleCount.Current.IntValue;
-            }
-        }
-
-        protected Func<bool> SpeakerTrackIsOnFeedbackFunc
-        {
-            get
-            {
-                return () => CodecStatus.Status.Cameras.SpeakerTrack.Status.BoolValue;
-            }
+            get { return () => false; }
         }
 
         //private HttpsClient Client;
@@ -162,7 +125,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             CodecStatus = new CiscoCodecStatus.RootObject();
 
-            //CodecEvent = new CiscoCodecEvents.RootObject();
+            CodecEvent = new CiscoCodecEvents.RootObject();
 
             CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
             CodecStatus.Status.Audio.VolumeMute.ValueChangedAction = MuteFeedback.FireUpdate;
@@ -519,38 +482,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                 if (response.IndexOf("\"Status\":{") > -1)
                 {
-                    // Check to see if this is a call status message received after the initial status message
-                    if(SyncState.InitialStatusMessageWasReceived && response.IndexOf("\"Call\":{") > -1)
-                    {
-                        CiscoCodecStatus.RootObject callStatus = new CiscoCodecStatus.RootObject();
-
-                        JsonConvert.PopulateObject(response, callStatus);
-
-                        // Iterate through the call objects in the response
-                        foreach (CiscoCodecStatus.Call call in callStatus.Status.Call)
-                        {
-                            // Look for a matching call id in the existing status structure
-                            var existingCall = CodecStatus.Status.Call.FirstOrDefault(c => c.id.Equals(call.id));
-
-                            if (existingCall != null)
-                            {
-                                // If an existing call object is found with a matching ID, populate the existing call with the new data. 
-                                // (must reserialize the object so that we can use PopulateObject() to overlay the new or updated properties on the existing object)
-                                JsonConvert.PopulateObject(JsonConvert.SerializeObject(call), existingCall);
-                            }
-                            else
-                            {
-                                // Add the call
-                                callStatus.Status.Call.Add(call);
-
-                                // Add a call to the ActiveCalls List
-                                //ActiveCalls.Add(new CodecActiveCallItem() { Id = call.id, Status = call.Status.Value, Name = call.DisplayName.Value, Number = call.RemoteNumber.Value, Type = call.Status.Value.ToString()
-                            }
-
-                            // Handle call.status to determine if we need to fire an event notifying of an incoming call or a call disconnect
-                        }
-                    }
-
                     JsonConvert.PopulateObject(response, CodecStatus);
 
                     if (!SyncState.InitialStatusMessageWasReceived)
@@ -576,35 +507,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 }
                 else if (response.IndexOf("\"Event\":{") > -1)
                 {
-                    CiscoCodecEvents.RootObject eventReceived = new CiscoCodecEvents.RootObject();
-
-                    JsonConvert.PopulateObject(response, eventReceived);
-
-                    EvalutateEvent(eventReceived);
+                    JsonConvert.PopulateObject(response, CodecEvent);
                 }
                 
             }
             catch (Exception ex)
             {
                 Debug.Console(1, this, "Error Deserializing feedback from codec: {0}", ex);
-            }
-        }
-
-        /// <summary>
-        /// Evaluates an event received from the codec
-        /// </summary>
-        /// <param name="eventReceived"></param>
-        void EvalutateEvent(CiscoCodecEvents.RootObject eventReceived)
-        {
-            if (eventReceived.Event.CallDisconnect != null)
-            {
-                var tempCall = CodecStatus.Status.Call.FirstOrDefault(c => c.id.Equals(eventReceived.Event.CallDisconnect.CallId));
-
-                if(tempCall != null)
-                {
-                    CodecStatus.Status.Call.Remove(tempCall);
-                    
-                }
             }
         }
 
@@ -642,6 +551,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SendText(string.Format("xCommand Dial BookingId: {0}", s));
         }
  
+<<<<<<< HEAD
+        public override void EndCall(string s)
+        {
+            SendText(string.Format("xCommand Call Disconnect CallId: {0}", GetCallId()));
+=======
         public override void EndCall(CodecActiveCallItem activeCall)
         {
             SendText(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
@@ -653,14 +567,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 SendText(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
             }
+>>>>>>> origin/feature/cisco-spark-2
         }
 
-        public override void AcceptCall(CodecActiveCallItem item)
+        public override void AcceptCall()
         {
             SendText("xCommand Call Accept");
         }
 
-        public override void RejectCall(CodecActiveCallItem item)
+        public override void RejectCall()
         {
             SendText("xCommand Call Reject");
         }

@@ -7,6 +7,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials
@@ -246,12 +247,13 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Routes the default source item, if any
+        /// Routes the default source item, if any. Returns true when default route exists
         /// </summary>
-        public void RunDefaultRoute()
+        public bool RunDefaultRoute()
         {
             if (DefaultSourceItem != null)
                 RunRouteAction(DefaultSourceItem);
+            return DefaultSourceItem != null;
         }
 
         /// <summary>

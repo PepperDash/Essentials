@@ -301,33 +301,33 @@ namespace PepperDash.Essentials
             base.Show();
         }
 
-        /// <summary>
-        /// Puts the UI into the "start" mode. System is off.  Logo shows. Activity SRL is clear
-        /// </summary>
-        void ShowStartMode()
-        {
-            SetupActivityFooterWhenRoomOff();
+        ///// <summary>
+        ///// Puts the UI into the "start" mode. System is off.  Logo shows. Activity SRL is clear
+        ///// </summary>
+        //void ShowStartMode()
+        //{
+        //    SetupActivityFooterWhenRoomOff();
             
-            ShareButtonSig.BoolValue = false;
-            CallButtonSig.BoolValue = false;
-            ShowLogo();
-            StagingBarInterlock.ShowInterlocked(UIBoolJoin.StartPageVisible);
-            StagingBarInterlock.HideAndClear();
-        }
+        //    ShareButtonSig.BoolValue = false;
+        //    CallButtonSig.BoolValue = false;
+        //    ShowLogo();
+        //    StagingBarInterlock.ShowInterlocked(UIBoolJoin.StartPageVisible);
+        //    StagingBarInterlock.HideAndClear();
+        //}
 
-        void ShowShareMode()
-        {
-            ShareButtonSig.BoolValue = true;
-            CallButtonSig.BoolValue = false;
-            StagingBarInterlock.ShowInterlocked(UIBoolJoin.SourceStagingBarVisible);
-        }
+        //void ShowShareMode()
+        //{
+        //    ShareButtonSig.BoolValue = true;
+        //    CallButtonSig.BoolValue = false;
+        //    StagingBarInterlock.ShowInterlocked(UIBoolJoin.SourceStagingBarVisible);
+        //}
 
-        void ShowVideoCallMode()
-        {
-            ShareButtonSig.BoolValue = false;
-            CallButtonSig.BoolValue = true;
-            StagingBarInterlock.ShowInterlocked(UIBoolJoin.CallStagingBarVisible);
-        }
+        //void ShowVideoCallMode()
+        //{
+        //    ShareButtonSig.BoolValue = false;
+        //    CallButtonSig.BoolValue = true;
+        //    StagingBarInterlock.ShowInterlocked(UIBoolJoin.CallStagingBarVisible);
+        //}
 
         /// <summary>
         /// 
@@ -345,6 +345,15 @@ namespace PepperDash.Essentials
                 TriList.SetBool(UIBoolJoin.LogoUrlVisible, true);
                 TriList.SetString(UIStringJoin.LogoUrl, _CurrentRoom.LogoUrl);
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void HideLogo()
+        {
+            TriList.SetBool(UIBoolJoin.LogoDefaultVisible, false);
+            TriList.SetBool(UIBoolJoin.LogoUrlVisible, false);
         }
 
         /// <summary>
@@ -404,9 +413,12 @@ namespace PepperDash.Essentials
                 return;
             CallButtonSig.BoolValue = true;
             ShareButtonSig.BoolValue = false;
+            HideLogo();
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
+            if (CurrentSourcePageManager != null)
+                CurrentSourcePageManager.Hide();
             VCDriver.Show();
         }
 
@@ -421,10 +433,18 @@ namespace PepperDash.Essentials
             CallButtonSig.BoolValue = false;
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
-            TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
-                CurrentRoom.RunDefaultRoute();
+            { 
+                // If there's no default, show UI elements
+                if(!CurrentRoom.RunDefaultRoute())
+                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
+            }
+            else // show what's active
+            {
+                if (CurrentSourcePageManager != null)
+                    CurrentSourcePageManager.Show();
+            }
         }
 
         /// <summary>
@@ -729,7 +749,10 @@ namespace PepperDash.Essentials
             }
             else
             {
+                if (VCDriver.IsVisible)
+                    VCDriver.Hide();
                 SetupActivityFooterWhenRoomOff();
+                ShowLogo();
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;

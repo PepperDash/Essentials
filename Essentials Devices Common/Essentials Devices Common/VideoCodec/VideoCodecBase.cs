@@ -6,11 +6,18 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Devices.Common;
+using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
     public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer, IHasSharing, ICodecAudio
     {
+        /// <summary>
+        /// Fires when the status of any active, dialing, or incoming call changes or is new
+        /// </summary>
+        public event EventHandler<CodecCallStatusItemChangeEventArgs> CallStatusChange;
+
         #region IUsageTracking Members
 
         /// <summary>
@@ -27,6 +34,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #endregion
 
+        /// <summary>
+        /// Returns true when ActiveCallCountFeedback is > 0
+        /// </summary>
         public bool IsInCall { get { return ActiveCallCountFeedback.IntValue > 0; } }
 
         public BoolFeedback IncomingCallFeedback { get; private set; }
@@ -83,8 +93,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
         public abstract void EndCall(CodecActiveCallItem activeCall);
         public abstract void EndAllCalls();
-        public abstract void AcceptCall();
-        public abstract void RejectCall();
+        public abstract void AcceptCall(CodecActiveCallItem call);
+        public abstract void RejectCall(CodecActiveCallItem call);
         public abstract void SendDtmf(string s);
 
         #endregion
@@ -103,6 +113,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
 
         public abstract void ExecuteSwitch(object selector);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="previousStatus"></param>
+        /// <param name="newStatus"></param>
+        /// <param name="item"></param>
+        protected void OnCallStatusChange(eCodecCallStatus previousStatus, eCodecCallStatus newStatus, CodecActiveCallItem item)
+        {
+            var handler = CallStatusChange;
+            if (handler != null)
+                handler(this, new CodecCallStatusItemChangeEventArgs(previousStatus, newStatus, item));
+        }
 
         #region ICodecAudio Members
 
@@ -139,7 +162,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public StringFeedback SharingSourceFeedback { get; private set; }
 
         #endregion
+    }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public class CodecCallStatusItemChangeEventArgs : EventArgs
+    {
+        public CodecActiveCallItem CallItem { get; private set; }
 
+        public eCodecCallStatus PreviousStatus { get; private set; }
+
+        public eCodecCallStatus NewStatus { get; private set; }
+
+        public CodecCallStatusItemChangeEventArgs(eCodecCallStatus previousStatus,
+             eCodecCallStatus newStatus, CodecActiveCallItem item)
+        {
+            PreviousStatus = previousStatus;
+            NewStatus = newStatus;
+            CallItem = item;
+        }
     }
 }
