@@ -17,6 +17,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public eCodecCallStatus Status { get; set; }
 
+        public eCodecCallDirection Direction { get; set; }
+
         public string Id { get; set; }
 
         public object CallMetaData { get; set; }
@@ -24,11 +26,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
     public enum eCodecCallType
     {
-        Unknown = 0, Audio, Video
+        Unknown = 0, Audio, Video, AudioCanEscalate, ForwardAllCall
     }
 
     public enum eCodecCallStatus
     {
-        Unknown = 0, Dialing, Connected, Incoming, OnHold, Disconnected
+        Unknown = 0, Idle, Dialing, Ringing, Connecting, Connected, Disconnecting, Incoming, OnHold, EarlyMedia, Preserved, RemotePreserved, Disconnected
+    }
+
+    public enum eCodecCallDirection
+    {
+        Unknown = 0, Incoming, Outgoing
     }
 }
