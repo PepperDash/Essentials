@@ -22,7 +22,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         void RejectCall(CodecActiveCallItem item);
         void SendDtmf(string digit);
 
-        IntFeedback ActiveCallCountFeedback { get; }
+        //IntFeedback ActiveCallCountFeedback { get; }
         BoolFeedback IncomingCallFeedback { get; }
     }
 }

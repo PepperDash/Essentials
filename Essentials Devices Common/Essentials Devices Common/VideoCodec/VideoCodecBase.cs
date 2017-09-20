@@ -35,15 +35,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         #endregion
 
         /// <summary>
-        /// Returns true when ActiveCallCountFeedback is > 0
+        /// Returns true when any call is not in state Unknown, Disconnecting, Disconnected
         /// </summary>
-        public bool IsInCall { get { return ActiveCallCountFeedback.IntValue > 0; } }
+        public bool IsInCall { get { return ActiveCalls.Any(c => c.IsActiveCall); } }
 
         public BoolFeedback IncomingCallFeedback { get; private set; }
 
-        public IntFeedback ActiveCallCountFeedback { get; private set; }
+        //public IntFeedback ActiveCallCountFeedback { get; private set; }
 
-        abstract protected Func<int> ActiveCallCountFeedbackFunc { get; }
+        //abstract protected Func<int> ActiveCallCountFeedbackFunc { get; }
         abstract protected Func<bool> IncomingCallFeedbackFunc { get; }
         abstract protected Func<bool> PrivacyModeIsOnFeedbackFunc { get; }
         abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
@@ -55,7 +55,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public VideoCodecBase(string key, string name)
             : base(key, name)
         {
-            ActiveCallCountFeedback = new IntFeedback(ActiveCallCountFeedbackFunc);
+            //ActiveCallCountFeedback = new IntFeedback(ActiveCallCountFeedbackFunc);
             IncomingCallFeedback = new BoolFeedback(IncomingCallFeedbackFunc);
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeIsOnFeedbackFunc);
             VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
@@ -64,7 +64,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-            ActiveCallCountFeedback.OutputChange += new EventHandler<EventArgs>(ActiveCallCountFeedback_OutputChange);
+            //ActiveCallCountFeedback.OutputChange += new EventHandler<EventArgs>(ActiveCallCountFeedback_OutputChange);
 
             ActiveCalls = new List<CodecActiveCallItem>();
         }
@@ -74,16 +74,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ActiveCallCountFeedback_OutputChange(object sender, EventArgs e)
-        {
-            if (UsageTracker != null)
-            {
-                if (IsInCall)
-                    UsageTracker.StartDeviceUsage();
-                else
-                    UsageTracker.EndDeviceUsage();
-            }
-        }
+        //void ActiveCallCountFeedback_OutputChange(object sender, EventArgs e)
+        //{
+        //    if (UsageTracker != null)
+        //    {
+        //        if (IsInCall)
+        //            UsageTracker.StartDeviceUsage();
+        //        else
+        //            UsageTracker.EndDeviceUsage();
+        //    }
+        //}
         #region IHasDialer Members
 
         public abstract void Dial(string s);

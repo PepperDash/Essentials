@@ -9,6 +9,7 @@ using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
+using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.UIDrivers.VC
@@ -60,6 +61,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
         StringBuilder DialStringBuilder = new StringBuilder();
         BoolFeedback DialStringBackspaceVisibleFeedback;
 
+        ModalDialog IncomingCallModal;
+
         /// <summary>
         /// 
         /// </summary>
@@ -71,6 +74,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
             Codec = codec;
             SetupCallStagingPopover();
             SetupDialKeypad();
+
+            codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
 
             InCall = new BoolFeedback(() => false);
             LocalPrivacyIsMuted = new BoolFeedback(() => false);
@@ -93,7 +98,91 @@ namespace PepperDash.Essentials.UIDrivers.VC
             DialStringBackspaceVisibleFeedback
                 .LinkInputSig(TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible]);
 
-            Codec.ActiveCallCountFeedback.OutputChange += new EventHandler<EventArgs>(InCallFeedback_OutputChange);
+        }
+
+        /// <summary>
+        /// Handles status changes for calls
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
+        {
+            var call = e.CallItem;
+            Debug.Console(1, "*#* UI: Codec status {0}: {1} --> {2}", call.Name, e.PreviousStatus, e.NewStatus);
+            switch (e.NewStatus)
+            {
+                case eCodecCallStatus.Connected:
+                    // fire at SRL item
+                    Debug.Console(1, "*#* UI: Call Connected {0}", call.Name);
+                    break;
+                case eCodecCallStatus.Connecting:
+                    // fire at SRL item
+                    Debug.Console(1, "*#* UI: Call Connecting {0}", call.Name);
+                    break;
+                case eCodecCallStatus.Dialing:
+                    Debug.Console(1, "*#* UI: Call Dialing {0}", call.Name);
+                    break;
+                case eCodecCallStatus.Disconnected:
+                    Debug.Console(1, "*#* UI: Call Disconnecting {0}", call.Name);
+                    break;
+                case eCodecCallStatus.Disconnecting:
+                    break;
+                case eCodecCallStatus.EarlyMedia:
+                    break;
+                case eCodecCallStatus.Idle:
+                    break;
+                case eCodecCallStatus.Incoming:
+                    // fire up a modal
+                    ShowIncomingModal(call);
+                    break;
+                case eCodecCallStatus.OnHold:
+                    break;
+                case eCodecCallStatus.Preserved:
+                    break;
+                case eCodecCallStatus.RemotePreserved:
+                    break;
+                case eCodecCallStatus.Ringing:
+                    break;
+                default:
+                    break;
+            }
+            TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(Codec.IsInCall ? 1 : 0);
+            StagingBarInterlock.ShowInterlocked(Codec.IsInCall ? 
+                UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
+
+            // Update list of calls
+            var activeList = Codec.ActiveCalls.Where(c => c.IsActiveCall).ToList();
+            Debug.Console(1, "*#* UI - Codec has {0} calls", activeList.Count);
+
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        void ShowIncomingModal(CodecActiveCallItem call)
+        {
+            IncomingCallModal = new ModalDialog(TriList);
+            string msg;
+            string icon;
+            if (call.Type == eCodecCallType.Audio)
+            {
+                icon = "Phone";
+                msg = string.Format("Incoming phone call from: {0}", call.Name);
+            }
+            else
+            {
+                icon = "Camera";
+                msg = string.Format("Incoming video call from: {0}", call.Name);
+            }
+            IncomingCallModal.PresentModalDialog(2, "Incoming Call", icon, msg,
+                "Ignore", "Accept", false, false, b =>
+                    {
+                        if (b == 1)
+                            Codec.RejectCall(call);
+                        else //2
+                            Codec.AcceptCall(call);
+                        IncomingCallModal = null;
+                    });
         }
 
         /// <summary>
@@ -196,28 +285,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 Codec.Dial(DialStringBuilder.ToString());
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        void InCallFeedback_OutputChange(object sender, EventArgs e)
-        {
-            var inCall = Codec.IsInCall;
-            Debug.Console(1, "*#* Codec Driver InCallFeedback change={0}", InCall);
-            TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(inCall ? 1 : 0);
-            StagingBarInterlock.ShowInterlocked(
-                inCall ? UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
-
-            if (Codec.IsInCall) // Call is starting
-            {
-                // Header icon
-                // Volume bar needs to have mic mute
-            }
-            else // ending
-            {
-                // Header icon
-                // Volume bar no mic mute (or hidden if no source?)
-            }
-        }
 
         /// <summary>
         /// 

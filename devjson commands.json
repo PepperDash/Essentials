@@ -9,3 +9,11 @@ devjson:1 {"deviceKey":"timer","methodName":"Cancel" }
 devjson:1 {"deviceKey":"timer","methodName":"Reset" }
 
 devjson:1 {"deviceKey":"room1","methodName":"Shutdown" }
+
+devjson:1 {"deviceKey":"mockVc-1", "methodName":"TestIncomingVideoCall", "params": ["123-456-7890"]}
+
+devjson:1 {"deviceKey":"mockVc-1", "methodName":"TestIncomingAudioCall", "params": ["111-111-1111"]}
+
+devjson:1 {"deviceKey":"mockVc-1", "methodName":"TestIncomingVideoCall", "params": ["444-444-4444"]}
+
+devjson:1 {"deviceKey":"mockVc-1", "methodName":"ListCalls"}

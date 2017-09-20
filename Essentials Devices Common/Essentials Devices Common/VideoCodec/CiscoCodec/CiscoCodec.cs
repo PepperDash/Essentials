@@ -799,11 +799,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             SendText("xCommand SystemUnit Boot Action: Restart");
         }
-
-        protected override Func<int> ActiveCallCountFeedbackFunc
-        {
-            get { return () => 0; }
-        }
     }
 
     /// <summary>

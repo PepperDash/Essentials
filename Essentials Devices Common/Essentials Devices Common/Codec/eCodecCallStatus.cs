@@ -5,10 +5,21 @@ using System.Text;
 using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
-
 {
     public enum eCodecCallStatus
     {
-        Unknown = 0, Dialing, Connected, Connecting, Incoming, OnHold, Disconnected
+        Connected, 
+        Connecting, 
+        Dialing, 
+        Disconnected,
+        Disconnecting, 
+        EarlyMedia, 
+        Idle, 
+        Incoming, 
+        OnHold, 
+        Ringing, 
+        Preserved, 
+        RemotePreserved,
+        Unknown = 0
     }
 }
