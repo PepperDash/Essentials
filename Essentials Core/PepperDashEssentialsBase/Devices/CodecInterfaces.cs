@@ -6,6 +6,34 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Requirements for a device that has dialing capabilities
+    /// </summary>
+    public interface IHasDialer
+    {
+        // Add requirements for Dialer functionality
+
+        void Dial(string number);
+        void EndCall(object activeCall);
+        void EndAllCalls();
+        void AcceptCall();
+        void RejectCall();
+        void SendDtmf(string digit);
+
+        IntFeedback ActiveCallCountFeedback { get; }
+        BoolFeedback IncomingCallFeedback { get; }
+
+
+        
+    }
+
+    /// <summary>
+    /// Defines minimum volume controls for a codec device with dialing capabilities
+    /// </summary>
+    public interface ICodecAudio : IBasicVolumeWithFeedback, IPrivacy
+    {
+
+    }
 
     /// <summary>
     /// Adds control of codec receive volume
