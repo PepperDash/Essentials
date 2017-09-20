@@ -66,30 +66,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void Dial(string s)
         {
             Debug.Console(1, this, "Dial: {0}", s);
-            var item = new CodecActiveCallItem() { Name = s, Number = s, Id = s, Status = eCodecCallStatus.Dialing };
-            ActiveCalls.Add(item);
-            OnCallStatusChange(eCodecCallStatus.Unknown, item.Status, item);
+            var call = new CodecActiveCallItem() { Name = s, Number = s, Id = s, Status = eCodecCallStatus.Dialing };
+            ActiveCalls.Add(call);
+            OnCallStatusChange(eCodecCallStatus.Unknown, call.Status, call);
             ActiveCallCountFeedback.FireUpdate();
-            // Simulate 2-second ring
+            // Simulate 2-second ring, then connecting, then connected
             new CTimer(o =>
             {
-                var prevStatus = item.Status;
-                item.Status = eCodecCallStatus.Connected;
-                item.Type = eCodecCallType.Video;
-                OnCallStatusChange(prevStatus, item.Status, item);
+                call.Type = eCodecCallType.Video;
+                SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connecting, call);
+                new CTimer(oo => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call), 1000);
             }, 2000);
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public override void EndCall(CodecActiveCallItem activeCall)
+        public override void EndCall(CodecActiveCallItem call)
         {
             Debug.Console(1, this, "EndCall");
-            ActiveCalls.Remove(activeCall);
-            var prevStatus = activeCall.Status;
-            activeCall.Status = eCodecCallStatus.Disconnected;
-            OnCallStatusChange(prevStatus, activeCall.Status, activeCall);
+            ActiveCalls.Remove(call);
+
+            SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
             ActiveCallCountFeedback.FireUpdate();
         }
 
@@ -99,23 +97,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void EndAllCalls()
         {
             Debug.Console(1, this, "EndAllCalls");
-            ActiveCalls.Clear();
+            foreach (var call in ActiveCalls)
+            {
+                ActiveCalls.Remove(call);
+                SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
+            }
             ActiveCallCountFeedback.FireUpdate();
         }
 
         /// <summary>
         /// For a call from the test methods below
         /// </summary>
-        public override void AcceptCall(CodecActiveCallItem item)
+        public override void AcceptCall(CodecActiveCallItem call)
         {
             Debug.Console(1, this, "AcceptCall");
-            
+            SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connecting, call);
+            new CTimer(o => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call), 1000);
+            // should already be in active list
         }
 
         /// <summary>
         /// For a call from the test methods below
         /// </summary>
-        public override void RejectCall(CodecActiveCallItem item)
+        public override void RejectCall(CodecActiveCallItem call)
         {
             Debug.Console(1, this, "RejectCall");
         }
@@ -247,16 +251,32 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// 
         /// </summary>
         /// <param name="url"></param>
-        public void TestIncomingCall(string url)
+        public void TestIncomingVideoCall(string url)
         {
-            Debug.Console(1, this, "TestIncomingCall from {0}", url);
-            var item = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Status = eCodecCallStatus.Incoming, Type= eCodecCallType.Unknown };
-            ActiveCalls.Add(item);
+            Debug.Console(1, this, "TestIncomingVideoCall from {0}", url);
+            var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type= eCodecCallType.Video };
+            ActiveCalls.Add(call);
+            SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Incoming, call);
             _IncomingCall = true;
             IncomingCallFeedback.FireUpdate();
-            
+            ActiveCallCountFeedback.FireUpdate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="url"></param>
+        public void TestIncomingAudioCall(string url)
+        {
+            Debug.Console(1, this, "TestIncomingAudioCall from {0}", url);
+            var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type = eCodecCallType.Audio };
+            ActiveCalls.Add(call);
+            SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Incoming, call);
+            _IncomingCall = true;
+            IncomingCallFeedback.FireUpdate();
+            ActiveCallCountFeedback.FireUpdate();
+        }
+        
         /// <summary>
         /// 
         /// </summary>
@@ -266,6 +286,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void ListCalls()
         {
             var sb = new StringBuilder();
@@ -278,7 +301,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
         {
-            get { throw new NotImplementedException(); }
+            get { return new RoutingPortCollection<RoutingOutputPort>(); }
         }
 
         #endregion

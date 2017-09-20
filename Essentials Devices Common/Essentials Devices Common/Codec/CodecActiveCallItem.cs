@@ -21,14 +21,4 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
         public object CallMetaData { get; set; }
     }
-
-    public enum eCodecCallType
-    {
-        Unknown = 0, Audio, Video
-    }
-
-    public enum eCodecCallStatus
-    {
-        Unknown = 0, Dialing, Connected, Incoming, OnHold, Disconnected
-    }
 }

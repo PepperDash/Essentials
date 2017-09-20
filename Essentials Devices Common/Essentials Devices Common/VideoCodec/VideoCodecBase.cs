@@ -87,11 +87,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         #region IHasDialer Members
 
         public abstract void Dial(string s);
-        public void EndCall(object activeCall)
-        {
-
-        }
-        public abstract void EndCall(CodecActiveCallItem activeCall);
+        public abstract void EndCall(CodecActiveCallItem call);
         public abstract void EndAllCalls();
         public abstract void AcceptCall(CodecActiveCallItem call);
         public abstract void RejectCall(CodecActiveCallItem call);
@@ -113,6 +109,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
 
         public abstract void ExecuteSwitch(object selector);
+
+        /// <summary>
+        /// Helper method to fire CallStatusChange event with old and new status
+        /// </summary>
+        protected void SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus newStatus, CodecActiveCallItem call)
+        {
+            var prevStatus = call.Status;
+            call.Status = newStatus;
+            OnCallStatusChange(prevStatus, newStatus, call);
+        }
 
         /// <summary>
         /// 
