@@ -31,7 +31,7 @@ namespace PepperDash.Essentials
 		{
             //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Reloads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
-            //CrestronConsole.AddNewConsoleCommand(s => TearDown(), "ungo", "Reloads configuration file",
+            //CrestronConsole.AddNewConsoleCommand(s => TearDown(), "ungo", "Unloads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(s =>
             {

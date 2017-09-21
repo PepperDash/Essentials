@@ -35,9 +35,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         #endregion
 
         /// <summary>
-        /// Returns true when ActiveCallCountFeedback is > 0
+        /// Returns whether any call in ActiveCalls is actually "active"
         /// </summary>
-        public bool IsInCall { get { return ActiveCallCountFeedback.IntValue > 0; } }
+        public bool IsInCall
+        {
+            get
+            {
+                return ActiveCalls.Any(c =>
+                    !(c.Status == eCodecCallStatus.Unknown
+                    || c.Status == eCodecCallStatus.Disconnected
+                    || c.Status == eCodecCallStatus.Disconnecting));
+            }
+        }
 
         public BoolFeedback IncomingCallFeedback { get; private set; }
 
@@ -87,11 +96,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         #region IHasDialer Members
 
         public abstract void Dial(string s);
-        public void EndCall(object activeCall)
-        {
-
-        }
-        public abstract void EndCall(CodecActiveCallItem activeCall);
+        public abstract void EndCall(CodecActiveCallItem call);
         public abstract void EndAllCalls();
         public abstract void AcceptCall(CodecActiveCallItem call);
         public abstract void RejectCall(CodecActiveCallItem call);
@@ -115,13 +120,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public abstract void ExecuteSwitch(object selector);
 
         /// <summary>
-        /// 
+        /// Helper method to fire CallStatusChange event with old and new status
+        /// </summary>
+        protected void SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus newStatus, CodecActiveCallItem call)
+        {
+            var prevStatus = call.Status;
+            call.Status = newStatus;
+            OnCallStatusChange(prevStatus, newStatus, call);
+        }
+
+        /// <summary>
+        /// Helper method to notify of call status change event
         /// </summary>
         /// <param name="previousStatus"></param>
         /// <param name="newStatus"></param>
         /// <param name="item"></param>
         protected void OnCallStatusChange(eCodecCallStatus previousStatus, eCodecCallStatus newStatus, CodecActiveCallItem item)
         {
+            Debug.Console(1, this, "Call Status Changed from {0} to {1} on call {2}", previousStatus, newStatus, item.Id);
             var handler = CallStatusChange;
             if (handler != null)
                 handler(this, new CodecCallStatusItemChangeEventArgs(previousStatus, newStatus, item));

@@ -65,6 +65,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class Microphones
         {
             public Mute Mute { get; set; }
+
+            public Microphones()
+            {
+                Mute = new Mute();
+            }
         }
 
         public class ConnectionStatus2
@@ -155,6 +160,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Audio()
             {
                 Volume = new Volume();
+                VolumeMute = new VolumeMute();
+                Microphones = new Microphones();
             }
         }
 
@@ -243,13 +250,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Status2 : ValueProperty
         {
+            string _Value;
             public bool BoolValue { get; private set; }
 
             public string Value
             {
+                get
+                {
+                    return _Value;
+                }
                 set
                 {
                     // If the incoming value is "Active" it sets the BoolValue true, otherwise sets it false
+                    _Value = value;
                     BoolValue = value == "Active";
                     OnValueChanged();
                 }
@@ -342,9 +355,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode2
+        public class Mode2 : ValueProperty
         {
-            public string Value { get; set; }
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                set
+                {
+                    // If the incoming value is "Active" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "On";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class Mode3
@@ -374,6 +397,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public CallId2 CallId { get; set; }
             public Mode2 Mode { get; set; }
             public Whiteboard Whiteboard { get; set; }
+
+            public Presentation()
+            {
+                Mode = new Mode2();
+            }
         }
 
         public class CallId3
@@ -399,6 +427,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Multipoint Multipoint { get; set; }
             public Presentation Presentation { get; set; }
             public SpeakerLock SpeakerLock { get; set; }
+
+            public Conference2()
+            {
+                Presentation = new Presentation();
+            }
         }
 
         public class Description
@@ -1656,6 +1689,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public RemoteNumber RemoteNumber { get; set; }
             public Status2 Status { get; set; }
             public TransmitCallRate TransmitCallRate { get; set; }
+
+            public Call()
+            {
+                CallType = new CallType();
+                Status = new Status2();
+            }
         }
 
         public class Status
@@ -1692,8 +1731,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Standby = new Standby();
                 Cameras = new Cameras();
                 RoomAnalytics = new RoomAnalytics();
+                Conference = new Conference2();
             }
-#warning Figure out how to flag codec as InCall if Call.Count > 0
         }
 
         public class RootObject

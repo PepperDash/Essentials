@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 
-    public class CiscoCodec : VideoCodecBase
+    public class CiscoCodec : VideoCodecBase, IHasCallHistory
     {
         public IBasicCommunication Communication { get; private set; }
         public CommunicationGather PortGather { get; private set; }
@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
-        public BoolFeedback PeopleCountFeedback { get; private set; }
+        public IntFeedback PeopleCountFeedback { get; private set; }
 
         public BoolFeedback SpeakerTrackIsOnFeedback { get; private set; }
 
@@ -42,6 +42,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         private CiscoCodecConfiguration.RootObject CodecConfiguration;
 
         private CiscoCodecStatus.RootObject CodecStatus;
+
+        private CiscoCallHistory.RootObject CodecCallHistory;
+
+        public List<CallHistory.CallHistoryEntry> RecentCalls { get; private set; }
 
         //private CiscoCodecEvents.RootObject CodecEvent;
 
@@ -72,11 +76,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+        /// <summary>
+        /// Gets the value of the currently shared source, or returns null
+        /// </summary>
         protected override Func<string> SharingSourceFeedbackFunc
         {
+#warning figure out how to return the key of the shared source somehow
             get 
-            { 
-                return () => "Todo";  
+            {
+                return () => "todo";
             }
         }
 
@@ -112,6 +120,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+        protected override Func<int> ActiveCallCountFeedbackFunc
+        {
+            get { return () => ActiveCalls.Count; }
+        }
+
         //private HttpsClient Client;
 
         //private HttpApiServer Server;
@@ -143,16 +156,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             : base(key, name)
         {
             StandbyIsOnFeedback = new BoolFeedback(StandbyStateFeedbackFunc);
+            RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
+            PeopleCountFeedback = new IntFeedback(PeopleCountFeedbackFunc);
+            SpeakerTrackIsOnFeedback = new BoolFeedback(SpeakerTrackIsOnFeedbackFunc);
+
 
             Communication = comm;
 
             SyncState = new CodecSyncState(key + "--sync");
 
+            SyncState.InitialSyncCompleted += new EventHandler<EventArgs>(SyncState_InitialSyncCompleted);
+
             PortGather = new CommunicationGather(Communication, Delimiter);
             PortGather.IncludeDelimiter = true;
             PortGather.LineReceived += this.Port_LineReceived;
-
-            //ServerPort = serverPort;
 
             CodecObtp = new CiscoOneButtonToPush();
 
@@ -162,16 +179,37 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             CodecStatus = new CiscoCodecStatus.RootObject();
 
-            //CodecEvent = new CiscoCodecEvents.RootObject();
-
+            CodecCallHistory = new CiscoCallHistory.RootObject();
+ 
             CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
             CodecStatus.Status.Audio.VolumeMute.ValueChangedAction = MuteFeedback.FireUpdate;
             CodecStatus.Status.Audio.Microphones.Mute.ValueChangedAction = PrivacyModeIsOnFeedback.FireUpdate;
             CodecStatus.Status.Standby.State.ValueChangedAction = StandbyIsOnFeedback.FireUpdate;
+            CodecStatus.Status.RoomAnalytics.PeoplePresence.ValueChangedAction = RoomIsOccupiedFeedback.FireUpdate;
+            CodecStatus.Status.RoomAnalytics.PeopleCount.Current.ValueChangedAction = PeopleCountFeedback.FireUpdate;
+            CodecStatus.Status.Cameras.SpeakerTrack.Status.ValueChangedAction = SpeakerTrackIsOnFeedback.FireUpdate;
+
+            //ServerPort = serverPort;
 
             //Client = new HttpsClient();
 
             //Server = new HttpApiServer();      
+        }
+
+        /// <summary>
+        /// Fires when initial codec sync is completed.  Used to then send commands to get call history, phonebook, bookings, etc.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void SyncState_InitialSyncCompleted(object sender, EventArgs e)
+        {
+            SendText("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
+
+            // Get bookings for the day
+            //SendText("xCommand Bookings List Days: 1 DayOffset: 0");
+
+            // Get Phonebook (determine local/corporate from config, and set results limit)
+            //SendText("xCommand Phonebook Search PhonebookType: {0} ContactType: Folder Limit: {0}", PhonebookType, PhonebookResultsLimit);
         }
 
         /// <summary>
@@ -230,6 +268,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Configuration" + Delimiter +
                 prefix + "/Status/Audio" + Delimiter +
                 prefix + "/Status/Call" + Delimiter +
+                prefix + "/Status/Conference/Presentation" + Delimiter +
                 prefix + "/Status/Cameras/SpeakerTrack" + Delimiter +
                 prefix + "/Status/RoomAnalytics" + Delimiter +
                 prefix + "/Status/Standby" + Delimiter +
@@ -325,17 +364,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         }
                     case "xpreferences outputmode json":
                         {
-                            if(!SyncState.InitialStatusMessageWasReceived)
+                            if (!SyncState.InitialStatusMessageWasReceived)
                                 SendText("xStatus");
                             break;
                         }
-                    case "xfeedback register":
+                    case "xfeedback register /event/calldisconnect":
                         {
                             SyncState.FeedbackRegistered();
                             break;
                         }
                 }
             }
+                
         }
 
         public void SendText(string command)
@@ -519,6 +559,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                 if (response.IndexOf("\"Status\":{") > -1)
                 {
+                    // Status Message
+
                     // Check to see if this is a call status message received after the initial status message
                     if(SyncState.InitialStatusMessageWasReceived && response.IndexOf("\"Call\":{") > -1)
                     {
@@ -537,14 +579,37 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                 // If an existing call object is found with a matching ID, populate the existing call with the new data. 
                                 // (must reserialize the object so that we can use PopulateObject() to overlay the new or updated properties on the existing object)
                                 JsonConvert.PopulateObject(JsonConvert.SerializeObject(call), existingCall);
+
+                                var tempActiveCall = ActiveCalls.FirstOrDefault(c => c.Id.Equals(call.id));
+
+                                // store previous status to pass to event handler
+                                var previousStatus = tempActiveCall.Status; 
+
+                                // Update properties of ActiveCallItem
+                                tempActiveCall.Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value);
+                                tempActiveCall.Type = CodecCallType.ConvertToTypeEnum(call.CallType.Value);
+                                tempActiveCall.Name = call.DisplayName.Value;
+
+                                SetNewCallStatusAndFireCallStatusChange(previousStatus, tempActiveCall);
                             }
                             else
                             {
                                 // Add the call
                                 callStatus.Status.Call.Add(call);
 
+                                var newCallItem = new CodecActiveCallItem() 
+                                { 
+                                    Id = call.id, 
+                                    Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value), 
+                                    Name = call.DisplayName.Value, 
+                                    Number = call.RemoteNumber.Value,
+                                    Type = CodecCallType.ConvertToTypeEnum(call.CallType.Value) 
+                                };
+
                                 // Add a call to the ActiveCalls List
-                                //ActiveCalls.Add(new CodecActiveCallItem() { Id = call.id, Status = call.Status.Value, Name = call.DisplayName.Value, Number = call.RemoteNumber.Value, Type = call.Status.Value.ToString()
+                                ActiveCalls.Add(newCallItem);
+
+                                SetNewCallStatusAndFireCallStatusChange(newCallItem.Status, newCallItem);
                             }
 
                             // Handle call.status to determine if we need to fire an event notifying of an incoming call or a call disconnect
@@ -562,6 +627,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 }
                 else if (response.IndexOf("\"Configuration\":{") > -1)
                 {
+                    // Configuration Message
+
                     JsonConvert.PopulateObject(response, CodecConfiguration);
 
                     if (!SyncState.InitialConfigurationMessageWasReceived)
@@ -576,11 +643,36 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 }
                 else if (response.IndexOf("\"Event\":{") > -1)
                 {
+                    // Event Message
+
                     CiscoCodecEvents.RootObject eventReceived = new CiscoCodecEvents.RootObject();
 
                     JsonConvert.PopulateObject(response, eventReceived);
 
                     EvalutateEvent(eventReceived);
+                }
+                else if (response.IndexOf("\"CommandResponse\":{") > -1)
+                {
+                    // CommandResponse Message
+
+                    if (response.IndexOf("\"CallHistoryRecentsResult\":{") > -1)
+                    {
+                        JsonConvert.PopulateObject(response, CodecCallHistory);
+
+                        RecentCalls = CallHistory.ConvertCiscoCallHistoryToGeneric(CodecCallHistory.CommandResponse.CallHistoryRecentsResult.Entry);
+
+                        if (Debug.Level == 1)
+                        {
+                            
+                            Debug.Console(1, this, "RecentCalls:\n");
+
+                            foreach (CallHistory.CallHistoryEntry entry in RecentCalls)
+                            {
+                                Debug.Console(1, this, "\nName: {0}\nNumber{1}\nStartTime{2}\nType{3}\n", entry.DisplayName, entry.CallBackNumber, entry.StartTime.ToString(), entry.OccurenceType);
+                            }
+                        }
+                    }
+
                 }
                 
             }
@@ -590,6 +682,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+
         /// <summary>
         /// Evaluates an event received from the codec
         /// </summary>
@@ -598,12 +691,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (eventReceived.Event.CallDisconnect != null)
             {
-                var tempCall = CodecStatus.Status.Call.FirstOrDefault(c => c.id.Equals(eventReceived.Event.CallDisconnect.CallId));
+                var tempCall = CodecStatus.Status.Call.FirstOrDefault(c => c.id.Equals(eventReceived.Event.CallDisconnect.CallId.Value));
 
                 if(tempCall != null)
                 {
+                    // Remove the call from the xStatus object
                     CodecStatus.Status.Call.Remove(tempCall);
-                    
+
+                    var tempActiveCall = ActiveCalls.FirstOrDefault(c => c.Id.Equals(eventReceived.Event.CallDisconnect.CallId.Value));
+
+                    // Remove the call from the Active calls list
+                    if (tempActiveCall != null)
+                        ActiveCalls.Remove(tempActiveCall);
+
+                    // Notify of the call disconnection
+                    SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, tempActiveCall);
                 }
             }
         }
@@ -800,10 +902,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SendText("xCommand SystemUnit Boot Action: Restart");
         }
 
-        protected override Func<int> ActiveCallCountFeedbackFunc
+        public void RemoveEntry(CallHistory.CallHistoryEntry entry)
         {
-            get { return () => 0; }
+            if (RecentCalls != null)
+            {
+                RecentCalls.Remove(entry);
+            }
         }
+
+
     }
 
     /// <summary>
@@ -811,9 +918,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
     /// </summary>
     public class CodecSyncState : IKeyed
     {
+        bool _InitialSyncComplete;
+
+        public event EventHandler<EventArgs> InitialSyncCompleted;
+
         public string Key { get; private set; }
 
-        public bool InitialSyncComplete { get; private set; }
+        public bool InitialSyncComplete 
+        {
+            get { return _InitialSyncComplete; }
+            private set
+            {
+                if (value == true)
+                {
+                    var handler = InitialSyncCompleted;
+                    if (handler != null)
+                        handler(this, new EventArgs());
+                }
+                _InitialSyncComplete = value;
+            }
+        }
 
         public bool InitialStatusMessageWasReceived { get; private set; }
 

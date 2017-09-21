@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Devices.Common.VideoCodec
+namespace PepperDash.Essentials.Devices.Common.Codec
 
 {
     public class CodecActiveCallItem
@@ -24,18 +24,4 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public object CallMetaData { get; set; }
     }
 
-    public enum eCodecCallType
-    {
-        Unknown = 0, Audio, Video, AudioCanEscalate, ForwardAllCall
-    }
-
-    public enum eCodecCallStatus
-    {
-        Unknown = 0, Idle, Dialing, Ringing, Connecting, Connected, Disconnecting, Incoming, OnHold, EarlyMedia, Preserved, RemotePreserved, Disconnected
-    }
-
-    public enum eCodecCallDirection
-    {
-        Unknown = 0, Incoming, Outgoing
-    }
 }

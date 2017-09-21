@@ -25,4 +25,16 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         IntFeedback ActiveCallCountFeedback { get; }
         BoolFeedback IncomingCallFeedback { get; }
     }
+
+
+    public interface IHasDirectory
+    {
+
+    }
+
+    public interface IHasObtp
+    {
+
+        // Upcoming Meeting warning event
+    }
 }
