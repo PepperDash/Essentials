@@ -21,6 +21,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
     public class CiscoCodec : VideoCodecBase, IHasCallHistory
     {
+        public event EventHandler<EventArgs> RecentCallsListHasChanged;
+
         public IBasicCommunication Communication { get; private set; }
         public CommunicationGather PortGather { get; private set; }
         public CommunicationGather JsonGather { get; private set; }
@@ -668,7 +670,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                             foreach (CallHistory.CallHistoryEntry entry in RecentCalls)
                             {
-                                Debug.Console(1, this, "\nName: {0}\nNumber{1}\nStartTime{2}\nType{3}\n", entry.DisplayName, entry.CallBackNumber, entry.StartTime.ToString(), entry.OccurenceType);
+                                Debug.Console(1, this, "\nName: {0}\nNumber: {1}\nStartTime: {2}\nType: {3}\n", entry.Name, entry.Number, entry.StartTime.ToString(), entry.OccurenceType);
                             }
                         }
                     }

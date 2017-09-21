@@ -8,6 +8,8 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 {
     public interface IHasCallHistory
     {
+        event EventHandler<EventArgs> RecentCallsListHasChanged;
+
         List<CallHistory.CallHistoryEntry> RecentCalls { get; }
 
         void RemoveEntry(CallHistory.CallHistoryEntry entry);
@@ -27,10 +29,8 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// <summary>
         /// Generic call history entry, not device specific
         /// </summary>
-        public class CallHistoryEntry
+        public class CallHistoryEntry : CodecActiveCallItem
         {
-            public string DisplayName { get; set; }
-            public string CallBackNumber { get; set; }
             public DateTime StartTime { get; set; }
             public eCodecOccurrenctType OccurenceType { get; set; }
             public string OccurrenceHistoryId { get; set; }
@@ -49,8 +49,8 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             {
                 genericEntries.Add(new CallHistoryEntry()
                 {
-                    DisplayName = entry.DisplayName.Value,
-                    CallBackNumber = entry.CallbackNumber.Value,
+                    Name = entry.DisplayName.Value,
+                    Number = entry.CallbackNumber.Value,
                     StartTime = entry.LastOccurrenceStartTime.Value,
                     OccurrenceHistoryId = entry.LastOccurrenceHistoryId.Value,
                     OccurenceType = ConvertToOccurenceTypeEnum(entry.OccurrenceType.Value)          
