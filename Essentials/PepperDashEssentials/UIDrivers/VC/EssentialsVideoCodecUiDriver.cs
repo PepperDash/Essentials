@@ -15,6 +15,10 @@ using PepperDash.Essentials.Devices.Common.VideoCodec;
 namespace PepperDash.Essentials.UIDrivers.VC
 {
 
+
+#warning When InCall, keypad text should clear.  Keypad becomes DTMF only. Delete is gone and disabled. Send keypresses immediately to SendDTMF. Queue them in disaply string.
+#warning when Call ends, clear keypad text.
+#warning FOR SPARK - (GFX also) we need a staging bar for in call state where there is no camera button
     /// <summary>
     /// This fella will likely need to interact with the room's source, although that is routed via the spark...
     /// Probably needs event or FB to feed AV driver - to show two-mute volume when appropriate.
@@ -149,6 +153,13 @@ namespace PepperDash.Essentials.UIDrivers.VC
             TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(Codec.IsInCall ? 1 : 0);
             StagingBarInterlock.ShowInterlocked(Codec.IsInCall ? 
                 UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
+            // Set mode of header button
+            if (!Codec.IsInCall)
+                TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 0);
+            else if(Codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
+                TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
+            else
+                TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
 
             // Update list of calls
             var activeList = Codec.ActiveCalls.Where(c => c.IsActiveCall).ToList();

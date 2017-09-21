@@ -256,7 +256,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Incoming, call);
             _IncomingCall = true;
             IncomingCallFeedback.FireUpdate();
-            //ActiveCallCountFeedback.FireUpdate();
         }
 
         /// <summary>
@@ -271,7 +270,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Incoming, call);
             _IncomingCall = true;
             IncomingCallFeedback.FireUpdate();
-            //ActiveCallCountFeedback.FireUpdate();
         }
         
         /// <summary>
@@ -290,7 +288,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             var sb = new StringBuilder();
             foreach (var c in ActiveCalls)
-                sb.AppendFormat("{0} {1} -- {2}\r", c.Id, c.Number, c.Name);
+                sb.AppendFormat("{0} {1} -- {2} {3}\r", c.Id, c.Number, c.Name, c.Status);
             Debug.Console(1, "{0}", sb.ToString());
         }
 

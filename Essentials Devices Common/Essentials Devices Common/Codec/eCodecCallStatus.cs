@@ -8,6 +8,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 {
     public enum eCodecCallStatus
     {
+        Unknown = 0,
         Connected, 
         Connecting, 
         Dialing, 
@@ -20,6 +21,5 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         Ringing, 
         Preserved, 
         RemotePreserved,
-        Unknown = 0
     }
 }

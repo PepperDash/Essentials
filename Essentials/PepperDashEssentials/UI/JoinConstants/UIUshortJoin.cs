@@ -40,5 +40,10 @@
         /// 3922
         /// </summary>
         public const uint PresentationListCaretMode = 3922;
+
+        /// <summary>
+        /// 15024 - Modes 0: On hook, 1: Phone, 2: Video
+        /// </summary>
+        public const uint CallHeaderButtonMode = 15024;
 	}
 }
