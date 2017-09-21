@@ -150,6 +150,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public StringFeedback SharingSourceFeedback { get; private set; }
 
         #endregion
+
+        // **** DEBUGGING THINGS ****
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual void ListCalls()
+        {
+            var sb = new StringBuilder();
+            foreach (var c in ActiveCalls)
+                sb.AppendFormat("{0} {1} -- {2} {3}\r", c.Id, c.Number, c.Name, c.Status);
+            Debug.Console(1, "{0}", sb.ToString());
+        }
     }
 
     /// <summary>

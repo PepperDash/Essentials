@@ -281,17 +281,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public void ListCalls()
-        {
-            var sb = new StringBuilder();
-            foreach (var c in ActiveCalls)
-                sb.AppendFormat("{0} {1} -- {2} {3}\r", c.Id, c.Number, c.Name, c.Status);
-            Debug.Console(1, "{0}", sb.ToString());
-        }
-
         #region IRoutingOutputs Members
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
