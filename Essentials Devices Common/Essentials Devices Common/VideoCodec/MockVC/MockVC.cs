@@ -17,18 +17,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             : base(key, name)
         {
             // Debug helpers
-            ActiveCallCountFeedback.OutputChange += (o, a) => Debug.Console(1, this, "InCall={0}", ActiveCallCountFeedback.IntValue);
+            //ActiveCallCountFeedback.OutputChange += (o, a) => Debug.Console(1, this, "InCall={0}", ActiveCallCountFeedback.IntValue);
             IncomingCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "IncomingCall={0}", _IncomingCall);
             MuteFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Mute={0}", _IsMuted);
             PrivacyModeIsOnFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Privacy={0}", _PrivacyModeIsOn);
             SharingSourceFeedback.OutputChange += (o, a) => Debug.Console(1, this, "SharingSource={0}", _SharingSource);   
             VolumeLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Volume={0}", _VolumeLevel);
        }
-
-        protected override Func<int> ActiveCallCountFeedbackFunc
-        {
-            get { return () => ActiveCalls.Count; }
-        }
 
         protected override Func<bool> IncomingCallFeedbackFunc
         {
@@ -69,7 +64,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             var call = new CodecActiveCallItem() { Name = s, Number = s, Id = s, Status = eCodecCallStatus.Dialing };
             ActiveCalls.Add(call);
             OnCallStatusChange(eCodecCallStatus.Unknown, call.Status, call);
-            ActiveCallCountFeedback.FireUpdate();
+            //ActiveCallCountFeedback.FireUpdate();
             // Simulate 2-second ring, then connecting, then connected
             new CTimer(o =>
             {
@@ -86,9 +81,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             Debug.Console(1, this, "EndCall");
             ActiveCalls.Remove(call);
-
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
-            ActiveCallCountFeedback.FireUpdate();
+            //ActiveCallCountFeedback.FireUpdate();
         }
 
         /// <summary>
@@ -102,7 +96,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 ActiveCalls.Remove(call);
                 SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
             }
-            ActiveCallCountFeedback.FireUpdate();
+            //ActiveCallCountFeedback.FireUpdate();
         }
 
         /// <summary>
@@ -122,6 +116,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void RejectCall(CodecActiveCallItem call)
         {
             Debug.Console(1, this, "RejectCall");
+            ActiveCalls.Remove(call);
+            SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
+            //ActiveCallCountFeedback.FireUpdate();
         }
 
         /// <summary>
@@ -259,7 +256,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Incoming, call);
             _IncomingCall = true;
             IncomingCallFeedback.FireUpdate();
-            ActiveCallCountFeedback.FireUpdate();
         }
 
         /// <summary>
@@ -274,7 +270,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Incoming, call);
             _IncomingCall = true;
             IncomingCallFeedback.FireUpdate();
-            ActiveCallCountFeedback.FireUpdate();
         }
         
         /// <summary>
@@ -284,17 +279,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             Debug.Console(1, this, "TestFarEndHangup");
 
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void ListCalls()
-        {
-            var sb = new StringBuilder();
-            foreach (var c in ActiveCalls)
-                sb.AppendFormat("{0} {1} -- {2}\r", c.Id, c.Number, c.Name);
-            Debug.Console(1, "{0}", sb.ToString());
         }
 
         #region IRoutingOutputs Members

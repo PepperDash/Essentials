@@ -163,6 +163,14 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
+        /// Helper method to set the value of a ushort Sig on TriList
+        /// </summary>
+        public static void SetUshort(this BasicTriList tl, uint sigNum, ushort value)
+        {
+            tl.UShortInput[sigNum].UShortValue = value;
+        }
+
+        /// <summary>
         /// Helper method to set the value of a string Sig on TriList
         /// </summary>
         public static void SetString(this BasicTriList tl, uint sigNum, string value)

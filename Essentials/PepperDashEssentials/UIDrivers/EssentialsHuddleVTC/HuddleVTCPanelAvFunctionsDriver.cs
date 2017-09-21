@@ -155,6 +155,12 @@ namespace PepperDash.Essentials
             //PowerOffTimeout = 30000;
 
             //TriList.StringInput[UIStringJoin.StartActivityText].StringValue = "Tap an activity below";
+
+            // Reveal proper header buttons with/without lighting
+            if(false) // has lighting
+                TriList.SetBool(UIBoolJoin.CallLeftHeaderButtonVisible, true);
+            else
+                TriList.SetBool(UIBoolJoin.CallRightHeaderButtonVisible, true);
         }
 
         /// <summary>

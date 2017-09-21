@@ -35,24 +35,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         #endregion
 
         /// <summary>
-        /// Returns whether any call in ActiveCalls is actually "active"
+        /// Returns true when any call is not in state Unknown, Disconnecting, Disconnected
         /// </summary>
-        public bool IsInCall
-        {
-            get
-            {
-                return ActiveCalls.Any(c =>
-                    !(c.Status == eCodecCallStatus.Unknown
-                    || c.Status == eCodecCallStatus.Disconnected
-                    || c.Status == eCodecCallStatus.Disconnecting));
-            }
-        }
+        public bool IsInCall { get { return ActiveCalls.Any(c => c.IsActiveCall); } }
 
         public BoolFeedback IncomingCallFeedback { get; private set; }
 
-        public IntFeedback ActiveCallCountFeedback { get; private set; }
+        //public IntFeedback ActiveCallCountFeedback { get; private set; }
 
-        abstract protected Func<int> ActiveCallCountFeedbackFunc { get; }
+        //abstract protected Func<int> ActiveCallCountFeedbackFunc { get; }
         abstract protected Func<bool> IncomingCallFeedbackFunc { get; }
         abstract protected Func<bool> PrivacyModeIsOnFeedbackFunc { get; }
         abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
@@ -64,7 +55,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public VideoCodecBase(string key, string name)
             : base(key, name)
         {
-            ActiveCallCountFeedback = new IntFeedback(ActiveCallCountFeedbackFunc);
             IncomingCallFeedback = new BoolFeedback(IncomingCallFeedbackFunc);
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeIsOnFeedbackFunc);
             VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
@@ -73,26 +63,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-            ActiveCallCountFeedback.OutputChange += new EventHandler<EventArgs>(ActiveCallCountFeedback_OutputChange);
-
             ActiveCalls = new List<CodecActiveCallItem>();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void ActiveCallCountFeedback_OutputChange(object sender, EventArgs e)
-        {
-            if (UsageTracker != null)
-            {
-                if (IsInCall)
-                    UsageTracker.StartDeviceUsage();
-                else
-                    UsageTracker.EndDeviceUsage();
-            }
-        }
         #region IHasDialer Members
 
         public abstract void Dial(string s);
@@ -130,14 +103,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
 
         /// <summary>
-        /// Helper method to notify of call status change event
+        /// 
         /// </summary>
         /// <param name="previousStatus"></param>
         /// <param name="newStatus"></param>
         /// <param name="item"></param>
         protected void OnCallStatusChange(eCodecCallStatus previousStatus, eCodecCallStatus newStatus, CodecActiveCallItem item)
         {
-            Debug.Console(1, this, "Call Status Changed from {0} to {1} on call {2}", previousStatus, newStatus, item.Id);
             var handler = CallStatusChange;
             if (handler != null)
                 handler(this, new CodecCallStatusItemChangeEventArgs(previousStatus, newStatus, item));
@@ -178,6 +150,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public StringFeedback SharingSourceFeedback { get; private set; }
 
         #endregion
+
+        // **** DEBUGGING THINGS ****
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual void ListCalls()
+        {
+            var sb = new StringBuilder();
+            foreach (var c in ActiveCalls)
+                sb.AppendFormat("{0} {1} -- {2} {3}\r", c.Id, c.Number, c.Name, c.Status);
+            Debug.Console(1, "{0}", sb.ToString());
+        }
     }
 
     /// <summary>
