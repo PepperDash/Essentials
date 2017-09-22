@@ -33,6 +33,10 @@ namespace PepperDash.Essentials
         /// 1002
         /// </summary>
         public const uint CallEndAllConfirmPress = 1002;
+        /// <summary>
+        /// 1003 - For tapping the text field to reveal the keyboard
+        /// </summary>
+        public const uint CodecDirectorySearchTextPress = 1003;
 
 
         // Audio Conference
@@ -178,7 +182,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 2904
         /// </summary>
-        public const uint KeyboardButton1Press = 2904;
+        public const uint KeyboardButton2Press = 2904;
 
 
         /// <summary>

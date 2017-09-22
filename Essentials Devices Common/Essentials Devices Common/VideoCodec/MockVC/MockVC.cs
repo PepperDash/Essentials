@@ -91,8 +91,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void EndAllCalls()
         {
             Debug.Console(1, this, "EndAllCalls");
-            foreach (var call in ActiveCalls)
+            for(int i = ActiveCalls.Count - 1; i >= 0; i--)
             {
+                var call = ActiveCalls[i];
                 ActiveCalls.Remove(call);
                 SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, call);
             }

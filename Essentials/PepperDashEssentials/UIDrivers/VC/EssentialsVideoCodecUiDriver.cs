@@ -24,7 +24,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
     /// </summary>
     public class EssentialsVideoCodecUiDriver : PanelDriverBase
     {
-        IHasPopupInterlock Parent;
+        IAVDriver Parent;
 
         /// <summary>
         /// 
@@ -76,10 +76,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         /// <param name="triList"></param>
         /// <param name="codec"></param>
-        public EssentialsVideoCodecUiDriver(BasicTriListWithSmartObject triList, IHasPopupInterlock parent, VideoCodecBase codec)
+        public EssentialsVideoCodecUiDriver(BasicTriListWithSmartObject triList, IAVDriver parent, VideoCodecBase codec)
             : base(triList)
         {
             Codec = codec;
+            Parent = parent;
             SetupCallStagingPopover();
             SetupDialKeypad();
             ActiveCallsSRL = new SubpageReferenceList(TriList, UISmartObjectJoin.CodecActiveCallsHeaderList, 3, 3, 3);
@@ -264,7 +265,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
             TriList.SetSigFalseAction(UIBoolJoin.CallEndPress, () =>
                 {
                     if (Codec.ActiveCalls.Count > 1)
+                    {
+                        Debug.Console(1, "#*#*#*# FUCK ME!!!!");
                         Parent.PopupInterlock.ShowInterlocked(UIBoolJoin.HeaderActiveCallsListVisible);
+                    }
                     else
                         Codec.EndAllCalls();
                 });
@@ -320,6 +324,25 @@ namespace PepperDash.Essentials.UIDrivers.VC
             // populate directory
             VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCDirectoryVisible);
             StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingDirectoryPress);
+
+            TriList.SetSigFalseAction(UIBoolJoin.CodecDirectorySearchTextPress, () =>
+                {
+                    var kb = Parent.Keyboard;
+                    kb.OutputFeedback.OutputChange += new EventHandler<EventArgs>(DirectoryKeyboardChange);
+                    kb.HideAction += () =>
+                    {
+                        kb.OutputFeedback.OutputChange -= DirectoryKeyboardChange;
+                    };
+                    
+                });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void DirectoryKeyboardChange(object sender, EventArgs e)
+        {
+            
         }
 
         void ShowRecents()

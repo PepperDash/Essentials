@@ -16,7 +16,7 @@ namespace PepperDash.Essentials
     /// <summary>
     /// 
     /// </summary>
-    public class EssentialsHuddleVtc1PanelAvFunctionsDriver : PanelDriverBase, IHasPopupInterlock
+    public class EssentialsHuddleVtc1PanelAvFunctionsDriver : PanelDriverBase, IAVDriver
     {
         CrestronTouchpanelPropertiesConfig Config;
 
@@ -130,6 +130,8 @@ namespace PepperDash.Essentials
 
         PepperDash.Essentials.UIDrivers.VC.EssentialsVideoCodecUiDriver VCDriver;
 
+        public PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; private set; }
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -152,9 +154,7 @@ namespace PepperDash.Essentials
             SetupActivityFooterWhenRoomOff();
 
             ShowVolumeGauge = true;
-            //PowerOffTimeout = 30000;
-
-            //TriList.StringInput[UIStringJoin.StartActivityText].StringValue = "Tap an activity below";
+            Keyboard = new PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController(TriList);
         }
 
         /// <summary>
@@ -305,34 +305,6 @@ namespace PepperDash.Essentials
 
             base.Show();
         }
-
-        ///// <summary>
-        ///// Puts the UI into the "start" mode. System is off.  Logo shows. Activity SRL is clear
-        ///// </summary>
-        //void ShowStartMode()
-        //{
-        //    SetupActivityFooterWhenRoomOff();
-            
-        //    ShareButtonSig.BoolValue = false;
-        //    CallButtonSig.BoolValue = false;
-        //    ShowLogo();
-        //    StagingBarInterlock.ShowInterlocked(UIBoolJoin.StartPageVisible);
-        //    StagingBarInterlock.HideAndClear();
-        //}
-
-        //void ShowShareMode()
-        //{
-        //    ShareButtonSig.BoolValue = true;
-        //    CallButtonSig.BoolValue = false;
-        //    StagingBarInterlock.ShowInterlocked(UIBoolJoin.SourceStagingBarVisible);
-        //}
-
-        //void ShowVideoCallMode()
-        //{
-        //    ShareButtonSig.BoolValue = false;
-        //    CallButtonSig.BoolValue = true;
-        //    StagingBarInterlock.ShowInterlocked(UIBoolJoin.CallStagingBarVisible);
-        //}
 
         /// <summary>
         /// 
@@ -978,8 +950,12 @@ namespace PepperDash.Essentials
         }
     }
 
-    public interface IHasPopupInterlock
+    /// <summary>
+    /// For hanging off various common things that child drivers might need from a parent AV driver
+    /// </summary>
+    public interface IAVDriver
     {
+        PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; }
         JoinedSigInterlock PopupInterlock { get; }
     }
 }

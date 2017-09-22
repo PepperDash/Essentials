@@ -11,11 +11,15 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
     {
         public BasicTriList TriList { get; private set; }
 
-        int ShiftMode;
-
         public StringFeedback OutputFeedback { get; private set; }
-        StringBuilder Output;
+
+        public bool IsVisible { get; private set; }
+
+        int ShiftMode;
         
+        StringBuilder Output;
+
+        public Action HideAction { get; set; }
 
         /// <summary>
         /// 
@@ -30,12 +34,14 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         }
 
         /// <summary>
-        /// Puts actions on buttons
+        /// Shows the keyboard and attaches sig handlers in the range of 2901-2969
         /// </summary>
-        void SetUp()
+        public void Show()
         {
-            TriList.SetSigTrueAction(KeyboardClosePress, Hide);
+            if (IsVisible)
+                return;
 
+            TriList.SetSigTrueAction(KeyboardClosePress, Hide);
             TriList.SetSigTrueAction(2921, () => Append(A(ShiftMode)));
             TriList.SetSigTrueAction(2922, () => Append(B(ShiftMode)));
             TriList.SetSigTrueAction(2923, () => Append(C(ShiftMode)));
@@ -70,21 +76,46 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
             TriList.SetSigTrueAction(2952, Shift);
             TriList.SetSigTrueAction(2953, NumShift);
 
-        }
-
-        public void Show()
-        {
             TriList.SetBool(KeyboardVisible, true);
+            IsVisible = true;
         }
 
+        /// <summary>
+        /// Hides the keyboard and disconnects ALL sig handlers from 2901 - 2969
+        /// </summary>
         public void Hide()
         {
+            if (!IsVisible)
+                return;
+
+            for (uint i = 2901; i < 2970; i++)
+                TriList.ClearBoolSigAction(i);
+
+            // run attached actions
+            if(HideAction != null)
+                HideAction();
+
             TriList.SetBool(KeyboardVisible, false);
+            IsVisible = false;
         }
 
-        void Append(char c)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="c"></param>
+        public void Append(char c)
         {
             Output.Append(c);
+            OutputFeedback.FireUpdate();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        public void Append(string s)
+        {
+            Output.Append(s);
             OutputFeedback.FireUpdate();
         }
 
@@ -171,7 +202,7 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         /// <summary>
         /// 2904
         /// </summary>
-        public const uint KeyboardButton1Press = 2904;
+        public const uint KeyboardButton2Press = 2904;
         /// <summary>
         /// 2910
         /// </summary>
@@ -182,4 +213,39 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         public const uint KeyboardClearVisible = 2911;
 
     }
+
+    /* When in mode 0 (lowercase):
+     *      shift button: up arrow 0
+     *      numShift button: 123/#$@#$ 0
+     *      
+     *      - shift --> mode 1
+     *      - double-tap shift --> caps lock
+     *      - numShift --> mode 2
+     *      
+     * mode 1 (uppercase)
+     *      shift button: down arrow 1
+     *      numShift button: 123/##$# 0
+     *      
+     *      - shift --> mode 0
+     *      - numShift --> mode 2
+     *      
+     *      - Tapping any key will go back to mode 0
+     * 
+     * mode 2 (numbers-sym)
+     *      Shift button: #$#$#$ 2
+     *      numShift: ABC 1
+     *      
+     *      - shift --> mode 3
+     *      - double-tap shift --> caps lock
+     *      - numShift --> mode 0
+     * 
+     * mode 3 (sym)
+     *      Shift button: 123 3
+     *      numShift: ABC 1
+     *      
+     *      - shift --> mode 2
+     *      - numShift --> mode 0
+     *      
+     *      - Tapping any key will go back to mode 2
+     */
 }
