@@ -26,8 +26,8 @@ namespace PepperDash.Essentials.Fusion
 	public class EssentialsHuddleSpaceFusionSystemController : Device
 	{
         public event EventHandler<ScheduleChangeEventArgs> ScheduleChange;
-        public event EventHandler<MeetingChangeEventArgs> MeetingEndWarning;
-        public event EventHandler<MeetingChangeEventArgs> NextMeetingBeginWarning;
+        //public event EventHandler<MeetingChangeEventArgs> MeetingEndWarning;
+        //public event EventHandler<MeetingChangeEventArgs> NextMeetingBeginWarning;
 
 		FusionRoom FusionRoom;
 		EssentialsHuddleSpaceRoom Room;

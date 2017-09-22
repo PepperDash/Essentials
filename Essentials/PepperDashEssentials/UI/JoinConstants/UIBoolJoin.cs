@@ -22,8 +22,21 @@ namespace PepperDash.Essentials
         /// </summary>
 		public const uint VolumeDownPress = 902;
 
-        //******************************************************
+        //****************************************************
+        // Codec General
+        
+        /// <summary>
+        /// 1001
+        /// </summary>
+        public const uint CallEndPress = 1001;
+        /// <summary>
+        /// 1002
+        /// </summary>
+        public const uint CallEndAllConfirmPress = 1002;
+
+
         // Audio Conference
+#warning Move these to 1100's
         /// <summary>
         /// 1001
         /// </summary>
@@ -153,7 +166,21 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 2901
         /// </summary>
-        public const uint KeyboardVisible = 2901; 
+        public const uint KeyboardVisible = 2901;
+        /// <summary>
+        /// 2902
+        /// </summary>
+        public const uint KeyboardClosePress = 2902;
+        /// <summary>
+        /// 2903
+        /// </summary>
+        public const uint KeyboardButton1Press = 2903;
+        /// <summary>
+        /// 2904
+        /// </summary>
+        public const uint KeyboardButton1Press = 2904;
+
+
         /// <summary>
         /// 2910
         /// </summary>
@@ -163,6 +190,9 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint KeyboardClearVisible = 2911;
 
+        // Letter joins start at 2921;
+
+       //******************************************************
         /// <summary>
         /// 3811
         /// </summary>
@@ -476,31 +506,30 @@ namespace PepperDash.Essentials
         /// 15060
         /// </summary>
         public const uint Display2AudioButtonPressAndFb = 15060;
-
         /// <summary>
         /// 15061 Reveals the dual-display subpage
         /// </summary>
         public const uint DualDisplayPageVisible = 15061;
-
         /// <summary>
         /// 15062 Reveals the toggle switch for the sharing mode
         /// </summary>
         public const uint ToggleSharingModeVisible = 15062;
-
         /// <summary>
         /// 15063 Press for the toggle mode switch
         /// </summary>
         public const uint ToggleSharingModePress = 15063;
-
         /// <summary>
         /// 15064
         /// </summary>
         public const uint LogoDefaultVisible = 15064;
-
         /// <summary>
         /// 15065
         /// </summary>
         public const uint LogoUrlVisible = 15065;
+        /// <summary>
+        /// 15066 - Reveals the active calls header item
+        /// </summary>
+        public const uint HeaderActiveCallsListVisible = 15066;
         /// <summary>
         /// 15083 - Press for Call help desk on AC/VC
         /// </summary>

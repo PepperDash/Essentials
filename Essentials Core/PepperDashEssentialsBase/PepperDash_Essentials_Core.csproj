@@ -184,6 +184,7 @@
     <Compile Include="SmartObjects\SmartObjectHelperBase.cs" />
     <Compile Include="Routing\TieLine.cs" />
     <Compile Include="Timers\CountdownTimer.cs" />
+    <Compile Include="Touchpanels\Keyboards\HabaneroKeyboardController.cs" />
     <Compile Include="Touchpanels\MOVED LargeTouchpanelControllerBase.cs" />
     <Compile Include="Touchpanels\TriListExtensions.cs" />
     <Compile Include="Touchpanels\MOVED UIControllers\DevicePageControllerBase.cs" />
@@ -208,7 +209,7 @@
     <Compile Include="Room\Room.cs" />
     <Compile Include="Room\RoomCues.cs" />
     <Compile Include="Room\MOVED RoomEventArgs.cs" />
-    <Compile Include="SubpageReferencList\SourceListSubpageReferenceList.cs" />
+    <Compile Include="SmartObjects\SubpageReferencList\SourceListSubpageReferenceList.cs" />
     <Compile Include="Touchpanels\ModalDialog.cs" />
     <Compile Include="Touchpanels\SmartGraphicsTouchpanelControllerBase.cs" />
     <Compile Include="TriListBridges\HandlerBridge.cs" />
@@ -216,9 +217,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SigHelper.cs" />
     <Compile Include="REMOVE SigId.cs" />
-    <Compile Include="SubpageReferencList\DeviceStatusListController.cs" />
-    <Compile Include="SubpageReferencList\SubpageReferenceList.cs" />
-    <Compile Include="SubpageReferencList\SubpageReferenceListItem.cs" />
+    <Compile Include="SmartObjects\SubpageReferencList\DeviceStatusListController.cs" />
+    <Compile Include="SmartObjects\SubpageReferencList\SubpageReferenceList.cs" />
+    <Compile Include="SmartObjects\SubpageReferencList\SubpageReferenceListItem.cs" />
     <None Include="app.config" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>

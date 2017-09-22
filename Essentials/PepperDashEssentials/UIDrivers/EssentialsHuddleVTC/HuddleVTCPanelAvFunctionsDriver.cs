@@ -16,7 +16,7 @@ namespace PepperDash.Essentials
     /// <summary>
     /// 
     /// </summary>
-    public class EssentialsHuddleVtc1PanelAvFunctionsDriver : PanelDriverBase
+    public class EssentialsHuddleVtc1PanelAvFunctionsDriver : PanelDriverBase, IHasPopupInterlock
     {
         CrestronTouchpanelPropertiesConfig Config;
 
@@ -118,7 +118,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Represents
         /// </summary>
-        JoinedSigInterlock PopupInterlock;
+        public JoinedSigInterlock PopupInterlock { get; private set; }
 
         /// <summary>
         /// Interlock for various source, camera, call control bars. The bar above the activity footer.  This is also 
@@ -155,12 +155,6 @@ namespace PepperDash.Essentials
             //PowerOffTimeout = 30000;
 
             //TriList.StringInput[UIStringJoin.StartActivityText].StringValue = "Tap an activity below";
-
-            // Reveal proper header buttons with/without lighting
-            if(false) // has lighting
-                TriList.SetBool(UIBoolJoin.CallLeftHeaderButtonVisible, true);
-            else
-                TriList.SetBool(UIBoolJoin.CallRightHeaderButtonVisible, true);
         }
 
         /// <summary>
@@ -272,9 +266,14 @@ namespace PepperDash.Essentials
             if(roomConf.OneButtonMeeting != null && roomConf.OneButtonMeeting.Enable)
             {
                 TriList.SetBool(UIBoolJoin.CalendarHeaderButtonVisible, true);
-                TriList.SetSigFalseAction(UIBoolJoin.CallHeaderButtonPress, () =>
-                { });
-            }            
+                TriList.SetBool(UIBoolJoin.CallLeftHeaderButtonVisible, true);
+            }
+            else
+                TriList.SetBool(UIBoolJoin.CallRightHeaderButtonVisible, true);
+
+            TriList.SetSigFalseAction(UIBoolJoin.CallHeaderButtonPress, () =>
+                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible));
+
             
             // Setup button - shows volumes with default button OR hold for tech page
             TriList.SetSigHeldAction(UIBoolJoin.GearHeaderButtonPress, 2000,
@@ -977,5 +976,10 @@ namespace PepperDash.Essentials
             else
                 RefreshSourceInfo();
         }
+    }
+
+    public interface IHasPopupInterlock
+    {
+        JoinedSigInterlock PopupInterlock { get; }
     }
 }

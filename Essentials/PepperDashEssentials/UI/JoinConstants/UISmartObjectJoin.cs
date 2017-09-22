@@ -3,6 +3,12 @@
 	public class UISmartObjectJoin
 	{
         //******************************************************
+        // Conference
+        /// <summary>
+        /// 1001 - The list that reveals in header to show calls
+        /// </summary>
+        public const uint CodecActiveCallsHeaderList = 1001;
+        
         // Video Conference
 
         /// <summary>
