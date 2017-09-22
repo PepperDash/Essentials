@@ -110,6 +110,7 @@
     <Compile Include="Codec\iHasCallFavorites.cs" />
     <Compile Include="Codec\iHasCallHistory.cs" />
     <Compile Include="Codec\iHasDialer.cs" />
+    <Compile Include="Codec\iHasDirectory.cs" />
     <Compile Include="Crestron\Gateways\CenRfgwController.cs" />
     <Compile Include="Display\ComTcpDisplayBase.cs" />
     <Compile Include="Display\SamsungMDCDisplay.cs" />
@@ -136,6 +137,7 @@
     <Compile Include="Streaming\Roku.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CiscoCodec.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CiscoCodecPropertiesConfig.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\PhonebookDataClasses.cs" />
     <Compile Include="VideoCodec\CiscoCodec\xConfiguration.cs" />
     <Compile Include="VideoCodec\CiscoCodec\xEvent.cs" />
     <Compile Include="VideoCodec\CiscoCodec\HttpApiServer.cs" />

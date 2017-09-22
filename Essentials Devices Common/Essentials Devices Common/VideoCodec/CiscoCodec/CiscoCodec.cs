@@ -43,9 +43,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         private CiscoCodecStatus.RootObject CodecStatus;
 
+        private CiscoCodecPhonebook.RootObject CodecPhonebook;
+
         public CodecCallHistory CallHistory { get; private set; }
 
         public CodecCallFavorites CallFavorites { get; private set; }
+
+        public CodecDirectory Directory { get; private set; }
 
         /// <summary>
         /// Gets and returns the scaled volume of the codec
@@ -170,7 +174,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
             else
             {
-                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 2000, 120000, 300000, "xStatus SystemUnit Software Version\r");
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, "xStatus SystemUnit Software Version\r");
             }
 
             DeviceManager.AddDevice(CommunicationMonitor);
@@ -191,11 +195,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             CodecConfiguration = new CiscoCodecConfiguration.RootObject();
             CodecStatus = new CiscoCodecStatus.RootObject();
+            CodecPhonebook = new CiscoCodecPhonebook.RootObject();
 
             CallHistory = new CodecCallHistory();
 
             CallFavorites = new CodecCallFavorites();
             CallFavorites.Favorites = props.Favorites;
+
+            Directory = new CodecDirectory();
  
             //Set Feedback Actions
             CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
@@ -205,22 +212,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.RoomAnalytics.PeoplePresence.ValueChangedAction = RoomIsOccupiedFeedback.FireUpdate;
             CodecStatus.Status.RoomAnalytics.PeopleCount.Current.ValueChangedAction = PeopleCountFeedback.FireUpdate;
             CodecStatus.Status.Cameras.SpeakerTrack.Status.ValueChangedAction = SpeakerTrackIsOnFeedback.FireUpdate;
-        }
-
-        /// <summary>
-        /// Fires when initial codec sync is completed.  Used to then send commands to get call history, phonebook, bookings, etc.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void SyncState_InitialSyncCompleted(object sender, EventArgs e)
-        {
-            GetCallHistory();
-
-            // Get bookings for the day
-            //SendText("xCommand Bookings List Days: 1 DayOffset: 0");
-
-            // Get Phonebook (determine local/corporate from config, and set results limit)
-            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Folder Limit: {1}", PhonebookMode, PhonebookResultsLimit));
         }
 
         /// <summary>
@@ -259,6 +250,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Event/CallDisconnect" + Delimiter;        
 
             return base.CustomActivate();
+        }
+
+        /// <summary>
+        /// Fires when initial codec sync is completed.  Used to then send commands to get call history, phonebook, bookings, etc.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void SyncState_InitialSyncCompleted(object sender, EventArgs e)
+        {
+            GetCallHistory();
+
+            // Get bookings for the day
+            //SendText("xCommand Bookings List Days: 1 DayOffset: 0");
+
+            GetPhonebook();
         }
 
         public void SetCommDebug(string s)
@@ -491,14 +497,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                         JsonConvert.PopulateObject(response, codecCallHistory);
 
-                        CallHistory.ConvertCiscoCallHistoryToGeneric(codecCallHistory.CommandResponse.CallHistoryRecentsResult.Entry);                       
+                        CallHistory.ConvertCiscoCallHistoryToGeneric(codecCallHistory.CommandResponse.CallHistoryRecentsResult.Entry);
                     }
                     else if (response.IndexOf("\"CallHistoryDeleteEntryResult\":{") > -1)
                     {
                         GetCallHistory();
                     }
+                    else if (response.IndexOf("\"PhonebookSearchResult\":{") > -1)
+                    {
+                        JsonConvert.PopulateObject(response, CodecPhonebook);
 
-                }
+                        Directory = CiscoCodecPhonebook.ConvertCiscoPhonebookToGeneric(CodecPhonebook.CommandResponse.PhonebookSearchResult);
+
+                        if (Debug.Level > 1)
+                        {
+                            //Print phonebook contents
+                        }
+                    }
+
+                }  
                 
             }
             catch (Exception ex)
@@ -557,6 +574,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         private void GetCallHistory()
         {
             SendText("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
+        }
+
+        private void GetPhonebook()
+        {
+            // Get Phonebook (determine local/corporate from config, and set results limit)
+            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Folder Limit: {1}", PhonebookMode, PhonebookResultsLimit));
         }
 
         public override void  Dial(string s)
