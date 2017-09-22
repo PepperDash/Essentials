@@ -16,8 +16,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 {
 
 
-#warning When InCall, keypad text should clear.  Keypad becomes DTMF only. Delete is gone and disabled. Send keypresses immediately to SendDTMF. Queue them in disaply string.
-#warning when Call ends, clear keypad text.
 #warning FOR SPARK - (GFX also) we need a staging bar for in call state where there is no camera button
     /// <summary>
     /// This fella will likely need to interact with the room's source, although that is routed via the spark...
@@ -26,6 +24,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
     /// </summary>
     public class EssentialsVideoCodecUiDriver : PanelDriverBase
     {
+        IAVDriver Parent;
+
         /// <summary>
         /// 
         /// </summary>
@@ -60,6 +60,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         SmartObjectNumeric DialKeypad;
 
+        SubpageReferenceList ActiveCallsSRL;
+
         // These are likely temp until we get a keyboard built
         StringFeedback DialStringFeedback;
         StringBuilder DialStringBuilder = new StringBuilder();
@@ -67,17 +69,21 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         ModalDialog IncomingCallModal;
 
+        eKeypadMode KeypadMode;
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="triList"></param>
         /// <param name="codec"></param>
-        public EssentialsVideoCodecUiDriver(BasicTriListWithSmartObject triList, VideoCodecBase codec)
+        public EssentialsVideoCodecUiDriver(BasicTriListWithSmartObject triList, IAVDriver parent, VideoCodecBase codec)
             : base(triList)
         {
             Codec = codec;
+            Parent = parent;
             SetupCallStagingPopover();
             SetupDialKeypad();
+            ActiveCallsSRL = new SubpageReferenceList(TriList, UISmartObjectJoin.CodecActiveCallsHeaderList, 3, 3, 3);
 
             codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
 
@@ -118,6 +124,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 case eCodecCallStatus.Connected:
                     // fire at SRL item
                     Debug.Console(1, "*#* UI: Call Connected {0}", call.Name);
+                    KeypadMode = eKeypadMode.DTMF;
+                    DialStringBuilder.Remove(0, DialStringBuilder.Length);
+                    DialStringFeedback.FireUpdate();
+                    TriList.SetBool(UIBoolJoin.KeyboardClearVisible, false);
                     break;
                 case eCodecCallStatus.Connecting:
                     // fire at SRL item
@@ -128,6 +138,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     break;
                 case eCodecCallStatus.Disconnected:
                     Debug.Console(1, "*#* UI: Call Disconnecting {0}", call.Name);
+                    if (!Codec.IsInCall)
+                    {
+                        KeypadMode = eKeypadMode.Dial;
+                        DialStringBuilder.Remove(0, DialStringBuilder.Length);
+                        DialStringFeedback.FireUpdate();
+                    }
                     break;
                 case eCodecCallStatus.Disconnecting:
                     break;
@@ -153,6 +169,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(Codec.IsInCall ? 1 : 0);
             StagingBarInterlock.ShowInterlocked(Codec.IsInCall ? 
                 UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
+
             // Set mode of header button
             if (!Codec.IsInCall)
                 TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 0);
@@ -162,9 +179,29 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
 
             // Update list of calls
-            var activeList = Codec.ActiveCalls.Where(c => c.IsActiveCall).ToList();
-            Debug.Console(1, "*#* UI - Codec has {0} calls", activeList.Count);
+            UpdateCallsHeaderList(call);
+        }
 
+        /// <summary>
+        /// Redraws the calls list on the header
+        /// </summary>
+        void UpdateCallsHeaderList(CodecActiveCallItem call)
+        {
+            var activeList = Codec.ActiveCalls.Where(c => c.IsActiveCall).ToList();
+            ActiveCallsSRL.Clear();
+            ushort i = 1;
+            foreach (var c in activeList)
+            {
+                var item = new SubpageReferenceListItem(1, ActiveCallsSRL);
+                ActiveCallsSRL.StringInputSig(i, 1).StringValue = c.Name;
+                ActiveCallsSRL.StringInputSig(i, 2).StringValue = c.Number;
+                ActiveCallsSRL.StringInputSig(i, 3).StringValue = c.Status.ToString();
+                ActiveCallsSRL.UShortInputSig(i, 1).UShortValue = (ushort)(c.Type == eCodecCallType.Video ? 2 : 1);
+                var cc = c; // for scope in lambda
+                ActiveCallsSRL.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() => Codec.EndCall(cc));
+                i++;
+            }
+                ActiveCallsSRL.Count = (ushort)activeList.Count;
         }
         
         /// <summary>
@@ -222,9 +259,20 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void SetupCallStagingPopover()
         {
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingDirectoryPress, ShowDirectory);
-            TriList.SetSigFalseAction(UIBoolJoin.VCStagingConnectPress, ConnectPress);
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingKeypadPress, ShowKeypad);
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingRecentsPress, ShowRecents);
+            TriList.SetSigFalseAction(UIBoolJoin.VCStagingConnectPress, ConnectPress);
+            TriList.SetSigFalseAction(UIBoolJoin.CallEndPress, () =>
+                {
+                    if (Codec.ActiveCalls.Count > 1)
+                    {
+                        Debug.Console(1, "#*#*#*# FUCK ME!!!!");
+                        Parent.PopupInterlock.ShowInterlocked(UIBoolJoin.HeaderActiveCallsListVisible);
+                    }
+                    else
+                        Codec.EndAllCalls();
+                });
+            TriList.SetSigFalseAction(UIBoolJoin.CallEndAllConfirmPress, Codec.EndAllCalls);
         }
 
         /// <summary>
@@ -276,6 +324,25 @@ namespace PepperDash.Essentials.UIDrivers.VC
             // populate directory
             VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCDirectoryVisible);
             StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingDirectoryPress);
+
+            TriList.SetSigFalseAction(UIBoolJoin.CodecDirectorySearchTextPress, () =>
+                {
+                    var kb = Parent.Keyboard;
+                    kb.OutputFeedback.OutputChange += new EventHandler<EventArgs>(DirectoryKeyboardChange);
+                    kb.HideAction += () =>
+                    {
+                        kb.OutputFeedback.OutputChange -= DirectoryKeyboardChange;
+                    };
+                    
+                });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void DirectoryKeyboardChange(object sender, EventArgs e)
+        {
+            
         }
 
         void ShowRecents()
@@ -290,10 +357,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void ConnectPress()
         {
-            if (Codec.IsInCall)
-                Codec.EndAllCalls();
-            else
-                Codec.Dial(DialStringBuilder.ToString());
+            Codec.Dial(DialStringBuilder.ToString());
         }
 
 
@@ -303,10 +367,20 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <param name="i"></param>
         void DialKeypadPress(string i)
         {
-            DialStringBuilder.Append(i);
-            DialStringFeedback.FireUpdate();
-            TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible].BoolValue = 
-                DialStringBuilder.Length > 0;
+            if (KeypadMode == eKeypadMode.Dial)
+            {
+                DialStringBuilder.Append(i);
+                DialStringFeedback.FireUpdate();
+                TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible].BoolValue =
+                    DialStringBuilder.Length > 0;
+            }
+            else
+            {
+                Codec.SendDtmf(i);
+                DialStringBuilder.Append(i);
+                DialStringFeedback.FireUpdate();
+                // no delete key in this mode!
+            }
         }
 
         /// <summary>
@@ -319,6 +393,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
             TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible].BoolValue =
                 DialStringBuilder.Length > 0;
             TriList.SetBool(UIBoolJoin.VCStagingConnectEnable, DialStringBuilder.Length > 0);
+        }
+
+        enum eKeypadMode
+        {
+            Dial, DTMF
         }
     }
 }

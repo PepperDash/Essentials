@@ -16,7 +16,7 @@ namespace PepperDash.Essentials
     /// <summary>
     /// 
     /// </summary>
-    public class EssentialsHuddleVtc1PanelAvFunctionsDriver : PanelDriverBase
+    public class EssentialsHuddleVtc1PanelAvFunctionsDriver : PanelDriverBase, IAVDriver
     {
         CrestronTouchpanelPropertiesConfig Config;
 
@@ -118,7 +118,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Represents
         /// </summary>
-        JoinedSigInterlock PopupInterlock;
+        public JoinedSigInterlock PopupInterlock { get; private set; }
 
         /// <summary>
         /// Interlock for various source, camera, call control bars. The bar above the activity footer.  This is also 
@@ -129,6 +129,8 @@ namespace PepperDash.Essentials
         JoinedSigInterlock CallPagesInterlock;
 
         PepperDash.Essentials.UIDrivers.VC.EssentialsVideoCodecUiDriver VCDriver;
+
+        public PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -152,15 +154,7 @@ namespace PepperDash.Essentials
             SetupActivityFooterWhenRoomOff();
 
             ShowVolumeGauge = true;
-            //PowerOffTimeout = 30000;
-
-            //TriList.StringInput[UIStringJoin.StartActivityText].StringValue = "Tap an activity below";
-
-            // Reveal proper header buttons with/without lighting
-            if(false) // has lighting
-                TriList.SetBool(UIBoolJoin.CallLeftHeaderButtonVisible, true);
-            else
-                TriList.SetBool(UIBoolJoin.CallRightHeaderButtonVisible, true);
+            Keyboard = new PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController(TriList);
         }
 
         /// <summary>
@@ -272,9 +266,14 @@ namespace PepperDash.Essentials
             if(roomConf.OneButtonMeeting != null && roomConf.OneButtonMeeting.Enable)
             {
                 TriList.SetBool(UIBoolJoin.CalendarHeaderButtonVisible, true);
-                TriList.SetSigFalseAction(UIBoolJoin.CallHeaderButtonPress, () =>
-                { });
-            }            
+                TriList.SetBool(UIBoolJoin.CallLeftHeaderButtonVisible, true);
+            }
+            else
+                TriList.SetBool(UIBoolJoin.CallRightHeaderButtonVisible, true);
+
+            TriList.SetSigFalseAction(UIBoolJoin.CallHeaderButtonPress, () =>
+                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible));
+
             
             // Setup button - shows volumes with default button OR hold for tech page
             TriList.SetSigHeldAction(UIBoolJoin.GearHeaderButtonPress, 2000,
@@ -306,34 +305,6 @@ namespace PepperDash.Essentials
 
             base.Show();
         }
-
-        ///// <summary>
-        ///// Puts the UI into the "start" mode. System is off.  Logo shows. Activity SRL is clear
-        ///// </summary>
-        //void ShowStartMode()
-        //{
-        //    SetupActivityFooterWhenRoomOff();
-            
-        //    ShareButtonSig.BoolValue = false;
-        //    CallButtonSig.BoolValue = false;
-        //    ShowLogo();
-        //    StagingBarInterlock.ShowInterlocked(UIBoolJoin.StartPageVisible);
-        //    StagingBarInterlock.HideAndClear();
-        //}
-
-        //void ShowShareMode()
-        //{
-        //    ShareButtonSig.BoolValue = true;
-        //    CallButtonSig.BoolValue = false;
-        //    StagingBarInterlock.ShowInterlocked(UIBoolJoin.SourceStagingBarVisible);
-        //}
-
-        //void ShowVideoCallMode()
-        //{
-        //    ShareButtonSig.BoolValue = false;
-        //    CallButtonSig.BoolValue = true;
-        //    StagingBarInterlock.ShowInterlocked(UIBoolJoin.CallStagingBarVisible);
-        //}
 
         /// <summary>
         /// 
@@ -977,5 +948,14 @@ namespace PepperDash.Essentials
             else
                 RefreshSourceInfo();
         }
+    }
+
+    /// <summary>
+    /// For hanging off various common things that child drivers might need from a parent AV driver
+    /// </summary>
+    public interface IAVDriver
+    {
+        PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; }
+        JoinedSigInterlock PopupInterlock { get; }
     }
 }

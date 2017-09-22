@@ -5,6 +5,9 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
+
 namespace PepperDash.Essentials
 {
     public class JoinedSigInterlock
@@ -26,7 +29,7 @@ namespace PepperDash.Essentials
             if (CurrentJoin == join)
                 return;
             SetButDontShow(join);
-            TriList.BooleanInput[CurrentJoin].BoolValue = true;
+            TriList.SetBool(CurrentJoin, true);
         }
 
         /// <summary>
@@ -74,7 +77,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Useful for pre-setting the interlock but not enabling it.
+        /// Useful for pre-setting the interlock but not enabling it. Sets CurrentJoin
         /// </summary>
         /// <param name="join"></param>
         public void SetButDontShow(uint join)
