@@ -7,6 +7,9 @@ using Crestron.SimplSharp.CrestronXml.Serialization;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
+    /// <summary>
+    /// This class exists to capture serialized data sent back by a Cisco codec in JSON output mode
+    /// </summary>
     public class CiscoCodecStatus
     {
         // Helper Classes for Proerties
@@ -1633,7 +1636,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             public string Value { get; set; }
         }
-
 
         public class FacilityServiceId
         {

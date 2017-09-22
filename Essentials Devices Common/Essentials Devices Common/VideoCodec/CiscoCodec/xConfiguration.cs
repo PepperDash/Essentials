@@ -6,6 +6,9 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
+    /// <summary>
+    /// This class exists to capture serialized data sent back by a Cisco codec in JSON output mode
+    /// </summary>
     public class CiscoCodecConfiguration
     {
         public class DefaultVolume

@@ -11,6 +11,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 using PepperDash.Essentials.Devices.Common.DSP;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 using PepperDash.Essentials.Devices.Common;
 
@@ -104,6 +105,13 @@ namespace PepperDash.Essentials.Devices.Common
             {
                 return new PepperDash.Essentials.Devices.Common.VideoCodec
                     .MockVC(key, name);
+            }
+
+            else if (typeName == "ciscocodec")
+            {
+                var comm = CommFactory.CreateCommForDevice(dc);
+                var props = JsonConvert.DeserializeObject<Codec.CiscoCodecPropertiesConfig>(properties.ToString());
+                return new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodec(key, name, comm, props);
             }
 
             else if (groupName == "settopbox") //(typeName == "irstbbase")

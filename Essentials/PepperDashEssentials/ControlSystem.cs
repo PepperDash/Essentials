@@ -29,8 +29,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void InitializeSystem()
 		{
-            //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Reloads configuration file",
-            //    ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Reloads configuration file",
+                ConsoleAccessLevelEnum.AccessOperator);
             //CrestronConsole.AddNewConsoleCommand(s => TearDown(), "ungo", "Unloads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(s =>
@@ -40,7 +40,7 @@ namespace PepperDash.Essentials
             },
             "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
 
-            GoWithLoad();
+            //GoWithLoad();
 		}
 
 		/// <summary>
@@ -128,6 +128,7 @@ namespace PepperDash.Essentials
 			}
 
             // CODEC TESTING
+            /*
             try
             {
                 GenericSshClient TestCodecClient = new GenericSshClient("TestCodec-1--SshClient", "10.11.50.135", 22, "crestron", "2H3Zu&OvgXp6");
@@ -149,6 +150,7 @@ namespace PepperDash.Essentials
             {
                 Debug.Console(0, "Error in something Neil is working on ;) \r{0}", e);
             }
+            */
             // CODEC TESTING
 		}
 

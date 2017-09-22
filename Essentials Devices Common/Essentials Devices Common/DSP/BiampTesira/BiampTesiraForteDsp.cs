@@ -17,9 +17,9 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 	
 	// Verbose on subscriptions?
 
+    // Example subscription feedback responses
 	// ! "publishToken":"name" "value":-77.0
 	// ! "myLevelName" -77
-
 
     public class BiampTesiraForteDsp : DspBase
     {

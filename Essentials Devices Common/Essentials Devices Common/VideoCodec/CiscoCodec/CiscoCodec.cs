@@ -149,7 +149,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         int PresentationSource;
 
-        string PhoneBookMode;
+        string PhonebookMode = "Local"; // Default to Local
+
+        int PhonebookResultsLimit = 255; // Could be set later by config.
 
         // Constructor for IBasicCommunication
         public CiscoCodec(string key, string name, IBasicCommunication comm, CiscoCodecPropertiesConfig props )
@@ -173,7 +175,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             DeviceManager.AddDevice(CommunicationMonitor);
 
-            PhoneBookMode = props.PhonebookMode;
+            PhonebookMode = props.PhonebookMode;
 
             SyncState = new CodecSyncState(key + "--sync");
 
@@ -218,7 +220,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             //SendText("xCommand Bookings List Days: 1 DayOffset: 0");
 
             // Get Phonebook (determine local/corporate from config, and set results limit)
-            //SendText("xCommand Phonebook Search PhonebookType: {0} ContactType: Folder Limit: {0}", PhonebookType, PhonebookResultsLimit);
+            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Folder Limit: {1}", PhonebookMode, PhonebookResultsLimit));
         }
 
         /// <summary>
@@ -236,6 +238,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 socket.ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
             }
+
+            CommunicationMonitor.Start();
 
             InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this));
             InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource2), this));
@@ -503,7 +507,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-
         /// <summary>
         /// Evaluates an event received from the codec
         /// </summary>
@@ -533,8 +536,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             (selector as Action)();
         }
-
-        //protected Func<bool> InCallFeedbackFunc { get { return () => false; } }
 
         protected override Func<bool> IncomingCallFeedbackFunc { get { return () => false; } }
 
