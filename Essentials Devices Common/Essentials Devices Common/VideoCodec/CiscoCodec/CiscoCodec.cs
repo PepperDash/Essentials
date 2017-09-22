@@ -19,10 +19,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 
-    public class CiscoCodec : VideoCodecBase, IHasCallHistory
+    public class CiscoCodec : VideoCodecBase, IHasCallHistory, iHasCallFavorites
     {
-        public event EventHandler<EventArgs> RecentCallsListHasChanged;
-
         public IBasicCommunication Communication { get; private set; }
         public CommunicationGather PortGather { get; private set; }
         public CommunicationGather JsonGather { get; private set; }
@@ -37,19 +35,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public BoolFeedback SpeakerTrackIsOnFeedback { get; private set; }
 
-        private CiscoOneButtonToPush CodecObtp;
+        //private CiscoOneButtonToPush CodecObtp;
 
-        private Corporate_Phone_Book PhoneBook;
+        //private Corporate_Phone_Book PhoneBook;
 
         private CiscoCodecConfiguration.RootObject CodecConfiguration;
 
         private CiscoCodecStatus.RootObject CodecStatus;
 
-        private CiscoCallHistory.RootObject CodecCallHistory;
+        public CodecCallHistory CallHistory { get; private set; }
 
-        public List<CallHistory.CallHistoryEntry> RecentCalls { get; private set; }
-
-        //private CiscoCodecEvents.RootObject CodecEvent;
+        public CodecCallFavorites CallFavorites { get; private set; }
 
         /// <summary>
         /// Gets and returns the scaled volume of the codec
@@ -122,10 +118,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        protected override Func<int> ActiveCallCountFeedbackFunc
-        {
-            get { return () => ActiveCalls.Count; }
-        }
+        //protected override Func<int> ActiveCallCountFeedbackFunc
+        //{
+        //    get { return () => ActiveCalls.Count; }
+        //}
 
         //private HttpsClient Client;
 
@@ -147,14 +143,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         private bool JsonFeedbackMessageIsIncoming;
 
+        public bool CommDebuggingIsOn;
+
         string Delimiter = "\r\n";
 
         int PresentationSource;
 
-        public bool CommDebuggingIsOn;
+        string PhoneBookMode;
 
         // Constructor for IBasicCommunication
-        public CiscoCodec(string key, string name, IBasicCommunication comm, int serverPort)
+        public CiscoCodec(string key, string name, IBasicCommunication comm, CiscoCodecPropertiesConfig props )
             : base(key, name)
         {
             StandbyIsOnFeedback = new BoolFeedback(StandbyStateFeedbackFunc);
@@ -162,8 +160,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             PeopleCountFeedback = new IntFeedback(PeopleCountFeedbackFunc);
             SpeakerTrackIsOnFeedback = new BoolFeedback(SpeakerTrackIsOnFeedbackFunc);
 
-
             Communication = comm;
+
+            if (props.CommunicationMonitorProperties != null)
+            {
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, props.CommunicationMonitorProperties);
+            }
+            else
+            {
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 2000, 120000, 300000, "xStatus SystemUnit Software Version\r");
+            }
+
+            DeviceManager.AddDevice(CommunicationMonitor);
+
+            PhoneBookMode = props.PhonebookMode;
 
             SyncState = new CodecSyncState(key + "--sync");
 
@@ -173,16 +183,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             PortGather.IncludeDelimiter = true;
             PortGather.LineReceived += this.Port_LineReceived;
 
-            CodecObtp = new CiscoOneButtonToPush();
+            //CodecObtp = new CiscoOneButtonToPush();
 
-            PhoneBook = new Corporate_Phone_Book();
+            //PhoneBook = new Corporate_Phone_Book();
 
             CodecConfiguration = new CiscoCodecConfiguration.RootObject();
-
             CodecStatus = new CiscoCodecStatus.RootObject();
 
-            CodecCallHistory = new CiscoCallHistory.RootObject();
+            CallHistory = new CodecCallHistory();
+
+            CallFavorites = new CodecCallFavorites();
+            CallFavorites.Favorites = props.Favorites;
  
+            //Set Feedback Actions
             CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
             CodecStatus.Status.Audio.VolumeMute.ValueChangedAction = MuteFeedback.FireUpdate;
             CodecStatus.Status.Audio.Microphones.Mute.ValueChangedAction = PrivacyModeIsOnFeedback.FireUpdate;
@@ -190,12 +203,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.RoomAnalytics.PeoplePresence.ValueChangedAction = RoomIsOccupiedFeedback.FireUpdate;
             CodecStatus.Status.RoomAnalytics.PeopleCount.Current.ValueChangedAction = PeopleCountFeedback.FireUpdate;
             CodecStatus.Status.Cameras.SpeakerTrack.Status.ValueChangedAction = SpeakerTrackIsOnFeedback.FireUpdate;
-
-            //ServerPort = serverPort;
-
-            //Client = new HttpsClient();
-
-            //Server = new HttpApiServer();      
         }
 
         /// <summary>
@@ -205,7 +212,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="e"></param>
         void SyncState_InitialSyncCompleted(object sender, EventArgs e)
         {
-            SendText("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
+            GetCallHistory();
 
             // Get bookings for the day
             //SendText("xCommand Bookings List Days: 1 DayOffset: 0");
@@ -223,8 +230,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CrestronConsole.AddNewConsoleCommand(SendText, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(SetCommDebug, "SetCiscoCommDebug", "0 for Off, 1 for on", ConsoleAccessLevelEnum.AccessOperator);
 
-            
-
             Communication.Connect();
             var socket = Communication as ISocketStatus;
             if (socket != null)
@@ -235,37 +240,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this));
             InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource2), this));
 
-            //Debug.Console(1, this, "Starting Cisco API Server");
+            string prefix = "xFeedback register ";
 
-            //Server.Start(ServerPort);
-
-            //Server.ApiRequest += new EventHandler<Crestron.SimplSharp.Net.Http.OnHttpRequestArgs>(Server_ApiRequest);
-
-            //CodecUrl = string.Format("http://{0}", (Communication as GenericSshClient).Hostname);
-
-            CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 2000, 120000, 300000, "xStatus SystemUnit Software Version\r");
-            DeviceManager.AddDevice(CommunicationMonitor);
-
-            //Client = new HttpsClient();
-
-            //Client.Verbose = true;
-            //Client.KeepAlive = true;
-
-
-            // Temp feedback registration
-
-            //FeedbackRegistrationExpression =
-            //    "<Command><HttpFeedback><Register command=\"True\"><FeedbackSlot>1</FeedbackSlot>" +
-            //    string.Format("<ServerUrl>http://{0}:{1}/cisco/api</ServerUrl>", CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0), ServerPort) +
-            //    "<Format>JSON</Format>" +
-            //    "<Expression item=\"1\">/Configuration</Expression>" +
-            //    "<Expression item=\"2\">/Event/CallDisconnect</Expression>" +
-            //    "<Expression item=\"3\">/Status/Call</Expression>" +
-            //    "</Register>" +
-            //    "</HttpFeedback>" +
-            //    "</Command>";
-
-                string prefix = "xFeedback register ";
             CliFeedbackRegistrationExpression =
                 prefix + "/Configuration" + Delimiter +
                 prefix + "/Status/Audio" + Delimiter +
@@ -276,15 +252,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Standby" + Delimiter +
                 prefix + "/Status/Video/Selfview" + Delimiter +
                 prefix + "/Bookings" + Delimiter +
-                prefix + "/Event/CallDisconnect" + Delimiter;
-
-            //StartHttpsSession();
-
-            //CodecObtp.Initialize();
-
-            //CodecObtp.GetMeetings();
-
-            //PhoneBook.DownloadPhoneBook(Corporate_Phone_Book.ePhoneBookLocation.Corporate);         
+                prefix + "/Event/CallDisconnect" + Delimiter;        
 
             return base.CustomActivate();
         }
@@ -305,7 +273,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
         {
-            // Reset sync status on disconnect
             if (!e.Client.IsConnected)
                 SyncState.CodecDisconnected();
         }
@@ -388,167 +355,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             Communication.SendText(command + Delimiter);
         }
 
-        //private void StartHttpsSession()
-        //{
-        //    SendHttpCommand("", eCommandType.SessionStart);
-        //}
-
-        //private void EndHttpsSession()
-        //{
-        //    SendHttpCommand("", eCommandType.SessionEnd);
-        //}
-
-        //private void SendHttpCommand(string command, eCommandType commandType)
-        //{
-        //    //HttpsClientRequest request = new HttpsClientRequest();
-
-        //    //string urlSuffix = null;
-
-        //    //Client.UserName = null;
-        //    //Client.Password = null;
-
-        //    //Client.PeerVerification = false;
-        //    //Client.HostVerification = false;
-
-        //    //request.RequestType = RequestType.Post;
-
-        //    //if(!string.IsNullOrEmpty(HttpSessionId))
-        //    //    request.Header.SetHeaderValue("Cookie", HttpSessionId);
-
-        //    //switch (commandType)
-        //    //{
-        //    //    case eCommandType.Command:
-        //    //        {
-        //    //            urlSuffix = "/putxml";
-        //    //            request.ContentString = command;
-        //    //            request.Header.SetHeaderValue("Content-Type", "text/xml");
-        //    //            break;
-        //    //        }
-        //    //    case eCommandType.SessionStart:
-        //    //        {
-                        
-        //    //            urlSuffix = "/xmlapi/session/begin";
-
-        //    //            Client.UserName = (Communication as GenericSshClient).Username;
-        //    //            Client.Password = (Communication as GenericSshClient).Password;
-
-        //    //            break;
-        //    //        }
-        //    //    case eCommandType.SessionEnd:
-        //    //        {
-        //    //            urlSuffix = "/xmlapi/session/end";
-        //    //            request.Header.SetHeaderValue("Cookie", HttpSessionId);
-        //    //            break;
-        //    //        }
-        //    //    case eCommandType.GetStatus:
-        //    //        {
-        //    //            request.RequestType = RequestType.Get;
-        //    //            request.Header.SetHeaderValue("Content-Type", "text/xml");
-        //    //            urlSuffix = "/getxml?location=/Status";
-        //    //            break;
-        //    //        }
-        //    //    case eCommandType.GetConfiguration:
-        //    //        {
-        //    //            request.RequestType = RequestType.Get;
-        //    //            request.Header.SetHeaderValue("Content-Type", "text/xml");
-        //    //            urlSuffix = "/getxml?location=/Configuration";
-        //    //            break;
-        //    //        }
-        //    //}
-
-        //    //var requestUrl = CodecUrl + urlSuffix;
-        //    //request.Header.RequestVersion = "HTTP/1.1";
-        //    //request.Url.Parse(requestUrl);
-
-        //    //Debug.Console(1, this, "Sending HTTP request to Cisco Codec at {0}\nHeader:\n{1}\nContent:\n{2}", requestUrl, request.Header, request.ContentString);
-
-        //    //Client.DispatchAsync(request, PostConnectionCallback);
-        //}
-
-        //void PostConnectionCallback(HttpsClientResponse resp, HTTPS_CALLBACK_ERROR err)
-        //{
-        //    //try
-        //    //{
-        //    //    if (resp != null)
-        //    //    {
-        //    //        if (resp.Code == 200)
-        //    //        {
-        //    //            Debug.Console(1, this, "Http Post to Cisco Codec Successful. Code: {0}\nContent: {1}", resp.Code, resp.ContentString);
-
-        //    //            if (resp.ContentString.IndexOf("<HttpFeedbackRegisterResult status=\"OK\">") > 1)
-        //    //            {
-        //    //                // Get the initial configruation for sync purposes
-        //    //                SendHttpCommand("", eCommandType.GetConfiguration);
-        //    //            }
-        //    //            else
-        //    //            {
-        //    //                try
-        //    //                {                               
-        //    //                    if (resp.ContentString.IndexOf("</Configuration>") > -1)
-        //    //                    {
-        //    //                        XmlReaderSettings settings = new XmlReaderSettings();
-
-        //    //                        XmlReader reader = new XmlReader(resp.ContentString, settings);
-
-        //    //                        CodecConfiguration = CrestronXMLSerialization.DeSerializeObject<CiscoCodecConfiguration.RootObject>(reader);
-
-        //    //                        //Debug.Console(1, this, "Product Name: {0} Software Version: {1} ApiVersion: {2}", CodecConfiguration.Configuration.Product, CodecConfiguration.Version, CodecConfiguration.ApiVersion);
-
-        //    //                        // Get the initial status for sync purposes
-        //    //                        SendHttpCommand("", eCommandType.GetStatus);
-        //    //                    }
-        //    //                    else if (resp.ContentString.IndexOf("</Status>") > -1)
-        //    //                    {
-        //    //                        XmlReaderSettings settings = new XmlReaderSettings();
-
-        //    //                        XmlReader reader = new XmlReader(resp.ContentString, settings);
-
-        //    //                        CodecStatus = CrestronXMLSerialization.DeSerializeObject<CiscoCodecStatus.RootObject>(reader);
-        //    //                        //Debug.Console(1, this, "Product Name: {0} Software Version: {1} ApiVersion: {2} Volume: {3}", CodecStatus.Product, CodecStatus.Version, CodecStatus.ApiVersion, CodecStatus.Audio.Volume);
-        //    //                    }
-        //    //                }
-        //    //                catch (Exception ex)
-        //    //                {
-        //    //                    Debug.Console(1, this, "Error Deserializing XML document from codec: {0}", ex);
-        //    //                }
-        //    //            }
-        //    //        }
-        //    //        else if (resp.Code == 204)
-        //    //        {
-        //    //            Debug.Console(1, this, "Response Code: {0}\nHeader:\n{1}Content:\n{1}", resp.Code, resp.Header, resp.ContentString);
-
-        //    //            HttpSessionId = resp.Header.GetHeaderValue("Set-Cookie");
-        //    //            //var chunks = HttpSessionId.Split(';');
-        //    //            //HttpSessionId = chunks[0];
-        //    //            //HttpSessionId = HttpSessionId.Substring(HttpSessionId.IndexOf("=") + 1);
-
-
-        //    //            // Register for feedbacks once we have a valid session
-        //    //            SendHttpCommand(FeedbackRegistrationExpression, eCommandType.Command);
-        //    //        }
-        //    //        else
-        //    //        {
-        //    //            Debug.Console(1, this, "Response Code: {0}\nHeader:\n{1}Content:\n{1}Err:\n{2}", resp.Code, resp.Header, resp.ContentString, err);
-        //    //        }
-        //    //    }
-        //    //    else
-        //    //        Debug.Console(1, this, "Null response received from server");
-        //    //}
-        //    //catch (Exception e)
-        //    //{
-        //    //    Debug.Console(1, this, "Error Initializing HTTPS Client: {0}", e);
-        //    //}
-        //}
-
-        //void Server_ApiRequest(object sender, Crestron.SimplSharp.Net.Http.OnHttpRequestArgs e)
-        //{
-        //    Debug.Console(1, this, "Api Reqeust from Codec: {0}", e.Request.ContentString);
-        //    e.Response.Code = 200;
-        //    e.Response.ContentString = "OK";
-
-        //    DeserializeResponse(e.Request.ContentString);        
-        //}
-
         void DeserializeResponse(string response)
         {
             try
@@ -563,59 +369,77 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 {
                     // Status Message
 
+                    // Temp object so we can inpsect for call data before simply deserializing
+                    CiscoCodecStatus.RootObject tempCodecStatus = new CiscoCodecStatus.RootObject();
+
+                    JsonConvert.PopulateObject(response, tempCodecStatus);
+
                     // Check to see if this is a call status message received after the initial status message
-                    if(SyncState.InitialStatusMessageWasReceived && response.IndexOf("\"Call\":{") > -1)
+                    if (tempCodecStatus.Status.Call.Count > 0)
                     {
-                        CiscoCodecStatus.RootObject callStatus = new CiscoCodecStatus.RootObject();
-
-                        JsonConvert.PopulateObject(response, callStatus);
-
                         // Iterate through the call objects in the response
-                        foreach (CiscoCodecStatus.Call call in callStatus.Status.Call)
+                        foreach (CiscoCodecStatus.Call call in tempCodecStatus.Status.Call)
                         {
-                            // Look for a matching call id in the existing status structure
-                            var existingCall = CodecStatus.Status.Call.FirstOrDefault(c => c.id.Equals(call.id));
+                            var tempActiveCall = ActiveCalls.FirstOrDefault(c => c.Id.Equals(call.id));
 
-                            if (existingCall != null)
+                            if (tempActiveCall != null)
                             {
-                                // If an existing call object is found with a matching ID, populate the existing call with the new data. 
-                                // (must reserialize the object so that we can use PopulateObject() to overlay the new or updated properties on the existing object)
-                                JsonConvert.PopulateObject(JsonConvert.SerializeObject(call), existingCall);
+                                // Store previous status to pass to event handler
+                                var previousStatus = tempActiveCall.Status;
 
-                                var tempActiveCall = ActiveCalls.FirstOrDefault(c => c.Id.Equals(call.id));
-
-                                // store previous status to pass to event handler
-                                var previousStatus = tempActiveCall.Status; 
+                                bool changeDetected = false;
 
                                 // Update properties of ActiveCallItem
-                                tempActiveCall.Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value);
-                                tempActiveCall.Type = CodecCallType.ConvertToTypeEnum(call.CallType.Value);
-                                tempActiveCall.Name = call.DisplayName.Value;
+                                if(call.Status != null)
+                                    if (!string.IsNullOrEmpty(call.Status.Value))
+                                    {
+#warning Something here is evaluating as Unknown when the Display Name changes....
+                                        tempActiveCall.Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value);
+                                        changeDetected = true;
+                                        if(tempActiveCall.Status == eCodecCallStatus.Connected)
+                                            GetCallHistory();
+                                    }
+                                if (call.CallType != null)
+                                    if (!string.IsNullOrEmpty(call.CallType.Value))
+                                    {
+                                        tempActiveCall.Type = CodecCallType.ConvertToTypeEnum(call.CallType.Value);
+                                        changeDetected = true;
+                                    }
+                                if (call.DisplayName != null)
+                                    if (!string.IsNullOrEmpty(call.DisplayName.Value))
+                                    {
+                                        tempActiveCall.Name = call.DisplayName.Value;
+                                        changeDetected = true;
+                                    }
 
-                                SetNewCallStatusAndFireCallStatusChange(previousStatus, tempActiveCall);
+                                if (changeDetected)
+                                {
+                                    ListCalls();
+                                    SetNewCallStatusAndFireCallStatusChange(previousStatus, tempActiveCall);
+                                }
                             }
-                            else
+                            else if( call.ghost == null )   // if the ghost value is present the call has ended already
                             {
-                                // Add the call
-                                callStatus.Status.Call.Add(call);
-
-                                var newCallItem = new CodecActiveCallItem() 
-                                { 
-                                    Id = call.id, 
-                                    Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value), 
-                                    Name = call.DisplayName.Value, 
+                                // Create a new call item
+                                var newCallItem = new CodecActiveCallItem()
+                                {
+                                    Id = call.id,
+                                    Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value),
+                                    Name = call.DisplayName.Value,
                                     Number = call.RemoteNumber.Value,
-                                    Type = CodecCallType.ConvertToTypeEnum(call.CallType.Value) 
+                                    Type = CodecCallType.ConvertToTypeEnum(call.CallType.Value)
                                 };
 
-                                // Add a call to the ActiveCalls List
+                                // Add it to the ActiveCalls List
                                 ActiveCalls.Add(newCallItem);
 
-                                SetNewCallStatusAndFireCallStatusChange(newCallItem.Status, newCallItem);
+                                ListCalls();
+
+                                SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Unknown, newCallItem);
                             }
 
-                            // Handle call.status to determine if we need to fire an event notifying of an incoming call or a call disconnect
                         }
+
                     }
 
                     JsonConvert.PopulateObject(response, CodecStatus);
@@ -623,7 +447,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     if (!SyncState.InitialStatusMessageWasReceived)
                     {
                         SyncState.InitialStatusMessageReceived();
-                        if(!SyncState.InitialConfigurationMessageWasReceived)
+                        if (!SyncState.InitialConfigurationMessageWasReceived)
                             SendText("xConfiguration");
                     }
                 }
@@ -659,20 +483,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                     if (response.IndexOf("\"CallHistoryRecentsResult\":{") > -1)
                     {
-                        JsonConvert.PopulateObject(response, CodecCallHistory);
+                        var codecCallHistory = new CiscoCallHistory.RootObject();
 
-                        RecentCalls = CallHistory.ConvertCiscoCallHistoryToGeneric(CodecCallHistory.CommandResponse.CallHistoryRecentsResult.Entry);
+                        JsonConvert.PopulateObject(response, codecCallHistory);
 
-                        if (Debug.Level == 1)
-                        {
-                            
-                            Debug.Console(1, this, "RecentCalls:\n");
-
-                            foreach (CallHistory.CallHistoryEntry entry in RecentCalls)
-                            {
-                                Debug.Console(1, this, "\nName: {0}\nNumber: {1}\nStartTime: {2}\nType: {3}\n", entry.Name, entry.Number, entry.StartTime.ToString(), entry.OccurenceType);
-                            }
-                        }
+                        CallHistory.ConvertCiscoCallHistoryToGeneric(codecCallHistory.CommandResponse.CallHistoryRecentsResult.Entry);                       
+                    }
+                    else if (response.IndexOf("\"CallHistoryDeleteEntryResult\":{") > -1)
+                    {
+                        GetCallHistory();
                     }
 
                 }
@@ -693,21 +512,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (eventReceived.Event.CallDisconnect != null)
             {
-                var tempCall = CodecStatus.Status.Call.FirstOrDefault(c => c.id.Equals(eventReceived.Event.CallDisconnect.CallId.Value));
+                var tempActiveCall = ActiveCalls.FirstOrDefault(c => c.Id.Equals(eventReceived.Event.CallDisconnect.CallId.Value));
 
-                if(tempCall != null)
+                // Remove the call from the Active calls list
+                if (tempActiveCall != null)
                 {
-                    // Remove the call from the xStatus object
-                    CodecStatus.Status.Call.Remove(tempCall);
+                    ActiveCalls.Remove(tempActiveCall);
 
-                    var tempActiveCall = ActiveCalls.FirstOrDefault(c => c.Id.Equals(eventReceived.Event.CallDisconnect.CallId.Value));
-
-                    // Remove the call from the Active calls list
-                    if (tempActiveCall != null)
-                        ActiveCalls.Remove(tempActiveCall);
+                    ListCalls();
 
                     // Notify of the call disconnection
                     SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, tempActiveCall);
+
+                    GetCallHistory();
                 }
             }
         }
@@ -734,6 +551,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             return callId;
 
+        }
+
+        private void GetCallHistory()
+        {
+            SendText("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
         }
 
         public override void  Dial(string s)
@@ -904,15 +726,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SendText("xCommand SystemUnit Boot Action: Restart");
         }
 
-        public void RemoveEntry(CallHistory.CallHistoryEntry entry)
+        public void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry)
         {
-            if (RecentCalls != null)
-            {
-                RecentCalls.Remove(entry);
-            }
+            SendText(string.Format("xCommand CallHistory DeleteEntry CallHistoryId: {0} AcknowledgeConsecutiveDuplicates: True", entry.OccurrenceHistoryId));
         }
-
-
     }
 
     /// <summary>

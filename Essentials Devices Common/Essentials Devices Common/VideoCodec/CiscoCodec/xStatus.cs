@@ -1682,6 +1682,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Duration Duration { get; set; }
             public Encryption Encryption { get; set; }
             public FacilityServiceId FacilityServiceId { get; set; }
+            public string ghost { get; set; }
             public HoldReason HoldReason { get; set; }
             public PlacedOnHold PlacedOnHold { get; set; }
             public Protocol Protocol { get; set; }

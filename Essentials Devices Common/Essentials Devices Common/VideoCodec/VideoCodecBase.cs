@@ -157,10 +157,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public virtual void ListCalls()
         {
+            Debug.Console(1, this, "Active Calls List:\n");
             var sb = new StringBuilder();
             foreach (var c in ActiveCalls)
                 sb.AppendFormat("{0} {1} -- {2} {3}\r", c.Id, c.Number, c.Name, c.Status);
-            Debug.Console(1, "{0}", sb.ToString());
+            Debug.Console(1, this, "{0}", sb.ToString());
         }
     }
 

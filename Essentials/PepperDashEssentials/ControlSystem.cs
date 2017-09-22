@@ -132,8 +132,14 @@ namespace PepperDash.Essentials
             {
                 GenericSshClient TestCodecClient = new GenericSshClient("TestCodec-1--SshClient", "10.11.50.135", 22, "crestron", "2H3Zu&OvgXp6");
 
+                var props = new PepperDash.Essentials.Devices.Common.Codec.CiscoCodecPropertiesConfig();
+
+                props.PhonebookMode = "Local";
+                props.Favorites = new System.Collections.Generic.List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem>();
+                props.Favorites.Add(new PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem() { Name = "NYU Cisco Webex", Number = "10.11.50.211" });
+
                 PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodec TestCodec =
-                    new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodec("TestCodec-1", "Cisco Spark Room Kit", TestCodecClient, 8080);
+                    new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodec("TestCodec-1", "Cisco Spark Room Kit", TestCodecClient, props);
 
                 TestCodec.CommDebuggingIsOn = true;
 

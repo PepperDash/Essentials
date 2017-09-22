@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using PepperDash.Core;
+
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
     public interface IHasCallHistory
     {
-        event EventHandler<EventArgs> RecentCallsListHasChanged;
+        CodecCallHistory CallHistory { get; }
 
-        List<CallHistory.CallHistoryEntry> RecentCalls { get; }
-
-        void RemoveEntry(CallHistory.CallHistoryEntry entry);
+        void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry);
     }
 
     public enum eCodecOccurrenctType
@@ -23,8 +23,54 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         NoAnswer
     }
 
-    public class CallHistory
+    /// <summary>
+    /// Represents the recent call history for a codec device
+    /// </summary>
+    public class CodecCallHistory
     {
+        event EventHandler<EventArgs> RecentCallsListHasChanged;
+
+        public List<CallHistoryEntry> RecentCalls { get; private set; }
+
+        /// <summary>
+        /// Item that gets added to the list when there are no recent calls in history
+        /// </summary>
+        CallHistoryEntry ListEmptyEntry;
+
+        public CodecCallHistory()
+        {
+            ListEmptyEntry = new CallHistoryEntry() { Name = "No Recent Calls" };
+
+            RecentCalls = new List<CallHistoryEntry>();
+
+            RecentCalls.Add(ListEmptyEntry);
+        }
+
+        void OnRecentCallsListChange()
+        {
+            var handler = RecentCallsListHasChanged;
+            if (handler != null)
+            {
+                handler(this, new EventArgs());
+
+                if (Debug.Level == 1)
+                {
+                    
+                    Debug.Console(1, "RecentCalls:\n");
+
+                    foreach (CodecCallHistory.CallHistoryEntry entry in RecentCalls)
+                    {
+                        Debug.Console(1, "\nName: {0}\nNumber: {1}\nStartTime: {2}\nType: {3}\n", entry.Name, entry.Number, entry.StartTime.ToString(), entry.OccurenceType);
+                    }
+                }
+            }
+        }
+
+        public void RemoveEntry(CallHistoryEntry entry)
+        {
+            RecentCalls.Remove(entry);
+            OnRecentCallsListChange();
+        }
 
         /// <summary>
         /// Generic call history entry, not device specific
@@ -41,7 +87,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// </summary>
         /// <param name="entries"></param>
         /// <returns></returns>
-        public static List<CallHistoryEntry> ConvertCiscoCallHistoryToGeneric(List<CiscoCallHistory.Entry> entries)
+        public void ConvertCiscoCallHistoryToGeneric(List<CiscoCallHistory.Entry> entries)
         {
             var genericEntries = new List<CallHistoryEntry>();
 
@@ -57,15 +103,19 @@ namespace PepperDash.Essentials.Devices.Common.Codec
                 });
             }
 
-            return genericEntries;
+            // Check if list is empty and if so, add an item to display No Recent Calls
+            if(genericEntries.Count == 0)
+                genericEntries.Add(ListEmptyEntry);
 
+            RecentCalls = genericEntries;
+            OnRecentCallsListChange();
         }
 
         /// <summary>
         /// Takes the Cisco occurence type and converts it to the matching enum
         /// </summary>
         /// <param name="s"></para
-        public static eCodecOccurrenctType ConvertToOccurenceTypeEnum(string s)
+        public eCodecOccurrenctType ConvertToOccurenceTypeEnum(string s)
         {
             switch (s)
             {
@@ -88,9 +138,6 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         }
 
     }
-
-
-
 
     public class CiscoCallHistory
     {
