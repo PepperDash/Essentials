@@ -14,11 +14,19 @@ namespace PepperDash.Essentials
 	public class UIStringJoin
 	{
         //******************************************************
+        // Codec
+        /// <summary>
+        /// 1001
+        /// </summary>
+        public const uint CodecAddressEntryText = 1001;
+
+
+        //******************************************************
         // Keyboard
         /// <summary>
         /// 1901
         /// </summary>
-        public const uint KeyboardText = 2901;
+        //public const uint KeypadText = 2901;
 
         /// <summary>
         /// 3812

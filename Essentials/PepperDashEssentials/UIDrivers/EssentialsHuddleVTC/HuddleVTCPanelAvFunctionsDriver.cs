@@ -86,11 +86,6 @@ namespace PepperDash.Essentials
         SubpageReferenceList ActivityFooterSrl;
 
         /// <summary>
-        /// Tracks which audio page group the UI is in
-        /// </summary>
-        UiDisplayMode CurrentDisplayMode;
-
-        /// <summary>
         /// The AV page mangagers that have been used, to keep them alive for later
         /// </summary>
         Dictionary<object, PageManager> PageManagers = new Dictionary<object, PageManager>();

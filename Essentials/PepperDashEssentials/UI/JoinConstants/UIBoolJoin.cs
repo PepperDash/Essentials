@@ -164,6 +164,18 @@ namespace PepperDash.Essentials
         /// 1236
         /// </summary>
         public const uint VCStagingConnectEnable = 1236;
+        /// <summary>
+        /// 1237 - When the user touches the text field, should trigger keyboard
+        /// </summary>
+        public const uint VCKeypadTextPress = 1237;
+        /// <summary>
+        /// 1238
+        /// </summary>
+        public const uint VCKeypadBackspacePress = 1238;
+        /// <summary>
+        /// 1239
+        /// </summary>
+        public const uint VCKeypadBackspaceVisible = 1239;
 
         //******************************************************
         // Keyboard
@@ -183,16 +195,14 @@ namespace PepperDash.Essentials
         /// 2904
         /// </summary>
         public const uint KeyboardButton2Press = 2904;
-
-
         /// <summary>
         /// 2910
         /// </summary>
-        public const uint KeyboardClearPress = 2910;
+        //public const uint KeyboardClearPress = 2910;
         /// <summary>
         /// 2911
         /// </summary>
-        public const uint KeyboardClearVisible = 2911;
+        //public const uint KeyboardClearVisible = 2911;
 
         // Letter joins start at 2921;
 

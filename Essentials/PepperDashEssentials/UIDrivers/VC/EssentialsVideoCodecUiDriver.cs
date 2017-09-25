@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 
@@ -9,6 +10,7 @@ using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
+using PepperDash.Essentials.Core.Touchpanels.Keyboards;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
@@ -30,12 +32,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// 
         /// </summary>
         VideoCodecBase Codec;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        SmartObjectDynamicList DirectorySrl; // ***************** SRL ???
-
 
         /// <summary>
         /// To drive UI elements outside of this driver that may be dependent on this.
@@ -90,10 +86,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
             InCall = new BoolFeedback(() => false);
             LocalPrivacyIsMuted = new BoolFeedback(() => false);
 
-            //DirectorySrl = new SubpageReferenceList(triList, UISmartObjectJoin.VCDirectoryList, 3, 3, 3);
-
             VCControlsInterlock = new JoinedSigInterlock(triList);
-            VCControlsInterlock.SetButDontShow(UIBoolJoin.VCDirectoryVisible);
+            VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadVisible);
 
             StagingBarInterlock = new JoinedSigInterlock(triList);
             StagingBarInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverVisible);
@@ -101,13 +95,22 @@ namespace PepperDash.Essentials.UIDrivers.VC
             StagingButtonFeedbackInterlock = new JoinedSigInterlock(triList);
             StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCRecentsVisible);
 
-            DialStringFeedback = new StringFeedback(() => DialStringBuilder.ToString());
-            DialStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.KeyboardText]);
+            // Return formatted when dialing, straight digits when in call
+            DialStringFeedback = new StringFeedback(() => 
+            {
+                if (KeypadMode == eKeypadMode.Dial)
+                    return GetFormattedDialString(DialStringBuilder.ToString());
+                else
+                    return DialStringBuilder.ToString();
+
+            });
+            DialStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecAddressEntryText]);
 
             DialStringBackspaceVisibleFeedback = new BoolFeedback(() => DialStringBuilder.Length > 0);
             DialStringBackspaceVisibleFeedback
-                .LinkInputSig(TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible]);
+                .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCKeypadBackspaceVisible]);
 
+            TriList.SetSigFalseAction(UIBoolJoin.VCKeypadTextPress, RevealKeyboard);
         }
 
         /// <summary>
@@ -127,7 +130,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     KeypadMode = eKeypadMode.DTMF;
                     DialStringBuilder.Remove(0, DialStringBuilder.Length);
                     DialStringFeedback.FireUpdate();
-                    TriList.SetBool(UIBoolJoin.KeyboardClearVisible, false);
+                    TriList.SetBool(UIBoolJoin.VCKeypadBackspaceVisible, false);
                     break;
                 case eCodecCallStatus.Connecting:
                     // fire at SRL item
@@ -297,11 +300,56 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 DialKeypad.Misc1.SetSigFalseAction(() => DialKeypadPress("*"));
                 DialKeypad.Misc2SigName = "#";
                 DialKeypad.Misc2.SetSigFalseAction(() => DialKeypadPress("#"));
-                TriList.SetSigFalseAction(UIBoolJoin.KeyboardClearPress, DialKeypadBackspacePress);
+                TriList.SetSigFalseAction(UIBoolJoin.VCKeypadBackspacePress, DialKeypadBackspacePress);
             }
             else
                 Debug.Console(0, "Trilist {0:x2}, VC dial keypad object {1} not found. Check SGD file or VTP",
                     TriList.ID, UISmartObjectJoin.VCDialKeypad);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void RevealKeyboard()
+        {
+            if (KeypadMode == eKeypadMode.Dial)
+            {
+                var kb = Parent.Keyboard;
+                kb.KeyPress += new EventHandler<PepperDash.Essentials.Core.Touchpanels.Keyboards.KeyboardControllerPressEventArgs>(Keyboard_KeyPress);
+                kb.HideAction = this.DetachKeyboard;
+                kb.GoButtonText = "Connect";
+                kb.GoButtonVisible = true;
+                DialStringKeypadCheckEnables();
+                kb.Show();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void Keyboard_KeyPress(object sender, PepperDash.Essentials.Core.Touchpanels.Keyboards.KeyboardControllerPressEventArgs e)
+        {
+            if (e.Text != null)
+                DialStringBuilder.Append(e.Text);
+            else
+            {
+                if (e.SpecialKey == KeyboardSpecialKey.Backspace)
+                    DialKeypadBackspacePress();
+                else if (e.SpecialKey == KeyboardSpecialKey.Clear)
+                    DialKeypadClear();
+                else if (e.SpecialKey == KeyboardSpecialKey.GoButton)
+                {
+                    ConnectPress();
+                    Parent.Keyboard.Hide();
+                }
+            }
+            DialStringFeedback.FireUpdate();
+            DialStringKeypadCheckEnables();
+        }
+
+        void DetachKeyboard()
+        {
+            Parent.Keyboard.KeyPress -= Keyboard_KeyPress;
         }
 
         /// <summary>
@@ -371,8 +419,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             {
                 DialStringBuilder.Append(i);
                 DialStringFeedback.FireUpdate();
-                TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible].BoolValue =
-                    DialStringBuilder.Length > 0;
+                DialStringKeypadCheckEnables();
             }
             else
             {
@@ -390,9 +437,54 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             DialStringBuilder.Remove(DialStringBuilder.Length - 1, 1);
             DialStringFeedback.FireUpdate();
-            TriList.BooleanInput[UIBoolJoin.KeyboardClearVisible].BoolValue =
-                DialStringBuilder.Length > 0;
-            TriList.SetBool(UIBoolJoin.VCStagingConnectEnable, DialStringBuilder.Length > 0);
+            DialStringKeypadCheckEnables();
+        }
+
+        /// <summary>
+        /// Clears the dial keypad
+        /// </summary>
+        void DialKeypadClear()
+        {
+            DialStringBuilder.Remove(0, DialStringBuilder.Length);
+            DialStringFeedback.FireUpdate();
+            DialStringKeypadCheckEnables();
+        }
+
+        /// <summary>
+        /// Checks the enabled states of various elements around the keypad
+        /// </summary>
+        void DialStringKeypadCheckEnables()
+        {
+            var textIsEntered = DialStringBuilder.Length > 0;
+            TriList.SetBool(UIBoolJoin.VCKeypadBackspaceVisible, textIsEntered);
+            TriList.SetBool(UIBoolJoin.VCStagingConnectEnable, textIsEntered);
+            if (textIsEntered)
+                Parent.Keyboard.EnableGoButton();
+            else
+                Parent.Keyboard.DisableGoButton();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        string GetFormattedDialString(string ds)
+        {               
+            if(Regex.Match(ds, @"^\d{4,7}$").Success) // 456-7890
+                return string.Format("{0}-{1}", ds.Substring(0, 3), ds.Substring(3));
+            if (Regex.Match(ds, @"^9\d{4,7}$").Success) // 456-7890
+                return string.Format("9 {0}-{1}", ds.Substring(1, 3), ds.Substring(4));
+            if (Regex.Match(ds, @"^\d{8,10}$").Success) // 123-456-78
+                return string.Format("({0}) {1}-{2}", ds.Substring(0, 3), ds.Substring(3, 3), ds.Substring(6));
+            if (Regex.Match(ds, @"^\d{10}$").Success) // 123-456-7890 full
+                return string.Format("({0}) {1}-{2}", ds.Substring(0, 3), ds.Substring(3, 3), ds.Substring(6));
+            if (Regex.Match(ds, @"^1\d{10}$").Success)
+                return string.Format("+1 ({0}) {1}-{2}", ds.Substring(1, 3), ds.Substring(4, 3), ds.Substring(7));
+            if (Regex.Match(ds, @"^9\d{10}$").Success)
+                return string.Format("9 ({0}) {1}-{2}", ds.Substring(1, 3), ds.Substring(4, 3), ds.Substring(7));
+            if (Regex.Match(ds, @"^91\d{10}$").Success)
+                return string.Format("9 +1 ({0}) {1}-{2}", ds.Substring(2, 3), ds.Substring(5, 3), ds.Substring(8));
+            return ds;
         }
 
         enum eKeypadMode
