@@ -545,6 +545,10 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint HeaderActiveCallsListVisible = 15066;
         /// <summary>
+        /// 15067
+        /// </summary>
+        public const uint NotificationRibbonVisible = 15067;
+        /// <summary>
         /// 15083 - Press for Call help desk on AC/VC
         /// </summary>
         public const uint HelpPageShowCallButtonPress = 15083;

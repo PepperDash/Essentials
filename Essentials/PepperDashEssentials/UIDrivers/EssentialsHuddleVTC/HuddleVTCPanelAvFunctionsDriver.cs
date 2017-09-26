@@ -125,6 +125,8 @@ namespace PepperDash.Essentials
 
         PepperDash.Essentials.UIDrivers.VC.EssentialsVideoCodecUiDriver VCDriver;
 
+        CTimer RibbonTimer;
+
         public PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; private set; }
 
         /// <summary>
@@ -340,6 +342,39 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
             base.Hide();
+        }
+
+        /// <summary>
+        /// Reveals a message on the notification ribbon until cleared
+        /// </summary>
+        /// <param name="message">Text to display</param>
+        /// <param name="timeout">Time in ms to display. 0 to keep on screen</param>
+        public void ShowNotificationRibbon(string message, int timeout)
+        {
+            TriList.SetString(UIStringJoin.NotificationRibbonText, message);
+            TriList.SetBool(UIBoolJoin.NotificationRibbonVisible, true);
+            if (timeout > 0)
+            {
+                if (RibbonTimer != null)
+                    RibbonTimer.Stop();
+                RibbonTimer = new CTimer(o => {
+                    TriList.SetBool(UIBoolJoin.NotificationRibbonVisible, false);
+                    RibbonTimer = null;
+                }, timeout);
+            }
+        }
+
+        /// <summary>
+        /// Hides the notification ribbon
+        /// </summary>
+        public void HideNotificationRibbon()
+        {
+            TriList.SetBool(UIBoolJoin.NotificationRibbonVisible, false);
+            if (RibbonTimer != null)
+            {
+                RibbonTimer.Stop();
+                RibbonTimer = null;
+            }
         }
 
         /// <summary>
@@ -952,5 +987,7 @@ namespace PepperDash.Essentials
     {
         PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; }
         JoinedSigInterlock PopupInterlock { get; }
+        void ShowNotificationRibbon(string message, int timeout);
+        void HideNotificationRibbon();
     }
 }

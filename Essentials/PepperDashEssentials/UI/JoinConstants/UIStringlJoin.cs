@@ -95,6 +95,11 @@ namespace PepperDash.Essentials
         public const uint SourceBackgroundOverlayTitle = 3914;
 
         /// <summary>
+        /// 3915
+        /// </summary>
+        public const uint NotificationRibbonText = 3915;
+
+        /// <summary>
         /// 3922
         /// </summary>
         public const uint HelpMessage = 3922;

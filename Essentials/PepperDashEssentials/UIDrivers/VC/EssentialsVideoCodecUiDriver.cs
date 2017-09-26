@@ -131,13 +131,16 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     DialStringBuilder.Remove(0, DialStringBuilder.Length);
                     DialStringFeedback.FireUpdate();
                     TriList.SetBool(UIBoolJoin.VCKeypadBackspaceVisible, false);
+                    Parent.ShowNotificationRibbon("Connected", 2000);
                     break;
                 case eCodecCallStatus.Connecting:
                     // fire at SRL item
                     Debug.Console(1, "*#* UI: Call Connecting {0}", call.Name);
+                    Parent.ShowNotificationRibbon("Connecting", 0);
                     break;
                 case eCodecCallStatus.Dialing:
                     Debug.Console(1, "*#* UI: Call Dialing {0}", call.Name);
+                    Parent.ShowNotificationRibbon("Dialing", 0);
                     break;
                 case eCodecCallStatus.Disconnected:
                     Debug.Console(1, "*#* UI: Call Disconnecting {0}", call.Name);
@@ -146,6 +149,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                         KeypadMode = eKeypadMode.Dial;
                         DialStringBuilder.Remove(0, DialStringBuilder.Length);
                         DialStringFeedback.FireUpdate();
+                        Parent.ShowNotificationRibbon("Disonnected", 2000);
                     }
                     break;
                 case eCodecCallStatus.Disconnecting:
@@ -243,6 +247,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             VCControlsInterlock.Show();
             StagingBarInterlock.Show();
+            DialStringFeedback.FireUpdate();
             base.Show();
         }
 
@@ -373,24 +378,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
             VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCDirectoryVisible);
             StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingDirectoryPress);
 
-            TriList.SetSigFalseAction(UIBoolJoin.CodecDirectorySearchTextPress, () =>
-                {
-                    var kb = Parent.Keyboard;
-                    kb.OutputFeedback.OutputChange += new EventHandler<EventArgs>(DirectoryKeyboardChange);
-                    kb.HideAction += () =>
-                    {
-                        kb.OutputFeedback.OutputChange -= DirectoryKeyboardChange;
-                    };
-                    
-                });
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void DirectoryKeyboardChange(object sender, EventArgs e)
-        {
-            
         }
 
         void ShowRecents()
@@ -469,7 +456,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         /// <returns></returns>
         string GetFormattedDialString(string ds)
-        {               
+        {
+            if (DialStringBuilder.Length == 0 && !Codec.IsInCall)
+            {
+                return "Dial or touch to enter address";
+            }
             if(Regex.Match(ds, @"^\d{4,7}$").Success) // 456-7890
                 return string.Format("{0}-{1}", ds.Substring(0, 3), ds.Substring(3));
             if (Regex.Match(ds, @"^9\d{4,7}$").Success) // 456-7890
