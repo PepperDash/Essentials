@@ -143,6 +143,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         private CodecSyncState SyncState;
 
+        private CodecPhonebookSyncState PhonebookSyncState; 
+
         private StringBuilder JsonMessage;
 
         private bool JsonFeedbackMessageIsIncoming;
@@ -181,7 +183,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             PhonebookMode = props.PhonebookMode;
 
-            SyncState = new CodecSyncState(key + "--sync");
+            SyncState = new CodecSyncState(key + "--Sync");
+
+            PhonebookSyncState = new CodecPhonebookSyncState(key + "--PhonebookSync");
 
             SyncState.InitialSyncCompleted += new EventHandler<EventArgs>(SyncState_InitialSyncCompleted);
 
@@ -284,7 +288,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
         {
             if (!e.Client.IsConnected)
+            {
                 SyncState.CodecDisconnected();
+                PhonebookSyncState.CodecDisconnected();
+            }
         }
 
         /// <summary>
@@ -507,12 +514,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     {
                         JsonConvert.PopulateObject(response, CodecPhonebook);
 
+                        if (!PhonebookSyncState.InitialPhonebookMessageWasReceived)
+                        {
+                            PhonebookSyncState.InitialPhonebookMessageReceived();
+
+                            PhonebookSyncState.SetPhonebookHasFolders(CodecPhonebook.CommandResponse.PhonebookSearchResult.Folder.Count > 0);
+                        }
+
                         Directory = CiscoCodecPhonebook.ConvertCiscoPhonebookToGeneric(CodecPhonebook.CommandResponse.PhonebookSearchResult);
 
                         if (Debug.Level > 1)
                         {
                             //Print phonebook contents
                         }
+                    }
+                    else if (response.IndexOf("\"BookingsListResult\":{") > -1)
+                    {
+                        var codecBookings = new CiscoCodecBookings.RootObject();
+
+                        JsonConvert.PopulateObject(response, codecBookings);
+
+                        // Do something with this data....
                     }
 
                 }  
@@ -578,7 +600,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         private void GetPhonebook()
         {
-            // Get Phonebook (determine local/corporate from config, and set results limit)
+            // Get Phonebook Folders (determine local/corporate from config, and set results limit)
             SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Folder Limit: {1}", PhonebookMode, PhonebookResultsLimit));
         }
 
@@ -833,5 +855,38 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             else
                 InitialSyncComplete = false;
         }
+    }
+
+    public class CodecPhonebookSyncState : IKeyed
+    {
+        public string Key { get; private set; }
+
+        public bool InitialPhonebookMessageWasReceived { get; private set; }
+
+        public bool PhonebookHasFolders { get; private set; }
+
+        public CodecPhonebookSyncState(string key)
+        {
+            Key = key;
+
+            CodecDisconnected();
+        }
+
+        public void InitialPhonebookMessageReceived()
+        {
+            InitialPhonebookMessageWasReceived = true;
+        }
+
+        public void SetPhonebookHasFolders(bool value)
+        {
+            PhonebookHasFolders = value;
+        }
+
+        public void CodecDisconnected()
+        {
+            InitialPhonebookMessageWasReceived = false;
+            PhonebookHasFolders = false;
+        }
+   
     }
 }
