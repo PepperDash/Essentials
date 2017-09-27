@@ -162,6 +162,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         int PhonebookResultsLimit = 255; // Could be set later by config.
 
+        CTimer LoginMessageReceived;
+
         // Constructor for IBasicCommunication
         public CiscoCodec(string key, string name, IBasicCommunication comm, CiscoCodecPropertiesConfig props )
             : base(key, name)
@@ -172,6 +174,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SpeakerTrackIsOnFeedback = new BoolFeedback(SpeakerTrackIsOnFeedbackFunc);
 
             Communication = comm;
+
+            LoginMessageReceived = new CTimer(DisconnectClientAndReconnect, 5000);
 
             if (props.CommunicationMonitorProperties != null)
             {
@@ -228,7 +232,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             CrestronConsole.AddNewConsoleCommand(SendText, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(SetCommDebug, "SetCiscoCommDebug", "0 for Off, 1 for on", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(GetPhonebook, "GetCodecPhonebook", "Triggers a refresh of the codec phonebook", ConsoleAccessLevelEnum.AccessOperator);
 
+            CommDebuggingIsOn = true;
             Communication.Connect();
             var socket = Communication as ISocketStatus;
             if (socket != null)
@@ -265,12 +271,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="e"></param>
         void SyncState_InitialSyncCompleted(object sender, EventArgs e)
         {
+            CommDebuggingIsOn = false;
+
             GetCallHistory();
 
             // Get bookings for the day
             //SendText("xCommand Bookings List Days: 1 DayOffset: 0");
 
-            GetPhonebookFolders();
+            GetPhonebook(null);
         }
 
         public void SetCommDebug(string s)
@@ -289,11 +297,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
         {
-            if (!e.Client.IsConnected)
+            if (e.Client.IsConnected)
+            {
+                //LoginMessageReceived.Reset();
+            }
+            else
             {
                 SyncState.CodecDisconnected();
                 PhonebookSyncState.CodecDisconnected();
             }
+        }
+
+        void DisconnectClientAndReconnect(object o)
+        {
+            Debug.Console(0, this, "Disconnecting and Reconnecting to codec.");
+
+            Communication.Disconnect();
+
+            CrestronEnvironment.Sleep(2000);
+
+            Communication.Connect();
         }
 
         /// <summary>
@@ -347,6 +370,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 {
                     case "*r login successful":
                         {
+                            //LoginMessageReceived.Stop();
                             SendText("xPreferences outputmode json");
                             break;
                         }
@@ -514,18 +538,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     }
                     else if (response.IndexOf("\"PhonebookSearchResult\":{") > -1)
                     {
-                        var codecPhonebook = new CiscoCodecPhonebook.RootObject();
+                        var codecPhonebookResponse = new CiscoCodecPhonebook.RootObject();
 
-                        if (!PhonebookSyncState.InitialPhonebookMessageWasReceived)
+                        JsonConvert.PopulateObject(response, codecPhonebookResponse);
+
+                        if (!PhonebookSyncState.InitialPhonebookFoldersWasReceived)
                         {
                             // Check if the phonebook has any folders
-                            PhonebookSyncState.InitialPhonebookMessageReceived();
+                            PhonebookSyncState.InitialPhonebookFoldersReceived();
 
-                            PhonebookSyncState.SetPhonebookHasFolders(codecPhonebook.CommandResponse.PhonebookSearchResult.Folder.Count > 0);
+                            PhonebookSyncState.SetPhonebookHasFolders(codecPhonebookResponse.CommandResponse.PhonebookSearchResult.Folder.Count > 0);
 
                             if (PhonebookSyncState.PhonebookHasFolders)
                             {
-                                DirectoryRoot.AddFoldersToDirectory(CiscoCodecPhonebook.GetRootFoldersFromSearchResult(codecPhonebook.CommandResponse.PhonebookSearchResult));
+                                DirectoryRoot.AddFoldersToDirectory(CiscoCodecPhonebook.GetRootFoldersFromSearchResult(codecPhonebookResponse.CommandResponse.PhonebookSearchResult));
                             }
 
                             // Get the number of contacts in the phonebook
@@ -534,18 +560,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         else if (!PhonebookSyncState.NumberOfContactsWasReceived)
                         {
                             // Store the total number of contacts in the phonebook
-                            PhonebookSyncState.SetNumberOfContacts(Int32.Parse(codecPhonebook.CommandResponse.PhonebookSearchResult.ResultInfo.TotalRows.Value));
+                            PhonebookSyncState.SetNumberOfContacts(Int32.Parse(codecPhonebookResponse.CommandResponse.PhonebookSearchResult.ResultInfo.TotalRows.Value));
 
-                            DirectoryRoot.AddContactsToDirectory(CiscoCodecPhonebook.GetRootContactsFromSearchResult(codecPhonebook.CommandResponse.PhonebookSearchResult));
+                            DirectoryRoot.AddContactsToDirectory(CiscoCodecPhonebook.GetRootContactsFromSearchResult(codecPhonebookResponse.CommandResponse.PhonebookSearchResult));
+
+                            PhonebookSyncState.PhonebookRootEntriesReceived();
+
+                            PrintPhonebook(DirectoryRoot);
                         }
                         else if (PhonebookSyncState.InitialSyncComplete)
                         {
-                            JsonConvert.PopulateObject(response, codecPhonebook);
+                            var directoryResults = new CodecDirectory();
 
-                            if (Debug.Level > 1)
-                            {
-                                //Print phonebook contents
-                            }
+                            directoryResults = CiscoCodecPhonebook.ConvertCiscoPhonebookToGeneric(codecPhonebookResponse.CommandResponse.PhonebookSearchResult);
+
+                            PrintPhonebook(directoryResults);
 
                             // Fire some sort of callback delegate to the UI that requested the directory search results
                         }
@@ -620,6 +649,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SendText("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
         }
 
+        /// <summary>
+        /// Triggers a refresh of the codec phonebook
+        /// </summary>
+        /// <param name="command">Just to allow this method to be called from a console command</param>
+        public void GetPhonebook(string command)
+        {
+            PhonebookSyncState.CodecDisconnected();
+
+            GetPhonebookFolders();
+        }
+
         private void GetPhonebookFolders()
         {
             // Get Phonebook Folders (determine local/corporate from config, and set results limit)
@@ -638,16 +678,36 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="searchString"></param>
         public void SearchDirectory(string searchString)
         {
-            SendText(string.Format("xCommand Phonebook Search SearchString: \"{0}\" PhonebookType: {1} ContactType: Contact, Limit: {2}", searchString, PhonebookMode, PhonebookResultsLimit));
+            SendText(string.Format("xCommand Phonebook Search SearchString: \"{0}\" PhonebookType: {1} ContactType: Contact Limit: {2}", searchString, PhonebookMode, PhonebookResultsLimit));
         }
 
         /// <summary>
         /// // Get contents of a specific folder in the phonebook
         /// </summary>
         /// <param name="folderId"></param>
-        public void GetFolderContents(string folderId)
+        public void GetDirectoryFolderContents(string folderId)
         {
-            SendText(string.Format("xCommand Phonebook Search FolderId: {0} PhonebookType: {1} ContactType: Contact, Limit: {2}", folderId, PhonebookMode, PhonebookResultsLimit));
+            SendText(string.Format("xCommand Phonebook Search FolderId: {0} PhonebookType: {1} ContactType: Contact Limit: {2}", folderId, PhonebookMode, PhonebookResultsLimit));
+        }
+
+        void PrintPhonebook(CodecDirectory directory)
+        {
+            if (Debug.Level > 0)
+            {
+                Debug.Console(1, this, "Directory Results:\n");
+
+                foreach (DirectoryItem item in directory.DirectoryResults)
+                {
+                    if (item is DirectoryFolder)
+                    {
+                        Debug.Console(1, this, "+ {0}", item.Name);
+                    }
+                    else if (item is DirectoryContact)
+                    {
+                        Debug.Console(1, this, "{0}", item.Name);
+                    }
+                }
+            }
         }
 
         public override void  Dial(string s)
@@ -929,10 +989,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-
-        public bool InitialPhonebookMessageWasReceived { get; private set; }
+        public bool InitialPhonebookFoldersWasReceived { get; private set; }
 
         public bool NumberOfContactsWasReceived { get; private set; }
+
+        public bool PhonebookRootEntriesWasRecieved { get; private set; }
 
         public bool PhonebookHasFolders { get; private set; }
 
@@ -945,9 +1006,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecDisconnected();
         }
 
-        public void InitialPhonebookMessageReceived()
+        public void InitialPhonebookFoldersReceived()
         {
-            InitialPhonebookMessageWasReceived = true;
+            InitialPhonebookFoldersWasReceived = true;
+
+            CheckSyncStatus();
+        }
+
+        public void PhonebookRootEntriesReceived()
+        {
+            PhonebookRootEntriesWasRecieved = true;
+
+            CheckSyncStatus();
         }
 
         public void SetPhonebookHasFolders(bool value)
@@ -963,15 +1033,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             NumberOfContactsWasReceived = true;
 
             Debug.Console(1, this, "Phonebook contains {0} contacts.", NumberOfContacts);
+
+            CheckSyncStatus();
         }
 
         public void CodecDisconnected()
         {
-            InitialPhonebookMessageWasReceived = false;
+            InitialPhonebookFoldersWasReceived = false;
             PhonebookHasFolders = false;
             NumberOfContacts = 0;
             NumberOfContactsWasReceived = false;
         }
-   
+
+        void CheckSyncStatus()
+        {
+            if (InitialPhonebookFoldersWasReceived && NumberOfContactsWasReceived && PhonebookRootEntriesWasRecieved)
+            {
+                InitialSyncComplete = true;
+                Debug.Console(1, this, "Initial Phonebook Sync Complete!");
+            }
+            else
+                InitialSyncComplete = false;
+        }
     }
 }

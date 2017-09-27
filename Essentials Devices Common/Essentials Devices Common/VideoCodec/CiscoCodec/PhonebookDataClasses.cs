@@ -157,13 +157,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             var rootFolders = new List<DirectoryItem>();
 
-            if (result.Folder.Count > 0)
+            if (result.Folder.Count == 0)
             {
                 return null;
             }
             else if (result.Folder.Count > 0)
             {
-                if (Debug.Level > 1)
+                if (Debug.Level > 0)
                     Debug.Console(1, "Phonebook Folders:\n");
 
                 foreach (Folder f in result.Folder)
@@ -176,7 +176,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     if (f.ParentFolderId == null)
                         rootFolders.Add(folder);
                    
-                    if (Debug.Level > 1)
+                    if (Debug.Level > 0)
                         Debug.Console(1, "+ {0}", folder.Name);
                 }
             }
@@ -187,6 +187,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
 
 
+        /// <summary>
+        /// Extracts the contacts with no FolderId and returns them sorted alphabetically
+        /// </summary>
+        /// <param name="result"></param>
+        /// <returns></returns>
         public static List<DirectoryItem> GetRootContactsFromSearchResult(PhonebookSearchResult result)
         {
             var rootContacts = new List<DirectoryItem>();
@@ -197,22 +202,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             }
             else if (result.Contact.Count > 0)
             {
-                if (Debug.Level > 1)
+                if (Debug.Level > 0)
                     Debug.Console(1, "Root Contacts:\n");
 
                 foreach (Contact c in result.Contact)
                 {
                     var contact = new DirectoryContact();
 
-
                     if (c.FolderId == null)
                     {
                         contact.Name = c.Name.Value;
                         contact.ContactId = c.ContactId.Value;
                         contact.Title = c.Title.Value;
-                        contact.FolderId = c.FolderId.Value;
 
-                        if (Debug.Level == 1)
+                        if (Debug.Level > 0)
                             Debug.Console(1, "{0}\nContact Methods:", contact.Name);
 
                         foreach (ContactMethod m in c.ContactMethod)
@@ -237,7 +240,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                             else if (m.Device.Value.ToLower() == "other")
                                 device = eContactMethodDevice.Other;
 
-                            if (Debug.Level > 1)
+                            if (Debug.Level > 0)
                                 Debug.Console(1, "Number: {0} CallType: {1} Device: {2}", m.Number.Value, callType, device);
 
                             contact.ContactMethods.Add(new PepperDash.Essentials.Devices.Common.Codec.ContactMethod()
@@ -248,12 +251,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                                 Device = device
                             });
                         }
-
                         rootContacts.Add(contact);
                     }
-
-                    if (Debug.Level == 1)
-                        Debug.Console(1, "{0}", contact.Name);
                 }
             }
 
@@ -274,9 +273,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 #warning Modify this to return a flat list of mixed folders/contacts
             var directory = new Codec.CodecDirectory();
 
-            var folders = new List<Codec.DirectoryFolder>();
+            var folders = new List<Codec.DirectoryItem>();
 
-            var contacts = new List<Codec.DirectoryContact>();
+            var contacts = new List<Codec.DirectoryItem>();
 
             if (result.Folder.Count > 0)
             {
@@ -290,11 +289,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     if (f.ParentFolderId != null)
                     {
                         //
-                        folder.ParentFolder = folders.FirstOrDefault(fld => fld.FolderId.Equals(f.ParentFolderId.Value));
+                        folder.ParentFolderId = f.ParentFolderId.Value;
                     }
 
                    folders.Add(folder);
                 }
+
+                folders.OrderBy(f => f.Name);
+
+                directory.AddFoldersToDirectory(folders);
             }
 
             if (result.Contact.Count > 0)
@@ -343,9 +346,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                             Device = device
                         });
                     }
-                    //directory.Contacts.Add(contact);
+                    contacts.Add(contact);
                 }
 
+                contacts.OrderBy(c => c.Name);
+
+                directory.AddContactsToDirectory(contacts);
             }
 
             return directory;

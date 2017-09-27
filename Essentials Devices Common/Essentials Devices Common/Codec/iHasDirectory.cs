@@ -15,16 +15,16 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
         void SearchDirectory(string searchString);
 
-        void GetFolderContents(string folderId);
+        void GetDirectoryFolderContents(string folderId);
     }
 
     public class CodecDirectory
     {
         public List<DirectoryItem> DirectoryResults { get; private set; }
 
-        public int Offset { get; private set; }
+        //public int Offset { get; private set; }
 
-        public int Limit { get; private set; }
+        //public int Limit { get; private set; }
 
         public CodecDirectory()
         {
@@ -79,12 +79,11 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     {
         public List<DirectoryContact> Contacts { get; set; }
         public string FolderId { get; set; }
-        public DirectoryFolder ParentFolder { get; set; }
+        public string ParentFolderId { get; set; }
 
         public DirectoryFolder()
         {
             Contacts = new List<DirectoryContact>();
-            ParentFolder = new DirectoryFolder();
         }
     }
 
@@ -94,6 +93,11 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         public string FolderId { get; set; }   
         public string Title { get; set; }
         public List<ContactMethod> ContactMethods { get; set; }
+
+        public DirectoryContact()
+        {
+            ContactMethods = new List<ContactMethod>();
+        }
     }
 
     public class ContactMethod
