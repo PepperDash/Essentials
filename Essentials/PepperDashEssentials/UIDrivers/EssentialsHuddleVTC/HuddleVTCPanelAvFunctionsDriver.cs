@@ -282,9 +282,9 @@ namespace PepperDash.Essentials
             TriList.SetSigFalseAction(UIBoolJoin.TechPagesExitButton, () =>
                 PopupInterlock.HideAndClear());
 
-            // Default Volume button
+            // Volume related things
             TriList.SetSigFalseAction(UIBoolJoin.VolumeDefaultPress, () => CurrentRoom.SetDefaultLevels());
-
+            TriList.SetString(UIStringJoin.AdvancedVolumeSlider1Text, "Room");
             
             if (TriList is CrestronApp)
                 TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = false;
