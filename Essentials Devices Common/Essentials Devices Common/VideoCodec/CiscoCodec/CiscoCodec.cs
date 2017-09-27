@@ -24,6 +24,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
     {
         public event EventHandler<EventArgs> UpcomingMeetingWarning;
 
+        public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
+
         public IBasicCommunication Communication { get; private set; }
         public CommunicationGather PortGather { get; private set; }
         public CommunicationGather JsonGather { get; private set; }
@@ -154,6 +156,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public bool CommDebuggingIsOn;
 
+        public bool MultiSiteOptionIsEnabled;
+
         string Delimiter = "\r\n";
 
         int PresentationSource;
@@ -234,7 +238,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CrestronConsole.AddNewConsoleCommand(SetCommDebug, "SetCiscoCommDebug", "0 for Off, 1 for on", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(GetPhonebook, "GetCodecPhonebook", "Triggers a refresh of the codec phonebook", ConsoleAccessLevelEnum.AccessOperator);
 
-            CommDebuggingIsOn = true;
+            //CommDebuggingIsOn = true;
             Communication.Connect();
             var socket = Communication as ISocketStatus;
             if (socket != null)
@@ -271,7 +275,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="e"></param>
         void SyncState_InitialSyncCompleted(object sender, EventArgs e)
         {
-            CommDebuggingIsOn = false;
+            //CommDebuggingIsOn = false;
 
             GetCallHistory();
 
@@ -370,7 +374,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 {
                     case "*r login successful":
                         {
-                            //LoginMessageReceived.Stop();
+                            LoginMessageReceived.Stop();
                             SendText("xPreferences outputmode json");
                             break;
                         }
@@ -427,19 +431,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                             if (tempActiveCall != null)
                             {
-                                // Store previous status to pass to event handler
-                                var previousStatus = tempActiveCall.Status;
-
                                 bool changeDetected = false;
 
                                 // Update properties of ActiveCallItem
                                 if(call.Status != null)
                                     if (!string.IsNullOrEmpty(call.Status.Value))
                                     {
-#warning Something here is evaluating as Unknown when the Display Name changes....
-                                        tempActiveCall.Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value);
-                                        changeDetected = true;
-                                        if(tempActiveCall.Status == eCodecCallStatus.Connected)
+                                        eCodecCallStatus newStatus = eCodecCallStatus.Unknown;
+
+                                        newStatus = CodecCallStatus.ConvertToStatusEnum(call.Status.Value);
+
+                                        if (newStatus != eCodecCallStatus.Unknown)
+                                        {
+                                            changeDetected = true;
+                                            SetNewCallStatusAndFireCallStatusChange(newStatus, tempActiveCall);
+                                        }
+
+                                        if (newStatus == eCodecCallStatus.Connected)
                                             GetCallHistory();
                                     }
                                 if (call.CallType != null)
@@ -458,7 +466,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                 if (changeDetected)
                                 {
                                     ListCalls();
-                                    SetNewCallStatusAndFireCallStatusChange(previousStatus, tempActiveCall);
                                 }
                             }
                             else if( call.ghost == null )   // if the ghost value is present the call has ended already
@@ -478,7 +485,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                                 ListCalls();
 
-                                SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Unknown, newCallItem);
+                                SetNewCallStatusAndFireCallStatusChange(newCallItem.Status, newCallItem);
                             }
 
                         }
@@ -490,6 +497,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     if (!SyncState.InitialStatusMessageWasReceived)
                     {
                         SyncState.InitialStatusMessageReceived();
+
+                        SetStatusProperties(CodecStatus);
+
                         if (!SyncState.InitialConfigurationMessageWasReceived)
                             SendText("xConfiguration");
                     }
@@ -576,6 +586,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                             PrintPhonebook(directoryResults);
 
+                            // This will return the latest results to all UIs.  Multiple indendent UI Directory browsing will require a different methodology
+                            var handler = DirectoryResultReturned;
+                            if (handler != null)
+                                handler(this, new DirectoryEventArgs() { Directory = directoryResults });
+
                             // Fire some sort of callback delegate to the UI that requested the directory search results
                         }
                     }
@@ -629,6 +644,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         protected override Func<bool> IncomingCallFeedbackFunc { get { return () => false; } }
 
+
+        /// <summary>
+        /// Sets the properties based on a complete status message return
+        /// </summary>
+        /// <param name="status"></param>
+        private void SetStatusProperties(CiscoCodecStatus.RootObject status)
+        {
+            if (status.Status.SystemUnit.Software.OptionKeys.MultiSite.Value == "true")
+                MultiSiteOptionIsEnabled = true;
+        }
+
         /// <summary>
         /// Gets the first CallId or returns null
         /// </summary>
@@ -637,8 +663,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             string callId = null;
 
-            if (CodecStatus.Status.Call.Count > 0)
-                callId = CodecStatus.Status.Call[0].id;
+            if (ActiveCalls.Count > 1)
+            {
+                foreach (CodecActiveCallItem call in ActiveCalls) ;
+            }
+            else if (ActiveCalls.Count == 1)
+                callId =  ActiveCalls[0].Id;
 
             return callId;
 
@@ -656,6 +686,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public void GetPhonebook(string command)
         {
             PhonebookSyncState.CodecDisconnected();
+
+            DirectoryRoot = new CodecDirectory();
 
             GetPhonebookFolders();
         }
@@ -745,7 +777,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public override void SendDtmf(string s)
         {
-            SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
+            if (CallFavorites != null)
+            {
+                SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
+            }
         }
 
         public void SelectPresentationSource(int source)

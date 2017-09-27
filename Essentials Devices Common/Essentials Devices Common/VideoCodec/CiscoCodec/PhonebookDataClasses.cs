@@ -310,10 +310,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     contact.ContactId = c.ContactId.Value;
                     contact.Title = c.Title.Value;
 
-                    // Go find the folder to which this contact belongs and store it
-                    if(!string.IsNullOrEmpty(c.FolderId.Value))
+                    if(c.FolderId != null)
                     {
-                        //contact.Folder = directory.Folders.FirstOrDefault(f => f.FolderId.Equals(c.FolderId.Value));
+                        contact.FolderId = c.FolderId.Value;
                     }
 
                     foreach (ContactMethod m in c.ContactMethod)

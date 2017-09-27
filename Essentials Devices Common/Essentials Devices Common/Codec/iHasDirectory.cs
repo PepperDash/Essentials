@@ -11,11 +11,18 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 {
     public interface iHasDirectory
     {
+        event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
+
         CodecDirectory DirectoryRoot { get; }
 
         void SearchDirectory(string searchString);
 
         void GetDirectoryFolderContents(string folderId);
+    }
+
+    public class DirectoryEventArgs : EventArgs
+    {
+        public CodecDirectory Directory { get; set; }
     }
 
     public class CodecDirectory

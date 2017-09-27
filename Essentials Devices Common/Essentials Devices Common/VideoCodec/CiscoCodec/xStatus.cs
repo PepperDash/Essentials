@@ -1271,6 +1271,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Encryption Encryption { get; set; }
             public MultiSite MultiSite { get; set; }
             public RemoteMonitoring RemoteMonitoring { get; set; }
+
+            public OptionKeys()
+            {
+                MultiSite = new MultiSite();
+            }
         }
 
         public class ReleaseDate
@@ -1290,6 +1295,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public OptionKeys OptionKeys { get; set; }
             public ReleaseDate ReleaseDate { get; set; }
             public Version2 Version { get; set; }
+
+            public Software2()
+            {
+                OptionKeys = new OptionKeys();
+            }
         }
 
         public class NumberOfActiveCalls
@@ -1328,6 +1338,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Software2 Software { get; set; }
             public State2 State { get; set; }
             public Uptime Uptime { get; set; }
+
+            public SystemUnit()
+            {
+                Software = new Software2();
+            }
         }
 
         public class SystemTime
@@ -1735,6 +1750,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Cameras = new Cameras();
                 RoomAnalytics = new RoomAnalytics();
                 Conference = new Conference2();
+                SystemUnit = new SystemUnit();
             }
         }
 
