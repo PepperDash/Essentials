@@ -75,6 +75,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
         public EssentialsVideoCodecUiDriver(BasicTriListWithSmartObject triList, IAVDriver parent, VideoCodecBase codec)
             : base(triList)
         {
+            if (codec == null)
+                throw new ArgumentNullException("Codec cannot be null");
             Codec = codec;
             Parent = parent;
             SetupCallStagingPopover();
@@ -274,7 +276,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 {
                     if (Codec.ActiveCalls.Count > 1)
                     {
-                        Debug.Console(1, "#*#*#*# FUCK ME!!!!");
                         Parent.PopupInterlock.ShowInterlocked(UIBoolJoin.HeaderActiveCallsListVisible);
                     }
                     else

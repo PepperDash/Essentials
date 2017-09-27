@@ -55,7 +55,7 @@ namespace PepperDash.Essentials
         EssentialsHuddleVtc1Room _CurrentRoom;
 
         /// <summary>
-        /// For hitting feedback
+        /// For hitting feedbacks
         /// </summary>
         BoolInputSig CallButtonSig;
         BoolInputSig ShareButtonSig;
@@ -129,6 +129,8 @@ namespace PepperDash.Essentials
 
         public PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; private set; }
 
+        UiDisplayMode CurrentMode = UiDisplayMode.Start;
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -147,6 +149,7 @@ namespace PepperDash.Essentials
             ActivityFooterSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.ActivityFooterSRL, 3, 3, 3);
             CallButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
             ShareButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
+            EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
 
             SetupActivityFooterWhenRoomOff();
 
@@ -203,19 +206,19 @@ namespace PepperDash.Essentials
             TriList.SetBool(UIBoolJoin.TopBarHabaneroVisible, true);
             TriList.SetBool(UIBoolJoin.ActivityFooterVisible, true);
 
+            // Privacy mute button
+            TriList.SetSigFalseAction(UIBoolJoin.Volume1SpeechMutePressAndFB, CurrentRoom.PrivacyModeToggle);
+            CurrentRoom.PrivacyModeIsOnFeedback.LinkInputSig(TriList.BooleanInput[UIBoolJoin.Volume1SpeechMutePressAndFB]);
+
             // Default to showing rooms/sources now.
-            //ShowMode(UiDisplayMode.PresentationMode);
             if (CurrentRoom.OnFeedback.BoolValue)
             {
-                TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
                 TriList.SetBool(UIBoolJoin.TapToBeginVisible, false);
-                TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
             }
             else
             {
                 TriList.SetBool(UIBoolJoin.StartPageVisible, true);
                 TriList.SetBool(UIBoolJoin.TapToBeginVisible, true);
-                TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
             }
             ShowCurrentDisplayModeSigsInUse();
 
@@ -280,8 +283,7 @@ namespace PepperDash.Essentials
                 PopupInterlock.HideAndClear());
 
             // Default Volume button
-            TriList.SetSigFalseAction(UIBoolJoin.VolumeDefaultPress, () => // Set default volume method on room
-                { });
+            TriList.SetSigFalseAction(UIBoolJoin.VolumeDefaultPress, () => CurrentRoom.SetDefaultLevels());
 
             
             if (TriList is CrestronApp)
@@ -388,8 +390,8 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 0,
                 b => { if (!b) ActivityShareButtonPressed(); }));
             ActivityFooterSrl.Count = 2;
-            TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 0;
-            ShareButtonSig.BoolValue = false;
+            TriList.SetUshort(UIUshortJoin.PresentationStagingCaretMode, 5); // right one slot
+            TriList.SetUshort(UIUshortJoin.CallStagingCaretMode, 1); // left one slot
         }
 
         /// <summary>
@@ -405,11 +407,21 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(3, ActivityFooterSrl,
                 3, b => { if (!b) PowerButtonPressed(); }));
             ActivityFooterSrl.Count = 3;
-            TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 1;
-            EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
+            TriList.SetUshort(UIUshortJoin.PresentationStagingCaretMode, 0); // center
+            TriList.SetUshort(UIUshortJoin.CallStagingCaretMode, 2); // left -2
+        }
 
-            ShareButtonSig.BoolValue = CurrentRoom.OnFeedback.BoolValue;
-        } 
+        /// <summary>
+        /// Single point call for setting the feedbacks on the activity buttons
+        /// </summary>
+        void SetActivityFooterFeedbacks()
+        {
+            CallButtonSig.BoolValue = CurrentMode == UiDisplayMode.Call 
+                && CurrentRoom.ShutdownType == ShutdownType.None;
+            ShareButtonSig.BoolValue = CurrentMode == UiDisplayMode.Presentation 
+                && CurrentRoom.ShutdownType == ShutdownType.None;
+            EndMeetingButtonSig.BoolValue = CurrentRoom.ShutdownType != ShutdownType.None;
+        }
 
         /// <summary>
         /// 
@@ -418,14 +430,18 @@ namespace PepperDash.Essentials
         {
             if (VCDriver.IsVisible)
                 return;
-            CallButtonSig.BoolValue = true;
-            ShareButtonSig.BoolValue = false;
             HideLogo();
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
             if (CurrentSourcePageManager != null)
                 CurrentSourcePageManager.Hide();
+            if (!CurrentRoom.OnFeedback.BoolValue)
+            {
+                CurrentRoom.RunDefaultCallRoute();
+            }
+            CurrentMode = UiDisplayMode.Call;
+            SetActivityFooterFeedbacks();
             VCDriver.Show();
         }
 
@@ -436,22 +452,26 @@ namespace PepperDash.Essentials
         {
             if (VCDriver.IsVisible)
                 VCDriver.Hide();
-            ShareButtonSig.BoolValue = true;
-            CallButtonSig.BoolValue = false;
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
+            TriList.SetBool(UIBoolJoin.CallStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
             { 
                 // If there's no default, show UI elements
-                if(!CurrentRoom.RunDefaultRoute())
+                if(!CurrentRoom.RunDefaultPresentRoute())
                     TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
             }
-            else // show what's active
+            else // room is on show what's active or select a source if nothing is yet active
             {
-                if (CurrentSourcePageManager != null)
+                Debug.Console(0, "*#*#*#*# ActivitySharPressed: CurrentSourceInfoKey={0}", CurrentRoom.CurrentSourceInfoKey);
+                if(CurrentRoom.CurrentSourceInfo == null || CurrentRoom.CurrentSourceInfoKey == CurrentRoom.DefaultCodecRouteString)
+                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
+                else if (CurrentSourcePageManager != null)
                     CurrentSourcePageManager.Show();
             }
+            CurrentMode = UiDisplayMode.Presentation;
+            SetActivityFooterFeedbacks();
         }
 
         /// <summary>
@@ -536,8 +556,7 @@ namespace PepperDash.Essentials
         {
             // Do we need to check where the UI is? No?
             var timer = CurrentRoom.ShutdownPromptTimer;
-            EndMeetingButtonSig.BoolValue = true;
-            ShareButtonSig.BoolValue = false;
+            SetActivityFooterFeedbacks();
 
             if (CurrentRoom.ShutdownType == ShutdownType.Manual)
             {
@@ -555,8 +574,8 @@ namespace PepperDash.Essentials
                 {
                     if (!onFb.BoolValue)
                     {
-                        EndMeetingButtonSig.BoolValue = false;
                         PowerDownModal.HideDialog();
+                        SetActivityFooterFeedbacks();
                         onFb.OutputChange -= offHandler;
                     }
                 };
@@ -580,11 +599,9 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_HasFinished(object sender, EventArgs e)
         {
-            //Debug.Console(2, "*#*UI shutdown prompt finished");
-            EndMeetingButtonSig.BoolValue = false;
+            SetActivityFooterFeedbacks();
             CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange -= ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
             CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange -= ShutdownPromptTimer_PercentFeedback_OutputChange;
-
         }
 
         /// <summary>
@@ -594,16 +611,17 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_WasCancelled(object sender, EventArgs e)
         {
-            //Debug.Console(2, "*#*UI shutdown prompt cancelled");
             if (PowerDownModal != null)
                 PowerDownModal.HideDialog();
-            EndMeetingButtonSig.BoolValue = false;
-            ShareButtonSig.BoolValue = CurrentRoom.OnFeedback.BoolValue;
+            SetActivityFooterFeedbacks();
 
             CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange += ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
             CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange -= ShutdownPromptTimer_PercentFeedback_OutputChange;
         }
 
+        /// <summary>
+        /// Event handler for countdown timer on power off modal
+        /// </summary>
         void ShutdownPromptTimer_TimeRemainingFeedback_OutputChange(object sender, EventArgs e)
         {
 
@@ -611,6 +629,9 @@ namespace PepperDash.Essentials
             TriList.StringInput[ModalDialog.MessageTextJoin].StringValue = message;
         }
 
+        /// <summary>
+        /// Event handler for percentage on power off countdown
+        /// </summary>
         void ShutdownPromptTimer_PercentFeedback_OutputChange(object sender, EventArgs e)
         {
             var value = (ushort)((sender as IntFeedback).UShortValue * 65535 / 100);
@@ -669,7 +690,7 @@ namespace PepperDash.Essentials
 
                 _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange -= CurrentRoom_IsWarmingFeedback_OutputChange;
-                _CurrentRoom.IsCoolingDownFeedback.OutputChange -= IsCoolingDownFeedback_OutputChange;
+                _CurrentRoom.IsCoolingDownFeedback.OutputChange -= CurrentRoom_IsCoolingDownFeedback_OutputChange;
             }
 
             _CurrentRoom = room;
@@ -717,7 +738,7 @@ namespace PepperDash.Essentials
                 _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
                 CurrentRoom_SyncOnFeedback();
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange += CurrentRoom_IsWarmingFeedback_OutputChange;
-                _CurrentRoom.IsCoolingDownFeedback.OutputChange += IsCoolingDownFeedback_OutputChange;
+                _CurrentRoom.IsCoolingDownFeedback.OutputChange += CurrentRoom_IsCoolingDownFeedback_OutputChange;
 
                 _CurrentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
                 RefreshAudioDeviceConnections();
@@ -739,29 +760,33 @@ namespace PepperDash.Essentials
             CurrentRoom_SyncOnFeedback();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void CurrentRoom_SyncOnFeedback()
         {
             var value = _CurrentRoom.OnFeedback.BoolValue;
-            //Debug.Console(2, CurrentRoom, "UI: Is on event={0}", value);
             TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
 
             if (value) //ON
             {
                 SetupActivityFooterWhenRoomOn();
                 TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
-                TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = true;
+                //TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
-                TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = true;
+                TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = true;
 
             }
             else
             {
+                CurrentMode = UiDisplayMode.Start;
                 if (VCDriver.IsVisible)
                     VCDriver.Hide();
                 SetupActivityFooterWhenRoomOff();
                 ShowLogo();
+                SetActivityFooterFeedbacks();
                 TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
-                TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = false;
+                TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
             }
         }
@@ -771,10 +796,7 @@ namespace PepperDash.Essentials
         /// </summary>
         void CurrentRoom_IsWarmingFeedback_OutputChange(object sender, EventArgs e)
         {
-            var value = CurrentRoom.IsWarmingUpFeedback.BoolValue;
-            //Debug.Console(2, CurrentRoom, "UI: WARMING event={0}", value);
-
-            if (value)
+            if (CurrentRoom.IsWarmingUpFeedback.BoolValue)
             {
                 WarmingCoolingModal = new ModalDialog(TriList);
                 WarmingCoolingModal.PresentModalDialog(0, "Powering Up", "Power", "<p>Room is powering up</p><p>Please wait</p>",
@@ -792,12 +814,9 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void IsCoolingDownFeedback_OutputChange(object sender, EventArgs e)
+        void CurrentRoom_IsCoolingDownFeedback_OutputChange(object sender, EventArgs e)
         {
-            var value = CurrentRoom.IsCoolingDownFeedback.BoolValue;
-            //Debug.Console(2, CurrentRoom, "UI: Cooldown event={0}", value);
-
-            if (value)
+            if (CurrentRoom.IsCoolingDownFeedback.BoolValue)
             {
                 WarmingCoolingModal = new ModalDialog(TriList);
                 WarmingCoolingModal.PresentModalDialog(0, "Shut Down", "Power", "<p>Room is shutting down</p><p>Please wait</p>",

@@ -99,7 +99,7 @@ namespace PepperDash.Essentials
         public EssentialsHuddleVtc1PropertiesConfig Config { get; private set; }
 
 		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
-		public IRoutingSinkNoSwitching DefaultAudioDevice { get; private set; }
+		public IBasicVolumeControls DefaultAudioDevice { get; private set; }
 		public IBasicVolumeControls DefaultVolumeControls { get; private set; }
 
         public VideoCodecBase VideoCodec { get; private set; }
@@ -110,7 +110,7 @@ namespace PepperDash.Essentials
 		/// The config name of the source list
 		/// </summary>
 		public string SourceListKey { get; set; }
-
+        
         public string DefaultSourceItem { get; set; }
 
         public ushort DefaultVolume { get; set; }
@@ -179,18 +179,25 @@ namespace PepperDash.Essentials
 
         public string CurrentSourceInfoKey { get; private set; }
 
+        /// <summary>
+        /// "codecOsd"
+        /// </summary>
+        public string DefaultCodecRouteString { get { return "codecOsd"; } }
+
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="name"></param>
         public EssentialsHuddleVtc1Room(string key, string name, IRoutingSinkWithSwitching defaultDisplay, 
-			IRoutingSinkNoSwitching defaultAudio, VideoCodecBase vc, EssentialsHuddleVtc1PropertiesConfig config)
+			IBasicVolumeControls defaultAudio, VideoCodecBase codec, EssentialsHuddleVtc1PropertiesConfig config)
 			: base(key, name)
 		{
+            if (codec == null)
+                throw new ArgumentNullException("codec cannot be null");
 			Config = config;
 			DefaultDisplay = defaultDisplay;
-            VideoCodec = vc;
+            VideoCodec = codec;
 			DefaultAudioDevice = defaultAudio;
 
 			if (defaultAudio is IBasicVolumeControls)
@@ -227,11 +234,14 @@ namespace PepperDash.Essentials
                 };
             }
 
-            InCallFeedback = new BoolFeedback(() => false); //###################################################
-            IsSharingFeedback = new BoolFeedback(() => false); //##########################################################
-            PrivacyModeIsOnFeedback = new BoolFeedback(() => false); //####################################################
-            CallTypeFeedback = new IntFeedback(() => 0); //######################################################
+            InCallFeedback = new BoolFeedback(() => VideoCodec.IsInCall);
+            IsSharingFeedback = new BoolFeedback(() => VideoCodec.SharingSourceFeedback.StringValue != null); 
 
+            // link privacy to VC (for now?)
+            PrivacyModeIsOnFeedback = new BoolFeedback(() => VideoCodec.PrivacyModeIsOnFeedback.BoolValue);
+            VideoCodec.PrivacyModeIsOnFeedback.OutputChange += (o, a) => this.PrivacyModeIsOnFeedback.FireUpdate();
+
+            CallTypeFeedback = new IntFeedback(() => 0);
           
 			SourceListKey = "default";
 			EnablePowerOnToLastSource = true;
@@ -244,16 +254,27 @@ namespace PepperDash.Essentials
         public override void Shutdown()
         {
             RunRouteAction("roomOff");
+            VideoCodec.EndAllCalls();
         }
 
         /// <summary>
         /// Routes the default source item, if any. Returns true when default route exists
         /// </summary>
-        public bool RunDefaultRoute()
+        public bool RunDefaultPresentRoute()
         {
             if (DefaultSourceItem != null)
                 RunRouteAction(DefaultSourceItem);
             return DefaultSourceItem != null;
+        }
+
+        /// <summary>
+        /// Sets up the room when started into call mode without presenting a source
+        /// </summary>
+        /// <returns></returns>
+        public bool RunDefaultCallRoute()
+        {
+            RunRouteAction(DefaultCodecRouteString);
+            return true;
         }
 
         /// <summary>
@@ -355,6 +376,17 @@ namespace PepperDash.Essentials
 
             }, 0); // end of CTimer
 		}
+        
+        /// <summary>
+        /// Does what it says
+        /// </summary>
+        public override void SetDefaultLevels()
+        {
+            Debug.Console(1, this, "Restoring default levels");
+            var vc = CurrentVolumeControls as IBasicVolumeWithFeedback;
+            if (vc != null)
+                vc.SetVolume(DefaultVolume);
+        }
 
         /// <summary>
         /// 
@@ -388,7 +420,7 @@ namespace PepperDash.Essentials
 			IRoutingSinkNoSwitching dest = null;
 
 			if (route.DestinationKey.Equals("$defaultaudio", StringComparison.OrdinalIgnoreCase))
-				dest = DefaultAudioDevice;
+                dest = DefaultAudioDevice as IRoutingSinkNoSwitching;
 			else if (route.DestinationKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
 				dest = DefaultDisplay;
 			else
@@ -445,17 +477,17 @@ namespace PepperDash.Essentials
 
         public void PrivacyModeOff()
         {
-            // Turn off privacy on all things (codec only for now)
+            VideoCodec.PrivacyModeOff();
         }
 
         public void PrivacyModeOn()
         {
-            // Turn on ...
+            VideoCodec.PrivacyModeOn();
         }
 
         public void PrivacyModeToggle()
         {
-           
+            VideoCodec.PrivacyModeToggle();
         }
 
         #endregion

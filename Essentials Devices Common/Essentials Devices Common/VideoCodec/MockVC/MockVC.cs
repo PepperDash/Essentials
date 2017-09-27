@@ -11,18 +11,35 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
-    public class MockVC : VideoCodecBase, IRoutingOutputs
+    public class MockVC : VideoCodecBase, IRoutingSource
     {
+        public RoutingInputPort CodecOsdIn { get; private set; }
+        public RoutingInputPort HdmiIn1 { get; private set; }
+        public RoutingInputPort HdmiIn2 { get; private set; }
+        public RoutingOutputPort HdmiOut { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public MockVC(string key, string name)
             : base(key, name)
         {
             // Debug helpers
-            //ActiveCallCountFeedback.OutputChange += (o, a) => Debug.Console(1, this, "InCall={0}", ActiveCallCountFeedback.IntValue);
             IncomingCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "IncomingCall={0}", _IncomingCall);
             MuteFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Mute={0}", _IsMuted);
             PrivacyModeIsOnFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Privacy={0}", _PrivacyModeIsOn);
             SharingSourceFeedback.OutputChange += (o, a) => Debug.Console(1, this, "SharingSource={0}", _SharingSource);   
             VolumeLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Volume={0}", _VolumeLevel);
+
+            CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 0, this);
+            HdmiIn1 = new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 1, this);
+            HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 2, this);
+            HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
+
+            InputPorts.Add(CodecOsdIn);
+            InputPorts.Add(HdmiIn1);
+            InputPorts.Add(HdmiIn2);
+            OutputPorts.Add(HdmiOut);
        }
 
         protected override Func<bool> IncomingCallFeedbackFunc
@@ -151,7 +168,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <param name="selector"></param>
         public override void ExecuteSwitch(object selector)
         {
-            Debug.Console(1, this, "ExecuteSwitch");
+            Debug.Console(1, this, "ExecuteSwitch: {0}", selector);
             _SharingSource = selector.ToString();
         }
 
@@ -281,14 +298,5 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             Debug.Console(1, this, "TestFarEndHangup");
 
         }
-
-        #region IRoutingOutputs Members
-
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts
-        {
-            get { return new RoutingPortCollection<RoutingOutputPort>(); }
-        }
-
-        #endregion
     }
 }
