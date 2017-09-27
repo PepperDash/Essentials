@@ -9,13 +9,28 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
 {
     public class HabaneroKeyboardController
     {
+        /// <summary>
+        /// Single-key press events, rather than using a built-up text string on the OutputFeedback
+        /// </summary>
+        public event EventHandler<KeyboardControllerPressEventArgs> KeyPress;
+
         public BasicTriList TriList { get; private set; }
 
         public StringFeedback OutputFeedback { get; private set; }
 
         public bool IsVisible { get; private set; }
 
-        int ShiftMode;
+        public string DotComButtonString { get; set; }
+
+        public string GoButtonText { get; set; }
+
+        public string SecondaryButtonText { get; set; }
+
+        public bool GoButtonVisible { get; set; }
+
+        public bool SecondaryButtonVisible { get; set; }
+
+        int ShiftMode = 0;
         
         StringBuilder Output;
 
@@ -30,7 +45,7 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
             TriList = trilist;
             Output = new StringBuilder();
             OutputFeedback = new StringFeedback(() => Output.ToString());
-
+            DotComButtonString = ".com";
         }
 
         /// <summary>
@@ -41,42 +56,51 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
             if (IsVisible)
                 return;
 
-            TriList.SetSigTrueAction(KeyboardClosePress, Hide);
-            TriList.SetSigTrueAction(2921, () => Append(A(ShiftMode)));
-            TriList.SetSigTrueAction(2922, () => Append(B(ShiftMode)));
-            TriList.SetSigTrueAction(2923, () => Append(C(ShiftMode)));
-            TriList.SetSigTrueAction(2924, () => Append(D(ShiftMode)));
-            TriList.SetSigTrueAction(2925, () => Append(E(ShiftMode)));
-            TriList.SetSigTrueAction(2926, () => Append(F(ShiftMode)));
-            TriList.SetSigTrueAction(2927, () => Append(G(ShiftMode)));
-            TriList.SetSigTrueAction(2928, () => Append(H(ShiftMode)));
-            TriList.SetSigTrueAction(2929, () => Append(I(ShiftMode)));
-            TriList.SetSigTrueAction(2930, () => Append(J(ShiftMode)));
-            TriList.SetSigTrueAction(2931, () => Append(K(ShiftMode)));
-            TriList.SetSigTrueAction(2932, () => Append(L(ShiftMode)));
-            TriList.SetSigTrueAction(2933, () => Append(M(ShiftMode)));
-            TriList.SetSigTrueAction(2934, () => Append(N(ShiftMode)));
-            TriList.SetSigTrueAction(2935, () => Append(O(ShiftMode)));
-            TriList.SetSigTrueAction(2936, () => Append(P(ShiftMode)));
-            TriList.SetSigTrueAction(2937, () => Append(Q(ShiftMode)));
-            TriList.SetSigTrueAction(2938, () => Append(R(ShiftMode)));
-            TriList.SetSigTrueAction(2939, () => Append(S(ShiftMode)));
-            TriList.SetSigTrueAction(2940, () => Append(T(ShiftMode)));
-            TriList.SetSigTrueAction(2941, () => Append(U(ShiftMode)));
-            TriList.SetSigTrueAction(2942, () => Append(V(ShiftMode)));
-            TriList.SetSigTrueAction(2943, () => Append(W(ShiftMode)));
-            TriList.SetSigTrueAction(2944, () => Append(X(ShiftMode)));
-            TriList.SetSigTrueAction(2945, () => Append(Y(ShiftMode)));
-            TriList.SetSigTrueAction(2946, () => Append(Z(ShiftMode)));
-            TriList.SetSigTrueAction(2947, () => Append('.'));
-            TriList.SetSigTrueAction(2948, () => Append('@'));
-            TriList.SetSigTrueAction(2949, () => Append(' '));
+            TriList.SetSigTrueAction(ClosePressJoin, Hide);
+            TriList.SetSigTrueAction(GoButtonPressJoin, () => OnKeyPress(KeyboardSpecialKey.GoButton));
+            TriList.SetSigTrueAction(SecondaryButtonPressJoin, () => OnKeyPress(KeyboardSpecialKey.SecondaryButton));
+            TriList.SetSigTrueAction(2921, () => Press(A(ShiftMode)));
+            TriList.SetSigTrueAction(2922, () => Press(B(ShiftMode)));
+            TriList.SetSigTrueAction(2923, () => Press(C(ShiftMode)));
+            TriList.SetSigTrueAction(2924, () => Press(D(ShiftMode)));
+            TriList.SetSigTrueAction(2925, () => Press(E(ShiftMode)));
+            TriList.SetSigTrueAction(2926, () => Press(F(ShiftMode)));
+            TriList.SetSigTrueAction(2927, () => Press(G(ShiftMode)));
+            TriList.SetSigTrueAction(2928, () => Press(H(ShiftMode)));
+            TriList.SetSigTrueAction(2929, () => Press(I(ShiftMode)));
+            TriList.SetSigTrueAction(2930, () => Press(J(ShiftMode)));
+            TriList.SetSigTrueAction(2931, () => Press(K(ShiftMode)));
+            TriList.SetSigTrueAction(2932, () => Press(L(ShiftMode)));
+            TriList.SetSigTrueAction(2933, () => Press(M(ShiftMode)));
+            TriList.SetSigTrueAction(2934, () => Press(N(ShiftMode)));
+            TriList.SetSigTrueAction(2935, () => Press(O(ShiftMode)));
+            TriList.SetSigTrueAction(2936, () => Press(P(ShiftMode)));
+            TriList.SetSigTrueAction(2937, () => Press(Q(ShiftMode)));
+            TriList.SetSigTrueAction(2938, () => Press(R(ShiftMode)));
+            TriList.SetSigTrueAction(2939, () => Press(S(ShiftMode)));
+            TriList.SetSigTrueAction(2940, () => Press(T(ShiftMode)));
+            TriList.SetSigTrueAction(2941, () => Press(U(ShiftMode)));
+            TriList.SetSigTrueAction(2942, () => Press(V(ShiftMode)));
+            TriList.SetSigTrueAction(2943, () => Press(W(ShiftMode)));
+            TriList.SetSigTrueAction(2944, () => Press(X(ShiftMode)));
+            TriList.SetSigTrueAction(2945, () => Press(Y(ShiftMode)));
+            TriList.SetSigTrueAction(2946, () => Press(Z(ShiftMode)));
+            TriList.SetSigTrueAction(2947, () => Press('.'));
+            TriList.SetSigTrueAction(2948, () => Press('@'));
+            TriList.SetSigTrueAction(2949, () => Press(' '));
             TriList.SetSigTrueAction(2950, Backspace);
-            TriList.SetSigTrueAction(2951, Clear);
-            TriList.SetSigTrueAction(2952, Shift);
-            TriList.SetSigTrueAction(2953, NumShift);
+            TriList.SetSigTrueAction(2951, Shift);
+            TriList.SetSigTrueAction(2952, NumShift);
+            TriList.SetSigTrueAction(2953, Clear);
+            TriList.SetSigTrueAction(2954, () => Press(DotComButtonString));
+
+            TriList.SetBool(GoButtonVisibleJoin, GoButtonVisible);
+            TriList.SetString(GoButtonTextJoin, GoButtonText);
+            TriList.SetBool(SecondaryButtonVisibleJoin, SecondaryButtonVisible);
+            TriList.SetString(SecondaryButtonTextJoin, SecondaryButtonText);
 
             TriList.SetBool(KeyboardVisible, true);
+            ShowKeys();
             IsVisible = true;
         }
 
@@ -103,20 +127,54 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         /// 
         /// </summary>
         /// <param name="c"></param>
-        public void Append(char c)
+        public void Press(char c)
         {
+            OnKeyPress(c.ToString());
             Output.Append(c);
             OutputFeedback.FireUpdate();
+            ResetShift();
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="s"></param>
-        public void Append(string s)
+        public void Press(string s)
         {
+            OnKeyPress(s);
             Output.Append(s);
             OutputFeedback.FireUpdate();
+            ResetShift();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void EnableGoButton()
+        {
+            TriList.SetBool(GoButtonEnableJoin, true);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void DisableGoButton()
+        {
+            TriList.SetBool(GoButtonEnableJoin, false);
+        }
+
+        void ResetShift()
+        {
+            if (ShiftMode == 1)
+            {
+                ShiftMode = 0;
+                ShowKeys();
+            }
+            else if (ShiftMode == 3)
+            {
+                ShiftMode = 2;
+                ShowKeys();
+            }
         }
 
         char A(int i) { return new char[] { 'a', 'A', '?', '?' }[i]; }
@@ -146,8 +204,11 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         char Y(int i) { return new char[] { 'y', 'Y', '6', '^' }[i]; }
         char Z(int i) { return new char[] { 'z', 'Z', ',', ',' }[i]; }
 
+
         void Backspace()
         {
+            OnKeyPress(KeyboardSpecialKey.Backspace);
+
             if (Output.Length > 0)
             {
                 Output.Remove(Output.Length - 1, 1);
@@ -157,10 +218,46 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
 
         void Clear()
         {
+            OnKeyPress(KeyboardSpecialKey.Clear);
+
             Output.Remove(0, Output.Length);
             OutputFeedback.FireUpdate();
         }
 
+        /* When in mode 0 (lowercase):
+         *      shift button: up arrow 0
+         *      numShift button: 123/#$@#$ 0
+         *      
+         *      - shift --> mode 1
+         *      - double-tap shift --> caps lock
+         *      - numShift --> mode 2
+         *      
+         * mode 1 (uppercase)
+         *      shift button: down arrow 1
+         *      numShift button: 123/##$# 0
+         *      
+         *      - shift --> mode 0
+         *      - numShift --> mode 2
+         *      
+         *      - Tapping any key will go back to mode 0
+         * 
+         * mode 2 (numbers-sym)
+         *      Shift button: #$#$#$ 2
+         *      numShift: ABC 1
+         *      
+         *      - shift --> mode 3
+         *      - double-tap shift --> caps lock
+         *      - numShift --> mode 0
+         * 
+         * mode 3 (sym)
+         *      Shift button: 123 3
+         *      numShift: ABC 1
+         *      
+         *      - shift --> mode 2
+         *      - numShift --> mode 0
+         *      
+         *      - Tapping any key will go back to mode 2
+         */
         void Shift()
         {
             if (ShiftMode == 0)
@@ -172,18 +269,72 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
             else
                 ShiftMode = 2;
 
-            TriList.SetUshort(2951, 0); // 0 = up, 1 = down, 2 = #, 3 = 123 
-            TriList.SetUshort(2952, 0); // 0 = #, 1 = abc
+            ShowKeys();
         }
 
         void NumShift()
         {
             if (ShiftMode == 0 || ShiftMode == 1)
                 ShiftMode = 2;
-            else if (ShiftMode == 2)
-                ShiftMode = 3;
-            else
+            else if (ShiftMode == 2 || ShiftMode == 3)
                 ShiftMode = 0;
+            ShowKeys();
+        }
+
+        void ShowKeys()
+        {
+            TriList.SetString(2921, A(ShiftMode).ToString());
+            TriList.SetString(2922, B(ShiftMode).ToString());
+            TriList.SetString(2923, C(ShiftMode).ToString());
+            TriList.SetString(2924, D(ShiftMode).ToString());
+            TriList.SetString(2925, E(ShiftMode).ToString());
+            TriList.SetString(2926, F(ShiftMode).ToString());
+            TriList.SetString(2927, G(ShiftMode).ToString());
+            TriList.SetString(2928, H(ShiftMode).ToString());
+            TriList.SetString(2929, I(ShiftMode).ToString());
+            TriList.SetString(2930, J(ShiftMode).ToString());
+            TriList.SetString(2931, K(ShiftMode).ToString());
+            TriList.SetString(2932, L(ShiftMode).ToString());
+            TriList.SetString(2933, M(ShiftMode).ToString());
+            TriList.SetString(2934, N(ShiftMode).ToString());
+            TriList.SetString(2935, O(ShiftMode).ToString());
+            TriList.SetString(2936, P(ShiftMode).ToString());
+            TriList.SetString(2937, Q(ShiftMode).ToString());
+            TriList.SetString(2938, R(ShiftMode).ToString());
+            TriList.SetString(2939, S(ShiftMode).ToString());
+            TriList.SetString(2940, T(ShiftMode).ToString());
+            TriList.SetString(2941, U(ShiftMode).ToString());
+            TriList.SetString(2942, V(ShiftMode).ToString());
+            TriList.SetString(2943, W(ShiftMode).ToString());
+            TriList.SetString(2944, X(ShiftMode).ToString());
+            TriList.SetString(2945, Y(ShiftMode).ToString());
+            TriList.SetString(2946, Z(ShiftMode).ToString());
+            TriList.SetString(2954, DotComButtonString);
+
+            TriList.SetUshort(2951, (ushort)ShiftMode); // 0 = up, 1 = down, 2 = #, 3 = 123 
+            TriList.SetUshort(2952, (ushort)(ShiftMode < 2 ? 0 : 1)); // 0 = #, 1 = abc
+        }
+
+        /// <summary>
+        /// Event fire helper for text 
+        /// </summary>
+        /// <param name="text"></param>
+        void OnKeyPress(string text)
+        {
+            var handler = KeyPress;
+            if (handler != null)
+                KeyPress(this, new KeyboardControllerPressEventArgs(text));
+        }
+
+        /// <summary>
+        /// event helper for special keys
+        /// </summary>
+        /// <param name="key"></param>
+        void OnKeyPress(KeyboardSpecialKey key)
+        {
+            var handler = KeyPress;
+            if (handler != null)
+                KeyPress(this, new KeyboardControllerPressEventArgs(key));
         }
 
 
@@ -194,58 +345,67 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         /// <summary>
         /// 2902
         /// </summary>
-        public const uint KeyboardClosePress = 2902;
+        public const uint ClosePressJoin = 2902;
         /// <summary>
         /// 2903
         /// </summary>
-        public const uint KeyboardButton1Press = 2903;
+        public const uint GoButtonPressJoin = 2903;
+        /// <summary>
+        /// 2903
+        /// </summary>
+        public const uint GoButtonTextJoin = 2903;
         /// <summary>
         /// 2904
         /// </summary>
-        public const uint KeyboardButton2Press = 2904;
+        public const uint SecondaryButtonPressJoin = 2904;
+        /// <summary>
+        /// 2904
+        /// </summary>
+        public const uint SecondaryButtonTextJoin = 2904;        
+        /// <summary>
+        /// 2905
+        /// </summary>
+        public const uint GoButtonVisibleJoin = 2905;
+        /// <summary>
+        /// 2906
+        /// </summary>
+        public const uint SecondaryButtonVisibleJoin = 2906;
+        /// <summary>
+        /// 2907
+        /// </summary>
+        public const uint GoButtonEnableJoin = 2907;
         /// <summary>
         /// 2910
         /// </summary>
-        public const uint KeyboardClearPress = 2910;
+        public const uint ClearPressJoin = 2910;
         /// <summary>
         /// 2911
         /// </summary>
-        public const uint KeyboardClearVisible = 2911;
+        public const uint ClearVisibleJoin = 2911;
 
     }
 
-    /* When in mode 0 (lowercase):
-     *      shift button: up arrow 0
-     *      numShift button: 123/#$@#$ 0
-     *      
-     *      - shift --> mode 1
-     *      - double-tap shift --> caps lock
-     *      - numShift --> mode 2
-     *      
-     * mode 1 (uppercase)
-     *      shift button: down arrow 1
-     *      numShift button: 123/##$# 0
-     *      
-     *      - shift --> mode 0
-     *      - numShift --> mode 2
-     *      
-     *      - Tapping any key will go back to mode 0
-     * 
-     * mode 2 (numbers-sym)
-     *      Shift button: #$#$#$ 2
-     *      numShift: ABC 1
-     *      
-     *      - shift --> mode 3
-     *      - double-tap shift --> caps lock
-     *      - numShift --> mode 0
-     * 
-     * mode 3 (sym)
-     *      Shift button: 123 3
-     *      numShift: ABC 1
-     *      
-     *      - shift --> mode 2
-     *      - numShift --> mode 0
-     *      
-     *      - Tapping any key will go back to mode 2
-     */
+    /// <summary>
+    /// 
+    /// </summary>
+    public class KeyboardControllerPressEventArgs : EventArgs
+    {
+        public string Text { get; private set; }
+        public KeyboardSpecialKey SpecialKey { get; private set; }
+
+        public KeyboardControllerPressEventArgs(string text)
+        {
+            Text = text;
+        }
+
+        public KeyboardControllerPressEventArgs(KeyboardSpecialKey key)
+        {
+            SpecialKey = key;
+        }
+    }
+
+    public enum KeyboardSpecialKey
+    {
+        None = 0, Backspace, Clear, GoButton, SecondaryButton
+    }
 }
