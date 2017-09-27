@@ -108,8 +108,9 @@ namespace PepperDash.Essentials.Core
 
 			// find a direct tie
 			var directTie = destDevInputTies.FirstOrDefault(
-				t => !(t.SourcePort.ParentDevice is IRoutingInputsOutputs) 
-					&& t.DestinationPort.ParentDevice == destination 
+				t =>// !(t.SourcePort.ParentDevice is IRoutingInputsOutputs) // why????
+                    //&& 
+            t.DestinationPort.ParentDevice == destination 
 					&& t.SourcePort.ParentDevice == source);
 			RoutingInputPort goodInputPort = null;
 			if (directTie != null) // Found a tie directly to the source

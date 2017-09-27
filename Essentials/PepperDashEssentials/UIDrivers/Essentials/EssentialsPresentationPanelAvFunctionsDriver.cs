@@ -485,7 +485,7 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 1,
                 b => { }));
             ActivityFooterSrl.Count = (ushort)(CurrentRoom.HasAudioDialer ? 2 : 1);
-            TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue =
+            TriList.UShortInput[UIUshortJoin.PresentationStagingCaretMode].UShortValue =
                 (ushort)(CurrentRoom.HasAudioDialer ? 1 : 0);
         }
 
@@ -504,7 +504,7 @@ namespace PepperDash.Essentials
                 ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(3, ActivityFooterSrl,
                     3, b => { if (!b) PowerButtonPressed(); }));
                 ActivityFooterSrl.Count = 3;
-                TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 2;
+                TriList.UShortInput[UIUshortJoin.PresentationStagingCaretMode].UShortValue = 2;
                 EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
             }
             else
@@ -512,7 +512,7 @@ namespace PepperDash.Essentials
                 ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl,
                     3, b => { if (!b) PowerButtonPressed(); }));
                 ActivityFooterSrl.Count = 2;
-                TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 1;
+                TriList.UShortInput[UIUshortJoin.PresentationStagingCaretMode].UShortValue = 1;
                 EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
             }
         }

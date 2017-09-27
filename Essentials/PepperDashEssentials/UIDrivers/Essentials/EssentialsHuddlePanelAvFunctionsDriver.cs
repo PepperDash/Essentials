@@ -318,7 +318,7 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 0, 
                 b => { if (!b) ShareButtonPressed(); }));
             ActivityFooterSrl.Count = 1;
-            TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 0;
+            TriList.UShortInput[UIUshortJoin.PresentationStagingCaretMode].UShortValue = 0;
             ShareButtonSig.BoolValue = false;
         }
 
@@ -333,7 +333,7 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl,
                 3, b => { if (!b) PowerButtonPressed(); }));
             ActivityFooterSrl.Count = 2;
-            TriList.UShortInput[UIUshortJoin.PresentationListCaretMode].UShortValue = 1;
+            TriList.UShortInput[UIUshortJoin.PresentationStagingCaretMode].UShortValue = 1;
             EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
             ShareButtonSig.BoolValue = CurrentRoom.OnFeedback.BoolValue;
         }

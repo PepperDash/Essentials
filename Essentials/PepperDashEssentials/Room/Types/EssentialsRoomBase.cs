@@ -97,6 +97,11 @@ namespace PepperDash.Essentials
         /// 
         /// </summary>
         public abstract void Shutdown();
+
+        /// <summary>
+        /// Override this to implement a default volume level(s) method
+        /// </summary>
+        public abstract void SetDefaultLevels();
     }
 
     /// <summary>

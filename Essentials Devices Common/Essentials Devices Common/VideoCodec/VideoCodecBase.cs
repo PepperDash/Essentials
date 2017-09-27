@@ -11,7 +11,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
-    public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer, IHasSharing, ICodecAudio
+    public abstract class VideoCodecBase : Device, IRoutingInputsOutputs, IUsageTracking, IHasDialer, IHasSharing, ICodecAudio
     {
         /// <summary>
         /// Fires when the status of any active, dialing, or incoming call changes or is new
@@ -28,11 +28,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #endregion
 
-        #region IRoutingInputs Members
-
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
-        #endregion
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
         /// <summary>
         /// Returns true when any call is not in state Unknown, Disconnecting, Disconnected
@@ -41,9 +39,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public BoolFeedback IncomingCallFeedback { get; private set; }
 
-        //public IntFeedback ActiveCallCountFeedback { get; private set; }
-
-        //abstract protected Func<int> ActiveCallCountFeedbackFunc { get; }
         abstract protected Func<bool> IncomingCallFeedbackFunc { get; }
         abstract protected Func<bool> PrivacyModeIsOnFeedbackFunc { get; }
         abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
@@ -62,6 +57,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             SharingSourceFeedback = new StringFeedback(SharingSourceFeedbackFunc);
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
+            OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
             ActiveCalls = new List<CodecActiveCallItem>();
         }

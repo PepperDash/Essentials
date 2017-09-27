@@ -365,6 +365,14 @@ namespace PepperDash.Essentials
 			RunRouteAction(LastSourceKey);
 		}
 
+        /// <summary>
+        /// Does what it says
+        /// </summary>
+        public override void SetDefaultLevels()
+        {
+            Debug.Console(0, this, "SetDefaultLevels not implemented");
+        }
+
 		/// <summary>
 		/// 
 		/// </summary>

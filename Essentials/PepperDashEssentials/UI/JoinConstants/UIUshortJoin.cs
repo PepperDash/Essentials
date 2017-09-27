@@ -37,9 +37,14 @@
         public const uint VolumeSlider6Value = 3862;
 
         /// <summary>
-        /// 3922
+        /// 3922: 0-4, center->left. 5-8, center -> right.
         /// </summary>
-        public const uint PresentationListCaretMode = 3922;
+        public const uint PresentationStagingCaretMode = 3922;
+
+        /// <summary>
+        /// 3923: 0-4, center->left. 5-8, center -> right.
+        /// </summary>
+        public const uint CallStagingCaretMode = 3923;
 
         /// <summary>
         /// 15024 - Modes 0: On hook, 1: Phone, 2: Video
