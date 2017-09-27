@@ -5,26 +5,22 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
     public interface iHasDirectory
     {
-        CodecDirectory Directory { get; }
+        CodecDirectory DirectoryRoot { get; }
 
-        /// <summary>
-        /// Searches the directory and returns a result 
-        /// </summary>
-        /// <param name="searchString"></param>
-        /// <param name="key"></param>
-        void SearchDirectory(string searchString, string key);
+        void SearchDirectory(string searchString);
+
+        void GetFolderContents(string folderId);
     }
 
     public class CodecDirectory
     {
-        public List<DirectoryFolder> Folders {get; private set;}
-
-        public List<DirectoryContact> Contacts { get; private set; }
+        public List<DirectoryItem> DirectoryResults { get; private set; }
 
         public int Offset { get; private set; }
 
@@ -32,16 +28,57 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
         public CodecDirectory()
         {
-            Folders = new List<DirectoryFolder>();
-            Contacts = new List<DirectoryContact>();
+            DirectoryResults = new List<DirectoryItem>();
+        }
+
+        public void AddFoldersToDirectory(List<DirectoryItem> folders)
+        {
+            DirectoryResults.AddRange(folders);
+
+            SortDirectory();
+        }
+
+        public void AddContactsToDirectory(List<DirectoryItem> contacts)
+        {
+            DirectoryResults.AddRange(contacts);
+
+            SortDirectory();
+        }
+
+        /// <summary>
+        /// Formats the DirectoryResults list to display all folders alphabetically, then all contacts alphabetically
+        /// </summary>
+        private void SortDirectory()
+        {
+            var sortedFolders = new List<DirectoryItem>();
+
+            sortedFolders.AddRange(DirectoryResults.Where(f => f is DirectoryFolder));
+
+            sortedFolders.OrderBy(f => f.Name);
+
+            var sortedContacts = new List<DirectoryItem>();
+
+            sortedContacts.AddRange(DirectoryResults.Where(c => c is DirectoryContact));
+
+            sortedFolders.OrderBy(c => c.Name);
+
+            DirectoryResults.Clear();
+
+            DirectoryResults.AddRange(sortedFolders);
+
+            DirectoryResults.AddRange(sortedContacts);
         }
     }
 
-    public class DirectoryFolder
+    public class DirectoryItem
+    {
+        public string Name { get; set; }
+    }
+
+    public class DirectoryFolder : DirectoryItem
     {
         public List<DirectoryContact> Contacts { get; set; }
         public string FolderId { get; set; }
-        public string Name { get; set; }
         public DirectoryFolder ParentFolder { get; set; }
 
         public DirectoryFolder()
@@ -51,11 +88,10 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         }
     }
 
-    public class DirectoryContact
+    public class DirectoryContact : DirectoryItem
     {
         public string ContactId { get; set; }
-        public DirectoryFolder Folder { get; set; }   
-        public string Name { get; set; }
+        public string FolderId { get; set; }   
         public string Title { get; set; }
         public List<ContactMethod> ContactMethods { get; set; }
     }
