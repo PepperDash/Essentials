@@ -33,6 +33,10 @@
         /// 3901 The Tech page menu list
         /// </summary>
         public const uint TechMenuList = 3901;
+        /// <summary>
+        /// 3902 Tech page statuses 
+        /// </summary>
+        public const uint TechStatusList = 3902;
 
 	}
 }

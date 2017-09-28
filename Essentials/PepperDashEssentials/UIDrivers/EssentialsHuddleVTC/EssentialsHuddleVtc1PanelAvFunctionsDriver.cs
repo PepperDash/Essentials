@@ -750,13 +750,13 @@ namespace PepperDash.Essentials
                         if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
                             continue;
 
-                        var actualSource = DeviceManager.GetDeviceForKey(srcConfig.SourceKey) as Device;
-                        if (actualSource == null)
-                        {
-                            Debug.Console(1, "Cannot assign missing source '{0}' to source UI list",
-                                srcConfig.SourceKey);
-                            continue;
-                        }
+                        //var actualSource = DeviceManager.GetDeviceForKey(srcConfig.SourceKey) as Device;
+                        //if (actualSource == null)
+                        //{
+                        //    Debug.Console(1, "Cannot assign missing source '{0}' to source UI list",
+                        //        srcConfig.SourceKey);
+                        //    continue;
+                        //}
                         var routeKey = kvp.Key;
                         var item = new SubpageReferenceListSourceItem(i++, SourceStagingSrl, srcConfig,
                             b => { if (!b) UiSelectSource(routeKey); });
