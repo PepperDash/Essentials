@@ -213,43 +213,55 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     {
                         contact.Name = c.Name.Value;
                         contact.ContactId = c.ContactId.Value;
-                        contact.Title = c.Title.Value;
+
+                        if(c.Title != null)
+                            contact.Title = c.Title.Value;
 
                         if (Debug.Level > 0)
                             Debug.Console(1, "{0}\nContact Methods:", contact.Name);
 
                         foreach (ContactMethod m in c.ContactMethod)
                         {
-                            eContactMethodCallType callType = eContactMethodCallType.Unknown;
+
+                            var tempContactMethod = new PepperDash.Essentials.Devices.Common.Codec.ContactMethod();
+
                             if (m.CallType != null)
                             {
-                                if (m.CallType.Value.ToLower() == "audio")
-                                    callType = eContactMethodCallType.Audio;
-                                else if (m.CallType.Value.ToLower() == "video")
-                                    callType = eContactMethodCallType.Video;
+                                eContactMethodCallType callType = eContactMethodCallType.Unknown;
+                                if (m.CallType != null)
+                                {
+                                    if (m.CallType.Value.ToLower() == "audio")
+                                        callType = eContactMethodCallType.Audio;
+                                    else if (m.CallType.Value.ToLower() == "video")
+                                        callType = eContactMethodCallType.Video;
+
+                                    tempContactMethod.CallType = callType;
+                                }
                             }
 
-                            eContactMethodDevice device = eContactMethodDevice.Unknown;
+                            if (m.Device != null)
+                            {
+                                eContactMethodDevice device = eContactMethodDevice.Unknown;
 
-                            if (m.Device.Value.ToLower() == "mobile")
-                                device = eContactMethodDevice.Mobile;
-                            else if (m.Device.Value.ToLower() == "telephone")
-                                device = eContactMethodDevice.Telephone;
-                            else if (m.Device.Value.ToLower() == "video")
-                                device = eContactMethodDevice.Video;
-                            else if (m.Device.Value.ToLower() == "other")
-                                device = eContactMethodDevice.Other;
+                                if (m.Device.Value.ToLower() == "mobile")
+                                    device = eContactMethodDevice.Mobile;
+                                else if (m.Device.Value.ToLower() == "telephone")
+                                    device = eContactMethodDevice.Telephone;
+                                else if (m.Device.Value.ToLower() == "video")
+                                    device = eContactMethodDevice.Video;
+                                else if (m.Device.Value.ToLower() == "other")
+                                    device = eContactMethodDevice.Other;
+
+                                tempContactMethod.Device = device;
+                            }
 
                             if (Debug.Level > 0)
-                                Debug.Console(1, "Number: {0} CallType: {1} Device: {2}", m.Number.Value, callType, device);
+                                Debug.Console(1, "Number: {0}", m.Number.Value);
 
-                            contact.ContactMethods.Add(new PepperDash.Essentials.Devices.Common.Codec.ContactMethod()
-                            {
-                                Number = m.Number.Value,
-                                ContactMethodId = m.ContactMethodId.Value,
-                                CallType = callType,
-                                Device = device
-                            });
+                            tempContactMethod.Number = m.Number.Value;
+                            tempContactMethod.ContactMethodId = m.ContactMethodId.Value;
+
+                            contact.ContactMethods.Add(tempContactMethod);
                         }
                         rootContacts.Add(contact);
                     }
@@ -269,8 +281,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <returns></returns>
         public static CodecDirectory ConvertCiscoPhonebookToGeneric(PhonebookSearchResult result)
         {
-
-#warning Modify this to return a flat list of mixed folders/contacts
             var directory = new Codec.CodecDirectory();
 
             var folders = new List<Codec.DirectoryItem>();
