@@ -11,7 +11,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
-    public abstract class VideoCodecBase : Device, IRoutingInputsOutputs, IUsageTracking, IHasDialer, IHasSharing, ICodecAudio
+    public abstract class VideoCodecBase : Device, IRoutingInputsOutputs, IUsageTracking, IHasDialer, IHasSharing, ICodecAudio, iCodecInfo
     {
         /// <summary>
         /// Fires when the status of any active, dialing, or incoming call changes or is new
@@ -46,6 +46,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         abstract protected Func<string> SharingSourceFeedbackFunc { get; }
 
         public List<CodecActiveCallItem> ActiveCalls { get; set; }
+
+        public VideoCodecInfo CodecInfo { get; protected set; }
 
         public VideoCodecBase(string key, string name)
             : base(key, name)
@@ -158,6 +160,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 sb.AppendFormat("{0} {1} -- {2} {3}\r", c.Id, c.Number, c.Name, c.Status);
             Debug.Console(1, "{0}", sb.ToString());
         }
+
     }
 
     /// <summary>

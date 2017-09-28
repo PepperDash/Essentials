@@ -15,8 +15,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         Disconnected,
         Disconnecting, 
         EarlyMedia, 
-        Idle, 
-        Incoming, 
+        Idle,
         OnHold, 
         Ringing, 
         Preserved, 
@@ -63,10 +62,6 @@ namespace PepperDash.Essentials.Devices.Common.Codec
                 case "Idle":
                     {
                         return eCodecCallStatus.Idle;
-                    }
-                case "Incoming":
-                    {
-                        return eCodecCallStatus.Incoming;
                     }
                 case "OnHold":
                     {

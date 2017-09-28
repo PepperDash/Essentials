@@ -156,8 +156,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public bool CommDebuggingIsOn;
 
-        public bool MultiSiteOptionIsEnabled;
-
         string Delimiter = "\r\n";
 
         int PresentationSource;
@@ -210,6 +208,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             CodecConfiguration = new CiscoCodecConfiguration.RootObject();
             CodecStatus = new CiscoCodecStatus.RootObject();
+
+            CodecInfo = new CiscoCodecInfo(CodecStatus, CodecConfiguration);
 
             CallHistory = new CodecCallHistory();
 
@@ -498,8 +498,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     {
                         SyncState.InitialStatusMessageReceived();
 
-                        SetStatusProperties(CodecStatus);
-
                         if (!SyncState.InitialConfigurationMessageWasReceived)
                             SendText("xConfiguration");
                     }
@@ -643,17 +641,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         }
 
         protected override Func<bool> IncomingCallFeedbackFunc { get { return () => false; } }
-
-
-        /// <summary>
-        /// Sets the properties based on a complete status message return
-        /// </summary>
-        /// <param name="status"></param>
-        private void SetStatusProperties(CiscoCodecStatus.RootObject status)
-        {
-            if (status.Status.SystemUnit.Software.OptionKeys.MultiSite.Value == "true")
-                MultiSiteOptionIsEnabled = true;
-        }
 
         /// <summary>
         /// Gets the first CallId or returns null
@@ -917,6 +904,73 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             SendText(string.Format("xCommand CallHistory DeleteEntry CallHistoryId: {0} AcknowledgeConsecutiveDuplicates: True", entry.OccurrenceHistoryId));
         }
+
+        public class CiscoCodecInfo : VideoCodecInfo
+        {
+            public CiscoCodecStatus.RootObject CodecStatus { get; private set; }
+
+            public CiscoCodecConfiguration.RootObject CodecConfiguration { get; private set; }
+
+            public override bool MultiSiteOptionIsEnabled
+            {
+                                get
+                {
+                    if (CodecStatus.Status.SystemUnit.Software.OptionKeys.MultiSite.Value.ToLower() == "true")
+                        return true;
+                    else
+                        return false;
+                }
+
+            }
+            public override string IpAddress
+            {
+                get
+                {
+                    if (CodecConfiguration.Configuration.Network != null)   
+                    {
+                        if (CodecConfiguration.Configuration.Network.Count > 0)
+                            return CodecConfiguration.Configuration.Network[0].IPv4.Address.Value;
+                    }
+                    return string.Empty;
+                }
+            }
+            public override string PhoneNumber
+            {
+                get
+                {
+                    if (CodecConfiguration.Configuration.H323.H323Alias.E164 != null)           
+                        return CodecConfiguration.Configuration.H323.H323Alias.E164.Value;
+                    else
+                        return string.Empty;
+                }
+            }
+            public override string SipUri
+            {
+                get
+                {
+                    if (CodecConfiguration.Configuration.H323.H323Alias.ID != null)          
+                        return CodecConfiguration.Configuration.H323.H323Alias.ID.Value;
+                    else
+                        return string.Empty;
+                }
+            }
+            public override bool AutoAnswerEnabled
+            {
+                get
+                {
+                    if (CodecConfiguration.Configuration.Conference.AutoAnswer.Mode.Value.ToLower() == "on")
+                        return true;
+                    else
+                        return false;
+                }
+            }
+
+            public CiscoCodecInfo(CiscoCodecStatus.RootObject status, CiscoCodecConfiguration.RootObject configuration)
+            {
+                CodecStatus = status;
+                CodecConfiguration = configuration;
+            }
+        }
     }
 
     /// <summary>
@@ -1091,4 +1145,5 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 InitialSyncComplete = false;
         }
     }
+
 }

@@ -269,9 +269,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public void TestIncomingVideoCall(string url)
         {
             Debug.Console(1, this, "TestIncomingVideoCall from {0}", url);
-            var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type= eCodecCallType.Video };
+            var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type= eCodecCallType.Video, Direction = eCodecCallDirection.Incoming };
             ActiveCalls.Add(call);
-            SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Incoming, call);
+            SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Ringing, call);
             _IncomingCall = true;
             IncomingCallFeedback.FireUpdate();
         }
@@ -283,9 +283,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public void TestIncomingAudioCall(string url)
         {
             Debug.Console(1, this, "TestIncomingAudioCall from {0}", url);
-            var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type = eCodecCallType.Audio };
+            var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type = eCodecCallType.Audio, Direction = eCodecCallDirection.Incoming };
             ActiveCalls.Add(call);
-            SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Incoming, call);
+            SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Ringing, call);
             _IncomingCall = true;
             IncomingCallFeedback.FireUpdate();
         }

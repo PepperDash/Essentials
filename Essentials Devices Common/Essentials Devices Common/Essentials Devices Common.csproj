@@ -107,6 +107,7 @@
     <Compile Include="Codec\eCodecCallType.cs" />
     <Compile Include="Codec\eCodecCallStatus.cs" />
     <Compile Include="Codec\iCodecAudio.cs" />
+    <Compile Include="Codec\iCodecInfo.cs" />
     <Compile Include="Codec\iHasCallFavorites.cs" />
     <Compile Include="Codec\iHasCallHistory.cs" />
     <Compile Include="Codec\iHasDialer.cs" />

@@ -160,10 +160,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     break;
                 case eCodecCallStatus.Idle:
                     break;
-                case eCodecCallStatus.Incoming:
-                    // fire up a modal
-                    ShowIncomingModal(call);
-                    break;
                 case eCodecCallStatus.OnHold:
                     break;
                 case eCodecCallStatus.Preserved:
@@ -171,7 +167,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 case eCodecCallStatus.RemotePreserved:
                     break;
                 case eCodecCallStatus.Ringing:
-                    break;
+                    {
+                        // fire up a modal
+                        if( !Codec.CodecInfo.AutoAnswerEnabled && call.Direction == eCodecCallDirection.Incoming)
+                            ShowIncomingModal(call);
+                        break;
+                    }
                 default:
                     break;
             }
