@@ -121,15 +121,46 @@ namespace PepperDash.Essentials
         /// </summary>
         JoinedSigInterlock StagingBarInterlock;
 
+        /// <summary>
+        /// Interlocks the various call-related subpages
+        /// </summary>
         JoinedSigInterlock CallPagesInterlock;
 
+        /// <summary>
+        /// The Video codec driver
+        /// </summary>
         PepperDash.Essentials.UIDrivers.VC.EssentialsVideoCodecUiDriver VCDriver;
 
+        /// <summary>
+        /// The driver for the tech page. Lazy getter for memory usage
+        /// </summary>
+        PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver TechDriver
+        {
+            get
+            {
+                if (_TechDriver == null)
+                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, this);
+                return _TechDriver;
+            }
+        }
+        PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver _TechDriver;
+
+        /// <summary>
+        /// Controls timeout of notification ribbon timer
+        /// </summary>
         CTimer RibbonTimer;
 
+        /// <summary>
+        /// The keyboard
+        /// </summary>
         public PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; private set; }
 
+        /// <summary>
+        /// The mode showing. Presentation or call.
+        /// </summary>
         UiDisplayMode CurrentMode = UiDisplayMode.Start;
+
+
 
         /// <summary>
         /// Constructor
@@ -277,14 +308,14 @@ namespace PepperDash.Essentials
             
             // Setup button - shows volumes with default button OR hold for tech page
             TriList.SetSigHeldAction(UIBoolJoin.GearHeaderButtonPress, 2000,
-                () => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.TechPanelSetupVisible),
+                ShowTech,
                 () => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible)); 
-            TriList.SetSigFalseAction(UIBoolJoin.TechPagesExitButton, () =>
+            TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
                 PopupInterlock.HideAndClear());
 
-            // Default Volume button
+            // Volume related things
             TriList.SetSigFalseAction(UIBoolJoin.VolumeDefaultPress, () => CurrentRoom.SetDefaultLevels());
-
+            TriList.SetString(UIStringJoin.AdvancedVolumeSlider1Text, "Room");
             
             if (TriList is CrestronApp)
                 TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = false;
@@ -377,6 +408,15 @@ namespace PepperDash.Essentials
                 RibbonTimer.Stop();
                 RibbonTimer = null;
             }
+        }
+
+        /// <summary>
+        /// Reveals the tech page and puts away anything that's in the way.
+        /// </summary>
+        void ShowTech()
+        {
+            PopupInterlock.HideAndClear();
+            TechDriver.Show();
         }
 
         /// <summary>
@@ -710,13 +750,13 @@ namespace PepperDash.Essentials
                         if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
                             continue;
 
-                        var actualSource = DeviceManager.GetDeviceForKey(srcConfig.SourceKey) as Device;
-                        if (actualSource == null)
-                        {
-                            Debug.Console(1, "Cannot assign missing source '{0}' to source UI list",
-                                srcConfig.SourceKey);
-                            continue;
-                        }
+                        //var actualSource = DeviceManager.GetDeviceForKey(srcConfig.SourceKey) as Device;
+                        //if (actualSource == null)
+                        //{
+                        //    Debug.Console(1, "Cannot assign missing source '{0}' to source UI list",
+                        //        srcConfig.SourceKey);
+                        //    continue;
+                        //}
                         var routeKey = kvp.Key;
                         var item = new SubpageReferenceListSourceItem(i++, SourceStagingSrl, srcConfig,
                             b => { if (!b) UiSelectSource(routeKey); });

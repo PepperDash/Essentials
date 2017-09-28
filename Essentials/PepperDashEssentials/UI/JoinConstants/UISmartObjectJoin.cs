@@ -29,6 +29,14 @@
         /// 15022 The main activity footer
         /// </summary>
         public const uint ActivityFooterSRL = 15022;
+        /// <summary>
+        /// 3901 The Tech page menu list
+        /// </summary>
+        public const uint TechMenuList = 3901;
+        /// <summary>
+        /// 3902 Tech page statuses 
+        /// </summary>
+        public const uint TechStatusList = 3902;
 
 	}
 }

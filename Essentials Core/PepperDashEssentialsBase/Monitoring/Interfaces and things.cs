@@ -26,11 +26,14 @@ namespace PepperDash.Essentials.Core
 	}
 
 	/// <summary>
-	/// 
+	/// StatusUnknown = 0, IsOk = 1, InWarning = 2, InError = 3
 	/// </summary>
 	public enum MonitorStatus
 	{
-		IsOk, InWarning, InError, StatusUnknown
+        StatusUnknown = 0,
+		IsOk = 1, 
+        InWarning = 2, 
+        InError = 3
 	}
 
 	public class MonitorStatusChangeEventArgs : EventArgs

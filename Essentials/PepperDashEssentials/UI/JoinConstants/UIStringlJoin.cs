@@ -29,6 +29,14 @@ namespace PepperDash.Essentials
         //public const uint KeypadText = 2901;
 
         /// <summary>
+        /// 3101 - This is the start of the range 3101 - 3120
+        /// </summary>
+        public const uint TechMenuButtonTextStart = 3101;
+
+        //----- through 3120
+
+
+        /// <summary>
         /// 3812
         /// </summary>
         public const uint AdvancedVolumeSlider1Text = 3812;

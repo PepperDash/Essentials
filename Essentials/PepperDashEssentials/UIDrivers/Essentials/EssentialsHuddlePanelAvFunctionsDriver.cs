@@ -220,7 +220,7 @@ namespace PepperDash.Essentials
             // Setup button
             TriList.SetSigHeldAction(UIBoolJoin.GearHeaderButtonPress, 2000,
                 () => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.TechPanelSetupVisible));// ShowInterlockedModal(UIBoolJoin.TechPanelSetupVisible));
-            TriList.SetSigFalseAction(UIBoolJoin.TechPagesExitButton, () =>
+            TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
                 PopupInterlock.HideAndClear()); // HideCurrentInterlockedModal());
 #warning This gets overridden by config after NYU demo
             if(TriList is CrestronApp)

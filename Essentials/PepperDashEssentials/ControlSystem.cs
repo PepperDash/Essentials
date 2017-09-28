@@ -15,6 +15,7 @@ namespace PepperDash.Essentials
 	public class ControlSystem : CrestronControlSystem
 	{
 		PepperDashPortalSyncClient PortalSync;
+        HttpLogoServer LogoServer;
 
 		public ControlSystem()
 			: base()
@@ -62,6 +63,8 @@ namespace PepperDash.Essentials
 					LoadDevices();
 					LoadTieLines();
 					LoadRooms();
+
+                    LogoServer = new HttpLogoServer(8080, @"\html\logo");
 
 					DeviceManager.ActivateAll();
 					Debug.Console(0, "Essentials load complete\r" +
@@ -206,6 +209,5 @@ namespace PepperDash.Essentials
 					Debug.Console(0, "WARNING: Cannot create room from config, key '{0}'", roomConfig.Key);
 			}
 		}
-
 	}
 }

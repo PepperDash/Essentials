@@ -206,6 +206,43 @@ namespace PepperDash.Essentials
 
         // Letter joins start at 2921;
 
+
+
+        /// <summary>
+        /// 3101
+        /// </summary>
+        public const uint TechExitButton = 3101;
+        /// <summary>
+        /// 3106
+        /// </summary>
+        public const uint TechCommonItemsVisbible = 3106;
+        /// <summary>
+        /// 3107
+        /// </summary>
+        public const uint TechSystemStatusVisible = 3107;
+        /// <summary>
+        /// 3108
+        /// </summary>
+        public const uint TechDisplayControlsVisible = 3108;
+        /// <summary>
+        /// 3109
+        /// </summary>
+        public const uint TechPanelSetupVisible = 3109;
+        /// <summary>
+        /// 3110
+        /// </summary>
+        public const uint TechAdvancedVolumeVisible = 3110;
+        /// <summary>
+        /// 3111
+        /// </summary>
+        public const uint TechAboutVisible = 3111;
+        /// <summary>
+        /// 3112
+        /// </summary>
+        public const uint TechSchedulerVisible = 3112;
+
+
+
        //******************************************************
         /// <summary>
         /// 3811
@@ -300,14 +337,8 @@ namespace PepperDash.Essentials
         /// 3891
         /// </summary>
         public const uint VolumeDefaultPress = 3891;
-        /// <summary>
-        /// 3901
-        /// </summary>
-        public const uint TechPagesExitButton = 3901;
-        /// <summary>
-        /// 3902
-        /// </summary>
-        public const uint TechPanelSetupVisible = 3902;
+
+
         /// <summary>
         /// 3999
         /// </summary>

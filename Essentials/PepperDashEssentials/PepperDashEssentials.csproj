@@ -164,11 +164,14 @@
     <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLargeSetTopBoxGeneric.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
+    <Compile Include="UIDrivers\SigInterlock.cs" />
     <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddlePresentationUiDriver.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddleTechPageDriver.cs" />
+    <Compile Include="UI\HttpLogoServer.cs" />
     <Compile Include="UI\SubpageReferenceListCallStagingItem.cs" />
     <Compile Include="UIDrivers\VC\EssentialsVideoCodecUiDriver.cs" />
     <Compile Include="UIDrivers\JoinedSigInterlock.cs" />
-    <Compile Include="UIDrivers\EssentialsHuddleVTC\HuddleVTCPanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddleVtc1PanelAvFunctionsDriver.cs" />
     <Compile Include="UIDrivers\VolumeAndSourceChangeArgs.cs" />
     <Compile Include="UI\JoinConstants\UISmartObjectJoin.cs" />
     <Compile Include="UI\JoinConstants\UIStringlJoin.cs" />
