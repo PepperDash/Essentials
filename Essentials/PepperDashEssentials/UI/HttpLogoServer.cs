@@ -64,8 +64,6 @@ namespace PepperDash.Essentials
         void Server_OnHttpRequest(object sender, OnHttpRequestArgs args)
         {
             var path = args.Request.Path;
-            Debug.Console(0, "########## PATH={0}", path);
-
             if (File.Exists(FileDirectory + @"\" + path))
             {
                 string filePath = path.Replace('/', '\\');
@@ -74,7 +72,6 @@ namespace PepperDash.Essentials
                 {
                     args.Response.Header.ContentType = GetContentType(new FileInfo(localPath).Extension);
                     args.Response.ContentStream = new FileStream(localPath, FileMode.Open, FileAccess.Read);
-                    //args.Response.CloseStream = true;
                 }
                 else
                 {

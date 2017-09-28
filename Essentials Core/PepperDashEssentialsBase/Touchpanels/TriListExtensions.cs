@@ -81,21 +81,25 @@ namespace PepperDash.Essentials.Core
         public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction, Action releaseAction)
         {
             CTimer heldTimer = null;
+            bool wasHeld = false;
             return tl.SetBoolSigAction(sigNum, press =>
             {
                 if (press)
                 {
-
+                    wasHeld = false;
                     // Could insert a pressed action here
                     heldTimer = new CTimer(o =>
                     {
                         // if still held and there's an action
                         if (tl.BooleanOutput[sigNum].BoolValue && heldAction != null)
+                        {
+                            wasHeld = true;
                             // Hold action here
                             heldAction();
+                        }
                     }, heldMs);
                 }
-                else if (heldTimer != null) // released
+                else if(!wasHeld) // released
                 {
                     heldTimer.Stop();
                     if (releaseAction != null)

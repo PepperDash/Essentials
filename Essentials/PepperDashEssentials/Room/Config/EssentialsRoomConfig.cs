@@ -141,7 +141,7 @@ namespace PepperDash.Essentials.Room.Config
             if (Type == "url")
                 return Url;
             if (Type == "system")
-                return string.Format("http://{0}:5646/logo", 
+                return string.Format("http://{0}:8080/logo.png", 
                     CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0));
             return null;
         }
