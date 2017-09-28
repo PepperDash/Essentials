@@ -462,6 +462,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                         tempActiveCall.Name = call.DisplayName.Value;
                                         changeDetected = true;
                                     }
+                                if (call.Direction != null)
+                                {
+                                    if (!string.IsNullOrEmpty(call.Direction.Value))
+                                    {
+                                        tempActiveCall.Direction = CodecCallDirection.ConvertToDirectionEnum(call.Direction.Value);
+                                        changeDetected = true;
+                                    }
+                                }
 
                                 if (changeDetected)
                                 {
@@ -477,7 +485,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                     Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value),
                                     Name = call.DisplayName.Value,
                                     Number = call.RemoteNumber.Value,
-                                    Type = CodecCallType.ConvertToTypeEnum(call.CallType.Value)
+                                    Type = CodecCallType.ConvertToTypeEnum(call.CallType.Value),
+                                    Direction = CodecCallDirection.ConvertToDirectionEnum(call.Direction.Value)
                                 };
 
                                 // Add it to the ActiveCalls List
