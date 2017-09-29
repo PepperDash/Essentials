@@ -85,6 +85,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
 
+            // If the codec is ready, then get the values we want, otherwise wait
+            if (Codec.IsReady)
+                Codec_IsReady();
+            else
+                codec.IsReadyChange += (o, a) => Codec_IsReady();
+
             InCall = new BoolFeedback(() => false);
             LocalPrivacyIsMuted = new BoolFeedback(() => false);
 
@@ -113,6 +119,19 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCKeypadBackspaceVisible]);
 
             TriList.SetSigFalseAction(UIBoolJoin.VCKeypadTextPress, RevealKeyboard);
+
+            // Address and number
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Codec_IsReady()
+        {
+            TriList.SetString(UIStringJoin.RoomPhoneText, Codec.CodecInfo.PhoneNumber);
+            TriList.SetString(UIStringJoin.RoomSipText, Codec.CodecInfo.SipUri);
         }
 
         /// <summary>

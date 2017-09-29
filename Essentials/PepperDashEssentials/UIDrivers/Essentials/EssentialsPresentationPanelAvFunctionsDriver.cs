@@ -232,7 +232,6 @@ namespace PepperDash.Essentials
             TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>
                 ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
 
-#warning Add press and hold to gear button here
             TriList.SetSigFalseAction(UIBoolJoin.GearHeaderButtonPress, () =>
                 ShowInterlockedModal(UIBoolJoin.VolumesPageVisible));
 

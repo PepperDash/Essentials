@@ -18,6 +18,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public event EventHandler<CodecCallStatusItemChangeEventArgs> CallStatusChange;
 
+        public event EventHandler<EventArgs> IsReadyChange;
+
         #region IUsageTracking Members
 
         /// <summary>
@@ -48,6 +50,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public List<CodecActiveCallItem> ActiveCalls { get; set; }
 
         public VideoCodecInfo CodecInfo { get; protected set; }
+
+        public bool IsReady { get; protected set; }
 
         public VideoCodecBase(string key, string name)
             : base(key, name)
@@ -111,6 +115,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             var handler = CallStatusChange;
             if (handler != null)
                 handler(this, new CodecCallStatusItemChangeEventArgs(previousStatus, newStatus, item));
+        }
+
+        /// <summary>
+        /// Sets IsReady property and fires the event. Used for dependent classes to sync up their data.
+        /// </summary>
+        protected void SetIsReady()
+        {
+            IsReady = true;
+            var h = IsReadyChange;
+            if(h != null)
+                h(this, new EventArgs());
         }
 
         #region ICodecAudio Members

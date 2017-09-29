@@ -178,8 +178,8 @@ namespace PepperDash.Essentials
             SourceStagingSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.SourceStagingSRL, 3, 3, 3);
 
             ActivityFooterSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.ActivityFooterSRL, 3, 3, 3);
-            CallButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
-            ShareButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
+            CallButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
+            ShareButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
             EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
 
             SetupActivityFooterWhenRoomOff();
@@ -425,13 +425,13 @@ namespace PepperDash.Essentials
         void SetupActivityFooterWhenRoomOff()
         {
             ActivityFooterSrl.Clear();
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 1,
-                b => { if (!b) ActivityCallButtonPressed(); }));
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 0,
+            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 0,
                 b => { if (!b) ActivityShareButtonPressed(); }));
+            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 3,
+                b => { if (!b) ActivityCallButtonPressed(); }));
             ActivityFooterSrl.Count = 2;
-            TriList.SetUshort(UIUshortJoin.PresentationStagingCaretMode, 5); // right one slot
-            TriList.SetUshort(UIUshortJoin.CallStagingCaretMode, 1); // left one slot
+            TriList.SetUshort(UIUshortJoin.PresentationStagingCaretMode, 1); // right one slot
+            TriList.SetUshort(UIUshortJoin.CallStagingCaretMode, 5); // left one slot
         }
 
         /// <summary>
@@ -440,15 +440,15 @@ namespace PepperDash.Essentials
         void SetupActivityFooterWhenRoomOn()
         {
             ActivityFooterSrl.Clear();
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 1, 
-                b => { if (!b) ActivityCallButtonPressed(); }));
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 0, 
+            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 0, 
                 b => { if (!b) ActivityShareButtonPressed(); }));
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(3, ActivityFooterSrl,
-                3, b => { if (!b) PowerButtonPressed(); }));
+            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 3,
+                b => { if (!b) ActivityCallButtonPressed(); }));
+            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(3, ActivityFooterSrl, 4, 
+                b => { if (!b) PowerButtonPressed(); }));
             ActivityFooterSrl.Count = 3;
-            TriList.SetUshort(UIUshortJoin.PresentationStagingCaretMode, 0); // center
-            TriList.SetUshort(UIUshortJoin.CallStagingCaretMode, 2); // left -2
+            TriList.SetUshort(UIUshortJoin.PresentationStagingCaretMode, 2); // center
+            TriList.SetUshort(UIUshortJoin.CallStagingCaretMode, 0); // left -2
         }
 
         /// <summary>

@@ -24,6 +24,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public MockVC(string key, string name)
             : base(key, name)
         {
+            CodecInfo = new MockCodecInfo();
+
             // Debug helpers
             IncomingCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "IncomingCall={0}", _IncomingCall);
             MuteFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Mute={0}", _IsMuted);
@@ -40,6 +42,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             InputPorts.Add(HdmiIn1);
             InputPorts.Add(HdmiIn2);
             OutputPorts.Add(HdmiOut);
+
+            SetIsReady();
        }
 
         protected override Func<bool> IncomingCallFeedbackFunc
@@ -297,6 +301,44 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             Debug.Console(1, this, "TestFarEndHangup");
 
+        }
+    }
+
+    /// <summary>
+    /// Implementation for the mock VC
+    /// </summary>
+    public class MockCodecInfo : VideoCodecInfo
+    {
+
+        public override bool MultiSiteOptionIsEnabled
+        {
+            get { return true; }
+        }
+
+        public override string IpAddress
+        {
+            get { return "xx.xx.xx.xx"; }
+        }
+
+        public override string PhoneNumber
+        {
+            get { return "333-444-5555"; }
+        }
+
+        public override string SipUri
+        {
+            get { return "mock@someurl.com"; }
+        }
+
+        public override bool AutoAnswerEnabled
+        {
+            get { return _AutoAnswerEnabled; }
+        }
+        bool _AutoAnswerEnabled;
+
+        public void SetAutoAnswer(bool value)
+        {
+            _AutoAnswerEnabled = value;
         }
     }
 }

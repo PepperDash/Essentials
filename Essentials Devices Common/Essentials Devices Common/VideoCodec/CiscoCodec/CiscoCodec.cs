@@ -275,6 +275,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="e"></param>
         void SyncState_InitialSyncCompleted(object sender, EventArgs e)
         {
+            // Fire the ready event
+            SetIsReady();
             //CommDebuggingIsOn = false;
 
             GetCallHistory();

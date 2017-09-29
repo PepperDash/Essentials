@@ -40,47 +40,46 @@ namespace PepperDash.Essentials
 
 
         // Audio Conference
-#warning Move these to 1100's
         /// <summary>
-        /// 1001
+        /// 1101
         /// </summary>
-        public const uint ACKeypadVisible = 1001;
+        public const uint ACKeypadVisible = 1101;
         /// <summary>
-        /// 1002
+        /// 1102
         /// </summary>
-        public const uint ACStagingPopoverVisible = 1002;
+        public const uint ACStagingPopoverVisible = 1102;
         /// <summary>
-        /// 1011
+        /// 1111
         /// </summary>
-        public const uint ACSpeedDial1Press = 1011;
+        public const uint ACSpeedDial1Press = 1111;
         /// <summary>
-        /// 1012
+        /// 1112
         /// </summary>
-        public const uint ACSpeedDial2Press = 1012;
+        public const uint ACSpeedDial2Press = 1112;
         /// <summary>
-        /// 1013
+        /// 1113
         /// </summary>
-        public const uint ACSpeedDial3Press = 1013;
+        public const uint ACSpeedDial3Press = 1113;
         /// <summary>
-        /// 1014
+        /// 1114
         /// </summary>
-        public const uint ACSpeedDial4Press = 1014;
+        public const uint ACSpeedDial4Press = 1114;
         /// <summary>
-        /// 1021
+        /// 1121
         /// </summary>
-        public const uint ACSpeedDial1Visible = 1021;
+        public const uint ACSpeedDial1Visible = 1121;
         /// <summary>
-        /// 1022
+        /// 1122
         /// </summary>
-        public const uint ACSpeedDial2Visible = 1022;
+        public const uint ACSpeedDial2Visible = 1122;
         /// <summary>
-        /// 1023
+        /// 1123
         /// </summary>
-        public const uint ACSpeedDial3Visible = 1023;
+        public const uint ACSpeedDial3Visible = 1123;
         /// <summary>
-        /// 1024
+        /// 1124
         /// </summary>
-        public const uint ACSpeedDial4Visible = 1024;
+        public const uint ACSpeedDial4Visible = 1124;
 
         //******************************************************
         // Video Conference
