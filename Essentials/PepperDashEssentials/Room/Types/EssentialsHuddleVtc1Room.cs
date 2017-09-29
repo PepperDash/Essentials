@@ -218,6 +218,10 @@ namespace PepperDash.Essentials
                                 CurrentSourceInfo = null;
                             OnFeedback.FireUpdate();
                         }
+                        if (disp.PowerIsOnFeedback.BoolValue)
+                        {
+                            SetDefaultLevels();
+                        }
                     };
 
                 disp.IsWarmingUpFeedback.OutputChange += (o, a) => 
@@ -291,9 +295,9 @@ namespace PepperDash.Essentials
 		/// route or commands
 		/// </summary>
 		/// <param name="name"></param>
-		public void RunRouteAction(string routeKey, Action successCallback)
-		{
-			// Run this on a separate thread
+        public void RunRouteAction(string routeKey, Action successCallback)
+        {
+            // Run this on a separate thread
             new CTimer(o =>
             {
                 try
@@ -336,7 +340,10 @@ namespace PepperDash.Essentials
                     // Let's run it
                     var item = dict[routeKey];
                     if (routeKey.ToLower() != "roomoff")
+                    {
+             
                         LastSourceKey = routeKey;
+                    }
                     else
                         CurrentSourceInfoKey = null;
 
@@ -375,17 +382,6 @@ namespace PepperDash.Essentials
                 }
 
             }, 0); // end of CTimer
-		}
-        
-        /// <summary>
-        /// Does what it says
-        /// </summary>
-        public override void SetDefaultLevels()
-        {
-            Debug.Console(1, this, "Restoring default levels");
-            var vc = CurrentVolumeControls as IBasicVolumeWithFeedback;
-            if (vc != null)
-                vc.SetVolume(DefaultVolume);
         }
 
         /// <summary>
@@ -450,7 +446,17 @@ namespace PepperDash.Essentials
 			}
 			return true;
 		}
-
+        
+        /// <summary>
+        /// Does what it says
+        /// </summary>
+        public override void SetDefaultLevels()
+        {
+            Debug.Console(1, this, "Restoring default levels");
+            var vc = CurrentVolumeControls as IBasicVolumeWithFeedback;
+            if (vc != null)
+                vc.SetVolume(DefaultVolume);
+        }
         /// <summary>
         /// Will power the room on with the last-used source
         /// </summary>
