@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using PepperDash.Core;
+using PepperDash.Essentials.Devices.Common.Codec;
+
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
     public class CiscoCodecBookings
@@ -69,6 +72,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             public LastName LastName { get; set; }
             public Email Email { get; set; }
             public Id2 Id { get; set; }
+
+            public Organizer()
+            {
+                FirstName = new FirstName();
+                LastName = new LastName();
+                Email = new Email();
+            }
         }
 
         public class StartTime
@@ -97,6 +107,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             public StartTimeBuffer StartTimeBuffer { get; set; }
             public EndTime EndTime { get; set; }
             public EndTimeBuffer EndTimeBuffer { get; set; }
+
+            public Time()
+            {
+                StartTime = new StartTime();
+                EndTime = new EndTime();
+            }
         }
 
         public class MaximumMeetingExtension
@@ -206,6 +222,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             public Role Role { get; set; }
             public Recording Recording { get; set; }
             public DialInfo DialInfo { get; set; }
+
+            public Booking()
+            {
+                Time = new Time();
+                Id = new Id();
+                Organizer = new Organizer();
+                Title = new Title();
+                Agenda = new Agenda();
+                Privacy = new Privacy();
+            }
         }
 
         public class BookingsListResult
@@ -224,6 +250,47 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public class RootObject
         {
             public CommandResponse CommandResponse { get; set; }
+        }
+
+        /// <summary>
+        /// Extracts the necessary meeting values from the Cisco bookings response ans converts them to the generic class
+        /// </summary>
+        /// <param name="bookings"></param>
+        /// <returns></returns>
+        public static List<Meeting> GetGenericMeetingsFromBookingResult(List<Booking> bookings)
+        {
+            var meetings = new List<Meeting>();
+
+            if (Debug.Level > 0)
+            {
+                Debug.Console(1, "Meetings List:\n"); 
+            }
+
+            foreach(Booking b in bookings)
+            {
+                var meeting = new Meeting();
+
+                meeting.Id = b.Id.Value;
+                meeting.Organizer = string.Format("{0}, {1}", b.Organizer.LastName.Value, b.Organizer.FirstName.Value);
+                meeting.Title = b.Title.Value;
+                meeting.Agenda = b.Agenda.Value;
+                meeting.StartTime = b.Time.StartTime.Value;
+                meeting.EndTime = b.Time.EndTime.Value;
+                meeting.Privacy = CodecCallPrivacy.ConvertToDirectionEnum(b.Privacy.Value);
+
+                if(Debug.Level > 0)
+                {
+                    Debug.Console(1, "Title: {0}, ID: {1}, Organizer: {2}, Agenda: {3}", meeting.Title, meeting.Id, meeting.Organizer, meeting.Agenda);
+                    Debug.Console(1, "    Start Time: {0}, End Time: {1}, Duration: {2}", meeting.StartTime, meeting.EndTime, meeting.Duration);
+                    Debug.Console(1, "    Joinable: {0}", meeting.Joinable);
+                }
+            }
+
+            meetings.OrderBy(m => m.StartTime);
+
+
+
+            return meetings;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 
-    public class CiscoCodec : VideoCodecBase, IHasCallHistory, iHasCallFavorites, iHasDirectory
+    public class CiscoCodec : VideoCodecBase, IHasCallHistory, iHasCallFavorites, iHasDirectory, IHasScheduleAwareness
     {
         public event EventHandler<EventArgs> UpcomingMeetingWarning;
 
@@ -56,6 +56,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public CodecDirectory DirectoryRoot { get; private set; }
 
+        public CodecScheduleAwareness CodecSchedule { get; private set; }
+
         /// <summary>
         /// Gets and returns the scaled volume of the codec
         /// </summary>
@@ -88,10 +90,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         protected override Func<string> SharingSourceFeedbackFunc
         {
-#warning figure out how to return the key of the shared source somehow
+#warning verify that source feedback to room works from codec
             get 
             {
-                return () => "todo";
+                return () => PresentationSourceKey;
             }
         }
 
@@ -160,11 +162,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         int PresentationSource;
 
+        string PresentationSourceKey;
+
         string PhonebookMode = "Local"; // Default to Local
 
         int PhonebookResultsLimit = 255; // Could be set later by config.
 
         CTimer LoginMessageReceived;
+
+        public RoutingInputPort CodecOsdIn { get; private set; }
+        public RoutingInputPort HdmiIn1 { get; private set; }
+        public RoutingInputPort HdmiIn2 { get; private set; }
+        public RoutingOutputPort HdmiOut { get; private set; }
 
         // Constructor for IBasicCommunication
         public CiscoCodec(string key, string name, IBasicCommunication comm, CiscoCodecPropertiesConfig props )
@@ -217,6 +226,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CallFavorites.Favorites = props.Favorites;
 
             DirectoryRoot = new CodecDirectory();
+
+            CodecSchedule = new CodecScheduleAwareness();
  
             //Set Feedback Actions
             CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
@@ -235,8 +246,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public override bool CustomActivate()
         {
             CrestronConsole.AddNewConsoleCommand(SendText, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
-            CrestronConsole.AddNewConsoleCommand(SetCommDebug, "SetCiscoCommDebug", "0 for Off, 1 for on", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(SetCommDebug, "SetCodecCommDebug", "0 for Off, 1 for on", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(GetPhonebook, "GetCodecPhonebook", "Triggers a refresh of the codec phonebook", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(GetBookings, "GetCodecBookings", "Triggers a refresh of the booking data for today", ConsoleAccessLevelEnum.AccessOperator);
 
             //CommDebuggingIsOn = true;
             Communication.Connect();
@@ -248,8 +260,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             CommunicationMonitor.Start();
 
-            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this));
-            InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource2), this));
+            CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
+            HdmiIn1 = new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this);
+            HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource2), this);
+
+            HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
+
+            InputPorts.Add(CodecOsdIn);
+            InputPorts.Add(HdmiIn1);
+            InputPorts.Add(HdmiIn2);
+            OutputPorts.Add(HdmiOut);
+
 
             string prefix = "xFeedback register ";
 
@@ -281,10 +302,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             GetCallHistory();
 
-            // Get bookings for the day
-            //SendText("xCommand Bookings List Days: 1 DayOffset: 0");
-
             GetPhonebook(null);
+
+            GetBookings(null);
         }
 
         public void SetCommDebug(string s)
@@ -609,7 +629,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                         JsonConvert.PopulateObject(response, codecBookings);
 
-                        // Do something with this data....
+                        CodecSchedule.Meetings = CiscoCodecBookings.GetGenericMeetingsFromBookingResult(codecBookings.CommandResponse.BookingsListResult.Booking);
                     }
 
                 }  
@@ -649,6 +669,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public override void ExecuteSwitch(object selector)
         {
             (selector as Action)();
+            PresentationSourceKey = selector.ToString();
         }
 
         protected override Func<bool> IncomingCallFeedbackFunc { get { return () => false; } }
@@ -675,6 +696,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         private void GetCallHistory()
         {
             SendText("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
+        }
+
+        /// <summary>
+        /// Gets the bookings for today
+        /// </summary>
+        /// <param name="command"></param>
+        public void GetBookings(string command)
+        {
+            SendText("xCommand Bookings List Days: 1 DayOffset: 0");
         }
 
         /// <summary>

@@ -106,12 +106,14 @@
     <Compile Include="Codec\eCodecCallDirection.cs" />
     <Compile Include="Codec\eCodecCallType.cs" />
     <Compile Include="Codec\eCodecCallStatus.cs" />
+    <Compile Include="Codec\eMeetingPrivacy.cs" />
     <Compile Include="Codec\iCodecAudio.cs" />
     <Compile Include="Codec\iCodecInfo.cs" />
     <Compile Include="Codec\iHasCallFavorites.cs" />
     <Compile Include="Codec\iHasCallHistory.cs" />
     <Compile Include="Codec\iHasDialer.cs" />
     <Compile Include="Codec\iHasDirectory.cs" />
+    <Compile Include="Codec\iHasScheduleAwareness.cs" />
     <Compile Include="Crestron\Gateways\CenRfgwController.cs" />
     <Compile Include="Display\ComTcpDisplayBase.cs" />
     <Compile Include="Display\SamsungMDCDisplay.cs" />
