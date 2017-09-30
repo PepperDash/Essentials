@@ -42,6 +42,16 @@ namespace PepperDash.Essentials.UIDrivers
         /// </summary>
         public const uint JoinText = 1;
 
+        CTimer PinAuthorizedTimer;
+
+        string Pin;
+
+        StringBuilder PinEntryBuilder = new StringBuilder(4);
+
+        bool IsAuthorized;
+
+        SmartObjectNumeric PinKeypad;
+
 
 
         /// <summary>
@@ -49,10 +59,12 @@ namespace PepperDash.Essentials.UIDrivers
         /// </summary>
         /// <param name="trilist"></param>
         /// <param name="parent"></param>
-        public EssentialsHuddleTechPageDriver(BasicTriListWithSmartObject trilist, IAVDriver parent)
+        public EssentialsHuddleTechPageDriver(BasicTriListWithSmartObject trilist, IAVDriver parent, string pin)
             : base(trilist)
         {
             Parent = parent;
+            Pin = pin;
+
             PagesInterlock = new JoinedSigInterlock(trilist);
             PagesInterlock.SetButDontShow(UIBoolJoin.TechSystemStatusVisible);
 
@@ -83,6 +95,8 @@ namespace PepperDash.Essentials.UIDrivers
             MenuList.Count = 3;
 
             BuildStatusList();
+
+            SetupPinModal();
         }
         
         /// <summary>
@@ -90,9 +104,21 @@ namespace PepperDash.Essentials.UIDrivers
         /// </summary>
         public override void Show()
         {
-            TriList.SetBool(UIBoolJoin.TechCommonItemsVisbible, true);
-            PagesInterlock.Show();
-            base.Show();
+            // divert to PIN if we need auth
+            if (IsAuthorized)
+            {
+                // Cancel the auth timer so we don't deauth after coming back in
+                if (PinAuthorizedTimer != null)
+                    PinAuthorizedTimer.Stop();
+
+                TriList.SetBool(UIBoolJoin.TechCommonItemsVisbible, true);
+                PagesInterlock.Show();
+                base.Show();
+            }
+            else
+            {
+                TriList.SetBool(UIBoolJoin.PinDialog4DigitVisible, true);
+            }
         }
 
         /// <summary>
@@ -100,10 +126,92 @@ namespace PepperDash.Essentials.UIDrivers
         /// </summary>
         public override void Hide()
         {
+            // Leave it authorized for 60 seconds.
+            if (IsAuthorized)
+                PinAuthorizedTimer = new CTimer(o => { 
+                    IsAuthorized = false;
+                    PinAuthorizedTimer = null;
+                }, 60000);
             TriList.SetBool(UIBoolJoin.TechCommonItemsVisbible, false);
             PagesInterlock.Hide();
             base.Hide();
         }
+
+        /// <summary>
+        /// Wire up the keypad and buttons
+        /// </summary>
+        void SetupPinModal()
+        {
+            TriList.SetSigFalseAction(UIBoolJoin.PinDialogCancelPress, CancelPinDialog);
+            PinKeypad = new SmartObjectNumeric(TriList.SmartObjects[UISmartObjectJoin.TechPinDialogKeypad], true);
+            PinKeypad.Digit0.UserObject = new Action<bool>(b => { if (b)DialPinDigit('0'); });
+            PinKeypad.Digit1.UserObject = new Action<bool>(b => { if (b)DialPinDigit('1'); });
+            PinKeypad.Digit2.UserObject = new Action<bool>(b => { if (b)DialPinDigit('2'); });
+            PinKeypad.Digit3.UserObject = new Action<bool>(b => { if (b)DialPinDigit('3'); });
+            PinKeypad.Digit4.UserObject = new Action<bool>(b => { if (b)DialPinDigit('4'); });
+            PinKeypad.Digit5.UserObject = new Action<bool>(b => { if (b)DialPinDigit('5'); });
+            PinKeypad.Digit6.UserObject = new Action<bool>(b => { if (b)DialPinDigit('6'); });
+            PinKeypad.Digit7.UserObject = new Action<bool>(b => { if (b)DialPinDigit('7'); });
+            PinKeypad.Digit8.UserObject = new Action<bool>(b => { if (b)DialPinDigit('8'); });
+            PinKeypad.Digit9.UserObject = new Action<bool>(b => { if (b)DialPinDigit('9'); });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="d"></param>
+        void DialPinDigit(char d)
+        {
+            PinEntryBuilder.Append(d);
+            var len = PinEntryBuilder.Length;
+            SetPinDotsFeedback(len);
+
+            // check it!
+            if (len == 4)
+            {
+                if (Pin == PinEntryBuilder.ToString())
+                {
+                    IsAuthorized = true;
+                    SetPinDotsFeedback(0);
+                    TriList.SetBool(UIBoolJoin.PinDialog4DigitVisible, false);
+                    Show();
+                }
+                else
+                {
+                    SetPinDotsFeedback(0);
+                    TriList.SetBool(UIBoolJoin.PinDialogErrorVisible, true);
+                    new CTimer(o => 
+                        {
+                            TriList.SetBool(UIBoolJoin.PinDialogErrorVisible, false);
+                        }, 1500);
+                }
+
+                PinEntryBuilder.Remove(0, len); // clear it either way
+            }
+        }
+
+        /// <summary>
+        /// Draws the dots as pin is entered
+        /// </summary>
+        /// <param name="len"></param>
+        void SetPinDotsFeedback(int len)
+        {
+            TriList.SetBool(UIBoolJoin.PinDialogDot1, len >= 1);
+            TriList.SetBool(UIBoolJoin.PinDialogDot2, len >= 2);
+            TriList.SetBool(UIBoolJoin.PinDialogDot3, len >= 3);
+            TriList.SetBool(UIBoolJoin.PinDialogDot4, len == 4);
+
+        }
+
+        /// <summary>
+        /// Does what it says
+        /// </summary>
+        void CancelPinDialog()
+        {
+            PinEntryBuilder.Remove(0, PinEntryBuilder.Length);
+            TriList.SetBool(UIBoolJoin.PinDialog4DigitVisible, false);
+        }
+
 
         /// <summary>
         /// 

@@ -346,6 +346,9 @@ namespace PepperDash.Essentials
         /// 12345
         /// </summary>
 		public const uint AvNoControlsSubVisible = 12345;
+
+        // 10000 - 14999 are general "source" pages
+
         /// <summary>
         /// 15001
         /// </summary>
@@ -610,5 +613,36 @@ namespace PepperDash.Essentials
         /// 15091
         /// </summary>
 		public const uint SetupFullDistrib = 15091;
+
+        // PIN dialogs ************************************
+
+        /// <summary>
+        /// 15201
+        /// </summary>
+        public const uint PinDialog4DigitVisible = 15201;
+        /// <summary>
+        /// 15206
+        /// </summary>
+        public const uint PinDialogCancelPress = 15206;
+        /// <summary>
+        /// 15207
+        /// </summary>
+        public const uint PinDialogErrorVisible = 15207;
+        /// <summary>
+        /// 15211
+        /// </summary>
+        public const uint PinDialogDot1 = 15211;
+        /// <summary>
+        /// 15212
+        /// </summary>
+        public const uint PinDialogDot2 = 15212;
+        /// <summary>
+        /// 15213
+        /// </summary>
+        public const uint PinDialogDot3 = 15213;
+        /// <summary>
+        /// 15214
+        /// </summary>
+        public const uint PinDialogDot4 = 15214;
     }
 }

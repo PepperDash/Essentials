@@ -37,6 +37,10 @@
         /// 3902 Tech page statuses 
         /// </summary>
         public const uint TechStatusList = 3902;
+        /// <summary>
+        /// 3903
+        /// </summary>
+        public const uint TechPinDialogKeypad = 3903;
 
 	}
 }

@@ -139,7 +139,8 @@ namespace PepperDash.Essentials
             get
             {
                 if (_TechDriver == null)
-                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, this);
+#warning Make PIN come from config!
+                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, this, "1234");
                 return _TechDriver;
             }
         }
