@@ -22,8 +22,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
     public class CiscoCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory, IHasScheduleAwareness
     {
-        public event EventHandler<EventArgs> UpcomingMeetingWarning;
-
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 
         public IBasicCommunication Communication { get; private set; }

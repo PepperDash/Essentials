@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
@@ -15,7 +16,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry);
     }
 
-    public enum eCodecOccurrenctType
+    public enum eCodecOccurrenceType
     {
         Unknown = 0,
         Placed,
@@ -28,7 +29,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public class CodecCallHistory
     {
-        event EventHandler<EventArgs> RecentCallsListHasChanged;
+        public event EventHandler<EventArgs> RecentCallsListHasChanged;
 
         public List<CallHistoryEntry> RecentCalls { get; private set; }
 
@@ -78,7 +79,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         public class CallHistoryEntry : CodecActiveCallItem
         {
             public DateTime StartTime { get; set; }
-            public eCodecOccurrenctType OccurenceType { get; set; }
+            public eCodecOccurrenceType OccurenceType { get; set; }
             public string OccurrenceHistoryId { get; set; }
         }
 
@@ -115,117 +116,27 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// Takes the Cisco occurence type and converts it to the matching enum
         /// </summary>
         /// <param name="s"></para
-        public eCodecOccurrenctType ConvertToOccurenceTypeEnum(string s)
+        public eCodecOccurrenceType ConvertToOccurenceTypeEnum(string s)
         {
             switch (s)
             {
                 case "Placed":
                     {
-                        return eCodecOccurrenctType.Placed;
+                        return eCodecOccurrenceType.Placed;
                     }
                 case "Received":
                     {
-                        return eCodecOccurrenctType.Received;
+                        return eCodecOccurrenceType.Received;
                     }
                 case "NoAnswer":
                     {
-                        return eCodecOccurrenctType.NoAnswer;
+                        return eCodecOccurrenceType.NoAnswer;
                     }
                 default:
-                    return eCodecOccurrenctType.Unknown;
+                    return eCodecOccurrenceType.Unknown;
             }
 
         }
 
-    }
-
-    public class CiscoCallHistory
-    {
-
-        public class CallbackNumber
-        {
-            public string Value { get; set; }
-        }
-
-        public class DisplayName
-        {
-            public string Value { get; set; }
-        }
-
-        public class LastOccurrenceStartTime
-        {
-            public DateTime Value { get; set; }
-        }
-
-        public class LastOccurrenceDaysAgo
-        {
-            public string Value { get; set; }
-        }
-
-        public class LastOccurrenceHistoryId
-        {
-            public string Value { get; set; }
-        }
-
-        public class OccurrenceType
-        {
-            public string Value { get; set; }
-        }
-
-        public class IsAcknowledged
-        {
-            public string Value { get; set; }
-        }
-
-        public class OccurrenceCount
-        {
-            public string Value { get; set; }
-        }
-
-        public class Entry
-        {
-            public string id { get; set; }
-            public CallbackNumber CallbackNumber { get; set; }
-            public DisplayName DisplayName { get; set; }
-            public LastOccurrenceStartTime LastOccurrenceStartTime { get; set; }
-            public LastOccurrenceDaysAgo LastOccurrenceDaysAgo { get; set; }
-            public LastOccurrenceHistoryId LastOccurrenceHistoryId { get; set; }
-            public OccurrenceType OccurrenceType { get; set; }
-            public IsAcknowledged IsAcknowledged { get; set; }
-            public OccurrenceCount OccurrenceCount { get; set; }
-        }
-
-        public class Offset
-        {
-            public string Value { get; set; }
-        }
-
-        public class Limit
-        {
-            public string Value { get; set; }
-        }
-
-        public class ResultInfo
-        {
-            public Offset Offset { get; set; }
-            public Limit Limit { get; set; }
-        }
-
-        public class CallHistoryRecentsResult
-        {
-            public string status { get; set; }
-            public List<Entry> Entry { get; set; }
-            public ResultInfo ResultInfo { get; set; }
-        }
-
-        public class CommandResponse
-        {
-            public CallHistoryRecentsResult CallHistoryRecentsResult { get; set; }
-        }
-
-        public class RootObject
-        {
-            public CommandResponse CommandResponse { get; set; }
-        }
     }
 }
