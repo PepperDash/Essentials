@@ -16,7 +16,19 @@
         /// </summary>
         public const uint VCDialKeypad = 1201;
 
+        /// <summary>
+        /// 1202
+        /// </summary>
         public const uint VCDirectoryList = 1202;
+        /// <summary>
+        /// 1203
+        /// </summary>
+        public const uint VCRecentsList = 1203;
+        /// <summary>
+        /// 1204
+        /// </summary>
+        public const uint VCFavoritesList = 1204;
+
 
         //******************************************************
         // General

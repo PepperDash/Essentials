@@ -58,6 +58,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         SubpageReferenceList ActiveCallsSRL;
 
+        SmartObjectDynamicList RecentCallsList;
+
         // These are likely temp until we get a keyboard built
         StringFeedback DialStringFeedback;
         StringBuilder DialStringBuilder = new StringBuilder();
@@ -82,6 +84,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             SetupCallStagingPopover();
             SetupDialKeypad();
             ActiveCallsSRL = new SubpageReferenceList(TriList, UISmartObjectJoin.CodecActiveCallsHeaderList, 3, 3, 3);
+            SetupRecentCallsList();
 
             codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
 
@@ -336,6 +339,40 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <summary>
         /// 
         /// </summary>
+        void SetupRecentCallsList()
+        {
+            var codec = Codec as IHasCallHistory;
+            if (codec != null)
+            {
+                // EVENT??????????????? Pointed at refresh
+                RefreshRecentCallsList();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void RefreshRecentCallsList()
+        {
+            var codec = Codec as IHasCallHistory;
+            if (codec != null)
+            {
+                RecentCallsList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCRecentsList], true, 1200);
+                ushort i = 0;
+                foreach (var c in codec.CallHistory.RecentCalls)
+                {
+                    i++;
+                    RecentCallsList.SetItemMainText(i, c.Name);
+                    var call = c; // for lambda scope
+                    RecentCallsList.SetItemButtonAction(i, b => { if(!b) Codec.Dial(call.Number); });
+                }
+                RecentCallsList.Count = i;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         void RevealKeyboard()
         {
             if (KeypadMode == eKeypadMode.Dial)
@@ -404,7 +441,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void ShowRecents()
         {
             //populate recents
-            VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCDirectoryVisible);
+            VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCRecentsVisible);
             StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingRecentsPress);
         }
 

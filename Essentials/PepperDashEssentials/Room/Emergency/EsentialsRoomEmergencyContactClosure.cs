@@ -37,8 +37,12 @@ namespace PepperDash.Essentials.Room
 
             if (config.Trigger.Type.Equals("contact", StringComparison.OrdinalIgnoreCase))
             {
-                if (config.Trigger.Number <= cs.NumberOfDigitalInputPorts)
-                    cs.DigitalInputPorts[(uint)config.Trigger.Number].StateChange += new DigitalInputEventHandler(EsentialsRoomEmergencyContactClosure_StateChange);
+                var portNum = (uint)config.Trigger.Number;
+                if (portNum <= cs.NumberOfDigitalInputPorts)
+                {
+                    cs.DigitalInputPorts[portNum].Register();
+                    cs.DigitalInputPorts[portNum].StateChange += EsentialsRoomEmergencyContactClosure_StateChange;
+                }
             }
             Behavior = config.Behavior;
             TriggerOnClose = config.Trigger.TriggerOnClose;
