@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry);
     }
 
-    public enum eCodecOccurrenctType
+    public enum eCodecOccurrenceType
     {
         Unknown = 0,
         Placed,
@@ -28,7 +28,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public class CodecCallHistory
     {
-        event EventHandler<EventArgs> RecentCallsListHasChanged;
+        public event EventHandler<EventArgs> RecentCallsListHasChanged;
 
         public List<CallHistoryEntry> RecentCalls { get; private set; }
 
@@ -78,7 +78,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         public class CallHistoryEntry : CodecActiveCallItem
         {
             public DateTime StartTime { get; set; }
-            public eCodecOccurrenctType OccurenceType { get; set; }
+            public eCodecOccurrenceType OccurenceType { get; set; }
             public string OccurrenceHistoryId { get; set; }
         }
 
@@ -115,24 +115,24 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// Takes the Cisco occurence type and converts it to the matching enum
         /// </summary>
         /// <param name="s"></para
-        public eCodecOccurrenctType ConvertToOccurenceTypeEnum(string s)
+        public eCodecOccurrenceType ConvertToOccurenceTypeEnum(string s)
         {
             switch (s)
             {
                 case "Placed":
                     {
-                        return eCodecOccurrenctType.Placed;
+                        return eCodecOccurrenceType.Placed;
                     }
                 case "Received":
                     {
-                        return eCodecOccurrenctType.Received;
+                        return eCodecOccurrenceType.Received;
                     }
                 case "NoAnswer":
                     {
-                        return eCodecOccurrenctType.NoAnswer;
+                        return eCodecOccurrenceType.NoAnswer;
                     }
                 default:
-                    return eCodecOccurrenctType.Unknown;
+                    return eCodecOccurrenceType.Unknown;
             }
 
         }

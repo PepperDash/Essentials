@@ -47,12 +47,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <summary>
         /// For the different staging bars: Active, inactive
         /// </summary>
-        JoinedSigInterlock StagingBarInterlock;
+        JoinedSigInterlock StagingBarsInterlock;
 
         /// <summary>
         /// For the staging button feedbacks
         /// </summary>
-        JoinedSigInterlock StagingButtonFeedbackInterlock;
+        JoinedSigInterlock StagingButtonsFeedbackInterlock;
 
         SmartObjectNumeric DialKeypad;
 
@@ -100,11 +100,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
             VCControlsInterlock = new JoinedSigInterlock(triList);
             VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadVisible);
 
-            StagingBarInterlock = new JoinedSigInterlock(triList);
-            StagingBarInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverVisible);
+            StagingBarsInterlock = new JoinedSigInterlock(triList);
+            StagingBarsInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverVisible);
 
-            StagingButtonFeedbackInterlock = new JoinedSigInterlock(triList);
-            StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCRecentsVisible);
+            StagingButtonsFeedbackInterlock = new JoinedSigInterlock(triList);
+            StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
 
             // Return formatted when dialing, straight digits when in call
             DialStringFeedback = new StringFeedback(() => 
@@ -156,6 +156,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     DialStringFeedback.FireUpdate();
                     TriList.SetBool(UIBoolJoin.VCKeypadBackspaceVisible, false);
                     Parent.ShowNotificationRibbon("Connected", 2000);
+                    StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
+                    VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
                     break;
                 case eCodecCallStatus.Connecting:
                     // fire at SRL item
@@ -199,7 +201,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     break;
             }
             TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(Codec.IsInCall ? 1 : 0);
-            StagingBarInterlock.ShowInterlocked(Codec.IsInCall ? 
+            StagingBarsInterlock.ShowInterlocked(Codec.IsInCall ? 
                 UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
 
             // Set mode of header button
@@ -271,7 +273,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         public override void Show()
         {
             VCControlsInterlock.Show();
-            StagingBarInterlock.Show();
+            StagingBarsInterlock.Show();
             DialStringFeedback.FireUpdate();
             base.Show();
         }
@@ -282,7 +284,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         public override void Hide()
         {
             VCControlsInterlock.Hide();
-            StagingBarInterlock.Hide();
+            StagingBarsInterlock.Hide();
             base.Hide();
         }
 
@@ -342,6 +344,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void SetupRecentCallsList()
         {
             var codec = Codec as IHasCallHistory;
+            codec.CallHistory.RecentCallsListHasChanged += (o, a) => RefreshRecentCallsList();
             if (codec != null)
             {
                 // EVENT??????????????? Pointed at refresh
@@ -421,20 +424,20 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void ShowCameraControls()
         {
             VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCCameraVisible);
-            StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingCameraPress);
+            StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingCameraPress);
         }
 
         void ShowKeypad()
         {
             VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
-            StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
+            StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
         }
 
         void ShowDirectory()
         {
             // populate directory
             VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCDirectoryVisible);
-            StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingDirectoryPress);
+            StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingDirectoryPress);
 
         }
 
@@ -442,7 +445,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             //populate recents
             VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCRecentsVisible);
-            StagingButtonFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingRecentsPress);
+            StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingRecentsPress);
         }
 
         /// <summary>
