@@ -9,7 +9,7 @@ using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
-    public interface iHasDirectory
+    public interface IHasDirectory
     {
         event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 

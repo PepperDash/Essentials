@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 
-    public class CiscoCodec : VideoCodecBase, IHasCallHistory, iHasCallFavorites, iHasDirectory, IHasScheduleAwareness
+    public class CiscoCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory, IHasScheduleAwareness
     {
         public event EventHandler<EventArgs> UpcomingMeetingWarning;
 
