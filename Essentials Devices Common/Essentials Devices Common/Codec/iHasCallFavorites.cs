@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
-    public interface iHasCallFavorites
+    public interface IHasCallFavorites
     {
         CodecCallFavorites CallFavorites { get; }
     }
