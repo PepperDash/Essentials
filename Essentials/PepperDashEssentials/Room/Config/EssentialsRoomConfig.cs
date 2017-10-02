@@ -69,11 +69,30 @@ namespace PepperDash.Essentials.Room.Config
                 rm.DefaultSourceItem = props.DefaultSourceItem;
                 rm.DefaultVolume = (ushort)(props.Volumes.Master.Level * 65535 / 100);
 
+                rm.Emergency = GetEmergency(props, rm); // Get emergency object, if any
+
                 return rm;
             }
 
             return null;
 		}
+
+        /// <summary>
+        /// Gets and operating, standalone emergegncy object that can be plugged into a room.
+        /// Returns null if there is no emergency defined
+        /// </summary>
+        EssentialsRoomEmergencyBase GetEmergency(EssentialsRoomPropertiesConfig props, EssentialsRoomBase room)
+        {
+            // This emergency 
+            var emergency = props.Emergency;
+            if (emergency != null)
+            {
+                //switch on emergency type here.  Right now only contact and shutdown
+                var e = new EssentialsRoomEmergencyContactClosure(room.Key + "-emergency", props.Emergency, room);
+                DeviceManager.AddDevice(e);
+            }
+            return null;
+        }
 	}
 
     /// <summary>
@@ -81,6 +100,7 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
 	public class EssentialsRoomPropertiesConfig
 	{
+        public EssentialsRoomEmergencyConfig Emergency { get; set; }
 		public string HelpMessage { get; set; }
         public string Description { get; set; }
         public int ShutdownVacancySeconds { get; set; }

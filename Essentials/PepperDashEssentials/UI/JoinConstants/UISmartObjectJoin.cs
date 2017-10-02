@@ -41,6 +41,10 @@
         /// 3903
         /// </summary>
         public const uint TechPinDialogKeypad = 3903;
+        /// <summary>
+        /// 3904 - Display controls on the tech page
+        /// </summary>
+        public const uint TechDisplayControlsList = 3904;
 
 	}
 }

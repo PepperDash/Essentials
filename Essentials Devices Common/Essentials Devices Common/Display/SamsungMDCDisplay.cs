@@ -14,7 +14,8 @@ namespace PepperDash.Essentials.Devices.Displays
 	/// <summary>
 	/// 
 	/// </summary>
-	public class SamsungMDC : TwoWayDisplayBase, IBasicVolumeWithFeedback, ICommunicationMonitor
+    public class SamsungMDC : TwoWayDisplayBase, IBasicVolumeWithFeedback, ICommunicationMonitor, IInputDisplayPort1, IInputDisplayPort2,
+        IInputHdmi1, IInputHdmi2, IInputHdmi3, IInputHdmi4
 	{
 		public IBasicCommunication Communication { get; private set; }
 				

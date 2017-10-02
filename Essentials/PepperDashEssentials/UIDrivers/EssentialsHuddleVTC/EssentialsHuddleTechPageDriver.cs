@@ -11,6 +11,7 @@ using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.Touchpanels.Keyboards;
+using PepperDash.Essentials.Devices.Displays;
 
 namespace PepperDash.Essentials.UIDrivers
 {
@@ -24,6 +25,10 @@ namespace PepperDash.Essentials.UIDrivers
         /// 
         /// </summary>
         SubpageReferenceList StatusList;
+        /// <summary>
+        /// The list of display controls
+        /// </summary>
+        SubpageReferenceList DisplayList;
         /// <summary>
         /// References lines in the list against device instances
         /// </summary>
@@ -95,6 +100,8 @@ namespace PepperDash.Essentials.UIDrivers
             MenuList.Count = 3;
 
             BuildStatusList();
+
+            BuildDisplayList();
 
             SetupPinModal();
         }
@@ -237,6 +244,47 @@ namespace PepperDash.Essentials.UIDrivers
                 sd.CommunicationMonitor.StatusChange += CommunicationMonitor_StatusChange ;
             }
             StatusList.Count = (ushort)i;
+        }
+
+        /// <summary>
+        /// Builds the list of display controls
+        /// </summary>
+        void BuildDisplayList()
+        {
+            DisplayList = new SubpageReferenceList(TriList, UISmartObjectJoin.TechDisplayControlsList, 10, 3, 3);
+
+            var devKeys = ConfigReader.ConfigObject.Devices.Where(d =>
+                d.Group.Equals("display", StringComparison.OrdinalIgnoreCase)
+                || d.Group.Equals("projector", StringComparison.OrdinalIgnoreCase))
+                .Select(dd => dd.Key);
+            Debug.Console(1, "#################### Config has {0} displays", devKeys.Count());
+            var disps = DeviceManager.AllDevices.Where(d =>
+                devKeys.Contains(d.Key));
+            Debug.Console(1, "#################### Devices has {0} displays", disps.Count());
+            ushort i = 0;
+            foreach (var disp in disps)
+            {
+                var display = disp as DisplayBase;
+                if (display != null)
+                {
+                    i++;
+                    DisplayList.StringInputSig(i, 1).StringValue = display.Name;
+                    DisplayList.GetBoolFeedbackSig(i, 1).SetSigFalseAction(display.PowerOn);
+                    DisplayList.GetBoolFeedbackSig(i, 2).SetSigFalseAction(display.PowerOff);
+                    DisplayList.GetBoolFeedbackSig(i, 3).SetSigFalseAction(() =>
+                        { if (display is IInputHdmi1) (display as IInputHdmi1).InputHdmi1(); });
+                    DisplayList.GetBoolFeedbackSig(i, 4).SetSigFalseAction(() =>
+                    { if (display is IInputHdmi2) (display as IInputHdmi2).InputHdmi2(); });
+                    DisplayList.GetBoolFeedbackSig(i, 5).SetSigFalseAction(() =>
+                    { if (display is IInputHdmi3) (display as IInputHdmi3).InputHdmi3(); });
+                    DisplayList.GetBoolFeedbackSig(i, 6).SetSigFalseAction(() =>
+                    { if (display is IInputHdmi4) (display as IInputHdmi4).InputHdmi4(); });
+                    DisplayList.GetBoolFeedbackSig(i, 7).SetSigFalseAction(() =>
+                    { if (display is IInputDisplayPort1) (display as IInputDisplayPort1).InputDisplayPort1(); });
+                }
+            }
+
+            DisplayList.Count = i;
         }
 
         /// <summary>
