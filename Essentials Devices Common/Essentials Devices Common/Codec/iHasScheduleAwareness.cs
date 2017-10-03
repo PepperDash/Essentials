@@ -44,15 +44,8 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         {
             get
             {
-                var timeToMeetingStart = StartTime - DateTime.Now;
-
-                var timetoMeetingEnd = DateTime.Now - EndTime;
-
-                // Meeting is joinable from 5 minutes before start until 5 minutes before end
-                if (timeToMeetingStart.Minutes <= 5 && timetoMeetingEnd.Minutes >= 5)
-                    return true;
-                else
-                    return false;
+				return StartTime.AddMinutes(-5) <= DateTime.Now 
+					&& DateTime.Now <= EndTime.AddMinutes(-5);
             }
         }
         public string ConferenceNumberToDial { get; set; }

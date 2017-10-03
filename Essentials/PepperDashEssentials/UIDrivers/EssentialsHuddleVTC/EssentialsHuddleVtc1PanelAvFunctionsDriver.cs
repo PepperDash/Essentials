@@ -10,6 +10,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
 using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials
 {
@@ -84,6 +85,11 @@ namespace PepperDash.Essentials
         /// Smart Object 15022
         /// </summary>
         SubpageReferenceList ActivityFooterSrl;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		SubpageReferenceList MeetingsSrl;
 
 		/// <summary>
 		/// The list of buttons on the header. Managed with visibility only
@@ -187,6 +193,9 @@ namespace PepperDash.Essentials
             CallButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
             ShareButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
             EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
+
+			MeetingsSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.MeetingListSRL, 3, 3, 5);
+
 
 			// buttons are added in SetCurrentRoom
 			HeaderButtonsList = new SmartObjectHeaderButtonList(TriList.SmartObjects[UISmartObjectJoin.HeaderButtonList]);
@@ -407,6 +416,15 @@ namespace PepperDash.Essentials
                 RibbonTimer = null;
             }
         }
+
+		/// <summary>
+		/// Calendar should only be visible when it's supposed to
+		/// </summary>
+		void CalendarPress()
+		{
+			RefreshMeetingsList();
+			PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsListVisible);
+		}
 
         /// <summary>
         /// Reveals the tech page and puts away anything that's in the way.
@@ -803,12 +821,9 @@ namespace PepperDash.Essentials
 			//
 			var setupButton = new HeaderListButton(HeaderButtonsList, 5);
 			setupButton.SetIcon(HeaderListButton.Gear);
-			setupButton.SetBoolFalseAction(() => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible));
-#warning Add held action - and add press/hold to SIG helper
-			//// Setup button - shows volumes with default button OR hold for tech page
-			//TriList.SetSigHeldAction(UIBoolJoin.HeaderGearButtonPress, 2000,
-			//    ShowTech,
-			//    () => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible));
+			setupButton.OutputSig.SetSigHeldAction(2000, 
+				ShowTech,
+				() => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible));
 
 			TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
 				PopupInterlock.HideAndClear());
@@ -833,7 +848,7 @@ namespace PepperDash.Essentials
 			}
 			var helpButton = new HeaderListButton(HeaderButtonsList, 4);
 			helpButton.SetIcon(HeaderListButton.Help);
-			helpButton.SetBoolFalseAction(() =>
+			helpButton.OutputSig.SetSigFalseAction(() =>
 			{
 				string message = null;
 				var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
@@ -859,14 +874,14 @@ namespace PepperDash.Essentials
 			{
 				var calBut = new HeaderListButton(HeaderButtonsList, nextIndex);
 				calBut.SetIcon(HeaderListButton.Calendar);
-				calBut.SetBoolFalseAction(() => { });
+				calBut.OutputSig.SetSigFalseAction(CalendarPress);
 				nextIndex--;
 			}
 
 			// Call button
 			var callBut = new HeaderListButton(HeaderButtonsList, nextIndex);
 			callBut.SetIcon(HeaderListButton.OnHook);
-			callBut.SetBoolFalseAction(() =>
+			callBut.OutputSig.SetSigFalseAction(() =>
 				PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible));
 			nextIndex--;
 
@@ -875,8 +890,34 @@ namespace PepperDash.Essentials
 			{
 				var blankBut = new HeaderListButton(HeaderButtonsList, i);
 				blankBut.ClearIcon();
-				blankBut.SetBoolFalseAction(() => { });
+				blankBut.OutputSig.SetSigFalseAction(() => { });
 			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void RefreshMeetingsList()
+		{
+			ushort i = 0;
+			foreach (var m in CurrentRoom.ScheduleSource.CodecSchedule.Meetings)
+			{
+				i++;
+				MeetingsSrl.StringInputSig(i, 1).StringValue = m.StartTime.ToShortTimeString();
+				MeetingsSrl.StringInputSig(i, 2).StringValue = m.EndTime.ToShortTimeString();
+				MeetingsSrl.StringInputSig(i, 3).StringValue = m.Title;
+				MeetingsSrl.StringInputSig(i, 4).StringValue = "Join";
+				MeetingsSrl.BoolInputSig(i, 2).BoolValue = m.Joinable;
+				var mm = m; // lambda scope
+				MeetingsSrl.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() =>
+				{
+					PopupInterlock.Hide();
+					var d = CurrentRoom.ScheduleSource as VideoCodecBase;
+					if (d != null)
+						d.Dial(mm.ConferenceNumberToDial);
+				});
+			}
+			MeetingsSrl.Count = i;
 		}
 
 		/// <summary>

@@ -73,6 +73,40 @@ namespace PepperDash.Essentials.Core
             return SetSigHeldAction(tl, sigNum, heldMs, heldAction, null);
         }
 
+		/// <summary>
+		/// Sets an action to a held sig as well as a released-without-hold action
+		/// </summary>
+		/// <returns></returns>
+		public static BoolOutputSig SetSigHeldAction(this BoolOutputSig sig, uint heldMs, Action heldAction, Action releaseAction)
+		{
+			CTimer heldTimer = null;
+			bool wasHeld = false;
+			return sig.SetBoolSigAction(press =>
+			{
+				if (press)
+				{
+					wasHeld = false;
+					// Could insert a pressed action here
+					heldTimer = new CTimer(o =>
+					{
+						// if still held and there's an action
+						if (sig.BoolValue && heldAction != null)
+						{
+							wasHeld = true;
+							// Hold action here
+							heldAction();
+						}
+					}, heldMs);
+				}
+				else if (!wasHeld) // released
+				{
+					heldTimer.Stop();
+					if (releaseAction != null)
+						releaseAction();
+				}
+			});
+
+		}
 
         /// <summary>
         /// Sets an action to a held sig as well as a released-without-hold action
@@ -80,34 +114,8 @@ namespace PepperDash.Essentials.Core
         /// <returns>The sig</returns>
         public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction, Action releaseAction)
         {
-            CTimer heldTimer = null;
-            bool wasHeld = false;
-            return tl.SetBoolSigAction(sigNum, press =>
-            {
-                if (press)
-                {
-                    wasHeld = false;
-                    // Could insert a pressed action here
-                    heldTimer = new CTimer(o =>
-                    {
-                        // if still held and there's an action
-                        if (tl.BooleanOutput[sigNum].BoolValue && heldAction != null)
-                        {
-                            wasHeld = true;
-                            // Hold action here
-                            heldAction();
-                        }
-                    }, heldMs);
-                }
-                else if(!wasHeld) // released
-                {
-                    heldTimer.Stop();
-                    if (releaseAction != null)
-                        releaseAction();
-                }
-            });
+			return tl.BooleanOutput[sigNum].SetSigHeldAction(heldMs, heldAction, releaseAction);
         }
-
 
 		/// <summary>
 		/// 

@@ -517,6 +517,10 @@ namespace PepperDash.Essentials
         /// 15045 - Visibility for the bar containing call navigation button list
         /// </summary>
         public const uint CallStagingBarVisible = 15045;
+		/// <summary>
+		/// 15046
+		/// </summary>
+		public const uint MeetingsListVisible = 15046;
         /// <summary>
         /// 15051
         /// </summary>

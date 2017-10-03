@@ -25,7 +25,7 @@ namespace PepperDash.Essentials
 	{
 		public BoolInputSig SelectedSig { get; private set; }
 		public BoolInputSig VisibleSig { get; private set; }
-		BoolOutputSig OutputSig;
+		public BoolOutputSig OutputSig { get; private set; }
 		StringInputSig IconSig;
 		
 		public HeaderListButton(SmartObjectHeaderButtonList list, uint index)
@@ -35,11 +35,6 @@ namespace PepperDash.Essentials
 			SelectedSig = so.BooleanInput["Item " + index + " Selected"];
 			VisibleSig = so.BooleanInput["Item " + index + " Visible"];
 			IconSig = so.StringInput["Set Item " + index + " Icon Serial"];
-		}
-
-		public void SetBoolFalseAction(Action a)
-		{
-			OutputSig.SetSigFalseAction(a);
 		}
 
 		public void SetIcon(string i)

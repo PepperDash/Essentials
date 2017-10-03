@@ -333,8 +333,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				for(int i = 0; i < 5; i++)
 				{
 					var m = new Meeting();
-					m.StartTime = DateTime.Now.AddHours(1 + i);
-					m.EndTime = DateTime.Now.AddHours(1 + i).AddMinutes(30);
+					m.StartTime = DateTime.Now.AddMinutes(3).AddHours(i);
+					m.EndTime = DateTime.Now.AddHours(i).AddMinutes(30);
 					m.Title = "Meeting " + i;
 					m.ConferenceNumberToDial = i + "meeting@fake.com";
 					sch.Meetings.Add(m);

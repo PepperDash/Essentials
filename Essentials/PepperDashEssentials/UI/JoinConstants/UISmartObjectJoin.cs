@@ -61,5 +61,9 @@
 		/// 15022 The main activity footer
 		/// </summary>
 		public const uint ActivityFooterSRL = 15022;
+		/// <summary>
+		/// 15023 - The header meetings SRL
+		/// </summary>
+		public const uint MeetingListSRL = 15023;
 	}
 }
