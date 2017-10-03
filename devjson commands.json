@@ -17,3 +17,5 @@ devjson:1 {"deviceKey":"mockVc-1", "methodName":"TestIncomingAudioCall", "params
 devjson:1 {"deviceKey":"mockVc-1", "methodName":"TestIncomingVideoCall", "params": ["444-444-4444"]}
 
 devjson:1 {"deviceKey":"mockVc-1", "methodName":"ListCalls"}
+
+devjson:1 {"deviceKey":"room1-emergency", "methodName":"RunEmergencyBehavior"}

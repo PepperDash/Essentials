@@ -144,6 +144,7 @@
     <Compile Include="Room\Config\EssentialsPresentationPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsHuddleRoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsHuddleVtc1PropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsRoomEmergencyConfig.cs" />
     <Compile Include="Room\Cotija\CotijaConfig.cs" />
     <Compile Include="Room\Cotija\CotijaRoomBridge.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\IChannelExtensions.cs" />
@@ -154,6 +155,7 @@
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\IPowerExtensions.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\ISetTopBoxControlsExtensions.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\ITransportExtensions.cs" />
+    <Compile Include="Room\Emergency\EsentialsRoomEmergencyContactClosure.cs" />
     <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
     <Compile Include="Room\Types\EssentialsPresentationRoom.cs" />
     <Compile Include="Room\Types\EssentialsRoomBase.cs" />
@@ -168,6 +170,7 @@
     <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddlePresentationUiDriver.cs" />
     <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddleTechPageDriver.cs" />
     <Compile Include="UI\HttpLogoServer.cs" />
+    <Compile Include="UI\SmartObjectHeaderButtonList.cs" />
     <Compile Include="UI\SubpageReferenceListCallStagingItem.cs" />
     <Compile Include="UIDrivers\VC\EssentialsVideoCodecUiDriver.cs" />
     <Compile Include="UIDrivers\JoinedSigInterlock.cs" />

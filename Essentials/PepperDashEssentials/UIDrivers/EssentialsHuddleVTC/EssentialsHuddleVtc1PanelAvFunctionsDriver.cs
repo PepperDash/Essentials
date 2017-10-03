@@ -10,6 +10,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
 using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials
 {
@@ -85,6 +86,16 @@ namespace PepperDash.Essentials
         /// </summary>
         SubpageReferenceList ActivityFooterSrl;
 
+		/// <summary>
+		/// 
+		/// </summary>
+		SubpageReferenceList MeetingsSrl;
+
+		/// <summary>
+		/// The list of buttons on the header. Managed with visibility only
+		/// </summary>
+		SmartObjectHeaderButtonList HeaderButtonsList;
+
         /// <summary>
         /// The AV page mangagers that have been used, to keep them alive for later
         /// </summary>
@@ -139,7 +150,8 @@ namespace PepperDash.Essentials
             get
             {
                 if (_TechDriver == null)
-                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, this);
+#warning Make PIN come from config!
+                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, this, "1234");
                 return _TechDriver;
             }
         }
@@ -182,6 +194,12 @@ namespace PepperDash.Essentials
             ShareButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
             EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
 
+			MeetingsSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.MeetingListSRL, 3, 3, 5);
+
+
+			// buttons are added in SetCurrentRoom
+			HeaderButtonsList = new SmartObjectHeaderButtonList(TriList.SmartObjects[UISmartObjectJoin.HeaderButtonList]);
+
             SetupActivityFooterWhenRoomOff();
 
             ShowVolumeGauge = true;
@@ -213,7 +231,7 @@ namespace PepperDash.Essentials
             if (Config.HeaderStyle == UiHeaderStyle.Habanero)
             {
                 TriList.SetString(UIStringJoin.CurrentRoomName, CurrentRoom.Name);
-                TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>
+                TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, () =>
                     PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderPageVisible));
             }
             else if (Config.HeaderStyle == UiHeaderStyle.Verbose)
@@ -234,7 +252,9 @@ namespace PepperDash.Essentials
             TriList.SetBool(UIBoolJoin.DateAndTimeVisible, Config.ShowDate && Config.ShowTime);
             TriList.SetBool(UIBoolJoin.DateOnlyVisible, Config.ShowDate && !Config.ShowTime);
             TriList.SetBool(UIBoolJoin.TimeOnlyVisible, !Config.ShowDate && Config.ShowTime);
-            TriList.SetBool(UIBoolJoin.TopBarHabaneroVisible, true);
+
+			TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
+
             TriList.SetBool(UIBoolJoin.ActivityFooterVisible, true);
 
             // Privacy mute button
@@ -258,60 +278,47 @@ namespace PepperDash.Essentials
             // Generic "close" button for these modals
             TriList.SetSigFalseAction(UIBoolJoin.InterlockedModalClosePress, PopupInterlock.HideAndClear);
             
-            // Help button and popup
-            if (CurrentRoom.Config.Help != null)
-            {
-                TriList.SetString(UIStringJoin.HelpMessage, roomConf.Help.Message);
-                TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, roomConf.Help.ShowCallButton);
-                TriList.SetString(UIStringJoin.HelpPageCallButtonText, roomConf.Help.CallButtonText);
-                if(roomConf.Help.ShowCallButton)
-                    TriList.SetSigFalseAction(UIBoolJoin.HelpPageShowCallButtonPress, () => { }); // ************ FILL IN
-                else
-                    TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
-            }
-            else // older config
-            {
-                TriList.SetString(UIStringJoin.HelpMessage, CurrentRoom.Config.HelpMessage);
-                TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, false);
-                TriList.SetString(UIStringJoin.HelpPageCallButtonText, null);
-                TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
-            }
-            TriList.SetSigFalseAction(UIBoolJoin.HelpPress, () =>
-            {
-                string message = null;
-                var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
-                    as EssentialsHuddleSpaceRoom;
-                if (room != null)
-                    message = room.Config.HelpMessage;
-                else
-                    message = "Sorry, no help message available. No room connected.";
-                //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
-                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
-            });
+			//// Help button and popup
+			//if (CurrentRoom.Config.Help != null)
+			//{
+			//    TriList.SetString(UIStringJoin.HelpMessage, roomConf.Help.Message);
+			//    TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, roomConf.Help.ShowCallButton);
+			//    TriList.SetString(UIStringJoin.HelpPageCallButtonText, roomConf.Help.CallButtonText);
+			//    if(roomConf.Help.ShowCallButton)
+			//        TriList.SetSigFalseAction(UIBoolJoin.HelpPageShowCallButtonPress, () => { }); // ************ FILL IN
+			//    else
+			//        TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
+			//}
+			//else // older config
+			//{
+			//    TriList.SetString(UIStringJoin.HelpMessage, CurrentRoom.Config.HelpMessage);
+			//    TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, false);
+			//    TriList.SetString(UIStringJoin.HelpPageCallButtonText, null);
+			//    TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
+			//}
+			//TriList.SetSigFalseAction(UIBoolJoin.HelpPress, () =>
+			//{
+			//    string message = null;
+			//    var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
+			//        as EssentialsHuddleSpaceRoom;
+			//    if (room != null)
+			//        message = room.Config.HelpMessage;
+			//    else
+			//        message = "Sorry, no help message available. No room connected.";
+			//    //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
+			//    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
+			//});
             
-            // Lights button
-            TriList.SetSigFalseAction(UIBoolJoin.LightsHeaderButtonPress, () => // ******************** FILL IN
-                { });
+			//// Lights button
+			//TriList.SetSigFalseAction(UIBoolJoin.HeaderLightsButtonPress, () => // ******************** FILL IN
+			//    { });
             
-            // Call header button
-            if(roomConf.OneButtonMeeting != null && roomConf.OneButtonMeeting.Enable)
-            {
-                TriList.SetBool(UIBoolJoin.CalendarHeaderButtonVisible, true);
-                TriList.SetBool(UIBoolJoin.CallLeftHeaderButtonVisible, true);
-            }
-            else
-                TriList.SetBool(UIBoolJoin.CallRightHeaderButtonVisible, true);
-
-            TriList.SetSigFalseAction(UIBoolJoin.CallHeaderButtonPress, () =>
-                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible));
-
-            
-            // Setup button - shows volumes with default button OR hold for tech page
-            TriList.SetSigHeldAction(UIBoolJoin.GearHeaderButtonPress, 2000,
-                ShowTech,
-                () => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible)); 
-            TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
-                PopupInterlock.HideAndClear());
+			//// Setup button - shows volumes with default button OR hold for tech page
+			//TriList.SetSigHeldAction(UIBoolJoin.HeaderGearButtonPress, 2000,
+			//    ShowTech,
+			//    () => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible)); 
+			//TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
+			//    PopupInterlock.HideAndClear());
 
             // Volume related things
             TriList.SetSigFalseAction(UIBoolJoin.VolumeDefaultPress, () => CurrentRoom.SetDefaultLevels());
@@ -369,7 +376,7 @@ namespace PepperDash.Essentials
         public override void Hide()
         {
             HideAndClearCurrentDisplayModeSigsInUse();
-            TriList.BooleanInput[UIBoolJoin.TopBarHabaneroVisible].BoolValue = false;
+			TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, false);
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = false;
@@ -409,6 +416,15 @@ namespace PepperDash.Essentials
                 RibbonTimer = null;
             }
         }
+
+		/// <summary>
+		/// Calendar should only be visible when it's supposed to
+		/// </summary>
+		void CalendarPress()
+		{
+			RefreshMeetingsList();
+			PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsListVisible);
+		}
 
         /// <summary>
         /// Reveals the tech page and puts away anything that's in the way.
@@ -774,7 +790,7 @@ namespace PepperDash.Essentials
                 _CurrentRoom.ShutdownPromptTimer.HasFinished += ShutdownPromptTimer_HasFinished;
                 _CurrentRoom.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
 
-                // Link up all the change events from the room
+				// Link up all the change events from the room
                 _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
                 CurrentRoom_SyncOnFeedback();
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange += CurrentRoom_IsWarmingFeedback_OutputChange;
@@ -784,6 +800,8 @@ namespace PepperDash.Essentials
                 RefreshAudioDeviceConnections();
                 _CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
                 RefreshSourceInfo();
+
+				SetupHeaderButtons();
             }
             else
             {
@@ -792,10 +810,120 @@ namespace PepperDash.Essentials
             }
         }
 
-        /// <summary>
-        /// For room on/off changes
-        /// </summary>
-        void CurrentRoom_OnFeedback_OutputChange(object sender, EventArgs e)
+		/// <summary>
+		/// 
+		/// </summary>
+		void SetupHeaderButtons()
+		{
+			TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
+
+			var roomConf = CurrentRoom.Config;
+			//
+			var setupButton = new HeaderListButton(HeaderButtonsList, 5);
+			setupButton.SetIcon(HeaderListButton.Gear);
+			setupButton.OutputSig.SetSigHeldAction(2000, 
+				ShowTech,
+				() => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible));
+
+			TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
+				PopupInterlock.HideAndClear());
+
+			// Help button and popup
+			if (CurrentRoom.Config.Help != null)
+			{
+				TriList.SetString(UIStringJoin.HelpMessage, roomConf.Help.Message);
+				TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, roomConf.Help.ShowCallButton);
+				TriList.SetString(UIStringJoin.HelpPageCallButtonText, roomConf.Help.CallButtonText);
+				if (roomConf.Help.ShowCallButton)
+					TriList.SetSigFalseAction(UIBoolJoin.HelpPageShowCallButtonPress, () => { }); // ************ FILL IN
+				else
+					TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
+			}
+			else // older config
+			{
+				TriList.SetString(UIStringJoin.HelpMessage, CurrentRoom.Config.HelpMessage);
+				TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, false);
+				TriList.SetString(UIStringJoin.HelpPageCallButtonText, null);
+				TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
+			}
+			var helpButton = new HeaderListButton(HeaderButtonsList, 4);
+			helpButton.SetIcon(HeaderListButton.Help);
+			helpButton.OutputSig.SetSigFalseAction(() =>
+			{
+				string message = null;
+				var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
+					as EssentialsHuddleSpaceRoom;
+				if (room != null)
+					message = room.Config.HelpMessage;
+				else
+					message = "Sorry, no help message available. No room connected.";
+				//TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
+				PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
+			});
+			uint nextIndex = 3;
+
+			// Lights button
+			//if (WHATEVER MAKES LIGHTS WORK)
+			//{
+			//    // do lights
+			//    nextIndex--;
+			//}
+
+			// Calendar button
+			if (_CurrentRoom.ScheduleSource != null) // ******************* Do we need a config option here as well?
+			{
+				var calBut = new HeaderListButton(HeaderButtonsList, nextIndex);
+				calBut.SetIcon(HeaderListButton.Calendar);
+				calBut.OutputSig.SetSigFalseAction(CalendarPress);
+				nextIndex--;
+			}
+
+			// Call button
+			var callBut = new HeaderListButton(HeaderButtonsList, nextIndex);
+			callBut.SetIcon(HeaderListButton.OnHook);
+			callBut.OutputSig.SetSigFalseAction(() =>
+				PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible));
+			nextIndex--;
+
+			// blank any that remain
+			for (var i = nextIndex; i > 0; i--)
+			{
+				var blankBut = new HeaderListButton(HeaderButtonsList, i);
+				blankBut.ClearIcon();
+				blankBut.OutputSig.SetSigFalseAction(() => { });
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void RefreshMeetingsList()
+		{
+			ushort i = 0;
+			foreach (var m in CurrentRoom.ScheduleSource.CodecSchedule.Meetings)
+			{
+				i++;
+				MeetingsSrl.StringInputSig(i, 1).StringValue = m.StartTime.ToShortTimeString();
+				MeetingsSrl.StringInputSig(i, 2).StringValue = m.EndTime.ToShortTimeString();
+				MeetingsSrl.StringInputSig(i, 3).StringValue = m.Title;
+				MeetingsSrl.StringInputSig(i, 4).StringValue = "Join";
+				MeetingsSrl.BoolInputSig(i, 2).BoolValue = m.Joinable;
+				var mm = m; // lambda scope
+				MeetingsSrl.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() =>
+				{
+					PopupInterlock.Hide();
+					var d = CurrentRoom.ScheduleSource as VideoCodecBase;
+					if (d != null)
+						d.Dial(mm.ConferenceNumberToDial);
+				});
+			}
+			MeetingsSrl.Count = i;
+		}
+
+		/// <summary>
+		/// For room on/off changes
+		/// </summary>
+		void CurrentRoom_OnFeedback_OutputChange(object sender, EventArgs e)
         {
             CurrentRoom_SyncOnFeedback();
         }

@@ -346,6 +346,9 @@ namespace PepperDash.Essentials
         /// 12345
         /// </summary>
 		public const uint AvNoControlsSubVisible = 12345;
+
+        // 10000 - 14999 are general "source" pages
+
         /// <summary>
         /// 15001
         /// </summary>
@@ -402,6 +405,10 @@ namespace PepperDash.Essentials
         /// 15017
         /// </summary>
         public const uint StagingPageAdditionalArrowsVisible = 15017;
+		/// <summary>
+		/// 15018 The Header with dynamic buttons
+		/// </summary>
+		public const uint TopBarHabaneroDynamicVisible = 15018;
         /// <summary>
         /// 15020
         /// </summary>
@@ -417,31 +424,31 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 15023
         /// </summary>
-        public const uint LightsHeaderButtonVisible = 15023;
+        public const uint HeaderLightsButtonVisible = 15023;
         /// <summary>
         /// 15024
         /// </summary>
-        public const uint CallRightHeaderButtonVisible = 15024;
+        public const uint HeaderCallRightButtonVisible = 15024;
         /// <summary>
         /// 15025
         /// </summary>
-        public const uint CallLeftHeaderButtonVisible = 15025;
+        public const uint HeaderCallLeftButtonVisible = 15025;
         /// <summary>
         /// 15026
         /// </summary>
-        public const uint LightsHeaderButtonPress = 15026;
+        public const uint HeaderLightsButtonPress = 15026;
         /// <summary>[-
         /// 15027
         /// </summary>
-        public const uint CallHeaderButtonPress = 15027;
+        public const uint HeaderCallButtonPress = 15027;
         /// <summary>
         /// 15028 The gear button in header
         /// </summary>
-        public const uint GearHeaderButtonPress = 15028;
+        public const uint HeaderGearButtonPress = 15028;
         /// <summary>
         /// 15029 the room button in header
         /// </summary>
-        public const uint RoomHeaderButtonPress = 15029;
+        public const uint HeaderRoomButtonPress = 15029;
         /// <summary>
         /// 15030 Visibility for room data popup
         /// </summary>
@@ -510,6 +517,10 @@ namespace PepperDash.Essentials
         /// 15045 - Visibility for the bar containing call navigation button list
         /// </summary>
         public const uint CallStagingBarVisible = 15045;
+		/// <summary>
+		/// 15046
+		/// </summary>
+		public const uint MeetingsListVisible = 15046;
         /// <summary>
         /// 15051
         /// </summary>
@@ -610,5 +621,36 @@ namespace PepperDash.Essentials
         /// 15091
         /// </summary>
 		public const uint SetupFullDistrib = 15091;
+
+        // PIN dialogs ************************************
+
+        /// <summary>
+        /// 15201
+        /// </summary>
+        public const uint PinDialog4DigitVisible = 15201;
+        /// <summary>
+        /// 15206
+        /// </summary>
+        public const uint PinDialogCancelPress = 15206;
+        /// <summary>
+        /// 15207
+        /// </summary>
+        public const uint PinDialogErrorVisible = 15207;
+        /// <summary>
+        /// 15211
+        /// </summary>
+        public const uint PinDialogDot1 = 15211;
+        /// <summary>
+        /// 15212
+        /// </summary>
+        public const uint PinDialogDot2 = 15212;
+        /// <summary>
+        /// 15213
+        /// </summary>
+        public const uint PinDialogDot3 = 15213;
+        /// <summary>
+        /// 15214
+        /// </summary>
+        public const uint PinDialogDot4 = 15214;
     }
 }

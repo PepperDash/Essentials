@@ -229,10 +229,10 @@ namespace PepperDash.Essentials
                 ShowInterlockedModal(UIBoolJoin.HelpPageVisible);
             });
 
-            TriList.SetSigFalseAction(UIBoolJoin.RoomHeaderButtonPress, () =>
+            TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, () =>
                 ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
 
-            TriList.SetSigFalseAction(UIBoolJoin.GearHeaderButtonPress, () =>
+            TriList.SetSigFalseAction(UIBoolJoin.HeaderGearButtonPress, () =>
                 ShowInterlockedModal(UIBoolJoin.VolumesPageVisible));
 
 			// power-related functions

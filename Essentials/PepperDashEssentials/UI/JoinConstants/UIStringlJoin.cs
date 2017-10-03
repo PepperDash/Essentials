@@ -20,6 +20,11 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint CodecAddressEntryText = 1001;
 
+        /// <summary>
+        /// 1201 - 1230 range of joins for recents list
+        /// </summary>
+        public const uint VCRecentListTextStart = 1201;
+
 
         //******************************************************
         // Keyboard
@@ -106,6 +111,10 @@ namespace PepperDash.Essentials
         /// 3915
         /// </summary>
         public const uint NotificationRibbonText = 3915;
+		/// <summary>
+		/// 3916 The "active call" label
+		/// </summary>
+		public const uint HeaderCallLabel = 3916;
 
         /// <summary>
         /// 3922

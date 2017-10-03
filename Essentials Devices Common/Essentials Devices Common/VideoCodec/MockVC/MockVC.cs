@@ -11,7 +11,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
-    public class MockVC : VideoCodecBase, IRoutingSource
+    public class MockVC : VideoCodecBase, IRoutingSource, IHasCallHistory, IHasScheduleAwareness
     {
         public RoutingInputPort CodecOsdIn { get; private set; }
         public RoutingInputPort HdmiIn1 { get; private set; }
@@ -42,6 +42,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             InputPorts.Add(HdmiIn1);
             InputPorts.Add(HdmiIn2);
             OutputPorts.Add(HdmiOut);
+
+            CallHistory = new CodecCallHistory();
+            for (int i = 0; i < 10; i++)
+            {
+                var call = new CodecCallHistory.CallHistoryEntry();
+                call.Name = "Call " + i;
+                call.Number = i + "@call.com";
+                CallHistory.RecentCalls.Add(call);
+            }
+            // eventually fire history event here
 
             SetIsReady();
        }
@@ -302,7 +312,39 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             Debug.Console(1, this, "TestFarEndHangup");
 
         }
-    }
+
+        #region IHasCallHistory Members
+
+        public CodecCallHistory CallHistory { get; private set; }
+
+        public void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry)
+        {
+            
+        }
+
+        #endregion
+
+		#region IHasScheduleAwareness Members
+
+		public CodecScheduleAwareness CodecSchedule
+		{
+			get {
+				var sch = new CodecScheduleAwareness();
+				for(int i = 0; i < 5; i++)
+				{
+					var m = new Meeting();
+					m.StartTime = DateTime.Now.AddMinutes(3).AddHours(i);
+					m.EndTime = DateTime.Now.AddHours(i).AddMinutes(30);
+					m.Title = "Meeting " + i;
+					m.ConferenceNumberToDial = i + "meeting@fake.com";
+					sch.Meetings.Add(m);
+				}
+				return sch;
+			}
+		}
+
+		#endregion
+	}
 
     /// <summary>
     /// Implementation for the mock VC

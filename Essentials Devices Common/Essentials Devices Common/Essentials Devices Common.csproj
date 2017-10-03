@@ -116,6 +116,7 @@
     <Compile Include="Codec\iHasScheduleAwareness.cs" />
     <Compile Include="Crestron\Gateways\CenRfgwController.cs" />
     <Compile Include="Display\ComTcpDisplayBase.cs" />
+    <Compile Include="Display\InputInterfaces.cs" />
     <Compile Include="Display\SamsungMDCDisplay.cs" />
     <Compile Include="Display\DeviceFactory.cs" />
     <Compile Include="Display\NecPaSeriesProjector.cs" />
