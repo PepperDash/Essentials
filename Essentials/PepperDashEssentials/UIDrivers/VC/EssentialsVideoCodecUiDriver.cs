@@ -60,6 +60,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         SmartObjectDynamicList RecentCallsList;
 
+		SmartObjectDynamicList DirectoryList;
+
         // These are likely temp until we get a keyboard built
         StringFeedback DialStringFeedback;
         StringBuilder DialStringBuilder = new StringBuilder();
@@ -344,11 +346,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void SetupRecentCallsList()
         {
             var codec = Codec as IHasCallHistory;
-            codec.CallHistory.RecentCallsListHasChanged += (o, a) => RefreshRecentCallsList();
             if (codec != null)
             {
+				codec.CallHistory.RecentCallsListHasChanged += (o, a) => RefreshRecentCallsList();
                 // EVENT??????????????? Pointed at refresh
-                RefreshRecentCallsList();
+				RecentCallsList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCRecentsList], true, 1200);
+				RefreshRecentCallsList();
             }
         }
 
@@ -360,7 +363,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
             var codec = Codec as IHasCallHistory;
             if (codec != null)
             {
-                RecentCallsList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCRecentsList], true, 1200);
                 ushort i = 0;
                 foreach (var c in codec.CallHistory.RecentCalls)
                 {
@@ -372,6 +374,24 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 RecentCallsList.Count = i;
             }
         }
+
+		void SetupDirectoryList()
+		{
+			var codec = Codec as IHasDirectory;
+			if (codec != null)
+			{
+				codec.CallHistory.RecentCallsListHasChanged += (o, a) => RefreshRecentCallsList();
+				// EVENT??????????????? Pointed at refresh
+				DirectoryList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCDirectoryList], 
+					true, 1300);
+				RefreshDirectory();
+			}
+		}
+
+		void RefreshDirectory()
+		{
+
+		}
 
         /// <summary>
         /// 

@@ -24,7 +24,15 @@ namespace PepperDash.Essentials
         /// 1201 - 1230 range of joins for recents list
         /// </summary>
         public const uint VCRecentListTextStart = 1201;
+		//									RANGE IN USE
+		public const uint VCRecentListTextEnd = 1230;
 
+		/// <summary>
+		/// 1301 - 1400
+		/// </summary>
+		public const uint VCDirectoryListTextStart = 1301;
+		//									RANGE IN USE
+		public const uint VCDirectoryListTextEnd = 1400;
 
         //******************************************************
         // Keyboard

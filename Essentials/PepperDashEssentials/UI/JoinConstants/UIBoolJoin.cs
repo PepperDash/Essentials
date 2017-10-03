@@ -175,6 +175,14 @@ namespace PepperDash.Essentials
         /// 1239
         /// </summary>
         public const uint VCKeypadBackspaceVisible = 1239;
+		/// <summary>
+		/// 1240
+		/// </summary>
+		public const uint VCDirectoryBackPress = 1240;
+		/// <summary>
+		/// 1241 For touching the text area to bring up keyboard
+		/// </summary>
+		public const uint VcDirectoryTextEntryPress = 1241;
 
         //******************************************************
         // Keyboard
