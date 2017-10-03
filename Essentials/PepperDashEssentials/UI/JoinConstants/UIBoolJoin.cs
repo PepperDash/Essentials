@@ -405,6 +405,10 @@ namespace PepperDash.Essentials
         /// 15017
         /// </summary>
         public const uint StagingPageAdditionalArrowsVisible = 15017;
+		/// <summary>
+		/// 15018 The Header with dynamic buttons
+		/// </summary>
+		public const uint TopBarHabaneroDynamicVisible = 15018;
         /// <summary>
         /// 15020
         /// </summary>
@@ -420,31 +424,31 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 15023
         /// </summary>
-        public const uint LightsHeaderButtonVisible = 15023;
+        public const uint HeaderLightsButtonVisible = 15023;
         /// <summary>
         /// 15024
         /// </summary>
-        public const uint CallRightHeaderButtonVisible = 15024;
+        public const uint HeaderCallRightButtonVisible = 15024;
         /// <summary>
         /// 15025
         /// </summary>
-        public const uint CallLeftHeaderButtonVisible = 15025;
+        public const uint HeaderCallLeftButtonVisible = 15025;
         /// <summary>
         /// 15026
         /// </summary>
-        public const uint LightsHeaderButtonPress = 15026;
+        public const uint HeaderLightsButtonPress = 15026;
         /// <summary>[-
         /// 15027
         /// </summary>
-        public const uint CallHeaderButtonPress = 15027;
+        public const uint HeaderCallButtonPress = 15027;
         /// <summary>
         /// 15028 The gear button in header
         /// </summary>
-        public const uint GearHeaderButtonPress = 15028;
+        public const uint HeaderGearButtonPress = 15028;
         /// <summary>
         /// 15029 the room button in header
         /// </summary>
-        public const uint RoomHeaderButtonPress = 15029;
+        public const uint HeaderRoomButtonPress = 15029;
         /// <summary>
         /// 15030 Visibility for room data popup
         /// </summary>

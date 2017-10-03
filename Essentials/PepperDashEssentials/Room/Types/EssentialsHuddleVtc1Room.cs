@@ -182,7 +182,13 @@ namespace PepperDash.Essentials
         /// <summary>
         /// "codecOsd"
         /// </summary>
-        public string DefaultCodecRouteString { get { return "codecOsd"; } }
+        public string DefaultCodecRouteString { get { return "codecOsd"; } } 
+
+        /// <summary>
+        /// Temporary implementation. Returns the schedule-ready object or null if none. Fow now,
+        /// always returns the VideoCodec if it is capable
+        /// </summary>
+        public IHasScheduleAwareness ScheduleSource { get { return VideoCodec as IHasScheduleAwareness; } }
 
 		/// <summary>
 		/// 

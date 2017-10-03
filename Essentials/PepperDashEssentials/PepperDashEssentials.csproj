@@ -170,6 +170,7 @@
     <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddlePresentationUiDriver.cs" />
     <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddleTechPageDriver.cs" />
     <Compile Include="UI\HttpLogoServer.cs" />
+    <Compile Include="UI\SmartObjectHeaderButtonList.cs" />
     <Compile Include="UI\SubpageReferenceListCallStagingItem.cs" />
     <Compile Include="UIDrivers\VC\EssentialsVideoCodecUiDriver.cs" />
     <Compile Include="UIDrivers\JoinedSigInterlock.cs" />

@@ -111,6 +111,10 @@ namespace PepperDash.Essentials
         /// 3915
         /// </summary>
         public const uint NotificationRibbonText = 3915;
+		/// <summary>
+		/// 3916 The "active call" label
+		/// </summary>
+		public const uint HeaderCallLabel = 3916;
 
         /// <summary>
         /// 3922

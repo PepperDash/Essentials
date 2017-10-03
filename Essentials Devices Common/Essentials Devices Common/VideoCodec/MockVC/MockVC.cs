@@ -11,7 +11,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
-    public class MockVC : VideoCodecBase, IRoutingSource, IHasCallHistory
+    public class MockVC : VideoCodecBase, IRoutingSource, IHasCallHistory, IHasScheduleAwareness
     {
         public RoutingInputPort CodecOsdIn { get; private set; }
         public RoutingInputPort HdmiIn1 { get; private set; }
@@ -323,7 +323,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
 
         #endregion
-    }
+
+		#region IHasScheduleAwareness Members
+
+		public CodecScheduleAwareness CodecSchedule
+		{
+			get {
+				var sch = new CodecScheduleAwareness();
+				for(int i = 0; i < 5; i++)
+				{
+					var m = new Meeting();
+					m.StartTime = DateTime.Now.AddHours(1 + i);
+					m.EndTime = DateTime.Now.AddHours(1 + i).AddMinutes(30);
+					m.Title = "Meeting " + i;
+					m.ConferenceNumberToDial = i + "meeting@fake.com";
+					sch.Meetings.Add(m);
+				}
+				return sch;
+			}
+		}
+
+		#endregion
+	}
 
     /// <summary>
     /// Implementation for the mock VC

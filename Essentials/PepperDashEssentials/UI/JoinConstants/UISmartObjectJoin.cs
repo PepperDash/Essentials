@@ -38,10 +38,6 @@
         /// </summary>
 		public const uint SourceStagingSRL = 3200;
         /// <summary>
-        /// 15022 The main activity footer
-        /// </summary>
-        public const uint ActivityFooterSRL = 15022;
-        /// <summary>
         /// 3901 The Tech page menu list
         /// </summary>
         public const uint TechMenuList = 3901;
@@ -57,6 +53,13 @@
         /// 3904 - Display controls on the tech page
         /// </summary>
         public const uint TechDisplayControlsList = 3904;
-
+		/// <summary>
+		/// 15018
+		/// </summary>
+		public const uint HeaderButtonList = 15018;
+		/// <summary>
+		/// 15022 The main activity footer
+		/// </summary>
+		public const uint ActivityFooterSRL = 15022;
 	}
 }
