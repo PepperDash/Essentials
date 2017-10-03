@@ -145,5 +145,26 @@ namespace PepperDash.Essentials
         /// 3965 Title above display 2
         /// </summary>
         public const uint Display2TitleLabel = 3965;
+
+		/// <summary>
+		/// 3966
+		/// </summary>
+		public const uint NextMeetingRibbonStartText = 3966;
+		/// <summary>
+		/// 3967
+		/// </summary>
+		public const uint NextMeetingRibbonEndText = 3967;
+		/// <summary>
+		/// 3968
+		/// </summary>
+		public const uint NextMeetingRibbonTitleText = 3968;
+		/// <summary>
+		/// 3969
+		/// </summary>
+		public const uint NextMettingRibbonNameText = 3969;
+		/// <summary>
+		/// 3970
+		/// </summary>
+		public const uint NextMeetingRibbonButtonLabel = 3970;
     }
 }

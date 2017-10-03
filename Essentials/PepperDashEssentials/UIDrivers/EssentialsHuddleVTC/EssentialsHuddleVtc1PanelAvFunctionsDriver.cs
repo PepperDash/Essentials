@@ -150,7 +150,7 @@ namespace PepperDash.Essentials
             get
             {
                 if (_TechDriver == null)
-#warning Make PIN come from config!
+#warning HLV-Make PIN come from config!
                     _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, this, "1234");
                 return _TechDriver;
             }
@@ -171,6 +171,8 @@ namespace PepperDash.Essentials
         /// The mode showing. Presentation or call.
         /// </summary>
         UiDisplayMode CurrentMode = UiDisplayMode.Start;
+
+		CTimer NextMeetingTimer;
 
 
 
@@ -275,50 +277,8 @@ namespace PepperDash.Essentials
 
             // *** Header Buttons ***
             
-            // Generic "close" button for these modals
+            // Generic "close" button for popup modals
             TriList.SetSigFalseAction(UIBoolJoin.InterlockedModalClosePress, PopupInterlock.HideAndClear);
-            
-			//// Help button and popup
-			//if (CurrentRoom.Config.Help != null)
-			//{
-			//    TriList.SetString(UIStringJoin.HelpMessage, roomConf.Help.Message);
-			//    TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, roomConf.Help.ShowCallButton);
-			//    TriList.SetString(UIStringJoin.HelpPageCallButtonText, roomConf.Help.CallButtonText);
-			//    if(roomConf.Help.ShowCallButton)
-			//        TriList.SetSigFalseAction(UIBoolJoin.HelpPageShowCallButtonPress, () => { }); // ************ FILL IN
-			//    else
-			//        TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
-			//}
-			//else // older config
-			//{
-			//    TriList.SetString(UIStringJoin.HelpMessage, CurrentRoom.Config.HelpMessage);
-			//    TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, false);
-			//    TriList.SetString(UIStringJoin.HelpPageCallButtonText, null);
-			//    TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
-			//}
-			//TriList.SetSigFalseAction(UIBoolJoin.HelpPress, () =>
-			//{
-			//    string message = null;
-			//    var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
-			//        as EssentialsHuddleSpaceRoom;
-			//    if (room != null)
-			//        message = room.Config.HelpMessage;
-			//    else
-			//        message = "Sorry, no help message available. No room connected.";
-			//    //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
-			//    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
-			//});
-            
-			//// Lights button
-			//TriList.SetSigFalseAction(UIBoolJoin.HeaderLightsButtonPress, () => // ******************** FILL IN
-			//    { });
-            
-			//// Setup button - shows volumes with default button OR hold for tech page
-			//TriList.SetSigHeldAction(UIBoolJoin.HeaderGearButtonPress, 2000,
-			//    ShowTech,
-			//    () => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible)); 
-			//TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
-			//    PopupInterlock.HideAndClear());
 
             // Volume related things
             TriList.SetSigFalseAction(UIBoolJoin.VolumeDefaultPress, () => CurrentRoom.SetDefaultLevels());
@@ -339,6 +299,8 @@ namespace PepperDash.Essentials
                 if (CurrentRoom != null && CurrentRoom.DefaultDisplay is IPower)
                     (CurrentRoom.DefaultDisplay as IPower).PowerToggle();
             });
+
+			SetupNextMeetingTimer();
 
             base.Show();
         }
@@ -381,6 +343,9 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
+			if (NextMeetingTimer != null)
+				NextMeetingTimer.Stop();
+			HideNextMeetingRibbon();
             base.Hide();
         }
 
@@ -417,6 +382,52 @@ namespace PepperDash.Essentials
             }
         }
 
+		void SetupNextMeetingTimer()
+		{
+			var ss = CurrentRoom.ScheduleSource;
+			if (ss != null)
+			{
+#warning HLV-Add some sort of every-minute "cron" thing to run these.
+				NextMeetingTimer = new CTimer(o =>
+				{
+					// Every 60 seconds, check meetings list for the closest, joinable meeting
+					var meeting = ss.CodecSchedule.Meetings
+						.Aggregate((m1, m2) => m1.StartTime < m2.StartTime ? m1 : m2);
+					if (meeting != null && meeting.Joinable)
+					{
+						TriList.SetString(UIStringJoin.NextMeetingRibbonStartText, meeting.StartTime.ToShortTimeString());
+						TriList.SetString(UIStringJoin.NextMeetingRibbonEndText, meeting.EndTime.ToShortTimeString());
+						TriList.SetString(UIStringJoin.NextMeetingRibbonTitleText, meeting.Title);
+						TriList.SetString(UIStringJoin.NextMettingRibbonNameText, meeting.Organizer);
+						TriList.SetString(UIStringJoin.NextMeetingRibbonButtonLabel, "Join");
+						TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonJoinPress, () =>
+							{
+								HideNextMeetingRibbon();
+								RoomOnAndDialMeeting(meeting.ConferenceNumberToDial);
+							});
+						ShowNextMeetingRibbon();
+					}
+				}, null, 0, 60000);
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void ShowNextMeetingRibbon()
+		{
+			TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonClosePress, HideNextMeetingRibbon);
+			TriList.SetBool(UIBoolJoin.NextMeetingRibbonVisible, true);
+		}
+		
+		/// <summary>
+		/// 
+		/// </summary>
+		void HideNextMeetingRibbon()
+		{
+			TriList.SetBool(UIBoolJoin.NextMeetingRibbonVisible, false);
+		}
+
 		/// <summary>
 		/// Calendar should only be visible when it's supposed to
 		/// </summary>
@@ -424,6 +435,36 @@ namespace PepperDash.Essentials
 		{
 			RefreshMeetingsList();
 			PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsListVisible);
+		}
+
+		/// <summary>
+		/// Dials a meeting after turning on room (if necessary)
+		/// </summary>
+		void RoomOnAndDialMeeting(string number)
+		{
+			Action dialAction = () => 
+				{
+					var d = CurrentRoom.ScheduleSource as VideoCodecBase;
+					if (d != null)
+						d.Dial(number);
+				};
+			if (CurrentRoom.OnFeedback.BoolValue)
+				dialAction();
+			else
+			{
+				// Rig a one-time handler to catch when the room is warmed and then dial call
+				EventHandler<EventArgs> oneTimeHandler = null;
+				oneTimeHandler = (o, a) =>
+					{
+						if (!CurrentRoom.IsWarmingUpFeedback.BoolValue)
+						{
+							CurrentRoom.IsWarmingUpFeedback.OutputChange -= oneTimeHandler;
+							dialAction();
+						}
+					};
+				CurrentRoom.IsWarmingUpFeedback.OutputChange += oneTimeHandler;
+				ActivityCallButtonPressed();
+			}
 		}
 
         /// <summary>
@@ -914,7 +955,7 @@ namespace PepperDash.Essentials
 					PopupInterlock.Hide();
 					var d = CurrentRoom.ScheduleSource as VideoCodecBase;
 					if (d != null)
-						d.Dial(mm.ConferenceNumberToDial);
+						RoomOnAndDialMeeting(mm.ConferenceNumberToDial);
 				});
 			}
 			MeetingsSrl.Count = i;

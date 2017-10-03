@@ -521,6 +521,18 @@ namespace PepperDash.Essentials
 		/// 15046
 		/// </summary>
 		public const uint MeetingsListVisible = 15046;
+		/// <summary>
+		/// 15047 The "Join" button on the next meeting ribbon
+		/// </summary>
+		public const uint NextMeetingRibbonJoinPress = 15047;
+		/// <summary>
+		/// 15048 Dismisses the ribbon
+		/// </summary>
+		public const uint NextMeetingRibbonClosePress = 15048;
+		/// <summary>
+		/// 15049
+		/// </summary>
+		public const uint NextMeetingRibbonVisible = 15049;
         /// <summary>
         /// 15051
         /// </summary>
