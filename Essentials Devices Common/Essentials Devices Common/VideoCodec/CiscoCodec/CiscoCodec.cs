@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.Net.Https;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXml.Serialization;
+//using Crestron.SimplSharpPro;
 using Newtonsoft.Json;
 using Cisco_One_Button_To_Push;
 using Cisco_SX80_Corporate_Phone_Book;
@@ -33,6 +34,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public BoolFeedback StandbyIsOnFeedback { get; private set; }
 
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
+
+        //public BoolOutputSig OccupancyDetectedFeedback { get; private set; }
 
         public IntFeedback PeopleCountFeedback { get; private set; }
 
@@ -628,6 +631,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         JsonConvert.PopulateObject(response, codecBookings);
 
                         CodecSchedule.Meetings = CiscoCodecBookings.GetGenericMeetingsFromBookingResult(codecBookings.CommandResponse.BookingsListResult.Booking);
+
+                        
                     }
 
                 }  

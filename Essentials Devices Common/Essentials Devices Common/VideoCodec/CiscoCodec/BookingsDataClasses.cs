@@ -288,8 +288,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             meetings.OrderBy(m => m.StartTime);
 
-
-
             return meetings;
         }
     }
