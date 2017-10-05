@@ -114,35 +114,35 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 1211
         /// </summary>
-        public const uint VCSpeedDial1Press = 1211;
+        public const uint VCFavorite1Press = 1211;
         /// <summary>
         /// 1212
         /// </summary>
-        public const uint VCSpeedDial2Press = 1212;
+        public const uint VCFavorite2Press = 1212;
         /// <summary>
         /// 1213
         /// </summary>
-        public const uint VCSpeedDial3Press = 1213;
+        public const uint VCFavorite3Press = 1213;
         /// <summary>
         /// 1214
         /// </summary>
-        public const uint VCSpeedDial4Press = 1214;
+        public const uint VCFavorite4Press = 1214;
         /// <summary>
         /// 1221
         /// </summary>
-        public const uint VCSpeedDial1Visible = 1221;
+        public const uint VCFavorite1Visible = 1221;
         /// <summary>
         /// 1222
         /// </summary>
-        public const uint VCSpeedDial2Visible = 1222;
+        public const uint VCFavorite2Visible = 1222;
         /// <summary>
         /// 1223
         /// </summary>
-        public const uint VCSpeedDial3Visible = 1223;
+        public const uint VCFavorite3Visible = 1223;
         /// <summary>
         /// 1224
         /// </summary>
-        public const uint VCSpeedDial4Visible = 1224;
+        public const uint VCFavorite4Visible = 1224;
         /// <summary>
         /// 1231
         /// </summary>
@@ -187,6 +187,19 @@ namespace PepperDash.Essentials
 		/// 1241 For touching the text area to bring up keyboard
 		/// </summary>
 		public const uint VcDirectoryTextEntryPress = 1241;
+
+		/// <summary>
+		/// 1251
+		/// </summary>
+		public const uint VCSelfViewTogglePress = 1251;
+		/// <summary>
+		/// 1252
+		/// </summary>
+		public const uint VCRemoteViewTogglePress = 1252;
+		/// <summary>
+		/// 1253
+		/// </summary>
+		public const uint VCSelfViewPipTogglePress = 1253;
 
         //******************************************************
         // Keyboard

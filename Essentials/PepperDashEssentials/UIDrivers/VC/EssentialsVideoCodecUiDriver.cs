@@ -90,6 +90,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             ActiveCallsSRL = new SubpageReferenceList(TriList, UISmartObjectJoin.CodecActiveCallsHeaderList, 3, 3, 3);
             SetupRecentCallsList();
 			SetupFavorites();
+			SetupSelfViewControls();
 
             codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
 
@@ -437,6 +438,17 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		void RefreshDirectory()
 		{
 
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void SetupSelfViewControls()
+		{
+			if(Codec.
+			TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewTogglePress, () => { });
+			TriList.SetSigFalseAction(UIBoolJoin.VCRemoteViewTogglePress, () => { });
+			TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewPipTogglePress, () => { });
 		}
 
         /// <summary>
