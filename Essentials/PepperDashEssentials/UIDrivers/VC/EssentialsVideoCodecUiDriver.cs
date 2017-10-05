@@ -71,6 +71,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         eKeypadMode KeypadMode;
 
+		bool CodecHasFavorites;
+
         /// <summary>
         /// 
         /// </summary>
@@ -87,6 +89,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             SetupDialKeypad();
             ActiveCallsSRL = new SubpageReferenceList(TriList, UISmartObjectJoin.CodecActiveCallsHeaderList, 3, 3, 3);
             SetupRecentCallsList();
+			SetupFavorites();
 
             codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
 
@@ -100,7 +103,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
             LocalPrivacyIsMuted = new BoolFeedback(() => false);
 
             VCControlsInterlock = new JoinedSigInterlock(triList);
-            VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadVisible);
+			if(CodecHasFavorites)
+	            VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadWithFavoritesVisible);
+			else
+				VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadVisible);
 
             StagingBarsInterlock = new JoinedSigInterlock(triList);
             StagingBarsInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverVisible);
@@ -156,7 +162,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     KeypadMode = eKeypadMode.DTMF;
                     DialStringBuilder.Remove(0, DialStringBuilder.Length);
                     DialStringFeedback.FireUpdate();
-                    TriList.SetBool(UIBoolJoin.VCKeypadBackspaceVisible, false);
+                    TriList.SetBool(UIBoolJoin.VCKeypadVisible, false);
                     Parent.ShowNotificationRibbon("Connected", 2000);
                     StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
                     VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
@@ -175,6 +181,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     if (!Codec.IsInCall)
                     {
                         KeypadMode = eKeypadMode.Dial;
+						ShowKeypad();
                         DialStringBuilder.Remove(0, DialStringBuilder.Length);
                         DialStringFeedback.FireUpdate();
                         Parent.ShowNotificationRibbon("Disonnected", 2000);
@@ -382,6 +389,38 @@ namespace PepperDash.Essentials.UIDrivers.VC
             }
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		void SetupFavorites()
+		{
+			var c = Codec as IHasCallFavorites;
+			if (c != null && c.CallFavorites != null)
+			{
+				CodecHasFavorites = true;
+				var favs = c.CallFavorites.Favorites;
+				for (uint i = 0; i <= 3; i++)
+				{
+					if (i < favs.Count)
+					{
+						var fav = favs[(int)i];
+						TriList.SetString(1211 + i, fav.Name);
+						TriList.SetBool(1221 + i, true);
+						TriList.SetSigFalseAction(1211 + i, () =>
+							{
+								Codec.Dial(fav.Number);
+							});
+					}
+					else
+						TriList.SetBool(1221 + i, false);
+
+				}
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
 		void SetupDirectoryList()
 		{
 			var codec = Codec as IHasDirectory;
@@ -456,7 +495,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         void ShowKeypad()
         {
-            VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
+			if(CodecHasFavorites)
+	            VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadWithFavoritesVisible);
+			else
+				VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
             StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
         }
 

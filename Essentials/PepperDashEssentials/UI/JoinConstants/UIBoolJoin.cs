@@ -86,7 +86,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 1201
         /// </summary>
-        public const uint VCKeypadVisible = 1201;
+        public const uint VCKeypadWithFavoritesVisible = 1201;
         /// <summary>
         /// 1202
         /// </summary>
@@ -95,6 +95,10 @@ namespace PepperDash.Essentials
         /// 
         /// </summary>
         public const uint VCStagingActivePopoverVisible = 1203;
+		/// <summary>
+		/// 
+		/// </summary>
+		public const uint VCKeypadVisible = 1204;
         /// <summary>
         /// 1205
         /// </summary>
