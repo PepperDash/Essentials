@@ -446,9 +446,20 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		void SetupSelfViewControls()
 		{
 			TriList.SetSigFalseAction(UIBoolJoin.VCStagingSelfViewLayoutPress, this.ShowSelfViewLayout);
-			TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewTogglePress, () => { });
-			TriList.SetSigFalseAction(UIBoolJoin.VCRemoteViewTogglePress, () => { });
-			TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewPipTogglePress, () => { });
+			var svc = Codec as IHasCodecSelfview;
+			if (svc != null)
+			{
+				TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewTogglePress, svc.SelfviewModeToggle);
+				svc.SelfviewIsOnFeedback.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCSelfViewTogglePress]);
+
+				//TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewPipTogglePress, () => { });
+			}
+			var lc = Codec as IHasCodecLayouts;
+			if (lc != null)
+			{
+				TriList.SetSigFalseAction(UIBoolJoin.VCRemoteViewTogglePress, lc.LocalLayoutToggle);
+				lc.LocalLayoutFeedback.LinkInputSig(TriList.StringInput[UIStringJoin.VCLayoutModeText]);
+			}
 		}
 
         /// <summary>

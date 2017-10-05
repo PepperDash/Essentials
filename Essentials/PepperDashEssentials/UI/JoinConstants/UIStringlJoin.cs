@@ -26,6 +26,10 @@ namespace PepperDash.Essentials
         public const uint VCRecentListTextStart = 1201;
 		//									RANGE IN USE
 		public const uint VCRecentListTextEnd = 1230;
+		/// <summary>
+		/// 1231 - the current layout mode
+		/// </summary>
+		public const uint VCLayoutModeText = 1231;
 
 		/// <summary>
 		/// 1301 - 1400
