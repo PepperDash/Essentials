@@ -414,6 +414,11 @@ namespace PepperDash.Essentials
 			return true;
 		}
 
+        public override void RoomVacatedForTimeoutPeriod(object o)
+        {
+            //Implement this
+        }
+
 		/// <summary>
 		/// Runs "roomOff" action on all rooms not set to ExcludeFromGlobalFunctions
 		/// </summary>

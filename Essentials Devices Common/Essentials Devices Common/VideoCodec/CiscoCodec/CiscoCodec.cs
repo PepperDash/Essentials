@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.Net.Https;
 using Crestron.SimplSharp.CrestronXml;
 using Crestron.SimplSharp.CrestronXml.Serialization;
+//using Crestron.SimplSharpPro;
 using Newtonsoft.Json;
 using Cisco_One_Button_To_Push;
 using Cisco_SX80_Corporate_Phone_Book;
@@ -14,13 +15,14 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Devices.Common.Occupancy;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 
-    public class CiscoCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory, IHasScheduleAwareness
+    public class CiscoCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory, IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfview
     {
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 
@@ -38,15 +40,46 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public BoolFeedback SpeakerTrackIsOnFeedback { get; private set; }
 
-        //private CiscoOneButtonToPush CodecObtp;
+        public BoolFeedback SelfviewIsOnFeedback { get; private set; }
 
-        //private Corporate_Phone_Book PhoneBook;
+        public StringFeedback SelfviewPipPositionFeedback { get; private set; }
 
+        public StringFeedback LocalLayoutFeedback { get; private set; }
+
+        private CodecCommandWithLabel CurrentSelfviewPipPosition;
+
+        private CodecCommandWithLabel CurrentLocalLayout;
+
+        /// <summary>
+        /// List the available positions for the selfview PIP window
+        /// </summary>
+        public List<CodecCommandWithLabel> SelfviewPipPositions = new List<CodecCommandWithLabel>()
+        {
+            new CodecCommandWithLabel("CenterLeft", "Center Left"),
+            new CodecCommandWithLabel("CenterRight", "Center Right"),
+            new CodecCommandWithLabel("LowerLeft", "Lower Left"),
+            new CodecCommandWithLabel("LowerRight", "Lower Right"),
+            new CodecCommandWithLabel("UpperCenter", "Upper Center"),
+            new CodecCommandWithLabel("UpperLeft", "Upper Left"),
+            new CodecCommandWithLabel("UpperRight", "Upper Right"),
+        };
+
+        /// <summary>
+        /// Lists the available options for local layout
+        /// </summary>
+        public List<CodecCommandWithLabel> LocalLayouts = new List<CodecCommandWithLabel>()
+        {
+            new CodecCommandWithLabel("auto", "Auto"),
+            //new CiscoCodecLocalLayout("custom", "Custom"),    // Left out for now
+            new CodecCommandWithLabel("equal","Equal"),
+            new CodecCommandWithLabel("overlay","Overlay"),
+            new CodecCommandWithLabel("prominent","Prominent"),
+            new CodecCommandWithLabel("single","Single")
+        };
+        
         private CiscoCodecConfiguration.RootObject CodecConfiguration;
 
         private CiscoCodecStatus.RootObject CodecStatus;
-
-        //private CiscoCodecPhonebook.RootObject CodecPhonebook;
 
         public CodecCallHistory CallHistory { get; private set; }
 
@@ -127,22 +160,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        //protected override Func<int> ActiveCallCountFeedbackFunc
-        //{
-        //    get { return () => ActiveCalls.Count; }
-        //}
+        protected Func<bool> SelfViewIsOnFeedbackFunc
+        {
+            get
+            {
+                return () => CodecStatus.Status.Video.Selfview.Mode.BoolValue;
+            }
+        }
 
-        //private HttpsClient Client;
+        protected Func<string> SelfviewPipPositionFeedbackFunc
+        {
+            get
+            {               
+                return () => CurrentSelfviewPipPosition.Label;
+            }
+        }
 
-        //private HttpApiServer Server;
-
-        //private int ServerPort;
-
-        //private string CodecUrl;
-
-        //private string HttpSessionId;
-
-        //private string FeedbackRegistrationExpression;
+        protected Func<string> LocalLayoutFeedbackFunc
+        {
+            get
+            {
+                return () => CurrentLocalLayout.Label;
+            }
+        }
 
         private string CliFeedbackRegistrationExpression;
 
@@ -181,6 +221,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
             PeopleCountFeedback = new IntFeedback(PeopleCountFeedbackFunc);
             SpeakerTrackIsOnFeedback = new BoolFeedback(SpeakerTrackIsOnFeedbackFunc);
+            SelfviewIsOnFeedback = new BoolFeedback(SelfViewIsOnFeedbackFunc);
+            SelfviewPipPositionFeedback = new StringFeedback(SelfviewPipPositionFeedbackFunc);
+            LocalLayoutFeedback = new StringFeedback(LocalLayoutFeedbackFunc);
 
             Communication = comm;
 
@@ -220,8 +263,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             CallHistory = new CodecCallHistory();
 
-            CallFavorites = new CodecCallFavorites();
-            CallFavorites.Favorites = props.Favorites;
+            if (props.Favorites != null)
+            {
+                CallFavorites = new CodecCallFavorites();
+                CallFavorites.Favorites = props.Favorites;
+            }
 
             DirectoryRoot = new CodecDirectory();
 
@@ -235,6 +281,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.RoomAnalytics.PeoplePresence.ValueChangedAction = RoomIsOccupiedFeedback.FireUpdate;
             CodecStatus.Status.RoomAnalytics.PeopleCount.Current.ValueChangedAction = PeopleCountFeedback.FireUpdate;
             CodecStatus.Status.Cameras.SpeakerTrack.Status.ValueChangedAction = SpeakerTrackIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Video.Selfview.Mode.ValueChangedAction = SelfviewIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Video.Selfview.PIPPosition.ValueChangedAction = ComputeSelfviewPipStatus;
+            CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
         }
 
         /// <summary>
@@ -628,6 +677,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         JsonConvert.PopulateObject(response, codecBookings);
 
                         CodecSchedule.Meetings = CiscoCodecBookings.GetGenericMeetingsFromBookingResult(codecBookings.CommandResponse.BookingsListResult.Booking);
+
+                        
                     }
 
                 }  
@@ -939,6 +990,109 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SendText("xCommand SystemUnit Boot Action: Restart");
         }
 
+        /// <summary>
+        /// Turns on Selfview Mode
+        /// </summary>
+        public void SelfviewModeOn()
+        {
+            SendText("xCommand Video Selfview Set Mode: On");
+        }
+
+        /// <summary>
+        /// Turns off Selfview Mode
+        /// </summary>
+        public void SelfviewModeOff()
+        {
+            SendText("xCommand Video Selfview Set Mode: Off");
+        }
+
+        /// <summary>
+        /// Toggles Selfview mode on/off
+        /// </summary>
+        public void SelfviewModeToggle()
+        {
+            string mode = string.Empty;
+
+            if (CodecStatus.Status.Video.Selfview.Mode.BoolValue)
+                mode = "Off";
+            else
+                mode = "On";
+
+            SendText(string.Format("xCommand Video Selfview Set Mode: {0}", mode));                    
+        }
+
+        /// <summary>
+        /// Sets a specified position for the selfview PIP window
+        /// </summary>
+        /// <param name="position"></param>
+        public void SelfviewPipPositionSet(CodecCommandWithLabel position)
+        {
+            SendText(string.Format("xCommand Video Selfview Set Mode: On PIPPosition: {0}", position.Command));
+        }
+
+        /// <summary>
+        /// Toggles to the next selfview PIP position
+        /// </summary>
+        public void SelfviewPipPositionToggle()
+        {
+            if (CurrentSelfviewPipPosition != null)
+            {
+                var nextPipPositionIndex = SelfviewPipPositions.IndexOf(CurrentSelfviewPipPosition) + 1;
+
+                if (nextPipPositionIndex >= SelfviewPipPositions.Count) // Check if we need to loop back to the first item in the list
+                    nextPipPositionIndex = 0;                  
+
+                SelfviewPipPositionSet(SelfviewPipPositions[nextPipPositionIndex]);
+            }
+        }
+
+        /// <summary>
+        /// Sets a specific local layout
+        /// </summary>
+        /// <param name="layout"></param>
+        public void LocalLayoutSet(CodecCommandWithLabel layout)
+        {
+            SendText(string.Format("xCommand Video Layout LayoutFamily Set Target: local LayoutFamily: {0}", layout.Command));
+        }
+
+        /// <summary>
+        /// Toggles to the next local layout
+        /// </summary>
+        public void LocalLayoutToggle()
+        {
+            if(CurrentLocalLayout != null)
+            {
+                var nextLocalLayoutIndex = LocalLayouts.IndexOf(CurrentLocalLayout) + 1;
+
+                if (nextLocalLayoutIndex >= LocalLayouts.Count)  // Check if we need to loop back to the first item in the list
+                    nextLocalLayoutIndex = 0;
+                
+                LocalLayoutSet(LocalLayouts[nextLocalLayoutIndex]);
+            }
+        }
+
+        /// <summary>
+        /// Calculates the current selfview PIP position
+        /// </summary>
+        void ComputeSelfviewPipStatus()
+        {
+            CurrentSelfviewPipPosition = SelfviewPipPositions.FirstOrDefault(p => p.Command.ToLower().Equals(CodecStatus.Status.Video.Selfview.PIPPosition.Value.ToLower()));
+
+            if(CurrentSelfviewPipPosition != null)
+                SelfviewIsOnFeedback.FireUpdate();
+        }
+
+        /// <summary>
+        /// Calculates the current local Layout
+        /// </summary>
+        void ComputeLocalLayout()
+        {
+            CurrentLocalLayout = LocalLayouts.FirstOrDefault(l => l.Command.ToLower().Equals(CodecStatus.Status.Video.Layout.LayoutFamily.Local.Value.ToLower()));
+
+            if (CurrentLocalLayout != null)
+                LocalLayoutFeedback.FireUpdate();
+        }
+
         public void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry)
         {
             SendText(string.Format("xCommand CallHistory DeleteEntry CallHistoryId: {0} AcknowledgeConsecutiveDuplicates: True", entry.OccurrenceHistoryId));
@@ -1009,6 +1163,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 CodecStatus = status;
                 CodecConfiguration = configuration;
             }
+        }
+    }
+
+    /// <summary>
+    /// Represents a codec command that might need to have a friendly label applied for UI feedback purposes
+    /// </summary>
+    public class CodecCommandWithLabel
+    {
+        public string Command { get; set; }
+        public string Label { get; set; }
+
+        public CodecCommandWithLabel(string command, string label)
+        {
+            Command = command;
+            Label = label;
         }
     }
 

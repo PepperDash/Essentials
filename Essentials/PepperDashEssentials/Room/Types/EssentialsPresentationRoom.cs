@@ -427,5 +427,11 @@ namespace PepperDash.Essentials
 			}
 			return true;
 		}
+
+        public override void RoomVacatedForTimeoutPeriod(object o)
+        {
+            //Implement this
+        }
+
 	}
 }

@@ -1485,19 +1485,42 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public List<Source> Source { get; set; }
         }
 
-        public class Local
+        public class Local : ValueProperty
         {
-            public string Value { get; set; }
+            string _Value;
+
+            public string Value // Valid values are On/Off
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    OnValueChanged();
+                }
+            }
         }
 
         public class LayoutFamily
         {
             public Local Local { get; set; }
+
+            public LayoutFamily()
+            {
+                Local = new Local();
+            }
         }
 
         public class Layout
         {
             public LayoutFamily LayoutFamily { get; set; }
+
+            public Layout()
+            {
+                LayoutFamily = new LayoutFamily();
+            }
         }
 
         public class Monitors
@@ -1588,19 +1611,43 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode8
+        public class Mode8 : ValueProperty
         {
-            public string Value { get; set; }
+            public bool BoolValue { get; private set; }
+
+            public string Value // Valid values are On/Off
+            {
+                set
+                {
+                    // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "On";
+                    OnValueChanged();
+                }
+            }
         }
+
 
         public class OnMonitorRole
         {
             public string Value { get; set; }
         }
 
-        public class PIPPosition3
+        public class PIPPosition3 : ValueProperty
         {
-            public string Value { get; set; }
+            string _Value;
+
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    OnValueChanged();
+                }
+            }
         }
 
         public class Selfview
@@ -1609,6 +1656,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Mode8 Mode { get; set; }
             public OnMonitorRole OnMonitorRole { get; set; }
             public PIPPosition3 PIPPosition { get; set; }
+
+            public Selfview()
+            {
+                Mode = new Mode8();
+                PIPPosition = new PIPPosition3();
+            }
         }
 
         public class Video
@@ -1620,6 +1673,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Output2 Output { get; set; }
             public Presentation2 Presentation { get; set; }
             public Selfview Selfview { get; set; }
+
+            public Video()
+            {
+                Selfview = new Selfview();
+                Layout = new Layout();
+            }
         }
 
         public class AnswerState
@@ -1751,6 +1810,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 RoomAnalytics = new RoomAnalytics();
                 Conference = new Conference2();
                 SystemUnit = new SystemUnit();
+                Video = new Video();
             }
         }
 
