@@ -324,6 +324,10 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint Volume6MutePressAndFB = 3863;
 
+		/// <summary>
+		/// 3869 - when the system is off and the gear is pressed
+		/// </summary>
+		public const uint VolumesPagePowerOffVisible = 3869;
         /// <summary>
         /// 3870
         /// </summary>

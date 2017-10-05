@@ -11,20 +11,29 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
-    public class MockVC : VideoCodecBase, IRoutingSource, IHasCallHistory, IHasScheduleAwareness
+    public class MockVC : VideoCodecBase, IRoutingSource, IHasCallHistory, IHasScheduleAwareness, IHasCallFavorites
     {
         public RoutingInputPort CodecOsdIn { get; private set; }
         public RoutingInputPort HdmiIn1 { get; private set; }
         public RoutingInputPort HdmiIn2 { get; private set; }
         public RoutingOutputPort HdmiOut { get; private set; }
 
+		public CodecCallFavorites CallFavorites { get; private set; }
+
         /// <summary>
         /// 
         /// </summary>
-        public MockVC(string key, string name)
+        public MockVC(string key, string name, MockVcPropertiesConfig props)
             : base(key, name)
         {
             CodecInfo = new MockCodecInfo();
+
+			// Get favoritesw
+			if (props.Favorites != null)
+			{
+				CallFavorites = new CodecCallFavorites();
+				CallFavorites.Favorites = props.Favorites;
+			}
 
             // Debug helpers
             IncomingCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "IncomingCall={0}", _IncomingCall);
@@ -329,19 +338,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		public CodecScheduleAwareness CodecSchedule
 		{
 			get {
-				var sch = new CodecScheduleAwareness();
-				for(int i = 0; i < 5; i++)
+				// if the last meeting has past, generate a new list
+				if (_CodecSchedule == null
+					|| _CodecSchedule.Meetings[_CodecSchedule.Meetings.Count - 1].StartTime < DateTime.Now)
 				{
-					var m = new Meeting();
-					m.StartTime = DateTime.Now.AddMinutes(3).AddHours(i);
-					m.EndTime = DateTime.Now.AddHours(i).AddMinutes(30);
-					m.Title = "Meeting " + i;
-					m.ConferenceNumberToDial = i + "meeting@fake.com";
-					sch.Meetings.Add(m);
+					_CodecSchedule = new CodecScheduleAwareness();
+					for (int i = 0; i < 5; i++)
+					{
+						var m = new Meeting();
+						m.StartTime = DateTime.Now.AddMinutes(3).AddHours(i);
+						m.EndTime = DateTime.Now.AddHours(i).AddMinutes(30);
+						m.Title = "Meeting " + i;
+						m.ConferenceNumberToDial = i + "meeting@fake.com";
+						_CodecSchedule.Meetings.Add(m);
+					}
 				}
-				return sch;
+				return _CodecSchedule;
 			}
 		}
+		CodecScheduleAwareness _CodecSchedule;
 
 		#endregion
 	}

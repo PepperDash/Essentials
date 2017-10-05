@@ -174,5 +174,13 @@ namespace PepperDash.Essentials
 		/// 3970
 		/// </summary>
 		public const uint NextMeetingRibbonButtonLabel = 3970;
+		/// <summary>
+		/// 3971
+		/// </summary>
+		public const uint NextMeetingSecondaryButtonLabel = 3971;
+		/// <summary>
+		/// 3972
+		/// </summary>
+		public const uint NextMeetingFollowingMeetingText = 3972;
     }
 }

@@ -142,6 +142,7 @@
     <Compile Include="VideoCodec\CiscoCodec\BookingsDataClasses.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CiscoCodec.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CiscoCodecPropertiesConfig.cs" />
+    <Compile Include="VideoCodec\MockVC\MockVcPropertiesConfig.cs" />
     <Compile Include="VideoCodec\CiscoCodec\PhonebookDataClasses.cs" />
     <Compile Include="VideoCodec\CiscoCodec\xConfiguration.cs" />
     <Compile Include="VideoCodec\CiscoCodec\xEvent.cs" />

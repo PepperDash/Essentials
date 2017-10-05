@@ -108,6 +108,7 @@ namespace PepperDash.Essentials.Core
                 WarningTimer.Reset(WarningTime, WarningTime);
             if(ErrorTimer != null)
                 ErrorTimer.Reset(ErrorTime, ErrorTime);
+
         }
 	}
 }

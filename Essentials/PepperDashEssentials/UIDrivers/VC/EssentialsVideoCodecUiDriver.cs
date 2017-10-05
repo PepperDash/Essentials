@@ -207,12 +207,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
 
             // Set mode of header button
-            if (!Codec.IsInCall)
-                TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 0);
-            else if(Codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
-                TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
-            else
-                TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
+			if (!Codec.IsInCall)
+				Parent.HeaderCallButton.SetIcon(HeaderListButton.OnHook);
+				//TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 0);
+			else if (Codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
+				Parent.HeaderCallButton.SetIcon(HeaderListButton.Camera);
+				//TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
+			else
+				Parent.HeaderCallButton.SetIcon(HeaderListButton.Phone);
+				//TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
 
             // Update list of calls
             UpdateCallsHeaderList(call);
@@ -228,7 +231,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             ushort i = 1;
             foreach (var c in activeList)
             {
-                var item = new SubpageReferenceListItem(1, ActiveCallsSRL);
+				//var item = new SubpageReferenceListItem(1, ActiveCallsSRL);
                 ActiveCallsSRL.StringInputSig(i, 1).StringValue = c.Name;
                 ActiveCallsSRL.StringInputSig(i, 2).StringValue = c.Number;
                 ActiveCallsSRL.StringInputSig(i, 3).StringValue = c.Status.ToString();
@@ -308,7 +311,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     else
                         Codec.EndAllCalls();
                 });
-            TriList.SetSigFalseAction(UIBoolJoin.CallEndAllConfirmPress, Codec.EndAllCalls);
+			TriList.SetSigFalseAction(UIBoolJoin.CallEndAllConfirmPress, () =>
+				{
+					Parent.PopupInterlock.HideAndClear();
+					Codec.EndAllCalls();
+				});
         }
 
         /// <summary>
@@ -380,7 +387,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			var codec = Codec as IHasDirectory;
 			if (codec != null)
 			{
-				codec.CallHistory.RecentCallsListHasChanged += (o, a) => RefreshRecentCallsList();
+				//codec.CallHistory.RecentCallsListHasChanged += (o, a) => RefreshRecentCallsList();
 				// EVENT??????????????? Pointed at refresh
 				DirectoryList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCDirectoryList], 
 					true, 1300);

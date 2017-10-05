@@ -62,6 +62,9 @@ namespace PepperDash.Essentials
         BoolInputSig ShareButtonSig;
         BoolInputSig EndMeetingButtonSig;
 
+		public HeaderListButton HeaderCallButton { get; private set; }
+		public HeaderListButton HeaderGearButton { get; private set; }
+
         /// <summary>
         /// The parent driver for this
         /// </summary>
@@ -345,7 +348,7 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
 			if (NextMeetingTimer != null)
 				NextMeetingTimer.Stop();
-			HideNextMeetingRibbon();
+			HideNextMeetingPopup();
             base.Hide();
         }
 
@@ -390,9 +393,11 @@ namespace PepperDash.Essentials
 #warning HLV-Add some sort of every-minute "cron" thing to run these.
 				NextMeetingTimer = new CTimer(o =>
 				{
+					if (CurrentRoom.OnFeedback.BoolValue)
+						return;
 					// Every 60 seconds, check meetings list for the closest, joinable meeting
-					var meeting = ss.CodecSchedule.Meetings
-						.Aggregate((m1, m2) => m1.StartTime < m2.StartTime ? m1 : m2);
+					var meetings = ss.CodecSchedule.Meetings;
+					var meeting = meetings.Aggregate((m1, m2) => m1.StartTime < m2.StartTime ? m1 : m2);
 					if (meeting != null && meeting.Joinable)
 					{
 						TriList.SetString(UIStringJoin.NextMeetingRibbonStartText, meeting.StartTime.ToShortTimeString());
@@ -402,10 +407,22 @@ namespace PepperDash.Essentials
 						TriList.SetString(UIStringJoin.NextMeetingRibbonButtonLabel, "Join");
 						TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonJoinPress, () =>
 							{
-								HideNextMeetingRibbon();
+								HideNextMeetingPopup();
 								RoomOnAndDialMeeting(meeting.ConferenceNumberToDial);
 							});
-						ShowNextMeetingRibbon();
+						TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
+						TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
+							{
+								HideNextMeetingPopup();
+								CalendarPress();
+							});
+						if (meetings.Count > 1)
+						{
+							TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText, 
+								meetings[1].StartTime.ToShortTimeString());
+						}
+
+						ShowNextMeetingPopup();
 					}
 				}, null, 0, 60000);
 			}
@@ -414,16 +431,16 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 
 		/// </summary>
-		void ShowNextMeetingRibbon()
+		void ShowNextMeetingPopup()
 		{
-			TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonClosePress, HideNextMeetingRibbon);
+			TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonClosePress, HideNextMeetingPopup);
 			TriList.SetBool(UIBoolJoin.NextMeetingRibbonVisible, true);
 		}
 		
 		/// <summary>
 		/// 
 		/// </summary>
-		void HideNextMeetingRibbon()
+		void HideNextMeetingPopup()
 		{
 			TriList.SetBool(UIBoolJoin.NextMeetingRibbonVisible, false);
 		}
@@ -860,11 +877,17 @@ namespace PepperDash.Essentials
 
 			var roomConf = CurrentRoom.Config;
 			//
-			var setupButton = new HeaderListButton(HeaderButtonsList, 5);
-			setupButton.SetIcon(HeaderListButton.Gear);
-			setupButton.OutputSig.SetSigHeldAction(2000, 
+			HeaderGearButton = new HeaderListButton(HeaderButtonsList, 5);
+			HeaderGearButton.SetIcon(HeaderListButton.Gear);
+			HeaderGearButton.OutputSig.SetSigHeldAction(2000,
 				ShowTech,
-				() => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible));
+				() =>
+				{
+					if (CurrentRoom.OnFeedback.BoolValue)
+						PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible);
+					else
+						PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPagePowerOffVisible);
+				});
 
 			TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
 				PopupInterlock.HideAndClear());
@@ -920,10 +943,11 @@ namespace PepperDash.Essentials
 			}
 
 			// Call button
-			var callBut = new HeaderListButton(HeaderButtonsList, nextIndex);
-			callBut.SetIcon(HeaderListButton.OnHook);
-			callBut.OutputSig.SetSigFalseAction(() =>
+			HeaderCallButton = new HeaderListButton(HeaderButtonsList, nextIndex);
+			HeaderCallButton.SetIcon(HeaderListButton.OnHook);
+			HeaderCallButton.OutputSig.SetSigFalseAction(() =>
 				PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible));
+			
 			nextIndex--;
 
 			// blank any that remain
@@ -1217,5 +1241,7 @@ namespace PepperDash.Essentials
         JoinedSigInterlock PopupInterlock { get; }
         void ShowNotificationRibbon(string message, int timeout);
         void HideNotificationRibbon();
+		HeaderListButton HeaderGearButton { get; }
+		HeaderListButton HeaderCallButton { get; }
     }
 }

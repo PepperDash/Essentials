@@ -103,8 +103,10 @@ namespace PepperDash.Essentials.Devices.Common
 
             else if (typeName == "mockvc")
             {
-                return new PepperDash.Essentials.Devices.Common.VideoCodec
-                    .MockVC(key, name);
+				var props = JsonConvert.DeserializeObject
+					<PepperDash.Essentials.Devices.Common.VideoCodec.MockVcPropertiesConfig>(properties.ToString());
+				return new PepperDash.Essentials.Devices.Common.VideoCodec
+                    .MockVC(key, name, props);
             }
 
             else if (typeName == "ciscocodec")
