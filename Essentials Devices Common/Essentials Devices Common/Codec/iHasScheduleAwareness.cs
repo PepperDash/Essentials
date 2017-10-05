@@ -72,11 +72,11 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             {
                 eMeetingEventChangeType changeType = eMeetingEventChangeType.Unkown;
 
-                if (m.TimeToMeetingStart.TotalMinutes == m.MeetingWarningMinutes.TotalMinutes)       // Meeting is about to start
+                if (m.TimeToMeetingStart.TotalMinutes <= m.MeetingWarningMinutes.TotalMinutes)       // Meeting is about to start
                     changeType = eMeetingEventChangeType.MeetingStartWarning;
                 else if (m.TimeToMeetingStart.TotalMinutes == 0)                                    // Meeting Start
                     changeType = eMeetingEventChangeType.MeetingStart;
-                else if (m.TimeToMeetingEnd.TotalMinutes == m.MeetingWarningMinutes.TotalMinutes)    // Meeting is about to end
+                else if (m.TimeToMeetingEnd.TotalMinutes <= m.MeetingWarningMinutes.TotalMinutes)    // Meeting is about to end
                     changeType = eMeetingEventChangeType.MeetingEndWarning;
                 else if (m.TimeToMeetingEnd.TotalMinutes == 0)                                      // Meeting has ended
                     changeType = eMeetingEventChangeType.MeetingEnd;

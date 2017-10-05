@@ -130,7 +130,8 @@
     <Compile Include="DSP\PolycomSoundStructure\SoundStructureBasics.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Generic\GenericSource.cs" />
-    <Compile Include="Occupancy\GlsOirCsmExBatt.cs" />
+    <Compile Include="Occupancy\EssentialsGlsOccupancySensorBaseController.cs" />
+    <Compile Include="Occupancy\EssentialsOccupancyAggregator.cs" />
     <Compile Include="Occupancy\iOccupancyStatusProvider.cs" />
     <Compile Include="PC\InRoomPc.cs" />
     <Compile Include="PC\Laptop.cs" />
@@ -150,6 +151,8 @@
     <Compile Include="VideoCodec\CiscoCodec\xEvent.cs" />
     <Compile Include="VideoCodec\CiscoCodec\HttpApiServer.cs" />
     <Compile Include="Codec\CodecActiveCallItem.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasCodecLayouts.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasCodecSelfview.cs" />
     <Compile Include="VideoCodec\MockVC\MockVC.cs" />
     <Compile Include="VideoCodec\CiscoCodec\xStatus.cs" />
     <Compile Include="VideoCodec\VideoCodecBase.cs" />

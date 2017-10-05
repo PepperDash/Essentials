@@ -142,7 +142,6 @@
     <Compile Include="Feedbacks\BoolFeedbackOneShot.cs" />
     <Compile Include="Ramps and Increments\NumericalHelpers.cs" />
     <Compile Include="Ramps and Increments\UshortSigIncrementer.cs" />
-    <Compile Include="Room\iHasOccupancyAwareness.cs" />
     <Compile Include="Routing\ICardPortsDevice.cs" />
     <Compile Include="InUseTracking\IInUseTracking.cs" />
     <Compile Include="InUseTracking\InUseTracking.cs" />

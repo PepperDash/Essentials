@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Devices.Common.Occupancy;
 
 namespace PepperDash.Essentials
 {
@@ -15,7 +16,6 @@ namespace PepperDash.Essentials
     {
         event SourceInfoChangeHandler CurrentSingleSourceChange;
     }
-
 
     /// <summary>
     /// 
@@ -29,6 +29,8 @@ namespace PepperDash.Essentials
 
         public BoolFeedback IsWarmingUpFeedback { get; private set; }
         public BoolFeedback IsCoolingDownFeedback { get; private set; }
+
+        public IOccupancyStatusProvider RoomOccupancy { get; private set; }
 
         protected abstract Func<bool> IsWarmingFeedbackFunc { get; }
         protected abstract Func<bool> IsCoolingFeedbackFunc { get; }
@@ -48,6 +50,10 @@ namespace PepperDash.Essentials
         public PepperDash.Essentials.Room.EssentialsRoomEmergencyBase Emergency { get; set; }
 
         public string LogoUrl { get; set; }
+
+        protected CTimer RoomVacancyShutdownTimer;
+
+        protected long RoomVacancyShutdownTimeout = 1800000;  // 30 minutes by default
 
         /// <summary>
         /// 
@@ -104,8 +110,40 @@ namespace PepperDash.Essentials
         /// Override this to implement a default volume level(s) method
         /// </summary>
         public abstract void SetDefaultLevels();
-    }
 
+        /// <summary>
+        /// Sets the object to be used as the IOccupancyStatusProvider for the room. Can be an Occupancy Aggregator or a specific device
+        /// </summary>
+        /// <param name="statusProvider"></param>
+        public void SetRoomOccupancy(IOccupancyStatusProvider statusProvider)
+        {
+            RoomOccupancy = statusProvider;
+
+            RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += new EventHandler<EventArgs>(RoomIsOccupiedFeedback_OutputChange);
+        }
+
+        void RoomIsOccupiedFeedback_OutputChange(object sender, EventArgs e)
+        {
+            if ((sender as IOccupancyStatusProvider).RoomIsOccupiedFeedback.BoolValue == false)
+            {
+                // Trigger the timer when the room is vacant
+                RoomVacancyShutdownTimer = new CTimer(RoomVacatedForTimeoutPeriod, RoomVacancyShutdownTimeout);
+            }
+            else
+            {
+                // Reset the timer when the room is occupied
+                if(RoomVacancyShutdownTimer != null)
+                    RoomVacancyShutdownTimer.Reset(RoomVacancyShutdownTimeout);
+            }
+        }
+
+        /// <summary>
+        /// Executes when RoomVacancyShutdownTimer expires.  Used to trigger specific room actions as needed.  Must nullify the timer object when executed
+        /// </summary>
+        /// <param name="o"></param>
+        public abstract void RoomVacatedForTimeoutPeriod(object o);
+    }
+        
     /// <summary>
     /// To describe the various ways a room may be shutting down
     /// </summary>
