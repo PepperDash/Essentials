@@ -445,7 +445,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// </summary>
 		void SetupSelfViewControls()
 		{
-			if(Codec.
+			TriList.SetSigFalseAction(UIBoolJoin.VCStagingSelfViewLayoutPress, this.ShowSelfViewLayout);
 			TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewTogglePress, () => { });
 			TriList.SetSigFalseAction(UIBoolJoin.VCRemoteViewTogglePress, () => { });
 			TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewPipTogglePress, () => { });
@@ -497,7 +497,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         }
 
         /// <summary>
-        /// 
+        /// Shows the camera controls subpage
         /// </summary>
         void ShowCameraControls()
         {
@@ -505,6 +505,20 @@ namespace PepperDash.Essentials.UIDrivers.VC
             StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingCameraPress);
         }
 
+		/// <summary>
+		/// shows the directory subpage
+		/// </summary>
+        void ShowDirectory()
+        {
+            // populate directory
+            VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCDirectoryVisible);
+            StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingDirectoryPress);
+
+        }
+
+		/// <summary>
+		/// shows the appropriate keypad depending on mode
+		/// </summary>
         void ShowKeypad()
         {
 			if(CodecHasFavorites)
@@ -514,14 +528,18 @@ namespace PepperDash.Essentials.UIDrivers.VC
             StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
         }
 
-        void ShowDirectory()
-        {
-            // populate directory
-            VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCDirectoryVisible);
-            StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingDirectoryPress);
+		/// <summary>
+		/// Shows the self-view layout controls subpage
+		/// </summary>
+		void ShowSelfViewLayout()
+		{
+			VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCSelfViewLayoutVisible);
+			StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingSelfViewLayoutPress);
+		}
 
-        }
-
+		/// <summary>
+		/// Shows the recents subpage
+		/// </summary>
         void ShowRecents()
         {
             //populate recents
@@ -530,13 +548,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
         }
 
         /// <summary>
-        ///
+        /// Connect call button
         /// </summary>
         void ConnectPress()
         {
             Codec.Dial(DialStringBuilder.ToString());
         }
-
 
         /// <summary>
         /// 

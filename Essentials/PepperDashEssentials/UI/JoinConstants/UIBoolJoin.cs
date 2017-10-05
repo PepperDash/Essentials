@@ -111,6 +111,10 @@ namespace PepperDash.Essentials
         /// 1207
         /// </summary>
         public const uint VCCameraVisible = 1207;
+		/// <summary>
+		/// 1208
+		/// </summary>
+		public const uint VCSelfViewLayoutVisible = 1208;
         /// <summary>
         /// 1211
         /// </summary>
@@ -187,6 +191,10 @@ namespace PepperDash.Essentials
 		/// 1241 For touching the text area to bring up keyboard
 		/// </summary>
 		public const uint VcDirectoryTextEntryPress = 1241;
+		/// <summary>
+		/// 1242
+		/// </summary>
+		public const uint VCStagingSelfViewLayoutPress = 1242;
 
 		/// <summary>
 		/// 1251
