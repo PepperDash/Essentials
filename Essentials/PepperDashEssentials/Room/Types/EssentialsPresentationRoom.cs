@@ -262,7 +262,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        public override void Shutdown()
+        protected override void EndShutdown()
         {
             RunRouteAction("roomoff");
         }

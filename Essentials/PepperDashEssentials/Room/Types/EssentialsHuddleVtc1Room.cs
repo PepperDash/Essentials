@@ -261,7 +261,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        public override void Shutdown()
+        protected override void EndShutdown()
         {
             RunRouteAction("roomOff");
             VideoCodec.EndAllCalls();
@@ -338,6 +338,7 @@ namespace PepperDash.Essentials
                             }
                             catch (Exception e)
                             {
+                                Debug.Console(1, this, "*#* EXCEPTION in end usage tracking:\r{0}", e);
                             }
                         }
                     }
