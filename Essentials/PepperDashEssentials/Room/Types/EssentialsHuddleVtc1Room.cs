@@ -338,7 +338,6 @@ namespace PepperDash.Essentials
                             }
                             catch (Exception e)
                             {
-                                Debug.Console(1, this, "*#* EXCEPTION in end usage tracking:\r{0}", e);
                             }
                         }
                     }

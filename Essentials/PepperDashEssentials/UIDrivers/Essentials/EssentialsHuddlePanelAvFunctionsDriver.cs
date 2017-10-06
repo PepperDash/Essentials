@@ -537,11 +537,9 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_HasFinished(object sender, EventArgs e)
         {
-            //Debug.Console(2, "*#*UI shutdown prompt finished");
             EndMeetingButtonSig.BoolValue = false;
             CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange -= ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
             CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange -= ShutdownPromptTimer_PercentFeedback_OutputChange;
-
         }
 
         /// <summary>
@@ -551,7 +549,6 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_WasCancelled(object sender, EventArgs e)
         {
-            //Debug.Console(2, "*#*UI shutdown prompt cancelled");
             if (PowerDownModal != null)
                 PowerDownModal.HideDialog();
             EndMeetingButtonSig.BoolValue = false;

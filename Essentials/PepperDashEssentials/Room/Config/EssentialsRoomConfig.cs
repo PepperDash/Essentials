@@ -110,6 +110,7 @@ namespace PepperDash.Essentials.Room.Config
         public EssentialsRoomAddressPropertiesConfig Addresses { get; set; }
         public EssentialsRoomOccSensorConfig OccupancySensors { get; set; }
         public EssentialsLogoPropertiesConfig Logo { get; set; }
+		public EssentialsRoomTechConfig Tech { get; set; }
         public EssentialsRoomVolumesConfig Volumes { get; set; }
 	}
 
@@ -175,5 +176,10 @@ namespace PepperDash.Essentials.Room.Config
         public string Mode { get; set; }
         public List<string> Types { get; set; }
     }
+
+	public class EssentialsRoomTechConfig
+	{
+		public string Password { get; set; }
+	}
 
 }

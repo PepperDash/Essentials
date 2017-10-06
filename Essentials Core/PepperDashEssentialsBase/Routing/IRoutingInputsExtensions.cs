@@ -102,7 +102,6 @@ namespace PepperDash.Essentials.Core
 				eRoutingSignalType signalType, int cycle, RouteDescriptor routeTable)
 		{
 			cycle++;
-			Debug.Console(2, destination, "*#* SelectInput-cycle {1}. Finding {2} route back to {0}", source.Key, cycle, signalType);
 			var destDevInputTies = TieLineCollection.Default.Where(t =>
 				t.DestinationPort.ParentDevice == destination && (t.Type == signalType || t.Type == eRoutingSignalType.AudioVideo));
 
@@ -115,7 +114,6 @@ namespace PepperDash.Essentials.Core
 			RoutingInputPort goodInputPort = null;
 			if (directTie != null) // Found a tie directly to the source
 			{
-				Debug.Console(2, destination, "*#* Found direct tie to {0}**", source.Key);
 				goodInputPort = directTie.DestinationPort;
 			}
 			else // no direct-connect.  Walk back devices.

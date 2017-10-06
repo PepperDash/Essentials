@@ -16,9 +16,6 @@ using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.UIDrivers.VC
 {
-
-
-#warning HLV - FOR SPARK - (GFX also) we need a staging bar for in call state where there is no camera button
     /// <summary>
     /// This fella will likely need to interact with the room's source, although that is routed via the spark...
     /// Probably needs event or FB to feed AV driver - to show two-mute volume when appropriate.
@@ -154,12 +151,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void Codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
         {
             var call = e.CallItem;
-            Debug.Console(1, "*#* UI: Codec status {0}: {1} --> {2}", call.Name, e.PreviousStatus, e.NewStatus);
             switch (e.NewStatus)
             {
                 case eCodecCallStatus.Connected:
                     // fire at SRL item
-                    Debug.Console(1, "*#* UI: Call Connected {0}", call.Name);
                     KeypadMode = eKeypadMode.DTMF;
                     DialStringBuilder.Remove(0, DialStringBuilder.Length);
                     DialStringFeedback.FireUpdate();
@@ -170,15 +165,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     break;
                 case eCodecCallStatus.Connecting:
                     // fire at SRL item
-                    Debug.Console(1, "*#* UI: Call Connecting {0}", call.Name);
                     Parent.ShowNotificationRibbon("Connecting", 0);
                     break;
                 case eCodecCallStatus.Dialing:
-                    Debug.Console(1, "*#* UI: Call Dialing {0}", call.Name);
                     Parent.ShowNotificationRibbon("Dialing", 0);
                     break;
                 case eCodecCallStatus.Disconnected:
-                    Debug.Console(1, "*#* UI: Call Disconnecting {0}", call.Name);
                     if (!Codec.IsInCall)
                     {
                         KeypadMode = eKeypadMode.Dial;

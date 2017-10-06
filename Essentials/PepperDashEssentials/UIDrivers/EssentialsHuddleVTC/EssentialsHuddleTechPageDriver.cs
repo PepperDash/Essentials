@@ -12,6 +12,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.Touchpanels.Keyboards;
 using PepperDash.Essentials.Devices.Displays;
+using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials.UIDrivers
 {
@@ -49,7 +50,7 @@ namespace PepperDash.Essentials.UIDrivers
 
         CTimer PinAuthorizedTimer;
 
-        string Pin;
+		EssentialsRoomTechConfig Config;
 
         StringBuilder PinEntryBuilder = new StringBuilder(4);
 
@@ -57,18 +58,16 @@ namespace PepperDash.Essentials.UIDrivers
 
         SmartObjectNumeric PinKeypad;
 
-
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="trilist"></param>
         /// <param name="parent"></param>
-        public EssentialsHuddleTechPageDriver(BasicTriListWithSmartObject trilist, IAVDriver parent, string pin)
+        public EssentialsHuddleTechPageDriver(BasicTriListWithSmartObject trilist, IAVDriver parent, EssentialsRoomTechConfig config)
             : base(trilist)
         {
             Parent = parent;
-            Pin = pin;
+			Config = config;
 
             PagesInterlock = new JoinedSigInterlock(trilist);
             PagesInterlock.SetButDontShow(UIBoolJoin.TechSystemStatusVisible);
@@ -176,7 +175,7 @@ namespace PepperDash.Essentials.UIDrivers
             // check it!
             if (len == 4)
             {
-                if (Pin == PinEntryBuilder.ToString())
+                if (Config.Password == PinEntryBuilder.ToString())
                 {
                     IsAuthorized = true;
                     SetPinDotsFeedback(0);
@@ -257,10 +256,8 @@ namespace PepperDash.Essentials.UIDrivers
                 d.Group.Equals("display", StringComparison.OrdinalIgnoreCase)
                 || d.Group.Equals("projector", StringComparison.OrdinalIgnoreCase))
                 .Select(dd => dd.Key);
-            Debug.Console(1, "#################### Config has {0} displays", devKeys.Count());
             var disps = DeviceManager.AllDevices.Where(d =>
                 devKeys.Contains(d.Key));
-            Debug.Console(1, "#################### Devices has {0} displays", disps.Count());
             ushort i = 0;
             foreach (var disp in disps)
             {

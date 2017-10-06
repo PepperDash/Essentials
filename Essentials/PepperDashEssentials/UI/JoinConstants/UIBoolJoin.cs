@@ -227,18 +227,8 @@ namespace PepperDash.Essentials
         /// 2904
         /// </summary>
         public const uint KeyboardButton2Press = 2904;
-        /// <summary>
-        /// 2910
-        /// </summary>
-        //public const uint KeyboardClearPress = 2910;
-        /// <summary>
-        /// 2911
-        /// </summary>
-        //public const uint KeyboardClearVisible = 2911;
 
         // Letter joins start at 2921;
-
-
 
         /// <summary>
         /// 3101
@@ -272,8 +262,6 @@ namespace PepperDash.Essentials
         /// 3112
         /// </summary>
         public const uint TechSchedulerVisible = 3112;
-
-
 
        //******************************************************
         /// <summary>

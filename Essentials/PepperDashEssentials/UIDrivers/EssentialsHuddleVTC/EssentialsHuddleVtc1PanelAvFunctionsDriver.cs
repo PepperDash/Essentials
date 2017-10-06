@@ -153,8 +153,7 @@ namespace PepperDash.Essentials
             get
             {
                 if (_TechDriver == null)
-#warning HLV-Make PIN come from config!
-                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, this, "1234");
+                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, this, CurrentRoom.Config.Tech);
                 return _TechDriver;
             }
         }
@@ -390,7 +389,6 @@ namespace PepperDash.Essentials
 			var ss = CurrentRoom.ScheduleSource;
 			if (ss != null)
 			{
-#warning HLV-Add some sort of every-minute "cron" thing to run these.
 				NextMeetingTimer = new CTimer(o =>
 				{
 					if (CurrentRoom.OnFeedback.BoolValue)
@@ -578,7 +576,6 @@ namespace PepperDash.Essentials
             }
             else // room is on show what's active or select a source if nothing is yet active
             {
-                Debug.Console(0, "*#*#*#*# ActivitySharPressed: CurrentSourceInfoKey={0}", CurrentRoom.CurrentSourceInfoKey);
                 if(CurrentRoom.CurrentSourceInfo == null || CurrentRoom.CurrentSourceInfoKey == CurrentRoom.DefaultCodecRouteString)
                     TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
                 else if (CurrentSourcePageManager != null)
