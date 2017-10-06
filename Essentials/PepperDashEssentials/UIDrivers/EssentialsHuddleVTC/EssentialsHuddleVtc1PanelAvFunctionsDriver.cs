@@ -395,33 +395,37 @@ namespace PepperDash.Essentials
 						return;
 					// Every 60 seconds, check meetings list for the closest, joinable meeting
 					var meetings = ss.CodecSchedule.Meetings;
-					var meeting = meetings.Aggregate((m1, m2) => m1.StartTime < m2.StartTime ? m1 : m2);
-					if (meeting != null && meeting.Joinable)
-					{
-						TriList.SetString(UIStringJoin.NextMeetingRibbonStartText, meeting.StartTime.ToShortTimeString());
-						TriList.SetString(UIStringJoin.NextMeetingRibbonEndText, meeting.EndTime.ToShortTimeString());
-						TriList.SetString(UIStringJoin.NextMeetingRibbonTitleText, meeting.Title);
-						TriList.SetString(UIStringJoin.NextMettingRibbonNameText, meeting.Organizer);
-						TriList.SetString(UIStringJoin.NextMeetingRibbonButtonLabel, "Join");
-						TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonJoinPress, () =>
-							{
-								HideNextMeetingPopup();
-								RoomOnAndDialMeeting(meeting.ConferenceNumberToDial);
-							});
-						TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
-						TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
-							{
-								HideNextMeetingPopup();
-								CalendarPress();
-							});
-						if (meetings.Count > 1)
-						{
-							TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText, 
-								meetings[1].StartTime.ToShortTimeString());
-						}
+                    if (meetings.Count > 0)
+                    {
+                        var meeting = meetings.Aggregate((m1, m2) => m1.StartTime < m2.StartTime ? m1 : m2);
+                        if (meeting != null && meeting.Joinable)
+                        {
+                            TriList.SetString(UIStringJoin.NextMeetingRibbonStartText, meeting.StartTime.ToShortTimeString());
+                            TriList.SetString(UIStringJoin.NextMeetingRibbonEndText, meeting.EndTime.ToShortTimeString());
+                            TriList.SetString(UIStringJoin.NextMeetingRibbonTitleText, meeting.Title);
+                            TriList.SetString(UIStringJoin.NextMettingRibbonNameText, meeting.Organizer);
+                            TriList.SetString(UIStringJoin.NextMeetingRibbonButtonLabel, "Join");
+                            TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonJoinPress, () =>
+                                {
+                                    HideNextMeetingPopup();
+                                    RoomOnAndDialMeeting(meeting.ConferenceNumberToDial);
+                                });
+                            TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
+                            TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
+                                {
+                                    HideNextMeetingPopup();
+                                    CalendarPress();
+                                });
+                            if (meetings.Count > 1)
+                            {
+                                TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
+                                    meetings[1].StartTime.ToShortTimeString());
+                            }
 
-						ShowNextMeetingPopup();
-					}
+                            ShowNextMeetingPopup();
+
+                        }
+                    }
 				}, null, 0, 60000);
 			}
 		}

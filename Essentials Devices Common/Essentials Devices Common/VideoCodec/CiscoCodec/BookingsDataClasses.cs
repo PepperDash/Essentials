@@ -278,6 +278,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 meeting.EndTime = b.Time.EndTime.Value;
                 meeting.Privacy = CodecCallPrivacy.ConvertToDirectionEnum(b.Privacy.Value);
 
+                meetings.Add(meeting);
+
                 if(Debug.Level > 0)
                 {
                     Debug.Console(1, "Title: {0}, ID: {1}, Organizer: {2}, Agenda: {3}", meeting.Title, meeting.Id, meeting.Organizer, meeting.Agenda);
