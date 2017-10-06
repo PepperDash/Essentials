@@ -45,15 +45,25 @@ namespace PepperDash.Essentials
         /// </summary>
         public int ShutdownPromptSeconds { get; set; }
         public int ShutdownVacancySeconds { get; set; }
-        public ShutdownType ShutdownType { get; private set; }
+        public eShutdownType ShutdownType { get; private set; }
 
         public PepperDash.Essentials.Room.EssentialsRoomEmergencyBase Emergency { get; set; }
 
         public string LogoUrl { get; set; }
 
-        protected CTimer RoomVacancyShutdownTimer;
+        protected SecondsCountdownTimer RoomVacancyShutdownTimer { get; private set; }
 
-        protected long RoomVacancyShutdownTimeout = 1800000;  // 30 minutes by default
+        public eVacancyMode VacancyMode { get; private set; }
+
+        /// <summary>
+        /// Seconds after vacancy prompt is displayed until shutdown
+        /// </summary>
+        protected int RoomVacancyShutdownSeconds;
+
+        /// <summary>
+        /// Seconds after vacancy detected until prompt is displayed
+        /// </summary>
+        protected int RoomVacancyShutdownPromptSeconds;
 
         /// <summary>
         /// 
@@ -67,17 +77,30 @@ namespace PepperDash.Essentials
         /// <param name="name"></param>
         public EssentialsRoomBase(string key, string name) : base(key, name)
         {
+            // Setup the ShutdownPromptTimer
             ShutdownPromptTimer = new SecondsCountdownTimer(Key + "-offTimer");
             ShutdownPromptTimer.IsRunningFeedback.OutputChange += (o, a) =>
             {
                 if (!ShutdownPromptTimer.IsRunningFeedback.BoolValue)
-                    ShutdownType = ShutdownType.None;
+                    ShutdownType = eShutdownType.None;
             };
             ShutdownPromptTimer.HasFinished += (o, a) => Shutdown(); // Shutdown is triggered 
 
             ShutdownPromptSeconds = 60;
             ShutdownVacancySeconds = 120;
-            ShutdownType = ShutdownType.None;
+            ShutdownType = eShutdownType.None;
+
+            RoomVacancyShutdownTimer = new SecondsCountdownTimer(Key + "-vacancyOffTimer");
+            //RoomVacancyShutdownTimer.IsRunningFeedback.OutputChange += (o, a) =>
+            //{
+            //    if (!RoomVacancyShutdownTimer.IsRunningFeedback.BoolValue)
+            //        ShutdownType = ShutdownType.Vacancy;
+            //};
+            RoomVacancyShutdownTimer.HasFinished += new EventHandler<EventArgs>(RoomVacancyShutdownPromptTimer_HasFinished); // Shutdown is triggered
+
+            RoomVacancyShutdownPromptSeconds = 1500;    //  25 min to prompt warning
+            RoomVacancyShutdownSeconds = 240;           //  4 min after prompt will trigger shutdown prompt
+            VacancyMode = eVacancyMode.None;
 
             OnFeedback = new BoolFeedback(OnFeedbackFunc);
 
@@ -85,26 +108,65 @@ namespace PepperDash.Essentials
             IsCoolingDownFeedback = new BoolFeedback(IsCoolingFeedbackFunc);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="type"></param>
-        public void StartShutdown(ShutdownType type)
+        void RoomVacancyShutdownPromptTimer_HasFinished(object sender, EventArgs e)
         {
-            // Check for shutdowns running. Manual should override other shutdowns
-
-            if (type == ShutdownType.Manual)
-                ShutdownPromptTimer.SecondsToCount = ShutdownPromptSeconds;
-            else if (type == ShutdownType.Vacancy)
-                ShutdownPromptTimer.SecondsToCount = ShutdownVacancySeconds;
-            ShutdownType = type;
-            ShutdownPromptTimer.Start();
+            switch (VacancyMode)
+            {
+                case eVacancyMode.None:
+                    StartRoomVacancyTimer(eVacancyMode.InInitialVacancy);
+                    break;
+                case eVacancyMode.InInitialVacancy:
+                    StartRoomVacancyTimer(eVacancyMode.InShutdownWarning);
+                    break;
+                case eVacancyMode.InShutdownWarning:
+                    StartShutdown(eShutdownType.Vacancy);
+                    break;
+                default:
+                    break;
+            }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public abstract void Shutdown();
+        /// <param name="type"></param>
+        public void StartShutdown(eShutdownType type)
+        {
+            // Check for shutdowns running. Manual should override other shutdowns
+
+            if (type == eShutdownType.Manual)
+                ShutdownPromptTimer.SecondsToCount = ShutdownPromptSeconds;
+            else if (type == eShutdownType.Vacancy)
+                ShutdownPromptTimer.SecondsToCount = ShutdownVacancySeconds;
+            ShutdownType = type;
+            ShutdownPromptTimer.Start();
+        }
+
+        public void StartRoomVacancyTimer(eVacancyMode mode)
+        {
+            if (mode == eVacancyMode.None)
+                RoomVacancyShutdownTimer.SecondsToCount = RoomVacancyShutdownPromptSeconds;
+            else if (mode == eVacancyMode.InInitialVacancy)
+                RoomVacancyShutdownTimer.SecondsToCount = RoomVacancyShutdownSeconds;
+            VacancyMode = mode;
+            RoomVacancyShutdownTimer.Start();
+        }
+
+        /// <summary>
+        /// Resets the vacancy mode and shutsdwon the room
+        /// </summary>
+        public void Shutdown()
+        {
+            VacancyMode = eVacancyMode.None;
+            EndShutdown();
+        }
+
+        /// <summary>
+        /// This method is for the derived class to define it's specific shutdown
+        /// requirements but should not be called directly.  It is called by Shutdown()
+        /// </summary>
+        protected abstract void EndShutdown();
+
 
         /// <summary>
         /// Override this to implement a default volume level(s) method
@@ -127,13 +189,13 @@ namespace PepperDash.Essentials
             if ((sender as IOccupancyStatusProvider).RoomIsOccupiedFeedback.BoolValue == false)
             {
                 // Trigger the timer when the room is vacant
-                RoomVacancyShutdownTimer = new CTimer(RoomVacatedForTimeoutPeriod, RoomVacancyShutdownTimeout);
+                StartRoomVacancyTimer(eVacancyMode.InInitialVacancy);
             }
             else
             {
                 // Reset the timer when the room is occupied
-                if(RoomVacancyShutdownTimer != null)
-                    RoomVacancyShutdownTimer.Reset(RoomVacancyShutdownTimeout);
+                if(RoomVacancyShutdownTimer.IsRunningFeedback.BoolValue)
+                    RoomVacancyShutdownTimer.Cancel();
             }
         }
 
@@ -147,18 +209,25 @@ namespace PepperDash.Essentials
     /// <summary>
     /// To describe the various ways a room may be shutting down
     /// </summary>
-    public enum ShutdownType
+    public enum eShutdownType
     {
-        None,
+        None = 0,
         External,
         Manual,
         Vacancy
     }
 
+    public enum eVacancyMode
+    {
+        None = 0,
+        InInitialVacancy,
+        InShutdownWarning
+    }
+
     /// <summary>
     /// 
     /// </summary>
-    public enum WarmingCoolingMode
+    public enum eWarmingCoolingMode
     {
         None,
         Warming,

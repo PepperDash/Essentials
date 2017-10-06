@@ -473,10 +473,10 @@ namespace PepperDash.Essentials
         void SetActivityFooterFeedbacks()
         {
             CallButtonSig.BoolValue = CurrentMode == UiDisplayMode.Call 
-                && CurrentRoom.ShutdownType == ShutdownType.None;
+                && CurrentRoom.ShutdownType == eShutdownType.None;
             ShareButtonSig.BoolValue = CurrentMode == UiDisplayMode.Presentation 
-                && CurrentRoom.ShutdownType == ShutdownType.None;
-            EndMeetingButtonSig.BoolValue = CurrentRoom.ShutdownType != ShutdownType.None;
+                && CurrentRoom.ShutdownType == eShutdownType.None;
+            EndMeetingButtonSig.BoolValue = CurrentRoom.ShutdownType != eShutdownType.None;
         }
 
         /// <summary>
@@ -600,7 +600,7 @@ namespace PepperDash.Essentials
                 || CurrentRoom.ShutdownPromptTimer.IsRunningFeedback.BoolValue)
                 return;
 
-            CurrentRoom.StartShutdown(ShutdownType.Manual);
+            CurrentRoom.StartShutdown(eShutdownType.Manual);
         }
 
         /// <summary>
@@ -614,7 +614,7 @@ namespace PepperDash.Essentials
             var timer = CurrentRoom.ShutdownPromptTimer;
             SetActivityFooterFeedbacks();
 
-            if (CurrentRoom.ShutdownType == ShutdownType.Manual)
+            if (CurrentRoom.ShutdownType == eShutdownType.Manual)
             {
                 PowerDownModal = new ModalDialog(TriList);
                 var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);
