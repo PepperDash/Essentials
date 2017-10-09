@@ -59,6 +59,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
 		SmartObjectDynamicList DirectoryList;
 
+		CodecDirectory CurrentDirectoryResult;
+
         // These are likely temp until we get a keyboard built
         StringFeedback DialStringFeedback;
         StringBuilder DialStringBuilder = new StringBuilder();
@@ -85,6 +87,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             SetupCallStagingPopover();
             SetupDialKeypad();
             ActiveCallsSRL = new SubpageReferenceList(TriList, UISmartObjectJoin.CodecActiveCallsHeaderList, 3, 3, 3);
+			SetupDirectoryList();
             SetupRecentCallsList();
 			SetupFavorites();
 			SetupSelfViewControls();
@@ -368,13 +371,32 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void RefreshRecentCallsList()
         {
             var codec = Codec as IHasCallHistory;
+			uint textOffset = 1200;
+			uint timeTextOffset = 1230;
             if (codec != null)
             {
                 ushort i = 0;
                 foreach (var c in codec.CallHistory.RecentCalls)
                 {
                     i++;
-                    RecentCallsList.SetItemMainText(i, c.Name);
+					TriList.SetString(textOffset + i, c.Name);
+					// if it's today, show a simpler string
+					string timeText = null;
+					if (c.StartTime.Date == DateTime.Now.Date) 
+						timeText = c.StartTime.ToShortTimeString();
+					else
+						timeText = c.StartTime.ToString();
+					TriList.SetString(timeTextOffset + i, timeText);
+
+					string iconName = null;
+					if (c.Direction == eCodecCallDirection.Incoming)
+						iconName = "Left";
+					else if (c.Direction == eCodecCallDirection.Outgoing)
+						iconName = "Right";
+					else
+						iconName = "Blank";
+					RecentCallsList.SetItemIcon(i, iconName);
+
                     var call = c; // for lambda scope
                     RecentCallsList.SetItemButtonAction(i, b => { if(!b) Codec.Dial(call.Number); });
                 }
@@ -406,7 +428,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					}
 					else
 						TriList.SetBool(1221 + i, false);
-
 				}
 			}
 		}
@@ -419,17 +440,80 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			var codec = Codec as IHasDirectory;
 			if (codec != null)
 			{
-				//codec.CallHistory.RecentCallsListHasChanged += (o, a) => RefreshRecentCallsList();
-				// EVENT??????????????? Pointed at refresh
-				DirectoryList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCDirectoryList], 
-					true, 1300);
-				RefreshDirectory();
+				var dir = Codec as IHasDirectory;
+				if (dir != null)
+				{
+					DirectoryList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCDirectoryList],
+						true, 1300);
+					dir.DirectoryResultReturned += new EventHandler<DirectoryEventArgs>(dir_DirectoryResultReturned);
+					CurrentDirectoryResult = dir.DirectoryRoot;
+
+					if (CurrentDirectoryResult != null && dir.DirectoryRoot.DirectoryResults.Count > 0)
+					{
+						// populate it
+					}
+					else
+					{
+						// it will just show up??????
+					}
+				}
 			}
 		}
 
-		void RefreshDirectory()
-		{
+		///// <summary>
+		///// 
+		///// </summary>
+		//void RefreshDirectory()
+		//{
+		//    (Codec as IHasDirectory).GetDirectoryFolderContents(CurrentDirectoryResult.
+		//}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void dir_DirectoryResultReturned(object sender, DirectoryEventArgs e)
+		{
+			CurrentDirectoryResult = e.Directory;
+			ushort i = 0;
+			foreach (var r in CurrentDirectoryResult.DirectoryResults)
+			{
+				if (i == DirectoryList.MaxCount)
+				{
+					break;
+				}
+
+				i++;
+				DirectoryList.SetItemMainText(i, r.Name);
+				if(r is DirectoryContact)
+				{
+					var dc = r as DirectoryContact;
+					// if more than one contact method, pop up modal to choose
+					// otherwiese dial 0 entry
+					if (dc.ContactMethods.Count == 1)
+					{
+						DirectoryList.SetItemButtonAction(i, b => { if (!b) Codec.Dial(dc.ContactMethods[0].Number); });
+					}
+					else
+					{
+
+					}	
+				}
+				else
+				{
+					DirectoryList.SetItemButtonAction(i, b =>
+					{
+						if (!b)
+						{
+							var id = (r as DirectoryFolder).FolderId;
+							(Codec as IHasDirectory).GetDirectoryFolderContents(id);
+							// will later call event handler
+						}
+					});
+				}
+			}
+			DirectoryList.Count = i;		
 		}
 
 		/// <summary>

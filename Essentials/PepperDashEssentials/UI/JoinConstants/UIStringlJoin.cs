@@ -27,9 +27,15 @@ namespace PepperDash.Essentials
 		//									RANGE IN USE
 		public const uint VCRecentListTextEnd = 1230;
 		/// <summary>
-		/// 1231 - the current layout mode
+		/// 1231 - 1261 range of joins for recent list time 
 		/// </summary>
-		public const uint VCLayoutModeText = 1231;
+		public const uint VCRecentListTimeTextStart = 1231;
+		//
+		public const uint VCRecentListTimeTextEnd = 1260;
+		/// <summary>
+		/// 1291 - the current layout mode
+		/// </summary>
+		public const uint VCLayoutModeText = 1291;
 
 		/// <summary>
 		/// 1301 - 1400
