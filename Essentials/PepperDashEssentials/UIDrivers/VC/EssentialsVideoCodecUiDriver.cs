@@ -394,7 +394,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					else if (c.Direction == eCodecCallDirection.Outgoing)
 						iconName = "Right";
 					else
-						iconName = "Blank";
+						iconName = "Help";
 					RecentCallsList.SetItemIcon(i, iconName);
 
                     var call = c; // for lambda scope
@@ -440,33 +440,21 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			var codec = Codec as IHasDirectory;
 			if (codec != null)
 			{
-				var dir = Codec as IHasDirectory;
-				if (dir != null)
+				if (codec != null)
 				{
 					DirectoryList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCDirectoryList],
 						true, 1300);
-					dir.DirectoryResultReturned += new EventHandler<DirectoryEventArgs>(dir_DirectoryResultReturned);
-					CurrentDirectoryResult = dir.DirectoryRoot;
+					codec.DirectoryResultReturned += new EventHandler<DirectoryEventArgs>(dir_DirectoryResultReturned);
+					CurrentDirectoryResult = codec.DirectoryRoot;
 
-					if (CurrentDirectoryResult != null && dir.DirectoryRoot.DirectoryResults.Count > 0)
+					// If there is something here now, show it otherwise wait for the event
+					if (CurrentDirectoryResult != null && codec.DirectoryRoot.DirectoryResults.Count > 0)
 					{
-						// populate it
-					}
-					else
-					{
-						// it will just show up??????
+						RefreshDirectory();
 					}
 				}
 			}
 		}
-
-		///// <summary>
-		///// 
-		///// </summary>
-		//void RefreshDirectory()
-		//{
-		//    (Codec as IHasDirectory).GetDirectoryFolderContents(CurrentDirectoryResult.
-		//}
 
 		/// <summary>
 		/// 
@@ -476,6 +464,17 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		void dir_DirectoryResultReturned(object sender, DirectoryEventArgs e)
 		{
 			CurrentDirectoryResult = e.Directory;
+			RefreshDirectory();
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="dir"></param>
+		void RefreshDirectory()
+		{
+			Debug.Console(0, "****** RefreshDirectory!");
+
 			ushort i = 0;
 			foreach (var r in CurrentDirectoryResult.DirectoryResults)
 			{
