@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
@@ -54,16 +55,16 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             {
                 handler(this, new EventArgs());
 
-                if (Debug.Level == 1)
-                {
+                //if (Debug.Level == 1)
+                //{
                     
-                    Debug.Console(1, "RecentCalls:\n");
+                //    Debug.Console(1, "RecentCalls:\n");
 
-                    foreach (CodecCallHistory.CallHistoryEntry entry in RecentCalls)
-                    {
-                        Debug.Console(1, "\nName: {0}\nNumber: {1}\nStartTime: {2}\nType: {3}\n", entry.Name, entry.Number, entry.StartTime.ToString(), entry.OccurenceType);
-                    }
-                }
+                //    foreach (CodecCallHistory.CallHistoryEntry entry in RecentCalls)
+                //    {
+                //        Debug.Console(1, "\nName: {0}\nNumber: {1}\nStartTime: {2}\nType: {3}\n", entry.Name, entry.Number, entry.StartTime.ToString(), entry.OccurenceType);
+                //    }
+                //}
             }
         }
 
@@ -94,13 +95,14 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
             foreach (CiscoCallHistory.Entry entry in entries)
             {
+
                 genericEntries.Add(new CallHistoryEntry()
                 {
                     Name = entry.DisplayName.Value,
                     Number = entry.CallbackNumber.Value,
                     StartTime = entry.LastOccurrenceStartTime.Value,
                     OccurrenceHistoryId = entry.LastOccurrenceHistoryId.Value,
-                    OccurenceType = ConvertToOccurenceTypeEnum(entry.OccurrenceType.Value)          
+                    OccurenceType = ConvertToOccurenceTypeEnum(entry.OccurrenceType.Value)
                 });
             }
 

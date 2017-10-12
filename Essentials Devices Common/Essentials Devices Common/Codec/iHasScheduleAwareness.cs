@@ -132,8 +132,24 @@ namespace PepperDash.Essentials.Devices.Common.Codec
                     && DateTime.Now <= EndTime.AddMinutes(-5);
             }
         }
-        public string ConferenceNumberToDial { get; set; }
+        //public string ConferenceNumberToDial { get; set; }
         public string ConferencePassword { get; set; }
+        public bool IsOneButtonToPushMeeting { get; set; }
+
+        public List<Call> Calls { get; private set; }
+
+        public Meeting()
+        {
+            Calls = new List<Call>();
+        }
+    }
+
+    public class Call
+    {
+        public string Number { get; set; }
+        public string Protocol { get; set; }
+        public string CallRate { get; set; }
+        public string CallType { get; set; }
     }
 
     public class MeetingEventArgs : EventArgs

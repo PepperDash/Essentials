@@ -65,13 +65,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-
+            
             ActiveCalls = new List<CodecActiveCallItem>();
         }
 
         #region IHasDialer Members
 
-        public abstract void Dial(string s);
+        public abstract void Dial(string number);
+        public abstract void Dial(Meeting meeting);
         public abstract void EndCall(CodecActiveCallItem call);
         public abstract void EndAllCalls();
         public abstract void AcceptCall(CodecActiveCallItem call);
@@ -196,6 +197,100 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             PreviousStatus = previousStatus;
             NewStatus = newStatus;
             CallItem = item;
+        }
+    }
+
+    /// <summary>
+    /// Used to track the status of syncronizing the phonebook values when connecting to a codec or refreshing the phonebook info
+    /// </summary>
+    public class CodecPhonebookSyncState : IKeyed
+    {
+        bool _InitialSyncComplete;
+
+        public event EventHandler<EventArgs> InitialSyncCompleted;
+
+        public string Key { get; private set; }
+
+        public bool InitialSyncComplete
+        {
+            get { return _InitialSyncComplete; }
+            private set
+            {
+                if (value == true)
+                {
+                    var handler = InitialSyncCompleted;
+                    if (handler != null)
+                        handler(this, new EventArgs());
+                }
+                _InitialSyncComplete = value;
+            }
+        }
+
+        public bool InitialPhonebookFoldersWasReceived { get; private set; }
+
+        public bool NumberOfContactsWasReceived { get; private set; }
+
+        public bool PhonebookRootEntriesWasRecieved { get; private set; }
+
+        public bool PhonebookHasFolders { get; private set; }
+
+        public int NumberOfContacts { get; private set; }
+
+        public CodecPhonebookSyncState(string key)
+        {
+            Key = key;
+
+            CodecDisconnected();
+        }
+
+        public void InitialPhonebookFoldersReceived()
+        {
+            InitialPhonebookFoldersWasReceived = true;
+
+            CheckSyncStatus();
+        }
+
+        public void PhonebookRootEntriesReceived()
+        {
+            PhonebookRootEntriesWasRecieved = true;
+
+            CheckSyncStatus();
+        }
+
+        public void SetPhonebookHasFolders(bool value)
+        {
+            PhonebookHasFolders = value;
+
+            Debug.Console(1, this, "Phonebook has folders: {0}", PhonebookHasFolders);
+        }
+
+        public void SetNumberOfContacts(int contacts)
+        {
+            NumberOfContacts = contacts;
+            NumberOfContactsWasReceived = true;
+
+            Debug.Console(1, this, "Phonebook contains {0} contacts.", NumberOfContacts);
+
+            CheckSyncStatus();
+        }
+
+        public void CodecDisconnected()
+        {
+            InitialPhonebookFoldersWasReceived = false;
+            PhonebookHasFolders = false;
+            NumberOfContacts = 0;
+            NumberOfContactsWasReceived = false;
+        }
+
+        void CheckSyncStatus()
+        {
+            if (InitialPhonebookFoldersWasReceived && NumberOfContactsWasReceived && PhonebookRootEntriesWasRecieved)
+            {
+                InitialSyncComplete = true;
+                Debug.Console(1, this, "Initial Phonebook Sync Complete!");
+            }
+            else
+                InitialSyncComplete = false;
         }
     }
 }

@@ -10,6 +10,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
 using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials
@@ -408,7 +409,7 @@ namespace PepperDash.Essentials
                             TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonJoinPress, () =>
                                 {
                                     HideNextMeetingPopup();
-                                    RoomOnAndDialMeeting(meeting.ConferenceNumberToDial);
+                                    RoomOnAndDialMeeting(meeting);
                                 });
                             TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
                             TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
@@ -459,13 +460,15 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// Dials a meeting after turning on room (if necessary)
 		/// </summary>
-		void RoomOnAndDialMeeting(string number)
+		void RoomOnAndDialMeeting(Meeting meeting)
 		{
 			Action dialAction = () => 
 				{
 					var d = CurrentRoom.ScheduleSource as VideoCodecBase;
-					if (d != null)
-						d.Dial(number);
+                    if (d != null)
+                    {
+                        d.Dial(meeting);
+                    }
 				};
 			if (CurrentRoom.OnFeedback.BoolValue)
 				dialAction();
@@ -980,7 +983,7 @@ namespace PepperDash.Essentials
 					PopupInterlock.Hide();
 					var d = CurrentRoom.ScheduleSource as VideoCodecBase;
 					if (d != null)
-						RoomOnAndDialMeeting(mm.ConferenceNumberToDial);
+						RoomOnAndDialMeeting(mm);
 				});
 			}
 			MeetingsSrl.Count = i;

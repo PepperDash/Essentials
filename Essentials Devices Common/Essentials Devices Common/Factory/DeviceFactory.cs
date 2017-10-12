@@ -109,11 +109,11 @@ namespace PepperDash.Essentials.Devices.Common
                     .MockVC(key, name, props);
             }
 
-            else if (typeName == "ciscocodec")
+            else if (typeName.StartsWith("ciscospark"))
             {
                 var comm = CommFactory.CreateCommForDevice(dc);
-                var props = JsonConvert.DeserializeObject<Codec.CiscoCodecPropertiesConfig>(properties.ToString());
-                return new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodec(key, name, comm, props);
+                var props = JsonConvert.DeserializeObject<Codec.CiscoSparkCodecPropertiesConfig>(properties.ToString());
+                return new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec(key, name, comm, props);
             }
 
             else if (groupName == "settopbox") //(typeName == "irstbbase")

@@ -189,8 +189,32 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             public string Value { get; set; }
         }
 
-        public class Calls
+        public class Number
         {
+            public string Value { get; set; }
+        }
+
+        public class Protocol
+        {
+            public string Value { get; set; }
+        }
+
+        public class CallRate
+        {
+            public string Value { get; set; }
+        }
+
+        public class CallType
+        {
+            public string Value { get; set; }
+        }
+
+        public class Call
+        {
+            public Number Number { get; set; }
+            public Protocol Protocol { get; set; }
+            public CallRate CallRate { get; set; }
+            public CallType CallType { get; set; }
         }
 
         public class ConnectMode
@@ -200,8 +224,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public class DialInfo
         {
-            public Calls Calls { get; set; }
+            public List<Call> Calls { get; set; }
             public ConnectMode ConnectMode { get; set; }
+
+            public DialInfo()
+            {
+                Calls = new List<Call>();
+            }
         }
 
         public class Booking
@@ -231,6 +260,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 Title = new Title();
                 Agenda = new Agenda();
                 Privacy = new Privacy();
+                DialInfo = new DialInfo();
             }
         }
 
@@ -270,13 +300,36 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 var meeting = new Meeting();
 
-                meeting.Id = b.Id.Value;
-                meeting.Organizer = string.Format("{0}, {1}", b.Organizer.LastName.Value, b.Organizer.FirstName.Value);
-                meeting.Title = b.Title.Value;
-                meeting.Agenda = b.Agenda.Value;
-                meeting.StartTime = b.Time.StartTime.Value;
-                meeting.EndTime = b.Time.EndTime.Value;
-                meeting.Privacy = CodecCallPrivacy.ConvertToDirectionEnum(b.Privacy.Value);
+                if(b.Id != null)
+                    meeting.Id = b.Id.Value;
+                if(b.Organizer != null)
+                    meeting.Organizer = string.Format("{0}, {1}", b.Organizer.LastName.Value, b.Organizer.FirstName.Value);
+                if(b.Title != null)
+                    meeting.Title = b.Title.Value;
+                if(b.Agenda != null)
+                    meeting.Agenda = b.Agenda.Value;
+                if(b.Time != null)
+                    meeting.StartTime = b.Time.StartTime.Value;
+                    meeting.EndTime = b.Time.EndTime.Value;
+                if(b.Privacy != null)
+                    meeting.Privacy = CodecCallPrivacy.ConvertToDirectionEnum(b.Privacy.Value);
+
+#warning Update this ConnectMode conversion after testing onsite.  Expected value is "OBTP", but in PD NYC Test scenarios, "Manual" is being returned for OBTP meetings
+                if (b.DialInfo.ConnectMode != null)
+                    if (b.DialInfo.ConnectMode.Value.ToLower() == "obtp" || b.DialInfo.ConnectMode.Value.ToLower() == "manual")
+                        meeting.IsOneButtonToPushMeeting = true;
+
+                foreach (Call c in b.DialInfo.Calls)
+                {
+                    meeting.Calls.Add(new PepperDash.Essentials.Devices.Common.Codec.Call()
+                    {
+                        Number = c.Number.Value,
+                        Protocol = c.Protocol.Value,
+                        CallRate = c.CallRate.Value,
+                        CallType = c.CallType.Value
+                    });
+                }
+
 
                 meetings.Add(meeting);
 
@@ -284,7 +337,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 {
                     Debug.Console(1, "Title: {0}, ID: {1}, Organizer: {2}, Agenda: {3}", meeting.Title, meeting.Id, meeting.Organizer, meeting.Agenda);
                     Debug.Console(1, "    Start Time: {0}, End Time: {1}, Duration: {2}", meeting.StartTime, meeting.EndTime, meeting.Duration);
-                    Debug.Console(1, "    Joinable: {0}", meeting.Joinable);
+                    Debug.Console(1, "    Joinable: {0}\n", meeting.Joinable);
                 }
             }
 

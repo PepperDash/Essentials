@@ -61,6 +61,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
 		CodecDirectory CurrentDirectoryResult;
 
+        string LastFolderRequestedParentFolderId;
+
+        BoolFeedback DirectoryBackButtonVisibleFeedback;
+
         // These are likely temp until we get a keyboard built
         StringFeedback DialStringFeedback;
         StringBuilder DialStringBuilder = new StringBuilder();
@@ -129,6 +133,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
             DialStringBackspaceVisibleFeedback = new BoolFeedback(() => DialStringBuilder.Length > 0);
             DialStringBackspaceVisibleFeedback
                 .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCKeypadBackspaceVisible]);
+
+            TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackPress, GetDirectoryParentFolderContents);
+
+            DirectoryBackButtonVisibleFeedback = new BoolFeedback(() => CurrentDirectoryResult != (codec as IHasDirectory).DirectoryRoot);
+            DirectoryBackButtonVisibleFeedback
+                .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCDirectoryBackVisible]);
 
             TriList.SetSigFalseAction(UIBoolJoin.VCKeypadTextPress, RevealKeyboard);
 
@@ -389,9 +399,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					TriList.SetString(timeTextOffset + i, timeText);
 
 					string iconName = null;
-					if (c.Direction == eCodecCallDirection.Incoming)
+					if (c.OccurenceType == eCodecOccurrenceType.Received)
 						iconName = "Left";
-					else if (c.Direction == eCodecCallDirection.Outgoing)
+                    else if (c.OccurenceType == eCodecOccurrenceType.Placed)
 						iconName = "Right";
 					else
 						iconName = "Help";
@@ -419,7 +429,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					if (i < favs.Count)
 					{
 						var fav = favs[(int)i];
-						TriList.SetString(1211 + i, fav.Name);
+						TriList.SetString(1411 + i, fav.Name);
 						TriList.SetBool(1221 + i, true);
 						TriList.SetSigFalseAction(1211 + i, () =>
 							{
@@ -445,7 +455,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					DirectoryList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCDirectoryList],
 						true, 1300);
 					codec.DirectoryResultReturned += new EventHandler<DirectoryEventArgs>(dir_DirectoryResultReturned);
-					CurrentDirectoryResult = codec.DirectoryRoot;
+
+                    if (codec.PhonebookSyncState.InitialSyncComplete)
+                        SetCurrentDirectoryToRoot();
+                    else
+                    {
+                        codec.PhonebookSyncState.InitialSyncCompleted += new EventHandler<EventArgs>(PhonebookSyncState_InitialSyncCompleted);
+                    }
+
 
 					// If there is something here now, show it otherwise wait for the event
 					if (CurrentDirectoryResult != null && codec.DirectoryRoot.DirectoryResults.Count > 0)
@@ -456,6 +473,37 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			}
 		}
 
+        /// <summary>
+        /// Sets the current directory resutls to the DirectorRoot and updates Back Button visibiltiy
+        /// </summary>
+        void SetCurrentDirectoryToRoot()
+        {
+            LastFolderRequestedParentFolderId = string.Empty;
+
+            CurrentDirectoryResult = (Codec as IHasDirectory).DirectoryRoot;
+
+            DirectoryBackButtonVisibleFeedback.FireUpdate();
+
+            RefreshDirectory();
+        }
+
+        /// <summary>
+        /// Setup the Directory list when notified that the initial phonebook sync is completed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void PhonebookSyncState_InitialSyncCompleted(object sender, EventArgs e)
+        {
+            var codec = Codec as IHasDirectory;
+
+            SetCurrentDirectoryToRoot();
+
+            if (CurrentDirectoryResult != null && codec.DirectoryRoot.DirectoryResults.Count > 0)
+            {
+                RefreshDirectory();
+            }
+        }
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -464,8 +512,37 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		void dir_DirectoryResultReturned(object sender, DirectoryEventArgs e)
 		{
 			CurrentDirectoryResult = e.Directory;
+            DirectoryBackButtonVisibleFeedback.FireUpdate();
 			RefreshDirectory();
 		}
+
+        /// <summary>
+        /// Helper method to retrieve directory folder contents and store last requested folder id
+        /// </summary>
+        /// <param name="folderId"></param>
+        void GetDirectoryFolderContents(DirectoryFolder folder)
+        {
+            LastFolderRequestedParentFolderId = folder.ParentFolderId;
+
+            (Codec as IHasDirectory).GetDirectoryFolderContents(folder.FolderId);
+        }
+
+        /// <summary>
+        /// Request the parent folder contents or sets back to the root if no parent folder
+        /// </summary>
+        void GetDirectoryParentFolderContents()
+        {
+            var codec = Codec as IHasDirectory;
+
+            if (!string.IsNullOrEmpty(LastFolderRequestedParentFolderId))
+                codec.GetDirectoryFolderContents(LastFolderRequestedParentFolderId);
+            else
+            {
+                SetCurrentDirectoryToRoot();
+            }
+                
+
+        }
 
 		/// <summary>
 		/// 
@@ -484,9 +561,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
 				}
 
 				i++;
-				DirectoryList.SetItemMainText(i, r.Name);
+
 				if(r is DirectoryContact)
 				{
+                    DirectoryList.SetItemMainText(i, r.Name);
+
 					var dc = r as DirectoryContact;
 					// if more than one contact method, pop up modal to choose
 					// otherwiese dial 0 entry
@@ -499,15 +578,18 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
 					}	
 				}
-				else
+				else    // is DirectoryFolder
 				{
+                    DirectoryList.SetItemMainText(i, string.Format("[+] {0}", r.Name));
+
+                    var df = r as DirectoryFolder;
+
 					DirectoryList.SetItemButtonAction(i, b =>
 					{
 						if (!b)
 						{
-							var id = (r as DirectoryFolder).FolderId;
-							(Codec as IHasDirectory).GetDirectoryFolderContents(id);
-							// will later call event handler
+							GetDirectoryFolderContents(df);
+							// will later call event handler after folder contents retrieved
 						}
 					});
 				}

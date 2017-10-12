@@ -98,10 +98,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <summary>
         /// Dials, yo!
         /// </summary>
-        public override void Dial(string s)
+        public override void Dial(string number)
         {
-            Debug.Console(1, this, "Dial: {0}", s);
-            var call = new CodecActiveCallItem() { Name = s, Number = s, Id = s, Status = eCodecCallStatus.Dialing };
+            Debug.Console(1, this, "Dial: {0}", number);
+            var call = new CodecActiveCallItem() { Name = number, Number = number, Id = number, Status = eCodecCallStatus.Dialing };
             ActiveCalls.Add(call);
             OnCallStatusChange(eCodecCallStatus.Unknown, call.Status, call);
             //ActiveCallCountFeedback.FireUpdate();
@@ -112,6 +112,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connecting, call);
                 new CTimer(oo => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call), 1000);
             }, 2000);
+        }
+
+        public override void Dial(Meeting meeting)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -349,7 +354,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 						m.StartTime = DateTime.Now.AddMinutes(3).AddHours(i);
 						m.EndTime = DateTime.Now.AddHours(i).AddMinutes(30);
 						m.Title = "Meeting " + i;
-						m.ConferenceNumberToDial = i + "meeting@fake.com";
+						m.Calls[0].Number = i + "meeting@fake.com";
 						_CodecSchedule.Meetings.Add(m);
 					}
 				}

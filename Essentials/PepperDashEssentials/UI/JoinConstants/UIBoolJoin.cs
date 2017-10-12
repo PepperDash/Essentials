@@ -190,11 +190,16 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 1241 For touching the text area to bring up keyboard
 		/// </summary>
-		public const uint VcDirectoryTextEntryPress = 1241;
+		public const uint VCDirectoryTextEntryPress = 1241;
 		/// <summary>
 		/// 1242
 		/// </summary>
 		public const uint VCStagingSelfViewLayoutPress = 1242;
+
+        /// <summary>
+        /// 1243
+        /// </summary>
+        public const uint VCDirectoryBackVisible = 1243;
 
 		/// <summary>
 		/// 1251

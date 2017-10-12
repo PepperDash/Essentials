@@ -30,8 +30,8 @@ namespace PepperDash.Essentials
 		/// 1231 - 1261 range of joins for recent list time 
 		/// </summary>
 		public const uint VCRecentListTimeTextStart = 1231;
-		//
-		public const uint VCRecentListTimeTextEnd = 1260;
+        //									RANGE IN USE
+        public const uint VCRecentListTimeTextEnd = 1260;
 		/// <summary>
 		/// 1291 - the current layout mode
 		/// </summary>
@@ -43,6 +43,32 @@ namespace PepperDash.Essentials
 		public const uint VCDirectoryListTextStart = 1301;
 		//									RANGE IN USE
 		public const uint VCDirectoryListTextEnd = 1400;
+
+        /// <summary>
+        /// 141112
+        /// </summary>
+        public const uint VCFavorites1Text = 1411;
+
+        /// <summary>
+        /// 1412
+        /// </summary>
+        public const uint VCFavorites2Text = 1412;
+
+        /// <summary>
+        /// 1413
+        /// </summary>
+        public const uint VCFavorites3Text = 1413;
+
+        /// <summary>
+        /// 1414
+        /// </summary>
+        public const uint VCFavorites4Text = 1414;
+
+        /// <summary>
+        /// 1415
+        /// </summary>
+        public const uint VCFavorites5Text = 1415;
+
 
         //******************************************************
         // Keyboard

@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
-    public class CiscoCodecPropertiesConfig
+    public class CiscoSparkCodecPropertiesConfig
     {
         public CommunicationMonitorConfig CommunicationMonitorProperties { get; set; }
 

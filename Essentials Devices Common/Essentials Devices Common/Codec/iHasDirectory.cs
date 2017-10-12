@@ -15,6 +15,8 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
         CodecDirectory DirectoryRoot { get; }
 
+        CodecPhonebookSyncState PhonebookSyncState { get; }
+
         void SearchDirectory(string searchString);
 
         void GetDirectoryFolderContents(string folderId);
@@ -29,7 +31,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     {
         public List<DirectoryItem> DirectoryResults { get; private set; }
 
-        //public int Offset { get; private set; }
+        public string ResultsFolderId { get; set; }
 
         //public int Limit { get; private set; }
 

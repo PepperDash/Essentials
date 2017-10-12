@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 
-    public class CiscoCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory, 
+    public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory, 
 		IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfview
     {
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
@@ -188,7 +188,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         private CodecSyncState SyncState;
 
-        private CodecPhonebookSyncState PhonebookSyncState; 
+        public CodecPhonebookSyncState PhonebookSyncState { get; private set; }
 
         private StringBuilder JsonMessage;
 
@@ -214,7 +214,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public RoutingOutputPort HdmiOut { get; private set; }
 
         // Constructor for IBasicCommunication
-        public CiscoCodec(string key, string name, IBasicCommunication comm, CiscoCodecPropertiesConfig props )
+        public CiscoSparkCodec(string key, string name, IBasicCommunication comm, CiscoSparkCodecPropertiesConfig props )
             : base(key, name)
         {
             StandbyIsOnFeedback = new BoolFeedback(StandbyStateFeedbackFunc);
@@ -329,6 +329,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/RoomAnalytics" + Delimiter +
                 prefix + "/Status/Standby" + Delimiter +
                 prefix + "/Status/Video/Selfview" + Delimiter +
+                prefix + "/Status/Video/Layout" + Delimiter +
                 prefix + "/Bookings" + Delimiter +
                 prefix + "/Event/CallDisconnect" + Delimiter;        
 
@@ -675,9 +676,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                         JsonConvert.PopulateObject(response, codecBookings);
 
-                        CodecSchedule.Meetings = CiscoCodecBookings.GetGenericMeetingsFromBookingResult(codecBookings.CommandResponse.BookingsListResult.Booking);
+                        if(codecBookings.CommandResponse.BookingsListResult.ResultInfo.TotalRows.Value != "0")
+                            CodecSchedule.Meetings = CiscoCodecBookings.GetGenericMeetingsFromBookingResult(codecBookings.CommandResponse.BookingsListResult.Booking);
 
-                        
                     }
 
                 }  
@@ -795,7 +796,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="folderId"></param>
         public void GetDirectoryFolderContents(string folderId)
         {
-            SendText(string.Format("xCommand Phonebook Search FolderId: {0} PhonebookType: {1} ContactType: Contact Limit: {2}", folderId, PhonebookMode, PhonebookResultsLimit));
+            SendText(string.Format("xCommand Phonebook Search FolderId: {0} PhonebookType: {1} ContactType: Any Limit: {2}", folderId, PhonebookMode, PhonebookResultsLimit));
         }
 
         void PrintPhonebook(CodecDirectory directory)
@@ -808,7 +809,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 {
                     if (item is DirectoryFolder)
                     {
-                        Debug.Console(1, this, "+ {0}", item.Name);
+                        Debug.Console(1, this, "[+] {0}", item.Name);
                     }
                     else if (item is DirectoryContact)
                     {
@@ -818,14 +819,38 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        public override void  Dial(string s)
+        /// <summary>
+        /// Simple dial method
+        /// </summary>
+        /// <param name="number"></param>
+        public override void Dial(string number)
         {
-         	SendText(string.Format("xCommand Dial Number: \"{0}\"", s));
+         	SendText(string.Format("xCommand Dial Number: \"{0}\"", number));
         }
 
-        public void DialBookingId(string s)
+        /// <summary>
+        /// Dials a specific meeting
+        /// </summary>
+        /// <param name="meeting"></param>
+        public override void Dial(Meeting meeting)
         {
-            SendText(string.Format("xCommand Dial BookingId: {0}", s));
+            foreach (Call c in meeting.Calls)
+            {
+                Dial(c.Number, c.Protocol, c.CallRate, c.CallType, meeting.Id);
+            }
+        }
+
+        /// <summary>
+        /// Detailed dial method
+        /// </summary>
+        /// <param name="number"></param>
+        /// <param name="protocol"></param>
+        /// <param name="callRate"></param>
+        /// <param name="callType"></param>
+        /// <param name="meetingId"></param>
+        public void Dial(string number, string protocol, string callRate, string callType, string meetingId)
+        {
+            SendText(string.Format("xCommand Dial Number: \"{0}\" Protocol: {1} CallRate: {2} CallType: {3} BookingId: {4}", number, protocol, callRate, callType, meetingId));
         }
  
         public override void EndCall(CodecActiveCallItem activeCall)
@@ -1253,100 +1278,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 InitialSyncComplete = true;
                 Debug.Console(1, this, "Initial Codec Sync Complete!");
-            }
-            else
-                InitialSyncComplete = false;
-        }
-    }
-
-    /// <summary>
-    /// Used to track the status of syncronizing the phonebook values when connecting to a codec or refreshing the phonebook info
-    /// </summary>
-    public class CodecPhonebookSyncState : IKeyed
-    {
-        bool _InitialSyncComplete;
-
-        public event EventHandler<EventArgs> InitialSyncCompleted;
-
-        public string Key { get; private set; }
-
-        public bool InitialSyncComplete 
-        {
-            get { return _InitialSyncComplete; }
-            private set
-            {
-                if (value == true)
-                {
-                    var handler = InitialSyncCompleted;
-                    if (handler != null)
-                        handler(this, new EventArgs());
-                }
-                _InitialSyncComplete = value;
-            }
-        }
-
-        public bool InitialPhonebookFoldersWasReceived { get; private set; }
-
-        public bool NumberOfContactsWasReceived { get; private set; }
-
-        public bool PhonebookRootEntriesWasRecieved { get; private set; }
-
-        public bool PhonebookHasFolders { get; private set; }
-
-        public int NumberOfContacts { get; private set; }
-
-        public CodecPhonebookSyncState(string key)
-        {
-            Key = key;
-
-            CodecDisconnected();
-        }
-
-        public void InitialPhonebookFoldersReceived()
-        {
-            InitialPhonebookFoldersWasReceived = true;
-
-            CheckSyncStatus();
-        }
-
-        public void PhonebookRootEntriesReceived()
-        {
-            PhonebookRootEntriesWasRecieved = true;
-
-            CheckSyncStatus();
-        }
-
-        public void SetPhonebookHasFolders(bool value)
-        {
-            PhonebookHasFolders = value;
-
-            Debug.Console(1, this, "Phonebook has folders: {0}", PhonebookHasFolders);
-        }
-
-        public void SetNumberOfContacts(int contacts)
-        {
-            NumberOfContacts = contacts;
-            NumberOfContactsWasReceived = true;
-
-            Debug.Console(1, this, "Phonebook contains {0} contacts.", NumberOfContacts);
-
-            CheckSyncStatus();
-        }
-
-        public void CodecDisconnected()
-        {
-            InitialPhonebookFoldersWasReceived = false;
-            PhonebookHasFolders = false;
-            NumberOfContacts = 0;
-            NumberOfContactsWasReceived = false;
-        }
-
-        void CheckSyncStatus()
-        {
-            if (InitialPhonebookFoldersWasReceived && NumberOfContactsWasReceived && PhonebookRootEntriesWasRecieved)
-            {
-                InitialSyncComplete = true;
-                Debug.Console(1, this, "Initial Phonebook Sync Complete!");
             }
             else
                 InitialSyncComplete = false;
