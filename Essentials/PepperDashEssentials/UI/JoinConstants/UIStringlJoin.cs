@@ -19,6 +19,10 @@ namespace PepperDash.Essentials
         /// 1001
         /// </summary>
         public const uint CodecAddressEntryText = 1001;
+        /// <summary>
+        /// 1002
+        /// </summary>
+        public const uint CodecDirectorySearchEntryText = 1002;
 
         /// <summary>
         /// 1201 - 1230 range of joins for recents list
@@ -218,5 +222,16 @@ namespace PepperDash.Essentials
 		/// 3972
 		/// </summary>
 		public const uint NextMeetingFollowingMeetingText = 3972;
+
+        /// <summary>
+        /// 3996
+        /// </summary>
+        public const uint MeetingsOrContactMethodListIcon = 3996;
+
+        /// <summary>
+        /// 3997
+        /// </summary>
+        public const uint MeetingsOrContactMethodListTitleText = 3997;
+ 
     }
 }

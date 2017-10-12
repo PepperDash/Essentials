@@ -190,17 +190,23 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 1241 For touching the text area to bring up keyboard
 		/// </summary>
-		public const uint VCDirectoryTextEntryPress = 1241;
+		public const uint VCDirectorySearchTextPress = 1241;
 		/// <summary>
 		/// 1242
 		/// </summary>
 		public const uint VCStagingSelfViewLayoutPress = 1242;
-
         /// <summary>
         /// 1243
         /// </summary>
         public const uint VCDirectoryBackVisible = 1243;
-
+        /// <summary>
+        /// 1244
+        /// </summary>
+        public const uint VCDirectoryBackspacePress = 1244;
+        /// <summary>
+        /// 1245
+        /// </summary>
+        public const uint VCDirectoryBackspaceVisible = 1245;
 		/// <summary>
 		/// 1251
 		/// </summary>
@@ -215,23 +221,6 @@ namespace PepperDash.Essentials
 		public const uint VCSelfViewPipTogglePress = 1253;
 
         //******************************************************
-        // Keyboard
-        /// <summary>
-        /// 2901
-        /// </summary>
-        public const uint KeyboardVisible = 2901;
-        /// <summary>
-        /// 2902
-        /// </summary>
-        public const uint KeyboardClosePress = 2902;
-        /// <summary>
-        /// 2903
-        /// </summary>
-        public const uint KeyboardButton1Press = 2903;
-        /// <summary>
-        /// 2904
-        /// </summary>
-        public const uint KeyboardButton2Press = 2904;
 
         // Letter joins start at 2921;
 
@@ -550,7 +539,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 15046
 		/// </summary>
-		public const uint MeetingsListVisible = 15046;
+		public const uint MeetingsOrContacMethodsListVisible = 15046;
 		/// <summary>
 		/// 15047 The "Join" button on the next meeting ribbon
 		/// </summary>

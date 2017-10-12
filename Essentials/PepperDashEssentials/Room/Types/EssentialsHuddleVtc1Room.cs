@@ -234,13 +234,11 @@ namespace PepperDash.Essentials
                 { 
                     IsWarmingUpFeedback.FireUpdate();
                     if (!IsWarmingUpFeedback.BoolValue)
-                        (DefaultDisplay as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
+                        (CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
                 };
                 disp.IsCoolingDownFeedback.OutputChange += (o, a) => 
                 {
                     IsCoolingDownFeedback.FireUpdate(); 
-                    if (IsCoolingDownFeedback.BoolValue)
-                        (DefaultDisplay as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
                 };
             }
 

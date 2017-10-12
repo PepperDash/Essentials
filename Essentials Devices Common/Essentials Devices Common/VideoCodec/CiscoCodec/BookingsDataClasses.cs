@@ -211,10 +211,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public class Call
         {
+            public string id { get; set; }
             public Number Number { get; set; }
             public Protocol Protocol { get; set; }
             public CallRate CallRate { get; set; }
             public CallType CallType { get; set; }
+        }
+
+        public class Calls
+        {
+            public List<Call> Call {get; set;}
         }
 
         public class ConnectMode
@@ -224,12 +230,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public class DialInfo
         {
-            public List<Call> Calls { get; set; }
+            public Calls Calls { get; set; }
             public ConnectMode ConnectMode { get; set; }
 
             public DialInfo()
             {
-                Calls = new List<Call>();
+                Calls = new Calls();
+                ConnectMode = new ConnectMode();
             }
         }
 
@@ -319,15 +326,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     if (b.DialInfo.ConnectMode.Value.ToLower() == "obtp" || b.DialInfo.ConnectMode.Value.ToLower() == "manual")
                         meeting.IsOneButtonToPushMeeting = true;
 
-                foreach (Call c in b.DialInfo.Calls)
+                if (b.DialInfo.Calls.Call != null)
                 {
-                    meeting.Calls.Add(new PepperDash.Essentials.Devices.Common.Codec.Call()
+                    foreach (Call c in b.DialInfo.Calls.Call)
                     {
-                        Number = c.Number.Value,
-                        Protocol = c.Protocol.Value,
-                        CallRate = c.CallRate.Value,
-                        CallType = c.CallType.Value
-                    });
+                        meeting.Calls.Add(new PepperDash.Essentials.Devices.Common.Codec.Call()
+                        {
+                            Number = c.Number.Value,
+                            Protocol = c.Protocol.Value,
+                            CallRate = c.CallRate.Value,
+                            CallType = c.CallType.Value
+                        });
+                    }
                 }
 
 

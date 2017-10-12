@@ -64,6 +64,8 @@ namespace PepperDash.Essentials.Room.Config
                     PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
 
                 var rm = new EssentialsHuddleVtc1Room(Key, Name, disp, codec, codec, props);
+                // Add Occupancy object from config
+#warning Add in occupancy object from confic if found and link up device to occupancy feedback
                 rm.LogoUrl = props.Logo.GetUrl();
                 rm.SourceListKey = props.SourceListKey;
                 rm.DefaultSourceItem = props.DefaultSourceItem;
@@ -108,7 +110,7 @@ namespace PepperDash.Essentials.Room.Config
         public EssentialsHelpPropertiesConfig Help { get; set; }
         public EssentialsOneButtonMeetingPropertiesConfig OneButtonMeeting { get; set; }
         public EssentialsRoomAddressPropertiesConfig Addresses { get; set; }
-        public EssentialsRoomOccSensorConfig OccupancySensors { get; set; }
+        public EssentialsRoomOccSensorConfig Occupancy { get; set; }
         public EssentialsLogoPropertiesConfig Logo { get; set; }
 		public EssentialsRoomTechConfig Tech { get; set; }
         public EssentialsRoomVolumesConfig Volumes { get; set; }
@@ -173,8 +175,7 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsRoomOccSensorConfig
     {
-        public string Mode { get; set; }
-        public List<string> Types { get; set; }
+        public string DeviceKey { get; set; }
     }
 
 	public class EssentialsRoomTechConfig

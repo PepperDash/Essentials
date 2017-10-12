@@ -93,7 +93,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 
 		/// </summary>
-		SubpageReferenceList MeetingsSrl;
+        public SubpageReferenceList MeetingOrContactMethodModalSrl { get; set; }
 
 		/// <summary>
 		/// The list of buttons on the header. Managed with visibility only
@@ -199,7 +199,7 @@ namespace PepperDash.Essentials
             ShareButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
             EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(3, 1);
 
-			MeetingsSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.MeetingListSRL, 3, 3, 5);
+			MeetingOrContactMethodModalSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.MeetingListSRL, 3, 3, 5);
 
 
 			// buttons are added in SetCurrentRoom
@@ -454,7 +454,7 @@ namespace PepperDash.Essentials
 		void CalendarPress()
 		{
 			RefreshMeetingsList();
-			PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsListVisible);
+			PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsOrContacMethodsListVisible);
 		}
 
 		/// <summary>
@@ -968,17 +968,21 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void RefreshMeetingsList()
 		{
+            TriList.SetString(UIStringJoin.MeetingsOrContactMethodListIcon, "Calendar");
+            TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Today's Meetings");
+
 			ushort i = 0;
 			foreach (var m in CurrentRoom.ScheduleSource.CodecSchedule.Meetings)
 			{
 				i++;
-				MeetingsSrl.StringInputSig(i, 1).StringValue = m.StartTime.ToShortTimeString();
-				MeetingsSrl.StringInputSig(i, 2).StringValue = m.EndTime.ToShortTimeString();
-				MeetingsSrl.StringInputSig(i, 3).StringValue = m.Title;
-				MeetingsSrl.StringInputSig(i, 4).StringValue = "Join";
-				MeetingsSrl.BoolInputSig(i, 2).BoolValue = m.Joinable;
+				MeetingOrContactMethodModalSrl.StringInputSig(i, 1).StringValue = m.StartTime.ToShortTimeString();
+				MeetingOrContactMethodModalSrl.StringInputSig(i, 2).StringValue = m.EndTime.ToShortTimeString();
+				MeetingOrContactMethodModalSrl.StringInputSig(i, 3).StringValue = m.Title;
+                MeetingOrContactMethodModalSrl.StringInputSig(i, 4).StringValue = string.Format("<br>{0}",m.Organizer);
+                MeetingOrContactMethodModalSrl.StringInputSig(i, 5).StringValue = "Join";
+				MeetingOrContactMethodModalSrl.BoolInputSig(i, 2).BoolValue = m.Joinable;
 				var mm = m; // lambda scope
-				MeetingsSrl.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() =>
+				MeetingOrContactMethodModalSrl.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() =>
 				{
 					PopupInterlock.Hide();
 					var d = CurrentRoom.ScheduleSource as VideoCodecBase;
@@ -986,7 +990,7 @@ namespace PepperDash.Essentials
 						RoomOnAndDialMeeting(mm);
 				});
 			}
-			MeetingsSrl.Count = i;
+			MeetingOrContactMethodModalSrl.Count = i;
 		}
 
 		/// <summary>
@@ -1247,5 +1251,6 @@ namespace PepperDash.Essentials
         void HideNotificationRibbon();
 		HeaderListButton HeaderGearButton { get; }
 		HeaderListButton HeaderCallButton { get; }
+        SubpageReferenceList MeetingOrContactMethodModalSrl { get; }
     }
 }

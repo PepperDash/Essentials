@@ -70,6 +70,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
         StringBuilder DialStringBuilder = new StringBuilder();
         BoolFeedback DialStringBackspaceVisibleFeedback;
 
+        StringFeedback SearchStringFeedback;
+        StringBuilder SearchStringBuilder = new StringBuilder();
+        BoolFeedback SearchStringBackspaceVisibleFeedback;
+
         ModalDialog IncomingCallModal;
 
         eKeypadMode KeypadMode;
@@ -134,6 +138,24 @@ namespace PepperDash.Essentials.UIDrivers.VC
             DialStringBackspaceVisibleFeedback
                 .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCKeypadBackspaceVisible]);
 
+            SearchStringFeedback = new StringFeedback(() => 
+            {
+                if (SearchStringBuilder.Length > 0)
+                {
+                    Parent.Keyboard.EnableGoButton();
+                    return SearchStringBuilder.ToString();
+                }
+                else
+                {
+                    Parent.Keyboard.DisableGoButton();
+                    return "Touch to Search";
+                }
+            });
+            SearchStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecDirectorySearchEntryText]);
+
+            SearchStringBackspaceVisibleFeedback = new BoolFeedback(() => SearchStringBuilder.Length > 0);
+            SearchStringBackspaceVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackspaceVisible]);
+
             TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackPress, GetDirectoryParentFolderContents);
 
             DirectoryBackButtonVisibleFeedback = new BoolFeedback(() => CurrentDirectoryResult != (codec as IHasDirectory).DirectoryRoot);
@@ -141,6 +163,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCDirectoryBackVisible]);
 
             TriList.SetSigFalseAction(UIBoolJoin.VCKeypadTextPress, RevealKeyboard);
+
+            TriList.SetSigFalseAction(UIBoolJoin.VCDirectorySearchTextPress, RevealKeyboard);
+
+            TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackspacePress, SearchKeypadBackspacePress);
 
             // Address and number
         }
@@ -400,9 +426,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
 					string iconName = null;
 					if (c.OccurenceType == eCodecOccurrenceType.Received)
-						iconName = "Left";
+                        iconName = "Misc-18_Light";
                     else if (c.OccurenceType == eCodecOccurrenceType.Placed)
-						iconName = "Right";
+                        iconName = "Misc-17_Light";
 					else
 						iconName = "Help";
 					RecentCallsList.SetItemIcon(i, iconName);
@@ -522,7 +548,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <param name="folderId"></param>
         void GetDirectoryFolderContents(DirectoryFolder folder)
         {
-            LastFolderRequestedParentFolderId = folder.ParentFolderId;
+            if (!string.IsNullOrEmpty(folder.ParentFolderId))
+                LastFolderRequestedParentFolderId = folder.ParentFolderId;
+            else
+                LastFolderRequestedParentFolderId = string.Empty;
 
             (Codec as IHasDirectory).GetDirectoryFolderContents(folder.FolderId);
         }
@@ -567,16 +596,17 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     DirectoryList.SetItemMainText(i, r.Name);
 
 					var dc = r as DirectoryContact;
-					// if more than one contact method, pop up modal to choose
-					// otherwiese dial 0 entry
-					if (dc.ContactMethods.Count == 1)
-					{
-						DirectoryList.SetItemButtonAction(i, b => { if (!b) Codec.Dial(dc.ContactMethods[0].Number); });
-					}
-					else
-					{
 
-					}	
+                    DirectoryList.SetItemButtonAction(i, b =>
+                    {
+                        if (!b) 
+                        {
+                            // Refresh the contact methods list
+                            RefreshContactMethodsModalList(dc);
+                            Parent.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsOrContacMethodsListVisible);
+                        }
+                    });
+
 				}
 				else    // is DirectoryFolder
 				{
@@ -596,6 +626,34 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			}
 			DirectoryList.Count = i;		
 		}
+
+        void RefreshContactMethodsModalList(DirectoryContact contact)
+        {
+            TriList.SetString(UIStringJoin.MeetingsOrContactMethodListIcon, "Users");
+            TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Contact Methods");
+
+            ushort i = 0;
+            foreach (var c in contact.ContactMethods)
+            {
+                i++;
+                Parent.MeetingOrContactMethodModalSrl.StringInputSig(i, 1).StringValue = c.Device.ToString();
+                Parent.MeetingOrContactMethodModalSrl.StringInputSig(i, 2).StringValue = c.CallType.ToString();
+                Parent.MeetingOrContactMethodModalSrl.StringInputSig(i, 3).StringValue = c.Number;
+                Parent.MeetingOrContactMethodModalSrl.StringInputSig(i, 4).StringValue = "";
+                Parent.MeetingOrContactMethodModalSrl.StringInputSig(i, 5).StringValue = "Connect";
+                Parent.MeetingOrContactMethodModalSrl.BoolInputSig(i, 2).BoolValue = true;
+                var cc = c; // lambda scope
+                Parent.MeetingOrContactMethodModalSrl.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() =>
+                {
+                    Parent.PopupInterlock.Hide();
+                    var codec = Codec as VideoCodecBase;
+                    if (codec != null)
+                        codec.Dial(c.Number);
+                });
+            }
+            Parent.MeetingOrContactMethodModalSrl.Count = i;
+
+        }
 
 		/// <summary>
 		/// 
@@ -624,7 +682,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void RevealKeyboard()
         {
-            if (KeypadMode == eKeypadMode.Dial)
+            if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCKeypadVisible && KeypadMode == eKeypadMode.Dial)
             {
                 var kb = Parent.Keyboard;
                 kb.KeyPress += new EventHandler<PepperDash.Essentials.Core.Touchpanels.Keyboards.KeyboardControllerPressEventArgs>(Keyboard_KeyPress);
@@ -634,6 +692,16 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 DialStringKeypadCheckEnables();
                 kb.Show();
             }
+            else if(VCControlsInterlock.CurrentJoin == UIBoolJoin.VCDirectoryVisible)
+            {
+                var kb = Parent.Keyboard;
+                kb.KeyPress += Keyboard_KeyPress;
+                kb.HideAction = this.DetachKeyboard;
+                kb.GoButtonText = "Search";
+                kb.GoButtonVisible = true;
+                SearchStringKeypadCheckEnables();
+                kb.Show();
+            }
         }
 
         /// <summary>
@@ -641,22 +709,47 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void Keyboard_KeyPress(object sender, PepperDash.Essentials.Core.Touchpanels.Keyboards.KeyboardControllerPressEventArgs e)
         {
-            if (e.Text != null)
-                DialStringBuilder.Append(e.Text);
-            else
+            if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCKeypadVisible)
             {
-                if (e.SpecialKey == KeyboardSpecialKey.Backspace)
-                    DialKeypadBackspacePress();
-                else if (e.SpecialKey == KeyboardSpecialKey.Clear)
-                    DialKeypadClear();
-                else if (e.SpecialKey == KeyboardSpecialKey.GoButton)
-                {
-                    ConnectPress();
-                    Parent.Keyboard.Hide();
-                }
+                if (KeypadMode == eKeypadMode.Dial)
+                    if (e.Text != null)
+                        DialStringBuilder.Append(e.Text);
+                    else
+                    {
+                        if (e.SpecialKey == KeyboardSpecialKey.Backspace)
+                            DialKeypadBackspacePress();
+                        else if (e.SpecialKey == KeyboardSpecialKey.Clear)
+                            DialKeypadClear();
+                        else if (e.SpecialKey == KeyboardSpecialKey.GoButton)
+                        {
+                            ConnectPress();
+                            Parent.Keyboard.Hide();
+                        }
+                    }
+                DialStringFeedback.FireUpdate();
+                DialStringKeypadCheckEnables();
             }
-            DialStringFeedback.FireUpdate();
-            DialStringKeypadCheckEnables();
+            else if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCDirectoryVisible)
+            {
+                if (e.Text != null)
+                    SearchStringBuilder.Append(e.Text);
+                else
+                {
+                    if (e.SpecialKey == KeyboardSpecialKey.Backspace)
+                        SearchKeypadBackspacePress();
+                    else if (e.SpecialKey == KeyboardSpecialKey.Clear)
+                        SearchKeypadClear();
+                    else if (e.SpecialKey == KeyboardSpecialKey.GoButton)
+                    {
+                        SearchPress();
+                        Parent.Keyboard.Hide();
+                    }
+                }
+                SearchStringFeedback.FireUpdate();
+                SearchStringKeypadCheckEnables();
+            }
+
+
         }
 
         void DetachKeyboard()
@@ -777,6 +870,59 @@ namespace PepperDash.Essentials.UIDrivers.VC
             else
                 Parent.Keyboard.DisableGoButton();
         }
+
+
+        void SearchPress()
+        {
+            (Codec as IHasDirectory).SearchDirectory(SearchStringBuilder.ToString());
+        }
+
+        void SearchKeypadPress(string i)
+        {
+            SearchStringBuilder.Append(i);
+            SearchStringFeedback.FireUpdate();
+            SearchStringKeypadCheckEnables();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void SearchKeypadBackspacePress()
+        {
+            SearchStringBuilder.Remove(SearchStringBuilder.Length - 1, 1);
+
+            if (SearchStringBuilder.Length == 0)
+                SetCurrentDirectoryToRoot();
+
+            SearchStringFeedback.FireUpdate();
+            SearchStringKeypadCheckEnables();
+        }
+
+        /// <summary>
+        /// Clears the Search keypad
+        /// </summary>
+        void SearchKeypadClear()
+        {
+            SearchStringBuilder.Remove(0, SearchStringBuilder.Length);
+            SearchStringFeedback.FireUpdate();
+            SearchStringKeypadCheckEnables();
+
+            SetCurrentDirectoryToRoot();
+        }
+
+        /// <summary>
+        /// Checks the enabled states of various elements around the keypad
+        /// </summary>
+        void SearchStringKeypadCheckEnables()
+        {
+            var textIsEntered = SearchStringBuilder.Length > 0;
+            TriList.SetBool(UIBoolJoin.VCDirectoryBackspaceVisible, textIsEntered);
+            if (textIsEntered)
+                Parent.Keyboard.EnableGoButton();
+            else
+                Parent.Keyboard.DisableGoButton();
+        }
+
 
         /// <summary>
         /// 
