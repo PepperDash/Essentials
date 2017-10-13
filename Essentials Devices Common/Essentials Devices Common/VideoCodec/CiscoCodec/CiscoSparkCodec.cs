@@ -303,7 +303,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <returns></returns>
         public override bool CustomActivate()
         {
-            CrestronConsole.AddNewConsoleCommand(SendText, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
+            //CrestronConsole.AddNewConsoleCommand(SendText, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(SetCommDebug, "SetCodecCommDebug", "0 for Off, 1 for on", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(GetPhonebook, "GetCodecPhonebook", "Triggers a refresh of the codec phonebook", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(GetBookings, "GetCodecBookings", "Triggers a refresh of the booking data for today", ConsoleAccessLevelEnum.AccessOperator);

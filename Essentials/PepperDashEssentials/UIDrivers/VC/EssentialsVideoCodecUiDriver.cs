@@ -508,6 +508,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             CurrentDirectoryResult = (Codec as IHasDirectory).DirectoryRoot;
 
+            SearchKeypadClear();
+
             DirectoryBackButtonVisibleFeedback.FireUpdate();
 
             RefreshDirectory();
@@ -580,51 +582,60 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		void RefreshDirectory()
 		{
 			Debug.Console(0, "****** RefreshDirectory!");
-
-			ushort i = 0;
-			foreach (var r in CurrentDirectoryResult.DirectoryResults)
-			{
-				if (i == DirectoryList.MaxCount)
-				{
-					break;
-				}
-
-				i++;
-
-				if(r is DirectoryContact)
-				{
-                    DirectoryList.SetItemMainText(i, r.Name);
-
-					var dc = r as DirectoryContact;
-
-                    DirectoryList.SetItemButtonAction(i, b =>
+            if (CurrentDirectoryResult.DirectoryResults.Count > 0)
+            {
+                ushort i = 0;
+                foreach (var r in CurrentDirectoryResult.DirectoryResults)
+                {
+                    if (i == DirectoryList.MaxCount)
                     {
-                        if (!b) 
+                        break;
+                    }
+
+                    i++;
+
+                    if (r is DirectoryContact)
+                    {
+                        DirectoryList.SetItemMainText(i, r.Name);
+
+                        var dc = r as DirectoryContact;
+
+                        DirectoryList.SetItemButtonAction(i, b =>
                         {
-                            // Refresh the contact methods list
-                            RefreshContactMethodsModalList(dc);
-                            Parent.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsOrContacMethodsListVisible);
-                        }
-                    });
+                            if (!b)
+                            {
+                                // Refresh the contact methods list
+                                RefreshContactMethodsModalList(dc);
+                                Parent.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsOrContacMethodsListVisible);
+                            }
+                        });
 
-				}
-				else    // is DirectoryFolder
-				{
-                    DirectoryList.SetItemMainText(i, string.Format("[+] {0}", r.Name));
+                    }
+                    else    // is DirectoryFolder
+                    {
+                        DirectoryList.SetItemMainText(i, string.Format("[+] {0}", r.Name));
 
-                    var df = r as DirectoryFolder;
+                        var df = r as DirectoryFolder;
 
-					DirectoryList.SetItemButtonAction(i, b =>
-					{
-						if (!b)
-						{
-							GetDirectoryFolderContents(df);
-							// will later call event handler after folder contents retrieved
-						}
-					});
-				}
-			}
-			DirectoryList.Count = i;		
+                        DirectoryList.SetItemButtonAction(i, b =>
+                        {
+                            if (!b)
+                            {
+                                GetDirectoryFolderContents(df);
+                                // will later call event handler after folder contents retrieved
+                            }
+                        });
+                    }
+                }
+                DirectoryList.Count = i;
+            }
+            else        // No results in directory, display message to user
+            {
+                DirectoryList.Count = 1;
+
+                DirectoryList.SetItemMainText(1, "No Results Found");
+            }
+
 		}
 
         void RefreshContactMethodsModalList(DirectoryContact contact)
@@ -907,7 +918,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
             SearchStringFeedback.FireUpdate();
             SearchStringKeypadCheckEnables();
 
-            SetCurrentDirectoryToRoot();
+            if(CurrentDirectoryResult != (Codec as IHasDirectory).DirectoryRoot)
+                SetCurrentDirectoryToRoot();
         }
 
         /// <summary>

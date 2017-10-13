@@ -66,6 +66,8 @@ namespace PepperDash.Essentials
 		public HeaderListButton HeaderCallButton { get; private set; }
 		public HeaderListButton HeaderGearButton { get; private set; }
 
+        StringFeedback HeaderCallLabelTextFeedback { get; private set; }
+
         /// <summary>
         /// The parent driver for this
         /// </summary>
@@ -961,6 +963,10 @@ namespace PepperDash.Essentials
 				blankBut.ClearIcon();
 				blankBut.OutputSig.SetSigFalseAction(() => { });
 			}
+
+            // Call Status Label/Button
+
+            //HeaderCallLabel = new S
 		}
 
 		/// <summary>

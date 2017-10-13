@@ -447,11 +447,11 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 15024
         /// </summary>
-        public const uint HeaderCallRightButtonVisible = 15024;
+        public const uint HeaderCallStatusRightPositionVisible = 15024;
         /// <summary>
         /// 15025
         /// </summary>
-        public const uint HeaderCallLeftButtonVisible = 15025;
+        public const uint HeaderCallStatusLeftPositionVisible = 15025;
         /// <summary>
         /// 15026
         /// </summary>
@@ -459,7 +459,7 @@ namespace PepperDash.Essentials
         /// <summary>[-
         /// 15027
         /// </summary>
-        public const uint HeaderCallButtonPress = 15027;
+        public const uint HeaderCallStatusButtonPress = 15027;
         /// <summary>
         /// 15028 The gear button in header
         /// </summary>
