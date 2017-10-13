@@ -63,10 +63,9 @@ namespace PepperDash.Essentials
         BoolInputSig ShareButtonSig;
         BoolInputSig EndMeetingButtonSig;
 
-		public HeaderListButton HeaderCallButton { get; private set; }
-		public HeaderListButton HeaderGearButton { get; private set; }
+        HeaderListButton HeaderCallButton;
+        HeaderListButton HeaderGearButton;
 
-        StringFeedback HeaderCallLabelTextFeedback { get; private set; }
 
         /// <summary>
         /// The parent driver for this
@@ -304,6 +303,9 @@ namespace PepperDash.Essentials
                 if (CurrentRoom != null && CurrentRoom.DefaultDisplay is IPower)
                     (CurrentRoom.DefaultDisplay as IPower).PowerToggle();
             });
+
+            TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusButtonPress, () => 
+                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible));
 
 			SetupNextMeetingTimer();
 
@@ -964,10 +966,51 @@ namespace PepperDash.Essentials
 				blankBut.OutputSig.SetSigFalseAction(() => { });
 			}
 
-            // Call Status Label/Button
+            // Set Call Status Subpage Position
 
-            //HeaderCallLabel = new S
+            if (nextIndex == 1)
+            {
+                // Set to right position
+                TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, false);
+                TriList.SetBool(UIBoolJoin.HeaderCallStatusRightPositionVisible, true);
+            }
+            else if (nextIndex == 0)
+            {
+                // Set to left position
+                TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, true);
+                TriList.SetBool(UIBoolJoin.HeaderCallStatusRightPositionVisible, false);
+            }
+               
 		}
+
+        /// <summary>
+        /// Evaluates the call status and sets the icon mode and text label 
+        /// </summary>
+        public void ComputeHeaderCallStatus(VideoCodecBase codec)
+        {
+            // Set mode of header button
+            if (!codec.IsInCall)
+            {
+                HeaderCallButton.SetIcon(HeaderListButton.OnHook);
+            }
+            else if (codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
+                HeaderCallButton.SetIcon(HeaderListButton.Camera);
+            //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
+            else
+                HeaderCallButton.SetIcon(HeaderListButton.Phone);
+            //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
+
+            // Set the call status text
+            if (codec.ActiveCalls.Count > 0)
+            {
+                if (codec.ActiveCalls.Count == 1)
+                    TriList.SetString(UIStringJoin.HeaderCallStatusLabel, "1 Active Call");
+                else if (codec.ActiveCalls.Count > 1)
+                    TriList.SetString(UIStringJoin.HeaderCallStatusLabel, string.Format("{0} Active Calls", codec.ActiveCalls.Count));
+            }
+            else
+                TriList.SetString(UIStringJoin.HeaderCallStatusLabel, "No Active Calls");
+        }
 
 		/// <summary>
 		/// 
@@ -1255,8 +1298,7 @@ namespace PepperDash.Essentials
         JoinedSigInterlock PopupInterlock { get; }
         void ShowNotificationRibbon(string message, int timeout);
         void HideNotificationRibbon();
-		HeaderListButton HeaderGearButton { get; }
-		HeaderListButton HeaderCallButton { get; }
+        void ComputeHeaderCallStatus(VideoCodecBase codec);
         SubpageReferenceList MeetingOrContactMethodModalSrl { get; }
     }
 }

@@ -180,6 +180,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             TriList.SetString(UIStringJoin.RoomPhoneText, Codec.CodecInfo.PhoneNumber);
             TriList.SetString(UIStringJoin.RoomSipText, Codec.CodecInfo.SipUri);
+
+            Parent.ComputeHeaderCallStatus(Codec);
         }
 
         /// <summary>
@@ -245,16 +247,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
             StagingBarsInterlock.ShowInterlocked(Codec.IsInCall ? 
                 UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
 
-            // Set mode of header button
-			if (!Codec.IsInCall)
-				Parent.HeaderCallButton.SetIcon(HeaderListButton.OnHook);
-				//TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 0);
-			else if (Codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
-				Parent.HeaderCallButton.SetIcon(HeaderListButton.Camera);
-				//TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
-			else
-				Parent.HeaderCallButton.SetIcon(HeaderListButton.Phone);
-				//TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
+
+            Parent.ComputeHeaderCallStatus(Codec);
 
             // Update list of calls
             UpdateCallsHeaderList(call);
@@ -697,7 +691,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             {
                 var kb = Parent.Keyboard;
                 kb.KeyPress += new EventHandler<PepperDash.Essentials.Core.Touchpanels.Keyboards.KeyboardControllerPressEventArgs>(Keyboard_KeyPress);
-                kb.HideAction = this.DetachKeyboard;
+                kb.HideAction = this.DetachDialKeyboard;
                 kb.GoButtonText = "Connect";
                 kb.GoButtonVisible = true;
                 DialStringKeypadCheckEnables();
@@ -706,14 +700,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
             else if(VCControlsInterlock.CurrentJoin == UIBoolJoin.VCDirectoryVisible)
             {
                 var kb = Parent.Keyboard;
-                kb.KeyPress += Keyboard_KeyPress;
-                kb.HideAction = this.DetachKeyboard;
+                kb.KeyPress += new EventHandler<KeyboardControllerPressEventArgs>(Search_KeyPress);
+                kb.HideAction = this.DetachSearchKeyboard;
                 kb.GoButtonText = "Search";
                 kb.GoButtonVisible = true;
                 SearchStringKeypadCheckEnables();
                 kb.Show();
             }
         }
+
 
         /// <summary>
         /// 
@@ -739,8 +734,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     }
                 DialStringFeedback.FireUpdate();
                 DialStringKeypadCheckEnables();
-            }
-            else if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCDirectoryVisible)
+            } 
+        }
+
+        void Search_KeyPress(object sender, KeyboardControllerPressEventArgs e)
+        {
+            if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCDirectoryVisible)
             {
                 if (e.Text != null)
                     SearchStringBuilder.Append(e.Text);
@@ -759,13 +758,16 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 SearchStringFeedback.FireUpdate();
                 SearchStringKeypadCheckEnables();
             }
-
-
         }
 
-        void DetachKeyboard()
+        void DetachDialKeyboard()
         {
             Parent.Keyboard.KeyPress -= Keyboard_KeyPress;
+        }
+
+        void DetachSearchKeyboard()
+        {
+            Parent.Keyboard.KeyPress -= Search_KeyPress;
         }
 
         /// <summary>

@@ -162,7 +162,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 3916 The "active call" label
 		/// </summary>
-		public const uint HeaderCallLabel = 3916;
+		public const uint HeaderCallStatusLabel = 3916;
 
         /// <summary>
         /// 3922

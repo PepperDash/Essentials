@@ -447,11 +447,11 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 15024
         /// </summary>
-        public const uint HeaderCallStatusRightPositionVisible = 15024;
+        public const uint HeaderCallStatusLeftPositionVisible = 15024;
         /// <summary>
         /// 15025
         /// </summary>
-        public const uint HeaderCallStatusLeftPositionVisible = 15025;
+        public const uint HeaderCallStatusRightPositionVisible = 15025;
         /// <summary>
         /// 15026
         /// </summary>
