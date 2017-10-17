@@ -1040,6 +1040,17 @@ namespace PepperDash.Essentials
 				});
 			}
 			MeetingOrContactMethodModalSrl.Count = i;
+
+            if (i == 0)         // Show item indicating no meetings are booked for rest of day
+            {
+                MeetingOrContactMethodModalSrl.Count = 1;
+
+                MeetingOrContactMethodModalSrl.StringInputSig(1, 1).StringValue = string.Empty;
+                MeetingOrContactMethodModalSrl.StringInputSig(1, 2).StringValue = string.Empty;
+                MeetingOrContactMethodModalSrl.StringInputSig(1, 3).StringValue = "No Meetings are booked for the remainder of the day.";
+                MeetingOrContactMethodModalSrl.StringInputSig(1, 4).StringValue = string.Empty;
+                MeetingOrContactMethodModalSrl.StringInputSig(1, 5).StringValue = string.Empty;
+            }
 		}
 
 		/// <summary>

@@ -61,7 +61,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
 		CodecDirectory CurrentDirectoryResult;
 
-        string LastFolderRequestedParentFolderId;
+        /// <summary>
+        /// Tracks the directory browse history when browsing beyond the root directory
+        /// </summary>
+        List<CodecDirectory> DirectoryBrowseHistory;
+        
+        bool NextDirectoryResultIsFolderContents;
 
         BoolFeedback DirectoryBackButtonVisibleFeedback;
 
@@ -467,6 +472,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// </summary>
 		void SetupDirectoryList()
 		{
+            DirectoryBrowseHistory = new List<CodecDirectory>();
+
 			var codec = Codec as IHasDirectory;
 			if (codec != null)
 			{
@@ -498,7 +505,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void SetCurrentDirectoryToRoot()
         {
-            LastFolderRequestedParentFolderId = string.Empty;
+            DirectoryBrowseHistory.Clear();
 
             CurrentDirectoryResult = (Codec as IHasDirectory).DirectoryRoot;
 
@@ -533,6 +540,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// <param name="e"></param>
 		void dir_DirectoryResultReturned(object sender, DirectoryEventArgs e)
 		{
+            if (NextDirectoryResultIsFolderContents)
+            {
+                NextDirectoryResultIsFolderContents = false;
+                DirectoryBrowseHistory.Add(e.Directory);
+            }
 			CurrentDirectoryResult = e.Directory;
             DirectoryBackButtonVisibleFeedback.FireUpdate();
 			RefreshDirectory();
@@ -544,12 +556,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <param name="folderId"></param>
         void GetDirectoryFolderContents(DirectoryFolder folder)
         {
-            if (!string.IsNullOrEmpty(folder.ParentFolderId))
-                LastFolderRequestedParentFolderId = folder.ParentFolderId;
-            else
-                LastFolderRequestedParentFolderId = string.Empty;
-
             (Codec as IHasDirectory).GetDirectoryFolderContents(folder.FolderId);
+
+            NextDirectoryResultIsFolderContents = true;
         }
 
         /// <summary>
@@ -559,14 +568,18 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             var codec = Codec as IHasDirectory;
 
-            if (!string.IsNullOrEmpty(LastFolderRequestedParentFolderId))
-                codec.GetDirectoryFolderContents(LastFolderRequestedParentFolderId);
+            if (DirectoryBrowseHistory.Count > 0)
+            {
+                var lastItemIndex = DirectoryBrowseHistory.Count - 1;
+                CurrentDirectoryResult = DirectoryBrowseHistory[lastItemIndex];
+                DirectoryBrowseHistory.Remove(DirectoryBrowseHistory[lastItemIndex]);
+
+                RefreshDirectory();
+            }
             else
             {
                 SetCurrentDirectoryToRoot();
             }
-                
-
         }
 
 		/// <summary>
@@ -708,7 +721,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 kb.Show();
             }
         }
-
 
         /// <summary>
         /// 

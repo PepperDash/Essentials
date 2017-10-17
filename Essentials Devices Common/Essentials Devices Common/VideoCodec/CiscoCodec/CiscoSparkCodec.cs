@@ -121,7 +121,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         protected override Func<string> SharingSourceFeedbackFunc
         {
-#warning verify that source feedback to room works from codec
             get 
             {
                 return () => PresentationSourceKey;
@@ -207,6 +206,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         int PhonebookResultsLimit = 255; // Could be set later by config.
 
         CTimer LoginMessageReceived;
+
+        // **___________________________________________________________________**
+        //  Timers to be moved to the global system timer at a later point....
+        CTimer BookingsRefreshTimer;
+        CTimer PhonebookRefreshTimer;
+        // **___________________________________________________________________**
 
         public RoutingInputPort CodecOsdIn { get; private set; }
         public RoutingInputPort HdmiIn1 { get; private set; }
@@ -349,8 +354,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             GetCallHistory();
 
+            PhonebookRefreshTimer = new CTimer(CheckCurrentHour, 3600000, 3600000);     // check each hour to see if the phonebook should be downloaded
             GetPhonebook(null);
 
+            BookingsRefreshTimer = new CTimer(GetBookings, 900000,  900000);       // 15 minute timer to check for new booking info
             GetBookings(null);
         }
 
@@ -372,12 +379,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (e.Client.IsConnected)
             {
-                //LoginMessageReceived.Reset();
+                LoginMessageReceived.Reset(5000);
             }
             else
             {
                 SyncState.CodecDisconnected();
                 PhonebookSyncState.CodecDisconnected();
+
+                if (PhonebookRefreshTimer != null)
+                {
+                    PhonebookRefreshTimer.Stop();
+                    PhonebookRefreshTimer = null;
+                }
+
+                if (BookingsRefreshTimer != null)
+                {
+                    BookingsRefreshTimer.Stop();
+                    BookingsRefreshTimer = null;
+                }
             }
         }
 
@@ -679,6 +698,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         if(codecBookings.CommandResponse.BookingsListResult.ResultInfo.TotalRows.Value != "0")
                             CodecSchedule.Meetings = CiscoCodecBookings.GetGenericMeetingsFromBookingResult(codecBookings.CommandResponse.BookingsListResult.Booking);
 
+                        BookingsRefreshTimer.Reset(900000, 900000);
                     }
 
                 }  
@@ -751,9 +771,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// Gets the bookings for today
         /// </summary>
         /// <param name="command"></param>
-        public void GetBookings(string command)
+        public void GetBookings(object command)
         {
+            Debug.Console(1, this, "Retrieving Booking Info from Codec. Current Time: {0}", DateTime.Now.ToLocalTime());
+
             SendText("xCommand Bookings List Days: 1 DayOffset: 0");
+        }
+
+        /// <summary>
+        /// Checks to see if it is 2am (or within that hour) and triggers a download of the phonebook
+        /// </summary>
+        /// <param name="o"></param>
+        public void CheckCurrentHour(object o)
+        {
+            if (DateTime.Now.Hour == 2)
+            {
+                Debug.Console(1, this, "Checking hour to see if phonebook should be downloaded.  Current hour is {0}", DateTime.Now.Hour);
+
+                GetPhonebook(null);
+                PhonebookRefreshTimer.Reset(3600000, 3600000);
+            }
         }
 
         /// <summary>
