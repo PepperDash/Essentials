@@ -43,13 +43,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             VolumeLevelFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Volume={0}", _VolumeLevel);
 
             CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 0, this);
-            HdmiIn1 = new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 1, this);
-            HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 2, this);
-            HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
-
             InputPorts.Add(CodecOsdIn);
+            HdmiIn1 = new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 1, this);
             InputPorts.Add(HdmiIn1);
+            HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 2, this);
             InputPorts.Add(HdmiIn2);
+            HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
             OutputPorts.Add(HdmiOut);
 
             CallHistory = new CodecCallHistory();

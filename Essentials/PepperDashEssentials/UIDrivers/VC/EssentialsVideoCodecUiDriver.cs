@@ -417,8 +417,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					TriList.SetString(textOffset + i, c.Name);
 					// if it's today, show a simpler string
 					string timeText = null;
-					if (c.StartTime.Date == DateTime.Now.Date) 
+					if (c.StartTime.Date == DateTime.Now.Date)
 						timeText = c.StartTime.ToShortTimeString();
+					else if (c.StartTime == DateTime.MinValue)
+						timeText = "";
 					else
 						timeText = c.StartTime.ToString();
 					TriList.SetString(timeTextOffset + i, timeText);
@@ -678,10 +680,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// </summary>
 		void SetupSelfViewControls()
 		{
+
 			TriList.SetSigFalseAction(UIBoolJoin.VCStagingSelfViewLayoutPress, this.ShowSelfViewLayout);
 			var svc = Codec as IHasCodecSelfview;
 			if (svc != null)
 			{
+                // Default Selfview to off
+                svc.SelfviewModeOff();
+
 				TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewTogglePress, svc.SelfviewModeToggle);
 				svc.SelfviewIsOnFeedback.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCSelfViewTogglePress]);
 

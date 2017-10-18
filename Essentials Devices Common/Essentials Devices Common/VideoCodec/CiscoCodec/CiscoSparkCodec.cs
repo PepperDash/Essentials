@@ -21,8 +21,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 
-    public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory, 
-		IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfview
+    public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
+        IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfview, ICommunicationMonitor
     {
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 
@@ -762,7 +762,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         }
 
-        private void GetCallHistory()
+        public void GetCallHistory()
         {
             SendText("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
         }
@@ -961,7 +961,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             else
                 sendingMode = "LocalOnly";
 
-            SendText(string.Format("xCommand Presentation Start PresentationSource: {0}", PresentationSource));
+            SendText(string.Format("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", PresentationSource, sendingMode));
         }
 
         public override void StopSharing()

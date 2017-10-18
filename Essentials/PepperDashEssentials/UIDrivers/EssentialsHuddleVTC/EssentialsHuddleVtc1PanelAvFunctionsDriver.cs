@@ -234,25 +234,25 @@ namespace PepperDash.Essentials
 
             var roomConf = CurrentRoom.Config;
 
-            if (Config.HeaderStyle == UiHeaderStyle.Habanero)
+			TriList.SetString(UIStringJoin.CurrentRoomName, CurrentRoom.Name);
+
+            if (Config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Habanero)
             {
-                TriList.SetString(UIStringJoin.CurrentRoomName, CurrentRoom.Name);
                 TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, () =>
                     PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderPageVisible));
             }
-            else if (Config.HeaderStyle == UiHeaderStyle.Verbose)
+			else if (Config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Verbose)
             {
                 // room name on join 1, concat phone and sip on join 2, no button method
-                TriList.SetString(UIStringJoin.CurrentRoomName, CurrentRoom.Name);
-                var addr = roomConf.Addresses;
-                if (addr == null) // protect from missing values by using default empties
-                    addr = new EssentialsRoomAddressPropertiesConfig();
-                // empty string when either missing, pipe when both showing
-                TriList.SetString(UIStringJoin.RoomAddressPipeText, 
-                    (string.IsNullOrEmpty(addr.PhoneNumber.Trim())
-                    || string.IsNullOrEmpty(addr.SipAddress.Trim())) ? "" : " | ");
-                TriList.SetString(UIStringJoin.RoomPhoneText, addr.PhoneNumber);
-                TriList.SetString(UIStringJoin.RoomSipText, addr.SipAddress);
+				//var addr = roomConf.Addresses;
+				//if (addr == null) // protect from missing values by using default empties
+				//    addr = new EssentialsRoomAddressPropertiesConfig();
+				//// empty string when either missing, pipe when both showing
+				//TriList.SetString(UIStringJoin.RoomAddressPipeText, 
+				//    (string.IsNullOrEmpty(addr.PhoneNumber.Trim())
+				//    || string.IsNullOrEmpty(addr.SipAddress.Trim())) ? "" : " | ");
+				//TriList.SetString(UIStringJoin.RoomPhoneText, addr.PhoneNumber);
+				//TriList.SetString(UIStringJoin.RoomSipText, addr.SipAddress);
             }
 
             TriList.SetBool(UIBoolJoin.DateAndTimeVisible, Config.ShowDate && Config.ShowTime);
@@ -621,16 +621,22 @@ namespace PepperDash.Essentials
         /// </summary>
         void ShowCurrentSource()
         {
-            if (CurrentRoom.CurrentSourceInfo == null)
-                return;
+			if (CurrentRoom.CurrentSourceInfo == null)
+				return;
 
+			if (CurrentRoom.CurrentSourceInfo.SourceDevice == null)
+			{
+				TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
+				return;
+			}
+				
             var uiDev = CurrentRoom.CurrentSourceInfo.SourceDevice as IUiDisplayInfo;
             PageManager pm = null;
             // If we need a page manager, get an appropriate one
             if (uiDev != null)
             {
-                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
-                // Got an existing page manager, get it
+				TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
+				// Got an existing page manager, get it
                 if (PageManagers.ContainsKey(uiDev))
                     pm = PageManagers[uiDev];
                 // Otherwise make an apporiate one
@@ -1195,12 +1201,12 @@ namespace PepperDash.Essentials
                 Parent.Show();
                 return;
             }
-            else if (CurrentRoom.CurrentSourceInfo != null)
+            else if (routeInfo != null)
             {
                 TriList.StringInput[UIStringJoin.CurrentSourceName].StringValue = routeInfo.PreferredName;
                 TriList.StringInput[UIStringJoin.CurrentSourceIcon].StringValue = routeInfo.Icon; // defaults to "blank"
             }
-            else
+            else // This never gets hit???!!!
             {
                 TriList.StringInput[UIStringJoin.CurrentSourceName].StringValue = "---";
                 TriList.StringInput[UIStringJoin.CurrentSourceIcon].StringValue = "Blank";

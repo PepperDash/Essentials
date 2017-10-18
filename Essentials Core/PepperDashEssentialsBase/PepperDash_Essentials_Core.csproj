@@ -105,6 +105,7 @@
   <ItemGroup>
     <Compile Include="Devices\CodecInterfaces.cs" />
     <Compile Include="Devices\IHasSharing.cs" />
+    <Compile Include="Global\JobTimer.cs" />
     <Compile Include="Ramps and Increments\ActionIncrementer.cs" />
     <Compile Include="Comm and IR\CommFactory.cs" />
     <Compile Include="Comm and IR\CommunicationExtras.cs" />
@@ -163,7 +164,7 @@
     <Compile Include="Display\MockDisplay.cs" />
     <Compile Include="Ethernet\EthernetStatistics.cs" />
     <Compile Include="Fusion\MOVED FusionSystemController.cs" />
-    <Compile Include="Global.cs" />
+    <Compile Include="Global\Global.cs" />
     <Compile Include="License\EssentialsLicenseManager.cs" />
     <Compile Include="Feedbacks\BoolOutputLogicals.cs" />
     <Compile Include="Presets\Interfaces.cs" />

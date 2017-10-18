@@ -12,7 +12,7 @@
 		public bool ShowDate { get; set; }
 		public bool ShowTime { get; set; }
         public UiSetupPropertiesConfig Setup { get; set; }
-        public UiHeaderStyle HeaderStyle { get; set; }
+        public string HeaderStyle { get; set; }
 
         /// <summary>
         /// The count of sources that will trigger the "additional" arrows to show on the SRL.
@@ -23,8 +23,17 @@
         public CrestronTouchpanelPropertiesConfig()
         {
             SourcesOverflowCount = 5;
-            HeaderStyle = UiHeaderStyle.Habanero;
+			HeaderStyle = CrestronTouchpanelPropertiesConfig.Habanero;
         }
+
+		/// <summary>
+		/// "habanero"
+		/// </summary>
+		public const string Habanero = "habanero";
+		/// <summary>
+		/// "verbose"
+		/// </summary>
+		public const string Verbose = "verbose";
 	}
 
     /// <summary>
@@ -34,14 +43,4 @@
     {
         public bool IsVisible { get; set; }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum UiHeaderStyle
-    {
-        Habanero = 0,
-        Verbose
-    }
-
 }

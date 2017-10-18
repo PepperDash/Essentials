@@ -12,7 +12,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
     public abstract class VideoCodecBase : Device, IRoutingInputsOutputs, 
-		IUsageTracking, IHasDialer, IHasSharing, ICodecAudio, iCodecInfo //, ICommunicationMonitor
+		IUsageTracking, IHasDialer, IHasSharing, ICodecAudio, iCodecInfo
     {
         /// <summary>
         /// Fires when the status of any active, dialing, or incoming call changes or is new
