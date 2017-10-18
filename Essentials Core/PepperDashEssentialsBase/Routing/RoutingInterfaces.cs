@@ -40,6 +40,9 @@ namespace PepperDash.Essentials.Core
 
 	}
 
+	/// <summary>
+	/// Endpoint device like a display, that selects inputs
+	/// </summary>
 	public interface IRoutingSinkWithSwitching : IRoutingSinkNoSwitching
 	{
 		//void ClearRoute();
@@ -53,12 +56,21 @@ namespace PepperDash.Essentials.Core
 	{
 	}
 
+	/// <summary>
+	/// Defines a midpoint device as have internal routing.  Any devices in the middle of the
+	/// signal chain, that do switching, must implement this for routing to work otherwise
+	/// the routing algorithm will treat the IRoutingInputsOutputs device as a passthrough
+	/// device.
+	/// </summary>
 	public interface IRouting : IRoutingInputsOutputs
 	{
 		//void ClearRoute(object outputSelector);
 		void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType);
 	}
 
+	/// <summary>
+	/// Defines an IRoutingOutputs devices as being a source - the start of the chain
+	/// </summary>
 	public interface IRoutingSource : IRoutingOutputs
 	{
 	}

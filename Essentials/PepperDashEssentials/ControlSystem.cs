@@ -162,10 +162,11 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public void LoadTieLines()
 		{
-			// Make this reusable by clearing the TieLineCollection
+			// In the future, we can't necessarily just clear here because devices
+			// might be making their own internal sources/tie lines
 
 			var tlc = TieLineCollection.Default;
-			tlc.Clear();
+			//tlc.Clear();
 			foreach (var tieLineConfig in ConfigReader.ConfigObject.TieLines)
 			{
 				var newTL = tieLineConfig.GetTieLine();

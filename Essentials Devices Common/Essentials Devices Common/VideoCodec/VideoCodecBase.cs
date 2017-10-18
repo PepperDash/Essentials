@@ -11,7 +11,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
-    public abstract class VideoCodecBase : Device, IRoutingInputsOutputs, 
+    public abstract class VideoCodecBase : Device, IRoutingInputsOutputs,
 		IUsageTracking, IHasDialer, IHasSharing, ICodecAudio, iCodecInfo
     {
         /// <summary>

@@ -22,7 +22,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 
     public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
-        IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfview, ICommunicationMonitor
+        IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfview,
+		ICommunicationMonitor, IRouting
     {
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 
@@ -45,6 +46,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public StringFeedback SelfviewPipPositionFeedback { get; private set; }
 
         public StringFeedback LocalLayoutFeedback { get; private set; }
+
+		/// <summary>
+		/// An internal pseudo-source that is routable and connected to the osd input
+		/// </summary>
+		public DummyRoutingInputsDevice OsdSource { get; private set; }
 
         private CodecCommandWithLabel CurrentSelfviewPipPosition;
 
@@ -183,6 +189,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+#warning Figure out where this func is or disappeared to
+		protected override Func<bool> IncomingCallFeedbackFunc { get { return () => false; } }
+
+
         private string CliFeedbackRegistrationExpression;
 
         private CodecSyncState SyncState;
@@ -290,17 +300,36 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.Video.Selfview.PIPPosition.ValueChangedAction = ComputeSelfviewPipStatus;
             CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
 
-			CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
-			HdmiIn1 = new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this);
-			HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource2), this);
+			CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.AudioVideo, 
+				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
+			HdmiIn1 = new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, 
+				eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this);
+			HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, 
+				eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource2), this);
 
-			HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null, this);
+			HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.AudioVideo, 
+				eRoutingPortConnectionType.Hdmi, null, this);
 
 			InputPorts.Add(CodecOsdIn);
 			InputPorts.Add(HdmiIn1);
 			InputPorts.Add(HdmiIn2);
 			OutputPorts.Add(HdmiOut);
+
+			CreateOsdSource();
         }
+
+
+		/// <summary>
+		/// Creates the fake OSD source, and connects it's AudioVideo output to the CodecOsdIn input
+		/// to enable routing 
+		/// </summary>
+		void CreateOsdSource()
+		{
+			OsdSource = new DummyRoutingInputsDevice(Key + "[osd]");
+			DeviceManager.AddDevice(OsdSource);
+			var tl = new TieLine(OsdSource.AudioVideoOutputPort, CodecOsdIn);
+			TieLineCollection.Default.Add(tl);
+		}
 
         /// <summary>
         /// Starts the HTTP feedback server and syncronizes state of codec
@@ -735,13 +764,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        public override void ExecuteSwitch(object selector)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="selector"></param>
+		public override void ExecuteSwitch(object selector)
+		{
+			(selector as Action)();
+			PresentationSourceKey = selector.ToString();
+		}
+
+		/// <summary>
+		/// This is necessary for devices that are "routers" in the middle of the path, even though it only has one output and 
+		/// may only have one input.
+		/// </summary>
+        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
-            (selector as Action)();
-            PresentationSourceKey = selector.ToString();
+			ExecuteSwitch(inputSelector);
         }
 
-        protected override Func<bool> IncomingCallFeedbackFunc { get { return () => false; } }
 
         /// <summary>
         /// Gets the first CallId or returns null

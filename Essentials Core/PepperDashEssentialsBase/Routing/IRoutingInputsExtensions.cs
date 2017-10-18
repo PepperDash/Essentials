@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core
 			var newRoute = destination.GetRouteToSource(source, signalType);
 			if (newRoute == null) return;
 			RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(newRoute);
-            //Debug.Console(1, destination, "Executing new route");
+			Debug.Console(2, destination, "Executing full route");
 			newRoute.ExecuteRoutes();
 		}
 
@@ -102,16 +102,16 @@ namespace PepperDash.Essentials.Core
 				eRoutingSignalType signalType, int cycle, RouteDescriptor routeTable)
 		{
 			cycle++;
+			Debug.Console(2, "GetRouteToSource: {0} {1}--> {2}", cycle, source.Key, destination.Key);
+
+			RoutingInputPort goodInputPort = null;
 			var destDevInputTies = TieLineCollection.Default.Where(t =>
 				t.DestinationPort.ParentDevice == destination && (t.Type == signalType || t.Type == eRoutingSignalType.AudioVideo));
 
 			// find a direct tie
 			var directTie = destDevInputTies.FirstOrDefault(
-				t =>// !(t.SourcePort.ParentDevice is IRoutingInputsOutputs) // why????
-                    //&& 
-            t.DestinationPort.ParentDevice == destination 
+				t => t.DestinationPort.ParentDevice == destination 
 					&& t.SourcePort.ParentDevice == source);
-			RoutingInputPort goodInputPort = null;
 			if (directTie != null) // Found a tie directly to the source
 			{
 				goodInputPort = directTie.DestinationPort;
@@ -264,14 +264,14 @@ namespace PepperDash.Essentials.Core
 		{
 			foreach (var route in Routes)
 			{
-				Debug.Console(2, route.ToString());
+				Debug.Console(2, "ExecuteRoutes: {0}", route.ToString());
 				if (route.SwitchingDevice is IRoutingSinkWithSwitching)
 					(route.SwitchingDevice as IRoutingSinkWithSwitching).ExecuteSwitch(route.InputPort.Selector);
 				else if (route.SwitchingDevice is IRouting)
 				{
 					(route.SwitchingDevice as IRouting).ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
 					route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
-					Debug.Console(2, "Port {0} routing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+					Debug.Console(2, "Output port {0} routing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
 				}
 			}
 		}
@@ -323,10 +323,11 @@ namespace PepperDash.Essentials.Core
 
 		public override string ToString()
 		{
-			if(OutputPort == null) // IRoutingSink
+			if(SwitchingDevice is IRouting)
+				return string.Format("{0} switches output '{1}' to input '{2}'", SwitchingDevice.Key, OutputPort.Selector, InputPort.Selector);
+			else
 				return string.Format("{0} switches to input '{1}'", SwitchingDevice.Key, InputPort.Selector);
 
-			return string.Format("{0} switches output '{1}' to input '{2}'", SwitchingDevice.Key, OutputPort.Selector, InputPort.Selector);
 		}
 	}
 }
