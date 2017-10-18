@@ -18,6 +18,8 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     public interface IHasScheduleAwareness
     {
         CodecScheduleAwareness CodecSchedule { get; }
+
+        void GetSchedule();
     }
 
     public class CodecScheduleAwareness

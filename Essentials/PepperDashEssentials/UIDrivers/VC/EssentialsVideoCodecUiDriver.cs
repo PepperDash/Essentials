@@ -680,10 +680,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// </summary>
 		void SetupSelfViewControls()
 		{
+
 			TriList.SetSigFalseAction(UIBoolJoin.VCStagingSelfViewLayoutPress, this.ShowSelfViewLayout);
 			var svc = Codec as IHasCodecSelfview;
 			if (svc != null)
 			{
+                // Default Selfview to off
+                svc.SelfviewModeOff();
+
 				TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewTogglePress, svc.SelfviewModeToggle);
 				svc.SelfviewIsOnFeedback.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCSelfViewTogglePress]);
 
