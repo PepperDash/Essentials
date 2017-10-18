@@ -1017,6 +1017,9 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void RefreshMeetingsList()
 		{
+            // See if this is helpful or if the callback response in the codec class maybe doesn't come it time?
+            CurrentRoom.ScheduleSource.GetSchedule();
+
             TriList.SetString(UIStringJoin.MeetingsOrContactMethodListIcon, "Calendar");
             TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Today's Meetings");
 

@@ -65,7 +65,9 @@ namespace PepperDash.Essentials.Room.Config
 
                 var rm = new EssentialsHuddleVtc1Room(Key, Name, disp, codec, codec, props);
                 // Add Occupancy object from config
-#warning Add in occupancy object from config if found and link up device to occupancy feedback
+
+                if (props.Occupancy != null)
+                    rm.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider);
                 rm.LogoUrl = props.Logo.GetUrl();
                 rm.SourceListKey = props.SourceListKey;
                 rm.DefaultSourceItem = props.DefaultSourceItem;

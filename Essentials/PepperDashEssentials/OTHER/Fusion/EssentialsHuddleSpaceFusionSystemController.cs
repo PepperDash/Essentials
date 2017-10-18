@@ -18,12 +18,13 @@ using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common;
+using PepperDash.Essentials.Devices.Common.Occupancy;
 
 
 
 namespace PepperDash.Essentials.Fusion
 {
-	public class EssentialsHuddleSpaceFusionSystemController : Device
+	public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupancyStatusProvider
 	{
         public event EventHandler<ScheduleChangeEventArgs> ScheduleChange;
         //public event EventHandler<MeetingChangeEventArgs> MeetingEndWarning;
@@ -33,8 +34,6 @@ namespace PepperDash.Essentials.Fusion
 		EssentialsHuddleSpaceRoom Room;
 		Dictionary<Device, BoolInputSig> SourceToFeedbackSigs = 
 			new Dictionary<Device, BoolInputSig>();
-
-        //BooleanSigData OccupancyStatusSig;
 
 		StatusMonitorCollection ErrorMessageRollUp;
 
@@ -105,11 +104,25 @@ namespace PepperDash.Essentials.Fusion
 
         Dictionary<int, FusionAsset> FusionStaticAssets;
 
+        // For use with local occ sensor devices which will relay to Fusion the current occupancy status
+        FusionRemoteOccupancySensor FusionRemoteOccSensor;
+        
+        // For use with occ sensor attached to a scheduling panel in Fusion
         FusionOccupancySensorAsset FusionOccSensor;
+
+        public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
+
+        protected Func<bool> RoomIsOccupiedFeedbackFunc
+        {
+            get
+            {
+                return () => FusionRemoteOccSensor.RoomOccupied.OutputSig.BoolValue;
+            }
+        }
 
         //ScheduleResponseEvent NextMeeting;
 
-        public EssentialsHuddleSpaceFusionSystemController(EssentialsHuddleSpaceRoom room, uint ipId)
+        public EssentialsHuddleSpaceFusionSystemControllerBase(EssentialsHuddleSpaceRoom room, uint ipId)
 			: base(room.Key + "-fusion")
 		{
 
@@ -143,8 +156,17 @@ namespace PepperDash.Essentials.Fusion
 			SetUpCommunitcationMonitors();
 			SetUpDisplay();
 			SetUpError();
-            //SetUpOccupancy();
-            
+
+            if(Room.RoomOccupancy != null)
+            {
+                if(Room.OccupancyStatusProviderIsRemote)
+                    SetUpRemoteOccupancy();
+                else
+                {
+                    SetUpLocalOccupancy();
+                }
+            }
+
             // Make it so!   
             FusionRVI.GenerateFileForAllFusionDevices();
 
@@ -1176,7 +1198,25 @@ namespace PepperDash.Essentials.Fusion
 
 		}
 
-        void SetUpOccupancy()
+        /// <summary>
+        /// Sets up a local occupancy sensor, such as one attached to a Fusion Scheduling panel.  The occupancy status of the room will be read from Fusion
+        /// </summary>
+        void SetUpLocalOccupancy()
+        {
+            RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
+
+            // Build Occupancy Asset?
+            // Link sigs?
+
+            Room.SetRoomOccupancy(this);
+
+
+        }
+
+        /// <summary>
+        /// Sets up remote occupancy that will relay the occupancy status determined by local system devices to Fusion
+        /// </summary>
+        void SetUpRemoteOccupancy()
         { 
 
             //  Need to have the room occupancy object first and somehow determine the slot number of the Occupancy asset but will not be able to use the UID from config likely.
@@ -1203,7 +1243,7 @@ namespace PepperDash.Essentials.Fusion
                 //occSensorShutdownMinutes.OutputSig.UserObject(new Action(ushort)(b => Room.OccupancyObj.SetShutdownMinutes(b));
                 
 
-                // use Room.OccObject.RoomOccupiedFeedback.LinkInputSig(occSensorAsset.InputSig);
+                Room.RoomOccupancy.RoomIsOccupiedFeedback.LinkInputSig(occSensorAsset.RoomOccupied.InputSig);
             //}
         }
 

@@ -768,6 +768,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         }
 
         /// <summary>
+        /// Required for IHasScheduleAwareness
+        /// </summary>
+        public void GetSchedule()
+        {
+            GetBookings(null);
+        }
+
+        /// <summary>
         /// Gets the bookings for today
         /// </summary>
         /// <param name="command"></param>

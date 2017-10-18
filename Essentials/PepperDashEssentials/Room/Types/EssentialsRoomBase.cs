@@ -32,6 +32,8 @@ namespace PepperDash.Essentials
 
         public IOccupancyStatusProvider RoomOccupancy { get; private set; }
 
+        public bool OccupancyStatusProviderIsRemote { get; private set; }
+
         protected abstract Func<bool> IsWarmingFeedbackFunc { get; }
         protected abstract Func<bool> IsCoolingFeedbackFunc { get; }
 
@@ -179,6 +181,10 @@ namespace PepperDash.Essentials
         /// <param name="statusProvider"></param>
         public void SetRoomOccupancy(IOccupancyStatusProvider statusProvider)
         {
+            // If status provider is fusion, set flag to remote
+            if (statusProvider is PepperDash.Essentials.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase)
+                OccupancyStatusProviderIsRemote = true;
+
             RoomOccupancy = statusProvider;
 
             RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += new EventHandler<EventArgs>(RoomIsOccupiedFeedback_OutputChange);

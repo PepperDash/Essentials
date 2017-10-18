@@ -340,6 +340,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		#region IHasScheduleAwareness Members
 
+        public void GetSchedule()
+        {
+
+        }
+
 		public CodecScheduleAwareness CodecSchedule
 		{
 			get {
