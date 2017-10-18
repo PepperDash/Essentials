@@ -33,6 +33,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             {
                 return !(Status == eCodecCallStatus.Disconnected
                     || Status == eCodecCallStatus.Disconnecting
+					|| Status == eCodecCallStatus.Idle
                     || Status == eCodecCallStatus.Unknown);
             }
         }
