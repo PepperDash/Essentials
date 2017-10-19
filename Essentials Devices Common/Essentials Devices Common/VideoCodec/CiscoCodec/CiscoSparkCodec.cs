@@ -27,13 +27,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
     {
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 
-        public IBasicCommunication Communication { get; private set; }
         public CommunicationGather PortGather { get; private set; }
         public CommunicationGather JsonGather { get; private set; }
 
         public StatusMonitorBase CommunicationMonitor { get; private set; }
-
-        public BoolFeedback StandbyIsOnFeedback { get; private set; }
 
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
@@ -114,7 +111,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        protected Func<bool> StandbyStateFeedbackFunc
+        protected override Func<bool> StandbyIsOnFeedbackFunc
         {
             get
             {
@@ -230,7 +227,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public CiscoSparkCodec(string key, string name, IBasicCommunication comm, CiscoSparkCodecPropertiesConfig props )
             : base(key, name)
         {
-            StandbyIsOnFeedback = new BoolFeedback(StandbyStateFeedbackFunc);
             RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
             PeopleCountFeedback = new IntFeedback(PeopleCountFeedbackFunc);
             SpeakerTrackIsOnFeedback = new BoolFeedback(SpeakerTrackIsOnFeedbackFunc);
@@ -1080,7 +1076,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <summary>
         /// Puts the codec in standby mode
         /// </summary>
-        public void StandbyActivate()
+        public override void StandbyActivate()
         {
             SendText("xCommand Standby Activate");
         }
@@ -1088,7 +1084,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <summary>
         /// Wakes the codec from standby
         /// </summary>
-        public void StandbyDeactivate()
+        public override void StandbyDeactivate()
         {
             SendText("xCommand Standby Deactivate");
         }

@@ -204,6 +204,7 @@ namespace PepperDash.Essentials
                         DeviceManager.AddDevice(room);
 
                         Debug.Console(1, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
+                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
                     }
                     else
                     {

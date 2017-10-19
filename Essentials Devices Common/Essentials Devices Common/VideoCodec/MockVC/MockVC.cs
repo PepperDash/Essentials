@@ -87,6 +87,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
         int _VolumeLevel;
 
+        protected override Func<bool> StandbyIsOnFeedbackFunc
+        {
+            get { return () => _StandbyIsOn; }
+        }
+        bool _StandbyIsOn;
+
+
         /// <summary>
         /// Dials, yo!
         /// </summary>
@@ -180,6 +187,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void StopSharing()
         {
+        }
+
+        public override void StandbyActivate()
+        {
+            _StandbyIsOn = true;
+        }
+
+        public override void StandbyDeactivate()
+        {
+            _StandbyIsOn = false;
         }
 
         /// <summary>
