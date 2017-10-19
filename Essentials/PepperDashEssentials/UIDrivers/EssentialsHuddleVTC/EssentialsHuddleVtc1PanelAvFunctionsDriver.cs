@@ -124,7 +124,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        ModalDialog WarmingCoolingModal;
+		//ModalDialog WarmingCoolingModal;
 
         /// <summary>
         /// Represents
@@ -1120,14 +1120,16 @@ namespace PepperDash.Essentials
         {
             if (CurrentRoom.IsWarmingUpFeedback.BoolValue)
             {
-                WarmingCoolingModal = new ModalDialog(TriList);
-                WarmingCoolingModal.PresentModalDialog(0, "Powering Up", "Power", "<p>Room is powering up</p><p>Please wait</p>",
-                    "", "", false, false, null);
+				ShowNotificationRibbon("Room is powering on. Please wait...", 0);
+				//WarmingCoolingModal = new ModalDialog(TriList);
+				//WarmingCoolingModal.PresentModalDialog(0, "Powering Up", "Power", "<p>Room is powering up</p><p>Please wait</p>",
+				//    "", "", false, false, null);
             }
             else
             {
-                if (WarmingCoolingModal != null)
-                    WarmingCoolingModal.CancelDialog();
+				ShowNotificationRibbon("Room is powered on. Welcome.", 2000);
+				//if (WarmingCoolingModal != null)
+				//    WarmingCoolingModal.CancelDialog();
             }
         }
 
@@ -1140,14 +1142,17 @@ namespace PepperDash.Essentials
         {
             if (CurrentRoom.IsCoolingDownFeedback.BoolValue)
             {
-                WarmingCoolingModal = new ModalDialog(TriList);
-                WarmingCoolingModal.PresentModalDialog(0, "Shut Down", "Power", "<p>Room is shutting down</p><p>Please wait</p>",
-                    "", "", false, false, null);
+				ShowNotificationRibbon("Room is powering off. Please wait.", 0);
+
+				//WarmingCoolingModal = new ModalDialog(TriList);
+				//WarmingCoolingModal.PresentModalDialog(0, "Power Off", "Power", "<p>Room is powering off</p><p>Please wait</p>",
+				//    "", "", false, false, null);
             }
             else
             {
-                if (WarmingCoolingModal != null)
-                    WarmingCoolingModal.CancelDialog();
+				HideNotificationRibbon();
+				//if (WarmingCoolingModal != null)
+				//    WarmingCoolingModal.CancelDialog();
             }
         }
 

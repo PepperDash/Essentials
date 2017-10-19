@@ -87,6 +87,8 @@ namespace PepperDash.Essentials.Devices.Displays
 		void Init()
 		{
             WarmupTime = 10000;
+			CooldownTime = 8000;
+
             CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 2000, 120000, 300000, StatusGet);
             DeviceManager.AddDevice(CommunicationMonitor);
 
