@@ -766,7 +766,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void RevealKeyboard()
         {
-            if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCKeypadVisible && KeypadMode == eKeypadMode.Dial)
+            if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCKeypadWithFavoritesVisible && KeypadMode == eKeypadMode.Dial)
             {
                 var kb = Parent.Keyboard;
                 kb.KeyPress += new EventHandler<PepperDash.Essentials.Core.Touchpanels.Keyboards.KeyboardControllerPressEventArgs>(Keyboard_KeyPress);

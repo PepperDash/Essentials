@@ -52,7 +52,7 @@ namespace PepperDash.Essentials
 		public static string Gear = "Gear";
 		public static string Lights = "Lights";
 		public static string Help = "Help";
-		public static string OnHook = "Phone Down";
+		public static string OnHook = "DND";
 		public static string Phone = "Phone";
 	}
 }
