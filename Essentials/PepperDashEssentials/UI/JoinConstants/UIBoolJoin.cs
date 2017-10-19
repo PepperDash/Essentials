@@ -557,11 +557,11 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 15048 Dismisses the ribbon
 		/// </summary>
-		public const uint NextMeetingRibbonClosePress = 15048;
+		public const uint NextMeetingModalClosePress = 15048;
 		/// <summary>
 		/// 15049
 		/// </summary>
-		public const uint NextMeetingRibbonVisible = 15049;
+		public const uint NextMeetingModalVisible = 15049;
         /// <summary>
         /// 15051
         /// </summary>

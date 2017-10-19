@@ -261,8 +261,8 @@ namespace PepperDash.Essentials
         /// </summary>
         protected override void EndShutdown()
         {
-            RunRouteAction("roomOff");
             VideoCodec.EndAllCalls();
+            RunRouteAction("roomOff");
         }
 
         /// <summary>

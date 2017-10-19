@@ -296,7 +296,7 @@ namespace PepperDash.Essentials
             // power-related functions
             // Note: some of these are not directly-related to the huddle space UI, but are held over
             // in case
-            TriList.SetSigFalseAction(UIBoolJoin.ShowPowerOffPress, PowerButtonPressed);
+            TriList.SetSigFalseAction(UIBoolJoin.ShowPowerOffPress, EndMeetingPress);
 
             TriList.SetSigFalseAction(UIBoolJoin.DisplayPowerTogglePress, () =>
             {
@@ -453,8 +453,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void ShowNextMeetingPopup()
 		{
-			TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonClosePress, HideNextMeetingPopup);
-			TriList.SetBool(UIBoolJoin.NextMeetingRibbonVisible, true);
+			TriList.SetSigFalseAction(UIBoolJoin.NextMeetingModalClosePress, HideNextMeetingPopup);
+			TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, true);
 		}
 		
 		/// <summary>
@@ -462,7 +462,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void HideNextMeetingPopup()
 		{
-			TriList.SetBool(UIBoolJoin.NextMeetingRibbonVisible, false);
+			TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, false);
 		}
 
 		/// <summary>
@@ -541,7 +541,7 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 3,
                 b => { if (!b) ActivityCallButtonPressed(); }));
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(3, ActivityFooterSrl, 4, 
-                b => { if (!b) PowerButtonPressed(); }));
+                b => { if (!b) EndMeetingPress(); }));
             ActivityFooterSrl.Count = 3;
             TriList.SetUshort(UIUshortJoin.PresentationStagingCaretMode, 2); // center
             TriList.SetUshort(UIUshortJoin.CallStagingCaretMode, 0); // left -2
@@ -562,20 +562,18 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        void ActivityCallButtonPressed()
+        public void ActivityCallButtonPressed()
         {
             if (VCDriver.IsVisible)
                 return;
             HideLogo();
+			HideNextMeetingPopup();
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
             if (CurrentSourcePageManager != null)
                 CurrentSourcePageManager.Hide();
-            if (!CurrentRoom.OnFeedback.BoolValue)
-            {
-                CurrentRoom.RunDefaultCallRoute();
-            }
+			PowerOnFromCall();
             CurrentMode = UiDisplayMode.Call;
             SetActivityFooterFeedbacks();
             VCDriver.Show();
@@ -588,6 +586,7 @@ namespace PepperDash.Essentials
         {
             if (VCDriver.IsVisible)
                 VCDriver.Hide();
+			HideNextMeetingPopup();
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.CallStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
@@ -608,6 +607,17 @@ namespace PepperDash.Essentials
             CurrentMode = UiDisplayMode.Presentation;
             SetActivityFooterFeedbacks();
         }
+
+		/// <summary>
+		/// Powers up the system to the codec route, if not already on.
+		/// </summary>
+		void PowerOnFromCall()
+		{
+			if (!CurrentRoom.OnFeedback.BoolValue)
+			{
+				CurrentRoom.RunDefaultCallRoute();
+			}
+		}
 
         /// <summary>
         /// Shows all sigs that are in CurrentDisplayModeSigsInUse
@@ -679,7 +689,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        public void PowerButtonPressed()
+        public void EndMeetingPress()
         {
             if (!CurrentRoom.OnFeedback.BoolValue
                 || CurrentRoom.ShutdownPromptTimer.IsRunningFeedback.BoolValue)
@@ -687,6 +697,16 @@ namespace PepperDash.Essentials
 
             CurrentRoom.StartShutdown(eShutdownType.Manual);
         }
+
+		/// <summary>
+		/// Puts away modals and things that might be up when call comes in
+		/// </summary>
+		public void PrepareForCodecIncomingCall()
+		{
+			if (PowerDownModal != null &&	PowerDownModal.ModalIsVisible)
+				PowerDownModal.CancelDialog();
+			PopupInterlock.Hide();
+		}
 
         /// <summary>
         /// 
@@ -842,7 +862,8 @@ namespace PepperDash.Essentials
                 var config = ConfigReader.ConfigObject.SourceLists;
                 if (config.ContainsKey(_CurrentRoom.SourceListKey))
                 {
-                    var srcList = config[_CurrentRoom.SourceListKey];
+                    var srcList = config[_CurrentRoom.SourceListKey].OrderBy(kv => kv.Value.Order);
+
                     // Setup sources list			
                     uint i = 1; // counter for UI list
                     foreach (var kvp in srcList)
@@ -851,13 +872,6 @@ namespace PepperDash.Essentials
                         if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
                             continue;
 
-                        //var actualSource = DeviceManager.GetDeviceForKey(srcConfig.SourceKey) as Device;
-                        //if (actualSource == null)
-                        //{
-                        //    Debug.Console(1, "Cannot assign missing source '{0}' to source UI list",
-                        //        srcConfig.SourceKey);
-                        //    continue;
-                        //}
                         var routeKey = kvp.Key;
                         var item = new SubpageReferenceListSourceItem(i++, SourceStagingSrl, srcConfig,
                             b => { if (!b) UiSelectSource(routeKey); });
@@ -1091,12 +1105,12 @@ namespace PepperDash.Essentials
             var value = _CurrentRoom.OnFeedback.BoolValue;
             TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
 
+            TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = !value;
+
             if (value) //ON
             {
                 SetupActivityFooterWhenRoomOn();
                 TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
-                //TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = true;
-                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = true;
 
             }
@@ -1108,7 +1122,6 @@ namespace PepperDash.Essentials
                 SetupActivityFooterWhenRoomOff();
                 ShowLogo();
                 SetActivityFooterFeedbacks();
-                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
             }
@@ -1338,5 +1351,13 @@ namespace PepperDash.Essentials
         void HideNotificationRibbon();
         void ComputeHeaderCallStatus(VideoCodecBase codec);
         SubpageReferenceList MeetingOrContactMethodModalSrl { get; }
+		/// <summary>
+		/// Exposes the ability to switch into call mode
+		/// </summary>
+		void ActivityCallButtonPressed();
+		/// <summary>
+		/// Allows the codec to trigger the main UI to clear up if call is coming in.
+		/// </summary>
+		void PrepareForCodecIncomingCall();
     }
 }

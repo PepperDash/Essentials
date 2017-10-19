@@ -189,10 +189,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
             CallSharingInfoTextFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CallSharedSourceNameText]);
 
             TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, Codec.StopSharing);
-
-
-
-            // Address and number
         }
 
         /// <summary>
@@ -260,7 +256,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					DialStringTextCheckEnables();
                     Parent.ShowNotificationRibbon("Connected", 2000);
                     StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
-                    VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
+					ShowKeypad();
+					//VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
                     break;
                 case eCodecCallStatus.Connecting:
                     // fire at SRL item
@@ -273,6 +270,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     if (!Codec.IsInCall)
                     {
                         KeypadMode = eKeypadMode.Dial;
+						// show keypad if we're in call UI mode
 						ShowKeypad();
                         DialStringBuilder.Remove(0, DialStringBuilder.Length);
                         DialStringFeedback.FireUpdate();
@@ -302,15 +300,21 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     break;
             }
             TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(Codec.IsInCall ? 1 : 0);
-            StagingBarsInterlock.ShowInterlocked(Codec.IsInCall ? 
-                UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
-
+			
+			uint stageJoin;
+			if (Codec.IsInCall)
+				stageJoin = UIBoolJoin.VCStagingActivePopoverVisible;
+			else
+				stageJoin = UIBoolJoin.VCStagingInactivePopoverVisible;
+			if (IsVisible)
+				StagingBarsInterlock.ShowInterlocked(stageJoin);
+			else
+				StagingBarsInterlock.SetButDontShow(stageJoin);
 
             Parent.ComputeHeaderCallStatus(Codec);
 
             // Update active call list
             UpdateHeaderActiveCallList();
-
         }
 
         /// <summary>
@@ -344,6 +348,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void ShowIncomingModal(CodecActiveCallItem call)
         {
+			Parent.PrepareForCodecIncomingCall();
             IncomingCallModal = new ModalDialog(TriList);
             string msg;
             string icon;
@@ -360,13 +365,22 @@ namespace PepperDash.Essentials.UIDrivers.VC
             IncomingCallModal.PresentModalDialog(2, "Incoming Call", icon, msg,
                 "Ignore", "Accept", false, false, b =>
                     {
-                        if (b == 1)
-                            Codec.RejectCall(call);
-                        else //2
-                            Codec.AcceptCall(call);
+						if (b == 1)
+							Codec.RejectCall(call);
+						else //2
+							AcceptIncomingCall(call);
                         IncomingCallModal = null;
                     });
         }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void AcceptIncomingCall(CodecActiveCallItem call)
+		{
+			Parent.ActivityCallButtonPressed();
+			Codec.AcceptCall(call);
+		}
 
         /// <summary>
         /// 
@@ -884,14 +898,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
         }
 
 		/// <summary>
-		/// shows the appropriate keypad depending on mode
+		/// shows the appropriate keypad depending on mode and whether visible
 		/// </summary>
         void ShowKeypad()
         {
-			if(CodecHasFavorites)
-	            VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadWithFavoritesVisible);
+			uint join = CodecHasFavorites ? UIBoolJoin.VCKeypadWithFavoritesVisible : UIBoolJoin.VCKeypadVisible;
+			if (IsVisible)
+				VCControlsInterlock.ShowInterlocked(join);
 			else
-				VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
+				VCControlsInterlock.SetButDontShow(join);
             StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
         }
 
