@@ -36,7 +36,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			}
 
             // Debug helpers
-            IncomingCallFeedback.OutputChange += (o, a) => Debug.Console(1, this, "IncomingCall={0}", _IncomingCall);
             MuteFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Mute={0}", _IsMuted);
             PrivacyModeIsOnFeedback.OutputChange += (o, a) => Debug.Console(1, this, "Privacy={0}", _PrivacyModeIsOn);
             SharingSourceFeedback.OutputChange += (o, a) => Debug.Console(1, this, "SharingSource={0}", _SharingSource);   
@@ -63,12 +62,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             SetIsReady();
        }
-
-        protected override Func<bool> IncomingCallFeedbackFunc
-        {
-            get { return () => _IncomingCall; }
-        }
-        bool _IncomingCall;
 
         protected override Func<bool> MuteFeedbackFunc
         {
@@ -102,7 +95,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             Debug.Console(1, this, "Dial: {0}", number);
             var call = new CodecActiveCallItem() { Name = number, Number = number, Id = number, Status = eCodecCallStatus.Dialing };
             ActiveCalls.Add(call);
-            OnCallStatusChange(eCodecCallStatus.Unknown, call.Status, call);
+            OnCallStatusChange(call);
             //ActiveCallCountFeedback.FireUpdate();
             // Simulate 2-second ring, then connecting, then connected
             new CTimer(o =>
@@ -299,8 +292,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type= eCodecCallType.Video, Direction = eCodecCallDirection.Incoming };
             ActiveCalls.Add(call);
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Ringing, call);
-            _IncomingCall = true;
-            IncomingCallFeedback.FireUpdate();
+
+            //OnCallStatusChange(eCodecCallStatus.Unknown, eCodecCallStatus.Ringing, call);
+                
         }
 
         /// <summary>
@@ -313,8 +307,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             var call = new CodecActiveCallItem() { Name = url, Id = url, Number = url, Type = eCodecCallType.Audio, Direction = eCodecCallDirection.Incoming };
             ActiveCalls.Add(call);
             SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Ringing, call);
-            _IncomingCall = true;
-            IncomingCallFeedback.FireUpdate();
+
+            //OnCallStatusChange(eCodecCallStatus.Unknown, eCodecCallStatus.Ringing, call);
         }
         
         /// <summary>

@@ -40,9 +40,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public bool IsInCall { get { return ActiveCalls.Any(c => c.IsActiveCall); } }
 
-        public BoolFeedback IncomingCallFeedback { get; private set; }
-
-        abstract protected Func<bool> IncomingCallFeedbackFunc { get; }
         abstract protected Func<bool> PrivacyModeIsOnFeedbackFunc { get; }
         abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
         abstract protected Func<bool> MuteFeedbackFunc { get; }
@@ -52,12 +49,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public VideoCodecInfo CodecInfo { get; protected set; }
 
+        public bool ShowSelfViewByDefault { get; protected set; }
+
+        public bool AutoShareContentWhileInCall { get; protected set; }
+
         public bool IsReady { get; protected set; }
 
         public VideoCodecBase(string key, string name)
             : base(key, name)
         {
-            IncomingCallFeedback = new BoolFeedback(IncomingCallFeedbackFunc);
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeIsOnFeedbackFunc);
             VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
             MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
@@ -87,7 +87,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 return new List<Feedback>
 				{
-                    IncomingCallFeedback,
                     PrivacyModeIsOnFeedback,
                     SharingSourceFeedback
 				};
@@ -101,9 +100,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         protected void SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus newStatus, CodecActiveCallItem call)
         {
-            var prevStatus = call.Status;
             call.Status = newStatus;
-            OnCallStatusChange(prevStatus, newStatus, call);
+
+            OnCallStatusChange(call);
+
+            if (AutoShareContentWhileInCall)
+                StartSharing();
         }
 
         /// <summary>
@@ -112,11 +114,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <param name="previousStatus"></param>
         /// <param name="newStatus"></param>
         /// <param name="item"></param>
-        protected void OnCallStatusChange(eCodecCallStatus previousStatus, eCodecCallStatus newStatus, CodecActiveCallItem item)
+        protected void OnCallStatusChange(CodecActiveCallItem item)
         {
             var handler = CallStatusChange;
             if (handler != null)
-                handler(this, new CodecCallStatusItemChangeEventArgs(previousStatus, newStatus, item));
+                handler(this, new CodecCallStatusItemChangeEventArgs(item));
         }
 
         /// <summary>
@@ -174,31 +176,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             var sb = new StringBuilder();
             foreach (var c in ActiveCalls)
-                sb.AppendFormat("{0} {1} -- {2} {3}\r", c.Id, c.Number, c.Name, c.Status);
-            Debug.Console(1, "{0}", sb.ToString());
+                sb.AppendFormat("{0} {1} -- {2} {3}\n", c.Id, c.Number, c.Name, c.Status);
+            Debug.Console(1, this, "\n{0}\n", sb.ToString());
         }
 
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public class CodecCallStatusItemChangeEventArgs : EventArgs
-    {
-        public CodecActiveCallItem CallItem { get; private set; }
-
-        public eCodecCallStatus PreviousStatus { get; private set; }
-
-        public eCodecCallStatus NewStatus { get; private set; }
-
-        public CodecCallStatusItemChangeEventArgs(eCodecCallStatus previousStatus,
-             eCodecCallStatus newStatus, CodecActiveCallItem item)
-        {
-            PreviousStatus = previousStatus;
-            NewStatus = newStatus;
-            CallItem = item;
-        }
-    }
 
     /// <summary>
     /// Used to track the status of syncronizing the phonebook values when connecting to a codec or refreshing the phonebook info

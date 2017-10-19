@@ -23,6 +23,11 @@ namespace PepperDash.Essentials
         /// 1002
         /// </summary>
         public const uint CodecDirectorySearchEntryText = 1002;
+        /// <summary>
+        /// 1004
+        /// </summary>
+        public const uint CallSharedSourceNameText = 1004;
+
 
         /// <summary>
         /// 1201 - 1230 range of joins for recents list

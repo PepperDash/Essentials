@@ -189,9 +189,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-#warning Figure out where this func is or disappeared to
-		protected override Func<bool> IncomingCallFeedbackFunc { get { return () => false; } }
-
 
         private string CliFeedbackRegistrationExpression;
 
@@ -204,6 +201,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         private bool JsonFeedbackMessageIsIncoming;
 
         public bool CommDebuggingIsOn;
+
 
         string Delimiter = "\r\n";
 
@@ -242,8 +240,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             Communication = comm;
 
-            LoginMessageReceived = new CTimer(DisconnectClientAndReconnect, 5000);
-
             if (props.CommunicationMonitorProperties != null)
             {
                 CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, props.CommunicationMonitorProperties);
@@ -252,6 +248,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, "xStatus SystemUnit Software Version\r");
             }
+
+            if (props.Sharing != null)
+                AutoShareContentWhileInCall = props.Sharing.AutoShareContentWhileInCall;
+
+            ShowSelfViewByDefault = props.ShowSelfViewByDefault;
 
             DeviceManager.AddDevice(CommunicationMonitor);
 
@@ -337,13 +338,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <returns></returns>
         public override bool CustomActivate()
         {
-            //CrestronConsole.AddNewConsoleCommand(SendText, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(SetCommDebug, "SetCodecCommDebug", "0 for Off, 1 for on", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(GetPhonebook, "GetCodecPhonebook", "Triggers a refresh of the codec phonebook", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(GetBookings, "GetCodecBookings", "Triggers a refresh of the booking data for today", ConsoleAccessLevelEnum.AccessOperator);
 
-            //CommDebuggingIsOn = true;
             Communication.Connect();
+            LoginMessageReceived = new CTimer(DisconnectClientAndReconnect, 5000);
+
             var socket = Communication as ISocketStatus;
             if (socket != null)
             {
@@ -550,22 +551,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                             {
                                 bool changeDetected = false;
 
+                                eCodecCallStatus newStatus = eCodecCallStatus.Unknown;
+
                                 // Update properties of ActiveCallItem
                                 if(call.Status != null)
                                     if (!string.IsNullOrEmpty(call.Status.Value))
                                     {
-                                        eCodecCallStatus newStatus = eCodecCallStatus.Unknown;
-
-                                        newStatus = CodecCallStatus.ConvertToStatusEnum(call.Status.Value);
-
-                                        if (newStatus != eCodecCallStatus.Unknown)
-                                        {
-                                            changeDetected = true;
-                                            SetNewCallStatusAndFireCallStatusChange(newStatus, tempActiveCall);
-                                        }
+                                        tempActiveCall.Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value);
 
                                         if (newStatus == eCodecCallStatus.Connected)
                                             GetCallHistory();
+
+                                        changeDetected = true;
                                     }
                                 if (call.CallType != null)
                                     if (!string.IsNullOrEmpty(call.CallType.Value))
@@ -590,6 +587,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                                 if (changeDetected)
                                 {
+                                    SetSelfViewMode();
+                                    OnCallStatusChange(tempActiveCall);
                                     ListCalls();
                                 }
                             }
@@ -611,7 +610,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                                 ListCalls();
 
-                                SetNewCallStatusAndFireCallStatusChange(newCallItem.Status, newCallItem);
+                                SetSelfViewMode();
+                                OnCallStatusChange(newCallItem);
                             }
 
                         }
@@ -756,6 +756,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                     ListCalls();
 
+                    SetSelfViewMode();
                     // Notify of the call disconnection
                     SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, tempActiveCall);
 
@@ -1098,6 +1099,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public void Reboot()
         {
             SendText("xCommand SystemUnit Boot Action: Restart");
+        }
+
+        /// <summary>
+        /// Sets SelfView Mode based on config
+        /// </summary>
+        void SetSelfViewMode()
+        {
+            if (!IsInCall)
+            {
+                SelfviewModeOff();
+            }
+            else
+            {
+                if (ShowSelfViewByDefault)
+                    SelfviewModeOn();
+                else
+                    SelfviewModeOff();
+            }
         }
 
         /// <summary>

@@ -13,8 +13,6 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     {
         public CommunicationMonitorConfig CommunicationMonitorProperties { get; set; }
 
-        //public ControlPropertiesConfig Control { get; set; }
-
         public List<CodecActiveCallItem> Favorites { get; set; }
 
         /// <summary>
@@ -22,5 +20,14 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// </summary>
         public string PhonebookMode { get; set; }
 
+        public bool ShowSelfViewByDefault { get; set; }
+
+        public SharingProperties Sharing { get; set; }
+
+    }
+
+    public class SharingProperties
+    {
+        public bool AutoShareContentWhileInCall { get; set; }
     }
 }

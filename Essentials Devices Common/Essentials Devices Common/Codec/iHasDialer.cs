@@ -15,6 +15,8 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     {
         // Add requirements for Dialer functionality
 
+        event EventHandler<CodecCallStatusItemChangeEventArgs> CallStatusChange;
+
         void Dial(string number);
         void EndCall(CodecActiveCallItem activeCall);
         void EndAllCalls();
@@ -22,6 +24,27 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         void RejectCall(CodecActiveCallItem item);
         void SendDtmf(string digit);
 
-        BoolFeedback IncomingCallFeedback { get; }
+        //BoolFeedback IncomingCallFeedback { get; }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class CodecCallStatusItemChangeEventArgs : EventArgs
+    {
+        public CodecActiveCallItem CallItem { get; private set; }
+
+        //public eCodecCallStatus PreviousStatus { get; private set; }
+
+        //public eCodecCallStatus NewStatus { get; private set; }
+
+        public CodecCallStatusItemChangeEventArgs(/*eCodecCallStatus previousStatus,
+             eCodecCallStatus newStatus,*/ CodecActiveCallItem item)
+        {
+            //PreviousStatus = previousStatus;
+            //NewStatus = newStatus;
+            CallItem = item;
+        }
     }
 }

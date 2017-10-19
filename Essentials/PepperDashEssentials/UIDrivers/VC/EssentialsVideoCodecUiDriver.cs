@@ -79,6 +79,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
         StringBuilder SearchStringBuilder = new StringBuilder();
         BoolFeedback SearchStringBackspaceVisibleFeedback;
 
+        BoolFeedback CallSharingInfoVisibleFeedback;
+        StringFeedback CallSharingInfoTextFeedback;
+
         ModalDialog IncomingCallModal;
 
         eKeypadMode KeypadMode;
@@ -106,6 +109,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			SetupSelfViewControls();
 
             codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
+
+            codec.SharingSourceFeedback.OutputChange += new EventHandler<EventArgs>(SharingSourceFeedback_OutputChange);
 
             // If the codec is ready, then get the values we want, otherwise wait
             if (Codec.IsReady)
@@ -153,7 +158,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 else
                 {
                     Parent.Keyboard.DisableGoButton();
-                    return "Touch to Search";
+                    return "Tap For Search Keyboard";
                 }
             });
             SearchStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecDirectorySearchEntryText]);
@@ -173,7 +178,44 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackspacePress, SearchKeypadBackspacePress);
 
+            CallSharingInfoVisibleFeedback = new BoolFeedback(() => !string.IsNullOrEmpty(Codec.SharingSourceFeedback.StringValue));
+            CallSharingInfoVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.CallSharedSourceInfoEnable]);
+
+            CallSharingInfoTextFeedback = new StringFeedback(() => GetCurrentSourceName(Codec.SharingSourceFeedback.StringValue));
+            CallSharingInfoTextFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CallSharedSourceNameText]);
+
+            TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, Codec.StopSharing);
+
+
+
             // Address and number
+        }
+
+        /// <summary>
+        /// Returns the name of the source that matches the specified key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        string GetCurrentSourceName(string key)
+        {
+            var device = DeviceManager.GetDeviceForKey(key);
+
+            return (device as SourceListItem).Name;
+        }
+
+        /// <summary>
+        /// Fires when the sharing source feedback of the codec changes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void SharingSourceFeedback_OutputChange(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty((sender as IHasSharing).SharingSourceFeedback.StringValue))
+            {
+                // Source is being shared
+
+
+            }
         }
 
         /// <summary>
@@ -197,7 +239,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void Codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
         {
             var call = e.CallItem;
-            switch (e.NewStatus)
+
+            //var newStatus = e.NewStatus;
+
+            //// Catch events with no status and reuse previous status if found
+            //if (newStatus == eCodecCallStatus.Unknown && e.PreviousStatus != eCodecCallStatus.Unknown)
+            //    newStatus = e.PreviousStatus;
+
+            switch (e.CallItem.Status)
             {
                 case eCodecCallStatus.Connected:
                     // fire at SRL item
@@ -214,7 +263,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     Parent.ShowNotificationRibbon("Connecting", 0);
                     break;
                 case eCodecCallStatus.Dialing:
-                    Parent.ShowNotificationRibbon("Dialing", 0);
+                    Parent.ShowNotificationRibbon("Connecting", 0);
                     break;
                 case eCodecCallStatus.Disconnected:
                     if (!Codec.IsInCall)
@@ -255,14 +304,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             Parent.ComputeHeaderCallStatus(Codec);
 
-            // Update list of calls
-            UpdateCallsHeaderList(call);
+            // Update active call list
+            UpdateHeaderActiveCallList();
+
         }
 
         /// <summary>
         /// Redraws the calls list on the header
         /// </summary>
-        void UpdateCallsHeaderList(CodecActiveCallItem call)
+        void UpdateHeaderActiveCallList()
         {
             var activeList = Codec.ActiveCalls.Where(c => c.IsActiveCall).ToList();
             ActiveCallsSRL.Clear();
@@ -279,6 +329,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 i++;
             }
                 ActiveCallsSRL.Count = (ushort)activeList.Count;
+
+            // If Active Calls list is visible and codec is not in a call, hide the list    
+            if (!Codec.IsInCall && Parent.PopupInterlock.CurrentJoin == UIBoolJoin.HeaderActiveCallsListVisible)
+                Parent.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
         }
         
         /// <summary>
@@ -431,7 +485,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     else if (c.OccurenceType == eCodecOccurrenceType.Placed)
                         iconName = "Misc-17_Light";
 					else
-						iconName = "Help";
+						iconName = "Delete";
 					RecentCallsList.SetItemIcon(i, iconName);
 
                     var call = c; // for lambda scope
@@ -609,16 +663,25 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                         var dc = r as DirectoryContact;
 
-                        DirectoryList.SetItemButtonAction(i, b =>
+                        if (dc.ContactMethods.Count > 1)
                         {
-                            if (!b)
+                            // If more than one contact method, show contact method modal dialog
+                            DirectoryList.SetItemButtonAction(i, b =>
                             {
-                                // Refresh the contact methods list
-                                RefreshContactMethodsModalList(dc);
-                                Parent.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsOrContacMethodsListVisible);
-                            }
-                        });
+                                if (!b)
+                                {
+                                    // Refresh the contact methods list
+                                    RefreshContactMethodsModalList(dc);
+                                    Parent.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsOrContacMethodsListVisible);
+                                }
+                            });
 
+                        }
+                        else
+                        {
+                            // If only one contact method, just dial that method
+                            DirectoryList.SetItemButtonAction(i, b => Codec.Dial(dc.ContactMethods[0].Number));
+                        }
                     }
                     else    // is DirectoryFolder
                     {
@@ -685,9 +748,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			var svc = Codec as IHasCodecSelfview;
 			if (svc != null)
 			{
-                // Default Selfview to off
-                svc.SelfviewModeOff();
-
 				TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewTogglePress, svc.SelfviewModeToggle);
 				svc.SelfviewIsOnFeedback.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCSelfViewTogglePress]);
 
@@ -964,7 +1024,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             if (DialStringBuilder.Length == 0 && !Codec.IsInCall)
             {
-                return "Dial or touch to enter address";
+                return "Dial or Tap to Show Keyboard";
             }
             if(Regex.Match(ds, @"^\d{4,7}$").Success) // 456-7890
                 return string.Format("{0}-{1}", ds.Substring(0, 3), ds.Substring(3));
@@ -985,7 +1045,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         enum eKeypadMode
         {
-            Dial, DTMF
+            Dial = 0,
+            DTMF
         }
     }
 }

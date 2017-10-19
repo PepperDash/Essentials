@@ -304,12 +304,25 @@ namespace PepperDash.Essentials
                     (CurrentRoom.DefaultDisplay as IPower).PowerToggle();
             });
 
-            TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusButtonPress, () => 
-                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible));
+            TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusButtonPress, ShowActiveCallsList );
 
 			SetupNextMeetingTimer();
 
             base.Show();
+        }
+
+        /// <summary>
+        /// Allows PopupInterlock to be toggled if the calls list is already visible, or if the codec is in a call
+        /// </summary>
+        void ShowActiveCallsList()
+        {
+            if(PopupInterlock.CurrentJoin == UIBoolJoin.HeaderActiveCallsListVisible) 
+                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
+            else
+            {
+                if((CurrentRoom.ScheduleSource as VideoCodecBase).IsInCall)
+                    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
+            }
         }
 
         /// <summary>
@@ -959,8 +972,7 @@ namespace PepperDash.Essentials
 			// Call button
 			HeaderCallButton = new HeaderListButton(HeaderButtonsList, nextIndex);
 			HeaderCallButton.SetIcon(HeaderListButton.OnHook);
-			HeaderCallButton.OutputSig.SetSigFalseAction(() =>
-				PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible));
+            HeaderCallButton.OutputSig.SetSigFalseAction(ShowActiveCallsList);
 			
 			nextIndex--;
 

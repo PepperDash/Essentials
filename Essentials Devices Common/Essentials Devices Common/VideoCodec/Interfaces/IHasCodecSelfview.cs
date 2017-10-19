@@ -15,6 +15,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     {
         BoolFeedback SelfviewIsOnFeedback { get; }
 
+        bool ShowSelfViewByDefault { get; }
+
         void SelfviewModeOn();
 
         void SelfviewModeOff();

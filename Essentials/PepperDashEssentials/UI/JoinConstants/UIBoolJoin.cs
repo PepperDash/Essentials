@@ -37,6 +37,15 @@ namespace PepperDash.Essentials
         /// 1003 - For tapping the text field to reveal the keyboard
         /// </summary>
         public const uint CodecDirectorySearchTextPress = 1003;
+        /// <summary>
+        /// 1004
+        /// </summary>
+        public const uint CallStopSharingPress = 1004;
+        /// <summary>
+        /// 1005
+        /// </summary>
+        public const uint CallSharedSourceInfoEnable = 1005;
+
 
 
         // Audio Conference
@@ -219,6 +228,7 @@ namespace PepperDash.Essentials
 		/// 1253
 		/// </summary>
 		public const uint VCSelfViewPipTogglePress = 1253;
+
 
         //******************************************************
 
