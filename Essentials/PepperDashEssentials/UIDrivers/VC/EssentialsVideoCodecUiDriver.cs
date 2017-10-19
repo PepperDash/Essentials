@@ -88,6 +88,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
 		bool CodecHasFavorites;
 
+		CTimer BackspaceTimer;
+
         /// <summary>
         /// 
         /// </summary>
@@ -176,7 +178,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             TriList.SetSigFalseAction(UIBoolJoin.VCDirectorySearchTextPress, RevealKeyboard);
 
-            TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackspacePress, SearchKeypadBackspacePress);
+			//TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackspacePress, SearchKeypadBackspacePress);
+			TriList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
+				StartSearchBackspaceRepeat, StopSearchBackspaceRepeat, SearchKeypadBackspacePress);
 
             CallSharingInfoVisibleFeedback = new BoolFeedback(() => !string.IsNullOrEmpty(Codec.SharingSourceFeedback.StringValue));
             CallSharingInfoVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.CallSharedSourceInfoEnable]);
@@ -253,7 +257,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     KeypadMode = eKeypadMode.DTMF;
                     DialStringBuilder.Remove(0, DialStringBuilder.Length);
                     DialStringFeedback.FireUpdate();
-                    TriList.SetBool(UIBoolJoin.VCKeypadVisible, false);
+					DialStringTextCheckEnables();
                     Parent.ShowNotificationRibbon("Connected", 2000);
                     StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
                     VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
@@ -432,7 +436,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 DialKeypad.Misc1.SetSigFalseAction(() => DialKeypadPress("*"));
                 DialKeypad.Misc2SigName = "#";
                 DialKeypad.Misc2.SetSigFalseAction(() => DialKeypadPress("#"));
-                TriList.SetSigFalseAction(UIBoolJoin.VCKeypadBackspacePress, DialKeypadBackspacePress);
+				//TriList.SetSigFalseAction(UIBoolJoin.VCKeypadBackspacePress, DialKeypadBackspacePress);
+				TriList.SetSigHeldAction(UIBoolJoin.VCKeypadBackspacePress, 500,
+					StartBackspaceRepeat, StopBackspaceRepeat, DialKeypadBackspacePress);
             }
             else
                 Debug.Console(0, "Trilist {0:x2}, VC dial keypad object {1} not found. Check SGD file or VTP",
@@ -769,17 +775,19 @@ namespace PepperDash.Essentials.UIDrivers.VC
             if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCKeypadWithFavoritesVisible && KeypadMode == eKeypadMode.Dial)
             {
                 var kb = Parent.Keyboard;
-                kb.KeyPress += new EventHandler<PepperDash.Essentials.Core.Touchpanels.Keyboards.KeyboardControllerPressEventArgs>(Keyboard_KeyPress);
+				kb.KeyPress -= Keyboard_DialKeyPress;
+                kb.KeyPress += Keyboard_DialKeyPress;
                 kb.HideAction = this.DetachDialKeyboard;
                 kb.GoButtonText = "Connect";
                 kb.GoButtonVisible = true;
-                DialStringKeypadCheckEnables();
+                DialStringTextCheckEnables();
                 kb.Show();
             }
             else if(VCControlsInterlock.CurrentJoin == UIBoolJoin.VCDirectoryVisible)
             {
                 var kb = Parent.Keyboard;
-                kb.KeyPress += new EventHandler<KeyboardControllerPressEventArgs>(Search_KeyPress);
+				kb.KeyPress -= Keyboard_SearchKeyPress;
+				kb.KeyPress += Keyboard_SearchKeyPress;
                 kb.HideAction = this.DetachSearchKeyboard;
                 kb.GoButtonText = "Search";
                 kb.GoButtonVisible = true;
@@ -789,33 +797,37 @@ namespace PepperDash.Essentials.UIDrivers.VC
         }
 
         /// <summary>
-        /// 
+        /// Event handler for keyboard dialing
         /// </summary>
-        void Keyboard_KeyPress(object sender, PepperDash.Essentials.Core.Touchpanels.Keyboards.KeyboardControllerPressEventArgs e)
+        void Keyboard_DialKeyPress(object sender, PepperDash.Essentials.Core.Touchpanels.Keyboards.KeyboardControllerPressEventArgs e)
         {
-            if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCKeypadVisible)
+            if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCKeypadWithFavoritesVisible && KeypadMode == eKeypadMode.Dial)
             {
-                if (KeypadMode == eKeypadMode.Dial)
-                    if (e.Text != null)
-                        DialStringBuilder.Append(e.Text);
-                    else
-                    {
-                        if (e.SpecialKey == KeyboardSpecialKey.Backspace)
-                            DialKeypadBackspacePress();
-                        else if (e.SpecialKey == KeyboardSpecialKey.Clear)
-                            DialKeypadClear();
-                        else if (e.SpecialKey == KeyboardSpecialKey.GoButton)
-                        {
-                            ConnectPress();
-                            Parent.Keyboard.Hide();
-                        }
-                    }
+				if (e.Text != null)
+					DialStringBuilder.Append(e.Text);
+				else
+				{
+					if (e.SpecialKey == KeyboardSpecialKey.Backspace)
+						DialKeypadBackspacePress();
+					else if (e.SpecialKey == KeyboardSpecialKey.Clear)
+						DialKeypadClear();
+					else if (e.SpecialKey == KeyboardSpecialKey.GoButton)
+					{
+						ConnectPress();
+						Parent.Keyboard.Hide();
+					}
+				}
                 DialStringFeedback.FireUpdate();
-                DialStringKeypadCheckEnables();
+                DialStringTextCheckEnables();
             } 
         }
 
-        void Search_KeyPress(object sender, KeyboardControllerPressEventArgs e)
+		/// <summary>
+		/// Event handler for keyboard directory searches
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+        void Keyboard_SearchKeyPress(object sender, KeyboardControllerPressEventArgs e)
         {
             if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCDirectoryVisible)
             {
@@ -838,14 +850,17 @@ namespace PepperDash.Essentials.UIDrivers.VC
             }
         }
 
+		/// <summary>
+		/// Call
+		/// </summary>
         void DetachDialKeyboard()
         {
-            Parent.Keyboard.KeyPress -= Keyboard_KeyPress;
+            Parent.Keyboard.KeyPress -= Keyboard_DialKeyPress;
         }
 
         void DetachSearchKeyboard()
         {
-            Parent.Keyboard.KeyPress -= Search_KeyPress;
+            Parent.Keyboard.KeyPress -= Keyboard_SearchKeyPress;
         }
 
         /// <summary>
@@ -917,7 +932,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             {
                 DialStringBuilder.Append(i);
                 DialStringFeedback.FireUpdate();
-                DialStringKeypadCheckEnables();
+                DialStringTextCheckEnables();
             }
             else
             {
@@ -926,16 +941,44 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 DialStringFeedback.FireUpdate();
                 // no delete key in this mode!
             }
-        }
+		}
+	
+		/// <summary>
+		/// Does what it says
+		/// </summary>
+		void StartBackspaceRepeat()
+		{
+			if (BackspaceTimer == null)
+			{
+				BackspaceTimer = new CTimer(o => DialKeypadBackspacePress(), null, 0, 175);
+			}
+		}
+
+		/// <summary>
+		/// Does what it says
+		/// </summary>
+		void StopBackspaceRepeat()
+		{
+			if (BackspaceTimer != null)
+			{
+				BackspaceTimer.Stop();
+				BackspaceTimer = null;
+			}
+		}
 
         /// <summary>
         /// 
         /// </summary>
         void DialKeypadBackspacePress()
         {
-            DialStringBuilder.Remove(DialStringBuilder.Length - 1, 1);
-            DialStringFeedback.FireUpdate();
-            DialStringKeypadCheckEnables();
+			if (KeypadMode == eKeypadMode.Dial)
+			{
+				DialStringBuilder.Remove(DialStringBuilder.Length - 1, 1);
+				DialStringFeedback.FireUpdate();
+				DialStringTextCheckEnables();
+			}
+			else
+				DialKeypadClear();
         }
 
         /// <summary>
@@ -945,13 +988,13 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             DialStringBuilder.Remove(0, DialStringBuilder.Length);
             DialStringFeedback.FireUpdate();
-            DialStringKeypadCheckEnables();
+            DialStringTextCheckEnables();
         }
 
         /// <summary>
         /// Checks the enabled states of various elements around the keypad
         /// </summary>
-        void DialStringKeypadCheckEnables()
+        void DialStringTextCheckEnables()
         {
             var textIsEntered = DialStringBuilder.Length > 0;
             TriList.SetBool(UIBoolJoin.VCKeypadBackspaceVisible, textIsEntered);
@@ -962,18 +1005,47 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 Parent.Keyboard.DisableGoButton();
         }
 
-
+		/// <summary>
+		/// 
+		/// </summary>
         void SearchPress()
         {
             (Codec as IHasDirectory).SearchDirectory(SearchStringBuilder.ToString());
         }
 
-        void SearchKeypadPress(string i)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="i"></param>
+        void SearchKeyboardPress(string i)
         {
             SearchStringBuilder.Append(i);
             SearchStringFeedback.FireUpdate();
             SearchStringKeypadCheckEnables();
         }
+
+		/// <summary>
+		/// Does what it says
+		/// </summary>
+		void StartSearchBackspaceRepeat()
+		{
+			if (BackspaceTimer == null)
+			{
+				BackspaceTimer = new CTimer(o => SearchKeypadBackspacePress(), null, 0, 175);
+			}
+		}
+
+		/// <summary>
+		/// Does what it says
+		/// </summary>
+		void StopSearchBackspaceRepeat()
+		{
+			if (BackspaceTimer != null)
+			{
+				BackspaceTimer.Stop();
+				BackspaceTimer = null;
+			}
+		}
 
         /// <summary>
         /// 

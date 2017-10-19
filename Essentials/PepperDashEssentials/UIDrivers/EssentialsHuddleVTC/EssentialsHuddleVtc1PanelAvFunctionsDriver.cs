@@ -908,6 +908,7 @@ namespace PepperDash.Essentials
 			HeaderGearButton.SetIcon(HeaderListButton.Gear);
 			HeaderGearButton.OutputSig.SetSigHeldAction(2000,
 				ShowTech,
+				null,
 				() =>
 				{
 					if (CurrentRoom.OnFeedback.BoolValue)
