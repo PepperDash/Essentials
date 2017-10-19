@@ -22,11 +22,13 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Hides CurrentJoin and shows join. Does nothing when resending CurrentJoin
+        /// Hides CurrentJoin and shows join. Will check and re-set signal if join
+		/// equals CurrentJoin
         /// </summary>
         public void ShowInterlocked(uint join)
         {
-            if (CurrentJoin == join)
+			Debug.Console(2, "Trilist {0:X2}, interlock swapping {1} for {2}", TriList.ID, CurrentJoin, join);
+            if (CurrentJoin == join && TriList.BooleanInput[join].BoolValue)
                 return;
             SetButDontShow(join);
             TriList.SetBool(CurrentJoin, true);
@@ -38,7 +40,8 @@ namespace PepperDash.Essentials
         /// <param name="join"></param>
         public void ShowInterlockedWithToggle(uint join)
         {
-            if (CurrentJoin == join)
+			Debug.Console(2, "Trilist {0:X2}, interlock swapping {1} for {2}", TriList.ID, CurrentJoin, join);
+			if (CurrentJoin == join)
                 HideAndClear();
             else
             {
@@ -53,6 +56,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public void HideAndClear()
         {
+			Debug.Console(2, "Trilist {0:X2}, interlock hiding {1}", TriList.ID, CurrentJoin);
             Hide();
             CurrentJoin = 0;
         }
@@ -63,7 +67,8 @@ namespace PepperDash.Essentials
         /// </summary>
         public void Hide()
         {
-            if (CurrentJoin > 0)
+			Debug.Console(2, "Trilist {0:X2}, interlock hiding {1}", TriList.ID, CurrentJoin);
+			if (CurrentJoin > 0)
                 TriList.BooleanInput[CurrentJoin].BoolValue = false;
         }
 
@@ -72,7 +77,8 @@ namespace PepperDash.Essentials
         /// </summary>
         public void Show()
         {
-            if (CurrentJoin > 0)
+			Debug.Console(2, "Trilist {0:X2}, interlock showing {1}", TriList.ID, CurrentJoin);
+			if (CurrentJoin > 0)
                 TriList.BooleanInput[CurrentJoin].BoolValue = true;
         }
 

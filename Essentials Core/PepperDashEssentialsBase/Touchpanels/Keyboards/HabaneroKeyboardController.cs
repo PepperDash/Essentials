@@ -36,6 +36,8 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
 
         public Action HideAction { get; set; }
 
+		CTimer BackspaceTimer;
+
         /// <summary>
         /// 
         /// </summary>
@@ -88,7 +90,8 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
             TriList.SetSigTrueAction(2947, () => Press('.'));
             TriList.SetSigTrueAction(2948, () => Press('@'));
             TriList.SetSigTrueAction(2949, () => Press(' '));
-            TriList.SetSigTrueAction(2950, Backspace);
+			TriList.SetSigHeldAction(2950, 500, StartBackspaceRepeat, StopBackspaceRepeat, Backspace);
+			//TriList.SetSigTrueAction(2950, Backspace);
             TriList.SetSigTrueAction(2951, Shift);
             TriList.SetSigTrueAction(2952, NumShift);
             TriList.SetSigTrueAction(2953, Clear);
@@ -204,6 +207,28 @@ namespace PepperDash.Essentials.Core.Touchpanels.Keyboards
         char Y(int i) { return new char[] { 'y', 'Y', '6', '^' }[i]; }
         char Z(int i) { return new char[] { 'z', 'Z', ',', ',' }[i]; }
 
+		/// <summary>
+		/// Does what it says
+		/// </summary>
+		void StartBackspaceRepeat()
+		{
+			if (BackspaceTimer == null)
+			{
+				BackspaceTimer = new CTimer(o => Backspace(), null, 0, 175);
+			}
+		}
+
+		/// <summary>
+		/// Does what it says
+		/// </summary>
+		void StopBackspaceRepeat()
+		{
+			if (BackspaceTimer != null)
+			{
+				BackspaceTimer.Stop();
+				BackspaceTimer = null;
+			}
+		}
 
         void Backspace()
         {

@@ -77,7 +77,7 @@ namespace PepperDash.Essentials.Core
 		/// Sets an action to a held sig as well as a released-without-hold action
 		/// </summary>
 		/// <returns></returns>
-		public static BoolOutputSig SetSigHeldAction(this BoolOutputSig sig, uint heldMs, Action heldAction, Action releaseAction)
+		public static BoolOutputSig SetSigHeldAction(this BoolOutputSig sig, uint heldMs, Action heldAction, Action holdReleasedAction, Action releaseAction)
 		{
 			CTimer heldTimer = null;
 			bool wasHeld = false;
@@ -98,11 +98,17 @@ namespace PepperDash.Essentials.Core
 						}
 					}, heldMs);
 				}
-				else if (!wasHeld) // released
+				else if (!press && !wasHeld) // released, no hold
 				{
 					heldTimer.Stop();
 					if (releaseAction != null)
 						releaseAction();
+				}
+				else // !press && wasHeld // released after held
+				{
+					heldTimer.Stop();
+					if (holdReleasedAction != null)
+						holdReleasedAction();
 				}
 			});
 
@@ -114,8 +120,18 @@ namespace PepperDash.Essentials.Core
         /// <returns>The sig</returns>
         public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction, Action releaseAction)
         {
-			return tl.BooleanOutput[sigNum].SetSigHeldAction(heldMs, heldAction, releaseAction);
+			return tl.BooleanOutput[sigNum].SetSigHeldAction(heldMs, heldAction, null, releaseAction);
         }
+
+		/// <summary>
+		/// Sets an action to a held sig, an action for the release of hold, as well as a released-without-hold action
+		/// </summary>
+		/// <returns></returns>
+		public static BoolOutputSig SetSigHeldAction(this BasicTriList tl, uint sigNum, uint heldMs, Action heldAction,
+			Action holdReleasedAction, Action releaseAction)
+		{
+			return tl.BooleanOutput[sigNum].SetSigHeldAction(heldMs, heldAction, holdReleasedAction, releaseAction);
+		}
 
 		/// <summary>
 		/// 
