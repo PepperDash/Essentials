@@ -271,11 +271,13 @@ namespace PepperDash.Essentials
             if (CurrentRoom.OnFeedback.BoolValue)
             {
                 TriList.SetBool(UIBoolJoin.TapToBeginVisible, false);
+				SetupActivityFooterWhenRoomOn();
             }
             else
             {
                 TriList.SetBool(UIBoolJoin.StartPageVisible, true);
                 TriList.SetBool(UIBoolJoin.TapToBeginVisible, true);
+				SetupActivityFooterWhenRoomOff();
             }
             ShowCurrentDisplayModeSigsInUse();
 
@@ -288,10 +290,10 @@ namespace PepperDash.Essentials
             TriList.SetSigFalseAction(UIBoolJoin.VolumeDefaultPress, () => CurrentRoom.SetDefaultLevels());
             TriList.SetString(UIStringJoin.AdvancedVolumeSlider1Text, "Room");
             
-            if (TriList is CrestronApp)
-                TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = false;
-            else
-                TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = true;
+			//if (TriList is CrestronApp)
+			//    TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = false;
+			//else
+			//    TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = true;
 
             // power-related functions
             // Note: some of these are not directly-related to the huddle space UI, but are held over
@@ -1070,6 +1072,7 @@ namespace PepperDash.Essentials
 				MeetingOrContactMethodModalSrl.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() =>
 				{
 					PopupInterlock.Hide();
+					ActivityCallButtonPressed();
 					var d = CurrentRoom.ScheduleSource as VideoCodecBase;
 					if (d != null)
 						RoomOnAndDialMeeting(mm);

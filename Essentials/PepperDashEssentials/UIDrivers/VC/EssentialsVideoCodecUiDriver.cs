@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <summary>
         /// To drive UI elements outside of this driver that may be dependent on this.
         /// </summary>
-        BoolFeedback InCall;
+		//BoolFeedback InCall;
         BoolFeedback LocalPrivacyIsMuted;
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             else
                 codec.IsReadyChange += (o, a) => Codec_IsReady();
 
-            InCall = new BoolFeedback(() => false);
+			//InCall = new BoolFeedback(() => false);
             LocalPrivacyIsMuted = new BoolFeedback(() => false);
 
             VCControlsInterlock = new JoinedSigInterlock(triList);
@@ -378,6 +378,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// </summary>
 		void AcceptIncomingCall(CodecActiveCallItem call)
 		{
+			Parent.PrepareForCodecIncomingCall();
 			Parent.ActivityCallButtonPressed();
 			Codec.AcceptCall(call);
 		}
@@ -902,7 +903,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// </summary>
         void ShowKeypad()
         {
-			uint join = CodecHasFavorites ? UIBoolJoin.VCKeypadWithFavoritesVisible : UIBoolJoin.VCKeypadVisible;
+			uint join = Codec.IsInCall ? UIBoolJoin.VCKeypadVisible : UIBoolJoin.VCKeypadWithFavoritesVisible;
 			if (IsVisible)
 				VCControlsInterlock.ShowInterlocked(join);
 			else
