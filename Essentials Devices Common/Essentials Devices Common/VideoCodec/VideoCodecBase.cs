@@ -21,6 +21,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public event EventHandler<EventArgs> IsReadyChange;
 
+        public IBasicCommunication Communication { get; protected set; }
+
         #region IUsageTracking Members
 
         /// <summary>
@@ -40,10 +42,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public bool IsInCall { get { return ActiveCalls.Any(c => c.IsActiveCall); } }
 
+        public BoolFeedback StandbyIsOnFeedback { get; private set; }
+
         abstract protected Func<bool> PrivacyModeIsOnFeedbackFunc { get; }
         abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
         abstract protected Func<bool> MuteFeedbackFunc { get; }
         abstract protected Func<string> SharingSourceFeedbackFunc { get; }
+        abstract protected Func<bool> StandbyIsOnFeedbackFunc { get; }
 
         public List<CodecActiveCallItem> ActiveCalls { get; set; }
 
@@ -58,6 +63,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public VideoCodecBase(string key, string name)
             : base(key, name)
         {
+            StandbyIsOnFeedback = new BoolFeedback(StandbyIsOnFeedbackFunc);
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeIsOnFeedbackFunc);
             VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
             MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
@@ -179,6 +185,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 sb.AppendFormat("{0} {1} -- {2} {3}\n", c.Id, c.Number, c.Name, c.Status);
             Debug.Console(1, this, "\n{0}\n", sb.ToString());
         }
+
+        public abstract void StandbyActivate();
+
+        public abstract void StandbyDeactivate();
 
     }
 
