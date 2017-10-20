@@ -160,7 +160,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 else
                 {
                     Parent.Keyboard.DisableGoButton();
-                    return "Tap For Search Keyboard";
+                    return "Tap for keyboard";
                 }
             });
             SearchStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecDirectorySearchEntryText]);
@@ -1112,7 +1112,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             if (DialStringBuilder.Length == 0 && !Codec.IsInCall)
             {
-                return "Dial or Tap to Show Keyboard";
+                return "Tap for keyboard";
             }
             if(Regex.Match(ds, @"^\d{4,7}$").Success) // 456-7890
                 return string.Format("{0}-{1}", ds.Substring(0, 3), ds.Substring(3));

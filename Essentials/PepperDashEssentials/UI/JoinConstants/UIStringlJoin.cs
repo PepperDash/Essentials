@@ -228,6 +228,27 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public const uint NextMeetingFollowingMeetingText = 3972;
 
+		/// <summary>
+		/// 3991
+		/// </summary>
+		public const uint HeaderButtonIcon1 = 3991;
+		/// <summary>
+		/// 3992
+		/// </summary>
+		public const uint HeaderButtonIcon2 = 3992;
+		/// <summary>
+		/// 3993
+		/// </summary>
+		public const uint HeaderButtonIcon3 = 3993;
+		/// <summary>
+		/// 3994
+		/// </summary>
+		public const uint HeaderButtonIcon4 = 3994;
+		/// <summary>
+		/// 3995
+		/// </summary>
+		public const uint HeaderButtonIcon5 = 3995;
+
         /// <summary>
         /// 3996
         /// </summary>

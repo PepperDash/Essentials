@@ -366,7 +366,26 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint VolumeDefaultPress = 3891;
 
-
+		/// <summary>
+		/// 3991
+		/// </summary>
+		public const uint HeaderIcon1Press = 3991;
+		/// <summary>
+		/// 3992
+		/// </summary>
+		public const uint HeaderIcon2Press = 3992;
+		/// <summary>
+		/// 3993
+		/// </summary>
+		public const uint HeaderIcon3Press = 3993;
+		/// <summary>
+		/// 3994
+		/// </summary>
+		public const uint HeaderIcon4Press = 3994;
+		/// <summary>
+		/// 3995
+		/// </summary>
+		public const uint HeaderIcon5Press = 3995;
         /// <summary>
         /// 3999
         /// </summary>
@@ -451,10 +470,6 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint ActivityFooterVisible = 15022;
         /// <summary>
-        /// 15023
-        /// </summary>
-        public const uint HeaderLightsButtonVisible = 15023;
-        /// <summary>
         /// 15024
         /// </summary>
         public const uint HeaderCallStatusLeftPositionVisible = 15024;
@@ -463,17 +478,9 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint HeaderCallStatusRightPositionVisible = 15025;
         /// <summary>
-        /// 15026
-        /// </summary>
-        public const uint HeaderLightsButtonPress = 15026;
-        /// <summary>[-
-        /// 15027
-        /// </summary>
-        public const uint HeaderCallStatusButtonPress = 15027;
-        /// <summary>
         /// 15028 The gear button in header
         /// </summary>
-        public const uint HeaderGearButtonPress = 15028;
+        public const uint FIXFIX_HeaderGearButtonPress_FIXFIX = 15028;
         /// <summary>
         /// 15029 the room button in header
         /// </summary>
