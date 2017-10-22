@@ -214,7 +214,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <param name="e"></param>
         void SharingSourceFeedback_OutputChange(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty((sender as IHasSharing).SharingSourceFeedback.StringValue))
+            if (!string.IsNullOrEmpty((sender as IHasContentSharing).SharingSourceFeedback.StringValue))
             {
                 // Source is being shared
 

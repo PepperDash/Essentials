@@ -30,8 +30,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void InitializeSystem()
 		{
-            //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Reloads configuration file",
-            //    ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Reloads configuration file",
+                ConsoleAccessLevelEnum.AccessOperator);
             //CrestronConsole.AddNewConsoleCommand(s => TearDown(), "ungo", "Unloads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(s =>
@@ -41,7 +41,7 @@ namespace PepperDash.Essentials
             },
             "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
 
-            GoWithLoad();
+            //GoWithLoad();
 		}
 
 		/// <summary>

@@ -366,8 +366,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 set
                 {
-                    // If the incoming value is "Active" it sets the BoolValue true, otherwise sets it false
-                    BoolValue = value == "On";
+                    // If the incoming value is "Sending" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "Sending";
                     OnValueChanged();
                 }
             }

@@ -104,7 +104,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Devices\CodecInterfaces.cs" />
-    <Compile Include="Devices\IHasSharing.cs" />
     <Compile Include="Global\JobTimer.cs" />
     <Compile Include="Ramps and Increments\ActionIncrementer.cs" />
     <Compile Include="Comm and IR\CommFactory.cs" />

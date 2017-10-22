@@ -81,6 +81,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
         string _SharingSource;
 
+        protected override Func<bool> SharingContentIsOnFeedbackFunc
+        {
+            get { return () => _SharingIsOn; }
+        }
+        bool _SharingIsOn;
+
         protected override Func<int> VolumeLevelFeedbackFunc
         {
             get { return () => _VolumeLevel; }
@@ -180,6 +186,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void StartSharing()
         {
+            _SharingIsOn = true;
         }
 
         /// <summary>
@@ -187,11 +194,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         public override void StopSharing()
         {
+            _SharingIsOn = false;
+            SharingContentIsOnFeedback.FireUpdate();
         }
 
         public override void StandbyActivate()
         {
             _StandbyIsOn = true;
+            SharingContentIsOnFeedback.FireUpdate();
         }
 
         public override void StandbyDeactivate()

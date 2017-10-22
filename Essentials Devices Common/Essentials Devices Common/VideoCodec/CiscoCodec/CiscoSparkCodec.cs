@@ -130,6 +130,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+        protected override Func<bool> SharingContentIsOnFeedbackFunc
+        {
+            get 
+            { 
+                return () => CodecStatus.Status.Conference.Presentation.Mode.BoolValue; 
+            }
+        }
+
         protected override Func<bool> MuteFeedbackFunc
         {
             get 

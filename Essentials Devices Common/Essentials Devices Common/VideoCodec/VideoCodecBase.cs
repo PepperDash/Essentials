@@ -12,7 +12,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
     public abstract class VideoCodecBase : Device, IRoutingInputsOutputs,
-		IUsageTracking, IHasDialer, IHasSharing, ICodecAudio, iCodecInfo
+		IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iCodecInfo
     {
         /// <summary>
         /// Fires when the status of any active, dialing, or incoming call changes or is new
@@ -47,7 +47,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         abstract protected Func<bool> PrivacyModeIsOnFeedbackFunc { get; }
         abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
         abstract protected Func<bool> MuteFeedbackFunc { get; }
-        abstract protected Func<string> SharingSourceFeedbackFunc { get; }
         abstract protected Func<bool> StandbyIsOnFeedbackFunc { get; }
 
         public List<CodecActiveCallItem> ActiveCalls { get; set; }
@@ -56,7 +55,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public bool ShowSelfViewByDefault { get; protected set; }
 
-        public bool AutoShareContentWhileInCall { get; protected set; }
 
         public bool IsReady { get; protected set; }
 
@@ -68,6 +66,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
             MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
             SharingSourceFeedback = new StringFeedback(SharingSourceFeedbackFunc);
+            SharingContentIsOnFeedback = new BoolFeedback(SharingContentIsOnFeedbackFunc);
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
@@ -170,7 +169,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public abstract void StartSharing();
         public abstract void StopSharing();
 
+        public bool AutoShareContentWhileInCall { get; protected set; }
+
         public StringFeedback SharingSourceFeedback { get; private set; }
+        public BoolFeedback SharingContentIsOnFeedback { get; private set; }
+
+        abstract protected Func<string> SharingSourceFeedbackFunc { get; }
+        abstract protected Func<bool> SharingContentIsOnFeedbackFunc { get; }
+
 
         #endregion
 

@@ -319,7 +319,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
      
                     contact.Name = c.Name.Value;
                     contact.ContactId = c.ContactId.Value;
-                    contact.Title = c.Title.Value;
+                    if (c.Title != null)
+                        contact.Title = c.Title.Value;
 
                     if(c.FolderId != null)
                     {
