@@ -240,12 +240,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             var call = e.CallItem;
 
-            //var newStatus = e.NewStatus;
-
-            //// Catch events with no status and reuse previous status if found
-            //if (newStatus == eCodecCallStatus.Unknown && e.PreviousStatus != eCodecCallStatus.Unknown)
-            //    newStatus = e.PreviousStatus;
-
             switch (e.CallItem.Status)
             {
                 case eCodecCallStatus.Connected:
@@ -267,6 +261,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     Parent.ShowNotificationRibbon("Connecting", 0);
                     break;
                 case eCodecCallStatus.Disconnected:
+					if (IncomingCallModal != null)
+						IncomingCallModal.HideDialog();
                     if (!Codec.IsInCall)
                     {
                         KeypadMode = eKeypadMode.Dial;
