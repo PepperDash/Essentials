@@ -232,7 +232,7 @@ namespace PepperDash.Essentials
             TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, () =>
                 ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
 
-            TriList.SetSigFalseAction(UIBoolJoin.HeaderGearButtonPress, () =>
+            TriList.SetSigFalseAction(UIBoolJoin.FIXFIX_HeaderGearButtonPress_FIXFIX, () =>
                 ShowInterlockedModal(UIBoolJoin.VolumesPageVisible));
 
 			// power-related functions

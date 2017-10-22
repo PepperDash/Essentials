@@ -63,8 +63,10 @@ namespace PepperDash.Essentials
         BoolInputSig ShareButtonSig;
         BoolInputSig EndMeetingButtonSig;
 
-        HeaderListButton HeaderCallButton;
-        HeaderListButton HeaderGearButton;
+		//HeaderListButton HeaderCallButton;
+		//HeaderListButton HeaderGearButton;
+
+		StringInputSig HeaderCallButtonIconSig;
 
 
         /// <summary>
@@ -99,7 +101,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// The list of buttons on the header. Managed with visibility only
 		/// </summary>
-		SmartObjectHeaderButtonList HeaderButtonsList;
+		//SmartObjectHeaderButtonList HeaderButtonsList;
 
         /// <summary>
         /// The AV page mangagers that have been used, to keep them alive for later
@@ -178,6 +180,16 @@ namespace PepperDash.Essentials
 
 		CTimer NextMeetingTimer;
 
+		/// <summary>
+		/// Tracks whether the user dismissed the meeting popup, while the system was on.  Always false when 
+		/// system is off.
+		/// </summary>
+		bool NextMeetingWarningWasDismissed;
+		/// <summary>
+		/// Tracks the last meeting that was cancelled
+		/// </summary>
+		Meeting LastMeetingDismissed;
+
 
 
         /// <summary>
@@ -204,7 +216,7 @@ namespace PepperDash.Essentials
 
 
 			// buttons are added in SetCurrentRoom
-			HeaderButtonsList = new SmartObjectHeaderButtonList(TriList.SmartObjects[UISmartObjectJoin.HeaderButtonList]);
+			//HeaderButtonsList = new SmartObjectHeaderButtonList(TriList.SmartObjects[UISmartObjectJoin.HeaderButtonList]);
 
             SetupActivityFooterWhenRoomOff();
 
@@ -271,11 +283,13 @@ namespace PepperDash.Essentials
             if (CurrentRoom.OnFeedback.BoolValue)
             {
                 TriList.SetBool(UIBoolJoin.TapToBeginVisible, false);
+				SetupActivityFooterWhenRoomOn();
             }
             else
             {
                 TriList.SetBool(UIBoolJoin.StartPageVisible, true);
                 TriList.SetBool(UIBoolJoin.TapToBeginVisible, true);
+				SetupActivityFooterWhenRoomOff();
             }
             ShowCurrentDisplayModeSigsInUse();
 
@@ -288,15 +302,15 @@ namespace PepperDash.Essentials
             TriList.SetSigFalseAction(UIBoolJoin.VolumeDefaultPress, () => CurrentRoom.SetDefaultLevels());
             TriList.SetString(UIStringJoin.AdvancedVolumeSlider1Text, "Room");
             
-            if (TriList is CrestronApp)
-                TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = false;
-            else
-                TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = true;
+			//if (TriList is CrestronApp)
+			//    TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = false;
+			//else
+			//    TriList.BooleanInput[UIBoolJoin.GearButtonVisible].BoolValue = true;
 
             // power-related functions
             // Note: some of these are not directly-related to the huddle space UI, but are held over
             // in case
-            TriList.SetSigFalseAction(UIBoolJoin.ShowPowerOffPress, PowerButtonPressed);
+            TriList.SetSigFalseAction(UIBoolJoin.ShowPowerOffPress, EndMeetingPress);
 
             TriList.SetSigFalseAction(UIBoolJoin.DisplayPowerTogglePress, () =>
             {
@@ -304,7 +318,7 @@ namespace PepperDash.Essentials
                     (CurrentRoom.DefaultDisplay as IPower).PowerToggle();
             });
 
-            TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusButtonPress, ShowActiveCallsList );
+			//TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusButtonPress, ShowActiveCallsList );
 
 			SetupNextMeetingTimer();
 
@@ -316,6 +330,7 @@ namespace PepperDash.Essentials
         /// </summary>
         void ShowActiveCallsList()
         {
+			TriList.SetBool(UIBoolJoin.CallEndAllConfirmVisible, true);
             if(PopupInterlock.CurrentJoin == UIBoolJoin.HeaderActiveCallsListVisible) 
                 PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
             else
@@ -407,54 +422,78 @@ namespace PepperDash.Essentials
 			var ss = CurrentRoom.ScheduleSource;
 			if (ss != null)
 			{
-				NextMeetingTimer = new CTimer(o =>
-				{
-					if (CurrentRoom.OnFeedback.BoolValue)
-						return;
-					// Every 60 seconds, check meetings list for the closest, joinable meeting
-					var meetings = ss.CodecSchedule.Meetings;
-                    if (meetings.Count > 0)
-                    {
-                        var meeting = meetings.Aggregate((m1, m2) => m1.StartTime < m2.StartTime ? m1 : m2);
-                        if (meeting != null && meeting.Joinable)
-                        {
-                            TriList.SetString(UIStringJoin.NextMeetingRibbonStartText, meeting.StartTime.ToShortTimeString());
-                            TriList.SetString(UIStringJoin.NextMeetingRibbonEndText, meeting.EndTime.ToShortTimeString());
-                            TriList.SetString(UIStringJoin.NextMeetingRibbonTitleText, meeting.Title);
-                            TriList.SetString(UIStringJoin.NextMettingRibbonNameText, meeting.Organizer);
-                            TriList.SetString(UIStringJoin.NextMeetingRibbonButtonLabel, "Join");
-                            TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonJoinPress, () =>
-                                {
-                                    HideNextMeetingPopup();
-                                    RoomOnAndDialMeeting(meeting);
-                                });
-                            TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
-                            TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
-                                {
-                                    HideNextMeetingPopup();
-                                    CalendarPress();
-                                });
-                            if (meetings.Count > 1)
-                            {
-                                TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
-                                    meetings[1].StartTime.ToShortTimeString());
-                            }
-
-                            ShowNextMeetingPopup();
-
-                        }
-                    }
-				}, null, 0, 60000);
+				NextMeetingTimer = new CTimer(o => ShowNextMeetingCallback(), null, 0, 60000);
 			}
 		}
 
 		/// <summary>
 		/// 
 		/// </summary>
-		void ShowNextMeetingPopup()
+		void ShowNextMeetingCallback()
 		{
-			TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonClosePress, HideNextMeetingPopup);
-			TriList.SetBool(UIBoolJoin.NextMeetingRibbonVisible, true);
+			// Every 60 seconds, check meetings list for the closest, joinable meeting
+			var ss = CurrentRoom.ScheduleSource;
+			var meetings = ss.CodecSchedule.Meetings;
+			Debug.Console(0, "***** Checking meetings *****");
+			foreach (var m in meetings)
+				Debug.Console(0, "****** {0} {1} ******", m.StartTime.ToShortTimeString(), m.Joinable);
+
+			if (meetings.Count > 0)
+			{
+				var meeting = meetings.FirstOrDefault(m => m.Joinable);
+
+				// If the room is off pester the user
+				// If the room is on, and the meeting is joinable
+				// and the LastMeetingDismissed != this meeting
+
+				if (CurrentRoom.OnFeedback.BoolValue
+					&& LastMeetingDismissed == meeting)
+					//|| (LastMeetingDismissed != null && !LastMeetingDismissed.Joinable)))
+				{
+					Debug.Console(0, "****** Ignoring previously cancelled meeting warning ******");
+					return;
+				}
+
+				LastMeetingDismissed = null;
+				if (meeting != null)
+				{
+					Debug.Console(0, "***** First joinable meeting: {0} {1}", meeting.StartTime.ToShortTimeString(), meeting.Joinable);
+					TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Upcoming meeting");
+					TriList.SetString(UIStringJoin.NextMeetingStartTimeText, meeting.StartTime.ToShortTimeString());
+					TriList.SetString(UIStringJoin.NextMeetingEndTimeText, meeting.EndTime.ToShortTimeString());
+					TriList.SetString(UIStringJoin.NextMeetingTitleText, meeting.Title);
+					TriList.SetString(UIStringJoin.NextMeetingNameText, meeting.Organizer);
+					TriList.SetString(UIStringJoin.NextMeetingButtonLabel, "Join");
+					TriList.SetSigFalseAction(UIBoolJoin.NextMeetingJoinPress, () =>
+					{
+						HideNextMeetingPopup();
+						RoomOnAndDialMeeting(meeting);
+					});
+					TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
+					TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
+					{
+						HideNextMeetingPopup();
+						CalendarPress();
+					});
+					var indexOfNext = meetings.IndexOf(meeting) + 1;
+
+					// indexOf = 3, 4 meetings :  
+					if (indexOfNext < meetings.Count)
+					{
+						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
+							meetings[indexOfNext].StartTime.ToShortTimeString());
+					}
+					TriList.SetSigFalseAction(UIBoolJoin.NextMeetingModalClosePress, () =>
+						{
+							// Mark the meeting to not re-harass the user
+							if(CurrentRoom.OnFeedback.BoolValue)
+								LastMeetingDismissed = meeting;
+							HideNextMeetingPopup();
+						});
+
+					TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, true);
+				}
+			}
 		}
 		
 		/// <summary>
@@ -462,7 +501,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void HideNextMeetingPopup()
 		{
-			TriList.SetBool(UIBoolJoin.NextMeetingRibbonVisible, false);
+			TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, false);
+			
 		}
 
 		/// <summary>
@@ -541,7 +581,7 @@ namespace PepperDash.Essentials
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl, 3,
                 b => { if (!b) ActivityCallButtonPressed(); }));
             ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(3, ActivityFooterSrl, 4, 
-                b => { if (!b) PowerButtonPressed(); }));
+                b => { if (!b) EndMeetingPress(); }));
             ActivityFooterSrl.Count = 3;
             TriList.SetUshort(UIUshortJoin.PresentationStagingCaretMode, 2); // center
             TriList.SetUshort(UIUshortJoin.CallStagingCaretMode, 0); // left -2
@@ -562,20 +602,18 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        void ActivityCallButtonPressed()
+        public void ActivityCallButtonPressed()
         {
             if (VCDriver.IsVisible)
                 return;
             HideLogo();
+			HideNextMeetingPopup();
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
             if (CurrentSourcePageManager != null)
                 CurrentSourcePageManager.Hide();
-            if (!CurrentRoom.OnFeedback.BoolValue)
-            {
-                CurrentRoom.RunDefaultCallRoute();
-            }
+			PowerOnFromCall();
             CurrentMode = UiDisplayMode.Call;
             SetActivityFooterFeedbacks();
             VCDriver.Show();
@@ -588,6 +626,7 @@ namespace PepperDash.Essentials
         {
             if (VCDriver.IsVisible)
                 VCDriver.Hide();
+			HideNextMeetingPopup();
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.CallStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
@@ -608,6 +647,17 @@ namespace PepperDash.Essentials
             CurrentMode = UiDisplayMode.Presentation;
             SetActivityFooterFeedbacks();
         }
+
+		/// <summary>
+		/// Powers up the system to the codec route, if not already on.
+		/// </summary>
+		void PowerOnFromCall()
+		{
+			if (!CurrentRoom.OnFeedback.BoolValue)
+			{
+				CurrentRoom.RunDefaultCallRoute();
+			}
+		}
 
         /// <summary>
         /// Shows all sigs that are in CurrentDisplayModeSigsInUse
@@ -679,7 +729,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        public void PowerButtonPressed()
+        public void EndMeetingPress()
         {
             if (!CurrentRoom.OnFeedback.BoolValue
                 || CurrentRoom.ShutdownPromptTimer.IsRunningFeedback.BoolValue)
@@ -687,6 +737,16 @@ namespace PepperDash.Essentials
 
             CurrentRoom.StartShutdown(eShutdownType.Manual);
         }
+
+		/// <summary>
+		/// Puts away modals and things that might be up when call comes in
+		/// </summary>
+		public void PrepareForCodecIncomingCall()
+		{
+			if (PowerDownModal != null &&	PowerDownModal.ModalIsVisible)
+				PowerDownModal.CancelDialog();
+			PopupInterlock.Hide();
+		}
 
         /// <summary>
         /// 
@@ -842,7 +902,8 @@ namespace PepperDash.Essentials
                 var config = ConfigReader.ConfigObject.SourceLists;
                 if (config.ContainsKey(_CurrentRoom.SourceListKey))
                 {
-                    var srcList = config[_CurrentRoom.SourceListKey];
+                    var srcList = config[_CurrentRoom.SourceListKey].OrderBy(kv => kv.Value.Order);
+
                     // Setup sources list			
                     uint i = 1; // counter for UI list
                     foreach (var kvp in srcList)
@@ -851,13 +912,6 @@ namespace PepperDash.Essentials
                         if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
                             continue;
 
-                        //var actualSource = DeviceManager.GetDeviceForKey(srcConfig.SourceKey) as Device;
-                        //if (actualSource == null)
-                        //{
-                        //    Debug.Console(1, "Cannot assign missing source '{0}' to source UI list",
-                        //        srcConfig.SourceKey);
-                        //    continue;
-                        //}
                         var routeKey = kvp.Key;
                         var item = new SubpageReferenceListSourceItem(i++, SourceStagingSrl, srcConfig,
                             b => { if (!b) UiSelectSource(routeKey); });
@@ -903,10 +957,10 @@ namespace PepperDash.Essentials
 			TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
 
 			var roomConf = CurrentRoom.Config;
-			//
-			HeaderGearButton = new HeaderListButton(HeaderButtonsList, 5);
-			HeaderGearButton.SetIcon(HeaderListButton.Gear);
-			HeaderGearButton.OutputSig.SetSigHeldAction(2000,
+
+			// Gear
+			TriList.SetString(UIStringJoin.HeaderButtonIcon5, "Gear");
+			TriList.SetSigHeldAction(UIBoolJoin.HeaderIcon5Press, 2000,
 				ShowTech,
 				null,
 				() =>
@@ -916,9 +970,22 @@ namespace PepperDash.Essentials
 					else
 						PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPagePowerOffVisible);
 				});
-
 			TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
 				PopupInterlock.HideAndClear());
+
+			//HeaderGearButton = new HeaderListButton(HeaderButtonsList, 5);
+			//HeaderGearButton.SetIcon(HeaderListButton.Gear);
+			//HeaderGearButton.OutputSig.SetSigHeldAction(2000,
+			//    ShowTech,
+			//    null,
+			//    () =>
+			//    {
+			//        if (CurrentRoom.OnFeedback.BoolValue)
+			//            PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible);
+			//        else
+			//            PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPagePowerOffVisible);
+			//    });
+
 
 			// Help button and popup
 			if (CurrentRoom.Config.Help != null)
@@ -938,9 +1005,8 @@ namespace PepperDash.Essentials
 				TriList.SetString(UIStringJoin.HelpPageCallButtonText, null);
 				TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
 			}
-			var helpButton = new HeaderListButton(HeaderButtonsList, 4);
-			helpButton.SetIcon(HeaderListButton.Help);
-			helpButton.OutputSig.SetSigFalseAction(() =>
+			TriList.SetString(UIStringJoin.HeaderButtonIcon4, "Help");
+			TriList.SetSigFalseAction(UIBoolJoin.HeaderIcon4Press, () =>
 			{
 				string message = null;
 				var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
@@ -952,7 +1018,21 @@ namespace PepperDash.Essentials
 				//TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
 				PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
 			});
-			uint nextIndex = 3;
+			//var helpButton = new HeaderListButton(HeaderButtonsList, 4);
+			//helpButton.SetIcon(HeaderListButton.Help);
+			//helpButton.OutputSig.SetSigFalseAction(() =>
+			//{
+			//    string message = null;
+			//    var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
+			//        as EssentialsHuddleSpaceRoom;
+			//    if (room != null)
+			//        message = room.Config.HelpMessage;
+			//    else
+			//        message = "Sorry, no help message available. No room connected.";
+			//    //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
+			//    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
+			//});
+			uint nextJoin = 3953;
 
 			// Lights button
 			//if (WHATEVER MAKES LIGHTS WORK)
@@ -964,36 +1044,47 @@ namespace PepperDash.Essentials
 			// Calendar button
 			if (_CurrentRoom.ScheduleSource != null) // ******************* Do we need a config option here as well?
 			{
-				var calBut = new HeaderListButton(HeaderButtonsList, nextIndex);
-				calBut.SetIcon(HeaderListButton.Calendar);
-				calBut.OutputSig.SetSigFalseAction(CalendarPress);
-				nextIndex--;
+				//var calBut = new HeaderListButton(HeaderButtonsList, nextIndex);
+				//calBut.SetIcon(HeaderListButton.Calendar);
+				//calBut.OutputSig.SetSigFalseAction(CalendarPress);
+
+				TriList.SetString(nextJoin, "Calendar");
+				TriList.SetSigFalseAction(nextJoin, CalendarPress);
+
+				nextJoin--;
 			}
 
 			// Call button
-			HeaderCallButton = new HeaderListButton(HeaderButtonsList, nextIndex);
-			HeaderCallButton.SetIcon(HeaderListButton.OnHook);
-            HeaderCallButton.OutputSig.SetSigFalseAction(ShowActiveCallsList);
-			
-			nextIndex--;
+			//HeaderCallButton = new HeaderListButton(HeaderButtonsList, nextJoin);
+			//HeaderCallButton.SetIcon(HeaderListButton.OnHook);
+			//HeaderCallButton.OutputSig.SetSigFalseAction(ShowActiveCallsList);
+
+			TriList.SetString(nextJoin, "DND");
+			TriList.SetSigFalseAction(nextJoin, ShowActiveCallsList);
+			HeaderCallButtonIconSig = TriList.StringInput[nextJoin];
+
+			nextJoin--;
 
 			// blank any that remain
-			for (var i = nextIndex; i > 0; i--)
+			for (var i = nextJoin; i > 3950; i--)
 			{
-				var blankBut = new HeaderListButton(HeaderButtonsList, i);
-				blankBut.ClearIcon();
-				blankBut.OutputSig.SetSigFalseAction(() => { });
+				//var blankBut = new HeaderListButton(HeaderButtonsList, i);
+				//blankBut.ClearIcon();
+				//blankBut.OutputSig.SetSigFalseAction(() => { });
+
+				TriList.SetString(i, "Blank");
+				TriList.SetSigFalseAction(i, () => { });
 			}
 
             // Set Call Status Subpage Position
 
-            if (nextIndex == 1)
+            if (nextJoin == 3951)
             {
                 // Set to right position
                 TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, false);
                 TriList.SetBool(UIBoolJoin.HeaderCallStatusRightPositionVisible, true);
             }
-            else if (nextIndex == 0)
+            else if (nextJoin == 3950)
             {
                 // Set to left position
                 TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, true);
@@ -1010,13 +1101,16 @@ namespace PepperDash.Essentials
             // Set mode of header button
             if (!codec.IsInCall)
             {
-                HeaderCallButton.SetIcon(HeaderListButton.OnHook);
+				HeaderCallButtonIconSig.StringValue = "DND";
+				//HeaderCallButton.SetIcon(HeaderListButton.OnHook);
             }
             else if (codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
-                HeaderCallButton.SetIcon(HeaderListButton.Camera);
+				HeaderCallButtonIconSig.StringValue = "Misc-06_Dark";
+			//HeaderCallButton.SetIcon(HeaderListButton.Camera);
             //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
             else
-                HeaderCallButton.SetIcon(HeaderListButton.Phone);
+				HeaderCallButtonIconSig.StringValue = "Misc-09_Dark";
+			//HeaderCallButton.SetIcon(HeaderListButton.Phone);
             //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
 
             // Set the call status text
@@ -1056,6 +1150,7 @@ namespace PepperDash.Essentials
 				MeetingOrContactMethodModalSrl.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() =>
 				{
 					PopupInterlock.Hide();
+					ActivityCallButtonPressed();
 					var d = CurrentRoom.ScheduleSource as VideoCodecBase;
 					if (d != null)
 						RoomOnAndDialMeeting(mm);
@@ -1091,12 +1186,12 @@ namespace PepperDash.Essentials
             var value = _CurrentRoom.OnFeedback.BoolValue;
             TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
 
+            TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = !value;
+
             if (value) //ON
             {
                 SetupActivityFooterWhenRoomOn();
                 TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
-                //TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = true;
-                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = true;
 
             }
@@ -1108,9 +1203,10 @@ namespace PepperDash.Essentials
                 SetupActivityFooterWhenRoomOff();
                 ShowLogo();
                 SetActivityFooterFeedbacks();
-                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
+				// Clear this so that the pesky meeting warning can resurface every minute when off
+				LastMeetingDismissed = null;
             }
         }
 
@@ -1338,5 +1434,13 @@ namespace PepperDash.Essentials
         void HideNotificationRibbon();
         void ComputeHeaderCallStatus(VideoCodecBase codec);
         SubpageReferenceList MeetingOrContactMethodModalSrl { get; }
+		/// <summary>
+		/// Exposes the ability to switch into call mode
+		/// </summary>
+		void ActivityCallButtonPressed();
+		/// <summary>
+		/// Allows the codec to trigger the main UI to clear up if call is coming in.
+		/// </summary>
+		void PrepareForCodecIncomingCall();
     }
 }

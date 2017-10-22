@@ -166,7 +166,7 @@ namespace PepperDash.Essentials
                                 {
                                     var tsw = Panel as TswFt5ButtonSystem;
                                     // Wire up hard keys
-                                    tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.PowerButtonPressed(); });
+                                    tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.EndMeetingPress(); });
                                     //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
                                     tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
                                     tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);

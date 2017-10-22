@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <summary>
         /// To drive UI elements outside of this driver that may be dependent on this.
         /// </summary>
-        BoolFeedback InCall;
+		//BoolFeedback InCall;
         BoolFeedback LocalPrivacyIsMuted;
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             else
                 codec.IsReadyChange += (o, a) => Codec_IsReady();
 
-            InCall = new BoolFeedback(() => false);
+			//InCall = new BoolFeedback(() => false);
             LocalPrivacyIsMuted = new BoolFeedback(() => false);
 
             VCControlsInterlock = new JoinedSigInterlock(triList);
@@ -160,7 +160,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 else
                 {
                     Parent.Keyboard.DisableGoButton();
-                    return "Tap For Search Keyboard";
+                    return "Tap for keyboard";
                 }
             });
             SearchStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecDirectorySearchEntryText]);
@@ -189,10 +189,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
             CallSharingInfoTextFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CallSharedSourceNameText]);
 
             TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, Codec.StopSharing);
-
-
-
-            // Address and number
         }
 
         /// <summary>
@@ -260,7 +256,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					DialStringTextCheckEnables();
                     Parent.ShowNotificationRibbon("Connected", 2000);
                     StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
-                    VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
+					ShowKeypad();
+					//VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
                     break;
                 case eCodecCallStatus.Connecting:
                     // fire at SRL item
@@ -273,6 +270,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     if (!Codec.IsInCall)
                     {
                         KeypadMode = eKeypadMode.Dial;
+						// show keypad if we're in call UI mode
 						ShowKeypad();
                         DialStringBuilder.Remove(0, DialStringBuilder.Length);
                         DialStringFeedback.FireUpdate();
@@ -302,15 +300,21 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     break;
             }
             TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(Codec.IsInCall ? 1 : 0);
-            StagingBarsInterlock.ShowInterlocked(Codec.IsInCall ? 
-                UIBoolJoin.VCStagingActivePopoverVisible : UIBoolJoin.VCStagingInactivePopoverVisible);
-
+			
+			uint stageJoin;
+			if (Codec.IsInCall)
+				stageJoin = UIBoolJoin.VCStagingActivePopoverVisible;
+			else
+				stageJoin = UIBoolJoin.VCStagingInactivePopoverVisible;
+			if (IsVisible)
+				StagingBarsInterlock.ShowInterlocked(stageJoin);
+			else
+				StagingBarsInterlock.SetButDontShow(stageJoin);
 
             Parent.ComputeHeaderCallStatus(Codec);
 
             // Update active call list
             UpdateHeaderActiveCallList();
-
         }
 
         /// <summary>
@@ -344,6 +348,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void ShowIncomingModal(CodecActiveCallItem call)
         {
+			Parent.PrepareForCodecIncomingCall();
             IncomingCallModal = new ModalDialog(TriList);
             string msg;
             string icon;
@@ -360,13 +365,23 @@ namespace PepperDash.Essentials.UIDrivers.VC
             IncomingCallModal.PresentModalDialog(2, "Incoming Call", icon, msg,
                 "Ignore", "Accept", false, false, b =>
                     {
-                        if (b == 1)
-                            Codec.RejectCall(call);
-                        else //2
-                            Codec.AcceptCall(call);
+						if (b == 1)
+							Codec.RejectCall(call);
+						else //2
+							AcceptIncomingCall(call);
                         IncomingCallModal = null;
                     });
         }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void AcceptIncomingCall(CodecActiveCallItem call)
+		{
+			Parent.PrepareForCodecIncomingCall();
+			Parent.ActivityCallButtonPressed();
+			Codec.AcceptCall(call);
+		}
 
         /// <summary>
         /// 
@@ -814,7 +829,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					else if (e.SpecialKey == KeyboardSpecialKey.GoButton)
 					{
 						ConnectPress();
-						Parent.Keyboard.Hide();
 					}
 				}
                 DialStringFeedback.FireUpdate();
@@ -884,14 +898,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
         }
 
 		/// <summary>
-		/// shows the appropriate keypad depending on mode
+		/// shows the appropriate keypad depending on mode and whether visible
 		/// </summary>
         void ShowKeypad()
         {
-			if(CodecHasFavorites)
-	            VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadWithFavoritesVisible);
+			uint join = Codec.IsInCall ? UIBoolJoin.VCKeypadVisible : UIBoolJoin.VCKeypadWithFavoritesVisible;
+			if (IsVisible)
+				VCControlsInterlock.ShowInterlocked(join);
 			else
-				VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
+				VCControlsInterlock.SetButDontShow(join);
             StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
         }
 
@@ -919,6 +934,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void ConnectPress()
         {
+			if (Parent.Keyboard != null)
+				Parent.Keyboard.Hide();
             Codec.Dial(DialStringBuilder.ToString());
         }
 
@@ -941,6 +958,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 DialStringFeedback.FireUpdate();
                 // no delete key in this mode!
             }
+			DialStringTextCheckEnables();
 		}
 	
 		/// <summary>
@@ -1096,7 +1114,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             if (DialStringBuilder.Length == 0 && !Codec.IsInCall)
             {
-                return "Dial or Tap to Show Keyboard";
+                return "Tap for keyboard";
             }
             if(Regex.Match(ds, @"^\d{4,7}$").Success) // 456-7890
                 return string.Format("{0}-{1}", ds.Substring(0, 3), ds.Substring(3));

@@ -45,6 +45,10 @@ namespace PepperDash.Essentials
         /// 1005
         /// </summary>
         public const uint CallSharedSourceInfoEnable = 1005;
+		/// <summary>
+		/// 1006
+		/// </summary>
+		public const uint CallEndAllConfirmVisible = 1006;
 
 
 
@@ -365,7 +369,27 @@ namespace PepperDash.Essentials
         /// 3891
         /// </summary>
         public const uint VolumeDefaultPress = 3891;
-
+		/// <summary>
+		/// 3951
+		/// </summary
+		
+		public const uint HeaderIcon1Press = 3951;
+		/// <summary>
+		/// 3952
+		/// </summary>
+		public const uint HeaderIcon2Press = 3952;
+		/// <summary>
+		/// 3953
+		/// </summary>
+		public const uint HeaderIcon3Press = 3953;
+		/// <summary>
+		/// 3954
+		/// </summary>
+		public const uint HeaderIcon4Press = 3954;
+		/// <summary>
+		/// 3955
+		/// </summary>
+		public const uint HeaderIcon5Press = 3955;
 
         /// <summary>
         /// 3999
@@ -438,6 +462,10 @@ namespace PepperDash.Essentials
 		/// 15018 The Header with dynamic buttons
 		/// </summary>
 		public const uint TopBarHabaneroDynamicVisible = 15018;
+		/// <summary>
+		/// 15019 Shown when system is starting and not ready for use
+		/// </summary>
+		public const uint SystemInitializingVisible = 15019;
         /// <summary>
         /// 15020
         /// </summary>
@@ -451,10 +479,6 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint ActivityFooterVisible = 15022;
         /// <summary>
-        /// 15023
-        /// </summary>
-        public const uint HeaderLightsButtonVisible = 15023;
-        /// <summary>
         /// 15024
         /// </summary>
         public const uint HeaderCallStatusLeftPositionVisible = 15024;
@@ -463,17 +487,9 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint HeaderCallStatusRightPositionVisible = 15025;
         /// <summary>
-        /// 15026
-        /// </summary>
-        public const uint HeaderLightsButtonPress = 15026;
-        /// <summary>[-
-        /// 15027
-        /// </summary>
-        public const uint HeaderCallStatusButtonPress = 15027;
-        /// <summary>
         /// 15028 The gear button in header
         /// </summary>
-        public const uint HeaderGearButtonPress = 15028;
+        public const uint FIXFIX_HeaderGearButtonPress_FIXFIX = 15028;
         /// <summary>
         /// 15029 the room button in header
         /// </summary>
@@ -553,15 +569,15 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 15047 The "Join" button on the next meeting ribbon
 		/// </summary>
-		public const uint NextMeetingRibbonJoinPress = 15047;
+		public const uint NextMeetingJoinPress = 15047;
 		/// <summary>
 		/// 15048 Dismisses the ribbon
 		/// </summary>
-		public const uint NextMeetingRibbonClosePress = 15048;
+		public const uint NextMeetingModalClosePress = 15048;
 		/// <summary>
 		/// 15049
 		/// </summary>
-		public const uint NextMeetingRibbonVisible = 15049;
+		public const uint NextMeetingModalVisible = 15049;
         /// <summary>
         /// 15051
         /// </summary>

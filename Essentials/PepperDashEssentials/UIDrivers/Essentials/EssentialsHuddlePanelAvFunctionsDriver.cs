@@ -218,7 +218,7 @@ namespace PepperDash.Essentials
             //    ShowInterlockedModal(UIBoolJoin.RoomHeaderPageVisible));
 
             // Setup button
-            TriList.SetSigHeldAction(UIBoolJoin.HeaderGearButtonPress, 2000,
+            TriList.SetSigHeldAction(UIBoolJoin.FIXFIX_HeaderGearButtonPress_FIXFIX, 2000,
                 () => PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.TechPanelSetupVisible));// ShowInterlockedModal(UIBoolJoin.TechPanelSetupVisible));
             TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
                 PopupInterlock.HideAndClear()); // HideCurrentInterlockedModal());
