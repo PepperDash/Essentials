@@ -168,7 +168,10 @@ namespace PepperDash.Essentials
 		/// 3916 The "active call" label
 		/// </summary>
 		public const uint HeaderCallStatusLabel = 3916;
-
+		/// <summary>
+		/// 3919 Mesage on init page
+		/// </summary>
+		public const uint SystemInitializingMessage = 3919;
         /// <summary>
         /// 3922
         /// </summary>
@@ -181,6 +184,27 @@ namespace PepperDash.Essentials
         /// 3924 - the text on the "call help desk" button
         /// </summary>
         public const uint HelpPageCallButtonText = 3924;
+
+		/// <summary>
+		/// 3951
+		/// </summary>
+		public const uint HeaderButtonIcon1 = 3951;
+		/// <summary>
+		/// 3952
+		/// </summary>
+		public const uint HeaderButtonIcon2 = 3952;
+		/// <summary>
+		/// 3953
+		/// </summary>
+		public const uint HeaderButtonIcon3 = 3953;
+		/// <summary>
+		/// 3954
+		/// </summary>
+		public const uint HeaderButtonIcon4 = 3954;
+		/// <summary>
+		/// 3955
+		/// </summary>
+		public const uint HeaderButtonIcon5 = 3955;
 
         /// <summary>
         /// 3961 Name of source on display 1
@@ -202,23 +226,23 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 3966
 		/// </summary>
-		public const uint NextMeetingRibbonStartText = 3966;
+		public const uint NextMeetingStartTimeText = 3966;
 		/// <summary>
 		/// 3967
 		/// </summary>
-		public const uint NextMeetingRibbonEndText = 3967;
+		public const uint NextMeetingEndTimeText = 3967;
 		/// <summary>
 		/// 3968
 		/// </summary>
-		public const uint NextMeetingRibbonTitleText = 3968;
+		public const uint NextMeetingTitleText = 3968;
 		/// <summary>
 		/// 3969
 		/// </summary>
-		public const uint NextMettingRibbonNameText = 3969;
+		public const uint NextMeetingNameText = 3969;
 		/// <summary>
 		/// 3970
 		/// </summary>
-		public const uint NextMeetingRibbonButtonLabel = 3970;
+		public const uint NextMeetingButtonLabel = 3970;
 		/// <summary>
 		/// 3971
 		/// </summary>
@@ -227,37 +251,19 @@ namespace PepperDash.Essentials
 		/// 3972
 		/// </summary>
 		public const uint NextMeetingFollowingMeetingText = 3972;
-
-		/// <summary>
-		/// 3991
-		/// </summary>
-		public const uint HeaderButtonIcon1 = 3991;
-		/// <summary>
-		/// 3992
-		/// </summary>
-		public const uint HeaderButtonIcon2 = 3992;
-		/// <summary>
-		/// 3993
-		/// </summary>
-		public const uint HeaderButtonIcon3 = 3993;
-		/// <summary>
-		/// 3994
-		/// </summary>
-		public const uint HeaderButtonIcon4 = 3994;
-		/// <summary>
-		/// 3995
-		/// </summary>
-		public const uint HeaderButtonIcon5 = 3995;
-
         /// <summary>
-        /// 3996
+        /// 3976
         /// </summary>
-        public const uint MeetingsOrContactMethodListIcon = 3996;
+        public const uint MeetingsOrContactMethodListIcon = 3976;
+		/// <summary>
+		/// 3977
+		/// </summary>
+		public const uint MeetingsOrContactMethodListTitleText = 3977;
 
-        /// <summary>
-        /// 3997
-        /// </summary>
-        public const uint MeetingsOrContactMethodListTitleText = 3997;
- 
+		// ------------------------------------
+		//
+		// MODAL JOINS 3991 - 3999
+		//
+		// ------------------------------------
     }
 }

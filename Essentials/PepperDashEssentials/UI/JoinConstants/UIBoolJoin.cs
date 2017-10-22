@@ -45,6 +45,10 @@ namespace PepperDash.Essentials
         /// 1005
         /// </summary>
         public const uint CallSharedSourceInfoEnable = 1005;
+		/// <summary>
+		/// 1006
+		/// </summary>
+		public const uint CallEndAllConfirmVisible = 1006;
 
 
 
@@ -365,27 +369,28 @@ namespace PepperDash.Essentials
         /// 3891
         /// </summary>
         public const uint VolumeDefaultPress = 3891;
+		/// <summary>
+		/// 3951
+		/// </summary
+		
+		public const uint HeaderIcon1Press = 3951;
+		/// <summary>
+		/// 3952
+		/// </summary>
+		public const uint HeaderIcon2Press = 3952;
+		/// <summary>
+		/// 3953
+		/// </summary>
+		public const uint HeaderIcon3Press = 3953;
+		/// <summary>
+		/// 3954
+		/// </summary>
+		public const uint HeaderIcon4Press = 3954;
+		/// <summary>
+		/// 3955
+		/// </summary>
+		public const uint HeaderIcon5Press = 3955;
 
-		/// <summary>
-		/// 3991
-		/// </summary>
-		public const uint HeaderIcon1Press = 3991;
-		/// <summary>
-		/// 3992
-		/// </summary>
-		public const uint HeaderIcon2Press = 3992;
-		/// <summary>
-		/// 3993
-		/// </summary>
-		public const uint HeaderIcon3Press = 3993;
-		/// <summary>
-		/// 3994
-		/// </summary>
-		public const uint HeaderIcon4Press = 3994;
-		/// <summary>
-		/// 3995
-		/// </summary>
-		public const uint HeaderIcon5Press = 3995;
         /// <summary>
         /// 3999
         /// </summary>
@@ -457,6 +462,10 @@ namespace PepperDash.Essentials
 		/// 15018 The Header with dynamic buttons
 		/// </summary>
 		public const uint TopBarHabaneroDynamicVisible = 15018;
+		/// <summary>
+		/// 15019 Shown when system is starting and not ready for use
+		/// </summary>
+		public const uint SystemInitializingVisible = 15019;
         /// <summary>
         /// 15020
         /// </summary>
@@ -560,7 +569,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 15047 The "Join" button on the next meeting ribbon
 		/// </summary>
-		public const uint NextMeetingRibbonJoinPress = 15047;
+		public const uint NextMeetingJoinPress = 15047;
 		/// <summary>
 		/// 15048 Dismisses the ribbon
 		/// </summary>

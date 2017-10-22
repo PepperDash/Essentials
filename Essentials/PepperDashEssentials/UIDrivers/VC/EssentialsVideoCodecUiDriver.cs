@@ -829,7 +829,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					else if (e.SpecialKey == KeyboardSpecialKey.GoButton)
 					{
 						ConnectPress();
-						Parent.Keyboard.Hide();
 					}
 				}
                 DialStringFeedback.FireUpdate();
@@ -935,6 +934,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void ConnectPress()
         {
+			if (Parent.Keyboard != null)
+				Parent.Keyboard.Hide();
             Codec.Dial(DialStringBuilder.ToString());
         }
 
@@ -957,6 +958,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 DialStringFeedback.FireUpdate();
                 // no delete key in this mode!
             }
+			DialStringTextCheckEnables();
 		}
 	
 		/// <summary>

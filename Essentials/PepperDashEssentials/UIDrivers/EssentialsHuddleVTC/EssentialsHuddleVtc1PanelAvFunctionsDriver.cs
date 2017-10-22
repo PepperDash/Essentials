@@ -184,7 +184,11 @@ namespace PepperDash.Essentials
 		/// Tracks whether the user dismissed the meeting popup, while the system was on.  Always false when 
 		/// system is off.
 		/// </summary>
-		DateTime NextMeetingWarningDismissedTime;
+		bool NextMeetingWarningWasDismissed;
+		/// <summary>
+		/// Tracks the last meeting that was cancelled
+		/// </summary>
+		Meeting LastMeetingDismissed;
 
 
 
@@ -326,6 +330,7 @@ namespace PepperDash.Essentials
         /// </summary>
         void ShowActiveCallsList()
         {
+			TriList.SetBool(UIBoolJoin.CallEndAllConfirmVisible, true);
             if(PopupInterlock.CurrentJoin == UIBoolJoin.HeaderActiveCallsListVisible) 
                 PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
             else
@@ -417,59 +422,78 @@ namespace PepperDash.Essentials
 			var ss = CurrentRoom.ScheduleSource;
 			if (ss != null)
 			{
-				NextMeetingTimer = new CTimer(o =>
-				{
-					if (CurrentRoom.OnFeedback.BoolValue)
-						return;
-					// Every 60 seconds, check meetings list for the closest, joinable meeting
-					var meetings = ss.CodecSchedule.Meetings;
-                    if (meetings.Count > 0)
-                    {
-						var meeting = meetings.FirstOrDefault(m => m.Joinable);
-
-						//var meeting = meetings.Aggregate((m1, m2) => m1.StartTime < m2.StartTime ? m1 : m2);
-
-
-#warning PICK UP CALENDAR TIME HERE
-                        if (meeting != null)// && NextMeetingWarningDismissedTime != null 
-							//&& (DateTime.Now - NextMeetingWarningDismissedTime).Minutes > 5) // && meeting.Joinable)
-                        {
-                            TriList.SetString(UIStringJoin.NextMeetingRibbonStartText, meeting.StartTime.ToShortTimeString());
-                            TriList.SetString(UIStringJoin.NextMeetingRibbonEndText, meeting.EndTime.ToShortTimeString());
-                            TriList.SetString(UIStringJoin.NextMeetingRibbonTitleText, meeting.Title);
-                            TriList.SetString(UIStringJoin.NextMettingRibbonNameText, meeting.Organizer);
-                            TriList.SetString(UIStringJoin.NextMeetingRibbonButtonLabel, "Join");
-                            TriList.SetSigFalseAction(UIBoolJoin.NextMeetingRibbonJoinPress, () =>
-                                {
-                                    HideNextMeetingPopup();
-                                    RoomOnAndDialMeeting(meeting);
-                                });
-                            TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
-                            TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
-                                {
-                                    HideNextMeetingPopup();
-                                    CalendarPress();
-                                });
-                            if (meetings.Count > 1)
-                            {
-                                TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
-                                    meetings[1].StartTime.ToShortTimeString());
-                            }
-
-                            ShowNextMeetingPopup();
-                        }
-                    }
-				}, null, 0, 60000);
+				NextMeetingTimer = new CTimer(o => ShowNextMeetingCallback(), null, 0, 60000);
 			}
 		}
 
 		/// <summary>
 		/// 
 		/// </summary>
-		void ShowNextMeetingPopup()
+		void ShowNextMeetingCallback()
 		{
-			TriList.SetSigFalseAction(UIBoolJoin.NextMeetingModalClosePress, HideNextMeetingPopup);
-			TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, true);
+			// Every 60 seconds, check meetings list for the closest, joinable meeting
+			var ss = CurrentRoom.ScheduleSource;
+			var meetings = ss.CodecSchedule.Meetings;
+			Debug.Console(0, "***** Checking meetings *****");
+			foreach (var m in meetings)
+				Debug.Console(0, "****** {0} {1} ******", m.StartTime.ToShortTimeString(), m.Joinable);
+
+			if (meetings.Count > 0)
+			{
+				var meeting = meetings.FirstOrDefault(m => m.Joinable);
+
+				// If the room is off pester the user
+				// If the room is on, and the meeting is joinable
+				// and the LastMeetingDismissed != this meeting
+
+				if (CurrentRoom.OnFeedback.BoolValue
+					&& LastMeetingDismissed == meeting)
+					//|| (LastMeetingDismissed != null && !LastMeetingDismissed.Joinable)))
+				{
+					Debug.Console(0, "****** Ignoring previously cancelled meeting warning ******");
+					return;
+				}
+
+				LastMeetingDismissed = null;
+				if (meeting != null)
+				{
+					Debug.Console(0, "***** First joinable meeting: {0} {1}", meeting.StartTime.ToShortTimeString(), meeting.Joinable);
+					TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Upcoming meeting");
+					TriList.SetString(UIStringJoin.NextMeetingStartTimeText, meeting.StartTime.ToShortTimeString());
+					TriList.SetString(UIStringJoin.NextMeetingEndTimeText, meeting.EndTime.ToShortTimeString());
+					TriList.SetString(UIStringJoin.NextMeetingTitleText, meeting.Title);
+					TriList.SetString(UIStringJoin.NextMeetingNameText, meeting.Organizer);
+					TriList.SetString(UIStringJoin.NextMeetingButtonLabel, "Join");
+					TriList.SetSigFalseAction(UIBoolJoin.NextMeetingJoinPress, () =>
+					{
+						HideNextMeetingPopup();
+						RoomOnAndDialMeeting(meeting);
+					});
+					TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
+					TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
+					{
+						HideNextMeetingPopup();
+						CalendarPress();
+					});
+					var indexOfNext = meetings.IndexOf(meeting) + 1;
+
+					// indexOf = 3, 4 meetings :  
+					if (indexOfNext < meetings.Count)
+					{
+						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
+							meetings[indexOfNext].StartTime.ToShortTimeString());
+					}
+					TriList.SetSigFalseAction(UIBoolJoin.NextMeetingModalClosePress, () =>
+						{
+							// Mark the meeting to not re-harass the user
+							if(CurrentRoom.OnFeedback.BoolValue)
+								LastMeetingDismissed = meeting;
+							HideNextMeetingPopup();
+						});
+
+					TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, true);
+				}
+			}
 		}
 		
 		/// <summary>
@@ -478,6 +502,7 @@ namespace PepperDash.Essentials
 		void HideNextMeetingPopup()
 		{
 			TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, false);
+			
 		}
 
 		/// <summary>
@@ -1007,7 +1032,7 @@ namespace PepperDash.Essentials
 			//    //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
 			//    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
 			//});
-			uint nextJoin = 3993;
+			uint nextJoin = 3953;
 
 			// Lights button
 			//if (WHATEVER MAKES LIGHTS WORK)
@@ -1041,7 +1066,7 @@ namespace PepperDash.Essentials
 			nextJoin--;
 
 			// blank any that remain
-			for (var i = nextJoin; i > 3990; i--)
+			for (var i = nextJoin; i > 3950; i--)
 			{
 				//var blankBut = new HeaderListButton(HeaderButtonsList, i);
 				//blankBut.ClearIcon();
@@ -1053,13 +1078,13 @@ namespace PepperDash.Essentials
 
             // Set Call Status Subpage Position
 
-            if (nextJoin == 1)
+            if (nextJoin == 3951)
             {
                 // Set to right position
                 TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, false);
                 TriList.SetBool(UIBoolJoin.HeaderCallStatusRightPositionVisible, true);
             }
-            else if (nextJoin == 0)
+            else if (nextJoin == 3950)
             {
                 // Set to left position
                 TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, true);
@@ -1080,11 +1105,11 @@ namespace PepperDash.Essentials
 				//HeaderCallButton.SetIcon(HeaderListButton.OnHook);
             }
             else if (codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
-				HeaderCallButtonIconSig.StringValue = "Camera";
+				HeaderCallButtonIconSig.StringValue = "Misc-06_Dark";
 			//HeaderCallButton.SetIcon(HeaderListButton.Camera);
             //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
             else
-				HeaderCallButtonIconSig.StringValue = "Phone";
+				HeaderCallButtonIconSig.StringValue = "Misc-09_Dark";
 			//HeaderCallButton.SetIcon(HeaderListButton.Phone);
             //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
 
@@ -1180,6 +1205,8 @@ namespace PepperDash.Essentials
                 SetActivityFooterFeedbacks();
                 TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
+				// Clear this so that the pesky meeting warning can resurface every minute when off
+				LastMeetingDismissed = null;
             }
         }
 
