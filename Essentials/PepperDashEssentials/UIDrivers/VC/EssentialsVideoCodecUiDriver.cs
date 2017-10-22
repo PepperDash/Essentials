@@ -112,8 +112,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
 
-            codec.SharingSourceFeedback.OutputChange += new EventHandler<EventArgs>(SharingSourceFeedback_OutputChange);
-
             // If the codec is ready, then get the values we want, otherwise wait
             if (Codec.IsReady)
                 Codec_IsReady();
@@ -182,8 +180,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			TriList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
 				StartSearchBackspaceRepeat, StopSearchBackspaceRepeat, SearchKeypadBackspacePress);
 
-            CallSharingInfoVisibleFeedback = new BoolFeedback(() => !string.IsNullOrEmpty(Codec.SharingSourceFeedback.StringValue));
-            CallSharingInfoVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.CallSharedSourceInfoEnable]);
+            CallSharingInfoVisibleFeedback = new BoolFeedback(() => Codec.SharingContentIsOnFeedback.BoolValue);
+            codec.SharingContentIsOnFeedback.OutputChange += new EventHandler<EventArgs>(SharingContentIsOnFeedback_OutputChange);
+            CallSharingInfoVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.CallSharedSourceInfoVisible]);
 
             CallSharingInfoTextFeedback = new StringFeedback(() => GetCurrentSourceName(Codec.SharingSourceFeedback.StringValue));
             CallSharingInfoTextFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CallSharedSourceNameText]);
@@ -198,9 +197,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <returns></returns>
         string GetCurrentSourceName(string key)
         {
+            Debug.Console(1, "GetCurrentSource: Attempting to get device with key: {0}", key);
+
             var device = DeviceManager.GetDeviceForKey(key);
 
-            return (device as SourceListItem).Name;
+            if (device != null)
+                return (device as SourceListItem).Name;
+            else
+                return "None";
         }
 
         /// <summary>
@@ -208,14 +212,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void SharingSourceFeedback_OutputChange(object sender, EventArgs e)
+        void SharingContentIsOnFeedback_OutputChange(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty((sender as IHasContentSharing).SharingSourceFeedback.StringValue))
-            {
-                // Source is being shared
-
-
-            }
+            CallSharingInfoVisibleFeedback.FireUpdate();
+            CallSharingInfoTextFeedback.FireUpdate();
         }
 
         /// <summary>

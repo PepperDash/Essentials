@@ -5,6 +5,8 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronXml.Serialization;
 
+using PepperDash.Core;
+
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     /// <summary>
@@ -395,15 +397,34 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public RequestFloorAvailability RequestFloorAvailability { get; set; }
         }
 
+        public class Source2
+        {
+            public string Value { get; set; }
+        }
+
+        public class SendingMode
+        {
+            public string Value { get; set; }
+        }
+
+        public class LocalInstance
+        {
+            public string id { get; set; }
+            public SendingMode SendingMode {get; set;}
+            public Source2 Source { get; set; }
+        }
+
         public class Presentation
         {
             public CallId2 CallId { get; set; }
             public Mode2 Mode { get; set; }
             public Whiteboard Whiteboard { get; set; }
+            public List<LocalInstance> LocalInstance { get; set; }
 
             public Presentation()
             {
                 Mode = new Mode2();
+                LocalInstance = new List<LocalInstance>();
             }
         }
 

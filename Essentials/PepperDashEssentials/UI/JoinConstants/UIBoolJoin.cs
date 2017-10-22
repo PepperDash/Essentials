@@ -44,7 +44,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 1005
         /// </summary>
-        public const uint CallSharedSourceInfoEnable = 1005;
+        public const uint CallSharedSourceInfoVisible = 1005;
 		/// <summary>
 		/// 1006
 		/// </summary>
@@ -486,6 +486,10 @@ namespace PepperDash.Essentials
         /// 15025
         /// </summary>
         public const uint HeaderCallStatusRightPositionVisible = 15025;
+        /// <summary>
+        /// 15027
+        /// </summary>
+        public const uint HeaderCallStatusLabelPress = 15027;
         /// <summary>
         /// 15028 The gear button in header
         /// </summary>

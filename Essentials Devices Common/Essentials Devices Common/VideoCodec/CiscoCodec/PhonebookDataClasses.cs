@@ -109,6 +109,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             public Number Number { get; set; }
             public Device Device { get; set; }
             public CallType CallType { get; set; }
+
+            public ContactMethod()
+            {
+                ContactMethodId = new ContactMethodId();
+                Number = new Number();
+                Device = new Device();
+                CallType = new CallType();
+            }
         }
 
         public class Contact
@@ -119,6 +127,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             public FolderId2 FolderId { get; set; }
             public Title Title { get; set; }
             public List<ContactMethod> ContactMethod { get; set; }
+
+            public Contact()
+            {
+                Name = new Name2();
+                ContactId = new ContactId();
+                FolderId = new FolderId2();
+                Title = new Title();
+                ContactMethod = new List<ContactMethod>();
+            }
         }
 
         public class PhonebookSearchResult
@@ -209,12 +226,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 {
                     var contact = new DirectoryContact();
 
-                    if (c.FolderId == null)
+                    if (string.IsNullOrEmpty(c.FolderId.Value))
                     {
                         contact.Name = c.Name.Value;
                         contact.ContactId = c.ContactId.Value;
 
-                        if(c.Title != null)
+                        if(!string.IsNullOrEmpty(c.Title.Value))
                             contact.Title = c.Title.Value;
 
                         if (Debug.Level > 0)
@@ -225,10 +242,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                             var tempContactMethod = new PepperDash.Essentials.Devices.Common.Codec.ContactMethod();
 
-                            if (m.CallType != null)
+                            eContactMethodCallType callType = eContactMethodCallType.Unknown;
+                            if (!string.IsNullOrEmpty(m.CallType.Value))
                             {
-                                eContactMethodCallType callType = eContactMethodCallType.Unknown;
-                                if (m.CallType != null)
+                                if (!string.IsNullOrEmpty(m.CallType.Value))
                                 {
                                     if (m.CallType.Value.ToLower() == "audio")
                                         callType = eContactMethodCallType.Audio;
@@ -239,9 +256,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                                 }
                             }
 
-                            if (m.Device != null)
+                            eContactMethodDevice device = eContactMethodDevice.Unknown;
+                            if (!string.IsNullOrEmpty(m.Device.Value))
                             {
-                                eContactMethodDevice device = eContactMethodDevice.Unknown;
 
                                 if (m.Device.Value.ToLower() == "mobile")
                                     device = eContactMethodDevice.Mobile;
@@ -288,81 +305,90 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             var contacts = new List<Codec.DirectoryItem>();
 
-            if (result.Folder.Count > 0)
+            try
             {
-                foreach (Folder f in result.Folder)
+                if (result.Folder.Count > 0)
                 {
-                    var folder = new DirectoryFolder();
-
-                    folder.Name = f.Name.Value;
-                    folder.FolderId = f.FolderId.Value;
-
-                    if (f.ParentFolderId != null)
+                    foreach (Folder f in result.Folder)
                     {
-                        //
-                        folder.ParentFolderId = f.ParentFolderId.Value;
-                    }
+                        var folder = new DirectoryFolder();
 
-                   folders.Add(folder);
-                }
+                        folder.Name = f.Name.Value;
+                        folder.FolderId = f.FolderId.Value;
 
-                folders.OrderBy(f => f.Name);
-
-                directory.AddFoldersToDirectory(folders);
-            }
-
-            if (result.Contact.Count > 0)
-            {
-                foreach (Contact c in result.Contact)
-                {
-                    var contact = new DirectoryContact();
-     
-                    contact.Name = c.Name.Value;
-                    contact.ContactId = c.ContactId.Value;
-                    if (c.Title != null)
-                        contact.Title = c.Title.Value;
-
-                    if(c.FolderId != null)
-                    {
-                        contact.FolderId = c.FolderId.Value;
-                    }
-
-                    foreach (ContactMethod m in c.ContactMethod)
-                    {
-                        eContactMethodCallType callType = eContactMethodCallType.Unknown;
-                        if(m.CallType != null)
+                        if (f.ParentFolderId != null)
                         {
-                            if(m.CallType.Value.ToLower() == "audio")
-                                callType = eContactMethodCallType.Audio;
-                            else if (m.CallType.Value.ToLower() == "video")
-                                callType = eContactMethodCallType.Video;
+                            folder.ParentFolderId = f.ParentFolderId.Value;
                         }
-                            
-                        eContactMethodDevice device = eContactMethodDevice.Unknown;
 
-                        if (m.Device.Value.ToLower() == "mobile")
-                            device = eContactMethodDevice.Mobile;
-                        else if (m.Device.Value.ToLower() == "telephone")
-                            device = eContactMethodDevice.Telephone;
-                        else if (m.Device.Value.ToLower() == "video")
-                            device = eContactMethodDevice.Video;
-                        else if (m.Device.Value.ToLower() == "other")
-                            device = eContactMethodDevice.Other;
-
-                        contact.ContactMethods.Add(new PepperDash.Essentials.Devices.Common.Codec.ContactMethod()
-                        {
-                            Number = m.Number.Value,
-                            ContactMethodId = m.ContactMethodId.Value,
-                            CallType = callType,
-                            Device = device
-                        });
+                        folders.Add(folder);
                     }
-                    contacts.Add(contact);
+
+                    folders.OrderBy(f => f.Name);
+
+                    directory.AddFoldersToDirectory(folders);
                 }
 
-                contacts.OrderBy(c => c.Name);
+                if (result.Contact.Count > 0)
+                {
+                    foreach (Contact c in result.Contact)
+                    {
+                        var contact = new DirectoryContact();
 
-                directory.AddContactsToDirectory(contacts);
+                        contact.Name = c.Name.Value;
+                        contact.ContactId = c.ContactId.Value;
+                        if (!string.IsNullOrEmpty(c.Title.Value))
+                            contact.Title = c.Title.Value;
+
+                        if (c.FolderId != null)
+                        {
+                            contact.FolderId = c.FolderId.Value;
+                        }
+
+                        foreach (ContactMethod m in c.ContactMethod)
+                        {
+                            eContactMethodCallType callType = eContactMethodCallType.Unknown;
+                            if (!string.IsNullOrEmpty(m.CallType.Value))
+                            {
+                                if (m.CallType.Value.ToLower() == "audio")
+                                    callType = eContactMethodCallType.Audio;
+                                else if (m.CallType.Value.ToLower() == "video")
+                                    callType = eContactMethodCallType.Video;
+                            }
+
+                            eContactMethodDevice device = eContactMethodDevice.Unknown;
+
+                            if (!string.IsNullOrEmpty(m.Device.Value))
+                            {
+                                if (m.Device.Value.ToLower() == "mobile")
+                                    device = eContactMethodDevice.Mobile;
+                                else if (m.Device.Value.ToLower() == "telephone")
+                                    device = eContactMethodDevice.Telephone;
+                                else if (m.Device.Value.ToLower() == "video")
+                                    device = eContactMethodDevice.Video;
+                                else if (m.Device.Value.ToLower() == "other")
+                                    device = eContactMethodDevice.Other;
+                            }
+
+                            contact.ContactMethods.Add(new PepperDash.Essentials.Devices.Common.Codec.ContactMethod()
+                            {
+                                Number = m.Number.Value,
+                                ContactMethodId = m.ContactMethodId.Value,
+                                CallType = callType,
+                                Device = device
+                            });
+                        }
+                        contacts.Add(contact);
+                    }
+
+                    contacts.OrderBy(c => c.Name);
+
+                    directory.AddContactsToDirectory(contacts);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, "Error converting Cisco Phonebook results to generic: {0}", e);
             }
 
             return directory;

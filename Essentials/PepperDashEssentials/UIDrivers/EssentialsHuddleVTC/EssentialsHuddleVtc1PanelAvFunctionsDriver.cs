@@ -1076,6 +1076,9 @@ namespace PepperDash.Essentials
 				TriList.SetSigFalseAction(i, () => { });
 			}
 
+
+            TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusLabelPress, ShowActiveCallsList);
+
             // Set Call Status Subpage Position
 
             if (nextJoin == 3951)

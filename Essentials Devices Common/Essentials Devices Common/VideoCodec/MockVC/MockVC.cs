@@ -187,6 +187,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void StartSharing()
         {
             _SharingIsOn = true;
+            SharingContentIsOnFeedback.FireUpdate();
         }
 
         /// <summary>
@@ -201,7 +202,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void StandbyActivate()
         {
             _StandbyIsOn = true;
-            SharingContentIsOnFeedback.FireUpdate();
         }
 
         public override void StandbyDeactivate()

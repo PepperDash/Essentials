@@ -82,7 +82,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         
         private CiscoCodecConfiguration.RootObject CodecConfiguration;
 
-        private CiscoCodecStatus.RootObject CodecStatus;
+        private CiscoCodecStatus.RootObject CodecStatus = new CiscoCodecStatus.RootObject();
 
         public CodecCallHistory CallHistory { get; private set; }
 
@@ -133,7 +133,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         protected override Func<bool> SharingContentIsOnFeedbackFunc
         {
             get 
-            { 
+            {
                 return () => CodecStatus.Status.Conference.Presentation.Mode.BoolValue; 
             }
         }
@@ -272,12 +272,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             PortGather.IncludeDelimiter = true;
             PortGather.LineReceived += this.Port_LineReceived;
 
-            //CodecObtp = new CiscoOneButtonToPush();
-
-            //PhoneBook = new Corporate_Phone_Book();
-
             CodecConfiguration = new CiscoCodecConfiguration.RootObject();
-            CodecStatus = new CiscoCodecStatus.RootObject();
+            //CodecStatus = new CiscoCodecStatus.RootObject();
 
             CodecInfo = new CiscoCodecInfo(CodecStatus, CodecConfiguration);
 
@@ -304,6 +300,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.Video.Selfview.Mode.ValueChangedAction = SelfviewIsOnFeedback.FireUpdate;
             CodecStatus.Status.Video.Selfview.PIPPosition.ValueChangedAction = ComputeSelfviewPipStatus;
             CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = SharingContentIsOnFeedback.FireUpdate;
 
 			CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.AudioVideo, 
 				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
@@ -998,6 +995,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SelectPresentationSource(2);
         }
 
+        /// <summary>
+        /// Starts presentation sharing
+        /// </summary>
         public override void StartSharing()
         {
             string sendingMode = string.Empty;
@@ -1010,9 +1010,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SendText(string.Format("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", PresentationSource, sendingMode));
         }
 
+        /// <summary>
+        /// Stops sharing the current presentation
+        /// </summary>
         public override void StopSharing()
         {
-            SendText(string.Format("xCommand Presentation Stop PresentationSource: {0}", PresentationSource));
+            SendText("xCommand Presentation Stop");
         }
 
         public override void PrivacyModeOn()
