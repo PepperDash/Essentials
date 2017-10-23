@@ -80,7 +80,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         BoolFeedback SearchStringBackspaceVisibleFeedback;
 
         BoolFeedback CallSharingInfoVisibleFeedback;
-        StringFeedback CallSharingInfoTextFeedback;
+        //StringFeedback CallSharingInfoTextFeedback;
 
         ModalDialog IncomingCallModal;
 
@@ -183,28 +183,21 @@ namespace PepperDash.Essentials.UIDrivers.VC
             CallSharingInfoVisibleFeedback = new BoolFeedback(() => Codec.SharingContentIsOnFeedback.BoolValue);
             codec.SharingContentIsOnFeedback.OutputChange += new EventHandler<EventArgs>(SharingContentIsOnFeedback_OutputChange);
             CallSharingInfoVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.CallSharedSourceInfoVisible]);
-
-            CallSharingInfoTextFeedback = new StringFeedback(() => GetCurrentSourceName(Codec.SharingSourceFeedback.StringValue));
-            CallSharingInfoTextFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CallSharedSourceNameText]);
+            Parent.CurrentRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
 
             TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, Codec.StopSharing);
         }
 
         /// <summary>
-        /// Returns the name of the source that matches the specified key
+        /// Updates the current shared source label on the call list when the source changes
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        string GetCurrentSourceName(string key)
+        /// <param name="room"></param>
+        /// <param name="info"></param>
+        /// <param name="type"></param>
+        void CurrentRoom_CurrentSingleSourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
         {
-            Debug.Console(1, "GetCurrentSource: Attempting to get device with key: {0}", key);
-
-            var device = DeviceManager.GetDeviceForKey(key);
-
-            if (device != null)
-                return (device as SourceListItem).Name;
-            else
-                return "None";
+            if (Codec.SharingContentIsOnFeedback.BoolValue)
+                TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = Parent.CurrentRoom.CurrentSourceInfo.PreferredName;
         }
 
         /// <summary>
@@ -215,7 +208,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void SharingContentIsOnFeedback_OutputChange(object sender, EventArgs e)
         {
             CallSharingInfoVisibleFeedback.FireUpdate();
-            CallSharingInfoTextFeedback.FireUpdate();
+
+            string callListSharedSourceLabel;
+
+            if (Codec.SharingContentIsOnFeedback.BoolValue)
+                 callListSharedSourceLabel = Parent.CurrentRoom.CurrentSourceInfo.PreferredName;
+            else
+                callListSharedSourceLabel = "None";
+
+            TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = callListSharedSourceLabel;
         }
 
         /// <summary>
@@ -228,7 +229,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
             TriList.SetString(UIStringJoin.RoomPhoneText, Codec.CodecInfo.PhoneNumber);
             TriList.SetString(UIStringJoin.RoomSipText, Codec.CodecInfo.SipUri);
 
-            Parent.ComputeHeaderCallStatus(Codec);
+            if(Parent.HeaderButtonsAreSetUp)
+                Parent.ComputeHeaderCallStatus(Codec);
         }
 
         /// <summary>

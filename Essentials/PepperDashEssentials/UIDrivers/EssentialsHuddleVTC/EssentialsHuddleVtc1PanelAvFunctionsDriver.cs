@@ -44,6 +44,11 @@ namespace PepperDash.Essentials
         public string DefaultRoomKey { get; set; }
 
         /// <summary>
+        /// Indicates that the SetHeaderButtons method has completed successfully
+        /// </summary>
+        public bool HeaderButtonsAreSetUp { get; private set; }
+
+        /// <summary>
         /// 
         /// </summary>
         public EssentialsHuddleVtc1Room CurrentRoom
@@ -954,6 +959,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void SetupHeaderButtons()
 		{
+            HeaderButtonsAreSetUp = false;
+
 			TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
 
 			var roomConf = CurrentRoom.Config;
@@ -1093,7 +1100,11 @@ namespace PepperDash.Essentials
                 TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, true);
                 TriList.SetBool(UIBoolJoin.HeaderCallStatusRightPositionVisible, false);
             }
-               
+
+
+            HeaderButtonsAreSetUp = true;
+
+            ComputeHeaderCallStatus(CurrentRoom.VideoCodec);
 		}
 
         /// <summary>
@@ -1101,6 +1112,18 @@ namespace PepperDash.Essentials
         /// </summary>
         public void ComputeHeaderCallStatus(VideoCodecBase codec)
         {
+            if (codec == null)
+            {
+                Debug.Console(1, "ComputeHeaderCallStatus() cannot execute.  codec is null");
+                return;
+            }
+
+            if(HeaderCallButtonIconSig == null)
+            {
+                Debug.Console(1, "ComputeHeaderCallStatus() cannot execute.  HeaderCallButtonIconSig is null");
+                return;
+            }
+
             // Set mode of header button
             if (!codec.IsInCall)
             {
@@ -1433,9 +1456,11 @@ namespace PepperDash.Essentials
     {
         PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; }
         JoinedSigInterlock PopupInterlock { get; }
+        EssentialsHuddleVtc1Room CurrentRoom { get; }
         void ShowNotificationRibbon(string message, int timeout);
         void HideNotificationRibbon();
         void ComputeHeaderCallStatus(VideoCodecBase codec);
+        bool HeaderButtonsAreSetUp { get; }
         SubpageReferenceList MeetingOrContactMethodModalSrl { get; }
 		/// <summary>
 		/// Exposes the ability to switch into call mode
