@@ -663,7 +663,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// <param name="dir"></param>
 		void RefreshDirectory()
 		{
-			Debug.Console(0, "****** RefreshDirectory!");
             if (CurrentDirectoryResult.DirectoryResults.Count > 0)
             {
                 ushort i = 0;

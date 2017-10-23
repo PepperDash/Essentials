@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 
 [assembly: AssemblyTitle("PepperDashEssentials")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("PepperDash Technology Corp")]
 [assembly: AssemblyProduct("PepperDashEssentials")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
-[assembly: AssemblyVersion("1.0.0.*")]
+[assembly: AssemblyCopyright("Copyright © PepperDash Technology Corp 2017")]
+[assembly: AssemblyVersion("1.0.1.*")]
 
