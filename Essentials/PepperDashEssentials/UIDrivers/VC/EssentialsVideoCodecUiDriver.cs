@@ -98,94 +98,101 @@ namespace PepperDash.Essentials.UIDrivers.VC
         public EssentialsVideoCodecUiDriver(BasicTriListWithSmartObject triList, IAVDriver parent, VideoCodecBase codec)
             : base(triList)
         {
-            if (codec == null)
-                throw new ArgumentNullException("Codec cannot be null");
-            Codec = codec;
-            Parent = parent;
-            SetupCallStagingPopover();
-            SetupDialKeypad();
-            ActiveCallsSRL = new SubpageReferenceList(TriList, UISmartObjectJoin.CodecActiveCallsHeaderList, 3, 3, 3);
-			SetupDirectoryList();
-            SetupRecentCallsList();
-			SetupFavorites();
-			SetupSelfViewControls();
-
-            codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
-
-            // If the codec is ready, then get the values we want, otherwise wait
-            if (Codec.IsReady)
-                Codec_IsReady();
-            else
-                codec.IsReadyChange += (o, a) => Codec_IsReady();
-
-			//InCall = new BoolFeedback(() => false);
-            LocalPrivacyIsMuted = new BoolFeedback(() => false);
-
-            VCControlsInterlock = new JoinedSigInterlock(triList);
-			if(CodecHasFavorites)
-	            VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadWithFavoritesVisible);
-			else
-				VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadVisible);
-
-            StagingBarsInterlock = new JoinedSigInterlock(triList);
-            StagingBarsInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverVisible);
-
-            StagingButtonsFeedbackInterlock = new JoinedSigInterlock(triList);
-            StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
-
-            // Return formatted when dialing, straight digits when in call
-            DialStringFeedback = new StringFeedback(() => 
+            try
             {
-                if (KeypadMode == eKeypadMode.Dial)
-                    return GetFormattedDialString(DialStringBuilder.ToString());
+                if (codec == null)
+                    throw new ArgumentNullException("Codec cannot be null");
+                Codec = codec;
+                Parent = parent;
+                SetupCallStagingPopover();
+                SetupDialKeypad();
+                ActiveCallsSRL = new SubpageReferenceList(TriList, UISmartObjectJoin.CodecActiveCallsHeaderList, 3, 3, 3);
+                SetupDirectoryList();
+                SetupRecentCallsList();
+                SetupFavorites();
+                SetupSelfViewControls();
+
+                codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
+
+                // If the codec is ready, then get the values we want, otherwise wait
+                if (Codec.IsReady)
+                    Codec_IsReady();
                 else
-                    return DialStringBuilder.ToString();
+                    codec.IsReadyChange += (o, a) => Codec_IsReady();
 
-            });
-            DialStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecAddressEntryText]);
+                //InCall = new BoolFeedback(() => false);
+                LocalPrivacyIsMuted = new BoolFeedback(() => false);
 
-            DialStringBackspaceVisibleFeedback = new BoolFeedback(() => DialStringBuilder.Length > 0);
-            DialStringBackspaceVisibleFeedback
-                .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCKeypadBackspaceVisible]);
+                VCControlsInterlock = new JoinedSigInterlock(triList);
+                if (CodecHasFavorites)
+                    VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadWithFavoritesVisible);
+                else
+                    VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadVisible);
 
-            SearchStringFeedback = new StringFeedback(() => 
+                StagingBarsInterlock = new JoinedSigInterlock(triList);
+                StagingBarsInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverVisible);
+
+                StagingButtonsFeedbackInterlock = new JoinedSigInterlock(triList);
+                StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
+
+                // Return formatted when dialing, straight digits when in call
+                DialStringFeedback = new StringFeedback(() =>
+                {
+                    if (KeypadMode == eKeypadMode.Dial)
+                        return GetFormattedDialString(DialStringBuilder.ToString());
+                    else
+                        return DialStringBuilder.ToString();
+
+                });
+                DialStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecAddressEntryText]);
+
+                DialStringBackspaceVisibleFeedback = new BoolFeedback(() => DialStringBuilder.Length > 0);
+                DialStringBackspaceVisibleFeedback
+                    .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCKeypadBackspaceVisible]);
+
+                SearchStringFeedback = new StringFeedback(() =>
+                {
+                    if (SearchStringBuilder.Length > 0)
+                    {
+                        Parent.Keyboard.EnableGoButton();
+                        return SearchStringBuilder.ToString();
+                    }
+                    else
+                    {
+                        Parent.Keyboard.DisableGoButton();
+                        return "Tap for keyboard";
+                    }
+                });
+                SearchStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecDirectorySearchEntryText]);
+
+                SearchStringBackspaceVisibleFeedback = new BoolFeedback(() => SearchStringBuilder.Length > 0);
+                SearchStringBackspaceVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackspaceVisible]);
+
+                TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackPress, GetDirectoryParentFolderContents);
+
+                DirectoryBackButtonVisibleFeedback = new BoolFeedback(() => CurrentDirectoryResult != (codec as IHasDirectory).DirectoryRoot);
+                DirectoryBackButtonVisibleFeedback
+                    .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCDirectoryBackVisible]);
+
+                TriList.SetSigFalseAction(UIBoolJoin.VCKeypadTextPress, RevealKeyboard);
+
+                TriList.SetSigFalseAction(UIBoolJoin.VCDirectorySearchTextPress, RevealKeyboard);
+
+                //TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackspacePress, SearchKeypadBackspacePress);
+                TriList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
+                    StartSearchBackspaceRepeat, StopSearchBackspaceRepeat, SearchKeypadBackspacePress);
+
+                CallSharingInfoVisibleFeedback = new BoolFeedback(() => Codec.SharingContentIsOnFeedback.BoolValue);
+                codec.SharingContentIsOnFeedback.OutputChange += new EventHandler<EventArgs>(SharingContentIsOnFeedback_OutputChange);
+                CallSharingInfoVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.CallSharedSourceInfoVisible]);
+                Parent.CurrentRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
+
+                TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, Codec.StopSharing);
+            }
+            catch (Exception e)
             {
-                if (SearchStringBuilder.Length > 0)
-                {
-                    Parent.Keyboard.EnableGoButton();
-                    return SearchStringBuilder.ToString();
-                }
-                else
-                {
-                    Parent.Keyboard.DisableGoButton();
-                    return "Tap for keyboard";
-                }
-            });
-            SearchStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecDirectorySearchEntryText]);
-
-            SearchStringBackspaceVisibleFeedback = new BoolFeedback(() => SearchStringBuilder.Length > 0);
-            SearchStringBackspaceVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackspaceVisible]);
-
-            TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackPress, GetDirectoryParentFolderContents);
-
-            DirectoryBackButtonVisibleFeedback = new BoolFeedback(() => CurrentDirectoryResult != (codec as IHasDirectory).DirectoryRoot);
-            DirectoryBackButtonVisibleFeedback
-                .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCDirectoryBackVisible]);
-
-            TriList.SetSigFalseAction(UIBoolJoin.VCKeypadTextPress, RevealKeyboard);
-
-            TriList.SetSigFalseAction(UIBoolJoin.VCDirectorySearchTextPress, RevealKeyboard);
-
-			//TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackspacePress, SearchKeypadBackspacePress);
-			TriList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
-				StartSearchBackspaceRepeat, StopSearchBackspaceRepeat, SearchKeypadBackspacePress);
-
-            CallSharingInfoVisibleFeedback = new BoolFeedback(() => Codec.SharingContentIsOnFeedback.BoolValue);
-            codec.SharingContentIsOnFeedback.OutputChange += new EventHandler<EventArgs>(SharingContentIsOnFeedback_OutputChange);
-            CallSharingInfoVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.CallSharedSourceInfoVisible]);
-            Parent.CurrentRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
-
-            TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, Codec.StopSharing);
+                Debug.Console(1, "Exception in VideoCodecUiDriver Constructor: {0}", e);
+            }
         }
 
         /// <summary>
@@ -272,7 +279,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 						ShowKeypad();
                         DialStringBuilder.Remove(0, DialStringBuilder.Length);
                         DialStringFeedback.FireUpdate();
-                        Parent.ShowNotificationRibbon("Disonnected", 2000);
+                        Parent.ShowNotificationRibbon("Disconnected", 2000);
                     }
                     break;
                 case eCodecCallStatus.Disconnecting:
