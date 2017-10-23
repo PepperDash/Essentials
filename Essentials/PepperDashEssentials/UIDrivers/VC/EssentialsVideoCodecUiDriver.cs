@@ -79,9 +79,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
         StringBuilder SearchStringBuilder = new StringBuilder();
         BoolFeedback SearchStringBackspaceVisibleFeedback;
 
-        BoolFeedback CallSharingInfoVisibleFeedback;
-        //StringFeedback CallSharingInfoTextFeedback;
-
         ModalDialog IncomingCallModal;
 
         eKeypadMode KeypadMode;
@@ -106,7 +103,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 Parent = parent;
                 SetupCallStagingPopover();
                 SetupDialKeypad();
-                ActiveCallsSRL = new SubpageReferenceList(TriList, UISmartObjectJoin.CodecActiveCallsHeaderList, 3, 3, 3);
+                ActiveCallsSRL = new SubpageReferenceList(triList, UISmartObjectJoin.CodecActiveCallsHeaderList, 5,5,5);
                 SetupDirectoryList();
                 SetupRecentCallsList();
                 SetupFavorites();
@@ -148,7 +145,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 DialStringBackspaceVisibleFeedback = new BoolFeedback(() => DialStringBuilder.Length > 0);
                 DialStringBackspaceVisibleFeedback
-                    .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCKeypadBackspaceVisible]);
+                    .LinkInputSig(triList.BooleanInput[UIBoolJoin.VCKeypadBackspaceVisible]);
 
                 SearchStringFeedback = new StringFeedback(() =>
                 {
@@ -168,26 +165,21 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 SearchStringBackspaceVisibleFeedback = new BoolFeedback(() => SearchStringBuilder.Length > 0);
                 SearchStringBackspaceVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackspaceVisible]);
 
-                TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackPress, GetDirectoryParentFolderContents);
+                triList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackPress, GetDirectoryParentFolderContents);
 
                 DirectoryBackButtonVisibleFeedback = new BoolFeedback(() => CurrentDirectoryResult != (codec as IHasDirectory).DirectoryRoot);
                 DirectoryBackButtonVisibleFeedback
-                    .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCDirectoryBackVisible]);
+                    .LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackVisible]);
 
-                TriList.SetSigFalseAction(UIBoolJoin.VCKeypadTextPress, RevealKeyboard);
+                triList.SetSigFalseAction(UIBoolJoin.VCKeypadTextPress, RevealKeyboard);
 
-                TriList.SetSigFalseAction(UIBoolJoin.VCDirectorySearchTextPress, RevealKeyboard);
+                triList.SetSigFalseAction(UIBoolJoin.VCDirectorySearchTextPress, RevealKeyboard);
 
                 //TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackspacePress, SearchKeypadBackspacePress);
-                TriList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
+                triList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
                     StartSearchBackspaceRepeat, StopSearchBackspaceRepeat, SearchKeypadBackspacePress);
 
-                CallSharingInfoVisibleFeedback = new BoolFeedback(() => Codec.SharingContentIsOnFeedback.BoolValue);
-                codec.SharingContentIsOnFeedback.OutputChange += new EventHandler<EventArgs>(SharingContentIsOnFeedback_OutputChange);
-                CallSharingInfoVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.CallSharedSourceInfoVisible]);
-                Parent.CurrentRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
-
-                TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, Codec.StopSharing);
+                triList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, Codec.StopSharing);
             }
             catch (Exception e)
             {
@@ -195,36 +187,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
             }
         }
 
-        /// <summary>
-        /// Updates the current shared source label on the call list when the source changes
-        /// </summary>
-        /// <param name="room"></param>
-        /// <param name="info"></param>
-        /// <param name="type"></param>
-        void CurrentRoom_CurrentSingleSourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
-        {
-            if (Codec.SharingContentIsOnFeedback.BoolValue)
-                TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = Parent.CurrentRoom.CurrentSourceInfo.PreferredName;
-        }
-
-        /// <summary>
-        /// Fires when the sharing source feedback of the codec changes
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void SharingContentIsOnFeedback_OutputChange(object sender, EventArgs e)
-        {
-            CallSharingInfoVisibleFeedback.FireUpdate();
-
-            string callListSharedSourceLabel;
-
-            if (Codec.SharingContentIsOnFeedback.BoolValue)
-                 callListSharedSourceLabel = Parent.CurrentRoom.CurrentSourceInfo.PreferredName;
-            else
-                callListSharedSourceLabel = "None";
-
-            TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = callListSharedSourceLabel;
-        }
 
         /// <summary>
         /// 
@@ -336,6 +298,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 ActiveCallsSRL.StringInputSig(i, 1).StringValue = c.Name;
                 ActiveCallsSRL.StringInputSig(i, 2).StringValue = c.Number;
                 ActiveCallsSRL.StringInputSig(i, 3).StringValue = c.Status.ToString();
+                ActiveCallsSRL.StringInputSig(i, 4).StringValue = string.Format("Participant {0}", i);
                 ActiveCallsSRL.UShortInputSig(i, 1).UShortValue = (ushort)(c.Type == eCodecCallType.Video ? 2 : 1);
                 var cc = c; // for scope in lambda
                 ActiveCallsSRL.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() => Codec.EndCall(cc));

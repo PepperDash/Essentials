@@ -397,9 +397,39 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public RequestFloorAvailability RequestFloorAvailability { get; set; }
         }
 
-        public class Source2
+        public class Source2 : ValueProperty
         {
-            public string Value { get; set; }
+            string _Value;
+
+            /// <summary>
+            /// Sets Value and triggers the action when set
+            /// </summary>
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    OnValueChanged();
+                }
+            }
+
+            /// <summary>
+            /// Converted value of _Value for use as feedback
+            /// </summary>
+            public int IntValue
+            {
+                get
+                {
+                    if (!string.IsNullOrEmpty(_Value))
+                        return Convert.ToInt32(_Value);
+                    else
+                        return 0;
+                }
+            }
         }
 
         public class SendingMode
@@ -410,16 +440,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class LocalInstance
         {
             public string id { get; set; }
+            public string ghost { get; set; }
             public SendingMode SendingMode {get; set;}
             public Source2 Source { get; set; }
+
+            public LocalInstance()
+            {
+                Source = new Source2();
+            }
         }
 
         public class Presentation
         {
-            public CallId2 CallId { get; set; }
-            public Mode2 Mode { get; set; }
-            public Whiteboard Whiteboard { get; set; }
-            public List<LocalInstance> LocalInstance { get; set; }
+            public CallId2 CallId { get;  set; }
+            public Mode2 Mode { get;  set; }
+            public Whiteboard Whiteboard { get;  set; }
+            public List<LocalInstance> LocalInstance { get;  set; }
 
             public Presentation()
             {

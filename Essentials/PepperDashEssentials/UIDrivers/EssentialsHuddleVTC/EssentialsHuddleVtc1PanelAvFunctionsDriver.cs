@@ -73,6 +73,8 @@ namespace PepperDash.Essentials
 
 		StringInputSig HeaderCallButtonIconSig;
 
+        BoolFeedback CallSharingInfoVisibleFeedback;
+
 
         /// <summary>
         /// The parent driver for this
@@ -185,12 +187,7 @@ namespace PepperDash.Essentials
 
 		CTimer NextMeetingTimer;
 
-		/// <summary>
-		/// Tracks whether the user dismissed the meeting popup, while the system was on.  Always false when 
-		/// system is off.
-		/// </summary>
-		bool NextMeetingWarningWasDismissed;
-		/// <summary>
+        /// <summary>
 		/// Tracks the last meeting that was cancelled
 		/// </summary>
 		Meeting LastMeetingDismissed;
@@ -945,6 +942,16 @@ namespace PepperDash.Essentials
                 _CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
                 RefreshSourceInfo();
 
+
+                CallSharingInfoVisibleFeedback = new BoolFeedback(() => _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue);
+                _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.OutputChange += new EventHandler<EventArgs>(SharingContentIsOnFeedback_OutputChange);
+                CallSharingInfoVisibleFeedback.LinkInputSig(TriList.BooleanInput[UIBoolJoin.CallSharedSourceInfoVisible]);
+
+                SetActiveCallListSharingContentStatus();
+
+                if (_CurrentRoom != null)
+                    _CurrentRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
+
 				SetupHeaderButtons();
             }
             else
@@ -953,6 +960,46 @@ namespace PepperDash.Essentials
                 TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = "Select a room";
             }
         }
+
+        /// <summary>
+        /// Updates the current shared source label on the call list when the source changes
+        /// </summary>
+        /// <param name="room"></param>
+        /// <param name="info"></param>
+        /// <param name="type"></param>
+        void CurrentRoom_CurrentSingleSourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        {
+            if (_CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue)
+                TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = _CurrentRoom.CurrentSourceInfo.PreferredName;
+        }
+
+        /// <summary>
+        /// Fires when the sharing source feedback of the codec changes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void SharingContentIsOnFeedback_OutputChange(object sender, EventArgs e)
+        {
+            SetActiveCallListSharingContentStatus();
+        }
+
+        /// <summary>
+        /// Sets the values for the text and button visibilty for the active call list source sharing info
+        /// </summary>
+        void SetActiveCallListSharingContentStatus()
+        {
+            CallSharingInfoVisibleFeedback.FireUpdate();
+
+            string callListSharedSourceLabel;
+
+            if (_CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue)
+                callListSharedSourceLabel = _CurrentRoom.CurrentSourceInfo.PreferredName;
+            else
+                callListSharedSourceLabel = "None";
+
+            TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = callListSharedSourceLabel;
+        }
+
 
 		/// <summary>
 		/// 
@@ -1456,7 +1503,6 @@ namespace PepperDash.Essentials
     {
         PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; }
         JoinedSigInterlock PopupInterlock { get; }
-        EssentialsHuddleVtc1Room CurrentRoom { get; }
         void ShowNotificationRibbon(string message, int timeout);
         void HideNotificationRibbon();
         void ComputeHeaderCallStatus(VideoCodecBase codec);
