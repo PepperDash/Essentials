@@ -212,7 +212,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <summary>
         /// Used to track the current connector used for the presentation source
         /// </summary>
-        int PresentationSourceConnector;
+        int PresentationSource;
 
         string PresentationSourceKey;
 
@@ -309,9 +309,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.AudioVideo, 
 				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
 			HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, 
-				eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSourceConnector2), this);
+				eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this);
 			HdmiIn3 = new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.AudioVideo, 
-				eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSourceConnector3), this);
+				eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource2), this);
 
 			HdmiOut1 = new RoutingOutputPort(RoutingPortNames.HdmiOut1, eRoutingSignalType.AudioVideo, 
 				eRoutingPortConnectionType.Hdmi, null, this);
@@ -552,10 +552,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     if (conference.Presentation.LocalInstance.Count > 0)
                     {
                         if (!string.IsNullOrEmpty(conference.Presentation.LocalInstance[0].ghost))
-                            PresentationSourceConnector = 0;
+                            PresentationSource = 0;
                         else if (conference.Presentation.LocalInstance[0].Source != null)
                         {
-                            PresentationSourceConnector = conference.Presentation.LocalInstance[0].Source.IntValue;
+                            PresentationSource = conference.Presentation.LocalInstance[0].Source.IntValue;
                         }
                     }
 
@@ -992,9 +992,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        public void SelectPresentationByConnector(int connector)
+        public void SelectPresentationByConnector(int source)
         {
-            PresentationSourceConnector = connector;
+            PresentationSource = source;
 
             StartSharing();
         }
@@ -1002,17 +1002,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <summary>
         /// Select source 1 as the presetnation source
         /// </summary>
-        public void SelectPresentationSourceConnector2()
+        public void SelectPresentationSource1()
         {
-            SelectPresentationByConnector(2);
+            SelectPresentationByConnector(1);
         }
 
         /// <summary>
         /// Select source 2 as the presetnation source
         /// </summary>
-        public void SelectPresentationSourceConnector3()
+        public void SelectPresentationSource2()
         {
-            SelectPresentationByConnector(3);
+            SelectPresentationByConnector(2);
         }
 
         /// <summary>
@@ -1027,7 +1027,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             else
                 sendingMode = "LocalOnly";
 
-            SendText(string.Format("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", PresentationSourceConnector, sendingMode));
+            SendText(string.Format("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", PresentationSource, sendingMode));
         }
 
         /// <summary>
@@ -1035,7 +1035,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public override void StopSharing()
         {
-            PresentationSourceConnector = 0;
+            PresentationSource = 0;
 
             SendText("xCommand Presentation Stop");
         }

@@ -187,12 +187,10 @@ namespace PepperDash.Essentials
 
 		CTimer NextMeetingTimer;
 
-        /// <summary>
+		/// <summary>
 		/// Tracks the last meeting that was cancelled
 		/// </summary>
 		Meeting LastMeetingDismissed;
-
-
 
         /// <summary>
         /// Constructor
@@ -436,9 +434,6 @@ namespace PepperDash.Essentials
 			// Every 60 seconds, check meetings list for the closest, joinable meeting
 			var ss = CurrentRoom.ScheduleSource;
 			var meetings = ss.CodecSchedule.Meetings;
-			Debug.Console(0, "***** Checking meetings *****");
-			foreach (var m in meetings)
-				Debug.Console(0, "****** {0} {1} ******", m.StartTime.ToShortTimeString(), m.Joinable);
 
 			if (meetings.Count > 0)
 			{
@@ -450,16 +445,13 @@ namespace PepperDash.Essentials
 
 				if (CurrentRoom.OnFeedback.BoolValue
 					&& LastMeetingDismissed == meeting)
-					//|| (LastMeetingDismissed != null && !LastMeetingDismissed.Joinable)))
 				{
-					Debug.Console(0, "****** Ignoring previously cancelled meeting warning ******");
 					return;
 				}
 
 				LastMeetingDismissed = null;
 				if (meeting != null)
 				{
-					Debug.Console(0, "***** First joinable meeting: {0} {1}", meeting.StartTime.ToShortTimeString(), meeting.Joinable);
 					TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Upcoming meeting");
 					TriList.SetString(UIStringJoin.NextMeetingStartTimeText, meeting.StartTime.ToShortTimeString());
 					TriList.SetString(UIStringJoin.NextMeetingEndTimeText, meeting.EndTime.ToShortTimeString());
@@ -1027,20 +1019,6 @@ namespace PepperDash.Essentials
 			TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
 				PopupInterlock.HideAndClear());
 
-			//HeaderGearButton = new HeaderListButton(HeaderButtonsList, 5);
-			//HeaderGearButton.SetIcon(HeaderListButton.Gear);
-			//HeaderGearButton.OutputSig.SetSigHeldAction(2000,
-			//    ShowTech,
-			//    null,
-			//    () =>
-			//    {
-			//        if (CurrentRoom.OnFeedback.BoolValue)
-			//            PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible);
-			//        else
-			//            PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPagePowerOffVisible);
-			//    });
-
-
 			// Help button and popup
 			if (CurrentRoom.Config.Help != null)
 			{
@@ -1072,36 +1050,11 @@ namespace PepperDash.Essentials
 				//TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
 				PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
 			});
-			//var helpButton = new HeaderListButton(HeaderButtonsList, 4);
-			//helpButton.SetIcon(HeaderListButton.Help);
-			//helpButton.OutputSig.SetSigFalseAction(() =>
-			//{
-			//    string message = null;
-			//    var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
-			//        as EssentialsHuddleSpaceRoom;
-			//    if (room != null)
-			//        message = room.Config.HelpMessage;
-			//    else
-			//        message = "Sorry, no help message available. No room connected.";
-			//    //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
-			//    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
-			//});
 			uint nextJoin = 3953;
 
-			// Lights button
-			//if (WHATEVER MAKES LIGHTS WORK)
-			//{
-			//    // do lights
-			//    nextIndex--;
-			//}
-
 			// Calendar button
-			if (_CurrentRoom.ScheduleSource != null) // ******************* Do we need a config option here as well?
+			if (_CurrentRoom.ScheduleSource != null)
 			{
-				//var calBut = new HeaderListButton(HeaderButtonsList, nextIndex);
-				//calBut.SetIcon(HeaderListButton.Calendar);
-				//calBut.OutputSig.SetSigFalseAction(CalendarPress);
-
 				TriList.SetString(nextJoin, "Calendar");
 				TriList.SetSigFalseAction(nextJoin, CalendarPress);
 
@@ -1109,10 +1062,6 @@ namespace PepperDash.Essentials
 			}
 
 			// Call button
-			//HeaderCallButton = new HeaderListButton(HeaderButtonsList, nextJoin);
-			//HeaderCallButton.SetIcon(HeaderListButton.OnHook);
-			//HeaderCallButton.OutputSig.SetSigFalseAction(ShowActiveCallsList);
-
 			TriList.SetString(nextJoin, "DND");
 			TriList.SetSigFalseAction(nextJoin, ShowActiveCallsList);
 			HeaderCallButtonIconSig = TriList.StringInput[nextJoin];
@@ -1122,14 +1071,9 @@ namespace PepperDash.Essentials
 			// blank any that remain
 			for (var i = nextJoin; i > 3950; i--)
 			{
-				//var blankBut = new HeaderListButton(HeaderButtonsList, i);
-				//blankBut.ClearIcon();
-				//blankBut.OutputSig.SetSigFalseAction(() => { });
-
 				TriList.SetString(i, "Blank");
 				TriList.SetSigFalseAction(i, () => { });
 			}
-
 
             TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusLabelPress, ShowActiveCallsList);
 
@@ -1147,7 +1091,6 @@ namespace PepperDash.Essentials
                 TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, true);
                 TriList.SetBool(UIBoolJoin.HeaderCallStatusRightPositionVisible, false);
             }
-
 
             HeaderButtonsAreSetUp = true;
 
@@ -1365,8 +1308,6 @@ namespace PepperDash.Essentials
                 (previousDev as IPower).UnlinkButtons(TriList);
             if (previousDev is ITransport)
                 (previousDev as ITransport).UnlinkButtons(TriList);
-            //if (previousDev is IRadio)
-            //    (previousDev as IRadio).UnlinkButtons(this);
         }
 
         /// <summary>
