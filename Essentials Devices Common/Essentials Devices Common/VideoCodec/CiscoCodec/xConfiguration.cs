@@ -17,19 +17,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode
-        {
-            public string valueSpaceRef { get; set; }
-            public string Value { get; set; }
-        }
-
         public class Dereverberation
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
         }
 
-        public class Mode2
+        public class Mode
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -44,7 +38,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class EchoControl
         {
             public Dereverberation Dereverberation { get; set; }
-            public Mode2 Mode { get; set; }
+            public Mode Mode { get; set; }
             public NoiseReduction NoiseReduction { get; set; }
         }
 
@@ -54,12 +48,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
+        public class Mode2
+        {
+            public string valueSpaceRef { get; set; }
+            public string Value { get; set; }
+        }
+
         public class Microphone
         {
             public string id { get; set; }
-            public Mode Mode { get; set; }
             public EchoControl EchoControl { get; set; }
             public Level Level { get; set; }
+            public Mode2 Mode { get; set; }
         }
 
         public class Input
@@ -94,29 +94,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Mode3 Mode { get; set; }
         }
 
-        public class Mode4
-        {
-            public string valueSpaceRef { get; set; }
-            public string Value { get; set; }
-        }
-
-        public class OutputType
-        {
-            public string valueSpaceRef { get; set; }
-            public string Value { get; set; }
-        }
-
-        public class Line
-        {
-            public string id { get; set; }
-            public Mode4 Mode { get; set; }
-            public OutputType OutputType { get; set; }
-        }
-
         public class Output
         {
             public InternalSpeaker InternalSpeaker { get; set; }
-            public List<Line> Line { get; set; }
         }
 
         public class RingTone
@@ -146,21 +126,33 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public SoundsAndAlerts SoundsAndAlerts { get; set; }
         }
 
-        public class Framerate
+        public class DefaultMode
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
         }
 
-        public class Camera
+        public class Backlight
         {
-            public Framerate Framerate { get; set; }
+            public DefaultMode DefaultMode { get; set; }
         }
 
-        public class Closeup
+        public class DefaultLevel
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
+        }
+
+        public class Mode4
+        {
+            public string valueSpaceRef { get; set; }
+            public string Value { get; set; }
+        }
+
+        public class Brightness
+        {
+            public DefaultLevel DefaultLevel { get; set; }
+            public Mode4 Mode { get; set; }
         }
 
         public class Mode5
@@ -169,15 +161,85 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
+        public class Focus
+        {
+            public Mode5 Mode { get; set; }
+        }
+
+        public class Level2
+        {
+            public string valueSpaceRef { get; set; }
+            public string Value { get; set; }
+        }
+
+        public class Mode6
+        {
+            public string valueSpaceRef { get; set; }
+            public string Value { get; set; }
+        }
+
+        public class Gamma
+        {
+            public Level2 Level { get; set; }
+            public Mode6 Mode { get; set; }
+        }
+
+        public class Mirror
+        {
+            public string valueSpaceRef { get; set; }
+            public string Value { get; set; }
+        }
+
+        public class Level3
+        {
+            public string valueSpaceRef { get; set; }
+            public string Value { get; set; }
+        }
+
+        public class Mode7
+        {
+            public string valueSpaceRef { get; set; }
+            public string Value { get; set; }
+        }
+
+        public class Whitebalance
+        {
+            public Level3 Level { get; set; }
+            public Mode7 Mode { get; set; }
+        }
+
+        public class Camera
+        {
+            public string id { get; set; }
+            public Backlight Backlight { get; set; }
+            public Brightness Brightness { get; set; }
+            public Focus Focus { get; set; }
+            public Gamma Gamma { get; set; }
+            public Mirror Mirror { get; set; }
+            public Whitebalance Whitebalance { get; set; }
+        }
+
+        public class Closeup
+        {
+            public string valueSpaceRef { get; set; }
+            public string Value { get; set; }
+        }
+
+        public class Mode8
+        {
+            public string valueSpaceRef { get; set; }
+            public string Value { get; set; }
+        }
+
         public class SpeakerTrack
         {
             public Closeup Closeup { get; set; }
-            public Mode5 Mode { get; set; }
+            public Mode8 Mode { get; set; }
         }
 
         public class Cameras
         {
-            public Camera Camera { get; set; }
+            public List<Camera> Camera { get; set; }
             public SpeakerTrack SpeakerTrack { get; set; }
         }
 
@@ -187,7 +249,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode6
+        public class Mode9
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -202,7 +264,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class AutoAnswer
         {
             public Delay Delay { get; set; }
-            public Mode6 Mode { get; set; }
+            public Mode9 Mode { get; set; }
             public Mute2 Mute { get; set; }
         }
 
@@ -235,7 +297,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public DefaultTimeout DefaultTimeout { get; set; }
         }
 
-        public class Mode7
+        public class Mode10
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -243,10 +305,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Encryption
         {
-            public Mode7 Mode { get; set; }
+            public Mode10 Mode { get; set; }
         }
 
-        public class Mode8
+        public class Mode11
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -254,7 +316,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class FarEndControl
         {
-            public Mode8 Mode { get; set; }
+            public Mode11 Mode { get; set; }
         }
 
         public class MaxReceiveCallRate
@@ -281,7 +343,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode9
+        public class Mode12
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -289,7 +351,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class MultiStream
         {
-            public Mode9 Mode { get; set; }
+            public Mode12 Mode { get; set; }
         }
 
         public class Conference
@@ -312,7 +374,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode10
+        public class Mode13
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -327,11 +389,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class Authentication
         {
             public LoginName LoginName { get; set; }
-            public Mode10 Mode { get; set; }
+            public Mode13 Mode { get; set; }
             public Password Password { get; set; }
         }
 
-        public class Mode11
+        public class Mode14
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -339,7 +401,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class CallSetup
         {
-            public Mode11 Mode { get; set; }
+            public Mode14 Mode { get; set; }
         }
 
         public class KeySize
@@ -388,7 +450,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode12
+        public class Mode15
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -397,7 +459,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class NAT
         {
             public Address2 Address { get; set; }
-            public Mode12 Mode { get; set; }
+            public Mode15 Mode { get; set; }
         }
 
         public class H323
@@ -483,7 +545,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode13
+        public class Mode16
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -512,7 +574,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public AnonymousIdentity AnonymousIdentity { get; set; }
             public Eap Eap { get; set; }
             public Identity Identity { get; set; }
-            public Mode13 Mode { get; set; }
+            public Mode16 Mode { get; set; }
             public Password2 Password { get; set; }
             public TlsVerify TlsVerify { get; set; }
             public UseClientCertificate UseClientCertificate { get; set; }
@@ -640,7 +702,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Video Video { get; set; }
         }
 
-        public class Mode14
+        public class Mode17
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -649,7 +711,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class QoS
         {
             public Diffserv Diffserv { get; set; }
-            public Mode14 Mode { get; set; }
+            public Mode17 Mode { get; set; }
         }
 
         public class Allow
@@ -669,7 +731,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode15
+        public class Mode18
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -683,7 +745,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Voice
         {
-            public Mode15 Mode { get; set; }
+            public Mode18 Mode { get; set; }
             public VlanId VlanId { get; set; }
         }
 
@@ -707,7 +769,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public VLAN VLAN { get; set; }
         }
 
-        public class Mode16
+        public class Mode19
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -715,10 +777,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class CDP
         {
-            public Mode16 Mode { get; set; }
+            public Mode19 Mode { get; set; }
         }
 
-        public class Mode17
+        public class Mode20
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -726,10 +788,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class H3232
         {
-            public Mode17 Mode { get; set; }
+            public Mode20 Mode { get; set; }
         }
 
-        public class Mode18
+        public class Mode21
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -737,7 +799,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class HTTP
         {
-            public Mode18 Mode { get; set; }
+            public Mode21 Mode { get; set; }
         }
 
         public class MinimumTLSVersion
@@ -777,7 +839,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public VerifyServerCertificate VerifyServerCertificate { get; set; }
         }
 
-        public class Mode19
+        public class Mode22
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -797,11 +859,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class NTP2
         {
-            public Mode19 Mode { get; set; }
+            public Mode22 Mode { get; set; }
             public List<Server3> Server { get; set; }
         }
 
-        public class Mode20
+        public class Mode23
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -809,7 +871,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class SIP
         {
-            public Mode20 Mode { get; set; }
+            public Mode23 Mode { get; set; }
         }
 
         public class CommunityName
@@ -830,7 +892,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Address7 Address { get; set; }
         }
 
-        public class Mode21
+        public class Mode24
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -852,12 +914,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             public CommunityName CommunityName { get; set; }
             public List<Host> Host { get; set; }
-            public Mode21 Mode { get; set; }
+            public Mode24 Mode { get; set; }
             public SystemContact SystemContact { get; set; }
             public SystemLocation SystemLocation { get; set; }
         }
 
-        public class Mode22
+        public class Mode25
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -865,10 +927,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class SSH
         {
-            public Mode22 Mode { get; set; }
+            public Mode25 Mode { get; set; }
         }
 
-        public class Mode23
+        public class Mode26
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -876,7 +938,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class UPnP
         {
-            public Mode23 Mode { get; set; }
+            public Mode26 Mode { get; set; }
         }
 
         public class WelcomeText
@@ -1017,7 +1079,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode24
+        public class Mode27
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -1035,11 +1097,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public ExternalManager ExternalManager { get; set; }
             public HttpMethod HttpMethod { get; set; }
             public LoginName2 LoginName { get; set; }
-            public Mode24 Mode { get; set; }
+            public Mode27 Mode { get; set; }
             public Password3 Password { get; set; }
         }
 
-        public class Mode25
+        public class Mode28
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -1077,7 +1139,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Proximity
         {
-            public Mode25 Mode { get; set; }
+            public Mode28 Mode { get; set; }
             public Services Services { get; set; }
         }
 
@@ -1135,7 +1197,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode26
+        public class Mode29
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -1144,7 +1206,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class Ice
         {
             public DefaultCandidate DefaultCandidate { get; set; }
-            public Mode26 Mode { get; set; }
+            public Mode29 Mode { get; set; }
         }
 
         public class ListenPort
@@ -1220,7 +1282,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode27
+        public class Mode30
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -1230,7 +1292,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             public BaudRate BaudRate { get; set; }
             public LoginRequired LoginRequired { get; set; }
-            public Mode27 Mode { get; set; }
+            public Mode30 Mode { get; set; }
         }
 
         public class BootAction
@@ -1319,7 +1381,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Type2 Type { get; set; }
         }
 
-        public class Mode28
+        public class Mode31
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -1327,7 +1389,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class KeyTones
         {
-            public Mode28 Mode { get; set; }
+            public Mode31 Mode { get; set; }
         }
 
         public class Language
@@ -1397,7 +1459,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode29
+        public class Mode32
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -1434,7 +1496,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public BaseDN BaseDN { get; set; }
             public Encryption3 Encryption { get; set; }
             public MinimumTLSVersion2 MinimumTLSVersion { get; set; }
-            public Mode29 Mode { get; set; }
+            public Mode32 Mode { get; set; }
             public Server6 Server { get; set; }
             public VerifyServerCertificate2 VerifyServerCertificate { get; set; }
         }
@@ -1456,7 +1518,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode30
+        public class Mode33
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -1465,7 +1527,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class CameraControl
         {
             public CameraId CameraId { get; set; }
-            public Mode30 Mode { get; set; }
+            public Mode33 Mode { get; set; }
         }
 
         public class InputSourceType
@@ -1475,12 +1537,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         }
 
         public class Name3
-        {
-            public string valueSpaceRef { get; set; }
-            public string Value { get; set; }
-        }
-
-        public class Visibility
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -1504,16 +1560,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
+        public class Visibility
+        {
+            public string valueSpaceRef { get; set; }
+            public string Value { get; set; }
+        }
+
         public class Connector
         {
             public string id { get; set; }
             public CameraControl CameraControl { get; set; }
             public InputSourceType InputSourceType { get; set; }
             public Name3 Name { get; set; }
-            public Visibility Visibility { get; set; }
             public PreferredResolution PreferredResolution { get; set; }
             public PresentationSelection PresentationSelection { get; set; }
             public Quality Quality { get; set; }
+            public Visibility Visibility { get; set; }
         }
 
         public class Input2
@@ -1527,7 +1589,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode31
+        public class Mode34
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -1535,7 +1597,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class CEC
         {
-            public Mode31 Mode { get; set; }
+            public Mode34 Mode { get; set; }
         }
 
         public class MonitorRole
@@ -1580,7 +1642,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode32
+        public class Mode35
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -1601,7 +1663,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class Default
         {
             public FullscreenMode FullscreenMode { get; set; }
-            public Mode32 Mode { get; set; }
+            public Mode35 Mode { get; set; }
             public OnMonitorRole OnMonitorRole { get; set; }
             public PIPPosition PIPPosition { get; set; }
         }
@@ -1612,7 +1674,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode33
+        public class Mode36
         {
             public string valueSpaceRef { get; set; }
             public string Value { get; set; }
@@ -1621,7 +1683,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class OnCall
         {
             public Duration Duration { get; set; }
-            public Mode33 Mode { get; set; }
+            public Mode36 Mode { get; set; }
         }
 
         public class Selfview

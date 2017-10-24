@@ -179,7 +179,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 triList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
                     StartSearchBackspaceRepeat, StopSearchBackspaceRepeat, SearchKeypadBackspacePress);
 
-                triList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, Codec.StopSharing);
             }
             catch (Exception e)
             {

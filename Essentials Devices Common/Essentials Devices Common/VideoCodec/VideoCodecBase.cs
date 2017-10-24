@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Devices.Common.Codec;
 
@@ -32,6 +33,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public UsageTracking UsageTracker { get; set; }
 
         #endregion
+
+        /// <summary>
+        /// An internal pseudo-source that is routable and connected to the osd input
+        /// </summary>
+        public DummyRoutingInputsDevice OsdSource { get; protected set; }
 
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 

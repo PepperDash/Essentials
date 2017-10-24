@@ -44,11 +44,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public StringFeedback LocalLayoutFeedback { get; private set; }
 
-		/// <summary>
-		/// An internal pseudo-source that is routable and connected to the osd input
-		/// </summary>
-		public DummyRoutingInputsDevice OsdSource { get; private set; }
-
         private CodecCommandWithLabel CurrentSelfviewPipPosition;
 
         private CodecCommandWithLabel CurrentLocalLayout;
@@ -373,7 +368,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Video/Selfview" + Delimiter +
                 prefix + "/Status/Video/Layout" + Delimiter +
                 prefix + "/Bookings" + Delimiter +
-                prefix + "/Event/CallDisconnect" + Delimiter;        
+                prefix + "/Event/CallDisconnect" + Delimiter;// + 
+                //prefix + "/Event/Bookings" + Delimiter;
 
             return base.CustomActivate();
         }
@@ -726,7 +722,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         {
                             var directoryResults = new CodecDirectory();
 
-                            directoryResults = CiscoCodecPhonebook.ConvertCiscoPhonebookToGeneric(codecPhonebookResponse.CommandResponse.PhonebookSearchResult);
+                            if(codecPhonebookResponse.CommandResponse.PhonebookSearchResult.ResultInfo.TotalRows.Value != "0")
+                                directoryResults = CiscoCodecPhonebook.ConvertCiscoPhonebookToGeneric(codecPhonebookResponse.CommandResponse.PhonebookSearchResult);
 
                             PrintPhonebook(directoryResults);
 
@@ -1004,7 +1001,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SelectPresentationSource1()
         {
-            SelectPresentationByConnector(1);
+            SelectPresentationByConnector(2);
         }
 
         /// <summary>
@@ -1012,7 +1009,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SelectPresentationSource2()
         {
-            SelectPresentationByConnector(2);
+            SelectPresentationByConnector(3);
         }
 
         /// <summary>

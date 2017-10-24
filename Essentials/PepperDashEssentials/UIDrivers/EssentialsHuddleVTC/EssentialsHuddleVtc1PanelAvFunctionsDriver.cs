@@ -944,6 +944,8 @@ namespace PepperDash.Essentials
                 if (_CurrentRoom != null)
                     _CurrentRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
 
+                TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, () => _CurrentRoom.RunRouteAction("codecOsd"));
+
 				SetupHeaderButtons();
             }
             else

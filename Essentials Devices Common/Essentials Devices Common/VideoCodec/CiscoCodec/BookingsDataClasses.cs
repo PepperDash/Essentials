@@ -23,7 +23,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public class LastUpdated
         {
-            public DateTime Value { get; set; }
+            string _value;
+
+            public DateTime Value { 
+                get
+                {
+                    DateTime _valueDateTime;
+                    try
+                    {
+                        _valueDateTime = DateTime.Parse(_value);
+                        return _valueDateTime;
+                    }
+                    catch
+                    {
+                        return new DateTime();
+                    }
+                }
+                set
+                {
+                    _value = value.ToString();                                    
+                }
+            }
         }
 
         public class Id
@@ -275,7 +295,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             public string status { get; set; }
             public ResultInfo ResultInfo { get; set; }
-            public LastUpdated LastUpdated { get; set; }
+            //public LastUpdated LastUpdated { get; set; }
             public List<Booking> Booking { get; set; }
         }
 
