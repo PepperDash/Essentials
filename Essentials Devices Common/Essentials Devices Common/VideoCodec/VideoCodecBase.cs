@@ -43,10 +43,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
+        bool wasIsInCall;
+
         /// <summary>
         /// Returns true when any call is not in state Unknown, Disconnecting, Disconnected
         /// </summary>
-        public bool IsInCall { get { return ActiveCalls.Any(c => c.IsActiveCall); } }
+        public bool IsInCall 
+        { 
+            get
+            {
+                var value = ActiveCalls.Any(c => c.IsActiveCall);
+                return value; 
+            } 
+        }
 
         public BoolFeedback StandbyIsOnFeedback { get; private set; }
 
@@ -131,6 +140,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             if (AutoShareContentWhileInCall)
                 StartSharing();
+
+            if(IsInCall && !UsageTracker.UsageTrackingStarted)
+                UsageTracker.StartDeviceUsage();
+            else if(UsageTracker.UsageTrackingStarted && !IsInCall)
+                UsageTracker.EndDeviceUsage();
         }
 
         /// <summary>
