@@ -1293,11 +1293,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         var match = Regex.Match(CodecStatus.Status.SIP.Registration[0].URI.Value, @"(\d+)"); // extract numbers only
                         if (match.Success)
                         {
-                            Debug.Console(1, "Unable to extract phone number from string: '{0}'", CodecStatus.Status.SIP.Registration[0].URI.Value);
+                            Debug.Console(1, "Extracted phone number as '{0}' from string '{1}'", match.Groups[1].Value, CodecStatus.Status.SIP.Registration[0].URI.Value);
                             return match.Groups[1].Value;
                         }
                         else
+                        {
+                            Debug.Console(1, "Unable to extract phone number from string: '{0}'", CodecStatus.Status.SIP.Registration[0].URI.Value);
                             return string.Empty;
+                        }
                     }
                     else
                     {
