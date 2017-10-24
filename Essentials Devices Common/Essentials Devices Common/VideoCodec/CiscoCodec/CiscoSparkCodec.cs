@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Net.Https;
 using Crestron.SimplSharp.CrestronXml;
@@ -368,8 +369,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Video/Selfview" + Delimiter +
                 prefix + "/Status/Video/Layout" + Delimiter +
                 prefix + "/Bookings" + Delimiter +
-                prefix + "/Event/CallDisconnect" + Delimiter;// + 
-                //prefix + "/Event/Bookings" + Delimiter;
+                prefix + "/Event/CallDisconnect" + Delimiter + 
+                prefix + "/Event/Bookings" + Delimiter;
 
             return base.CustomActivate();
         }
@@ -662,13 +663,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 }
                 else if (response.IndexOf("\"Event\":{") > -1)
                 {
-                    // Event Message
+                    if (response.IndexOf("\"CallDisconnect\":{") > -1)
+                    {
+                        CiscoCodecEvents.RootObject eventReceived = new CiscoCodecEvents.RootObject();
 
-                    CiscoCodecEvents.RootObject eventReceived = new CiscoCodecEvents.RootObject();
+                        JsonConvert.PopulateObject(response, eventReceived);
 
-                    JsonConvert.PopulateObject(response, eventReceived);
-
-                    EvalutateEvent(eventReceived);
+                        EvalutateDisconnectEvent(eventReceived);
+                    }
                 }
                 else if (response.IndexOf("\"CommandResponse\":{") > -1)
                 {
@@ -760,7 +762,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// Evaluates an event received from the codec
         /// </summary>
         /// <param name="eventReceived"></param>
-        void EvalutateEvent(CiscoCodecEvents.RootObject eventReceived)
+        void EvalutateDisconnectEvent(CiscoCodecEvents.RootObject eventReceived)
         {
             if (eventReceived.Event.CallDisconnect != null)
             {
@@ -1286,18 +1288,30 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    if (CodecConfiguration.Configuration.H323.H323Alias.E164 != null)           
-                        return CodecConfiguration.Configuration.H323.H323Alias.E164.Value;
+                    if (CodecStatus.Status.SIP.Registration.Count > 0)
+                    {
+                        var match = Regex.Match(CodecStatus.Status.SIP.Registration[0].URI.Value, "\\d+"); // extract numbers only
+                        if (match.Success)
+                        {
+                            Debug.Console(1, "Unable to extract phone number from string: '{0}'", CodecStatus.Status.SIP.Registration[0].URI.Value);
+                            return match.Groups[1].Value;
+                        }
+                        else
+                            return string.Empty;
+                    }
                     else
+                    {
+                        Debug.Console(1, "Unable to extract phone number. No SIP Registration items found");
                         return string.Empty;
+                    }
                 }
             }
             public override string SipUri
             {
                 get
                 {
-                    if (CodecConfiguration.Configuration.H323.H323Alias.ID != null)          
-                        return CodecConfiguration.Configuration.H323.H323Alias.ID.Value;
+                    if (CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value != null)
+                        return CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value;
                     else
                         return string.Empty;
                 }

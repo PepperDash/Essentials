@@ -239,7 +239,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Cameras
         {
-            public List<Camera> Camera { get; set; }
+            //public List<Camera> Camera { get; set; }
             public SpeakerTrack SpeakerTrack { get; set; }
         }
 

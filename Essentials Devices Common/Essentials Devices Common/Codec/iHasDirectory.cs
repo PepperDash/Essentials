@@ -42,14 +42,16 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
         public void AddFoldersToDirectory(List<DirectoryItem> folders)
         {
-            DirectoryResults.AddRange(folders);
+            if(folders != null)
+                DirectoryResults.AddRange(folders);
 
             SortDirectory();
         }
 
         public void AddContactsToDirectory(List<DirectoryItem> contacts)
         {
-            DirectoryResults.AddRange(contacts);
+            if(contacts != null)
+                DirectoryResults.AddRange(contacts);
 
             SortDirectory();
         }

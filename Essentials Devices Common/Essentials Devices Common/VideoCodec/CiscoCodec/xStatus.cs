@@ -313,12 +313,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Cameras
         {
-            public List<Camera> Camera { get; set; }
+            //public List<Camera> Camera { get; set; }
             public SpeakerTrack SpeakerTrack { get; set; }
 
             public Cameras()
             {
-                Camera = new List<Camera>();
+                //Camera = new List<Camera>();
                 SpeakerTrack = new SpeakerTrack();
             }
         }
@@ -1109,6 +1109,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+        public class Primary
+        {
+            public URI URI { get; set; }
+
+            public Primary()
+            {
+                URI = new URI();
+            }
+        }
+
+        public class AlternateURI
+        {
+            public Primary Primary { get; set; }
+
+            public AlternateURI()
+            {
+                Primary = new Primary();
+            }
+        }
+
         public class Authentication
         {
             public string Value { get; set; }
@@ -1190,6 +1210,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Reason3 Reason { get; set; }
             public Status10 Status { get; set; }
             public URI3 URI { get; set; }
+
+            public Registration()
+            {
+                URI = new URI3();
+            }
         }
 
         public class Secure
@@ -1204,6 +1229,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class SIP
         {
+            public AlternateURI AlternateURI { get; set; }
             public Authentication Authentication { get; set; }
             public CallForward CallForward { get; set; }
             public Mailbox Mailbox { get; set; }
@@ -1211,6 +1237,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public List<Registration> Registration { get; set; }
             public Secure Secure { get; set; }
             public Verified Verified { get; set; }
+
+            public SIP()
+            {
+                AlternateURI = new AlternateURI();
+                Registration = new List<Registration>();
+            }
         }
 
         public class Mode7
