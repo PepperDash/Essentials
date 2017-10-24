@@ -443,6 +443,9 @@ namespace PepperDash.Essentials
 				// If the room is on, and the meeting is joinable
 				// and the LastMeetingDismissed != this meeting
 
+
+				Debug.Console(0, "*#* Room on: {0}, LastMeetingDismissed: {1} *#*", CurrentRoom.OnFeedback.BoolValue,
+					LastMeetingDismissed != null ? LastMeetingDismissed.StartTime.ToShortTimeString() : "null");
 				if (CurrentRoom.OnFeedback.BoolValue
 					&& LastMeetingDismissed == meeting)
 				{
@@ -450,7 +453,11 @@ namespace PepperDash.Essentials
 				}
 
 				LastMeetingDismissed = null;
-				if (meeting != null)
+				if (meeting == null)
+				{
+					HideNextMeetingPopup();
+				}
+				else
 				{
 					TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Upcoming meeting");
 					TriList.SetString(UIStringJoin.NextMeetingStartTimeText, meeting.StartTime.ToShortTimeString());
@@ -473,10 +480,11 @@ namespace PepperDash.Essentials
 
 					// indexOf = 3, 4 meetings :  
 					if (indexOfNext < meetings.Count)
-					{
 						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
 							meetings[indexOfNext].StartTime.ToShortTimeString());
-					}
+					else
+						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText, "No more meetings today");
+
 					TriList.SetSigFalseAction(UIBoolJoin.NextMeetingModalClosePress, () =>
 						{
 							// Mark the meeting to not re-harass the user

@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using Crestron.SimplSharp;
+
+using Newtonsoft.Json;
+
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
@@ -239,7 +243,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Cameras
         {
-            //public List<Camera> Camera { get; set; }
+			//[JsonConverter(typeof(CameraConverter))]
+			//public List<Camera> Camera { get; set; }
             public SpeakerTrack SpeakerTrack { get; set; }
         }
 
