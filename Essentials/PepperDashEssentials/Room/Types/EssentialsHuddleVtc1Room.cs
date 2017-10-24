@@ -55,8 +55,8 @@ namespace PepperDash.Essentials
                     var disp = DefaultDisplay as DisplayBase;
                     var val = CurrentSourceInfo != null
                         && CurrentSourceInfo.Type == eSourceListItemType.Route
-                        && disp != null
-                        && disp.PowerIsOnFeedback.BoolValue;
+                        && disp != null;
+						//&& disp.PowerIsOnFeedback.BoolValue;
                     return val;
                 };
             }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronXml.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 
@@ -313,12 +315,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Cameras
         {
-            public List<Camera> Camera { get; set; }
+			//[JsonConverter(typeof(CameraConverter))]
+			//public List<Camera> Camera { get; set; }
             public SpeakerTrack SpeakerTrack { get; set; }
 
             public Cameras()
             {
-                Camera = new List<Camera>();
+				//Camera = new List<Camera>();
                 SpeakerTrack = new SpeakerTrack();
             }
         }

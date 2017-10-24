@@ -137,6 +137,7 @@
     <Compile Include="Streaming\Roku.cs" />
     <Compile Include="VideoCodec\CiscoCodec\BookingsDataClasses.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CallHistoryDataClasses.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\CameraConverter.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CiscoSparkCodec.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CiscoSparkCodecPropertiesConfig.cs" />
     <Compile Include="VideoCodec\CiscoCodec\xStatusSparkPlus.cs" />
