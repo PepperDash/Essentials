@@ -194,7 +194,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <param name="e"></param>
         void Codec_IsReady()
         {
-            TriList.SetString(UIStringJoin.RoomPhoneText, Codec.CodecInfo.PhoneNumber);
+            TriList.SetString(UIStringJoin.RoomPhoneText, GetFormattedDialString(Codec.CodecInfo.PhoneNumber));
             TriList.SetString(UIStringJoin.RoomSipText, Codec.CodecInfo.SipUri);
 
             if(Parent.HeaderButtonsAreSetUp)

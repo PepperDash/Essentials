@@ -1290,7 +1290,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 {
                     if (CodecStatus.Status.SIP.Registration.Count > 0)
                     {
-                        var match = Regex.Match(CodecStatus.Status.SIP.Registration[0].URI.Value, "\\d+"); // extract numbers only
+                        var match = Regex.Match(CodecStatus.Status.SIP.Registration[0].URI.Value, @"(\d+)"); // extract numbers only
                         if (match.Success)
                         {
                             Debug.Console(1, "Unable to extract phone number from string: '{0}'", CodecStatus.Status.SIP.Registration[0].URI.Value);
