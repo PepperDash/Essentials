@@ -194,7 +194,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <param name="e"></param>
         void Codec_IsReady()
         {
-            TriList.SetString(UIStringJoin.RoomPhoneText, GetFormattedDialString(Codec.CodecInfo.PhoneNumber));
+            TriList.SetString(UIStringJoin.RoomPhoneText, GetFormattedPhoneNumber(Codec.CodecInfo.PhoneNumber));
             TriList.SetString(UIStringJoin.RoomSipText, Codec.CodecInfo.SipUri);
 
             if(Parent.HeaderButtonsAreSetUp)
@@ -221,6 +221,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     Parent.ShowNotificationRibbon("Connected", 2000);
                     StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
 					ShowKeypad();
+                    (Parent.CurrentRoom.CurrentVolumeControls as IBasicVolumeWithFeedback).MuteOff();
 					//VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
                     break;
                 case eCodecCallStatus.Connecting:
@@ -498,15 +499,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					if (i < favs.Count)
 					{
 						var fav = favs[(int)i];
-						TriList.SetString(1411 + i, fav.Name);
-						TriList.SetBool(1221 + i, true);
-						TriList.SetSigFalseAction(1211 + i, () =>
+                        TriList.SetString(UIStringJoin.VCFavoritesStart + i, fav.Name);
+						TriList.SetBool(UIBoolJoin.VCFavoriteVisibleStart + i, true);
+						TriList.SetSigFalseAction(UIBoolJoin.VCFavoritePressStart + i, () =>
 							{
 								Codec.Dial(fav.Number);
 							});
 					}
 					else
-						TriList.SetBool(1221 + i, false);
+                        TriList.SetBool(UIBoolJoin.VCFavoriteVisibleStart + i, false);
 				}
 			}
 		}
@@ -1073,7 +1074,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
 
         /// <summary>
-        /// 
+        /// Returns the text value for the keypad dial entry field
         /// </summary>
         /// <returns></returns>
         string GetFormattedDialString(string ds)
@@ -1082,21 +1083,33 @@ namespace PepperDash.Essentials.UIDrivers.VC
             {
                 return "Tap for keyboard";
             }
-            if(Regex.Match(ds, @"^\d{4,7}$").Success) // 456-7890
-                return string.Format("{0}-{1}", ds.Substring(0, 3), ds.Substring(3));
-            if (Regex.Match(ds, @"^9\d{4,7}$").Success) // 456-7890
-                return string.Format("9 {0}-{1}", ds.Substring(1, 3), ds.Substring(4));
-            if (Regex.Match(ds, @"^\d{8,10}$").Success) // 123-456-78
-                return string.Format("({0}) {1}-{2}", ds.Substring(0, 3), ds.Substring(3, 3), ds.Substring(6));
-            if (Regex.Match(ds, @"^\d{10}$").Success) // 123-456-7890 full
-                return string.Format("({0}) {1}-{2}", ds.Substring(0, 3), ds.Substring(3, 3), ds.Substring(6));
-            if (Regex.Match(ds, @"^1\d{10}$").Success)
-                return string.Format("+1 ({0}) {1}-{2}", ds.Substring(1, 3), ds.Substring(4, 3), ds.Substring(7));
-            if (Regex.Match(ds, @"^9\d{10}$").Success)
-                return string.Format("9 ({0}) {1}-{2}", ds.Substring(1, 3), ds.Substring(4, 3), ds.Substring(7));
-            if (Regex.Match(ds, @"^91\d{10}$").Success)
-                return string.Format("9 +1 ({0}) {1}-{2}", ds.Substring(2, 3), ds.Substring(5, 3), ds.Substring(8));
-            return ds;
+
+            return GetFormattedPhoneNumber(ds);
+            
+        }
+
+        /// <summary>
+        /// Formats a string of numbers as a North American phone number
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        string GetFormattedPhoneNumber(string s)
+        {
+            if (Regex.Match(s, @"^\d{4,7}$").Success) // 456-7890
+                return string.Format("{0}-{1}", s.Substring(0, 3), s.Substring(3));
+            if (Regex.Match(s, @"^9\d{4,7}$").Success) // 456-7890
+                return string.Format("9 {0}-{1}", s.Substring(1, 3), s.Substring(4));
+            if (Regex.Match(s, @"^\d{8,10}$").Success) // 123-456-78
+                return string.Format("({0}) {1}-{2}", s.Substring(0, 3), s.Substring(3, 3), s.Substring(6));
+            if (Regex.Match(s, @"^\d{10}$").Success) // 123-456-7890 full
+                return string.Format("({0}) {1}-{2}", s.Substring(0, 3), s.Substring(3, 3), s.Substring(6));
+            if (Regex.Match(s, @"^1\d{10}$").Success)
+                return string.Format("+1 ({0}) {1}-{2}", s.Substring(1, 3), s.Substring(4, 3), s.Substring(7));
+            if (Regex.Match(s, @"^9\d{10}$").Success)
+                return string.Format("9 ({0}) {1}-{2}", s.Substring(1, 3), s.Substring(4, 3), s.Substring(7));
+            if (Regex.Match(s, @"^91\d{10}$").Success)
+                return string.Format("9 +1 ({0}) {1}-{2}", s.Substring(2, 3), s.Substring(5, 3), s.Substring(8));
+            return s;
         }
 
         enum eKeypadMode

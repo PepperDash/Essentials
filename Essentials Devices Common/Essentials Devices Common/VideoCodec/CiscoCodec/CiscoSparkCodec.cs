@@ -885,7 +885,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         private void GetPhonebookContacts()
         {
             // Get Phonebook Folders (determine local/corporate from config, and set results limit)
-            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Contact", PhonebookMode));
+            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Contact Limit: {1}", PhonebookMode, PhonebookResultsLimit));
         }
 
         /// <summary>
@@ -991,7 +991,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        public void SelectPresentationByConnector(int source)
+        public void SelectPresentationSource(int source)
         {
             PresentationSource = source;
 
@@ -1003,7 +1003,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SelectPresentationSource1()
         {
-            SelectPresentationByConnector(2);
+            SelectPresentationSource(2);
         }
 
         /// <summary>
@@ -1011,7 +1011,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SelectPresentationSource2()
         {
-            SelectPresentationByConnector(3);
+            SelectPresentationSource(3);
         }
 
         /// <summary>

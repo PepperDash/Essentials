@@ -58,8 +58,12 @@ namespace PepperDash.Essentials.Fusion
                 var codecPowerOnAction = new Action<bool>(b => { if (!b) codec.StandbyDeactivate(); });
                 var codecPowerOffAction = new Action<bool>(b => { if (!b) codec.StandbyActivate(); });
 
-
                 // Map FusionRoom Attributes:
+
+                // Codec volume
+                var codecVolume = FusionRoom.CreateOffsetUshortSig(50, "Volume - Fader01", eSigIoMask.InputOutputSig);
+                codecVolume.OutputSig.UserObject = new Action<ushort>(b => (codec as IBasicVolumeWithFeedback).SetVolume(b));
+                (codec as IBasicVolumeWithFeedback).VolumeLevelFeedback.LinkInputSig(codecVolume.InputSig);
 
                 // In Call Status
                 CodecIsInCall = FusionRoom.CreateOffsetBoolSig(69, "Conf - VC 1 In Call", eSigIoMask.InputSigOnly);
@@ -331,11 +335,6 @@ namespace PepperDash.Essentials.Fusion
 
             if (display == (Room as EssentialsHuddleVtc1Room).DefaultDisplay)
             {
-                // Display volume
-                var defaultDisplayVolume = FusionRoom.CreateOffsetUshortSig(50, "Volume - Fader01", eSigIoMask.InputOutputSig);
-                defaultDisplayVolume.OutputSig.UserObject = new Action<ushort>(b => (display as IBasicVolumeWithFeedback).SetVolume(b));
-                (display as IBasicVolumeWithFeedback).VolumeLevelFeedback.LinkInputSig(defaultDisplayVolume.InputSig);
-
                 // Power on
                 var defaultDisplayPowerOn = FusionRoom.CreateOffsetBoolSig((uint)joinOffset, displayName + "Power On", eSigIoMask.InputOutputSig);
                 defaultDisplayPowerOn.OutputSig.UserObject = new Action<bool>(b => { if (!b) display.PowerOn(); });

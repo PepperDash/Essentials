@@ -1327,7 +1327,7 @@ namespace PepperDash.Essentials
         {
             var routeInfo = CurrentRoom.CurrentSourceInfo;
             // This will show off popup too
-            if (this.IsVisible)
+            if (this.IsVisible && !VCDriver.IsVisible)
                 ShowCurrentSource();
 
             if (routeInfo == null)// || !CurrentRoom.OnFeedback.BoolValue)
@@ -1454,6 +1454,7 @@ namespace PepperDash.Essentials
     {
         PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; }
         JoinedSigInterlock PopupInterlock { get; }
+        EssentialsHuddleVtc1Room CurrentRoom { get; }
         void ShowNotificationRibbon(string message, int timeout);
         void HideNotificationRibbon();
         void ComputeHeaderCallStatus(VideoCodecBase codec);

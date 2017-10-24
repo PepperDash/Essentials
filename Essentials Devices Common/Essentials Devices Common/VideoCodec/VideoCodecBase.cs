@@ -115,8 +115,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             OnCallStatusChange(call);
 
-            if (AutoShareContentWhileInCall)
-                StartSharing();
         }
 
         /// <summary>
@@ -130,6 +128,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             var handler = CallStatusChange;
             if (handler != null)
                 handler(this, new CodecCallStatusItemChangeEventArgs(item));
+
+            if (AutoShareContentWhileInCall)
+                StartSharing();
         }
 
         /// <summary>

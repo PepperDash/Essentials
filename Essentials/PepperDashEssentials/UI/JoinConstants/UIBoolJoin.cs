@@ -129,37 +129,17 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public const uint VCSelfViewLayoutVisible = 1208;
         /// <summary>
-        /// 1211
+        /// 1211 - 1215
         /// </summary>
-        public const uint VCFavorite1Press = 1211;
+        public const uint VCFavoritePressStart = 1211;
+        //									RANGE IN USE
+        public const uint VCFavoritePressEnd = 1215;
         /// <summary>
-        /// 1212
+        /// 1221 - 1225
         /// </summary>
-        public const uint VCFavorite2Press = 1212;
-        /// <summary>
-        /// 1213
-        /// </summary>
-        public const uint VCFavorite3Press = 1213;
-        /// <summary>
-        /// 1214
-        /// </summary>
-        public const uint VCFavorite4Press = 1214;
-        /// <summary>
-        /// 1221
-        /// </summary>
-        public const uint VCFavorite1Visible = 1221;
-        /// <summary>
-        /// 1222
-        /// </summary>
-        public const uint VCFavorite2Visible = 1222;
-        /// <summary>
-        /// 1223
-        /// </summary>
-        public const uint VCFavorite3Visible = 1223;
-        /// <summary>
-        /// 1224
-        /// </summary>
-        public const uint VCFavorite4Visible = 1224;
+        public const uint VCFavoriteVisibleStart = 1221;
+        //									RANGE IN USE
+        public const uint VCFavoriteVisibleEnd = 1225;
         /// <summary>
         /// 1231
         /// </summary>
