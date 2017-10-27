@@ -27,6 +27,8 @@ namespace PepperDash.Essentials.Core
         public InUseTracking InUseTracker { get; protected set; }
 
         public bool UsageIsTracked { get; set; }
+
+        public bool UsageTrackingStarted { get; protected set; }
         public DateTime UsageStartTime { get; protected set; }
         public DateTime UsageEndTime { get; protected set; }
 
@@ -59,6 +61,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void StartDeviceUsage()
         {
+            UsageTrackingStarted = true;
             UsageStartTime = DateTime.Now;
         }
 
@@ -69,6 +72,8 @@ namespace PepperDash.Essentials.Core
         {
             try
             {
+                UsageTrackingStarted = false;
+
                 UsageEndTime = DateTime.Now;
 
                 if (UsageStartTime != null)

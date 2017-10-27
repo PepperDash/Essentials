@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Devices.Common.Codec;
 
@@ -33,14 +34,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #endregion
 
+        /// <summary>
+        /// An internal pseudo-source that is routable and connected to the osd input
+        /// </summary>
+        public DummyRoutingInputsDevice OsdSource { get; protected set; }
+
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
+        bool wasIsInCall;
+
         /// <summary>
         /// Returns true when any call is not in state Unknown, Disconnecting, Disconnected
         /// </summary>
-        public bool IsInCall { get { return ActiveCalls.Any(c => c.IsActiveCall); } }
+        public bool IsInCall 
+        { 
+            get
+            {
+                var value = ActiveCalls.Any(c => c.IsActiveCall);
+                return value; 
+            } 
+        }
 
         public BoolFeedback StandbyIsOnFeedback { get; private set; }
 
@@ -109,8 +124,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             OnCallStatusChange(call);
 
-            if (AutoShareContentWhileInCall)
-                StartSharing();
         }
 
         /// <summary>
@@ -124,6 +137,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             var handler = CallStatusChange;
             if (handler != null)
                 handler(this, new CodecCallStatusItemChangeEventArgs(item));
+
+            if (AutoShareContentWhileInCall)
+                StartSharing();
+
+            if(IsInCall && !UsageTracker.UsageTrackingStarted)
+                UsageTracker.StartDeviceUsage();
+            else if(UsageTracker.UsageTrackingStarted && !IsInCall)
+                UsageTracker.EndDeviceUsage();
         }
 
         /// <summary>

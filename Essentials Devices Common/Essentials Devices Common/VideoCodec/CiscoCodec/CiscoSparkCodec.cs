@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Net.Https;
 using Crestron.SimplSharp.CrestronXml;
@@ -43,11 +44,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public StringFeedback SelfviewPipPositionFeedback { get; private set; }
 
         public StringFeedback LocalLayoutFeedback { get; private set; }
-
-		/// <summary>
-		/// An internal pseudo-source that is routable and connected to the osd input
-		/// </summary>
-		public DummyRoutingInputsDevice OsdSource { get; private set; }
 
         private CodecCommandWithLabel CurrentSelfviewPipPosition;
 
@@ -207,9 +203,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public bool CommDebuggingIsOn;
 
-
         string Delimiter = "\r\n";
 
+        /// <summary>
+        /// Used to track the current connector used for the presentation source
+        /// </summary>
         int PresentationSource;
 
         string PresentationSourceKey;
@@ -227,9 +225,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         // **___________________________________________________________________**
 
         public RoutingInputPort CodecOsdIn { get; private set; }
-        public RoutingInputPort HdmiIn1 { get; private set; }
         public RoutingInputPort HdmiIn2 { get; private set; }
-        public RoutingOutputPort HdmiOut { get; private set; }
+        public RoutingInputPort HdmiIn3 { get; private set; }
+        public RoutingOutputPort HdmiOut1 { get; private set; }
+        public RoutingOutputPort HdmiOut2 { get; private set; }
+
 
         // Constructor for IBasicCommunication
         public CiscoSparkCodec(string key, string name, IBasicCommunication comm, CiscoSparkCodecPropertiesConfig props )
@@ -304,18 +304,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
 			CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.AudioVideo, 
 				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
-			HdmiIn1 = new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, 
-				eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this);
 			HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, 
+				eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this);
+			HdmiIn3 = new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.AudioVideo, 
 				eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource2), this);
 
-			HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.AudioVideo, 
+			HdmiOut1 = new RoutingOutputPort(RoutingPortNames.HdmiOut1, eRoutingSignalType.AudioVideo, 
 				eRoutingPortConnectionType.Hdmi, null, this);
+            HdmiOut2 = new RoutingOutputPort(RoutingPortNames.HdmiOut2, eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.Hdmi, null, this);
 
 			InputPorts.Add(CodecOsdIn);
-			InputPorts.Add(HdmiIn1);
 			InputPorts.Add(HdmiIn2);
-			OutputPorts.Add(HdmiOut);
+			InputPorts.Add(HdmiIn3);
+			OutputPorts.Add(HdmiOut1);
 
 			CreateOsdSource();
         }
@@ -367,7 +369,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Video/Selfview" + Delimiter +
                 prefix + "/Status/Video/Layout" + Delimiter +
                 prefix + "/Bookings" + Delimiter +
-                prefix + "/Event/CallDisconnect" + Delimiter;        
+                prefix + "/Event/CallDisconnect" + Delimiter + 
+                prefix + "/Event/Bookings" + Delimiter;
 
             return base.CustomActivate();
         }
@@ -540,6 +543,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                     JsonConvert.PopulateObject(response, tempCodecStatus);
 
+                    // Check to see if the message contains /Status/Conference/Presentation/LocalInstance and extract source value 
+                    var conference = tempCodecStatus.Status.Conference;
+
+                    if (conference.Presentation.LocalInstance.Count > 0)
+                    {
+                        if (!string.IsNullOrEmpty(conference.Presentation.LocalInstance[0].ghost))
+                            PresentationSource = 0;
+                        else if (conference.Presentation.LocalInstance[0].Source != null)
+                        {
+                            PresentationSource = conference.Presentation.LocalInstance[0].Source.IntValue;
+                        }
+                    }
+
                     // Check to see if this is a call status message received after the initial status message
                     if (tempCodecStatus.Status.Call.Count > 0)
                     {
@@ -647,13 +663,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 }
                 else if (response.IndexOf("\"Event\":{") > -1)
                 {
-                    // Event Message
+                    if (response.IndexOf("\"CallDisconnect\":{") > -1)
+                    {
+                        CiscoCodecEvents.RootObject eventReceived = new CiscoCodecEvents.RootObject();
 
-                    CiscoCodecEvents.RootObject eventReceived = new CiscoCodecEvents.RootObject();
+                        JsonConvert.PopulateObject(response, eventReceived);
 
-                    JsonConvert.PopulateObject(response, eventReceived);
-
-                    EvalutateEvent(eventReceived);
+                        EvalutateDisconnectEvent(eventReceived);
+                    }
                 }
                 else if (response.IndexOf("\"CommandResponse\":{") > -1)
                 {
@@ -707,7 +724,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         {
                             var directoryResults = new CodecDirectory();
 
-                            directoryResults = CiscoCodecPhonebook.ConvertCiscoPhonebookToGeneric(codecPhonebookResponse.CommandResponse.PhonebookSearchResult);
+                            if(codecPhonebookResponse.CommandResponse.PhonebookSearchResult.ResultInfo.TotalRows.Value != "0")
+                                directoryResults = CiscoCodecPhonebook.ConvertCiscoPhonebookToGeneric(codecPhonebookResponse.CommandResponse.PhonebookSearchResult);
 
                             PrintPhonebook(directoryResults);
 
@@ -744,7 +762,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// Evaluates an event received from the codec
         /// </summary>
         /// <param name="eventReceived"></param>
-        void EvalutateEvent(CiscoCodecEvents.RootObject eventReceived)
+        void EvalutateDisconnectEvent(CiscoCodecEvents.RootObject eventReceived)
         {
             if (eventReceived.Event.CallDisconnect != null)
             {
@@ -783,6 +801,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
 			ExecuteSwitch(inputSelector);
+            PresentationSourceKey = inputSelector.ToString();
         }
 
 
@@ -866,7 +885,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         private void GetPhonebookContacts()
         {
             // Get Phonebook Folders (determine local/corporate from config, and set results limit)
-            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Contact", PhonebookMode));
+            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Contact Limit: {1}", PhonebookMode, PhonebookResultsLimit));
         }
 
         /// <summary>
@@ -984,7 +1003,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SelectPresentationSource1()
         {
-            SelectPresentationSource(1);
+            SelectPresentationSource(2);
         }
 
         /// <summary>
@@ -992,7 +1011,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SelectPresentationSource2()
         {
-            SelectPresentationSource(2);
+            SelectPresentationSource(3);
         }
 
         /// <summary>
@@ -1007,7 +1026,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             else
                 sendingMode = "LocalOnly";
 
-            SendText(string.Format("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", PresentationSource, sendingMode));
+            if(PresentationSource > 0)
+                SendText(string.Format("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", PresentationSource, sendingMode));
         }
 
         /// <summary>
@@ -1015,6 +1035,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public override void StopSharing()
         {
+            PresentationSource = 0;
+
             SendText("xCommand Presentation Stop");
         }
 
@@ -1267,18 +1289,33 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    if (CodecConfiguration.Configuration.H323.H323Alias.E164 != null)           
-                        return CodecConfiguration.Configuration.H323.H323Alias.E164.Value;
+                    if (CodecStatus.Status.SIP.Registration.Count > 0)
+                    {
+                        var match = Regex.Match(CodecStatus.Status.SIP.Registration[0].URI.Value, @"(\d+)"); // extract numbers only
+                        if (match.Success)
+                        {
+                            Debug.Console(1, "Extracted phone number as '{0}' from string '{1}'", match.Groups[1].Value, CodecStatus.Status.SIP.Registration[0].URI.Value);
+                            return match.Groups[1].Value;
+                        }
+                        else
+                        {
+                            Debug.Console(1, "Unable to extract phone number from string: '{0}'", CodecStatus.Status.SIP.Registration[0].URI.Value);
+                            return string.Empty;
+                        }
+                    }
                     else
+                    {
+                        Debug.Console(1, "Unable to extract phone number. No SIP Registration items found");
                         return string.Empty;
+                    }
                 }
             }
             public override string SipUri
             {
                 get
                 {
-                    if (CodecConfiguration.Configuration.H323.H323Alias.ID != null)          
-                        return CodecConfiguration.Configuration.H323.H323Alias.ID.Value;
+                    if (CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value != null)
+                        return CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value;
                     else
                         return string.Empty;
                 }

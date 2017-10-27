@@ -73,6 +73,8 @@ namespace PepperDash.Essentials
 
 		StringInputSig HeaderCallButtonIconSig;
 
+        BoolFeedback CallSharingInfoVisibleFeedback;
+
 
         /// <summary>
         /// The parent driver for this
@@ -441,6 +443,9 @@ namespace PepperDash.Essentials
 				// If the room is on, and the meeting is joinable
 				// and the LastMeetingDismissed != this meeting
 
+
+				Debug.Console(0, "*#* Room on: {0}, LastMeetingDismissed: {1} *#*", CurrentRoom.OnFeedback.BoolValue,
+					LastMeetingDismissed != null ? LastMeetingDismissed.StartTime.ToShortTimeString() : "null");
 				if (CurrentRoom.OnFeedback.BoolValue
 					&& LastMeetingDismissed == meeting)
 				{
@@ -448,7 +453,11 @@ namespace PepperDash.Essentials
 				}
 
 				LastMeetingDismissed = null;
-				if (meeting != null)
+				if (meeting == null)
+				{
+					HideNextMeetingPopup();
+				}
+				else
 				{
 					TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Upcoming meeting");
 					TriList.SetString(UIStringJoin.NextMeetingStartTimeText, meeting.StartTime.ToShortTimeString());
@@ -471,10 +480,11 @@ namespace PepperDash.Essentials
 
 					// indexOf = 3, 4 meetings :  
 					if (indexOfNext < meetings.Count)
-					{
 						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
 							meetings[indexOfNext].StartTime.ToShortTimeString());
-					}
+					else
+						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText, "No more meetings today");
+
 					TriList.SetSigFalseAction(UIBoolJoin.NextMeetingModalClosePress, () =>
 						{
 							// Mark the meeting to not re-harass the user
@@ -932,6 +942,18 @@ namespace PepperDash.Essentials
                 _CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
                 RefreshSourceInfo();
 
+
+                CallSharingInfoVisibleFeedback = new BoolFeedback(() => _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue);
+                _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.OutputChange += new EventHandler<EventArgs>(SharingContentIsOnFeedback_OutputChange);
+                CallSharingInfoVisibleFeedback.LinkInputSig(TriList.BooleanInput[UIBoolJoin.CallSharedSourceInfoVisible]);
+
+                SetActiveCallListSharingContentStatus();
+
+                if (_CurrentRoom != null)
+                    _CurrentRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
+
+                TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, () => _CurrentRoom.RunRouteAction("codecOsd"));
+
 				SetupHeaderButtons();
             }
             else
@@ -940,6 +962,46 @@ namespace PepperDash.Essentials
                 TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = "Select a room";
             }
         }
+
+        /// <summary>
+        /// Updates the current shared source label on the call list when the source changes
+        /// </summary>
+        /// <param name="room"></param>
+        /// <param name="info"></param>
+        /// <param name="type"></param>
+        void CurrentRoom_CurrentSingleSourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        {
+            if (_CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue)
+                TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = _CurrentRoom.CurrentSourceInfo.PreferredName;
+        }
+
+        /// <summary>
+        /// Fires when the sharing source feedback of the codec changes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void SharingContentIsOnFeedback_OutputChange(object sender, EventArgs e)
+        {
+            SetActiveCallListSharingContentStatus();
+        }
+
+        /// <summary>
+        /// Sets the values for the text and button visibilty for the active call list source sharing info
+        /// </summary>
+        void SetActiveCallListSharingContentStatus()
+        {
+            CallSharingInfoVisibleFeedback.FireUpdate();
+
+            string callListSharedSourceLabel;
+
+            if (_CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue)
+                callListSharedSourceLabel = _CurrentRoom.CurrentSourceInfo.PreferredName;
+            else
+                callListSharedSourceLabel = "None";
+
+            TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = callListSharedSourceLabel;
+        }
+
 
 		/// <summary>
 		/// 
@@ -1265,7 +1327,7 @@ namespace PepperDash.Essentials
         {
             var routeInfo = CurrentRoom.CurrentSourceInfo;
             // This will show off popup too
-            if (this.IsVisible)
+            if (this.IsVisible && !VCDriver.IsVisible)
                 ShowCurrentSource();
 
             if (routeInfo == null)// || !CurrentRoom.OnFeedback.BoolValue)

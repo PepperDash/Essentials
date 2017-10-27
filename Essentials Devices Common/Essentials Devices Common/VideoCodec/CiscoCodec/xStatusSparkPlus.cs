@@ -3,37 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronXml.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-using PepperDash.Core;
-
-namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
+namespace PepperDash.Essentials.Devices.Common.VideoCodec.CiscoCodec
 {
-    /// <summary>
-    /// This class exists to capture serialized data sent back by a Cisco codec in JSON output mode
-    /// </summary>
-    public class CiscoCodecStatus
+    public class xStatusSparkPlus
     {
-        // Helper Classes for Proerties
-        public abstract class ValueProperty
-        {
-            /// <summary>
-            /// Triggered when Value is set
-            /// </summary>
-            public Action ValueChangedAction { get; set; }
-
-            protected void OnValueChanged()
-            {
-                var a = ValueChangedAction;
-                if (a != null)
-                    a();
-            }
-
-        }
-
-
         public class ConnectionStatus
         {
             public string Value { get; set; }
@@ -61,29 +35,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Connectors Connectors { get; set; }
         }
 
-        public class Mute : ValueProperty
+        public class Mute
         {
-            public bool BoolValue { get; private set; }
-
-            public string Value
-            {
-                set
-                {
-                    // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
-                    BoolValue = value == "On";
-                    OnValueChanged();
-                }
-            }
+            public string Value { get; set; }
         }
 
         public class Microphones
         {
             public Mute Mute { get; set; }
-
-            public Microphones()
-            {
-                Mute = new Mute();
-            }
         }
 
         public class ConnectionStatus2
@@ -113,70 +72,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Connectors2 Connectors { get; set; }
         }
 
-        public class Volume : ValueProperty
+        public class Volume
         {
-            string _Value;
-
-            /// <summary>
-            /// Sets Value and triggers the action when set
-            /// </summary>
-            public string Value 
-            {
-                get
-                {
-                    return _Value;
-                }
-                set
-                {
-                    _Value = value;
-                    OnValueChanged();
-                }
-            }
-
-            /// <summary>
-            /// Converted value of _Value for use as feedback
-            /// </summary>
-            public int IntValue
-            {
-                get
-                {
-                    if (!string.IsNullOrEmpty(_Value))
-                        return Convert.ToInt32(_Value);
-                    else
-                        return 0;
-                }
-            }
+            public string Value { get; set; }
         }
 
-        public class VolumeMute : ValueProperty
+        public class VolumeMute
         {
-            public bool BoolValue { get; private set; }
-
-            public string Value 
-            {
-                set
-                {
-                    // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
-                    BoolValue = value == "On";
-                    OnValueChanged();
-                }
-            }
+            public string Value { get; set; }
         }
 
         public class Audio
         {
             public Input Input { get; set; }
-            public Microphones Microphones { get; set; } // Can we have this setter fire the update on the CiscoCodec feedback?
+            public Microphones Microphones { get; set; }
             public Output Output { get; set; }
-            public Volume Volume { get; set; }  
-            public VolumeMute VolumeMute { get; set; } 
-
-            public Audio()
-            {
-                Volume = new Volume();
-                VolumeMute = new VolumeMute();
-                Microphones = new Microphones();
-            }
+            public Volume Volume { get; set; }
+            public VolumeMute VolumeMute { get; set; }
         }
 
         public class Id
@@ -209,17 +121,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Framerate
-        {
-            public string Value { get; set; }
-        }
-
         public class Flip
         {
             public string Value { get; set; }
         }
 
         public class HardwareID
+        {
+            public string Value { get; set; }
+        }
+
+        public class MacAddress
         {
             public string Value { get; set; }
         }
@@ -256,6 +168,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Zoom Zoom { get; set; }
         }
 
+        public class SerialNumber
+        {
+            public string Value { get; set; }
+        }
+
         public class SoftwareID
         {
             public string Value { get; set; }
@@ -281,49 +198,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Status2 : ValueProperty
+        public class Status2
         {
-            string _Value;
-            public bool BoolValue { get; private set; }
-
-            public string Value
-            {
-                get
-                {
-                    return _Value;
-                }
-                set
-                {
-                    // If the incoming value is "Active" it sets the BoolValue true, otherwise sets it false
-                    _Value = value;
-                    BoolValue = value == "Active";
-                    OnValueChanged();
-                }
-            }
+            public string Value { get; set; }
         }
 
         public class SpeakerTrack
         {
             public Availability Availability { get; set; }
             public Status2 Status { get; set; }
-
-            public SpeakerTrack()
-            {
-                Status = new Status2();
-            }
         }
 
         public class Cameras
         {
-			//[JsonConverter(typeof(CameraConverter))]
-			//public List<Camera> Camera { get; set; }
+            public List<Camera> Camera { get; set; }
             public SpeakerTrack SpeakerTrack { get; set; }
-
-            public Cameras()
-            {
-				//Camera = new List<Camera>();
-                SpeakerTrack = new SpeakerTrack();
-            }
         }
 
         public class MaxActiveCalls
@@ -379,9 +268,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
+        public class Line2
+        {
+            public string id { get; set; }
+            public Mode Mode { get; set; }
+        }
+
+        public class Mode2
+        {
+            public string Value { get; set; }
+        }
+
         public class Multipoint
         {
-            public Mode Mode { get; set; }
+            public Mode2 Mode { get; set; }
         }
 
         public class CallId2
@@ -389,22 +289,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode2 : ValueProperty
+        public class SendingMode
         {
-            public bool BoolValue { get; private set; }
+            public string Value { get; set; }
+        }
 
-            public string Value
-            {
-                set
-                {
-                    // If the incoming value is "Sending" it sets the BoolValue true, otherwise sets it false
-                    BoolValue = value == "Sending";
-                    OnValueChanged();
-                }
-            }
+        public class Source
+        {
+            public string Value { get; set; }
+        }
+
+        public class LocalInstance
+        {
+            public string id { get; set; }
+            public SendingMode SendingMode { get; set; }
+            public Source Source { get; set; }
         }
 
         public class Mode3
+        {
+            public string Value { get; set; }
+        }
+
+        public class Mode4
         {
             public string Value { get; set; }
         }
@@ -421,76 +328,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Whiteboard
         {
-            public Mode3 Mode { get; set; }
+            public Mode4 Mode { get; set; }
             public ReleaseFloorAvailability ReleaseFloorAvailability { get; set; }
             public RequestFloorAvailability RequestFloorAvailability { get; set; }
         }
 
-        public class Source2 : ValueProperty
-        {
-            string _Value;
-
-            /// <summary>
-            /// Sets Value and triggers the action when set
-            /// </summary>
-            public string Value
-            {
-                get
-                {
-                    return _Value;
-                }
-                set
-                {
-                    _Value = value;
-                    OnValueChanged();
-                }
-            }
-
-            /// <summary>
-            /// Converted value of _Value for use as feedback
-            /// </summary>
-            public int IntValue
-            {
-                get
-                {
-                    if (!string.IsNullOrEmpty(_Value))
-                        return Convert.ToInt32(_Value);
-                    else
-                        return 0;
-                }
-            }
-        }
-
-        public class SendingMode
-        {
-            public string Value { get; set; }
-        }
-
-        public class LocalInstance
-        {
-            public string id { get; set; }
-            public string ghost { get; set; }
-            public SendingMode SendingMode {get; set;}
-            public Source2 Source { get; set; }
-
-            public LocalInstance()
-            {
-                Source = new Source2();
-            }
-        }
-
         public class Presentation
         {
-            public CallId2 CallId { get;  set; }
-            public Mode2 Mode { get;  set; }
-            public Whiteboard Whiteboard { get;  set; }
-            public List<LocalInstance> LocalInstance { get;  set; }
-
-            public Presentation()
-            {
-                Mode = new Mode2();
-                LocalInstance = new List<LocalInstance>();
-            }
+            public CallId2 CallId { get; set; }
+            public List<LocalInstance> LocalInstance { get; set; }
+            public Mode3 Mode { get; set; }
+            public Whiteboard Whiteboard { get; set; }
         }
 
         public class CallId3
@@ -498,7 +346,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode4
+        public class Mode5
         {
             public string Value { get; set; }
         }
@@ -506,55 +354,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class SpeakerLock
         {
             public CallId3 CallId { get; set; }
-            public Mode4 Mode { get; set; }
+            public Mode5 Mode { get; set; }
         }
 
         public class Conference2
         {
             public ActiveSpeaker ActiveSpeaker { get; set; }
             public DoNotDisturb DoNotDisturb { get; set; }
+            public List<Line2> Line { get; set; }
             public Multipoint Multipoint { get; set; }
             public Presentation Presentation { get; set; }
             public SpeakerLock SpeakerLock { get; set; }
-
-            public Conference2()
-            {
-                Presentation = new Presentation();
-            }
-        }
-
-        public class Description
-        {
-            public string Value { get; set; }
-        }
-
-        public class Level
-        {
-            public string Value { get; set; }
-        }
-
-        public class References
-        {
-            public string Value { get; set; }
-        }
-
-        public class Type
-        {
-            public string Value { get; set; }
-        }
-
-        public class Message
-        {
-            public string id { get; set; }
-            public Description Description { get; set; }
-            public Level Level { get; set; }
-            public References References { get; set; }
-            public Type Type { get; set; }
-        }
-
-        public class Diagnostics
-        {
-            public List<Message> Message { get; set; }
         }
 
         public class Conference3
@@ -604,7 +414,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode5
+        public class Mode6
         {
             public Reason2 Reason { get; set; }
             public Status4 Status { get; set; }
@@ -613,7 +423,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class H323
         {
             public Gatekeeper Gatekeeper { get; set; }
-            public Mode5 Mode { get; set; }
+            public Mode6 Mode { get; set; }
         }
 
         public class Expression
@@ -747,7 +557,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public List<Server> Server { get; set; }
         }
 
-        public class MacAddress
+        public class MacAddress2
         {
             public string Value { get; set; }
         }
@@ -759,7 +569,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Ethernet
         {
-            public MacAddress MacAddress { get; set; }
+            public MacAddress2 MacAddress { get; set; }
             public Speed Speed { get; set; }
         }
 
@@ -885,7 +695,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Type2
+        public class Type
         {
             public string Value { get; set; }
         }
@@ -903,7 +713,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Name2 Name { get; set; }
             public SoftwareInfo SoftwareInfo { get; set; }
             public Status6 Status { get; set; }
-            public Type2 Type { get; set; }
+            public Type Type { get; set; }
             public UpgradeStatus UpgradeStatus { get; set; }
         }
 
@@ -966,7 +776,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Message2
+        public class Message
         {
             public string Value { get; set; }
         }
@@ -999,7 +809,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class UpgradeStatus2
         {
             public LastChange LastChange { get; set; }
-            public Message2 Message { get; set; }
+            public Message Message { get; set; }
             public Phase Phase { get; set; }
             public SessionId SessionId { get; set; }
             public Status7 Status { get; set; }
@@ -1040,96 +850,40 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Services Services { get; set; }
         }
 
-        public class Current3 : ValueProperty
+        public class Current3
         {
-            string _Value;
-
-            /// <summary>
-            /// Sets Value and triggers the action when set
-            /// </summary>
-            public string Value
-            {
-                get
-                {
-                    return _Value;
-                }
-                set
-                {
-                    _Value = value;
-                    OnValueChanged();
-                }
-            }
-
-            /// <summary>
-            /// Converted value of _Value for use as feedback
-            /// </summary>
-            public int IntValue
-            {
-                get
-                {
-                    if (!string.IsNullOrEmpty(_Value))
-                        return Convert.ToInt32(_Value);
-                    else
-                        return 0;
-                }
-            }
+            public string Value { get; set; }
         }
 
         public class PeopleCount
         {
             public Current3 Current { get; set; }
-
-            public PeopleCount()
-            {
-                Current = new Current3();
-            }
         }
 
-        public class PeoplePresence : ValueProperty
+        public class PeoplePresence
         {
-            public bool BoolValue { get; private set; }
-
-            public string Value
-            {
-                set
-                {
-                    // If the incoming value is "Yes" it sets the BoolValue true, otherwise sets it false
-                    BoolValue = value == "Yes";
-                    OnValueChanged();
-                }
-            }
+            public string Value { get; set; }
         }
 
         public class RoomAnalytics
         {
             public PeopleCount PeopleCount { get; set; }
             public PeoplePresence PeoplePresence { get; set; }
+        }
 
-            public RoomAnalytics()
-            {
-                PeopleCount = new PeopleCount();
-                PeoplePresence = new PeoplePresence();
-            }
+        public class URI
+        {
+            public string Value { get; set; }
         }
 
         public class Primary
         {
             public URI URI { get; set; }
-
-            public Primary()
-            {
-                URI = new URI();
-            }
         }
 
         public class AlternateURI
         {
             public Primary Primary { get; set; }
-
-            public AlternateURI()
-            {
-                Primary = new Primary();
-            }
         }
 
         public class Authentication
@@ -1142,24 +896,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode6
-        {
-            public string Value { get; set; }
-        }
-
-        public class URI
-        {
-            public string Value { get; set; }
-        }
-
-        public class CallForward
-        {
-            public DisplayName DisplayName { get; set; }
-            public Mode6 Mode { get; set; }
-            public URI URI { get; set; }
-        }
-
-        public class MessagesWaiting
+        public class Mode7
         {
             public string Value { get; set; }
         }
@@ -1169,10 +906,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
+        public class CallForward
+        {
+            public DisplayName DisplayName { get; set; }
+            public Mode7 Mode { get; set; }
+            public URI2 URI { get; set; }
+        }
+
+        public class MessagesWaiting
+        {
+            public string Value { get; set; }
+        }
+
+        public class URI3
+        {
+            public string Value { get; set; }
+        }
+
         public class Mailbox
         {
             public MessagesWaiting MessagesWaiting { get; set; }
-            public URI2 URI { get; set; }
+            public URI3 URI { get; set; }
         }
 
         public class Address7
@@ -1202,7 +956,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class URI3
+        public class URI4
         {
             public string Value { get; set; }
         }
@@ -1212,12 +966,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string id { get; set; }
             public Reason3 Reason { get; set; }
             public Status10 Status { get; set; }
-            public URI3 URI { get; set; }
-
-            public Registration()
-            {
-                URI = new URI3();
-            }
+            public URI4 URI { get; set; }
         }
 
         public class Secure
@@ -1240,22 +989,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public List<Registration> Registration { get; set; }
             public Secure Secure { get; set; }
             public Verified Verified { get; set; }
-
-            public SIP()
-            {
-                AlternateURI = new AlternateURI();
-                Registration = new List<Registration>();
-            }
         }
 
-        public class Mode7
+        public class Mode8
         {
             public string Value { get; set; }
         }
 
         public class FIPS
         {
-            public Mode7 Mode { get; set; }
+            public Mode8 Mode { get; set; }
         }
 
         public class CallHistory
@@ -1298,29 +1041,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Persistency Persistency { get; set; }
         }
 
-        public class State : ValueProperty
+        public class State
         {
-            public bool BoolValue { get; private set; }
-
-            public string Value // Valid values are Standby/EnteringStandby/Halfwake/Off
-            {
-                set
-                {
-                    // If the incoming value is "Of" it sets the BoolValue true, otherwise sets it false
-                    BoolValue = value == "Off";
-                    OnValueChanged();
-                }
-            }
+            public string Value { get; set; }
         }
 
         public class Standby
         {
             public State State { get; set; }
-
-            public Standby()
-            {
-                State = new State();
-            }
         }
 
         public class CompatibilityLevel
@@ -1328,7 +1056,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class SerialNumber
+        public class SerialNumber2
         {
             public string Value { get; set; }
         }
@@ -1336,7 +1064,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class Module
         {
             public CompatibilityLevel CompatibilityLevel { get; set; }
-            public SerialNumber SerialNumber { get; set; }
+            public SerialNumber2 SerialNumber { get; set; }
         }
 
         public class Hardware
@@ -1389,11 +1117,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Encryption Encryption { get; set; }
             public MultiSite MultiSite { get; set; }
             public RemoteMonitoring RemoteMonitoring { get; set; }
-
-            public OptionKeys()
-            {
-                MultiSite = new MultiSite();
-            }
         }
 
         public class ReleaseDate
@@ -1413,11 +1136,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public OptionKeys OptionKeys { get; set; }
             public ReleaseDate ReleaseDate { get; set; }
             public Version2 Version { get; set; }
-
-            public Software2()
-            {
-                OptionKeys = new OptionKeys();
-            }
         }
 
         public class NumberOfActiveCalls
@@ -1456,11 +1174,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Software2 Software { get; set; }
             public State2 State { get; set; }
             public Uptime Uptime { get; set; }
-
-            public SystemUnit()
-            {
-                Software = new Software2();
-            }
         }
 
         public class SystemTime
@@ -1515,6 +1228,40 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
+        public class DeviceType
+        {
+            public string Value { get; set; }
+        }
+
+        public class Name5
+        {
+            public string Value { get; set; }
+        }
+
+        public class PowerStatus
+        {
+            public string Value { get; set; }
+        }
+
+        public class VendorId
+        {
+            public string Value { get; set; }
+        }
+
+        public class CEC
+        {
+            public string id { get; set; }
+            public DeviceType DeviceType { get; set; }
+            public Name5 Name { get; set; }
+            public PowerStatus PowerStatus { get; set; }
+            public VendorId VendorId { get; set; }
+        }
+
+        public class ConnectedDevice2
+        {
+            public List<CEC> CEC { get; set; }
+        }
+
         public class SignalState
         {
             public string Value { get; set; }
@@ -1525,7 +1272,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Type3
+        public class Type2
         {
             public string Value { get; set; }
         }
@@ -1534,9 +1281,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             public string id { get; set; }
             public Connected2 Connected { get; set; }
+            public ConnectedDevice2 ConnectedDevice { get; set; }
             public SignalState SignalState { get; set; }
             public SourceId SourceId { get; set; }
-            public Type3 Type { get; set; }
+            public Type2 Type { get; set; }
         }
 
         public class MainVideoSource
@@ -1586,7 +1334,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Width Width { get; set; }
         }
 
-        public class Source
+        public class Source2
         {
             public string id { get; set; }
             public ConnectorId ConnectorId { get; set; }
@@ -1600,45 +1348,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             public List<Connector> Connector { get; set; }
             public MainVideoSource MainVideoSource { get; set; }
-            public List<Source> Source { get; set; }
+            public List<Source2> Source { get; set; }
         }
 
-        public class Local : ValueProperty
+        public class Local
         {
-            string _Value;
-
-            public string Value // Valid values are On/Off
-            {
-                get
-                {
-                    return _Value;
-                }
-                set
-                {
-                    _Value = value;
-                    OnValueChanged();
-                }
-            }
+            public string Value { get; set; }
         }
 
         public class LayoutFamily
         {
             public Local Local { get; set; }
-
-            public LayoutFamily()
-            {
-                Local = new Local();
-            }
         }
 
         public class Layout
         {
             public LayoutFamily LayoutFamily { get; set; }
-
-            public Layout()
-            {
-                LayoutFamily = new LayoutFamily();
-            }
         }
 
         public class Monitors
@@ -1651,7 +1376,36 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Name5
+        public class DeviceType2
+        {
+            public string Value { get; set; }
+        }
+
+        public class Name6
+        {
+            public string Value { get; set; }
+        }
+
+        public class PowerStatus2
+        {
+            public string Value { get; set; }
+        }
+
+        public class VendorId2
+        {
+            public string Value { get; set; }
+        }
+
+        public class CEC2
+        {
+            public string id { get; set; }
+            public DeviceType2 DeviceType { get; set; }
+            public Name6 Name { get; set; }
+            public PowerStatus2 PowerStatus { get; set; }
+            public VendorId2 VendorId { get; set; }
+        }
+
+        public class Name7
         {
             public string Value { get; set; }
         }
@@ -1661,9 +1415,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class ConnectedDevice2
+        public class ConnectedDevice3
         {
-            public Name5 Name { get; set; }
+            public List<CEC2> CEC { get; set; }
+            public Name7 Name { get; set; }
             public PreferredFormat PreferredFormat { get; set; }
         }
 
@@ -1694,7 +1449,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Width2 Width { get; set; }
         }
 
-        public class Type4
+        public class Type3
         {
             public string Value { get; set; }
         }
@@ -1703,10 +1458,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             public string id { get; set; }
             public Connected3 Connected { get; set; }
-            public ConnectedDevice2 ConnectedDevice { get; set; }
+            public ConnectedDevice3 ConnectedDevice { get; set; }
             public MonitorRole MonitorRole { get; set; }
             public Resolution2 Resolution { get; set; }
-            public Type4 Type { get; set; }
+            public Type3 Type { get; set; }
         }
 
         public class Output2
@@ -1729,57 +1484,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Mode8 : ValueProperty
+        public class Mode9
         {
-            public bool BoolValue { get; private set; }
-
-            public string Value // Valid values are On/Off
-            {
-                set
-                {
-                    // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
-                    BoolValue = value == "On";
-                    OnValueChanged();
-                }
-            }
+            public string Value { get; set; }
         }
-
 
         public class OnMonitorRole
         {
             public string Value { get; set; }
         }
 
-        public class PIPPosition3 : ValueProperty
+        public class PIPPosition3
         {
-            string _Value;
-
-            public string Value
-            {
-                get
-                {
-                    return _Value;
-                }
-                set
-                {
-                    _Value = value;
-                    OnValueChanged();
-                }
-            }
+            public string Value { get; set; }
         }
 
         public class Selfview
         {
             public FullscreenMode FullscreenMode { get; set; }
-            public Mode8 Mode { get; set; }
+            public Mode9 Mode { get; set; }
             public OnMonitorRole OnMonitorRole { get; set; }
             public PIPPosition3 PIPPosition { get; set; }
-
-            public Selfview()
-            {
-                Mode = new Mode8();
-                PIPPosition = new PIPPosition3();
-            }
         }
 
         public class Video
@@ -1791,116 +1516,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Output2 Output { get; set; }
             public Presentation2 Presentation { get; set; }
             public Selfview Selfview { get; set; }
-
-            public Video()
-            {
-                Selfview = new Selfview();
-                Layout = new Layout();
-            }
-        }
-
-        public class AnswerState
-        {
-            public string Value { get; set; }
-        }
-
-        public class CallType
-        {
-            public string Value { get; set; }
-        }
-
-        public class CallbackNumber
-        {
-            public string Value { get; set; }
-        }
-
-        public class DeviceType
-        {
-            public string Value { get; set; }
-        }
-
-        public class Direction
-        {
-            public string Value { get; set; }
-        }
-
-        public class Duration
-        {
-            public string Value { get; set; }
-        }
-
-        public class FacilityServiceId
-        {
-            public string Value { get; set; }
-        }
-
-        public class HoldReason
-        {
-            public string Value { get; set; }
-        }
-
-        public class PlacedOnHold
-        {
-            public string Value { get; set; }
-        }
-
-        public class Protocol
-        {
-            public string Value { get; set; }
-        }
-
-        public class ReceiveCallRate
-        {
-            public string Value { get; set; }
-        }
-
-        public class RemoteNumber
-        {
-            public string Value { get; set; }
-        }
-
-        public class TransmitCallRate
-        {
-            public string Value { get; set; }
-        }
-
-        public class Call
-        {
-            public string id { get; set; }
-            public AnswerState AnswerState { get; set; }
-            public CallType CallType { get; set; }
-            public CallbackNumber CallbackNumber { get; set; }
-            public DeviceType DeviceType { get; set; }
-            public Direction Direction { get; set; }
-            public DisplayName DisplayName { get; set; }
-            public Duration Duration { get; set; }
-            public Encryption Encryption { get; set; }
-            public FacilityServiceId FacilityServiceId { get; set; }
-            public string ghost { get; set; }
-            public HoldReason HoldReason { get; set; }
-            public PlacedOnHold PlacedOnHold { get; set; }
-            public Protocol Protocol { get; set; }
-            public ReceiveCallRate ReceiveCallRate { get; set; }
-            public RemoteNumber RemoteNumber { get; set; }
-            public Status2 Status { get; set; }
-            public TransmitCallRate TransmitCallRate { get; set; }
-
-            public Call()
-            {
-                CallType = new CallType();
-                Status = new Status2();
-            }
         }
 
         public class Status
         {
             public Audio Audio { get; set; }
             public Bookings Bookings { get; set; }
-            public List<Call> Call { get; set; }
             public Cameras Cameras { get; set; }
             public Capabilities2 Capabilities { get; set; }
             public Conference2 Conference { get; set; }
-            public Diagnostics Diagnostics { get; set; }
             public Experimental Experimental { get; set; }
             public H323 H323 { get; set; }
             public List<HttpFeedback> HttpFeedback { get; set; }
@@ -1918,28 +1542,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Time Time { get; set; }
             public UserInterface UserInterface { get; set; }
             public Video Video { get; set; }
-
-            public Status()
-            {
-                Audio = new Audio();
-                Call = new List<Call>();
-                Standby = new Standby();
-                Cameras = new Cameras();
-                RoomAnalytics = new RoomAnalytics();
-                Conference = new Conference2();
-                SystemUnit = new SystemUnit();
-                Video = new Video();
-            }
         }
 
         public class RootObject
         {
             public Status Status { get; set; }
-
-            public RootObject()
-            {
-                Status = new Status();
-            }
         }
     }
 }

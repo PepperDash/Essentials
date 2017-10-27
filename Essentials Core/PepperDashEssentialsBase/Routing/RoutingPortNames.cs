@@ -132,6 +132,30 @@ namespace PepperDash.Essentials.Core.Routing
         /// </summary>
 		public const string HdmiOut = "hdmiOut";
         /// <summary>
+        /// hdmiOut1
+        /// </summary>
+        public const string HdmiOut1 = "hdmiOut1";
+        /// <summary>
+        /// hdmiOut2
+        /// </summary>
+        public const string HdmiOut2 = "hdmiOut2";
+        /// <summary>
+        /// hdmiOut3
+        /// </summary>
+        public const string HdmiOut3 = "hdmiOut3";
+        /// <summary>
+        /// hdmiOut4
+        /// </summary>
+        public const string HdmiOut4 = "hdmiOut4";
+        /// <summary>
+        /// hdmiOut5
+        /// </summary>
+        public const string HdmiOut5 = "hdmiOut5";
+        /// <summary>
+        /// hdmiOut6
+        /// </summary>
+        public const string HdmiOut6 = "hdmiOut6";
+        /// <summary>
         /// none
         /// </summary>
         public const string None = "none";

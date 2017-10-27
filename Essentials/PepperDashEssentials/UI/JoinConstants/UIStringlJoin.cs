@@ -51,32 +51,14 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public const uint VCDirectoryListTextStart = 1301;
 		//									RANGE IN USE
-		public const uint VCDirectoryListTextEnd = 1400;
+		public const uint VCDirectoryListTextEnd = 1556;
 
         /// <summary>
-        /// 141112
+        /// 1611 - 1615
         /// </summary>
-        public const uint VCFavorites1Text = 1411;
-
-        /// <summary>
-        /// 1412
-        /// </summary>
-        public const uint VCFavorites2Text = 1412;
-
-        /// <summary>
-        /// 1413
-        /// </summary>
-        public const uint VCFavorites3Text = 1413;
-
-        /// <summary>
-        /// 1414
-        /// </summary>
-        public const uint VCFavorites4Text = 1414;
-
-        /// <summary>
-        /// 1415
-        /// </summary>
-        public const uint VCFavorites5Text = 1415;
+        public const uint VCFavoritesStart = 1611;
+        //									RANGE IN USE
+        public const uint VCFavoritesTextEnd = 1615;
 
 
         //******************************************************

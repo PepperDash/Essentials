@@ -79,9 +79,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
         StringBuilder SearchStringBuilder = new StringBuilder();
         BoolFeedback SearchStringBackspaceVisibleFeedback;
 
-        BoolFeedback CallSharingInfoVisibleFeedback;
-        //StringFeedback CallSharingInfoTextFeedback;
-
         ModalDialog IncomingCallModal;
 
         eKeypadMode KeypadMode;
@@ -106,7 +103,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 Parent = parent;
                 SetupCallStagingPopover();
                 SetupDialKeypad();
-                ActiveCallsSRL = new SubpageReferenceList(TriList, UISmartObjectJoin.CodecActiveCallsHeaderList, 3, 3, 3);
+                ActiveCallsSRL = new SubpageReferenceList(triList, UISmartObjectJoin.CodecActiveCallsHeaderList, 5,5,5);
                 SetupDirectoryList();
                 SetupRecentCallsList();
                 SetupFavorites();
@@ -148,7 +145,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 DialStringBackspaceVisibleFeedback = new BoolFeedback(() => DialStringBuilder.Length > 0);
                 DialStringBackspaceVisibleFeedback
-                    .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCKeypadBackspaceVisible]);
+                    .LinkInputSig(triList.BooleanInput[UIBoolJoin.VCKeypadBackspaceVisible]);
 
                 SearchStringFeedback = new StringFeedback(() =>
                 {
@@ -168,26 +165,20 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 SearchStringBackspaceVisibleFeedback = new BoolFeedback(() => SearchStringBuilder.Length > 0);
                 SearchStringBackspaceVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackspaceVisible]);
 
-                TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackPress, GetDirectoryParentFolderContents);
+                triList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackPress, GetDirectoryParentFolderContents);
 
                 DirectoryBackButtonVisibleFeedback = new BoolFeedback(() => CurrentDirectoryResult != (codec as IHasDirectory).DirectoryRoot);
                 DirectoryBackButtonVisibleFeedback
-                    .LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCDirectoryBackVisible]);
+                    .LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackVisible]);
 
-                TriList.SetSigFalseAction(UIBoolJoin.VCKeypadTextPress, RevealKeyboard);
+                triList.SetSigFalseAction(UIBoolJoin.VCKeypadTextPress, RevealKeyboard);
 
-                TriList.SetSigFalseAction(UIBoolJoin.VCDirectorySearchTextPress, RevealKeyboard);
+                triList.SetSigFalseAction(UIBoolJoin.VCDirectorySearchTextPress, RevealKeyboard);
 
                 //TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackspacePress, SearchKeypadBackspacePress);
-                TriList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
+                triList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
                     StartSearchBackspaceRepeat, StopSearchBackspaceRepeat, SearchKeypadBackspacePress);
 
-                CallSharingInfoVisibleFeedback = new BoolFeedback(() => Codec.SharingContentIsOnFeedback.BoolValue);
-                codec.SharingContentIsOnFeedback.OutputChange += new EventHandler<EventArgs>(SharingContentIsOnFeedback_OutputChange);
-                CallSharingInfoVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.CallSharedSourceInfoVisible]);
-                Parent.CurrentRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
-
-                TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, Codec.StopSharing);
             }
             catch (Exception e)
             {
@@ -195,36 +186,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
             }
         }
 
-        /// <summary>
-        /// Updates the current shared source label on the call list when the source changes
-        /// </summary>
-        /// <param name="room"></param>
-        /// <param name="info"></param>
-        /// <param name="type"></param>
-        void CurrentRoom_CurrentSingleSourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
-        {
-            if (Codec.SharingContentIsOnFeedback.BoolValue)
-                TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = Parent.CurrentRoom.CurrentSourceInfo.PreferredName;
-        }
-
-        /// <summary>
-        /// Fires when the sharing source feedback of the codec changes
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void SharingContentIsOnFeedback_OutputChange(object sender, EventArgs e)
-        {
-            CallSharingInfoVisibleFeedback.FireUpdate();
-
-            string callListSharedSourceLabel;
-
-            if (Codec.SharingContentIsOnFeedback.BoolValue)
-                 callListSharedSourceLabel = Parent.CurrentRoom.CurrentSourceInfo.PreferredName;
-            else
-                callListSharedSourceLabel = "None";
-
-            TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = callListSharedSourceLabel;
-        }
 
         /// <summary>
         /// 
@@ -233,7 +194,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <param name="e"></param>
         void Codec_IsReady()
         {
-            TriList.SetString(UIStringJoin.RoomPhoneText, Codec.CodecInfo.PhoneNumber);
+            TriList.SetString(UIStringJoin.RoomPhoneText, GetFormattedPhoneNumber(Codec.CodecInfo.PhoneNumber));
             TriList.SetString(UIStringJoin.RoomSipText, Codec.CodecInfo.SipUri);
 
             if(Parent.HeaderButtonsAreSetUp)
@@ -260,6 +221,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     Parent.ShowNotificationRibbon("Connected", 2000);
                     StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
 					ShowKeypad();
+                    (Parent.CurrentRoom.CurrentVolumeControls as IBasicVolumeWithFeedback).MuteOff();
 					//VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
                     break;
                 case eCodecCallStatus.Connecting:
@@ -336,6 +298,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 ActiveCallsSRL.StringInputSig(i, 1).StringValue = c.Name;
                 ActiveCallsSRL.StringInputSig(i, 2).StringValue = c.Number;
                 ActiveCallsSRL.StringInputSig(i, 3).StringValue = c.Status.ToString();
+                ActiveCallsSRL.StringInputSig(i, 4).StringValue = string.Format("Participant {0}", i);
                 ActiveCallsSRL.UShortInputSig(i, 1).UShortValue = (ushort)(c.Type == eCodecCallType.Video ? 2 : 1);
                 var cc = c; // for scope in lambda
                 ActiveCallsSRL.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() => Codec.EndCall(cc));
@@ -536,15 +499,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					if (i < favs.Count)
 					{
 						var fav = favs[(int)i];
-						TriList.SetString(1411 + i, fav.Name);
-						TriList.SetBool(1221 + i, true);
-						TriList.SetSigFalseAction(1211 + i, () =>
+                        TriList.SetString(UIStringJoin.VCFavoritesStart + i, fav.Name);
+						TriList.SetBool(UIBoolJoin.VCFavoriteVisibleStart + i, true);
+						TriList.SetSigFalseAction(UIBoolJoin.VCFavoritePressStart + i, () =>
 							{
 								Codec.Dial(fav.Number);
 							});
 					}
 					else
-						TriList.SetBool(1221 + i, false);
+                        TriList.SetBool(UIBoolJoin.VCFavoriteVisibleStart + i, false);
 				}
 			}
 		}
@@ -1111,7 +1074,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
 
         /// <summary>
-        /// 
+        /// Returns the text value for the keypad dial entry field
         /// </summary>
         /// <returns></returns>
         string GetFormattedDialString(string ds)
@@ -1120,21 +1083,33 @@ namespace PepperDash.Essentials.UIDrivers.VC
             {
                 return "Tap for keyboard";
             }
-            if(Regex.Match(ds, @"^\d{4,7}$").Success) // 456-7890
-                return string.Format("{0}-{1}", ds.Substring(0, 3), ds.Substring(3));
-            if (Regex.Match(ds, @"^9\d{4,7}$").Success) // 456-7890
-                return string.Format("9 {0}-{1}", ds.Substring(1, 3), ds.Substring(4));
-            if (Regex.Match(ds, @"^\d{8,10}$").Success) // 123-456-78
-                return string.Format("({0}) {1}-{2}", ds.Substring(0, 3), ds.Substring(3, 3), ds.Substring(6));
-            if (Regex.Match(ds, @"^\d{10}$").Success) // 123-456-7890 full
-                return string.Format("({0}) {1}-{2}", ds.Substring(0, 3), ds.Substring(3, 3), ds.Substring(6));
-            if (Regex.Match(ds, @"^1\d{10}$").Success)
-                return string.Format("+1 ({0}) {1}-{2}", ds.Substring(1, 3), ds.Substring(4, 3), ds.Substring(7));
-            if (Regex.Match(ds, @"^9\d{10}$").Success)
-                return string.Format("9 ({0}) {1}-{2}", ds.Substring(1, 3), ds.Substring(4, 3), ds.Substring(7));
-            if (Regex.Match(ds, @"^91\d{10}$").Success)
-                return string.Format("9 +1 ({0}) {1}-{2}", ds.Substring(2, 3), ds.Substring(5, 3), ds.Substring(8));
-            return ds;
+
+            return GetFormattedPhoneNumber(ds);
+            
+        }
+
+        /// <summary>
+        /// Formats a string of numbers as a North American phone number
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        string GetFormattedPhoneNumber(string s)
+        {
+            if (Regex.Match(s, @"^\d{4,7}$").Success) // 456-7890
+                return string.Format("{0}-{1}", s.Substring(0, 3), s.Substring(3));
+            if (Regex.Match(s, @"^9\d{4,7}$").Success) // 456-7890
+                return string.Format("9 {0}-{1}", s.Substring(1, 3), s.Substring(4));
+            if (Regex.Match(s, @"^\d{8,10}$").Success) // 123-456-78
+                return string.Format("({0}) {1}-{2}", s.Substring(0, 3), s.Substring(3, 3), s.Substring(6));
+            if (Regex.Match(s, @"^\d{10}$").Success) // 123-456-7890 full
+                return string.Format("({0}) {1}-{2}", s.Substring(0, 3), s.Substring(3, 3), s.Substring(6));
+            if (Regex.Match(s, @"^1\d{10}$").Success)
+                return string.Format("+1 ({0}) {1}-{2}", s.Substring(1, 3), s.Substring(4, 3), s.Substring(7));
+            if (Regex.Match(s, @"^9\d{10}$").Success)
+                return string.Format("9 ({0}) {1}-{2}", s.Substring(1, 3), s.Substring(4, 3), s.Substring(7));
+            if (Regex.Match(s, @"^91\d{10}$").Success)
+                return string.Format("9 +1 ({0}) {1}-{2}", s.Substring(2, 3), s.Substring(5, 3), s.Substring(8));
+            return s;
         }
 
         enum eKeypadMode
