@@ -169,7 +169,7 @@
     <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
     <Compile Include="UIDrivers\SigInterlock.cs" />
     <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddlePresentationUiDriver.cs" />
-    <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddleTechPageDriver.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddle\EssentialsHuddleTechPageDriver.cs" />
     <Compile Include="UI\HttpLogoServer.cs" />
     <Compile Include="UI\SmartObjectHeaderButtonList.cs" />
     <Compile Include="UI\SubpageReferenceListCallStagingItem.cs" />
@@ -185,7 +185,7 @@
     <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalDriver.cs" />
     <Compile Include="UIDrivers\Essentials\EssentialsPanelMainInterfaceDriver.cs" />
     <Compile Include="UIDrivers\enums and base.cs" />
-    <Compile Include="UIDrivers\Essentials\EssentialsHuddlePanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddle\EssentialsHuddlePanelAvFunctionsDriver.cs" />
     <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalAndBackDriver.cs" />
     <Compile Include="UIDrivers\SmartObjectRoomsList.cs" />
     <Compile Include="UI\JoinConstants\UIBoolJoin.cs" />

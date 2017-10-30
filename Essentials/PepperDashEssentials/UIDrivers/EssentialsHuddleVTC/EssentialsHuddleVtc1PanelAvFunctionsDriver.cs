@@ -164,7 +164,7 @@ namespace PepperDash.Essentials
             get
             {
                 if (_TechDriver == null)
-                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, this, CurrentRoom.Config.Tech);
+                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, CurrentRoom.Config.Tech);
                 return _TechDriver;
             }
         }
@@ -1244,15 +1244,10 @@ namespace PepperDash.Essentials
             if (CurrentRoom.IsWarmingUpFeedback.BoolValue)
             {
 				ShowNotificationRibbon("Room is powering on. Please wait...", 0);
-				//WarmingCoolingModal = new ModalDialog(TriList);
-				//WarmingCoolingModal.PresentModalDialog(0, "Powering Up", "Power", "<p>Room is powering up</p><p>Please wait</p>",
-				//    "", "", false, false, null);
             }
             else
             {
 				ShowNotificationRibbon("Room is powered on. Welcome.", 2000);
-				//if (WarmingCoolingModal != null)
-				//    WarmingCoolingModal.CancelDialog();
             }
         }
 
@@ -1266,16 +1261,10 @@ namespace PepperDash.Essentials
             if (CurrentRoom.IsCoolingDownFeedback.BoolValue)
             {
 				ShowNotificationRibbon("Room is powering off. Please wait.", 0);
-
-				//WarmingCoolingModal = new ModalDialog(TriList);
-				//WarmingCoolingModal.PresentModalDialog(0, "Power Off", "Power", "<p>Room is powering off</p><p>Please wait</p>",
-				//    "", "", false, false, null);
             }
             else
             {
 				HideNotificationRibbon();
-				//if (WarmingCoolingModal != null)
-				//    WarmingCoolingModal.CancelDialog();
             }
         }
 
@@ -1460,13 +1449,13 @@ namespace PepperDash.Essentials
         void ComputeHeaderCallStatus(VideoCodecBase codec);
         bool HeaderButtonsAreSetUp { get; }
         SubpageReferenceList MeetingOrContactMethodModalSrl { get; }
-		/// <summary>
-		/// Exposes the ability to switch into call mode
-		/// </summary>
-		void ActivityCallButtonPressed();
-		/// <summary>
-		/// Allows the codec to trigger the main UI to clear up if call is coming in.
-		/// </summary>
-		void PrepareForCodecIncomingCall();
+        /// <summary>
+        /// Exposes the ability to switch into call mode
+        /// </summary>
+        void ActivityCallButtonPressed();
+        /// <summary>
+        /// Allows the codec to trigger the main UI to clear up if call is coming in.
+        /// </summary>
+        void PrepareForCodecIncomingCall();
     }
 }

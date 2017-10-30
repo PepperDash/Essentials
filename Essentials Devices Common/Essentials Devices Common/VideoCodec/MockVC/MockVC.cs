@@ -402,12 +402,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             get { return true; }
         }
 
-        public override string IpAddress
+        public override string E164Alias
         {
-            get { return "xx.xx.xx.xx"; }
+            get { return "someE164alias"; }
         }
 
-        public override string PhoneNumber
+        public override string H323Id
+        {
+            get { return "someH323Id"; }
+        }
+
+        public override string IpAddress
+        {
+            get { return "xxx.xxx.xxx.xxx"; }
+        }
+
+        public override string SipPhoneNumber
         {
             get { return "333-444-5555"; }
         }
