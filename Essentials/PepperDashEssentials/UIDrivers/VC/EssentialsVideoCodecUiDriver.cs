@@ -195,9 +195,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             string roomNumberSipUri = "";
             if (!string.IsNullOrEmpty(Codec.CodecInfo.SipUri)) // If both values are present, format the string with a pipe divider
-                roomNumberSipUri = string.Format("{0} | {2}", GetFormattedPhoneNumber(Codec.CodecInfo.PhoneNumber), Codec.CodecInfo.SipUri);
+                roomNumberSipUri = string.Format("{0} | {2}", GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber), Codec.CodecInfo.SipUri);
             else                                               // If only one value present, just show the phone number
-                roomNumberSipUri = Codec.CodecInfo.PhoneNumber;
+                roomNumberSipUri = Codec.CodecInfo.SipPhoneNumber;
 
             TriList.SetString(UIStringJoin.RoomPhoneText, roomNumberSipUri);
 
