@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-
 using Crestron.SimplSharpPro;
 
 namespace PepperDash.Essentials.Core.Crestron_IO
@@ -13,31 +12,49 @@ namespace PepperDash.Essentials.Core.Crestron_IO
     /// </summary>
     public class GenericRelayDevice
     {
-        //Relay RelayOutput { get; private set; }
+        Relay RelayOutput { get; private set; }
 
-        //public boolfeedback relaystatefeedback { get; private set; }
+        public BoolFeedback RelayStateFeedback { get; private set; }
 
-        //func<bool> relaystatefeedbackfunc
-        //{
-        //    get
-        //    {
-        //        return () => relayoutput.state;
-        //    }
-        //}
+        Func<bool> RelayStateFeedbackFunc
+        {
+            get
+            {
+                return () => RelayOutput.State;
+            }
+        }
 
-        //public genericrelaydevice(relay relay)
-        //{
-        //    relaystatefeedback = new boolfeedback(relaystatefeedbackfunc);
+        public GenericRelayDevice(Relay relay)
+        {
+            RelayStateFeedback = new BoolFeedback(RelayStateFeedbackFunc);
 
-        //    if(relay.availableforuse)
-        //        relayoutput = relay;
+            if (relay.AvailableForUse)
+                RelayOutput = relay;
 
-        //    relayoutput.statechange += new relayeventhandler(relayoutput_statechange);
-        //}
+            RelayOutput.StateChange += new RelayEventHandler(RelayOutput_StateChange);
+        }
 
-        //void relayoutput_statechange(relay relay, relayeventargs args)
-        //{
-        //    relaystatefeedback.fireupdate();
-        //}
+        void RelayOutput_StateChange(Relay relay, RelayEventArgs args)
+        {
+            RelayStateFeedback.FireUpdate();
+        }
+
+        void OpenRelay()
+        {
+            RelayOutput.State = false;
+        }
+
+        void CloseRelay()
+        {
+            RelayOutput.State = true;
+        }
+
+        void ToggleRelayState()
+        {
+            if (RelayOutput.State == true)
+                OpenRelay();
+            else
+                CloseRelay();
+        }
     }
 }
