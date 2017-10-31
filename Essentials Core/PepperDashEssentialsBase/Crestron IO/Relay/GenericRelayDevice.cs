@@ -15,29 +15,29 @@ namespace PepperDash.Essentials.Core.Crestron_IO
     {
         //Relay RelayOutput { get; private set; }
 
-        //public BoolFeedback RelayStateFeedback { get; private set; }
+        //public boolfeedback relaystatefeedback { get; private set; }
 
-        //Func<bool> RelayStateFeedbackFunc
+        //func<bool> relaystatefeedbackfunc
         //{
         //    get
         //    {
-        //        return () => RelayOutput.State;
+        //        return () => relayoutput.state;
         //    }
         //}
 
-        //public GenericRelayDevice(Relay relay)
+        //public genericrelaydevice(relay relay)
         //{
-        //    RelayStateFeedback = new BoolFeedback(RelayStateFeedbackFunc);
+        //    relaystatefeedback = new boolfeedback(relaystatefeedbackfunc);
 
-        //    if(relay.AvailableForUse)
-        //        RelayOutput = relay;
+        //    if(relay.availableforuse)
+        //        relayoutput = relay;
 
-        //    RelayOutput.StateChange += new RelayEventHandler(RelayOutput_StateChange);
+        //    relayoutput.statechange += new relayeventhandler(relayoutput_statechange);
         //}
 
-        //void RelayOutput_StateChange(Relay relay, RelayEventArgs args)
+        //void relayoutput_statechange(relay relay, relayeventargs args)
         //{
-        //    RelayStateFeedback.FireUpdate();
+        //    relaystatefeedback.fireupdate();
         //}
     }
 }
