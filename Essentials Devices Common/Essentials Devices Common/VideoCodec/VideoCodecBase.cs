@@ -43,8 +43,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
-        bool wasIsInCall;
-
         /// <summary>
         /// Returns true when any call is not in state Unknown, Disconnecting, Disconnected
         /// </summary>

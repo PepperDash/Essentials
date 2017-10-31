@@ -37,10 +37,6 @@ namespace PepperDash.Essentials.UIDrivers
         /// <summary>
         /// 
         /// </summary>
-        IAVDriver Parent;
-        /// <summary>
-        /// 
-        /// </summary>
         JoinedSigInterlock PagesInterlock;
 
         /// <summary>
@@ -63,10 +59,9 @@ namespace PepperDash.Essentials.UIDrivers
         /// </summary>
         /// <param name="trilist"></param>
         /// <param name="parent"></param>
-        public EssentialsHuddleTechPageDriver(BasicTriListWithSmartObject trilist, IAVDriver parent, EssentialsRoomTechConfig config)
+        public EssentialsHuddleTechPageDriver(BasicTriListWithSmartObject trilist, EssentialsRoomTechConfig config)
             : base(trilist)
         {
-            Parent = parent;
 			Config = config;
 
             PagesInterlock = new JoinedSigInterlock(trilist);

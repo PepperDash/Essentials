@@ -118,10 +118,6 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint RoomPhoneText = 3904;
         /// <summary>
-        /// 3905 - SIP address for room header
-        /// </summary>
-        public const uint RoomSipText = 3905;
-        /// <summary>
         /// 3906 - The separator for verbose-header text on addresses
         /// </summary>
         public const uint RoomAddressPipeText = 3906;

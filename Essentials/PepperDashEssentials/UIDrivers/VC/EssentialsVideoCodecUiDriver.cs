@@ -175,7 +175,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 triList.SetSigFalseAction(UIBoolJoin.VCDirectorySearchTextPress, RevealKeyboard);
 
-                //TriList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackspacePress, SearchKeypadBackspacePress);
                 triList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
                     StartSearchBackspaceRepeat, StopSearchBackspaceRepeat, SearchKeypadBackspacePress);
 
@@ -194,8 +193,13 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <param name="e"></param>
         void Codec_IsReady()
         {
-            TriList.SetString(UIStringJoin.RoomPhoneText, GetFormattedPhoneNumber(Codec.CodecInfo.PhoneNumber));
-            TriList.SetString(UIStringJoin.RoomSipText, Codec.CodecInfo.SipUri);
+            string roomNumberSipUri = "";
+            if (!string.IsNullOrEmpty(Codec.CodecInfo.SipUri)) // If both values are present, format the string with a pipe divider
+                roomNumberSipUri = string.Format("{0} | {2}", GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber), Codec.CodecInfo.SipUri);
+            else                                               // If only one value present, just show the phone number
+                roomNumberSipUri = Codec.CodecInfo.SipPhoneNumber;
+
+            TriList.SetString(UIStringJoin.RoomPhoneText, roomNumberSipUri);
 
             if(Parent.HeaderButtonsAreSetUp)
                 Parent.ComputeHeaderCallStatus(Codec);

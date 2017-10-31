@@ -315,16 +315,69 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Cameras
         {
-			//[JsonConverter(typeof(CameraConverter))]
-			//public List<Camera> Camera { get; set; }
+//            [JsonConverter(typeof(CameraConverter))]
+            public List<Camera> Camera { get; set; }
             public SpeakerTrack SpeakerTrack { get; set; }
 
             public Cameras()
             {
-				//Camera = new List<Camera>();
+                Camera = new List<Camera>();
                 SpeakerTrack = new SpeakerTrack();
             }
         }
+
+        //public class CameraConverter : JsonConverter
+        //{
+
+        //    public override bool CanConvert(System.Type objectType)
+        //    {
+        //        return true; // objectType == typeof(Camera) || objectType == typeof(List<Camera>); // This should not be called but is required for implmentation
+        //    }
+
+        //    public override object ReadJson(JsonReader reader, System.Type objectType, object existingValue, JsonSerializer serializer)
+        //    {
+        //        try
+        //        {
+        //            if (reader.TokenType == JsonToken.StartArray)
+        //            {
+        //                var l = new List<Camera>();
+        //                reader.Read();
+        //                while (reader.TokenType != JsonToken.EndArray)
+        //                {
+        //                    l.Add(reader.Value as Camera);
+        //                    reader.Read();
+        //                }
+        //                Debug.Console(1, "[xStatus]: Cameras converted as list");
+        //                return l;
+        //            }
+        //            else
+        //            {
+        //                Debug.Console(1, "[xStatus]: Camera converted as single object and added to list");
+        //                return new List<Camera> { reader.Value as Camera };
+        //            }
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            Debug.Console(1, "[xStatus]: Unable to convert JSON for camera objects: {0}", e);
+
+        //            return new List<Camera>();
+        //        }
+        //    }
+
+        //    public override bool CanWrite
+        //    {
+        //        get
+        //        {
+        //            return false;
+        //        }
+        //    }
+
+        //    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        //    {
+        //        throw new NotImplementedException("Write not implemented");
+        //    }
+        //}
+
 
         public class MaxActiveCalls
         {

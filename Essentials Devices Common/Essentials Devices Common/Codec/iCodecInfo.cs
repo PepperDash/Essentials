@@ -21,7 +21,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     {
         public abstract bool MultiSiteOptionIsEnabled { get; }
         public abstract string IpAddress { get; }
-        public abstract string PhoneNumber { get; }
+        public abstract string SipPhoneNumber { get; }
+        public abstract string E164Alias { get; }
+        public abstract string H323Id { get; }
         public abstract string SipUri { get; }
         public abstract bool AutoAnswerEnabled { get; }
     }
