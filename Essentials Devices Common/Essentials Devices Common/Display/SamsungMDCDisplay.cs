@@ -87,7 +87,7 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		void Init()
 		{
-            WarmupTime = 12000;
+            WarmupTime = 10000;
 			CooldownTime = 8000;
 
             CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 2000, 120000, 300000, StatusGet);
@@ -165,6 +165,9 @@ namespace PepperDash.Essentials.Devices.Displays
             var newBytes = new byte[IncomingBuffer.Length + e.Bytes.Length];
             IncomingBuffer.CopyTo(newBytes, 0);
             e.Bytes.CopyTo(newBytes, IncomingBuffer.Length);
+
+            if (Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
+                Debug.Console(2, this, "Received:{0}", ComTextHelper.GetEscapedText(newBytes));
 
             // Need to find AA FF and have 
             for (int i = 0; i < newBytes.Length; i++)
