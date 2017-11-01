@@ -23,6 +23,7 @@ namespace PepperDash.Essentials.Devices.Displays
 
         public byte ID { get; private set; }
 
+        bool LastCommandSentWasVolume;
 
 		bool _PowerIsOn;
 		bool _IsWarmingUp;
@@ -86,7 +87,7 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		void Init()
 		{
-            WarmupTime = 10000;
+            WarmupTime = 12000;
 			CooldownTime = 8000;
 
             CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 2000, 120000, 300000, StatusGet);
@@ -309,6 +310,10 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <param name="b"></param>
         void SendBytes(byte[] b)
         {
+            if (LastCommandSentWasVolume)   // If the last command sent was volume
+                if (b[1] != 0x12)           // Check if this command is volume, and if not, delay this command 
+                    CrestronEnvironment.Sleep(100);
+
             b[2] = ID;
             // append checksum by adding all bytes, except last which should be 00
             int checksum = 0;
@@ -320,6 +325,12 @@ namespace PepperDash.Essentials.Devices.Displays
             b[b.Length - 1] = (byte)checksum;
             if(Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
                 Debug.Console(2, this, "Sending:{0}", ComTextHelper.GetEscapedText(b));
+
+            if (b[1] == 0x12)
+                LastCommandSentWasVolume = true;
+            else
+                LastCommandSentWasVolume = false;
+
             Communication.SendBytes(b);
         }
 
