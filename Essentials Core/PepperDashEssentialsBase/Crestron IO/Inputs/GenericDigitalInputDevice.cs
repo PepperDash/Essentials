@@ -9,9 +9,9 @@ namespace PepperDash.Essentials.Core.Crestron_IO
 {
     public class GenericDigitalInputDevice : IDigitalInput
     {
-        DigitalInput InputPort { get; private set; }
+        public DigitalInput InputPort { get; private set; }
 
-        BoolFeedback InputStateFeedback { get; private set; }
+        public BoolFeedback InputStateFeedback { get; private set; }
 
         Func<bool> InputStateFeedbackFunc
         {
@@ -35,5 +35,6 @@ namespace PepperDash.Essentials.Core.Crestron_IO
         {
             InputStateFeedback.FireUpdate();
         }
+
     }
 }

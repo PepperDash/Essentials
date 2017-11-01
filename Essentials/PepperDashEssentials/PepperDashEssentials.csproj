@@ -70,10 +70,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.UI.dll</HintPath>
     </Reference>
-    <Reference Include="Essentials Devices Common, Version=1.0.0.18129, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Essentials Devices Common\Essentials Devices Common\bin\Essentials Devices Common.dll</HintPath>
-    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="PepperDashCorePortalSync, Version=1.0.0.27069, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -200,6 +196,12 @@
     <Compile Include="UI\SubpageReferenceListSourceItem.cs" />
     <None Include="app.config" />
     <None Include="Properties\ControlSystem.cfg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Essentials Devices Common\Essentials Devices Common\Essentials Devices Common.csproj">
+      <Project>{892B761C-E479-44CE-BD74-243E9214AF13}</Project>
+      <Name>Essentials Devices Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

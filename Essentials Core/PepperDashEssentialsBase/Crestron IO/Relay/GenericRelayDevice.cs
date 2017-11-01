@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Core.Crestron_IO
     /// </summary>
     public class GenericRelayDevice
     {
-        Relay RelayOutput { get; private set; }
+        public Relay RelayOutput { get; private set; }
 
         public BoolFeedback RelayStateFeedback { get; private set; }
 
@@ -39,17 +39,17 @@ namespace PepperDash.Essentials.Core.Crestron_IO
             RelayStateFeedback.FireUpdate();
         }
 
-        void OpenRelay()
+        public void OpenRelay()
         {
             RelayOutput.State = false;
         }
 
-        void CloseRelay()
+        public void CloseRelay()
         {
             RelayOutput.State = true;
         }
 
-        void ToggleRelayState()
+        public void ToggleRelayState()
         {
             if (RelayOutput.State == true)
                 OpenRelay();

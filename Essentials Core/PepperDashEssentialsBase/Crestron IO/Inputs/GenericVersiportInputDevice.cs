@@ -12,9 +12,9 @@ namespace PepperDash.Essentials.Core.Crestron_IO
     /// </summary>
     public class GenericVersiportInputDevice : IDigitalInput
     {
-        Versiport InputPort { get; private set; }
+        public Versiport InputPort { get; private set; }
 
-        BoolFeedback InputStateFeedback { get; private set; }
+        public BoolFeedback InputStateFeedback { get; private set; }
 
         Func<bool> InputStateFeedbackFunc
         {

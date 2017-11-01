@@ -109,7 +109,6 @@
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Devices\CodecInterfaces.cs" />
     <Compile Include="Global\JobTimer.cs" />
-    <Compile Include="Microphone Privacy\MicrophonePrivacyController.cs" />
     <Compile Include="Ramps and Increments\ActionIncrementer.cs" />
     <Compile Include="Comm and IR\CommFactory.cs" />
     <Compile Include="Comm and IR\CommunicationExtras.cs" />

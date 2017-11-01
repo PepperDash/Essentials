@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Crestron_IO;
 
-namespace PepperDash.Essentials.Core.Microphone_Privacy
+
+namespace PepperDash.Essentials.Devices.Common.Microphones
 {
     public class MicrophonePrivacyController
     {
@@ -17,8 +20,6 @@ namespace PepperDash.Essentials.Core.Microphone_Privacy
         public GenericRelayDevice GreenLedRelay { get; private set; }
 
         public IPrivacy PrivacyDevice { get; private set; }
-
-
 
         public MicrophonePrivacyController(IPrivacy privacyDevice)
         {
@@ -33,7 +34,10 @@ namespace PepperDash.Essentials.Core.Microphone_Privacy
         {
             var privacyState = (sender as IPrivacy).PrivacyModeIsOnFeedback.BoolValue;
 
-            if(privacyState)
+            if (privacyState)
+                TurnOnRedLeds();
+            else
+                TurnOnGreenLeds();
 
         }
 
@@ -81,6 +85,24 @@ namespace PepperDash.Essentials.Core.Microphone_Privacy
         void TogglePrivacyMute()
         {
             PrivacyDevice.PrivacyModeToggle();
+        }
+
+        void TurnOnRedLeds()
+        {
+            GreenLedRelay.OpenRelay();
+            RedLedRelay.CloseRelay();
+        }
+
+        void TurnOnGreenLeds()
+        {
+            RedLedRelay.CloseRelay();
+            GreenLedRelay.OpenRelay();
+        }
+
+        void TurnOffAllLeds()
+        {
+            GreenLedRelay.OpenRelay();
+            RedLedRelay.OpenRelay();
         }
     }
 }
