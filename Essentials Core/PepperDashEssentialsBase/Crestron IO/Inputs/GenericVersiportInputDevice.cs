@@ -30,6 +30,8 @@ namespace PepperDash.Essentials.Core.Crestron_IO
 
             InputPort = inputPort;
 
+            InputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalInput);
+
             InputPort.VersiportChange += new VersiportEventHandler(InputPort_VersiportChange);
 
         }
@@ -39,4 +41,10 @@ namespace PepperDash.Essentials.Core.Crestron_IO
             InputStateFeedback.FireUpdate();
         }
     }
+
+    public class GenericVersiportInputDeviceConfigProperties
+    {
+
+    }
+
 }

@@ -11,13 +11,36 @@ using PepperDash.Essentials.Core.Crestron_IO;
 
 namespace PepperDash.Essentials.Devices.Common.Microphones
 {
+    /// <summary>
+    /// Used for applications where one or more microphones with momentary contact closure outputs are used to
+    /// toggle the privacy state of the room.  Privacy state feedback is represented 
+    /// </summary>
     public class MicrophonePrivacyController
     {
+        public bool EnableLeds
+        {
+            get
+            {
+                return _enableLeds;
+            }
+            set
+            {
+                if (value)
+                    SetLedRelayStates();
+                else
+                    TurnOffAllLeds();
+                _enableLeds = value;
+            }
+        }
+        bool _enableLeds;
+
         public List<IDigitalInput> Inputs { get; private set; }
 
         public GenericRelayDevice RedLedRelay { get; private set; }
+        bool _redLedRelayState;
 
         public GenericRelayDevice GreenLedRelay { get; private set; }
+        bool _greenLedRelayState;
 
         public IPrivacy PrivacyDevice { get; private set; }
 
@@ -89,16 +112,42 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
 
         void TurnOnRedLeds()
         {
-            GreenLedRelay.OpenRelay();
-            RedLedRelay.CloseRelay();
+            _greenLedRelayState = false;
+            _redLedRelayState = true;
+            SetLedRelayStates();
         }
 
         void TurnOnGreenLeds()
         {
-            RedLedRelay.CloseRelay();
-            GreenLedRelay.OpenRelay();
+            _redLedRelayState = false;
+            _greenLedRelayState = true;
+            SetLedRelayStates();
         }
 
+        /// <summary>
+        /// If enabled, sets the actual state of the relays
+        /// </summary>
+        void SetLedRelayStates()
+        {
+            if (_enableLeds)
+            {
+                if (_redLedRelayState)
+                    RedLedRelay.CloseRelay();
+                else
+                    RedLedRelay.OpenRelay();
+
+                if (_greenLedRelayState)
+                    GreenLedRelay.CloseRelay();
+                else
+                    GreenLedRelay.OpenRelay();
+            }
+            else
+                TurnOffAllLeds();
+        }
+
+        /// <summary>
+        /// Turns off all LEDs
+        /// </summary>
         void TurnOffAllLeds()
         {
             GreenLedRelay.OpenRelay();

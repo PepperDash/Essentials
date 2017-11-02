@@ -116,6 +116,15 @@ namespace PepperDash.Essentials.Devices.Common
                 return new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec(key, name, comm, props);
             }
 
+            else if (typeName == "versiportinput")
+            {
+                var props = JsonConvert.DeserializeObject < PepperDash.Essentials.Core.Crestron_IO.GenericVersiportInputDeviceConfigProperties>(properties.ToString());
+
+
+                //Versiport inputPort = new Versiport();
+                //return new PepperDash.Essentials.Core.Crestron_IO.GenericVersiportInputDevice(inputPort);
+            }
+
             else if (groupName == "settopbox") //(typeName == "irstbbase")
             {
                 var irCont = IRPortHelper.GetIrOutputPortController(dc);
