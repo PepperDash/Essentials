@@ -100,8 +100,14 @@ namespace PepperDash.Essentials.Devices.Displays
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, new Action(InputHdmi1), this), 0x21);
 
+            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn1PC, eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi1PC), this), 0x22);
+
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, new Action(InputHdmi2), this), 0x23);
+
+            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn2PC, eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi2PC), this), 0x24);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, new Action(InputHdmi3), this), 0x32);
@@ -407,11 +413,21 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		public void InputHdmi1()
 		{
-            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x22, 0x00 });
+            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x21, 0x00 });
 		}
+
+        public void InputHdmi1PC()
+        {
+            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x22, 0x00 });
+        }
 
 		public void InputHdmi2()
 		{
+            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x23, 0x00 });
+        }
+
+        public void InputHdmi2PC()
+        {
             SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x24, 0x00 });
         }
 

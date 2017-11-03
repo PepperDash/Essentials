@@ -108,9 +108,17 @@ namespace PepperDash.Essentials.Core.Routing
         /// </summary>
 		public const string HdmiIn1 = "hdmiIn1";
         /// <summary>
+        /// hdmiIn1PC
+        /// </summary>
+        public const string HdmiIn1PC = "hdmiIn1PC";
+        /// <summary>
         /// hdmiIn2
         /// </summary>
 		public const string HdmiIn2 = "hdmiIn2";
+        /// <summary>
+        /// hdmiIn2PC
+        /// </summary>
+        public const string HdmiIn2PC = "hdmiIn2PC";
         /// <summary>
         /// hdmiIn3
         /// </summary>

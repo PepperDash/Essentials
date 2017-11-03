@@ -269,9 +269,9 @@ namespace PepperDash.Essentials.UIDrivers
                     { if (display is IInputHdmi2) (display as IInputHdmi2).InputHdmi2(); });
                     DisplayList.GetBoolFeedbackSig(i, 5).SetSigFalseAction(() =>
                     { if (display is IInputHdmi3) (display as IInputHdmi3).InputHdmi3(); });
+                    //DisplayList.GetBoolFeedbackSig(i, 6).SetSigFalseAction(() =>
+                    //{ if (display is IInputHdmi4) (display as IInputHdmi4).InputHdmi4(); });
                     DisplayList.GetBoolFeedbackSig(i, 6).SetSigFalseAction(() =>
-                    { if (display is IInputHdmi4) (display as IInputHdmi4).InputHdmi4(); });
-                    DisplayList.GetBoolFeedbackSig(i, 7).SetSigFalseAction(() =>
                     { if (display is IInputDisplayPort1) (display as IInputDisplayPort1).InputDisplayPort1(); });
                 }
             }
