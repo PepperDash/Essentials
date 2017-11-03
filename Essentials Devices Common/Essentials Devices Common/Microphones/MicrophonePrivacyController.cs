@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
     /// Used for applications where one or more microphones with momentary contact closure outputs are used to
     /// toggle the privacy state of the room.  Privacy state feedback is represented 
     /// </summary>
-    public class MicrophonePrivacyController
+    public class MicrophonePrivacyController : Device
     {
         public bool EnableLeds
         {
@@ -44,13 +44,17 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
 
         public IPrivacy PrivacyDevice { get; private set; }
 
-        public MicrophonePrivacyController(IPrivacy privacyDevice)
+        public MicrophonePrivacyController(string key, MicrophonePrivacyControllerConfig config) :
+            base(key)
+        {
+            Inputs = new List<IDigitalInput>();
+        }
+
+        public void SetPrivacyDevice(IPrivacy privacyDevice)
         {
             PrivacyDevice = privacyDevice;
 
             PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange += new EventHandler<EventArgs>(PrivacyModeIsOnFeedback_OutputChange);
-
-            Inputs = new List<IDigitalInput>();
         }
 
         void PrivacyModeIsOnFeedback_OutputChange(object sender, EventArgs e)

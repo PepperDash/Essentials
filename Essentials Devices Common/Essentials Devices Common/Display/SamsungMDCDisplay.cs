@@ -393,12 +393,12 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		public void InputHdmi1()
 		{
-            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x22, 0x00 });
+            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x21, 0x00 });
 		}
 
 		public void InputHdmi2()
 		{
-            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x24, 0x00 });
+            SendBytes(new byte[] { 0xAA, 0x14, 0x00, 0x01, 0x23, 0x00 });
         }
 
 		public void InputHdmi3()

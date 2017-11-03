@@ -51,6 +51,8 @@ namespace PepperDash.Essentials
 
         public PepperDash.Essentials.Room.EssentialsRoomEmergencyBase Emergency { get; set; }
 
+        public PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController MicrophonePrivacy { get; set; }
+
         public string LogoUrl { get; set; }
 
         protected SecondsCountdownTimer RoomVacancyShutdownTimer { get; private set; }

@@ -130,31 +130,6 @@ namespace PepperDash.Essentials
 					Debug.Console(0, "WARNING: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
 			}
 
-            // CODEC TESTING
-            /*
-            try
-            {
-                GenericSshClient TestCodecClient = new GenericSshClient("TestCodec-1--SshClient", "10.11.50.135", 22, "crestron", "2H3Zu&OvgXp6");
-
-                var props = new PepperDash.Essentials.Devices.Common.Codec.CiscoCodecPropertiesConfig();
-
-                props.PhonebookMode = "Local";
-                props.Favorites = new System.Collections.Generic.List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem>();
-                props.Favorites.Add(new PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem() { Name = "NYU Cisco Webex", Number = "10.11.50.211" });
-
-                PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodec TestCodec =
-                    new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodec("TestCodec-1", "Cisco Spark Room Kit", TestCodecClient, props);
-
-                TestCodec.CommDebuggingIsOn = true;
-
-                TestCodec.CustomActivate();
-            }
-            catch (Exception e)
-            {
-                Debug.Console(0, "Error in something Neil is working on ;) \r{0}", e);
-            }
-            */
-            // CODEC TESTING
 		}
 
 		/// <summary>

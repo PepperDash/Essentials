@@ -120,6 +120,7 @@
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Generic\GenericSource.cs" />
     <Compile Include="Microphones\MicrophonePrivacyController.cs" />
+    <Compile Include="Microphones\MicrophonePrivacyControllerConfig.cs" />
     <Compile Include="Occupancy\EssentialsGlsOccupancySensorBaseController.cs" />
     <Compile Include="Occupancy\EssentialsOccupancyAggregator.cs" />
     <Compile Include="Occupancy\iOccupancyStatusProvider.cs" />

@@ -73,6 +73,8 @@ namespace PepperDash.Essentials.Room.Config
                 rm.DefaultSourceItem = props.DefaultSourceItem;
                 rm.DefaultVolume = (ushort)(props.Volumes.Master.Level * 65535 / 100);
 
+                rm.MicrophonePrivacy = GetMicrophonePrivacy(props, rm); // Get Microphone Privacy object, if any
+
                 rm.Emergency = GetEmergency(props, rm); // Get emergency object, if any
 
                 return rm;
@@ -97,6 +99,21 @@ namespace PepperDash.Essentials.Room.Config
             }
             return null;
         }
+
+        PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController GetMicrophonePrivacy(EssentialsRoomPropertiesConfig props, EssentialsHuddleVtc1Room room)
+        {
+            var microphonePrivacy = props.MicrophonePrivacy;
+            if (microphonePrivacy != null)
+            {
+                // Get the MicrophonePrivacy device from the device manager
+                var mP = (DeviceManager.GetDeviceForKey(props.MicrophonePrivacy.Key) as PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController);
+                // Set this room as the IPrivacy device
+                mP.SetPrivacyDevice(room);
+
+                return mP;
+            }
+            return null;
+        }
 	}
 
     /// <summary>
@@ -105,6 +122,7 @@ namespace PepperDash.Essentials.Room.Config
 	public class EssentialsRoomPropertiesConfig
 	{
         public EssentialsRoomEmergencyConfig Emergency { get; set; }
+        public EssentialsRoomMicrophonePrivacyConfig MicrophonePrivacy {get; set;}
 		public string HelpMessage { get; set; }
         public string Description { get; set; }
         public int ShutdownVacancySeconds { get; set; }
@@ -117,6 +135,11 @@ namespace PepperDash.Essentials.Room.Config
 		public EssentialsRoomTechConfig Tech { get; set; }
         public EssentialsRoomVolumesConfig Volumes { get; set; }
 	}
+
+    public class EssentialsRoomMicrophonePrivacyConfig
+    {
+        public string Key { get; set; }
+    }
 
     /// <summary>
     /// Properties for the help text box
