@@ -79,10 +79,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\PepperDash.Core\Pepperdash Core\Pepperdash Core\bin\PepperDash_Core.dll</HintPath>
     </Reference>
-    <Reference Include="PepperDash_Essentials_Core, Version=1.0.0.18243, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Essentials Core\PepperDashEssentialsBase\bin\PepperDash_Essentials_Core.dll</HintPath>
-    </Reference>
     <Reference Include="PepperDash_Essentials_DM, Version=1.0.0.19343, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Essentials DM\Essentials_DM\bin\PepperDash_Essentials_DM.dll</HintPath>
@@ -198,6 +194,10 @@
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Essentials Core\PepperDashEssentialsBase\PepperDash_Essentials_Core.csproj">
+      <Project>{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}</Project>
+      <Name>PepperDash_Essentials_Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Essentials Devices Common\Essentials Devices Common\Essentials Devices Common.csproj">
       <Project>{892B761C-E479-44CE-BD74-243E9214AF13}</Project>
       <Name>Essentials Devices Common</Name>

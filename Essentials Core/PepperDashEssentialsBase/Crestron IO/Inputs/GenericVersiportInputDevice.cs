@@ -5,12 +5,14 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
-namespace PepperDash.Essentials.Core.Crestron_IO
+using PepperDash.Core;
+
+namespace PepperDash.Essentials.Core.CrestronIO
 {
     /// <summary>
     /// Represents a generic digital input deviced tied to a versiport
     /// </summary>
-    public class GenericVersiportInputDevice : IDigitalInput
+    public class GenericVersiportInputDevice : Device, IDigitalInput
     {
         public Versiport InputPort { get; private set; }
 
@@ -24,7 +26,8 @@ namespace PepperDash.Essentials.Core.Crestron_IO
             }
         }
 
-        public GenericVersiportInputDevice(Versiport inputPort)
+        public GenericVersiportInputDevice(string key, Versiport inputPort):
+            base(key)
         {
             InputStateFeedback = new BoolFeedback(InputStateFeedbackFunc);
 

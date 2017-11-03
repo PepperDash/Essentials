@@ -6,11 +6,10 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
-    /// <summary>
-    /// Represents a device that provides digital input
-    /// </summary>
-    public interface IDigitalInput
+    public class IOPortConfig
     {
-        BoolFeedback InputStateFeedback { get; }
+        public string PortDeviceKey { get; set; }
+        public uint PortNumber { get; set; }
     }
+
 }

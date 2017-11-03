@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.CrestronIO;
 
 using PepperDash.Essentials.Devices.Common.DSP;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
@@ -118,11 +119,114 @@ namespace PepperDash.Essentials.Devices.Common
 
             else if (typeName == "versiportinput")
             {
-                var props = JsonConvert.DeserializeObject < PepperDash.Essentials.Core.Crestron_IO.GenericVersiportInputDeviceConfigProperties>(properties.ToString());
+                var props = JsonConvert.DeserializeObject<IOPortConfig>(properties.ToString());
 
+                IIOPorts portDevice;
 
-                //Versiport inputPort = new Versiport();
-                //return new PepperDash.Essentials.Core.Crestron_IO.GenericVersiportInputDevice(inputPort);
+                if (props.PortDeviceKey == "processor")
+                    portDevice = Global.ControlSystem as IIOPorts;
+                else
+                    portDevice = DeviceManager.GetDeviceForKey(props.PortDeviceKey) as IIOPorts;
+
+                if(portDevice == null)
+                    Debug.Console(0, "Unable to add versiport device with key '{0}'. Port Device does not support versiports", key);
+                else
+                {
+                    var cs = (portDevice as CrestronControlSystem);
+
+                    if (cs != null)
+                        if (cs.SupportsVersiport && props.PortNumber <= cs.NumberOfVersiPorts)
+                        {
+                            Versiport versiport = cs.VersiPorts[props.PortNumber];
+
+                            if(!versiport.Registered)
+                            {
+                                if (versiport.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+                                    return new GenericVersiportInputDevice(key, versiport);
+                                else
+                                    Debug.Console(0, "Attempt to register versiport {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
+                            }
+                        }
+
+                    // Future: Check if portDevice is 3-series card or other non control system that supports versiports
+                            
+                }
+            }
+
+            else if (typeName == "digitalinput")
+            {
+                var props = JsonConvert.DeserializeObject<IOPortConfig>(properties.ToString());
+
+                IDigitalInputPorts portDevice;
+
+                if (props.PortDeviceKey == "processor")
+                    portDevice = Global.ControlSystem as IDigitalInputPorts;
+                else
+                    portDevice = DeviceManager.GetDeviceForKey(props.PortDeviceKey) as IDigitalInputPorts;
+
+                if (portDevice == null)
+                    Debug.Console(0, "Unable to add digital input device with key '{0}'. Port Device does not support digital inputs", key);
+                else
+                {
+                    var cs = (portDevice as CrestronControlSystem);
+
+                    if (cs != null)
+                        if (cs.SupportsDigitalInput && props.PortNumber <= cs.NumberOfDigitalInputPorts)
+                        {
+                            DigitalInput digitalInput = cs.DigitalInputPorts[props.PortNumber];
+
+                            if (!digitalInput.Registered)
+                            {
+                                if(digitalInput.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+                                    return new GenericDigitalInputDevice(key, digitalInput);
+                                else
+                                    Debug.Console(0, "Attempt to register digital input {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
+                            }
+                        }
+                    // Future: Check if portDevice is 3-series card or other non control system that supports versiports
+                }
+            }
+
+            else if (typeName == "relayoutput")
+            {
+                var props = JsonConvert.DeserializeObject<IOPortConfig>(properties.ToString());
+
+                IRelayPorts portDevice;
+
+                if (props.PortDeviceKey == "processor")
+                    portDevice = Global.ControlSystem as IRelayPorts;
+                else
+                    portDevice = DeviceManager.GetDeviceForKey(props.PortDeviceKey) as IRelayPorts;
+
+                if (portDevice == null)
+                    Debug.Console(0, "Unable to add relay device with key '{0}'. Port Device does not support relays", key);
+                else
+                {
+                    var cs = (portDevice as CrestronControlSystem);
+
+                    if(cs != null)
+                        if (cs.SupportsRelay && props.PortNumber <= cs.NumberOfRelayPorts)
+                        {
+                            Relay relay = cs.RelayPorts[props.PortNumber];
+
+                            if (!relay.Registered)
+                            {
+                                if(relay.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+                                    return new GenericRelayDevice(key, relay);
+                                else
+                                    Debug.Console(0, "Attempt to register relay {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
+                            }
+                        }
+
+                    // Future: Check if portDevice is 3-series card or other non control system that supports versiports
+                }
+            }
+
+            else if (typeName == "microphoneprivacycontroller")
+            {
+                var props = JsonConvert.DeserializeObject<Microphones.MicrophonePrivacyControllerConfig>(properties.ToString());
+
+                return new Microphones.MicrophonePrivacyController(key, props);
             }
 
             else if (groupName == "settopbox") //(typeName == "irstbbase")

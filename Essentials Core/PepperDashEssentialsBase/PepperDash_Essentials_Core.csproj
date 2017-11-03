@@ -106,6 +106,7 @@
     <Compile Include="Crestron IO\Inputs\GenericDigitalInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\IDigitalInput.cs" />
+    <Compile Include="Crestron IO\IOPortConfig.cs" />
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Devices\CodecInterfaces.cs" />
     <Compile Include="Global\JobTimer.cs" />

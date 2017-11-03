@@ -75,8 +75,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             new CodecCommandWithLabel("prominent","Prominent"),
             new CodecCommandWithLabel("single","Single")
         };
-        
-        private CiscoCodecConfiguration.RootObject CodecConfiguration;
+
+        private CiscoCodecConfiguration.RootObject CodecConfiguration = new CiscoCodecConfiguration.RootObject();
 
         private CiscoCodecStatus.RootObject CodecStatus = new CiscoCodecStatus.RootObject();
 
@@ -271,9 +271,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             PortGather = new CommunicationGather(Communication, Delimiter);
             PortGather.IncludeDelimiter = true;
             PortGather.LineReceived += this.Port_LineReceived;
-
-            CodecConfiguration = new CiscoCodecConfiguration.RootObject();
-            //CodecStatus = new CiscoCodecStatus.RootObject();
 
             CodecInfo = new CiscoCodecInfo(CodecStatus, CodecConfiguration);
 

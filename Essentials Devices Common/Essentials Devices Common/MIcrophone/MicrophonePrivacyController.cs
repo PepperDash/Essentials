@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Crestron_IO;
+using PepperDash.Essentials.Core.CrestronIO;
 
 
 namespace PepperDash.Essentials.Devices.Common.Microphones
@@ -17,6 +17,8 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
     /// </summary>
     public class MicrophonePrivacyController : Device
     {
+        MicrophonePrivacyControllerConfig Config;
+
         public bool EnableLeds
         {
             get
@@ -25,11 +27,15 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
             }
             set
             {
+                _enableLeds = value;
+
                 if (value)
-                    SetLedRelayStates();
+                {
+                    CheckPrivacyMode();
+                    SetLedStates();
+                }
                 else
                     TurnOffAllLeds();
-                _enableLeds = value;
             }
         }
         bool _enableLeds;
@@ -47,7 +53,38 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
         public MicrophonePrivacyController(string key, MicrophonePrivacyControllerConfig config) :
             base(key)
         {
+            Config = config;
+
             Inputs = new List<IDigitalInput>();
+        }
+
+        public override bool CustomActivate()
+        {
+            foreach (var i in Config.Inputs)
+            {
+                var input = DeviceManager.GetDeviceForKey(i.DeviceKey) as IDigitalInput;
+
+                if(input != null)
+                    AddInput(input);
+            }
+
+            var greenLed = DeviceManager.GetDeviceForKey(Config.GreenLedRelay.DeviceKey) as GenericRelayDevice;
+
+            if (greenLed != null)
+                GreenLedRelay = greenLed;
+            else
+                Debug.Console(0, this, "Unable to add Green LED device");
+
+            var redLed = DeviceManager.GetDeviceForKey(Config.RedLedRelay.DeviceKey) as GenericRelayDevice;
+
+            if (redLed != null)
+                RedLedRelay = redLed;
+            else
+                Debug.Console(0, this, "Unable to add Red LED device");
+
+            CheckPrivacyMode();
+
+            return base.CustomActivate();
         }
 
         public void SetPrivacyDevice(IPrivacy privacyDevice)
@@ -59,13 +96,20 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
 
         void PrivacyModeIsOnFeedback_OutputChange(object sender, EventArgs e)
         {
-            var privacyState = (sender as IPrivacy).PrivacyModeIsOnFeedback.BoolValue;
+            CheckPrivacyMode();
+        }
 
-            if (privacyState)
-                TurnOnRedLeds();
-            else
-                TurnOnGreenLeds();
+        void CheckPrivacyMode()
+        {
+            if (PrivacyDevice != null)
+            {
+                var privacyState = PrivacyDevice.PrivacyModeIsOnFeedback.BoolValue;
 
+                if (privacyState)
+                    TurnOnRedLeds();
+                else
+                    TurnOnGreenLeds();
+            }
         }
 
         void AddInput(IDigitalInput input)
@@ -118,32 +162,24 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
         {
             _greenLedRelayState = false;
             _redLedRelayState = true;
-            SetLedRelayStates();
+            SetLedStates();
         }
 
         void TurnOnGreenLeds()
         {
             _redLedRelayState = false;
             _greenLedRelayState = true;
-            SetLedRelayStates();
+            SetLedStates();
         }
 
         /// <summary>
         /// If enabled, sets the actual state of the relays
         /// </summary>
-        void SetLedRelayStates()
+        void SetLedStates()
         {
             if (_enableLeds)
             {
-                if (_redLedRelayState)
-                    RedLedRelay.CloseRelay();
-                else
-                    RedLedRelay.OpenRelay();
-
-                if (_greenLedRelayState)
-                    GreenLedRelay.CloseRelay();
-                else
-                    GreenLedRelay.OpenRelay();
+                SetRelayStates();
             }
             else
                 TurnOffAllLeds();
@@ -154,8 +190,29 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
         /// </summary>
         void TurnOffAllLeds()
         {
-            GreenLedRelay.OpenRelay();
-            RedLedRelay.OpenRelay();
+            _redLedRelayState = false;
+            _greenLedRelayState = false;
+
+            SetRelayStates();
+        }
+
+        void SetRelayStates()
+        {
+            if (RedLedRelay != null)
+            {
+                if (_redLedRelayState)
+                    RedLedRelay.CloseRelay();
+                else
+                    RedLedRelay.OpenRelay();
+            }
+
+            if(GreenLedRelay != null)
+            {
+                if (_greenLedRelayState)
+                    GreenLedRelay.CloseRelay();
+                else
+                    GreenLedRelay.OpenRelay();
+            }
         }
     }
 }

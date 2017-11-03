@@ -5,12 +5,14 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
-namespace PepperDash.Essentials.Core.Crestron_IO
+using PepperDash.Core;
+
+namespace PepperDash.Essentials.Core.CrestronIO
 {
     /// <summary>
     /// Represents a generic device controlled by relays
     /// </summary>
-    public class GenericRelayDevice
+    public class GenericRelayDevice : Device
     {
         public Relay RelayOutput { get; private set; }
 
@@ -24,7 +26,8 @@ namespace PepperDash.Essentials.Core.Crestron_IO
             }
         }
 
-        public GenericRelayDevice(Relay relay)
+        public GenericRelayDevice(string key, Relay relay):
+            base(key)
         {
             RelayStateFeedback = new BoolFeedback(RelayStateFeedbackFunc);
 

@@ -5,9 +5,11 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
-namespace PepperDash.Essentials.Core.Crestron_IO
+using PepperDash.Core;
+
+namespace PepperDash.Essentials.Core.CrestronIO
 {
-    public class GenericDigitalInputDevice : IDigitalInput
+    public class GenericDigitalInputDevice : Device, IDigitalInput
     {
         public DigitalInput InputPort { get; private set; }
 
@@ -21,7 +23,8 @@ namespace PepperDash.Essentials.Core.Crestron_IO
             }
         }
 
-        public GenericDigitalInputDevice(DigitalInput inputPort)
+        public GenericDigitalInputDevice(string key, DigitalInput inputPort):
+            base(key)
         {
             InputStateFeedback = new BoolFeedback(InputStateFeedbackFunc);
 

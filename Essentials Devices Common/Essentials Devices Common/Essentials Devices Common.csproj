@@ -61,7 +61,7 @@
     <Reference Include="mscorlib" />
     <Reference Include="PepperDash_Core, Version=1.0.6284.20368, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\pepperdash-simplsharp-core\Pepperdash Core\CLZ Builds\PepperDash_Core.dll</HintPath>
+      <HintPath>..\..\..\PepperDash.Core\Pepperdash Core\Pepperdash Core\bin\PepperDash_Core.dll</HintPath>
     </Reference>
     <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -119,6 +119,8 @@
     <Compile Include="DSP\PolycomSoundStructure\SoundStructureBasics.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Generic\GenericSource.cs" />
+    <Compile Include="MIcrophone\MicrophonePrivacyController.cs" />
+    <Compile Include="MIcrophone\MicrophonePrivacyControllerConfig.cs" />
     <Compile Include="Occupancy\EssentialsGlsOccupancySensorBaseController.cs" />
     <Compile Include="Occupancy\EssentialsOccupancyAggregator.cs" />
     <Compile Include="Occupancy\iOccupancyStatusProvider.cs" />

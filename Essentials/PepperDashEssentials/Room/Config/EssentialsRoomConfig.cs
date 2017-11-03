@@ -106,11 +106,25 @@ namespace PepperDash.Essentials.Room.Config
             if (microphonePrivacy != null)
             {
                 // Get the MicrophonePrivacy device from the device manager
-                var mP = (DeviceManager.GetDeviceForKey(props.MicrophonePrivacy.Key) as PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController);
+                var mP = (DeviceManager.GetDeviceForKey(props.MicrophonePrivacy.DeviceKey) as PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController);
                 // Set this room as the IPrivacy device
-                mP.SetPrivacyDevice(room);
+                if (mP != null)
+                {
+                    mP.SetPrivacyDevice(room);
 
-                return mP;
+                    // Tie LED enable to room power state
+                    room.OnFeedback.OutputChange += (o, a) =>
+                    {
+                        if (room.OnFeedback.BoolValue)
+                            mP.EnableLeds = true;
+                        else
+                            mP.EnableLeds = false;
+                    };
+
+                    mP.EnableLeds = room.OnFeedback.BoolValue;
+
+                    return mP;
+                }
             }
             return null;
         }
@@ -138,7 +152,7 @@ namespace PepperDash.Essentials.Room.Config
 
     public class EssentialsRoomMicrophonePrivacyConfig
     {
-        public string Key { get; set; }
+        public string DeviceKey { get; set; }
     }
 
     /// <summary>
