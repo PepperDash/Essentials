@@ -1264,7 +1264,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             public override bool MultiSiteOptionIsEnabled
             {
-                                get
+                get
                 {
                     if (CodecStatus.Status.SystemUnit.Software.OptionKeys.MultiSite.Value.ToLower() == "true")
                         return true;
