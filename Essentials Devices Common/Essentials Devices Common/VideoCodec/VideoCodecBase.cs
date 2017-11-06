@@ -50,7 +50,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         { 
             get
             {
-                var value = ActiveCalls.Any(c => c.IsActiveCall);
+                bool value;
+
+                if (ActiveCalls != null)
+                    value = ActiveCalls.Any(c => c.IsActiveCall);
+                else
+                    value = false;
                 return value; 
             } 
         }

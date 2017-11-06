@@ -112,16 +112,39 @@ namespace PepperDash.Essentials.Room.Config
                 {
                     mP.SetPrivacyDevice(room);
 
-                    // Tie LED enable to room power state
-                    room.OnFeedback.OutputChange += (o, a) =>
-                    {
-                        if (room.OnFeedback.BoolValue)
-                            mP.EnableLeds = true;
-                        else
-                            mP.EnableLeds = false;
-                    };
+                    var behaviour = props.MicrophonePrivacy.Behaviour.ToLower();
 
-                    mP.EnableLeds = room.OnFeedback.BoolValue;
+                    if (behaviour != null)
+                    {
+                        if (behaviour == "trackroomstate")
+                        {
+                            // Tie LED enable to room power state
+                            room.OnFeedback.OutputChange += (o, a) =>
+                            {
+                                if (room.OnFeedback.BoolValue)
+                                    mP.EnableLeds = true;
+                                else
+                                    mP.EnableLeds = false;
+                            };
+
+                            mP.EnableLeds = room.OnFeedback.BoolValue;
+                        }
+                        else if (behaviour == "trackcallstate")
+                        {
+                            // Tie LED enable to room power state
+                            room.InCallFeedback.OutputChange += (o, a) =>
+                            {
+                                if (room.InCallFeedback.BoolValue)
+                                    mP.EnableLeds = true;
+                                else
+                                    mP.EnableLeds = false;
+                            };
+
+                            mP.EnableLeds = room.InCallFeedback.BoolValue;
+                        }
+                    }
+                    else
+                        Debug.Console(0, "No behaviour defined for MicrophonePrivacyController");
 
                     return mP;
                 }
@@ -153,6 +176,7 @@ namespace PepperDash.Essentials.Room.Config
     public class EssentialsRoomMicrophonePrivacyConfig
     {
         public string DeviceKey { get; set; }
+        public string Behaviour { get; set; }
     }
 
     /// <summary>

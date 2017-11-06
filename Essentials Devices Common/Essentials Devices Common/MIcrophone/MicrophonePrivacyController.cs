@@ -19,6 +19,8 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
     {
         MicrophonePrivacyControllerConfig Config;
 
+        bool initialized;
+
         public bool EnableLeds
         {
             get
@@ -29,13 +31,16 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
             {
                 _enableLeds = value;
 
-                if (value)
+                if (initialized)
                 {
-                    CheckPrivacyMode();
-                    SetLedStates();
+                    if (value)
+                    {
+                        CheckPrivacyMode();
+                        SetLedStates();
+                    }
+                    else
+                        TurnOffAllLeds();
                 }
-                else
-                    TurnOffAllLeds();
             }
         }
         bool _enableLeds;
@@ -83,6 +88,8 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
                 Debug.Console(0, this, "Unable to add Red LED device");
 
             CheckPrivacyMode();
+
+            initialized = true;
 
             return base.CustomActivate();
         }
