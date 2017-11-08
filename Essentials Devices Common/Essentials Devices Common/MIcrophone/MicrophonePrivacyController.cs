@@ -153,7 +153,7 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
         /// <param name="e"></param>
         void InputStateFeedback_OutputChange(object sender, EventArgs e)
         {
-            if ((sender as IDigitalInput).InputStateFeedback.BoolValue)
+            if ((sender as BoolFeedback).BoolValue == true)
                 TogglePrivacyMute();
         }
 

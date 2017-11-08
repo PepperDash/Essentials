@@ -243,7 +243,10 @@ namespace PepperDash.Essentials
             }
 
             InCallFeedback = new BoolFeedback(() => VideoCodec.IsInCall);
-            IsSharingFeedback = new BoolFeedback(() => VideoCodec.SharingSourceFeedback.StringValue != null); 
+            VideoCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+
+            IsSharingFeedback = new BoolFeedback(() => VideoCodec.SharingContentIsOnFeedback.BoolValue);
+            VideoCodec.SharingContentIsOnFeedback.OutputChange += (o, a) => this.IsSharingFeedback.FireUpdate();
 
             // link privacy to VC (for now?)
             PrivacyModeIsOnFeedback = new BoolFeedback(() => VideoCodec.PrivacyModeIsOnFeedback.BoolValue);
