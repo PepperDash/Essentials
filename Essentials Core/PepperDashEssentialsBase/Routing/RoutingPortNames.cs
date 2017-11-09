@@ -184,8 +184,20 @@ namespace PepperDash.Essentials.Core.Routing
         /// </summary>
 		public const string VgaIn = "vgaIn";
         /// <summary>
+        /// vgaIn1
+        /// </summary>
+        public const string VgaIn1 = "vgaIn1";
+        /// <summary>
         /// vgaOut
         /// </summary>
 		public const string VgaOut = "vgaOut";
+        /// <summary>
+        /// IPC/OPS
+        /// </summary>
+        public const string IpcOps = "ipcOps";
+        /// <summary>
+        /// MediaPlayer
+        /// </summary>
+        public const string MediaPlayer = "mediaPlayer";
 	}
 }

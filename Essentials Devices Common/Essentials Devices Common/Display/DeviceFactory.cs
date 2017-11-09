@@ -37,6 +37,12 @@ namespace PepperDash.Essentials.Devices.Displays
                     if (comm != null)
                         return new SamsungMDC(dc.Key, dc.Name, comm, dc.Properties["id"].Value<string>());
                 }
+                if (typeName == "avocorvtf")
+                {
+                    var comm = CommFactory.CreateCommForDevice(dc);
+                    if (comm != null)
+                        return new AvocorDisplay(dc.Key, dc.Name, comm, null);
+                }
                    
 			}
 			catch (Exception e)

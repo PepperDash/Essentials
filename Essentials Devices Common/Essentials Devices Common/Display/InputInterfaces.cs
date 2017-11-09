@@ -12,5 +12,6 @@ namespace PepperDash.Essentials.Devices.Displays
     public interface IInputHdmi4 { void InputHdmi4(); }
     public interface IInputDisplayPort1 { void InputDisplayPort1(); }
     public interface IInputDisplayPort2 { void InputDisplayPort2(); }
+    public interface IInputVga1 { void InputVga1(); }
 
 }
