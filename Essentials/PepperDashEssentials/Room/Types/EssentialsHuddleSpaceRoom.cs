@@ -370,7 +370,10 @@ namespace PepperDash.Essentials
         /// </summary>
         public override void SetDefaultLevels()
         {
-            Debug.Console(0, this, "SetDefaultLevels not implemented");
+            Debug.Console(1, this, "Restoring default levels");
+            var vc = CurrentVolumeControls as IBasicVolumeWithFeedback;
+            if (vc != null)
+                vc.SetVolume(DefaultVolume);
         }
 
 		/// <summary>
