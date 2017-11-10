@@ -24,6 +24,44 @@ namespace PepperDash.Essentials.Devices.Displays
 
         public byte ID { get; private set; }
 
+        /// <summary>
+        /// 0x08
+        /// </summary>
+        const byte InputVga1Value = 0x00;
+        /// <summary>
+        /// 0x09
+        /// </summary>
+        const byte InputHdmi1Value = 0x09;
+        /// <summary>
+        /// 0x0a
+        /// </summary>
+        const byte InputHdmi2Value = 0x0a;
+        /// <summary>
+        /// 0x0b
+        /// </summary>
+        const byte InputHdmi3Value = 0x0b;
+        /// <summary>
+        /// 0x0c
+        /// </summary>
+        const byte InputHdmi4Value = 0x0c;
+        /// <summary>
+        /// 0c0d
+        /// </summary>
+        const byte InputDisplayPort1Value = 0x0d;
+        /// <summary>
+        /// 0x0e
+        /// </summary>
+        const byte InputIpcOpsValue = 0x0e;
+        /// <summary>
+        /// 0x11
+        /// </summary>
+        const byte InputHdmi5Value = 0x11;
+        /// <summary>
+        /// 0x12
+        /// </summary>
+        const byte InputMediaPlayerValue = 0x12;
+
+
 		bool _PowerIsOn;
 		bool _IsWarmingUp;
 		bool _IsCoolingDown;
@@ -109,36 +147,34 @@ namespace PepperDash.Essentials.Devices.Displays
                 () => _LastVolumeSent);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi1), this), 0x09);
+                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi1), this), InputHdmi1Value);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi2), this), 0x10);
+                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi2), this), InputHdmi2Value);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi3), this), 0x11);
+                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi3), this), InputHdmi3Value);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn4, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi4), this), 0x12);
+                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi4), this), InputHdmi4Value);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn5, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi5), this), 0x17);
+                eRoutingPortConnectionType.Hdmi, new Action(InputHdmi5), this), InputHdmi5Value);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.DisplayPortIn1, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.DisplayPort, new Action(InputDisplayPort1), this), 0x13);
+                eRoutingPortConnectionType.DisplayPort, new Action(InputDisplayPort1), this), InputDisplayPort1Value);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.VgaIn, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Dvi, new Action(InputVga1), this), 0x00);
+                eRoutingPortConnectionType.Dvi, new Action(InputVga1), this), InputVga1Value);
 
             AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.IpcOps, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Composite, new Action(InputIpcOps), this), 0x14);
+                eRoutingPortConnectionType.Composite, new Action(InputIpcOps), this), InputIpcOpsValue);
 
 			AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.MediaPlayer, eRoutingSignalType.Video,
-                eRoutingPortConnectionType.Vga, new Action(InputMediaPlayer), this), 0x18);
+                eRoutingPortConnectionType.Vga, new Action(InputMediaPlayer), this), InputMediaPlayerValue);
 
 			VolumeLevelFeedback = new IntFeedback(() => { return _VolumeLevelForSig; });
 			MuteFeedback = new BoolFeedback(() => _IsMuted);
-
-            StatusGet();
 		}
 
         /// <summary>
@@ -148,10 +184,26 @@ namespace PepperDash.Essentials.Devices.Displays
 		public override bool CustomActivate()
 		{
 			Communication.Connect();
+
+            var socket = Communication as ISocketStatus;
+            if (socket != null)
+            {
+                socket.ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
+            }
+
 			CommunicationMonitor.StatusChange += (o, a) => { Debug.Console(2, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
 			CommunicationMonitor.Start();
+
+            StatusGet();
+
 			return true;
 		}
+
+        void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+        {
+            if (e.Client.IsConnected)
+                StatusGet();
+        }
 
 		public override List<Feedback> Feedbacks
 		{
@@ -267,12 +319,13 @@ namespace PepperDash.Essentials.Devices.Displays
                         }
                     case '\x01':
                         {
-                            _PowerIsOn = false;
+                            _PowerIsOn = true;
                             break;
                         }
                 }
 
                 PowerIsOnFeedback.FireUpdate();
+                Debug.Console(1, this, "PowerIsOn State: {0}", PowerIsOnFeedback.BoolValue);
 
             }
             else if (e.Text.IndexOf("\x4D\x49\x4E") > -1)
@@ -286,6 +339,7 @@ namespace PepperDash.Essentials.Devices.Displays
                 {
                     _CurrentInputPort = newInput;
                     CurrentInputFeedback.FireUpdate();
+                    Debug.Console(1, this, "Current Input: {0}", CurrentInputFeedback.StringValue);
                 }
                 
             }
@@ -304,6 +358,7 @@ namespace PepperDash.Essentials.Devices.Displays
                 {
                     _VolumeLevelForSig = newVol;
                     VolumeLevelFeedback.FireUpdate();
+                    Debug.Console(1, this, "Volume Level: {0}", VolumeLevelFeedback.IntValue);
                 }
             }
 
@@ -405,7 +460,13 @@ namespace PepperDash.Essentials.Devices.Displays
         {
             PowerGet();
 
+            CrestronEnvironment.Sleep(100);
+
             InputGet();
+
+            CrestronEnvironment.Sleep(100);
+
+            VolumeGet();
         }
 
         /// <summary>
@@ -469,47 +530,47 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		public void InputHdmi1()
 		{
-            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, 0x09, 0x08, 0x0d });
+            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, InputHdmi1Value, 0x08, 0x0d });
 		}
 
 		public void InputHdmi2()
 		{
-            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, 0x10, 0x08, 0x0d });
+            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, InputHdmi2Value, 0x08, 0x0d });
         }
 
 		public void InputHdmi3()
 		{
-            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, 0x11, 0x08, 0x0d });
+            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, InputHdmi3Value, 0x08, 0x0d });
         }
 
         public void InputHdmi4()
         {
-            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, 0x12, 0x08, 0x0d });
+            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, InputHdmi4Value, 0x08, 0x0d });
         }
 
         public void InputHdmi5()
         {
-            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, 0x17, 0x08, 0x0d });
+            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, InputHdmi5Value, 0x08, 0x0d });
         }
 
 		public void InputDisplayPort1()
 		{
-            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, 0x13, 0x08, 0x0d });
+            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, InputDisplayPort1Value, 0x08, 0x0d });
         }
 
         public void InputVga1()
         {
-            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, 0x00, 0x08, 0x0d });
+            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, InputVga1Value, 0x08, 0x0d });
         }
 
         public void InputIpcOps()
         {
-            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, 0x14, 0x08, 0x0d });
+            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, InputIpcOpsValue, 0x08, 0x0d });
         }
 
         public void InputMediaPlayer()
         {
-            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, 0x18, 0x08, 0x0d });
+            SendBytes(new byte[] { 0x07, ID, 0x02, 0x4D, 0x49, 0x4E, InputMediaPlayerValue, 0x08, 0x0d });
         }
 
         public void InputGet()

@@ -261,22 +261,45 @@ namespace PepperDash.Essentials.UIDrivers
                 {
                     i++;
                     DisplayList.StringInputSig(i, 1).StringValue = display.Name;
-                    DisplayList.GetBoolFeedbackSig(i, 1).SetSigFalseAction(display.PowerOn);
+                    DisplayList.GetBoolFeedbackSig(i, 1).SetSigFalseAction(display.PowerOn);      
                     DisplayList.GetBoolFeedbackSig(i, 2).SetSigFalseAction(display.PowerOff);
+                    if (display is TwoWayDisplayBase)
+                    {
+                        var powerOnSig = DisplayList.BoolInputSig(i, 1);
+                        (display as TwoWayDisplayBase).PowerIsOnFeedback.LinkInputSig(powerOnSig);
+
+                        var powerOffSig = DisplayList.BoolInputSig(1, 2);
+                        (display as TwoWayDisplayBase).PowerIsOnFeedback.LinkComplementInputSig(powerOffSig);
+                    } 
                     DisplayList.GetBoolFeedbackSig(i, 3).SetSigFalseAction(() =>
                         { if (display is IInputHdmi1) (display as IInputHdmi1).InputHdmi1(); });
                     DisplayList.GetBoolFeedbackSig(i, 4).SetSigFalseAction(() =>
-                    { if (display is IInputHdmi2) (display as IInputHdmi2).InputHdmi2(); });
+                        { if (display is IInputHdmi2) (display as IInputHdmi2).InputHdmi2(); });
                     DisplayList.GetBoolFeedbackSig(i, 5).SetSigFalseAction(() =>
-                    { if (display is IInputHdmi3) (display as IInputHdmi3).InputHdmi3(); });
+                        { if (display is IInputHdmi3) (display as IInputHdmi3).InputHdmi3(); });
                     //DisplayList.GetBoolFeedbackSig(i, 6).SetSigFalseAction(() =>
                     //{ if (display is IInputHdmi4) (display as IInputHdmi4).InputHdmi4(); });
                     DisplayList.GetBoolFeedbackSig(i, 6).SetSigFalseAction(() =>
-                    { if (display is IInputDisplayPort1) (display as IInputDisplayPort1).InputDisplayPort1(); });
+                        { if (display is IInputDisplayPort1) (display as IInputDisplayPort1).InputDisplayPort1(); });
+
+                
+                    // Figure out some way to provide current input feedback
+                    if (display is TwoWayDisplayBase)
+                    {
+                        (display as TwoWayDisplayBase).CurrentInputFeedback.OutputChange += new EventHandler<EventArgs>(CurrentInputFeedback_OutputChange);
+                    }
                 }
+
+                
             }
 
             DisplayList.Count = i;
+        }
+
+
+        void CurrentInputFeedback_OutputChange(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
