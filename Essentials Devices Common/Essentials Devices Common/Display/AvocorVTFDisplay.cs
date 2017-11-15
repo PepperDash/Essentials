@@ -67,9 +67,9 @@ namespace PepperDash.Essentials.Devices.Displays
 		bool _IsCoolingDown;
 		ushort _VolumeLevelForSig;
         int _LastVolumeSent;
+        ushort _PreMuteVolumeLevel;
 		bool _IsMuted;
         RoutingInputPort _CurrentInputPort;
-        //byte[] IncomingBuffer = new byte[]{};
         ActionIncrementer VolumeIncrementer;
         bool VolumeIsRamping;
         public bool IsInStandby { get; private set; }
@@ -358,6 +358,14 @@ namespace PepperDash.Essentials.Devices.Displays
                 {
                     _VolumeLevelForSig = newVol;
                     VolumeLevelFeedback.FireUpdate();
+
+                    if (_VolumeLevelForSig > 0)
+                        _IsMuted = false;
+                    else
+                        _IsMuted = true;
+
+                    MuteFeedback.FireUpdate();
+
                     Debug.Console(1, this, "Volume Level: {0}", VolumeLevelFeedback.IntValue);
                 }
             }
@@ -635,7 +643,7 @@ namespace PepperDash.Essentials.Devices.Displays
         /// </summary>
 		public void MuteOff()
 		{
-            SendBytes(new byte[] { 0xAA, 0x13, 0x00, 0x01, 0x00, 0x00 });
+            SetVolume(_PreMuteVolumeLevel);
         }
 
         /// <summary>
@@ -643,16 +651,18 @@ namespace PepperDash.Essentials.Devices.Displays
         /// </summary>
 		public void MuteOn()
 		{
-            SendBytes(new byte[] { 0xAA, 0x13, 0x00, 0x01, 0x01, 0x00 });
+            _PreMuteVolumeLevel = _VolumeLevelForSig;
+
+            SetVolume(0);
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public void MuteGet()
-        {
-            SendBytes(new byte[] { 0xAA, 0x13, 0x00, 0x00, 0x00 });
-        }
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        //public void MuteGet()
+        //{
+        //    SendBytes(new byte[] { 0x07, ID, 0x01, });
+        //}
 
 		#endregion
 

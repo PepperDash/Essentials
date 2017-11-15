@@ -265,6 +265,13 @@ namespace PepperDash.Essentials
         protected override void EndShutdown()
         {
             VideoCodec.EndAllCalls();
+
+            SetDefaultLevels();
+
+            RunDefaultPresentRoute();
+
+            CrestronEnvironment.Sleep(200);
+
             RunRouteAction("roomOff");
         }
 

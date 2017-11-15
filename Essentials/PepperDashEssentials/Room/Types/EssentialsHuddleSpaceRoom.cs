@@ -202,6 +202,12 @@ namespace PepperDash.Essentials
         /// </summary>
         protected override void EndShutdown()
         {
+            SetDefaultLevels();
+
+            RunDefaultRoute();
+
+            CrestronEnvironment.Sleep(200);
+
             RunRouteAction("roomOff");
         }
 
