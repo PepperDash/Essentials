@@ -97,6 +97,8 @@ namespace PepperDash.Essentials.Fusion
 
         CTimer PushNotificationTimer = null;
 
+        CTimer DailyTimeRequestTimer = null;
+
         // Default poll time is 5 min unless overridden by config value
         public long SchedulePollInterval = 300000;
 
@@ -465,14 +467,33 @@ namespace PepperDash.Essentials.Fusion
 
 
                 // Request current Fusion Server Time
+                RequestLocalDateTime(null);
 
-                string timeRequestID = "TimeRequest";
+                // Setup timer to request time daily
+                if (DailyTimeRequestTimer != null && !DailyTimeRequestTimer.Disposed)
+                {
+                    DailyTimeRequestTimer.Stop();
+                    DailyTimeRequestTimer.Dispose();
+                }
 
-                string timeRequest = string.Format("<LocalTimeRequest><RequestID>{0}</RequestID></LocalTimeRequest>", timeRequestID);
+                DailyTimeRequestTimer = new CTimer(RequestLocalDateTime, null, 86400000, 86400000);
 
-                FusionRoom.ExtenderFusionRoomDataReservedSigs.LocalDateTimeQuery.StringValue = timeRequest;
+                DailyTimeRequestTimer.Reset(86400000, 86400000);
             }
 
+        }
+
+        /// <summary>
+        /// Requests the local date and time from the Fusion Server
+        /// </summary>
+        /// <param name="callbackObject"></param>
+        public void RequestLocalDateTime(object callbackObject)
+        {
+            string timeRequestID = "TimeRequest";
+
+            string timeRequest = string.Format("<LocalTimeRequest><RequestID>{0}</RequestID></LocalTimeRequest>", timeRequestID);
+
+            FusionRoom.ExtenderFusionRoomDataReservedSigs.LocalDateTimeQuery.StringValue = timeRequest;
         }
 
         /// <summary>
