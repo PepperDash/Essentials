@@ -971,7 +971,7 @@ namespace PepperDash.Essentials
         /// <param name="type"></param>
         void CurrentRoom_CurrentSingleSourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
         {
-            if (_CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue)
+            if (_CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && _CurrentRoom.CurrentSourceInfo != null)
                 TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = _CurrentRoom.CurrentSourceInfo.PreferredName;
         }
 
@@ -994,10 +994,14 @@ namespace PepperDash.Essentials
 
             string callListSharedSourceLabel;
 
-            if (_CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue)
-                callListSharedSourceLabel = _CurrentRoom.CurrentSourceInfo.PreferredName;
-            else
-                callListSharedSourceLabel = "None";
+			if (_CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && _CurrentRoom.CurrentSourceInfo != null)
+			{
+				Debug.Console(0, "*#* CurrentRoom.CurrentSourceInfo = {0}", 
+					_CurrentRoom.CurrentSourceInfo != null ? _CurrentRoom.CurrentSourceInfo.SourceKey : "Nada!");
+				callListSharedSourceLabel = _CurrentRoom.CurrentSourceInfo.PreferredName;
+			}
+			else
+				callListSharedSourceLabel = "None";
 
             TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = callListSharedSourceLabel;
         }

@@ -299,7 +299,7 @@ namespace PepperDash.Essentials.UIDrivers
 
         void CurrentInputFeedback_OutputChange(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            
         }
 
         /// <summary>
