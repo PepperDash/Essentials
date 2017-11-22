@@ -668,6 +668,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                         EvalutateDisconnectEvent(eventReceived);
                     }
+					else if (response.IndexOf("\"Bookings\":{") > -1) // The list has changed, reload it
+					{
+						GetBookings(null);
+					}
                 }
                 else if (response.IndexOf("\"CommandResponse\":{") > -1)
                 {

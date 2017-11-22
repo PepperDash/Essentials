@@ -190,7 +190,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// Tracks the last meeting that was cancelled
 		/// </summary>
-		Meeting LastMeetingDismissed;
+		string LastMeetingDismissedId;
 
         /// <summary>
         /// Constructor
@@ -422,37 +422,42 @@ namespace PepperDash.Essentials
 			var ss = CurrentRoom.ScheduleSource;
 			if (ss != null)
 			{
-				NextMeetingTimer = new CTimer(o => ShowNextMeetingCallback(), null, 0, 60000);
+				NextMeetingTimer = new CTimer(o => ShowNextMeetingTimerCallback(), null, 0, 60000);
 			}
 		}
 
 		/// <summary>
 		/// 
 		/// </summary>
-		void ShowNextMeetingCallback()
+		void ShowNextMeetingTimerCallback()
 		{
-			// Every 60 seconds, check meetings list for the closest, joinable meeting
+			// Every 60 seconds, refresh the calendar
+			RefreshMeetingsList();
+			// check meetings list for the closest, joinable meeting
 			var ss = CurrentRoom.ScheduleSource;
 			var meetings = ss.CodecSchedule.Meetings;
 
 			if (meetings.Count > 0)
 			{
-				var meeting = meetings.FirstOrDefault(m => m.Joinable);
-
 				// If the room is off pester the user
 				// If the room is on, and the meeting is joinable
 				// and the LastMeetingDismissed != this meeting
 
+				var lastMeetingDismissed = meetings.FirstOrDefault(m => m.Id == LastMeetingDismissedId);
+				Debug.Console(0, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
+					CurrentRoom.OnFeedback.BoolValue,
+					LastMeetingDismissedId,
+					lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToShortTimeString() : "");
 
-				Debug.Console(0, "*#* Room on: {0}, LastMeetingDismissed: {1} *#*", CurrentRoom.OnFeedback.BoolValue,
-					LastMeetingDismissed != null ? LastMeetingDismissed.StartTime.ToShortTimeString() : "null");
+				var meeting = meetings.LastOrDefault(m => m.Joinable);
 				if (CurrentRoom.OnFeedback.BoolValue
-					&& LastMeetingDismissed == meeting)
+					&& lastMeetingDismissed == meeting)
 				{
 					return;
 				}
 
-				LastMeetingDismissed = null;
+				LastMeetingDismissedId = null;
+				// Clear the popup when we run out of meetings
 				if (meeting == null)
 				{
 					HideNextMeetingPopup();
@@ -468,13 +473,16 @@ namespace PepperDash.Essentials
 					TriList.SetSigFalseAction(UIBoolJoin.NextMeetingJoinPress, () =>
 					{
 						HideNextMeetingPopup();
+						PopupInterlock.Hide();
 						RoomOnAndDialMeeting(meeting);
 					});
 					TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
 					TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
 					{
 						HideNextMeetingPopup();
-						CalendarPress();
+						//CalendarPress();
+						RefreshMeetingsList();
+						PopupInterlock.ShowInterlocked(UIBoolJoin.MeetingsOrContacMethodsListVisible);
 					});
 					var indexOfNext = meetings.IndexOf(meeting) + 1;
 
@@ -489,7 +497,7 @@ namespace PepperDash.Essentials
 						{
 							// Mark the meeting to not re-harass the user
 							if(CurrentRoom.OnFeedback.BoolValue)
-								LastMeetingDismissed = meeting;
+								LastMeetingDismissedId = meeting.Id;
 							HideNextMeetingPopup();
 						});
 
@@ -512,7 +520,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void CalendarPress()
 		{
-			RefreshMeetingsList();
+			//RefreshMeetingsList(); // List should be up-to-date
 			PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsOrContacMethodsListVisible);
 		}
 
@@ -527,6 +535,7 @@ namespace PepperDash.Essentials
                     if (d != null)
                     {
                         d.Dial(meeting);
+						LastMeetingDismissedId = meeting.Id; // To prevent prompts for already-joined call
                     }
 				};
 			if (CurrentRoom.OnFeedback.BoolValue)
@@ -942,6 +951,7 @@ namespace PepperDash.Essentials
                 _CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
                 RefreshSourceInfo();
 
+				(_CurrentRoom.VideoCodec as IHasScheduleAwareness).CodecSchedule.MeetingsListHasChanged += CodecSchedule_MeetingsListHasChanged;
 
                 CallSharingInfoVisibleFeedback = new BoolFeedback(() => _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue);
                 _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.OutputChange += new EventHandler<EventArgs>(SharingContentIsOnFeedback_OutputChange);
@@ -962,6 +972,16 @@ namespace PepperDash.Essentials
                 TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = "Select a room";
             }
         }
+
+		/// <summary>
+		/// If the schedule changes, this event will fire
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void CodecSchedule_MeetingsListHasChanged(object sender, EventArgs e)
+		{
+			RefreshMeetingsList();
+		}
 
         /// <summary>
         /// Updates the current shared source label on the call list when the source changes
@@ -1161,7 +1181,8 @@ namespace PepperDash.Essentials
 		void RefreshMeetingsList()
 		{
             // See if this is helpful or if the callback response in the codec class maybe doesn't come it time?
-            CurrentRoom.ScheduleSource.GetSchedule();
+            // Let's build list from event
+			// CurrentRoom.ScheduleSource.GetSchedule();
 
             TriList.SetString(UIStringJoin.MeetingsOrContactMethodListIcon, "Calendar");
             TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Today's Meetings");
@@ -1236,7 +1257,7 @@ namespace PepperDash.Essentials
                 TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
 				// Clear this so that the pesky meeting warning can resurface every minute when off
-				LastMeetingDismissed = null;
+				LastMeetingDismissedId = null;
             }
         }
 

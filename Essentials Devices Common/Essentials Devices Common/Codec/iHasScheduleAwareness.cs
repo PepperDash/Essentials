@@ -30,6 +30,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
         public event EventHandler<EventArgs> MeetingsListHasChanged;
 
+		/// <summary>
+		/// Setter triggers MeetingsListHasChanged event
+		/// </summary>
         public List<Meeting> Meetings
         {
             get
@@ -131,7 +134,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             get
             {
                 return StartTime.AddMinutes(-5) <= DateTime.Now
-                    && DateTime.Now <= EndTime.AddMinutes(-5);
+                    && DateTime.Now <= EndTime; //.AddMinutes(-5);
             }
         }
         //public string ConferenceNumberToDial { get; set; }
