@@ -28,6 +28,10 @@
         /// 1204
         /// </summary>
         public const uint VCFavoritesList = 1204;
+		/// <summary>
+		/// 1205 Layout buttons dynamic list
+		/// </summary>
+		public const uint VCLayoutsList = 1205;
 
 
         //******************************************************
