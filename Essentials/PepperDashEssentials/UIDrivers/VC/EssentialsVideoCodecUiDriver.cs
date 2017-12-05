@@ -751,7 +751,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			var lc = Codec as IHasCodecLayouts;
 			if (lc != null)
 			{
-				TriList.SetSigFalseAction(UIBoolJoin.VCRemoteViewTogglePress, lc.LocalLayoutToggle);
+				TriList.SetSigFalseAction(UIBoolJoin.VCLayoutTogglePress, lc.LocalLayoutToggle);
 				lc.LocalLayoutFeedback.LinkInputSig(TriList.StringInput[UIStringJoin.VCLayoutModeText]);
 			}
 		}

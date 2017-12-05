@@ -16,7 +16,10 @@ namespace PepperDash.Essentials
 	/// </summary>
 	public class EssentialsConfig : BasicConfig
 	{
+		[JsonProperty("system_url")]
         public string SystemUrl { get; set; }
+
+		[JsonProperty("template_url")]
         public string TemplateUrl { get; set; }
 
         public CotijaConfig Cotija { get; private set; }
@@ -25,7 +28,7 @@ namespace PepperDash.Essentials
         {
             get
             {
-                var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/templates\/(.*)#.*");
+                var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/(.*)\/#.*");
 
                 string uuid = result.Groups[1].Value;
 
@@ -37,7 +40,7 @@ namespace PepperDash.Essentials
         {
             get
             {
-                var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/templates\/(.*)#.*");
+                var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/templates\/(.*)\/#.*");
 
                 string uuid = result.Groups[1].Value;
 

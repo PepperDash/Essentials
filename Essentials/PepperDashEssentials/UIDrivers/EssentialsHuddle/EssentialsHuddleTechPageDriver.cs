@@ -73,6 +73,7 @@ namespace PepperDash.Essentials.UIDrivers
                 true, 3100);
 
             MenuList.SetFeedback(1, true); // initial fb
+			ushort count = 0;
 
             MenuList.SetItemMainText(1, "System Status");
             MenuList.SetItemButtonAction(1, b => { 
@@ -84,19 +85,25 @@ namespace PepperDash.Essentials.UIDrivers
             MenuList.SetItemButtonAction(2, b => { 
                 if (b) PagesInterlock.ShowInterlocked(UIBoolJoin.TechDisplayControlsVisible); 
                 MenuList.SetFeedback(2, true);
-            });           
-            
-            MenuList.SetItemMainText(3, "Panel Setup");
-            MenuList.SetItemButtonAction(3, b => { 
-                if (b) PagesInterlock.ShowInterlocked(UIBoolJoin.TechPanelSetupVisible);
-                MenuList.SetFeedback(3, true);
             });
-            MenuList.Count = 3;
 
+			count = 2;
+
+			// Don't show panel setup on iPad or xpanel
+			if (TriList is Crestron.SimplSharpPro.DeviceSupport.TswFt5Button)
+			{
+				count++;
+				MenuList.SetItemMainText(count, "Panel Setup");
+				MenuList.SetItemButtonAction(count, b =>
+				{
+					if (b) PagesInterlock.ShowInterlocked(UIBoolJoin.TechPanelSetupVisible);
+					MenuList.SetFeedback(count, true);
+				});
+			}
+
+            MenuList.Count = count;
             BuildStatusList();
-
             BuildDisplayList();
-
             SetupPinModal();
         }
         

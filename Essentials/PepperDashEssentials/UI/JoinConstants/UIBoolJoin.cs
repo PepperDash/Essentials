@@ -207,11 +207,23 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 1252
 		/// </summary>
-		public const uint VCRemoteViewTogglePress = 1252;
+		public const uint VCLayoutTogglePress = 1252;
 		/// <summary>
 		/// 1253
 		/// </summary>
 		public const uint VCSelfViewPipTogglePress = 1253;
+		/// <summary>
+		/// 1254
+		/// </summary>
+		public const uint VCLayoutToggleEnable = 1254;
+		/// <summary>
+		/// 1255
+		/// </summary>
+		public const uint VCMinMaxPress = 1255;
+		/// <summary>
+		/// 1256
+		/// </summary>
+		public const uint VCMinMaxEnable = 1256; 
 
 
         //******************************************************

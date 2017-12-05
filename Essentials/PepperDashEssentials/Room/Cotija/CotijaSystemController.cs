@@ -22,17 +22,17 @@ namespace PepperDash.Essentials
 
         CotijaConfig Config;
 
-        HttpClient Client;
+		//HttpClient Client;
 
         Dictionary<string, Object> ActionDictionary = new Dictionary<string, Object>(StringComparer.InvariantCultureIgnoreCase);
 
         Dictionary<string, CTimer> PushedActions = new Dictionary<string, CTimer>();
 
-        CTimer ServerHeartbeat;
+        CTimer ServerHeartbeatCheckTimer;
 
         long ServerHeartbeatInterval = 20000;
 
-        CTimer ServerReconnect;
+        CTimer ServerReconnectTimer;
 
         long ServerReconnectInterval = 5000;
 
@@ -48,10 +48,15 @@ namespace PepperDash.Essentials
 
             CotijaRooms = new List<CotijaEssentialsHuddleSpaceRoomBridge>();
 
-            CrestronConsole.AddNewConsoleCommand(RegisterSystemToServer, "InitializeHttpClient", "Initializes a new HTTP client connection to a specified URL", ConsoleAccessLevelEnum.AccessOperator);
-            CrestronConsole.AddNewConsoleCommand(DisconnectSseClient, "CloseHttpClient", "Closes the active HTTP client", ConsoleAccessLevelEnum.AccessOperator);
+			//CrestronConsole.AddNewConsoleCommand(s => RegisterSystemToServer(), 
+			//    "CotiInitializeHttpClient", "Initializes a new HTTP client connection to a specified URL", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(DisconnectSseClient, 
+				"CloseHttpClient", "Closes the active HTTP client", ConsoleAccessLevelEnum.AccessOperator);
 
-            AddPostActivationAction(() => RegisterSystemToServer(null));
+			CrestronConsole.AddNewConsoleCommand(AuthorizeSystem,
+				"cotijaauth", "Authorizes system to talk to cotija server", ConsoleAccessLevelEnum.AccessOperator);
+
+            AddPostActivationAction(() => RegisterSystemToServer());
         }
 
         /// <summary>
@@ -67,12 +72,12 @@ namespace PepperDash.Essentials
             }
             else
             {
-                Debug.Console(1, this, "Cannot add action with key '{0}' because key already exists in ActionDictionary.");
+                Debug.Console(1, this, "Cannot add action with key '{0}' because key already exists in ActionDictionary.", key);
             }
         }
 
         /// <summary>
-        /// Removes and action from the dictionary
+        /// Removes an action from the dictionary
         /// </summary>
         /// <param name="key"></param>
         public void RemoveAction(string key)
@@ -81,16 +86,58 @@ namespace PepperDash.Essentials
                 ActionDictionary.Remove(key);
         }
 
-        void ReconnectToServer(object o)
+        void ReconnectToServerTimerCallback(object o)
         {
-            RegisterSystemToServer(null);
+            RegisterSystemToServer();
         }
+
+		/// <summary>
+		/// Verifies system connection with servers
+		/// </summary>
+		/// <param name="command"></param>
+		void AuthorizeSystem(string code)
+		{
+			if (string.IsNullOrEmpty(code))
+			{
+				CrestronConsole.ConsoleCommandResponse("Please enter a user code to authorize a system");
+				return;
+			}
+
+
+			var req = new HttpClientRequest();
+			string url = string.Format("http://{0}/api/system/grantcode/{1}", Config.ServerUrl, code);
+			Debug.Console(0, this, "Authorizing to: {0}", url);
+
+			if (string.IsNullOrEmpty(Config.ServerUrl))
+			{
+				CrestronConsole.ConsoleCommandResponse("Config URL address is not set.  Check portal configuration");
+				return;
+			}
+			try
+			{
+				req.Url.Parse(url);
+				new HttpClient().DispatchAsync(req, (r, e) =>
+				{
+					if (r.Code == 200)
+					{
+						Debug.Console(0, this, "System authorized, sending config.");
+						RegisterSystemToServer();
+					}
+					else
+						Debug.Console(0, this, "HTTP Error {0} in authorizing system", r.Code);
+				});
+			}
+			catch (Exception e)
+			{
+				Debug.Console(0, this, "Error in authorizing: {0}", e);
+			}
+		}
 
         /// <summary>
         /// Registers the room with the server
         /// </summary>
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
-        void RegisterSystemToServer(string command)
+        void RegisterSystemToServer()
         {
             try
             {
@@ -122,23 +169,22 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
-                    Client = new HttpClient();
-
-                    HttpClientRequest request = new HttpClientRequest();
-
-                    Client.Verbose = true;
-                    Client.KeepAlive = true;
-
+                    var client = new HttpClient();
+					client.Verbose = true;
+					client.KeepAlive = true;
+	
                     SystemUuid = Essentials.ConfigReader.ConfigObject.SystemUuid;
 
-                    string url = string.Format("http://{0}/api/system/join/{1}", Config.serverUrl, SystemUuid);
+                    string url = string.Format("http://{0}/api/system/join/{1}", Config.ServerUrl, SystemUuid);
+					Debug.Console(1, this, "Sending config to {0}", url);
 
+                    HttpClientRequest request = new HttpClientRequest();
                     request.Url.Parse(url);
                     request.RequestType = RequestType.Post;
                     request.Header.SetHeaderValue("Content-Type", "application/json");
                     request.ContentString = postBody;
 
-                    Client.DispatchAsync(request, PostConnectionCallback);
+					client.DispatchAsync(request, PostConnectionCallback);
                 }
 
             }
@@ -158,17 +204,14 @@ namespace PepperDash.Essentials
         {
             try
             {
-                if (Client == null)
-                    Client = new HttpClient();
-
-                //HttpClient client = new HttpClient();
+                var client = new HttpClient();
 
                 HttpClientRequest request = new HttpClientRequest();
 
-                Client.Verbose = true;
-                Client.KeepAlive = true;
+				client.Verbose = true;
+				client.KeepAlive = true;
 
-                string url = string.Format("http://{0}/api/room/{1}/status", Config.serverUrl, string.Format("{0}--{1}", SystemUuid, room.Key));
+                string url = string.Format("http://{0}/api/system/{1}/status", Config.ServerUrl, SystemUuid);
 
                 request.Url.Parse(url);
                 request.RequestType = RequestType.Post;
@@ -180,10 +223,17 @@ namespace PepperDash.Essentials
                 request.ContentString = ignored;
 
                 Debug.Console(1, this, "Posting to '{0}':\n{1}", url, request.ContentString);
+				try
+				{
+					client.DispatchAsync(request, (r, err) => { if (r != null) { Debug.Console(1, this, "Status Response Code: {0}", r.Code); } });
+				}
+				catch (Exception e)
+				{
 
-                Client.DispatchAsync(request, (r, err) => { if (r != null) { Debug.Console(1, this, "Status Response Code: {0}", r.Code); } });
+					Debug.Console(1, this, "PostToServer exception: {0}", e);
+				}
 
-                StartReconnectTimer(ServerReconnectInterval, ServerReconnectInterval);
+				//ResetOrStartHearbeatTimer();
             }
             catch(Exception e)
             {
@@ -200,11 +250,11 @@ namespace PepperDash.Essentials
             if(SseClient != null)
                 SseClient.Disconnect();
 
-            if (ServerHeartbeat != null)
+            if (ServerHeartbeatCheckTimer != null)
             {
-                ServerHeartbeat.Stop();
+                ServerHeartbeatCheckTimer.Stop();
 
-                ServerHeartbeat = null;
+                ServerHeartbeatCheckTimer = null;
             }
         }
         
@@ -219,11 +269,11 @@ namespace PepperDash.Essentials
             {
                 if (resp != null && resp.Code == 200)
                 {
-                    if(ServerReconnect != null)
+                    if(ServerReconnectTimer != null)
                     {
-                        ServerReconnect.Stop();
+                        ServerReconnectTimer.Stop();
 
-                        ServerReconnect = null;
+                        ServerReconnectTimer = null;
                     }
 
                     if (SseClient == null)
@@ -249,40 +299,51 @@ namespace PepperDash.Essentials
         /// Executes when we don't get a heartbeat message in time.  Triggers reconnect.
         /// </summary>
         /// <param name="o"></param>
-        void HeartbeatExpired(object o)
+        void HeartbeatExpiredTimerCallback(object o)
         {
-             if (ServerHeartbeat != null)
+             if (ServerHeartbeatCheckTimer != null)
             {
                 Debug.Console(1, this, "Heartbeat Timer Expired.");
 
-                ServerHeartbeat.Stop();
+                ServerHeartbeatCheckTimer.Stop();
 
-                ServerHeartbeat = null;
+                ServerHeartbeatCheckTimer = null;
             }
 
-             StartReconnectTimer(ServerReconnectInterval, ServerReconnectInterval);
+             StartReconnectTimer();
         }
 
-        void StartReconnectTimer(long dueTime, long repeatTime)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="dueTime"></param>
+		/// <param name="repeatTime"></param>
+        void StartReconnectTimer()
         {
             // Start the reconnect timer
-            ServerReconnect = new CTimer(ReconnectToServer, null, dueTime, repeatTime);
-
-            ServerReconnect.Reset(dueTime, repeatTime);
+			if (ServerReconnectTimer == null)
+			{
+				ServerReconnectTimer = new CTimer(ReconnectToServerTimerCallback, null, ServerReconnectInterval, ServerReconnectInterval);
+				Debug.Console(1, this, "Reconnect Timer Started.");
+			}
+			ServerReconnectTimer.Reset(ServerReconnectInterval, ServerReconnectInterval);
         }
 
-        void StartHearbeatTimer(long dueTime, long repeatTime)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="dueTime"></param>
+		/// <param name="repeatTime"></param>
+        void ResetOrStartHearbeatTimer()
         {
-            if (ServerHeartbeat == null)
+            if (ServerHeartbeatCheckTimer == null)
             {
-                ServerHeartbeat = new CTimer(HeartbeatExpired, null, dueTime, repeatTime);
+				ServerHeartbeatCheckTimer = new CTimer(HeartbeatExpiredTimerCallback, null, ServerHeartbeatInterval, ServerHeartbeatInterval);
 
-                Debug.Console(2, this, "Heartbeat Timer Started.");
+                Debug.Console(1, this, "Heartbeat Timer Started.");
             }
 
-            ServerHeartbeat.Reset(dueTime, repeatTime);
-
-            Debug.Console(2, this, "Heartbeat Timer Reset.");
+			ServerHeartbeatCheckTimer.Reset(ServerHeartbeatInterval, ServerHeartbeatInterval);
         }
 
 
@@ -312,7 +373,7 @@ namespace PepperDash.Essentials
 
             string uuid = Essentials.ConfigReader.ConfigObject.SystemUuid;
 
-            SseClient.Url = string.Format("http://{0}/api/system/stream/{1}", Config.serverUrl, uuid);
+            SseClient.Url = string.Format("http://{0}/api/system/stream/{1}", Config.ServerUrl, uuid);
 
             SseClient.Connect();
         }
@@ -336,101 +397,102 @@ namespace PepperDash.Essentials
 
                     if (type == "hello")
                     {
-                        StartHearbeatTimer(ServerHeartbeatInterval, ServerHeartbeatInterval);
+                        ResetOrStartHearbeatTimer();
                     }
-                    else if (type == "/system/heartbeat")
-                    {
-                        StartHearbeatTimer(ServerHeartbeatInterval, ServerHeartbeatInterval);
-                    }
-                    else if (type == "close")
-                    {
-                        SseClient.Disconnect();
+					else if (type == "/system/heartbeat")
+					{
+						ResetOrStartHearbeatTimer();
+					}
+					else if (type == "close")
+					{
+						SseClient.Disconnect();
 
-                        // Start the reconnect timer
-                        ServerReconnect = new CTimer(ConnectSseClient, null, ServerReconnectInterval, ServerReconnectInterval);
+						ServerHeartbeatCheckTimer.Stop();
+						// Start the reconnect timer
+						StartReconnectTimer();
+						//ServerReconnectTimer = new CTimer(ConnectSseClient, null, ServerReconnectInterval, ServerReconnectInterval);
+						//ServerReconnectTimer.Reset(ServerReconnectInterval, ServerReconnectInterval);
+					}
+					else
+					{
+						// Check path against Action dictionary
+						if (ActionDictionary.ContainsKey(type))
+						{
+							var action = ActionDictionary[type];
 
-                        ServerReconnect.Reset(ServerReconnectInterval, ServerReconnectInterval);
-                    }
-                    else
-                    {
-                        // Check path against Action dictionary
-                        if (ActionDictionary.ContainsKey(type))
-                        {
-                            var action = ActionDictionary[type];
+							if (action is Action)
+							{
+								(action as Action)();
+							}
+							else if (action is PressAndHoldAction)
+							{
+								var stateString = messageObj["content"]["state"].Value<string>();
 
-                            if (action is Action)
-                            {
-                                (action as Action)();
-                            }
-                            else if (action is PressAndHoldAction)
-                            {
-                                var stateString = messageObj["content"]["state"].Value<string>();
+								// Look for a button press event
+								if (!string.IsNullOrEmpty(stateString))
+								{
+									switch (stateString)
+									{
+										case "true":
+											{
+												if (!PushedActions.ContainsKey(type))
+												{
+													PushedActions.Add(type, new CTimer(o =>
+													{
+														(action as PressAndHoldAction)(false);
+														PushedActions.Remove(type);
+													}, null, ButtonHeartbeatInterval, ButtonHeartbeatInterval));
+												}
+												// Maybe add an else to reset the timer
+												break;
+											}
+										case "held":
+											{
+												if (!PushedActions.ContainsKey(type))
+												{
+													PushedActions[type].Reset(ButtonHeartbeatInterval, ButtonHeartbeatInterval);
+												}
+												return;
+											}
+										case "false":
+											{
+												if (PushedActions.ContainsKey(type))
+												{
+													PushedActions[type].Stop();
+													PushedActions.Remove(type);
+												}
+												break;
+											}
+									}
 
-                                // Look for a button press event
-                                if (!string.IsNullOrEmpty(stateString))
-                                {
-                                    switch (stateString)
-                                    {
-                                        case "true":
-                                            {
-                                                if (!PushedActions.ContainsKey(type))
-                                                {
-                                                    PushedActions.Add(type, new CTimer(o => 
-                                                    {
-                                                        (action as PressAndHoldAction)(false);
-                                                       PushedActions.Remove(type);
-                                                    }, null, ButtonHeartbeatInterval, ButtonHeartbeatInterval));
-                                                }
-                                                // Maybe add an else to reset the timer
-                                                break;
-                                            }
-                                        case "held":
-                                            {
-                                                if (!PushedActions.ContainsKey(type))
-                                                {
-                                                    PushedActions[type].Reset(ButtonHeartbeatInterval, ButtonHeartbeatInterval);
-                                                }
-                                                return;
-                                            }
-                                        case "false":
-                                            {
-                                                if (PushedActions.ContainsKey(type))
-                                                {
-                                                    PushedActions[type].Stop();
-                                                    PushedActions.Remove(type);
-                                                }
-                                                break;
-                                            }
-                                    }
+									(action as PressAndHoldAction)(stateString == "true");
+								}
+							}
+							else if (action is Action<bool>)
+							{
+								var stateString = messageObj["content"]["state"].Value<string>();
 
-                                    (action as PressAndHoldAction)(stateString == "true");
-                                }
-                            }
-                            else if (action is Action<bool>)
-                            {
-                                var stateString = messageObj["content"]["state"].Value<string>();
+								if (!string.IsNullOrEmpty(stateString))
+								{
+									(action as Action<bool>)(stateString == "true");
+								}
+							}
+							else if (action is Action<ushort>)
+							{
+								(action as Action<ushort>)(messageObj["content"]["value"].Value<ushort>());
+							}
+							else if (action is Action<string>)
+							{
+								(action as Action<string>)(messageObj["content"]["value"].Value<string>());
+							}
+							else if (action is Action<SourceSelectMessageContent>)
+							{
+								(action as Action<SourceSelectMessageContent>)(messageObj["content"]
+									.ToObject<SourceSelectMessageContent>());
+							}
+						}
 
-                                if (!string.IsNullOrEmpty(stateString))
-                                {
-                                    (action as Action<bool>)(stateString == "true");
-                                }
-                            }
-                            else if (action is Action<ushort>)
-                            {
-                                (action as Action<ushort>)(messageObj["content"]["value"].Value<ushort>());
-                            }
-                            else if (action is Action<string>)
-                            {
-                                (action as Action<string>)(messageObj["content"]["value"].Value<string>());
-                            }
-                            else if (action is Action<SourceSelectMessageContent>)
-                            {
-                                (action as Action<SourceSelectMessageContent>)(messageObj["content"]
-                                    .ToObject<SourceSelectMessageContent>());
-                            }
-                        }
-
-                    }
+					}
 
                 }
                 catch (Exception err)
