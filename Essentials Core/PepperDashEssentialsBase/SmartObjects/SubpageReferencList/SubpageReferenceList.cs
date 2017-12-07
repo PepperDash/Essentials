@@ -68,7 +68,7 @@ namespace PepperDash.Essentials.Core
 				// Count the enable lines to see what max items is
 				MaxDefinedItems = (ushort)SRL.BooleanInput
 					.Where(s => s.Name.Contains("Enable")).Count();
-				Debug.Console(0, "SRL {0} contains max {1} items", SRL.ID, MaxDefinedItems);
+				Debug.Console(2, "SRL {0} contains max {1} items", SRL.ID, MaxDefinedItems);
 
 				SRL.SigChange -= new SmartObjectSigChangeEventHandler(SRL_SigChange);
 				SRL.SigChange += new SmartObjectSigChangeEventHandler(SRL_SigChange);

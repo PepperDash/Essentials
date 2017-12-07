@@ -22,7 +22,7 @@ namespace PepperDash.Essentials
 
         CotijaConfig Config;
 
-		//HttpClient Client;
+		HttpClient Client;
 
         Dictionary<string, Object> ActionDictionary = new Dictionary<string, Object>(StringComparer.InvariantCultureIgnoreCase);
 
@@ -139,7 +139,7 @@ namespace PepperDash.Essentials
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
         void RegisterSystemToServer()
         {
-            try
+			try
             {
                 string filePath = string.Format(@"\NVRAM\Program{0}\configurationFile.json", Global.ControlSystem.ProgramNumber);
                 string postBody = null;
@@ -169,9 +169,10 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
-                    var client = new HttpClient();
-					client.Verbose = true;
-					client.KeepAlive = true;
+					//if(Client == null)
+	                Client = new HttpClient();
+					Client.Verbose = true;
+					Client.KeepAlive = true;
 	
                     SystemUuid = Essentials.ConfigReader.ConfigObject.SystemUuid;
 
@@ -184,7 +185,7 @@ namespace PepperDash.Essentials
                     request.Header.SetHeaderValue("Content-Type", "application/json");
                     request.ContentString = postBody;
 
-					client.DispatchAsync(request, PostConnectionCallback);
+					Client.DispatchAsync(request, PostConnectionCallback);
                 }
 
             }
@@ -204,15 +205,14 @@ namespace PepperDash.Essentials
         {
             try
             {
-                var client = new HttpClient();
-
-                HttpClientRequest request = new HttpClientRequest();
-
-				client.Verbose = true;
-				client.KeepAlive = true;
+				if(Client == null)
+	                Client = new HttpClient();
+				Client.Verbose = true;
+				Client.KeepAlive = true;
 
                 string url = string.Format("http://{0}/api/system/{1}/status", Config.ServerUrl, SystemUuid);
 
+                HttpClientRequest request = new HttpClientRequest();
                 request.Url.Parse(url);
                 request.RequestType = RequestType.Post;
                 request.Header.SetHeaderValue("Content-Type", "application/json");
@@ -225,7 +225,7 @@ namespace PepperDash.Essentials
                 Debug.Console(1, this, "Posting to '{0}':\n{1}", url, request.ContentString);
 				try
 				{
-					client.DispatchAsync(request, (r, err) => { if (r != null) { Debug.Console(1, this, "Status Response Code: {0}", r.Code); } });
+					Client.DispatchAsync(request, (r, err) => { if (r != null) { Debug.Console(1, this, "Status Response Code: {0}", r.Code); } });
 				}
 				catch (Exception e)
 				{
@@ -276,10 +276,11 @@ namespace PepperDash.Essentials
                         ServerReconnectTimer = null;
                     }
 
-                    if (SseClient == null)
-                    {
+#warning The SSE Client from a previous session might need to be killed...
+					//if (SseClient == null)
+					//{
                         ConnectSseClient(null);
-                    }
+					//}
                 }
                 else
                 {
@@ -301,16 +302,13 @@ namespace PepperDash.Essentials
         /// <param name="o"></param>
         void HeartbeatExpiredTimerCallback(object o)
         {
-             if (ServerHeartbeatCheckTimer != null)
+			Debug.Console(1, this, "Heartbeat Timer Expired.");
+			if (ServerHeartbeatCheckTimer != null)
             {
-                Debug.Console(1, this, "Heartbeat Timer Expired.");
-
                 ServerHeartbeatCheckTimer.Stop();
-
                 ServerHeartbeatCheckTimer = null;
             }
-
-             StartReconnectTimer();
+            StartReconnectTimer();
         }
 
 		/// <summary>
@@ -378,7 +376,11 @@ namespace PepperDash.Essentials
             SseClient.Connect();
         }
             
-
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
         void LineGathered_LineReceived(object sender, GenericCommMethodReceiveTextArgs e)
         {
             //Debug.Console(1, this, "Received from Server: '{0}'", e.Text);

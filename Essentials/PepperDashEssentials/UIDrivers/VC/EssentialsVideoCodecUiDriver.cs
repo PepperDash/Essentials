@@ -107,7 +107,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 SetupDirectoryList();
                 SetupRecentCallsList();
                 SetupFavorites();
-                SetupSelfViewControls();
+                SetupLayoutControls();
 
                 codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
 
@@ -736,23 +736,51 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// <summary>
 		/// 
 		/// </summary>
-		void SetupSelfViewControls()
+		void SetupLayoutControls()
 		{
-
 			TriList.SetSigFalseAction(UIBoolJoin.VCStagingSelfViewLayoutPress, this.ShowSelfViewLayout);
 			var svc = Codec as IHasCodecSelfview;
 			if (svc != null)
 			{
 				TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewTogglePress, svc.SelfviewModeToggle);
 				svc.SelfviewIsOnFeedback.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCSelfViewTogglePress]);
-
-				//TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewPipTogglePress, () => { });
 			}
 			var lc = Codec as IHasCodecLayouts;
 			if (lc != null)
 			{
 				TriList.SetSigFalseAction(UIBoolJoin.VCLayoutTogglePress, lc.LocalLayoutToggle);
 				lc.LocalLayoutFeedback.LinkInputSig(TriList.StringInput[UIStringJoin.VCLayoutModeText]);
+
+				// attach to cisco special things to enable buttons
+				var cisco = Codec as PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec;
+				if (cisco != null)
+				{
+					// Cisco has min/max buttons that need special sauce
+					cisco.SharingContentIsOnFeedback.OutputChange += CiscoSharingAndPresentation_OutputChanges;
+					cisco.PresentationViewMaximizedFeedback.OutputChange += CiscoSharingAndPresentation_OutputChanges;
+
+					TriList.SetSigFalseAction(UIBoolJoin.VCMinMaxPress, cisco.MinMaxLayoutToggle);
+				}
+				 
+			}
+		}
+
+		/// <summary>
+		/// This should only be linked by cisco classes (spark initially)
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void CiscoSharingAndPresentation_OutputChanges(object sender, EventArgs e)
+		{
+			var cisco = Codec as PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec;
+			if (cisco != null)
+			{
+				var sharing = cisco.SharingContentIsOnFeedback.BoolValue;
+				var maximized = cisco.PresentationViewMaximizedFeedback.BoolValue;
+				//set feedback and enables
+				TriList.BooleanInput[UIBoolJoin.VCMinMaxEnable].BoolValue = sharing;
+				TriList.BooleanInput[UIBoolJoin.VCLayoutToggleEnable].BoolValue = sharing && maximized;
+				TriList.BooleanInput[UIBoolJoin.VCMinMaxPress].BoolValue = maximized;
 			}
 		}
 

@@ -33,6 +33,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
+		public BoolFeedback PresentationViewMaximizedFeedback { get; private set; }
+
+		string CurrentPresentationView;
+
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
         public IntFeedback PeopleCountFeedback { get; private set; }
@@ -68,7 +72,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public List<CodecCommandWithLabel> LocalLayouts = new List<CodecCommandWithLabel>()
         {
-            new CodecCommandWithLabel("auto", "Auto"),
+            //new CodecCommandWithLabel("auto", "Auto"),
             //new CiscoCodecLocalLayout("custom", "Custom"),    // Left out for now
             new CodecCommandWithLabel("equal","Equal"),
             new CodecCommandWithLabel("overlay","Overlay"),
@@ -241,6 +245,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SelfviewIsOnFeedback = new BoolFeedback(SelfViewIsOnFeedbackFunc);
             SelfviewPipPositionFeedback = new StringFeedback(SelfviewPipPositionFeedbackFunc);
             LocalLayoutFeedback = new StringFeedback(LocalLayoutFeedbackFunc);
+
+			PresentationViewMaximizedFeedback = new BoolFeedback(() => CurrentPresentationView == "Maximized");
 
             Communication = comm;
 
@@ -1229,6 +1235,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 LocalLayoutSet(LocalLayouts[nextLocalLayoutIndex]);
             }
         }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public void MinMaxLayoutToggle()
+		{
+			if (PresentationViewMaximizedFeedback.BoolValue)
+				CurrentPresentationView = "Minimized";
+			else
+				CurrentPresentationView = "Maximized";
+
+			SendText(string.Format("xCommand Video PresentationView Set View:  {0}", CurrentPresentationView));
+			PresentationViewMaximizedFeedback.FireUpdate();
+		}
 
         /// <summary>
         /// Calculates the current selfview PIP position
