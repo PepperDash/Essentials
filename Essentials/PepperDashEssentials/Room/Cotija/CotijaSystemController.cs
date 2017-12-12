@@ -359,7 +359,7 @@ namespace PepperDash.Essentials
 
                 CommunicationGather LineGathered = new CommunicationGather(SseClient, "\x0d\x0a");
 
-                LineGathered.LineReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(LineGathered_LineReceived);
+                LineGathered.LineReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(SSEClient_LineReceived);
             }
             else
             {
@@ -381,7 +381,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-        void LineGathered_LineReceived(object sender, GenericCommMethodReceiveTextArgs e)
+        void SSEClient_LineReceived(object sender, GenericCommMethodReceiveTextArgs e)
         {
             //Debug.Console(1, this, "Received from Server: '{0}'", e.Text);
 
@@ -492,6 +492,10 @@ namespace PepperDash.Essentials
 								(action as Action<SourceSelectMessageContent>)(messageObj["content"]
 									.ToObject<SourceSelectMessageContent>());
 							}
+						}
+						else
+						{
+							Debug.Console(1, this, "-- Warning: Incoming message has no registered handler");
 						}
 
 					}

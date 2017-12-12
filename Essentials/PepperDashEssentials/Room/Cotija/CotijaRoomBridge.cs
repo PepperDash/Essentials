@@ -21,9 +21,16 @@ namespace PepperDash.Essentials
             Parent = parent;
             Room = room;
 
+			// we add actions to the messaging system with a path, and a related action. Custom action
+			// content objects can be handled in the controller's LineReceived method - and perhaps other
+			// sub-controller parsing could be attached to these classes, so that the systemController
+			// doesn't need to know about everything.
+
             // Source Changes and room off
             Parent.AddAction(string.Format(@"/room/{0}/status",Room.Key), new Action(() => Room_RoomFullStatus(Room)));
-            Parent.AddAction(string.Format(@"/room/{0}/source", Room.Key), new Action<SourceSelectMessageContent>(c => room.RunRouteAction(c.SourceSelect)));
+            Parent.AddAction(string.Format(@"/room/{0}/source", Room.Key), new Action<SourceSelectMessageContent>(c => room.RunRouteAction(c.SourceListItem)));
+			Parent.AddAction(string.Format(@"/room/{0}/defaultsource", Room.Key), new Action(Room.RunDefaultRoute));
+
             Parent.AddAction(string.Format(@"/room/{0}/event/masterVolumeUpBtn", Room.Key), new PressAndHoldAction(b => room.CurrentVolumeControls.VolumeUp(b)));
             Parent.AddAction(string.Format(@"/room/{0}/event/masterVolumeDownBtn", Room.Key), new PressAndHoldAction(b => room.CurrentVolumeControls.VolumeDown(b)));
             Parent.AddAction(string.Format(@"/room/{0}/event/muteToggle", Room.Key), new Action(() => room.CurrentVolumeControls.MuteToggle()));
@@ -247,8 +254,9 @@ namespace PepperDash.Essentials
 
     public class SourceSelectMessageContent
     {
-        public string Destination { get; set; }
-        public string SourceSelect { get; set; }
+		public string SourceListItem { get; set; }
+		//public string Destination { get; set; }
+		//public string SourceSelect { get; set; }
     }
 
     public delegate void PressAndHoldAction(bool b);
