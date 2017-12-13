@@ -205,26 +205,26 @@ namespace PepperDash.Essentials
         {
             try
             {
-				if(Client == null)
+				//if(Client == null)
 	                Client = new HttpClient();
 				Client.Verbose = true;
 				Client.KeepAlive = true;
 
-                string url = string.Format("http://{0}/api/system/{1}/status", Config.ServerUrl, SystemUuid);
 
-                HttpClientRequest request = new HttpClientRequest();
-                request.Url.Parse(url);
-                request.RequestType = RequestType.Post;
-                request.Header.SetHeaderValue("Content-Type", "application/json");
-                request.KeepAlive = true;
 
-                // Ignore any null objects when serializing and remove formatting
-                string ignored = JsonConvert.SerializeObject(o, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-                request.ContentString = ignored;
-
-                Debug.Console(1, this, "Posting to '{0}':\n{1}", url, request.ContentString);
 				try
 				{
+					HttpClientRequest request = new HttpClientRequest();
+					request.RequestType = RequestType.Post;
+					string url = string.Format("http://{0}/api/system/{1}/status", Config.ServerUrl, SystemUuid);
+					request.Url.Parse(url);
+					request.KeepAlive = true;
+					request.Header.ContentType = "application/json";
+					// Ignore any null objects when serializing and remove formatting
+					string ignored = JsonConvert.SerializeObject(o, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+					Debug.Console(1, this, "Posting to '{0}':\n{1}", url, ignored);
+					request.ContentString = ignored;
+					request.FinalizeHeader();
 					Client.DispatchAsync(request, (r, err) => { if (r != null) { Debug.Console(1, this, "Status Response Code: {0}", r.Code); } });
 				}
 				catch (Exception e)

@@ -40,6 +40,12 @@ namespace PepperDash.Essentials
             Room.CurrentVolumeDeviceChange += new EventHandler<VolumeDeviceChangeEventArgs>(Room_CurrentVolumeDeviceChange);
 
             Room.OnFeedback.OutputChange += new EventHandler<EventArgs>(OnFeedback_OutputChange);
+			Room.IsCoolingDownFeedback.OutputChange += new EventHandler<EventArgs>(IsCoolingDownFeedback_OutputChange);
+			Room.IsWarmingUpFeedback.OutputChange += new EventHandler<EventArgs>(IsWarmingUpFeedback_OutputChange);
+
+			Room.ShutdownPromptTimer.HasStarted += new EventHandler<EventArgs>(ShutdownPromptTimer_HasStarted);
+			Room.ShutdownPromptTimer.HasFinished += new EventHandler<EventArgs>(ShutdownPromptTimer_HasFinished);
+			Room.ShutdownPromptTimer.WasCancelled += new EventHandler<EventArgs>(ShutdownPromptTimer_WasCancelled);
 
             // Registers for initial volume events, if possible
             var currentVolumeDevice = Room.CurrentVolumeControls;
@@ -57,6 +63,74 @@ namespace PepperDash.Essentials
             
         }
 
+		void ShutdownPromptTimer_WasCancelled(object sender, EventArgs e)
+		{
+			JObject roomStatus = new JObject();
+			roomStatus.Add("state", "wasCancelled");
+			JObject message = new JObject();
+			message.Add("type", "/room/shutdown/");
+			message.Add("content", roomStatus);
+			Parent.PostToServer(Room, message);
+		}
+
+		void ShutdownPromptTimer_HasFinished(object sender, EventArgs e)
+		{
+			JObject roomStatus = new JObject();
+			roomStatus.Add("state", "hasFinished");
+			JObject message = new JObject();
+			message.Add("type", "/room/shutdown/");
+			message.Add("content", roomStatus);
+			Parent.PostToServer(Room, message);
+		}
+
+		void ShutdownPromptTimer_HasStarted(object sender, EventArgs e)
+		{
+			JObject roomStatus = new JObject();
+			roomStatus.Add("state", "hasStarted");
+			roomStatus.Add("duration", Room.ShutdownPromptTimer.SecondsToCount);
+			JObject message = new JObject();
+			message.Add("type", "/room/shutdown/");
+			message.Add("content", roomStatus);
+			Parent.PostToServer(Room, message);
+			// equivalent JS message:
+			//	Post( { type: '/room/status/', content: { shutdown: 'hasStarted', duration: Room.ShutdownPromptTimer.SecondsToCount })
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void IsWarmingUpFeedback_OutputChange(object sender, EventArgs e)
+		{
+			JObject roomStatus = new JObject();
+			roomStatus.Add("isWarmingUp", (sender as BoolFeedback).BoolValue);
+			JObject message = new JObject();
+			message.Add("type", "/room/status/");
+			message.Add("content", roomStatus);
+			Parent.PostToServer(Room, message);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void IsCoolingDownFeedback_OutputChange(object sender, EventArgs e)
+		{
+			JObject roomStatus = new JObject();
+			roomStatus.Add("isCoolingDown", (sender as BoolFeedback).BoolValue);
+			JObject message = new JObject();
+			message.Add("type", "/room/status/");
+			message.Add("content", roomStatus);
+			Parent.PostToServer(Room, message);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
         void OnFeedback_OutputChange(object sender, EventArgs e)
         {
             /* Example message

@@ -216,7 +216,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public void RunDefaultRoute()
         {
-            if (DefaultSourceItem != null)
+            if (DefaultSourceItem != null && !OnFeedback.BoolValue)
                 RunRouteAction(DefaultSourceItem);
         }
 
