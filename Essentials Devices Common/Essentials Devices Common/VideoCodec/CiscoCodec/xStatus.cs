@@ -444,12 +444,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class Mode2 : ValueProperty
         {
+            string _Value;
+
             public bool BoolValue { get; private set; }
+
+
 
             public string Value
             {
+                get
+                {
+                    return _Value;
+                }
                 set
                 {
+                    _Value = value;
                     // If the incoming value is "Sending" it sets the BoolValue true, otherwise sets it false
                     BoolValue = value == "Sending";
                     OnValueChanged();
