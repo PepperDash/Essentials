@@ -266,6 +266,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SelfviewPipPositionFeedback = new StringFeedback(SelfviewPipPositionFeedbackFunc);
             LocalLayoutFeedback = new StringFeedback(LocalLayoutFeedbackFunc);
             LocalLayoutIsProminentFeedback = new BoolFeedback(LocalLayoutIsProminentFeedbackFunc);
+			FarEndIsSharingContentFeedback = new BoolFeedback(FarEndIsSharingContentFeedbackFunc);
 
 			PresentationViewMaximizedFeedback = new BoolFeedback(() => CurrentPresentationView == "Maximized");
 
@@ -324,8 +325,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.Video.Selfview.Mode.ValueChangedAction = SelfviewIsOnFeedback.FireUpdate;
             CodecStatus.Status.Video.Selfview.PIPPosition.ValueChangedAction = ComputeSelfviewPipStatus;
             CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
-            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = SharingContentIsOnFeedback.FireUpdate;
-            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = FarEndIsSharingContentFeedback.FireUpdate;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction += SharingContentIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction += FarEndIsSharingContentFeedback.FireUpdate;
 
 			CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.AudioVideo, 
 				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);

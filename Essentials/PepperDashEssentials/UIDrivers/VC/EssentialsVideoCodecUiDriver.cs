@@ -752,6 +752,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			{
                 TriList.SetSigFalseAction(UIBoolJoin.VCLayoutTogglePress, lc.LocalLayoutToggleSingleProminent);
 				lc.LocalLayoutFeedback.LinkInputSig(TriList.StringInput[UIStringJoin.VCLayoutModeText]);
+				lc.LocalLayoutFeedback.OutputChange += (o,a) => 
+				{
+					TriList.BooleanInput[UIBoolJoin.VCLayoutTogglePress].BoolValue =
+						lc.LocalLayoutFeedback.StringValue == "Prominent";
+				};
+
 
 				// attach to cisco special things to enable buttons
 				var cisco = Codec as PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec;
@@ -782,7 +788,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 				var sharingFar = cisco.FarEndIsSharingContentFeedback.BoolValue;
 				//set feedback and enables
                 TriList.BooleanInput[UIBoolJoin.VCMinMaxEnable].BoolValue = sharingNear;
-                TriList.BooleanInput[UIBoolJoin.VCLayoutToggleEnable].BoolValue = sharingNear && sharingFar;
+                TriList.BooleanInput[UIBoolJoin.VCLayoutToggleEnable].BoolValue = sharingNear || sharingFar;
                 TriList.BooleanInput[UIBoolJoin.VCMinMaxPress].BoolValue = sharingNear;
 			}
 		}
