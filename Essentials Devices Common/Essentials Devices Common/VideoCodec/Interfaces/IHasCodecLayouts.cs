@@ -16,6 +16,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         StringFeedback LocalLayoutFeedback { get; }
 
         void LocalLayoutToggle();
+		void LocalLayoutToggleSingleProminent();
 		void MinMaxLayoutToggle();
     }
 }
