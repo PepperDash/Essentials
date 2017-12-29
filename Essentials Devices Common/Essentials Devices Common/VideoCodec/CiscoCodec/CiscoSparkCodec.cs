@@ -49,6 +49,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public StringFeedback LocalLayoutFeedback { get; private set; }
 
+        public BoolFeedback LocalLayoutIsProminentFeedback { get; private set; }
+
+        public BoolFeedback FarEndIsSharingContentFeedback { get; private set; }
+
         private CodecCommandWithLabel CurrentSelfviewPipPosition;
 
         private CodecCommandWithLabel CurrentLocalLayout;
@@ -138,6 +142,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+        protected Func<bool> FarEndIsSharingContentFeedbackFunc
+        {
+            get
+            {
+                return () => CodecStatus.Status.Conference.Presentation.Mode.Value == "Receiving";
+            }
+        }
+
         protected override Func<bool> MuteFeedbackFunc
         {
             get 
@@ -194,6 +206,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+        protected Func<bool> LocalLayoutIsProminentFeedbackFunc
+        {
+            get
+            {
+                return () => CurrentLocalLayout.Label == "Prominent";
+            }
+        }
+
 
         private string CliFeedbackRegistrationExpression;
 
@@ -245,6 +265,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SelfviewIsOnFeedback = new BoolFeedback(SelfViewIsOnFeedbackFunc);
             SelfviewPipPositionFeedback = new StringFeedback(SelfviewPipPositionFeedbackFunc);
             LocalLayoutFeedback = new StringFeedback(LocalLayoutFeedbackFunc);
+            LocalLayoutIsProminentFeedback = new BoolFeedback(LocalLayoutIsProminentFeedbackFunc);
+			FarEndIsSharingContentFeedback = new BoolFeedback(FarEndIsSharingContentFeedbackFunc);
 
 			PresentationViewMaximizedFeedback = new BoolFeedback(() => CurrentPresentationView == "Maximized");
 
@@ -303,7 +325,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.Video.Selfview.Mode.ValueChangedAction = SelfviewIsOnFeedback.FireUpdate;
             CodecStatus.Status.Video.Selfview.PIPPosition.ValueChangedAction = ComputeSelfviewPipStatus;
             CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
-            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = SharingContentIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction += SharingContentIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction += FarEndIsSharingContentFeedback.FireUpdate;
 
 			CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.AudioVideo, 
 				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
@@ -1234,6 +1257,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 
                 LocalLayoutSet(LocalLayouts[nextLocalLayoutIndex]);
             }
+        }
+
+        /// <summary>
+        /// Toggles between single/prominent layouts
+        /// </summary>
+        public void LocalLayoutToggleSingleProminent()
+        {
+            if (CurrentLocalLayout != null)
+            {
+                if (CurrentLocalLayout.Label != "Prominent")
+                    LocalLayoutSet(LocalLayouts.FirstOrDefault(l => l.Label.Equals("Prominent")));
+                else
+                    LocalLayoutSet(LocalLayouts.FirstOrDefault(l => l.Label.Equals("Single")));
+            }
+
         }
 
 		/// <summary>
