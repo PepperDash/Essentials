@@ -79,6 +79,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
         StringBuilder SearchStringBuilder = new StringBuilder();
         BoolFeedback SearchStringBackspaceVisibleFeedback;
 
+        BoolFeedback LayoutButtonEnableFeedback;
+
         ModalDialog IncomingCallModal;
 
         eKeypadMode KeypadMode;
@@ -748,8 +750,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			var lc = Codec as IHasCodecLayouts;
 			if (lc != null)
 			{
-				TriList.SetSigFalseAction(UIBoolJoin.VCLayoutTogglePress, lc.LocalLayoutToggle);
+                TriList.SetSigFalseAction(UIBoolJoin.VCLayoutTogglePress, lc.LocalLayoutToggleSingleProminent);
 				lc.LocalLayoutFeedback.LinkInputSig(TriList.StringInput[UIStringJoin.VCLayoutModeText]);
+				lc.LocalLayoutFeedback.OutputChange += (o,a) => 
+				{
+					TriList.BooleanInput[UIBoolJoin.VCLayoutTogglePress].BoolValue =
+						lc.LocalLayoutFeedback.StringValue == "Prominent";
+				};
+
 
 				// attach to cisco special things to enable buttons
 				var cisco = Codec as PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec;
@@ -757,7 +765,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 				{
 					// Cisco has min/max buttons that need special sauce
 					cisco.SharingContentIsOnFeedback.OutputChange += CiscoSharingAndPresentation_OutputChanges;
-					cisco.PresentationViewMaximizedFeedback.OutputChange += CiscoSharingAndPresentation_OutputChanges;
+					//cisco.PresentationViewMaximizedFeedback.OutputChange += CiscoSharingAndPresentation_OutputChanges;
 
 					TriList.SetSigFalseAction(UIBoolJoin.VCMinMaxPress, cisco.MinMaxLayoutToggle);
 				}
@@ -775,12 +783,13 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			var cisco = Codec as PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec;
 			if (cisco != null)
 			{
-				var sharing = cisco.SharingContentIsOnFeedback.BoolValue;
-				var maximized = cisco.PresentationViewMaximizedFeedback.BoolValue;
+                var sharingNear = cisco.SharingContentIsOnFeedback.BoolValue;
+
+				var sharingFar = cisco.FarEndIsSharingContentFeedback.BoolValue;
 				//set feedback and enables
-				TriList.BooleanInput[UIBoolJoin.VCMinMaxEnable].BoolValue = sharing;
-				TriList.BooleanInput[UIBoolJoin.VCLayoutToggleEnable].BoolValue = sharing && maximized;
-				TriList.BooleanInput[UIBoolJoin.VCMinMaxPress].BoolValue = maximized;
+                TriList.BooleanInput[UIBoolJoin.VCMinMaxEnable].BoolValue = sharingNear;
+                TriList.BooleanInput[UIBoolJoin.VCLayoutToggleEnable].BoolValue = sharingNear || sharingFar;
+                TriList.BooleanInput[UIBoolJoin.VCMinMaxPress].BoolValue = sharingNear;
 			}
 		}
 

@@ -1,0 +1,12 @@
+﻿using System.Reflection;
+
+[assembly: AssemblyTitle("PepperDashEssentials")]
+[assembly: AssemblyCompany("PepperDash Technology Corp")]
+[assembly: AssemblyProduct("PepperDashEssentials")]
+[assembly: AssemblyCopyright("Copyright © PepperDash Technology Corp 2017")]
+<<<<<<< HEAD
+[assembly: AssemblyVersion("1.0.8.*")]
+=======
+[assembly: AssemblyVersion("1.0.10.*")]
+>>>>>>> development
+
