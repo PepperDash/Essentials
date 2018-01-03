@@ -23,7 +23,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// Prevents post operations from stomping on each other and getting lost
 		/// </summary>
-		CMutex PostLock = new CMutex();
+		CEvent PostLockEvent = new CEvent(true, true);
 
         CotijaConfig Config;
 
@@ -211,12 +211,14 @@ namespace PepperDash.Essentials
         /// <param name="o">object to be serialized and sent in post body</param>
         public void PostToServer(EssentialsRoomBase room, JObject o)
         {
-			var go = PostLock.WaitForMutex(2000);
-			if (!go)
+			var ready = PostLockEvent.Wait(2000);
+			if (!ready)
 			{
-				Debug.Console(0, this, "Mutex not released after 2 seconds. Skipping message");
+				Debug.Console(1, this, "PostToServer failed to enter after 2 seconds.  Ignoring");
 				return;
 			}
+
+			PostLockEvent.Reset();
             try
             {
 				if (Client == null || NeedNewClient)
@@ -242,20 +244,23 @@ namespace PepperDash.Essentials
 					Debug.Console(1, this, "POST result: {0}", err);
 
 					if (err == HTTP_CALLBACK_ERROR.COMPLETED)
+					{
 						Debug.Console(1, this, "Status Response Code: {0}", r.Code);
+						PostLockEvent.Set();
+					}
 					else
 					{
 						// Try again.  This client is hosed.
 						NeedNewClient = true;
+						PostLockEvent.Set();
 						PostToServer(room, o);
 					}
-					PostLock.ReleaseMutex();
 				});
             }
             catch(Exception e)
             {
                 Debug.Console(1, this, "Error Posting to Server: {0}", e);
-				PostLock.ReleaseMutex();
+				PostLockEvent.Set();
             }
         }
 
