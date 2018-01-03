@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharp.Net.Http;
 using Newtonsoft.Json;
@@ -24,6 +25,8 @@ namespace PepperDash.Essentials
 		/// Prevents post operations from stomping on each other and getting lost
 		/// </summary>
 		CEvent PostLockEvent = new CEvent(true, true);
+
+		Thread SseWorkerThread;
 
         CotijaConfig Config;
 
@@ -211,57 +214,63 @@ namespace PepperDash.Essentials
         /// <param name="o">object to be serialized and sent in post body</param>
         public void PostToServer(EssentialsRoomBase room, JObject o)
         {
-			var ready = PostLockEvent.Wait(2000);
-			if (!ready)
+			CrestronInvoke.BeginInvoke(oo => 
 			{
-				Debug.Console(1, this, "PostToServer failed to enter after 2 seconds.  Ignoring");
-				return;
-			}
-
-			PostLockEvent.Reset();
-            try
-            {
-				if (Client == null || NeedNewClient)
+				var ready = PostLockEvent.Wait(2000);
+				if (!ready)
 				{
-					NeedNewClient = false;
-					Client = new HttpClient();
+					Debug.Console(1, this, "PostToServer failed to enter after 2 seconds.  Ignoring");
+					return;
 				}
-				Client.Verbose = false;
-				Client.KeepAlive = true;
 
-				HttpClientRequest request = new HttpClientRequest();
-				request.RequestType = RequestType.Post;
-				string url = string.Format("http://{0}/api/system/{1}/status", Config.ServerUrl, SystemUuid);
-				request.Url.Parse(url);
-				request.KeepAlive = true;
-				request.Header.ContentType = "application/json";
-				// Ignore any null objects when serializing and remove formatting
-				string ignored = JsonConvert.SerializeObject(o, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-				Debug.Console(1, this, "Posting to '{0}':\n{1}", url, ignored);
-				request.ContentString = ignored;
-				request.FinalizeHeader();
-				Client.DispatchAsync(request, (r, err) => {
-					Debug.Console(1, this, "POST result: {0}", err);
+				PostLockEvent.Reset();
+				try
+				{
+					if (Client == null || NeedNewClient)
+					{
+						NeedNewClient = false;
+						Client = new HttpClient();
+					}
+					Client.Verbose = false;
+					Client.KeepAlive = true;
 
-					if (err == HTTP_CALLBACK_ERROR.COMPLETED)
+					HttpClientRequest request = new HttpClientRequest();
+					request.RequestType = RequestType.Post;
+					string url = string.Format("http://{0}/api/system/{1}/status", Config.ServerUrl, SystemUuid);
+					request.Url.Parse(url);
+					request.KeepAlive = true;
+					request.Header.ContentType = "application/json";
+					// Ignore any null objects when serializing and remove formatting
+					string ignored = JsonConvert.SerializeObject(o, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+					Debug.Console(1, this, "Posting to '{0}':\n{1}", url, ignored);
+					request.ContentString = ignored;
+					request.FinalizeHeader();
+					Client.DispatchAsync(request, (r, err) =>
 					{
-						Debug.Console(1, this, "Status Response Code: {0}", r.Code);
-						PostLockEvent.Set();
-					}
-					else
-					{
-						// Try again.  This client is hosed.
-						NeedNewClient = true;
-						PostLockEvent.Set();
-						PostToServer(room, o);
-					}
-				});
-            }
-            catch(Exception e)
-            {
-                Debug.Console(1, this, "Error Posting to Server: {0}", e);
-				PostLockEvent.Set();
-            }
+						Debug.Console(1, this, "POST result: {0}", err);
+
+						if (err == HTTP_CALLBACK_ERROR.COMPLETED)
+						{
+							Debug.Console(1, this, "Status Response Code: {0}", r.Code);
+							PostLockEvent.Set();
+						}
+						else
+						{
+							// Try again.  This client is hosed.
+							NeedNewClient = true;
+							PostLockEvent.Set();
+							PostToServer(room, o);
+						}
+					});
+				}
+				catch (Exception e)
+				{
+					Debug.Console(1, this, "Error Posting to Server: {0}", e);
+					PostLockEvent.Set();
+				}
+
+			});
+
         }
 
         /// <summary>
@@ -406,13 +415,11 @@ namespace PepperDash.Essentials
 		/// <param name="e"></param>
         void SSEClient_LineReceived(object sender, GenericCommMethodReceiveTextArgs e)
         {
-            //Debug.Console(1, this, "Received from Server: '{0}'", e.Text);
-
             if(e.Text.IndexOf("data:") > -1)
             {
                 var message = e.Text.Substring(6);
 
-                Debug.Console(1, this, "Message: '{0}'", message);
+                Debug.Console(1, this, "Message RX: '{0}'", message);
 
                 try
                 {

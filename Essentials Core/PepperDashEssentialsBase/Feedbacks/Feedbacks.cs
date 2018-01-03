@@ -28,7 +28,18 @@ namespace PepperDash.Essentials.Core
 			Cue = cue;
 		}
 
+		/// <summary>
+		/// Fires an update synchronously
+		/// </summary>
 		public abstract void FireUpdate();
+
+		/// <summary>
+		/// Fires the update asynchronously within a CrestronInvoke
+		/// </summary>
+		public void InvokeFireUpdate()
+		{
+			CrestronInvoke.BeginInvoke(o => FireUpdate());
+		}
 
 		protected void OnOutputChange()
 		{

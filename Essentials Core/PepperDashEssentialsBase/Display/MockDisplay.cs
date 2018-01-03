@@ -64,14 +64,14 @@ namespace PepperDash.Essentials.Core
 			if (!PowerIsOnFeedback.BoolValue && !_IsWarmingUp && !_IsCoolingDown)
 			{
 				_IsWarmingUp = true;
-				IsWarmingUpFeedback.FireUpdate();
+				IsWarmingUpFeedback.InvokeFireUpdate();
 				// Fake power-up cycle
 				WarmupTimer = new CTimer(o =>
 					{
 						_IsWarmingUp = false;
 						_PowerIsOn = true;
-						IsWarmingUpFeedback.FireUpdate();
-						PowerIsOnFeedback.FireUpdate();
+						IsWarmingUpFeedback.InvokeFireUpdate();
+						PowerIsOnFeedback.InvokeFireUpdate();
 					}, WarmupTime);
 			}
 		}
@@ -84,14 +84,14 @@ namespace PepperDash.Essentials.Core
 			{
 				_IsCoolingDown = true;
 				_PowerIsOn = false;
-				PowerIsOnFeedback.FireUpdate();
-				IsCoolingDownFeedback.FireUpdate();
+				PowerIsOnFeedback.InvokeFireUpdate();
+				IsCoolingDownFeedback.InvokeFireUpdate();
 				// Fake cool-down cycle
 				CooldownTimer = new CTimer(o =>
 					{
 						Debug.Console(2, this, "Cooldown timer ending");
 						_IsCoolingDown = false;
-						IsCoolingDownFeedback.FireUpdate();
+						IsCoolingDownFeedback.InvokeFireUpdate();
 					}, CooldownTime);
 			}
 		}		
@@ -117,20 +117,20 @@ namespace PepperDash.Essentials.Core
 
 		public void SetVolume(ushort level)
 		{
-			_FakeVolumeLevel = level; 
-			VolumeLevelFeedback.FireUpdate();
+			_FakeVolumeLevel = level;
+			VolumeLevelFeedback.InvokeFireUpdate();
 		}
 
 		public void MuteOn()
 		{
 			_IsMuted = true;
-			MuteFeedback.FireUpdate();
+			MuteFeedback.InvokeFireUpdate();
 		}
 
 		public void MuteOff()
 		{
 			_IsMuted = false;
-			MuteFeedback.FireUpdate();
+			MuteFeedback.InvokeFireUpdate();
 		}
 
 		public BoolFeedback MuteFeedback { get; private set; }
@@ -170,7 +170,7 @@ namespace PepperDash.Essentials.Core
 		public void MuteToggle()
 		{
 			_IsMuted = !_IsMuted;
-			MuteFeedback.FireUpdate();
+			MuteFeedback.InvokeFireUpdate();
 		}
 
 		#endregion
