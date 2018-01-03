@@ -20,6 +20,11 @@ namespace PepperDash.Essentials
 
         CCriticalSection FileLock;
 
+		/// <summary>
+		/// Prevents post operations from stomping on each other and getting lost
+		/// </summary>
+		CMutex PostLock = new CMutex();
+
         CotijaConfig Config;
 
 		HttpClient Client;
@@ -41,6 +46,8 @@ namespace PepperDash.Essentials
         public List<CotijaEssentialsHuddleSpaceRoomBridge> CotijaRooms { get; private set; }
 
         long ButtonHeartbeatInterval = 1000;
+
+		bool NeedNewClient;
 
         public CotijaSystemController(string key, string name, CotijaConfig config) : base(key, name)
         {
@@ -151,8 +158,9 @@ namespace PepperDash.Essentials
                 }
 
                 FileLock = new CCriticalSection();
+#warning NEIL I think we need to review this usage. Don't think it ever blocks
 
-                if (FileLock.TryEnter())
+				if (FileLock.TryEnter())
                 {
                     Debug.Console(1, this, "Reading configuration file to extract system UUID...");
 
@@ -203,11 +211,20 @@ namespace PepperDash.Essentials
         /// <param name="o">object to be serialized and sent in post body</param>
         public void PostToServer(EssentialsRoomBase room, JObject o)
         {
+			var go = PostLock.WaitForMutex(2000);
+			if (!go)
+			{
+				Debug.Console(0, this, "Mutex not released after 2 seconds. Skipping message");
+				return;
+			}
             try
             {
-				if(Client == null)
-	                Client = new HttpClient();
-				Client.Verbose = true;
+				if (Client == null || NeedNewClient)
+				{
+					NeedNewClient = false;
+					Client = new HttpClient();
+				}
+				Client.Verbose = false;
 				Client.KeepAlive = true;
 
 				HttpClientRequest request = new HttpClientRequest();
@@ -221,13 +238,24 @@ namespace PepperDash.Essentials
 				Debug.Console(1, this, "Posting to '{0}':\n{1}", url, ignored);
 				request.ContentString = ignored;
 				request.FinalizeHeader();
-				Client.DispatchAsync(request, (r, err) => { if (r != null) { Debug.Console(1, this, "Status Response Code: {0}", r.Code); } });
+				Client.DispatchAsync(request, (r, err) => {
+					Debug.Console(1, this, "POST result: {0}", err);
 
-				//ResetOrStartHearbeatTimer();
+					if (err == HTTP_CALLBACK_ERROR.COMPLETED)
+						Debug.Console(1, this, "Status Response Code: {0}", r.Code);
+					else
+					{
+						// Try again.  This client is hosed.
+						NeedNewClient = true;
+						PostToServer(room, o);
+					}
+					PostLock.ReleaseMutex();
+				});
             }
             catch(Exception e)
             {
                 Debug.Console(1, this, "Error Posting to Server: {0}", e);
+				PostLock.ReleaseMutex();
             }
         }
 
