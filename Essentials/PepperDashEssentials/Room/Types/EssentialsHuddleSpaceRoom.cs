@@ -204,7 +204,7 @@ namespace PepperDash.Essentials
 
             RunDefaultRoute();
 
-            CrestronEnvironment.Sleep(200);
+            CrestronEnvironment.Sleep(1000);
 
             RunRouteAction("roomOff");
         }

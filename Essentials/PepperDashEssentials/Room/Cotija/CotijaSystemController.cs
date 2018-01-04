@@ -26,8 +26,6 @@ namespace PepperDash.Essentials
 		/// </summary>
 		CEvent PostLockEvent = new CEvent(true, true);
 
-		Thread SseWorkerThread;
-
         CotijaConfig Config;
 
 		HttpClient Client;
@@ -180,8 +178,8 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
-					//if(Client == null)
-	                Client = new HttpClient();
+					if(Client == null || NeedNewClient)
+		                Client = new HttpClient();
 					Client.Verbose = true;
 					Client.KeepAlive = true;
 	
@@ -304,7 +302,6 @@ namespace PepperDash.Essentials
                     if(ServerReconnectTimer != null)
                     {
                         ServerReconnectTimer.Stop();
-
                         ServerReconnectTimer = null;
                     }
 
@@ -316,10 +313,13 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
-                    if (resp != null)
-                        Debug.Console(1, this, "Response from server: {0}\n{1}", resp.Code, err);
-                    else
-                        Debug.Console(1, this, "Null response received from server.");
+					if (resp != null)
+						Debug.Console(1, this, "Response from server: {0}\n{1}", resp.Code, err);
+					else
+					{
+						Debug.Console(1, this, "Null response received from server.");
+						NeedNewClient = true;
+					}
                 }
             }
             catch (Exception e)
