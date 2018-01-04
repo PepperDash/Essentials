@@ -187,8 +187,6 @@ namespace PepperDash.Essentials
                 disp.IsCoolingDownFeedback.OutputChange += (o, a) => 
                 {
                     IsCoolingDownFeedback.FireUpdate(); 
-                    if (IsCoolingDownFeedback.BoolValue)
-                        (DefaultDisplay as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
                 };
             }
           
@@ -216,8 +214,8 @@ namespace PepperDash.Essentials
         /// </summary>
         public void RunDefaultRoute()
         {
-            if (DefaultSourceItem != null && !OnFeedback.BoolValue)
-                RunRouteAction(DefaultSourceItem);
+			//if (DefaultSourceItem != null && !OnFeedback.BoolValue)
+            RunRouteAction(DefaultSourceItem);
         }
 
         /// <summary>
