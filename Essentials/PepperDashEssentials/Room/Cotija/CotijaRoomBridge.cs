@@ -31,11 +31,13 @@ namespace PepperDash.Essentials
             Parent.AddAction(string.Format(@"/room/{0}/source", Room.Key), new Action<SourceSelectMessageContent>(c => room.RunRouteAction(c.SourceListItem)));
 			Parent.AddAction(string.Format(@"/room/{0}/defaultsource", Room.Key), new Action(Room.RunDefaultRoute));
 
-			//Parent.AddAction(string.Format(@"/room/{0}/event/masterVolumeUpBtn", Room.Key), new PressAndHoldAction(b => room.CurrentVolumeControls.VolumeUp(b)));
-			//Parent.AddAction(string.Format(@"/room/{0}/event/masterVolumeDownBtn", Room.Key), new PressAndHoldAction(b => room.CurrentVolumeControls.VolumeDown(b)));
 			Parent.AddAction(string.Format(@"/room/{0}/masterVolumeLevel", Room.Key), new Action<ushort>(u =>
 				(room.CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(u)));
 			Parent.AddAction(string.Format(@"/room/{0}/masterVolumeMuteToggle", Room.Key), new Action(() => room.CurrentVolumeControls.MuteToggle()));
+
+			Parent.AddAction(string.Format(@"/room/{0}/shutdownStart", Room.Key), new Action(() => room.StartShutdown(eShutdownType.Manual)));
+			Parent.AddAction(string.Format(@"/room/{0}/shutdownEnd", Room.Key), new Action(() => room.ShutdownPromptTimer.Finish()));
+			Parent.AddAction(string.Format(@"/room/{0}/shutdownCancel", Room.Key), new Action(() => room.ShutdownPromptTimer.Cancel()));
 
             Room.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSingleSourceChange);
 
@@ -65,6 +67,11 @@ namespace PepperDash.Essentials
             
         }
 
+		/// <summary>
+		/// Handler for cancelled shutdown
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		void ShutdownPromptTimer_WasCancelled(object sender, EventArgs e)
 		{
 			JObject roomStatus = new JObject();
@@ -75,6 +82,11 @@ namespace PepperDash.Essentials
 			Parent.PostToServer(Room, message);
 		}
 
+		/// <summary>
+		/// Handler for when shutdown finishes
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		void ShutdownPromptTimer_HasFinished(object sender, EventArgs e)
 		{
 			JObject roomStatus = new JObject();
@@ -85,6 +97,11 @@ namespace PepperDash.Essentials
 			Parent.PostToServer(Room, message);
 		}
 
+		/// <summary>
+		/// Handler for when shutdown starts
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		void ShutdownPromptTimer_HasStarted(object sender, EventArgs e)
 		{
 			JObject roomStatus = new JObject();
