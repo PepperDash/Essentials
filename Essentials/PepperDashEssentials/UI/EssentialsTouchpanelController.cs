@@ -98,7 +98,7 @@ namespace PepperDash.Essentials
                                 + @"\sgd\" + props.SgdFile;
                             if (!File.Exists(sgdName))
                             {
-                                Debug.Console(0, this, "WARNING: Smart object file '{0}' not present. Exiting TSW load", sgdName);
+                                Debug.Console(0, this, "ERROR: Smart object file '{0}' not present. Exiting TSW load", sgdName);
                                 return;
                             }
 

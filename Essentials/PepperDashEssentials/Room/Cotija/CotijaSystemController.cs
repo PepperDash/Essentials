@@ -53,6 +53,7 @@ namespace PepperDash.Essentials
         public CotijaSystemController(string key, string name, CotijaConfig config) : base(key, name)
         {
             Config = config;
+			Debug.Console(0, this, "Mobile UI controller initializing for server:{0}", config.ServerUrl);
 
             CotijaRooms = new List<CotijaEssentialsHuddleSpaceRoomBridge>();
 

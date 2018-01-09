@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using PepperDash.Core;
@@ -49,33 +50,82 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public void GoWithLoad()
 		{
-//			var thread = new Thread(o =>
-//			{
-    			try
+			try
+			{
+                CrestronConsole.AddNewConsoleCommand(EnablePortalSync, "portalsync", "Loads Portal Sync",
+                    ConsoleAccessLevelEnum.AccessOperator);
+
+                //PortalSync = new PepperDashPortalSyncClient();
+
+				Debug.Console(0, "Starting Essentials load from configuration");
+
+				var filesReady = SetupFilesystem();
+				if (filesReady)
 				{
-                    CrestronConsole.AddNewConsoleCommand(EnablePortalSync, "portalsync", "Loads Portal Sync",
-                        ConsoleAccessLevelEnum.AccessOperator);
+					Debug.Console(0, "Folder structure verified. Loading config...");
+					if (!ConfigReader.LoadConfig2())
+						return;
 
-                    //PortalSync = new PepperDashPortalSyncClient();
-
-					Debug.Console(0, "Starting Essentials load from configuration");
-					ConfigReader.LoadConfig2();
 					LoadDevices();
 					LoadTieLines();
 					LoadRooms();
 
-                    LogoServer = new HttpLogoServer(8080, @"\html\logo");
+					try
+					{
+						LogoServer = new HttpLogoServer(8080, @"\html\logo");
+					}
+					catch (Exception e)
+					{
+
+						Debug.Console(0, "WARNING: Logo server cannot be started on port 8080:\n{0}", e);
+					}
 
 					DeviceManager.ActivateAll();
 					Debug.Console(0, "Essentials load complete\r" +
-                        "-------------------------------------------------------------");
-                }
-				catch (Exception e)
-				{
-					Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r{0}", e);
+						"-------------------------------------------------------------");
 				}
-//				return null;
-//			}, null);
+				else
+				{
+					Debug.Console(0,
+						"------------------------------------------------\n" +
+						"------------------------------------------------\n" +
+						"------------------------------------------------\n" +
+						"Essentials file structure setup completed.\n" +
+						"Please load config, sgd and ir files and\n" +
+						"restart program.\n" +
+						"------------------------------------------------\n" +
+						"------------------------------------------------\n" +
+						"------------------------------------------------");
+				}
+            }
+			catch (Exception e)
+			{
+				Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r{0}", e);
+			}
+
+		}
+
+		/// <summary>
+		/// Verifies filesystem is set up. IR, SGD, and program1 folders
+		/// </summary>
+		bool SetupFilesystem()
+		{
+			Debug.Console(0, "Verifying and/or creating folder structure");
+			var appNum = InitialParametersClass.ApplicationNumber;
+			var configDir = @"\NVRAM\Program" + appNum;
+			var configExists = Directory.Exists(configDir);
+			if (!configExists)
+				Directory.Create(configDir);
+
+			var irDir = string.Format(@"\NVRAM\Program{0}\ir", appNum);
+			if (!Directory.Exists(irDir))
+				Directory.Create(irDir);
+
+			var sgdDir = string.Format(@"\NVRAM\Program{0}\sgd", appNum);
+			if (!Directory.Exists(sgdDir))
+				Directory.Create(sgdDir);
+
+			return configExists;
 		}
 
         public void EnablePortalSync(string s)

@@ -16,13 +16,21 @@ namespace PepperDash.Essentials
 	{
 		public static EssentialsConfig ConfigObject { get; private set; }
 
-		public static void LoadConfig2()
+		public static bool LoadConfig2()
 		{
 			Debug.Console(0, "Using unmerged system/template configs.");
 			try
 			{
-				using (StreamReader fs = new StreamReader(string.Format(@"\NVRAM\program{0}\ConfigurationFile.json", 
-                    InitialParametersClass.ApplicationNumber)))
+				var filePath = string.Format(@"\NVRAM\program{0}\ConfigurationFile.json", 
+                    InitialParametersClass.ApplicationNumber);
+				if (!File.Exists(filePath))
+				{
+					Debug.Console(0, 
+						"ERROR: Configuration file not present. Please load file to {0} and reset program", filePath);
+					return false;
+				}
+
+				using (StreamReader fs = new StreamReader(filePath))
 				{
 					var doubleObj = JObject.Parse(fs.ReadToEnd());
 					ConfigObject = MergeConfigs(doubleObj).ToObject<EssentialsConfig>();
@@ -38,13 +46,13 @@ namespace PepperDash.Essentials
                     {
                         ConfigObject.TemplateUrl= doubleObj["template_url"].Value<string>();
                     }
-
-                    
 				}
+				return true;
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, "Config failed: \r{0}", e);
+				Debug.Console(0, "ERROR: Config load failed: \r{0}", e);
+				return false;
 			}
 		}
 
