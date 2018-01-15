@@ -50,6 +50,11 @@ namespace PepperDash.Essentials
 
 		bool NeedNewClient;
 
+		/// <summary>
+		/// Used to count retries in PostToServer
+		/// </summary>
+		int RetryCounter;
+
         public CotijaSystemController(string key, string name, CotijaConfig config) : base(key, name)
         {
             Config = config;
@@ -252,11 +257,26 @@ namespace PepperDash.Essentials
 						{
 							Debug.Console(1, this, "Status Response Code: {0}", r.Code);
 							PostLockEvent.Set();
+							RetryCounter = 0;
 						}
 						else
 						{
 							// Try again.  This client is hosed.
 							NeedNewClient = true;
+							RetryCounter++;
+							// instant retry on first try.
+							if (RetryCounter >= 2 && RetryCounter < 5)
+								CrestronEnvironment.Sleep(1000);
+							else if (RetryCounter >= 5 && RetryCounter <= 10)
+								CrestronEnvironment.Sleep(5000);
+							// give up 
+							else if (RetryCounter > 10)
+							{
+								Debug.Console(1, this, "Giving up on server POST");
+								RetryCounter = 0;
+								return;
+							}
+							Debug.Console(1, this, "POST retry #{0}", RetryCounter);
 							PostLockEvent.Set();
 							PostToServer(o);
 						}

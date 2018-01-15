@@ -18,37 +18,55 @@ namespace PepperDash.Essentials.Room.Cotija
 		public class BoolJoin
 		{
 			/// <summary>
-			/// 1
-			/// </summary>
-			public const uint GetStatus = 1;
-			/// <summary>
 			/// 2
 			/// </summary>
-			public const uint RoomIsOn = 2;
+			public const uint RoomIsOn = 301;
+
 			/// <summary>
-			/// 3
+			/// 51
 			/// </summary>
-			public const uint DefaultSourcePress = 3;
+			public const uint ActivitySharePress = 51;
+			/// <summary>
+			/// 52
+			/// </summary>
+			public const uint ActivityPhoneCallPress = 52;
+			/// <summary>
+			/// 53
+			/// </summary>
+			public const uint ActivityVideoCallPress = 53;
+
 			/// <summary>
 			/// 4
 			/// </summary>
-			public const uint MasterVolumeIsMuted = 4;
+			public const uint MasterVolumeIsMuted = 1;
 			/// <summary>
 			/// 4
 			/// </summary>
-			public const uint MasterVolumeMuteToggle = 4;
+			public const uint MasterVolumeMuteToggle = 1;
+
 			/// <summary>
-			/// 21
+			/// 61
 			/// </summary>
-			public const uint ShutdownStart = 21;
+			public const uint ShutdownCancel = 61;
 			/// <summary>
-			/// 22
+			/// 62
 			/// </summary>
-			public const uint ShutdownEnd = 22;
+			public const uint ShutdownEnd = 62;			
 			/// <summary>
-			/// 23
+			/// 63
 			/// </summary>
-			public const uint ShutdownCancel = 23;
+			public const uint ShutdownStart = 63;
+
+
+
+			/// <summary>
+			/// 71
+			/// </summary>
+			public const uint SourceHasChanged = 71;
+			/// <summary>
+			/// 501
+			/// </summary>
+			public const uint ConfigIsReady = 501;
 		}
 
 		public class UshortJoin
@@ -56,7 +74,9 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// <summary>
 			/// 
 			/// </summary>
-			public const uint MasterVolumeLevel = 4;
+			public const uint MasterVolumeLevel = 1;
+
+			public const uint ShutdownPromptDuration = 61;
 		}
 
 		public class StringJoin
@@ -64,13 +84,36 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// <summary>
 			/// 
 			/// </summary>
-			public const uint SetSource = 3;
+			public const uint SelectedSourceKey = 3;
+			
+			/// <summary>
+			/// 501
+			/// </summary>
+			public const uint ConfigRoomName = 501;
+			/// <summary>
+			/// 502
+			/// </summary>
+			public const uint ConfigHelpMessage = 502;
+			/// <summary>
+			/// 503
+			/// </summary>
+			public const uint ConfigHelpNumber = 503;
+			/// <summary>
+			/// 504
+			/// </summary>
+			public const uint ConfigRoomPhoneNumber = 504;
+			/// <summary>
+			/// 505
+			/// </summary>
+			public const uint ConfigRoomURI = 505;
 		}
 
 
 		public ThreeSeriesTcpIpEthernetIntersystemCommunications EISC { get; private set; }
 
 		CotijaSystemController Parent;
+
+		public bool ConfigIsLoaded { get; private set; }
 
 		public CotijaDdvc01RoomBridge(string key, string name, uint ipId)
 			: base(key, name)
@@ -105,6 +148,7 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			SetupFunctions();
 			SetupFeedbacks();
+			EISC.SigChange += EISC_SigChange;
 			return base.CustomActivate();
 		}
 
@@ -114,12 +158,16 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		void SetupFunctions()
 		{
-			Parent.AddAction(@"/room/room1/status", new Action(() => 
-				EISC.PulseBool(BoolJoin.GetStatus)));
-			Parent.AddAction(@"/room/room1/source", new Action<SourceSelectMessageContent>(c => 
-				EISC.SetString(StringJoin.SetSource, c.SourceListItem)));
-			Parent.AddAction(@"/room/room1/defaultsource", new Action(() => 
-				EISC.PulseBool(BoolJoin.DefaultSourcePress)));
+			Parent.AddAction(@"/room/room1/status", new Action(SendFullStatus));
+
+			Parent.AddAction(@"/room/room1/source", new Action<SourceSelectMessageContent>(c =>
+			{
+				EISC.SetString(StringJoin.SelectedSourceKey, c.SourceListItem);
+				EISC.PulseBool(BoolJoin.SourceHasChanged);
+			}));
+
+			Parent.AddAction(@"/room/room1/activityshare", new Action(() => 
+				EISC.PulseBool(BoolJoin.ActivitySharePress)));
 
 			Parent.AddAction(@"/room/room1/masterVolumeLevel", new Action<ushort>(u => 
 				EISC.SetUshort(UshortJoin.MasterVolumeLevel, u)));
@@ -139,12 +187,21 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		void SetupFeedbacks()
 		{
-			EISC.SetStringSigAction(StringJoin.SetSource, s =>
+			// Power 
+			EISC.SetBoolSigAction(BoolJoin.RoomIsOn, b =>
 				PostStatusMessage(new
 					{
-						selectedSourceKey = s
+						isOn = b
 					}));
 
+			// Source change things
+			EISC.SetSigTrueAction(BoolJoin.SourceHasChanged, () =>
+				PostStatusMessage(new
+					{
+						selectedSourceKey = EISC.StringOutput[StringJoin.SelectedSourceKey].StringValue
+					}));
+
+			// Volume things
 			EISC.SetUShortSigAction(UshortJoin.MasterVolumeLevel, u =>
 				PostStatusMessage(new
 					{
@@ -157,15 +214,63 @@ namespace PepperDash.Essentials.Room.Cotija
 						masterVolumeMuteState = b
 					}));
 
-			EISC.SetSigTrueAction(BoolJoin.GetStatus, () =>
+			// shutdown things
+			EISC.SetSigTrueAction(BoolJoin.ShutdownCancel, new Action(() =>
+				PostStatusMessage(new
+				{
+					state = "wasCancelled"
+				})));
+			EISC.SetSigTrueAction(BoolJoin.ShutdownEnd, new Action(() =>
+				PostStatusMessage(new
+				{
+					state = "hasFinished"
+				})));
+			EISC.SetSigTrueAction(BoolJoin.ShutdownStart, new Action(() =>
+				PostStatusMessage(new
+				{
+					state = "hasStarted",
+					duration = EISC.UShortOutput[UshortJoin.ShutdownPromptDuration].UShortValue
+				})));
+
+			// Config things
+			EISC.SetSigTrueAction(BoolJoin.ConfigIsReady, LoadConfigValues);
+
+
+		}
+
+		/// <summary>
+		/// Reads in config values when the Simpl program is ready
+		/// </summary>
+		void LoadConfigValues()
+		{
+			ConfigIsLoaded = false;
+			ConfigIsLoaded = true;
+
+			// send config changed status???
+		}
+
+		void SendFullStatus()
+		{
+			if (ConfigIsLoaded)
+			{
 				PostStatusMessage(new
 					{
 						isOn = EISC.BooleanOutput[BoolJoin.RoomIsOn].BoolValue,
-						selectedSourceKey = EISC.StringOutput[StringJoin.SetSource].StringValue,
+						selectedSourceKey = EISC.StringOutput[StringJoin.SelectedSourceKey].StringValue,
 						masterVolumeLevel = EISC.UShortOutput[UshortJoin.MasterVolumeLevel].UShortValue,
 						masterVolumeMuteState = EISC.BooleanOutput[BoolJoin.MasterVolumeIsMuted].BoolValue
-					}));
+					});
+			}
+			else
+			{
+				PostStatusMessage(new
+				{
+					error = "systemNotReady"
+				});
+			}
 		}
+
+
 
 		/// <summary>
 		/// Helper for posting status message
@@ -178,6 +283,25 @@ namespace PepperDash.Essentials.Room.Cotija
 					type = "/room/status/",
 					content = contentObject
 				}));
+		}
+
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="currentDevice"></param>
+		/// <param name="args"></param>
+		void EISC_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
+		{
+			if (Debug.Level == 2)
+				Debug.Console(2, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+			var uo = args.Sig.UserObject;
+			if (uo is Action<bool>)
+				(uo as Action<bool>)(args.Sig.BoolValue);
+			else if (uo is Action<ushort>)
+				(uo as Action<ushort>)(args.Sig.UShortValue);
+			else if (uo is Action<string>)
+				(uo as Action<string>)(args.Sig.StringValue);
 		}
 	}
 }
