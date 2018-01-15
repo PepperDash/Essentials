@@ -144,23 +144,47 @@ namespace PepperDash.Essentials.Core
 			sig.UserObject = a;
 			return sig;
 		}
-
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="tl"></param>
+		/// <param name="sigNum"></param>
+		/// <param name="a"></param>
+		/// <returns></returns>
 		public static UShortOutputSig SetUShortSigAction(this BasicTriList tl, uint sigNum, Action<ushort> a)
 		{
 			return tl.UShortOutput[sigNum].SetUShortSigAction(a);
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sig"></param>
+		/// <param name="a"></param>
+		/// <returns></returns>
 		public static StringOutputSig SetStringSigAction(this StringOutputSig sig, Action<string> a)
 		{
 			sig.UserObject = a;
 			return sig;
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="tl"></param>
+		/// <param name="sigNum"></param>
+		/// <param name="a"></param>
+		/// <returns></returns>
 		public static StringOutputSig SetStringSigAction(this BasicTriList tl, uint sigNum, Action<string> a)
 		{
-			return tl.SetStringSigAction(sigNum, a);
+			return tl.StringOutput[sigNum].SetStringSigAction(a);
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sig"></param>
+		/// <returns></returns>
 		public static Sig ClearSigAction(this Sig sig)
 		{
 			sig.UserObject = null;
@@ -189,6 +213,27 @@ namespace PepperDash.Essentials.Core
         {
             tl.BooleanInput[sigNum].BoolValue = value;
         }
+
+		/// <summary>
+		/// Sends an true-false pulse to the sig
+		/// </summary>
+		/// <param name="tl"></param>
+		/// <param name="sigNum"></param>
+		public static void PulseBool(this BasicTriList tl, uint sigNum)
+		{
+			tl.BooleanInput[sigNum].Pulse();
+		}
+
+		/// <summary>
+		/// Sends a timed pulse to the sig
+		/// </summary>
+		/// <param name="tl"></param>
+		/// <param name="sigNum"></param>
+		/// <param name="ms"></param>
+		public static void PulseBool(this BasicTriList tl, uint sigNum, int ms)
+		{
+			tl.BooleanInput[sigNum].Pulse(ms);
+		}
 
         /// <summary>
         /// Helper method to set the value of a ushort Sig on TriList

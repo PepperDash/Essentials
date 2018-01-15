@@ -211,7 +211,7 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="room">room from which the message originates</param>
         /// <param name="o">object to be serialized and sent in post body</param>
-        public void PostToServer(EssentialsRoomBase room, JObject o)
+        public void PostToServer(JObject o)
         {
 			CrestronInvoke.BeginInvoke(oo => 
 			{
@@ -258,7 +258,7 @@ namespace PepperDash.Essentials
 							// Try again.  This client is hosed.
 							NeedNewClient = true;
 							PostLockEvent.Set();
-							PostToServer(room, o);
+							PostToServer(o);
 						}
 					});
 				}

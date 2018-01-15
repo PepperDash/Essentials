@@ -139,6 +139,7 @@
     <Compile Include="Room\Config\EssentialsHuddleVtc1PropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsRoomEmergencyConfig.cs" />
     <Compile Include="Room\Cotija\CotijaConfig.cs" />
+    <Compile Include="Room\Cotija\RoomBridges\CotijaDdvc01RoomBridge.cs" />
     <Compile Include="Room\Cotija\RoomBridges\CotijaEssentialsHuddleSpaceRoomBridge.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\IChannelExtensions.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\IColorExtensions.cs" />

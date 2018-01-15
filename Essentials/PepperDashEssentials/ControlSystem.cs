@@ -66,19 +66,7 @@ namespace PepperDash.Essentials
 					if (!ConfigReader.LoadConfig2())
 						return;
 
-					LoadDevices();
-					LoadTieLines();
-					LoadRooms();
-
-					try
-					{
-						LogoServer = new HttpLogoServer(8080, @"\html\logo");
-					}
-					catch (Exception e)
-					{
-
-						Debug.Console(0, "WARNING: Logo server cannot be started on port 8080:\n{0}", e);
-					}
+					Load();
 
 					DeviceManager.ActivateAll();
 					Debug.Console(0, "Essentials load complete\r" +
@@ -87,14 +75,14 @@ namespace PepperDash.Essentials
 				else
 				{
 					Debug.Console(0,
-						"------------------------------------------------\n" +
-						"------------------------------------------------\n" +
-						"------------------------------------------------\n" +
-						"Essentials file structure setup completed.\n" +
-						"Please load config, sgd and ir files and\n" +
-						"restart program.\n" +
-						"------------------------------------------------\n" +
-						"------------------------------------------------\n" +
+						"------------------------------------------------\r" +
+						"------------------------------------------------\r" +
+						"------------------------------------------------\r" +
+						"Essentials file structure setup completed.\r" +
+						"Please load config, sgd and ir files and\r" +
+						"restart program.\r" +
+						"------------------------------------------------\r" +
+						"------------------------------------------------\r" +
 						"------------------------------------------------");
 				}
             }
@@ -148,6 +136,17 @@ namespace PepperDash.Essentials
 				DeviceManager.RemoveDevice(key);
 
 			Debug.Console(0, "Tear down COMPLETE");
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void Load()
+		{
+			LoadDevices();
+			LoadTieLines();
+			LoadRooms();
+			LoadLogoServer();
 		}
 
 
@@ -240,6 +239,22 @@ namespace PepperDash.Essentials
 				}
 				else
 					Debug.Console(0, "WARNING: Cannot create room from config, key '{0}'", roomConfig.Key);
+			}
+		}
+
+		/// <summary>
+		/// Fires up a logo server if not already running
+		/// </summary>
+		void LoadLogoServer()
+		{
+
+			try
+			{
+				LogoServer = new HttpLogoServer(8080, @"\html\logo");
+			}
+			catch (Exception)
+			{
+				Debug.Console(0, "NOTICE: Logo server cannot be started. Likely already running in another program");
 			}
 		}
 	}

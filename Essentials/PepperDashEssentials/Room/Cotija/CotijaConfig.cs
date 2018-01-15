@@ -9,9 +9,22 @@ using Newtonsoft.Json;
 
 namespace PepperDash.Essentials
 {
-    public class CotijaConfig : DeviceConfig
+
+	/// <summary>
+	/// 
+	/// </summary>
+    public class CotijaConfig
     {       
 		[JsonProperty("serverUrl")]
         public string ServerUrl { get; set; }     
     }
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public class CotijaDdvc01RoomBridgePropertiesConfig
+	{
+		[JsonProperty("eiscId")]
+		public string EiscId { get; set; }
+	}
 }

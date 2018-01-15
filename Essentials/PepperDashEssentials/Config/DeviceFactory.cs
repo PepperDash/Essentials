@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
@@ -67,6 +68,12 @@ namespace PepperDash.Essentials
                 var props = JsonConvert.DeserializeObject<CotijaConfig>(properties.ToString());
                 return new CotijaSystemController(key, name, props);
             }
+
+			else if (typeName == "cotijaddvc01room")
+			{
+				var comm = CommFactory.GetControlPropertiesConfig(dc);
+				return new PepperDash.Essentials.Room.Cotija.CotijaDdvc01RoomBridge(key, name, comm.IpIdInt);
+			}
 
 			return null;
 		}
