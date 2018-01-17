@@ -62,7 +62,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// <summary>
 			/// 71
 			/// </summary>
-			public const uint SourceHasChanged = 71;
+			public const uint SourceHasChanged = 72;
 			/// <summary>
 			/// 501
 			/// </summary>
@@ -293,8 +293,8 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// <param name="args"></param>
 		void EISC_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
 		{
-			if (Debug.Level == 2)
-				Debug.Console(2, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+			if (Debug.Level >= 1)
+				Debug.Console(1, this, "DDVC EISC change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
 			var uo = args.Sig.UserObject;
 			if (uo is Action<bool>)
 				(uo as Action<bool>)(args.Sig.BoolValue);
