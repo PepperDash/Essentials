@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.GeneralIO;
 
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.Occupancy
@@ -24,6 +25,7 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
     public class GlsOccupancySensorConfigurationProperties
     {
-
+        public string CresnetId { get; set; }
+        public string Model { get; set; }
     }
 }
