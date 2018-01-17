@@ -151,6 +151,8 @@ namespace PepperDash.Essentials.Room.Config
             }
             return null;
         }
+
+
 	}
 
     /// <summary>
@@ -239,6 +241,7 @@ namespace PepperDash.Essentials.Room.Config
     public class EssentialsRoomOccSensorConfig
     {
         public string DeviceKey { get; set; }
+        public string TimoutMinutes { get; set; }
     }
 
 	public class EssentialsRoomTechConfig

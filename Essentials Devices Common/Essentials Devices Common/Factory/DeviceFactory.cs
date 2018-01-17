@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.GeneralIO;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -13,6 +14,7 @@ using PepperDash.Essentials.Core.CrestronIO;
 
 using PepperDash.Essentials.Devices.Common.DSP;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Common.Occupancy;
 
 using PepperDash.Essentials.Devices.Common;
 
@@ -246,6 +248,46 @@ namespace PepperDash.Essentials.Devices.Common
             {
                 var irCont = IRPortHelper.GetIrOutputPortController(dc);
                 return new Roku2(key, name, irCont);
+            }
+
+            else if (typeName == "occsensor")
+            {
+                var props = JsonConvert.DeserializeObject<GlsOccupancySensorConfigurationProperties>(properties.ToString());
+                uint id = 0x00;
+                GlsOccupancySensorBase occSensor = null;
+
+                try
+                {
+                    id = Convert.ToUInt32(props.CresnetId, 8);
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(0, "Unable to convert Crestnet ID: {0} to hex.  Error:\n{1}", props.CresnetId, e);
+                }
+
+                switch (props.Model.ToLower())
+                {
+                    case "glsodtccn":
+                        {
+                            occSensor = new GlsOdtCCn(id, Global.ControlSystem);
+                            break;
+                        }
+                    case "glsoirccn":
+                        {
+                            occSensor = new GlsOirCCn(id, Global.ControlSystem);
+                            break;
+                        }
+                    default:
+                        {
+                            Debug.Console(0, "Unrecognized Model: '{0}'.  Unable to create occupancy sensor device.", props.Model);
+                            break;
+                        }
+                }
+
+                if (occSensor != null)
+                    return new EssentialsGlsOccupancySensorBaseController(key, name, occSensor, props);
+                else
+                    Debug.Console(0, "Unable to create Occupancy Sensor Device. Key: '{0}'", key);
             }
 
 			return null;
