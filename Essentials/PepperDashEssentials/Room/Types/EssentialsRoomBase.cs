@@ -123,8 +123,11 @@ namespace PepperDash.Essentials
                     StartRoomVacancyTimer(eVacancyMode.InShutdownWarning);
                     break;
                 case eVacancyMode.InShutdownWarning:
-                    StartShutdown(eShutdownType.Vacancy);
-                    break;
+                    {
+                        StartShutdown(eShutdownType.Vacancy);
+                        Debug.Console(0, this, "Shutting Down due to vacancy.");
+                        break;
+                    }
                 default:
                     break;
             }
@@ -154,6 +157,8 @@ namespace PepperDash.Essentials
                 RoomVacancyShutdownTimer.SecondsToCount = RoomVacancyShutdownSeconds;
             VacancyMode = mode;
             RoomVacancyShutdownTimer.Start();
+
+            Debug.Console(0, this, "Vacancy Timer Started.");
         }
 
         /// <summary>
@@ -196,13 +201,15 @@ namespace PepperDash.Essentials
         {
             if ((sender as IOccupancyStatusProvider).RoomIsOccupiedFeedback.BoolValue == false)
             {
+                Debug.Console(0, this, "Vacancy Detected");
                 // Trigger the timer when the room is vacant
                 StartRoomVacancyTimer(eVacancyMode.InInitialVacancy);
             }
             else
             {
+                Debug.Console(0, this, "Occupancy Detected");
                 // Reset the timer when the room is occupied
-                if(RoomVacancyShutdownTimer.IsRunningFeedback.BoolValue)
+
                     RoomVacancyShutdownTimer.Cancel();
             }
         }
