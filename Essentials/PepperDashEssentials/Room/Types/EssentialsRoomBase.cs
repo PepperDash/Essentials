@@ -188,6 +188,12 @@ namespace PepperDash.Essentials
         /// <param name="statusProvider"></param>
         public void SetRoomOccupancy(IOccupancyStatusProvider statusProvider)
         {
+			if (statusProvider == null)
+			{
+				Debug.Console(0, this, "ERROR: Occupancy sensor device is null");
+				return;
+			}
+
             // If status provider is fusion, set flag to remote
             if (statusProvider is PepperDash.Essentials.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase)
                 OccupancyStatusProviderIsRemote = true;

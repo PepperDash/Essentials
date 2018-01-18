@@ -28,6 +28,7 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             : base(key, name, sensor)
         {
             OccSensor = sensor;
+			RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
 
             OccSensor.GlsOccupancySensorChange += new GlsOccupancySensorChangeEventHandler(sensor_GlsOccupancySensorChange);
         }

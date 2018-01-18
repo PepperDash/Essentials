@@ -92,7 +92,7 @@ namespace PepperDash.Essentials
 			else
 				merged.Add("tieLines", new JArray());
 
-			//Debug.Console(0, "MERGED RESULT: \x0d\x0a{0}", merged);
+			Debug.Console(2, "MERGED CONFIG RESULT: \x0d\x0a{0}", merged);
 			return merged;
 		}
 

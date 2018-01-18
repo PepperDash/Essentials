@@ -157,26 +157,34 @@ namespace PepperDash.Essentials
 		{
 			foreach (var devConf in ConfigReader.ConfigObject.Devices)
 			{
-				Debug.Console(0, "Creating device '{0}'", devConf.Key);
-				// Skip this to prevent unnecessary warnings
-				if (devConf.Key == "processor")
-					continue;
-				
-				// Try local factory first
-				var newDev = DeviceFactory.GetDevice(devConf);
 
-				// Then associated library factories
-				if (newDev == null)
-					newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
-				if (newDev == null)
-					newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
-				if (newDev == null)
-					newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
+				try
+				{
+					Debug.Console(0, "Creating device '{0}'", devConf.Key);
+					// Skip this to prevent unnecessary warnings
+					if (devConf.Key == "processor")
+						continue;
 
-				if (newDev != null)
-					DeviceManager.AddDevice(newDev);
-				else
-					Debug.Console(0, "WARNING: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
+					// Try local factory first
+					var newDev = DeviceFactory.GetDevice(devConf);
+
+					// Then associated library factories
+					if (newDev == null)
+						newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
+					if (newDev == null)
+						newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
+					if (newDev == null)
+						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
+
+					if (newDev != null)
+						DeviceManager.AddDevice(newDev);
+					else
+						Debug.Console(0, "WARNING: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
+				}
+				catch (Exception e)
+				{
+					Debug.Console(0, "ERROR: Creating device {0}. Skipping device. \r{1}", devConf.Key, e);
+				} 
 			}
 
 		}

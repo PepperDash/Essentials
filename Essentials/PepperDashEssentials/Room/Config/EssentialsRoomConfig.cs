@@ -67,7 +67,8 @@ namespace PepperDash.Essentials.Room.Config
                 // Add Occupancy object from config
 
                 if (props.Occupancy != null)
-                    rm.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider);
+                    rm.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as 
+						PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider);
                 rm.LogoUrl = props.Logo.GetUrl();
                 rm.SourceListKey = props.SourceListKey;
                 rm.DefaultSourceItem = props.DefaultSourceItem;
