@@ -16,10 +16,25 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
+        public Func<bool> RoomIsOccupiedFeedbackFunc
+        {
+            get
+            {
+                return () => OccSensor.OccupancyDetectedFeedback.BoolValue;
+            }
+        }
+
         public EssentialsGlsOccupancySensorBaseController(string key, string name, GlsOccupancySensorBase sensor, GlsOccupancySensorConfigurationProperties props)
             : base(key, name, sensor)
         {
+            OccSensor = sensor;
 
+            OccSensor.GlsOccupancySensorChange += new GlsOccupancySensorChangeEventHandler(sensor_GlsOccupancySensorChange);
+        }
+
+        void sensor_GlsOccupancySensorChange(GlsOccupancySensorBase device, GlsOccupancySensorChangeEventArgs args)
+        {
+            RoomIsOccupiedFeedback.FireUpdate();
         }
     }
 

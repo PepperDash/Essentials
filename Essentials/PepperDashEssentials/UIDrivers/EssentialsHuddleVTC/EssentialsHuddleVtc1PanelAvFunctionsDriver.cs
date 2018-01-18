@@ -644,9 +644,12 @@ namespace PepperDash.Essentials
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
             { 
-                // If there's no default, show UI elements
-                if(!CurrentRoom.RunDefaultPresentRoute())
-                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
+				if (!CurrentRoom.OnFeedback.BoolValue)
+				{
+					// If there's no default, show UI elements
+					if (!CurrentRoom.RunDefaultPresentRoute())
+						TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
+				}
             }
             else // room is on show what's active or select a source if nothing is yet active
             {

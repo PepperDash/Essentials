@@ -270,7 +270,7 @@ namespace PepperDash.Essentials
 
             RunDefaultPresentRoute();
 
-            CrestronEnvironment.Sleep(200);
+            CrestronEnvironment.Sleep(1000);
 
             RunRouteAction("roomOff");
         }
@@ -280,7 +280,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public bool RunDefaultPresentRoute()
         {
-            if (DefaultSourceItem != null)
+			//if (DefaultSourceItem != null)
                 RunRouteAction(DefaultSourceItem);
             return DefaultSourceItem != null;
         }
