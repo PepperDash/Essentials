@@ -158,7 +158,7 @@ namespace PepperDash.Essentials.Devices.Common
             else if (typeName == "digitalinput")
             {
                 var props = JsonConvert.DeserializeObject<IOPortConfig>(properties.ToString());
-
+				
                 IDigitalInputPorts portDevice;
 
                 if (props.PortDeviceKey == "processor")
@@ -167,25 +167,61 @@ namespace PepperDash.Essentials.Devices.Common
                     portDevice = DeviceManager.GetDeviceForKey(props.PortDeviceKey) as IDigitalInputPorts;
 
                 if (portDevice == null)
-                    Debug.Console(0, "Unable to add digital input device with key '{0}'. Port Device does not support digital inputs", key);
+                    Debug.Console(0, "ERROR: Unable to add digital input device with key '{0}'. Port Device does not support digital inputs", key);
                 else
                 {
                     var cs = (portDevice as CrestronControlSystem);
+					if (cs == null)
+					{
+						Debug.Console(0, "ERROR: Port device for [{0}] is not control system", props.PortDeviceKey);
+						return null;
+					}
 
-                    if (cs != null)
-                        if (cs.SupportsDigitalInput && props.PortNumber <= cs.NumberOfDigitalInputPorts)
-                        {
-                            DigitalInput digitalInput = cs.DigitalInputPorts[props.PortNumber];
+					if (cs.SupportsDigitalInput)
+					{
+						if (props.PortNumber > cs.NumberOfDigitalInputPorts)
+						{
+							Debug.Console(0, "WARNING: Cannot register DIO port {0} on {1}. Out of range",
+								props.PortNumber, props.PortDeviceKey);
+							return null;
+						}
 
-                            if (!digitalInput.Registered)
-                            {
-                                if(digitalInput.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
-                                    return new GenericDigitalInputDevice(key, digitalInput);
-                                else
-                                    Debug.Console(0, "Attempt to register digital input {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
-                            }
-                        }
-                    // Future: Check if portDevice is 3-series card or other non control system that supports versiports
+						DigitalInput digitalInput = cs.DigitalInputPorts[props.PortNumber];
+
+						if (!digitalInput.Registered)
+						{
+							if (digitalInput.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+								return new GenericDigitalInputDevice(key, digitalInput);
+							else
+								Debug.Console(0, "WARNING: Attempt to register digital input {0} on device with key '{1}' failed.", 
+									props.PortNumber, props.PortDeviceKey);
+						}
+					}
+					else if (cs.SupportsVersiport)
+					{
+						if (props.PortNumber > cs.NumberOfVersiPorts)
+						{
+							Debug.Console(0, "WARNING: Cannot register Vesiport {0} on {1}. Out of range",
+								props.PortNumber, props.PortDeviceKey);
+							return null;
+						}
+
+						Versiport vp = cs.VersiPorts[props.PortNumber];
+
+						if (!vp.Registered)
+						{
+							if (vp.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+							{
+								return new GenericVersiportInputDevice(key, vp);
+							}
+							else
+							{
+								Debug.Console(0, "WARNING: Attempt to register versiport {0} on device with key '{1}' failed.",
+									props.PortNumber, props.PortDeviceKey);
+								return null;
+							}
+						}
+					}
                 }
             }
 

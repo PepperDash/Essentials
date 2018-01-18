@@ -179,7 +179,7 @@ namespace PepperDash.Essentials
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
 					else
-						Debug.Console(0, "WARNING: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
+						Debug.Console(0, "ERROR: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
 				}
 				catch (Exception e)
 				{
