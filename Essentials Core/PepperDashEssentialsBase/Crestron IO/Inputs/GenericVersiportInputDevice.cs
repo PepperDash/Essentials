@@ -30,17 +30,14 @@ namespace PepperDash.Essentials.Core.CrestronIO
             base(key)
         {
             InputStateFeedback = new BoolFeedback(InputStateFeedbackFunc);
-
             InputPort = inputPort;
-
-            InputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalInput);
-
+            InputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalInput);		
             InputPort.VersiportChange += new VersiportEventHandler(InputPort_VersiportChange);
-
         }
 
         void InputPort_VersiportChange(Versiport port, VersiportEventArgs args)
         {
+			Debug.Console(1, this, "Versiport change: {0}", args.Event);
             InputStateFeedback.FireUpdate();
         }
     }

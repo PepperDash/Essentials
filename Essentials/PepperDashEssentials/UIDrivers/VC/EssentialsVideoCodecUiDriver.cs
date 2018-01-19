@@ -202,8 +202,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
             else                                               // If only one value present, just show the phone number
                 roomNumberSipUri = Codec.CodecInfo.SipPhoneNumber;
 
-            if(string.IsNullOrEmpty(roomNumberSipUri))
-                roomNumberSipUri = string.Format("{0} | {1}", GetFormattedPhoneNumber(Codec.CodecInfo.E164Alias), Codec.CodecInfo.H323Id);
+			if (string.IsNullOrEmpty(roomNumberSipUri))
+			{
+				var phone = Codec.CodecInfo.E164Alias.Length < 7 ? Codec.CodecInfo.E164Alias : GetFormattedPhoneNumber(Codec.CodecInfo.E164Alias);
+				roomNumberSipUri = string.Format("{0} | {1}", phone, Codec.CodecInfo.H323Id);
+			}
 
             TriList.SetString(UIStringJoin.RoomPhoneText, roomNumberSipUri);
 

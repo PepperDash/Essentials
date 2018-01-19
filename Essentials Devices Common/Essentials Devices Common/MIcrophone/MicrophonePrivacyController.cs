@@ -103,6 +103,7 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
 
         void PrivacyModeIsOnFeedback_OutputChange(object sender, EventArgs e)
         {
+			Debug.Console(1, this, "Privacy mode change: {0}", sender as BoolFeedback);
             CheckPrivacyMode();
         }
 
@@ -160,7 +161,7 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
         /// <summary>
         /// Toggles the state of the privacy mute
         /// </summary>
-        void TogglePrivacyMute()
+        public void TogglePrivacyMute()
         {
             PrivacyDevice.PrivacyModeToggle();
         }

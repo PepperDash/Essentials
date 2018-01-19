@@ -119,41 +119,41 @@ namespace PepperDash.Essentials.Devices.Common
                 return new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec(key, name, comm, props);
             }
 
-            else if (typeName == "versiportinput")
-            {
-                var props = JsonConvert.DeserializeObject<IOPortConfig>(properties.ToString());
+			//else if (typeName == "versiportinput")
+			//{
+			//    var props = JsonConvert.DeserializeObject<IOPortConfig>(properties.ToString());
 
-                IIOPorts portDevice;
+			//    IIOPorts portDevice;
 
-                if (props.PortDeviceKey == "processor")
-                    portDevice = Global.ControlSystem as IIOPorts;
-                else
-                    portDevice = DeviceManager.GetDeviceForKey(props.PortDeviceKey) as IIOPorts;
+			//    if (props.PortDeviceKey == "processor")
+			//        portDevice = Global.ControlSystem as IIOPorts;
+			//    else
+			//        portDevice = DeviceManager.GetDeviceForKey(props.PortDeviceKey) as IIOPorts;
 
-                if(portDevice == null)
-                    Debug.Console(0, "Unable to add versiport device with key '{0}'. Port Device does not support versiports", key);
-                else
-                {
-                    var cs = (portDevice as CrestronControlSystem);
+			//    if(portDevice == null)
+			//        Debug.Console(0, "Unable to add versiport device with key '{0}'. Port Device does not support versiports", key);
+			//    else
+			//    {
+			//        var cs = (portDevice as CrestronControlSystem);
 
-                    if (cs != null)
-                        if (cs.SupportsVersiport && props.PortNumber <= cs.NumberOfVersiPorts)
-                        {
-                            Versiport versiport = cs.VersiPorts[props.PortNumber];
+			//        if (cs != null)
+			//            if (cs.SupportsVersiport && props.PortNumber <= cs.NumberOfVersiPorts)
+			//            {
+			//                Versiport versiport = cs.VersiPorts[props.PortNumber];
 
-                            if(!versiport.Registered)
-                            {
-                                if (versiport.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
-                                    return new GenericVersiportInputDevice(key, versiport);
-                                else
-                                    Debug.Console(0, "Attempt to register versiport {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
-                            }
-                        }
+			//                if(!versiport.Registered)
+			//                {
+			//                    if (versiport.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+			//                        return new GenericVersiportInputDevice(key, versiport);
+			//                    else
+			//                        Debug.Console(0, "Attempt to register versiport {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
+			//                }
+			//            }
 
-                    // Future: Check if portDevice is 3-series card or other non control system that supports versiports
+			//        // Future: Check if portDevice is 3-series card or other non control system that supports versiports
                             
-                }
-            }
+			//    }
+			//}
 
             else if (typeName == "digitalinput")
             {
@@ -210,14 +210,15 @@ namespace PepperDash.Essentials.Devices.Common
 
 						if (!vp.Registered)
 						{
-							if (vp.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+							var regSuccess = vp.Register();
+							if (regSuccess == eDeviceRegistrationUnRegistrationResponse.Success)
 							{
 								return new GenericVersiportInputDevice(key, vp);
 							}
 							else
 							{
-								Debug.Console(0, "WARNING: Attempt to register versiport {0} on device with key '{1}' failed.",
-									props.PortNumber, props.PortDeviceKey);
+								Debug.Console(0, "WARNING: Attempt to register versiport {0} on device with key '{1}' failed: {2}",
+									props.PortNumber, props.PortDeviceKey, regSuccess);
 								return null;
 							}
 						}
