@@ -41,40 +41,4 @@ namespace PepperDash.Essentials.Core.CrestronIO
             InputStateFeedback.FireUpdate();
         }
     }
-
-    public class GenericVersibportAnalogInputDevice : Device, IDigitalInput
-    {
-        public Versiport InputPort { get; private set; }
-
-        public BoolFeedback InputStateFeedback { get; private set; }
-
-        public uint MinAnalogChange { get; private set; }
-
-        Func<bool> InputStateFeedbackFunc
-        {
-            get
-            {
-                return () => InputPort.AnalogIn > MinAnalogChange ? true : false;
-            }
-        }
-
-        public GenericVersibportAnalogInputDevice(string key, Versiport inputPort, uint minAnalogChange) :
-            base(key)
-        {
-            InputStateFeedback = new BoolFeedback(InputStateFeedbackFunc);
-            MinAnalogChange = minAnalogChange;
-            InputPort = inputPort;
-            InputPort.SetVersiportConfiguration(eVersiportConfiguration.AnalogInput);
-            InputPort.VersiportChange += new VersiportEventHandler(InputPort_VersiportChange);
-        }
-
-        void InputPort_VersiportChange(Versiport port, VersiportEventArgs args)
-        {
-            Debug.Console(1, this, "Versiport change: {0}", args.Event);
-            InputStateFeedback.FireUpdate();
-        }
-    }
-
-
-
 }
