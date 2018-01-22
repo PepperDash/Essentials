@@ -16,11 +16,18 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
+		/// <summary>
+		/// Set by debugging functions	
+		/// </summary>
+		public bool InMockMode { get; private set; }
+
+		public bool MockRoomIsOccupiedFeedback { get; private set; }
+
         public Func<bool> RoomIsOccupiedFeedbackFunc
         {
             get
             {
-                return () => OccSensor.OccupancyDetectedFeedback.BoolValue;
+                return () => InMockMode ? MockRoomIsOccupiedFeedback : OccSensor.OccupancyDetectedFeedback.BoolValue;
             }
         }
 

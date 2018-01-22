@@ -29,10 +29,6 @@ namespace PepperDash.Essentials.Core
 
 		public static void Initialize(CrestronControlSystem cs)
 		{
-            //CrestronConsole.AddNewConsoleCommand(ListDeviceCommands, "devcmdlist", "Lists commands", 
-            //    ConsoleAccessLevelEnum.AccessOperator);
-            //CrestronConsole.AddNewConsoleCommand(DoDeviceCommand, "devcmd", "Runs a command on device - key Name value", 
-            //    ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(ListDeviceCommStatuses, "devcommstatus", "Lists the communication status of all devices",
 				ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(ListDeviceFeedbacks, "devfb", "Lists current feedbacks", 
@@ -64,8 +60,15 @@ namespace PepperDash.Essentials.Core
 		{
 			foreach (var d in Devices.Values)
 			{
-				if (d is Device)
-					(d as Device).Activate();
+				try
+				{
+					if (d is Device)
+						(d as Device).Activate();
+				}
+				catch (Exception e)
+				{
+					Debug.Console(0, d, "ERROR: Device activation failure:\r{0}", e);
+				}
 			}
 		}
 

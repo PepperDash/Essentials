@@ -300,7 +300,7 @@ namespace PepperDash.Essentials.Devices.Common
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(0, "ERROR:Unable to convert Crestnet ID: {0} to hex.  Error:\n{1}", props.CresnetId, e);
+                    Debug.Console(0, "ERROR:Unable to convert Cresnet ID: {0} to hex.  Error:\n{1}", props.CresnetId, e);
                 }
 
                 switch (props.Model.ToLower())

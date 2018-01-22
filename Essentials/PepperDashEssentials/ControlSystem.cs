@@ -67,8 +67,6 @@ namespace PepperDash.Essentials
 						return;
 
 					Load();
-
-					DeviceManager.ActivateAll();
 					Debug.Console(0, "Essentials load complete\r" +
 						"-------------------------------------------------------------");
 				}
@@ -147,6 +145,8 @@ namespace PepperDash.Essentials
 			LoadTieLines();
 			LoadRooms();
 			LoadLogoServer();
+
+			DeviceManager.ActivateAll();
 		}
 
 
@@ -186,7 +186,6 @@ namespace PepperDash.Essentials
 					Debug.Console(0, "ERROR: Creating device {0}. Skipping device. \r{1}", devConf.Key, e);
 				} 
 			}
-
 		}
 
 		/// <summary>

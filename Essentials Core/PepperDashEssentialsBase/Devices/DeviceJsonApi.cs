@@ -56,8 +56,6 @@ namespace PepperDash.Essentials.Core
 									System.Globalization.CultureInfo.InvariantCulture))
 								.ToArray();
 			object ret = method.Invoke(obj, convertedParams);
-			//Debug.Console(0, JsonConvert.SerializeObject(ret));
-			// return something?
 		}
 
 		/// <summary>
