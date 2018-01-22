@@ -39,6 +39,9 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         }
     }
 
+	/// <summary>
+	/// 
+	/// </summary>
     public class GlsOccupancySensorConfigurationProperties
     {
         public string CresnetId { get; set; }

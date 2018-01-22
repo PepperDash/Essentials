@@ -197,16 +197,16 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void Codec_IsReady()
         {
             string roomNumberSipUri = "";
+
+#warning FIX PHONE FORMATTING TO ONLY SHOW WHEN APPROPRIATE - TALK TO NEIL
+
             if (!string.IsNullOrEmpty(Codec.CodecInfo.SipUri)) // If both values are present, format the string with a pipe divider
                 roomNumberSipUri = string.Format("{0} | {1}", GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber), Codec.CodecInfo.SipUri);
             else                                               // If only one value present, just show the phone number
                 roomNumberSipUri = Codec.CodecInfo.SipPhoneNumber;
 
-			if (string.IsNullOrEmpty(roomNumberSipUri))
-			{
-				var phone = Codec.CodecInfo.E164Alias.Length < 7 ? Codec.CodecInfo.E164Alias : GetFormattedPhoneNumber(Codec.CodecInfo.E164Alias);
-				roomNumberSipUri = string.Format("{0} | {1}", phone, Codec.CodecInfo.H323Id);
-			}
+            if(string.IsNullOrEmpty(roomNumberSipUri))
+                roomNumberSipUri = string.Format("{0} | {1}", Codec.CodecInfo.E164Alias, Codec.CodecInfo.H323Id);
 
             TriList.SetString(UIStringJoin.RoomPhoneText, roomNumberSipUri);
 

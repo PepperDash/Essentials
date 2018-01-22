@@ -201,7 +201,7 @@ namespace PepperDash.Essentials.Devices.Common
 					{
 						if (props.PortNumber > cs.NumberOfVersiPorts)
 						{
-							Debug.Console(0, "WARNING: Cannot register Vesiport {0} on {1}. Out of range",
+							Debug.Console(0, "WARNING: Cannot add Vesiport {0} on {1}. Out of range",
 								props.PortNumber, props.PortDeviceKey);
 							return null;
 						}
@@ -290,16 +290,17 @@ namespace PepperDash.Essentials.Devices.Common
             else if (typeName == "occsensor")
             {
                 var props = JsonConvert.DeserializeObject<GlsOccupancySensorConfigurationProperties>(properties.ToString());
+				
                 uint id = 0x00;
                 GlsOccupancySensorBase occSensor = null;
 
                 try
                 {
-                    id = Convert.ToUInt32(props.CresnetId, 8);
+                    id = Convert.ToUInt32(props.CresnetId, 16);
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(0, "Unable to convert Crestnet ID: {0} to hex.  Error:\n{1}", props.CresnetId, e);
+                    Debug.Console(0, "ERROR:Unable to convert Crestnet ID: {0} to hex.  Error:\n{1}", props.CresnetId, e);
                 }
 
                 switch (props.Model.ToLower())
@@ -324,7 +325,7 @@ namespace PepperDash.Essentials.Devices.Common
                 if (occSensor != null)
                     return new EssentialsGlsOccupancySensorBaseController(key, name, occSensor, props);
                 else
-                    Debug.Console(0, "Unable to create Occupancy Sensor Device. Key: '{0}'", key);
+                    Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
             }
 
 			return null;
