@@ -130,11 +130,6 @@
     <Compile Include="OTHER\Fusion\FusionEventHandlers.cs" />
     <Compile Include="OTHER\Fusion\FusionProcessorQueries.cs" />
     <Compile Include="OTHER\Fusion\FusionRviDataClasses.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="REMOVE EssentialsApp.cs" />
     <Compile Include="OTHER\Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
     <Compile Include="HttpApiHandler.cs" />
@@ -198,15 +193,6 @@
     <Compile Include="UI\SubpageReferenceListSourceItem.cs" />
     <None Include="app.config" />
     <None Include="Properties\ControlSystem.cfg" />
-    <None Include="Resources\PepperDash Essentials iPad.sgd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\PepperDash Essentials TSW-560.sgd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\PepperDash Essentials TSW-760.sgd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials Core\PepperDashEssentialsBase\PepperDash_Essentials_Core.csproj">
@@ -217,12 +203,6 @@
       <Project>{892B761C-E479-44CE-BD74-243E9214AF13}</Project>
       <Name>Essentials Devices Common</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

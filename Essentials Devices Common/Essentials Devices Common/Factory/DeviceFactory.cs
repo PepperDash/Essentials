@@ -213,7 +213,9 @@ namespace PepperDash.Essentials.Devices.Common
 							var regSuccess = vp.Register();
 							if (regSuccess == eDeviceRegistrationUnRegistrationResponse.Success)
 							{
-								return new GenericVersiportInputDevice(key, vp);
+                                if (props.DisablePullUpResistor)
+                                    vp.DisablePullUpResistor = true;
+								return new GenericVersiportDigitalInputDevice(key, vp);
 							}
 							else
 							{
@@ -243,14 +245,14 @@ namespace PepperDash.Essentials.Devices.Common
                 {
                     var cs = (portDevice as CrestronControlSystem);
 
-                    if(cs != null)
+                    if (cs != null)
                         if (cs.SupportsRelay && props.PortNumber <= cs.NumberOfRelayPorts)
                         {
                             Relay relay = cs.RelayPorts[props.PortNumber];
 
                             if (!relay.Registered)
                             {
-                                if(relay.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+                                if (relay.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
                                     return new GenericRelayDevice(key, relay);
                                 else
                                     Debug.Console(0, "Attempt to register relay {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
@@ -290,7 +292,7 @@ namespace PepperDash.Essentials.Devices.Common
             else if (typeName == "occsensor")
             {
                 var props = JsonConvert.DeserializeObject<GlsOccupancySensorConfigurationProperties>(properties.ToString());
-				
+
                 uint id = 0x00;
                 GlsOccupancySensorBase occSensor = null;
 
@@ -300,7 +302,7 @@ namespace PepperDash.Essentials.Devices.Common
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(0, "ERROR:Unable to convert Crestnet ID: {0} to hex.  Error:\n{1}", props.CresnetId, e);
+                    Debug.Console(0, "ERROR:Unable to convert Cresnet ID: {0} to hex.  Error:\n{1}", props.CresnetId, e);
                 }
 
                 switch (props.Model.ToLower())

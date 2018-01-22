@@ -207,13 +207,13 @@ namespace PepperDash.Essentials
         {
             if ((sender as IOccupancyStatusProvider).RoomIsOccupiedFeedback.BoolValue == false)
             {
-                Debug.Console(0, this, "Vacancy Detected");
+                Debug.Console(1, this, "Notice: Vacancy Detected");
                 // Trigger the timer when the room is vacant
                 StartRoomVacancyTimer(eVacancyMode.InInitialVacancy);
             }
             else
             {
-                Debug.Console(0, this, "Occupancy Detected");
+                Debug.Console(1, this, "Notice: Occupancy Detected");
                 // Reset the timer when the room is occupied
 
                     RoomVacancyShutdownTimer.Cancel();
