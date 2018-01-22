@@ -68,7 +68,6 @@ namespace PepperDash.Essentials
 
 					Load();
 
-					DeviceManager.ActivateAll();
 					Debug.Console(0, "Essentials load complete\r" +
 						"-------------------------------------------------------------");
 				}
@@ -147,6 +146,8 @@ namespace PepperDash.Essentials
 			LoadTieLines();
 			LoadRooms();
 			LoadLogoServer();
+
+            DeviceManager.ActivateAll();
 		}
 
 

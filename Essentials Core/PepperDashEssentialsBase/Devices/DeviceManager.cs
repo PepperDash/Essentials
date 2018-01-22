@@ -64,9 +64,16 @@ namespace PepperDash.Essentials.Core
 		{
 			foreach (var d in Devices.Values)
 			{
-				if (d is Device)
-					(d as Device).Activate();
-			}
+                try
+                {
+                    if (d is Device)
+                        (d as Device).Activate();
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(0, d, "ERROR: Device activation failure:\r{0}", e);
+                }
+            }
 		}
 
 		/// <summary>

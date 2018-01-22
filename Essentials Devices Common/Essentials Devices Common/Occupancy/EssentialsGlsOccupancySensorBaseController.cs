@@ -50,7 +50,7 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             Debug.Console(1, this, "In Mock Mode: '{0}'", InTestMode);
         }
 
-        public void SetTestState(bool state)
+        public void SetTestOccupiedState(bool state)
         {
             if (!InTestMode)
                 Debug.Console(1, "Mock mode not enabled");

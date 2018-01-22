@@ -186,7 +186,7 @@ namespace PepperDash.Essentials
         /// Sets the object to be used as the IOccupancyStatusProvider for the room. Can be an Occupancy Aggregator or a specific device
         /// </summary>
         /// <param name="statusProvider"></param>
-        public void SetRoomOccupancy(IOccupancyStatusProvider statusProvider)
+        public void SetRoomOccupancy(IOccupancyStatusProvider statusProvider, int timeoutMinutes)
         {
 			if (statusProvider == null)
 			{
@@ -198,6 +198,9 @@ namespace PepperDash.Essentials
             if (statusProvider is PepperDash.Essentials.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase)
                 OccupancyStatusProviderIsRemote = true;
 
+            if(timeoutMinutes > 0)
+                RoomVacancyShutdownSeconds = timeoutMinutes * 60;
+
             RoomOccupancy = statusProvider;
 
             RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += new EventHandler<EventArgs>(RoomIsOccupiedFeedback_OutputChange);
@@ -205,7 +208,7 @@ namespace PepperDash.Essentials
 
         void RoomIsOccupiedFeedback_OutputChange(object sender, EventArgs e)
         {
-            if ((sender as IOccupancyStatusProvider).RoomIsOccupiedFeedback.BoolValue == false)
+            if (RoomOccupancy.RoomIsOccupiedFeedback.BoolValue == false)
             {
                 Debug.Console(1, this, "Notice: Vacancy Detected");
                 // Trigger the timer when the room is vacant
