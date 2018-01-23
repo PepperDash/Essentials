@@ -42,9 +42,9 @@ namespace PepperDash.Essentials.Core
             var response = Hardware.RegisterWithLogging(Key);
             if (response != eDeviceRegistrationUnRegistrationResponse.Success)
             {
-				Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
-				return false;
-			}
+                Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
+                return false;
+            }
             Hardware.OnlineStatusChange += new OnlineStatusChangeEventHandler(Hardware_OnlineStatusChange);
             CommunicationMonitor.Start();    
 

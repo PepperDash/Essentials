@@ -29,6 +29,10 @@ namespace PepperDash.Essentials.Room.Config
 				var disp = DeviceManager.GetDeviceForKey(props.DefaultDisplayKey) as IRoutingSinkWithSwitching;
 				var audio = DeviceManager.GetDeviceForKey(props.DefaultAudioKey) as IRoutingSinkNoSwitching;
 				var huddle = new EssentialsHuddleSpaceRoom(Key, Name, disp, audio, props);
+
+                if (props.Occupancy != null)
+                    huddle.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as
+                        PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, props.Occupancy.TimoutMinutes);
                 huddle.LogoUrl = props.Logo.GetUrl();
                 huddle.SourceListKey = props.SourceListKey;
                 huddle.DefaultSourceItem = props.DefaultSourceItem;
@@ -67,8 +71,8 @@ namespace PepperDash.Essentials.Room.Config
                 // Add Occupancy object from config
 
                 if (props.Occupancy != null)
-                    rm.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as 
-						PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider);
+                    rm.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as
+                        PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, props.Occupancy.TimoutMinutes);
                 rm.LogoUrl = props.Logo.GetUrl();
                 rm.SourceListKey = props.SourceListKey;
                 rm.DefaultSourceItem = props.DefaultSourceItem;
@@ -252,7 +256,7 @@ namespace PepperDash.Essentials.Room.Config
     public class EssentialsRoomOccSensorConfig
     {
         public string DeviceKey { get; set; }
-        public string TimoutMinutes { get; set; }
+        public int TimoutMinutes { get; set; }
     }
 
 	public class EssentialsRoomTechConfig

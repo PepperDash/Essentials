@@ -16,18 +16,16 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
-		/// <summary>
-		/// Set by debugging functions	
-		/// </summary>
-		public bool InMockMode { get; private set; }
+        // Debug properties
+        public bool InTestMode { get; private set; }
 
-		public bool MockRoomIsOccupiedFeedback { get; private set; }
+        public bool TestRoomIsOccupiedFeedback { get; private set; }
 
         public Func<bool> RoomIsOccupiedFeedbackFunc
         {
             get
             {
-                return () => InMockMode ? MockRoomIsOccupiedFeedback : OccSensor.OccupancyDetectedFeedback.BoolValue;
+                return () => InTestMode ? TestRoomIsOccupiedFeedback : OccSensor.OccupancyDetectedFeedback.BoolValue;
             }
         }
 
@@ -43,6 +41,25 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         void sensor_GlsOccupancySensorChange(GlsOccupancySensorBase device, GlsOccupancySensorChangeEventArgs args)
         {
             RoomIsOccupiedFeedback.FireUpdate();
+        }
+
+        public void SetTestMode(bool mode)
+        {
+            InTestMode = mode;
+
+            Debug.Console(1, this, "In Mock Mode: '{0}'", InTestMode);
+        }
+
+        public void SetTestOccupiedState(bool state)
+        {
+            if (!InTestMode)
+                Debug.Console(1, "Mock mode not enabled");
+            else
+            {
+                TestRoomIsOccupiedFeedback = state;
+
+                RoomIsOccupiedFeedback.FireUpdate();
+            }
         }
     }
 

@@ -27,4 +27,5 @@ devjson:1 {"deviceKey":"room1-emergency", "methodName":"RunEmergencyBehavior"}
 devjson:1 {"deviceKey":"microphonePrivacyController-1", "methodName":"TogglePrivacyMute"}
 
 devjson:1 {"deviceKey":"room1.InCallFeedback","methodName":"SetTestValue", "params": [ true ]}
+
 devjson:1 {"deviceKey":"room1.InCallFeedback","methodName":"ClearTestValue", "params": []}

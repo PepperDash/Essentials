@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
     /// <summary>
     /// Represents a generic digital input deviced tied to a versiport
     /// </summary>
-    public class GenericVersiportInputDevice : Device, IDigitalInput
+    public class GenericVersiportDigitalInputDevice : Device, IDigitalInput
     {
         public Versiport InputPort { get; private set; }
 
@@ -26,25 +26,25 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
         }
 
-        public GenericVersiportInputDevice(string key, Versiport inputPort):
+        public GenericVersiportDigitalInputDevice(string key, Versiport inputPort, IOPortConfig props):
             base(key)
         {
             InputStateFeedback = new BoolFeedback(InputStateFeedbackFunc);
             InputPort = inputPort;
-            InputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalInput);		
+            InputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalInput);
+            if (props.DisablePullUpResistor)
+                InputPort.DisablePullUpResistor = true;
             InputPort.VersiportChange += new VersiportEventHandler(InputPort_VersiportChange);
+
+            Debug.Console(1, this, "Created GenericVersiportDigitalInputDevice on port '{0}'.  DisablePullUpResistor: '{1}'", props.PortNumber, InputPort.DisablePullUpResistor);
         }
 
         void InputPort_VersiportChange(Versiport port, VersiportEventArgs args)
         {
 			Debug.Console(1, this, "Versiport change: {0}", args.Event);
-            InputStateFeedback.FireUpdate();
+
+            if(args.Event == eVersiportEvent.DigitalInChange)
+                InputStateFeedback.FireUpdate();
         }
     }
-
-    public class GenericVersiportInputDeviceConfigProperties
-    {
-
-    }
-
 }
