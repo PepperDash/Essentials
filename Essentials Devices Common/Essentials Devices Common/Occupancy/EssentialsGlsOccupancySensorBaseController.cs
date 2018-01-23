@@ -29,7 +29,7 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             }
         }
 
-        public EssentialsGlsOccupancySensorBaseController(string key, string name, GlsOccupancySensorBase sensor, GlsOccupancySensorConfigurationProperties props)
+        public EssentialsGlsOccupancySensorBaseController(string key, string name, GlsOccupancySensorBase sensor)
             : base(key, name, sensor)
         {
             OccSensor = sensor;
@@ -61,14 +61,5 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
                 RoomIsOccupiedFeedback.FireUpdate();
             }
         }
-    }
-
-	/// <summary>
-	/// 
-	/// </summary>
-    public class GlsOccupancySensorConfigurationProperties
-    {
-        public string CresnetId { get; set; }
-        public string Model { get; set; }
     }
 }

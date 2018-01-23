@@ -295,43 +295,32 @@ namespace PepperDash.Essentials.Devices.Common
                 return new Roku2(key, name, irCont);
             }
 
-            else if (typeName == "occsensor")
+            else if (typeName == "glsoirccn")
             {
-                var props = JsonConvert.DeserializeObject<GlsOccupancySensorConfigurationProperties>(properties.ToString());
+                var comm = CommFactory.GetControlPropertiesConfig(dc);
 
                 uint id = 0x00;
                 GlsOccupancySensorBase occSensor = null;
 
-                try
-                {
-                    id = Convert.ToUInt32(props.CresnetId, 16);
-                }
-                catch (Exception e)
-                {
-                    Debug.Console(0, "ERROR:Unable to convert Cresnet ID: {0} to hex.  Error:\n{1}", props.CresnetId, e);
-                }
-
-                switch (props.Model.ToLower())
-                {
-                    case "glsodtccn":
-                        {
-                            occSensor = new GlsOdtCCn(id, Global.ControlSystem);
-                            break;
-                        }
-                    case "glsoirccn":
-                        {
-                            occSensor = new GlsOirCCn(id, Global.ControlSystem);
-                            break;
-                        }
-                    default:
-                        {
-                            Debug.Console(0, "Unrecognized Model: '{0}'.  Unable to create occupancy sensor device.", props.Model);
-                            break;
-                        }
-                }
+                occSensor = new GlsOirCCn(comm.CresnetIdInt, Global.ControlSystem);
 
                 if (occSensor != null)
-                    return new EssentialsGlsOccupancySensorBaseController(key, name, occSensor, props);
+                    return new EssentialsGlsOccupancySensorBaseController(key, name, occSensor);
+                else
+                    Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
+            }
+
+            else if (typeName == "glsodtccn")
+            {
+                var comm = CommFactory.GetControlPropertiesConfig(dc);
+
+                uint id = 0x00;
+                GlsOccupancySensorBase occSensor = null;
+
+                occSensor = new GlsOdtCCn(comm.CresnetIdInt, Global.ControlSystem);
+
+                if (occSensor != null)
+                    return new EssentialsGlsOccupancySensorBaseController(key, name, occSensor);
                 else
                     Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
             }

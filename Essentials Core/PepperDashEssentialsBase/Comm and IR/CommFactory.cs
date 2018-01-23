@@ -146,6 +146,24 @@ namespace PepperDash.Essentials.Core
 
 		public string CresnetId { get; set; }
 
+        /// <summary>
+        /// Attempts to provide uint conversion of string CresnetId
+        /// </summary>
+        public uint CresnetIdInt
+        {
+            get
+            {
+                try 
+                {
+                    return Convert.ToUInt32(CresnetId, 16);
+                }
+                catch (Exception)
+                {
+                    throw new FormatException(string.Format("ERROR:Unable to convert Cresnet ID: {0} to hex.  Error:\n{1}", CresnetId));
+                }
+            }
+        }
+
         //public string IpId { get; set; }
 
         //[JsonIgnore]
