@@ -200,7 +200,7 @@ namespace PepperDash.Essentials
                     request.Header.SetHeaderValue("Content-Type", "application/json");
                     request.ContentString = postBody;
 
-					Client.DispatchAsync(request, PostConnectionCallback);
+					var err = Client.DispatchAsync(request, PostConnectionCallback);
                 }
 
             }
@@ -316,6 +316,7 @@ namespace PepperDash.Essentials
         /// <param name="err"></param>
         void PostConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
         {
+			Debug.Console(1, this, "PostConnectionCallback err: {0}", err);
             try
             {
                 if (resp != null && resp.Code == 200)
@@ -326,11 +327,7 @@ namespace PepperDash.Essentials
                         ServerReconnectTimer = null;
                     }
 
-#warning The SSE Client from a previous session might need to be killed...
-					//if (SseClient == null)
-					//{
-                        ConnectSseClient(null);
-					//}
+                    ConnectSseClient(null);
                 }
                 else
                 {

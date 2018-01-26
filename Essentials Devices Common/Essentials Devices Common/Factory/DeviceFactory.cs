@@ -299,7 +299,6 @@ namespace PepperDash.Essentials.Devices.Common
             {
                 var comm = CommFactory.GetControlPropertiesConfig(dc);
 
-                uint id = 0x00;
                 GlsOccupancySensorBase occSensor = null;
 
                 occSensor = new GlsOirCCn(comm.CresnetIdInt, Global.ControlSystem);
@@ -314,7 +313,6 @@ namespace PepperDash.Essentials.Devices.Common
             {
                 var comm = CommFactory.GetControlPropertiesConfig(dc);
 
-                uint id = 0x00;
                 GlsOccupancySensorBase occSensor = null;
 
                 occSensor = new GlsOdtCCn(comm.CresnetIdInt, Global.ControlSystem);
