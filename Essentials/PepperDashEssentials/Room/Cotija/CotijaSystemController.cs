@@ -19,7 +19,7 @@ namespace PepperDash.Essentials
     {
         GenericHttpSseClient SseClient;
 
-        CCriticalSection FileLock;
+		//CCriticalSection FileLock;
 
 		/// <summary>
 		/// Prevents post operations from stomping on each other and getting lost
@@ -153,34 +153,37 @@ namespace PepperDash.Essentials
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
         void RegisterSystemToServer()
         {
+#warning THIS SHOULD NOT GO until the config is ready - in cases of config populated from elsewhere (DDVC)
 			try
             {
                 string filePath = string.Format(@"\NVRAM\Program{0}\configurationFile.json", Global.ControlSystem.ProgramNumber);
-                string postBody = null;
+				var confObject = ConfigReader.ConfigObject;
+				string postBody = JsonConvert.SerializeObject(confObject);
+				SystemUuid = confObject.SystemUuid;
 
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    Debug.Console(0, this, "Error reading file.  No path specified.");
-                    return;
-                }
+				//if (string.IsNullOrEmpty(filePath))
+				//{
+				//    Debug.Console(0, this, "Error reading file.  No path specified.");
+				//    return;
+				//}
 
-                FileLock = new CCriticalSection();
-#warning NEIL I think we need to review this usage. Don't think it ever blocks
+//                FileLock = new CCriticalSection();
+//#warning NEIL I think we need to review this usage. Don't think it ever blocks
 
-				if (FileLock.TryEnter())
-                {
-                    Debug.Console(1, this, "Reading configuration file to extract system UUID...");
+//                if (FileLock.TryEnter())
+//                {
+//                    Debug.Console(1, this, "Reading configuration file to extract system UUID...");
 
-                    postBody = File.ReadToEnd(filePath, Encoding.ASCII);
+//                    postBody = File.ReadToEnd(filePath, Encoding.ASCII);
 
-                    Debug.Console(2, this, "{0}", postBody);
+//                    Debug.Console(2, this, "{0}", postBody);
 
-                    FileLock.Leave();
-                }
+//                    FileLock.Leave();
+//                }
 
                 if (string.IsNullOrEmpty(postBody))
                 {
-                    Debug.Console(1, "Post Body is null or empty");
+                    Debug.Console(1, this, "ERROR: Config post body is empty. Cannot register with server.");
                 }
                 else
                 {
@@ -188,11 +191,9 @@ namespace PepperDash.Essentials
 		                Client = new HttpClient();
 					Client.Verbose = true;
 					Client.KeepAlive = true;
-	
-                    SystemUuid = Essentials.ConfigReader.ConfigObject.SystemUuid;
 
-                    string url = string.Format("http://{0}/api/system/join/{1}", Config.ServerUrl, SystemUuid);
-					Debug.Console(1, this, "Sending config to {0}", url);
+					string url = string.Format("http://{0}/api/system/join/{1}", Config.ServerUrl, SystemUuid);
+					Debug.Console(1, this, "Joining server at {0}", url);
 
                     HttpClientRequest request = new HttpClientRequest();
                     request.Url.Parse(url);
@@ -206,7 +207,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.Console(0, this, "Error Initilizing Room: {0}", e);
+                Debug.Console(0, this, "ERROR: Initilizing Room: {0}", e);
             }
 
         }

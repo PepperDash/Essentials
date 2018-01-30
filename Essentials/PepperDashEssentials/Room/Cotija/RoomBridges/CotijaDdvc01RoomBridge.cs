@@ -10,11 +10,13 @@ using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Config;
+
 
 namespace PepperDash.Essentials.Room.Cotija
 {
-	public class CotijaDdvc01RoomBridge : Device
+	public class CotijaDdvc01RoomBridge : Device, IDelayedConfiguration
 	{
 		public class BoolJoin
 		{
@@ -109,6 +111,10 @@ namespace PepperDash.Essentials.Room.Cotija
 			public const uint ConfigRoomURI = 505;
 		}
 
+		/// <summary>
+		/// Fires when the config is ready, to be used by the controller class to forward config to server
+		/// </summary>
+		public event EventHandler<EventArgs> ConfigurationIsReady;
 
 		public ThreeSeriesTcpIpEthernetIntersystemCommunications EISC { get; private set; }
 
@@ -277,7 +283,7 @@ namespace PepperDash.Essentials.Room.Cotija
 				if (string.IsNullOrEmpty(num))
 					break;
 				var name = EISC.StringInput[i + 1].StringValue;
-				rmProps.SpeedDials.Add(new DDVC01SpeedDial { Number = num, Name = name};
+				rmProps.SpeedDials.Add(new DDVC01SpeedDial { Number = num, Name = name});
 			}
 			// volume control names
 			var volCount = EISC.UShortInput[701].UShortValue;
@@ -286,12 +292,40 @@ namespace PepperDash.Essentials.Room.Cotija
 			{
 				rmProps.VolumeSliderNames.Add(EISC.StringInput[i].StringValue);
 			}
+
+			// There should be cotija devices in here, I think...
+			if(co.Devices == null)
+				co.Devices = new List<DeviceConfig>();
 			
 			// Source list! This might be brutal!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			rmProps.SourceListKey = "default";
 			co.SourceLists = new Dictionary<string,Dictionary<string,SourceListItem>>();
 			var newSl = new Dictionary<string, SourceListItem>();
 			// add sources...
+			for (uint i = 0; i<= 19; i++)
+			{
+				var name = EISC.StringInput[601 + i].StringValue;
+				if(string.IsNullOrEmpty(name))
+					break;
+				var icon = EISC.StringInput[651 + i].StringValue;
+				var key = EISC.StringInput[671 + i].StringValue;
+				var type = EISC.StringInput[701 + i].StringValue;
+				var newSLI = new SourceListItem{
+					Icon = icon,
+					Name = name,
+					Order = (int)i + 1,
+					SourceKey = key,
+				};
+				
+				// add dev to devices list
+				var devConf = new DeviceConfig {
+					Group = "ddvc01",
+					Key = key,
+					Name = name,
+					Type = type
+				};
+				co.Devices.Add(devConf);
+			}
 
 			co.SourceLists.Add("default", newSl);
 

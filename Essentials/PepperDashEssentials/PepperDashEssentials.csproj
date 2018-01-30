@@ -134,11 +134,13 @@
     <Compile Include="OTHER\Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
     <Compile Include="HttpApiHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Room\Config\DDVC01RoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsPresentationPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsHuddleRoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsHuddleVtc1PropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsRoomEmergencyConfig.cs" />
     <Compile Include="Room\Cotija\CotijaConfig.cs" />
+    <Compile Include="Room\Cotija\Interfaces.cs" />
     <Compile Include="Room\Cotija\RoomBridges\CotijaDdvc01RoomBridge.cs" />
     <Compile Include="Room\Cotija\RoomBridges\CotijaEssentialsHuddleSpaceRoomBridge.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\IChannelExtensions.cs" />

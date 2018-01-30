@@ -42,6 +42,21 @@ namespace PepperDash.Essentials
             },
             "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
 
+			CrestronConsole.AddNewConsoleCommand(s =>
+			{
+				CrestronConsole.ConsoleCommandResponse
+					("Current running configuration. This is the merged system and template configuration");
+				CrestronConsole.ConsoleCommandResponse(Newtonsoft.Json.JsonConvert.SerializeObject
+					(ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
+			}, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
+
+			CrestronConsole.AddNewConsoleCommand(s =>
+				{
+					CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r" +
+						"System URL:   {0}\r" +
+						"Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
+				}, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
+
             GoWithLoad();
 		}
 
