@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials.Room.Cotija
 {
@@ -244,6 +245,58 @@ namespace PepperDash.Essentials.Room.Cotija
 		void LoadConfigValues()
 		{
 			ConfigIsLoaded = false;
+
+			var co = ConfigReader.ConfigObject;
+
+			//Room
+			if (co.Rooms == null)
+				co.Rooms = new List<EssentialsRoomConfig>();
+			if (co.Rooms.Count == 0)
+				co.Rooms.Add(new EssentialsRoomConfig());
+			var rm = co.Rooms[0];
+			rm.Name = EISC.StringInput[501].StringValue;
+			rm.Key = "room1";
+			rm.Type = "ddvc01";
+
+			DDVC01RoomPropertiesConfig rmProps;
+			if (rm.Properties == null)
+				rmProps = new DDVC01RoomPropertiesConfig();
+			else
+				rmProps = JsonConvert.DeserializeObject<DDVC01RoomPropertiesConfig>(rm.Properties.ToString());
+			
+			rmProps.Help = new EssentialsHelpPropertiesConfig();
+			rmProps.Help.Message = EISC.StringInput[502].StringValue;
+			rmProps.Help.CallButtonText = EISC.StringInput[503].StringValue;
+			rmProps.RoomPhoneNumber = EISC.StringInput[504].StringValue;
+			rmProps.RoomURI = EISC.StringInput[505].StringValue;
+			rmProps.SpeedDials = new List<DDVC01SpeedDial>();
+			// add speed dials as long as there are more - up to 4
+			for (uint i = 512; i <= 519; i = i + 2)
+			{
+				var num = EISC.StringInput[i].StringValue;
+				if (string.IsNullOrEmpty(num))
+					break;
+				var name = EISC.StringInput[i + 1].StringValue;
+				rmProps.SpeedDials.Add(new DDVC01SpeedDial { Number = num, Name = name};
+			}
+			// volume control names
+			var volCount = EISC.UShortInput[701].UShortValue;
+			rmProps.VolumeSliderNames = new List<string>();
+			for(uint i = 701; i <= 700 + volCount; i++)
+			{
+				rmProps.VolumeSliderNames.Add(EISC.StringInput[i].StringValue);
+			}
+			
+			// Source list! This might be brutal!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			rmProps.SourceListKey = "default";
+			co.SourceLists = new Dictionary<string,Dictionary<string,SourceListItem>>();
+			var newSl = new Dictionary<string, SourceListItem>();
+			// add sources...
+
+			co.SourceLists.Add("default", newSl);
+
+
+
 			ConfigIsLoaded = true;
 
 			// send config changed status???
