@@ -74,6 +74,13 @@ namespace PepperDash.Essentials
         /// </summary>
         protected abstract Func<bool> OnFeedbackFunc { get; }
 
+		protected Dictionary<IBasicVolumeWithFeedback, uint> SavedVolumeLevels = new Dictionary<IBasicVolumeWithFeedback, uint>();
+
+		/// <summary>
+		/// When volume control devices change, should we zero the one that we are leaving?
+		/// </summary>
+		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; private set; }
+
         /// <summary>
         /// 
         /// </summary>
@@ -222,6 +229,11 @@ namespace PepperDash.Essentials
                     RoomVacancyShutdownTimer.Cancel();
             }
         }
+
+		//void SwapVolumeDevices(IBasicVolumeControls currentDevice, IBasicVolumeControls newDevice)
+		//{
+
+		//}
 
         /// <summary>
         /// Executes when RoomVacancyShutdownTimer expires.  Used to trigger specific room actions as needed.  Must nullify the timer object when executed

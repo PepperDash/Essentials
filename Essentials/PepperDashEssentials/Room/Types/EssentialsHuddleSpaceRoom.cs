@@ -317,7 +317,7 @@ namespace PepperDash.Essentials
                     }
 
 
-					// Set volume control on room, using default if non provided
+					// Set volume control, using default if non provided
 					IBasicVolumeControls volDev = null;
 					// Handle special cases for volume control
 					if (string.IsNullOrEmpty(item.VolumeControlKey) 
@@ -334,6 +334,10 @@ namespace PepperDash.Essentials
 						else if (dev is IHasVolumeDevice)
 							volDev = (dev as IHasVolumeDevice).VolumeDevice;
 					}
+
+					if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
+						(CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(0);
+
 					CurrentVolumeControls = volDev;
 
 					// store the name and UI info for routes

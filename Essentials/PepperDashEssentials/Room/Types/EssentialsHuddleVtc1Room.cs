@@ -122,7 +122,8 @@ namespace PepperDash.Essentials
 		string LastSourceKey;
 
 		/// <summary>
-		/// 
+		/// Sets the volume control device, and attaches/removes InUseTrackers with "audio"
+		/// tag to device.
 		/// </summary>
 		public IBasicVolumeControls CurrentVolumeControls 
 		{
@@ -211,6 +212,7 @@ namespace PepperDash.Essentials
 			else if (defaultAudio is IHasVolumeDevice)
 				DefaultVolumeControls = (defaultAudio as IHasVolumeDevice).VolumeDevice;
             CurrentVolumeControls = DefaultVolumeControls;
+			
 
             var disp = DefaultDisplay as DisplayBase;
             if (disp != null)
@@ -371,6 +373,48 @@ namespace PepperDash.Essentials
                     {
                         (item.SourceDevice as IUsageTracking).UsageTracker.StartDeviceUsage();
                     }
+
+
+					// See if this can be moved into common, base-class method -------------
+
+					// Set volume control, using default if non provided
+					IBasicVolumeControls volDev = null;
+					// Handle special cases for volume control
+					if (string.IsNullOrEmpty(item.VolumeControlKey)
+						|| item.VolumeControlKey.Equals("$defaultAudio", StringComparison.OrdinalIgnoreCase))
+						volDev = DefaultVolumeControls;
+					else if (item.VolumeControlKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
+						volDev = DefaultDisplay as IBasicVolumeControls;
+					// Or a specific device, probably rarely used.
+					else
+					{
+						var dev = DeviceManager.GetDeviceForKey(item.VolumeControlKey);
+						if (dev is IBasicVolumeControls)
+							volDev = dev as IBasicVolumeControls;
+						else if (dev is IHasVolumeDevice)
+							volDev = (dev as IHasVolumeDevice).VolumeDevice;
+					}
+
+					// zero the volume on the device we are leaving.  
+					// Set the volume to default on device we are entering
+					if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
+					{
+						var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
+						SavedVolumeLevels[vd] = (uint)vd.VolumeLevelFeedback.IntValue;
+						vd.SetVolume(0);
+					}
+
+					CurrentVolumeControls = volDev;
+					if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
+					{
+						var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
+						ushort vol = (SavedVolumeLevels.ContainsKey(vd) ? (ushort)SavedVolumeLevels[vd] : DefaultVolume);
+						vd.SetVolume(vol);
+					}
+
+					// -----------------------------------------------------------------------
+
+
 
                     // store the name and UI info for routes
                     if (item.SourceKey == "$off")

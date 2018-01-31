@@ -188,6 +188,7 @@ namespace PepperDash.Essentials.Room.Config
         public EssentialsLogoPropertiesConfig Logo { get; set; }
 		public EssentialsRoomTechConfig Tech { get; set; }
         public EssentialsRoomVolumesConfig Volumes { get; set; }
+		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 	}
 
     public class EssentialsRoomMicrophonePrivacyConfig
