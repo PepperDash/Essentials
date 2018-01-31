@@ -377,6 +377,8 @@ namespace PepperDash.Essentials
 
 					// See if this can be moved into common, base-class method -------------
 
+
+
 					// Set volume control, using default if non provided
 					IBasicVolumeControls volDev = null;
 					// Handle special cases for volume control
@@ -395,23 +397,25 @@ namespace PepperDash.Essentials
 							volDev = (dev as IHasVolumeDevice).VolumeDevice;
 					}
 
-					// zero the volume on the device we are leaving.  
-					// Set the volume to default on device we are entering
-					if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
+					if (volDev != CurrentVolumeControls)
 					{
-						var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
-						SavedVolumeLevels[vd] = (uint)vd.VolumeLevelFeedback.IntValue;
-						vd.SetVolume(0);
-					}
+						// zero the volume on the device we are leaving.  
+						// Set the volume to default on device we are entering
+						if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
+						{
+							var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
+							SavedVolumeLevels[vd] = (uint)vd.VolumeLevelFeedback.IntValue;
+							vd.SetVolume(0);
+						}
 
-					CurrentVolumeControls = volDev;
-					if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
-					{
-						var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
-						ushort vol = (SavedVolumeLevels.ContainsKey(vd) ? (ushort)SavedVolumeLevels[vd] : DefaultVolume);
-						vd.SetVolume(vol);
+						CurrentVolumeControls = volDev;
+						if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
+						{
+							var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
+							ushort vol = (SavedVolumeLevels.ContainsKey(vd) ? (ushort)SavedVolumeLevels[vd] : DefaultVolume);
+							vd.SetVolume(vol);
+						}
 					}
-
 					// -----------------------------------------------------------------------
 
 

@@ -317,6 +317,8 @@ namespace PepperDash.Essentials
                     }
 
 
+
+
 					// Set volume control, using default if non provided
 					IBasicVolumeControls volDev = null;
 					// Handle special cases for volume control
@@ -335,10 +337,26 @@ namespace PepperDash.Essentials
 							volDev = (dev as IHasVolumeDevice).VolumeDevice;
 					}
 
-					if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
-						(CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(0);
+					if (volDev != CurrentVolumeControls)
+					{
+						// zero the volume on the device we are leaving.  
+						// Set the volume to default on device we are entering
+						if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
+						{
+							var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
+							SavedVolumeLevels[vd] = (uint)vd.VolumeLevelFeedback.IntValue;
+							vd.SetVolume(0);
+						}
+						CurrentVolumeControls = volDev;
+						if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
+						{
+							var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
+							ushort vol = (SavedVolumeLevels.ContainsKey(vd) ? (ushort)SavedVolumeLevels[vd] : DefaultVolume);
+							vd.SetVolume(vol);
+						}
+					}
 
-					CurrentVolumeControls = volDev;
+
 
 					// store the name and UI info for routes
                     if (item.SourceKey == "$off")
