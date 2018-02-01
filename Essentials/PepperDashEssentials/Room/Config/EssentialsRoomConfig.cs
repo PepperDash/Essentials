@@ -84,6 +84,10 @@ namespace PepperDash.Essentials.Room.Config
 
                 return rm;
             }
+			else if (typeName == "ddvc01Bridge")
+			{
+				return new Device(Key, Name); // placeholder device that does nothing.
+			}
 
             return null;
 		}

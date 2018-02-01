@@ -10,15 +10,18 @@ using PepperDash.Essentials.Room.Cotija;
 
 namespace PepperDash.Essentials
 {
-    public class CotijaEssentialsHuddleSpaceRoomBridge
+    public class CotijaEssentialsHuddleSpaceRoomBridge : CotijaBridgeBase
     {
-        CotijaSystemController Parent;
 
         public EssentialsHuddleSpaceRoom Room { get; private set; }
 
-        public CotijaEssentialsHuddleSpaceRoomBridge(CotijaSystemController parent, EssentialsHuddleSpaceRoom room)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="room"></param>
+        public CotijaEssentialsHuddleSpaceRoomBridge(CotijaSystemController parent, EssentialsHuddleSpaceRoom room):base(parent)
         {
-            Parent = parent;
             Room = room;
 
 			// we add actions to the messaging system with a path, and a related action. Custom action

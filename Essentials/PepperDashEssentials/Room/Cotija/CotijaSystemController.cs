@@ -44,7 +44,7 @@ namespace PepperDash.Essentials
 
         string SystemUuid;
 
-        public List<CotijaEssentialsHuddleSpaceRoomBridge> CotijaRooms { get; private set; }
+        public List<CotijaBridgeBase> CotijaRooms { get; private set; }
 
         long ButtonHeartbeatInterval = 1000;
 
@@ -60,7 +60,7 @@ namespace PepperDash.Essentials
             Config = config;
 			Debug.Console(0, this, "Mobile UI controller initializing for server:{0}", config.ServerUrl);
 
-            CotijaRooms = new List<CotijaEssentialsHuddleSpaceRoomBridge>();
+            CotijaRooms = new List<CotijaBridgeBase>();
 
 			//CrestronConsole.AddNewConsoleCommand(s => RegisterSystemToServer(), 
 			//    "CotiInitializeHttpClient", "Initializes a new HTTP client connection to a specified URL", ConsoleAccessLevelEnum.AccessOperator);

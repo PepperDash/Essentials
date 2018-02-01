@@ -16,7 +16,7 @@ using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials.Room.Cotija
 {
-	public class CotijaDdvc01RoomBridge : Device, IDelayedConfiguration
+	public class CotijaDdvc01RoomBridge : CotijaBridgeBase, IDelayedConfiguration
 	{
 		public class BoolJoin
 		{
@@ -122,6 +122,12 @@ namespace PepperDash.Essentials.Room.Cotija
 
 		public bool ConfigIsLoaded { get; private set; }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="name"></param>
+		/// <param name="ipId"></param>
 		public CotijaDdvc01RoomBridge(string key, string name, uint ipId)
 			: base(key, name)
 		{
@@ -156,6 +162,9 @@ namespace PepperDash.Essentials.Room.Cotija
 			SetupFunctions();
 			SetupFeedbacks();
 			EISC.SigChange += EISC_SigChange;
+			// load config if it's already there
+			if (EISC.BooleanInput[BoolJoin.ConfigIsReady].BoolValue)
+				LoadConfigValues();
 			return base.CustomActivate();
 		}
 
@@ -241,6 +250,7 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			// Config things
 			EISC.SetSigTrueAction(BoolJoin.ConfigIsReady, LoadConfigValues);
+
 
 
 		}
@@ -329,6 +339,7 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			co.SourceLists.Add("default", newSl);
 
+			Debug.Console(0, this, "******* CONFIG FROM DDVC: \r", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
 
 
 			ConfigIsLoaded = true;
