@@ -118,9 +118,11 @@ namespace PepperDash.Essentials.Room.Cotija
 
 		public ThreeSeriesTcpIpEthernetIntersystemCommunications EISC { get; private set; }
 
-		CotijaSystemController Parent;
-
+		/// <summary>
+		/// 
+		/// </summary>
 		public bool ConfigIsLoaded { get; private set; }
+
 
 		/// <summary>
 		/// 
@@ -131,7 +133,6 @@ namespace PepperDash.Essentials.Room.Cotija
 		public CotijaDdvc01RoomBridge(string key, string name, uint ipId)
 			: base(key, name)
 		{
-			Key = key;
 			try
 			{
 				EISC = new ThreeSeriesTcpIpEthernetIntersystemCommunications(ipId, "127.0.0.2", Global.ControlSystem);
@@ -146,24 +147,17 @@ namespace PepperDash.Essentials.Room.Cotija
 		}
 
 		/// <summary>
-		/// Finish wiring up everything after all devices are created
+		/// Finish wiring up everything after all devices are created. The base class will hunt down the related
+		/// parent controller and link them up.
 		/// </summary>
 		/// <returns></returns>
 		public override bool CustomActivate()
 		{
-			
-			Parent = DeviceManager.AllDevices.FirstOrDefault(d => d is CotijaSystemController) as CotijaSystemController;
-			if (Parent == null)
-			{
-				Debug.Console(0, this, "ERROR: Cannot build CotijaDdvc01RoomBridge. System controller not present");
-				return false;
-			}
-
 			SetupFunctions();
 			SetupFeedbacks();
 			EISC.SigChange += EISC_SigChange;
 			// load config if it's already there
-			if (EISC.BooleanInput[BoolJoin.ConfigIsReady].BoolValue)
+			if (EISC.IsOnline || EISC.BooleanInput[BoolJoin.ConfigIsReady].BoolValue)
 				LoadConfigValues();
 			return base.CustomActivate();
 		}

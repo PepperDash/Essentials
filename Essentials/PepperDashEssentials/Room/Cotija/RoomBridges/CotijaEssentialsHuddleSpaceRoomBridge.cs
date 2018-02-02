@@ -20,7 +20,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="room"></param>
-        public CotijaEssentialsHuddleSpaceRoomBridge(CotijaSystemController parent, EssentialsHuddleSpaceRoom room):base(parent)
+        public CotijaEssentialsHuddleSpaceRoomBridge(EssentialsHuddleSpaceRoom room):
+			base("cotijaController", "Cotija Controller")
         {
             Room = room;
 

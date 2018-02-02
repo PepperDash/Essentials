@@ -141,6 +141,7 @@
     <Compile Include="Room\Config\EssentialsRoomEmergencyConfig.cs" />
     <Compile Include="Room\Cotija\CotijaConfig.cs" />
     <Compile Include="Room\Cotija\Interfaces.cs" />
+    <Compile Include="Room\Cotija\RoomBridges\CotijaBridgeBase.cs" />
     <Compile Include="Room\Cotija\RoomBridges\CotijaDdvc01RoomBridge.cs" />
     <Compile Include="Room\Cotija\RoomBridges\CotijaEssentialsHuddleSpaceRoomBridge.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\IChannelExtensions.cs" />

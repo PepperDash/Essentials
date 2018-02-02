@@ -69,10 +69,24 @@ namespace PepperDash.Essentials
                 return new CotijaSystemController(key, name, props);
             }
 
-			else if (typeName == "cotijaddvc01room")
+			else if (typeName == "cotijaddvc01roombridge")
 			{
 				var comm = CommFactory.GetControlPropertiesConfig(dc);
-				return new PepperDash.Essentials.Room.Cotija.CotijaDdvc01RoomBridge(key, name, comm.IpIdInt);
+
+				var bridge = new PepperDash.Essentials.Room.Cotija.CotijaDdvc01RoomBridge(key, name, comm.IpIdInt);
+				bridge.AddPreActivationAction(() =>
+				{
+					var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "cotijaServer") as CotijaSystemController;
+					if (parent == null)
+					{
+						Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
+					}
+					Debug.Console(0, bridge, "Linking to parent controller");
+					bridge.AddParent(parent);
+					parent.CotijaRooms.Add(bridge);
+				});
+
+				return bridge;
 			}
 
 			return null;
