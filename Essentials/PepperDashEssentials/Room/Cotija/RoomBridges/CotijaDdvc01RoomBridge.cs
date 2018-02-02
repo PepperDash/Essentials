@@ -337,7 +337,7 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			co.SourceLists.Add("default", newSl);
 
-			Debug.Console(0, this, "******* CONFIG FROM DDVC: \r", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
+			Debug.Console(0, this, "******* CONFIG FROM DDVC: \r{0}", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
 
 			ConfigIsLoaded = true;
 
