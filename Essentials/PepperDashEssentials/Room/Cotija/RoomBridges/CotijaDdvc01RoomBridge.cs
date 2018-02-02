@@ -156,8 +156,13 @@ namespace PepperDash.Essentials.Room.Cotija
 			SetupFunctions();
 			SetupFeedbacks();
 			EISC.SigChange += EISC_SigChange;
+			EISC.OnlineStatusChange += (o, a) =>
+			{
+				if (a.DeviceOnLine)
+					LoadConfigValues();
+			};
 			// load config if it's already there
-			if (EISC.IsOnline || EISC.BooleanInput[BoolJoin.ConfigIsReady].BoolValue)
+			if (EISC.IsOnline) // || EISC.BooleanInput[BoolJoin.ConfigIsReady].BoolValue)
 				LoadConfigValues();
 			return base.CustomActivate();
 		}
@@ -244,9 +249,6 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			// Config things
 			EISC.SetSigTrueAction(BoolJoin.ConfigIsReady, LoadConfigValues);
-
-
-
 		}
 
 		/// <summary>
@@ -254,6 +256,8 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		void LoadConfigValues()
 		{
+
+			Debug.Console(1, this, "Loading configuration from DDVC01 EISC bridge");
 			ConfigIsLoaded = false;
 
 			var co = ConfigReader.ConfigObject;
@@ -334,7 +338,6 @@ namespace PepperDash.Essentials.Room.Cotija
 			co.SourceLists.Add("default", newSl);
 
 			Debug.Console(0, this, "******* CONFIG FROM DDVC: \r", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
-
 
 			ConfigIsLoaded = true;
 
