@@ -91,9 +91,12 @@
     <Compile Include="Cards REMOVE\DmInputCardBase.cs" />
     <Compile Include="Chassis\DmCardAudioOutput.cs" />
     <Compile Include="Chassis\DmChassisController.cs" />
+    <Compile Include="Chassis\HdMdNxM4kEController.cs" />
     <Compile Include="Config\DmRmcConfig.cs" />
     <Compile Include="Config\DmTxConfig.cs" />
     <Compile Include="Config\DMChassisConfig.cs" />
+    <Compile Include="Config\HdMdNxM4kEPropertiesConfig.cs" />
+    <Compile Include="Config\InputPropertiesConfig.cs" />
     <Compile Include="DmPortName.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc4KScalerCController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmcScalerCController.cs" />
