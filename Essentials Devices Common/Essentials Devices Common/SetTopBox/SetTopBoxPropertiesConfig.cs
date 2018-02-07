@@ -8,7 +8,7 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-    public class SetTopBoxPropertiesConfig
+    public class SetTopBoxPropertiesConfig : PepperDash.Essentials.Core.Config.SourceDevicePropertiesConfigBase
     {
         public bool HasPresets { get; set; }
         public bool HasDvr { get; set; }

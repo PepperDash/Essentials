@@ -318,8 +318,6 @@ namespace PepperDash.Essentials
                     (CurrentRoom.DefaultDisplay as IPower).PowerToggle();
             });
 
-			//TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusButtonPress, ShowActiveCallsList );
-
 			SetupNextMeetingTimer();
 
             base.Show();
@@ -906,6 +904,7 @@ namespace PepperDash.Essentials
                 _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange -= CurrentRoom_IsWarmingFeedback_OutputChange;
                 _CurrentRoom.IsCoolingDownFeedback.OutputChange -= CurrentRoom_IsCoolingDownFeedback_OutputChange;
+				_CurrentRoom.InCallFeedback.OutputChange -= CurrentRoom_InCallFeedback_OutputChange;
             }
 
             _CurrentRoom = room;
@@ -913,27 +912,9 @@ namespace PepperDash.Essentials
             if (_CurrentRoom != null)
             {
                 // get the source list config and set up the source list
-                var config = ConfigReader.ConfigObject.SourceLists;
-                if (config.ContainsKey(_CurrentRoom.SourceListKey))
-                {
-                    var srcList = config[_CurrentRoom.SourceListKey].OrderBy(kv => kv.Value.Order);
 
-                    // Setup sources list			
-                    uint i = 1; // counter for UI list
-                    foreach (var kvp in srcList)
-                    {
-                        var srcConfig = kvp.Value;
-                        if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
-                            continue;
+				SetupSourceList();
 
-                        var routeKey = kvp.Key;
-                        var item = new SubpageReferenceListSourceItem(i++, SourceStagingSrl, srcConfig,
-                            b => { if (!b) UiSelectSource(routeKey); });
-                        SourceStagingSrl.AddItem(item); // add to the SRL
-                        item.RegisterForSourceChange(_CurrentRoom);
-                    }
-                    SourceStagingSrl.Count = (ushort)(i - 1);
-                }
                 // Name and logo
                 TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
                 ShowLogo();
@@ -948,6 +929,8 @@ namespace PepperDash.Essentials
                 CurrentRoom_SyncOnFeedback();
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange += CurrentRoom_IsWarmingFeedback_OutputChange;
                 _CurrentRoom.IsCoolingDownFeedback.OutputChange += CurrentRoom_IsCoolingDownFeedback_OutputChange;
+				_CurrentRoom.InCallFeedback.OutputChange -= CurrentRoom_InCallFeedback_OutputChange;
+
 
                 _CurrentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
                 RefreshAudioDeviceConnections();
@@ -975,6 +958,60 @@ namespace PepperDash.Essentials
                 TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = "Select a room";
             }
         }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void CurrentRoom_InCallFeedback_OutputChange(object sender, EventArgs e)
+		{
+			var inCall = CurrentRoom.InCallFeedback.BoolValue;
+			if (inCall)
+			{
+				// Check if transitioning to in call - and non-sharable source is in use
+				if (CurrentRoom.CurrentSourceInfo.DisableCodecSharing)
+				{
+					Debug.Console(1, CurrentRoom, "Transitioning to in-call, cancelling non-sharable source");
+					CurrentRoom.RunRouteAction("none");
+				}
+			}
+
+			SetupSourceList();
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void SetupSourceList()
+		{
+			var inCall = CurrentRoom.VideoCodec.IsInCall;
+			var config = ConfigReader.ConfigObject.SourceLists;
+			if (config.ContainsKey(_CurrentRoom.SourceListKey))
+			{
+				var srcList = config[_CurrentRoom.SourceListKey].OrderBy(kv => kv.Value.Order);
+
+				// Setup sources list			
+				uint i = 1; // counter for UI list
+				foreach (var kvp in srcList)
+				{
+					var srcConfig = kvp.Value;
+					// Skip sources marked as not included, and filter list of non-sharable sources when in call
+					// or on share screen
+					if (!srcConfig.IncludeInSourceList || (inCall && srcConfig.DisableCodecSharing) 
+						|| this.CurrentMode == UiDisplayMode.Call) 
+						continue;
+
+					var routeKey = kvp.Key;
+					var item = new SubpageReferenceListSourceItem(i++, SourceStagingSrl, srcConfig,
+						b => { if (!b) UiSelectSource(routeKey); });
+					SourceStagingSrl.AddItem(item); // add to the SRL
+					item.RegisterForSourceChange(_CurrentRoom);
+				}
+				SourceStagingSrl.Count = (ushort)(i - 1);
+			}
+
+		}
 
 		/// <summary>
 		/// If the schedule changes, this event will fire

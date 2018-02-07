@@ -18,6 +18,7 @@ using PepperDash.Essentials.Devices.Common.Occupancy;
 
 using PepperDash.Essentials.Devices.Common;
 
+
 namespace PepperDash.Essentials.Devices.Common
 {
 	public class DeviceFactory
@@ -28,6 +29,8 @@ namespace PepperDash.Essentials.Devices.Common
 			var name = dc.Name;
 			var type = dc.Type;
 			var properties = dc.Properties;
+			var propAnon = new {};
+			JsonConvert.DeserializeAnonymousType(dc.Properties.ToString(), propAnon);
 
 			var typeName = dc.Type.ToLower();
 			var groupName = dc.Group.ToLower();

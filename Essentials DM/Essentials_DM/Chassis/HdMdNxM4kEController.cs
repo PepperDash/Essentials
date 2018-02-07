@@ -35,10 +35,10 @@ namespace PepperDash.Essentials.DM.Chassis
 
 			// logical ports
 			InputPorts = new RoutingPortCollection<RoutingInputPort>();
-			for (int i = 1; i <= 4; i++)
+			for (uint i = 1; i <= 4; i++)
 			{
 				InputPorts.Add(new RoutingInputPort("hdmiIn" + i, eRoutingSignalType.AudioVideo,
-					eRoutingPortConnectionType.Hdmi, 1, this, false));
+					eRoutingPortConnectionType.Hdmi, i, this));
 			}
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 			OutputPorts.Add(new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.AudioVideo,
@@ -80,7 +80,6 @@ namespace PepperDash.Essentials.DM.Chassis
 		public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
 		{
 			Chassis.HdmiOutputs[1].VideoOut = Chassis.HdmiInputs[(uint)inputSelector];
-			Chassis.VideoEnter.Pulse();
 		}
 
 		#endregion

@@ -68,6 +68,8 @@ namespace PepperDash.Essentials.Core
 		public string VolumeControlKey { get; set; }
 		public eSourceListItemType Type { get; set; }
 		public List<SourceRouteListItem> RouteList { get; set; }
+		public bool DisableCodecSharing { get; set; }
+		public bool DisableRoutedSharing { get; set; }
 
 		public SourceListItem()
 		{
