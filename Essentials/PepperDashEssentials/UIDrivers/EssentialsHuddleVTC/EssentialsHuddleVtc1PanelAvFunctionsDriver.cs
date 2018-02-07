@@ -633,6 +633,7 @@ namespace PepperDash.Essentials
         /// </summary>
         void ActivityShareButtonPressed()
         {
+			SetupSourceList();
             if (VCDriver.IsVisible)
                 VCDriver.Hide();
 			HideNextMeetingPopup();
@@ -929,7 +930,7 @@ namespace PepperDash.Essentials
                 CurrentRoom_SyncOnFeedback();
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange += CurrentRoom_IsWarmingFeedback_OutputChange;
                 _CurrentRoom.IsCoolingDownFeedback.OutputChange += CurrentRoom_IsCoolingDownFeedback_OutputChange;
-				_CurrentRoom.InCallFeedback.OutputChange -= CurrentRoom_InCallFeedback_OutputChange;
+				_CurrentRoom.InCallFeedback.OutputChange += CurrentRoom_InCallFeedback_OutputChange;
 
 
                 _CurrentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
@@ -973,7 +974,7 @@ namespace PepperDash.Essentials
 				if (CurrentRoom.CurrentSourceInfo.DisableCodecSharing)
 				{
 					Debug.Console(1, CurrentRoom, "Transitioning to in-call, cancelling non-sharable source");
-					CurrentRoom.RunRouteAction("none");
+					CurrentRoom.RunRouteAction("codecOsd");
 				}
 			}
 
@@ -985,7 +986,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void SetupSourceList()
 		{
-			var inCall = CurrentRoom.VideoCodec.IsInCall;
+			var inCall = CurrentRoom.InCallFeedback.BoolValue;
+			Debug.Console(0, "**** REDRAWING SOURCES InCall={0}", inCall);
 			var config = ConfigReader.ConfigObject.SourceLists;
 			if (config.ContainsKey(_CurrentRoom.SourceListKey))
 			{
@@ -998,9 +1000,13 @@ namespace PepperDash.Essentials
 					var srcConfig = kvp.Value;
 					// Skip sources marked as not included, and filter list of non-sharable sources when in call
 					// or on share screen
+					Debug.Console(0, "*** Source list item: {0}", Newtonsoft.Json.JsonConvert.SerializeObject(srcConfig));
 					if (!srcConfig.IncludeInSourceList || (inCall && srcConfig.DisableCodecSharing) 
-						|| this.CurrentMode == UiDisplayMode.Call) 
+						|| this.CurrentMode == UiDisplayMode.Call && srcConfig.DisableCodecSharing) 
+					{
+						Debug.Console(0, "**** SKIPPING {0} IN SOURCE LIST", kvp.Key);
 						continue;
+					}
 
 					var routeKey = kvp.Key;
 					var item = new SubpageReferenceListSourceItem(i++, SourceStagingSrl, srcConfig,
