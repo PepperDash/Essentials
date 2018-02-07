@@ -987,7 +987,6 @@ namespace PepperDash.Essentials
 		void SetupSourceList()
 		{
 			var inCall = CurrentRoom.InCallFeedback.BoolValue;
-			Debug.Console(0, "**** REDRAWING SOURCES InCall={0}", inCall);
 			var config = ConfigReader.ConfigObject.SourceLists;
 			if (config.ContainsKey(_CurrentRoom.SourceListKey))
 			{
@@ -1000,11 +999,9 @@ namespace PepperDash.Essentials
 					var srcConfig = kvp.Value;
 					// Skip sources marked as not included, and filter list of non-sharable sources when in call
 					// or on share screen
-					Debug.Console(0, "*** Source list item: {0}", Newtonsoft.Json.JsonConvert.SerializeObject(srcConfig));
-					if (!srcConfig.IncludeInSourceList || (inCall && srcConfig.DisableCodecSharing) 
+ 					if (!srcConfig.IncludeInSourceList || (inCall && srcConfig.DisableCodecSharing) 
 						|| this.CurrentMode == UiDisplayMode.Call && srcConfig.DisableCodecSharing) 
 					{
-						Debug.Console(0, "**** SKIPPING {0} IN SOURCE LIST", kvp.Key);
 						continue;
 					}
 

@@ -49,7 +49,9 @@ namespace PepperDash.Essentials.DM.Chassis
 			{
 				foreach (var kvp in props.Inputs)
 				{
-					var inputNum = Convert.ToUInt32(kvp.Key);
+					// strip "hdmiIn"
+					Debug.Console(0, "**************** {0}", kvp.Key);
+					var inputNum =  Convert.ToUInt32(kvp.Key.Substring(6));
 
 					var port = chassis.HdmiInputs[inputNum].HdmiInputPort;
 					// set hdcp disables
