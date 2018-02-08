@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.GeneralIO;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -13,8 +14,10 @@ using PepperDash.Essentials.Core.CrestronIO;
 
 using PepperDash.Essentials.Devices.Common.DSP;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Common.Occupancy;
 
 using PepperDash.Essentials.Devices.Common;
+
 
 namespace PepperDash.Essentials.Devices.Common
 {
@@ -26,6 +29,8 @@ namespace PepperDash.Essentials.Devices.Common
 			var name = dc.Name;
 			var type = dc.Type;
 			var properties = dc.Properties;
+			var propAnon = new {};
+			JsonConvert.DeserializeAnonymousType(dc.Properties.ToString(), propAnon);
 
 			var typeName = dc.Type.ToLower();
 			var groupName = dc.Group.ToLower();
@@ -117,46 +122,46 @@ namespace PepperDash.Essentials.Devices.Common
                 return new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec(key, name, comm, props);
             }
 
-            else if (typeName == "versiportinput")
-            {
-                var props = JsonConvert.DeserializeObject<IOPortConfig>(properties.ToString());
+			//else if (typeName == "versiportinput")
+			//{
+			//    var props = JsonConvert.DeserializeObject<IOPortConfig>(properties.ToString());
 
-                IIOPorts portDevice;
+			//    IIOPorts portDevice;
 
-                if (props.PortDeviceKey == "processor")
-                    portDevice = Global.ControlSystem as IIOPorts;
-                else
-                    portDevice = DeviceManager.GetDeviceForKey(props.PortDeviceKey) as IIOPorts;
+			//    if (props.PortDeviceKey == "processor")
+			//        portDevice = Global.ControlSystem as IIOPorts;
+			//    else
+			//        portDevice = DeviceManager.GetDeviceForKey(props.PortDeviceKey) as IIOPorts;
 
-                if(portDevice == null)
-                    Debug.Console(0, "Unable to add versiport device with key '{0}'. Port Device does not support versiports", key);
-                else
-                {
-                    var cs = (portDevice as CrestronControlSystem);
+			//    if(portDevice == null)
+			//        Debug.Console(0, "Unable to add versiport device with key '{0}'. Port Device does not support versiports", key);
+			//    else
+			//    {
+			//        var cs = (portDevice as CrestronControlSystem);
 
-                    if (cs != null)
-                        if (cs.SupportsVersiport && props.PortNumber <= cs.NumberOfVersiPorts)
-                        {
-                            Versiport versiport = cs.VersiPorts[props.PortNumber];
+			//        if (cs != null)
+			//            if (cs.SupportsVersiport && props.PortNumber <= cs.NumberOfVersiPorts)
+			//            {
+			//                Versiport versiport = cs.VersiPorts[props.PortNumber];
 
-                            if(!versiport.Registered)
-                            {
-                                if (versiport.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
-                                    return new GenericVersiportInputDevice(key, versiport);
-                                else
-                                    Debug.Console(0, "Attempt to register versiport {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
-                            }
-                        }
+			//                if(!versiport.Registered)
+			//                {
+			//                    if (versiport.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+			//                        return new GenericVersiportInputDevice(key, versiport);
+			//                    else
+			//                        Debug.Console(0, "Attempt to register versiport {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
+			//                }
+			//            }
 
-                    // Future: Check if portDevice is 3-series card or other non control system that supports versiports
+			//        // Future: Check if portDevice is 3-series card or other non control system that supports versiports
                             
-                }
-            }
+			//    }
+			//}
 
             else if (typeName == "digitalinput")
             {
                 var props = JsonConvert.DeserializeObject<IOPortConfig>(properties.ToString());
-
+				
                 IDigitalInputPorts portDevice;
 
                 if (props.PortDeviceKey == "processor")
@@ -165,25 +170,70 @@ namespace PepperDash.Essentials.Devices.Common
                     portDevice = DeviceManager.GetDeviceForKey(props.PortDeviceKey) as IDigitalInputPorts;
 
                 if (portDevice == null)
-                    Debug.Console(0, "Unable to add digital input device with key '{0}'. Port Device does not support digital inputs", key);
+                    Debug.Console(0, "ERROR: Unable to add digital input device with key '{0}'. Port Device does not support digital inputs", key);
                 else
                 {
                     var cs = (portDevice as CrestronControlSystem);
+					if (cs == null)
+					{
+						Debug.Console(0, "ERROR: Port device for [{0}] is not control system", props.PortDeviceKey);
+						return null;
+					}
 
-                    if (cs != null)
-                        if (cs.SupportsDigitalInput && props.PortNumber <= cs.NumberOfDigitalInputPorts)
+                    if (cs.SupportsVersiport)
+					{
+                        Debug.Console(1, "Attempting to add Digital Input device to Versiport port '{0}'", props.PortNumber);
+
+						if (props.PortNumber > cs.NumberOfVersiPorts)
+						{
+							Debug.Console(0, "WARNING: Cannot add Vesiport {0} on {1}. Out of range",
+								props.PortNumber, props.PortDeviceKey);
+							return null;
+						}
+
+						Versiport vp = cs.VersiPorts[props.PortNumber];
+
+						if (!vp.Registered)
+						{
+							var regSuccess = vp.Register();
+							if (regSuccess == eDeviceRegistrationUnRegistrationResponse.Success)
+							{                                    
+                                Debug.Console(1, "Successfully Created Digital Input Device on Versiport");
+								return new GenericVersiportDigitalInputDevice(key, vp, props);
+							}
+							else
+							{
+								Debug.Console(0, "WARNING: Attempt to register versiport {0} on device with key '{1}' failed: {2}",
+									props.PortNumber, props.PortDeviceKey, regSuccess);
+								return null;
+							}
+						}
+					}
+                    else if (cs.SupportsDigitalInput)
                         {
+                            Debug.Console(1, "Attempting to add Digital Input device to Digital Input port '{0}'", props.PortNumber);
+
+                            if (props.PortNumber > cs.NumberOfDigitalInputPorts)
+                            {
+                                Debug.Console(0, "WARNING: Cannot register DIO port {0} on {1}. Out of range",
+                                    props.PortNumber, props.PortDeviceKey);
+                                return null;
+                            }
+
                             DigitalInput digitalInput = cs.DigitalInputPorts[props.PortNumber];
 
                             if (!digitalInput.Registered)
                             {
-                                if(digitalInput.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+                                if (digitalInput.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+                                {
+                                    Debug.Console(1, "Successfully Created Digital Input Device on Digital Input");
                                     return new GenericDigitalInputDevice(key, digitalInput);
+                                }
                                 else
-                                    Debug.Console(0, "Attempt to register digital input {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
+                                    Debug.Console(0, "WARNING: Attempt to register digital input {0} on device with key '{1}' failed.",
+                                        props.PortNumber, props.PortDeviceKey);
                             }
                         }
-                    // Future: Check if portDevice is 3-series card or other non control system that supports versiports
                 }
             }
 
@@ -204,14 +254,14 @@ namespace PepperDash.Essentials.Devices.Common
                 {
                     var cs = (portDevice as CrestronControlSystem);
 
-                    if(cs != null)
+                    if (cs != null)
                         if (cs.SupportsRelay && props.PortNumber <= cs.NumberOfRelayPorts)
                         {
                             Relay relay = cs.RelayPorts[props.PortNumber];
 
                             if (!relay.Registered)
                             {
-                                if(relay.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+                                if (relay.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
                                     return new GenericRelayDevice(key, relay);
                                 else
                                     Debug.Console(0, "Attempt to register relay {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
@@ -246,6 +296,34 @@ namespace PepperDash.Essentials.Devices.Common
             {
                 var irCont = IRPortHelper.GetIrOutputPortController(dc);
                 return new Roku2(key, name, irCont);
+            }
+
+            else if (typeName == "glsoirccn")
+            {
+                var comm = CommFactory.GetControlPropertiesConfig(dc);
+
+                GlsOccupancySensorBase occSensor = null;
+
+                occSensor = new GlsOirCCn(comm.CresnetIdInt, Global.ControlSystem);
+
+                if (occSensor != null)
+                    return new EssentialsGlsOccupancySensorBaseController(key, name, occSensor);
+                else
+                    Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
+            }
+
+            else if (typeName == "glsodtccn")
+            {
+                var comm = CommFactory.GetControlPropertiesConfig(dc);
+
+                GlsOccupancySensorBase occSensor = null;
+
+                occSensor = new GlsOdtCCn(comm.CresnetIdInt, Global.ControlSystem);
+
+                if (occSensor != null)
+                    return new EssentialsGlsOccupancySensorBaseController(key, name, occSensor);
+                else
+                    Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
             }
 
 			return null;

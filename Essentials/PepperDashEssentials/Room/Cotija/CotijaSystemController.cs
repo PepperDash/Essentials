@@ -19,7 +19,7 @@ namespace PepperDash.Essentials
     {
         GenericHttpSseClient SseClient;
 
-        CCriticalSection FileLock;
+		//CCriticalSection FileLock;
 
 		/// <summary>
 		/// Prevents post operations from stomping on each other and getting lost
@@ -44,7 +44,7 @@ namespace PepperDash.Essentials
 
         string SystemUuid;
 
-        public List<CotijaEssentialsHuddleSpaceRoomBridge> CotijaRooms { get; private set; }
+        public List<CotijaBridgeBase> CotijaRooms { get; private set; }
 
         long ButtonHeartbeatInterval = 1000;
 
@@ -60,7 +60,7 @@ namespace PepperDash.Essentials
             Config = config;
 			Debug.Console(0, this, "Mobile UI controller initializing for server:{0}", config.ServerUrl);
 
-            CotijaRooms = new List<CotijaEssentialsHuddleSpaceRoomBridge>();
+            CotijaRooms = new List<CotijaBridgeBase>();
 
 			//CrestronConsole.AddNewConsoleCommand(s => RegisterSystemToServer(), 
 			//    "CotiInitializeHttpClient", "Initializes a new HTTP client connection to a specified URL", ConsoleAccessLevelEnum.AccessOperator);
@@ -153,34 +153,37 @@ namespace PepperDash.Essentials
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
         void RegisterSystemToServer()
         {
+#warning THIS SHOULD NOT GO until the config is ready - in cases of config populated from elsewhere (DDVC)
 			try
             {
                 string filePath = string.Format(@"\NVRAM\Program{0}\configurationFile.json", Global.ControlSystem.ProgramNumber);
-                string postBody = null;
+				var confObject = ConfigReader.ConfigObject;
+				string postBody = JsonConvert.SerializeObject(confObject);
+				SystemUuid = confObject.SystemUuid;
 
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    Debug.Console(0, this, "Error reading file.  No path specified.");
-                    return;
-                }
+				//if (string.IsNullOrEmpty(filePath))
+				//{
+				//    Debug.Console(0, this, "Error reading file.  No path specified.");
+				//    return;
+				//}
 
-                FileLock = new CCriticalSection();
-#warning NEIL I think we need to review this usage. Don't think it ever blocks
+//                FileLock = new CCriticalSection();
+//#warning NEIL I think we need to review this usage. Don't think it ever blocks
 
-				if (FileLock.TryEnter())
-                {
-                    Debug.Console(1, this, "Reading configuration file to extract system UUID...");
+//                if (FileLock.TryEnter())
+//                {
+//                    Debug.Console(1, this, "Reading configuration file to extract system UUID...");
 
-                    postBody = File.ReadToEnd(filePath, Encoding.ASCII);
+//                    postBody = File.ReadToEnd(filePath, Encoding.ASCII);
 
-                    Debug.Console(2, this, "{0}", postBody);
+//                    Debug.Console(2, this, "{0}", postBody);
 
-                    FileLock.Leave();
-                }
+//                    FileLock.Leave();
+//                }
 
                 if (string.IsNullOrEmpty(postBody))
                 {
-                    Debug.Console(1, "Post Body is null or empty");
+                    Debug.Console(1, this, "ERROR: Config post body is empty. Cannot register with server.");
                 }
                 else
                 {
@@ -188,11 +191,9 @@ namespace PepperDash.Essentials
 		                Client = new HttpClient();
 					Client.Verbose = true;
 					Client.KeepAlive = true;
-	
-                    SystemUuid = Essentials.ConfigReader.ConfigObject.SystemUuid;
 
-                    string url = string.Format("http://{0}/api/system/join/{1}", Config.ServerUrl, SystemUuid);
-					Debug.Console(1, this, "Sending config to {0}", url);
+					string url = string.Format("http://{0}/api/system/join/{1}", Config.ServerUrl, SystemUuid);
+					Debug.Console(1, this, "Joining server at {0}", url);
 
                     HttpClientRequest request = new HttpClientRequest();
                     request.Url.Parse(url);
@@ -200,13 +201,13 @@ namespace PepperDash.Essentials
                     request.Header.SetHeaderValue("Content-Type", "application/json");
                     request.ContentString = postBody;
 
-					Client.DispatchAsync(request, PostConnectionCallback);
+					var err = Client.DispatchAsync(request, PostConnectionCallback);
                 }
 
             }
             catch (Exception e)
             {
-                Debug.Console(0, this, "Error Initilizing Room: {0}", e);
+                Debug.Console(0, this, "ERROR: Initilizing Room: {0}", e);
             }
 
         }
@@ -316,6 +317,7 @@ namespace PepperDash.Essentials
         /// <param name="err"></param>
         void PostConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
         {
+			Debug.Console(1, this, "PostConnectionCallback err: {0}", err);
             try
             {
                 if (resp != null && resp.Code == 200)
@@ -326,11 +328,7 @@ namespace PepperDash.Essentials
                         ServerReconnectTimer = null;
                     }
 
-#warning The SSE Client from a previous session might need to be killed...
-					//if (SseClient == null)
-					//{
-                        ConnectSseClient(null);
-					//}
+                    ConnectSseClient(null);
                 }
                 else
                 {

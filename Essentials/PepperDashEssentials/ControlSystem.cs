@@ -10,6 +10,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
+using PepperDash.Essentials.Room.Cotija;
 
 namespace PepperDash.Essentials
 {
@@ -42,6 +43,21 @@ namespace PepperDash.Essentials
             },
             "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
 
+			CrestronConsole.AddNewConsoleCommand(s =>
+			{
+				CrestronConsole.ConsoleCommandResponse
+					("Current running configuration. This is the merged system and template configuration");
+				CrestronConsole.ConsoleCommandResponse(Newtonsoft.Json.JsonConvert.SerializeObject
+					(ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
+			}, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
+
+			CrestronConsole.AddNewConsoleCommand(s =>
+				{
+					CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r" +
+						"System URL:   {0}\r" +
+						"Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
+				}, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
+
             GoWithLoad();
 		}
 
@@ -67,8 +83,6 @@ namespace PepperDash.Essentials
 						return;
 
 					Load();
-
-					DeviceManager.ActivateAll();
 					Debug.Console(0, "Essentials load complete\r" +
 						"-------------------------------------------------------------");
 				}
@@ -147,6 +161,8 @@ namespace PepperDash.Essentials
 			LoadTieLines();
 			LoadRooms();
 			LoadLogoServer();
+
+			DeviceManager.ActivateAll();
 		}
 
 
@@ -157,28 +173,35 @@ namespace PepperDash.Essentials
 		{
 			foreach (var devConf in ConfigReader.ConfigObject.Devices)
 			{
-				Debug.Console(0, "Creating device '{0}'", devConf.Key);
-				// Skip this to prevent unnecessary warnings
-				if (devConf.Key == "processor")
-					continue;
-				
-				// Try local factory first
-				var newDev = DeviceFactory.GetDevice(devConf);
 
-				// Then associated library factories
-				if (newDev == null)
-					newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
-				if (newDev == null)
-					newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
-				if (newDev == null)
-					newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
+				try
+				{
+					Debug.Console(0, "Creating device '{0}'", devConf.Key);
+					// Skip this to prevent unnecessary warnings
+					if (devConf.Key == "processor")
+						continue;
 
-				if (newDev != null)
-					DeviceManager.AddDevice(newDev);
-				else
-					Debug.Console(0, "WARNING: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
+					// Try local factory first
+					var newDev = DeviceFactory.GetDevice(devConf);
+
+					// Then associated library factories
+					if (newDev == null)
+						newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
+					if (newDev == null)
+						newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
+					if (newDev == null)
+						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
+
+					if (newDev != null)
+						DeviceManager.AddDevice(newDev);
+					else
+						Debug.Console(0, "ERROR: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
+				}
+				catch (Exception e)
+				{
+					Debug.Console(0, "ERROR: Creating device {0}. Skipping device. \r{1}", devConf.Key, e);
+				} 
 			}
-
 		}
 
 		/// <summary>
@@ -204,6 +227,12 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public void LoadRooms()
 		{
+			if (ConfigReader.ConfigObject.Rooms == null)
+			{
+				Debug.Console(0, "WARNING: Configuration contains no rooms");
+				return;
+			}
+
 			foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
 			{
 				var room = roomConfig.GetRoomObject();
@@ -216,12 +245,9 @@ namespace PepperDash.Essentials
                         Debug.Console(1, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(new EssentialsHuddleSpaceFusionSystemControllerBase((EssentialsHuddleSpaceRoom)room, 0xf1));
 
-                        var cotija = DeviceManager.GetDeviceForKey("cotijaServer") as CotijaSystemController;
-
-                        if (cotija != null)
-                        {
-                            cotija.CotijaRooms.Add(new CotijaEssentialsHuddleSpaceRoomBridge(cotija, room as EssentialsHuddleSpaceRoom));
-                        }
+						Debug.Console(0, "******* RE-ENABLE COTIJA PROPERLY *******");
+						//var bridge = new CotijaEssentialsHuddleSpaceRoomBridge(room as EssentialsHuddleSpaceRoom);
+						//AddBridgePostActivationHelper(bridge);
                     }
                     else if (room is EssentialsHuddleVtc1Room)
                     {
@@ -229,7 +255,7 @@ namespace PepperDash.Essentials
 
                         Debug.Console(1, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
-                    }
+                    }					
                     else
                     {
                         Debug.Console(1, "Room is NOT EssentialsHuddleSpaceRoom, attempting to add to DeviceManager w/o Fusion");
@@ -243,11 +269,29 @@ namespace PepperDash.Essentials
 		}
 
 		/// <summary>
+		/// Helps add the post activation steps that link bridges to main controller
+		/// </summary>
+		/// <param name="bridge"></param>
+		void AddBridgePostActivationHelper(CotijaBridgeBase bridge)
+		{
+			bridge.AddPostActivationAction(() =>
+			{
+				var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "cotijaServer") as CotijaSystemController;
+				if (parent == null)
+				{
+					Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
+				}
+				Debug.Console(0, bridge, "Linking to parent controller");
+				bridge.AddParent(parent);
+				parent.CotijaRooms.Add(bridge);
+			});
+		}
+
+		/// <summary>
 		/// Fires up a logo server if not already running
 		/// </summary>
 		void LoadLogoServer()
 		{
-
 			try
 			{
 				LogoServer = new HttpLogoServer(8080, @"\html\logo");

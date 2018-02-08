@@ -10,6 +10,6 @@ namespace PepperDash.Essentials.Core.CrestronIO
     {
         public string PortDeviceKey { get; set; }
         public uint PortNumber { get; set; }
+        public bool DisablePullUpResistor { get; set; }
     }
-
 }

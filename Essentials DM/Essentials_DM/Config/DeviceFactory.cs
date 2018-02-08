@@ -47,6 +47,13 @@ namespace PepperDash.Essentials.DM
 				return PepperDash.Essentials.DM.DmRmcHelper.GetDmRmcController(key, name, type, props);
 			}
 
+			else if (typeName.Equals("hdmd4x14ke"))
+			{
+				var props = JsonConvert.DeserializeObject
+					<PepperDash.Essentials.DM.Config.HdMdNxM4kEPropertiesConfig>(properties.ToString());
+				return PepperDash.Essentials.DM.Chassis.HdMdNxM4kEController.GetController(key, name, type, props);
+			}
+
 			return null;
 		}
 

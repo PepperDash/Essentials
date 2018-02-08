@@ -18,7 +18,7 @@ namespace PepperDash.Essentials
 
 		public static bool LoadConfig2()
 		{
-			Debug.Console(0, "Using unmerged system/template configs.");
+			Debug.Console(0, "Loading unmerged system/template portal configuration file.");
 			try
 			{
 				var filePath = string.Format(@"\NVRAM\program{0}\ConfigurationFile.json", 
@@ -35,7 +35,7 @@ namespace PepperDash.Essentials
 					var doubleObj = JObject.Parse(fs.ReadToEnd());
 					ConfigObject = MergeConfigs(doubleObj).ToObject<EssentialsConfig>();
 
-                    // Extract SystemUrl and TemplateUrl
+                    // Extract SystemUrl and TemplateUrl into final config output
 
                     if (doubleObj["system_url"] != null)
                     {
@@ -83,7 +83,7 @@ namespace PepperDash.Essentials
 			else
 				merged.Add("sourceLists", Merge(template["sourceLists"], system["sourceLists"]));
 
-            // Template tie lines take precdence.  Config tool probably can't do them at system
+            // Template tie lines take precdence.  Config tool doesn't do them at system
             // level anyway...
 			if (template["tieLines"] != null)
 				merged.Add("tieLines", template["tieLines"]);
@@ -92,7 +92,7 @@ namespace PepperDash.Essentials
 			else
 				merged.Add("tieLines", new JArray());
 
-			//Debug.Console(0, "MERGED RESULT: \x0d\x0a{0}", merged);
+			Debug.Console(2, "MERGED CONFIG RESULT: \x0d\x0a{0}", merged);
 			return merged;
 		}
 
@@ -141,7 +141,6 @@ namespace PepperDash.Essentials
 		/// <param name="b"></param>
 		static JObject Merge(JObject o1, JObject o2)
 		{
-			//Console.WriteLine("Merging {0}\ronto {1}", o2, o1);
 			foreach (var o2Prop in o2)
 			{
 				var o1Value = o1[o2Prop.Key];
@@ -160,6 +159,11 @@ namespace PepperDash.Essentials
 			return o1;
 		}
 
+		/// <summary>
+		/// Returns the group for a given device key in config
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
         public static string GetGroupForDeviceKey(string key)
         {
             var dev = ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));

@@ -74,6 +74,13 @@ namespace PepperDash.Essentials
         /// </summary>
         protected abstract Func<bool> OnFeedbackFunc { get; }
 
+		protected Dictionary<IBasicVolumeWithFeedback, uint> SavedVolumeLevels = new Dictionary<IBasicVolumeWithFeedback, uint>();
+
+		/// <summary>
+		/// When volume control devices change, should we zero the one that we are leaving?
+		/// </summary>
+		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; private set; }
+
         /// <summary>
         /// 
         /// </summary>
@@ -123,8 +130,11 @@ namespace PepperDash.Essentials
                     StartRoomVacancyTimer(eVacancyMode.InShutdownWarning);
                     break;
                 case eVacancyMode.InShutdownWarning:
-                    StartShutdown(eShutdownType.Vacancy);
-                    break;
+                    {
+                        StartShutdown(eShutdownType.Vacancy);
+                        Debug.Console(0, this, "Shutting Down due to vacancy.");
+                        break;
+                    }
                 default:
                     break;
             }
@@ -154,6 +164,8 @@ namespace PepperDash.Essentials
                 RoomVacancyShutdownTimer.SecondsToCount = RoomVacancyShutdownSeconds;
             VacancyMode = mode;
             RoomVacancyShutdownTimer.Start();
+
+            Debug.Console(0, this, "Vacancy Timer Started.");
         }
 
         /// <summary>
@@ -181,11 +193,20 @@ namespace PepperDash.Essentials
         /// Sets the object to be used as the IOccupancyStatusProvider for the room. Can be an Occupancy Aggregator or a specific device
         /// </summary>
         /// <param name="statusProvider"></param>
-        public void SetRoomOccupancy(IOccupancyStatusProvider statusProvider)
+        public void SetRoomOccupancy(IOccupancyStatusProvider statusProvider, int timeoutMinutes)
         {
+			if (statusProvider == null)
+			{
+				Debug.Console(0, this, "ERROR: Occupancy sensor device is null");
+				return;
+			}
+
             // If status provider is fusion, set flag to remote
             if (statusProvider is PepperDash.Essentials.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase)
                 OccupancyStatusProviderIsRemote = true;
+
+            if(timeoutMinutes > 0)
+                RoomVacancyShutdownSeconds = timeoutMinutes * 60;
 
             RoomOccupancy = statusProvider;
 
@@ -194,18 +215,25 @@ namespace PepperDash.Essentials
 
         void RoomIsOccupiedFeedback_OutputChange(object sender, EventArgs e)
         {
-            if ((sender as IOccupancyStatusProvider).RoomIsOccupiedFeedback.BoolValue == false)
+            if (RoomOccupancy.RoomIsOccupiedFeedback.BoolValue == false)
             {
+                Debug.Console(1, this, "Notice: Vacancy Detected");
                 // Trigger the timer when the room is vacant
                 StartRoomVacancyTimer(eVacancyMode.InInitialVacancy);
             }
             else
             {
+                Debug.Console(1, this, "Notice: Occupancy Detected");
                 // Reset the timer when the room is occupied
-                if(RoomVacancyShutdownTimer.IsRunningFeedback.BoolValue)
+
                     RoomVacancyShutdownTimer.Cancel();
             }
         }
+
+		//void SwapVolumeDevices(IBasicVolumeControls currentDevice, IBasicVolumeControls newDevice)
+		//{
+
+		//}
 
         /// <summary>
         /// Executes when RoomVacancyShutdownTimer expires.  Used to trigger specific room actions as needed.  Must nullify the timer object when executed

@@ -1208,11 +1208,20 @@ namespace PepperDash.Essentials.Fusion
         {
             RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
 
+            FusionRoom.FusionAssetStateChange += new FusionAssetStateEventHandler(FusionRoom_FusionAssetStateChange);
+
             // Build Occupancy Asset?
             // Link sigs?
 
-            Room.SetRoomOccupancy(this);
+            //Room.SetRoomOccupancy(this as IOccupancyStatusProvider, 0);
 
+
+        }
+
+        void FusionRoom_FusionAssetStateChange(FusionBase device, FusionAssetStateEventArgs args)
+        {
+            if (args.EventId == FusionAssetEventId.RoomOccupiedReceivedEventId || args.EventId == FusionAssetEventId.RoomUnoccupiedReceivedEventId)
+                RoomIsOccupiedFeedback.FireUpdate();
 
         }
 

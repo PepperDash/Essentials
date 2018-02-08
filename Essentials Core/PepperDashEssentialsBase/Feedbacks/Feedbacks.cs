@@ -19,6 +19,14 @@ namespace PepperDash.Essentials.Core
 
 		public abstract eCueType Type { get; }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		public bool InTestMode { get; protected set; }
+
+		/// <summary>
+		/// Base Constructor - empty
+		/// </summary>
 		protected Feedback()
 		{
 		}
@@ -26,6 +34,15 @@ namespace PepperDash.Essentials.Core
 		protected Feedback(Cue cue)
 		{
 			Cue = cue;
+		}
+
+		/// <summary>
+		/// Clears test mode and fires update.
+		/// </summary>
+		public void ClearTestValue()
+		{
+			InTestMode = false;
+			FireUpdate();
 		}
 
 		/// <summary>
@@ -60,11 +77,16 @@ namespace PepperDash.Essentials.Core
 
 		public override eCueType Type { get { return eCueType.Bool; } }
 
+		/// <summary>
+		/// Fake value to be used in test mode
+		/// </summary>
+		public bool TestValue { get; private set; }
+
+		/// <summary>
+		/// Func that evaluates on FireUpdate
+		/// </summary>
 		public Func<bool> ValueFunc { get; private set; }
-        /// <summary>
-        /// The last value delivered on FireUpdate
-        /// </summary>
-        //public bool PreviousValue { get; private set; }
+
 		List<BoolInputSig> LinkedInputSigs = new List<BoolInputSig>();
 		List<BoolInputSig> LinkedComplementInputSigs = new List<BoolInputSig>();
 
@@ -82,7 +104,7 @@ namespace PepperDash.Essentials.Core
 
 		public override void FireUpdate()
 		{
-            var newValue = ValueFunc.Invoke();
+			bool newValue = InTestMode ? TestValue : ValueFunc.Invoke();
             if (newValue != _BoolValue)
             {
                 _BoolValue = newValue;
@@ -116,8 +138,19 @@ namespace PepperDash.Essentials.Core
 
         public override string ToString()
         {
-            return BoolValue.ToString();
+			return (InTestMode ? "TEST -- " : "") + BoolValue.ToString();
         }
+
+		/// <summary>
+		/// Puts this in test mode, sets the test value and fires an update.
+		/// </summary>
+		/// <param name="value"></param>
+		public void SetTestValue(bool value)
+		{
+			TestValue = value;
+			InTestMode = true;
+			FireUpdate();
+		}
 
 		void UpdateSig(BoolInputSig sig)
 		{
@@ -137,8 +170,12 @@ namespace PepperDash.Essentials.Core
         int _IntValue;
         public ushort UShortValue { get { return (ushort)_IntValue; } }
 		public override eCueType Type { get { return eCueType.Int; } }
-        //public int PreviousValue { get; private set; }
 
+		public int TestValue { get; private set; }
+
+		/// <summary>
+		/// Func evaluated on FireUpdate
+		/// </summary>
 		Func<int> ValueFunc;
 		List<UShortInputSig> LinkedInputSigs = new List<UShortInputSig>();
 
@@ -156,7 +193,7 @@ namespace PepperDash.Essentials.Core
 
 		public override void FireUpdate()
 		{
-            var newValue = ValueFunc.Invoke();
+			var newValue = InTestMode ? TestValue : ValueFunc.Invoke();
             if (newValue != _IntValue)
             {
                 _IntValue = newValue;
@@ -178,8 +215,19 @@ namespace PepperDash.Essentials.Core
 
         public override string ToString()
         {
-            return IntValue.ToString();
+			return (InTestMode ? "TEST -- " : "") + IntValue.ToString();
         }
+
+		/// <summary>
+		/// Puts this in test mode, sets the test value and fires an update.
+		/// </summary>
+		/// <param name="value"></param>
+		public void SetTestValue(int value)
+		{
+			TestValue = value;
+			InTestMode = true;
+			FireUpdate();
+		}
 
 		void UpdateSig(UShortInputSig sig)
 		{
@@ -194,7 +242,15 @@ namespace PepperDash.Essentials.Core
         public override string StringValue { get { return _StringValue; } } // ValueFunc.Invoke(); } }
         string _StringValue;
 		public override eCueType Type { get { return eCueType.String; } }
-        //public string PreviousValue { get; private set; }
+
+		/// <summary>
+		/// Used in testing.  Set/Clear functions
+		/// </summary>
+		public string TestValue { get; private set; }
+
+		/// <summary>
+		/// Evalutated on FireUpdate
+		/// </summary>
 		public Func<string> ValueFunc { get; private set; }
 		List<StringInputSig> LinkedInputSigs = new List<StringInputSig>();
 
@@ -213,7 +269,7 @@ namespace PepperDash.Essentials.Core
 
 		public override void FireUpdate()
 		{
-            var newValue = ValueFunc.Invoke();
+            var newValue = InTestMode ? TestValue : ValueFunc.Invoke();
             if (newValue != _StringValue)
             {
                 _StringValue = newValue;
@@ -235,8 +291,19 @@ namespace PepperDash.Essentials.Core
 
         public override string ToString()
         {
-            return StringValue;    
+            return (InTestMode ? "TEST -- " : "") + StringValue;    
         }
+
+		/// <summary>
+		/// Puts this in test mode, sets the test value and fires an update.
+		/// </summary>
+		/// <param name="value"></param>
+		public void SetTestValue(string value)
+		{
+			TestValue = value;
+			InTestMode = true;
+			FireUpdate();
+		}
 
 		void UpdateSig(StringInputSig sig)
 		{

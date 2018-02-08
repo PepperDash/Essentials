@@ -38,16 +38,16 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public override bool CustomActivate()
 		{
-            new CTimer(o =>
+            Debug.Console(0, this, "Activating");
+            var response = Hardware.RegisterWithLogging(Key);
+            if (response != eDeviceRegistrationUnRegistrationResponse.Success)
             {
-                Debug.Console(1, this, "Activating");
-                var response = Hardware.RegisterWithLogging(Key);
-                if (response == eDeviceRegistrationUnRegistrationResponse.Success)
-                {
-                    Hardware.OnlineStatusChange += new OnlineStatusChangeEventHandler(Hardware_OnlineStatusChange);
-                    CommunicationMonitor.Start();
-                }
-            }, 0);
+                Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
+                return false;
+            }
+            Hardware.OnlineStatusChange += new OnlineStatusChangeEventHandler(Hardware_OnlineStatusChange);
+            CommunicationMonitor.Start();    
+
 			return true;
 		}
 

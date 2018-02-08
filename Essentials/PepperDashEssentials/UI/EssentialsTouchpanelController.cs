@@ -87,8 +87,8 @@ namespace PepperDash.Essentials
                             += ExtenderSystemReservedSigs_DeviceExtenderSigChange;
                     }
 
-                    new CTimer(o =>
-                        {
+					//CrestronInvoke.BeginInvoke(o =>
+					//    {
                             var regSuccess = Panel.Register();
                             if (regSuccess != eDeviceRegistrationUnRegistrationResponse.Success)
                                 Debug.Console(0, this, "WARNING: Registration failed. Continuing, but panel may not function: {0}", regSuccess);
@@ -177,7 +177,7 @@ namespace PepperDash.Essentials
                             {
                                 Debug.Console(0, this, "ERROR: Cannot load AvFunctionsDriver for room '{0}'", props.DefaultRoomKey);
                             }
-                        }, 0);
+						//}, 0);
 				});
 		}
 

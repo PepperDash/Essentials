@@ -22,7 +22,7 @@ namespace PepperDash.Essentials
 		[JsonProperty("template_url")]
         public string TemplateUrl { get; set; }
 
-        public CotijaConfig Cotija { get; private set; }
+		//public CotijaConfig Cotija { get; private set; }
 
         public string SystemUuid
         {
@@ -49,7 +49,7 @@ namespace PepperDash.Essentials
         }
 
 		[JsonProperty("rooms")]
-		public List<EssentialsRoomConfig> Rooms { get; private set; }
+		public List<EssentialsRoomConfig> Rooms { get; set; }
 	}
 
 	/// <summary>
@@ -60,7 +60,5 @@ namespace PepperDash.Essentials
 		public EssentialsConfig System { get; set; }
 
 		public EssentialsConfig Template { get; set; }
-
-        //public CotijaConfig Cotija { get; set; }
 	}
 }

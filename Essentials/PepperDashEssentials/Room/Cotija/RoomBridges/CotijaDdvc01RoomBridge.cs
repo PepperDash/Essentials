@@ -10,10 +10,13 @@ using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Room.Config;
+
 
 namespace PepperDash.Essentials.Room.Cotija
 {
-	public class CotijaDdvc01RoomBridge : Device
+	public class CotijaDdvc01RoomBridge : CotijaBridgeBase, IDelayedConfiguration
 	{
 		public class BoolJoin
 		{
@@ -108,17 +111,28 @@ namespace PepperDash.Essentials.Room.Cotija
 			public const uint ConfigRoomURI = 505;
 		}
 
+		/// <summary>
+		/// Fires when the config is ready, to be used by the controller class to forward config to server
+		/// </summary>
+		public event EventHandler<EventArgs> ConfigurationIsReady;
 
 		public ThreeSeriesTcpIpEthernetIntersystemCommunications EISC { get; private set; }
 
-		CotijaSystemController Parent;
-
+		/// <summary>
+		/// 
+		/// </summary>
 		public bool ConfigIsLoaded { get; private set; }
 
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="name"></param>
+		/// <param name="ipId"></param>
 		public CotijaDdvc01RoomBridge(string key, string name, uint ipId)
 			: base(key, name)
 		{
-			Key = key;
 			try
 			{
 				EISC = new ThreeSeriesTcpIpEthernetIntersystemCommunications(ipId, "127.0.0.2", Global.ControlSystem);
@@ -133,22 +147,23 @@ namespace PepperDash.Essentials.Room.Cotija
 		}
 
 		/// <summary>
-		/// Finish wiring up everything after all devices are created
+		/// Finish wiring up everything after all devices are created. The base class will hunt down the related
+		/// parent controller and link them up.
 		/// </summary>
 		/// <returns></returns>
 		public override bool CustomActivate()
 		{
-			
-			Parent = DeviceManager.AllDevices.FirstOrDefault(d => d is CotijaSystemController) as CotijaSystemController;
-			if (Parent == null)
-			{
-				Debug.Console(0, this, "ERROR: Cannot build CotijaDdvc01RoomBridge. System controller not present");
-				return false;
-			}
-
 			SetupFunctions();
 			SetupFeedbacks();
 			EISC.SigChange += EISC_SigChange;
+			EISC.OnlineStatusChange += (o, a) =>
+			{
+				if (a.DeviceOnLine)
+					LoadConfigValues();
+			};
+			// load config if it's already there
+			if (EISC.IsOnline) // || EISC.BooleanInput[BoolJoin.ConfigIsReady].BoolValue)
+				LoadConfigValues();
 			return base.CustomActivate();
 		}
 
@@ -234,8 +249,6 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			// Config things
 			EISC.SetSigTrueAction(BoolJoin.ConfigIsReady, LoadConfigValues);
-
-
 		}
 
 		/// <summary>
@@ -243,7 +256,89 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		void LoadConfigValues()
 		{
+
+			Debug.Console(1, this, "Loading configuration from DDVC01 EISC bridge");
 			ConfigIsLoaded = false;
+
+			var co = ConfigReader.ConfigObject;
+
+			//Room
+			if (co.Rooms == null)
+				co.Rooms = new List<EssentialsRoomConfig>();
+			if (co.Rooms.Count == 0)
+				co.Rooms.Add(new EssentialsRoomConfig());
+			var rm = co.Rooms[0];
+			rm.Name = EISC.StringInput[501].StringValue;
+			rm.Key = "room1";
+			rm.Type = "ddvc01";
+
+			DDVC01RoomPropertiesConfig rmProps;
+			if (rm.Properties == null)
+				rmProps = new DDVC01RoomPropertiesConfig();
+			else
+				rmProps = JsonConvert.DeserializeObject<DDVC01RoomPropertiesConfig>(rm.Properties.ToString());
+			
+			rmProps.Help = new EssentialsHelpPropertiesConfig();
+			rmProps.Help.Message = EISC.StringInput[502].StringValue;
+			rmProps.Help.CallButtonText = EISC.StringInput[503].StringValue;
+			rmProps.RoomPhoneNumber = EISC.StringInput[504].StringValue;
+			rmProps.RoomURI = EISC.StringInput[505].StringValue;
+			rmProps.SpeedDials = new List<DDVC01SpeedDial>();
+			// add speed dials as long as there are more - up to 4
+			for (uint i = 512; i <= 519; i = i + 2)
+			{
+				var num = EISC.StringInput[i].StringValue;
+				if (string.IsNullOrEmpty(num))
+					break;
+				var name = EISC.StringInput[i + 1].StringValue;
+				rmProps.SpeedDials.Add(new DDVC01SpeedDial { Number = num, Name = name});
+			}
+			// volume control names
+			var volCount = EISC.UShortInput[701].UShortValue;
+			rmProps.VolumeSliderNames = new List<string>();
+			for(uint i = 701; i <= 700 + volCount; i++)
+			{
+				rmProps.VolumeSliderNames.Add(EISC.StringInput[i].StringValue);
+			}
+
+			// There should be cotija devices in here, I think...
+			if(co.Devices == null)
+				co.Devices = new List<DeviceConfig>();
+			
+			// Source list! This might be brutal!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			rmProps.SourceListKey = "default";
+			co.SourceLists = new Dictionary<string,Dictionary<string,SourceListItem>>();
+			var newSl = new Dictionary<string, SourceListItem>();
+			// add sources...
+			for (uint i = 0; i<= 19; i++)
+			{
+				var name = EISC.StringInput[601 + i].StringValue;
+				if(string.IsNullOrEmpty(name))
+					break;
+				var icon = EISC.StringInput[651 + i].StringValue;
+				var key = EISC.StringInput[671 + i].StringValue;
+				var type = EISC.StringInput[701 + i].StringValue;
+				var newSLI = new SourceListItem{
+					Icon = icon,
+					Name = name,
+					Order = (int)i + 1,
+					SourceKey = key,
+				};
+				
+				// add dev to devices list
+				var devConf = new DeviceConfig {
+					Group = "ddvc01",
+					Key = key,
+					Name = name,
+					Type = type
+				};
+				co.Devices.Add(devConf);
+			}
+
+			co.SourceLists.Add("default", newSl);
+
+			Debug.Console(0, this, "******* CONFIG FROM DDVC: \r{0}", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
+
 			ConfigIsLoaded = true;
 
 			// send config changed status???

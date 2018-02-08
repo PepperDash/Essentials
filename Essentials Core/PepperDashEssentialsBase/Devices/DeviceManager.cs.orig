@@ -59,6 +59,7 @@ namespace PepperDash.Essentials.Core
 		public static void ActivateAll()
 		{
 			foreach (var d in Devices.Values)
+<<<<<<< HEAD
 			{
 				try
 				{
@@ -70,6 +71,19 @@ namespace PepperDash.Essentials.Core
 					Debug.Console(0, d, "ERROR: Device activation failure:\r{0}", e);
 				}
 			}
+=======
+			{
+                try
+                {
+                    if (d is Device)
+                        (d as Device).Activate();
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(0, d, "ERROR: Device activation failure:\r{0}", e);
+                }
+            }
+>>>>>>> origin/feature/ecs-342-neil
 		}
 
 		/// <summary>

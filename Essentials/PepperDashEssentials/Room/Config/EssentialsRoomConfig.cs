@@ -29,6 +29,10 @@ namespace PepperDash.Essentials.Room.Config
 				var disp = DeviceManager.GetDeviceForKey(props.DefaultDisplayKey) as IRoutingSinkWithSwitching;
 				var audio = DeviceManager.GetDeviceForKey(props.DefaultAudioKey) as IRoutingSinkNoSwitching;
 				var huddle = new EssentialsHuddleSpaceRoom(Key, Name, disp, audio, props);
+
+                if (props.Occupancy != null)
+                    huddle.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as
+                        PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, props.Occupancy.TimoutMinutes);
                 huddle.LogoUrl = props.Logo.GetUrl();
                 huddle.SourceListKey = props.SourceListKey;
                 huddle.DefaultSourceItem = props.DefaultSourceItem;
@@ -67,7 +71,8 @@ namespace PepperDash.Essentials.Room.Config
                 // Add Occupancy object from config
 
                 if (props.Occupancy != null)
-                    rm.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider);
+                    rm.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as
+                        PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, props.Occupancy.TimoutMinutes);
                 rm.LogoUrl = props.Logo.GetUrl();
                 rm.SourceListKey = props.SourceListKey;
                 rm.DefaultSourceItem = props.DefaultSourceItem;
@@ -79,6 +84,10 @@ namespace PepperDash.Essentials.Room.Config
 
                 return rm;
             }
+			else if (typeName == "ddvc01Bridge")
+			{
+				return new Device(Key, Name); // placeholder device that does nothing.
+			}
 
             return null;
 		}
@@ -100,57 +109,69 @@ namespace PepperDash.Essentials.Room.Config
             return null;
         }
 
-        PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController GetMicrophonePrivacy(EssentialsRoomPropertiesConfig props, EssentialsHuddleVtc1Room room)
-        {
-            var microphonePrivacy = props.MicrophonePrivacy;
-            if (microphonePrivacy != null)
-            {
-                // Get the MicrophonePrivacy device from the device manager
-                var mP = (DeviceManager.GetDeviceForKey(props.MicrophonePrivacy.DeviceKey) as PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController);
-                // Set this room as the IPrivacy device
-                if (mP != null)
-                {
-                    mP.SetPrivacyDevice(room);
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="props"></param>
+		/// <param name="room"></param>
+		/// <returns></returns>
+		PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController GetMicrophonePrivacy(
+			EssentialsRoomPropertiesConfig props, EssentialsHuddleVtc1Room room)
+		{
+			var microphonePrivacy = props.MicrophonePrivacy;
+			if (microphonePrivacy == null)
+			{
+				Debug.Console(0, "ERROR: Cannot create microphone privacy with null properties");
+				return null;
+			}
+			// Get the MicrophonePrivacy device from the device manager
+			var mP = (DeviceManager.GetDeviceForKey(props.MicrophonePrivacy.DeviceKey) as
+				PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController);
+			// Set this room as the IPrivacy device
+			if (mP == null)
+			{
+				Debug.Console(0, "ERROR: Selected device {0} is not MicrophonePrivacyController", props.MicrophonePrivacy.DeviceKey);
+				return null;
+			}
+			mP.SetPrivacyDevice(room);
 
-                    var behaviour = props.MicrophonePrivacy.Behaviour.ToLower();
+			var behaviour = props.MicrophonePrivacy.Behaviour.ToLower();
 
-                    if (behaviour != null)
-                    {
-                        if (behaviour == "trackroomstate")
-                        {
-                            // Tie LED enable to room power state
-                            room.OnFeedback.OutputChange += (o, a) =>
-                            {
-                                if (room.OnFeedback.BoolValue)
-                                    mP.EnableLeds = true;
-                                else
-                                    mP.EnableLeds = false;
-                            };
+			if (behaviour == null)
+			{
+				Debug.Console(0, "WARNING: No behaviour defined for MicrophonePrivacyController");
+				return null;
+			}
+			if (behaviour == "trackroomstate")
+			{
+				// Tie LED enable to room power state
+				room.OnFeedback.OutputChange += (o, a) =>
+				{
+					if (room.OnFeedback.BoolValue)
+						mP.EnableLeds = true;
+					else
+						mP.EnableLeds = false;
+				};
 
-                            mP.EnableLeds = room.OnFeedback.BoolValue;
-                        }
-                        else if (behaviour == "trackcallstate")
-                        {
-                            // Tie LED enable to room power state
-                            room.InCallFeedback.OutputChange += (o, a) =>
-                            {
-                                if (room.InCallFeedback.BoolValue)
-                                    mP.EnableLeds = true;
-                                else
-                                    mP.EnableLeds = false;
-                            };
+				mP.EnableLeds = room.OnFeedback.BoolValue;
+			}
+			else if (behaviour == "trackcallstate")
+			{
+				// Tie LED enable to room power state
+				room.InCallFeedback.OutputChange += (o, a) =>
+				{
+					if (room.InCallFeedback.BoolValue)
+						mP.EnableLeds = true;
+					else
+						mP.EnableLeds = false;
+				};
 
-                            mP.EnableLeds = room.InCallFeedback.BoolValue;
-                        }
-                    }
-                    else
-                        Debug.Console(0, "No behaviour defined for MicrophonePrivacyController");
+				mP.EnableLeds = room.InCallFeedback.BoolValue;
+			}
 
-                    return mP;
-                }
-            }
-            return null;
-        }
+			return mP;
+		}
+	
 	}
 
     /// <summary>
@@ -171,6 +192,7 @@ namespace PepperDash.Essentials.Room.Config
         public EssentialsLogoPropertiesConfig Logo { get; set; }
 		public EssentialsRoomTechConfig Tech { get; set; }
         public EssentialsRoomVolumesConfig Volumes { get; set; }
+		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 	}
 
     public class EssentialsRoomMicrophonePrivacyConfig
@@ -239,6 +261,7 @@ namespace PepperDash.Essentials.Room.Config
     public class EssentialsRoomOccSensorConfig
     {
         public string DeviceKey { get; set; }
+        public int TimoutMinutes { get; set; }
     }
 
 	public class EssentialsRoomTechConfig
