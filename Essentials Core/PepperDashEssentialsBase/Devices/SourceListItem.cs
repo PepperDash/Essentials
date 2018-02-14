@@ -23,6 +23,7 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public class SourceListItem
 	{
+		[JsonProperty("sourceKey")]
 		public string SourceKey { get; set; }
 		/// <summary>
 		/// Returns the source Device for this, if it exists in DeviceManager
@@ -43,6 +44,7 @@ namespace PepperDash.Essentials.Core
 		/// Gets either the source's Name or this AlternateName property, if 
 		/// defined.  If source doesn't exist, returns "Missing source"
 		/// </summary>
+		[JsonProperty("preferredName")]
 		public string PreferredName
 		{
 			get
@@ -60,15 +62,34 @@ namespace PepperDash.Essentials.Core
 		/// <summary>
 		/// A name that will override the source's name on the UI
 		/// </summary>
+		[JsonProperty("name")]
 		public string Name { get; set; }
+
+		[JsonProperty("icon")]
 		public string Icon { get; set; }
+
+		[JsonProperty("altIcon")]
 		public string AltIcon { get; set; }
+
+		[JsonProperty("includeInSourceList")]
 		public bool IncludeInSourceList { get; set; }
-        public int Order { get; set; }
+
+		[JsonProperty("order")]
+		public int Order { get; set; }
+
+		[JsonProperty("volumeControlKey")]
 		public string VolumeControlKey { get; set; }
+
+		[JsonProperty("type")]
 		public eSourceListItemType Type { get; set; }
+
+		[JsonProperty("routeList")]
 		public List<SourceRouteListItem> RouteList { get; set; }
+
+		[JsonProperty("disableCodecSharing")]
 		public bool DisableCodecSharing { get; set; }
+
+		[JsonProperty("disableRoutedSharing")]
 		public bool DisableRoutedSharing { get; set; }
 
 		public SourceListItem()

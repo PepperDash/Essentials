@@ -10,16 +10,16 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharp.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Room.Cotija;
 
 namespace PepperDash.Essentials
 {
     public class CotijaSystemController : Device
     {
         GenericHttpSseClient SseClient;
-
-		//CCriticalSection FileLock;
 
 		/// <summary>
 		/// Prevents post operations from stomping on each other and getting lost
@@ -44,7 +44,7 @@ namespace PepperDash.Essentials
 
         string SystemUuid;
 
-        public List<CotijaBridgeBase> CotijaRooms { get; private set; }
+		List<CotijaBridgeBase> RoomBridges = new List<CotijaBridgeBase>();
 
         long ButtonHeartbeatInterval = 1000;
 
@@ -54,23 +54,24 @@ namespace PepperDash.Essentials
 		/// Used to count retries in PostToServer
 		/// </summary>
 		int RetryCounter;
-
+		
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="name"></param>
+		/// <param name="config"></param>
         public CotijaSystemController(string key, string name, CotijaConfig config) : base(key, name)
         {
             Config = config;
 			Debug.Console(0, this, "Mobile UI controller initializing for server:{0}", config.ServerUrl);
 
-            CotijaRooms = new List<CotijaBridgeBase>();
-
-			//CrestronConsole.AddNewConsoleCommand(s => RegisterSystemToServer(), 
-			//    "CotiInitializeHttpClient", "Initializes a new HTTP client connection to a specified URL", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(DisconnectSseClient, 
 				"CloseHttpClient", "Closes the active HTTP client", ConsoleAccessLevelEnum.AccessOperator);
-
 			CrestronConsole.AddNewConsoleCommand(AuthorizeSystem,
 				"cotijaauth", "Authorizes system to talk to cotija server", ConsoleAccessLevelEnum.AccessOperator);
 
-            AddPostActivationAction(() => RegisterSystemToServer());
+			//AddPostActivationAction(() => RegisterSystemToServer());
         }
 
         /// <summary>
@@ -100,6 +101,40 @@ namespace PepperDash.Essentials
                 ActionDictionary.Remove(key);
         }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="bridge"></param>
+		public void AddBridge(CotijaBridgeBase bridge)
+		{
+			RoomBridges.Add(bridge);
+			var b = bridge as IDelayedConfiguration;
+			if (b != null)
+			{
+				b.ConfigurationIsReady += new EventHandler<EventArgs>(bridge_ConfigurationIsReady);
+			}
+			else
+			{
+				RegisterSystemToServer();
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void bridge_ConfigurationIsReady(object sender, EventArgs e)
+		{
+			Debug.Console(1, this, "Bridge ready.  Registering");
+			// send the configuration object to the server
+			RegisterSystemToServer();
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="o"></param>
         void ReconnectToServerTimerCallback(object o)
         {
             RegisterSystemToServer();
@@ -153,33 +188,11 @@ namespace PepperDash.Essentials
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
         void RegisterSystemToServer()
         {
-#warning THIS SHOULD NOT GO until the config is ready - in cases of config populated from elsewhere (DDVC)
 			try
             {
-                string filePath = string.Format(@"\NVRAM\Program{0}\configurationFile.json", Global.ControlSystem.ProgramNumber);
 				var confObject = ConfigReader.ConfigObject;
 				string postBody = JsonConvert.SerializeObject(confObject);
 				SystemUuid = confObject.SystemUuid;
-
-				//if (string.IsNullOrEmpty(filePath))
-				//{
-				//    Debug.Console(0, this, "Error reading file.  No path specified.");
-				//    return;
-				//}
-
-//                FileLock = new CCriticalSection();
-//#warning NEIL I think we need to review this usage. Don't think it ever blocks
-
-//                if (FileLock.TryEnter())
-//                {
-//                    Debug.Console(1, this, "Reading configuration file to extract system UUID...");
-
-//                    postBody = File.ReadToEnd(filePath, Encoding.ASCII);
-
-//                    Debug.Console(2, this, "{0}", postBody);
-
-//                    FileLock.Leave();
-//                }
 
                 if (string.IsNullOrEmpty(postBody))
                 {
@@ -187,8 +200,7 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
-					if(Client == null || NeedNewClient)
-		                Client = new HttpClient();
+					Client = new HttpClient();
 					Client.Verbose = true;
 					Client.KeepAlive = true;
 
@@ -221,6 +233,11 @@ namespace PepperDash.Essentials
         {
 			CrestronInvoke.BeginInvoke(oo => 
 			{
+				if (string.IsNullOrEmpty(SystemUuid))
+				{
+					Debug.Console(1, this, "Status post attempt before UUID is set. Ignoring.");
+					return;
+				}
 				var ready = PostLockEvent.Wait(2000);
 				if (!ready)
 				{
@@ -546,9 +563,7 @@ namespace PepperDash.Essentials
 						{
 							Debug.Console(1, this, "-- Warning: Incoming message has no registered handler");
 						}
-
 					}
-
                 }
                 catch (Exception err)
                 {
@@ -557,6 +572,4 @@ namespace PepperDash.Essentials
             }
         }
     }
-
-    
 }

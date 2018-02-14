@@ -283,7 +283,7 @@ namespace PepperDash.Essentials
 				}
 				Debug.Console(0, bridge, "Linking to parent controller");
 				bridge.AddParent(parent);
-				parent.CotijaRooms.Add(bridge);
+				parent.AddBridge(bridge);
 			});
 		}
 

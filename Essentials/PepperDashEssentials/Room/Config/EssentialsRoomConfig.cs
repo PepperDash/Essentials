@@ -179,26 +179,56 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
 	public class EssentialsRoomPropertiesConfig
 	{
-        public EssentialsRoomEmergencyConfig Emergency { get; set; }
-        public EssentialsRoomMicrophonePrivacyConfig MicrophonePrivacy {get; set;}
+		[JsonProperty("emergency")]
+		public EssentialsRoomEmergencyConfig Emergency { get; set; }
+
+		[JsonProperty("microphonePrivacy")]
+		public EssentialsRoomMicrophonePrivacyConfig MicrophonePrivacy { get; set; }
+
+		[JsonProperty("helpMessage")]
 		public string HelpMessage { get; set; }
-        public string Description { get; set; }
-        public int ShutdownVacancySeconds { get; set; }
-        public int ShutdownPromptSeconds { get; set; }
-        public EssentialsHelpPropertiesConfig Help { get; set; }
-        public EssentialsOneButtonMeetingPropertiesConfig OneButtonMeeting { get; set; }
-        public EssentialsRoomAddressPropertiesConfig Addresses { get; set; }
-        public EssentialsRoomOccSensorConfig Occupancy { get; set; }
-        public EssentialsLogoPropertiesConfig Logo { get; set; }
+
+		[JsonProperty("description")]
+		public string Description { get; set; }
+
+		[JsonProperty("shutdownVacancySeconds")]
+		public int ShutdownVacancySeconds { get; set; }
+
+		[JsonProperty("shutdownPromptSeconds")]
+		public int ShutdownPromptSeconds { get; set; }
+
+		[JsonProperty("help")]
+		public EssentialsHelpPropertiesConfig Help { get; set; }
+
+		[JsonProperty("oneButtonMeeting")]
+		public EssentialsOneButtonMeetingPropertiesConfig OneButtonMeeting { get; set; }
+
+		[JsonProperty("addresses")]
+		public EssentialsRoomAddressPropertiesConfig Addresses { get; set; }
+
+		[JsonProperty("occupancy")]
+		public EssentialsRoomOccSensorConfig Occupancy { get; set; }
+
+		[JsonProperty("logo")]
+		public EssentialsLogoPropertiesConfig Logo { get; set; }
+
+		[JsonProperty("tech")]
 		public EssentialsRoomTechConfig Tech { get; set; }
-        public EssentialsRoomVolumesConfig Volumes { get; set; }
+
+		[JsonProperty("volumes")]
+		public EssentialsRoomVolumesConfig Volumes { get; set; }
+
+		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 	}
 
     public class EssentialsRoomMicrophonePrivacyConfig
     {
-        public string DeviceKey { get; set; }
-        public string Behaviour { get; set; }
+		[JsonProperty("deviceKey")]
+		public string DeviceKey { get; set; }
+
+		[JsonProperty("behaviour")]
+		public string Behaviour { get; set; }
     }
 
     /// <summary>
@@ -206,12 +236,17 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsHelpPropertiesConfig
     {
-        public string Message { get; set; }
-        public bool ShowCallButton { get; set; }
-        /// <summary>
+		[JsonProperty("message")]
+		public string Message { get; set; }
+
+		[JsonProperty("showCallButton")]
+		public bool ShowCallButton { get; set; }
+        
+		/// <summary>
         /// Defaults to "Call Help Desk"
         /// </summary>
-        public string CallButtonText { get; set; }
+		[JsonProperty("callButtonText")]
+		public string CallButtonText { get; set; }
 
         public EssentialsHelpPropertiesConfig()
         {
@@ -224,13 +259,17 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsOneButtonMeetingPropertiesConfig
     {
-        public bool Enable { get; set; }
+		[JsonProperty("enable")]
+		public bool Enable { get; set; }
     }
 
     public class EssentialsRoomAddressPropertiesConfig
     {
-        public string PhoneNumber { get; set; }
-        public string SipAddress { get; set; }
+		[JsonProperty("phoneNumber")]
+		public string PhoneNumber { get; set; }
+
+		[JsonProperty("sipAddress")]
+		public string SipAddress { get; set; }
     }
 
 
@@ -239,8 +278,11 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsLogoPropertiesConfig
     {
-        public string Type { get; set; }
-        public string Url { get; set; }
+		[JsonProperty("type")]
+		public string Type { get; set; }
+
+		[JsonProperty("url")]
+		public string Url { get; set; }
         /// <summary>
         /// Gets either the custom URL, a local-to-processor URL, or null if it's a default logo
         /// </summary>
@@ -260,13 +302,16 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
     public class EssentialsRoomOccSensorConfig
     {
-        public string DeviceKey { get; set; }
-        public int TimoutMinutes { get; set; }
+		[JsonProperty("deviceKey")]
+		public string DeviceKey { get; set; }
+
+		[JsonProperty("timoutMinutes")]
+		public int TimoutMinutes { get; set; }
     }
 
 	public class EssentialsRoomTechConfig
 	{
+		[JsonProperty("password")]
 		public string Password { get; set; }
 	}
-
 }

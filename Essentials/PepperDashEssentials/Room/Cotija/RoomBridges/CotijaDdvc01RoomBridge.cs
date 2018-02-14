@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Room.Cotija
 		public class BoolJoin
 		{
 			/// <summary>
-			/// 2
+			/// 301
 			/// </summary>
 			public const uint RoomIsOn = 301;
 
@@ -39,11 +39,11 @@ namespace PepperDash.Essentials.Room.Cotija
 			public const uint ActivityVideoCallPress = 53;
 
 			/// <summary>
-			/// 4
+			/// 1
 			/// </summary>
 			public const uint MasterVolumeIsMuted = 1;
 			/// <summary>
-			/// 4
+			/// 1
 			/// </summary>
 			public const uint MasterVolumeMuteToggle = 1;
 
@@ -63,7 +63,7 @@ namespace PepperDash.Essentials.Room.Cotija
 
 
 			/// <summary>
-			/// 71
+			/// 72
 			/// </summary>
 			public const uint SourceHasChanged = 72;
 			/// <summary>
@@ -75,19 +75,22 @@ namespace PepperDash.Essentials.Room.Cotija
 		public class UshortJoin
 		{
 			/// <summary>
-			/// 
+			/// 1
 			/// </summary>
 			public const uint MasterVolumeLevel = 1;
 
+			/// <summary>
+			/// 61
+			/// </summary>
 			public const uint ShutdownPromptDuration = 61;
 		}
 
 		public class StringJoin
 		{
 			/// <summary>
-			/// 
+			/// 71
 			/// </summary>
-			public const uint SelectedSourceKey = 3;
+			public const uint SelectedSourceKey = 71;
 			
 			/// <summary>
 			/// 501
@@ -112,7 +115,7 @@ namespace PepperDash.Essentials.Room.Cotija
 		}
 
 		/// <summary>
-		/// Fires when the config is ready, to be used by the controller class to forward config to server
+		/// Fires when config is ready to go
 		/// </summary>
 		public event EventHandler<EventArgs> ConfigurationIsReady;
 
@@ -153,17 +156,49 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// <returns></returns>
 		public override bool CustomActivate()
 		{
+			Debug.Console(0, this, "Final activation. Setting up actions and feedbacks");
 			SetupFunctions();
 			SetupFeedbacks();
+
+
+			//**** RE-ADD THESE WHEN IT MAKES SENSE
+
 			EISC.SigChange += EISC_SigChange;
 			EISC.OnlineStatusChange += (o, a) =>
 			{
-				if (a.DeviceOnLine)
+				Debug.Console(1, this, "DDVC EISC online={0}. Config is ready={1}", a.DeviceOnLine, EISC.BooleanOutput[BoolJoin.ConfigIsReady].BoolValue);
+				if (a.DeviceOnLine && EISC.BooleanOutput[BoolJoin.ConfigIsReady].BoolValue)
 					LoadConfigValues();
 			};
 			// load config if it's already there
-			if (EISC.IsOnline) // || EISC.BooleanInput[BoolJoin.ConfigIsReady].BoolValue)
+			if (EISC.IsOnline && EISC.BooleanOutput[BoolJoin.ConfigIsReady].BoolValue) // || EISC.BooleanInput[BoolJoin.ConfigIsReady].BoolValue)
 				LoadConfigValues();
+
+
+			CrestronConsole.AddNewConsoleCommand(s =>
+			{
+				for (uint i = 1; i < 1000; i++)
+				{
+					if (s.ToLower().Equals("b"))
+					{
+						CrestronConsole.ConsoleCommandResponse("D{0,6} {1} - ", i, EISC.BooleanOutput[i].BoolValue);
+					}
+					else if (s.ToLower().Equals("u"))
+					{
+						CrestronConsole.ConsoleCommandResponse("U{0,6} {1,8} - ", i, EISC.UShortOutput[i].UShortValue);
+					}
+					else if (s.ToLower().Equals("s"))
+					{
+						var val = EISC.StringOutput[i].StringValue;
+						if(!string.IsNullOrEmpty(val))
+							CrestronConsole.ConsoleCommandResponse("S{0,6} {1}\r", i, EISC.StringOutput[i].StringValue);
+					}
+
+				}
+			}, "cotijabridgedump", "Dumps DDVC01 bridge EISC data b,u,s", ConsoleAccessLevelEnum.AccessOperator);
+
+			CrestronConsole.AddNewConsoleCommand(s => LoadConfigValues(), "loadddvc", "", ConsoleAccessLevelEnum.AccessOperator);
+
 			return base.CustomActivate();
 		}
 
@@ -173,6 +208,7 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		void SetupFunctions()
 		{
+
 			Parent.AddAction(@"/room/room1/status", new Action(SendFullStatus));
 
 			Parent.AddAction(@"/room/room1/source", new Action<SourceSelectMessageContent>(c =>
@@ -181,7 +217,8 @@ namespace PepperDash.Essentials.Room.Cotija
 				EISC.PulseBool(BoolJoin.SourceHasChanged);
 			}));
 
-			Parent.AddAction(@"/room/room1/activityshare", new Action(() => 
+#warning CHANGE to activityshare.  Perhaps
+			Parent.AddAction(@"/room/room1/defaultsource", new Action(() => 
 				EISC.PulseBool(BoolJoin.ActivitySharePress)));
 
 			Parent.AddAction(@"/room/room1/masterVolumeLevel", new Action<ushort>(u => 
@@ -231,17 +268,17 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			// shutdown things
 			EISC.SetSigTrueAction(BoolJoin.ShutdownCancel, new Action(() =>
-				PostStatusMessage(new
+				PostMessage("/room/shutdown/", new
 				{
 					state = "wasCancelled"
 				})));
 			EISC.SetSigTrueAction(BoolJoin.ShutdownEnd, new Action(() =>
-				PostStatusMessage(new
+				PostMessage("/room/shutdown/", new
 				{
 					state = "hasFinished"
 				})));
 			EISC.SetSigTrueAction(BoolJoin.ShutdownStart, new Action(() =>
-				PostStatusMessage(new
+				PostMessage("/room/shutdown/", new
 				{
 					state = "hasStarted",
 					duration = EISC.UShortOutput[UshortJoin.ShutdownPromptDuration].UShortValue
@@ -256,7 +293,6 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		void LoadConfigValues()
 		{
-
 			Debug.Console(1, this, "Loading configuration from DDVC01 EISC bridge");
 			ConfigIsLoaded = false;
 
@@ -265,10 +301,13 @@ namespace PepperDash.Essentials.Room.Cotija
 			//Room
 			if (co.Rooms == null)
 				co.Rooms = new List<EssentialsRoomConfig>();
+			var rm = new EssentialsRoomConfig();
 			if (co.Rooms.Count == 0)
-				co.Rooms.Add(new EssentialsRoomConfig());
-			var rm = co.Rooms[0];
-			rm.Name = EISC.StringInput[501].StringValue;
+			{
+				Debug.Console(0, this, "Adding room to config");
+				co.Rooms.Add(rm);
+			}
+			rm.Name = EISC.StringOutput[501].StringValue;
 			rm.Key = "room1";
 			rm.Type = "ddvc01";
 
@@ -279,22 +318,22 @@ namespace PepperDash.Essentials.Room.Cotija
 				rmProps = JsonConvert.DeserializeObject<DDVC01RoomPropertiesConfig>(rm.Properties.ToString());
 			
 			rmProps.Help = new EssentialsHelpPropertiesConfig();
-			rmProps.Help.Message = EISC.StringInput[502].StringValue;
-			rmProps.Help.CallButtonText = EISC.StringInput[503].StringValue;
-			rmProps.RoomPhoneNumber = EISC.StringInput[504].StringValue;
-			rmProps.RoomURI = EISC.StringInput[505].StringValue;
+			rmProps.Help.Message = EISC.StringOutput[502].StringValue;
+			rmProps.Help.CallButtonText = EISC.StringOutput[503].StringValue;
+			rmProps.RoomPhoneNumber = EISC.StringOutput[504].StringValue;
+			rmProps.RoomURI = EISC.StringOutput[505].StringValue;
 			rmProps.SpeedDials = new List<DDVC01SpeedDial>();
 			// add speed dials as long as there are more - up to 4
 			for (uint i = 512; i <= 519; i = i + 2)
 			{
-				var num = EISC.StringInput[i].StringValue;
+				var num = EISC.StringOutput[i].StringValue;
 				if (string.IsNullOrEmpty(num))
 					break;
-				var name = EISC.StringInput[i + 1].StringValue;
+				var name = EISC.StringOutput[i + 1].StringValue;
 				rmProps.SpeedDials.Add(new DDVC01SpeedDial { Number = num, Name = name});
 			}
 			// volume control names
-			var volCount = EISC.UShortInput[701].UShortValue;
+			var volCount = EISC.UShortOutput[701].UShortValue;
 			rmProps.VolumeSliderNames = new List<string>();
 			for(uint i = 701; i <= 700 + volCount; i++)
 			{
@@ -305,29 +344,43 @@ namespace PepperDash.Essentials.Room.Cotija
 			if(co.Devices == null)
 				co.Devices = new List<DeviceConfig>();
 			
-			// Source list! This might be brutal!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			rmProps.SourceListKey = "default";
+			rm.Properties = JToken.FromObject(rmProps);
+
+			// Source list! This might be brutal!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+			var groupMap = GetSourceGroupDictionary();
+
 			co.SourceLists = new Dictionary<string,Dictionary<string,SourceListItem>>();
 			var newSl = new Dictionary<string, SourceListItem>();
 			// add sources...
 			for (uint i = 0; i<= 19; i++)
 			{
-				var name = EISC.StringInput[601 + i].StringValue;
+				var name = EISC.StringOutput[601 + i].StringValue;
 				if(string.IsNullOrEmpty(name))
 					break;
-				var icon = EISC.StringInput[651 + i].StringValue;
-				var key = EISC.StringInput[671 + i].StringValue;
-				var type = EISC.StringInput[701 + i].StringValue;
+				var icon = EISC.StringOutput[651 + i].StringValue;
+				var key = EISC.StringOutput[671 + i].StringValue;
+				var type = EISC.StringOutput[701 + i].StringValue;
+
+				Debug.Console(0, this, "Adding source {0} '{1}'", key, name);
 				var newSLI = new SourceListItem{
 					Icon = icon,
 					Name = name,
 					Order = (int)i + 1,
 					SourceKey = key,
 				};
+				newSl.Add(key, newSLI);
+
+				string group = "genericsource";
+				if (groupMap.ContainsKey(type))
+				{
+					group = groupMap[type];
+				}
 				
 				// add dev to devices list
 				var devConf = new DeviceConfig {
-					Group = "ddvc01",
+					Group = group,
 					Key = key,
 					Name = name,
 					Type = type
@@ -339,9 +392,13 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			Debug.Console(0, this, "******* CONFIG FROM DDVC: \r{0}", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
 
-			ConfigIsLoaded = true;
+			var handler = ConfigurationIsReady;
+			if (handler != null)
+			{
+				handler(this, new EventArgs());
+			}
 
-			// send config changed status???
+			ConfigIsLoaded = true;
 		}
 
 		void SendFullStatus()
@@ -380,6 +437,20 @@ namespace PepperDash.Essentials.Room.Cotija
 				}));
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="messageType"></param>
+		/// <param name="contentObject"></param>
+		void PostMessage(string messageType, object contentObject)
+		{
+			Parent.PostToServer(JObject.FromObject(new
+			{
+				type = messageType,
+				content = contentObject
+			}));
+		}
+
 
 		/// <summary>
 		/// 
@@ -397,6 +468,24 @@ namespace PepperDash.Essentials.Room.Cotija
 				(uo as Action<ushort>)(args.Sig.UShortValue);
 			else if (uo is Action<string>)
 				(uo as Action<string>)(args.Sig.StringValue);
+		}
+
+		/// <summary>
+		/// Returns the mapping of types to groups, for setting up devices.
+		/// </summary>
+		/// <returns></returns>
+		Dictionary<string, string> GetSourceGroupDictionary()
+		{
+			//type, group
+			var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+			{
+				{ "laptop", "pc" },
+				{ "wireless", "genericsource" },
+				{ "iptv", "settopbox" }
+
+			};
+			return d;
+
 		}
 	}
 }
