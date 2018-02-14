@@ -22,10 +22,11 @@ namespace PepperDash.Essentials
 		}
 
 		/// <summary>
-		/// 
+		/// Set the parent.  Does nothing else.  Override to add functionality such
+		/// as adding actions to parent
 		/// </summary>
 		/// <param name="parent"></param>
-		public void AddParent(CotijaSystemController parent)
+		public virtual void AddParent(CotijaSystemController parent)
 		{
 			Parent = parent;
 		}

@@ -111,10 +111,12 @@ namespace PepperDash.Essentials
 			var b = bridge as IDelayedConfiguration;
 			if (b != null)
 			{
+				Debug.Console(0, this, "Adding room bridge with delayed configuration");
 				b.ConfigurationIsReady += new EventHandler<EventArgs>(bridge_ConfigurationIsReady);
 			}
 			else
 			{
+				Debug.Console(0, this, "Adding room bridge and sending configuration");
 				RegisterSystemToServer();
 			}
 		}
@@ -200,9 +202,9 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
-					Client = new HttpClient();
-					Client.Verbose = true;
-					Client.KeepAlive = true;
+					var regClient = new HttpClient();
+					regClient.Verbose = true;
+					regClient.KeepAlive = true;
 
 					string url = string.Format("http://{0}/api/system/join/{1}", Config.ServerUrl, SystemUuid);
 					Debug.Console(1, this, "Joining server at {0}", url);
@@ -213,7 +215,7 @@ namespace PepperDash.Essentials
                     request.Header.SetHeaderValue("Content-Type", "application/json");
                     request.ContentString = postBody;
 
-					var err = Client.DispatchAsync(request, PostConnectionCallback);
+					var err = regClient.DispatchAsync(request, PostConnectionCallback);
                 }
 
             }

@@ -245,9 +245,10 @@ namespace PepperDash.Essentials
                         Debug.Console(1, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(new EssentialsHuddleSpaceFusionSystemControllerBase((EssentialsHuddleSpaceRoom)room, 0xf1));
 
-						Debug.Console(0, "******* RE-ENABLE COTIJA PROPERLY *******");
-						//var bridge = new CotijaEssentialsHuddleSpaceRoomBridge(room as EssentialsHuddleSpaceRoom);
-						//AddBridgePostActivationHelper(bridge);
+						// Cotija bridge
+						var bridge = new CotijaEssentialsHuddleSpaceRoomBridge(room as EssentialsHuddleSpaceRoom);
+						AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
+						DeviceManager.AddDevice(bridge);
                     }
                     else if (room is EssentialsHuddleVtc1Room)
                     {

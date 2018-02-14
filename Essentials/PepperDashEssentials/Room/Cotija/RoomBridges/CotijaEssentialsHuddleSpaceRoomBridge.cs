@@ -23,31 +23,40 @@ namespace PepperDash.Essentials
         public CotijaEssentialsHuddleSpaceRoomBridge(EssentialsHuddleSpaceRoom room):
 			base("cotijaController", "Cotija Controller")
         {
-            Room = room;
+            Room = room;   
+        }
+
+		/// <summary>
+		/// Override of base: calls base to add parent and then registers actions and events.
+		/// </summary>
+		/// <param name="parent"></param>
+		public override void AddParent(CotijaSystemController parent)
+		{
+			base.AddParent(parent);
 
 			// we add actions to the messaging system with a path, and a related action. Custom action
 			// content objects can be handled in the controller's LineReceived method - and perhaps other
 			// sub-controller parsing could be attached to these classes, so that the systemController
 			// doesn't need to know about everything.
 
-            // Source Changes and room off
-            Parent.AddAction(string.Format(@"/room/{0}/status",Room.Key), new Action(() => Room_RoomFullStatus(Room)));
-            Parent.AddAction(string.Format(@"/room/{0}/source", Room.Key), new Action<SourceSelectMessageContent>(c => room.RunRouteAction(c.SourceListItem)));
+			// Source Changes and room off
+			Parent.AddAction(string.Format(@"/room/{0}/status", Room.Key), new Action(() => Room_RoomFullStatus(Room)));
+			Parent.AddAction(string.Format(@"/room/{0}/source", Room.Key), new Action<SourceSelectMessageContent>(c => Room.RunRouteAction(c.SourceListItem)));
 			Parent.AddAction(string.Format(@"/room/{0}/defaultsource", Room.Key), new Action(Room.RunDefaultRoute));
 
 			Parent.AddAction(string.Format(@"/room/{0}/masterVolumeLevel", Room.Key), new Action<ushort>(u =>
-				(room.CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(u)));
-			Parent.AddAction(string.Format(@"/room/{0}/masterVolumeMuteToggle", Room.Key), new Action(() => room.CurrentVolumeControls.MuteToggle()));
+				(Room.CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(u)));
+			Parent.AddAction(string.Format(@"/room/{0}/masterVolumeMuteToggle", Room.Key), new Action(() => Room.CurrentVolumeControls.MuteToggle()));
 
-			Parent.AddAction(string.Format(@"/room/{0}/shutdownStart", Room.Key), new Action(() => room.StartShutdown(eShutdownType.Manual)));
-			Parent.AddAction(string.Format(@"/room/{0}/shutdownEnd", Room.Key), new Action(() => room.ShutdownPromptTimer.Finish()));
-			Parent.AddAction(string.Format(@"/room/{0}/shutdownCancel", Room.Key), new Action(() => room.ShutdownPromptTimer.Cancel()));
+			Parent.AddAction(string.Format(@"/room/{0}/shutdownStart", Room.Key), new Action(() => Room.StartShutdown(eShutdownType.Manual)));
+			Parent.AddAction(string.Format(@"/room/{0}/shutdownEnd", Room.Key), new Action(() => Room.ShutdownPromptTimer.Finish()));
+			Parent.AddAction(string.Format(@"/room/{0}/shutdownCancel", Room.Key), new Action(() => Room.ShutdownPromptTimer.Cancel()));
 
-            Room.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSingleSourceChange);
+			Room.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSingleSourceChange);
 
-            Room.CurrentVolumeDeviceChange += new EventHandler<VolumeDeviceChangeEventArgs>(Room_CurrentVolumeDeviceChange);
+			Room.CurrentVolumeDeviceChange += new EventHandler<VolumeDeviceChangeEventArgs>(Room_CurrentVolumeDeviceChange);
 
-            Room.OnFeedback.OutputChange += new EventHandler<EventArgs>(OnFeedback_OutputChange);
+			Room.OnFeedback.OutputChange += new EventHandler<EventArgs>(OnFeedback_OutputChange);
 			Room.IsCoolingDownFeedback.OutputChange += new EventHandler<EventArgs>(IsCoolingDownFeedback_OutputChange);
 			Room.IsWarmingUpFeedback.OutputChange += new EventHandler<EventArgs>(IsWarmingUpFeedback_OutputChange);
 
@@ -55,21 +64,20 @@ namespace PepperDash.Essentials
 			Room.ShutdownPromptTimer.HasFinished += new EventHandler<EventArgs>(ShutdownPromptTimer_HasFinished);
 			Room.ShutdownPromptTimer.WasCancelled += new EventHandler<EventArgs>(ShutdownPromptTimer_WasCancelled);
 
-            // Registers for initial volume events, if possible
-            var currentVolumeDevice = Room.CurrentVolumeControls;
+			// Registers for initial volume events, if possible
+			var currentVolumeDevice = Room.CurrentVolumeControls;
 
-            if (currentVolumeDevice != null)
-            {
-                if (currentVolumeDevice is IBasicVolumeWithFeedback)
-                {
-                    var newDev = currentVolumeDevice as IBasicVolumeWithFeedback;
+			if (currentVolumeDevice != null)
+			{
+				if (currentVolumeDevice is IBasicVolumeWithFeedback)
+				{
+					var newDev = currentVolumeDevice as IBasicVolumeWithFeedback;
 
-                    newDev.MuteFeedback.OutputChange += new EventHandler<EventArgs>(VolumeLevelFeedback_OutputChange);
-                    newDev.VolumeLevelFeedback.OutputChange += new EventHandler<EventArgs>(VolumeLevelFeedback_OutputChange);
-                }
-            }
-            
-        }
+					newDev.MuteFeedback.OutputChange += new EventHandler<EventArgs>(VolumeLevelFeedback_OutputChange);
+					newDev.VolumeLevelFeedback.OutputChange += new EventHandler<EventArgs>(VolumeLevelFeedback_OutputChange);
+				}
+			}
+		}
 
 		/// <summary>
 		/// Handler for cancelled shutdown
