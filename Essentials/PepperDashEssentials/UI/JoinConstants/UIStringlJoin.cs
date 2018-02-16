@@ -121,6 +121,10 @@ namespace PepperDash.Essentials
         /// 3906 - The separator for verbose-header text on addresses
         /// </summary>
         public const uint RoomAddressPipeText = 3906;
+		/// <summary>
+		/// 3907 - The user code for mobile control
+		/// </summary>
+		public const uint RoomUserCode = 3907;
         /// <summary>
         /// 3911
         /// </summary>

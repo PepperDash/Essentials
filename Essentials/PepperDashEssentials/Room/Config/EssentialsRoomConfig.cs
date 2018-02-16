@@ -179,38 +179,41 @@ namespace PepperDash.Essentials.Room.Config
     /// </summary>
 	public class EssentialsRoomPropertiesConfig
 	{
+		[JsonProperty("addresses")]
+		public EssentialsRoomAddressPropertiesConfig Addresses { get; set; }
+
+		[JsonProperty("description")]
+		public string Description { get; set; }
+
 		[JsonProperty("emergency")]
 		public EssentialsRoomEmergencyConfig Emergency { get; set; }
 
-		[JsonProperty("microphonePrivacy")]
-		public EssentialsRoomMicrophonePrivacyConfig MicrophonePrivacy { get; set; }
+		[JsonProperty("help")]
+		public EssentialsHelpPropertiesConfig Help { get; set; }
 
 		[JsonProperty("helpMessage")]
 		public string HelpMessage { get; set; }
 
-		[JsonProperty("description")]
-		public string Description { get; set; }
+		[JsonProperty("lighting")]
+		public EssentialsLightingPropertiesConfig Lighting { get; set; }
+
+		[JsonProperty("logo")]
+		public EssentialsLogoPropertiesConfig Logo { get; set; }
+	
+		[JsonProperty("microphonePrivacy")]
+		public EssentialsRoomMicrophonePrivacyConfig MicrophonePrivacy { get; set; }
+
+		[JsonProperty("occupancy")]
+		public EssentialsRoomOccSensorConfig Occupancy { get; set; }
+
+		[JsonProperty("oneButtonMeeting")]
+		public EssentialsOneButtonMeetingPropertiesConfig OneButtonMeeting { get; set; }
 
 		[JsonProperty("shutdownVacancySeconds")]
 		public int ShutdownVacancySeconds { get; set; }
 
 		[JsonProperty("shutdownPromptSeconds")]
 		public int ShutdownPromptSeconds { get; set; }
-
-		[JsonProperty("help")]
-		public EssentialsHelpPropertiesConfig Help { get; set; }
-
-		[JsonProperty("oneButtonMeeting")]
-		public EssentialsOneButtonMeetingPropertiesConfig OneButtonMeeting { get; set; }
-
-		[JsonProperty("addresses")]
-		public EssentialsRoomAddressPropertiesConfig Addresses { get; set; }
-
-		[JsonProperty("occupancy")]
-		public EssentialsRoomOccSensorConfig Occupancy { get; set; }
-
-		[JsonProperty("logo")]
-		public EssentialsLogoPropertiesConfig Logo { get; set; }
 
 		[JsonProperty("tech")]
 		public EssentialsRoomTechConfig Tech { get; set; }
@@ -220,6 +223,11 @@ namespace PepperDash.Essentials.Room.Config
 
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
+	}
+
+	public class EssentialsLightingPropertiesConfig
+	{
+		public bool Enabled { get; set; }
 	}
 
     public class EssentialsRoomMicrophonePrivacyConfig

@@ -26,7 +26,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		CEvent PostLockEvent = new CEvent(true, true);
 
-        CotijaConfig Config;
+		public CotijaConfig Config { get; private set; }
 
 		HttpClient Client;
 
@@ -445,6 +445,19 @@ namespace PepperDash.Essentials
 
             SseClient.Connect();
         }
+
+		/// <summary>
+		/// Resets reconnect timer and updates usercode
+		/// </summary>
+		/// <param name="content"></param>
+		void HandleHeartBeat(JToken content)
+		{
+			foreach (var b in RoomBridges)
+			{
+				b.SetUserCode(content["userCode"].Value<string>());
+			}
+			ResetOrStartHearbeatTimer();
+		}
             
 		/// <summary>
 		/// 
@@ -471,7 +484,7 @@ namespace PepperDash.Essentials
                     }
 					else if (type == "/system/heartbeat")
 					{
-						ResetOrStartHearbeatTimer();
+						HandleHeartBeat(messageObj["content"]);
 					}
 					else if (type == "close")
 					{

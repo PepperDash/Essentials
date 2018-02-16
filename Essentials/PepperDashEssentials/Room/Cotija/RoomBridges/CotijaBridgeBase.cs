@@ -16,6 +16,8 @@ namespace PepperDash.Essentials
 	{
 		public CotijaSystemController Parent { get; private set; }
 
+		public string UserCode { get; private set; }
+
 		public CotijaBridgeBase(string key, string name)
 			: base(key, name)
 		{
@@ -29,6 +31,30 @@ namespace PepperDash.Essentials
 		public virtual void AddParent(CotijaSystemController parent)
 		{
 			Parent = parent;
+		}
+
+		/// <summary>
+		/// Sets the UserCode on the bridge object. Called from controller. A changed code will
+		/// fire method UserCodeChange.  Override that to handle changes
+		/// </summary>
+		/// <param name="code"></param>
+		public void SetUserCode(string code)
+		{
+			var changed = UserCode != code;
+			UserCode = code;
+			if (changed)
+			{
+				UserCodeChange();
+			}
+		}
+
+		/// <summary>
+		/// Empty method in base class.  Override this to add functionality
+		/// when code changes
+		/// </summary>
+		protected virtual void UserCodeChange()
+		{
+
 		}
 	}
 }

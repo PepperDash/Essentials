@@ -112,6 +112,12 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 505
 			/// </summary>
 			public const uint ConfigRoomURI = 505;
+			/// <summary>
+			/// 401
+			/// </summary>
+			public const uint UserCodeToSystem = 401;
+
+			public const uint ServerUrl = 402;
 		}
 
 		/// <summary>
@@ -125,6 +131,8 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// 
 		/// </summary>
 		public bool ConfigIsLoaded { get; private set; }
+
+		CotijaDdvc01DeviceBridge SourceBridge;
 
 
 		/// <summary>
@@ -142,6 +150,9 @@ namespace PepperDash.Essentials.Room.Cotija
 				var reg = EISC.Register();
 				if (reg != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
 					Debug.Console(0, this, "Cannot connect EISC at IPID {0}: \r{1}", ipId, reg);
+
+				SourceBridge = new CotijaDdvc01DeviceBridge(key + "-sourceBridge", "DDVC01 source bridge", EISC);
+				DeviceManager.AddDevice(SourceBridge);
 			}
 			catch (Exception)
 			{
@@ -159,9 +170,6 @@ namespace PepperDash.Essentials.Room.Cotija
 			Debug.Console(0, this, "Final activation. Setting up actions and feedbacks");
 			SetupFunctions();
 			SetupFeedbacks();
-
-
-			//**** RE-ADD THESE WHEN IT MAKES SENSE
 
 			EISC.SigChange += EISC_SigChange;
 			EISC.OnlineStatusChange += (o, a) =>
@@ -316,10 +324,13 @@ namespace PepperDash.Essentials.Room.Cotija
 				rmProps = new DDVC01RoomPropertiesConfig();
 			else
 				rmProps = JsonConvert.DeserializeObject<DDVC01RoomPropertiesConfig>(rm.Properties.ToString());
-			
+
 			rmProps.Help = new EssentialsHelpPropertiesConfig();
-			rmProps.Help.Message = EISC.StringOutput[502].StringValue;
 			rmProps.Help.CallButtonText = EISC.StringOutput[503].StringValue;
+			rmProps.Help.Message = EISC.StringOutput[502].StringValue;
+
+			rmProps.Lighting = new EssentialsLightingPropertiesConfig(); // enabled defaults to false
+
 			rmProps.RoomPhoneNumber = EISC.StringOutput[504].StringValue;
 			rmProps.RoomURI = EISC.StringOutput[505].StringValue;
 			rmProps.SpeedDials = new List<DDVC01SpeedDial>();
@@ -334,6 +345,8 @@ namespace PepperDash.Essentials.Room.Cotija
 			}
 			// volume control names
 			var volCount = EISC.UShortOutput[701].UShortValue;
+
+			// use Volumes object or?
 			rmProps.VolumeSliderNames = new List<string>();
 			for(uint i = 701; i <= 700 + volCount; i++)
 			{
@@ -343,6 +356,9 @@ namespace PepperDash.Essentials.Room.Cotija
 			// There should be cotija devices in here, I think...
 			if(co.Devices == null)
 				co.Devices = new List<DeviceConfig>();
+
+			// clear out previous DDVC devices
+			co.Devices.RemoveAll(d => d.Key.StartsWith("source-", StringComparison.OrdinalIgnoreCase));
 			
 			rmProps.SourceListKey = "default";
 			rm.Properties = JToken.FromObject(rmProps);
@@ -485,7 +501,97 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			};
 			return d;
+		}
 
+		/// <summary>
+		/// updates the usercode from server
+		/// </summary>
+		protected override void UserCodeChange()
+		{
+			Debug.Console(1, this, "User code changed: {0}", UserCode);
+			EISC.StringInput[StringJoin.UserCodeToSystem].StringValue = UserCode;
+			EISC.StringInput[StringJoin.ServerUrl].StringValue = Parent.Config.ServerUrl;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="oldKey"></param>
+		/// <param name="newKey"></param>
+		void SourceChange(string oldKey, string newKey)
+		{
+			/* Example message
+             * {
+                  "type":"/room/status",
+                  "content": {
+                    "selectedSourceKey": "off",
+                  }
+                }
+             */
+			//if (type == ChangeType.WillChange)
+			//{
+			//    // Disconnect from previous source
+
+			//    if (info != null)
+			//    {
+			//        var previousDev = info.SourceDevice;
+
+			//        // device type interfaces
+			//        if (previousDev is ISetTopBoxControls)
+			//            (previousDev as ISetTopBoxControls).UnlinkActions(Parent);
+			//        // common interfaces
+			//        if (previousDev is IChannel)
+			//            (previousDev as IChannel).UnlinkActions(Parent);
+			//        if (previousDev is IColor)
+			//            (previousDev as IColor).UnlinkActions(Parent);
+			//        if (previousDev is IDPad)
+			//            (previousDev as IDPad).UnlinkActions(Parent);
+			//        if (previousDev is IDvr)
+			//            (previousDev as IDvr).UnlinkActions(Parent);
+			//        if (previousDev is INumericKeypad)
+			//            (previousDev as INumericKeypad).UnlinkActions(Parent);
+			//        if (previousDev is IPower)
+			//            (previousDev as IPower).UnlinkActions(Parent);
+			//        if (previousDev is ITransport)
+			//            (previousDev as ITransport).UnlinkActions(Parent);
+			//    }
+
+
+			//    var huddleRoom = room as EssentialsHuddleSpaceRoom;
+			//    JObject roomStatus = new JObject();
+			//    roomStatus.Add("selectedSourceKey", huddleRoom.CurrentSourceInfoKey);
+
+			//    JObject message = new JObject();
+
+			//    message.Add("type", "/room/status/");
+			//    message.Add("content", roomStatus);
+
+			//    Parent.PostToServer(message);
+			//}
+			//else
+			//{
+			//    if (info != null)
+			//    {
+			//        var dev = info.SourceDevice;
+
+			//        if (dev is ISetTopBoxControls)
+			//            (dev as ISetTopBoxControls).LinkActions(Parent);
+			//        if (dev is IChannel)
+			//            (dev as IChannel).LinkActions(Parent);
+			//        if (dev is IColor)
+			//            (dev as IColor).LinkActions(Parent);
+			//        if (dev is IDPad)
+			//            (dev as IDPad).LinkActions(Parent);
+			//        if (dev is IDvr)
+			//            (dev as IDvr).LinkActions(Parent);
+			//        if (dev is INumericKeypad)
+			//            (dev as INumericKeypad).LinkActions(Parent);
+			//        if (dev is IPower)
+			//            (dev as IPower).LinkActions(Parent);
+			//        if (dev is ITransport)
+			//            (dev as ITransport).LinkActions(Parent);
+			//    }
+			//}
 		}
 	}
 }
