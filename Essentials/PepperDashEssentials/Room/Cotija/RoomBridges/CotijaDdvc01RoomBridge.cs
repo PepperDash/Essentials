@@ -116,7 +116,9 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 401
 			/// </summary>
 			public const uint UserCodeToSystem = 401;
-
+			/// <summary>
+			/// 402
+			/// </summary>
 			public const uint ServerUrl = 402;
 		}
 
@@ -508,7 +510,7 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		protected override void UserCodeChange()
 		{
-			Debug.Console(1, this, "User code changed: {0}", UserCode);
+			Debug.Console(1, this, "Server user code changed: {0}", UserCode);
 			EISC.StringInput[StringJoin.UserCodeToSystem].StringValue = UserCode;
 			EISC.StringInput[StringJoin.ServerUrl].StringValue = Parent.Config.ServerUrl;
 		}
