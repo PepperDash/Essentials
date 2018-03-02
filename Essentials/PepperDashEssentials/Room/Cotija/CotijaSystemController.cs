@@ -19,6 +19,8 @@ namespace PepperDash.Essentials
 {
     public class CotijaSystemController : Device
     {
+		int SseMessageLengthBeforeFailureCount;
+
         GenericHttpSseClient SseClient;
 
 		/// <summary>
@@ -452,9 +454,13 @@ namespace PepperDash.Essentials
 		/// <param name="content"></param>
 		void HandleHeartBeat(JToken content)
 		{
-			foreach (var b in RoomBridges)
+			var code = content["userCode"];
+			if(code != null) 
 			{
-				b.SetUserCode(content["userCode"].Value<string>());
+				foreach (var b in RoomBridges)
+				{
+					b.SetUserCode(code.Value<string>());
+				}
 			}
 			ResetOrStartHearbeatTimer();
 		}
@@ -468,6 +474,8 @@ namespace PepperDash.Essentials
         {
             if(e.Text.IndexOf("data:") > -1)
             {
+				SseMessageLengthBeforeFailureCount += e.Text.Length;
+
                 var message = e.Text.Substring(6);
 
                 Debug.Console(1, this, "Message RX: '{0}'", message);
@@ -582,7 +590,9 @@ namespace PepperDash.Essentials
                 }
                 catch (Exception err)
                 {
-                    Debug.Console(1, this, "Unable to parse message: {0}", err);
+					Debug.Console(1, "SseMessageLengthBeforeFailureCount: {0}", SseMessageLengthBeforeFailureCount);
+					SseMessageLengthBeforeFailureCount = 0;
+                    Debug.Console(1, this, "Unable to parse message: {0}", err);	
                 }
             }
         }
