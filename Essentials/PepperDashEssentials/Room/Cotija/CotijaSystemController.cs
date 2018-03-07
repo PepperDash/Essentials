@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro.CrestronThread;
+using Crestron.SimplSharp.CrestronWebSocketClient;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharp.Net.Http;
 using Newtonsoft.Json;
@@ -21,7 +22,9 @@ namespace PepperDash.Essentials
     {
 		int SseMessageLengthBeforeFailureCount;
 
-        GenericHttpSseClient SseClient;
+		WebSocketClient WSClient;
+
+		//GenericHttpSseClient SseClient;
 
 		/// <summary>
 		/// Prevents post operations from stomping on each other and getting lost
@@ -68,7 +71,7 @@ namespace PepperDash.Essentials
             Config = config;
 			Debug.Console(0, this, "Mobile UI controller initializing for server:{0}", config.ServerUrl);
 
-            CrestronConsole.AddNewConsoleCommand(DisconnectSseClient, 
+            CrestronConsole.AddNewConsoleCommand(DisconnectStreamClient, 
 				"CloseHttpClient", "Closes the active HTTP client", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(AuthorizeSystem,
 				"cotijaauth", "Authorizes system to talk to cotija server", ConsoleAccessLevelEnum.AccessOperator);
@@ -318,10 +321,13 @@ namespace PepperDash.Essentials
         /// Disconnects the SSE Client and stops the heartbeat timer
         /// </summary>
         /// <param name="command"></param>
-        void DisconnectSseClient(string command)
+        void DisconnectStreamClient(string command)
         {
-            if(SseClient != null)
-                SseClient.Disconnect();
+			//if(SseClient != null)
+			//    SseClient.Disconnect();
+
+			if (WSClient != null && WSClient.Connected)
+				WSClient.Disconnect();
 
             if (ServerHeartbeatCheckTimer != null)
             {
@@ -338,7 +344,7 @@ namespace PepperDash.Essentials
         /// <param name="err"></param>
         void PostConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
         {
-			Debug.Console(1, this, "PostConnectionCallback err: {0}", err);
+			Debug.Console(1, this, "PostConnectionCallback: {0}", err);
             try
             {
                 if (resp != null && resp.Code == 200)
@@ -349,7 +355,7 @@ namespace PepperDash.Essentials
                         ServerReconnectTimer = null;
                     }
 
-                    ConnectSseClient(null);
+                    ConnectStreamClient(null);
                 }
                 else
                 {
@@ -364,7 +370,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.Console(1, this, "Error Initializing SSE Client: {0}", e);
+                Debug.Console(1, this, "Error Initializing Stream Client: {0}", e);
             }
         }
 
@@ -421,32 +427,47 @@ namespace PepperDash.Essentials
         /// Connects the SSE Client
         /// </summary>
         /// <param name="o"></param>
-        void ConnectSseClient(object o)
+        void ConnectStreamClient(object o)
         {
-            Debug.Console(0, this, "Initializing SSE Client.");
+            Debug.Console(0, this, "Initializing Stream client to server.");
 
-            if (SseClient == null)
-            {
-                SseClient = new GenericHttpSseClient(string.Format("{0}-SseClient", Key), Name);
+			if (WSClient == null)
+			{
+				WSClient = new WebSocketClient();
+				WSClient.URL = string.Format("wss://{0}/system/join/{1}", Config.ServerUrl, this.SystemUuid);
+				WSClient.Connect();
+				Debug.Console(0, this, "Websocket connected");
+				WSClient.ReceiveCallBack = WebsocketReceive;
+				WSClient.ReceiveAsync();
+			}
 
-                CommunicationGather LineGathered = new CommunicationGather(SseClient, "\x0d\x0a");
 
-                LineGathered.LineReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(SSEClient_LineReceived);
-            }
-            else
-            {
-                if (SseClient.IsConnected)
-                {
-                    SseClient.Disconnect();
-                }
-            }
+			//// **********************************
+			//if (SseClient == null)
+			//{
+			//    SseClient = new GenericHttpSseClient(string.Format("{0}-SseClient", Key), Name);
+
+			//    CommunicationGather LineGathered = new CommunicationGather(SseClient, "\x0d\x0a");
+
+			//    LineGathered.LineReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(SSEClient_LineReceived);
+			//}
+			//else
+			//{
+			//    if (SseClient.IsConnected)
+			//    {
+			//        SseClient.Disconnect();
+			//    }
+			//}
 
             string uuid = Essentials.ConfigReader.ConfigObject.SystemUuid;
 
-            SseClient.Url = string.Format("http://{0}/api/system/stream/{1}", Config.ServerUrl, uuid);
+			//SseClient.Url = string.Format("http://{0}/api/system/stream/{1}", Config.ServerUrl, uuid);
 
-            SseClient.Connect();
+			//SseClient.Connect();
+
+			// ***********************************
         }
+
 
 		/// <summary>
 		/// Resets reconnect timer and updates usercode
@@ -464,7 +485,25 @@ namespace PepperDash.Essentials
 			}
 			ResetOrStartHearbeatTimer();
 		}
-            
+
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="data"></param>
+		/// <param name="length"></param>
+		/// <param name="opcode"></param>
+		/// <param name="err"></param>
+		int WebsocketReceive(byte[] data, uint length, WebSocketClient.WEBSOCKET_PACKET_TYPES opcode,
+			WebSocketClient.WEBSOCKET_RESULT_CODES err)
+		{
+			var rx = System.Text.Encoding.UTF8.GetString(data, 0, (int)length);
+
+			Debug.Console(0, this, "WS RECEIVED {0}", rx);
+			WSClient.ReceiveAsync();
+			return 1;
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -496,7 +535,8 @@ namespace PepperDash.Essentials
 					}
 					else if (type == "close")
 					{
-						SseClient.Disconnect();
+						WSClient.Disconnect();
+						//SseClient.Disconnect();
 
 						ServerHeartbeatCheckTimer.Stop();
 						// Start the reconnect timer

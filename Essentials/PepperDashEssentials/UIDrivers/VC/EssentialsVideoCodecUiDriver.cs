@@ -678,7 +678,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                         else
                         {
                             // If only one contact method, just dial that method
-                            DirectoryList.SetItemButtonAction(i, b => Codec.Dial(dc.ContactMethods[0].Number));
+							DirectoryList.SetItemButtonAction(i, b => { if (!b) Codec.Dial(dc.ContactMethods[0].Number); });
                         }
                     }
                     else    // is DirectoryFolder
