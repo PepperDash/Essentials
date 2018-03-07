@@ -434,12 +434,13 @@ namespace PepperDash.Essentials
 			if (WSClient == null)
 			{
 				WSClient = new WebSocketClient();
-				WSClient.URL = string.Format("wss://{0}/system/join/{1}", Config.ServerUrl, this.SystemUuid);
-				WSClient.Connect();
-				Debug.Console(0, this, "Websocket connected");
-				WSClient.ReceiveCallBack = WebsocketReceive;
-				WSClient.ReceiveAsync();
 			}
+			WSClient.URL = string.Format("wss://{0}/system/join/{1}", Config.ServerUrl, this.SystemUuid);
+			WSClient.Connect();
+			Debug.Console(0, this, "Websocket connected");
+			WSClient.ReceiveCallBack = WebsocketReceive;
+			WSClient.ReceiveAsync();
+			
 
 
 			//// **********************************
@@ -497,7 +498,8 @@ namespace PepperDash.Essentials
 			WebSocketClient.WEBSOCKET_RESULT_CODES err)
 		{
 			var rx = System.Text.Encoding.UTF8.GetString(data, 0, (int)length);
-			ParseStreamRx(rx);
+			if(rx.Length > 0)
+				ParseStreamRx(rx);
 			WSClient.ReceiveAsync();
 			return 1;
 		}
