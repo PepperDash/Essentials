@@ -486,7 +486,6 @@ namespace PepperDash.Essentials
 			ResetOrStartHearbeatTimer();
 		}
 
-
 		/// <summary>
 		/// 
 		/// </summary>
@@ -498,8 +497,7 @@ namespace PepperDash.Essentials
 			WebSocketClient.WEBSOCKET_RESULT_CODES err)
 		{
 			var rx = System.Text.Encoding.UTF8.GetString(data, 0, (int)length);
-
-			Debug.Console(0, this, "WS RECEIVED {0}", rx);
+			ParseStreamRx(rx);
 			WSClient.ReceiveAsync();
 			return 1;
 		}
@@ -509,16 +507,9 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-        void SSEClient_LineReceived(object sender, GenericCommMethodReceiveTextArgs e)
-        {
-            if(e.Text.IndexOf("data:") > -1)
-            {
-				SseMessageLengthBeforeFailureCount += e.Text.Length;
-
-                var message = e.Text.Substring(6);
-
+        void ParseStreamRx(string message)
+		{
                 Debug.Console(1, this, "Message RX: '{0}'", message);
-
                 try
                 {
                     var messageObj = JObject.Parse(message);
@@ -536,13 +527,10 @@ namespace PepperDash.Essentials
 					else if (type == "close")
 					{
 						WSClient.Disconnect();
-						//SseClient.Disconnect();
 
 						ServerHeartbeatCheckTimer.Stop();
 						// Start the reconnect timer
 						StartReconnectTimer();
-						//ServerReconnectTimer = new CTimer(ConnectSseClient, null, ServerReconnectInterval, ServerReconnectInterval);
-						//ServerReconnectTimer.Reset(ServerReconnectInterval, ServerReconnectInterval);
 					}
 					else
 					{
@@ -634,7 +622,6 @@ namespace PepperDash.Essentials
 					SseMessageLengthBeforeFailureCount = 0;
                     Debug.Console(1, this, "Unable to parse message: {0}", err);	
                 }
-            }
         }
     }
 }
