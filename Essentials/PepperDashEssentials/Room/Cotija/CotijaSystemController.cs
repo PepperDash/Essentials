@@ -31,6 +31,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		CEvent PostLockEvent = new CEvent(true, true);
 
+		CEvent RegisterLockEvent = new CEvent(true, true);
+
 		public CotijaConfig Config { get; private set; }
 
 		HttpClient Client;
@@ -195,6 +197,14 @@ namespace PepperDash.Essentials
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
         void RegisterSystemToServer()
         {
+			var ready = RegisterLockEvent.Wait(2000);
+			if (!ready)
+			{
+				Debug.Console(1, this, "RegisterSystemToServer failed to enter after 2 seconds.  Ignoring");
+				return;
+			}
+			RegisterLockEvent.Reset();
+
 			try
             {
 				var confObject = ConfigReader.ConfigObject;
@@ -220,13 +230,14 @@ namespace PepperDash.Essentials
                     request.Header.SetHeaderValue("Content-Type", "application/json");
                     request.ContentString = postBody;
 
-					var err = regClient.DispatchAsync(request, PostConnectionCallback);
+					var err = regClient.DispatchAsync(request, RegistrationConnectionCallback);
                 }
 
             }
             catch (Exception e)
             {
                 Debug.Console(0, this, "ERROR: Initilizing Room: {0}", e);
+				RegisterLockEvent.Set();
             }
 
         }
@@ -342,9 +353,9 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="resp"></param>
         /// <param name="err"></param>
-        void PostConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
+        void RegistrationConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
         {
-			Debug.Console(1, this, "PostConnectionCallback: {0}", err);
+			Debug.Console(1, this, "RegistrationConnectionCallback: {0}", err);
             try
             {
                 if (resp != null && resp.Code == 200)
@@ -355,7 +366,7 @@ namespace PepperDash.Essentials
                         ServerReconnectTimer = null;
                     }
 
-                    ConnectStreamClient(null);
+                    ConnectStreamClient();
                 }
                 else
                 {
@@ -372,12 +383,13 @@ namespace PepperDash.Essentials
             {
                 Debug.Console(1, this, "Error Initializing Stream Client: {0}", e);
             }
+			RegisterLockEvent.Set();
         }
 
         /// <summary>
         /// Executes when we don't get a heartbeat message in time.  Triggers reconnect.
         /// </summary>
-        /// <param name="o"></param>
+        /// <param name="o">For CTimer callback. Not used</param>
         void HeartbeatExpiredTimerCallback(object o)
         {
 			Debug.Console(1, this, "Heartbeat Timer Expired.");
@@ -427,7 +439,7 @@ namespace PepperDash.Essentials
         /// Connects the SSE Client
         /// </summary>
         /// <param name="o"></param>
-        void ConnectStreamClient(object o)
+        void ConnectStreamClient()
         {
             Debug.Console(0, this, "Initializing Stream client to server.");
 
