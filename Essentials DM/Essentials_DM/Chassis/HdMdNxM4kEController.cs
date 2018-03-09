@@ -83,7 +83,10 @@ namespace PepperDash.Essentials.DM.Chassis
 
 		public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
 		{
-			Chassis.HdmiOutputs[1].VideoOut = Chassis.HdmiInputs[(uint)inputSelector];
+			// Try to make switch only when necessary.  The unit appears to toggle when already selected.
+			var current = Chassis.HdmiOutputs[1].VideoOut;
+			if(current != Chassis.HdmiInputs[(uint)inputSelector])
+				Chassis.HdmiOutputs[1].VideoOut = Chassis.HdmiInputs[(uint)inputSelector];
 		}
 
 		#endregion

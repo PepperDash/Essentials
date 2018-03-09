@@ -658,6 +658,7 @@ namespace PepperDash.Essentials
                     CurrentSourcePageManager.Show();
             }
             CurrentMode = UiDisplayMode.Presentation;
+			SetupSourceList();
             SetActivityFooterFeedbacks();
         }
 
@@ -986,6 +987,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void SetupSourceList()
 		{
+				
 			var inCall = CurrentRoom.InCallFeedback.BoolValue;
 			var config = ConfigReader.ConfigObject.SourceLists;
 			if (config.ContainsKey(_CurrentRoom.SourceListKey))
@@ -997,11 +999,14 @@ namespace PepperDash.Essentials
 				foreach (var kvp in srcList)
 				{
 					var srcConfig = kvp.Value;
+					Debug.Console(1, "**** {0}, {1}, {2}, {3}, {4}", srcConfig.PreferredName, srcConfig.IncludeInSourceList,
+						srcConfig.DisableCodecSharing, inCall, this.CurrentMode);
 					// Skip sources marked as not included, and filter list of non-sharable sources when in call
 					// or on share screen
  					if (!srcConfig.IncludeInSourceList || (inCall && srcConfig.DisableCodecSharing) 
 						|| this.CurrentMode == UiDisplayMode.Call && srcConfig.DisableCodecSharing) 
 					{
+						Debug.Console(1, "Skipping {0}", srcConfig.PreferredName);
 						continue;
 					}
 
