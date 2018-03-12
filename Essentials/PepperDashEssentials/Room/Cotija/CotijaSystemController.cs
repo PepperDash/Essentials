@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharp.CrestronWebSocketClient;
 using Crestron.SimplSharpPro;
@@ -208,6 +209,11 @@ namespace PepperDash.Essentials
 			try
             {
 				var confObject = ConfigReader.ConfigObject;
+                confObject.Info.RuntimeInfo.AppName = Assembly.GetExecutingAssembly().GetName().Name;
+                var version = Assembly.GetExecutingAssembly().GetName().Version;
+                confObject.Info.RuntimeInfo.AssemblyVersion = string.Format("v{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+                confObject.Info.RuntimeInfo.OsVersion = Crestron.SimplSharp.CrestronEnvironment.OSVersion.Firmware;
+
 				string postBody = JsonConvert.SerializeObject(confObject);
 				SystemUuid = confObject.SystemUuid;
 

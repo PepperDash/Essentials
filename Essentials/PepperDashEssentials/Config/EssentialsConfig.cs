@@ -22,6 +22,7 @@ namespace PepperDash.Essentials
 		[JsonProperty("template_url")]
         public string TemplateUrl { get; set; }
 
+
 		//public CotijaConfig Cotija { get; private set; }
 
         public string SystemUuid
