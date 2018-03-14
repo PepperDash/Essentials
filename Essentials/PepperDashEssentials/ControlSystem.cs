@@ -32,10 +32,6 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void InitializeSystem()
 		{
-            //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Reloads configuration file",
-            //    ConsoleAccessLevelEnum.AccessOperator);
-            //CrestronConsole.AddNewConsoleCommand(s => TearDown(), "ungo", "Unloads configuration file",
-            //    ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 foreach (var tl in TieLineCollection.Default)

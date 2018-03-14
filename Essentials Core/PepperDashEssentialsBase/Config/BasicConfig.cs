@@ -17,9 +17,6 @@ namespace PepperDash.Essentials.Core.Config
 		[JsonProperty("info")]
 		public InfoConfig Info { get; set; }
 
-		//[JsonProperty("roomLists")]
-		//public Dictionary<string, List<string>> RoomLists { get; set; }
-
 		[JsonProperty("devices")]
 		public List<DeviceConfig> Devices { get; set; }
 

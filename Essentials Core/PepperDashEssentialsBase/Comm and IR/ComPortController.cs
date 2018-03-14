@@ -26,12 +26,20 @@ namespace PepperDash.Essentials.Core
 		public ComPortController(string key, ComPort port, ComPort.ComPortSpec spec)
 			: base(key)
 		{
+			if (port == null)
+			{
+				Debug.Console(0, this,  "ERROR: Invalid com port, continuing but comms will not function");
+				return;
+			}
+
 			Port = port;
 			Spec = spec;
 			//IsConnected = new BoolFeedback(CommonBoolCue.IsConnected, () => true);
 
 			if (Port.Parent is CrestronControlSystem)
 			{
+
+
 				var result = Port.Register();
 				if (result != eDeviceRegistrationUnRegistrationResponse.Success)
 				{
@@ -80,11 +88,15 @@ namespace PepperDash.Essentials.Core
 
 		public void SendText(string text)
 		{
+			if (Port == null)
+				return;
 			Port.Send(text);
 		}
 
 		public void SendBytes(byte[] bytes)
 		{
+			if (Port == null)
+				return;
 			var text = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
 			Port.Send(text);
 		}
