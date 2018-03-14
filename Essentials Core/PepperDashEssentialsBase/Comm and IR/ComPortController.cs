@@ -43,7 +43,7 @@ namespace PepperDash.Essentials.Core
 				var result = Port.Register();
 				if (result != eDeviceRegistrationUnRegistrationResponse.Success)
 				{
-					Debug.Console(0, this, "WARNING: Cannot register Com port: {0}", result);
+					Debug.Console(0, this, "ERROR: Cannot register Com port: {0}", result);
 					return; // false
 				}
 			}
