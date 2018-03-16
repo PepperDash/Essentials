@@ -74,12 +74,12 @@ namespace PepperDash.Essentials
             Config = config;
 			Debug.Console(0, this, "Mobile UI controller initializing for server:{0}", config.ServerUrl);
 
-            CrestronConsole.AddNewConsoleCommand(DisconnectStreamClient, 
-				"CloseHttpClient", "Closes the active HTTP client", ConsoleAccessLevelEnum.AccessOperator);
+			//CrestronConsole.AddNewConsoleCommand(DisconnectStreamClient, 
+			//    "CloseHttpClient", "Closes the active HTTP client", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(AuthorizeSystem,
-				"cotijaauth", "Authorizes system to talk to cotija server", ConsoleAccessLevelEnum.AccessOperator);
-
-			//AddPostActivationAction(() => RegisterSystemToServer());
+				"mobileauth", "Authorizes system to talk to cotija server", ConsoleAccessLevelEnum.AccessOperator);
+			CrestronConsole.AddNewConsoleCommand(s => ShowInfo(),
+				"mobileinfo", "Shows information for current mobile control session", ConsoleAccessLevelEnum.AccessOperator);
         }
 
         /// <summary>
@@ -192,6 +192,20 @@ namespace PepperDash.Essentials
 			}
 		}
 
+		/// <summary>
+		/// Dumps info in response to console command.
+		/// </summary>
+		void ShowInfo()
+		{
+			CrestronConsole.ConsoleCommandResponse(@"Mobile Control Information:
+	Server address: {0}
+	System Name: {1}
+	System UUID: {2}
+	System User code: {3}
+	Connected?: {4}", Config.ServerUrl, RoomBridges[0].RoomName, SystemUuid, 
+					RoomBridges[0].UserCode, WSClient.Connected ? "Yes" : "No");
+		}
+
         /// <summary>
         /// Registers the room with the server
         /// </summary>
@@ -224,7 +238,7 @@ namespace PepperDash.Essentials
                 else
                 {
 					var regClient = new HttpClient();
-					regClient.Verbose = true;
+					regClient.Verbose = false;
 					regClient.KeepAlive = true;
 
 					string url = string.Format("http://{0}/api/system/join/{1}", Config.ServerUrl, SystemUuid);

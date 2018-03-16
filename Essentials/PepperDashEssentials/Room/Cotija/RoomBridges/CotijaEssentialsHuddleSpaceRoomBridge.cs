@@ -18,6 +18,17 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 
 		/// </summary>
+		public override string RoomName
+		{
+			get
+			{
+				return Room.Name;
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="room"></param>
         public CotijaEssentialsHuddleSpaceRoomBridge(EssentialsHuddleSpaceRoom room):

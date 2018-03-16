@@ -134,6 +134,14 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		public bool ConfigIsLoaded { get; private set; }
 
+		public override string RoomName
+		{
+			get { 
+				var name = EISC.StringOutput[StringJoin.ConfigRoomName].StringValue;
+				return string.IsNullOrEmpty(name) ? "Not Loaded" : name;
+			}
+		}
+
 		CotijaDdvc01DeviceBridge SourceBridge;
 
 

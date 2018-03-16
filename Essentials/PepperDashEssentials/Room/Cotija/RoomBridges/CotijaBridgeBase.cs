@@ -18,6 +18,8 @@ namespace PepperDash.Essentials
 
 		public string UserCode { get; private set; }
 
+		public abstract string RoomName { get; }
+
 		public CotijaBridgeBase(string key, string name)
 			: base(key, name)
 		{
