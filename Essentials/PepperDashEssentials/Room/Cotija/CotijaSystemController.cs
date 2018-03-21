@@ -197,13 +197,28 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void ShowInfo()
 		{
+			var url = Config != null ? Config.ServerUrl : "No config";
+			string name;
+			string code;
+			if (RoomBridges != null && RoomBridges.Count > 0)
+			{
+				name = RoomBridges[0].RoomName;
+				code = RoomBridges[0].UserCode;
+			}
+			else
+			{
+				name = "No config";
+				code = "Not available";
+			}
+			var conn = WSClient == null ? "No client" : (WSClient.Connected ? "Yes" : "No");
+
 			CrestronConsole.ConsoleCommandResponse(@"Mobile Control Information:
 	Server address: {0}
 	System Name: {1}
 	System UUID: {2}
 	System User code: {3}
-	Connected?: {4}", Config.ServerUrl, RoomBridges[0].RoomName, SystemUuid, 
-					RoomBridges[0].UserCode, WSClient.Connected ? "Yes" : "No");
+	Connected?: {4}", url, name, SystemUuid, 
+					code, conn);
 		}
 
         /// <summary>
