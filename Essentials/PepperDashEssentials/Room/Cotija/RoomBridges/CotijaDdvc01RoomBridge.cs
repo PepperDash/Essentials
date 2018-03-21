@@ -456,7 +456,7 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// <param name="contentObject">The contents of the content object</param>
 		void PostStatusMessage(object contentObject)
 		{
-			Parent.PostToServer(JObject.FromObject(new
+			Parent.SendMessageToServer(JObject.FromObject(new
 				{
 					type = "/room/status/",
 					content = contentObject
@@ -470,7 +470,7 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// <param name="contentObject"></param>
 		void PostMessage(string messageType, object contentObject)
 		{
-			Parent.PostToServer(JObject.FromObject(new
+			Parent.SendMessageToServer(JObject.FromObject(new
 			{
 				type = messageType,
 				content = contentObject

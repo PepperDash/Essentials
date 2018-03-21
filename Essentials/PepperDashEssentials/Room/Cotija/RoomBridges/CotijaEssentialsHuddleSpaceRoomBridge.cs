@@ -102,7 +102,7 @@ namespace PepperDash.Essentials
 			JObject message = new JObject();
 			message.Add("type", "/room/shutdown/");
 			message.Add("content", roomStatus);
-			Parent.PostToServer(message);
+			Parent.SendMessageToServer(message);
 		}
 
 		/// <summary>
@@ -117,7 +117,7 @@ namespace PepperDash.Essentials
 			JObject message = new JObject();
 			message.Add("type", "/room/shutdown/");
 			message.Add("content", roomStatus);
-			Parent.PostToServer(message);
+			Parent.SendMessageToServer(message);
 		}
 
 		/// <summary>
@@ -133,7 +133,7 @@ namespace PepperDash.Essentials
 			JObject message = new JObject();
 			message.Add("type", "/room/shutdown/");
 			message.Add("content", roomStatus);
-			Parent.PostToServer(message);
+			Parent.SendMessageToServer(message);
 			// equivalent JS message:
 			//	Post( { type: '/room/status/', content: { shutdown: 'hasStarted', duration: Room.ShutdownPromptTimer.SecondsToCount })
 		}
@@ -150,7 +150,7 @@ namespace PepperDash.Essentials
 			JObject message = new JObject();
 			message.Add("type", "/room/status/");
 			message.Add("content", roomStatus);
-			Parent.PostToServer(message);
+			Parent.SendMessageToServer(message);
 		}
 
 		/// <summary>
@@ -165,7 +165,7 @@ namespace PepperDash.Essentials
 			JObject message = new JObject();
 			message.Add("type", "/room/status/");
 			message.Add("content", roomStatus);
-			Parent.PostToServer(message);
+			Parent.SendMessageToServer(message);
 		}
 
 		/// <summary>
@@ -193,7 +193,7 @@ namespace PepperDash.Essentials
             message.Add("type", "/room/status/");
             message.Add("content", roomStatus);
 
-            Parent.PostToServer(message);
+            Parent.SendMessageToServer(message);
         }
 
         void Room_CurrentVolumeDeviceChange(object sender, VolumeDeviceChangeEventArgs e)
@@ -245,7 +245,7 @@ namespace PepperDash.Essentials
                 message.Add("type", "/room/status/");
                 message.Add("content", roomStatus);
 
-                Parent.PostToServer(message);
+                Parent.SendMessageToServer(message);
             }
         }
 
@@ -297,7 +297,7 @@ namespace PepperDash.Essentials
                 message.Add("type", "/room/status/");
                 message.Add("content", roomStatus);
 
-                Parent.PostToServer(message);
+                Parent.SendMessageToServer(message);
             }
             else 
             {
@@ -362,7 +362,7 @@ namespace PepperDash.Essentials
             message.Add("type", "/room/status/");
             message.Add("content", roomStatus);
 
-            Parent.PostToServer(message);
+            Parent.SendMessageToServer(message);
 
         }
      
