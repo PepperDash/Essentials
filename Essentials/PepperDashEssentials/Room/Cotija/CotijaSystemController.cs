@@ -280,7 +280,7 @@ namespace PepperDash.Essentials
 
                 WSClient.SendAsync(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
             }
-
+ 
         }
 
         /// <summary>

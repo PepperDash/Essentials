@@ -120,8 +120,8 @@
     <Compile Include="DSP\PolycomSoundStructure\SoundStructureBasics.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Generic\GenericSource.cs" />
-    <Compile Include="MIcrophone\MicrophonePrivacyController.cs" />
-    <Compile Include="MIcrophone\MicrophonePrivacyControllerConfig.cs" />
+    <Compile Include="Microphone\MicrophonePrivacyController.cs" />
+    <Compile Include="Microphone\MicrophonePrivacyControllerConfig.cs" />
     <Compile Include="Occupancy\EssentialsGlsOccupancySensorBaseController.cs" />
     <Compile Include="Occupancy\EssentialsOccupancyAggregator.cs" />
     <Compile Include="Occupancy\iOccupancyStatusProvider.cs" />
