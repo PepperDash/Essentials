@@ -286,20 +286,8 @@ namespace PepperDash.Essentials
                     if (previousDev is ITransport)
                         (previousDev as ITransport).UnlinkActions(Parent);
                 }
-
-
-                var huddleRoom = room as EssentialsHuddleSpaceRoom;
-                JObject roomStatus = new JObject();
-                roomStatus.Add("selectedSourceKey", huddleRoom.CurrentSourceInfoKey);
-
-                JObject message = new JObject();
-
-                message.Add("type", "/room/status/");
-                message.Add("content", roomStatus);
-
-                Parent.SendMessageToServer(message);
             }
-            else 
+            else // did change
             {
                 if (info != null)
                 {
@@ -321,6 +309,17 @@ namespace PepperDash.Essentials
                         (dev as IPower).LinkActions(Parent);
                     if (dev is ITransport)
                         (dev as ITransport).LinkActions(Parent);
+
+					var huddleRoom = room as EssentialsHuddleSpaceRoom;
+					JObject roomStatus = new JObject();
+					roomStatus.Add("selectedSourceKey", huddleRoom.CurrentSourceInfoKey);
+
+					JObject message = new JObject();
+
+					message.Add("type", "/room/status/");
+					message.Add("content", roomStatus);
+
+					Parent.SendMessageToServer(message);
                 }
             }
         }

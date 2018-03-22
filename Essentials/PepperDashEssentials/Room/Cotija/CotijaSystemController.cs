@@ -61,8 +61,6 @@ namespace PepperDash.Essentials
             Config = config;
 			Debug.Console(0, this, "Mobile UI controller initializing for server:{0}", config.ServerUrl);
 
-			//CrestronConsole.AddNewConsoleCommand(DisconnectStreamClient, 
-			//    "CloseHttpClient", "Closes the active HTTP client", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(AuthorizeSystem,
 				"mobileauth", "Authorizes system to talk to cotija server", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(s => ShowInfo(),
@@ -149,7 +147,6 @@ namespace PepperDash.Essentials
 				return;
 			}
 
-
 			var req = new HttpClientRequest();
 			string url = string.Format("http://{0}/api/system/grantcode/{1}", Config.ServerUrl, code);
 			Debug.Console(0, this, "Authorizing to: {0}", url);
@@ -164,13 +161,13 @@ namespace PepperDash.Essentials
 				req.Url.Parse(url);
 				new HttpClient().DispatchAsync(req, (r, e) =>
 				{
-					if (r.Code == 200)
+					if (e == HTTP_CALLBACK_ERROR.COMPLETED && r.Code == 200)
 					{
 						Debug.Console(0, this, "System authorized, sending config.");
 						RegisterSystemToServer();
 					}
 					else
-						Debug.Console(0, this, "HTTP Error {0} in authorizing system", r.Code);
+						Debug.Console(0, this, "HTTP Error {0} in authorizing system", e);
 				});
 			}
 			catch (Exception e)
@@ -275,12 +272,12 @@ namespace PepperDash.Essentials
             if (WSClient != null && WSClient.Connected)
             {
                 string message = JsonConvert.SerializeObject(o, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-
+				Debug.Console(1, this, "Message TX: {0}", message);
                 var messageBytes = System.Text.Encoding.UTF8.GetBytes(message);
-
-                WSClient.SendAsync(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
+				WSClient.Send(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
+				//WSClient.SendAsync(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
             }
-
+		
         }
 
         /// <summary>
@@ -405,35 +402,8 @@ namespace PepperDash.Essentials
 			WSClient.Connect();
 			Debug.Console(0, this, "Websocket connected");
 			WSClient.ReceiveCallBack = WebsocketReceiveCallback;
-            WSClient.SendCallBack = WebsocketSendCallback;
+			//WSClient.SendCallBack = WebsocketSendCallback;
 			WSClient.ReceiveAsync();
-			
-
-
-			//// **********************************
-			//if (SseClient == null)
-			//{
-			//    SseClient = new GenericHttpSseClient(string.Format("{0}-SseClient", Key), Name);
-
-			//    CommunicationGather LineGathered = new CommunicationGather(SseClient, "\x0d\x0a");
-
-			//    LineGathered.LineReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(SSEClient_LineReceived);
-			//}
-			//else
-			//{
-			//    if (SseClient.IsConnected)
-			//    {
-			//        SseClient.Disconnect();
-			//    }
-			//}
-
-            string uuid = Essentials.ConfigReader.ConfigObject.SystemUuid;
-
-			//SseClient.Url = string.Format("http://{0}/api/system/stream/{1}", Config.ServerUrl, uuid);
-
-			//SseClient.Connect();
-
-			// ***********************************
         }
 
 		/// <summary>
@@ -477,7 +447,7 @@ namespace PepperDash.Essentials
         /// <returns></returns>
         int WebsocketSendCallback(Crestron.SimplSharp.CrestronWebSocketClient.WebSocketClient.WEBSOCKET_RESULT_CODES result)
         {
-            Debug.Console(2, "SendCallback result: {0}", result);
+            Debug.Console(1, this, "SendCallback result: {0}", result);
 
             return 1;
         }
