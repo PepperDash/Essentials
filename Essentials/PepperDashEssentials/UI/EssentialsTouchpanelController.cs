@@ -94,7 +94,7 @@ namespace PepperDash.Essentials
                                 Debug.Console(0, this, "WARNING: Registration failed. Continuing, but panel may not function: {0}", regSuccess);
 
                             // Give up cleanly if SGD is not present.
-                            var sgdName = @"\NVRAM\Program" + InitialParametersClass.ApplicationNumber
+                            var sgdName = Global.FilePathPrefix
                                 + @"\sgd\" + props.SgdFile;
                             if (!File.Exists(sgdName))
                             {

@@ -5,6 +5,7 @@ using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials
@@ -21,13 +22,13 @@ namespace PepperDash.Essentials
 			Debug.Console(0, "Loading unmerged system/template portal configuration file.");
 			try
 			{
-				var filePath = string.Format(@"\NVRAM\program{0}\ConfigurationFile.json", 
-                    InitialParametersClass.ApplicationNumber);
+                var filePath = Global.FilePathPrefix + @"ConfigurationFile.json";
+
 				if (!File.Exists(filePath))
 				{
-					Debug.Console(0, 
-						"ERROR: Configuration file not present. Please load file to {0} and reset program", filePath);
-					return false;
+                        Debug.Console(0,
+                            "ERROR: Configuration file not present. Please load file to {0} and reset program", filePath);
+                        return false;
 				}
 
 				using (StreamReader fs = new StreamReader(filePath))

@@ -54,8 +54,33 @@ namespace PepperDash.Essentials
 						"Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
 				}, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
+
+            DeterminePlatform();
+
             GoWithLoad();
 		}
+
+        /// <summary>
+        /// Determines if the program is running on a processor (appliance) or server (XiO Edge).
+        /// 
+        /// Sets Global.FilePathPrefix based on platform
+        /// </summary>
+        public void DeterminePlatform()
+        {
+            string filePathPrefix;
+
+            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)
+            {
+                filePathPrefix = string.Format(@"\NVRAM\program{0}\",
+                        InitialParametersClass.ApplicationNumber);
+            }
+            else
+            {
+                filePathPrefix = (@"\USER\");
+            }
+
+            Global.SetFilePathPrefix(filePathPrefix);
+        }
 
 		/// <summary>
 		/// Do it, yo
@@ -109,17 +134,16 @@ namespace PepperDash.Essentials
 		bool SetupFilesystem()
 		{
 			Debug.Console(0, "Verifying and/or creating folder structure");
-			var appNum = InitialParametersClass.ApplicationNumber;
-			var configDir = @"\NVRAM\Program" + appNum;
+			var configDir = Global.FilePathPrefix;
 			var configExists = Directory.Exists(configDir);
 			if (!configExists)
 				Directory.Create(configDir);
 
-			var irDir = string.Format(@"\NVRAM\Program{0}\ir", appNum);
+			var irDir = Global.FilePathPrefix + @"ir";
 			if (!Directory.Exists(irDir))
 				Directory.Create(irDir);
 
-			var sgdDir = string.Format(@"\NVRAM\Program{0}\sgd", appNum);
+            var sgdDir = Global.FilePathPrefix + @"sgd";
 			if (!Directory.Exists(sgdDir))
 				Directory.Create(sgdDir);
 

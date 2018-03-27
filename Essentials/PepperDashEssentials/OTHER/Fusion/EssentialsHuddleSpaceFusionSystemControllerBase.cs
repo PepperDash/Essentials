@@ -140,17 +140,20 @@ namespace PepperDash.Essentials.Fusion
 
             var slot = Global.ControlSystem.ProgramNumber;
 
-            string guidFilePath = string.Format(@"\NVRAM\Program{0}\{1}-FusionGuids.json", Global.ControlSystem.ProgramNumber, InitialParametersClass.ProgramIDTag);
+            string guidFilePath = Global.FilePathPrefix + string.Format(@"{1}-FusionGuids.json", Global.ControlSystem.ProgramNumber, InitialParametersClass.ProgramIDTag);        
 
             GuidFileExists = File.Exists(guidFilePath);
 
-            if (GuidFileExists)
+            // Check if file exists
+            if (!GuidFileExists)
             {
-                ReadGuidFile(guidFilePath);
+                // Does not exist. Create GUIDs
+                GUIDs = new FusionRoomGuids(Room.Name, ipId, GUIDs.GenerateNewRoomGuid(slot, mac), FusionStaticAssets);
             }
             else
             {
-                GUIDs = new FusionRoomGuids(Room.Name, ipId, GUIDs.GenerateNewRoomGuid(slot, mac), FusionStaticAssets);              
+                // Exists. Read GUIDs
+                ReadGuidFile(guidFilePath);
             }
 
 			CreateSymbolAndBasicSigs(IpId);
@@ -267,11 +270,11 @@ namespace PepperDash.Essentials.Fusion
 
                 }
 
-                Debug.Console(0, this, "Fusion Guids successfully read from file:");
+                Debug.Console(0, this, "Fusion Guids successfully read from file: {0}", filePath);
 
                 Debug.Console(1, this, "\nRoom Name: {0}\nIPID: {1:x}\n RoomGuid: {2}", Room.Name, IpId, RoomGuid);
 
-                foreach (KeyValuePair<int, FusionAsset> item in FusionStaticAssets)
+                foreach (var item in FusionStaticAssets)
                 {
                     Debug.Console(1, this, "\nAsset Name: {0}\nAsset No: {1}\n Guid: {2}", item.Value.Name, item.Value.SlotNumber, item.Value.InstanceId);
                 }

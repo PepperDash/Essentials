@@ -17,7 +17,7 @@ namespace PepperDash.Essentials
 {
 	public static class FactoryHelper
 	{
-		public static string IrDriverPathPrefix = @"\NVRAM\IR\";
+		public static string IrDriverPathPrefix = Global.FilePathPrefix + @"IR\";
 
 		public static void HandleUnknownType(JToken devToken, string type)
 		{
