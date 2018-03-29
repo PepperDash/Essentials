@@ -19,14 +19,18 @@ namespace PepperDash.Essentials
 
 		public static bool LoadConfig2()
 		{
-			Debug.Console(0, "Loading unmerged system/template portal configuration file.");
+			Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading unmerged system/template portal configuration file.");
 			try
 			{
-                var filePath = Global.FilePathPrefix + @"ConfigurationFile.json";
+                var filePath = Global.FilePathPrefix + "configurationFile.json";
 
-				if (!File.Exists(filePath))
+#warning Temporary Error logging for XiO Edge Debugging
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to load config file: '{0}'", filePath);
+
+                if (!File.Exists(filePath))
 				{
-                        Debug.Console(0,
+#warning Temporary Error logging for XiO Edge Debugging
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, 
                             "ERROR: Configuration file not present. Please load file to {0} and reset program", filePath);
                         return false;
 				}
@@ -48,11 +52,16 @@ namespace PepperDash.Essentials
                         ConfigObject.TemplateUrl= doubleObj["template_url"].Value<string>();
                     }
 				}
+
+#warning Temporary Error logging for XiO Edge Debugging
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Successfully Loaded Merged Config");
+
 				return true;
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, "ERROR: Config load failed: \r{0}", e);
+#warning Temporary Error logging for XiO Edge Debugging
+                Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Config load failed: \r{0}", e);
 				return false;
 			}
 		}

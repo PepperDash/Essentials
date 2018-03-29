@@ -38,7 +38,8 @@ namespace PepperDash.Essentials
 		{
 			AddPostActivationAction(() =>
 				{
-					Debug.Console(0, this, "Creating hardware...");
+#warning Temporary Error logging for XiO Edge Debugging
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Creating touchpanel hardware...");
 					type = type.ToLower();
 					try
 					{
@@ -68,13 +69,15 @@ namespace PepperDash.Essentials
                             Panel = new Tsw1060(id, Global.ControlSystem);
                         else
                         {
-                            Debug.Console(0, this, "WARNING: Cannot create TSW controller with type '{0}'", type);
+#warning Temporary Error logging for XiO Edge Debugging
+                            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create TSW controller with type '{0}'", type);
                             return;
                         }
 					}
 					catch (Exception e)
 					{
-						Debug.Console(0, this, "WARNING: Cannot create TSW base class. Panel will not function: {0}", e.Message);
+#warning Temporary Error logging for XiO Edge Debugging
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create TSW base class. Panel will not function: {0}", e.Message);
 						return;				
 					}
 
@@ -90,12 +93,13 @@ namespace PepperDash.Essentials
 					//CrestronInvoke.BeginInvoke(o =>
 					//    {
                             var regSuccess = Panel.Register();
+#warning Temporary Error logging for XiO Edge Debugging
                             if (regSuccess != eDeviceRegistrationUnRegistrationResponse.Success)
-                                Debug.Console(0, this, "WARNING: Registration failed. Continuing, but panel may not function: {0}", regSuccess);
+                                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Registration failed. Continuing, but panel may not function: {0}", regSuccess);
 
                             // Give up cleanly if SGD is not present.
                             var sgdName = Global.FilePathPrefix
-                                + @"\sgd\" + props.SgdFile;
+                                + Global.DirectorySeparator + "sgd" + Global.DirectorySeparator + props.SgdFile;
                             if (!File.Exists(sgdName))
                             {
                                 Debug.Console(0, this, "ERROR: Smart object file '{0}' not present. Exiting TSW load", sgdName);

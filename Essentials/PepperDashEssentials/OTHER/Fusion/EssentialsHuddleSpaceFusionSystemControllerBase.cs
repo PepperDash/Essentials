@@ -128,55 +128,63 @@ namespace PepperDash.Essentials.Fusion
 			: base(room.Key + "-fusion")
 		{
 
-			Room = room;
-
-            IpId = ipId;
-
-            FusionStaticAssets = new Dictionary<int, FusionAsset>();
-
-            GUIDs = new FusionRoomGuids();
-
-            var mac = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
-
-            var slot = Global.ControlSystem.ProgramNumber;
-
-            string guidFilePath = Global.FilePathPrefix + string.Format(@"{1}-FusionGuids.json", Global.ControlSystem.ProgramNumber, InitialParametersClass.ProgramIDTag);        
-
-            GuidFileExists = File.Exists(guidFilePath);
-
-            // Check if file exists
-            if (!GuidFileExists)
+            try
             {
-                // Does not exist. Create GUIDs
-                GUIDs = new FusionRoomGuids(Room.Name, ipId, GUIDs.GenerateNewRoomGuid(slot, mac), FusionStaticAssets);
-            }
-            else
-            {
-                // Exists. Read GUIDs
-                ReadGuidFile(guidFilePath);
-            }
 
-			CreateSymbolAndBasicSigs(IpId);
-			SetUpSources();
-			SetUpCommunitcationMonitors();
-			SetUpDisplay();
-			SetUpError();
-            ExecuteCustomSteps();
+                Room = room;
 
-            if(Room.RoomOccupancy != null)
-            {
-                if(Room.OccupancyStatusProviderIsRemote)
-                    SetUpRemoteOccupancy();
+                IpId = ipId;
+
+                FusionStaticAssets = new Dictionary<int, FusionAsset>();
+
+                GUIDs = new FusionRoomGuids();
+
+                var mac = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, 0);
+
+                var slot = Global.ControlSystem.ProgramNumber;
+
+                string guidFilePath = Global.FilePathPrefix + string.Format(@"{0}-FusionGuids.json", InitialParametersClass.ProgramIDTag);
+
+                GuidFileExists = File.Exists(guidFilePath);
+
+                // Check if file exists
+                if (!GuidFileExists)
+                {
+                    // Does not exist. Create GUIDs
+                    GUIDs = new FusionRoomGuids(Room.Name, ipId, GUIDs.GenerateNewRoomGuid(slot, mac), FusionStaticAssets);
+                }
                 else
                 {
-                    SetUpLocalOccupancy();
+                    // Exists. Read GUIDs
+                    ReadGuidFile(guidFilePath);
                 }
+
+                CreateSymbolAndBasicSigs(IpId);
+                SetUpSources();
+                SetUpCommunitcationMonitors();
+                SetUpDisplay();
+                SetUpError();
+                ExecuteCustomSteps();
+
+                if (Room.RoomOccupancy != null)
+                {
+                    if (Room.OccupancyStatusProviderIsRemote)
+                        SetUpRemoteOccupancy();
+                    else
+                    {
+                        SetUpLocalOccupancy();
+                    }
+                }
+
+                // Make it so!   
+                FusionRVI.GenerateFileForAllFusionDevices();
+
+                GenerateGuidFile(guidFilePath);
             }
-
-            // Make it so!   
-            FusionRVI.GenerateFileForAllFusionDevices();
-
-            GenerateGuidFile(guidFilePath);      
+            catch (Exception e)
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Error Building Fusion System Controller: {0}", e);
+            }
 		}
 
         /// <summary>
@@ -245,7 +253,7 @@ namespace PepperDash.Essentials.Fusion
         {
             if(string.IsNullOrEmpty(filePath))
             {
-                Debug.Console(0, this, "Error reading guid file.  No path specified.");
+                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Error reading guid file.  No path specified.");
                 return;
             }
 
@@ -270,7 +278,7 @@ namespace PepperDash.Essentials.Fusion
 
                 }
 
-                Debug.Console(0, this, "Fusion Guids successfully read from file: {0}", filePath);
+                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Fusion Guids successfully read from file: {0}", filePath);
 
                 Debug.Console(1, this, "\nRoom Name: {0}\nIPID: {1:x}\n RoomGuid: {2}", Room.Name, IpId, RoomGuid);
 
@@ -281,7 +289,7 @@ namespace PepperDash.Essentials.Fusion
             }
             catch (Exception e)
             {
-                Debug.Console(0, this, "Error reading guid file: {0}", e);
+                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Error reading guid file: {0}", e);
             }
             finally
             {
@@ -293,7 +301,7 @@ namespace PepperDash.Essentials.Fusion
 
 		protected virtual void CreateSymbolAndBasicSigs(uint ipId)
 		{
-            Debug.Console(1, this, "Creating Fusion Room symbol with GUID: {0}", RoomGuid);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Creating Fusion Room symbol with GUID: {0}", RoomGuid);
 
             FusionRoom = new FusionRoom(ipId, Global.ControlSystem, Room.Name, RoomGuid);
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.Use();
@@ -395,31 +403,20 @@ namespace PepperDash.Essentials.Fusion
 
         protected void GetProcessorInfo()
         {
-            //SystemName = FusionRoom.CreateOffsetStringSig(50, "Info - Processor - System Name", eSigIoMask.InputSigOnly);
-            //Model = FusionRoom.CreateOffsetStringSig(51, "Info - Processor - Model", eSigIoMask.InputSigOnly);
-            //SerialNumber = FusionRoom.CreateOffsetStringSig(52, "Info - Processor - Serial Number", eSigIoMask.InputSigOnly);
-            //Uptime = FusionRoom.CreateOffsetStringSig(53, "Info - Processor - Uptime", eSigIoMask.InputSigOnly);
 
             Firmware = FusionRoom.CreateOffsetStringSig(61, "Info - Processor - Firmware", eSigIoMask.InputSigOnly);
 
-            for (int i = 0; i < Global.ControlSystem.NumProgramsSupported; i++)
+            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)
             {
-                var join = 62 + i;
-                var progNum = i + 1;
-                Program[i] = FusionRoom.CreateOffsetStringSig((uint)join, string.Format("Info - Processor - Program {0}", progNum), eSigIoMask.InputSigOnly);
+                for (int i = 0; i < Global.ControlSystem.NumProgramsSupported; i++)
+                {
+                    var join = 62 + i;
+                    var progNum = i + 1;
+                    Program[i] = FusionRoom.CreateOffsetStringSig((uint)join, string.Format("Info - Processor - Program {0}", progNum), eSigIoMask.InputSigOnly);
+                }
             }
 
             Firmware.InputSig.StringValue = InitialParametersClass.FirmwareVersion;
-
-            //var programs = ProcessorProgReg.GetProcessorProgReg();
-
-            //for (int i = 1; i < Global.ControlSystem.NumProgramsSupported; i++)
-            //{
-            //    var join = 62 + i;
-            //    var progNum = i + 1;
-            //    if (programs[i].Exists)
-            //        Program[i].InputSig.StringValue = programs[i].Name;
-            //}
             
         }
 

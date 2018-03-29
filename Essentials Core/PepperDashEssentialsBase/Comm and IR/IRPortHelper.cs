@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core
 		{
 			get
 			{
-				return Global.FilePathPrefix + @"IR\";
+				return Global.FilePathPrefix + "IR" + Global.DirectorySeparator;
 			}
 		}
 

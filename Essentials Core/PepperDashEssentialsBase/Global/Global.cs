@@ -17,6 +17,14 @@ namespace PepperDash.Essentials.Core
 
         public static string FilePathPrefix { get; private set; }
 
+        public static char DirectorySeparator
+        {
+            get
+            {
+                return System.IO.Path.DirectorySeparatorChar;
+            }
+        }
+
         /// <summary>
         /// Sets the file path prefix
         /// </summary>
