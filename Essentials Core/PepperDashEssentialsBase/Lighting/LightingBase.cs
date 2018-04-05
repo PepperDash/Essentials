@@ -11,10 +11,9 @@ namespace PepperDash.Essentials.Core.Lighting
 {
     public abstract class LightingBase : Device, ILightingScenes
     {
-
         #region ILightingScenes Members
 
-        event EventHandler<LightingSceneChangeEventArgs> ILightingScenes.LightingSceneChange
+        public event EventHandler<LightingSceneChangeEventArgs> LightingSceneChange
         {
             add { throw new NotImplementedException(); }
             remove { throw new NotImplementedException(); }
@@ -27,8 +26,8 @@ namespace PepperDash.Essentials.Core.Lighting
         #endregion
 
 
-        public LightingBase(string key, string name) :
-            base(key, name)
+        public LightingBase(string key, string name)
+            : base(key, name)
         {
             LightingScenes = new List<LightingScene>();
         }
@@ -41,5 +40,6 @@ namespace PepperDash.Essentials.Core.Lighting
     public class LightingScene
     {
         public string Name { get; set; }
+        public object ID { get; set; }
     }
 }
