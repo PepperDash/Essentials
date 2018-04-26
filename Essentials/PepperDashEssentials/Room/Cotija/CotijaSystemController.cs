@@ -49,6 +49,11 @@ namespace PepperDash.Essentials
 		List<CotijaBridgeBase> RoomBridges = new List<CotijaBridgeBase>();
 
         long ButtonHeartbeatInterval = 1000;
+
+		/// <summary>
+		/// Used for tracking HTTP debugging
+		/// </summary>
+		bool HttpDebugEnabled;
 		
 		/// <summary>
 		/// 
@@ -65,6 +70,8 @@ namespace PepperDash.Essentials
 				"mobileauth", "Authorizes system to talk to cotija server", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(s => ShowInfo(),
 				"mobileinfo", "Shows information for current mobile control session", ConsoleAccessLevelEnum.AccessOperator);
+			CrestronConsole.AddNewConsoleCommand(s => { HttpDebugEnabled = (s.Trim() != "0"); },
+				"mobilehttpdebug", "1 enables more verbose HTTP response debugging", ConsoleAccessLevelEnum.AccessOperator);
         }
 
         /// <summary>
@@ -161,6 +168,8 @@ namespace PepperDash.Essentials
 				req.Url.Parse(url);
 				new HttpClient().DispatchAsync(req, (r, e) =>
 				{
+					CheckHttpDebug(r, e);
+
 					if (e == HTTP_CALLBACK_ERROR.COMPLETED && r.Code == 200)
 					{
 						Debug.Console(0, this, "System authorized, sending config.");
@@ -307,6 +316,7 @@ namespace PepperDash.Essentials
         /// <param name="err"></param>
         void RegistrationConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
         {
+			CheckHttpDebug(resp, err);
 			Debug.Console(1, this, "RegistrationConnectionCallback: {0}", err);
             try
             {
@@ -421,6 +431,24 @@ namespace PepperDash.Essentials
 				}
 			}
 			ResetOrStartHearbeatTimer();
+		}
+
+		/// <summary>
+		/// Outputs debug info when enabled
+		/// </summary>
+		/// <param name="req"></param>
+		/// <param name="r"></param>
+		/// <param name="e"></param>
+		void CheckHttpDebug(HttpClientResponse r, HTTP_CALLBACK_ERROR e)
+		{
+			if (HttpDebugEnabled)
+			{
+				Debug.Console(0, this, "HTTP Response URL: {0}", r.ResponseUrl.ToString());
+				Debug.Console(0, this, "----------------------------------------------------");
+				Debug.Console(0, this, "HTTP Response 'error' {0}", e);
+				Debug.Console(0, this, "HTTP Response code: {0}", r.Code);
+				Debug.Console(0, this, "HTTP Response content: \r{0}", r.ContentString);
+			}
 		}
 
 		/// <summary>
