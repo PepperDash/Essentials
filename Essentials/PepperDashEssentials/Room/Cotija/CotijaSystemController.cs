@@ -237,7 +237,7 @@ namespace PepperDash.Essentials
                 else
                 {
 					var regClient = new HttpClient();
-					regClient.Verbose = false;
+					regClient.Verbose = true;
 					regClient.KeepAlive = true;
 
 					string url = string.Format("http://{0}/api/system/join/{1}", Config.ServerUrl, SystemUuid);

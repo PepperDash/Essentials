@@ -54,7 +54,7 @@ namespace PepperDash.Essentials
 		[JsonProperty("rooms")]
 		public List<EssentialsRoomConfig> Rooms { get; set; }
 	}
-
+		
 	/// <summary>
 	/// 
 	/// </summary>

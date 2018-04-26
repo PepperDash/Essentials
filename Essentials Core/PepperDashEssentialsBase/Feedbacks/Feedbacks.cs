@@ -20,7 +20,9 @@ namespace PepperDash.Essentials.Core
 		public abstract eCueType Type { get; }
 
 		/// <summary>
-		/// 
+		/// Feedbacks can be put into test mode for simulation of events without real data. 
+		/// Using JSON debugging methods and the Set/ClearTestValue methods, we can simulate
+		/// Feedback behaviors
 		/// </summary>
 		public bool InTestMode { get; protected set; }
 
@@ -58,6 +60,9 @@ namespace PepperDash.Essentials.Core
 			CrestronInvoke.BeginInvoke(o => FireUpdate());
 		}
 
+		/// <summary>
+		/// Helper method that fires event. Use this intstead of calling OutputChange
+		/// </summary>
 		protected void OnOutputChange()
 		{
 			if (OutputChange != null) OutputChange(this, EventArgs.Empty);
@@ -70,7 +75,8 @@ namespace PepperDash.Essentials.Core
 	public class BoolFeedback : Feedback
 	{
         /// <summary>
-        /// Returns the current value of the feedback, derived from the ValueFunc
+        /// Returns the current value of the feedback, derived from the ValueFunc. The ValueFunc is 
+		/// evaluated whenever FireUpdate() is called
         /// </summary>
         public override bool BoolValue { get { return _BoolValue; } }
         bool _BoolValue;
@@ -169,6 +175,7 @@ namespace PepperDash.Essentials.Core
         public override int IntValue { get { return _IntValue; } } // ValueFunc.Invoke(); } }
         int _IntValue;
         public ushort UShortValue { get { return (ushort)_IntValue; } }
+
 		public override eCueType Type { get { return eCueType.Int; } }
 
 		public int TestValue { get; private set; }
@@ -241,6 +248,7 @@ namespace PepperDash.Essentials.Core
 	{
         public override string StringValue { get { return _StringValue; } } // ValueFunc.Invoke(); } }
         string _StringValue;
+
 		public override eCueType Type { get { return eCueType.String; } }
 
 		/// <summary>
