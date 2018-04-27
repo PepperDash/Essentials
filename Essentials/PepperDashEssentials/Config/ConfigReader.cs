@@ -24,12 +24,10 @@ namespace PepperDash.Essentials
 			{
                 var filePath = Global.FilePathPrefix + "configurationFile.json";
 
-#warning Temporary Error logging for XiO Edge Debugging
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to load config file: '{0}'", filePath);
 
                 if (!File.Exists(filePath))
 				{
-#warning Temporary Error logging for XiO Edge Debugging
                         Debug.Console(0, Debug.ErrorLogLevel.Error, 
                             "ERROR: Configuration file not present. Please load file to {0} and reset program", filePath);
                         return false;
@@ -53,14 +51,12 @@ namespace PepperDash.Essentials
                     }
 				}
 
-#warning Temporary Error logging for XiO Edge Debugging
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Successfully Loaded Merged Config");
 
 				return true;
 			}
 			catch (Exception e)
 			{
-#warning Temporary Error logging for XiO Edge Debugging
                 Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Config load failed: \r{0}", e);
 				return false;
 			}

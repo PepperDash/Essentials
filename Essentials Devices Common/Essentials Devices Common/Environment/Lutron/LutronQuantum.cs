@@ -15,7 +15,10 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         public CommunicationGather PortGather { get; private set; }
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
+        CTimer SubscribeAfterLogin;
+
         public int IntegrationId;
+        public string Username;
         public string Password;
 
         const string Delimiter = "\x0d\x0a";
@@ -29,6 +32,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
 
             IntegrationId = props.IntegrationId;
 
+            Username = props.Username;
             Password = props.Password;
 
             LightingScenes = props.Scenes;
@@ -44,6 +48,8 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
                 // RS-232 Control
             }
 
+            Communication.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Communication_TextReceived);
+
             PortGather = new CommunicationGather(Communication, Delimiter);
             PortGather.LineReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(PortGather_LineReceived);
 
@@ -53,7 +59,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
             }
             else
             {
-                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 120000, 120000, 300000, "?SYSTEM,1\x0d\x0a");
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 120000, 120000, 300000, "?ETHERNET,0\x0d\x0a");
             }
         }
 
@@ -76,16 +82,49 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
             }
         }
 
+        /// <summary>
+        /// Checks for responses that do not contain the delimiter
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        void Communication_TextReceived(object sender, GenericCommMethodReceiveTextArgs args)
+        {
+            Debug.Console(2, this, "Text Received: '{0}'");
+
+            if (args.Text.Contains("login:"))
+            {
+                // Login
+                SendLine(Username);
+            }
+            else if (args.Text.Contains("password:"))
+            {
+                // Login
+                SendLine(Password);
+                SubscribeAfterLogin = new CTimer(x => SubscribeToFeedback(), null, 5000);
+
+            }
+            else if (args.Text.Contains("Access Granted"))
+            {
+                if (SubscribeAfterLogin != null)
+                {
+                    SubscribeAfterLogin.Stop();
+                }
+                SubscribeToFeedback();
+            }
+        }
+
+        /// <summary>
+        /// Handles all responses that contain the delimiter
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void PortGather_LineReceived(object sender, GenericCommMethodReceiveTextArgs args)
         {
+            Debug.Console(2, this, "Line Received: '{0}'");
+
             try
             {
-                if (args.Text.IndexOf("login:") > -1)
-                {
-                    // Login
-                    SendLine(Password);
-                }
-                else if (args.Text.IndexOf("~AREA") > -1)
+                if (args.Text.Contains("~AREA"))
                 {
                     var response = args.Text.Split(',');
 
@@ -107,12 +146,8 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
                                     var scene = Int32.Parse(response[3]);
                                     CurrentLightingScene = LightingScenes.FirstOrDefault(s => s.ID.Equals(scene));
 
-                                    var handler = LightingSceneChange;
-                                    if (handler != null)
-                                    {
-                                        handler(this, new LightingSceneChangeEventArgs(CurrentLightingScene));
-                                    }
-                                    
+                                    OnLightingSceneChange();
+
                                     break;
                                 }
                             default:
@@ -128,12 +163,23 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         }
 
         /// <summary>
+        /// Subscribes to feedback
+        /// </summary>
+        public void SubscribeToFeedback()
+        {
+            Debug.Console(1, "Sending Monitoring Subscriptions");
+            SendLine("#MONITORING,6,1");
+            SendLine("#MONITORING,8,1");
+            SendLine("#MONITORING,5,2");
+        }
+
+        /// <summary>
         /// Recalls the specified scene
         /// </summary>
         /// <param name="scene"></param>
-        public void SelectScene(LightingScene scene)
+        public override void SelectScene(LightingScene scene)
         {
-            SendLine(string.Format("{0}AREA,{1},{2},{3}", Set, IntegrationId, (int)eAction.Scene, (int)scene.ID));
+            SendLine(string.Format("{0}AREA,{1},{2},{3}", Set, IntegrationId, eAction.Scene, scene.ID));
         }
 
         /// <summary>
@@ -141,7 +187,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         /// </summary>
         public void MasterRaise()
         {
-            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, (int)eAction.Raise));
+            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, eAction.Raise));
         }
 
         /// <summary>
@@ -149,7 +195,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         /// </summary>
         public void MasterLower()
         {
-            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, (int)eAction.Lower));
+            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, eAction.Lower));
         }
 
         /// <summary>
@@ -157,7 +203,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         /// </summary>
         public void MasterRaiseLowerStop()
         {
-            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, (int)eAction.Stop));
+            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, eAction.Stop));
         }
 
         /// <summary>
@@ -166,12 +212,12 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         /// <param name="s"></param>
         public void SendLine(string s)
         {
-            Debug.Console(1, this, "TX: '{0}'", s);
+            Debug.Console(2, this, "TX: '{0}'", s);
             Communication.SendText(s + Delimiter);
         }
     }
 
-    public enum eAction
+    public enum eAction : int
     {
         SetLevel = 1,
         Raise = 2,
@@ -194,7 +240,8 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
 
         public int IntegrationId { get; set; }
         public List<LightingScene> Scenes{ get; set; }
-        
+
+        public string Username { get; set; }
         public string Password { get; set; }
     }
 }

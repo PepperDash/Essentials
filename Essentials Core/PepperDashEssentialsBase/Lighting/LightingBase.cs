@@ -13,11 +13,7 @@ namespace PepperDash.Essentials.Core.Lighting
     {
         #region ILightingScenes Members
 
-        public event EventHandler<LightingSceneChangeEventArgs> LightingSceneChange
-        {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
-        }
+        public event EventHandler<LightingSceneChangeEventArgs> LightingSceneChange;
 
         public List<LightingScene> LightingScenes { get; protected set; }
 
@@ -32,14 +28,22 @@ namespace PepperDash.Essentials.Core.Lighting
             LightingScenes = new List<LightingScene>();
         }
 
-
         public abstract void SelectScene(LightingScene scene);
+
+        protected void OnLightingSceneChange()
+        {
+            var handler = LightingSceneChange;
+            if (handler != null)
+            {
+                handler(this, new LightingSceneChangeEventArgs(CurrentLightingScene));
+            }
+        }
 
     }
 
     public class LightingScene
     {
         public string Name { get; set; }
-        public object ID { get; set; }
+        public string ID { get; set; }
     }
 }

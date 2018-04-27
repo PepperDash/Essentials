@@ -12,11 +12,12 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 
+using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Devices.Common.DSP;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Devices.Common.Occupancy;
+using PepperDash.Essentials.Devices.Common.Environment;
 
-using PepperDash.Essentials.Devices.Common;
 
 
 namespace PepperDash.Essentials.Devices.Common
@@ -109,54 +110,16 @@ namespace PepperDash.Essentials.Devices.Common
 
             else if (typeName == "mockvc")
             {
-				var props = JsonConvert.DeserializeObject
-					<PepperDash.Essentials.Devices.Common.VideoCodec.MockVcPropertiesConfig>(properties.ToString());
-				return new PepperDash.Essentials.Devices.Common.VideoCodec
-                    .MockVC(key, name, props);
+				var props = JsonConvert.DeserializeObject<VideoCodec.MockVcPropertiesConfig>(properties.ToString());
+				return new VideoCodec.MockVC(key, name, props);
             }
 
             else if (typeName.StartsWith("ciscospark"))
             {
                 var comm = CommFactory.CreateCommForDevice(dc);
                 var props = JsonConvert.DeserializeObject<Codec.CiscoSparkCodecPropertiesConfig>(properties.ToString());
-                return new PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec(key, name, comm, props);
+                return new VideoCodec.Cisco.CiscoSparkCodec(key, name, comm, props);
             }
-
-			//else if (typeName == "versiportinput")
-			//{
-			//    var props = JsonConvert.DeserializeObject<IOPortConfig>(properties.ToString());
-
-			//    IIOPorts portDevice;
-
-			//    if (props.PortDeviceKey == "processor")
-			//        portDevice = Global.ControlSystem as IIOPorts;
-			//    else
-			//        portDevice = DeviceManager.GetDeviceForKey(props.PortDeviceKey) as IIOPorts;
-
-			//    if(portDevice == null)
-			//        Debug.Console(0, "Unable to add versiport device with key '{0}'. Port Device does not support versiports", key);
-			//    else
-			//    {
-			//        var cs = (portDevice as CrestronControlSystem);
-
-			//        if (cs != null)
-			//            if (cs.SupportsVersiport && props.PortNumber <= cs.NumberOfVersiPorts)
-			//            {
-			//                Versiport versiport = cs.VersiPorts[props.PortNumber];
-
-			//                if(!versiport.Registered)
-			//                {
-			//                    if (versiport.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
-			//                        return new GenericVersiportInputDevice(key, versiport);
-			//                    else
-			//                        Debug.Console(0, "Attempt to register versiport {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
-			//                }
-			//            }
-
-			//        // Future: Check if portDevice is 3-series card or other non control system that supports versiports
-                            
-			//    }
-			//}
 
             else if (typeName == "digitalinput")
             {
@@ -324,6 +287,19 @@ namespace PepperDash.Essentials.Devices.Common
                     return new EssentialsGlsOccupancySensorBaseController(key, name, occSensor);
                 else
                     Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
+            }
+
+            else if (groupName == "lighting")
+            {
+                if (typeName == "lutronqs")
+                {
+                    var comm = CommFactory.CreateCommForDevice(dc);
+
+                    var props = JsonConvert.DeserializeObject<Environment.Lutron.LutronQuantumPropertiesConfig>(properties.ToString());
+
+                    return new Environment.Lutron.LutronQuantumArea(key, name, comm, props);
+                }
+
             }
 
 			return null;

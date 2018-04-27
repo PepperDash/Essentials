@@ -66,9 +66,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public void DeterminePlatform()
         {
-#warning Temporary Error logging for XiO Edge Debugging
-
-            ErrorLog.Error("Determining Platform....");
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Determining Platform....");
 
             string filePathPrefix;
 
@@ -82,14 +80,14 @@ namespace PepperDash.Essentials
             {
                 filePathPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory() + dirSeparator + "NVRAM" 
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
-#warning Temporary Error logging for XiO Edge Debugging
-                ErrorLog.Error(string.Format("Starting Essentials v{0} on 3-series Appliance", versionString));
+
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", versionString);
             }
             else
             {
                 filePathPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory() + dirSeparator + "User" + dirSeparator;
-#warning Temporary Error logging for XiO Edge Debugging
-                ErrorLog.Error(string.Format("Starting Essentials v{0} on XiO Edge Server", versionString));
+
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on XiO Edge Server", versionString);
             }
 
             Global.SetFilePathPrefix(filePathPrefix);
@@ -106,7 +104,6 @@ namespace PepperDash.Essentials
                     ConsoleAccessLevelEnum.AccessOperator);
 
                 //PortalSync = new PepperDashPortalSyncClient();
-#warning Temporary Error logging for XiO Edge Debugging
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 
 				var filesReady = SetupFilesystem();
@@ -117,7 +114,6 @@ namespace PepperDash.Essentials
 						return;
 
 					Load();
-#warning Temporary Error logging for XiO Edge Debugging
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Essentials load complete\r" +
 						"-------------------------------------------------------------");
 				}
@@ -210,7 +206,6 @@ namespace PepperDash.Essentials
 
 				try
 				{
-#warning Temporary Error logging for XiO Edge Debugging
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Creating device '{0}'", devConf.Key);
 					// Skip this to prevent unnecessary warnings
 					if (devConf.Key == "processor")
@@ -230,16 +225,13 @@ namespace PepperDash.Essentials
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
 					else
-#warning Temporary Error logging for XiO Edge Debugging
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "ERROR: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
 				}
 				catch (Exception e)
 				{
-#warning Temporary Error logging for XiO Edge Debugging
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "ERROR: Creating device {0}. Skipping device. \r{1}", devConf.Key, e);
 				} 
 			}
-#warning Temporary Error logging for XiO Edge Debugging
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Devices Loaded.");
 
 		}
@@ -261,7 +253,6 @@ namespace PepperDash.Essentials
 					tlc.Add(newTL);
 			}
 
-#warning Temporary Error logging for XiO Edge Debugging
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Tie Lines Loaded.");
 
 		}
@@ -316,7 +307,6 @@ namespace PepperDash.Essentials
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create room from config, key '{0}'", roomConfig.Key);
 			}
 
-#warning Temporary Error logging for XiO Edge Debugging
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");
 
 		}
