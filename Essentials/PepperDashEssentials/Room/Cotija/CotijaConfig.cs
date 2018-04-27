@@ -16,7 +16,10 @@ namespace PepperDash.Essentials
     public class CotijaConfig
     {       
 		[JsonProperty("serverUrl")]
-        public string ServerUrl { get; set; }     
+        public string ServerUrl { get; set; }
+
+		[JsonProperty("clientAppUrl")]
+		public string ClientAppUrl { get; set; }
     }
 
 	/// <summary>

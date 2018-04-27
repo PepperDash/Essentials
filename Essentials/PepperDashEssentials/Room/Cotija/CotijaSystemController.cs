@@ -70,8 +70,41 @@ namespace PepperDash.Essentials
 				"mobileauth", "Authorizes system to talk to cotija server", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(s => ShowInfo(),
 				"mobileinfo", "Shows information for current mobile control session", ConsoleAccessLevelEnum.AccessOperator);
-			CrestronConsole.AddNewConsoleCommand(s => { HttpDebugEnabled = (s.Trim() != "0"); },
+			CrestronConsole.AddNewConsoleCommand(s => { 
+					s = s.Trim();
+					if(!string.IsNullOrEmpty(s))
+					{
+						HttpDebugEnabled = (s.Trim() != "0"); 
+					}
+					CrestronConsole.ConsoleCommandResponse("HTTP Debug {0}", HttpDebugEnabled ? "Enabled" : "Disabled");
+				},
 				"mobilehttpdebug", "1 enables more verbose HTTP response debugging", ConsoleAccessLevelEnum.AccessOperator);
+			CrestronConsole.AddNewConsoleCommand(s => 
+			{
+				s = s.Trim();
+				if (string.IsNullOrEmpty(s))
+				{
+					CrestronConsole.ConsoleCommandResponse("Command must include http URL");
+					return;
+				}
+
+				try 
+				{	        
+					var resp = new HttpClient().Get(s);	
+					CrestronConsole.ConsoleCommandResponse("RESPONSE:\r{0}", resp);
+					
+				}
+				catch (HttpException e)
+				{
+					CrestronConsole.ConsoleCommandResponse("Exception in request:");
+					CrestronConsole.ConsoleCommandResponse("Response URL: {0}", e.Response.ResponseUrl);
+					CrestronConsole.ConsoleCommandResponse("Response Error Code: {0}", e.Response.Code);
+					CrestronConsole.ConsoleCommandResponse("Response body: {0}", e.Response.ContentString);
+				}
+				
+			},
+			"mobilehttprequest", "Tests an HTTP get to URL given", ConsoleAccessLevelEnum.AccessOperator);
+
         }
 
         /// <summary>

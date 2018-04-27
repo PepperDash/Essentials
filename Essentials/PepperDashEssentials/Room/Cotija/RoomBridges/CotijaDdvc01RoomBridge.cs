@@ -520,7 +520,7 @@ namespace PepperDash.Essentials.Room.Cotija
 		{
 			Debug.Console(1, this, "Server user code changed: {0}", UserCode);
 			EISC.StringInput[StringJoin.UserCodeToSystem].StringValue = UserCode;
-			EISC.StringInput[StringJoin.ServerUrl].StringValue = Parent.Config.ServerUrl;
+			EISC.StringInput[StringJoin.ServerUrl].StringValue = Parent.Config.ClientAppUrl;
 		}
 
 		/// <summary>
