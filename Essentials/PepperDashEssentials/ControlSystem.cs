@@ -76,16 +76,22 @@ namespace PepperDash.Essentials
 
             var versionString = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
 
+            string directoryPrefix;
+
+            //directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+#warning ^ For use with beta Include4.dat for XiO Edge
+            directoryPrefix = "";
+
             if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)
             {
-                filePathPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory() + dirSeparator + "NVRAM" 
+                filePathPrefix = directoryPrefix + dirSeparator + "NVRAM" 
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
 
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", versionString);
             }
             else
             {
-                filePathPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory() + dirSeparator + "User" + dirSeparator;
+                filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
 
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on XiO Edge Server", versionString);
             }

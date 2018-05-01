@@ -6,7 +6,18 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core.Shades
 {
-    public class Shade Interfaces 
-    {  
+    public interface IShades
+    {
+        List<ShadeBase> Shades { get; }
+    }
+
+    /// <summary>
+    /// Requirements for a device that implements basic shade control
+    /// </summary>
+    public interface iShadesRaiseLower
+    {
+        void Raise();
+        void Lower();
+        void Stop();
     }
 }

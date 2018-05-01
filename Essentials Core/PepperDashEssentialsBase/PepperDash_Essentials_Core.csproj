@@ -182,6 +182,8 @@
     <Compile Include="Feedbacks\BoolFeedbackPulseExtender.cs" />
     <Compile Include="Routing\RoutingPortNames.cs" />
     <Compile Include="Routing\TieLineConfig.cs" />
+    <Compile Include="Shades\Shade Interfaces.cs" />
+    <Compile Include="Shades\ShadeController.cs" />
     <Compile Include="SmartObjects\SmartObjectNumeric.cs" />
     <Compile Include="SmartObjects\SmartObjectDynamicList.cs" />
     <Compile Include="SmartObjects\SmartObjectDPad.cs" />

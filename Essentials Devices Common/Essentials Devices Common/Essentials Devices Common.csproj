@@ -58,6 +58,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.GeneralIO.dll</HintPath>
     </Reference>
+    <Reference Include="Crestron.SimplSharpPro.Lighting, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Lighting.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="PepperDash_Core, Version=1.0.4.20530, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -118,7 +122,9 @@
     <Compile Include="DSP\BiampTesira\BiampTesiraForteDsp.cs" />
     <Compile Include="DSP\BiampTesira\BiampTesiraFortePropertiesConfig.cs" />
     <Compile Include="DSP\PolycomSoundStructure\SoundStructureBasics.cs" />
+    <Compile Include="Environment\Crestron Lighting\Din8sw8.cs" />
     <Compile Include="Environment\Lutron\LutronQuantum.cs" />
+    <Compile Include="Environment\Somfy\RelayControlledShade.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Generic\GenericSource.cs" />
     <Compile Include="Microphone\MicrophonePrivacyController.cs" />
