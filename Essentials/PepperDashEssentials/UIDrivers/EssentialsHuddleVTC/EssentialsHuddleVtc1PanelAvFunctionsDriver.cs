@@ -995,6 +995,7 @@ namespace PepperDash.Essentials
 				var srcList = config[_CurrentRoom.SourceListKey].OrderBy(kv => kv.Value.Order);
 
 				// Setup sources list			
+				SourceStagingSrl.Clear();
 				uint i = 1; // counter for UI list
 				foreach (var kvp in srcList)
 				{

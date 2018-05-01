@@ -79,30 +79,7 @@ namespace PepperDash.Essentials
 					CrestronConsole.ConsoleCommandResponse("HTTP Debug {0}", HttpDebugEnabled ? "Enabled" : "Disabled");
 				},
 				"mobilehttpdebug", "1 enables more verbose HTTP response debugging", ConsoleAccessLevelEnum.AccessOperator);
-			CrestronConsole.AddNewConsoleCommand(s => 
-			{
-				s = s.Trim();
-				if (string.IsNullOrEmpty(s))
-				{
-					CrestronConsole.ConsoleCommandResponse("Command must include http URL");
-					return;
-				}
-
-				try 
-				{	        
-					var resp = new HttpClient().Get(s);	
-					CrestronConsole.ConsoleCommandResponse("RESPONSE:\r{0}", resp);
-					
-				}
-				catch (HttpException e)
-				{
-					CrestronConsole.ConsoleCommandResponse("Exception in request:");
-					CrestronConsole.ConsoleCommandResponse("Response URL: {0}", e.Response.ResponseUrl);
-					CrestronConsole.ConsoleCommandResponse("Response Error Code: {0}", e.Response.Code);
-					CrestronConsole.ConsoleCommandResponse("Response body: {0}", e.Response.ContentString);
-				}
-				
-			},
+			CrestronConsole.AddNewConsoleCommand(TestHttpRequest,
 			"mobilehttprequest", "Tests an HTTP get to URL given", ConsoleAccessLevelEnum.AccessOperator);
 
         }
@@ -253,10 +230,10 @@ namespace PepperDash.Essentials
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
         void RegisterSystemToServer()
         {
-			var ready = RegisterLockEvent.Wait(2000);
+			var ready = RegisterLockEvent.Wait(20000);
 			if (!ready)
 			{
-				Debug.Console(1, this, "RegisterSystemToServer failed to enter after 2 seconds.  Ignoring");
+				Debug.Console(1, this, "RegisterSystemToServer failed to enter after 20 seconds.  Ignoring");
 				return;
 			}
 			RegisterLockEvent.Reset();
@@ -274,7 +251,7 @@ namespace PepperDash.Essentials
 
                 if (string.IsNullOrEmpty(postBody))
                 {
-                    Debug.Console(1, this, "ERROR: Config post body is empty. Cannot register with server.");
+                    Debug.Console(1, this, "ERROR: Config body is empty. Cannot register with server.");
                 }
                 else
                 {
@@ -299,6 +276,7 @@ namespace PepperDash.Essentials
             {
                 Debug.Console(0, this, "ERROR: Initilizing Room: {0}", e);
 				RegisterLockEvent.Set();
+				StartReconnectTimer();
             }
 
         }
@@ -361,6 +339,7 @@ namespace PepperDash.Essentials
                         ServerReconnectTimer = null;
                     }
 
+					// Success here!
                     ConnectStreamClient();
                 }
                 else
@@ -371,11 +350,13 @@ namespace PepperDash.Essentials
 					{
 						Debug.Console(1, this, "Null response received from server.");
 					}
+					StartReconnectTimer();
                 }
             }
             catch (Exception e)
             {
                 Debug.Console(1, this, "Error Initializing Stream Client: {0}", e);
+				StartReconnectTimer();
             }
 			RegisterLockEvent.Set();
         }
@@ -637,5 +618,56 @@ namespace PepperDash.Essentials
                 Debug.Console(1, this, "Unable to parse message: {0}", err);	
             }
         }
+
+		void TestHttpRequest(string s)
+		{
+			{
+				s = s.Trim();
+				if (string.IsNullOrEmpty(s))
+				{
+					PrintTestHttpRequestUsage();
+					return;
+				}
+				var tokens = s.Split(' ');
+				if (tokens.Length < 2)
+				{
+					PrintTestHttpRequestUsage();
+					return;
+				}
+
+				try
+				{
+					var url = tokens[1];
+					if (tokens[0].ToLower() == "get")
+					{
+						var resp = new HttpClient().Get(url);
+						CrestronConsole.ConsoleCommandResponse("RESPONSE:\r{0}", resp);
+					}
+					else if (tokens[1].ToLower() == "post")
+					{
+						var resp = new HttpClient().Post(url, new byte[] { });
+						CrestronConsole.ConsoleCommandResponse("RESPONSE:\r{0}", resp);
+					}
+
+					else
+					{
+						PrintTestHttpRequestUsage();
+					}
+				}
+				catch (HttpException e)
+				{
+					CrestronConsole.ConsoleCommandResponse("Exception in request:");
+					CrestronConsole.ConsoleCommandResponse("Response URL: {0}", e.Response.ResponseUrl);
+					CrestronConsole.ConsoleCommandResponse("Response Error Code: {0}", e.Response.Code);
+					CrestronConsole.ConsoleCommandResponse("Response body: {0}", e.Response.ContentString);
+				}
+
+			}
+		}
+
+		void PrintTestHttpRequestUsage()
+		{
+			CrestronConsole.ConsoleCommandResponse("Usage: mobilehttprequest:N get/post url ");
+		}
     }
 }

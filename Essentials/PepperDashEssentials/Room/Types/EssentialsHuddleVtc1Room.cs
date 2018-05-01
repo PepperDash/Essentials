@@ -191,6 +191,8 @@ namespace PepperDash.Essentials
         /// </summary>
         public IHasScheduleAwareness ScheduleSource { get { return VideoCodec as IHasScheduleAwareness; } }
 
+		CCriticalSection SourceSelectLock = new CCriticalSection();
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -316,6 +318,9 @@ namespace PepperDash.Essentials
             // Run this on a separate thread
             new CTimer(o =>
             {
+				// try to prevent multiple simultaneous selections
+				SourceSelectLock.TryEnter();
+
                 try
                 {
 
@@ -374,9 +379,7 @@ namespace PepperDash.Essentials
                         (item.SourceDevice as IUsageTracking).UsageTracker.StartDeviceUsage();
                     }
 
-
 					// See if this can be moved into common, base-class method -------------
-
 
 
 					// Set volume control, using default if non provided
@@ -443,6 +446,7 @@ namespace PepperDash.Essentials
                     Debug.Console(1, this, "ERROR in routing: {0}", e);
                 }
 
+				SourceSelectLock.Leave();
             }, 0); // end of CTimer
         }
 
