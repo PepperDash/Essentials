@@ -165,7 +165,7 @@ namespace PepperDash.Essentials
 			}
 
 			var req = new HttpClientRequest();
-			string url = string.Format("http://{0}/api/system/grantcode/{1}", Config.ServerUrl, code);
+			string url = string.Format("http://{0}/api/system/grantcode/{1}/{2}", Config.ServerUrl, code, SystemUuid);
 			Debug.Console(0, this, "Authorizing to: {0}", url);
 
 			if (string.IsNullOrEmpty(Config.ServerUrl))
@@ -179,14 +179,28 @@ namespace PepperDash.Essentials
 				new HttpClient().DispatchAsync(req, (r, e) =>
 				{
 					CheckHttpDebug(r, e);
-
-					if (e == HTTP_CALLBACK_ERROR.COMPLETED && r.Code == 200)
+					if (e == HTTP_CALLBACK_ERROR.COMPLETED)
 					{
-						Debug.Console(0, this, "System authorized, sending config.");
-						RegisterSystemToServer();
+						if (r.Code == 200)
+						{
+							Debug.Console(0, "System authorized, sending config.");
+							RegisterSystemToServer();
+						}
+						else if (r.Code == 404)
+						{
+							if (r.ContentString.Contains("codeNotFound"))
+							{
+								Debug.Console(0, "Authorization failed, code not found for system UUID {0}", SystemUuid);
+							}
+							else if (r.ContentString.Contains("uuidNotFound"))
+							{
+								Debug.Console(0, "Authorization failed, uuid {0} not found. Check Essentials configuration is correct",
+									SystemUuid);
+							}
+						}
 					}
 					else
-						Debug.Console(0, this, "HTTP Error {0} in authorizing system", e);
+						Debug.Console(0, this, "Error {0} in authorizing system", e);
 				});
 			}
 			catch (Exception e)
@@ -457,11 +471,12 @@ namespace PepperDash.Essentials
 		{
 			if (HttpDebugEnabled)
 			{
+				Debug.Console(0, this, "------ Begin HTTP Debug ---------------------------------------");
 				Debug.Console(0, this, "HTTP Response URL: {0}", r.ResponseUrl.ToString());
-				Debug.Console(0, this, "----------------------------------------------------");
 				Debug.Console(0, this, "HTTP Response 'error' {0}", e);
 				Debug.Console(0, this, "HTTP Response code: {0}", r.Code);
 				Debug.Console(0, this, "HTTP Response content: \r{0}", r.ContentString);
+				Debug.Console(0, this, "------ End HTTP Debug -----------------------------------------");
 			}
 		}
 
@@ -631,6 +646,7 @@ namespace PepperDash.Essentials
 				var tokens = s.Split(' ');
 				if (tokens.Length < 2)
 				{
+					CrestronConsole.ConsoleCommandResponse("Too few paramaters\r");
 					PrintTestHttpRequestUsage();
 					return;
 				}
@@ -641,25 +657,26 @@ namespace PepperDash.Essentials
 					if (tokens[0].ToLower() == "get")
 					{
 						var resp = new HttpClient().Get(url);
-						CrestronConsole.ConsoleCommandResponse("RESPONSE:\r{0}", resp);
+						CrestronConsole.ConsoleCommandResponse("RESPONSE:\r{0}\r\r", resp);
 					}
-					else if (tokens[1].ToLower() == "post")
+					else if (tokens[0].ToLower() == "post")
 					{
 						var resp = new HttpClient().Post(url, new byte[] { });
-						CrestronConsole.ConsoleCommandResponse("RESPONSE:\r{0}", resp);
+						CrestronConsole.ConsoleCommandResponse("RESPONSE:\r{0}\r\r", resp);
 					}
 
 					else
 					{
+						CrestronConsole.ConsoleCommandResponse("Only get or post supported\r");
 						PrintTestHttpRequestUsage();
 					}
 				}
 				catch (HttpException e)
 				{
-					CrestronConsole.ConsoleCommandResponse("Exception in request:");
-					CrestronConsole.ConsoleCommandResponse("Response URL: {0}", e.Response.ResponseUrl);
-					CrestronConsole.ConsoleCommandResponse("Response Error Code: {0}", e.Response.Code);
-					CrestronConsole.ConsoleCommandResponse("Response body: {0}", e.Response.ContentString);
+					CrestronConsole.ConsoleCommandResponse("Exception in request:\r");
+					CrestronConsole.ConsoleCommandResponse("Response URL: {0}\r", e.Response.ResponseUrl);
+					CrestronConsole.ConsoleCommandResponse("Response Error Code: {0}\r", e.Response.Code);
+					CrestronConsole.ConsoleCommandResponse("Response body: {0}\r", e.Response.ContentString);
 				}
 
 			}
@@ -667,7 +684,7 @@ namespace PepperDash.Essentials
 
 		void PrintTestHttpRequestUsage()
 		{
-			CrestronConsole.ConsoleCommandResponse("Usage: mobilehttprequest:N get/post url ");
+			CrestronConsole.ConsoleCommandResponse("Usage: mobilehttprequest:N get/post url\r");
 		}
     }
 }
