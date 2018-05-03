@@ -16,8 +16,8 @@ namespace PepperDash.Essentials.Core.Shades
     /// </summary>
     public interface iShadesRaiseLower
     {
-        void Raise();
-        void Lower();
+        void Open();
         void Stop();
+        void Close();
     }
 }

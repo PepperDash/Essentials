@@ -10,24 +10,14 @@ namespace PepperDash.Essentials.Core.Shades
 {
     public class ShadeController : Device, IShades
     {
-        public List<ShadeBase> IShades.Shades { get; private set; }
+        public List<ShadeBase> Shades { get; private set; }
 
-    }
-
-    public abstract class ShadeBase : Device, iShadesRaiseLower
-    {
-        public ShadeBase(string key, string name)
+        public ShadeController(string key, string name)
             : base(key, name)
         {
-
+            Shades = new List<ShadeBase>();
         }
 
-        #region iShadesRaiseLower Members
-
-        public void iShadesRaiseLower.Raise();
-        public void iShadesRaiseLower.Lower();
-        public void iShadesRaiseLower.Stop();
-
-        #endregion
     }
+
 }

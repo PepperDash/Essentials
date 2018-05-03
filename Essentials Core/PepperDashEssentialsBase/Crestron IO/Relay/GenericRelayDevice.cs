@@ -12,24 +12,16 @@ namespace PepperDash.Essentials.Core.CrestronIO
     /// <summary>
     /// Represents a generic device controlled by relays
     /// </summary>
-    public class GenericRelayDevice : Device
+    public class GenericRelayDevice : Device, ISwitchedOutput
     {
         public Relay RelayOutput { get; private set; }
 
-        public BoolFeedback RelayStateFeedback { get; private set; }
-
-        Func<bool> RelayStateFeedbackFunc
-        {
-            get
-            {
-                return () => RelayOutput.State;
-            }
-        }
+        public BoolFeedback OutputIsOnFeedback { get; private set; }
 
         public GenericRelayDevice(string key, Relay relay):
             base(key)
         {
-            RelayStateFeedback = new BoolFeedback(RelayStateFeedbackFunc);
+            OutputIsOnFeedback = new BoolFeedback(new Func<bool>(() => RelayOutput.State));
 
             if (relay.AvailableForUse)
                 RelayOutput = relay;
@@ -39,7 +31,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         void RelayOutput_StateChange(Relay relay, RelayEventArgs args)
         {
-            RelayStateFeedback.FireUpdate();
+            OutputIsOnFeedback.FireUpdate();
         }
 
         public void OpenRelay()
@@ -59,5 +51,19 @@ namespace PepperDash.Essentials.Core.CrestronIO
             else
                 CloseRelay();
         }
+
+        #region ISwitchedOutput Members
+
+        void ISwitchedOutput.On()
+        {
+            CloseRelay();
+        }
+
+        void ISwitchedOutput.Off()
+        {
+            OpenRelay();
+        }
+
+        #endregion
     }
 }
