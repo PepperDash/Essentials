@@ -50,7 +50,7 @@ namespace PepperDash.Essentials
             // Gear
             TriList.SetString(UIStringJoin.HeaderButtonIcon5, "Gear");
             TriList.SetSigHeldAction(UIBoolJoin.HeaderIcon5Press, 2000,
-                Parent.AvDriver.ShowTech,
+                avDriver.ShowTech,
                 null,
                 () =>
                 {
@@ -96,6 +96,19 @@ namespace PepperDash.Essentials
                 //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
                 Parent.AvDriver.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
             });
+        }
+
+        uint SetUpEnvironmentButton(EssentialsEnvironmentDriver environmentDriver, uint nextJoin)
+        {
+            if (environmentDriver != null)
+            {
+                TriList.SetString(nextJoin, "Lights");
+                TriList.SetSigFalseAction(nextJoin, environmentDriver.Show);
+
+                return nextJoin--;
+            }
+            else
+                return nextJoin;
         }
 
         uint SetUpCalendarButton(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, uint nextJoin)
@@ -185,6 +198,8 @@ namespace PepperDash.Essentials
             
             uint nextJoin = 3953;
 
+            nextJoin = SetUpEnvironmentButton(Parent.EnvironmentDriver, nextJoin);
+
             nextJoin = SetUpCalendarButton(avDriver, nextJoin);
 
             nextJoin = SetUpCallButton(avDriver, nextJoin);
@@ -218,8 +233,12 @@ namespace PepperDash.Essentials
             ComputeHeaderCallStatus(currentRoom.VideoCodec);
         }
 
+        /// <summary>
+        /// Sets up Header Buttons for the EssentialsHuddleSpaceRoom type
+        /// </summary>
         public void SetupHeaderButtons(EssentialsHuddleSpaceRoom currentRoom)
         {
+#warning This is returning avDriver as null
             var avDriver = Parent.AvDriver as EssentialsHuddlePanelAvFunctionsDriver;
 
             HeaderButtonsAreSetUp = false;
@@ -228,23 +247,13 @@ namespace PepperDash.Essentials
 
             var roomConf = currentRoom.Config;
 
-
-            //SetUpGear(avDriver, currentRoom);
+            SetUpGear(avDriver, currentRoom);
 
             SetUpHelpButton(roomConf);
             
             uint nextJoin = 3953;
 
-            //// Calendar button
-            //if (_CurrentRoom.ScheduleSource != null)
-            //{
-            //    TriList.SetString(nextJoin, "Calendar");
-            //    TriList.SetSigFalseAction(nextJoin, CalendarPress);
-
-            //    nextJoin--;
-            //}
-
-            //nextJoin--;
+            nextJoin = SetUpEnvironmentButton(Parent.EnvironmentDriver, nextJoin);
 
             // blank any that remain
             for (var i = nextJoin; i > 3950; i--)

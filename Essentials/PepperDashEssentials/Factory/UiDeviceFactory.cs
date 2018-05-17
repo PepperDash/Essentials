@@ -36,7 +36,7 @@ namespace PepperDash.Essentials
                     var room = DeviceManager.GetDeviceForKey(props.DefaultRoomKey);
                     if (room is EssentialsHuddleSpaceRoom)
                     {
-                        Debug.Console(0, panelController, "Adding huddle space driver");
+                        Debug.Console(0, panelController, "Adding huddle space AV driver");
 
                         // Header Driver
                         mainDriver.HeaderDriver = new EssentialsHeaderDriver(mainDriver, props);
@@ -49,7 +49,10 @@ namespace PepperDash.Essentials
 
                         // Environment Driver
                         if (avDriver.CurrentRoom.Config.Environment != null && avDriver.CurrentRoom.Config.Environment.DeviceKeys.Count > 0)
+                        {
+                            Debug.Console(0, panelController, "Adding environment driver");
                             mainDriver.EnvironmentDriver = new EssentialsEnvironmentDriver(mainDriver, props);
+                        }
 
                         panelController.LoadAndShowDriver(mainDriver);  // This is a little convoluted.
 
@@ -85,7 +88,7 @@ namespace PepperDash.Essentials
                     //}
                     else if (room is EssentialsHuddleVtc1Room)
                     {
-                        Debug.Console(0, panelController, "Adding huddle space driver");
+                        Debug.Console(0, panelController, "Adding huddle space VTC AV driver");
 
                         // Header Driver
                         mainDriver.HeaderDriver = new EssentialsHeaderDriver(mainDriver, props);
@@ -102,7 +105,10 @@ namespace PepperDash.Essentials
 
                         // Environment Driver
                         if (avDriver.CurrentRoom.Config.Environment != null && avDriver.CurrentRoom.Config.Environment.DeviceKeys.Count > 0)
+                        {
+                            Debug.Console(0, panelController, "Adding environment driver");
                             mainDriver.EnvironmentDriver = new EssentialsEnvironmentDriver(mainDriver, props);
+                        }
 
                         panelController.LoadAndShowDriver(mainDriver);  // This is a little convoluted.
 
