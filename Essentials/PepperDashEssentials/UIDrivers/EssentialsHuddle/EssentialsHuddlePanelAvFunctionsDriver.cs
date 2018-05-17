@@ -14,7 +14,7 @@ namespace PepperDash.Essentials
 	/// <summary>
 	/// 
 	/// </summary>
-	public class EssentialsHuddlePanelAvFunctionsDriver : PanelDriverBase
+	public class EssentialsHuddlePanelAvFunctionsDriver : PanelDriverBase, IAVDriver
 	{
 		CrestronTouchpanelPropertiesConfig Config;
 
@@ -110,7 +110,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// The parent driver for this
         /// </summary>
-		PanelDriverBase Parent;
+        PanelDriverBase Parent;
 
         /// <summary>
         /// All children attached to this driver.  For hiding and showing as a group.
@@ -153,7 +153,7 @@ namespace PepperDash.Essentials
 
         ModalDialog PowerDownModal;
 
-        JoinedSigInterlock PopupInterlock;
+        public JoinedSigInterlock PopupInterlock { get; private set; }
 
         /// <summary>
         /// The driver for the tech page. Lazy getter for memory usage
@@ -311,7 +311,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Reveals the tech page and puts away anything that's in the way.
         /// </summary>
-        void ShowTech()
+        public void ShowTech()
         {
             PopupInterlock.HideAndClear();
             TechDriver.Show();
@@ -808,7 +808,7 @@ namespace PepperDash.Essentials
 				_CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
 				RefreshSourceInfo();
 
-                SetupHeaderButtons();
+                (Parent as EssentialsPanelMainInterfaceDriver).HeaderDriver.SetupHeaderButtons(CurrentRoom);
             }
 			else
 			{
@@ -817,82 +817,82 @@ namespace PepperDash.Essentials
 			}
 		}
 
-        void SetupHeaderButtons()
-        {
-            HeaderButtonsAreSetUp = false;
+        //void SetupHeaderButtons()
+        //{
+        //    HeaderButtonsAreSetUp = false;
 
-            TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
+        //    TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
 
-            var roomConf = CurrentRoom.Config;
+        //    var roomConf = CurrentRoom.Config;
 
-            // Gear
-            TriList.SetString(UIStringJoin.HeaderButtonIcon5, "Gear");
-            TriList.SetSigHeldAction(UIBoolJoin.HeaderIcon5Press, 2000,
-                ShowTech,
-                null,
-                () =>
-                {
-                    if (CurrentRoom.OnFeedback.BoolValue)
-                        PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible);
-                    else
-                        PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPagePowerOffVisible);
-                });
-            TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
-                PopupInterlock.HideAndClear());
+        //    // Gear
+        //    TriList.SetString(UIStringJoin.HeaderButtonIcon5, "Gear");
+        //    TriList.SetSigHeldAction(UIBoolJoin.HeaderIcon5Press, 2000,
+        //        ShowTech,
+        //        null,
+        //        () =>
+        //        {
+        //            if (CurrentRoom.OnFeedback.BoolValue)
+        //                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible);
+        //            else
+        //                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPagePowerOffVisible);
+        //        });
+        //    TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
+        //        PopupInterlock.HideAndClear());
 
-            // Help button and popup
-            if (CurrentRoom.Config.Help != null)
-            {
-                TriList.SetString(UIStringJoin.HelpMessage, roomConf.Help.Message);
-                TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, roomConf.Help.ShowCallButton);
-                TriList.SetString(UIStringJoin.HelpPageCallButtonText, roomConf.Help.CallButtonText);
-                if (roomConf.Help.ShowCallButton)
-                    TriList.SetSigFalseAction(UIBoolJoin.HelpPageShowCallButtonPress, () => { }); // ************ FILL IN
-                else
-                    TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
-            }
-            else // older config
-            {
-                TriList.SetString(UIStringJoin.HelpMessage, CurrentRoom.Config.HelpMessage);
-                TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, false);
-                TriList.SetString(UIStringJoin.HelpPageCallButtonText, null);
-                TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
-            }
-            TriList.SetString(UIStringJoin.HeaderButtonIcon4, "Help");
-            TriList.SetSigFalseAction(UIBoolJoin.HeaderIcon4Press, () =>
-            {
-                string message = null;
-                var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
-                    as EssentialsHuddleSpaceRoom;
-                if (room != null)
-                    message = room.Config.HelpMessage;
-                else
-                    message = "Sorry, no help message available. No room connected.";
-                //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
-                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
-            });
-            uint nextJoin = 3953;
+        //    // Help button and popup
+        //    if (CurrentRoom.Config.Help != null)
+        //    {
+        //        TriList.SetString(UIStringJoin.HelpMessage, roomConf.Help.Message);
+        //        TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, roomConf.Help.ShowCallButton);
+        //        TriList.SetString(UIStringJoin.HelpPageCallButtonText, roomConf.Help.CallButtonText);
+        //        if (roomConf.Help.ShowCallButton)
+        //            TriList.SetSigFalseAction(UIBoolJoin.HelpPageShowCallButtonPress, () => { }); // ************ FILL IN
+        //        else
+        //            TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
+        //    }
+        //    else // older config
+        //    {
+        //        TriList.SetString(UIStringJoin.HelpMessage, CurrentRoom.Config.HelpMessage);
+        //        TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, false);
+        //        TriList.SetString(UIStringJoin.HelpPageCallButtonText, null);
+        //        TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
+        //    }
+        //    TriList.SetString(UIStringJoin.HeaderButtonIcon4, "Help");
+        //    TriList.SetSigFalseAction(UIBoolJoin.HeaderIcon4Press, () =>
+        //    {
+        //        string message = null;
+        //        var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
+        //            as EssentialsHuddleSpaceRoom;
+        //        if (room != null)
+        //            message = room.Config.HelpMessage;
+        //        else
+        //            message = "Sorry, no help message available. No room connected.";
+        //        //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
+        //        PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
+        //    });
+        //    uint nextJoin = 3953;
 
-            //// Calendar button
-            //if (_CurrentRoom.ScheduleSource != null)
-            //{
-            //    TriList.SetString(nextJoin, "Calendar");
-            //    TriList.SetSigFalseAction(nextJoin, CalendarPress);
+        //    //// Calendar button
+        //    //if (_CurrentRoom.ScheduleSource != null)
+        //    //{
+        //    //    TriList.SetString(nextJoin, "Calendar");
+        //    //    TriList.SetSigFalseAction(nextJoin, CalendarPress);
 
-            //    nextJoin--;
-            //}
+        //    //    nextJoin--;
+        //    //}
 
-            //nextJoin--;
+        //    //nextJoin--;
 
-            // blank any that remain
-            for (var i = nextJoin; i > 3950; i--)
-            {
-                TriList.SetString(i, "Blank");
-                TriList.SetSigFalseAction(i, () => { });
-            }
+        //    // blank any that remain
+        //    for (var i = nextJoin; i > 3950; i--)
+        //    {
+        //        TriList.SetString(i, "Blank");
+        //        TriList.SetSigFalseAction(i, () => { });
+        //    }
 
-            HeaderButtonsAreSetUp = true;
-        }
+        //    HeaderButtonsAreSetUp = true;
+        //}
 
 
         /// <summary>

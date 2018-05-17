@@ -16,21 +16,32 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
     /// </summary>
     public class RelayControlledShade : ShadeBase
     {
+        RelayControlledShadeConfigProperties Config;
+
         ISwitchedOutput OpenRelay;
         ISwitchedOutput StopRelay;
         ISwitchedOutput CloseRelay;
 
         int RelayPulseTime;
 
-        public RelayControlledShade(string key, string name, RelayControlledShadeConfigProperties props)
+        public RelayControlledShade(string key, string name, RelayControlledShadeConfigProperties config)
             : base(key, name)
         {
-            RelayPulseTime = props.RelayPulseTime;
-            //Create ISwitchedOutput objects based on props
+            Config = config;
 
-            OpenRelay = GetSwitchedOutputFromDevice(props.Relays.Open);
-            StopRelay = GetSwitchedOutputFromDevice(props.Relays.Stop);
-            CloseRelay = GetSwitchedOutputFromDevice(props.Relays.Close);
+            RelayPulseTime = Config.RelayPulseTime;
+
+        }
+
+        public override bool CustomActivate()
+        {
+            //Create ISwitchedOutput objects based on props
+            OpenRelay = GetSwitchedOutputFromDevice(Config.Relays.Open);
+            StopRelay = GetSwitchedOutputFromDevice(Config.Relays.Stop);
+            CloseRelay = GetSwitchedOutputFromDevice(Config.Relays.Close);
+
+
+            return base.CustomActivate();
         }
 
         public override void Open()

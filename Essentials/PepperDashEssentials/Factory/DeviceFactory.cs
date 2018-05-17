@@ -30,11 +30,7 @@ namespace PepperDash.Essentials
             } 
             else if (dc.Group.ToLower() == "touchpanel") //  typeName.StartsWith("tsw"))
             {
-                var comm = CommFactory.GetControlPropertiesConfig(dc);
-
-                var props = JsonConvert.DeserializeObject<CrestronTouchpanelPropertiesConfig>(
-                    properties.ToString());
-                return new EssentialsTouchpanelController(key, name, typeName, props, comm.IpIdInt);
+                return UiDeviceFactory.GetUiDevice(dc);
             }
 
             else if (typeName == "mockdisplay")
@@ -92,4 +88,5 @@ namespace PepperDash.Essentials
 			return null;
 		}
 	}
+
 }

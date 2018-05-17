@@ -299,9 +299,31 @@ namespace PepperDash.Essentials.Devices.Common
 
                     return new Environment.Lutron.LutronQuantumArea(key, name, comm, props);
                 }
+                else if (typeName == "din8sw8")
+                {
+                    var comm = CommFactory.GetControlPropertiesConfig(dc);
+
+                    return new Environment.Lighting.Din8sw8Controller(key, comm.CresnetIdInt);
+                }
 
             }
 
+            else if (groupName == "environment")
+            {
+                if (typeName == "shadecontroller")
+                {
+                    var props = JsonConvert.DeserializeObject<Core.Shades.ShadeControllerConfigProperties>(properties.ToString());
+
+                    return new Core.Shades.ShadeController(key, name, props);
+                }
+                else if (typeName == "relaycontrolledshade")
+                {
+                    var props = JsonConvert.DeserializeObject<Environment.Somfy.RelayControlledShadeConfigProperties>(properties.ToString());
+
+                    return new Environment.Somfy.RelayControlledShade(key, name, props);
+                }
+
+            }
             
 
 			return null;

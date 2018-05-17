@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
     /// </summary>
     public class EssentialsVideoCodecUiDriver : PanelDriverBase
     {
-        IAVDriver Parent;
+        IAVWithVCDriver Parent;
 
         /// <summary>
         /// 
@@ -87,12 +87,18 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
 		CTimer BackspaceTimer;
 
+
+        /// <summary>
+        /// The panel header driver
+        /// </summary>
+        EssentialsHeaderDriver HeaderDriver;
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="triList"></param>
         /// <param name="codec"></param>
-        public EssentialsVideoCodecUiDriver(BasicTriListWithSmartObject triList, IAVDriver parent, VideoCodecBase codec)
+        public EssentialsVideoCodecUiDriver(BasicTriListWithSmartObject triList, IAVWithVCDriver parent, VideoCodecBase codec, EssentialsHeaderDriver headerDriver)
             : base(triList)
         {
             try
@@ -101,6 +107,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     throw new ArgumentNullException("Codec cannot be null");
                 Codec = codec;
                 Parent = parent;
+                HeaderDriver = headerDriver;
                 SetupCallStagingPopover();
                 SetupDialKeypad();
                 ActiveCallsSRL = new SubpageReferenceList(triList, UISmartObjectJoin.CodecActiveCallsHeaderList, 5,5,5);
@@ -207,8 +214,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             TriList.SetString(UIStringJoin.RoomPhoneText, roomNumberSipUri);
 
-            if(Parent.HeaderButtonsAreSetUp)
-                Parent.ComputeHeaderCallStatus(Codec);
+            if(HeaderDriver.HeaderButtonsAreSetUp)
+                HeaderDriver.ComputeHeaderCallStatus(Codec);
         }
 
         /// <summary>
@@ -231,7 +238,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     Parent.ShowNotificationRibbon("Connected", 2000);
                     StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
 					ShowKeypad();
-                    (Parent.CurrentRoom.CurrentVolumeControls as IBasicVolumeWithFeedback).MuteOff();
+                    ((Parent.CurrentRoom as IHasCurrentVolumeControls).CurrentVolumeControls as IBasicVolumeWithFeedback).MuteOff();
 					//VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
                     break;
                 case eCodecCallStatus.Connecting:
@@ -288,7 +295,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			else
 				StagingBarsInterlock.SetButDontShow(stageJoin);
 
-            Parent.ComputeHeaderCallStatus(Codec);
+            HeaderDriver.ComputeHeaderCallStatus(Codec);
 
             // Update active call list
             UpdateHeaderActiveCallList();
@@ -326,7 +333,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void ShowIncomingModal(CodecActiveCallItem call)
         {
-			Parent.PrepareForCodecIncomingCall();
+			(Parent as IAVWithVCDriver).PrepareForCodecIncomingCall();
             IncomingCallModal = new ModalDialog(TriList);
             string msg;
             string icon;
@@ -356,8 +363,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// </summary>
 		void AcceptIncomingCall(CodecActiveCallItem call)
 		{
-			Parent.PrepareForCodecIncomingCall();
-			Parent.ActivityCallButtonPressed();
+			(Parent as IAVWithVCDriver).PrepareForCodecIncomingCall();
+            (Parent as IAVWithVCDriver).ActivityCallButtonPressed();
 			Codec.AcceptCall(call);
 		}
 

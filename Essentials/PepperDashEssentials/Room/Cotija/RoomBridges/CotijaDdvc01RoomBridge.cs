@@ -339,7 +339,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			rmProps.Help.CallButtonText = EISC.StringOutput[503].StringValue;
 			rmProps.Help.Message = EISC.StringOutput[502].StringValue;
 
-			rmProps.Lighting = new EssentialsLightingPropertiesConfig(); // enabled defaults to false
+			rmProps.Environment = new EssentialsEnvironmentPropertiesConfig(); // enabled defaults to false
 
 			rmProps.RoomPhoneNumber = EISC.StringOutput[504].StringValue;
 			rmProps.RoomURI = EISC.StringOutput[505].StringValue;

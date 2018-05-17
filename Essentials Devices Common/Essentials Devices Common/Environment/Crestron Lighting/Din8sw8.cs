@@ -22,14 +22,28 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lighting
         /// <summary>
         /// Collection of generic switched outputs
         /// </summary>
-        public Dictionary<uint, ISwitchedOutput> SwitchedOutputs;
+        public Dictionary<uint, ISwitchedOutput> SwitchedOutputs { get; private set; }
 
-        public Din8sw8Controller(string key, string cresnetId)
+        public Din8sw8Controller(string key, uint cresnetId)
             : base(key)
         {
             SwitchedOutputs = new Dictionary<uint, ISwitchedOutput>();
 
+            SwitchModule = new Din8Sw8(cresnetId, Global.ControlSystem);
+
+            if (SwitchModule.Register() != eDeviceRegistrationUnRegistrationResponse.Success)
+            {
+                Debug.Console(2, this, "Error registering Din8sw8. Reason: {0}", SwitchModule.RegistrationFailureReason);
+            }
+
             PopulateDictionary();
+        }
+
+        public override bool CustomActivate()
+        {
+
+
+            return base.CustomActivate();
         }
 
         /// <summary>
@@ -70,4 +84,5 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lighting
             SwitchedOutput.FullOff();
         }
     }
+
 }
