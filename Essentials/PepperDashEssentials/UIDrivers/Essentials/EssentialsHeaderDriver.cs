@@ -105,7 +105,8 @@ namespace PepperDash.Essentials
                 TriList.SetString(nextJoin, "Lights");
                 TriList.SetSigFalseAction(nextJoin, environmentDriver.Show);
 
-                return nextJoin--;
+                nextJoin--;
+                return nextJoin;
             }
             else
                 return nextJoin;
@@ -119,7 +120,8 @@ namespace PepperDash.Essentials
                 TriList.SetString(nextJoin, "Calendar");
                 TriList.SetSigFalseAction(nextJoin, avDriver.CalendarPress);
 
-                return nextJoin--;
+                nextJoin--;
+                return nextJoin;
             }
             else
                 return nextJoin;
@@ -132,7 +134,8 @@ namespace PepperDash.Essentials
             TriList.SetSigFalseAction(nextJoin, avDriver.ShowActiveCallsList);
             HeaderCallButtonIconSig = TriList.StringInput[nextJoin];
 
-            return nextJoin--;
+            nextJoin--;
+            return nextJoin;
         }
 
         /// <summary>
@@ -182,10 +185,8 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Sets up Header Buttons for the EssentialsHuddleVtc1Room type
         /// </summary>
-        public void SetupHeaderButtons(EssentialsHuddleVtc1Room currentRoom)
+        public void SetupHeaderButtons(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, EssentialsHuddleVtc1Room currentRoom)
         {
-            var avDriver = Parent.AvDriver as EssentialsHuddleVtc1PanelAvFunctionsDriver;
-
             HeaderButtonsAreSetUp = false;
 
             TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
@@ -214,6 +215,7 @@ namespace PepperDash.Essentials
             TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusLabelPress, avDriver.ShowActiveCallsList);
 
             // Set Call Status Subpage Position
+#warning may need to add a new position when environment icon is displayed
 
             if (nextJoin == 3951)
             {
@@ -236,11 +238,8 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Sets up Header Buttons for the EssentialsHuddleSpaceRoom type
         /// </summary>
-        public void SetupHeaderButtons(EssentialsHuddleSpaceRoom currentRoom)
+        public void SetupHeaderButtons(EssentialsHuddlePanelAvFunctionsDriver avDriver, EssentialsHuddleSpaceRoom currentRoom)
         {
-#warning This is returning avDriver as null
-            var avDriver = Parent.AvDriver as EssentialsHuddlePanelAvFunctionsDriver;
-
             HeaderButtonsAreSetUp = false;
 
             TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);

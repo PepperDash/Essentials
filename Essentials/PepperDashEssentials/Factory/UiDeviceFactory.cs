@@ -36,12 +36,13 @@ namespace PepperDash.Essentials
                     var room = DeviceManager.GetDeviceForKey(props.DefaultRoomKey);
                     if (room is EssentialsHuddleSpaceRoom)
                     {
-                        Debug.Console(0, panelController, "Adding huddle space AV driver");
 
                         // Header Driver
+                        Debug.Console(0, panelController, "Adding header driver");
                         mainDriver.HeaderDriver = new EssentialsHeaderDriver(mainDriver, props);
                         
                         // AV Driver
+                        Debug.Console(0, panelController, "Adding huddle space AV driver");
                         var avDriver = new EssentialsHuddlePanelAvFunctionsDriver(mainDriver, props);
                         avDriver.CurrentRoom = room as EssentialsHuddleSpaceRoom;
                         avDriver.DefaultRoomKey = props.DefaultRoomKey;
@@ -53,6 +54,8 @@ namespace PepperDash.Essentials
                             Debug.Console(0, panelController, "Adding environment driver");
                             mainDriver.EnvironmentDriver = new EssentialsEnvironmentDriver(mainDriver, props);
                         }
+
+                        mainDriver.HeaderDriver.SetupHeaderButtons(avDriver, avDriver.CurrentRoom);
 
                         panelController.LoadAndShowDriver(mainDriver);  // This is a little convoluted.
 
@@ -109,6 +112,8 @@ namespace PepperDash.Essentials
                             Debug.Console(0, panelController, "Adding environment driver");
                             mainDriver.EnvironmentDriver = new EssentialsEnvironmentDriver(mainDriver, props);
                         }
+
+                        mainDriver.HeaderDriver.SetupHeaderButtons(avDriver, avDriver.CurrentRoom);
 
                         panelController.LoadAndShowDriver(mainDriver);  // This is a little convoluted.
 

@@ -942,7 +942,7 @@ namespace PepperDash.Essentials
 
                 TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, () => _CurrentRoom.RunRouteAction("codecOsd"));
 
-                (Parent as EssentialsPanelMainInterfaceDriver).HeaderDriver.SetupHeaderButtons(CurrentRoom);
+                (Parent as EssentialsPanelMainInterfaceDriver).HeaderDriver.SetupHeaderButtons(this, CurrentRoom);
             }
             else
             {

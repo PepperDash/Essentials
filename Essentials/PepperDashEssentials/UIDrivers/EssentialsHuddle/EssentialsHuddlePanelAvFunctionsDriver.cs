@@ -808,7 +808,7 @@ namespace PepperDash.Essentials
 				_CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
 				RefreshSourceInfo();
 
-                (Parent as EssentialsPanelMainInterfaceDriver).HeaderDriver.SetupHeaderButtons(CurrentRoom);
+                (Parent as EssentialsPanelMainInterfaceDriver).HeaderDriver.SetupHeaderButtons(this, CurrentRoom);
             }
 			else
 			{

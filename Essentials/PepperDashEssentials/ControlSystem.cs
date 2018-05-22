@@ -34,6 +34,9 @@ namespace PepperDash.Essentials
 		{
             DeterminePlatform();
 
+            CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
+                ConsoleAccessLevelEnum.AccessOperator);
+
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 foreach (var tl in TieLineCollection.Default)
@@ -56,7 +59,7 @@ namespace PepperDash.Essentials
 						"Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
 				}, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
-            GoWithLoad();
+            //GoWithLoad();
 		}
 
         /// <summary>
