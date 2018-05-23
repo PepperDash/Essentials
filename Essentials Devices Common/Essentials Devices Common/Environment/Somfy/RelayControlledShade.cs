@@ -14,7 +14,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
     /// <summary>
     /// Controls a single shade using three relays
     /// </summary>
-    public class RelayControlledShade : ShadeBase
+    public class RelayControlledShade : ShadeBase, IShadesOpenCloseStop
     {
         RelayControlledShadeConfigProperties Config;
 
@@ -52,7 +52,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
             OpenRelay.On();
         }
 
-        public override void Stop()
+        public void Stop()
         {
             OpenRelay.Off();
             CloseRelay.Off();

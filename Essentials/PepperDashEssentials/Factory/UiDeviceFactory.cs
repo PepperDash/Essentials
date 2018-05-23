@@ -53,6 +53,8 @@ namespace PepperDash.Essentials
                         {
                             Debug.Console(0, panelController, "Adding environment driver");
                             mainDriver.EnvironmentDriver = new EssentialsEnvironmentDriver(mainDriver, props);
+
+                            mainDriver.EnvironmentDriver.GetDevicesFromConfig(avDriver.CurrentRoom.Config.Environment);
                         }
 
                         mainDriver.HeaderDriver.SetupHeaderButtons(avDriver, avDriver.CurrentRoom);
@@ -65,6 +67,15 @@ namespace PepperDash.Essentials
                             // Wire up hard keys
                             tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.PowerButtonPressed(); });
                             //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
+                            if(mainDriver.EnvironmentDriver != null)
+                                tsw.Lights.UserObject = new Action<bool>(b => 
+                                {
+                                    if (!b)
+                                    {
+                                        mainDriver.AvDriver.PopupInterlock.ShowInterlockedWithToggle(mainDriver.EnvironmentDriver.BackgroundSubpageJoin);
+                                        mainDriver.EnvironmentDriver.Toggle();
+                                    }
+                                });
                             tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
                             tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
                         }
@@ -111,6 +122,8 @@ namespace PepperDash.Essentials
                         {
                             Debug.Console(0, panelController, "Adding environment driver");
                             mainDriver.EnvironmentDriver = new EssentialsEnvironmentDriver(mainDriver, props);
+
+                            mainDriver.EnvironmentDriver.GetDevicesFromConfig(avDriver.CurrentRoom.Config.Environment);
                         }
 
                         mainDriver.HeaderDriver.SetupHeaderButtons(avDriver, avDriver.CurrentRoom);
@@ -123,6 +136,15 @@ namespace PepperDash.Essentials
                             // Wire up hard keys
                             tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.EndMeetingPress(); });
                             //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
+                            if (mainDriver.EnvironmentDriver != null)
+                                tsw.Lights.UserObject = new Action<bool>(b =>
+                                {
+                                    if (!b)
+                                    {
+                                        mainDriver.AvDriver.PopupInterlock.ShowInterlockedWithToggle(mainDriver.EnvironmentDriver.BackgroundSubpageJoin);
+                                        mainDriver.EnvironmentDriver.Toggle();
+                                    }
+                                });
                             tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
                             tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
                         }

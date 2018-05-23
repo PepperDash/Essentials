@@ -223,12 +223,92 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 1256
 		/// </summary>
-		public const uint VCMinMaxEnable = 1256; 
+		public const uint VCMinMaxEnable = 1256;
 
+        // Letter joins start at 2921;
 
         //******************************************************
 
-        // Letter joins start at 2921;
+        // Environment Joins
+
+        // Popup Container
+
+        /// <summary>
+        /// 3001 - 3004
+        /// </summary>
+        public const uint EnvironmentPopupSubpageVisibleBase = 3000;
+
+
+        // ColumnOne
+
+        /// <summary>
+        /// 3011 - 3015
+        /// </summary>
+        public const uint EnvironmentColumnOneLightingTypeVisibleBase = 3010;
+
+        /// <summary>
+        /// 3016 - 3020
+        /// </summary>
+        public const uint EnvironmentColumnOneShadingTypeVisibleBase = 3015;
+
+        // ColumnTwo
+
+        /// <summary>
+        /// 3021 - 3025
+        /// </summary>
+        public const uint EnvironmentColumnTwoLightingTypeVisibleBase = 3020;
+
+        /// <summary>
+        /// 3026 - 3030
+        /// </summary>
+        public const uint EnvironmentColumnTwoShadingTypeVisibleBase = 3025;
+
+        // ColumnThree
+
+        /// <summary>
+        /// 3031 - 3035
+        /// </summary>
+        public const uint EnvironmentColumnThreeLightingTypeVisibleBase = 3030;
+
+        /// <summary>
+        /// 3036 - 3040
+        /// </summary>
+        public const uint EnvironmentColumnThreeShadingTypeVisibleBase = 3035;
+
+        // ColumnFour
+
+        /// <summary>
+        /// 3041 - 3045
+        /// </summary>
+        public const uint EnvironmentColumnFourLightingTypeVisibleBase = 3040;
+
+        /// <summary>
+        /// 3046 - 3050
+        /// </summary>
+        public const uint EnvironmentColumnFourShadingTypeVisibleBase = 3045;
+
+        /// <summary>
+        /// 3051 - 3060
+        /// </summary>
+        public const uint EnvironmentColumnOneButtonPressBase = 3050;
+
+        /// <summary>
+        /// 3061 - 3070
+        /// </summary>
+        public const uint EnvironmentColumnTwoButtonPressBase = 3060;
+
+        /// <summary>
+        /// 3071 - 3080
+        /// </summary>
+        public const uint EnvironmentColumnThreeButtonPressBase = 3070;
+
+        /// <summary>
+        /// 3081 - 3090
+        /// </summary>
+        public const uint EnvironmentColumnFourButtonPressBase = 3080;
+
+
+        //******************************************************
 
         /// <summary>
         /// 3101
@@ -263,7 +343,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint TechSchedulerVisible = 3112;
 
-       //******************************************************
+        //*****************************************************
         /// <summary>
         /// 3811
         /// </summary>

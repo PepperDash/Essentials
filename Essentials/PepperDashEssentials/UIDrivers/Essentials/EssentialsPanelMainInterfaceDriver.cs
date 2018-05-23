@@ -28,7 +28,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// The main interlock for popups
         /// </summary>
-        public JoinedSigInterlock PopupInterlock { get; private set; }
+        //public JoinedSigInterlock PopupInterlock { get; private set; }
 
 		public EssentialsPanelMainInterfaceDriver(BasicTriListWithSmartObject trilist,
 			CrestronTouchpanelPropertiesConfig config)

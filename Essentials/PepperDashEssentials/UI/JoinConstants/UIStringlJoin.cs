@@ -68,6 +68,34 @@ namespace PepperDash.Essentials
         /// </summary>
         //public const uint KeypadText = 2901;
 
+        //******************************************************
+
+        // Environment Joins
+
+        /// <summary>
+        /// 3001 - 3010
+        /// </summary>
+        public const uint EnvironmentColumnOneLabelBase = 3000;
+
+        /// <summary>
+        /// 3011 - 3020
+        /// </summary>
+        public const uint EnvironmentColumnTwoLabelBase = 3010;
+
+        /// <summary>
+        /// 3021 - 3030
+        /// </summary>
+        public const uint EnvironmentColumnThreeLabelBase = 3020;
+
+        /// <summary>
+        /// 3031 - 3040
+        /// </summary>
+        public const uint EnvironmentColumnFourLabelBase = 3030;
+
+        // 3050, 3060, 3070 and 3080 reserved for column device name labels
+
+        //******************************************************
+
         /// <summary>
         /// 3101 - This is the start of the range 3101 - 3120
         /// </summary>
