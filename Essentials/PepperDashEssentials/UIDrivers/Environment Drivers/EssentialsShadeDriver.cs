@@ -19,18 +19,26 @@ namespace PepperDash.Essentials
 
         public uint SubpageVisibleJoin { get; private set; }
 
-        uint DigitalJoinBase;
+        /// <summary>
+        /// The base join number that all button presses are offset from
+        /// </summary>
+        uint ButtonPressJoinBase;
 
+        /// <summary>
+        /// The base join number that all string lables are offset from
+        /// </summary>
         uint StringJoinBase;
 
         eShadeDeviceType DeviceType;
 
-        public EssentialsShadeDriver(EssentialsEnvironmentDriver parent, string deviceKey, uint digitalJoinBase, uint stringJoinBase, uint subpageVisibleBase)
+        const uint DeviceNameJoinOffset = 50;
+
+        public EssentialsShadeDriver(EssentialsEnvironmentDriver parent, string deviceKey, uint buttonPressJoinBase, uint stringJoinBase, uint subpageVisibleBase)
             : base(parent.TriList)
         {
             Parent = parent;
 
-            DigitalJoinBase = digitalJoinBase;
+            ButtonPressJoinBase = buttonPressJoinBase;
             StringJoinBase = stringJoinBase;
 
             ShadeDevice = DeviceManager.GetDeviceForKey(deviceKey) as ShadeBase;
@@ -38,6 +46,10 @@ namespace PepperDash.Essentials
             SetDeviceType();
 
             SetSubpageVisibleJoin(subpageVisibleBase);
+
+            SetUpDeviceName();
+
+            SetUpButtonActions();
         }
 
         public override void Show()
@@ -56,7 +68,7 @@ namespace PepperDash.Essentials
 
         void SetUpDeviceName()
         {
-            Parent.TriList.SetString(StringJoinBase + 50, ShadeDevice.Name);
+            Parent.TriList.SetString(StringJoinBase + DeviceNameJoinOffset, ShadeDevice.Name);
         }
 
         void SetDeviceType()
@@ -70,6 +82,24 @@ namespace PepperDash.Essentials
         void SetSubpageVisibleJoin(uint subpageVisibleBase)
         {
             SubpageVisibleJoin = subpageVisibleBase + (uint)DeviceType;
+        }
+
+        void SetUpButtonActions()
+        {
+            if(DeviceType == eShadeDeviceType.OpenClose)
+            {
+                TriList.SetSigFalseAction(ButtonPressJoinBase + 1, ShadeDevice.Open);
+
+                TriList.SetSigFalseAction(ButtonPressJoinBase + 2, ShadeDevice.Close);
+            }
+            else if(DeviceType == eShadeDeviceType.OpenCloseStop)
+            {
+                TriList.SetSigFalseAction(ButtonPressJoinBase + 1, ShadeDevice.Open);
+
+                TriList.SetSigFalseAction(ButtonPressJoinBase + 2, (ShadeDevice as IShadesOpenCloseStop).Stop);
+
+                TriList.SetSigFalseAction(ButtonPressJoinBase + 3, ShadeDevice.Close);
+            }
         }
     }
 

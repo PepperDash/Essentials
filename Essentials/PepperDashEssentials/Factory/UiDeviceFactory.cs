@@ -72,7 +72,7 @@ namespace PepperDash.Essentials
                                 {
                                     if (!b)
                                     {
-                                        mainDriver.AvDriver.PopupInterlock.ShowInterlockedWithToggle(mainDriver.EnvironmentDriver.BackgroundSubpageJoin);
+                                        //mainDriver.AvDriver.PopupInterlock.ShowInterlockedWithToggle(mainDriver.EnvironmentDriver.BackgroundSubpageJoin);
                                         mainDriver.EnvironmentDriver.Toggle();
                                     }
                                 });
@@ -141,7 +141,7 @@ namespace PepperDash.Essentials
                                 {
                                     if (!b)
                                     {
-                                        mainDriver.AvDriver.PopupInterlock.ShowInterlockedWithToggle(mainDriver.EnvironmentDriver.BackgroundSubpageJoin);
+                                        //mainDriver.AvDriver.PopupInterlock.ShowInterlockedWithToggle(mainDriver.EnvironmentDriver.BackgroundSubpageJoin);
                                         mainDriver.EnvironmentDriver.Toggle();
                                     }
                                 });

@@ -169,6 +169,7 @@
     <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLargeSetTopBoxGeneric.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
+    <Compile Include="UIDrivers\Environment Drivers\EssentialsLightingDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsEnvironmentDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsShadeDriver.cs" />
     <Compile Include="UIDrivers\Essentials\EssentialsHeaderDriver.cs" />

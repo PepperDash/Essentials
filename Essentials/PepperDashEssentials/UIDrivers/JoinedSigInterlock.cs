@@ -16,9 +16,30 @@ namespace PepperDash.Essentials
 
         BasicTriList TriList;
 
+        public BoolFeedback IsShownFeedback;
+
+        bool _IsShown;
+
+        public bool IsShown 
+        {
+            get
+            {
+                return _IsShown;
+            }
+            private set
+            {
+                _IsShown = value;
+                IsShownFeedback.FireUpdate();
+            }
+        }
+
+        //public BoolFeedback ShownFeedback { get; private set; }
+
         public JoinedSigInterlock(BasicTriList triList)
         {
             TriList = triList;
+
+            IsShownFeedback = new BoolFeedback(new Func<bool>( () => _IsShown));
         }
 
         /// <summary>
@@ -32,6 +53,7 @@ namespace PepperDash.Essentials
                 return;
             SetButDontShow(join);
             TriList.SetBool(CurrentJoin, true);
+            IsShown = true;
         }
 
         /// <summary>
@@ -49,6 +71,7 @@ namespace PepperDash.Essentials
                     TriList.BooleanInput[CurrentJoin].BoolValue = false;
                 CurrentJoin = join;
                 TriList.BooleanInput[CurrentJoin].BoolValue = true;
+                IsShown = true;
             }
         }
         /// <summary>
@@ -68,8 +91,11 @@ namespace PepperDash.Essentials
         public void Hide()
         {
 			Debug.Console(2, "Trilist {0:X2}, interlock hiding {1}", TriList.ID, CurrentJoin);
-			if (CurrentJoin > 0)
+            if (CurrentJoin > 0)
+            {
                 TriList.BooleanInput[CurrentJoin].BoolValue = false;
+                IsShown = false;
+            }
         }
 
         /// <summary>
@@ -78,8 +104,11 @@ namespace PepperDash.Essentials
         public void Show()
         {
 			Debug.Console(2, "Trilist {0:X2}, interlock showing {1}", TriList.ID, CurrentJoin);
-			if (CurrentJoin > 0)
+            if (CurrentJoin > 0)
+            {
                 TriList.BooleanInput[CurrentJoin].BoolValue = true;
+                IsShown = true;
+            }
         }
 
         /// <summary>
@@ -89,7 +118,10 @@ namespace PepperDash.Essentials
         public void SetButDontShow(uint join)
         {
             if (CurrentJoin > 0)
+            {
                 TriList.BooleanInput[CurrentJoin].BoolValue = false;
+                IsShown = false;
+            }
             CurrentJoin = join;
         }
 

@@ -45,7 +45,23 @@ namespace PepperDash.Essentials
             Devices = new List<IKeyed>();
             DeviceSubDrivers = new List<PanelDriverBase>();
 
+            Parent.AvDriver.PopupInterlock.IsShownFeedback.OutputChange += new EventHandler<EventArgs>(IsShownFeedback_OutputChange);
+
             // Calculate the join offests for each device page and assign join actions for each button
+        }
+
+        void IsShownFeedback_OutputChange(object sender, EventArgs e)
+        {
+            // Hide this driver and all sub drivers if popup interlock is not shown
+            if (Parent.AvDriver.PopupInterlock.IsShownFeedback.BoolValue == false)
+            {
+                foreach (var driver in DeviceSubDrivers)
+                {
+                    driver.Hide();
+                }
+
+                base.Hide();
+            }
         }
 
         /// <summary>
@@ -53,7 +69,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public override void Show()
         {
-            //TriList.SetBool(BackgroundSubpageJoin, true);
+            Parent.AvDriver.PopupInterlock.ShowInterlockedWithToggle(BackgroundSubpageJoin);
 
             foreach (var driver in DeviceSubDrivers)
             {
@@ -68,7 +84,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public override void Hide()
         {
-            //TriList.SetBool(BackgroundSubpageJoin, false);
+            Parent.AvDriver.PopupInterlock.HideAndClear();
 
             foreach (var driver in DeviceSubDrivers)
             {
@@ -80,7 +96,10 @@ namespace PepperDash.Essentials
 
         public override void Toggle()
         {
-            base.Toggle();
+            if (IsVisible)
+                Hide();
+            else
+                Show();
         }
 
 
@@ -94,7 +113,7 @@ namespace PepperDash.Essentials
                 Devices.Clear();
                 DeviceSubDrivers.Clear();
 
-                uint column = 4;
+                uint column = 1;
 
                 foreach (var dKey in EnvironmentPropertiesConfig.DeviceKeys)
                 {
@@ -103,14 +122,23 @@ namespace PepperDash.Essentials
                     if (device != null)
                     {
                         Devices.Add(device);
-                        
+
+                        // Build the driver
+                        var devicePanelDriver = GetPanelDriverForDevice(device, column);
+
                         // Add new PanelDriverBase SubDriver 
-                        DeviceSubDrivers.Add(GetPanelDriverForDevice(device, column));
+                        if (devicePanelDriver != null)
+                            DeviceSubDrivers.Add(devicePanelDriver);
 
                         Debug.Console(1, "Adding '{0}' to Environment Devices", device.Key);
+
+                        column++;
+
+                        // Quit if device count is exceeded
+                        if (column > 4)
+                            break;
                     }
 
-                    column --;
                 }
 
                 SetupEnvironmentUiJoins();
@@ -131,43 +159,48 @@ namespace PepperDash.Essentials
         {
             PanelDriverBase panelDriver = null;
 
-            uint digitalJoinBase = 0;
+            uint buttonPressJoinBase = 0;
+            uint buttonVisibleJoinBase = 0;
             uint stringJoinBase = 0;
             uint shadeTypeVisibleBase = 0;
             uint lightingTypeVisibleBase = 0;
 
             switch (column)
             {
-                case 4:
+                case 1:
                     {
-                        digitalJoinBase = UIBoolJoin.EnvironmentColumnFourButtonPressBase;
-                        stringJoinBase = UIStringJoin.EnvironmentColumnFourLabelBase;
-                        shadeTypeVisibleBase = UIBoolJoin.EnvironmentColumnFourShadingTypeVisibleBase;
-                        lightingTypeVisibleBase = UIBoolJoin.EnvironmentColumnFourLightingTypeVisibleBase;
+                        buttonPressJoinBase = UIBoolJoin.EnvironmentColumnOneButtonPressBase;
+                        buttonVisibleJoinBase = UIBoolJoin.EnvironmentColumnOneButtonVisibleBase;
+                        stringJoinBase = UIStringJoin.EnvironmentColumnOneLabelBase;
+                        shadeTypeVisibleBase = UIBoolJoin.EnvironmentColumnOneShadingTypeVisibleBase;
+                        lightingTypeVisibleBase = UIBoolJoin.EnvironmentColumnOneLightingTypeVisibleBase;
+                        break;
+                    }
+                case 2:
+                    {
+                        buttonPressJoinBase = UIBoolJoin.EnvironmentColumnTwoButtonPressBase;
+                        buttonVisibleJoinBase = UIBoolJoin.EnvironmentColumnTwoButtonVisibleBase;
+                        stringJoinBase = UIStringJoin.EnvironmentColumnTwoLabelBase;
+                        shadeTypeVisibleBase = UIBoolJoin.EnvironmentColumnTwoShadingTypeVisibleBase;
+                        lightingTypeVisibleBase = UIBoolJoin.EnvironmentColumnTwoLightingTypeVisibleBase;
                         break;
                     }
                 case 3:
                     {
-                        digitalJoinBase = UIBoolJoin.EnvironmentColumnThreeButtonPressBase;
+                        buttonPressJoinBase = UIBoolJoin.EnvironmentColumnThreeButtonPressBase;
+                        buttonVisibleJoinBase = UIBoolJoin.EnvironmentColumnThreeButtonVisibleBase;
                         stringJoinBase = UIStringJoin.EnvironmentColumnThreeLabelBase;
-                         shadeTypeVisibleBase = UIBoolJoin.EnvironmentColumnThreeShadingTypeVisibleBase;
+                        shadeTypeVisibleBase = UIBoolJoin.EnvironmentColumnThreeShadingTypeVisibleBase;
                         lightingTypeVisibleBase = UIBoolJoin.EnvironmentColumnThreeLightingTypeVisibleBase;
-                       break;
+                        break;
                     }
-                case 2:
+                case 4:
                     {
-                        digitalJoinBase = UIBoolJoin.EnvironmentColumnTwoButtonPressBase;
-                        stringJoinBase = UIStringJoin.EnvironmentColumnTwoLabelBase;
-                        shadeTypeVisibleBase = UIBoolJoin.EnvironmentColumnTwoShadingTypeVisibleBase;
-                        lightingTypeVisibleBase = UIBoolJoin.EnvironmentColumnTwoLightingTypeVisibleBase;
-                       break;
-                    }
-                case 1:
-                    {
-                        digitalJoinBase = UIBoolJoin.EnvironmentColumnOneButtonPressBase;
-                        stringJoinBase = UIStringJoin.EnvironmentColumnOneLabelBase;
-                        shadeTypeVisibleBase = UIBoolJoin.EnvironmentColumnOneShadingTypeVisibleBase;
-                        lightingTypeVisibleBase = UIBoolJoin.EnvironmentColumnOneLightingTypeVisibleBase;
+                        buttonPressJoinBase = UIBoolJoin.EnvironmentColumnFourButtonPressBase;
+                        buttonVisibleJoinBase = UIBoolJoin.EnvironmentColumnFourButtonVisibleBase;
+                        stringJoinBase = UIStringJoin.EnvironmentColumnFourLabelBase;
+                        shadeTypeVisibleBase = UIBoolJoin.EnvironmentColumnFourShadingTypeVisibleBase;
+                        lightingTypeVisibleBase = UIBoolJoin.EnvironmentColumnFourLightingTypeVisibleBase;
                         break;
                     }
                 default:
@@ -180,11 +213,11 @@ namespace PepperDash.Essentials
             // Determine if device is a shade or lighting type and construct the appropriate driver
             if (device is ShadeBase)
             {
-                panelDriver = new EssentialsShadeDriver(this, device.Key, digitalJoinBase, stringJoinBase, shadeTypeVisibleBase);
+                panelDriver = new EssentialsShadeDriver(this, device.Key, buttonPressJoinBase, stringJoinBase, shadeTypeVisibleBase);
             }
             else if (device is LightingBase)
             {
-                //panelDriver = new EssentialsLightingDriver(this, device.Key, digitalJoinBase, stringJoinBase, lightingTypeVisibleBase);
+                panelDriver = new EssentialsLightingDriver(this, device.Key, buttonPressJoinBase, buttonVisibleJoinBase, stringJoinBase, lightingTypeVisibleBase);
             }
 
             // Return the driver
@@ -198,7 +231,7 @@ namespace PepperDash.Essentials
         void SetupEnvironmentUiJoins()
         {
             // Calculate which background subpage join to use
-            BackgroundSubpageJoin = UIBoolJoin.EnvironmentPopupSubpageVisibleBase + (uint)DeviceSubDrivers.Count;
+            BackgroundSubpageJoin = UIBoolJoin.EnvironmentBackgroundSubpageVisibleBase + (uint)DeviceSubDrivers.Count;
 
 
         }

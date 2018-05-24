@@ -46,6 +46,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
 
         public override void Open()
         {
+            Debug.Console(1, this, "Opening Shade: '{0}'", this.Name);
             StopRelay.Off();
             CloseRelay.Off();
 
@@ -54,6 +55,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
 
         public void Stop()
         {
+            Debug.Console(1, this, "Stopping Shade: '{0}'", this.Name);
             OpenRelay.Off();
             CloseRelay.Off();
 
@@ -63,6 +65,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
 
         public override void Close()
         {
+            Debug.Console(1, this, "Closing Shade: '{0}'", this.Name);
             OpenRelay.Off();
             StopRelay.Off();
 

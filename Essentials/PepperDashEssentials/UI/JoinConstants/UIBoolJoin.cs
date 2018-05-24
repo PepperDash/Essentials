@@ -234,78 +234,102 @@ namespace PepperDash.Essentials
         // Popup Container
 
         /// <summary>
-        /// 3001 - 3004
+        /// 2001 - 2004
         /// </summary>
-        public const uint EnvironmentPopupSubpageVisibleBase = 3000;
+        public const uint EnvironmentBackgroundSubpageVisibleBase = 2000;
 
 
         // ColumnOne
 
         /// <summary>
-        /// 3011 - 3015
+        /// 2011 - 2015
         /// </summary>
-        public const uint EnvironmentColumnOneLightingTypeVisibleBase = 3010;
+        public const uint EnvironmentColumnOneLightingTypeVisibleBase = 2010;
 
         /// <summary>
-        /// 3016 - 3020
+        /// 2016 - 2020
         /// </summary>
-        public const uint EnvironmentColumnOneShadingTypeVisibleBase = 3015;
+        public const uint EnvironmentColumnOneShadingTypeVisibleBase = 2015;
 
         // ColumnTwo
 
         /// <summary>
-        /// 3021 - 3025
+        /// 2021 - 2025
         /// </summary>
-        public const uint EnvironmentColumnTwoLightingTypeVisibleBase = 3020;
+        public const uint EnvironmentColumnTwoLightingTypeVisibleBase = 2020;
 
         /// <summary>
-        /// 3026 - 3030
+        /// 2026 - 2030
         /// </summary>
-        public const uint EnvironmentColumnTwoShadingTypeVisibleBase = 3025;
+        public const uint EnvironmentColumnTwoShadingTypeVisibleBase = 2025;
 
         // ColumnThree
 
         /// <summary>
-        /// 3031 - 3035
+        /// 2031 - 2035
         /// </summary>
-        public const uint EnvironmentColumnThreeLightingTypeVisibleBase = 3030;
+        public const uint EnvironmentColumnThreeLightingTypeVisibleBase = 2030;
 
         /// <summary>
-        /// 3036 - 3040
+        /// 2036 - 2040
         /// </summary>
-        public const uint EnvironmentColumnThreeShadingTypeVisibleBase = 3035;
+        public const uint EnvironmentColumnThreeShadingTypeVisibleBase = 2035;
 
         // ColumnFour
 
         /// <summary>
-        /// 3041 - 3045
+        /// 2041 - 2045
         /// </summary>
-        public const uint EnvironmentColumnFourLightingTypeVisibleBase = 3040;
+        public const uint EnvironmentColumnFourLightingTypeVisibleBase = 2040;
 
         /// <summary>
-        /// 3046 - 3050
+        /// 2046 - 2050
         /// </summary>
-        public const uint EnvironmentColumnFourShadingTypeVisibleBase = 3045;
+        public const uint EnvironmentColumnFourShadingTypeVisibleBase = 2045;
+
+        // Button press
 
         /// <summary>
-        /// 3051 - 3060
+        /// 2051 - 2060
         /// </summary>
-        public const uint EnvironmentColumnOneButtonPressBase = 3050;
+        public const uint EnvironmentColumnOneButtonPressBase = 2050;
 
         /// <summary>
-        /// 3061 - 3070
+        /// 2061 - 2070
         /// </summary>
-        public const uint EnvironmentColumnTwoButtonPressBase = 3060;
+        public const uint EnvironmentColumnTwoButtonPressBase = 2060;
 
         /// <summary>
-        /// 3071 - 3080
+        /// 2071 - 2080
         /// </summary>
-        public const uint EnvironmentColumnThreeButtonPressBase = 3070;
+        public const uint EnvironmentColumnThreeButtonPressBase = 2070;
 
         /// <summary>
-        /// 3081 - 3090
+        /// 2081 - 2090
         /// </summary>
-        public const uint EnvironmentColumnFourButtonPressBase = 3080;
+        public const uint EnvironmentColumnFourButtonPressBase = 2080;
+
+        // Button visibility
+
+        /// <summary>
+        /// 2151 - 2160
+        /// </summary>
+        public const uint EnvironmentColumnOneButtonVisibleBase = 2150;
+
+        /// <summary>
+        /// 2161 - 2170
+        /// </summary>
+        public const uint EnvironmentColumnTwoButtonVisibleBase = 2160;
+
+        /// <summary>
+        /// 2171 - 2180
+        /// </summary>
+        public const uint EnvironmentColumnThreeButtonVisibleBase = 2170;
+        
+        /// <summary>
+        /// 2181 - 2190
+        /// </summary>
+        public const uint EnvironmentColumnFourButtonVisibleBase = 2180;
 
 
         //******************************************************

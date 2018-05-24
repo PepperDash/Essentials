@@ -103,13 +103,7 @@ namespace PepperDash.Essentials
             if (environmentDriver != null)
             {
                 TriList.SetString(nextJoin, "Lights");
-                TriList.SetSigFalseAction(nextJoin, () =>
-                    {
-                        Parent.AvDriver.PopupInterlock.ShowInterlockedWithToggle(environmentDriver.BackgroundSubpageJoin);
-                        environmentDriver.Toggle();
-                    });
-                //TriList.SetSigFalseAction(nextJoin, environmentDriver.Toggle);
-#warning Check the best way to show the environment subpage
+                TriList.SetSigFalseAction(nextJoin, environmentDriver.Toggle);
                 nextJoin--;
                 return nextJoin;
             }

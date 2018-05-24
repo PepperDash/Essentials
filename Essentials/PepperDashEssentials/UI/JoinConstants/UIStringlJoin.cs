@@ -73,26 +73,26 @@ namespace PepperDash.Essentials
         // Environment Joins
 
         /// <summary>
-        /// 3001 - 3010
+        /// 2001 - 2010
         /// </summary>
-        public const uint EnvironmentColumnOneLabelBase = 3000;
+        public const uint EnvironmentColumnOneLabelBase = 2000;
 
         /// <summary>
-        /// 3011 - 3020
+        /// 2011 - 2020
         /// </summary>
-        public const uint EnvironmentColumnTwoLabelBase = 3010;
+        public const uint EnvironmentColumnTwoLabelBase = 2010;
 
         /// <summary>
-        /// 3021 - 3030
+        /// 2021 - 2030
         /// </summary>
-        public const uint EnvironmentColumnThreeLabelBase = 3020;
+        public const uint EnvironmentColumnThreeLabelBase = 2020;
 
         /// <summary>
-        /// 3031 - 3040
+        /// 2031 - 2040
         /// </summary>
-        public const uint EnvironmentColumnFourLabelBase = 3030;
+        public const uint EnvironmentColumnFourLabelBase = 2030;
 
-        // 3050, 3060, 3070 and 3080 reserved for column device name labels
+        // 2050, 2060, 2070 and 2080 reserved for column device name labels
 
         //******************************************************
 

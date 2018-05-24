@@ -179,6 +179,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         /// <param name="scene"></param>
         public override void SelectScene(LightingScene scene)
         {
+            Debug.Console(1, this, "Selecting Scene: '{0}'", scene.Name);
             SendLine(string.Format("{0}AREA,{1},{2},{3}", Set, IntegrationId, eAction.Scene, scene.ID));
         }
 
