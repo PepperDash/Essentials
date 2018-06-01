@@ -64,6 +64,8 @@ namespace PepperDash.Essentials
 			var merged = new JObject();
 
 			// Put together top-level objects
+			// skip any objects that don't have template objects
+
 			if (system["info"] != null)
 				merged.Add("info", Merge(template["info"], system["info"]));
 			else
@@ -72,25 +74,31 @@ namespace PepperDash.Essentials
 			merged.Add("devices", MergeArraysOnTopLevelProperty(template["devices"] as JArray, 
                 system["devices"] as JArray, "uid"));
 
-			if (system["rooms"] == null)
-				merged.Add("rooms", template["rooms"]);
-			else
-				merged.Add("rooms", MergeArraysOnTopLevelProperty(template["rooms"] as JArray, 
-                    system["rooms"] as JArray, "key"));
+			if (template["rooms"] != null)
+			{
+				if (system["rooms"] == null)
+					merged.Add("rooms", template["rooms"]);
+				else
+					merged.Add("rooms", MergeArraysOnTopLevelProperty(template["rooms"] as JArray,
+						system["rooms"] as JArray, "key"));
+			}
 
-			if (system["sourceLists"] == null)
-				merged.Add("sourceLists", template["sourceLists"]);
-			else
-				merged.Add("sourceLists", Merge(template["sourceLists"], system["sourceLists"]));
+			if (template["sourceLists"] != null)
+			{
+				if (system["sourceLists"] == null)
+					merged.Add("sourceLists", template["sourceLists"]);
+				else
+					merged.Add("sourceLists", Merge(template["sourceLists"], system["sourceLists"]));
+			}
 
             // Template tie lines take precdence.  Config tool doesn't do them at system
             // level anyway...
 			if (template["tieLines"] != null)
 				merged.Add("tieLines", template["tieLines"]);
-			else if (system["tieLines"] != null)
-				merged.Add("tieLines", system["tieLines"]);
-			else
-				merged.Add("tieLines", new JArray());
+			//else if (system["tieLines"] != null)
+			//    merged.Add("tieLines", system["tieLines"]);
+			//else
+			//    merged.Add("tieLines", new JArray());
 
 			Debug.Console(2, "MERGED CONFIG RESULT: \x0d\x0a{0}", merged);
 			return merged;

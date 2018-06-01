@@ -213,7 +213,7 @@ namespace PepperDash.Essentials.Room.Cotija
 					}
 
 				}
-			}, "cotijabridgedump", "Dumps DDVC01 bridge EISC data b,u,s", ConsoleAccessLevelEnum.AccessOperator);
+			}, "mobilebridgedump", "Dumps DDVC01 bridge EISC data b,u,s", ConsoleAccessLevelEnum.AccessOperator);
 
 			CrestronConsole.AddNewConsoleCommand(s => LoadConfigValues(), "loadddvc", "", ConsoleAccessLevelEnum.AccessOperator);
 

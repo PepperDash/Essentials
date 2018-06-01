@@ -210,6 +210,11 @@ namespace PepperDash.Essentials
 
 			var tlc = TieLineCollection.Default;
 			//tlc.Clear();
+			if (ConfigReader.ConfigObject.TieLines == null)
+			{
+				return;
+			}
+
 			foreach (var tieLineConfig in ConfigReader.ConfigObject.TieLines)
 			{
 				var newTL = tieLineConfig.GetTieLine();
@@ -273,7 +278,7 @@ namespace PepperDash.Essentials
 		{
 			bridge.AddPostActivationAction(() =>
 			{
-				var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "cotijaServer") as CotijaSystemController;
+				var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as CotijaSystemController;
 				if (parent == null)
 				{
 					Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
