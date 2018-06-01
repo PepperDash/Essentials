@@ -63,13 +63,13 @@ namespace PepperDash.Essentials
                 return new ConsoleCommMockDevice(key, name, props, comm);
             }
 
-            else if (typeName == "webserver")
+            else if (typeName == "appserver")
             {
                 var props = JsonConvert.DeserializeObject<CotijaConfig>(properties.ToString());
                 return new CotijaSystemController(key, name, props);
             }
 
-			else if (typeName == "cotijaddvc01roombridge")
+			else if (typeName == "mobileControlBridge-ddvc01")
 			{
 				var comm = CommFactory.GetControlPropertiesConfig(dc);
 
