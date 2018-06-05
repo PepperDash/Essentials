@@ -23,6 +23,7 @@ namespace PepperDash.Essentials.Core.Shades
         #region iShadesOpenClose Members
 
         public abstract void Open();
+        public abstract void StopOrPreset();
         public abstract void Close();
 
         #endregion

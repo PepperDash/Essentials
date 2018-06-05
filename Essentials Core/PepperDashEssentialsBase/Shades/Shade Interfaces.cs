@@ -23,11 +23,11 @@ namespace PepperDash.Essentials.Core.Shades
     }
 
     /// <summary>
-    /// Requirements for a device that implements basic Open/Close/Stop shade control
+    /// Requirements for a device that implements basic Open/Close/Stop shade control (Uses 3 relays)
     /// </summary>
     public interface IShadesOpenCloseStop : IShadesOpenClose
     {
-        void Stop();
+        void StopOrPreset();
     }
 
     /// <summary>

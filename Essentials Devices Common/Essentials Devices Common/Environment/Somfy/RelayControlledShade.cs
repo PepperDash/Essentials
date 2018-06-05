@@ -19,10 +19,12 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
         RelayControlledShadeConfigProperties Config;
 
         ISwitchedOutput OpenRelay;
-        ISwitchedOutput StopRelay;
+        ISwitchedOutput StopOrPresetRelay;
         ISwitchedOutput CloseRelay;
 
         int RelayPulseTime;
+
+        public string StopOrPresetButtonLabel { get; set; }
 
         public RelayControlledShade(string key, string name, RelayControlledShadeConfigProperties config)
             : base(key, name)
@@ -31,13 +33,15 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
 
             RelayPulseTime = Config.RelayPulseTime;
 
+            StopOrPresetButtonLabel = Config.StopOrPresetLabel;
+
         }
 
         public override bool CustomActivate()
         {
             //Create ISwitchedOutput objects based on props
             OpenRelay = GetSwitchedOutputFromDevice(Config.Relays.Open);
-            StopRelay = GetSwitchedOutputFromDevice(Config.Relays.Stop);
+            StopOrPresetRelay = GetSwitchedOutputFromDevice(Config.Relays.StopOrPreset);
             CloseRelay = GetSwitchedOutputFromDevice(Config.Relays.Close);
 
 
@@ -47,29 +51,28 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
         public override void Open()
         {
             Debug.Console(1, this, "Opening Shade: '{0}'", this.Name);
-            StopRelay.Off();
-            CloseRelay.Off();
 
-            OpenRelay.On();
+            PulseOutput(OpenRelay, RelayPulseTime);
         }
 
-        public void Stop()
+        public override void StopOrPreset()
         {
-            Debug.Console(1, this, "Stopping Shade: '{0}'", this.Name);
-            OpenRelay.Off();
-            CloseRelay.Off();
+            Debug.Console(1, this, "Stopping or recalling preset on Shade: '{0}'", this.Name);
 
-            StopRelay.On();
-            CTimer stopTimer = new CTimer(new CTimerCallbackFunction((o) => StopRelay.Off()), RelayPulseTime);
+            PulseOutput(StopOrPresetRelay, RelayPulseTime);
         }
 
         public override void Close()
         {
             Debug.Console(1, this, "Closing Shade: '{0}'", this.Name);
-            OpenRelay.Off();
-            StopRelay.Off();
 
-            CloseRelay.On();
+            PulseOutput(CloseRelay, RelayPulseTime);
+        }
+
+        void PulseOutput(ISwitchedOutput output, int pulseTime)
+        {
+            output.On();
+            CTimer pulseTimer = new CTimer(new CTimerCallbackFunction((o) => output.Off()), pulseTime);
         }
 
         /// <summary>
@@ -98,11 +101,12 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
     {
         public int RelayPulseTime { get; set; }
         public ShadeRelaysConfig Relays { get; set; }
+        public string StopOrPresetLabel { get; set; }
 
         public class ShadeRelaysConfig
         {
             public IOPortConfig Open { get; set; }
-            public IOPortConfig Stop { get; set; }
+            public IOPortConfig StopOrPreset { get; set; }
             public IOPortConfig Close { get; set; }
         }
     }

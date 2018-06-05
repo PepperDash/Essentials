@@ -8,6 +8,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Shades;
+using PepperDash.Essentials.Devices.Common.Environment.Somfy;
 
 namespace PepperDash.Essentials
 {
@@ -88,7 +89,7 @@ namespace PepperDash.Essentials
         {
             if(DeviceType == eShadeDeviceType.OpenClose)
             {
-                TriList.SetSigFalseAction(ButtonPressJoinBase + 1, ShadeDevice.Open);
+                TriList.SetSigTrueAction(ButtonPressJoinBase + 1, ShadeDevice.Open);
 
                 TriList.SetSigFalseAction(ButtonPressJoinBase + 2, ShadeDevice.Close);
             }
@@ -96,8 +97,11 @@ namespace PepperDash.Essentials
             {
                 TriList.SetSigFalseAction(ButtonPressJoinBase + 1, ShadeDevice.Open);
 
-                TriList.SetSigFalseAction(ButtonPressJoinBase + 2, (ShadeDevice as IShadesOpenCloseStop).Stop);
+                TriList.SetSigFalseAction(ButtonPressJoinBase + 2, (ShadeDevice as IShadesOpenCloseStop).StopOrPreset);
 
+                if(ShadeDevice is RelayControlledShade)
+                    TriList.SetString(StringJoinBase + 2, (ShadeDevice as RelayControlledShade).StopOrPresetButtonLabel);
+                
                 TriList.SetSigFalseAction(ButtonPressJoinBase + 3, ShadeDevice.Close);
             }
         }
