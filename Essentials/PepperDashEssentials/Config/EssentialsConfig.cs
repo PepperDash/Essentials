@@ -25,7 +25,7 @@ namespace PepperDash.Essentials
 
 		//public CotijaConfig Cotija { get; private set; }
 
-		[JsonProperty("templateUuid")]
+		[JsonProperty("systemUuid")]
 		public string SystemUuid
         {
             get
@@ -38,7 +38,7 @@ namespace PepperDash.Essentials
             }
         }
 
-		[JsonProperty("systemUuid")]
+		[JsonProperty("templateUuid")]
 		public string TemplateUuid
         {
             get
