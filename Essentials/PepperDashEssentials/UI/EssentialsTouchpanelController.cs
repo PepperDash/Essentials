@@ -13,9 +13,13 @@ using PepperDash.Essentials.Core.PageManagers;
 
 namespace PepperDash.Essentials
 {
-	public class EssentialsTouchpanelController : Device
+	public class EssentialsTouchpanelController : Device, ICommunicationMonitor
 	{
 		public BasicTriListWithSmartObject Panel { get; private set; }
+
+        public StatusMonitorBase CommunicationMonitor { get; private set; }
+
+        public bool IncludeInFusionRoomHealth { get; private set; }
 
 		public PanelDriverBase PanelDriver { get; private set; }
 
@@ -36,47 +40,96 @@ namespace PepperDash.Essentials
 		public EssentialsTouchpanelController(string key, string name, string type, CrestronTouchpanelPropertiesConfig props, uint id)
 			: base(key, name)
 		{
+            IncludeInFusionRoomHealth = props.IncludeInFusionRoomHealth;
+
+            Debug.Console(0, this, "Creating hardware...");
+            type = type.ToLower();
+            try
+            {
+                if (type == "crestronapp")
+                {
+                    var app = new CrestronApp(id, Global.ControlSystem);
+                    app.ParameterProjectName.Value = props.ProjectName;
+                    Panel = app;
+                }
+                else if (type == "tsw550")
+                    Panel = new Tsw550(id, Global.ControlSystem);
+                else if (type == "tsw552")
+                    Panel = new Tsw552(id, Global.ControlSystem);
+                else if (type == "tsw560")
+                    Panel = new Tsw560(id, Global.ControlSystem);
+                else if (type == "tsw750")
+                    Panel = new Tsw750(id, Global.ControlSystem);
+                else if (type == "tsw752")
+                    Panel = new Tsw752(id, Global.ControlSystem);
+                else if (type == "tsw760")
+                    Panel = new Tsw760(id, Global.ControlSystem);
+                else if (type == "tsw1050")
+                    Panel = new Tsw1050(id, Global.ControlSystem);
+                else if (type == "tsw1052")
+                    Panel = new Tsw1052(id, Global.ControlSystem);
+                else if (type == "tsw1060")
+                    Panel = new Tsw1060(id, Global.ControlSystem);
+                else if (type == "xpanel")
+                    Panel = new XpanelForSmartGraphics(id, Global.ControlSystem);
+                else
+                {
+                    Debug.Console(0, this, "WARNING: Cannot create TSW controller with type '{0}'", type);
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, this, "WARNING: Cannot create TSW base class. Panel will not function: {0}", e.Message);
+                return;
+            }
+
+            CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, Panel, 30000, 120000);
+
 			AddPostActivationAction(() =>
 				{
-					Debug.Console(0, this, "Creating hardware...");
-					type = type.ToLower();
-					try
-					{
-                        if (type == "crestronapp")
-                        {
-                            var app = new CrestronApp(id, Global.ControlSystem);
-                            app.ParameterProjectName.Value = props.ProjectName;
-                            Panel = app;
-                        }
-                        else if (type == "tsw550")
-                            Panel = new Tsw550(id, Global.ControlSystem);
-                        else if (type == "tsw552")
-                            Panel = new Tsw552(id, Global.ControlSystem);
-                        else if (type == "tsw560")
-                            Panel = new Tsw560(id, Global.ControlSystem);
-                        else if (type == "tsw750")
-                            Panel = new Tsw750(id, Global.ControlSystem);
-                        else if (type == "tsw752")
-                            Panel = new Tsw752(id, Global.ControlSystem);
-                        else if (type == "tsw760")
-                            Panel = new Tsw760(id, Global.ControlSystem);
-                        else if (type == "tsw1050")
-                            Panel = new Tsw1050(id, Global.ControlSystem);
-                        else if (type == "tsw1052")
-                            Panel = new Tsw1052(id, Global.ControlSystem);
-                        else if (type == "tsw1060")
-                            Panel = new Tsw1060(id, Global.ControlSystem);
-                        else
-                        {
-                            Debug.Console(0, this, "WARNING: Cannot create TSW controller with type '{0}'", type);
-                            return;
-                        }
-					}
-					catch (Exception e)
-					{
-						Debug.Console(0, this, "WARNING: Cannot create TSW base class. Panel will not function: {0}", e.Message);
-						return;				
-					}
+                    //Debug.Console(0, this, "Creating hardware...");
+                    //type = type.ToLower();
+                    //try
+                    //{
+                    //    if (type == "crestronapp")
+                    //    {
+                    //        var app = new CrestronApp(id, Global.ControlSystem);
+                    //        app.ParameterProjectName.Value = props.ProjectName;
+                    //        Panel = app;
+                    //    }
+                    //    else if (type == "tsw550")
+                    //        Panel = new Tsw550(id, Global.ControlSystem);
+                    //    else if (type == "tsw552")
+                    //        Panel = new Tsw552(id, Global.ControlSystem);
+                    //    else if (type == "tsw560")
+                    //        Panel = new Tsw560(id, Global.ControlSystem);
+                    //    else if (type == "tsw750")
+                    //        Panel = new Tsw750(id, Global.ControlSystem);
+                    //    else if (type == "tsw752")
+                    //        Panel = new Tsw752(id, Global.ControlSystem);
+                    //    else if (type == "tsw760")
+                    //        Panel = new Tsw760(id, Global.ControlSystem);
+                    //    else if (type == "tsw1050")
+                    //        Panel = new Tsw1050(id, Global.ControlSystem);
+                    //    else if (type == "tsw1052")
+                    //        Panel = new Tsw1052(id, Global.ControlSystem);
+                    //    else if (type == "tsw1060")
+                    //        Panel = new Tsw1060(id, Global.ControlSystem);
+                    //    else if (type == "xpanel")
+                    //        Panel = new XpanelForSmartGraphics(id, Global.ControlSystem);
+                    //    else
+                    //    {
+                    //        Debug.Console(0, this, "WARNING: Cannot create TSW controller with type '{0}'", type);
+                    //        return;
+                    //    }
+                    //}
+                    //catch (Exception e)
+                    //{
+                    //    Debug.Console(0, this, "WARNING: Cannot create TSW base class. Panel will not function: {0}", e.Message);
+                    //    return;				
+                    //}
+
 
                     // Reserved sigs
                     if (Panel is TswFt5ButtonSystem)

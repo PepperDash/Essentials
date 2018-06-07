@@ -1005,6 +1005,10 @@ namespace PepperDash.Essentials.Fusion
 		/// </summary>
 		void SetUpCommunitcationMonitors()
 		{
+            uint displayNum = 0;
+            uint touchpanelNum = 0;
+            uint xpanelNum = 0;
+
 			// Attach to all room's devices with monitors.
 			//foreach (var dev in DeviceManager.Devices)
 			foreach (var dev in DeviceManager.GetDevices())
@@ -1012,41 +1016,56 @@ namespace PepperDash.Essentials.Fusion
 				if (!(dev is ICommunicationMonitor))
 					continue;
 
-				var keyNum = ExtractNumberFromKey(dev.Key);
-				if (keyNum == -1)
-				{
-					Debug.Console(1, this, "WARNING: Cannot link device '{0}' to numbered Fusion monitoring attributes",
-						dev.Key);
-					continue;
-				}
-				string attrName = null;
-				uint attrNum = Convert.ToUInt32(keyNum);
+                string attrName = null;
+                uint attrNum = 1;
 
-                if (dev is EssentialsTouchpanelController)
+                //var keyNum = ExtractNumberFromKey(dev.Key);
+                //if (keyNum == -1)
+                //{
+                //    Debug.Console(1, this, "WARNING: Cannot link device '{0}' to numbered Fusion monitoring attributes",
+                //        dev.Key);
+                //    continue;
+                //}
+                //uint attrNum = Convert.ToUInt32(keyNum);
+
+                // Check for UI devices
+                var uiDev = dev as EssentialsTouchpanelController;
+                if (uiDev != null)
                 {
-                    if ((dev as EssentialsTouchpanelController).Panel is Crestron.SimplSharpPro.DeviceSupport.TswFt5Button)
+                    if (uiDev.Panel is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
                     {
-                        if (attrNum > 10)
-                            continue;
-                        attrName = "Online - Touch Panel " + attrNum;
-                        attrNum += 150;
-                    }
-                    else if ((dev as EssentialsTouchpanelController).Panel is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
-                    {
+                        attrNum = attrNum + touchpanelNum;
+
                         if (attrNum > 10)
                             continue;
                         attrName = "Online - XPanel " + attrNum;
                         attrNum += 160;
+
+                        touchpanelNum++;
                     }
-                }                
+                    else
+                    {
+                        attrNum = attrNum + xpanelNum;
+
+                        if (attrNum > 10)
+                            continue;
+                        attrName = "Online - Touch Panel " + attrNum;
+                        attrNum += 150;
+
+                        xpanelNum++;
+                    }
+                }
 
 				//else 
 				if (dev is DisplayBase)
 				{
+                    attrNum = attrNum + displayNum; 
 					if (attrNum > 10)
 						continue;
 					attrName = "Online - Display " + attrNum;
 					attrNum += 170;
+
+                    displayNum++;
 				}
 				//else if (dev is DvdDeviceBase)
 				//{
@@ -1265,7 +1284,7 @@ namespace PepperDash.Essentials.Fusion
 		/// <returns>-1 if no number matched</returns>
 		int ExtractNumberFromKey(string key)
 		{
-			var capture = System.Text.RegularExpressions.Regex.Match(key, @"\D+(\d+)");
+            var capture = System.Text.RegularExpressions.Regex.Match(key, @"\b(\d+)");
 			if (!capture.Success)
 				return -1;
 			else return Convert.ToInt32(capture.Groups[1].Value);
