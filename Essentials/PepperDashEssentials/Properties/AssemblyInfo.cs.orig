@@ -5,8 +5,8 @@
 [assembly: AssemblyProduct("PepperDashEssentials")]
 [assembly: AssemblyCopyright("Copyright © PepperDash Technology Corp 2017")]
 <<<<<<< HEAD
-[assembly: AssemblyVersion("1.0.31.*")]
+[assembly: AssemblyVersion("1.1.8.*")]
 =======
-[assembly: AssemblyVersion("1.0.33.*")]
->>>>>>> origin/feature/ecs-342-neil
+[assembly: AssemblyVersion("1.3.0.*")]
 
+>>>>>>> feature/ecs-684
