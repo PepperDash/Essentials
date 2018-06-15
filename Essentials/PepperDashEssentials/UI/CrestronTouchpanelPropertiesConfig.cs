@@ -13,6 +13,8 @@
 		public bool ShowTime { get; set; }
         public UiSetupPropertiesConfig Setup { get; set; }
         public string HeaderStyle { get; set; }
+        public bool IncludeInFusionRoomHealth { get; set; }
+
 
         /// <summary>
         /// The count of sources that will trigger the "additional" arrows to show on the SRL.
