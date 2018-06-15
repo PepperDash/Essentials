@@ -28,6 +28,15 @@ namespace PepperDash.Essentials.Core
 		BoolFeedback MuteFeedback { get; }
 	}
 
+    /// <summary>
+    /// A class that implements this contains a reference to a current IBasicVolumeControls device.
+    /// The class may have multiple IBasicVolumeControls.
+    /// </summary>
+    public interface IHasCurrentVolumeControls
+    {
+        IBasicVolumeControls CurrentVolumeControls { get; }
+    }
+
 
 	/// <summary>
 	/// 

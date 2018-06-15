@@ -109,8 +109,11 @@
     <Compile Include="Crestron IO\Inputs\IDigitalInput.cs" />
     <Compile Include="Crestron IO\IOPortConfig.cs" />
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
+    <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
     <Compile Include="Devices\CodecInterfaces.cs" />
     <Compile Include="Global\JobTimer.cs" />
+    <Compile Include="Lighting\Lighting Interfaces.cs" />
+    <Compile Include="Lighting\LightingBase.cs" />
     <Compile Include="Ramps and Increments\ActionIncrementer.cs" />
     <Compile Include="Comm and IR\CommFactory.cs" />
     <Compile Include="Comm and IR\CommunicationExtras.cs" />
@@ -180,6 +183,9 @@
     <Compile Include="Feedbacks\BoolFeedbackPulseExtender.cs" />
     <Compile Include="Routing\RoutingPortNames.cs" />
     <Compile Include="Routing\TieLineConfig.cs" />
+    <Compile Include="Shades\Shade Interfaces.cs" />
+    <Compile Include="Shades\ShadeBase.cs" />
+    <Compile Include="Shades\ShadeController.cs" />
     <Compile Include="SmartObjects\SmartObjectNumeric.cs" />
     <Compile Include="SmartObjects\SmartObjectDynamicList.cs" />
     <Compile Include="SmartObjects\SmartObjectDPad.cs" />

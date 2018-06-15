@@ -5,6 +5,7 @@ using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials
@@ -18,16 +19,18 @@ namespace PepperDash.Essentials
 
 		public static bool LoadConfig2()
 		{
-			Debug.Console(0, "Loading unmerged system/template portal configuration file.");
+			Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading unmerged system/template portal configuration file.");
 			try
 			{
-				var filePath = string.Format(@"\NVRAM\program{0}\ConfigurationFile.json", 
-                    InitialParametersClass.ApplicationNumber);
-				if (!File.Exists(filePath))
+                var filePath = Global.FilePathPrefix + "configurationFile.json";
+
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to load config file: '{0}'", filePath);
+
+                if (!File.Exists(filePath))
 				{
-					Debug.Console(0, 
-						"ERROR: Configuration file not present. Please load file to {0} and reset program", filePath);
-					return false;
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, 
+                            "ERROR: Configuration file not present. Please load file to {0} and reset program", filePath);
+                        return false;
 				}
 
 				using (StreamReader fs = new StreamReader(filePath))
@@ -47,11 +50,14 @@ namespace PepperDash.Essentials
                         ConfigObject.TemplateUrl= doubleObj["template_url"].Value<string>();
                     }
 				}
+
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Successfully Loaded Merged Config");
+
 				return true;
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, "ERROR: Config load failed: \r{0}", e);
+                Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Config load failed: \r{0}", e);
 				return false;
 			}
 		}

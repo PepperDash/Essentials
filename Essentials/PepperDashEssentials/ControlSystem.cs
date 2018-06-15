@@ -32,6 +32,11 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void InitializeSystem()
 		{
+            DeterminePlatform();
+
+            //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
+            //    ConsoleAccessLevelEnum.AccessOperator);
+
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 foreach (var tl in TieLineCollection.Default)
@@ -57,6 +62,46 @@ namespace PepperDash.Essentials
             GoWithLoad();
 		}
 
+        /// <summary>
+        /// Determines if the program is running on a processor (appliance) or server (XiO Edge).
+        /// 
+        /// Sets Global.FilePathPrefix based on platform
+        /// </summary>
+        public void DeterminePlatform()
+        {
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Determining Platform....");
+
+            string filePathPrefix;
+
+            var dirSeparator = Global.DirectorySeparator;
+
+            var version = Crestron.SimplSharp.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+
+            var versionString = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+
+            string directoryPrefix;
+
+            //directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+#warning ^ For use with beta Include4.dat for XiO Edge
+            directoryPrefix = "";
+
+            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)
+            {
+                filePathPrefix = directoryPrefix + dirSeparator + "NVRAM" 
+                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", versionString);
+            }
+            else
+            {
+                filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
+
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on XiO Edge Server", versionString);
+            }
+
+            Global.SetFilePathPrefix(filePathPrefix);
+        }
+
 		/// <summary>
 		/// Do it, yo
 		/// </summary>
@@ -68,18 +113,17 @@ namespace PepperDash.Essentials
                     ConsoleAccessLevelEnum.AccessOperator);
 
                 //PortalSync = new PepperDashPortalSyncClient();
-
-				Debug.Console(0, "Starting Essentials load from configuration");
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 
 				var filesReady = SetupFilesystem();
 				if (filesReady)
 				{
-					Debug.Console(0, "Folder structure verified. Loading config...");
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Folder structure verified. Loading config...");
 					if (!ConfigReader.LoadConfig2())
 						return;
 
 					Load();
-					Debug.Console(0, "Essentials load complete\r" +
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Essentials load complete\r" +
 						"-------------------------------------------------------------");
 				}
 				else
@@ -109,17 +153,16 @@ namespace PepperDash.Essentials
 		bool SetupFilesystem()
 		{
 			Debug.Console(0, "Verifying and/or creating folder structure");
-			var appNum = InitialParametersClass.ApplicationNumber;
-			var configDir = @"\NVRAM\Program" + appNum;
+			var configDir = Global.FilePathPrefix;
 			var configExists = Directory.Exists(configDir);
 			if (!configExists)
 				Directory.Create(configDir);
 
-			var irDir = string.Format(@"\NVRAM\Program{0}\ir", appNum);
+			var irDir = Global.FilePathPrefix + "ir";
 			if (!Directory.Exists(irDir))
 				Directory.Create(irDir);
 
-			var sgdDir = string.Format(@"\NVRAM\Program{0}\sgd", appNum);
+            var sgdDir = Global.FilePathPrefix + "sgd";
 			if (!Directory.Exists(sgdDir))
 				Directory.Create(sgdDir);
 
@@ -172,7 +215,7 @@ namespace PepperDash.Essentials
 
 				try
 				{
-					Debug.Console(0, "Creating device '{0}'", devConf.Key);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Creating device '{0}'", devConf.Key);
 					// Skip this to prevent unnecessary warnings
 					if (devConf.Key == "processor")
 						continue;
@@ -191,13 +234,15 @@ namespace PepperDash.Essentials
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
 					else
-						Debug.Console(0, "ERROR: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "ERROR: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
 				}
 				catch (Exception e)
 				{
-					Debug.Console(0, "ERROR: Creating device {0}. Skipping device. \r{1}", devConf.Key, e);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "ERROR: Creating device {0}. Skipping device. \r{1}", devConf.Key, e);
 				} 
 			}
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Devices Loaded.");
+
 		}
 
 		/// <summary>
@@ -221,6 +266,9 @@ namespace PepperDash.Essentials
 				if (newTL != null)
 					tlc.Add(newTL);
 			}
+
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Tie Lines Loaded.");
+
 		}
 
 		/// <summary>
@@ -230,7 +278,7 @@ namespace PepperDash.Essentials
 		{
 			if (ConfigReader.ConfigObject.Rooms == null)
 			{
-				Debug.Console(0, "WARNING: Configuration contains no rooms");
+				Debug.Console(0, Debug.ErrorLogLevel.Warning, "WARNING: Configuration contains no rooms");
 				return;
 			}
 
@@ -243,31 +291,38 @@ namespace PepperDash.Essentials
                     {
                         DeviceManager.AddDevice(room);
 
-                        Debug.Console(1, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(new EssentialsHuddleSpaceFusionSystemControllerBase((EssentialsHuddleSpaceRoom)room, 0xf1));
 
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Cotija Bridge...");
 						// Cotija bridge
 						var bridge = new CotijaEssentialsHuddleSpaceRoomBridge(room as EssentialsHuddleSpaceRoom);
 						AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
 						DeviceManager.AddDevice(bridge);
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Cotija Bridge Added...");
                     }
                     else if (room is EssentialsHuddleVtc1Room)
                     {
                         DeviceManager.AddDevice(room);
 
-                        Debug.Console(1, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
                     }					
                     else
                     {
-                        Debug.Console(1, "Room is NOT EssentialsHuddleSpaceRoom, attempting to add to DeviceManager w/o Fusion");
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is NOT EssentialsHuddleSpaceRoom, attempting to add to DeviceManager w/o Fusion");
                         DeviceManager.AddDevice(room);
                     }
 
 				}
 				else
-					Debug.Console(0, "WARNING: Cannot create room from config, key '{0}'", roomConfig.Key);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create room from config, key '{0}'", roomConfig.Key);
 			}
+
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");
+
 		}
 
 		/// <summary>
@@ -296,11 +351,11 @@ namespace PepperDash.Essentials
 		{
 			try
 			{
-				LogoServer = new HttpLogoServer(8080, @"\html\logo");
-			}
+                LogoServer = new HttpLogoServer(8080, Global.FilePathPrefix + "html" + Global.DirectorySeparator + "logo");
+            }
 			catch (Exception)
 			{
-				Debug.Console(0, "NOTICE: Logo server cannot be started. Likely already running in another program");
+				Debug.Console(0, Debug.ErrorLogLevel.Notice, "NOTICE: Logo server cannot be started. Likely already running in another program");
 			}
 		}
 	}

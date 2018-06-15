@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core
 		{
 			get
 			{
-				return string.Format(@"\NVRAM\Program{0}\IR\", InitialParametersClass.ApplicationNumber);
+				return Global.FilePathPrefix + "IR" + Global.DirectorySeparator;
 			}
 		}
 

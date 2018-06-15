@@ -194,8 +194,8 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("helpMessage")]
 		public string HelpMessage { get; set; }
 
-		[JsonProperty("lighting")]
-		public EssentialsLightingPropertiesConfig Lighting { get; set; }
+		[JsonProperty("environment")]
+		public EssentialsEnvironmentPropertiesConfig Environment { get; set; }
 
 		[JsonProperty("logo")]
 		public EssentialsLogoPropertiesConfig Logo { get; set; }
@@ -225,9 +225,18 @@ namespace PepperDash.Essentials.Room.Config
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 	}
 
-	public class EssentialsLightingPropertiesConfig
+	public class EssentialsEnvironmentPropertiesConfig
 	{
 		public bool Enabled { get; set; }
+
+        [JsonProperty("deviceKeys")]
+        public List<string> DeviceKeys { get; set; }
+
+        public EssentialsEnvironmentPropertiesConfig()
+        {
+            DeviceKeys = new List<string>();
+        }
+
 	}
 
     public class EssentialsRoomMicrophonePrivacyConfig

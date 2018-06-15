@@ -1,0 +1,740 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="PepperDash.Essentials.Devices.Common.GenericAudioOut" Collapsed="true">
+    <Position X="0.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAA=</HashCode>
+      <FileName>Audio\GenericAudioOut.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.GenericAudioOutWithVolume" Collapsed="true">
+    <Position X="0.5" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAgAAAAQA=</HashCode>
+      <FileName>Audio\GenericAudioOut.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.CenRfgwController" Collapsed="true">
+    <Position X="19" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAIIAAAAAAACABAAAAAAAAAAAA=</HashCode>
+      <FileName>Crestron\Gateways\CenRfgwController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.IRBlurayBase" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="17.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gUyjAAoIAAAAxgYAABAAgAECABAoAEAQqcCAQHIABAI=</HashCode>
+      <FileName>DiscPlayer\IRDiscPlayerBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.DeviceFactory" Collapsed="true">
+    <Position X="15.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAA=</HashCode>
+      <FileName>Factory\DeviceFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.GenericSource" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="12" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAAAAAACAAAAAAAAAAAAAAAgAAAAAAAAAAIAAAA=</HashCode>
+      <FileName>Generic\GenericSource.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.InRoomPc" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="15.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAwAAAAAAAACAAAAAAACAAAAAQAgAAAAAAAAAAIAAAA=</HashCode>
+      <FileName>PC\InRoomPc.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Laptop" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="22.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAwAAAAAAAACAAAAAAACAAAAAQAgAAAAAAAAAAIAAAA=</HashCode>
+      <FileName>PC\Laptop.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.IRSetTopBoxBase" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="19" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AUgjCAqAEAASwgYAACAAoAECABAoAEAwrcCAQHKABAI=</HashCode>
+      <FileName>SetTopBox\IRSetTopBoxBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.SetTopBoxPropertiesConfig" Collapsed="true">
+    <Position X="13.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEEAAQAAAAAAAAIAAAAAAAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>SetTopBox\SetTopBoxPropertiesConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.AppleTV" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="10.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAggAAIAAAAARAAAAAAAgAACABAoAEAQqACAQAAABAI=</HashCode>
+      <FileName>Streaming\AppleTV.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Roku2" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="10.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAggAAIAAAAABAAAAAAAgAACABAoAEAQqACAQAAABAI=</HashCode>
+      <FileName>Streaming\Roku.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem" Collapsed="true">
+    <Position X="19" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAEAAAAAAAAAOAAAAQAAAAAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>Codec\CodecActiveCallItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.CodecCallStatusItemChangeEventArgs" Collapsed="true">
+    <Position X="15.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Codec\CodecActiveCallItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.CodecCallDirection" Collapsed="true">
+    <Position X="20.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAA=</HashCode>
+      <FileName>Codec\eCodecCallDirection.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.CodecCallStatus" Collapsed="true">
+    <Position X="13.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>Codec\eCodecCallStatus.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.CodecCallType" Collapsed="true">
+    <Position X="17.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>Codec\eCodecCallType.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.CodecCallPrivacy" Collapsed="true">
+    <Position X="12" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAA=</HashCode>
+      <FileName>Codec\eMeetingPrivacy.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.VideoCodecInfo" Collapsed="true">
+    <Position X="5.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gIAAAAAAAAAAAACCAACAAAAAAAAAAAACAAAAAABAAAA=</HashCode>
+      <FileName>Codec\iCodecInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.CodecCallFavorites" Collapsed="true">
+    <Position X="22.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAA=</HashCode>
+      <FileName>Codec\iHasCallFavorites.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.CodecCallHistory" Collapsed="true">
+    <Position X="10.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAAAAAgAAAAAAAAAAAAAAGAAAABAAAAAAACQ=</HashCode>
+      <FileName>Codec\iHasCallHistory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.DirectoryEventArgs" Collapsed="true">
+    <Position X="17.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Codec\iHasDirectory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.CodecDirectory" Collapsed="true">
+    <Position X="20.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAIAAAAAAAAAAAABAAAAAIAAIAAQAAAAAA=</HashCode>
+      <FileName>Codec\iHasDirectory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.DirectoryItem" Collapsed="true">
+    <Position X="6.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Codec\iHasDirectory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.DirectoryFolder" Collapsed="true">
+    <Position X="5.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAIAAAAAAAAA=</HashCode>
+      <FileName>Codec\iHasDirectory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.DirectoryContact" Collapsed="true">
+    <Position X="7.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAEAAAAAAAAAAAAAAAAEIAAAAAAAAAAA=</HashCode>
+      <FileName>Codec\iHasDirectory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.ContactMethod" Collapsed="true">
+    <Position X="13.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAgAAAEAAAAAAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Codec\iHasDirectory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.DirectorySearchResultEventArgs" Collapsed="true">
+    <Position X="19" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Codec\iHasDirectory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.CodecScheduleAwareness" Collapsed="true">
+    <Position X="10.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAAAEAAAAAAAgAAEAAAABAAAAAAAIQAAAAA=</HashCode>
+      <FileName>Codec\iHasScheduleAwareness.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.Meeting" Collapsed="true">
+    <Position X="13.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAACEEgAAAAAAAgQIAAoAQABAAQAAEgAAAA=</HashCode>
+      <FileName>Codec\iHasScheduleAwareness.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.Call" Collapsed="true">
+    <Position X="17.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAABAAAAIAAAAAAAAAAgAAAA=</HashCode>
+      <FileName>Codec\iHasScheduleAwareness.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.MeetingEventArgs" Collapsed="true">
+    <Position X="15.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Codec\iHasScheduleAwareness.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.CiscoSparkCodecPropertiesConfig" Collapsed="true">
+    <Position X="17.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAQAAAAAAAAAAAAAAAAAIQAAACAABAAAAA=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\CiscoSparkCodecPropertiesConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Codec.SharingProperties" Collapsed="true">
+    <Position X="15.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\CiscoSparkCodecPropertiesConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Displays.AvocorDisplay" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="12" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>hC4gIEAIUAABoQAEgBACAAAdBC1gmsGRICKGdQNBACw=</HashCode>
+      <FileName>Display\AvocorVTFDisplay.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Displays.ComTcpDisplayBase" Collapsed="true">
+    <Position X="6.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAEQAAAAA=</HashCode>
+      <FileName>Display\ComTcpDisplayBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory" Collapsed="true">
+    <Position X="20.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAA=</HashCode>
+      <FileName>Display\DeviceFactory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Displays.NecPaSeriesProjector" Collapsed="true">
+    <Position X="6.5" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ogSIAAKIAAALCAAEABAQEAgABAAAAMIAAAAAEABAACA=</HashCode>
+      <FileName>Display\NecPaSeriesProjector.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Displays.NecPSXMDisplay" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="22.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>hLQgIShIAABFQQRUAvICDRMQESwSEQKRKACCZQNAESY=</HashCode>
+      <FileName>Display\NECPSXMDisplay.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Displays.SamsungMDC" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="12" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>hKwwIEAIQAABoUAGgBACAAAEBGxAmYORKCCGZQJAACw=</HashCode>
+      <FileName>Display\SamsungMDCDisplay.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.DSP.BiampTesiraForteDsp" Collapsed="true">
+    <Position X="3.5" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gACAAIAAAAEAQYCigAAAAAAQAACgCAAAAAAAAAMAAAI=</HashCode>
+      <FileName>DSP\BiampTesira\BiampTesiraForteDsp.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.DSP.TesiraForteLevelControl" Collapsed="true">
+    <Position X="0.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>RAAgJACAAAAAAYAAAkIAAAAAIAQCEACJABACRAAAAUQ=</HashCode>
+      <FileName>DSP\BiampTesira\BiampTesiraForteDspLevel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.DSP.BiampTesiraFortePropertiesConfig" Collapsed="true">
+    <Position X="15.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAEAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAA=</HashCode>
+      <FileName>DSP\BiampTesira\BiampTesiraFortePropertiesConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.DSP.BiampTesiraForteLevelControlBlockConfig" Collapsed="true">
+    <Position X="13.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAIAAAAAAAAAAAAAAAAAIAAEAAAAAAEQ=</HashCode>
+      <FileName>DSP\BiampTesira\BiampTesiraFortePropertiesConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.DSP.TesiraForteControlPoint" Collapsed="true">
+    <Position X="0.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAACAAQQAAAAAQAAAAAAAIAAAABEAAAAAAEA=</HashCode>
+      <FileName>DSP\BiampTesira\TesiraForteControlPoint.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.DSP.DspBase" Collapsed="true">
+    <Position X="3.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAEAIAgAAAAAAIAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DSP\DspBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.DSP.DspControlPoint" Collapsed="true">
+    <Position X="1.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DSP\DspBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.DSP.DspMuteControl" Collapsed="true">
+    <Position X="2.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAAAAAAAAQAAAAAAAAAAAAABAAAAQAAAAAQ=</HashCode>
+      <FileName>DSP\DspBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.DSP.SoundStructureBasics" Collapsed="true">
+    <Position X="17.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAA=</HashCode>
+      <FileName>DSP\PolycomSoundStructure\SoundStructureBasics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Environment.Lutron.LutronQuantumArea" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="10.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gACAEBAAAoAABQBAASAAAAAAAAEgAAACAAACAAMAQAI=</HashCode>
+      <FileName>Environment\Lutron\LutronQuantum.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Environment.Lutron.LutronQuantumPropertiesConfig" Collapsed="true">
+    <Position X="12" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAAAAAAgQAAAAAAAAAAAAQCAAACAAAAAAA=</HashCode>
+      <FileName>Environment\Lutron\LutronQuantum.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController" Collapsed="true">
+    <Position X="17.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gQAABAAAAxAAIACAgAgAgCBAUQAAQAgCIAEQAACBAAA=</HashCode>
+      <FileName>Microphone\MicrophonePrivacyController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyControllerConfig" Collapsed="true">
+    <Position X="19" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAgAIAAAAAAAAAA=</HashCode>
+      <FileName>Microphone\MicrophonePrivacyControllerConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Microphones.KeyedDevice" Collapsed="true">
+    <Position X="20.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Microphone\MicrophonePrivacyControllerConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Occupancy.EssentialsGlsOccupancySensorBaseController" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="22.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAAAAAAABAABgAAAAAASEABAAAAAAAAA=</HashCode>
+      <FileName>Occupancy\EssentialsGlsOccupancySensorBaseController.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.Occupancy.EssentialsOccupancyAggregator" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="10.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACBAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Occupancy\EssentialsOccupancyAggregator.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.CiscoCodecBookings" Collapsed="true">
+    <Position X="22.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\BookingsDataClasses.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.CiscoCallHistory" Collapsed="true">
+    <Position X="20.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\CallHistoryDataClasses.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.CiscoCodecPhonebook" Collapsed="true">
+    <Position X="13.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAABAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAA=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\PhonebookDataClasses.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.MockVC" Collapsed="true">
+    <Position X="0.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BgYAIAACAQaKBACAAwAAUSQAAWYCEACDAAiAQBBCgQU=</HashCode>
+      <FileName>VideoCodec\MockVC\MockVC.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.MockCodecInfo" Collapsed="true">
+    <Position X="5.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gKAAAAAAAAAAAACCAACAAAAAAAAAAAACAAAAAABBAAA=</HashCode>
+      <FileName>VideoCodec\MockVC\MockVC.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.MockVcPropertiesConfig" Collapsed="true">
+    <Position X="20.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAA=</HashCode>
+      <FileName>VideoCodec\MockVC\MockVcPropertiesConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase" Collapsed="true">
+    <Position X="1.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BiwgAAECAASAAECAgQEDIABAAAYiEBCpCEigQBZCAQU=</HashCode>
+      <FileName>VideoCodec\VideoCodecBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.CodecPhonebookSyncState" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="22.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAiCAAQAAgEAAQQAEAAAAAAAAAEAAAAAAACAAAAAAAM=</HashCode>
+      <FileName>VideoCodec\VideoCodecBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec" Collapsed="true">
+    <Position X="2.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>jhQEtAJaASb7kSCwAwtxECSABsf2n1GBJEmAVJFKWTc=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\CiscoSparkCodec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CodecCommandWithLabel" Collapsed="true">
+    <Position X="19" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\CiscoSparkCodec.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CodecSyncState" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="12" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAQACAEAAAQAEAAAAAAAAAAgAAAAAAAACAACACE=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\CiscoSparkCodec.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.HttpApiServer" Collapsed="true">
+    <Position X="13.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAACAAAAABAAAAAAAIAIAAAAAAAQAAgAAAAAA=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\HttpApiServer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodecConfiguration" Collapsed="true">
+    <Position X="10.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\xConfiguration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodecEvents" Collapsed="true">
+    <Position X="12" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\xEvent.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoCodecStatus" Collapsed="true">
+    <Position X="15.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\xStatus.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PepperDash.Essentials.Devices.Common.VideoCodec.CiscoCodec.xStatusSparkPlus" Collapsed="true">
+    <Position X="19" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\xStatusSparkPlus.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="PepperDash.Essentials.Devices.Common.Codec.ICodecAudio" Collapsed="true">
+    <Position X="10.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Codec\iCodecAudio.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Common.Codec.iCodecInfo" Collapsed="true">
+    <Position X="12" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Codec\iCodecInfo.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Common.Codec.IHasCallFavorites" Collapsed="true">
+    <Position X="15.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Codec\iHasCallFavorites.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Common.Codec.IHasCallHistory" Collapsed="true">
+    <Position X="17.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Codec\iHasCallHistory.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Common.Codec.IHasContentSharing" Collapsed="true">
+    <Position X="22.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAACAAAAAAAAAAAAAAAAAAAAAAAIAEAgABAAAAA=</HashCode>
+      <FileName>Codec\iHasContentSharing.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Common.Codec.IHasDialer" Collapsed="true">
+    <Position X="10.25" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAACAAAAAACAAAAAAAAAAAICAAAAAAAAAAQCAAA=</HashCode>
+      <FileName>Codec\iHasDialer.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Common.Codec.IHasDirectory" Collapsed="true">
+    <Position X="12" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAgCAAAAABAAAEAAAAAA=</HashCode>
+      <FileName>Codec\iHasDirectory.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Common.Codec.IHasScheduleAwareness" Collapsed="true">
+    <Position X="13.75" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAACQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Codec\iHasScheduleAwareness.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Displays.IInputHdmi1" Collapsed="true">
+    <Position X="19" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>Display\InputInterfaces.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Displays.IInputHdmi2" Collapsed="true">
+    <Position X="20.75" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAA=</HashCode>
+      <FileName>Display\InputInterfaces.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Displays.IInputHdmi3" Collapsed="true">
+    <Position X="22.5" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Display\InputInterfaces.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Displays.IInputHdmi4" Collapsed="true">
+    <Position X="10.25" Y="9.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAA=</HashCode>
+      <FileName>Display\InputInterfaces.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Displays.IInputDisplayPort1" Collapsed="true">
+    <Position X="15.5" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAA=</HashCode>
+      <FileName>Display\InputInterfaces.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Displays.IInputDisplayPort2" Collapsed="true">
+    <Position X="17.25" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAA=</HashCode>
+      <FileName>Display\InputInterfaces.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Displays.IInputVga1" Collapsed="true">
+    <Position X="12" Y="9.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Display\InputInterfaces.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Common.DSP.IDspLevelControl" Collapsed="true">
+    <Position X="13.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAACAAAAAAAAAAAAAAAAAAAAAAAAIAAEAAAAAAAQ=</HashCode>
+      <FileName>DSP\DspBase.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider" Collapsed="true">
+    <Position X="13.75" Y="9.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Occupancy\iOccupancyStatusProvider.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Common.VideoCodec.IHasCodecLayouts" Collapsed="true">
+    <Position X="19" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAAAAAAAAAAAAEEgAAAAAAAAAAAAA=</HashCode>
+      <FileName>VideoCodec\Interfaces\IHasCodecLayouts.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PepperDash.Essentials.Devices.Common.VideoCodec.IHasCodecSelfview" Collapsed="true">
+    <Position X="20.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAEAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAABAAAAI=</HashCode>
+      <FileName>VideoCodec\Interfaces\IHasCodecSelfview.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="PepperDash.Essentials.Devices.Common.eExGatewayType" Collapsed="true">
+    <Position X="10.25" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAIAAAEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Crestron\Gateways\CenRfgwController.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PepperDash.Essentials.Devices.Common.Codec.eCodecCallDirection" Collapsed="true">
+    <Position X="12" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAgQAAAAAAAAAAAABA=</HashCode>
+      <FileName>Codec\eCodecCallDirection.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PepperDash.Essentials.Devices.Common.Codec.eCodecCallStatus" Collapsed="true">
+    <Position X="13.75" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAgAAABAAAAAQAACAAABAAAAAAAAAAABCAAAAiAAQBA=</HashCode>
+      <FileName>Codec\eCodecCallStatus.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PepperDash.Essentials.Devices.Common.Codec.eCodecCallType" Collapsed="true">
+    <Position X="15.5" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAoBg=</HashCode>
+      <FileName>Codec\eCodecCallType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PepperDash.Essentials.Devices.Common.Codec.eMeetingPrivacy" Collapsed="true">
+    <Position X="13.75" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAQBA=</HashCode>
+      <FileName>Codec\eMeetingPrivacy.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PepperDash.Essentials.Devices.Common.Codec.eCodecOccurrenceType" Collapsed="true">
+    <Position X="17.25" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAIAAAAAAAAAAAAAAAAAAAEAAAAAAABA=</HashCode>
+      <FileName>Codec\iHasCallHistory.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PepperDash.Essentials.Devices.Common.Codec.eContactMethodDevice" Collapsed="true">
+    <Position X="22.5" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAIAAAAAAABg=</HashCode>
+      <FileName>Codec\iHasDirectory.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PepperDash.Essentials.Devices.Common.Codec.eContactMethodCallType" Collapsed="true">
+    <Position X="20.75" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABg=</HashCode>
+      <FileName>Codec\iHasDirectory.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PepperDash.Essentials.Devices.Common.Codec.eMeetingEventChangeType" Collapsed="true">
+    <Position X="12" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAIACg=</HashCode>
+      <FileName>Codec\iHasScheduleAwareness.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PepperDash.Essentials.Devices.Common.Environment.Lutron.eAction" Collapsed="true">
+    <Position X="10.25" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAACAAABAAgIAAgAAQAAAAAAAAIAAAIAAAACAEAAg=</HashCode>
+      <FileName>Environment\Lutron\LutronQuantum.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eCommandType" Collapsed="true">
+    <Position X="19" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAQAAAAABAAEAAAAAAAAgAAAAAAAAAA=</HashCode>
+      <FileName>VideoCodec\CiscoCodec\CiscoSparkCodec.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

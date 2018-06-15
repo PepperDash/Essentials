@@ -15,11 +15,20 @@ namespace PepperDash.Essentials
 		/// Assign the appropriate A/V driver.
 		/// Want to keep the AvDriver alive, because it may hold states
 		/// </summary>
-		public PanelDriverBase AvDriver { get; set; }
+		public IAVDriver AvDriver { get; set; }
+
+        public EssentialsHeaderDriver HeaderDriver { get; set; }
+
+        public EssentialsEnvironmentDriver EnvironmentDriver { get; set; }
 
 		public PanelDriverBase CurrentChildDriver { get; private set; }
 
 		CrestronTouchpanelPropertiesConfig Config;
+
+        /// <summary>
+        /// The main interlock for popups
+        /// </summary>
+        //public JoinedSigInterlock PopupInterlock { get; private set; }
 
 		public EssentialsPanelMainInterfaceDriver(BasicTriListWithSmartObject trilist,
 			CrestronTouchpanelPropertiesConfig config)
@@ -31,7 +40,7 @@ namespace PepperDash.Essentials
 		public override void Show()
 		{
 			CurrentChildDriver = null;
-			ShowSubDriver(AvDriver);
+			ShowSubDriver(AvDriver as PanelDriverBase);
 			base.Show();
 		}
 

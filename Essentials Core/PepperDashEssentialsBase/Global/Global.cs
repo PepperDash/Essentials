@@ -15,17 +15,24 @@ namespace PepperDash.Essentials.Core
 
 		public static LicenseManager LicenseManager { get; set; }
 
-		//public static EssentialsHttpServer HttpConfigServer
-		//{
-		//    get
-		//    {
-		//        if (_HttpConfigServer == null)
-		//            _HttpConfigServer = new EssentialsHttpServer();
-		//        return _HttpConfigServer;
-		//    }
-		//}
-		//static EssentialsHttpServer _HttpConfigServer;
+        public static string FilePathPrefix { get; private set; }
 
+        public static char DirectorySeparator
+        {
+            get
+            {
+                return System.IO.Path.DirectorySeparatorChar;
+            }
+        }
+
+        /// <summary>
+        /// Sets the file path prefix
+        /// </summary>
+        /// <param name="prefix"></param>
+        public static void SetFilePathPrefix(string prefix)
+        {
+            FilePathPrefix = prefix;
+        }
 
 		static Global()
 		{

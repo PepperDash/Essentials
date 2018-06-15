@@ -85,7 +85,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Toggles visibility of this driver
         /// </summary>
-        public void Toggle()
+        public virtual void Toggle()
         {
             if (IsVisible)
                 Hide();

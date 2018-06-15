@@ -36,149 +36,74 @@ namespace PepperDash.Essentials
 		public EssentialsTouchpanelController(string key, string name, string type, CrestronTouchpanelPropertiesConfig props, uint id)
 			: base(key, name)
 		{
-			AddPostActivationAction(() =>
-				{
-					Debug.Console(0, this, "Creating hardware...");
-					type = type.ToLower();
-					try
-					{
-                        if (type == "crestronapp")
-                        {
-                            var app = new CrestronApp(id, Global.ControlSystem);
-                            app.ParameterProjectName.Value = props.ProjectName;
-                            Panel = app;
-                        }
-                        else if (type == "tsw550")
-                            Panel = new Tsw550(id, Global.ControlSystem);
-                        else if (type == "tsw552")
-                            Panel = new Tsw552(id, Global.ControlSystem);
-                        else if (type == "tsw560")
-                            Panel = new Tsw560(id, Global.ControlSystem);
-                        else if (type == "tsw750")
-                            Panel = new Tsw750(id, Global.ControlSystem);
-                        else if (type == "tsw752")
-                            Panel = new Tsw752(id, Global.ControlSystem);
-                        else if (type == "tsw760")
-                            Panel = new Tsw760(id, Global.ControlSystem);
-                        else if (type == "tsw1050")
-                            Panel = new Tsw1050(id, Global.ControlSystem);
-                        else if (type == "tsw1052")
-                            Panel = new Tsw1052(id, Global.ControlSystem);
-                        else if (type == "tsw1060")
-                            Panel = new Tsw1060(id, Global.ControlSystem);
-                        else
-                        {
-                            Debug.Console(0, this, "WARNING: Cannot create TSW controller with type '{0}'", type);
-                            return;
-                        }
-					}
-					catch (Exception e)
-					{
-						Debug.Console(0, this, "WARNING: Cannot create TSW base class. Panel will not function: {0}", e.Message);
-						return;				
-					}
 
-                    // Reserved sigs
-                    if (Panel is TswFt5ButtonSystem)
-                    {
-                        var tsw = Panel as TswFt5ButtonSystem;
-                        tsw.ExtenderSystemReservedSigs.Use();
-                        tsw.ExtenderSystemReservedSigs.DeviceExtenderSigChange
-                            += ExtenderSystemReservedSigs_DeviceExtenderSigChange;
-                    }
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Creating touchpanel hardware...");
+			type = type.ToLower();
+			try
+			{
+                if (type == "crestronapp")
+                {
+                    var app = new CrestronApp(id, Global.ControlSystem);
+                    app.ParameterProjectName.Value = props.ProjectName;
+                    Panel = app;
+                }
+                else if (type == "tsw550")
+                    Panel = new Tsw550(id, Global.ControlSystem);
+                else if (type == "tsw552")
+                    Panel = new Tsw552(id, Global.ControlSystem);
+                else if (type == "tsw560")
+                    Panel = new Tsw560(id, Global.ControlSystem);
+                else if (type == "tsw750")
+                    Panel = new Tsw750(id, Global.ControlSystem);
+                else if (type == "tsw752")
+                    Panel = new Tsw752(id, Global.ControlSystem);
+                else if (type == "tsw760")
+                    Panel = new Tsw760(id, Global.ControlSystem);
+                else if (type == "tsw1050")
+                    Panel = new Tsw1050(id, Global.ControlSystem);
+                else if (type == "tsw1052")
+                    Panel = new Tsw1052(id, Global.ControlSystem);
+                else if (type == "tsw1060")
+                    Panel = new Tsw1060(id, Global.ControlSystem);
+                else
+                {
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create TSW controller with type '{0}'", type);
+                    return;
+                }
+			}
+			catch (Exception e)
+			{
+                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create TSW base class. Panel will not function: {0}", e.Message);
+				return;				
+			}
 
-					//CrestronInvoke.BeginInvoke(o =>
-					//    {
-                            var regSuccess = Panel.Register();
-                            if (regSuccess != eDeviceRegistrationUnRegistrationResponse.Success)
-                                Debug.Console(0, this, "WARNING: Registration failed. Continuing, but panel may not function: {0}", regSuccess);
+            // Reserved sigs
+            if (Panel is TswFt5ButtonSystem)
+            {
+                var tsw = Panel as TswFt5ButtonSystem;
+                tsw.ExtenderSystemReservedSigs.Use();
+                tsw.ExtenderSystemReservedSigs.DeviceExtenderSigChange
+                    += ExtenderSystemReservedSigs_DeviceExtenderSigChange;
 
-                            // Give up cleanly if SGD is not present.
-                            var sgdName = @"\NVRAM\Program" + InitialParametersClass.ApplicationNumber
-                                + @"\sgd\" + props.SgdFile;
-                            if (!File.Exists(sgdName))
-                            {
-                                Debug.Console(0, this, "ERROR: Smart object file '{0}' not present. Exiting TSW load", sgdName);
-                                return;
-                            }
+                tsw.ButtonStateChange += new ButtonEventHandler(Tsw_ButtonStateChange);
 
-                            Panel.LoadSmartObjects(sgdName);
-                            Panel.SigChange += Tsw_SigChange;
+            }
 
-                            var mainDriver = new EssentialsPanelMainInterfaceDriver(Panel, props);
-                            // Then the AV driver
+            if (Panel.Register() != eDeviceRegistrationUnRegistrationResponse.Success)
+                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Registration failed. Continuing, but panel may not function: {0}", Panel.RegistrationFailureReason);
 
-                            // spin up different room drivers depending on room type
-                            var room = DeviceManager.GetDeviceForKey(props.DefaultRoomKey);
-                            if (room is EssentialsHuddleSpaceRoom)
-                            {
-                                Debug.Console(0, this, "Adding huddle space driver");
-                                var avDriver = new EssentialsHuddlePanelAvFunctionsDriver(mainDriver, props);
-                                avDriver.CurrentRoom = room as EssentialsHuddleSpaceRoom;
-                                avDriver.DefaultRoomKey = props.DefaultRoomKey;
-                                mainDriver.AvDriver = avDriver;
-                                LoadAndShowDriver(mainDriver);  // This is a little convoluted.
+            // Give up cleanly if SGD is not present.
+            var sgdName = Global.FilePathPrefix
+                + Global.DirectorySeparator + "sgd" + Global.DirectorySeparator + props.SgdFile;
+            if (!File.Exists(sgdName))
+            {
+                Debug.Console(0, this, "ERROR: Smart object file '{0}' not present. Exiting TSW load", sgdName);
+                return;
+            }
 
-                                if (Panel is TswFt5ButtonSystem)
-                                {
-                                    var tsw = Panel as TswFt5ButtonSystem;
-                                    // Wire up hard keys
-                                    tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.PowerButtonPressed(); });
-                                    //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
-                                    tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
-                                    tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
-                                    tsw.ButtonStateChange += new ButtonEventHandler(Tsw_ButtonStateChange);
-                                }
-                            }
-                            else if (room is EssentialsPresentationRoom)
-                            {
-                                Debug.Console(0, this, "Adding presentation room driver");
-                                var avDriver = new EssentialsPresentationPanelAvFunctionsDriver(mainDriver, props);
-                                avDriver.CurrentRoom = room as EssentialsPresentationRoom;
-                                avDriver.DefaultRoomKey = props.DefaultRoomKey;
-                                mainDriver.AvDriver = avDriver;
-                                LoadAndShowDriver(mainDriver);
-                                
-                                if (Panel is TswFt5ButtonSystem)
-                                {
-                                    var tsw = Panel as TswFt5ButtonSystem;
-                                    // Wire up hard keys
-                                    tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.PowerButtonPressed(); });
-                                    //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
-                                    tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
-                                    tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
-                                    tsw.ButtonStateChange += new ButtonEventHandler(Tsw_ButtonStateChange);
-                                }
-                            }
-                            else if (room is EssentialsHuddleVtc1Room)
-                            {
-                                Debug.Console(0, this, "Adding huddle space driver");
-                                var avDriver = new EssentialsHuddleVtc1PanelAvFunctionsDriver(mainDriver, props);
-                                var codecDriver = new PepperDash.Essentials.UIDrivers.VC.EssentialsVideoCodecUiDriver(Panel, avDriver,
-                                    (room as EssentialsHuddleVtc1Room).VideoCodec);
-                                avDriver.SetVideoCodecDriver(codecDriver);
-                                avDriver.CurrentRoom = room as EssentialsHuddleVtc1Room;
-                                avDriver.DefaultRoomKey = props.DefaultRoomKey;
-                                mainDriver.AvDriver = avDriver;
-                                LoadAndShowDriver(mainDriver);  // This is a little convoluted.
+            Panel.LoadSmartObjects(sgdName);
+            Panel.SigChange += Tsw_SigChange;
 
-                                if (Panel is TswFt5ButtonSystem)
-                                {
-                                    var tsw = Panel as TswFt5ButtonSystem;
-                                    // Wire up hard keys
-                                    tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.EndMeetingPress(); });
-                                    //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
-                                    tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
-                                    tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
-                                    tsw.ButtonStateChange += new ButtonEventHandler(Tsw_ButtonStateChange);
-                                }
-                            }
-                            else
-                            {
-                                Debug.Console(0, this, "ERROR: Cannot load AvFunctionsDriver for room '{0}'", props.DefaultRoomKey);
-                            }
-						//}, 0);
-				});
 		}
 
 		public void LoadAndShowDriver(PanelDriverBase driver)

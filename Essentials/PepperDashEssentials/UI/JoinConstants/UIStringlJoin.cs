@@ -68,6 +68,34 @@ namespace PepperDash.Essentials
         /// </summary>
         //public const uint KeypadText = 2901;
 
+        //******************************************************
+
+        // Environment Joins
+
+        /// <summary>
+        /// 2001 - 2010
+        /// </summary>
+        public const uint EnvironmentColumnOneLabelBase = 2000;
+
+        /// <summary>
+        /// 2011 - 2020
+        /// </summary>
+        public const uint EnvironmentColumnTwoLabelBase = 2010;
+
+        /// <summary>
+        /// 2021 - 2030
+        /// </summary>
+        public const uint EnvironmentColumnThreeLabelBase = 2020;
+
+        /// <summary>
+        /// 2031 - 2040
+        /// </summary>
+        public const uint EnvironmentColumnFourLabelBase = 2030;
+
+        // 2050, 2060, 2070 and 2080 reserved for column device name labels
+
+        //******************************************************
+
         /// <summary>
         /// 3101 - This is the start of the range 3101 - 3120
         /// </summary>

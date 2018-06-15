@@ -223,12 +223,116 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 1256
 		/// </summary>
-		public const uint VCMinMaxEnable = 1256; 
+		public const uint VCMinMaxEnable = 1256;
 
+        // Letter joins start at 2921;
 
         //******************************************************
 
-        // Letter joins start at 2921;
+        // Environment Joins
+
+        // Popup Container
+
+        /// <summary>
+        /// 2001 - 2004
+        /// </summary>
+        public const uint EnvironmentBackgroundSubpageVisibleBase = 2000;
+
+
+        // ColumnOne
+
+        /// <summary>
+        /// 2011 - 2015
+        /// </summary>
+        public const uint EnvironmentColumnOneLightingTypeVisibleBase = 2010;
+
+        /// <summary>
+        /// 2016 - 2020
+        /// </summary>
+        public const uint EnvironmentColumnOneShadingTypeVisibleBase = 2015;
+
+        // ColumnTwo
+
+        /// <summary>
+        /// 2021 - 2025
+        /// </summary>
+        public const uint EnvironmentColumnTwoLightingTypeVisibleBase = 2020;
+
+        /// <summary>
+        /// 2026 - 2030
+        /// </summary>
+        public const uint EnvironmentColumnTwoShadingTypeVisibleBase = 2025;
+
+        // ColumnThree
+
+        /// <summary>
+        /// 2031 - 2035
+        /// </summary>
+        public const uint EnvironmentColumnThreeLightingTypeVisibleBase = 2030;
+
+        /// <summary>
+        /// 2036 - 2040
+        /// </summary>
+        public const uint EnvironmentColumnThreeShadingTypeVisibleBase = 2035;
+
+        // ColumnFour
+
+        /// <summary>
+        /// 2041 - 2045
+        /// </summary>
+        public const uint EnvironmentColumnFourLightingTypeVisibleBase = 2040;
+
+        /// <summary>
+        /// 2046 - 2050
+        /// </summary>
+        public const uint EnvironmentColumnFourShadingTypeVisibleBase = 2045;
+
+        // Button press
+
+        /// <summary>
+        /// 2051 - 2060
+        /// </summary>
+        public const uint EnvironmentColumnOneButtonPressBase = 2050;
+
+        /// <summary>
+        /// 2061 - 2070
+        /// </summary>
+        public const uint EnvironmentColumnTwoButtonPressBase = 2060;
+
+        /// <summary>
+        /// 2071 - 2080
+        /// </summary>
+        public const uint EnvironmentColumnThreeButtonPressBase = 2070;
+
+        /// <summary>
+        /// 2081 - 2090
+        /// </summary>
+        public const uint EnvironmentColumnFourButtonPressBase = 2080;
+
+        // Button visibility
+
+        /// <summary>
+        /// 2151 - 2160
+        /// </summary>
+        public const uint EnvironmentColumnOneButtonVisibleBase = 2150;
+
+        /// <summary>
+        /// 2161 - 2170
+        /// </summary>
+        public const uint EnvironmentColumnTwoButtonVisibleBase = 2160;
+
+        /// <summary>
+        /// 2171 - 2180
+        /// </summary>
+        public const uint EnvironmentColumnThreeButtonVisibleBase = 2170;
+        
+        /// <summary>
+        /// 2181 - 2190
+        /// </summary>
+        public const uint EnvironmentColumnFourButtonVisibleBase = 2180;
+
+
+        //******************************************************
 
         /// <summary>
         /// 3101
@@ -263,7 +367,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint TechSchedulerVisible = 3112;
 
-       //******************************************************
+        //*****************************************************
         /// <summary>
         /// 3811
         /// </summary>
