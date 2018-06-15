@@ -59,7 +59,7 @@ namespace PepperDash.Essentials
 						"Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
 				}, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
-            //GoWithLoad();
+            GoWithLoad();
 		}
 
         /// <summary>
