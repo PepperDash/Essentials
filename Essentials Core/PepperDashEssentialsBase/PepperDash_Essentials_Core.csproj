@@ -73,7 +73,7 @@
     <Reference Include="mscorlib" />
     <Reference Include="PepperDash_Core, Version=1.0.1.26313, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\pepperdash-simplsharp-core\Pepperdash Core\CLZ Builds\PepperDash_Core.dll</HintPath>
+      <HintPath>..\..\..\pepperdash-simplsharp-core\CLZ Builds\PepperDash_Core.dll</HintPath>
     </Reference>
     <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -111,6 +111,8 @@
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
     <Compile Include="Devices\CodecInterfaces.cs" />
+    <Compile Include="Feedbacks\FeedbackTest.cs" />
+    <Compile Include="Feedbacks\FeedbackEventArgs.cs" />
     <Compile Include="Global\JobTimer.cs" />
     <Compile Include="Lighting\Lighting Interfaces.cs" />
     <Compile Include="Lighting\LightingBase.cs" />

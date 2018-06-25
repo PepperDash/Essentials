@@ -57,7 +57,7 @@
     <Reference Include="mscorlib" />
     <Reference Include="PepperDash_Core, Version=1.0.4.20530, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\PepperDash.Core\Pepperdash Core\Pepperdash Core\bin\PepperDash_Core.dll</HintPath>
+      <HintPath>..\..\..\pepperdash-simplsharp-core\CLZ Builds\PepperDash_Core.dll</HintPath>
     </Reference>
     <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

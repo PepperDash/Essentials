@@ -71,13 +71,9 @@
       <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.UI.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="PepperDashCorePortalSync, Version=1.0.0.27069, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\pepperdash-portal-sync\SspPortalSync\SspPortalSync\bin\PepperDashCorePortalSync.dll</HintPath>
-    </Reference>
     <Reference Include="PepperDash_Core, Version=1.0.3.27452, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Release Package\PepperDash_Core.dll</HintPath>
+      <HintPath>..\..\..\pepperdash-simplsharp-core\CLZ Builds\PepperDash_Core.dll</HintPath>
     </Reference>
     <Reference Include="PepperDash_Essentials_DM, Version=1.0.0.19343, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -101,7 +97,7 @@
     </Reference>
     <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

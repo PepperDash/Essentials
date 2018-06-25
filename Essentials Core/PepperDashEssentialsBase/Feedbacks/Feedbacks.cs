@@ -9,7 +9,7 @@ namespace PepperDash.Essentials.Core
 {
 	public abstract class Feedback
 	{
-		public event EventHandler<EventArgs> OutputChange;
+		public event EventHandler<FeedbackEventArgs> OutputChange;
 
 		public virtual bool BoolValue { get { return false; } }
 		public virtual int IntValue { get { return 0; } }
@@ -60,13 +60,29 @@ namespace PepperDash.Essentials.Core
 			CrestronInvoke.BeginInvoke(o => FireUpdate());
 		}
 
-		/// <summary>
-		/// Helper method that fires event. Use this intstead of calling OutputChange
-		/// </summary>
-		protected void OnOutputChange()
-		{
-			if (OutputChange != null) OutputChange(this, EventArgs.Empty);
-		}
+        ///// <summary>
+        ///// Helper method that fires event. Use this intstead of calling OutputChange
+        ///// </summary>
+        //protected void OnOutputChange()
+        //{
+        //    if (OutputChange != null) OutputChange(this, EventArgs.Empty);
+        //}
+
+        protected void OnOutputChange(bool value)
+        {
+            if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));
+        }
+
+        protected void OnOutputChange(int value)
+        {
+            if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));
+        }
+
+
+        protected void OnOutputChange(string value)
+        {
+            if (OutputChange != null) OutputChange(this, new FeedbackEventArgs(value));
+        }
 	}
 
     /// <summary>
@@ -116,7 +132,7 @@ namespace PepperDash.Essentials.Core
                 _BoolValue = newValue;
 			    LinkedInputSigs.ForEach(s => UpdateSig(s));
 			    LinkedComplementInputSigs.ForEach(s => UpdateComplementSig(s));
-			    OnOutputChange();
+                OnOutputChange(newValue);
             }
 		}
 
@@ -205,7 +221,7 @@ namespace PepperDash.Essentials.Core
             {
                 _IntValue = newValue;
                 LinkedInputSigs.ForEach(s => UpdateSig(s));
-                OnOutputChange();
+                OnOutputChange(newValue);
             }
 		}
 
@@ -282,7 +298,7 @@ namespace PepperDash.Essentials.Core
             {
                 _StringValue = newValue;
                 LinkedInputSigs.ForEach(s => UpdateSig(s));
-                OnOutputChange();
+                OnOutputChange(newValue);
             }
 		}
 

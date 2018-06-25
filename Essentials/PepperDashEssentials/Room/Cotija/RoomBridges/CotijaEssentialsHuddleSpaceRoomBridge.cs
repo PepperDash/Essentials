@@ -67,7 +67,7 @@ namespace PepperDash.Essentials
 
 			Room.CurrentVolumeDeviceChange += new EventHandler<VolumeDeviceChangeEventArgs>(Room_CurrentVolumeDeviceChange);
 
-			Room.OnFeedback.OutputChange += new EventHandler<EventArgs>(OnFeedback_OutputChange);
+			Room.OnFeedback.OutputChange += OnFeedback_OutputChange;
 			Room.IsCoolingDownFeedback.OutputChange += new EventHandler<EventArgs>(IsCoolingDownFeedback_OutputChange);
 			Room.IsWarmingUpFeedback.OutputChange += new EventHandler<EventArgs>(IsWarmingUpFeedback_OutputChange);
 
