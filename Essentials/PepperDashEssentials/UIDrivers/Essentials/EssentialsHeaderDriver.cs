@@ -214,7 +214,6 @@ namespace PepperDash.Essentials
             TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusLabelPress, avDriver.ShowActiveCallsList);
 
             // Set Call Status Subpage Position
-#warning may need to add a new position when environment icon is displayed
 
             if (nextJoin == 3951)
             {
