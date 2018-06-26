@@ -143,7 +143,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
                         {
                             case (int)eAction.Scene:
                                 {
-                                    var scene = Int32.Parse(response[3]);
+                                    var scene = response[3];
                                     CurrentLightingScene = LightingScenes.FirstOrDefault(s => s.ID.Equals(scene));
 
                                     OnLightingSceneChange();
