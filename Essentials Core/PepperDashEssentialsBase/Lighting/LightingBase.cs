@@ -26,6 +26,8 @@ namespace PepperDash.Essentials.Core.Lighting
             : base(key, name)
         {
             LightingScenes = new List<LightingScene>();
+
+            CurrentLightingScene = new LightingScene();
         }
 
         public abstract void SelectScene(LightingScene scene);
