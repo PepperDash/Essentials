@@ -111,8 +111,11 @@
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
     <Compile Include="Devices\CodecInterfaces.cs" />
-    <Compile Include="Feedbacks\FeedbackTest.cs" />
+    <Compile Include="Feedbacks\BoolFeedback.cs" />
     <Compile Include="Feedbacks\FeedbackEventArgs.cs" />
+    <Compile Include="Feedbacks\IntFeedback.cs" />
+    <Compile Include="Feedbacks\SerialFeedback.cs" />
+    <Compile Include="Feedbacks\StringFeedback.cs" />
     <Compile Include="Global\JobTimer.cs" />
     <Compile Include="Lighting\Lighting Interfaces.cs" />
     <Compile Include="Lighting\LightingBase.cs" />
@@ -214,7 +217,7 @@
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\IrOutputPortController.cs" />
     <Compile Include="Display\DisplayBase.cs" />
-    <Compile Include="Feedbacks\Feedbacks.cs" />
+    <Compile Include="Feedbacks\FeedbackBase.cs" />
     <Compile Include="Room\Room.cs" />
     <Compile Include="Room\RoomCues.cs" />
     <Compile Include="Room\MOVED RoomEventArgs.cs" />

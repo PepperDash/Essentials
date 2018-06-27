@@ -606,7 +606,7 @@ namespace PepperDash.Essentials.Devices.Displays
             else // if power is off, wait until we get on FB to send it. 
             {
                 // One-time event handler to wait for power on before executing switch
-                EventHandler<EventArgs> handler = null; // necessary to allow reference inside lambda to handler
+                EventHandler<FeedbackEventArgs> handler = null; // necessary to allow reference inside lambda to handler
                 handler = (o, a) =>
                 {
                     if (!_IsWarmingUp) // Done warming

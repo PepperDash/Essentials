@@ -293,7 +293,7 @@ namespace PepperDash.Essentials.UIDrivers
                     // Figure out some way to provide current input feedback
                     if (display is TwoWayDisplayBase)
                     {
-                        (display as TwoWayDisplayBase).CurrentInputFeedback.OutputChange += new EventHandler<EventArgs>(CurrentInputFeedback_OutputChange);
+                        (display as TwoWayDisplayBase).CurrentInputFeedback.OutputChange += CurrentInputFeedback_OutputChange;
                     }
                 }
 

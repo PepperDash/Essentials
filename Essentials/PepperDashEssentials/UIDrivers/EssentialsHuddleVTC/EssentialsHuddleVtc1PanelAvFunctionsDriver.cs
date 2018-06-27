@@ -531,7 +531,7 @@ namespace PepperDash.Essentials
 			else
 			{
 				// Rig a one-time handler to catch when the room is warmed and then dial call
-				EventHandler<EventArgs> oneTimeHandler = null;
+				EventHandler<FeedbackEventArgs> oneTimeHandler = null;
 				oneTimeHandler = (o, a) =>
 					{
 						if (!CurrentRoom.IsWarmingUpFeedback.BoolValue)
@@ -774,7 +774,7 @@ namespace PepperDash.Essentials
 
                 // respond to offs by cancelling dialog
                 var onFb = CurrentRoom.OnFeedback;
-                EventHandler<EventArgs> offHandler = null;
+                EventHandler<FeedbackEventArgs> offHandler = null;
                 offHandler = (o, a) =>
                 {
                     if (!onFb.BoolValue)
@@ -932,7 +932,7 @@ namespace PepperDash.Essentials
 				(_CurrentRoom.VideoCodec as IHasScheduleAwareness).CodecSchedule.MeetingsListHasChanged += CodecSchedule_MeetingsListHasChanged;
 
                 CallSharingInfoVisibleFeedback = new BoolFeedback(() => _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue);
-                _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.OutputChange += new EventHandler<EventArgs>(SharingContentIsOnFeedback_OutputChange);
+                _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.OutputChange += SharingContentIsOnFeedback_OutputChange;
                 CallSharingInfoVisibleFeedback.LinkInputSig(TriList.BooleanInput[UIBoolJoin.CallSharedSourceInfoVisible]);
 
                 SetActiveCallListSharingContentStatus();

@@ -98,7 +98,7 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
         {
             PrivacyDevice = privacyDevice;
 
-            PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange += new EventHandler<EventArgs>(PrivacyModeIsOnFeedback_OutputChange);
+            PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange += PrivacyModeIsOnFeedback_OutputChange;
         }
 
         void PrivacyModeIsOnFeedback_OutputChange(object sender, EventArgs e)
@@ -124,7 +124,7 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
         {
             Inputs.Add(input);
 
-            input.InputStateFeedback.OutputChange += new EventHandler<EventArgs>(InputStateFeedback_OutputChange);
+            input.InputStateFeedback.OutputChange += InputStateFeedback_OutputChange;
         }
 
         void RemoveInput(IDigitalInput input)

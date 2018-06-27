@@ -45,7 +45,7 @@ namespace PepperDash.Essentials
             Devices = new List<IKeyed>();
             DeviceSubDrivers = new List<PanelDriverBase>();
 
-            Parent.AvDriver.PopupInterlock.IsShownFeedback.OutputChange += new EventHandler<EventArgs>(IsShownFeedback_OutputChange);
+            Parent.AvDriver.PopupInterlock.IsShownFeedback.OutputChange += IsShownFeedback_OutputChange;
 
             // Calculate the join offests for each device page and assign join actions for each button
         }

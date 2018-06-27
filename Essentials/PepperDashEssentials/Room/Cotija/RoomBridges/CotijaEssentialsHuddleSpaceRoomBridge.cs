@@ -68,12 +68,12 @@ namespace PepperDash.Essentials
 			Room.CurrentVolumeDeviceChange += new EventHandler<VolumeDeviceChangeEventArgs>(Room_CurrentVolumeDeviceChange);
 
 			Room.OnFeedback.OutputChange += OnFeedback_OutputChange;
-			Room.IsCoolingDownFeedback.OutputChange += new EventHandler<EventArgs>(IsCoolingDownFeedback_OutputChange);
-			Room.IsWarmingUpFeedback.OutputChange += new EventHandler<EventArgs>(IsWarmingUpFeedback_OutputChange);
+			Room.IsCoolingDownFeedback.OutputChange += IsCoolingDownFeedback_OutputChange;
+			Room.IsWarmingUpFeedback.OutputChange += IsWarmingUpFeedback_OutputChange;
 
-			Room.ShutdownPromptTimer.HasStarted += new EventHandler<EventArgs>(ShutdownPromptTimer_HasStarted);
-			Room.ShutdownPromptTimer.HasFinished += new EventHandler<EventArgs>(ShutdownPromptTimer_HasFinished);
-			Room.ShutdownPromptTimer.WasCancelled += new EventHandler<EventArgs>(ShutdownPromptTimer_WasCancelled);
+			Room.ShutdownPromptTimer.HasStarted += ShutdownPromptTimer_HasStarted;
+			Room.ShutdownPromptTimer.HasFinished += ShutdownPromptTimer_HasFinished;
+			Room.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
 
 			// Registers for initial volume events, if possible
 			var currentVolumeDevice = Room.CurrentVolumeControls;
@@ -84,8 +84,8 @@ namespace PepperDash.Essentials
 				{
 					var newDev = currentVolumeDevice as IBasicVolumeWithFeedback;
 
-					newDev.MuteFeedback.OutputChange += new EventHandler<EventArgs>(VolumeLevelFeedback_OutputChange);
-					newDev.VolumeLevelFeedback.OutputChange += new EventHandler<EventArgs>(VolumeLevelFeedback_OutputChange);
+					newDev.MuteFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
+					newDev.VolumeLevelFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
 				}
 			}
 		}
@@ -210,8 +210,8 @@ namespace PepperDash.Essentials
             {
                 var newDev = e.NewDev as IBasicVolumeWithFeedback;
 
-                newDev.MuteFeedback.OutputChange += new EventHandler<EventArgs>(VolumeLevelFeedback_OutputChange);
-                newDev.VolumeLevelFeedback.OutputChange += new EventHandler<EventArgs>(VolumeLevelFeedback_OutputChange);
+                newDev.MuteFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
+                newDev.VolumeLevelFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
             }
         }
 

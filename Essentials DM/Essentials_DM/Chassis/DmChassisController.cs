@@ -103,7 +103,7 @@ namespace PepperDash.Essentials.DM
 			InputPorts = new RoutingPortCollection<RoutingInputPort>();
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
             VolumeControls = new Dictionary<uint, DmCardAudioOutputController>();
-            IsOnline.OutputChange += new EventHandler<EventArgs>(IsOnline_OutputChange);
+            IsOnline.OutputChange += IsOnline_OutputChange;
             Chassis.DMOutputChange += new DMOutputEventHandler(Chassis_DMOutputChange);
 		}
 

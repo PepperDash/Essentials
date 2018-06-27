@@ -603,7 +603,7 @@ namespace PepperDash.Essentials
                
                 // respond to offs by cancelling dialog
                 var onFb = CurrentRoom.OnFeedback;
-                EventHandler<EventArgs> offHandler = null;
+                EventHandler<FeedbackEventArgs> offHandler = null;
                 offHandler = (o, a) =>
                 {
                     if (!onFb.BoolValue)

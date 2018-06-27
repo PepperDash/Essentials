@@ -210,7 +210,7 @@ namespace PepperDash.Essentials
 
             RoomOccupancy = statusProvider;
 
-            RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += new EventHandler<EventArgs>(RoomIsOccupiedFeedback_OutputChange);
+            RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
         }
 
         void RoomIsOccupiedFeedback_OutputChange(object sender, EventArgs e)

@@ -54,7 +54,7 @@ namespace PepperDash.Essentials.Core
 
 			InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-            PowerIsOnFeedback.OutputChange += new EventHandler<EventArgs>(PowerIsOnFeedback_OutputChange);
+            PowerIsOnFeedback.OutputChange += PowerIsOnFeedback_OutputChange;
 		}
 
         void PowerIsOnFeedback_OutputChange(object sender, EventArgs e)

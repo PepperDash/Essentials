@@ -1,0 +1,84 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
+
+namespace PepperDash.Essentials.Core
+{
+    public class StringFeedback : Feedback
+    {
+        public override string StringValue { get { return _StringValue; } } // ValueFunc.Invoke(); } }
+        string _StringValue;
+
+        public override eCueType Type { get { return eCueType.String; } }
+
+        /// <summary>
+        /// Used in testing.  Set/Clear functions
+        /// </summary>
+        public string TestValue { get; private set; }
+
+        /// <summary>
+        /// Evalutated on FireUpdate
+        /// </summary>
+        public Func<string> ValueFunc { get; private set; }
+        List<StringInputSig> LinkedInputSigs = new List<StringInputSig>();
+
+        public StringFeedback(Func<string> valueFunc)
+            : this(Cue.DefaultStringCue, valueFunc)
+        {
+        }
+
+        public StringFeedback(Cue cue, Func<string> valueFunc)
+            : base(cue)
+        {
+            if (cue == null) throw new ArgumentNullException("cue");
+            ValueFunc = valueFunc;
+
+        }
+
+        public override void FireUpdate()
+        {
+            var newValue = InTestMode ? TestValue : ValueFunc.Invoke();
+            if (newValue != _StringValue)
+            {
+                _StringValue = newValue;
+                LinkedInputSigs.ForEach(s => UpdateSig(s));
+                OnOutputChange(newValue);
+            }
+        }
+
+        public void LinkInputSig(StringInputSig sig)
+        {
+            LinkedInputSigs.Add(sig);
+            UpdateSig(sig);
+        }
+
+        public void UnlinkInputSig(StringInputSig sig)
+        {
+            LinkedInputSigs.Remove(sig);
+        }
+
+        public override string ToString()
+        {
+            return (InTestMode ? "TEST -- " : "") + StringValue;
+        }
+
+        /// <summary>
+        /// Puts this in test mode, sets the test value and fires an update.
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetTestValue(string value)
+        {
+            TestValue = value;
+            InTestMode = true;
+            FireUpdate();
+        }
+
+        void UpdateSig(StringInputSig sig)
+        {
+            sig.StringValue = _StringValue;
+        }
+    }
+}

@@ -112,6 +112,7 @@
     <Compile Include="MOVE IBasicVideoStatusFeedbacks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VideoStatusHelpers.cs" />
+    <None Include="app.config" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>

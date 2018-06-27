@@ -27,7 +27,7 @@ namespace PepperDash.Essentials.Core
 
 	public enum eCueType
 	{
-		Bool, Int, String, Void, Other
+		Bool, Int, String, Serial, Void, Other
 	}
 
 

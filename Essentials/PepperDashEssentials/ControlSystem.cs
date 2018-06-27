@@ -5,7 +5,6 @@ using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using PepperDash.Core;
-using PepperDash.Core.PortalSync;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
@@ -16,7 +15,6 @@ namespace PepperDash.Essentials
 {
 	public class ControlSystem : CrestronControlSystem
 	{
-		PepperDashPortalSyncClient PortalSync;
         HttpLogoServer LogoServer;
 
 		public ControlSystem()
@@ -59,7 +57,7 @@ namespace PepperDash.Essentials
 						"Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
 				}, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
-            //GoWithLoad();
+            GoWithLoad();
 		}
 
         /// <summary>
@@ -174,7 +172,6 @@ namespace PepperDash.Essentials
             if (s.ToLower() == "enable")
             {
                 CrestronConsole.ConsoleCommandResponse("Portal Sync features enabled");
-                PortalSync = new PepperDashPortalSyncClient();
             }
         }
 

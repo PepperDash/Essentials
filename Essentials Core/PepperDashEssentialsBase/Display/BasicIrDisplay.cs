@@ -186,7 +186,7 @@ namespace PepperDash.Essentials.Core
 			if (!PowerIsOnFeedback.BoolValue)
 			{
 				PowerOn();
-				EventHandler<EventArgs> oneTimer = null;
+				EventHandler<FeedbackEventArgs> oneTimer = null;
 				oneTimer = (o, a) =>
 					 {
 						 if (IsWarmingUpFeedback.BoolValue) return; // Only catch done warming
