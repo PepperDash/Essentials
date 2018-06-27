@@ -17,9 +17,9 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
 
         CTimer SubscribeAfterLogin;
 
-        public int IntegrationId;
-        public string Username;
-        public string Password;
+        string IntegrationId;
+        string Username;
+        string Password;
 
         const string Delimiter = "\x0d\x0a";
         const string Set = "#";
@@ -32,8 +32,8 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
 
             IntegrationId = props.IntegrationId;
 
-            Username = props.Username;
-            Password = props.Password;
+            Username = props.Control.TcpSshProperties.Username;
+            Password = props.Control.TcpSshProperties.Password;
 
             LightingScenes = props.Scenes;
 
@@ -89,7 +89,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         /// <param name="args"></param>
         void Communication_TextReceived(object sender, GenericCommMethodReceiveTextArgs args)
         {
-            Debug.Console(2, this, "Text Received: '{0}'");
+            Debug.Console(2, this, "Text Received: '{0}'", args.Text);
 
             if (args.Text.Contains("login:"))
             {
@@ -120,7 +120,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         /// <param name="args"></param>
         void PortGather_LineReceived(object sender, GenericCommMethodReceiveTextArgs args)
         {
-            Debug.Console(2, this, "Line Received: '{0}'");
+            Debug.Console(2, this, "Line Received: '{0}'", args.Text);
 
             try
             {
@@ -128,7 +128,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
                 {
                     var response = args.Text.Split(',');
 
-                    var integrationId = Int32.Parse(response[1]);
+                    var integrationId = response[1];
 
                     if (integrationId != IntegrationId)
                     {
@@ -143,7 +143,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
                         {
                             case (int)eAction.Scene:
                                 {
-                                    var scene = Int32.Parse(response[3]);
+                                    var scene = response[3];
                                     CurrentLightingScene = LightingScenes.FirstOrDefault(s => s.ID.Equals(scene));
 
                                     OnLightingSceneChange();
@@ -180,7 +180,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         public override void SelectScene(LightingScene scene)
         {
             Debug.Console(1, this, "Selecting Scene: '{0}'", scene.Name);
-            SendLine(string.Format("{0}AREA,{1},{2},{3}", Set, IntegrationId, eAction.Scene, scene.ID));
+            SendLine(string.Format("{0}AREA,{1},{2},{3}", Set, IntegrationId, (int)eAction.Scene, scene.ID));
         }
 
         /// <summary>
@@ -188,7 +188,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         /// </summary>
         public void MasterRaise()
         {
-            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, eAction.Raise));
+            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, (int)eAction.Raise));
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         /// </summary>
         public void MasterLower()
         {
-            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, eAction.Lower));
+            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, (int)eAction.Lower));
         }
 
         /// <summary>
@@ -204,7 +204,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         /// </summary>
         public void MasterRaiseLowerStop()
         {
-            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, eAction.Stop));
+            SendLine(string.Format("{0}AREA,{1},{2}", Set, IntegrationId, (int)eAction.Stop));
         }
 
         /// <summary>
@@ -239,10 +239,11 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         public CommunicationMonitorConfig CommunicationMonitorProperties { get; set; }
         public ControlPropertiesConfig Control { get; set; }
 
-        public int IntegrationId { get; set; }
-        public List<LightingScene> Scenes{ get; set; }
+        public string IntegrationId { get; set; }
+        public List<LightingScene> Scenes { get; set; }
 
-        public string Username { get; set; }
-        public string Password { get; set; }
+        // Moved to use existing properties in Control object
+        //public string Username { get; set; } 
+        //public string Password { get; set; }
     }
 }

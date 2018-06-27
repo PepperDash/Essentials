@@ -121,22 +121,27 @@ namespace PepperDash.Essentials
 
                     if (device != null)
                     {
-                        Devices.Add(device);
-
                         // Build the driver
                         var devicePanelDriver = GetPanelDriverForDevice(device, column);
 
                         // Add new PanelDriverBase SubDriver 
                         if (devicePanelDriver != null)
+                        {
+                            Devices.Add(device);
                             DeviceSubDrivers.Add(devicePanelDriver);
 
-                        Debug.Console(1, "Adding '{0}' to Environment Devices", device.Key);
+                            Debug.Console(1, "Adding '{0}' to Environment Devices", device.Key);
 
-                        column++;
+                            column++;
 
-                        // Quit if device count is exceeded
-                        if (column > 4)
-                            break;
+
+                            // Quit if device count is exceeded
+                            if (column > 4)
+                                break;
+                        }
+                        else
+                            Debug.Console(1, "Unable to build environment driver for device: '{0}'", device.Key);
+
                     }
 
                 }
