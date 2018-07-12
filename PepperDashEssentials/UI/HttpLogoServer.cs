@@ -7,6 +7,7 @@ using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Http;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials
 {
@@ -64,10 +65,14 @@ namespace PepperDash.Essentials
         void Server_OnHttpRequest(object sender, OnHttpRequestArgs args)
         {
             var path = args.Request.Path;
-            if (File.Exists(FileDirectory + @"\" + path))
+            Debug.Console(2, "HTTP Request with path: '{0}'", args.Request.Path);
+
+            if (File.Exists(FileDirectory + path))
             {
                 string filePath = path.Replace('/', '\\');
                 string localPath = string.Format(@"{0}{1}", FileDirectory, filePath);
+
+                Debug.Console(2, "HTTP Logo Server attempting to find file: '{0}'", localPath);
                 if (File.Exists(localPath))
                 {
                     args.Response.Header.ContentType = GetContentType(new FileInfo(localPath).Extension);
@@ -75,9 +80,14 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
+                    Debug.Console(2, "HTTP Logo Server Cannot find file '{0}'", localPath);
                     args.Response.ContentString = string.Format("Not found: '{0}'", filePath);
                     args.Response.Code = 404;
                 }
+            }
+            else
+            {
+                Debug.Console(2, "HTTP Logo Server: '{0}' does not exist", FileDirectory + path);
             }
         }
 

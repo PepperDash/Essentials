@@ -79,9 +79,9 @@ namespace PepperDash.Essentials
 
             string directoryPrefix;
 
-            //directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
-#warning ^ For use with beta Include4.dat for XiO Edge
-            directoryPrefix = "";
+            directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+
+            //directoryPrefix = "";
 
             if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)
             {
@@ -207,6 +207,9 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public void LoadDevices()
 		{
+            // Build the processor wrapper class
+            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+
 			foreach (var devConf in ConfigReader.ConfigObject.Devices)
 			{
 
@@ -214,8 +217,15 @@ namespace PepperDash.Essentials
 				{
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Creating device '{0}'", devConf.Key);
 					// Skip this to prevent unnecessary warnings
-					if (devConf.Key == "processor")
-						continue;
+                    if (devConf.Key == "processor")
+                    {
+                        if (devConf.Type.ToLower() != Global.ControlSystem.ControllerPrompt.ToLower())
+                            Debug.Console(0,
+                                "WARNING: Config file defines processor type as '{0}' but actual processor is '{1}'!  Some ports may not be available",
+                                devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
+
+                        continue;
+                    }
 
 					// Try local factory first
 					var newDev = DeviceFactory.GetDevice(devConf);
@@ -348,7 +358,7 @@ namespace PepperDash.Essentials
 		{
 			try
 			{
-                LogoServer = new HttpLogoServer(8080, Global.FilePathPrefix + "html" + Global.DirectorySeparator + "logo");
+                LogoServer = new HttpLogoServer(8080, Global.DirectorySeparator + "html" + Global.DirectorySeparator + "logo");
             }
 			catch (Exception)
 			{

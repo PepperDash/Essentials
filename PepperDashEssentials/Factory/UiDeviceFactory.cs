@@ -44,10 +44,10 @@ namespace PepperDash.Essentials
                         // AV Driver
                         Debug.Console(0, panelController, "Adding huddle space AV driver");
                         var avDriver = new EssentialsHuddlePanelAvFunctionsDriver(mainDriver, props);
-                        avDriver.CurrentRoom = room as EssentialsHuddleSpaceRoom;
                         avDriver.DefaultRoomKey = props.DefaultRoomKey;
                         mainDriver.AvDriver = avDriver;
-
+                        avDriver.CurrentRoom = room as EssentialsHuddleSpaceRoom;
+                        
                         // Environment Driver
                         if (avDriver.CurrentRoom.Config.Environment != null && avDriver.CurrentRoom.Config.Environment.DeviceKeys.Count > 0)
                         {
@@ -113,9 +113,9 @@ namespace PepperDash.Essentials
                         var codecDriver = new PepperDash.Essentials.UIDrivers.VC.EssentialsVideoCodecUiDriver(panelController.Panel, avDriver,
                             (room as EssentialsHuddleVtc1Room).VideoCodec, mainDriver.HeaderDriver);
                         avDriver.SetVideoCodecDriver(codecDriver);
-                        avDriver.CurrentRoom = room as EssentialsHuddleVtc1Room;
                         avDriver.DefaultRoomKey = props.DefaultRoomKey;
                         mainDriver.AvDriver = avDriver;
+                        avDriver.CurrentRoom = room as EssentialsHuddleVtc1Room;
 
                         // Environment Driver
                         if (avDriver.CurrentRoom.Config.Environment != null && avDriver.CurrentRoom.Config.Environment.DeviceKeys.Count > 0)
