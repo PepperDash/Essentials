@@ -105,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
+    <Compile Include="Bridges\Bridges.BridgeFactory.cs" />
     <Compile Include="Configuration ORIGINAL\Builders\TPConfig.cs" />
     <Compile Include="Configuration ORIGINAL\Configuration.cs" />
     <Compile Include="Configuration ORIGINAL\ConfigurationHelpers.cs" />
@@ -121,6 +122,8 @@
     <Compile Include="Configuration ORIGINAL\Factories\FactoryHelper.cs" />
     <Compile Include="Config\ConfigReader.cs" />
     <Compile Include="Config\EssentialsConfig.cs" />
+    <Compile Include="Bridges\EssentialComms.cs" />
+    <Compile Include="Bridges\EssentialDM.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Devices\Amplifier.cs" />
     <Compile Include="Devices\DiscPlayer\OppoExtendedBdp.cs" />

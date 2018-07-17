@@ -207,8 +207,9 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public void LoadDevices()
 		{
-            // Build the processor wrapper class
-            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+# warning Missing PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+			// Build the processor wrapper class
+            // DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
 
 			foreach (var devConf in ConfigReader.ConfigObject.Devices)
 			{
@@ -237,7 +238,8 @@ namespace PepperDash.Essentials
 						newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
-
+					if (newDev == null)
+						newDev = PepperDash.Essentials.BridgeFactory.GetDevice(devConf);
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
 					else
