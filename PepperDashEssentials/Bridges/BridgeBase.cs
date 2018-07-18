@@ -92,6 +92,10 @@ namespace PepperDash.Essentials.Bridges
         };
     }
 
+
+    /// <summary>
+    /// API class for IBasicCommunication devices
+    /// </summary>
     public class IBasicCommunicationApi : DeviceApiBase
     {
         public IBasicCommunication Device { get; set; }

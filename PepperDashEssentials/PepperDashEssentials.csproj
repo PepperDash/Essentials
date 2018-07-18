@@ -105,6 +105,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
+    <Compile Include="Bridges\BridgeBase.cs" />
+    <Compile Include="Bridges\BridgeFactory.cs" />
     <Compile Include="Configuration ORIGINAL\Builders\TPConfig.cs" />
     <Compile Include="Configuration ORIGINAL\Configuration.cs" />
     <Compile Include="Configuration ORIGINAL\ConfigurationHelpers.cs" />
@@ -154,6 +156,7 @@
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\IPowerExtensions.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\ISetTopBoxControlsExtensions.cs" />
     <Compile Include="Room\Cotija\DeviceTypeInterfaces\ITransportExtensions.cs" />
+    <Compile Include="Room\Cotija\RoomBridges\SourceDeviceMapDictionary.cs" />
     <Compile Include="Room\Emergency\EsentialsRoomEmergencyContactClosure.cs" />
     <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
     <Compile Include="Room\Types\EssentialsPresentationRoom.cs" />

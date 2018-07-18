@@ -82,6 +82,24 @@ namespace PepperDash.Essentials
 			CrestronConsole.AddNewConsoleCommand(TestHttpRequest,
 			"mobilehttprequest", "Tests an HTTP get to URL given", ConsoleAccessLevelEnum.AccessOperator);
 
+
+            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+        }
+
+        /// <summary>
+        /// Sends message to server to indicate the system is shutting down
+        /// </summary>
+        /// <param name="programEventType"></param>
+        void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
+        {
+            if (programEventType == eProgramStatusEventType.Stopping && WSClient.Connected)
+            {
+                SendMessageToServer(JObject.FromObject( new
+                {
+                    type = "/system/close"
+                }));
+
+            }
         }
 
         /// <summary>
@@ -450,6 +468,11 @@ namespace PepperDash.Essentials
 		/// <param name="content"></param>
 		void HandleHeartBeat(JToken content)
 		{
+            SendMessageToServer(JObject.FromObject(new
+            {
+                type = "/system/heartbeatAck"
+            }));
+
 			var code = content["userCode"];
 			if(code != null) 
 			{

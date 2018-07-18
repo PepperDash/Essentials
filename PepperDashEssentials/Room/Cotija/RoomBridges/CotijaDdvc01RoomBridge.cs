@@ -250,6 +250,18 @@ namespace PepperDash.Essentials.Room.Cotija
 				EISC.PulseBool(BoolJoin.ShutdownEnd)));
 			Parent.AddAction(@"/room/room1/shutdownCancel", new Action(() =>
 				EISC.PulseBool(BoolJoin.ShutdownCancel)));
+
+
+            // Source Device (Current Source)'
+
+            SourceDeviceMapDictionary sourceJoinMap = new SourceDeviceMapDictionary();
+
+            var prefix = @"/device/currentSource/";
+
+            foreach (var item in sourceJoinMap)
+            {
+                Parent.AddAction(prefix + item.Key, new PressAndHoldAction(b => EISC.SetBool(item.Value, b)));
+            }
 		}
 
 		/// <summary>
@@ -320,11 +332,16 @@ namespace PepperDash.Essentials.Room.Cotija
 			if (co.Rooms == null)
 				co.Rooms = new List<EssentialsRoomConfig>();
 			var rm = new EssentialsRoomConfig();
-			if (co.Rooms.Count == 0)
-			{
-				Debug.Console(0, this, "Adding room to config");
-				co.Rooms.Add(rm);
-			}
+            if (co.Rooms.Count == 0)
+            {
+                Debug.Console(0, this, "Adding room to config");
+                co.Rooms.Add(rm);
+            }
+            else
+            {
+                Debug.Console(0, this, "Replacing Room[0] in config");
+                co.Rooms[0] = rm;
+            }
 			rm.Name = EISC.StringOutput[501].StringValue;
 			rm.Key = "room1";
 			rm.Type = "ddvc01";
