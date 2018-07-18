@@ -28,14 +28,20 @@ namespace PepperDash.Essentials {
 			var groupName = dc.Group.ToLower();
 
 			Debug.Console(0, "Name {0}, Key {1}, Type {2}, Properties {3}", name, key, type, properties.ToString());
-			if (typeName == "essentialdm") {
+			if (typeName == "essentialdm") 
+			{
 				return new EssentialDM(key, name, properties);
-				} else if (typeName == "essentialcomm") {
-
+			} 
+			else if (typeName == "essentialcomm") 
+			{
 				Debug.Console(0, "Launch Essential Comm");
 				return new EssentialComm(key, name, properties);
-
-				}
+			}
+			else if (typeName == "essentialdsp")
+			{
+				Debug.Console(0, "Launch EssentialDsp");
+				return new EssentialDsp(key, name, properties);
+			}
 			return null;
 			}
 		}
