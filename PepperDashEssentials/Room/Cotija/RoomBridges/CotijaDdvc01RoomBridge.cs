@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.EthernetCommunication;
 
 using Newtonsoft.Json;
@@ -327,6 +328,11 @@ namespace PepperDash.Essentials.Room.Cotija
 			ConfigIsLoaded = false;
 
 			var co = ConfigReader.ConfigObject;
+
+            co.Info.RuntimeInfo.AppName = Assembly.GetExecutingAssembly().GetName().Name;
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            co.Info.RuntimeInfo.AssemblyVersion = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+
 
 			//Room
 			if (co.Rooms == null)

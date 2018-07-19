@@ -276,7 +276,6 @@ namespace PepperDash.Essentials
                 confObject.Info.RuntimeInfo.AppName = Assembly.GetExecutingAssembly().GetName().Name;
                 var version = Assembly.GetExecutingAssembly().GetName().Version;
                 confObject.Info.RuntimeInfo.AssemblyVersion = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
-                confObject.Info.RuntimeInfo.OsVersion = Crestron.SimplSharp.CrestronEnvironment.OSVersion.Firmware;
 
 				string postBody = JsonConvert.SerializeObject(confObject);
 				SystemUuid = confObject.SystemUuid;
