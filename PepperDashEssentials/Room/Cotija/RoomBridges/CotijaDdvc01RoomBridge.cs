@@ -240,9 +240,9 @@ namespace PepperDash.Essentials.Room.Cotija
 			Parent.AddAction(@"/room/room1/defaultsource", new Action(() => 
 				EISC.PulseBool(BoolJoin.ActivitySharePress)));
 
-			Parent.AddAction(@"/room/room1/masterVolumeLevel", new Action<ushort>(u => 
+			Parent.AddAction(@"/room/room1/volumes/master/level", new Action<ushort>(u => 
 				EISC.SetUshort(UshortJoin.MasterVolumeLevel, u)));
-			Parent.AddAction(@"/room/room1/masterVolumeMuteToggle", new Action(() => 
+			Parent.AddAction(@"/room/room1/volumes/master/muteToggle", new Action(() => 
 				EISC.PulseBool(BoolJoin.MasterVolumeIsMuted)));
 
 			Parent.AddAction(@"/room/room1/shutdownStart", new Action(() =>
@@ -286,16 +286,29 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			// Volume things
 			EISC.SetUShortSigAction(UshortJoin.MasterVolumeLevel, u =>
-				PostStatusMessage(new
-					{
-						masterVolumeLevel = u
-					}));
+                PostStatusMessage(new
+                {
+                    volumes = new
+                    {
+                        master = new
+                        {
+                            level = u
+                        }
+                    }
+                }));
 
 			EISC.SetBoolSigAction(BoolJoin.MasterVolumeIsMuted, b =>
-				PostStatusMessage(new
-					{
-						masterVolumeMuteState = b
-					}));
+                PostStatusMessage(new
+                {
+                    volumes = new
+                    {
+                        master = new
+                        {
+                            muted = b
+                        }
+                    }
+                }));
+
 
 			// shutdown things
 			EISC.SetSigTrueAction(BoolJoin.ShutdownCancel, new Action(() =>
@@ -379,12 +392,12 @@ namespace PepperDash.Essentials.Room.Cotija
 			// volume control names
 			var volCount = EISC.UShortOutput[701].UShortValue;
 
-			// use Volumes object or?
-			rmProps.VolumeSliderNames = new List<string>();
-			for(uint i = 701; i <= 700 + volCount; i++)
-			{
-				rmProps.VolumeSliderNames.Add(EISC.StringInput[i].StringValue);
-			}
+            //// use Volumes object or?
+            //rmProps.VolumeSliderNames = new List<string>();
+            //for(uint i = 701; i <= 700 + volCount; i++)
+            //{
+            //    rmProps.VolumeSliderNames.Add(EISC.StringInput[i].StringValue);
+            //}
 
 			// There should be cotija devices in here, I think...
 			if(co.Devices == null)
@@ -420,7 +433,7 @@ namespace PepperDash.Essentials.Room.Cotija
 					SourceKey = key,
 				};
 				newSl.Add(key, newSLI);
-
+                
 				string group = "genericsource";
 				if (groupMap.ContainsKey(type))
 				{
@@ -454,13 +467,24 @@ namespace PepperDash.Essentials.Room.Cotija
 		{
 			if (ConfigIsLoaded)
 			{
-				PostStatusMessage(new
-					{
-						isOn = EISC.BooleanOutput[BoolJoin.RoomIsOn].BoolValue,
-						selectedSourceKey = EISC.StringOutput[StringJoin.SelectedSourceKey].StringValue,
-						masterVolumeLevel = EISC.UShortOutput[UshortJoin.MasterVolumeLevel].UShortValue,
-						masterVolumeMuteState = EISC.BooleanOutput[BoolJoin.MasterVolumeIsMuted].BoolValue
-					});
+                PostStatusMessage(new
+                    {
+                        isOn = EISC.BooleanOutput[BoolJoin.RoomIsOn].BoolValue,
+                        selectedSourceKey = EISC.StringOutput[StringJoin.SelectedSourceKey].StringValue,
+                        volumes = new
+                        {
+                            master = new
+                            {
+                                level = EISC.UShortOutput[UshortJoin.MasterVolumeLevel].UShortValue,
+                                muted = EISC.BooleanOutput[BoolJoin.MasterVolumeIsMuted].BoolValue,
+                  				label = EISC.StringInput[701].StringValue,
+				                hasMute = true,
+				                muteIcon = "something.png"
+                            },
+                            count = 1
+                        }
+
+                    });			
 			}
 			else
 			{
