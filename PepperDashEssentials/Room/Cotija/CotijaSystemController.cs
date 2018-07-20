@@ -450,6 +450,11 @@ namespace PepperDash.Essentials
 		/// <param name="content"></param>
 		void HandleHeartBeat(JToken content)
 		{
+            SendMessageToServer(JObject.FromObject(new
+            {
+                type = "/heartbeat-ack"
+			}));
+
 			var code = content["userCode"];
 			if(code != null) 
 			{
