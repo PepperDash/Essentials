@@ -82,6 +82,8 @@ namespace PepperDash.Essentials
 			CrestronConsole.AddNewConsoleCommand(TestHttpRequest,
 			"mobilehttprequest", "Tests an HTTP get to URL given", ConsoleAccessLevelEnum.AccessOperator);
 
+            CrestronConsole.AddNewConsoleCommand(PrintActionDictionaryPaths, "showactionpaths", "Prints the paths in teh Action Dictionary", ConsoleAccessLevelEnum.AccessOperator);
+
 
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
         }
@@ -99,6 +101,16 @@ namespace PepperDash.Essentials
                     type = "/system/close"
                 }));
 
+            }
+        }
+
+        public void PrintActionDictionaryPaths(object o)
+        {
+            Debug.Console(0, this, "ActionDictionary Contents:");
+
+            foreach (var item in ActionDictionary)
+            {
+                Debug.Console(0, this, "{0}", item.Key);
             }
         }
 

@@ -90,11 +90,15 @@ namespace PepperDash.Essentials.Room.Cotija
                 {"prevTrack", 175},
                 {"nextTrack", 176},
                 {"powerOn", 177},
-                {"powerOff", 178}
+                {"powerOff", 178},
+                {"dot", 179}
 
             };
 
-            
+            foreach (var item in dictionary)
+            {
+                this.Add(item.Key, item.Value);
+            }
         }
     }
 }

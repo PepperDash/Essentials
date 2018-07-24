@@ -261,7 +261,7 @@ namespace PepperDash.Essentials.Room.Cotija
 
             foreach (var item in sourceJoinMap)
             {
-                Parent.AddAction(prefix + item.Key, new PressAndHoldAction(b => EISC.SetBool(item.Value, b)));
+                Parent.AddAction(string.Format("{0}{1}", prefix, item.Key), new PressAndHoldAction(b => EISC.SetBool(item.Value, b)));
             }
 		}
 
@@ -467,23 +467,42 @@ namespace PepperDash.Essentials.Room.Cotija
 		{
 			if (ConfigIsLoaded)
 			{
+                var count = EISC.UShortOutput[801].UShortValue;
+
+                Debug.Console(1, this, "The Fader Count is : {0}", count);
+
+                // build volumes object, serialize and put in content of method below
+
+                var auxFaders = new List<Volume>();
+
+                // Create auxFaders
+                for (uint i = 2; i <= count; i++)
+                {
+                    auxFaders.Add(
+                        new Volume(string.Format("level-{0}", i), 
+                            EISC.UShortOutput[i].UShortValue,
+                            EISC.BooleanOutput[i].BoolValue,
+                            EISC.StringOutput[800 + i].StringValue,
+                            true,
+                            "someting.png"));
+                }
+
+                var volumes = new Volumes();
+
+                volumes.Master = new Volume("master", 
+                                EISC.UShortOutput[UshortJoin.MasterVolumeLevel].UShortValue,
+                                EISC.BooleanOutput[BoolJoin.MasterVolumeIsMuted].BoolValue,
+                  				EISC.StringOutput[801].StringValue,
+				                true,
+				                "something.png");
+
+                volumes.AuxFaders = auxFaders;
+
                 PostStatusMessage(new
                     {
                         isOn = EISC.BooleanOutput[BoolJoin.RoomIsOn].BoolValue,
                         selectedSourceKey = EISC.StringOutput[StringJoin.SelectedSourceKey].StringValue,
-                        volumes = new
-                        {
-                            master = new
-                            {
-                                level = EISC.UShortOutput[UshortJoin.MasterVolumeLevel].UShortValue,
-                                muted = EISC.BooleanOutput[BoolJoin.MasterVolumeIsMuted].BoolValue,
-                  				label = EISC.StringInput[701].StringValue,
-				                hasMute = true,
-				                muteIcon = "something.png"
-                            },
-                            count = 1
-                        }
-
+                        volumes = volumes
                     });			
 			}
 			else
@@ -495,7 +514,45 @@ namespace PepperDash.Essentials.Room.Cotija
 			}
 		}
 
+        public class Volumes
+        {
+            [JsonProperty("master")]
+            public Volume Master { get; set; }
 
+            [JsonProperty("auxFaders")]
+            public List<Volume> AuxFaders { get; set; }
+        }
+
+        public class Volume
+        {
+            [JsonProperty("key")]
+            public string Key { get; set; }
+            
+            [JsonProperty("level")]
+            public ushort Level { get; set; }
+
+            [JsonProperty("muted")]
+            public bool Muted { get; set; }
+
+            [JsonProperty("label")]
+            public string Label { get; set; }
+
+            [JsonProperty("hasMute")]
+            public bool HasMute { get; set; }
+
+            [JsonProperty("muteIcon")]
+            public string MuteIcon { get; set; }
+
+            public Volume(string key, ushort level, bool muted, string label, bool hasMute, string muteIcon)
+            {
+                Key = key;
+                Level = level;
+                Muted = muted;
+                Label = label;
+                HasMute = hasMute;
+                MuteIcon = muteIcon;
+            }
+        }
 
 		/// <summary>
 		/// Helper for posting status message
