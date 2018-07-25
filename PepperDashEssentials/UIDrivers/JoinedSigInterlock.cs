@@ -18,6 +18,8 @@ namespace PepperDash.Essentials
 
         public BoolFeedback IsShownFeedback;
 
+        public event EventHandler<StatusChangedEventArgs> StatusChanged;
+
         bool _IsShown;
 
         public bool IsShown 
@@ -48,12 +50,16 @@ namespace PepperDash.Essentials
         /// </summary>
         public void ShowInterlocked(uint join)
         {
+            var prevJoin = CurrentJoin;
+            var wasShown = _IsShown;
 			Debug.Console(2, "Trilist {0:X2}, interlock swapping {1} for {2}", TriList.ID, CurrentJoin, join);
             if (CurrentJoin == join && TriList.BooleanInput[join].BoolValue)
                 return;
             SetButDontShow(join);
             TriList.SetBool(CurrentJoin, true);
             IsShown = true;
+
+            OnStatusChange(prevJoin, CurrentJoin, wasShown, IsShown);
         }
 
         /// <summary>
@@ -62,6 +68,9 @@ namespace PepperDash.Essentials
         /// <param name="join"></param>
         public void ShowInterlockedWithToggle(uint join)
         {
+            var prevJoin = CurrentJoin;
+            var wasShown = IsShown;
+
 			Debug.Console(2, "Trilist {0:X2}, interlock swapping {1} for {2}", TriList.ID, CurrentJoin, join);
 			if (CurrentJoin == join)
                 HideAndClear();
@@ -72,6 +81,8 @@ namespace PepperDash.Essentials
                 CurrentJoin = join;
                 TriList.BooleanInput[CurrentJoin].BoolValue = true;
                 IsShown = true;
+
+                OnStatusChange(prevJoin, CurrentJoin, wasShown, IsShown);
             }
         }
         /// <summary>
@@ -79,9 +90,13 @@ namespace PepperDash.Essentials
         /// </summary>
         public void HideAndClear()
         {
+            var prevJoin = CurrentJoin;
+            var wasShown = IsShown;
 			Debug.Console(2, "Trilist {0:X2}, interlock hiding {1}", TriList.ID, CurrentJoin);
             Hide();
             CurrentJoin = 0;
+
+            OnStatusChange(prevJoin, CurrentJoin, wasShown, IsShown);
         }
 
         /// <summary>
@@ -90,11 +105,15 @@ namespace PepperDash.Essentials
         /// </summary>
         public void Hide()
         {
+            var prevJoin = CurrentJoin;
+            var wasShown = IsShown;
+
 			Debug.Console(2, "Trilist {0:X2}, interlock hiding {1}", TriList.ID, CurrentJoin);
             if (CurrentJoin > 0)
             {
                 TriList.BooleanInput[CurrentJoin].BoolValue = false;
                 IsShown = false;
+                OnStatusChange(prevJoin, CurrentJoin, wasShown, IsShown);
             }
         }
 
@@ -103,11 +122,16 @@ namespace PepperDash.Essentials
         /// </summary>
         public void Show()
         {
+            var prevJoin = CurrentJoin;
+            var wasShown = IsShown;
+
 			Debug.Console(2, "Trilist {0:X2}, interlock showing {1}", TriList.ID, CurrentJoin);
             if (CurrentJoin > 0)
             {
                 TriList.BooleanInput[CurrentJoin].BoolValue = true;
                 IsShown = true;
+
+                OnStatusChange(prevJoin, CurrentJoin, wasShown, IsShown);
             }
         }
 
@@ -125,5 +149,27 @@ namespace PepperDash.Essentials
             CurrentJoin = join;
         }
 
+        void OnStatusChange(uint prevJoin, uint newJoin, bool wasShown, bool isShown)
+        {
+            var handler = StatusChanged;
+            if (handler != null)
+                handler(this, new StatusChangedEventArgs(prevJoin, newJoin, wasShown, isShown));
+        }
+    }
+
+    public class StatusChangedEventArgs : EventArgs
+    {
+        public uint PreviousJoin { get; set; }
+        public uint NewJoin { get; set; }
+        public bool WasShown { get; set; }
+        public bool IsShown  { get; set; }
+
+        public StatusChangedEventArgs(uint prevJoin, uint newJoin, bool wasShown, bool isShown)
+        {
+            PreviousJoin = prevJoin;
+            NewJoin = newJoin;
+            WasShown = wasShown;
+            IsShown = isShown;
+        }
     }
 }

@@ -24,6 +24,12 @@ namespace PepperDash.Essentials
     /// </summary>
     public class EssentialsHeaderDriver : PanelDriverBase
     {
+        uint EnvironmentCaretVisible;
+        uint CalendarCaretVisible;
+        uint CallCaretVisible;
+
+        JoinedSigInterlock CaretInterlock;
+
         CrestronTouchpanelPropertiesConfig Config;
         
         /// <summary>
@@ -43,6 +49,7 @@ namespace PepperDash.Essentials
         {
             Config = config;
             Parent = parent;
+            CaretInterlock = new JoinedSigInterlock(TriList);
         }
 
         void SetUpGear(IAVDriver avDriver, EssentialsRoomBase currentRoom)
@@ -55,9 +62,15 @@ namespace PepperDash.Essentials
                 () =>
                 {
                     if (currentRoom.OnFeedback.BoolValue)
+                    {
                         avDriver.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible);
+                        CaretInterlock.ShowInterlocked(UIBoolJoin.HeaderCaret5Visible);
+                    }
                     else
+                    {
                         avDriver.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPagePowerOffVisible);
+                        CaretInterlock.ShowInterlocked(UIBoolJoin.HeaderCaret5Visible);
+                    }
                 });
             TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
                 avDriver.PopupInterlock.HideAndClear());
@@ -72,9 +85,13 @@ namespace PepperDash.Essentials
                 TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, roomConf.Help.ShowCallButton);
                 TriList.SetString(UIStringJoin.HelpPageCallButtonText, roomConf.Help.CallButtonText);
                 if (roomConf.Help.ShowCallButton)
+                {
                     TriList.SetSigFalseAction(UIBoolJoin.HelpPageShowCallButtonPress, () => { }); // ************ FILL IN
+                }
                 else
+                {
                     TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
+                }
             }
             else // older config
             {
@@ -95,6 +112,7 @@ namespace PepperDash.Essentials
                     message = "Sorry, no help message available. No room connected.";
                 //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
                 Parent.AvDriver.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
+                CaretInterlock.ShowInterlocked(UIBoolJoin.HeaderCaret4Visible);
             });
         }
 
@@ -102,8 +120,14 @@ namespace PepperDash.Essentials
         {
             if (environmentDriver != null)
             {
-                TriList.SetString(nextJoin, "Lights");
-                TriList.SetSigFalseAction(nextJoin, environmentDriver.Toggle);
+                var tempJoin = nextJoin;
+                TriList.SetString(tempJoin, "Lights");
+                EnvironmentCaretVisible = tempJoin + 10;
+                TriList.SetSigFalseAction(tempJoin, () =>
+                    {
+                        environmentDriver.Toggle();
+                        CaretInterlock.ShowInterlocked(EnvironmentCaretVisible);
+                    });
                 nextJoin--;
                 return nextJoin;
             }
@@ -116,8 +140,14 @@ namespace PepperDash.Essentials
             // Calendar button
             if (avDriver.CurrentRoom.ScheduleSource != null)
             {
-                TriList.SetString(nextJoin, "Calendar");
-                TriList.SetSigFalseAction(nextJoin, avDriver.CalendarPress);
+                var tempJoin = nextJoin;
+                TriList.SetString(tempJoin, "Calendar");
+                CalendarCaretVisible = tempJoin + 10;
+                TriList.SetSigFalseAction(tempJoin, () =>
+                    {
+                        avDriver.CalendarPress();
+                        CaretInterlock.ShowInterlocked(CalendarCaretVisible);
+                    });
 
                 nextJoin--;
                 return nextJoin;
@@ -129,9 +159,16 @@ namespace PepperDash.Essentials
         uint SetUpCallButton(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, uint nextJoin)
         {
             // Call button
-            TriList.SetString(nextJoin, "DND");
-            TriList.SetSigFalseAction(nextJoin, avDriver.ShowActiveCallsList);
-            HeaderCallButtonIconSig = TriList.StringInput[nextJoin];
+            var tempJoin = nextJoin;
+            TriList.SetString(tempJoin, "DND");
+            CallCaretVisible = tempJoin + 10;
+            TriList.SetSigFalseAction(tempJoin, () =>
+                {
+                    avDriver.ShowActiveCallsList();
+                    if(avDriver.CurrentRoom.InCallFeedback.BoolValue)
+                        CaretInterlock.ShowInterlocked(CallCaretVisible);
+                });
+            HeaderCallButtonIconSig = TriList.StringInput[tempJoin];
 
             nextJoin--;
             return nextJoin;
@@ -192,6 +229,10 @@ namespace PepperDash.Essentials
 
             var roomConf = currentRoom.Config;
 
+            // Register for the PopupInterlock IsShowsFeedback event to tie the header carets subpage visiblity to it
+            Parent.AvDriver.PopupInterlock.StatusChanged -= PopupInterlock_StatusChanged;
+            Parent.AvDriver.PopupInterlock.StatusChanged += PopupInterlock_StatusChanged; 
+
             SetUpGear(avDriver, currentRoom);
 
             SetUpHelpButton(roomConf);
@@ -211,7 +252,13 @@ namespace PepperDash.Essentials
                 TriList.SetSigFalseAction(i, () => { });
             }
 
-            TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusLabelPress, avDriver.ShowActiveCallsList);
+            TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusLabelPress,
+                () =>
+                {
+                    avDriver.ShowActiveCallsList();
+                    if (avDriver.CurrentRoom.InCallFeedback.BoolValue)
+                        CaretInterlock.ShowInterlocked(CallCaretVisible);
+                });
 
             // Set Call Status Subpage Position
 
@@ -244,6 +291,10 @@ namespace PepperDash.Essentials
 
             var roomConf = currentRoom.Config;
 
+            // Register for the PopupInterlock IsShowsFeedback event to tie the header carets subpage visiblity to it
+            Parent.AvDriver.PopupInterlock.StatusChanged -= PopupInterlock_StatusChanged;
+            Parent.AvDriver.PopupInterlock.StatusChanged += PopupInterlock_StatusChanged; 
+
             SetUpGear(avDriver, currentRoom);
 
             SetUpHelpButton(roomConf);
@@ -262,5 +313,59 @@ namespace PepperDash.Essentials
             HeaderButtonsAreSetUp = true;
         }
 
+        ///// <summary>
+        ///// Whenever a popup is shown/hidden, show/hide the header carets subpage and set the visibility of the correct caret
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="e"></param>
+        //void IsShownFeedback_OutputChange(object sender, EventArgs e)
+        //{
+        //    var popupInterlockIsShown = Parent.AvDriver.PopupInterlock.IsShown;
+        //    // Set the visible state for the HeaderPopupCaretsSubpage to match that of the PopupInterlock state
+        //    TriList.SetBool(UIBoolJoin.HeaderPopupCaretsSubpageVisibile, popupInterlockIsShown);
+
+        //    // Clear all caret visibility
+        //    for (uint i = UIBoolJoin.HeaderCaret5Visible; i >= UIBoolJoin.HeaderCaret1Visible; i--)
+        //    {
+        //        TriList.SetBool(i, false);
+        //    }
+
+        //    // Set the current caret visible if the popup is still shown
+        //    if (popupInterlockIsShown)
+        //        TriList.SetBool(NextCaretVisible, true);
+        //}
+
+        /// <summary>
+        /// Whenever a popup is shown/hidden, show/hide the header carets subpage and set the visibility of the correct caret
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void PopupInterlock_StatusChanged(object sender, StatusChangedEventArgs e)
+        {
+            // Set the visible state for the HeaderPopupCaretsSubpage to match that of the PopupInterlock state
+
+            bool headerPopupShown = false;
+
+            // Check if the popup interlock is shown, and if one of the header popups is current, then show the carets subpage
+            if (e.IsShown)
+            {
+                if (e.NewJoin == Parent.EnvironmentDriver.BackgroundSubpageJoin)
+                    headerPopupShown = true;
+                else if (e.NewJoin == UIBoolJoin.HeaderActiveCallsListVisible)
+                    headerPopupShown = true;
+                else if (e.NewJoin == UIBoolJoin.HelpPageVisible)
+                    headerPopupShown = true;
+                else if (e.NewJoin == UIBoolJoin.MeetingsOrContacMethodsListVisible)
+                    headerPopupShown = true;
+                else if (e.NewJoin == UIBoolJoin.VolumesPagePowerOffVisible || e.NewJoin == UIBoolJoin.VolumesPageVisible)
+                    headerPopupShown = true;
+            }
+
+            // Set the carets subpage visibility
+            TriList.SetBool(UIBoolJoin.HeaderPopupCaretsSubpageVisibile, headerPopupShown);
+
+            if (!e.IsShown)
+                CaretInterlock.HideAndClear();
+        }
     }
 }
