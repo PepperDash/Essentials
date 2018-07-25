@@ -487,6 +487,30 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public const uint HeaderIcon5Press = 3955;
 
+        /// 3960
+        /// </summary>
+        public const uint HeaderPopupCaretsSubpageVisibile = 3960;
+        /// <summary>
+        /// 3961
+        /// </summary>
+        public const uint HeaderCaret1Visible = 3961;
+        /// <summary>
+        /// 3962
+        /// </summary>
+        public const uint HeaderCaret2Visible = 3962;
+        /// <summary>
+        /// 3963
+        /// </summary>
+        public const uint HeaderCaret3Visible = 3963;
+        /// <summary>
+        /// 3964
+        /// </summary>
+        public const uint HeaderCaret4Visible = 3964;
+        /// <summary>
+        /// 3965
+        /// </summary>
+        public const uint HeaderCaret5Visible = 3965;
+
         /// <summary>
         /// 3999
         /// </summary>

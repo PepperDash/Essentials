@@ -45,15 +45,15 @@ namespace PepperDash.Essentials
             Devices = new List<IKeyed>();
             DeviceSubDrivers = new List<PanelDriverBase>();
 
-            Parent.AvDriver.PopupInterlock.IsShownFeedback.OutputChange += IsShownFeedback_OutputChange;
+            Parent.AvDriver.PopupInterlock.StatusChanged += new EventHandler<StatusChangedEventArgs>(PopupInterlock_CurrentJoinChanged);
 
             // Calculate the join offests for each device page and assign join actions for each button
         }
 
-        void IsShownFeedback_OutputChange(object sender, EventArgs e)
+        void PopupInterlock_CurrentJoinChanged(object sender, StatusChangedEventArgs e)
         {
             // Hide this driver and all sub drivers if popup interlock is not shown
-            if (Parent.AvDriver.PopupInterlock.IsShownFeedback.BoolValue == false)
+            if (!e.IsShown || e.NewJoin != BackgroundSubpageJoin)
             {
                 foreach (var driver in DeviceSubDrivers)
                 {
@@ -64,12 +64,17 @@ namespace PepperDash.Essentials
             }
         }
 
+        void IsShownFeedback_OutputChange(object sender, EventArgs e)
+        {
+
+        }
+
         /// <summary>
         /// Shows this driver and all sub drivers
         /// </summary>
         public override void Show()
         {
-            Parent.AvDriver.PopupInterlock.ShowInterlockedWithToggle(BackgroundSubpageJoin);
+            Parent.AvDriver.PopupInterlock.ShowInterlocked(BackgroundSubpageJoin);
 
             foreach (var driver in DeviceSubDrivers)
             {
