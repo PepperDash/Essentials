@@ -54,7 +54,7 @@ namespace PepperDash.Essentials {
 							ApiEisc.Eisc.SetUShortSigAction(ApiMap.OutputVideoRoutes[tempX], u => DmSwitch.ExecuteSwitch(u, tempX, eRoutingSignalType.Video));
 							ApiEisc.Eisc.SetUShortSigAction(ApiMap.OutputAudioRoutes[tempX], u => DmSwitch.ExecuteSwitch(u, tempX, eRoutingSignalType.Audio));
 
-							if (DmSwitch.TxDictionary.ContainsKey(tempX)) {
+                            if (DmSwitch.TxDictionary.ContainsKey(tempX)) {
 								Debug.Console(2, "Creating Tx Feedbacks {0}", tempX);
 								var TxKey = DmSwitch.TxDictionary[tempX];
 								var TxDevice = DeviceManager.GetDeviceForKey(TxKey) as DmTxControllerBase;
