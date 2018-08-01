@@ -188,6 +188,12 @@ namespace PepperDash.Essentials
 		/// <param name="command"></param>
 		void AuthorizeSystem(string code)
 		{
+			if (string.IsNullOrEmpty(SystemUuid))
+			{
+				CrestronConsole.ConsoleCommandResponse("System does not have a UUID. Please ensure proper portal-format configuration is loaded and restart.");
+				return;
+			}
+
 			if (string.IsNullOrEmpty(code))
 			{
 				CrestronConsole.ConsoleCommandResponse("Please enter a user code to authorize a system");
@@ -274,6 +280,8 @@ namespace PepperDash.Essentials
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
         void RegisterSystemToServer()
         {
+
+
 			var ready = RegisterLockEvent.Wait(20000);
 			if (!ready)
 			{

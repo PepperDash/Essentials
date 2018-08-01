@@ -326,11 +326,15 @@ namespace PepperDash.Essentials
         {
 			var sourceKey = room is IHasCurrentSourceInfoChange ? (room as IHasCurrentSourceInfoChange).CurrentSourceInfoKey : null;
 			
-			var rmVc = room as IHasCurrentVolumeControls as IBasicVolumeWithFeedback;		
+			var rmVc = room as IHasCurrentVolumeControls;
 			var volumes = new Volumes();
 			if (rmVc != null)
 			{
-				volumes.Master = new Volume("master", rmVc.VolumeLevelFeedback.UShortValue, rmVc.MuteFeedback.BoolValue, "Volume", true, "");
+				var vc = rmVc.CurrentVolumeControls as IBasicVolumeWithFeedback;
+				if (rmVc != null)
+				{
+					volumes.Master = new Volume("master", vc.VolumeLevelFeedback.UShortValue, vc.MuteFeedback.BoolValue, "Volume", true, "");
+				}
 			}
 
 			PostStatusMessage(new
