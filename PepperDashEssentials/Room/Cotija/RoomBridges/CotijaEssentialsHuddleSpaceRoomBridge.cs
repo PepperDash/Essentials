@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Room.Cotija;
+using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials
 {
@@ -83,6 +85,13 @@ namespace PepperDash.Essentials
 			if(sscRoom != null)
 				sscRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSingleSourceChange);
 
+			var vidRoom = Room as IHasVideoCodec;
+			if (vidRoom != null)
+			{
+				var codec = vidRoom.VideoCodec;
+				codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
+			}
+
 			Parent.AddAction(string.Format(@"/room/{0}/shutdownStart", Room.Key), new Action(() => Room.StartShutdown(eShutdownType.Manual)));
 			Parent.AddAction(string.Format(@"/room/{0}/shutdownEnd", Room.Key), new Action(() => Room.ShutdownPromptTimer.Finish()));
 			Parent.AddAction(string.Format(@"/room/{0}/shutdownCancel", Room.Key), new Action(() => Room.ShutdownPromptTimer.Cancel()));
@@ -94,6 +103,18 @@ namespace PepperDash.Essentials
 			Room.ShutdownPromptTimer.HasStarted += ShutdownPromptTimer_HasStarted;
 			Room.ShutdownPromptTimer.HasFinished += ShutdownPromptTimer_HasFinished;
 			Room.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
+		}
+
+		/// <summary>
+		/// Handler for codec changes
+		/// </summary>
+		void codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
+		{
+			PostStatusMessage(new
+			{
+				calls = GetCallsMessageObject()
+			});
+
 		}
 
 		/// <summary>
@@ -337,21 +358,64 @@ namespace PepperDash.Essentials
 				}
 			}
 
+			//var callRm = room as IHasVideoCodec;
+			//object calls = null;
+			//if(callRm != null)
+			//{
+			//    calls = new {
+			//        activeCalls = callRm.VideoCodec.ActiveCalls,
+			//        callType = callRm.CallTypeFeedback.IntValue,
+			//        inCall = callRm.InCallFeedback.BoolValue,
+			//        isSharing = callRm.IsSharingFeedback.BoolValue,
+			//        privacyModeIsOn = callRm.PrivacyModeIsOnFeedback.BoolValue
+			//    };
+			//}
+
 			PostStatusMessage(new
 			{
+				calls = GetCallsMessageObject(),
 				isOn = room.OnFeedback.BoolValue,
 				selectedSourceKey = sourceKey,
+				videoCodec = new {
+
+				},
 				volumes = volumes
 			});
         }
+
+		/// <summary>
+		/// Helper to return a anonymous object with the call data for JSON message
+		/// </summary>
+		/// <returns></returns>
+		object GetCallsMessageObject()
+		{
+			var callRm = Room as IHasVideoCodec;
+			if (callRm == null)
+				return null;
+			return new
+			{
+				activeCalls = callRm.VideoCodec.ActiveCalls,
+				callType = callRm.CallTypeFeedback.IntValue,
+				inCall = callRm.InCallFeedback.BoolValue,
+				isSharing = callRm.IsSharingFeedback.BoolValue,
+				privacyModeIsOn = callRm.PrivacyModeIsOnFeedback.BoolValue
+			};
+		}
      
     }
 
+	/// <summary>
+	/// 
+	/// </summary>
     public class SourceSelectMessageContent
     {
 		public string SourceListItem { get; set; }
     }
 
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="b"></param>
     public delegate void PressAndHoldAction(bool b);
 
 }

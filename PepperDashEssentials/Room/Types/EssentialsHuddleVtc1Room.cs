@@ -13,7 +13,7 @@ using PepperDash.Essentials.Devices.Common.VideoCodec;
 namespace PepperDash.Essentials
 {
     public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange, 
-		IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute
+		IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSingleSourceChange;
