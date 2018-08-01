@@ -31,7 +31,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="room"></param>
-        public CotijaEssentialsHuddleSpaceRoomBridge(EssentialsHuddleSpaceRoom room):
+        public CotijaEssentialsHuddleSpaceRoomBridge(EssentialsRoomBase room):
 			base("mobileControlBridge-essentialsHuddle", "Essentials Mobile Control Bridge-Huddle")
         {
             Room = room;   
@@ -59,7 +59,7 @@ namespace PepperDash.Essentials
 
 			var defaultRoom = Room as IRunDefaultPresentRoute;
 			if(defaultRoom != null)
-				Parent.AddAction(string.Format(@"/room/{0}/defaultsource", Room.Key), new Action(defaultRoom.RunDefaultPresentRoute));
+				Parent.AddAction(string.Format(@"/room/{0}/defaultsource", Room.Key), new Action(() => defaultRoom.RunDefaultPresentRoute()));
 
 			var vcRoom = Room as IHasCurrentVolumeControls;
 			if (vcRoom != null)
@@ -71,15 +71,11 @@ namespace PepperDash.Essentials
 				vcRoom.CurrentVolumeDeviceChange += new EventHandler<VolumeDeviceChangeEventArgs>(Room_CurrentVolumeDeviceChange);
 
 				// Registers for initial volume events, if possible
-				var currentVolumeDevice = vcRoom.CurrentVolumeControls;
+				var currentVolumeDevice = vcRoom.CurrentVolumeControls as IBasicVolumeWithFeedback;
 				if (currentVolumeDevice != null)
 				{
-					if (currentVolumeDevice is IBasicVolumeWithFeedback)
-					{
-						var newDev = currentVolumeDevice as IBasicVolumeWithFeedback;
-						newDev.MuteFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
-						newDev.VolumeLevelFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
-					}
+					currentVolumeDevice.MuteFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
+					currentVolumeDevice.VolumeLevelFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
 				}
 			}
 
@@ -166,14 +162,12 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		void IsWarmingUpFeedback_OutputChange(object sender, EventArgs e)
+		void IsWarmingUpFeedback_OutputChange(object sender, FeedbackEventArgs e)
 		{
-			JObject roomStatus = new JObject();
-			roomStatus.Add("isWarmingUp", (sender as BoolFeedback).BoolValue);
-			JObject message = new JObject();
-			message.Add("type", "/room/status/");
-			message.Add("content", roomStatus);
-			Parent.SendMessageToServer(message);
+			PostStatusMessage(new
+			{
+				isWarmingUp = e.BoolValue
+			});
 		}
 
 		/// <summary>
@@ -181,14 +175,12 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		void IsCoolingDownFeedback_OutputChange(object sender, EventArgs e)
+		void IsCoolingDownFeedback_OutputChange(object sender, FeedbackEventArgs e)
 		{
-			JObject roomStatus = new JObject();
-			roomStatus.Add("isCoolingDown", (sender as BoolFeedback).BoolValue);
-			JObject message = new JObject();
-			message.Add("type", "/room/status/");
-			message.Add("content", roomStatus);
-			Parent.SendMessageToServer(message);
+			PostStatusMessage(new
+			{
+				isCoolingDown = e.BoolValue
+			});
 		}
 
 		/// <summary>
@@ -196,27 +188,12 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-        void OnFeedback_OutputChange(object sender, EventArgs e)
+        void OnFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
-            /* Example message
-            * {
-                 "type":"/room/status",
-                 "content": {
-                   "isOn": false
-                 }
-               }
-            */
-
-            JObject roomStatus = new JObject();
-
-            roomStatus.Add("isOn", (sender as BoolFeedback).BoolValue);
-
-            JObject message = new JObject();
-
-            message.Add("type", "/room/status/");
-            message.Add("content", roomStatus);
-
-            Parent.SendMessageToServer(message);
+            PostStatusMessage(new
+				{
+					isOn = e.BoolValue
+				});
         }
 
         void Room_CurrentVolumeDeviceChange(object sender, VolumeDeviceChangeEventArgs e)
@@ -224,55 +201,52 @@ namespace PepperDash.Essentials
             if (e.OldDev is IBasicVolumeWithFeedback)
             {
                 var oldDev = e.OldDev as IBasicVolumeWithFeedback;
-
-                oldDev.MuteFeedback.OutputChange -= VolumeLevelFeedback_OutputChange;
+                oldDev.MuteFeedback.OutputChange -= MuteFeedback_OutputChange;
                 oldDev.VolumeLevelFeedback.OutputChange -= VolumeLevelFeedback_OutputChange;
             }
 
             if (e.NewDev is IBasicVolumeWithFeedback)
             {
                 var newDev = e.NewDev as IBasicVolumeWithFeedback;
-
-                newDev.MuteFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
+				newDev.MuteFeedback.OutputChange += MuteFeedback_OutputChange;
                 newDev.VolumeLevelFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
             }
         }
 
-        void VolumeLevelFeedback_OutputChange(object sender, EventArgs e)
+		/// <summary>
+		/// Event handler for mute changes
+		/// </summary>
+		void MuteFeedback_OutputChange(object sender, FeedbackEventArgs e)
+		{
+			PostStatusMessage(new
+			{
+				volumes = new
+				{
+					master = new
+					{
+						muted = e.BoolValue
+					}
+				}
+			});
+		}
+
+		/// <summary>
+		/// Handles Volume changes on room
+		/// </summary>
+        void VolumeLevelFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
-            /* Example message
-             * {
-                  "type":"/room/status",
-                  "content": {
-                    "masterVolumeLevel": 12345,
-                    "masterVolumeMuteState": false
-                  }
-                }
-             */
-
-            var huddleRoom = Room as EssentialsHuddleSpaceRoom;
-
-            if(huddleRoom.CurrentVolumeControls is IBasicVolumeWithFeedback)
-            {
-
-
-                JObject roomStatus = new JObject();
-
-                if (huddleRoom.CurrentVolumeControls is IBasicVolumeWithFeedback)
-                {
-                    var currentVolumeConstrols = huddleRoom.CurrentVolumeControls as IBasicVolumeWithFeedback;
-                    roomStatus.Add("masterVolumeLevel", currentVolumeConstrols.VolumeLevelFeedback.IntValue);
-                    roomStatus.Add("masterVolumeMuteState", currentVolumeConstrols.MuteFeedback.BoolValue);
-                }
-
-                JObject message = new JObject();
-
-                message.Add("type", "/room/status/");
-                message.Add("content", roomStatus);
-
-                Parent.SendMessageToServer(message);
-            }
+			PostStatusMessage(new
+			{
+				volumes = new
+				{
+					master = new
+					{
+						level = e.IntValue
+					}
+				}
+			});
         }
+
 
         void Room_CurrentSingleSourceChange(EssentialsRoomBase room, PepperDash.Essentials.Core.SourceListItem info, ChangeType type)
         {
@@ -335,16 +309,11 @@ namespace PepperDash.Essentials
                     if (dev is ITransport)
                         (dev as ITransport).LinkActions(Parent);
 
-					var huddleRoom = room as EssentialsHuddleSpaceRoom;
-					JObject roomStatus = new JObject();
-					roomStatus.Add("selectedSourceKey", huddleRoom.CurrentSourceInfoKey);
-
-					JObject message = new JObject();
-
-					message.Add("type", "/room/status/");
-					message.Add("content", roomStatus);
-
-					Parent.SendMessageToServer(message);
+					var srcRm = room as IHasCurrentSourceInfoChange;
+					PostStatusMessage(new
+					{
+						selectedSourceKey = srcRm.CurrentSourceInfoKey
+					});
                 }
             }
         }
@@ -355,39 +324,21 @@ namespace PepperDash.Essentials
         /// <param name="room"></param>
         void Room_RoomFullStatus(EssentialsRoomBase room)
         {
-            /* Example message
-            * {
-                 "type":"/room/status",
-                 "content": {
-                   "selectedSourceKey": "off",
-                   "isOn": false,
-                   "masterVolumeLevel": 50,
-                   "masterVolumeMuteState": false
-                 }
-               }
-            */
+			var sourceKey = room is IHasCurrentSourceInfoChange ? (room as IHasCurrentSourceInfoChange).CurrentSourceInfoKey : null;
+			
+			var rmVc = room as IHasCurrentVolumeControls as IBasicVolumeWithFeedback;		
+			var volumes = new Volumes();
+			if (rmVc != null)
+			{
+				volumes.Master = new Volume("master", rmVc.VolumeLevelFeedback.UShortValue, rmVc.MuteFeedback.BoolValue, "Volume", true, "");
+			}
 
-            JObject roomStatus = new JObject();
-
-            var huddleRoom = room as EssentialsHuddleSpaceRoom;
-            roomStatus.Add("isOn", huddleRoom.OnFeedback.BoolValue);
-            roomStatus.Add("selectedSourceKey", huddleRoom.CurrentSourceInfoKey);
-
-
-            if(huddleRoom.CurrentVolumeControls is IBasicVolumeWithFeedback)
-            {
-                var currentVolumeConstrols = huddleRoom.CurrentVolumeControls as IBasicVolumeWithFeedback;
-                roomStatus.Add("masterVolumeLevel", currentVolumeConstrols.VolumeLevelFeedback.IntValue);
-                roomStatus.Add("masterVolumeMuteState", currentVolumeConstrols.MuteFeedback.BoolValue);
-            }
-
-            JObject message = new JObject();
-
-            message.Add("type", "/room/status/");
-            message.Add("content", roomStatus);
-
-            Parent.SendMessageToServer(message);
-
+			PostStatusMessage(new
+			{
+				isOn = room.OnFeedback.BoolValue,
+				selectedSourceKey = sourceKey,
+				volumes = volumes
+			});
         }
      
     }
@@ -395,8 +346,6 @@ namespace PepperDash.Essentials
     public class SourceSelectMessageContent
     {
 		public string SourceListItem { get; set; }
-		//public string Destination { get; set; }
-		//public string SourceSelect { get; set; }
     }
 
     public delegate void PressAndHoldAction(bool b);

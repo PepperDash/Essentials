@@ -17,8 +17,8 @@ namespace PepperDash.Essentials.Room.Cotija
             controller.AddAction(prefix + "play", new PressAndHoldAction(dev.Play));
             controller.AddAction(prefix + "pause", new PressAndHoldAction(dev.Pause));
             controller.AddAction(prefix + "stop", new PressAndHoldAction(dev.Stop));
-            controller.AddAction(prefix + "prevtrack", new PressAndHoldAction(dev.ChapPlus));
-            controller.AddAction(prefix + "nexttrack", new PressAndHoldAction(dev.ChapMinus));
+            controller.AddAction(prefix + "prevTrack", new PressAndHoldAction(dev.ChapPlus));
+            controller.AddAction(prefix + "nextTrack", new PressAndHoldAction(dev.ChapMinus));
             controller.AddAction(prefix + "rewind", new PressAndHoldAction(dev.Rewind));
             controller.AddAction(prefix + "ffwd", new PressAndHoldAction(dev.FFwd));
             controller.AddAction(prefix + "record", new PressAndHoldAction(dev.Record));
@@ -31,8 +31,8 @@ namespace PepperDash.Essentials.Room.Cotija
             controller.RemoveAction(prefix + "play");
             controller.RemoveAction(prefix + "pause");
             controller.RemoveAction(prefix + "stop");
-            controller.RemoveAction(prefix + "prevtrack");
-            controller.RemoveAction(prefix + "nexttrack");
+            controller.RemoveAction(prefix + "prevTrack");
+            controller.RemoveAction(prefix + "nextTrack");
             controller.RemoveAction(prefix + "rewind");
             controller.RemoveAction(prefix + "ffwd");
             controller.RemoveAction(prefix + "record");

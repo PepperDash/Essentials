@@ -291,7 +291,7 @@ namespace PepperDash.Essentials
 
 			foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
 			{
-				var room = roomConfig.GetRoomObject();
+				var room = roomConfig.GetRoomObject() as EssentialsRoomBase;
 				if (room != null)
 				{
                     if (room is EssentialsHuddleSpaceRoom)
@@ -319,7 +319,7 @@ namespace PepperDash.Essentials
 
 						Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Cotija Bridge...");
 						// Cotija bridge
-						var bridge = new CotijaEssentialsHuddleSpaceRoomBridge(room as EssentialsHuddleSpaceRoom);
+						var bridge = new CotijaEssentialsHuddleSpaceRoomBridge(room);
 						AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
 						DeviceManager.AddDevice(bridge);				
                     }					

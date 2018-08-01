@@ -82,6 +82,36 @@ namespace PepperDash.Essentials
 			CrestronConsole.AddNewConsoleCommand(TestHttpRequest,
 			"mobilehttprequest", "Tests an HTTP get to URL given", ConsoleAccessLevelEnum.AccessOperator);
 
+            CrestronConsole.AddNewConsoleCommand(PrintActionDictionaryPaths, "showactionpaths", "Prints the paths in teh Action Dictionary", ConsoleAccessLevelEnum.AccessOperator);
+
+
+            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+        }
+
+        /// <summary>
+        /// Sends message to server to indicate the system is shutting down
+        /// </summary>
+        /// <param name="programEventType"></param>
+        void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
+        {
+            if (programEventType == eProgramStatusEventType.Stopping && WSClient.Connected)
+            {
+                SendMessageToServer(JObject.FromObject( new
+                {
+                    type = "/system/close"
+                }));
+
+            }
+        }
+
+        public void PrintActionDictionaryPaths(object o)
+        {
+            Debug.Console(0, this, "ActionDictionary Contents:");
+
+            foreach (var item in ActionDictionary)
+            {
+                Debug.Console(0, this, "{0}", item.Key);
+            }
         }
 
         /// <summary>
@@ -258,7 +288,6 @@ namespace PepperDash.Essentials
                 confObject.Info.RuntimeInfo.AppName = Assembly.GetExecutingAssembly().GetName().Name;
                 var version = Assembly.GetExecutingAssembly().GetName().Version;
                 confObject.Info.RuntimeInfo.AssemblyVersion = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
-                confObject.Info.RuntimeInfo.OsVersion = Crestron.SimplSharp.CrestronEnvironment.OSVersion.Firmware;
 
 				string postBody = JsonConvert.SerializeObject(confObject);
 				SystemUuid = confObject.SystemUuid;
@@ -452,8 +481,8 @@ namespace PepperDash.Essentials
 		{
             SendMessageToServer(JObject.FromObject(new
             {
-                type = "/heartbeat-ack"
-			}));
+                type = "/system/heartbeatAck"
+            }));
 
 			var code = content["userCode"];
 			if(code != null) 

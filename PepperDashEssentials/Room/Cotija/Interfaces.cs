@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using PepperDash.Essentials.Core;
+
 namespace PepperDash.Essentials.Room.Cotija
 {
 	/// <summary>
@@ -24,6 +26,8 @@ namespace PepperDash.Essentials
 	/// </summary>
 	public interface IHasCurrentSourceInfoChange
 	{
+		string CurrentSourceInfoKey { get; }
+		SourceListItem CurrentSourceInfo { get; }
 		event SourceInfoChangeHandler CurrentSingleSourceChange;
 	}
 
@@ -43,7 +47,7 @@ namespace PepperDash.Essentials
 	/// </summary>
 	public interface IRunDefaultPresentRoute
 	{
-		void RunDefaultPresentRoute();
+		bool RunDefaultPresentRoute();
 	}
 
 	/// <summary>
@@ -51,6 +55,6 @@ namespace PepperDash.Essentials
 	/// </summary>
 	public interface IRunDefaultCallRoute : IRunDefaultPresentRoute
 	{
-		void RunDefaultCallRoute();
+		bool RunDefaultCallRoute();
 	}
 }

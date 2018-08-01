@@ -30,10 +30,11 @@ namespace PepperDash.Essentials
         {
             get
             {
+				if (string.IsNullOrEmpty(SystemUrl))
+					return "missing url";
+
                 var result = Regex.Match(SystemUrl, @"https?:\/\/.*\/systems\/(.*)\/#.*");
-
                 string uuid = result.Groups[1].Value;
-
                 return uuid;
             }
         }
@@ -43,10 +44,11 @@ namespace PepperDash.Essentials
         {
             get
             {
-                var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/templates\/(.*)\/#.*");
-
+				if (string.IsNullOrEmpty(TemplateUrl))
+					return "missing template url";
+       
+				var result = Regex.Match(TemplateUrl, @"https?:\/\/.*\/templates\/(.*)\/#.*");
                 string uuid = result.Groups[1].Value;
-
                 return uuid;
             }
         }

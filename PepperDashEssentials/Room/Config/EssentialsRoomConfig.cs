@@ -39,25 +39,25 @@ namespace PepperDash.Essentials.Room.Config
                 huddle.DefaultVolume = (ushort)(props.Volumes.Master.Level * 65535 / 100);
                 return huddle;
 			}
-			else if (typeName == "presentation")
-			{
-                var props = JsonConvert.DeserializeObject<EssentialsPresentationRoomPropertiesConfig>
-                    (this.Properties.ToString());
-                var displaysDict = new Dictionary<uint, IRoutingSinkNoSwitching>();
-                uint i = 1;
-                foreach (var dispKey in props.DisplayKeys) // read in the ordered displays list
-                {
-                    var disp = DeviceManager.GetDeviceForKey(dispKey) as IRoutingSinkWithSwitching;
-                    displaysDict.Add(i++, disp);
-                }
+			//else if (typeName == "presentation")
+			//{
+			//    var props = JsonConvert.DeserializeObject<EssentialsPresentationRoomPropertiesConfig>
+			//        (this.Properties.ToString());
+			//    var displaysDict = new Dictionary<uint, IRoutingSinkNoSwitching>();
+			//    uint i = 1;
+			//    foreach (var dispKey in props.DisplayKeys) // read in the ordered displays list
+			//    {
+			//        var disp = DeviceManager.GetDeviceForKey(dispKey) as IRoutingSinkWithSwitching;
+			//        displaysDict.Add(i++, disp);
+			//    }
 
-                // Get the master volume control
-                IBasicVolumeWithFeedback masterVolumeControlDev = props.Volumes.Master.GetDevice();
+			//    // Get the master volume control
+			//    IBasicVolumeWithFeedback masterVolumeControlDev = props.Volumes.Master.GetDevice();
 
                 
-                var presRoom = new EssentialsPresentationRoom(Key, Name, displaysDict, masterVolumeControlDev, props);
-                return presRoom;
-            }
+			//    var presRoom = new EssentialsPresentationRoom(Key, Name, displaysDict, masterVolumeControlDev, props);
+			//    return presRoom;
+			//}
             else if (typeName == "huddlevtc1")
             {
                 var props = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>

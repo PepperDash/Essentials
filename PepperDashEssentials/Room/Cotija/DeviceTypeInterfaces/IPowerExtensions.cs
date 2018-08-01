@@ -14,18 +14,18 @@ namespace PepperDash.Essentials.Room.Cotija
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
-            controller.AddAction(prefix + "poweron", new Action(dev.PowerOn));
-            controller.AddAction(prefix + "poweroff", new Action(dev.PowerOff));
-            controller.AddAction(prefix + "powertoggle", new Action(dev.PowerToggle));
+            controller.AddAction(prefix + "powerOn", new Action(dev.PowerOn));
+            controller.AddAction(prefix + "powerOff", new Action(dev.PowerOff));
+            controller.AddAction(prefix + "powerToggle", new Action(dev.PowerToggle));
         }
 
         public static void UnlinkActions(this IPower dev, CotijaSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
-            controller.RemoveAction(prefix + "poweron");
-            controller.RemoveAction(prefix + "poweroff");
-            controller.RemoveAction(prefix + "powertoggle");
+            controller.RemoveAction(prefix + "powerOn");
+            controller.RemoveAction(prefix + "powerOff");
+            controller.RemoveAction(prefix + "powerToggle");
   
         }
     }
