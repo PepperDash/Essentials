@@ -12,14 +12,6 @@ namespace PepperDash.Essentials
     /// <summary>
     /// 
     /// </summary>
-    public interface IHasCurrentSourceInfoChange
-    {
-        event SourceInfoChangeHandler CurrentSingleSourceChange;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     public abstract class EssentialsRoomBase : Device
     {
         /// <summary>

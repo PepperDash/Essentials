@@ -10,7 +10,7 @@ using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials
 {
-	public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange
+	public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange, IRunRouteAction, IRunDefaultPresentRoute
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSingleSourceChange;
@@ -202,7 +202,7 @@ namespace PepperDash.Essentials
         {
             SetDefaultLevels();
 
-            RunDefaultRoute();
+            RunDefaultPresentRoute();
 
             CrestronEnvironment.Sleep(1000);
 
@@ -212,7 +212,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Routes the default source item, if any
         /// </summary>
-        public void RunDefaultRoute()
+        public void RunDefaultPresentRoute()
         {
 			//if (DefaultSourceItem != null && !OnFeedback.BoolValue)
             RunRouteAction(DefaultSourceItem);

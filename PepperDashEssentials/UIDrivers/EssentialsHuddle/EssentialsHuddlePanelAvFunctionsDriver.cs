@@ -480,7 +480,7 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
-                CurrentRoom.RunDefaultRoute();
+                CurrentRoom.RunDefaultPresentRoute();
         }
 
 
