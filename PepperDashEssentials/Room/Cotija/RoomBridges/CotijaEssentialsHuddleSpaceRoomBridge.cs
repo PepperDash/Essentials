@@ -5,6 +5,8 @@ using System.Text;
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Room.Cotija;
 using PepperDash.Essentials.Devices.Common.Codec;
@@ -63,17 +65,17 @@ namespace PepperDash.Essentials
 			if(defaultRoom != null)
 				Parent.AddAction(string.Format(@"/room/{0}/defaultsource", Room.Key), new Action(() => defaultRoom.RunDefaultPresentRoute()));
 
-			var vcRoom = Room as IHasCurrentVolumeControls;
-			if (vcRoom != null)
+			var volumeRoom = Room as IHasCurrentVolumeControls;
+			if (volumeRoom != null)
 			{
 				Parent.AddAction(string.Format(@"/room/{0}/volumes/master/level", Room.Key), new Action<ushort>(u =>
-					(vcRoom.CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(u)));
+					(volumeRoom.CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(u)));
 				Parent.AddAction(string.Format(@"/room/{0}/volumes/master/mute", Room.Key), new Action(() => 
-					vcRoom.CurrentVolumeControls.MuteToggle()));
-				vcRoom.CurrentVolumeDeviceChange += new EventHandler<VolumeDeviceChangeEventArgs>(Room_CurrentVolumeDeviceChange);
+					volumeRoom.CurrentVolumeControls.MuteToggle()));
+				volumeRoom.CurrentVolumeDeviceChange += new EventHandler<VolumeDeviceChangeEventArgs>(Room_CurrentVolumeDeviceChange);
 
 				// Registers for initial volume events, if possible
-				var currentVolumeDevice = vcRoom.CurrentVolumeControls as IBasicVolumeWithFeedback;
+				var currentVolumeDevice = volumeRoom.CurrentVolumeControls as IBasicVolumeWithFeedback;
 				if (currentVolumeDevice != null)
 				{
 					currentVolumeDevice.MuteFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
@@ -85,11 +87,13 @@ namespace PepperDash.Essentials
 			if(sscRoom != null)
 				sscRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSingleSourceChange);
 
-			var vidRoom = Room as IHasVideoCodec;
-			if (vidRoom != null)
+			var vcRoom = Room as IHasVideoCodec;
+			if (vcRoom != null)
 			{
-				var codec = vidRoom.VideoCodec;
+				var codec = vcRoom.VideoCodec;
 				codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
+
+				vcRoom.IsSharingFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(IsSharingFeedback_OutputChange);
 			}
 
 			Parent.AddAction(string.Format(@"/room/{0}/shutdownStart", Room.Key), new Action(() => Room.StartShutdown(eShutdownType.Manual)));
@@ -103,6 +107,41 @@ namespace PepperDash.Essentials
 			Room.ShutdownPromptTimer.HasStarted += ShutdownPromptTimer_HasStarted;
 			Room.ShutdownPromptTimer.HasFinished += ShutdownPromptTimer_HasFinished;
 			Room.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void IsSharingFeedback_OutputChange(object sender, FeedbackEventArgs e)
+		{
+			// sharing source 
+			string shareText;
+			bool isSharing;
+
+			var vcRoom = Room as IHasVideoCodec;
+			var srcInfoRoom = Room as IHasCurrentSourceInfoChange;
+			if (vcRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && srcInfoRoom.CurrentSourceInfo != null)
+			{
+
+				shareText = srcInfoRoom.CurrentSourceInfo.PreferredName;
+				isSharing = true;
+			}
+			else
+			{
+				shareText = "None";
+				isSharing = false;
+			}
+
+			PostStatusMessage(new
+			{
+				share = new
+				{
+					currentShareText = shareText,
+					isSharing = isSharing
+				}
+			});
 		}
 
 		/// <summary>
