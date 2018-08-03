@@ -104,6 +104,7 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppServer\Messengers\VideoCodecBaseMessenger.cs" />
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
     <Compile Include="Bridges\BridgeBase.cs" />
     <Compile Include="Bridges\BridgeFactory.cs" />
@@ -142,22 +143,22 @@
     <Compile Include="Room\Config\EssentialsHuddleRoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsHuddleVtc1PropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsRoomEmergencyConfig.cs" />
-    <Compile Include="Room\Cotija\CotijaConfig.cs" />
-    <Compile Include="Room\Cotija\CotijaDdvc01DeviceBridge.cs" />
-    <Compile Include="Room\Cotija\Interfaces.cs" />
-    <Compile Include="Room\Cotija\RoomBridges\CotijaBridgeBase.cs" />
-    <Compile Include="Room\Cotija\RoomBridges\CotijaDdvc01RoomBridge.cs" />
-    <Compile Include="Room\Cotija\RoomBridges\CotijaEssentialsHuddleSpaceRoomBridge.cs" />
-    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IChannelExtensions.cs" />
-    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IColorExtensions.cs" />
-    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IDPadExtensions.cs" />
-    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IDvrExtensions.cs" />
-    <Compile Include="Room\Cotija\DeviceTypeInterfaces\INumericExtensions.cs" />
-    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IPowerExtensions.cs" />
-    <Compile Include="Room\Cotija\DeviceTypeInterfaces\ISetTopBoxControlsExtensions.cs" />
-    <Compile Include="Room\Cotija\DeviceTypeInterfaces\ITransportExtensions.cs" />
-    <Compile Include="Room\Cotija\RoomBridges\SourceDeviceMapDictionary.cs" />
-    <Compile Include="Room\Cotija\Volumes.cs" />
+    <Compile Include="AppServer\CotijaConfig.cs" />
+    <Compile Include="AppServer\CotijaDdvc01DeviceBridge.cs" />
+    <Compile Include="AppServer\Interfaces.cs" />
+    <Compile Include="AppServer\RoomBridges\CotijaBridgeBase.cs" />
+    <Compile Include="AppServer\RoomBridges\CotijaDdvc01RoomBridge.cs" />
+    <Compile Include="AppServer\RoomBridges\CotijaEssentialsHuddleSpaceRoomBridge.cs" />
+    <Compile Include="AppServer\DeviceTypeInterfaces\IChannelExtensions.cs" />
+    <Compile Include="AppServer\DeviceTypeInterfaces\IColorExtensions.cs" />
+    <Compile Include="AppServer\DeviceTypeInterfaces\IDPadExtensions.cs" />
+    <Compile Include="AppServer\DeviceTypeInterfaces\IDvrExtensions.cs" />
+    <Compile Include="AppServer\DeviceTypeInterfaces\INumericExtensions.cs" />
+    <Compile Include="AppServer\DeviceTypeInterfaces\IPowerExtensions.cs" />
+    <Compile Include="AppServer\DeviceTypeInterfaces\ISetTopBoxControlsExtensions.cs" />
+    <Compile Include="AppServer\DeviceTypeInterfaces\ITransportExtensions.cs" />
+    <Compile Include="AppServer\RoomBridges\SourceDeviceMapDictionary.cs" />
+    <Compile Include="AppServer\Volumes.cs" />
     <Compile Include="Room\Emergency\EsentialsRoomEmergencyContactClosure.cs" />
     <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
     <Compile Include="Room\Types\EssentialsPresentationRoom.cs" />
@@ -195,7 +196,7 @@
     <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalAndBackDriver.cs" />
     <Compile Include="UIDrivers\SmartObjectRoomsList.cs" />
     <Compile Include="UI\JoinConstants\UIBoolJoin.cs" />
-    <Compile Include="Room\Cotija\CotijaSystemController.cs" />
+    <Compile Include="AppServer\CotijaSystemController.cs" />
     <Compile Include="UI\DualDisplaySourceSRLController.cs" />
     <Compile Include="UI\SubpageReferenceListActivityItem.cs" />
     <Compile Include="UI\CrestronTouchpanelPropertiesConfig.cs" />

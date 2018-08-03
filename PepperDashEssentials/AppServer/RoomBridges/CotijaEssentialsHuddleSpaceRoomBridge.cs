@@ -160,7 +160,6 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
 		{
-			var codec = sender as VideoCodecBase;
 			PostStatusMessage(new
 			{
 				calls = GetCallsMessageObject(),
