@@ -83,6 +83,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			appServerController.AddAction(MessagePath + "/standbyOff", new Action(() => Codec.StandbyDeactivate()));
 		}
 
+		public void GetFullStatusMessage()
+		{
+
+		}
+
 		/// <summary>
 		/// Helper to grab a call with string ID
 		/// </summary>

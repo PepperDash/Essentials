@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
+using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Room.Cotija;
 using PepperDash.Essentials.Devices.Common.Codec;
@@ -18,6 +19,8 @@ namespace PepperDash.Essentials
     {
 
         public EssentialsRoomBase Room { get; private set; }
+
+		public VideoCodecBaseMessenger VCMessenger { get; private set; }
 
 		/// <summary>
 		/// 
@@ -91,20 +94,24 @@ namespace PepperDash.Essentials
 			if (vcRoom != null)
 			{
 				var codec = vcRoom.VideoCodec;
+				VCMessenger = new VideoCodecBaseMessenger(vcRoom.VideoCodec, "/device/videoCodec");
+				VCMessenger.RegisterWithAppServer(Parent);
+
+				// May need to move this or remove this 
 				codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
 
 				vcRoom.IsSharingFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(IsSharingFeedback_OutputChange);
 
-				Parent.AddAction("/device/videoCodec/dial", new Action<string>(s => codec.Dial(s)));
-				Parent.AddAction("/device/videoCodec/endCall", new Action<string>(s =>
-				{
-					var call = codec.ActiveCalls.FirstOrDefault(c => c.Id == s);
-					if (call != null)
-					{
-						codec.EndCall(call);
-					}
-				}));
-				Parent.AddAction("/device/videoCodec/endAllCalls", new Action(() => codec.EndAllCalls()));
+				//Parent.AddAction("/device/videoCodec/dial", new Action<string>(s => codec.Dial(s)));
+				//Parent.AddAction("/device/videoCodec/endCall", new Action<string>(s =>
+				//{
+				//    var call = codec.ActiveCalls.FirstOrDefault(c => c.Id == s);
+				//    if (call != null)
+				//    {
+				//        codec.EndCall(call);
+				//    }
+				//}));
+				//Parent.AddAction("/device/videoCodec/endAllCalls", new Action(() => codec.EndAllCalls()));
 			}
 
 			Parent.AddAction(string.Format(@"/room/{0}/shutdownStart", Room.Key), new Action(() => Room.StartShutdown(eShutdownType.Manual)));
@@ -163,7 +170,7 @@ namespace PepperDash.Essentials
 			PostStatusMessage(new
 			{
 				calls = GetCallsMessageObject(),
-				vtc = GetVtcCallsMessageObject()
+				//vtc = GetVtcCallsMessageObject()
 			});
 
 		}
