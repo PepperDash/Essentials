@@ -236,7 +236,6 @@ namespace PepperDash.Essentials.Room.Cotija
 				EISC.PulseBool(BoolJoin.SourceHasChanged);
 			}));
 
-#warning CHANGE to activityshare.  Perhaps
 			Parent.AddAction(@"/room/room1/defaultsource", new Action(() => 
 				EISC.PulseBool(BoolJoin.ActivitySharePress)));
 

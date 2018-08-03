@@ -202,8 +202,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             string roomNumberSipUri = "";
 
-#warning FIX PHONE FORMATTING TO ONLY SHOW WHEN APPROPRIATE - TALK TO NEIL
-
             if (!string.IsNullOrEmpty(Codec.CodecInfo.SipUri)) // If both values are present, format the string with a pipe divider
                 roomNumberSipUri = string.Format("{0} | {1}", GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber), Codec.CodecInfo.SipUri);
             else                                               // If only one value present, just show the phone number

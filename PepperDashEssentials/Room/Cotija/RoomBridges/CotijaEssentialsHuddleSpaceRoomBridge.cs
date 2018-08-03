@@ -55,7 +55,7 @@ namespace PepperDash.Essentials
 			// doesn't need to know about everything.
 
 			// Source Changes and room off
-			Parent.AddAction(string.Format(@"/room/{0}/status", Room.Key), new Action(() => Room_RoomFullStatus(Room)));
+			Parent.AddAction(string.Format(@"/room/{0}/status", Room.Key), new Action(() => SendFullStatus(Room)));
 
 			var routeRoom = Room as IRunRouteAction;
 			if(routeRoom != null)
@@ -94,6 +94,17 @@ namespace PepperDash.Essentials
 				codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
 
 				vcRoom.IsSharingFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(IsSharingFeedback_OutputChange);
+
+				Parent.AddAction("/device/videoCodec/dial", new Action<string>(s => codec.Dial(s)));
+				Parent.AddAction("/device/videoCodec/endCall", new Action<string>(s =>
+				{
+					var call = codec.ActiveCalls.FirstOrDefault(c => c.Id == s);
+					if (call != null)
+					{
+						codec.EndCall(call);
+					}
+				}));
+				Parent.AddAction("/device/videoCodec/endAllCalls", new Action(() => codec.EndAllCalls()));
 			}
 
 			Parent.AddAction(string.Format(@"/room/{0}/shutdownStart", Room.Key), new Action(() => Room.StartShutdown(eShutdownType.Manual)));
@@ -119,7 +130,7 @@ namespace PepperDash.Essentials
 			// sharing source 
 			string shareText;
 			bool isSharing;
-
+#warning This share update needs to happen on source change as well!
 			var vcRoom = Room as IHasVideoCodec;
 			var srcInfoRoom = Room as IHasCurrentSourceInfoChange;
 			if (vcRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && srcInfoRoom.CurrentSourceInfo != null)
@@ -149,9 +160,11 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
 		{
+			var codec = sender as VideoCodecBase;
 			PostStatusMessage(new
 			{
-				calls = GetCallsMessageObject()
+				calls = GetCallsMessageObject(),
+				vtc = GetVtcCallsMessageObject()
 			});
 
 		}
@@ -382,7 +395,7 @@ namespace PepperDash.Essentials
         /// Posts the full status of the room to the server
         /// </summary>
         /// <param name="room"></param>
-        void Room_RoomFullStatus(EssentialsRoomBase room)
+        void SendFullStatus(EssentialsRoomBase room)
         {
 			var sourceKey = room is IHasCurrentSourceInfoChange ? (room as IHasCurrentSourceInfoChange).CurrentSourceInfoKey : null;
 			
@@ -397,27 +410,12 @@ namespace PepperDash.Essentials
 				}
 			}
 
-			//var callRm = room as IHasVideoCodec;
-			//object calls = null;
-			//if(callRm != null)
-			//{
-			//    calls = new {
-			//        activeCalls = callRm.VideoCodec.ActiveCalls,
-			//        callType = callRm.CallTypeFeedback.IntValue,
-			//        inCall = callRm.InCallFeedback.BoolValue,
-			//        isSharing = callRm.IsSharingFeedback.BoolValue,
-			//        privacyModeIsOn = callRm.PrivacyModeIsOnFeedback.BoolValue
-			//    };
-			//}
-
 			PostStatusMessage(new
 			{
 				calls = GetCallsMessageObject(),
 				isOn = room.OnFeedback.BoolValue,
 				selectedSourceKey = sourceKey,
-				videoCodec = new {
-
-				},
+				vtc = GetVtcCallsMessageObject(),
 				volumes = volumes
 			});
         }
@@ -439,6 +437,26 @@ namespace PepperDash.Essentials
 				isSharing = callRm.IsSharingFeedback.BoolValue,
 				privacyModeIsOn = callRm.PrivacyModeIsOnFeedback.BoolValue
 			};
+		}
+
+		/// <summary>
+		/// Helper method to build call status for vtc
+		/// </summary>
+		/// <returns></returns>
+		object GetVtcCallsMessageObject()
+		{
+			var callRm = Room as IHasVideoCodec;
+			object vtc = null;
+			if (callRm != null)
+			{
+				var codec = callRm.VideoCodec;
+				vtc = new
+				{
+					isInCall = codec.IsInCall,
+					calls = codec.ActiveCalls
+				};
+			}
+			return vtc;
 		}
      
     }
