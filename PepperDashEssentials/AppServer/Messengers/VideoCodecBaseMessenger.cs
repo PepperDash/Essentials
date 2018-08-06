@@ -40,6 +40,20 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			MessagePath = messagePath;
 			Codec = codec;
 			codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
+			codec.IsReadyChange += new EventHandler<EventArgs>(codec_IsReadyChange);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void codec_IsReadyChange(object sender, EventArgs e)
+		{
+			PostStatusMessage(new
+			{
+				isReady = true
+			});
 		}
 
 		/// <summary>
@@ -53,6 +67,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			
 			AppServerController = appServerController;
 
+			appServerController.AddAction("/device/videoCodec/isReady", new Action(SendIsReady));
+			appServerController.AddAction("/device/videoCodec/fullStatus", new Action(SendVtcFullMessageObject));
 			appServerController.AddAction("/device/videoCodec/dial", new Action<string>(s => Codec.Dial(s)));
 			appServerController.AddAction("/device/videoCodec/endCallById", new Action<string>(s =>
 			{
@@ -60,7 +76,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				if (call != null)
 					Codec.EndCall(call);
 			}));
-			appServerController.AddAction(MessagePath + "/endAllCalls", new Action(() => Codec.EndAllCalls()));
+			appServerController.AddAction(MessagePath + "/endAllCalls", new Action(Codec.EndAllCalls));
 			appServerController.AddAction(MessagePath + "/dtmf", new Action<string>(s => Codec.SendDtmf(s)));
 			appServerController.AddAction(MessagePath + "/rejectById", new Action<string>(s =>
 			{
@@ -74,13 +90,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				if (call != null)
 					Codec.AcceptCall(call);
 			}));
-			appServerController.AddAction(MessagePath + "/privacyModeOn", new Action(() => Codec.PrivacyModeOn()));
-			appServerController.AddAction(MessagePath + "/privacyModeOff", new Action(() => Codec.PrivacyModeOff()));
-			appServerController.AddAction(MessagePath + "/privacyModeToggle", new Action(() => Codec.PrivacyModeToggle()));
-			appServerController.AddAction(MessagePath + "/sharingStart", new Action(() => Codec.StartSharing()));
-			appServerController.AddAction(MessagePath + "/sharingStop", new Action(() => Codec.StopSharing()));
-			appServerController.AddAction(MessagePath + "/standbyOn", new Action(() => Codec.StandbyActivate()));
-			appServerController.AddAction(MessagePath + "/standbyOff", new Action(() => Codec.StandbyDeactivate()));
+			appServerController.AddAction(MessagePath + "/privacyModeOn", new Action(Codec.PrivacyModeOn));
+			appServerController.AddAction(MessagePath + "/privacyModeOff", new Action(Codec.PrivacyModeOff));
+			appServerController.AddAction(MessagePath + "/privacyModeToggle", new Action(Codec.PrivacyModeToggle));
+			appServerController.AddAction(MessagePath + "/sharingStart", new Action(Codec.StartSharing));
+			appServerController.AddAction(MessagePath + "/sharingStop", new Action(Codec.StopSharing));
+			appServerController.AddAction(MessagePath + "/standbyOn", new Action(Codec.StandbyActivate));
+			appServerController.AddAction(MessagePath + "/standbyOff", new Action(Codec.StandbyDeactivate));
 		}
 
 		public void GetFullStatusMessage()
@@ -103,24 +119,32 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		void codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
 		{
+			SendVtcFullMessageObject();
+		}
+
+		void SendIsReady()
+		{
 			PostStatusMessage(new
 			{
-				vtc = GetVtcCallsMessageObject()
+				isReady = Codec.IsReady
 			});
-
 		}
 
 		/// <summary>
 		/// Helper method to build call status for vtc
 		/// </summary>
 		/// <returns></returns>
-		object GetVtcCallsMessageObject()
+		void SendVtcFullMessageObject()
 		{
+			if (!Codec.IsReady)
+			{
+				return;
+			}
+
 			var info = Codec.CodecInfo;
-			return new
+			PostStatusMessage(new
 			{
 				isInCall = Codec.IsInCall,
-				isReady = Codec.IsReady,
 				privacyModeIsOn = Codec.PrivacyModeIsOnFeedback.BoolValue,
 				sharingContentIsOn = Codec.SharingContentIsOnFeedback.BoolValue,
 				sharingSource = Codec.SharingSourceFeedback.StringValue,
@@ -132,12 +156,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 					e164Alias = info.E164Alias,
 					h323Id = info.H323Id,
 					ipAddress = info.IpAddress,
-					multiSiteEnabled = info.MultiSiteOptionIsEnabled,
 					sipPhoneNumber = info.SipPhoneNumber,
 					sipURI = info.SipUri
 				},
 				showSelfViewByDefault = Codec.ShowSelfViewByDefault
-			};
+			});
 		}
 
 		/// <summary>
