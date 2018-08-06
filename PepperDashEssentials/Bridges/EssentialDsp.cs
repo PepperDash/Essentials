@@ -65,6 +65,13 @@ namespace PepperDash.Essentials {
 							x++;
 
 						}
+						x = 1;
+						foreach (var preset in Dsp.PresetList)
+						{
+							ApiEisc.Eisc.StringInput[ApiMap.presets[x]].StringValue = preset.label;
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.presets[x], () => Dsp.RunPresetNumber(x));
+							x++;
+						}
 
 					}
 				}
@@ -93,19 +100,15 @@ namespace PepperDash.Essentials {
 		public ushort presetString = 2000;
 		public Dictionary<uint, ushort> channelMuteToggle;
 		public Dictionary<uint, ushort> channelVolume;
-		public Dictionary<uint, ushort> TxOnlineStatus;
-		public Dictionary<uint, ushort> RxOnlineStatus;
-		public Dictionary<uint, ushort> TxVideoSyncStatus;
-		public Dictionary<uint, ushort> InputNames;
-		public Dictionary<uint, ushort> OutputNames;
-		public Dictionary<uint, ushort> OutputRouteNames;
+		public Dictionary<uint, ushort> presets;
 
 		public EssentialDspApiMap() {
 			channelMuteToggle = new Dictionary<uint, ushort>();
 			channelVolume = new Dictionary<uint, ushort>();
+			presets = new Dictionary<uint, ushort>();
 			for (uint x = 1; x <= 100; x++) {
 				uint tempNum = x;
-
+				presets[tempNum] = (ushort)(tempNum + 100);
 				channelMuteToggle[tempNum] = (ushort)(tempNum + 400);
 				channelVolume[tempNum] = (ushort)(tempNum + 200);
 	
