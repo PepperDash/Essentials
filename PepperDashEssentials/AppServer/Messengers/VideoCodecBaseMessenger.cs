@@ -138,10 +138,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			var dir = dirCodec.DirectoryRoot;
 			PostStatusMessage(new
 			{
-				directory = new
+				currentDirectory = new
 				{
 					folderId = dir.ResultsFolderId,
-					directory = dir.DirectoryResults
+					items = dir.DirectoryResults
 				}
 			});
 		}
