@@ -41,6 +41,26 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			Codec = codec;
 			codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
 			codec.IsReadyChange += new EventHandler<EventArgs>(codec_IsReadyChange);
+
+			var dirCodec = codec as IHasDirectory;
+			if (dirCodec != null)
+			{
+				dirCodec.DirectoryResultReturned += new EventHandler<DirectoryEventArgs>(dirCodec_DirectoryResultReturned);
+			}
+		}
+		
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void dirCodec_DirectoryResultReturned(object sender, DirectoryEventArgs e)
+		{
+			var dir = e.Directory;
+			PostStatusMessage(new
+			{
+				currentDirectory = e.Directory
+			});
 		}
 
 		/// <summary>
@@ -91,6 +111,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 					Codec.AcceptCall(call);
 			}));
 			appServerController.AddAction(MessagePath + "/directoryRoot", new Action(GetDirectoryRoot));			
+			appServerController.AddAction(MessagePath + "/directoryById", new Action<string>(s => GetDirectory(s)));
+			appServerController.AddAction(MessagePath + "/directorySearch", new Action<string>(s => DirectorySearch(s)));
 			appServerController.AddAction(MessagePath + "/privacyModeOn", new Action(Codec.PrivacyModeOn));
 			appServerController.AddAction(MessagePath + "/privacyModeOff", new Action(Codec.PrivacyModeOff));
 			appServerController.AddAction(MessagePath + "/privacyModeToggle", new Action(Codec.PrivacyModeToggle));
@@ -118,6 +140,33 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// <summary>
 		/// 
 		/// </summary>
+		/// <param name="s"></param>
+		void DirectorySearch(string s)
+		{
+			var dirCodec = Codec as IHasDirectory;
+			if (dirCodec != null)
+			{
+				dirCodec.SearchDirectory(s);
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="id"></param>
+		void GetDirectory(string id)
+		{
+			var dirCodec = Codec as IHasDirectory;
+			if(dirCodec == null)
+			{
+				return;
+			}
+			dirCodec.GetDirectoryFolderContents(id);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
 		void GetDirectoryRoot()
 		{
 			var dirCodec = Codec as IHasDirectory;
@@ -135,14 +184,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				return;
 			}
 
-			var dir = dirCodec.DirectoryRoot;
 			PostStatusMessage(new
 			{
-				currentDirectory = new
-				{
-					folderId = dir.ResultsFolderId,
-					items = dir.DirectoryResults
-				}
+				currentDirectory = dirCodec.DirectoryRoot
 			});
 		}
 
