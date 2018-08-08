@@ -62,7 +62,8 @@ namespace PepperDash.Essentials
 
 			var routeRoom = Room as IRunRouteAction;
 			if(routeRoom != null)
-				Parent.AddAction(string.Format(@"/room/{0}/source", Room.Key), new Action<SourceSelectMessageContent>(c => routeRoom.RunRouteAction(c.SourceListItem)));
+				Parent.AddAction(string.Format(@"/room/{0}/source", Room.Key), new Action<SourceSelectMessageContent>(c => 
+					routeRoom.RunRouteAction(c.SourceListItem)));
 
 			var defaultRoom = Room as IRunDefaultPresentRoute;
 			if(defaultRoom != null)

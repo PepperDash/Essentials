@@ -15,6 +15,11 @@ namespace PepperDash.Essentials.Room.Cotija
 
 		[JsonProperty("auxFaders")]
 		public List<Volume> AuxFaders { get; set; }
+
+		public Volumes()
+		{
+			AuxFaders = new List<Volume>();	
+		}
 	}
 
 	public class Volume

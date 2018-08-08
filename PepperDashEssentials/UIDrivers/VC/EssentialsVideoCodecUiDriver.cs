@@ -537,25 +537,22 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			var codec = Codec as IHasDirectory;
 			if (codec != null)
 			{
-				if (codec != null)
+				DirectoryList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCDirectoryList],
+					true, 1300);
+				codec.DirectoryResultReturned += new EventHandler<DirectoryEventArgs>(dir_DirectoryResultReturned);
+
+				if (codec.PhonebookSyncState.InitialSyncComplete)
+					SetCurrentDirectoryToRoot();
+				else
 				{
-					DirectoryList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCDirectoryList],
-						true, 1300);
-					codec.DirectoryResultReturned += new EventHandler<DirectoryEventArgs>(dir_DirectoryResultReturned);
-
-                    if (codec.PhonebookSyncState.InitialSyncComplete)
-                        SetCurrentDirectoryToRoot();
-                    else
-                    {
-                        codec.PhonebookSyncState.InitialSyncCompleted += new EventHandler<EventArgs>(PhonebookSyncState_InitialSyncCompleted);
-                    }
+					codec.PhonebookSyncState.InitialSyncCompleted += new EventHandler<EventArgs>(PhonebookSyncState_InitialSyncCompleted);
+				}
 
 
-					// If there is something here now, show it otherwise wait for the event
-					if (CurrentDirectoryResult != null && codec.DirectoryRoot.DirectoryResults.Count > 0)
-					{
-						RefreshDirectory();
-					}
+				// If there is something here now, show it otherwise wait for the event
+				if (CurrentDirectoryResult != null && codec.DirectoryRoot.DirectoryResults.Count > 0)
+				{
+					RefreshDirectory();
 				}
 			}
 		}

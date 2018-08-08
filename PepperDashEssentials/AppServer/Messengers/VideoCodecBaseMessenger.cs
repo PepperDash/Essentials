@@ -90,6 +90,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				if (call != null)
 					Codec.AcceptCall(call);
 			}));
+			appServerController.AddAction(MessagePath + "/directoryRoot", new Action(GetDirectoryRoot));			
 			appServerController.AddAction(MessagePath + "/privacyModeOn", new Action(Codec.PrivacyModeOn));
 			appServerController.AddAction(MessagePath + "/privacyModeOff", new Action(Codec.PrivacyModeOff));
 			appServerController.AddAction(MessagePath + "/privacyModeToggle", new Action(Codec.PrivacyModeToggle));
@@ -115,6 +116,37 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		}
 
 		/// <summary>
+		/// 
+		/// </summary>
+		void GetDirectoryRoot()
+		{
+			var dirCodec = Codec as IHasDirectory;
+			if (dirCodec == null)
+			{
+				// do something else?
+				return;
+			}
+			if (!dirCodec.PhonebookSyncState.InitialSyncComplete)
+			{
+				PostStatusMessage(new
+				{
+					initialSyncComplete = false
+				});
+				return;
+			}
+
+			var dir = dirCodec.DirectoryRoot;
+			PostStatusMessage(new
+			{
+				directory = new
+				{
+					folderId = dir.ResultsFolderId,
+					directory = dir.DirectoryResults
+				}
+			});
+		}
+
+		/// <summary>
 		/// Handler for codec changes
 		/// </summary>
 		void codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
@@ -122,6 +154,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			SendVtcFullMessageObject();
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
 		void SendIsReady()
 		{
 			PostStatusMessage(new
@@ -159,7 +194,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 					sipPhoneNumber = info.SipPhoneNumber,
 					sipURI = info.SipUri
 				},
-				showSelfViewByDefault = Codec.ShowSelfViewByDefault
+				showSelfViewByDefault = Codec.ShowSelfViewByDefault,
+				hasDirectory = Codec is IHasDirectory
 			});
 		}
 
