@@ -115,6 +115,12 @@ namespace PepperDash.Essentials
 				//Parent.AddAction("/device/videoCodec/endAllCalls", new Action(() => codec.EndAllCalls()));
 			}
 
+			var defCallRm = Room as IRunDefaultCallRoute;
+			if (defCallRm != null)
+			{
+				Parent.AddAction(string.Format(@"/room/{0}/activityVideo", Room.Key), new Action(()=>defCallRm.RunDefaultCallRoute()));
+			}
+
 			Parent.AddAction(string.Format(@"/room/{0}/shutdownStart", Room.Key), new Action(() => Room.StartShutdown(eShutdownType.Manual)));
 			Parent.AddAction(string.Format(@"/room/{0}/shutdownEnd", Room.Key), new Action(() => Room.ShutdownPromptTimer.Finish()));
 			Parent.AddAction(string.Format(@"/room/{0}/shutdownCancel", Room.Key), new Action(() => Room.ShutdownPromptTimer.Cancel()));
