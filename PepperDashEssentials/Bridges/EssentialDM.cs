@@ -54,14 +54,16 @@ namespace PepperDash.Essentials {
 							ApiEisc.Eisc.SetUShortSigAction(ApiMap.OutputVideoRoutes[tempX], u => DmSwitch.ExecuteSwitch(u, tempX, eRoutingSignalType.Video));
 							ApiEisc.Eisc.SetUShortSigAction(ApiMap.OutputAudioRoutes[tempX], u => DmSwitch.ExecuteSwitch(u, tempX, eRoutingSignalType.Audio));
 
+
                             if (DmSwitch.TxDictionary.ContainsKey(tempX)) {
 								Debug.Console(2, "Creating Tx Feedbacks {0}", tempX);
 								var TxKey = DmSwitch.TxDictionary[tempX];
 								var TxDevice = DeviceManager.GetDeviceForKey(TxKey) as DmTxControllerBase;
 								TxDevice.IsOnline.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.TxOnlineStatus[tempX]]);
 								TxDevice.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.TxVideoSyncStatus[tempX]]);
-								ApiEisc.Eisc.SetUShortSigAction(901, u => TxDevice.SetHdcpSupport((eHdcpSupportMode)(u)));
-								} else {
+								ApiEisc.Eisc.SetUShortSigAction(901, u => TxDevice.SetHdcpSupport((ePdtHdcpSupport)(u)));
+								} 
+							else {
 								DmSwitch.VideoInputSyncFeedbacks[tempX].LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.TxVideoSyncStatus[tempX]]);
 								}
 							if (DmSwitch.RxDictionary.ContainsKey(tempX)) {
