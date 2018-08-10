@@ -42,6 +42,11 @@ namespace PepperDash.Essentials {
 				Debug.Console(0, "Launch EssentialDsp");
 				return new EssentialDsp(key, name, properties);
 			}
+			else if (typeName == "essentialstvone")
+			{
+				Debug.Console(0, "Launch essentialstvone");
+				return new EssentialsTVOne(key, name, properties);
+			}
 			return null;
 			}
 		}
