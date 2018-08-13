@@ -92,7 +92,7 @@ namespace PepperDash.Essentials {
 					var ApiEisc = new BridgeApiEisc(Ipid);
 					Apis.Add(ApiEisc);
 					foreach (var commConnection in CommDictionary) {
-						Debug.Console(0, "Joining Api{0} to comm {1}", Ipid, commConnection.Key);
+						Debug.Console(2, "Joining Api{0} to comm {1}", Ipid, commConnection.Key);
 						var tempComm = commConnection.Value;
 						var tempJoin = (uint)commConnection.Key;
 						EssentialComApiMap ApiMap = new EssentialComApiMap(ApiEisc, (uint)tempJoin);
@@ -121,11 +121,11 @@ namespace PepperDash.Essentials {
 
 
 					
-				Debug.Console(0, "Name {0} Activated", this.Name);
+				Debug.Console(2, "Name {0} Activated", this.Name);
 				return true;
 				}
 			catch (Exception e) {
-				Debug.Console(0, "BRidge {0}", e);
+				Debug.Console(0, "Bridge {0}", e);
 				return false;
 				}
         }

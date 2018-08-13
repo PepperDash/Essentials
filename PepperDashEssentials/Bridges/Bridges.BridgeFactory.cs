@@ -27,24 +27,24 @@ namespace PepperDash.Essentials {
 			var typeName = dc.Type.ToLower();
 			var groupName = dc.Group.ToLower();
 
-			Debug.Console(0, "Name {0}, Key {1}, Type {2}, Properties {3}", name, key, type, properties.ToString());
+			Debug.Console(2, "Name {0}, Key {1}, Type {2}, Properties {3}", name, key, type, properties.ToString());
 			if (typeName == "essentialdm") 
 			{
 				return new EssentialDM(key, name, properties);
 			} 
 			else if (typeName == "essentialcomm") 
 			{
-				Debug.Console(0, "Launch Essential Comm");
+				Debug.Console(2, "Launch Essential Comm");
 				return new EssentialComm(key, name, properties);
 			}
 			else if (typeName == "essentialdsp")
 			{
-				Debug.Console(0, "Launch EssentialDsp");
+				Debug.Console(2, "Launch EssentialDsp");
 				return new EssentialDsp(key, name, properties);
 			}
 			else if (typeName == "essentialstvone")
 			{
-				Debug.Console(0, "Launch essentialstvone");
+				Debug.Console(2, "Launch essentialstvone");
 				return new EssentialsTVOne(key, name, properties);
 			}
 			return null;
@@ -58,7 +58,7 @@ namespace PepperDash.Essentials {
 			Eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(Ipid, "127.0.0.2", Global.ControlSystem);
 			Eisc.Register();
 			Eisc.SigChange += Eisc_SigChange;
-			Debug.Console(0, "BridgeApiEisc Created at Ipid {0}", ipid);
+			Debug.Console(2, "BridgeApiEisc Created at Ipid {0}", ipid);
 			}
 		void Eisc_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args) {
 			if (Debug.Level >= 1)

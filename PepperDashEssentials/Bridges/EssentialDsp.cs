@@ -83,7 +83,7 @@ namespace PepperDash.Essentials {
 				return true;
 				}
 			catch (Exception e) {
-				Debug.Console(2, "BRidge {0}", e);
+				Debug.Console(0, "Bridge {0}", e);
 				return false;
 				}
 			}
