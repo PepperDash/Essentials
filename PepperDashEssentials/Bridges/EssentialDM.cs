@@ -61,7 +61,9 @@ namespace PepperDash.Essentials {
 								var TxDevice = DeviceManager.GetDeviceForKey(TxKey) as DmTxControllerBase;
 								TxDevice.IsOnline.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.TxOnlineStatus[tempX]]);
 								TxDevice.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.TxVideoSyncStatus[tempX]]);
-								ApiEisc.Eisc.SetUShortSigAction(901, u => TxDevice.SetHdcpSupport((ePdtHdcpSupport)(u)));
+								ApiEisc.Eisc.SetUShortSigAction((ApiMap.HdcpSupport[tempX]), u => TxDevice.SetHdcpSupportAll((ePdtHdcpSupport)(u)));
+								TxDevice.HdcpSupportAllFeedback.LinkInputSig(ApiEisc.Eisc.UShortInput[ApiMap.HdcpSupport[tempX]]);
+								ApiEisc.Eisc.UShortInput[ApiMap.HdcpSupportCapability[tempX]].UShortValue = TxDevice.HdcpSupportCapability;
 								} 
 							else {
 								DmSwitch.VideoInputSyncFeedbacks[tempX].LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.TxVideoSyncStatus[tempX]]);
@@ -113,6 +115,8 @@ namespace PepperDash.Essentials {
 		public Dictionary<uint, ushort> InputNames;
 		public Dictionary<uint, ushort> OutputNames;
 		public Dictionary<uint, ushort> OutputRouteNames;
+		public Dictionary<uint, ushort> HdcpSupport;
+		public Dictionary<uint, ushort> HdcpSupportCapability;
 
 		public EssentialDMApiMap() {
 			OutputVideoRoutes = new Dictionary<uint, ushort>();
@@ -123,10 +127,14 @@ namespace PepperDash.Essentials {
 			InputNames = new Dictionary<uint, ushort>();
 			OutputNames = new Dictionary<uint, ushort>();
 			OutputRouteNames = new Dictionary<uint, ushort>();
+			HdcpSupport = new Dictionary<uint, ushort>();
+			HdcpSupportCapability = new Dictionary<uint, ushort>();
+
 			for (uint x = 1; x <= 200; x++) {
 				// Debug.Console(0, "Init Value {0}", x);
 				uint tempNum = x;
-
+				HdcpSupportCapability[tempNum] = (ushort)(tempNum + 1200);
+				HdcpSupport[tempNum] = (ushort)(tempNum + 900);
 				OutputVideoRoutes[tempNum] = (ushort)(tempNum + 100);
 				OutputAudioRoutes[tempNum] = (ushort)(tempNum + 300);
 				TxOnlineStatus[tempNum] = (ushort)(tempNum + 500);
