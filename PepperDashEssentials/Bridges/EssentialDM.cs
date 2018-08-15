@@ -134,7 +134,7 @@ namespace PepperDash.Essentials {
 				// Debug.Console(0, "Init Value {0}", x);
 				uint tempNum = x;
 				HdcpSupportCapability[tempNum] = (ushort)(tempNum + 1200);
-				HdcpSupport[tempNum] = (ushort)(tempNum + 900);
+				HdcpSupport[tempNum] = (ushort)(tempNum + 1000);
 				OutputVideoRoutes[tempNum] = (ushort)(tempNum + 100);
 				OutputAudioRoutes[tempNum] = (ushort)(tempNum + 300);
 				TxOnlineStatus[tempNum] = (ushort)(tempNum + 500);
