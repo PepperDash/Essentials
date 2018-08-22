@@ -387,7 +387,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// Will power the room on with the last-used source
 		/// </summary>
-		public void PowerOnToDefaultOrLastSource()
+		public override void PowerOnToDefaultOrLastSource()
 		{
 			if (!EnablePowerOnToLastSource || LastSourceKey == null)
 				return;

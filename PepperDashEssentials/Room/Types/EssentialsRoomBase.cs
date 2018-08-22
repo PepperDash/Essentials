@@ -62,6 +62,22 @@ namespace PepperDash.Essentials
         protected int RoomVacancyShutdownPromptSeconds;
 
         /// <summary>
+        /// The time of day at which the room occupancy power on feature should be enabled
+        /// </summary>
+        protected DateTime RoomOccpuancyPowerOnStart;
+
+        /// <summary>
+        /// The time of day at which the room occupancy power on feature should be disabled
+        /// </summary>
+        protected DateTime RoomOccupancyPowerOnEnd;
+
+        /// <summary>
+        /// Should the room power on to the default source if occupied between the start and end times
+        /// </summary>
+        protected bool RoomOccupancyPowerOnIsEnabled;
+
+
+        /// <summary>
         /// 
         /// </summary>
         protected abstract Func<bool> OnFeedbackFunc { get; }
@@ -205,6 +221,11 @@ namespace PepperDash.Essentials
             RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
         }
 
+        /// <summary>
+        /// To allow base class to power room on to default source
+        /// </summary>
+        public abstract void PowerOnToDefaultOrLastSource();
+
         void RoomIsOccupiedFeedback_OutputChange(object sender, EventArgs e)
         {
             if (RoomOccupancy.RoomIsOccupiedFeedback.BoolValue == false)
@@ -217,15 +238,27 @@ namespace PepperDash.Essentials
             {
                 Debug.Console(1, this, "Notice: Occupancy Detected");
                 // Reset the timer when the room is occupied
+                RoomVacancyShutdownTimer.Cancel();
 
-                    RoomVacancyShutdownTimer.Cancel();
+                if(RoomOccupancyPowerOnIsEnabled)
+                {
+                    var currentTime = DateTime.Now.TimeOfDay;
+
+                    if (currentTime.CompareTo(RoomOccpuancyPowerOnStart.TimeOfDay) > 0 && RoomOccupancyPowerOnEnd.TimeOfDay.CompareTo(currentTime) > 0)
+                    {
+                        PowerOnToDefaultOrLastSource();
+                    }
+                }
             }
         }
 
-		//void SwapVolumeDevices(IBasicVolumeControls currentDevice, IBasicVolumeControls newDevice)
-		//{
+        /// <summary>
+        /// Sets up events in the scheduler for the start and end times of the appropriate days to enable and disable the RoomOccupancyPowerOnIsEnabled flag
+        /// </summary>
+        void SetUpOccupancyRoomOnEventsInScheduler()
+        {
 
-		//}
+        }
 
         /// <summary>
         /// Executes when RoomVacancyShutdownTimer expires.  Used to trigger specific room actions as needed.  Must nullify the timer object when executed
