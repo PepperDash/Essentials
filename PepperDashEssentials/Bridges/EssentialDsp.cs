@@ -59,7 +59,14 @@ namespace PepperDash.Essentials {
 							var QscChannel = channel.Value as IBasicVolumeWithFeedback;
 							QscChannel.MuteFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.channelMuteToggle[x]]);
 							QscChannel.VolumeLevelFeedback.LinkInputSig(ApiEisc.Eisc.UShortInput[ApiMap.channelVolume[x]]);
+
 							ApiEisc.Eisc.SetSigTrueAction(ApiMap.channelMuteToggle[x], () =>  QscChannel.MuteToggle());
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.channelMuteOn[x], () => QscChannel.MuteOn());
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.channelMuteOff[x], () => QscChannel.MuteOff());
+
+							ApiEisc.Eisc.SetBoolSigAction(ApiMap.channelVolumeUp[x], b => QscChannel.VolumeUp(b));
+							ApiEisc.Eisc.SetBoolSigAction(ApiMap.channelVolumeDown[x], b => QscChannel.VolumeDown(b));
+
 							ApiEisc.Eisc.SetUShortSigAction(ApiMap.channelVolume[x], u => QscChannel.SetVolume(u));
 							ApiEisc.Eisc.SetStringSigAction(ApiMap.presetString, s => Dsp.RunPreset(s));
 							x++;
@@ -99,19 +106,30 @@ namespace PepperDash.Essentials {
 	public class EssentialDspApiMap {
 		public ushort presetString = 2000;
 		public Dictionary<uint, ushort> channelMuteToggle;
+		public Dictionary<uint, ushort> channelMuteOn;
+		public Dictionary<uint, ushort> channelMuteOff;
 		public Dictionary<uint, ushort> channelVolume;
+		public Dictionary<uint, ushort> channelVolumeUp;
+		public Dictionary<uint, ushort> channelVolumeDown;
 		public Dictionary<uint, ushort> presets;
 
 		public EssentialDspApiMap() {
 			channelMuteToggle = new Dictionary<uint, ushort>();
+			channelMuteOn = new Dictionary<uint, ushort>();
+			channelMuteOff = new Dictionary<uint, ushort>();
 			channelVolume = new Dictionary<uint, ushort>();
 			presets = new Dictionary<uint, ushort>();
+			channelVolumeUp = new Dictionary<uint, ushort>();
+			channelVolumeDown = new Dictionary<uint, ushort>();
 			for (uint x = 1; x <= 100; x++) {
 				uint tempNum = x;
 				presets[tempNum] = (ushort)(tempNum + 100);
 				channelMuteToggle[tempNum] = (ushort)(tempNum + 400);
+				channelMuteOn[tempNum] = (ushort)(tempNum + 600);
+				channelMuteOff[tempNum] = (ushort)(tempNum + 800);
 				channelVolume[tempNum] = (ushort)(tempNum + 200);
-	
+				channelVolumeUp[tempNum] = (ushort)(tempNum + 1000);
+				channelVolumeDown[tempNum] = (ushort)(tempNum + 1200);
 				}
 			}
 		}
