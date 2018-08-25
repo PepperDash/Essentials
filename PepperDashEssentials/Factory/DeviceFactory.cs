@@ -85,6 +85,13 @@ namespace PepperDash.Essentials
 				return bridge;
 			}
 
+            else if (typeName == "roomonwhenoccupancydetectedfeature")
+            {
+                var props = JsonConvert.DeserializeObject<Room.Behaviours.RoomOnToDefaultSourceWhenOccupiedConfig>(properties.ToString());
+
+                return new Room.Behaviours.RoomOnToDefaultSourceWhenOccupied(key, props);
+            }
+
 			return null;
 		}
 	}

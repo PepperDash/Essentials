@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.Scheduler;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Occupancy;
@@ -60,22 +62,6 @@ namespace PepperDash.Essentials
         /// Seconds after vacancy detected until prompt is displayed
         /// </summary>
         protected int RoomVacancyShutdownPromptSeconds;
-
-        /// <summary>
-        /// The time of day at which the room occupancy power on feature should be enabled
-        /// </summary>
-        protected DateTime RoomOccpuancyPowerOnStart;
-
-        /// <summary>
-        /// The time of day at which the room occupancy power on feature should be disabled
-        /// </summary>
-        protected DateTime RoomOccupancyPowerOnEnd;
-
-        /// <summary>
-        /// Should the room power on to the default source if occupied between the start and end times
-        /// </summary>
-        protected bool RoomOccupancyPowerOnIsEnabled;
-
 
         /// <summary>
         /// 
@@ -239,16 +225,6 @@ namespace PepperDash.Essentials
                 Debug.Console(1, this, "Notice: Occupancy Detected");
                 // Reset the timer when the room is occupied
                 RoomVacancyShutdownTimer.Cancel();
-
-                if(RoomOccupancyPowerOnIsEnabled)
-                {
-                    var currentTime = DateTime.Now.TimeOfDay;
-
-                    if (currentTime.CompareTo(RoomOccpuancyPowerOnStart.TimeOfDay) > 0 && RoomOccupancyPowerOnEnd.TimeOfDay.CompareTo(currentTime) > 0)
-                    {
-                        PowerOnToDefaultOrLastSource();
-                    }
-                }
             }
         }
 
@@ -257,7 +233,7 @@ namespace PepperDash.Essentials
         /// </summary>
         void SetUpOccupancyRoomOnEventsInScheduler()
         {
-
+            
         }
 
         /// <summary>
