@@ -47,6 +47,11 @@ namespace PepperDash.Essentials {
 				Debug.Console(2, "Launch essentialstvone");
 				return new EssentialsTVOne(key, name, properties);
 			}
+			else if (typeName == "essentialslighting")
+			{
+				Debug.Console(2, "Launch essentialslighting");
+				return new EssentialsLightsBridge(key, name, properties);
+			}
 			return null;
 			}
 		}
