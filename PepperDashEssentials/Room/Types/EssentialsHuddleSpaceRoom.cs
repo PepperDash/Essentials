@@ -212,10 +212,13 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Routes the default source item, if any
         /// </summary>
-        public bool RunDefaultPresentRoute()
+        public override bool RunDefaultPresentRoute()
         {
-			if(DefaultSourceItem == null)
-				return false;
+            if (DefaultSourceItem == null)
+            {
+                Debug.Console(0, this, "Unable to run default present route, DefaultSourceItem is null.");
+                return false;
+            }
 
             RunRouteAction(DefaultSourceItem);
 			return true;

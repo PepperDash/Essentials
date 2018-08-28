@@ -21,6 +21,11 @@ namespace PepperDash.Essentials
         /// </summary>
         public BoolFeedback OnFeedback { get; private set; }
 
+        /// <summary>
+        /// Fires when the RoomOccupancy object is set
+        /// </summary>
+        public event EventHandler<EventArgs> RoomOccupancyIsSet;
+
         public BoolFeedback IsWarmingUpFeedback { get; private set; }
         public BoolFeedback IsCoolingDownFeedback { get; private set; }
 
@@ -111,6 +116,12 @@ namespace PepperDash.Essentials
 
             IsWarmingUpFeedback = new BoolFeedback(IsWarmingFeedbackFunc);
             IsCoolingDownFeedback = new BoolFeedback(IsCoolingFeedbackFunc);
+
+            AddPostActivationAction(() =>
+            {
+                if (RoomOccupancy != null)
+                    OnRoomOccupancyIsSet();
+            });
         }
 
         void RoomVacancyShutdownPromptTimer_HasFinished(object sender, EventArgs e)
@@ -204,13 +215,31 @@ namespace PepperDash.Essentials
 
             RoomOccupancy = statusProvider;
 
+            OnRoomOccupancyIsSet();
+
+            RoomOccupancy.RoomIsOccupiedFeedback.OutputChange -= RoomIsOccupiedFeedback_OutputChange;
             RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
+
+            Debug.Console(0, this, "Room Occupancy set to device: '{0}'", (statusProvider as Device).Key);
         }
+
+        void OnRoomOccupancyIsSet()
+        {
+            var handler = RoomOccupancyIsSet;
+            if (handler != null)
+                handler(this, new EventArgs());
+        }
+
+        /// <summary>
+        /// To allow base class to power room on to last source
+        /// </summary>
+        public abstract void PowerOnToDefaultOrLastSource();
 
         /// <summary>
         /// To allow base class to power room on to default source
         /// </summary>
-        public abstract void PowerOnToDefaultOrLastSource();
+        /// <returns></returns>
+        public abstract bool RunDefaultPresentRoute();
 
         void RoomIsOccupiedFeedback_OutputChange(object sender, EventArgs e)
         {
@@ -226,14 +255,6 @@ namespace PepperDash.Essentials
                 // Reset the timer when the room is occupied
                 RoomVacancyShutdownTimer.Cancel();
             }
-        }
-
-        /// <summary>
-        /// Sets up events in the scheduler for the start and end times of the appropriate days to enable and disable the RoomOccupancyPowerOnIsEnabled flag
-        /// </summary>
-        void SetUpOccupancyRoomOnEventsInScheduler()
-        {
-            
         }
 
         /// <summary>

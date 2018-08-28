@@ -283,10 +283,11 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Routes the default source item, if any. Returns true when default route exists
         /// </summary>
-        public bool RunDefaultPresentRoute()
+        public override bool RunDefaultPresentRoute()
         {
-			//if (DefaultSourceItem != null)
+			if (DefaultSourceItem != null)
                 RunRouteAction(DefaultSourceItem);
+
             return DefaultSourceItem != null;
         }
 

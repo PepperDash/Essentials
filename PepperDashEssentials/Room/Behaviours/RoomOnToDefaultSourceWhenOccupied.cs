@@ -43,19 +43,21 @@ namespace PepperDash.Essentials.Room.Behaviours
         public RoomOnToDefaultSourceWhenOccupied(string key, RoomOnToDefaultSourceWhenOccupiedConfig config) 
             : base(key)
         {
-
-            CrestronConsole.AddNewConsoleCommand((o) => FeatureEventGroup.ClearAllEvents(), "ClearAllEvents", "Clears all scheduled events for this group", ConsoleAccessLevelEnum.AccessAdministrator);
-
             Config = config;
 
             FeatureEventGroup = new ScheduledEventGroup(this.Key);
 
             FeatureEventGroup.RetrieveAllEvents();
 
+            // Add to the global class for tracking
+            //Global.Scheduler.AddEventGroup(FeatureEventGroup);
+
             AddPostActivationAction(() =>
             {
-                if (Room.RoomOccupancy != null)
-                    Room.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(RoomIsOccupiedFeedback_OutputChange);
+                // Subscribe to room event to know when RoomOccupancy is set and ready to be subscribed to
+                if (Room != null)
+                    Room.RoomOccupancyIsSet += new EventHandler<EventArgs>(RoomOccupancyIsSet);
+
                 else
                     Debug.Console(1, this, "Room has no RoomOccupancy object set");
 
@@ -74,11 +76,6 @@ namespace PepperDash.Essentials.Room.Behaviours
 
             if (Room != null)
             {
- 
-
-                // Creates the event group and adds it to the Global Scheduler list
-                //Global.Scheduler.AddEventGroup(FeatureEventGroup);
-
                 try
                 {
                     FeatureEnabledTime = DateTime.Parse(Config.OccupancyStartTime);
@@ -127,6 +124,21 @@ namespace PepperDash.Essentials.Room.Behaviours
             return base.CustomActivate();
         }
 
+        /// <summary>
+        /// Subscribe to feedback from RoomIsOccupiedFeedback on Room
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void RoomOccupancyIsSet(object sender, EventArgs e)
+        {
+            if (Room.RoomOccupancy != null)
+            {
+                Room.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange -= RoomIsOccupiedFeedback_OutputChange;
+                Room.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(RoomIsOccupiedFeedback_OutputChange);
+                Debug.Console(1, this, "Subscribed to RoomOccupancy status from: '{0}'", Room.Key);
+            }
+        }
+
         void FeatureEventGroup_UserGroupCallBack(ScheduledEvent SchEvent, ScheduledEventCommon.eCallbackReason type)
         {
             if (type == ScheduledEventCommon.eCallbackReason.NormalExpiration)
@@ -136,13 +148,13 @@ namespace PepperDash.Essentials.Room.Behaviours
                     if (Config.EnableRoomOnWhenOccupied)
                         FeatureEnabled = true;
 
-                    Debug.Console(1, this, "*****Feature Enabled.*****");
+                    Debug.Console(1, this, "*****Feature Enabled by event.*****");
                 }
                 else if (SchEvent.Name == FeatureDisableEventName)
                 {
                     FeatureEnabled = false;
 
-                    Debug.Console(1, this, "*****Feature Disabled.*****");
+                    Debug.Console(1, this, "*****Feature Disabled by event.*****");
                 }
             }
         }
@@ -159,7 +171,11 @@ namespace PepperDash.Essentials.Room.Behaviours
             {
                 if (DateTime.Now.CompareTo(FeatureEnabledTime) > 0 && FeatureDisabledTime.CompareTo(DateTime.Now) >= 0)
                 {
-                    enabled = true;
+                    if (SchedulerUtilities.CheckIfDayOfWeekMatchesRecurrenceDays(DateTime.Now, FeatureEnableEvent.Recurrence.RecurrenceDays))
+                    {
+                        Debug.Console(1, this, "*****Feature Enabled by startup check.*****");
+                        enabled = true;
+                    }
                 }
             }
             return enabled;
@@ -172,6 +188,7 @@ namespace PepperDash.Essentials.Room.Behaviours
         /// <param name="e"></param>
         void RoomIsOccupiedFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
+            Debug.Console(1, this, "RoomIsOccupiedFeeback.OutputChange event fired. e.BoolValue: {0}", e.BoolValue);
             if(e.BoolValue)
             {
                 // Occupancy detected
@@ -179,8 +196,11 @@ namespace PepperDash.Essentials.Room.Behaviours
                 if (FeatureEnabled)
                 {
                     // Check room power state first
-                    if(!Room.OnFeedback.BoolValue)
-                        Room.PowerOnToDefaultOrLastSource();
+                    if (!Room.OnFeedback.BoolValue)
+                    {
+                        Debug.Console(1, this, "Powering Room on to default source");
+                        Room.RunDefaultPresentRoute();
+                    }
                 }
             }
         }
@@ -206,17 +226,34 @@ namespace PepperDash.Essentials.Room.Behaviours
             {
                 schEvent.Description = "Enables the RoomOnToDefaultSourceWhenOccupiedFeature";
 
+                var eventRecurrennce = CalculateDaysOfWeekRecurrence();
+
+                var eventTime = new DateTime();
+
                 // Check to make sure the date for this event is in the future
                 if (DateTime.Now.CompareTo(FeatureEnabledTime) > 0)
-                    schEvent.DateAndTime.SetAbsoluteEventTime(FeatureEnabledTime.AddDays(1));
+                    eventTime = FeatureEnabledTime.AddDays(1);
                 else
-                    schEvent.DateAndTime.SetAbsoluteEventTime(FeatureEnabledTime);
+                    eventTime = FeatureEnabledTime;
+
+                Debug.Console(1, this, "eventTime (before recurrence check): {0}", eventTime);
+
+                // Check day of week against recurrence days and move date ahead as necessary to avoid throwing an exception by trying to set the event
+                // start date on a day of the week that doesn't match teh recurrence values
+                while(!SchedulerUtilities.CheckIfDayOfWeekMatchesRecurrenceDays(eventTime, eventRecurrennce))
+                {
+                    eventTime = eventTime.AddDays(1);
+                    Debug.Console(1, this, "eventTime does not fall on a recurrence weekday.  eventTime: {0}", eventTime);
+                }
+
+                schEvent.DateAndTime.SetAbsoluteEventTime(eventTime);
 
                 Debug.Console(1, this, "Event '{0}' Absolute time set to {1}", schEvent.Name, schEvent.DateAndTime.ToString());
 
                 CalculateAndSetAcknowledgeExpirationTimeout(schEvent, FeatureEnabledTime, FeatureDisabledTime);
 
-                schEvent.Recurrence.Weekly((ScheduledEventCommon.eWeekDays)CalculateDaysEnum());
+                schEvent.Recurrence.Weekly(eventRecurrennce);
+
             }
             else if (schEvent.Name == FeatureDisableEventName)
             {
@@ -235,6 +272,8 @@ namespace PepperDash.Essentials.Room.Behaviours
                 schEvent.Recurrence.Daily();
             }
         }
+
+
 
         void CalculateAndSetAcknowledgeExpirationTimeout(ScheduledEvent schEvent, DateTime time1, DateTime time2)
         {
@@ -263,6 +302,40 @@ namespace PepperDash.Essentials.Room.Behaviours
         }
 
         /// <summary>
+        /// Checks existing event to see if it matches the execution time
+        /// </summary>
+        /// <param name="existingEvent"></param>
+        /// <returns></returns>
+        bool CheckExistingEventTimeForMatch(ScheduledEvent existingEvent, DateTime newTime)
+        {
+            bool isMatch = true;
+
+            // Check to see if hour and minute match
+            if (existingEvent.DateAndTime.Hour != newTime.Hour || existingEvent.DateAndTime.Minute != newTime.Minute)
+                return false;
+
+
+            return isMatch;
+        }
+
+        /// <summary>
+        /// Checks existing event to see if it matches the recurrence days
+        /// </summary>
+        /// <param name="existingEvent"></param>
+        /// <param name="eWeekdays"></param>
+        /// <returns></returns>
+        bool CheckExistingEventRecurrenceForMatch(ScheduledEvent existingEvent, ScheduledEventCommon.eWeekDays eWeekdays)
+        {
+            bool isMatch = true;
+
+            // Check to see if recurrence matches
+            if (eWeekdays != existingEvent.Recurrence.RecurrenceDays)
+                return false;
+
+            return isMatch;
+        }
+
+        /// <summary>
         /// Adds the Enable event to the local event group and sets its properties based on config
         /// </summary>
         void AddEnableEventToGroup()
@@ -273,11 +346,21 @@ namespace PepperDash.Essentials.Room.Behaviours
             }
             else
             {
+                // Check if existing event has same time and recurrence as config values
+
                 FeatureEnableEvent = FeatureEventGroup.ScheduledEvents[FeatureEnableEventName];
                 Debug.Console(1, this, "Enable event already found in group");
 
-                // TODO: Check config times and days against DateAndTime of existing event.  If different, may need to remove event and recreate?
+                // Check config times and days against DateAndTime of existing event.  If different, delete existing event and create new event
+                if(!CheckExistingEventTimeForMatch(FeatureEnableEvent, FeatureEnabledTime) || !CheckExistingEventRecurrenceForMatch(FeatureEnableEvent, CalculateDaysOfWeekRecurrence()))
+                {
+                    Debug.Console(1, this, "Existing event does not match new config properties. Deleting exisiting event: '{0}'", FeatureEnableEvent.Name);
+                    FeatureEventGroup.DeleteEvent(FeatureEnableEvent);
 
+                    FeatureEnableEvent = null;
+
+                    CreateEvent(FeatureEnableEvent, FeatureEnableEventName);
+                }
             }
 
         }
@@ -296,34 +379,43 @@ namespace PepperDash.Essentials.Room.Behaviours
                 FeatureDisableEvent = FeatureEventGroup.ScheduledEvents[FeatureDisableEventName];
                 Debug.Console(1, this, "Disable event already found in group");
 
-                // TODO: Check config times and days against DateAndTime of existing event.  If different, may need to remove event and recreate?
-            }
+                // Check config times against DateAndTime of existing event.  If different, delete existing event and create new event
+                if(!CheckExistingEventTimeForMatch(FeatureDisableEvent, FeatureDisabledTime))
+                {
+                    Debug.Console(1, this, "Existing event does not match new config properties. Deleting exisiting event: '{0}'", FeatureDisableEvent.Name);
 
+                    FeatureEventGroup.DeleteEvent(FeatureDisableEvent);
+
+                    FeatureDisableEvent = null;
+
+                    CreateEvent(FeatureDisableEvent, FeatureDisableEventName);
+                }
+            }
         }
 
 
         /// <summary>
-        /// Calculates the correct enum value for the event recurrence based on the config values
+        /// Calculates the correct bitfield enum value for the event recurrence based on the config values
         /// </summary>
         /// <returns></returns>
-        ScheduledEventCommon.eWeekDays CalculateDaysEnum()
+        ScheduledEventCommon.eWeekDays CalculateDaysOfWeekRecurrence()
         {
             ScheduledEventCommon.eWeekDays value = new ScheduledEventCommon.eWeekDays();
 
             if (Config.EnableSunday)
-                value = value + (int)ScheduledEventCommon.eWeekDays.Sunday;
+                value = value | ScheduledEventCommon.eWeekDays.Sunday;
             if (Config.EnableMonday)
-                value = value + (int)ScheduledEventCommon.eWeekDays.Monday;
+                value = value | ScheduledEventCommon.eWeekDays.Monday;
             if (Config.EnableTuesday)
-                value = value + (int)ScheduledEventCommon.eWeekDays.Tuesday;
+                value = value | ScheduledEventCommon.eWeekDays.Tuesday;
             if (Config.EnableWednesday)
-                value = value + (int)ScheduledEventCommon.eWeekDays.Wednesday;
+                value = value | ScheduledEventCommon.eWeekDays.Wednesday;
             if (Config.EnableThursday)
-                value = value + (int)ScheduledEventCommon.eWeekDays.Thursday;
+                value = value | ScheduledEventCommon.eWeekDays.Thursday;
             if (Config.EnableFriday)
-                value = value + (int)ScheduledEventCommon.eWeekDays.Friday;
+                value = value | ScheduledEventCommon.eWeekDays.Friday;
             if (Config.EnableSaturday)
-                value = value + (int)ScheduledEventCommon.eWeekDays.Saturday;
+                value = value | ScheduledEventCommon.eWeekDays.Saturday;
 
             return value;
         }
