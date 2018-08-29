@@ -79,7 +79,30 @@ namespace PepperDash.Essentials {
 							ApiEisc.Eisc.SetSigTrueAction(ApiMap.presets[x], () => Dsp.RunPresetNumber(x));
 							x++;
 						}
+						foreach (var dialer in Dsp.Dialers)
+						{
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Keypad0, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Num0));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Keypad1, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Num1));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Keypad2, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Num2));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Keypad3, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Num3));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Keypad4, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Num4));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Keypad5, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Num5));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Keypad6, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Num6));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Keypad7, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Num7));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Keypad8, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Num8));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Keypad9, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Num9));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.KeypadStar, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Star));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.KeypadPound, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Pound));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.KeypadClear, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Clear));
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.KeypadBackspace, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Backspace));
 
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Dial, () => dialer.Value.Dial());
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.DoNotDisturbToggle, () => dialer.Value.ToggleDoNotDisturb());
+
+							dialer.Value.DoNoDisturbFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.DoNotDisturbToggle]);
+							dialer.Value.OffHookFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.Dial]);
+							dialer.Value.DialStringFeedback.LinkInputSig(ApiEisc.Eisc.StringInput[ApiMap.DialString]);
+						}
 					}
 				}
 
@@ -112,6 +135,23 @@ namespace PepperDash.Essentials {
 		public Dictionary<uint, ushort> channelVolumeUp;
 		public Dictionary<uint, ushort> channelVolumeDown;
 		public Dictionary<uint, ushort> presets;
+		public ushort DialString = 3100;
+		public ushort Keypad0 = 3110;
+		public ushort Keypad1 = 3111;
+		public ushort Keypad2 = 3112;
+		public ushort Keypad3 = 3113;
+		public ushort Keypad4 = 3114;
+		public ushort Keypad5 = 3115;
+		public ushort Keypad6 = 3116;
+		public ushort Keypad7 = 3117;
+		public ushort Keypad8 = 3118;
+		public ushort Keypad9 = 3119;
+		public ushort KeypadStar = 3120;
+		public ushort KeypadPound = 3121;
+		public ushort KeypadClear = 3122;
+		public ushort KeypadBackspace = 3123;
+		public ushort Dial = 3124;
+		public ushort DoNotDisturbToggle = 3132;
 
 		public EssentialDspApiMap() {
 			channelMuteToggle = new Dictionary<uint, ushort>();
