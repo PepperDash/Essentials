@@ -592,7 +592,7 @@ namespace PepperDash.Essentials
             EndMeetingButtonSig.BoolValue = true;
             ShareButtonSig.BoolValue = false;
 
-            if (CurrentRoom.ShutdownType == eShutdownType.Manual)
+            if (CurrentRoom.ShutdownType == eShutdownType.Manual || CurrentRoom.ShutdownType == eShutdownType.Vacancy)
             {
                 PowerDownModal = new ModalDialog(TriList);
                 var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);

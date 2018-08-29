@@ -50,7 +50,7 @@ namespace PepperDash.Essentials.Room.Behaviours
             FeatureEventGroup.RetrieveAllEvents();
 
             // Add to the global class for tracking
-            //Global.Scheduler.AddEventGroup(FeatureEventGroup);
+            Scheduler.AddEventGroup(FeatureEventGroup);
 
             AddPostActivationAction(() =>
             {
