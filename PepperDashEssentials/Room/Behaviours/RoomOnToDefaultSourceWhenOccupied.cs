@@ -273,8 +273,6 @@ namespace PepperDash.Essentials.Room.Behaviours
             }
         }
 
-
-
         void CalculateAndSetAcknowledgeExpirationTimeout(ScheduledEvent schEvent, DateTime time1, DateTime time2)
         {
             Debug.Console(1, this, "time1.Hour = {0}", time1.Hour);
@@ -421,7 +419,7 @@ namespace PepperDash.Essentials.Room.Behaviours
         }
 
         /// <summary>
-        /// Callback for event that enables feature
+        /// Callback for event that enables feature.  Enables feature if config property is true
         /// </summary>
         /// <param name="SchEvent"></param>
         /// <param name="type"></param>
@@ -437,7 +435,7 @@ namespace PepperDash.Essentials.Room.Behaviours
         }
 
         /// <summary>
-        /// Callback for event that enables feature
+        /// Callback for event that enables feature.  Disables feature
         /// </summary>
         /// <param name="SchEvent"></param>
         /// <param name="type"></param>

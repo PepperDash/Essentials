@@ -35,6 +35,8 @@ namespace PepperDash.Essentials
             //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
 
+            CrestronConsole.AddNewConsoleCommand(S => { ConfigWriter.WriteConfig(); }, "writeconfig", "writes the current config to a file", ConsoleAccessLevelEnum.AccessOperator);
+
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 foreach (var tl in TieLineCollection.Default)

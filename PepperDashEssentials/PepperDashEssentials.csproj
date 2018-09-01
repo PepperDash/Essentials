@@ -127,6 +127,7 @@
     <Compile Include="Configuration ORIGINAL\Factories\DisplayFactory.cs" />
     <Compile Include="Configuration ORIGINAL\Factories\FactoryHelper.cs" />
     <Compile Include="Config\ConfigReader.cs" />
+    <Compile Include="Config\ConfigWriter.cs" />
     <Compile Include="Config\EssentialsConfig.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Devices\Amplifier.cs" />
