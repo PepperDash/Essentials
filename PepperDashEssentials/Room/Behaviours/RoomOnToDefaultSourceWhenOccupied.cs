@@ -169,7 +169,9 @@ namespace PepperDash.Essentials.Room.Behaviours
 
             if(Config.EnableRoomOnWhenOccupied)
             {
-                if (DateTime.Now.CompareTo(FeatureEnabledTime) > 0 && FeatureDisabledTime.CompareTo(DateTime.Now) >= 0)
+                Debug.Console(1, this, "Current Time: {0} \n FeatureEnabledTime: {1} \n FeatureDisabledTime: {2}", DateTime.Now, FeatureEnabledTime, FeatureDisabledTime);
+
+                if (DateTime.Now.TimeOfDay.CompareTo(FeatureEnabledTime.TimeOfDay) >= 0 && FeatureDisabledTime.TimeOfDay.CompareTo(DateTime.Now.TimeOfDay) > 0)
                 {
                     if (SchedulerUtilities.CheckIfDayOfWeekMatchesRecurrenceDays(DateTime.Now, FeatureEnableEvent.Recurrence.RecurrenceDays))
                     {

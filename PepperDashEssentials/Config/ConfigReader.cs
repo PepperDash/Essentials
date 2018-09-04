@@ -22,38 +22,73 @@ namespace PepperDash.Essentials
 			Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading unmerged system/template portal configuration file.");
 			try
 			{
-                var filePath = Global.FilePathPrefix + "configurationFile.json";
+                // Check for local config file first
+                var filePath = Global.FilePathPrefix + ConfigWriter.LocalConfigFolder + Global.DirectorySeparator + "configurationFile.json";
 
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to load config file: '{0}'", filePath);
+                bool localConfigFound = false;
 
-                if (!File.Exists(filePath))
-				{
-                        Debug.Console(0, Debug.ErrorLogLevel.Error, 
-                            "ERROR: Configuration file not present. Please load file to {0} and reset program", filePath);
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to load Local config file: '{0}'", filePath);
+
+                // Check for local config directory first
+                if (Directory.Exists(Global.FilePathPrefix + ConfigWriter.LocalConfigFolder))
+                {
+                    if (!File.Exists(filePath))
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                            "Local Configuration file not present.", filePath);
+                    }
+                    else
+                        localConfigFound = true;
+                }
+
+                // Check for Portal Config
+                if(!localConfigFound)
+                {
+                    filePath = Global.FilePathPrefix + "configurationFile.json";
+
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to load Portal config file: '{0}'", filePath);
+
+                    if (!File.Exists(filePath))
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                        "ERROR: Local Configuration file not present. Please load file to {0} and reset program", filePath);
                         return false;
-				}
+                    }
+                }
 
-				using (StreamReader fs = new StreamReader(filePath))
-				{
-					var doubleObj = JObject.Parse(fs.ReadToEnd());
-					ConfigObject = MergeConfigs(doubleObj).ToObject<EssentialsConfig>();
-
-                    // Extract SystemUrl and TemplateUrl into final config output
-
-                    if (doubleObj["system_url"] != null)
+                // Read the file
+                using (StreamReader fs = new StreamReader(filePath))
+                {
+                    if (localConfigFound)
                     {
-                        ConfigObject.SystemUrl = doubleObj["system_url"].Value<string>();
+                        ConfigObject = JObject.Parse(fs.ReadToEnd()).ToObject<EssentialsConfig>();
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Successfully Loaded Local Config");
+
+                        return true;
+                    }
+                    else
+                    {
+                        var doubleObj = JObject.Parse(fs.ReadToEnd());
+                        ConfigObject = MergeConfigs(doubleObj).ToObject<EssentialsConfig>();
+
+                        // Extract SystemUrl and TemplateUrl into final config output
+
+                        if (doubleObj["system_url"] != null)
+                        {
+                            ConfigObject.SystemUrl = doubleObj["system_url"].Value<string>();
+                        }
+
+                        if (doubleObj["template_url"] != null)
+                        {
+                            ConfigObject.TemplateUrl = doubleObj["template_url"].Value<string>();
+                        }
                     }
 
-                    if (doubleObj["template_url"] != null)
-                    {
-                        ConfigObject.TemplateUrl= doubleObj["template_url"].Value<string>();
-                    }
-				}
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Successfully Loaded Merged Config");
 
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Successfully Loaded Merged Config");
-
-				return true;
+                    return true;
+                }
 			}
 			catch (Exception e)
 			{

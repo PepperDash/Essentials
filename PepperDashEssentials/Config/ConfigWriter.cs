@@ -14,6 +14,7 @@ namespace PepperDash.Essentials
 {
     public class ConfigWriter
     {
+        public const string LocalConfigFolder = "LocalConfig";
 
         public static bool WriteConfig()
         {
@@ -24,7 +25,7 @@ namespace PepperDash.Essentials
             var fileLock = new CCriticalSection();
 
 
-            var filePath = Global.FilePathPrefix + "LocalConfig" + Global.DirectorySeparator + "configurationFile.json";
+            var filePath = Global.FilePathPrefix + LocalConfigFolder + Global.DirectorySeparator + "configurationFile.json";
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to write config file: '{0}'", filePath);
 
