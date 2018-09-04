@@ -474,12 +474,51 @@ namespace PepperDash.Essentials
 				WSClient = new WebSocketClient();
 			}
 			WSClient.URL = string.Format("wss://{0}/system/join/{1}", Config.ServerUrl, this.SystemUuid);
+			WSClient.ConnectionCallBack = ConnectCallback;
+			WSClient.DisconnectCallBack = DisconnectCallback;
 			WSClient.Connect();
 			Debug.Console(0, this, "Websocket connected");
 			WSClient.ReceiveCallBack = WebsocketReceiveCallback;
 			//WSClient.SendCallBack = WebsocketSendCallback;
 			WSClient.ReceiveAsync();
         }
+
+		/// <summary>
+		/// Waits two and goes again
+		/// </summary>
+		void ReconnectStreamClient()
+		{
+			WSClient = null;
+			new CTimer(o => ConnectStreamClient(), 2000);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="code"></param>
+		/// <returns></returns>
+		int ConnectCallback(WebSocketClient.WEBSOCKET_RESULT_CODES code)
+		{
+			if (code != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
+			{
+				Debug.Console(1, this, "Web socket connection failed: {0}", code);
+				ReconnectStreamClient();
+			}
+			return 0;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="code"></param>
+		/// <returns></returns>
+		int DisconnectCallback(WebSocketClient.WEBSOCKET_RESULT_CODES code, object o)
+		{
+			Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Websocket disconnected with code: {0}", code);
+			ReconnectStreamClient();
+			return 0;
+		}
+
 
 		/// <summary>
 		/// Resets reconnect timer and updates usercode
@@ -619,7 +658,7 @@ namespace PepperDash.Essentials
 										}
 									case "held":
 										{
-											if (!PushedActions.ContainsKey(type))
+											if (PushedActions.ContainsKey(type))
 											{
 												PushedActions[type].Reset(ButtonHeartbeatInterval, ButtonHeartbeatInterval);
 											}

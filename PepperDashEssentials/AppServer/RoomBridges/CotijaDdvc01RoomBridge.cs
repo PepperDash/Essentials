@@ -422,6 +422,7 @@ namespace PepperDash.Essentials.Room.Cotija
 					break;
 				var icon = EISC.StringOutput[651 + i].StringValue;
 				var key = EISC.StringOutput[671 + i].StringValue;
+
 				var type = EISC.StringOutput[701 + i].StringValue;
 
 				Debug.Console(0, this, "Adding source {0} '{1}'", key, name);
@@ -430,6 +431,7 @@ namespace PepperDash.Essentials.Room.Cotija
 					Name = name,
 					Order = (int)i + 1,
 					SourceKey = key,
+					Type = eSourceListItemType.Route
 				};
 				newSl.Add(key, newSLI);
                 

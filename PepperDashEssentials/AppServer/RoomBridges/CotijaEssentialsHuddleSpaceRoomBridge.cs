@@ -74,7 +74,7 @@ namespace PepperDash.Essentials
 			{
 				Parent.AddAction(string.Format(@"/room/{0}/volumes/master/level", Room.Key), new Action<ushort>(u =>
 					(volumeRoom.CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(u)));
-				Parent.AddAction(string.Format(@"/room/{0}/volumes/master/mute", Room.Key), new Action(() => 
+				Parent.AddAction(string.Format(@"/room/{0}/volumes/master/muteToggle", Room.Key), new Action(() => 
 					volumeRoom.CurrentVolumeControls.MuteToggle()));
 				volumeRoom.CurrentVolumeDeviceChange += new EventHandler<VolumeDeviceChangeEventArgs>(Room_CurrentVolumeDeviceChange);
 
