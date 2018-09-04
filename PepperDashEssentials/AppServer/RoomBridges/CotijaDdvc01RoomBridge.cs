@@ -260,7 +260,8 @@ namespace PepperDash.Essentials.Room.Cotija
 
             foreach (var item in sourceJoinMap)
             {
-                Parent.AddAction(string.Format("{0}{1}", prefix, item.Key), new PressAndHoldAction(b => EISC.SetBool(item.Value, b)));
+				var join = item.Value;
+                Parent.AddAction(string.Format("{0}{1}", prefix, item.Key), new PressAndHoldAction(b => EISC.SetBool(join, b)));
             }
 		}
 
