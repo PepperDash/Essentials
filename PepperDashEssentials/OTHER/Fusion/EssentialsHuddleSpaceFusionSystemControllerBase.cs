@@ -31,10 +31,14 @@ namespace PepperDash.Essentials.Fusion
         //public event EventHandler<MeetingChangeEventArgs> MeetingEndWarning;
         //public event EventHandler<MeetingChangeEventArgs> NextMeetingBeginWarning;
 
+        public event EventHandler<EventArgs> RoomInfoChange;
+
 		protected FusionRoom FusionRoom;
 		protected EssentialsRoomBase Room;
 		Dictionary<Device, BoolInputSig> SourceToFeedbackSigs = 
 			new Dictionary<Device, BoolInputSig>();
+
+        public RoomInformation RoomInfo {get; protected set;}
 
 		StatusMonitorCollection ErrorMessageRollUp;
 
@@ -335,6 +339,8 @@ namespace PepperDash.Essentials.Fusion
 			FusionRoom.ErrorMessage.InputSig.StringValue =
 				"3: 7 Errors: This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;";
 
+            SetUpEthernetValues();
+
             GetProcessorEthernetValues();
 
             GetSystemInfo();
@@ -364,7 +370,7 @@ namespace PepperDash.Essentials.Fusion
             systemReboot.OutputSig.SetSigFalseAction(() => CrestronConsole.SendControlSystemCommand("reboot", ref response));
         }
 
-        protected void GetProcessorEthernetValues()
+        protected void SetUpEthernetValues()
         {
             Ip1 = FusionRoom.CreateOffsetStringSig(50, "Info - Processor - IP 1", eSigIoMask.InputSigOnly);
             Ip2 = FusionRoom.CreateOffsetStringSig(51, "Info - Processor - IP 2", eSigIoMask.InputSigOnly);
@@ -377,8 +383,10 @@ namespace PepperDash.Essentials.Fusion
             Mac2 = FusionRoom.CreateOffsetStringSig(58, "Info - Processor - MAC 2", eSigIoMask.InputSigOnly);
             NetMask1 = FusionRoom.CreateOffsetStringSig(59, "Info - Processor - Net Mask 1", eSigIoMask.InputSigOnly);
             NetMask2 = FusionRoom.CreateOffsetStringSig(60, "Info - Processor - Net Mask 2", eSigIoMask.InputSigOnly);
+        }
 
-            // Interface =0
+        protected void GetProcessorEthernetValues()
+        {
             Ip1.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
             Gateway.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_ROUTER, 0);
             Hostname.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
@@ -419,6 +427,19 @@ namespace PepperDash.Essentials.Fusion
 
             Firmware.InputSig.StringValue = InitialParametersClass.FirmwareVersion;
             
+        }
+
+        protected void GetCustomProperties()
+        {
+            try
+            {
+                if (FusionRoom.IsOnline)
+                {
+                    string fusionRoomCustomPropertiesRequest = @"<RequestRoomConfiguration><RequestID>RoomConfigurationRequest</RequestID><CustomProperties><Property></Property></CustomProperties></RequestRoomConfiguration>";
+
+                    FusionRoom.ExtenderFusionRoomDataReservedSigs.RoomConfigQuery.StringValue = fusionRoomCustomPropertiesRequest;
+                }
+            }
         }
 
         void GetTouchpanelInfo()
@@ -466,6 +487,7 @@ namespace PepperDash.Essentials.Fusion
 
                 FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = actionRequest;
 
+                GetCustomProperties();
 
                 // Request current Fusion Server Time
                 RequestLocalDateTime(null);
@@ -749,6 +771,78 @@ namespace PepperDash.Essentials.Fusion
                     Debug.Console(1, this, "Error parsing LocalDateTimeQueryResponse: {0}", e);
                 }
             }
+            else if (args.Sig == FusionRoom.ExtenderFusionRoomDataReservedSigs.RoomConfigResponse)
+            {
+                // Room info response with custom properties
+
+                string roomConfigResponseArgs = args.Sig.StringValue.Replace("&", "and");
+
+                try
+                {
+                    XmlDocument roomConfigResponse = new XmlDocument();
+
+                    roomConfigResponse.LoadXml(roomConfigResponseArgs);
+
+                    var requestRoomConfiguration = roomConfigResponse["RoomConfigurationResponse"];
+
+                    if (requestRoomConfiguration != null)
+                    {
+                        foreach (XmlElement e in roomConfigResponse.FirstChild.ChildNodes)
+                        {
+                            if (e.Name == "RoomInformation")
+                            {
+                                XmlReader roomInfo = new XmlReader(e.OuterXml);
+
+                                RoomInfo = CrestronXMLSerialization.DeSerializeObject<RoomInformation>(roomInfo);
+                            }
+                            else if (e.Name == "CustomFields")
+                            {
+                                foreach (XmlElement el in e)
+                                {
+                                    FusionCustomProperty customProperty = new FusionCustomProperty();
+
+                                    if (el.Name == "CustomField")
+                                    {
+                                        customProperty.ID = el.Attributes["ID"].Value;
+                                    }
+
+                                    foreach (XmlElement elm in el)
+                                    {
+                                        if (elm.Name == "CustomFieldName")
+                                        {
+                                            customProperty.CustomFieldName = elm.InnerText;
+                                        }
+                                        if (elm.Name == "CustomFieldType")
+                                        {
+                                            customProperty.CustomFieldType = elm.InnerText;
+                                        }
+                                        if (elm.Name == "CustomFieldValue")
+                                        {
+                                            customProperty.CustomFieldValue = elm.InnerText;
+                                        }
+                                    }
+                                    if (!RoomInfo.FusionCustomProperties.ContainsKey(customProperty.ID))
+                                        RoomInfo.FusionCustomProperties.Add(customProperty.ID, customProperty);
+                                    else
+                                        RoomInfo.FusionCustomProperties[customProperty.ID] = customProperty;
+                                }
+                            }
+                        }
+
+                        var handler = RoomInfoChange;
+                        if (handler != null)
+                            handler(this, new EventArgs());
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(1, this, "Error parsing Custom Properties response: {0}", e);
+                }
+                //PrintRoomInfo();
+                //getRoomInfoBusy = false;
+                //_DynFusion.API.EISC.BooleanInput[Constants.GetRoomInfo].BoolValue = getRoomInfoBusy;
+            }
+            
         }
 
         /// <summary>
@@ -1462,5 +1556,29 @@ namespace PepperDash.Essentials.Fusion
 		}
 	}
 
-   
+    public class RoomInformation
+    {
+        public string ID { get; set; }
+        public string Name { get; set; }
+        public string Location { get; set; }
+        public string Description { get; set; }
+        public string TimeZone { get; set; }
+        public string WebcamURL { get; set; }
+        public string BacklogMsg { get; set; }
+        public string SubErrorMsg { get; set; }
+        public string EmailInfo { get; set; }
+        public Dictionary<string, FusionCustomProperty> FusionCustomProperties { get; set; }
+
+        public RoomInformation()
+        {
+            FusionCustomProperties = new Dictionary<string,FusionCustomProperty>();
+        }
+    }
+    public class FusionCustomProperty
+    {
+        public string ID { get; set; }
+        public string CustomFieldName { get; set; }
+        public string CustomFieldType { get; set; }
+        public string CustomFieldValue { get; set; }
+    }
 }
