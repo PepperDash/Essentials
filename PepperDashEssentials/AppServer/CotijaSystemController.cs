@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Cotija;
 
 namespace PepperDash.Essentials

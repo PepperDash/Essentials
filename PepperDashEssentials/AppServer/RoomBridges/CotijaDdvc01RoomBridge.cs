@@ -348,8 +348,8 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			//Room
 			if (co.Rooms == null)
-				co.Rooms = new List<EssentialsRoomConfig>();
-			var rm = new EssentialsRoomConfig();
+				co.Rooms = new List<DeviceConfig>();
+			var rm = new DeviceConfig();
             if (co.Rooms.Count == 0)
             {
                 Debug.Console(0, this, "Adding room to config");

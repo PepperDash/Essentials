@@ -6,6 +6,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Scheduler;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -112,16 +113,25 @@ namespace PepperDash.Essentials.Room.Behaviours
 
                 AddDisableEventToGroup();
 
-                FeatureEnabled = CheckIfFeatureShouldBeEnabled();
-
                 FeatureEventGroup.UserGroupCallBack += new ScheduledEventGroup.UserEventGroupCallBack(FeatureEventGroup_UserGroupCallBack);
 
                 FeatureEventGroup.EnableAllEvents();
+
+                FeatureEnabled = CheckIfFeatureShouldBeEnabled();
             }
             else
                 Debug.Console(1, this, "Unable to get room from Device Manager with key: {0}", Config.RoomKey);
 
             return base.CustomActivate();
+        }
+
+        /// <summary>
+        /// Returns a JObject of the device config properties as they currently exist at runtime
+        /// </summary>
+        /// <returns></returns>
+        public JToken GetLocalConfigProperties()
+        {
+            return JToken.FromObject(Config);
         }
 
         /// <summary>
@@ -173,7 +183,7 @@ namespace PepperDash.Essentials.Room.Behaviours
 
                 if (DateTime.Now.TimeOfDay.CompareTo(FeatureEnabledTime.TimeOfDay) >= 0 && FeatureDisabledTime.TimeOfDay.CompareTo(DateTime.Now.TimeOfDay) > 0)
                 {
-                    if (SchedulerUtilities.CheckIfDayOfWeekMatchesRecurrenceDays(DateTime.Now, FeatureEnableEvent.Recurrence.RecurrenceDays))
+                    if (SchedulerUtilities.CheckIfDayOfWeekMatchesRecurrenceDays(DateTime.Now, CalculateDaysOfWeekRecurrence()))
                     {
                         Debug.Console(1, this, "*****Feature Enabled by startup check.*****");
                         enabled = true;

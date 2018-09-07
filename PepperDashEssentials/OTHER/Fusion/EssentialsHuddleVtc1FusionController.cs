@@ -13,6 +13,7 @@ using Crestron.SimplSharpPro.Fusion;
 using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Devices.Common.Occupancy;
 

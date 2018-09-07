@@ -6,9 +6,11 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
+using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Room.Cotija;
 
 namespace PepperDash.Essentials
@@ -35,7 +37,7 @@ namespace PepperDash.Essentials
             //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(S => { ConfigWriter.WriteConfig(); }, "writeconfig", "writes the current config to a file", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(S => { ConfigWriter.WriteConfigFile(null); }, "writeconfig", "writes the current config to a file", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
@@ -293,7 +295,7 @@ namespace PepperDash.Essentials
 
 			foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
 			{
-				var room = roomConfig.GetRoomObject() as EssentialsRoomBase;
+                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
 				if (room != null)
 				{
                     if (room is EssentialsHuddleSpaceRoom)
