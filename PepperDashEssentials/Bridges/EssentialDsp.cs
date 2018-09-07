@@ -28,12 +28,18 @@ namespace PepperDash.Essentials {
 			}
 		public override bool CustomActivate() {
 			// Create EiscApis 
+
 			try
 			{
+				ICommunicationMonitor comm = null;
 				foreach (var device in DeviceManager.AllDevices) 
 				{
 					if (device.Key == this.Properties.connectionDeviceKey) 
 					{
+						if (!(device is ICommunicationMonitor))
+						{
+							comm = device as ICommunicationMonitor;
+						}
 						Debug.Console(2, "deviceKey {0} Matches", device.Key);
 						Dsp = DeviceManager.GetDeviceForKey(device.Key) as PepperDash.Essentials.Devices.Common.DSP.QscDsp;
 						break;
@@ -51,6 +57,10 @@ namespace PepperDash.Essentials {
 						var ApiEisc = new BridgeApiEisc(Ipid);
 						Debug.Console(2, "Connecting EiscApi {0} to {1}", ApiEisc.Ipid, Dsp.Name);
 						ushort x = 1;
+						if (comm != null)
+						{
+							comm.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.Online]);
+						}
 						foreach (var channel in Dsp.LevelControlPoints)
 						{
 							//var QscChannel = channel.Value as PepperDash.Essentials.Devices.Common.DSP.QscDspLevelControl;
@@ -127,6 +137,7 @@ namespace PepperDash.Essentials {
 
 
 	public class EssentialDspApiMap {
+		public ushort Online = 1;
 		public ushort presetString = 2000;
 		public Dictionary<uint, ushort> channelMuteToggle;
 		public Dictionary<uint, ushort> channelMuteOn;
