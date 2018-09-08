@@ -17,6 +17,7 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Devices.Common.Occupancy;
 
@@ -334,6 +335,8 @@ namespace PepperDash.Essentials.Fusion
 			FusionRoom.ErrorMessage.InputSig.StringValue =
 				"3: 7 Errors: This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;";
 
+            SetUpEthernetValues();
+
             GetProcessorEthernetValues();
 
             GetSystemInfo();
@@ -363,7 +366,7 @@ namespace PepperDash.Essentials.Fusion
             systemReboot.OutputSig.SetSigFalseAction(() => CrestronConsole.SendControlSystemCommand("reboot", ref response));
         }
 
-        protected void GetProcessorEthernetValues()
+        protected void SetUpEthernetValues()
         {
             Ip1 = FusionRoom.CreateOffsetStringSig(50, "Info - Processor - IP 1", eSigIoMask.InputSigOnly);
             Ip2 = FusionRoom.CreateOffsetStringSig(51, "Info - Processor - IP 2", eSigIoMask.InputSigOnly);
@@ -376,8 +379,10 @@ namespace PepperDash.Essentials.Fusion
             Mac2 = FusionRoom.CreateOffsetStringSig(58, "Info - Processor - MAC 2", eSigIoMask.InputSigOnly);
             NetMask1 = FusionRoom.CreateOffsetStringSig(59, "Info - Processor - Net Mask 1", eSigIoMask.InputSigOnly);
             NetMask2 = FusionRoom.CreateOffsetStringSig(60, "Info - Processor - Net Mask 2", eSigIoMask.InputSigOnly);
+        }
 
-            // Interface =0
+        protected void GetProcessorEthernetValues()
+        {
             Ip1.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
             Gateway.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_ROUTER, 0);
             Hostname.InputSig.StringValue = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);

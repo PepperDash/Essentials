@@ -189,7 +189,9 @@ namespace PepperDash.Essentials.Fusion
             FusionRoom.ErrorMessage.InputSig.StringValue =
                 "3: 7 Errors: This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;";
 
-            GetProcessorEthernetValues();
+			SetUpEthernetValues();
+			
+			GetProcessorEthernetValues();
 
             GetSystemInfo();
 

@@ -23,6 +23,8 @@ namespace PepperDash.Essentials
     {
 		WebSocketClient WSClient;
 
+		bool LinkUp;
+
 		/// <summary>
 		/// Prevents post operations from stomping on each other and getting lost
 		/// </summary>
@@ -86,7 +88,24 @@ namespace PepperDash.Essentials
 
 
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+			CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
+				
         }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="ethernetEventArgs"></param>
+		void CrestronEnvironment_EthernetEventHandler(EthernetEventArgs ethernetEventArgs)
+		{
+			Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Ethernet status change, port {0}: {1}",
+				ethernetEventArgs.EthernetAdapter, ethernetEventArgs.EthernetEventType);
+
+			if (ethernetEventArgs.EthernetEventType == eEthernetEventType.LinkDown)
+			{
+				LinkUp = false;
+			}
+		}
 
         /// <summary>
         /// Sends message to server to indicate the system is shutting down
@@ -280,8 +299,6 @@ namespace PepperDash.Essentials
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
         void RegisterSystemToServer()
         {
-
-
 			var ready = RegisterLockEvent.Wait(20000);
 			if (!ready)
 			{
@@ -318,14 +335,20 @@ namespace PepperDash.Essentials
                     request.RequestType = RequestType.Post;
                     request.Header.SetHeaderValue("Content-Type", "application/json");
                     request.ContentString = postBody;
-
-					var err = regClient.DispatchAsync(request, RegistrationConnectionCallback);
+					try
+					{
+						regClient.DispatchAsync(request, RegistrationConnectionCallback);
+					}
+					catch (Exception e)
+					{
+						Debug.Console(1, this, "Cannot register with app server: {0}", e);
+					}
                 }
 
             }
             catch (Exception e)
             {
-                Debug.Console(0, this, "ERROR: Initilizing Room: {0}", e);
+                Debug.Console(0, this, "ERROR: Initilizing app server controller: {0}", e);
 				RegisterLockEvent.Set();
 				StartReconnectTimer();
             }
@@ -345,8 +368,8 @@ namespace PepperDash.Essentials
                 string message = JsonConvert.SerializeObject(o, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 				Debug.Console(1, this, "Message TX: {0}", message);
                 var messageBytes = System.Text.Encoding.UTF8.GetBytes(message);
-				WSClient.Send(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
-				//WSClient.SendAsync(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
+				//WSClient.Send(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
+				WSClient.SendAsync(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
             }
  
         }
@@ -355,20 +378,18 @@ namespace PepperDash.Essentials
         /// Disconnects the SSE Client and stops the heartbeat timer
         /// </summary>
         /// <param name="command"></param>
-        void DisconnectStreamClient(string command)
+        void DisconnectWebsocketClient()
         {
-			//if(SseClient != null)
-			//    SseClient.Disconnect();
-
-			if (WSClient != null && WSClient.Connected)
+			Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Disconnecting websocket");
+			if (WSClient != null) // && WSClient.Connected)
+			{
 				WSClient.Disconnect();
-
-            if (ServerHeartbeatCheckTimer != null)
-            {
-                ServerHeartbeatCheckTimer.Stop();
-
-                ServerHeartbeatCheckTimer = null;
-            }
+				WSClient.SendCallBack = null;
+				WSClient.ReceiveCallBack = null;
+				WSClient.ConnectionCallBack = null;
+				WSClient.Dispose();
+				WSClient = null;
+			}
         }
         
         /// <summary>
@@ -396,10 +417,19 @@ namespace PepperDash.Essentials
                 else
                 {
 					if (resp != null)
-						Debug.Console(1, this, "Response from server: {0}\n{1}", resp.Code, err);
+					{
+						if (resp.Code == 502)
+						{
+							Debug.Console(1, this, "Cannot reach App Server behind web server. Check that service/app is running on server");
+						}
+						else
+						{
+							Debug.Console(1, this, "Error response from server: {0}\n{1}", resp.Code, err);
+						}
+					}
 					else
 					{
-						Debug.Console(1, this, "Null response received from server.");
+						Debug.Console(1, this, "No response. Server is likely unreachable");
 					}
 					StartReconnectTimer();
                 }
@@ -424,6 +454,7 @@ namespace PepperDash.Essentials
                 ServerHeartbeatCheckTimer.Stop();
                 ServerHeartbeatCheckTimer = null;
             }
+			DisconnectWebsocketClient();
             StartReconnectTimer();
         }
 
@@ -461,25 +492,55 @@ namespace PepperDash.Essentials
         }
 
 
-        /// <summary>
-        /// Connects the SSE Client
+#warning notes here
+
+		/*
+		 * Need to understand why this is being sent from a server that should not have been closing,
+		 * and also why essentials is not recovering
+		 * 
+		 [17:36:09.044]App 10:[appServer] Joining server at http://bosd-node01.pepperdash.net/mobilecontrolapi/api/system/join/02cf80a1-ce35-482c-8fa6-286457ff2826
+[17:36:13.086]App 10:[appServer] RegistrationConnectionCallback: COMPLETED
+[17:36:13.088]App 10:[appServer] Response from server: 502COMPLETED
+[17:36:18.113]App 10:[appServer] Joining server at http://bosd-node01.pepperdash.net/mobilecontrolapi/api/system/join/02cf80a1-ce35-482c-8fa6-286457ff2826
+[17:36:22.159]App 10:[appServer] RegistrationConnectionCallback: COMPLETED
+[17:36:22.160]App 10:[appServer] Response from server: 502COMPLETED
+[17:36:27.005]App 10:[ciscoSparkCodec-1] Retrieving Booking Info from Codec. Current Time: 9/6/2018 5:36:27 PM
+[17:36:27.187]App 10:[appServer] Joining server at http://bosd-node01.pepperdash.net/mobilecontrolapi/api/system/join/02cf80a1-ce35-482c-8fa6-286457ff2826
+[17:36:31.233]App 10:[appServer] RegistrationConnectionCallback: COMPLETED
+[17:36:31.234]App 10:[appServer] Response from server: 502COMPLETED
+[17:36:36.338]App 10:[appServer] Joining server at http://bosd-node01.pepperdash.net/mobilecontrolapi/api/system/join/02cf80a1-ce35-482c-8fa6-286457ff2826
+[17:36:42.151]App 10:[appServer] RegistrationConnectionCallback: COMPLETED
+[17:36:42.153]App 10:[appServer] Initializing Stream client to server.
+[17:36:42.887]App 10:[appServer] Websocket connected
+[17:36:42.916]App 10:[appServer] Joining server at http://bosd-node01.pepperdash.net/mobilecontrolapi/api/system/join/02cf80a1-ce35-482c-8fa6-286457ff2826
+[17:36:42.978]App 10:[appServer] RegistrationConnectionCallback: COMPLETED
+[17:36:42.979]App 10:[appServer] Initializing Stream client to server.
+[17:36:42.980]App 10:[appServer] Websocket connected
+[17:36:42.990]App 10:[appServer] Message RX: '{"type":"close"}'
+		 */
+
+
+		/// <summary>
+        /// Connects the Websocket Client
         /// </summary>
         /// <param name="o"></param>
         void ConnectStreamClient()
         {
             Debug.Console(0, this, "Initializing Stream client to server.");
 
-			if (WSClient == null)
+			if (WSClient != null)
 			{
-				WSClient = new WebSocketClient();
+				DisconnectWebsocketClient();
 			}
+
+			WSClient = new WebSocketClient();
 			WSClient.URL = string.Format("wss://{0}/system/join/{1}", Config.ServerUrl, this.SystemUuid);
 			WSClient.ConnectionCallBack = ConnectCallback;
 			WSClient.DisconnectCallBack = DisconnectCallback;
 			WSClient.Connect();
-			Debug.Console(0, this, "Websocket connected");
+			Debug.Console(1, this, "Websocket connected");
+			WSClient.SendCallBack = WebsocketSendCallback;
 			WSClient.ReceiveCallBack = WebsocketReceiveCallback;
-			//WSClient.SendCallBack = WebsocketSendCallback;
 			WSClient.ReceiveAsync();
         }
 
@@ -488,7 +549,6 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void ReconnectStreamClient()
 		{
-			WSClient = null;
 			new CTimer(o => ConnectStreamClient(), 2000);
 		}
 
@@ -499,6 +559,7 @@ namespace PepperDash.Essentials
 		/// <returns></returns>
 		int ConnectCallback(WebSocketClient.WEBSOCKET_RESULT_CODES code)
 		{
+			Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Websocket status change: {0}", code);
 			if (code != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
 			{
 				Debug.Console(1, this, "Web socket connection failed: {0}", code);
@@ -552,12 +613,26 @@ namespace PepperDash.Essentials
 		{
 			if (HttpDebugEnabled)
 			{
-				Debug.Console(0, this, "------ Begin HTTP Debug ---------------------------------------");
-				Debug.Console(0, this, "HTTP Response URL: {0}", r.ResponseUrl.ToString());
-				Debug.Console(0, this, "HTTP Response 'error' {0}", e);
-				Debug.Console(0, this, "HTTP Response code: {0}", r.Code);
-				Debug.Console(0, this, "HTTP Response content: \r{0}", r.ContentString);
-				Debug.Console(0, this, "------ End HTTP Debug -----------------------------------------");
+				try
+				{
+					Debug.Console(0, this, "------ Begin HTTP Debug ---------------------------------------");
+					if (r != null)
+					{
+						Debug.Console(0, this, "HTTP Response URL: {0}", r.ResponseUrl != null ? r.ResponseUrl.ToString() : "NONE");
+						Debug.Console(0, this, "HTTP Response code: {0}", r.Code);
+						Debug.Console(0, this, "HTTP Response content: \r{0}", r.ContentString);
+					}
+					else
+					{
+						Debug.Console(0, this, "No HTTP response");
+					}
+					Debug.Console(0, this, "HTTP Response 'error' {0}", e);
+					Debug.Console(0, this, "------ End HTTP Debug -----------------------------------------");
+				}
+				catch (Exception ex)
+				{
+					Debug.Console(0, this, "HttpDebugError: {0}", ex);
+				}
 			}
 		}
 
@@ -575,7 +650,7 @@ namespace PepperDash.Essentials
 			if(rx.Length > 0)
 				ParseStreamRx(rx);
 			WSClient.ReceiveAsync();
-			return 1;
+			return 0;
 		}
 
         /// <summary>
@@ -585,9 +660,11 @@ namespace PepperDash.Essentials
         /// <returns></returns>
         int WebsocketSendCallback(Crestron.SimplSharp.CrestronWebSocketClient.WebSocketClient.WEBSOCKET_RESULT_CODES result)
         {
-            Debug.Console(1, this, "SendCallback result: {0}", result);
+			if(result != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
+	            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SendCallback questionable result: {0}", result);
+		
 
-            return 1;
+            return 0;
         }
 
 		/// <summary>
@@ -617,9 +694,10 @@ namespace PepperDash.Essentials
 				}
 				else if (type == "close")
 				{
-					WSClient.Disconnect();
+					DisconnectWebsocketClient();
 
-					ServerHeartbeatCheckTimer.Stop();
+					if(ServerHeartbeatCheckTimer != null)
+						ServerHeartbeatCheckTimer.Stop();
 					// Start the reconnect timer
 					StartReconnectTimer();
 				}
