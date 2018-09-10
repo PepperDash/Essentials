@@ -416,7 +416,6 @@ namespace PepperDash.Essentials
 			WSClient = new WebSocketClient();
 			WSClient.URL = string.Format("wss://{0}/system/join/{1}", Config.ServerUrl, this.SystemUuid);
 			WSClient.ConnectionCallBack = Websocket_ConnectCallback;
-			WSClient.DisconnectCallBack = Websocket_DisconnectCallback;
 			WSClient.ConnectAsync();
 		}
 
@@ -431,15 +430,30 @@ namespace PepperDash.Essentials
 			{
 				StopServerReconnectTimer();
 				Debug.Console(1, this, "Websocket connected");
+				WSClient.DisconnectCallBack = Websocket_DisconnectCallback;
 				WSClient.SendCallBack = Websocket_SendCallback;
 				WSClient.ReceiveCallBack = Websocket_ReceiveCallback;
 				WSClient.ReceiveAsync();
 			}
 			else
 			{
-				Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Web socket connection failed: {0}", code);
+				if (code == WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_HTTP_HANDSHAKE_TOKEN_ERROR)
+				{
+					// This is the case when app server is running behind a websever and app server is down
+					Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Web socket connection failed. Check that app server is running behind web server");
+				}
+				else if (code == WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SOCKET_CONNECTION_FAILED)
+				{
+					// this will be the case when webserver is unreachable
+					Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Web socket connection failed");
+				}
+				else
+				{
+					Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Web socket connection failure: {0}", code);
+				} 
 				StartServerReconnectTimer();
 			}
+
 			return 0;
 		}
 
@@ -670,8 +684,6 @@ namespace PepperDash.Essentials
         {
 			if(result != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
 	            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SendCallback questionable result: {0}", result);
-		
-
             return 0;
         }
 
