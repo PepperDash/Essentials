@@ -302,8 +302,8 @@ namespace PepperDash.Essentials
 			var ready = RegisterLockEvent.Wait(20000);
 			if (!ready)
 			{
-				Debug.Console(1, this, "RegisterSystemToServer failed to enter after 20 seconds.  Ignoring");
-				return;
+				Debug.Console(1, this, "RegisterSystemToServer event failed to clear after 20 seconds.  Ignoring");
+				//return;
 			}
 			RegisterLockEvent.Reset();
 
@@ -335,14 +335,8 @@ namespace PepperDash.Essentials
                     request.RequestType = RequestType.Post;
                     request.Header.SetHeaderValue("Content-Type", "application/json");
                     request.ContentString = postBody;
-					try
-					{
-						regClient.DispatchAsync(request, RegistrationConnectionCallback);
-					}
-					catch (Exception e)
-					{
-						Debug.Console(1, this, "Cannot register with app server: {0}", e);
-					}
+
+					regClient.DispatchAsync(request, RegistrationConnectionCallback);
                 }
 
             }
@@ -400,7 +394,7 @@ namespace PepperDash.Essentials
         void RegistrationConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
         {
 			CheckHttpDebug(resp, err);
-			Debug.Console(1, this, "RegistrationConnectionCallback: {0}", err);
+			//Debug.Console(2, this, "RegistrationConnectionCallback: {0}", err);
             try
             {
                 if (resp != null && resp.Code == 200)
@@ -438,8 +432,8 @@ namespace PepperDash.Essentials
             {
                 Debug.Console(1, this, "Error Initializing Stream Client: {0}", e);
 				StartReconnectTimer();
+				RegisterLockEvent.Set();
             }
-			RegisterLockEvent.Set();
         }
 
         /// <summary>
@@ -448,7 +442,7 @@ namespace PepperDash.Essentials
         /// <param name="o">For CTimer callback. Not used</param>
         void HeartbeatExpiredTimerCallback(object o)
         {
-			Debug.Console(1, this, "Heartbeat Timer Expired.");
+			Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Heartbeat Timer Expired.");
 			if (ServerHeartbeatCheckTimer != null)
             {
                 ServerHeartbeatCheckTimer.Stop();
@@ -491,57 +485,30 @@ namespace PepperDash.Essentials
 			ServerHeartbeatCheckTimer.Reset(ServerHeartbeatInterval, ServerHeartbeatInterval);
         }
 
-
-#warning notes here
-
-		/*
-		 * Need to understand why this is being sent from a server that should not have been closing,
-		 * and also why essentials is not recovering
-		 * 
-		 [17:36:09.044]App 10:[appServer] Joining server at http://bosd-node01.pepperdash.net/mobilecontrolapi/api/system/join/02cf80a1-ce35-482c-8fa6-286457ff2826
-[17:36:13.086]App 10:[appServer] RegistrationConnectionCallback: COMPLETED
-[17:36:13.088]App 10:[appServer] Response from server: 502COMPLETED
-[17:36:18.113]App 10:[appServer] Joining server at http://bosd-node01.pepperdash.net/mobilecontrolapi/api/system/join/02cf80a1-ce35-482c-8fa6-286457ff2826
-[17:36:22.159]App 10:[appServer] RegistrationConnectionCallback: COMPLETED
-[17:36:22.160]App 10:[appServer] Response from server: 502COMPLETED
-[17:36:27.005]App 10:[ciscoSparkCodec-1] Retrieving Booking Info from Codec. Current Time: 9/6/2018 5:36:27 PM
-[17:36:27.187]App 10:[appServer] Joining server at http://bosd-node01.pepperdash.net/mobilecontrolapi/api/system/join/02cf80a1-ce35-482c-8fa6-286457ff2826
-[17:36:31.233]App 10:[appServer] RegistrationConnectionCallback: COMPLETED
-[17:36:31.234]App 10:[appServer] Response from server: 502COMPLETED
-[17:36:36.338]App 10:[appServer] Joining server at http://bosd-node01.pepperdash.net/mobilecontrolapi/api/system/join/02cf80a1-ce35-482c-8fa6-286457ff2826
-[17:36:42.151]App 10:[appServer] RegistrationConnectionCallback: COMPLETED
-[17:36:42.153]App 10:[appServer] Initializing Stream client to server.
-[17:36:42.887]App 10:[appServer] Websocket connected
-[17:36:42.916]App 10:[appServer] Joining server at http://bosd-node01.pepperdash.net/mobilecontrolapi/api/system/join/02cf80a1-ce35-482c-8fa6-286457ff2826
-[17:36:42.978]App 10:[appServer] RegistrationConnectionCallback: COMPLETED
-[17:36:42.979]App 10:[appServer] Initializing Stream client to server.
-[17:36:42.980]App 10:[appServer] Websocket connected
-[17:36:42.990]App 10:[appServer] Message RX: '{"type":"close"}'
-		 */
-
-
 		/// <summary>
         /// Connects the Websocket Client
         /// </summary>
         /// <param name="o"></param>
         void ConnectStreamClient()
         {
-            Debug.Console(0, this, "Initializing Stream client to server.");
+            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Initializing Stream client to server.");
 
 			if (WSClient != null)
 			{
+				Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Cleaning up previous socket");
 				DisconnectWebsocketClient();
 			}
 
 			WSClient = new WebSocketClient();
 			WSClient.URL = string.Format("wss://{0}/system/join/{1}", Config.ServerUrl, this.SystemUuid);
-			WSClient.ConnectionCallBack = ConnectCallback;
-			WSClient.DisconnectCallBack = DisconnectCallback;
+			WSClient.ConnectionCallBack = Websocket_ConnectCallback;
+			WSClient.DisconnectCallBack = Websocket_DisconnectCallback;
 			WSClient.Connect();
 			Debug.Console(1, this, "Websocket connected");
 			WSClient.SendCallBack = WebsocketSendCallback;
 			WSClient.ReceiveCallBack = WebsocketReceiveCallback;
 			WSClient.ReceiveAsync();
+			RegisterLockEvent.Set();
         }
 
 		/// <summary>
@@ -557,13 +524,13 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="code"></param>
 		/// <returns></returns>
-		int ConnectCallback(WebSocketClient.WEBSOCKET_RESULT_CODES code)
+		int Websocket_ConnectCallback(WebSocketClient.WEBSOCKET_RESULT_CODES code)
 		{
 			Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Websocket status change: {0}", code);
 			if (code != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
 			{
-				Debug.Console(1, this, "Web socket connection failed: {0}", code);
-				ReconnectStreamClient();
+				Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Web socket connection failed: {0}", code);
+				//ReconnectStreamClient();
 			}
 			return 0;
 		}
@@ -573,10 +540,16 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="code"></param>
 		/// <returns></returns>
-		int DisconnectCallback(WebSocketClient.WEBSOCKET_RESULT_CODES code, object o)
+		int Websocket_DisconnectCallback(WebSocketClient.WEBSOCKET_RESULT_CODES code, object o)
 		{
 			Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Websocket disconnected with code: {0}", code);
-			ReconnectStreamClient();
+
+			if (ServerHeartbeatCheckTimer != null)
+				ServerHeartbeatCheckTimer.Stop();
+			// Start the reconnect timer
+			StartReconnectTimer();
+
+			//ReconnectStreamClient();
 			return 0;
 		}
 
@@ -694,12 +667,13 @@ namespace PepperDash.Essentials
 				}
 				else if (type == "close")
 				{
-					DisconnectWebsocketClient();
+					Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Received close message from server.");
+					// DisconnectWebsocketClient();
 
-					if(ServerHeartbeatCheckTimer != null)
+					if (ServerHeartbeatCheckTimer != null)
 						ServerHeartbeatCheckTimer.Stop();
-					// Start the reconnect timer
-					StartReconnectTimer();
+					//// Start the reconnect timer
+					//StartReconnectTimer();
 				}
 				else
 				{
