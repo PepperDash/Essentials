@@ -403,11 +403,11 @@ namespace PepperDash.Essentials
 		/// <param name="o"></param>
 		void ConnectWebsocketClient()
 		{
-			Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Initializing Stream client to server.");
+			Debug.Console(1, this, "Initializing Stream client to server.");
 
 			if (WSClient != null)
 			{
-				Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Cleaning up previous socket");
+				Debug.Console(1, this, "Cleaning up previous socket");
 				CleanUpWebsocketClient();
 			}
 
@@ -510,7 +510,7 @@ namespace PepperDash.Essentials
         /// <param name="command"></param>
         void CleanUpWebsocketClient()
         {
-			Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Disconnecting websocket");
+			Debug.Console(1, this, "Disconnecting websocket");
 			if (WSClient != null)
 			{
 				WSClient.SendCallBack = null;
@@ -555,7 +555,7 @@ namespace PepperDash.Essentials
         /// <param name="o">For CTimer callback. Not used</param>
         void HeartbeatExpiredTimerCallback(object o)
         {
-			Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Heartbeat Timer Expired.");
+			Debug.Console(1, this, "Heartbeat Timer Expired.");
 			if (ServerHeartbeatCheckTimer != null)
             {
                 ServerHeartbeatCheckTimer.Stop();
@@ -734,7 +734,7 @@ namespace PepperDash.Essentials
 				}
 				else if (type == "close")
 				{
-					Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Received close message from server.");
+					Debug.Console(1, this, "Received close message from server.");
 					// DisconnectWebsocketClient();
 
 					if (ServerHeartbeatCheckTimer != null)
