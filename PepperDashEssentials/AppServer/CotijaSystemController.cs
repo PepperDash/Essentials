@@ -86,9 +86,9 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(PrintActionDictionaryPaths, "mobileshowactionpaths", 
 				"Prints the paths in teh Action Dictionary", ConsoleAccessLevelEnum.AccessOperator);
-			CrestronConsole.AddNewConsoleCommand(s => ConnectStreamClient(), "mobileconnect", 
+			CrestronConsole.AddNewConsoleCommand(s => ConnectWebsocketClient(), "mobileconnect", 
 				"Forces connect of websocket", ConsoleAccessLevelEnum.AccessOperator);
-			CrestronConsole.AddNewConsoleCommand(s => DisconnectWebsocketClient(), "mobiledisco",
+			CrestronConsole.AddNewConsoleCommand(s => CleanUpWebsocketClient(), "mobiledisco",
 				"Disconnects websocket", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
@@ -100,15 +100,15 @@ namespace PepperDash.Essentials
 		/// 
 		/// </summary>
 		/// <param name="ethernetEventArgs"></param>
-		void CrestronEnvironment_EthernetEventHandler(EthernetEventArgs ethernetEventArgs)
+		void CrestronEnvironment_EthernetEventHandler(EthernetEventArgs args)
 		{
 			Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Ethernet status change, port {0}: {1}",
-				ethernetEventArgs.EthernetAdapter, ethernetEventArgs.EthernetEventType);
+				args.EthernetAdapter, args.EthernetEventType);
 
-			//if (ethernetEventArgs.EthernetEventType == eEthernetEventType.LinkDown)
-			//{
-			//    LinkUp = false;
-			//}
+			if (args.EthernetEventType == eEthernetEventType.LinkDown && WSClient != null && args.EthernetAdapter == WSClient.EthernetAdapter)
+			{
+				CleanUpWebsocketClient();
+			}
 		}
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace PepperDash.Essentials
         {
             if (programEventType == eProgramStatusEventType.Stopping && WSClient.Connected)
             {
-				DisconnectWebsocketClient();
+				CleanUpWebsocketClient();
             }
         }
 
@@ -299,7 +299,7 @@ namespace PepperDash.Essentials
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
         void RegisterSystemToServer()
         {
-			ConnectStreamClient();
+			ConnectWebsocketClient();
 			return;
 
 			//var ready = RegisterLockEvent.Wait(20000);
@@ -401,14 +401,14 @@ namespace PepperDash.Essentials
 		/// Connects the Websocket Client
 		/// </summary>
 		/// <param name="o"></param>
-		void ConnectStreamClient()
+		void ConnectWebsocketClient()
 		{
 			Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Initializing Stream client to server.");
 
 			if (WSClient != null)
 			{
 				Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Cleaning up previous socket");
-				DisconnectWebsocketClient();
+				CleanUpWebsocketClient();
 			}
 
 			SystemUuid = ConfigReader.ConfigObject.SystemUuid;
@@ -508,15 +508,19 @@ namespace PepperDash.Essentials
         /// Disconnects the SSE Client and stops the heartbeat timer
         /// </summary>
         /// <param name="command"></param>
-        void DisconnectWebsocketClient()
+        void CleanUpWebsocketClient()
         {
 			Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Disconnecting websocket");
 			if (WSClient != null)
 			{
-				WSClient.Disconnect();
 				WSClient.SendCallBack = null;
 				WSClient.ReceiveCallBack = null;
 				WSClient.ConnectionCallBack = null;
+				WSClient.DisconnectCallBack = null;
+				if (WSClient.Connected)
+				{
+					WSClient.Disconnect();
+				}
 				WSClient = null;
 			}
         }
@@ -557,7 +561,7 @@ namespace PepperDash.Essentials
                 ServerHeartbeatCheckTimer.Stop();
                 ServerHeartbeatCheckTimer = null;
             }
-			DisconnectWebsocketClient();
+			CleanUpWebsocketClient();
             StartServerReconnectTimer();
         }
 
@@ -568,14 +572,15 @@ namespace PepperDash.Essentials
 		/// <param name="repeatTime"></param>
         void ResetOrStartHearbeatTimer()
         {
-            if (ServerHeartbeatCheckTimer == null)
-            {
+			if (ServerHeartbeatCheckTimer == null)
+			{
 				ServerHeartbeatCheckTimer = new CTimer(HeartbeatExpiredTimerCallback, null, ServerHeartbeatInterval, ServerHeartbeatInterval);
-
-                Debug.Console(1, this, "Heartbeat Timer Started.");
-            }
-
-			ServerHeartbeatCheckTimer.Reset(ServerHeartbeatInterval, ServerHeartbeatInterval);
+				Debug.Console(1, this, "Heartbeat Timer Started.");
+			}
+			else
+			{
+				ServerHeartbeatCheckTimer.Reset(ServerHeartbeatInterval, ServerHeartbeatInterval);
+			}
         }
 
 		/// <summary>
@@ -583,7 +588,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void ReconnectStreamClient()
 		{
-			new CTimer(o => ConnectStreamClient(), 2000);
+			new CTimer(o => ConnectWebsocketClient(), 2000);
 		}
 
 		/// <summary>
@@ -668,10 +673,24 @@ namespace PepperDash.Essentials
 		int Websocket_ReceiveCallback(byte[] data, uint length, WebSocketClient.WEBSOCKET_PACKET_TYPES opcode,
 			WebSocketClient.WEBSOCKET_RESULT_CODES err)
 		{
-			var rx = System.Text.Encoding.UTF8.GetString(data, 0, (int)length);
-			if(rx.Length > 0)
-				ParseStreamRx(rx);
-			WSClient.ReceiveAsync();
+			if (opcode == WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME)
+			{
+				var rx = System.Text.Encoding.UTF8.GetString(data, 0, (int)length);
+				if (rx.Length > 0)
+					ParseStreamRx(rx);
+				WSClient.ReceiveAsync();
+			}
+
+			else if (opcode == WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__CLOSE)
+			{
+				Debug.Console(1, this, "Websocket disconnect received from remote");
+				CleanUpWebsocketClient();
+			}
+			else
+			{
+				Debug.Console(1, this, "websocket rx opcode/err {0}/{1}", opcode, err);
+				WSClient.ReceiveAsync();
+			}
 			return 0;
 		}
 
