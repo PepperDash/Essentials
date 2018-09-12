@@ -107,9 +107,21 @@ namespace PepperDash.Essentials {
 							ApiEisc.Eisc.SetSigTrueAction(ApiMap.KeypadBackspace, () => dialer.Value.SendKeypad(PepperDash.Essentials.Devices.Common.DSP.QscDspDialer.eKeypadKeys.Backspace));
 
 							ApiEisc.Eisc.SetSigTrueAction(ApiMap.Dial, () => dialer.Value.Dial());
-							ApiEisc.Eisc.SetSigTrueAction(ApiMap.DoNotDisturbToggle, () => dialer.Value.ToggleDoNotDisturb());
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.DoNotDisturbToggle, () => dialer.Value.DoNotDisturbToggle());
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.DoNotDisturbOn, () => dialer.Value.DoNotDisturbOn());
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.DoNotDisturbOff, () => dialer.Value.DoNotDisturbOff());
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.AutoAnswerToggle, () => dialer.Value.AutoAnswerToggle());
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.AutoAnswerOn, () => dialer.Value.AutoAnswerOn());
+							ApiEisc.Eisc.SetSigTrueAction(ApiMap.AutoAnswerOff, () => dialer.Value.AutoAnswerOff());
 
-							dialer.Value.DoNoDisturbFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.DoNotDisturbToggle]);
+							dialer.Value.DoNotDisturbFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.DoNotDisturbToggle]);
+							dialer.Value.DoNotDisturbFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.DoNotDisturbOn]);
+							dialer.Value.DoNotDisturbFeedback.LinkComplementInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.DoNotDisturbOff]);
+
+							dialer.Value.AutoAnswerFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.AutoAnswerToggle]);
+							dialer.Value.AutoAnswerFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.AutoAnswerOn]);
+							dialer.Value.AutoAnswerFeedback.LinkComplementInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.AutoAnswerOff]);
+
 							dialer.Value.OffHookFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.Dial]);
 							dialer.Value.DialStringFeedback.LinkInputSig(ApiEisc.Eisc.StringInput[ApiMap.DialString]);
 						}
@@ -163,6 +175,11 @@ namespace PepperDash.Essentials {
 		public ushort KeypadBackspace = 3123;
 		public ushort Dial = 3124;
 		public ushort DoNotDisturbToggle = 3132;
+		public ushort DoNotDisturbOn = 3133;
+		public ushort DoNotDisturbOff = 3134;
+		public ushort AutoAnswerToggle = 3127;
+		public ushort AutoAnswerOn = 3125;
+		public ushort AutoAnswerOff = 3126;
 
 		public EssentialDspApiMap() {
 			channelMuteToggle = new Dictionary<uint, ushort>();
