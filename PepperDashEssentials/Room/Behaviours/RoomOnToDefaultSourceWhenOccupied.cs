@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common.Occupancy;
 
 namespace PepperDash.Essentials.Room.Behaviours
@@ -17,7 +18,7 @@ namespace PepperDash.Essentials.Room.Behaviours
     /// <summary>
     /// A device that when linked to a room can power the room on when enabled during scheduled hours.
     /// </summary>
-    public class RoomOnToDefaultSourceWhenOccupied : Device
+    public class RoomOnToDefaultSourceWhenOccupied : Device, IRuntimeConfigurableDevice
     {
         RoomOnToDefaultSourceWhenOccupiedConfig Config;
 
@@ -73,6 +74,13 @@ namespace PepperDash.Essentials.Room.Behaviours
 
         public override bool CustomActivate()
         {
+            SetUpDevice();
+
+            return base.CustomActivate();
+        }
+
+        void SetUpDevice()
+        {
             Room = DeviceManager.GetDeviceForKey(Config.RoomKey) as EssentialsRoomBase;
 
             if (Room != null)
@@ -109,20 +117,23 @@ namespace PepperDash.Essentials.Room.Behaviours
                     Debug.Console(1, this, "Unable to parse a DateTime config value \n Error: {1}", e);
                 }
 
-                AddEnableEventToGroup();
+                if (!Config.EnableRoomOnWhenOccupied)
+                    FeatureEventGroup.ClearAllEvents();
+                else
+                {
+                    AddEnableEventToGroup();
 
-                AddDisableEventToGroup();
+                    AddDisableEventToGroup();
 
-                FeatureEventGroup.UserGroupCallBack += new ScheduledEventGroup.UserEventGroupCallBack(FeatureEventGroup_UserGroupCallBack);
+                    FeatureEventGroup.UserGroupCallBack += new ScheduledEventGroup.UserEventGroupCallBack(FeatureEventGroup_UserGroupCallBack);
 
-                FeatureEventGroup.EnableAllEvents();
+                    FeatureEventGroup.EnableAllEvents();
+                }
 
                 FeatureEnabled = CheckIfFeatureShouldBeEnabled();
             }
             else
                 Debug.Console(1, this, "Unable to get room from Device Manager with key: {0}", Config.RoomKey);
-
-            return base.CustomActivate();
         }
 
         /// <summary>
@@ -132,6 +143,22 @@ namespace PepperDash.Essentials.Room.Behaviours
         public JToken GetLocalConfigProperties()
         {
             return JToken.FromObject(Config);
+        }
+
+        public object GetDeviceConfig()
+        {
+            return Config;
+        }
+
+        public void SetDeviceConfig(object config)
+        {
+            var newConfig = config as RoomOnToDefaultSourceWhenOccupiedConfig;
+
+            Config = newConfig;
+
+            ConfigWriter.UpdateDeviceProperties(this.Key, GetLocalConfigProperties());
+
+            SetUpDevice();
         }
 
         /// <summary>
@@ -185,11 +212,16 @@ namespace PepperDash.Essentials.Room.Behaviours
                 {
                     if (SchedulerUtilities.CheckIfDayOfWeekMatchesRecurrenceDays(DateTime.Now, CalculateDaysOfWeekRecurrence()))
                     {
-                        Debug.Console(1, this, "*****Feature Enabled by startup check.*****");
                         enabled = true;
                     }
                 }
             }
+
+            if(enabled)
+                Debug.Console(1, this, "*****Feature Enabled*****");
+            else
+                Debug.Console(1, this, "*****Feature Disabled*****");
+
             return enabled;
         }
 

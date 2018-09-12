@@ -133,6 +133,7 @@
     <Compile Include="ControlSystem.cs" />
     <Compile Include="Factory\UiDeviceFactory.cs" />
     <Compile Include="OTHER\Fusion\EssentialsHuddleVtc1FusionController.cs" />
+    <Compile Include="OTHER\Fusion\FusionCustomPropertiesBridge.cs" />
     <Compile Include="OTHER\Fusion\FusionEventHandlers.cs" />
     <Compile Include="OTHER\Fusion\FusionProcessorQueries.cs" />
     <Compile Include="OTHER\Fusion\FusionRviDataClasses.cs" />

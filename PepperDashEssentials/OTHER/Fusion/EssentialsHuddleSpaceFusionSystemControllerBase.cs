@@ -33,12 +33,12 @@ namespace PepperDash.Essentials.Fusion
 
         public event EventHandler<EventArgs> RoomInfoChange;
 
+        public FusionCustomPropertiesBridge CustomPropertiesBridge = new FusionCustomPropertiesBridge();
+
 		protected FusionRoom FusionRoom;
 		protected EssentialsRoomBase Room;
 		Dictionary<Device, BoolInputSig> SourceToFeedbackSigs = 
 			new Dictionary<Device, BoolInputSig>();
-
-        public RoomInformation RoomInfo {get; protected set;}
 
 		StatusMonitorCollection ErrorMessageRollUp;
 
@@ -431,14 +431,11 @@ namespace PepperDash.Essentials.Fusion
 
         protected void GetCustomProperties()
         {
-            try
+            if (FusionRoom.IsOnline)
             {
-                if (FusionRoom.IsOnline)
-                {
-                    string fusionRoomCustomPropertiesRequest = @"<RequestRoomConfiguration><RequestID>RoomConfigurationRequest</RequestID><CustomProperties><Property></Property></CustomProperties></RequestRoomConfiguration>";
+                string fusionRoomCustomPropertiesRequest = @"<RequestRoomConfiguration><RequestID>RoomConfigurationRequest</RequestID><CustomProperties><Property></Property></CustomProperties></RequestRoomConfiguration>";
 
-                    FusionRoom.ExtenderFusionRoomDataReservedSigs.RoomConfigQuery.StringValue = fusionRoomCustomPropertiesRequest;
-                }
+                FusionRoom.ExtenderFusionRoomDataReservedSigs.RoomConfigQuery.StringValue = fusionRoomCustomPropertiesRequest;
             }
         }
 
@@ -777,6 +774,8 @@ namespace PepperDash.Essentials.Fusion
 
                 string roomConfigResponseArgs = args.Sig.StringValue.Replace("&", "and");
 
+                Debug.Console(1, this, "Fusion Response: \n {0}", roomConfigResponseArgs);
+
                 try
                 {
                     XmlDocument roomConfigResponse = new XmlDocument();
@@ -787,13 +786,15 @@ namespace PepperDash.Essentials.Fusion
 
                     if (requestRoomConfiguration != null)
                     {
+                        RoomInformation roomInformation = new RoomInformation();
+
                         foreach (XmlElement e in roomConfigResponse.FirstChild.ChildNodes)
                         {
                             if (e.Name == "RoomInformation")
                             {
                                 XmlReader roomInfo = new XmlReader(e.OuterXml);
 
-                                RoomInfo = CrestronXMLSerialization.DeSerializeObject<RoomInformation>(roomInfo);
+                                roomInformation = CrestronXMLSerialization.DeSerializeObject<RoomInformation>(roomInfo);
                             }
                             else if (e.Name == "CustomFields")
                             {
@@ -821,10 +822,8 @@ namespace PepperDash.Essentials.Fusion
                                             customProperty.CustomFieldValue = elm.InnerText;
                                         }
                                     }
-                                    if (!RoomInfo.FusionCustomProperties.ContainsKey(customProperty.ID))
-                                        RoomInfo.FusionCustomProperties.Add(customProperty.ID, customProperty);
-                                    else
-                                        RoomInfo.FusionCustomProperties[customProperty.ID] = customProperty;
+
+                                    roomInformation.FusionCustomProperties.Add(customProperty);
                                 }
                             }
                         }
@@ -832,6 +831,8 @@ namespace PepperDash.Essentials.Fusion
                         var handler = RoomInfoChange;
                         if (handler != null)
                             handler(this, new EventArgs());
+
+                        CustomPropertiesBridge.EvaluateRoomInfo(roomInformation);
                     }
                 }
                 catch (Exception e)
@@ -1567,11 +1568,11 @@ namespace PepperDash.Essentials.Fusion
         public string BacklogMsg { get; set; }
         public string SubErrorMsg { get; set; }
         public string EmailInfo { get; set; }
-        public Dictionary<string, FusionCustomProperty> FusionCustomProperties { get; set; }
+        public List<FusionCustomProperty> FusionCustomProperties { get; set; }
 
         public RoomInformation()
         {
-            FusionCustomProperties = new Dictionary<string,FusionCustomProperty>();
+            FusionCustomProperties = new List<FusionCustomProperty>();
         }
     }
     public class FusionCustomProperty
@@ -1580,5 +1581,15 @@ namespace PepperDash.Essentials.Fusion
         public string CustomFieldName { get; set; }
         public string CustomFieldType { get; set; }
         public string CustomFieldValue { get; set; }
+
+        public FusionCustomProperty()
+        {
+
+        }
+
+        public FusionCustomProperty(string id)
+        {
+            ID = id;
+        }
     }
 }
