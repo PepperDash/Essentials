@@ -258,9 +258,11 @@ namespace PepperDash.Essentials.Room.Behaviours
 
             // Set up its initial properties
 
-            schEvent.Acknowledgeable = true;
+            if(!schEvent.Acknowledgeable)
+                schEvent.Acknowledgeable = true;
 
-            schEvent.Persistent = true;
+            if(!schEvent.Persistent)
+                schEvent.Persistent = true;
 
             schEvent.DateAndTime.SetFirstDayOfWeek(ScheduledEventCommon.eFirstDayOfWeek.Sunday);
 

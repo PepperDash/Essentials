@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Behaviours;
 
 namespace PepperDash.Essentials.Fusion
@@ -20,7 +21,7 @@ namespace PepperDash.Essentials.Fusion
         /// Evaluates the room info and custom properties from Fusion and updates the system properties aa needed
         /// </summary>
         /// <param name="roomInfo"></param>
-        public void EvaluateRoomInfo(RoomInformation roomInfo)
+        public void EvaluateRoomInfo(string roomKey, RoomInformation roomInfo)
         {
             var runtimeConfigurableDevices = DeviceManager.AllDevices.Where(d => d is IRuntimeConfigurableDevice);
 
@@ -28,6 +29,7 @@ namespace PepperDash.Essentials.Fusion
             {
                 foreach (var device in runtimeConfigurableDevices)
                 {
+                    // Get the current device config so new values can be overwritten over existing
                     var deviceConfig = (device as IRuntimeConfigurableDevice).GetDeviceConfig();
 
                     if (device is RoomOnToDefaultSourceWhenOccupied)
@@ -77,8 +79,19 @@ namespace PepperDash.Essentials.Fusion
                         deviceConfig = devConfig;
                     }
 
+                    // Set the config on the device
                     (device as IRuntimeConfigurableDevice).SetDeviceConfig(deviceConfig);
                 }
+
+                //var roomConfig = ConfigReader.ConfigObject.Rooms.FirstOrDefault(r => r.Key.Equals(roomKey);
+
+                //if(roomConfig != null)
+                //{
+                //    roomConfig.Name = roomInfo.Name;
+
+                //    // Update HelpMessage in room properties
+                //    roomConfig.Properties.
+                //}
             }
             catch (Exception e)
             {

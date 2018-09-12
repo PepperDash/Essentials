@@ -832,7 +832,7 @@ namespace PepperDash.Essentials.Fusion
                         if (handler != null)
                             handler(this, new EventArgs());
 
-                        CustomPropertiesBridge.EvaluateRoomInfo(roomInformation);
+                        CustomPropertiesBridge.EvaluateRoomInfo(Room.Key, roomInformation);
                     }
                 }
                 catch (Exception e)
