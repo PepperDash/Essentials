@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Cotija;
 
 namespace PepperDash.Essentials
@@ -82,6 +83,36 @@ namespace PepperDash.Essentials
 			CrestronConsole.AddNewConsoleCommand(TestHttpRequest,
 			"mobilehttprequest", "Tests an HTTP get to URL given", ConsoleAccessLevelEnum.AccessOperator);
 
+            CrestronConsole.AddNewConsoleCommand(PrintActionDictionaryPaths, "showactionpaths", "Prints the paths in teh Action Dictionary", ConsoleAccessLevelEnum.AccessOperator);
+
+
+            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+        }
+
+        /// <summary>
+        /// Sends message to server to indicate the system is shutting down
+        /// </summary>
+        /// <param name="programEventType"></param>
+        void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
+        {
+            if (programEventType == eProgramStatusEventType.Stopping && WSClient.Connected)
+            {
+                SendMessageToServer(JObject.FromObject( new
+                {
+                    type = "/system/close"
+                }));
+
+            }
+        }
+
+        public void PrintActionDictionaryPaths(object o)
+        {
+            Debug.Console(0, this, "ActionDictionary Contents:");
+
+            foreach (var item in ActionDictionary)
+            {
+                Debug.Console(0, this, "{0}", item.Key);
+            }
         }
 
         /// <summary>
@@ -158,6 +189,12 @@ namespace PepperDash.Essentials
 		/// <param name="command"></param>
 		void AuthorizeSystem(string code)
 		{
+			if (string.IsNullOrEmpty(SystemUuid))
+			{
+				CrestronConsole.ConsoleCommandResponse("System does not have a UUID. Please ensure proper portal-format configuration is loaded and restart.");
+				return;
+			}
+
 			if (string.IsNullOrEmpty(code))
 			{
 				CrestronConsole.ConsoleCommandResponse("Please enter a user code to authorize a system");
@@ -244,6 +281,8 @@ namespace PepperDash.Essentials
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
         void RegisterSystemToServer()
         {
+
+
 			var ready = RegisterLockEvent.Wait(20000);
 			if (!ready)
 			{
@@ -258,7 +297,6 @@ namespace PepperDash.Essentials
                 confObject.Info.RuntimeInfo.AppName = Assembly.GetExecutingAssembly().GetName().Name;
                 var version = Assembly.GetExecutingAssembly().GetName().Version;
                 confObject.Info.RuntimeInfo.AssemblyVersion = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
-                confObject.Info.RuntimeInfo.OsVersion = Crestron.SimplSharp.CrestronEnvironment.OSVersion.Firmware;
 
 				string postBody = JsonConvert.SerializeObject(confObject);
 				SystemUuid = confObject.SystemUuid;
@@ -311,11 +349,7 @@ namespace PepperDash.Essentials
 				WSClient.Send(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
 				//WSClient.SendAsync(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
             }
-<<<<<<< HEAD
-		
-=======
  
->>>>>>> feature/ecs-684
         }
 
         /// <summary>
@@ -454,6 +488,11 @@ namespace PepperDash.Essentials
 		/// <param name="content"></param>
 		void HandleHeartBeat(JToken content)
 		{
+            SendMessageToServer(JObject.FromObject(new
+            {
+                type = "/system/heartbeatAck"
+            }));
+
 			var code = content["userCode"];
 			if(code != null) 
 			{

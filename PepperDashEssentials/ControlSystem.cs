@@ -6,9 +6,11 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
+using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Room.Cotija;
 
 namespace PepperDash.Essentials
@@ -34,6 +36,8 @@ namespace PepperDash.Essentials
 
             //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
+
+           // CrestronConsole.AddNewConsoleCommand(S => { ConfigWriter.WriteConfigFile(null); }, "writeconfig", "writes the current config to a file", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
@@ -94,7 +98,7 @@ namespace PepperDash.Essentials
             {
                 filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
 
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on XiO Edge Server", versionString);
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", versionString);
             }
 
             Global.SetFilePathPrefix(filePathPrefix);
@@ -291,7 +295,7 @@ namespace PepperDash.Essentials
 
 			foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
 			{
-				var room = roomConfig.GetRoomObject();
+                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
 				if (room != null)
 				{
                     if (room is EssentialsHuddleSpaceRoom)
@@ -316,10 +320,16 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
+
+						Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Cotija Bridge...");
+						// Cotija bridge
+						var bridge = new CotijaEssentialsHuddleSpaceRoomBridge(room);
+						AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
+						DeviceManager.AddDevice(bridge);				
                     }					
                     else
                     {
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is NOT EssentialsHuddleSpaceRoom, attempting to add to DeviceManager w/o Fusion");
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is NOT EssentialsRoom, attempting to add to DeviceManager w/o Fusion");
                         DeviceManager.AddDevice(room);
                     }
 
@@ -343,7 +353,8 @@ namespace PepperDash.Essentials
 				var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as CotijaSystemController;
 				if (parent == null)
 				{
-					Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
+					Debug.Console(0, bridge, "ERROR: Cannot connect app server room bridge. System controller not present");
+					return;
 				}
 				Debug.Console(0, bridge, "Linking to parent controller");
 				bridge.AddParent(parent);

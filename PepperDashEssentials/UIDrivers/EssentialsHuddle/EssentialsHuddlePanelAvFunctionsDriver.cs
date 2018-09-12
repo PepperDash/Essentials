@@ -6,6 +6,7 @@ using Crestron.SimplSharpPro.UI;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
 
@@ -480,7 +481,7 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
-                CurrentRoom.RunDefaultRoute();
+                CurrentRoom.RunDefaultPresentRoute();
         }
 
 
@@ -592,7 +593,7 @@ namespace PepperDash.Essentials
             EndMeetingButtonSig.BoolValue = true;
             ShareButtonSig.BoolValue = false;
 
-            if (CurrentRoom.ShutdownType == eShutdownType.Manual)
+            if (CurrentRoom.ShutdownType == eShutdownType.Manual || CurrentRoom.ShutdownType == eShutdownType.Vacancy)
             {
                 PowerDownModal = new ModalDialog(TriList);
                 var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);

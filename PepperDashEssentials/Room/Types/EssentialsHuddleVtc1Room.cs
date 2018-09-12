@@ -6,13 +6,15 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange, IPrivacy, IHasCurrentVolumeControls
+    public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange, 
+		IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSingleSourceChange;
@@ -282,10 +284,11 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Routes the default source item, if any. Returns true when default route exists
         /// </summary>
-        public bool RunDefaultPresentRoute()
+        public override bool RunDefaultPresentRoute()
         {
-			//if (DefaultSourceItem != null)
+			if (DefaultSourceItem != null)
                 RunRouteAction(DefaultSourceItem);
+
             return DefaultSourceItem != null;
         }
 
@@ -531,7 +534,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Will power the room on with the last-used source
         /// </summary>
-        public void PowerOnToDefaultOrLastSource()
+        public override void PowerOnToDefaultOrLastSource()
         {
             if (!EnablePowerOnToLastSource || LastSourceKey == null)
                 return;

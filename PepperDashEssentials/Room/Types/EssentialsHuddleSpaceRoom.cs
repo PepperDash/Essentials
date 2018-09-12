@@ -6,11 +6,12 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials
 {
-	public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange
+	public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange, IRunRouteAction, IRunDefaultPresentRoute
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSingleSourceChange;
@@ -202,7 +203,7 @@ namespace PepperDash.Essentials
         {
             SetDefaultLevels();
 
-            RunDefaultRoute();
+            RunDefaultPresentRoute();
 
             CrestronEnvironment.Sleep(1000);
 
@@ -212,10 +213,16 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Routes the default source item, if any
         /// </summary>
-        public void RunDefaultRoute()
+        public override bool RunDefaultPresentRoute()
         {
-			//if (DefaultSourceItem != null && !OnFeedback.BoolValue)
+            if (DefaultSourceItem == null)
+            {
+                Debug.Console(0, this, "Unable to run default present route, DefaultSourceItem is null.");
+                return false;
+            }
+
             RunRouteAction(DefaultSourceItem);
+			return true;
         }
 
         /// <summary>
@@ -384,7 +391,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// Will power the room on with the last-used source
 		/// </summary>
-		public void PowerOnToDefaultOrLastSource()
+		public override void PowerOnToDefaultOrLastSource()
 		{
 			if (!EnablePowerOnToLastSource || LastSourceKey == null)
 				return;
