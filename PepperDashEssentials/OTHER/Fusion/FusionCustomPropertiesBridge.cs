@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Room.Behaviours;
 
 namespace PepperDash.Essentials.Fusion
@@ -23,75 +26,79 @@ namespace PepperDash.Essentials.Fusion
         /// <param name="roomInfo"></param>
         public void EvaluateRoomInfo(string roomKey, RoomInformation roomInfo)
         {
-            var runtimeConfigurableDevices = DeviceManager.AllDevices.Where(d => d is IRuntimeConfigurableDevice);
-
             try
             {
-                foreach (var device in runtimeConfigurableDevices)
+                var reconfigurableDevices = DeviceManager.AllDevices.Where(d => d is ReconfigurableDevice);
+
+                foreach (var device in reconfigurableDevices)
                 {
                     // Get the current device config so new values can be overwritten over existing
-                    var deviceConfig = (device as IRuntimeConfigurableDevice).GetDeviceConfig();
+                    var deviceConfig = (device as ReconfigurableDevice).Config;
 
                     if (device is RoomOnToDefaultSourceWhenOccupied)
                     {
-                        var devConfig = (deviceConfig as RoomOnToDefaultSourceWhenOccupiedConfig);
+                        var devProps = JsonConvert.DeserializeObject<RoomOnToDefaultSourceWhenOccupiedConfig>(deviceConfig.Properties.ToString());
 
                         var enableFeature = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupied"));
                         if (enableFeature != null)
-                            devConfig.EnableRoomOnWhenOccupied = bool.Parse(enableFeature.CustomFieldValue);
+                            devProps.EnableRoomOnWhenOccupied = bool.Parse(enableFeature.CustomFieldValue);
 
                         var enableTime = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("RoomOnWhenOccupiedStartTime"));
                         if (enableTime != null)
-                            devConfig.OccupancyStartTime = enableTime.CustomFieldValue;
+                            devProps.OccupancyStartTime = enableTime.CustomFieldValue;
 
                         var disableTime = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("RoomOnWhenOccupiedEndTime"));
                         if (disableTime != null)
-                            devConfig.OccupancyEndTime = disableTime.CustomFieldValue;
+                            devProps.OccupancyEndTime = disableTime.CustomFieldValue;
 
                         var enableSunday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedSun"));
                         if (enableSunday != null)
-                            devConfig.EnableSunday = bool.Parse(enableSunday.CustomFieldValue);
+                            devProps.EnableSunday = bool.Parse(enableSunday.CustomFieldValue);
 
                         var enableMonday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedMon"));
                         if (enableMonday != null)
-                            devConfig.EnableMonday = bool.Parse(enableMonday.CustomFieldValue);
+                            devProps.EnableMonday = bool.Parse(enableMonday.CustomFieldValue);
 
                         var enableTuesday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedTue"));
                         if (enableTuesday != null)
-                            devConfig.EnableTuesday = bool.Parse(enableTuesday.CustomFieldValue);
+                            devProps.EnableTuesday = bool.Parse(enableTuesday.CustomFieldValue);
 
                         var enableWednesday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedWed"));
                         if (enableWednesday != null)
-                            devConfig.EnableWednesday = bool.Parse(enableWednesday.CustomFieldValue);
+                            devProps.EnableWednesday = bool.Parse(enableWednesday.CustomFieldValue);
 
                         var enableThursday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedThu"));
                         if (enableThursday != null)
-                            devConfig.EnableThursday = bool.Parse(enableThursday.CustomFieldValue);
+                            devProps.EnableThursday = bool.Parse(enableThursday.CustomFieldValue);
 
                         var enableFriday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedFri"));
                         if (enableFriday != null)
-                            devConfig.EnableFriday = bool.Parse(enableFriday.CustomFieldValue);
+                            devProps.EnableFriday = bool.Parse(enableFriday.CustomFieldValue);
 
                         var enableSaturday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedSat"));
                         if (enableSaturday != null)
-                            devConfig.EnableSaturday = bool.Parse(enableSaturday.CustomFieldValue);
+                            devProps.EnableSaturday = bool.Parse(enableSaturday.CustomFieldValue);
 
-                        deviceConfig = devConfig;
+                        deviceConfig.Properties = JToken.FromObject(devProps);
+                    }
+                    else if (device is EssentialsRoomBase)
+                    {
+                        // Set the room name
+                        deviceConfig.Name = roomInfo.Name;
+
+                        // Set the help message
+                        var helpMessage = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("RoomHelpMessage"));
+                        if (helpMessage != null)
+                        {
+                            deviceConfig.Properties["Help"]["Message"].Value<string>(helpMessage.CustomFieldValue);
+                        }
                     }
 
                     // Set the config on the device
-                    (device as IRuntimeConfigurableDevice).SetDeviceConfig(deviceConfig);
+                    (device as ReconfigurableDevice).SetConfig(deviceConfig);
                 }
 
-                //var roomConfig = ConfigReader.ConfigObject.Rooms.FirstOrDefault(r => r.Key.Equals(roomKey);
 
-                //if(roomConfig != null)
-                //{
-                //    roomConfig.Name = roomInfo.Name;
-
-                //    // Update HelpMessage in room properties
-                //    roomConfig.Properties.
-                //}
             }
             catch (Exception e)
             {

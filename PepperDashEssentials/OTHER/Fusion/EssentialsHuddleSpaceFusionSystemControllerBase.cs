@@ -774,7 +774,7 @@ namespace PepperDash.Essentials.Fusion
 
                 string roomConfigResponseArgs = args.Sig.StringValue.Replace("&", "and");
 
-                Debug.Console(1, this, "Fusion Response: \n {0}", roomConfigResponseArgs);
+                Debug.Console(2, this, "Fusion Response: \n {0}", roomConfigResponseArgs);
 
                 try
                 {

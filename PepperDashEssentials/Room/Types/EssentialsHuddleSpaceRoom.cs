@@ -66,7 +66,7 @@ namespace PepperDash.Essentials
             }
         }
 
-		public EssentialsRoomPropertiesConfig Config { get; private set; }
+		public EssentialsRoomPropertiesConfig PropertiesConfig { get; private set; }
 
 		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
 		public IRoutingSinkNoSwitching DefaultAudioDevice { get; private set; }
@@ -156,7 +156,7 @@ namespace PepperDash.Essentials
 			IRoutingSinkNoSwitching defaultAudio, EssentialsRoomPropertiesConfig config)
 			: base(key, name)
 		{
-			Config = config;
+			PropertiesConfig = config;
 			DefaultDisplay = defaultDisplay;
 			DefaultAudioDevice = defaultAudio;
 			if (defaultAudio is IBasicVolumeControls)

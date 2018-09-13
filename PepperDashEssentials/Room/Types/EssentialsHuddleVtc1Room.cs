@@ -98,7 +98,7 @@ namespace PepperDash.Essentials
             }
         }
 
-        public EssentialsHuddleVtc1PropertiesConfig Config { get; private set; }
+        public EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; private set; }
 
 		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
 		public IBasicVolumeControls DefaultAudioDevice { get; private set; }
@@ -206,7 +206,7 @@ namespace PepperDash.Essentials
 		{
             if (codec == null)
                 throw new ArgumentNullException("codec cannot be null");
-			Config = config;
+			PropertiesConfig = config;
 			DefaultDisplay = defaultDisplay;
             VideoCodec = codec;
 			DefaultAudioDevice = defaultAudio;
