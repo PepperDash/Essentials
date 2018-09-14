@@ -66,11 +66,16 @@ namespace PepperDash.Essentials
 						{
 							comm.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.Online]);
 						}
+
+						var lutronLights = Lights as PepperDash.Essentials.Devices.Common.Environment.Lutron.LutronQuantumArea;
+
 						ApiEisc.Eisc.SetUShortSigAction(ApiMap.CallPreset, u => Lights.SelectScene(Lights.LightingScenes[u]));
+						ApiEisc.Eisc.SetStringSigAction(ApiMap.integrationID, (s) => { lutronLights.IntegrationId = s; });
 						int sceneIndex = 1;
 						foreach (var scene in Lights.LightingScenes)
 						{
 							var tempIndex = sceneIndex - 1;
+							
 							ApiEisc.Eisc.SetSigTrueAction((uint)(ApiMap.LightingSceneOffset + sceneIndex), () => Lights.SelectScene(Lights.LightingScenes[tempIndex]));
 							scene.IsActiveFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[(uint)(ApiMap.LightingSceneOffset + sceneIndex)]);
 							ApiEisc.Eisc.StringInput[(uint)(ApiMap.LightingSceneOffset + sceneIndex)].StringValue = scene.Name;
@@ -108,6 +113,8 @@ namespace PepperDash.Essentials
 		public ushort LightingSceneOffset = 10;
 		public ushort ButtonVisibilityOffset = 40;
 		public ushort CallPreset = 1;
+
+		public ushort integrationID = 1;
 		public EssentialsLightsBridgeApiMap()
 		{
 
