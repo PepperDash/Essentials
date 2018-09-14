@@ -65,20 +65,26 @@ namespace PepperDash.Essentials {
 						{
 							//var QscChannel = channel.Value as PepperDash.Essentials.Devices.Common.DSP.QscDspLevelControl;
 							Debug.Console(2, "QscChannel {0} connect", x);
-							
-							var QscChannel = channel.Value as IBasicVolumeWithFeedback;
-							QscChannel.MuteFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.channelMuteToggle[x]]);
-							QscChannel.VolumeLevelFeedback.LinkInputSig(ApiEisc.Eisc.UShortInput[ApiMap.channelVolume[x]]);
+								
+							var genericChannel = channel.Value as IBasicVolumeWithFeedback;
+							if (channel.Value.Enabled)
+							{
+								ApiEisc.Eisc.StringInput[ApiMap.channelName[x]].StringValue = channel.Value.LevelCustomName;
+								ApiEisc.Eisc.UShortInput[ApiMap.channelType[x]].UShortValue = (ushort)channel.Value.Type;
 
-							ApiEisc.Eisc.SetSigTrueAction(ApiMap.channelMuteToggle[x], () =>  QscChannel.MuteToggle());
-							ApiEisc.Eisc.SetSigTrueAction(ApiMap.channelMuteOn[x], () => QscChannel.MuteOn());
-							ApiEisc.Eisc.SetSigTrueAction(ApiMap.channelMuteOff[x], () => QscChannel.MuteOff());
+								genericChannel.MuteFeedback.LinkInputSig(ApiEisc.Eisc.BooleanInput[ApiMap.channelMuteToggle[x]]);
+								genericChannel.VolumeLevelFeedback.LinkInputSig(ApiEisc.Eisc.UShortInput[ApiMap.channelVolume[x]]);
 
-							ApiEisc.Eisc.SetBoolSigAction(ApiMap.channelVolumeUp[x], b => QscChannel.VolumeUp(b));
-							ApiEisc.Eisc.SetBoolSigAction(ApiMap.channelVolumeDown[x], b => QscChannel.VolumeDown(b));
+								ApiEisc.Eisc.SetSigTrueAction(ApiMap.channelMuteToggle[x], () => genericChannel.MuteToggle());
+								ApiEisc.Eisc.SetSigTrueAction(ApiMap.channelMuteOn[x], () => genericChannel.MuteOn());
+								ApiEisc.Eisc.SetSigTrueAction(ApiMap.channelMuteOff[x], () => genericChannel.MuteOff());
 
-							ApiEisc.Eisc.SetUShortSigAction(ApiMap.channelVolume[x], u => QscChannel.SetVolume(u));
-							ApiEisc.Eisc.SetStringSigAction(ApiMap.presetString, s => Dsp.RunPreset(s));
+								ApiEisc.Eisc.SetBoolSigAction(ApiMap.channelVolumeUp[x], b => genericChannel.VolumeUp(b));
+								ApiEisc.Eisc.SetBoolSigAction(ApiMap.channelVolumeDown[x], b => genericChannel.VolumeDown(b));
+
+								ApiEisc.Eisc.SetUShortSigAction(ApiMap.channelVolume[x], u => genericChannel.SetVolume(u));
+								ApiEisc.Eisc.SetStringSigAction(ApiMap.presetString, s => Dsp.RunPreset(s));
+							}
 							x++;
 
 						}
@@ -155,6 +161,8 @@ namespace PepperDash.Essentials {
 		public Dictionary<uint, ushort> channelMuteOn;
 		public Dictionary<uint, ushort> channelMuteOff;
 		public Dictionary<uint, ushort> channelVolume;
+		public Dictionary<uint, ushort> channelType;
+		public Dictionary<uint, ushort> channelName;
 		public Dictionary<uint, ushort> channelVolumeUp;
 		public Dictionary<uint, ushort> channelVolumeDown;
 		public Dictionary<uint, ushort> presets;
@@ -186,6 +194,8 @@ namespace PepperDash.Essentials {
 			channelMuteOn = new Dictionary<uint, ushort>();
 			channelMuteOff = new Dictionary<uint, ushort>();
 			channelVolume = new Dictionary<uint, ushort>();
+			channelName = new Dictionary<uint, ushort>();
+			channelType = new Dictionary<uint, ushort>();
 			presets = new Dictionary<uint, ushort>();
 			channelVolumeUp = new Dictionary<uint, ushort>();
 			channelVolumeDown = new Dictionary<uint, ushort>();
@@ -196,6 +206,8 @@ namespace PepperDash.Essentials {
 				channelMuteOn[tempNum] = (ushort)(tempNum + 600);
 				channelMuteOff[tempNum] = (ushort)(tempNum + 800);
 				channelVolume[tempNum] = (ushort)(tempNum + 200);
+				channelName[tempNum] = (ushort)(tempNum + 200);
+				channelType[tempNum] = (ushort)(tempNum + 400);
 				channelVolumeUp[tempNum] = (ushort)(tempNum + 1000);
 				channelVolumeDown[tempNum] = (ushort)(tempNum + 1200);
 				}
