@@ -24,64 +24,14 @@ namespace PepperDash.Essentials.Room.Config
 			var typeName = roomConfig.Type.ToLower();
 			if (typeName == "huddle")
 			{
-                var props = JsonConvert.DeserializeObject<EssentialsHuddleRoomPropertiesConfig>
-                    (roomConfig.Properties.ToString());
-				var disp = DeviceManager.GetDeviceForKey(props.DefaultDisplayKey) as IRoutingSinkWithSwitching;
-				var audio = DeviceManager.GetDeviceForKey(props.DefaultAudioKey) as IRoutingSinkNoSwitching;
-                var huddle = new EssentialsHuddleSpaceRoom(roomConfig.Key, roomConfig.Name, disp, audio, props);
+                var huddle = new EssentialsHuddleSpaceRoom(roomConfig);
 
-                if (props.Occupancy != null)
-                    huddle.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as
-                        PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, props.Occupancy.TimoutMinutes);
-                huddle.LogoUrl = props.Logo.GetUrl();
-                huddle.SourceListKey = props.SourceListKey;
-                huddle.DefaultSourceItem = props.DefaultSourceItem;
-                huddle.DefaultVolume = (ushort)(props.Volumes.Master.Level * 65535 / 100);
                 return huddle;
 			}
-			//else if (typeName == "presentation")
-			//{
-			//    var props = JsonConvert.DeserializeObject<EssentialsPresentationRoomPropertiesConfig>
-			//        (this.Properties.ToString());
-			//    var displaysDict = new Dictionary<uint, IRoutingSinkNoSwitching>();
-			//    uint i = 1;
-			//    foreach (var dispKey in props.DisplayKeys) // read in the ordered displays list
-			//    {
-			//        var disp = DeviceManager.GetDeviceForKey(dispKey) as IRoutingSinkWithSwitching;
-			//        displaysDict.Add(i++, disp);
-			//    }
-
-			//    // Get the master volume control
-			//    IBasicVolumeWithFeedback masterVolumeControlDev = props.Volumes.Master.GetDevice();
-
-                
-			//    var presRoom = new EssentialsPresentationRoom(Key, Name, displaysDict, masterVolumeControlDev, props);
-			//    return presRoom;
-			//}
             else if (typeName == "huddlevtc1")
             {
-                var props = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
-                    (roomConfig.Properties.ToString());
-                var disp = DeviceManager.GetDeviceForKey(props.DefaultDisplayKey) as IRoutingSinkWithSwitching;
-
-                var codec = DeviceManager.GetDeviceForKey(props.VideoCodecKey) as
-                    PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
-
-                var rm = new EssentialsHuddleVtc1Room(roomConfig.Key, roomConfig.Name, disp, codec, codec, props);
-                // Add Occupancy object from config
-
-                if (props.Occupancy != null)
-                    rm.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as
-                        PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, props.Occupancy.TimoutMinutes);
-                rm.LogoUrl = props.Logo.GetUrl();
-                rm.SourceListKey = props.SourceListKey;
-                rm.DefaultSourceItem = props.DefaultSourceItem;
-                rm.DefaultVolume = (ushort)(props.Volumes.Master.Level * 65535 / 100);
-
-                rm.MicrophonePrivacy = GetMicrophonePrivacy(props, rm); // Get Microphone Privacy object, if any
-
-                rm.Emergency = GetEmergency(props, rm); // Get emergency object, if any
-
+                var rm = new EssentialsHuddleVtc1Room(roomConfig);
+                
                 return rm;
             }
 			else if (typeName == "ddvc01Bridge")
@@ -96,7 +46,7 @@ namespace PepperDash.Essentials.Room.Config
         /// Gets and operating, standalone emergegncy object that can be plugged into a room.
         /// Returns null if there is no emergency defined
         /// </summary>
-        static EssentialsRoomEmergencyBase GetEmergency(EssentialsRoomPropertiesConfig props, EssentialsRoomBase room)
+        public static EssentialsRoomEmergencyBase GetEmergency(EssentialsRoomPropertiesConfig props, EssentialsRoomBase room)
         {
             // This emergency 
             var emergency = props.Emergency;
@@ -115,7 +65,7 @@ namespace PepperDash.Essentials.Room.Config
 		/// <param name="props"></param>
 		/// <param name="room"></param>
 		/// <returns></returns>
-		static PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController GetMicrophonePrivacy(
+		public static PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController GetMicrophonePrivacy(
 			EssentialsRoomPropertiesConfig props, EssentialsHuddleVtc1Room room)
 		{
 			var microphonePrivacy = props.MicrophonePrivacy;

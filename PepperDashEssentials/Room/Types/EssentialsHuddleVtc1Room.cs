@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using Newtonsoft.Json;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -195,26 +197,37 @@ namespace PepperDash.Essentials
 
 		CCriticalSection SourceSelectLock = new CCriticalSection();
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="key"></param>
-		/// <param name="name"></param>
-        public EssentialsHuddleVtc1Room(string key, string name, IRoutingSinkWithSwitching defaultDisplay, 
-			IBasicVolumeControls defaultAudio, VideoCodecBase codec, EssentialsHuddleVtc1PropertiesConfig config)
-			: base(key, name)
-		{
-            if (codec == null)
-                throw new ArgumentNullException("codec cannot be null");
-			PropertiesConfig = config;
-			DefaultDisplay = defaultDisplay;
-            VideoCodec = codec;
-			DefaultAudioDevice = defaultAudio;
 
-			if (defaultAudio is IBasicVolumeControls)
-				DefaultVolumeControls = defaultAudio as IBasicVolumeControls;
-			else if (defaultAudio is IHasVolumeDevice)
-				DefaultVolumeControls = (defaultAudio as IHasVolumeDevice).VolumeDevice;
+        public EssentialsHuddleVtc1Room(DeviceConfig config)
+            : base(config)
+        {
+            try
+            {
+                PropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
+                    (config.Properties.ToString());
+                DefaultDisplay = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
+
+                VideoCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.VideoCodecKey) as
+                    PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
+                if (VideoCodec == null)
+                    throw new ArgumentNullException("codec cannot be null");
+
+                DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IBasicVolumeControls;
+
+                Initialize();
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "Error building room: \n{0}", e);
+            }
+        }
+
+        void Initialize()
+		{
+            if (DefaultAudioDevice is IBasicVolumeControls)
+                DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;
+            else if (DefaultAudioDevice is IHasVolumeDevice)
+                DefaultVolumeControls = (DefaultAudioDevice as IHasVolumeDevice).VolumeDevice;
             CurrentVolumeControls = DefaultVolumeControls;
 			
 
@@ -263,6 +276,37 @@ namespace PepperDash.Essentials
 			SourceListKey = "default";
 			EnablePowerOnToLastSource = true;
    		}
+
+        protected override void CustomSetConfig(DeviceConfig config)
+        {
+            var newPropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>(config.Properties.ToString());
+
+            if (newPropertiesConfig != null)
+                PropertiesConfig = newPropertiesConfig;
+
+            ConfigWriter.UpdateRoomConfig(config);
+        }
+
+        public override bool CustomActivate()
+        {
+            // Add Occupancy object from config
+            if (PropertiesConfig.Occupancy != null)
+                this.SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
+                    PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimoutMinutes);
+
+            this.LogoUrl = PropertiesConfig.Logo.GetUrl();
+            this.SourceListKey = PropertiesConfig.SourceListKey;
+            this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
+            this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
+
+            // Get Microphone Privacy object, if any
+            this.MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
+
+            // Get emergency object, if any
+            this.Emergency = EssentialsRoomConfigHelper.GetEmergency(PropertiesConfig, this);
+
+            return base.CustomActivate();
+        }
 
 
         /// <summary>

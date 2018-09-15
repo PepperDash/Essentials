@@ -37,6 +37,8 @@ namespace PepperDash.Essentials.Fusion
 
                     if (device is RoomOnToDefaultSourceWhenOccupied)
                     {
+                        Debug.Console(1, "Mapping Room on via Occupancy values from Fusion");
+
                         var devProps = JsonConvert.DeserializeObject<RoomOnToDefaultSourceWhenOccupiedConfig>(deviceConfig.Properties.ToString());
 
                         var enableFeature = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupied"));
@@ -84,13 +86,19 @@ namespace PepperDash.Essentials.Fusion
                     else if (device is EssentialsRoomBase)
                     {
                         // Set the room name
-                        deviceConfig.Name = roomInfo.Name;
+                        if (!string.IsNullOrEmpty(roomInfo.Name))
+                        {
+                            Debug.Console(1, "Current Room Name: {0}. New Room Name: {1}", deviceConfig.Name, roomInfo.Name);
+                            deviceConfig.Name = roomInfo.Name;
+                            Debug.Console(1, "Room Name Successfully Changed.");
+                        }
 
                         // Set the help message
                         var helpMessage = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("RoomHelpMessage"));
                         if (helpMessage != null)
                         {
-                            deviceConfig.Properties["Help"]["Message"].Value<string>(helpMessage.CustomFieldValue);
+                            //Debug.Console(1, "Current Help Message: {0}. New Help Message: {1}", deviceConfig.Properties["help"]["message"].Value<string>(ToString()), helpMessage.CustomFieldValue);
+                            deviceConfig.Properties["helpMessage"] = (string)helpMessage.CustomFieldValue;
                         }
                     }
 

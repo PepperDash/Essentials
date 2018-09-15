@@ -146,7 +146,7 @@ namespace PepperDash.Essentials.Room.Behaviours
             var newPropertiesConfig = JsonConvert.DeserializeObject<RoomOnToDefaultSourceWhenOccupiedConfig>(config.Properties.ToString());
 
             if(newPropertiesConfig != null)
-            PropertiesConfig = newPropertiesConfig;
+                PropertiesConfig = newPropertiesConfig;
 
             ConfigWriter.UpdateDeviceConfig(config);
 

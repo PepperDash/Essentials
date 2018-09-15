@@ -7,6 +7,7 @@ using Crestron.SimplSharp.Scheduler;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Devices.Common.Occupancy;
 
@@ -122,50 +123,6 @@ namespace PepperDash.Essentials
             });
         }
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="key"></param>
-        ///// <param name="name"></param>
-        //public EssentialsRoomBase(string key, string name) : base(key, name)
-        //{
-        //    // Setup the ShutdownPromptTimer
-        //    ShutdownPromptTimer = new SecondsCountdownTimer(Key + "-offTimer");
-        //    ShutdownPromptTimer.IsRunningFeedback.OutputChange += (o, a) =>
-        //    {
-        //        if (!ShutdownPromptTimer.IsRunningFeedback.BoolValue)
-        //            ShutdownType = eShutdownType.None;
-        //    };
-        //    ShutdownPromptTimer.HasFinished += (o, a) => Shutdown(); // Shutdown is triggered 
-
-        //    ShutdownPromptSeconds = 60;
-        //    ShutdownVacancySeconds = 120;
-        //    ShutdownType = eShutdownType.None;
-
-        //    RoomVacancyShutdownTimer = new SecondsCountdownTimer(Key + "-vacancyOffTimer");
-        //    //RoomVacancyShutdownTimer.IsRunningFeedback.OutputChange += (o, a) =>
-        //    //{
-        //    //    if (!RoomVacancyShutdownTimer.IsRunningFeedback.BoolValue)
-        //    //        ShutdownType = ShutdownType.Vacancy;
-        //    //};
-        //    RoomVacancyShutdownTimer.HasFinished += new EventHandler<EventArgs>(RoomVacancyShutdownPromptTimer_HasFinished); // Shutdown is triggered
-
-        //    RoomVacancyShutdownPromptSeconds = 1500;    //  25 min to prompt warning
-        //    RoomVacancyShutdownSeconds = 240;           //  4 min after prompt will trigger shutdown prompt
-        //    VacancyMode = eVacancyMode.None;
-
-        //    OnFeedback = new BoolFeedback(OnFeedbackFunc);
-
-        //    IsWarmingUpFeedback = new BoolFeedback(IsWarmingFeedbackFunc);
-        //    IsCoolingDownFeedback = new BoolFeedback(IsCoolingFeedbackFunc);
-
-        //    AddPostActivationAction(() =>
-        //    {
-        //        if (RoomOccupancy != null)
-        //            OnRoomOccupancyIsSet();
-        //    });
-        //}
-
         void RoomVacancyShutdownPromptTimer_HasFinished(object sender, EventArgs e)
         {
             switch (VacancyMode)
@@ -241,7 +198,7 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="statusProvider"></param>
         public void SetRoomOccupancy(IOccupancyStatusProvider statusProvider, int timeoutMinutes)
-        {
+        { 
 			if (statusProvider == null)
 			{
 				Debug.Console(0, this, "ERROR: Occupancy sensor device is null");
