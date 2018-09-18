@@ -89,7 +89,9 @@ namespace PepperDash.Essentials.Fusion
                         if (!string.IsNullOrEmpty(roomInfo.Name))
                         {
                             Debug.Console(1, "Current Room Name: {0}. New Room Name: {1}", deviceConfig.Name, roomInfo.Name);
+                            // Set the name in config
                             deviceConfig.Name = roomInfo.Name;
+
                             Debug.Console(1, "Room Name Successfully Changed.");
                         }
 

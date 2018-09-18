@@ -722,6 +722,10 @@ namespace PepperDash.Essentials
 				CurrentRoom.CurrentVolumeControls.VolumeDown(state);
 		}
 
+
+        /// <summary>
+        /// Helper for property setter. Sets the panel to the given room, latching up all functionality
+        /// </summary>
         public void RefreshCurrentRoom(EssentialsHuddleSpaceRoom room)
         {
             if (_CurrentRoom != null)
@@ -811,16 +815,26 @@ namespace PepperDash.Essentials
             }
         }
 
-		/// <summary>
-		/// Helper for property setter. Sets the panel to the given room, latching up all functionality
-		/// </summary>
 		void SetCurrentRoom(EssentialsHuddleSpaceRoom room)
 		{
 			if (_CurrentRoom == room) return;
             // Disconnect current (probably never called)
 
+            room.ConfigChanged -= room_ConfigChanged;
+            room.ConfigChanged += room_ConfigChanged;
+
             RefreshCurrentRoom(room);
 		}
+
+        /// <summary>
+        /// Fires when room config of current room has changed.  Meant to refresh room values to propegate any updates to UI
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void room_ConfigChanged(object sender, EventArgs e)
+        {
+            RefreshCurrentRoom(_CurrentRoom);
+        }
 
         /// <summary>
         /// For room on/off changes
