@@ -82,7 +82,7 @@ namespace PepperDash.Essentials
 				var currentVolumeDevice = volumeRoom.CurrentVolumeControls as IBasicVolumeWithFeedback;
 				if (currentVolumeDevice != null)
 				{
-					currentVolumeDevice.MuteFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
+					currentVolumeDevice.MuteFeedback.OutputChange += MuteFeedback_OutputChange;
 					currentVolumeDevice.VolumeLevelFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
 				}
 			}
@@ -470,8 +470,7 @@ namespace PepperDash.Essentials
 				};
 			}
 			return vtc;
-		}
-     
+		}     
     }
 
 	/// <summary>

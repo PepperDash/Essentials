@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
+using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Config;
@@ -145,6 +146,8 @@ namespace PepperDash.Essentials.Room.Cotija
 
 		CotijaDdvc01DeviceBridge SourceBridge;
 
+		Ddvc01AtcMessenger AtcMessenger;
+
 
 		/// <summary>
 		/// 
@@ -182,6 +185,9 @@ namespace PepperDash.Essentials.Room.Cotija
 			SetupFunctions();
 			SetupFeedbacks();
 
+			AtcMessenger = new Ddvc01AtcMessenger(EISC, "/atc");
+			AtcMessenger.RegisterWithAppServer(Parent);
+
 			EISC.SigChange += EISC_SigChange;
 			EISC.OnlineStatusChange += (o, a) =>
 			{
@@ -216,8 +222,6 @@ namespace PepperDash.Essentials.Room.Cotija
 				}
 			}, "mobilebridgedump", "Dumps DDVC01 bridge EISC data b,u,s", ConsoleAccessLevelEnum.AccessOperator);
 
-			CrestronConsole.AddNewConsoleCommand(s => LoadConfigValues(), "loadddvc", "", ConsoleAccessLevelEnum.AccessOperator);
-
 			return base.CustomActivate();
 		}
 
@@ -227,7 +231,6 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		void SetupFunctions()
 		{
-
 			Parent.AddAction(@"/room/room1/status", new Action(SendFullStatus));
 
 			Parent.AddAction(@"/room/room1/source", new Action<SourceSelectMessageContent>(c =>
@@ -465,6 +468,9 @@ namespace PepperDash.Essentials.Room.Cotija
 			ConfigIsLoaded = true;
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
 		void SendFullStatus()
 		{
 			if (ConfigIsLoaded)

@@ -239,6 +239,7 @@ namespace PepperDash.Essentials
 						if (r.Code == 200)
 						{
 							Debug.Console(0, "System authorized, sending config.");
+#warning This registration may need to wait for config ready. Maybe.
 							RegisterSystemToServer();
 						}
 						else if (r.Code == 404)
@@ -301,101 +302,7 @@ namespace PepperDash.Essentials
         {
 			ConnectWebsocketClient();
 			return;
-
-			//var ready = RegisterLockEvent.Wait(20000);
-			//if (!ready)
-			//{
-			//    Debug.Console(1, this, "RegisterSystemToServer event failed to clear after 20 seconds.  Ignoring");
-			//    //return;
-			//}
-			//RegisterLockEvent.Reset();
-
-			//try
-			//{
-			//    var confObject = ConfigReader.ConfigObject;
-			//    confObject.Info.RuntimeInfo.AppName = Assembly.GetExecutingAssembly().GetName().Name;
-			//    var version = Assembly.GetExecutingAssembly().GetName().Version;
-			//    confObject.Info.RuntimeInfo.AssemblyVersion = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
-
-			//    string postBody = JsonConvert.SerializeObject(confObject);
-			//    SystemUuid = confObject.SystemUuid;
-
-			//    if (string.IsNullOrEmpty(postBody))
-			//    {
-			//        Debug.Console(1, this, "ERROR: Config body is empty. Cannot register with server.");
-			//    }
-			//    else
-			//    {
-			//        var regClient = new HttpClient();
-			//        regClient.Verbose = true;
-			//        regClient.KeepAlive = true;
-
-			//        string url = string.Format("http://{0}/api/system/join/{1}", Config.ServerUrl, SystemUuid);
-			//        Debug.Console(1, this, "Joining server at {0}", url);
-
-			//        HttpClientRequest request = new HttpClientRequest();
-			//        request.Url.Parse(url);
-			//        request.RequestType = RequestType.Post;
-			//        request.Header.SetHeaderValue("Content-Type", "application/json");
-			//        request.ContentString = postBody;
-
-			//        regClient.DispatchAsync(request, RegistrationConnectionCallback);
-			//    }
-
-			//}
-			//catch (Exception e)
-			//{
-			//    Debug.Console(0, this, "ERROR: Initilizing app server controller: {0}", e);
-			//    RegisterLockEvent.Set();
-			//    StartReconnectTimer();
-			//}
-
         }
-
-		///// <summary>
-		///// The callback that fires when we get a response from our registration attempt
-		///// </summary>
-		///// <param name="resp"></param>
-		///// <param name="err"></param>
-		//void RegistrationConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
-		//{
-		//    CheckHttpDebug(resp, err);
-		//    try
-		//    {
-		//        if (resp != null && resp.Code == 200)
-		//        {
-		//            StopReconnectTimer();
-
-		//            // Success here!
-		//            ConnectStreamClient();
-		//        }
-		//        else
-		//        {
-		//            if (resp != null)
-		//            {
-		//                if (resp.Code == 502)
-		//                {
-		//                    Debug.Console(1, this, "Cannot reach App Server behind web server. Check that service/app is running on server");
-		//                }
-		//                else
-		//                {
-		//                    Debug.Console(1, this, "Error response from server: {0}\n{1}", resp.Code, err);
-		//                }
-		//            }
-		//            else
-		//            {
-		//                Debug.Console(1, this, "No response. Server is likely unreachable");
-		//            }
-		//            StartReconnectTimer();
-		//        }
-		//    }
-		//    catch (Exception e)
-		//    {
-		//        Debug.Console(1, this, "Error Initializing Stream Client: {0}", e);
-		//        StartReconnectTimer();
-		//        RegisterLockEvent.Set();
-		//    }
-		//}
 
 		/// <summary>
 		/// Connects the Websocket Client
@@ -500,8 +407,16 @@ namespace PepperDash.Essentials
                 string message = JsonConvert.SerializeObject(o, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 				Debug.Console(1, this, "Message TX: {0}", message);
                 var messageBytes = System.Text.Encoding.UTF8.GetBytes(message);
-				WSClient.SendAsync(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
+				var result = WSClient.Send(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
+				if (result != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
+				{
+					Debug.Console(1, this, "Socket send result error: {0}", result);
+				}
             }
+			else if (!WSClient.Connected)
+			{
+				Debug.Console(1, this, "Cannot send. Not connected {0}");
+			}
         }
 
         /// <summary>
@@ -703,7 +618,7 @@ namespace PepperDash.Essentials
         {
 			if(result != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
 	            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SendCallback questionable result: {0}", result);
-            return 0;
+			return 1;
         }
 
 		/// <summary>
@@ -716,7 +631,7 @@ namespace PepperDash.Essentials
             if(string.IsNullOrEmpty(message))
                 return;
 
-            Debug.Console(1, this, "Message RX: '{0}'", message);
+            Debug.Console(1, this, "Message RX: {0}", message);
             try
             {
                 var messageObj = JObject.Parse(message);
