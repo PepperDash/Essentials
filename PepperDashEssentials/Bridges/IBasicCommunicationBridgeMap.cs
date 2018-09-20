@@ -15,9 +15,9 @@ namespace PepperDash.Essentials.Bridges.TEST
 	/// <summary>
 	/// 
 	/// </summary>
-	public static class DmChassisControllerTrilistBridgeExtensions
+	public static class DmChassisControllerApiExtensions
 	{
-		public static void LinkMeToTrilist(this PepperDash.Essentials.DM.DmChassisController chassis, 
+		public static void LinkToApi(this PepperDash.Essentials.DM.DmChassisController chassis, 
 			BasicTriList trilist, Dictionary<string,uint> map, uint joinstart)
 		{
 			uint joinOffset = joinstart - 1;
@@ -48,7 +48,7 @@ namespace PepperDash.Essentials.Bridges.TEST
 	/// <summary>
 	/// For trilists to com sockets only
 	/// </summary>
-	public static class IBasicCommunicationTrilistBridgeExtensions
+	public static class IBasicCommunicationApiExtensions
 	{
 		/// <summary>
 		/// 
@@ -56,11 +56,12 @@ namespace PepperDash.Essentials.Bridges.TEST
 		/// <param name="comm"></param>
 		/// <param name="trilist"></param>
 		/// <param name="joinStart"></param>
-		public static void LinkMeToTrilist(this IBasicCommunication comm, BasicTriList trilist, uint joinStart)
+        public static void LinkToApi(this IBasicCommunication comm, BasicTriList trilist, uint joinStart)
 		{
 			// this is a permanent event handler. This cannot be -= from event
 			comm.TextReceived += (s, a) => trilist.SetString(joinStart, a.Text);
 			trilist.SetStringSigAction(joinStart, new Action<string>(s => comm.SendText(s)));
+
 			var sComm = comm as ISocketStatus;
 			if (sComm != null)
 			{

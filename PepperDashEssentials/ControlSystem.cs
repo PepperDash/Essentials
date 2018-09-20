@@ -235,6 +235,8 @@ namespace PepperDash.Essentials
 					var newDev = DeviceFactory.GetDevice(devConf);
 
 					// Then associated library factories
+                    if (newDev == null)
+                        newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)

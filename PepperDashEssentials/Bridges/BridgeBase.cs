@@ -5,6 +5,8 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.EthernetCommunication;
 
+using Newtonsoft.Json;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Devices;
@@ -76,20 +78,24 @@ namespace PepperDash.Essentials.Bridges
         }
     }
 
-
-
-
-    /// <summary>
-    /// Defines each type and it's matching API type
-    /// </summary>
-    public static class DeviceApiFactory
+    public class EiscApiPropertiesConfig
     {
-        public static Dictionary<Type, Type> TypeMap = new Dictionary<Type, Type>
+        [JsonProperty("control")]
+        public EssentialsControlPropertiesConfig Control { get; set; }
+
+
+        [JsonProperty("devices")]
+        public List<ApiDevice> Devices { get; set; }
+
+        public class ApiDevice
         {
-            { typeof(DmChassisController), typeof(DmChassisControllerApi) },
-            { typeof(IBasicCommunication), typeof(IBasicCommunicationApi) }
-            //{ typeof(SomeShittyDisplayController), typeof(SomeShittyDisplayControllerApi) }
-        };
+            [JsonProperty("deviceKey")]
+            public string DeviceKey { get; set; }
+
+            [JsonProperty("joinStart")]
+            public int JoinStart { get; set; }
+        }
+
     }
 
 
@@ -158,20 +164,6 @@ namespace PepperDash.Essentials.Bridges
     }
 
  
-
-    public class DmChassisController : Device
-    {
-        public DmChassisController(string key)
-            : base(key)
-        {
-
-        }
-
-        public void SetInput(int input)
-        {
-            Debug.Console(2, this, "Dm Chassis {0}, input {1}", Key, input);
-        }
-    }
 
     /// <summary>
     /// Each flavor of API is a static class with static properties and a static constructor that
