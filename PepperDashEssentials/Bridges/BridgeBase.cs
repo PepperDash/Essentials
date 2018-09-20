@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Bridges
 {
@@ -46,17 +47,37 @@ namespace PepperDash.Essentials.Bridges
     /// </summary>
     public class EiscApi : BridgeApi
     {
+        public EiscApiPropertiesConfig PropertiesConfig { get; private set; }
+
         public ThreeSeriesTcpIpEthernetIntersystemCommunications Eisc { get; private set; }
 
 
-        public EiscApi(string key, uint ipid, string hostname) :
-            base(key)
+        public EiscApi(DeviceConfig dc) :
+            base(dc.Key)
         {
-            Eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(ipid, hostname, Global.ControlSystem);
+            PropertiesConfig = JsonConvert.DeserializeObject<EiscApiPropertiesConfig>(dc.Properties.ToString());
+
+            Eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(PropertiesConfig.Control.IpIdInt, PropertiesConfig.Control.TcpSshProperties.Address, Global.ControlSystem);
 
             Eisc.SigChange += new Crestron.SimplSharpPro.DeviceSupport.SigEventHandler(Eisc_SigChange);
 
             Eisc.Register();
+
+            AddPostActivationAction( () =>
+            {
+                foreach (var d in PropertiesConfig.Devices)
+                {
+                    var device = DeviceManager.GetDeviceForKey(d.DeviceKey);
+
+                    if (device != null)
+                    {
+                        if (device is GenericComm)
+                        {
+                            (device as GenericComm).LinkToApi(Eisc, d.JoinStart);
+                        }
+                    }
+                }
+            });
         }
 
         /// <summary>
@@ -83,7 +104,6 @@ namespace PepperDash.Essentials.Bridges
         [JsonProperty("control")]
         public EssentialsControlPropertiesConfig Control { get; set; }
 
-
         [JsonProperty("devices")]
         public List<ApiDevice> Devices { get; set; }
 
@@ -93,7 +113,7 @@ namespace PepperDash.Essentials.Bridges
             public string DeviceKey { get; set; }
 
             [JsonProperty("joinStart")]
-            public int JoinStart { get; set; }
+            public uint JoinStart { get; set; }
         }
 
     }
@@ -165,42 +185,42 @@ namespace PepperDash.Essentials.Bridges
 
  
 
-    /// <summary>
-    /// Each flavor of API is a static class with static properties and a static constructor that
-    /// links up the things to do.
-    /// </summary>
-    public class DmChassisControllerApi : DeviceApiBase
-    {
-        IntFeedback Output1Feedback;
-        IntFeedback Output2Feedback;
+    ///// <summary>
+    ///// Each flavor of API is a static class with static properties and a static constructor that
+    ///// links up the things to do.
+    ///// </summary>
+    //public class DmChassisControllerApi : DeviceApiBase
+    //{
+    //    IntFeedback Output1Feedback;
+    //    IntFeedback Output2Feedback;
 
-        public DmChassisControllerApi(DmChassisController dev)
-        {
-            Output1Feedback = new IntFeedback( new Func<int>(() => 1));
-            Output2Feedback = new IntFeedback( new Func<int>(() => 2));
+    //    public DmChassisControllerApi(DmChassisController dev)
+    //    {
+    //        Output1Feedback = new IntFeedback( new Func<int>(() => 1));
+    //        Output2Feedback = new IntFeedback( new Func<int>(() => 2));
 
-            ActionApi = new Dictionary<string, Object>
-            {
+    //        ActionApi = new Dictionary<string, Object>
+    //        {
                 
-            };
+    //        };
 
-            FeedbackApi = new Dictionary<string, Feedback>
-            {
-                { "Output-1/fb", Output1Feedback },
-                { "Output-2/fb", Output2Feedback }
-            };
-        }
+    //        FeedbackApi = new Dictionary<string, Feedback>
+    //        {
+    //            { "Output-1/fb", Output1Feedback },
+    //            { "Output-2/fb", Output2Feedback }
+    //        };
+    //    }
 
-        /// <summary>
-        /// Factory method
-        /// </summary>
-        /// <param name="dev"></param>
-        /// <returns></returns>
-        public static DmChassisControllerApi GetActionApiForDevice(DmChassisController dev)
-        {
-            return new DmChassisControllerApi(dev);
-        }
-    }
+    //    /// <summary>
+    //    /// Factory method
+    //    /// </summary>
+    //    /// <param name="dev"></param>
+    //    /// <returns></returns>
+    //    public static DmChassisControllerApi GetActionApiForDevice(DmChassisController dev)
+    //    {
+    //        return new DmChassisControllerApi(dev);
+    //    }
+    //}
 
 
 }

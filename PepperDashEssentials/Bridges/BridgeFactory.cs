@@ -9,6 +9,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Bridges;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.EthernetCommunication;
 
@@ -16,7 +17,7 @@ namespace PepperDash.Essentials
 {
 	public class BridgeFactory 
     {
-		public static IKeyed GetDevice(PepperDash.Essentials.Core.Config.DeviceConfig dc) 
+		public static IKeyed GetDevice(DeviceConfig dc) 
         {
 			// ? why is this static JTA 2018-06-13? 
 			
@@ -25,22 +26,18 @@ namespace PepperDash.Essentials
 			var type = dc.Type;
 			var properties = dc.Properties;
 			var propAnon = new { };
-			JsonConvert.DeserializeAnonymousType(dc.Properties.ToString(), propAnon);
 			
 			var typeName = dc.Type.ToLower();
 			var groupName = dc.Group.ToLower();
 
 			Debug.Console(0, "Name {0}, Key {1}, Type {2}, Properties {3}", name, key, type, properties.ToString());
-			if (typeName == "dm") 
+
+			if (typeName == "eiscapi") 
             {
-			    return new DmBridge(key, name, properties);
+			    return new EiscApi(dc);
 			}
-            else if (typeName == "comm")
-            {
-                return new CommBridge(key, name, properties);
-            }
-            else
-			    return null;
+
+		    return null;
 		}
 	}
 

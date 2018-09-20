@@ -231,8 +231,11 @@ namespace PepperDash.Essentials
                         continue;
                     }
 
-					// Try local factory first
+					// Try local factories first
 					var newDev = DeviceFactory.GetDevice(devConf);
+
+                    if (newDev == null)
+                        newDev = BridgeFactory.GetDevice(devConf);
 
 					// Then associated library factories
                     if (newDev == null)
