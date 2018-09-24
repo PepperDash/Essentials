@@ -65,6 +65,8 @@ namespace PepperDash.Essentials.Bridges
 
             AddPostActivationAction( () =>
             {
+                Debug.Console(1, this, "Linking Devices...");
+
                 foreach (var d in PropertiesConfig.Devices)
                 {
                     var device = DeviceManager.GetDeviceForKey(d.DeviceKey);
@@ -73,10 +75,13 @@ namespace PepperDash.Essentials.Bridges
                     {
                         if (device is GenericComm)
                         {
-                            (device as GenericComm).LinkToApi(Eisc, d.JoinStart);
+
+                            (device as GenericComm).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                         }
                     }
                 }
+
+                Debug.Console(1, this, "Devices Linked.");
             });
         }
 
@@ -88,7 +93,7 @@ namespace PepperDash.Essentials.Bridges
         void Eisc_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
         {
             if (Debug.Level >= 1)
-                Debug.Console(1, this, "BridgeApi EISC change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+                Debug.Console(1, this, "EiscApi change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
             var uo = args.Sig.UserObject;
             if (uo is Action<bool>)
                 (uo as Action<bool>)(args.Sig.BoolValue);
@@ -114,6 +119,9 @@ namespace PepperDash.Essentials.Bridges
 
             [JsonProperty("joinStart")]
             public uint JoinStart { get; set; }
+
+            [JsonProperty("joinMapKey")]
+            public string JoinMapKey { get; set; }
         }
 
     }
