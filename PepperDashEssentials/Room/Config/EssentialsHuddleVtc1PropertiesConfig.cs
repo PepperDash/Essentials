@@ -20,5 +20,7 @@ namespace PepperDash.Essentials.Room.Config
 		public string DefaultSourceItem { get; set; }
 		[JsonProperty("videoCodecKey")]
 		public string VideoCodecKey { get; set; }
+		[JsonProperty("audioCodecKey")]
+		public string AudioCodecKey { get; set; }
     }
 }

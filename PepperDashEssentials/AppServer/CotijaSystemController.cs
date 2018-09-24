@@ -85,7 +85,7 @@ namespace PepperDash.Essentials
 			"mobilehttprequest", "Tests an HTTP get to URL given", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(PrintActionDictionaryPaths, "mobileshowactionpaths", 
-				"Prints the paths in teh Action Dictionary", ConsoleAccessLevelEnum.AccessOperator);
+				"Prints the paths in the Action Dictionary", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(s => ConnectWebsocketClient(), "mobileconnect", 
 				"Forces connect of websocket", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(s => CleanUpWebsocketClient(), "mobiledisco",
@@ -176,6 +176,7 @@ namespace PepperDash.Essentials
 			else
 			{
 				Debug.Console(0, this, "Adding room bridge and sending configuration");
+				SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 				RegisterSystemToServer();
 			}
 		}
@@ -188,6 +189,7 @@ namespace PepperDash.Essentials
 		void bridge_ConfigurationIsReady(object sender, EventArgs e)
 		{
 			Debug.Console(1, this, "Bridge ready.  Registering");
+			SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 			// send the configuration object to the server
 			RegisterSystemToServer();
 		}
@@ -207,6 +209,8 @@ namespace PepperDash.Essentials
 		/// <param name="command"></param>
 		void AuthorizeSystem(string code)
 		{
+			SystemUuid = ConfigReader.ConfigObject.SystemUuid;
+
 			if (string.IsNullOrEmpty(SystemUuid))
 			{
 				CrestronConsole.ConsoleCommandResponse("System does not have a UUID. Please ensure proper portal-format configuration is loaded and restart.");
@@ -301,7 +305,6 @@ namespace PepperDash.Essentials
         void RegisterSystemToServer()
         {
 			ConnectWebsocketClient();
-			return;
         }
 
 		/// <summary>
@@ -310,6 +313,8 @@ namespace PepperDash.Essentials
 		/// <param name="o"></param>
 		void ConnectWebsocketClient()
 		{
+
+
 			Debug.Console(1, this, "Initializing Stream client to server.");
 
 			if (WSClient != null)
@@ -317,8 +322,6 @@ namespace PepperDash.Essentials
 				Debug.Console(1, this, "Cleaning up previous socket");
 				CleanUpWebsocketClient();
 			}
-
-			SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 
 			WSClient = new WebSocketClient();
 			WSClient.URL = string.Format("wss://{0}/system/join/{1}", Config.ServerUrl, this.SystemUuid);
@@ -341,6 +344,10 @@ namespace PepperDash.Essentials
 				WSClient.SendCallBack = Websocket_SendCallback;
 				WSClient.ReceiveCallBack = Websocket_ReceiveCallback;
 				WSClient.ReceiveAsync();
+				SendMessageObjectToServer(new
+				{
+					type = "hello"
+				});
 			}
 			else
 			{

@@ -241,6 +241,11 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			Parent.AddAction(@"/room/room1/defaultsource", new Action(() => 
 				EISC.PulseBool(BoolJoin.ActivitySharePress)));
+			Parent.AddAction(@"/room/room1/activityVideo", new Action(() =>
+				EISC.PulseBool(BoolJoin.ActivityVideoCallPress)));
+			Parent.AddAction(@"/room/room1/activityPhone", new Action(() =>
+				EISC.PulseBool(BoolJoin.ActivityPhoneCallPress)));
+
 
 			Parent.AddAction(@"/room/room1/volumes/master/level", new Action<ushort>(u => 
 				EISC.SetUshort(UshortJoin.MasterVolumeLevel, u)));
@@ -392,6 +397,11 @@ namespace PepperDash.Essentials.Room.Cotija
 				var name = EISC.StringOutput[i + 1].StringValue;
 				rmProps.SpeedDials.Add(new DDVC01SpeedDial { Number = num, Name = name});
 			}
+
+			// This MAY need a check 
+			rmProps.AudioCodecKey = "audioCodec";
+			rmProps.VideoCodecKey = null; // "videoCodec";
+
 			// volume control names
 			var volCount = EISC.UShortOutput[701].UShortValue;
 
