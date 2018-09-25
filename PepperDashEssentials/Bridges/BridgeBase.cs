@@ -11,6 +11,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.DM;
 
 namespace PepperDash.Essentials.Bridges
 {
@@ -77,6 +78,10 @@ namespace PepperDash.Essentials.Bridges
                         {
 
                             (device as GenericComm).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                        }
+                        if (device is DmChassisController)
+                        {
+                            (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                         }
                     }
                 }
