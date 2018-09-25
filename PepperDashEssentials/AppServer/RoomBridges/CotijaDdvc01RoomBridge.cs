@@ -61,13 +61,14 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 63
 			/// </summary>
 			public const uint ShutdownStart = 63;
-
-
-
 			/// <summary>
 			/// 72
 			/// </summary>
 			public const uint SourceHasChanged = 72;
+			/// <summary>
+			/// 261 - The start of the range of speed dial visibles
+			/// </summary>
+			public const uint SpeedDialVisibleStartJoin = 261;
 			/// <summary>
 			/// 501
 			/// </summary>
@@ -93,6 +94,16 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 71
 			/// </summary>
 			public const uint SelectedSourceKey = 71;
+
+			/// <summary>
+			/// 241
+			/// </summary>
+			public const uint SpeedDialNameStartJoin = 241;
+
+			/// <summary>
+			/// 251
+			/// </summary>
+			public const uint SpeedDialNumberStartJoin = 251;
 			
 			/// <summary>
 			/// 501
@@ -185,7 +196,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			SetupFunctions();
 			SetupFeedbacks();
 
-			AtcMessenger = new Ddvc01AtcMessenger(EISC, "/atc");
+			AtcMessenger = new Ddvc01AtcMessenger(EISC, "/device/audioCodec");
 			AtcMessenger.RegisterWithAppServer(Parent);
 
 			EISC.SigChange += EISC_SigChange;
@@ -466,6 +477,41 @@ namespace PepperDash.Essentials.Room.Cotija
 			}
 
 			co.SourceLists.Add("default", newSl);
+
+			// build "audioCodec" config if we need
+			if (string.IsNullOrEmpty(rmProps.AudioCodecKey))
+			{
+				var acFavs = new List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem>();
+				for (uint i = 0; i < 4; i++)
+				{
+					if (!EISC.GetBool(BoolJoin.SpeedDialVisibleStartJoin + i))
+					{
+						break;
+					}
+					acFavs.Add(new PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem()
+					{
+						Name = EISC.GetString(StringJoin.SpeedDialNameStartJoin + i),
+						Number = EISC.GetString(StringJoin.SpeedDialNumberStartJoin + i),
+						Type = PepperDash.Essentials.Devices.Common.Codec.eCodecCallType.Audio
+					});
+				}
+
+				var acProps = new
+				{
+					favorites = acFavs
+				};
+
+				var acStr = "audioCodec";
+				var acConf = new DeviceConfig()
+				{
+					Group = acStr,
+					Key = acStr,
+					Name = acStr,
+					Type = acStr,
+					Properties = JToken.FromObject(acProps)
+				};
+				co.Devices.Add(acConf);
+			}
 
 			Debug.Console(0, this, "******* CONFIG FROM DDVC: \r{0}", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
 

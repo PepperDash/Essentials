@@ -39,17 +39,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		const uint BIsOffHook = 224;
 		const uint BDialHangupIsVisible = 251;
 		const uint BCallIsIncoming = 254;
-		const uint BSpeedDialIsVisible1 = 261;
-		const uint BSpeedDialIsVisible2 = 262;
-		const uint BSpeedDialIsVisible3 = 263;
-		const uint BSpeedDialIsVisible4 = 264;
-
 
 		const uint SCurrentDialString = 201;
-		const uint SSpeedDialName1 = 241;
-		const uint SSpeedDialName2 = 242;
-		const uint SSpeedDialName3 = 243;
-		const uint SSpeedDialName4 = 244;
+		const uint SHookState = 221;
+
 
 		/// <summary>
 		/// 
@@ -68,8 +61,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		void SendFullStatus()
 		{
+
 			this.PostStatusMessage(new
-			{
+			{				
 				atc = new
 				{
 					callIsIncoming = EISC.GetBool(BCallIsIncoming),
@@ -93,6 +87,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			EISC.SetBoolSigAction(BDialHangupIsVisible, b => send(new { dialHangupIsVisible = b }));
 			EISC.SetBoolSigAction(BCallIsIncoming, b => send(new { callIsIncoming = b }));
 			EISC.SetStringSigAction(SCurrentDialString, s => send(new { currentDialString = s }));
+			EISC.SetStringSigAction(SHookState, s => send(new { callStatus = s }));
 
 			// Add press and holds using helper
 			Action<string, uint> addPHAction = (s, u) => 
@@ -122,6 +117,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			addAction("/speedDial4", BSpeedDial4);
 
 			AppServerController.AddAction(MessagePath + "/fullStatus", new Action(SendFullStatus));
+
+			// Dial on string
+#warning Does this need to set the string and then dial?
+			AppServerController.AddAction(MessagePath + "/dial", new Action<string>(s => EISC.SetString(SCurrentDialString, s)));
 		}
 	}
 }
