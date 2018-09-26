@@ -22,6 +22,8 @@ namespace PepperDash.Essentials.Bridges
 
             joinMap.OffsetJoinNumbers(joinStart);
 
+            Debug.Console(1, dmChassis, "Linking device '{0}' to Trilist '{1}'", dmChassis.Key, trilist.ID);
+
             dmChassis.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
 
             // Link up outputs
@@ -61,8 +63,9 @@ namespace PepperDash.Essentials.Bridges
             public uint OutputCurrentVideoInputNames { get; set; }
             public uint OutputCurrentAudioInputNames { get; set; }
             public uint InputCurrentResolution { get; set; }
-            public uint HdcpSupport { get; set; }
-            public uint HdcpSupportCapability { get; set; }
+            public uint InputSlotOnline { get; set; }
+            //public uint HdcpSupport { get; set; }
+            //public uint HdcpSupportCapability { get; set; }
 
 
             public DmChassisControllerJoinMap()
@@ -76,8 +79,9 @@ namespace PepperDash.Essentials.Bridges
                 OutputCurrentVideoInputNames = 2000; //2001-2199
                 OutputCurrentAudioInputNames = 2200; //2201-2399
                 InputCurrentResolution = 2400; // 2401-2599
-                HdcpSupport = 1000; //1001-1199
-                HdcpSupportCapability = 1200; //1201-1399
+                InputSlotOnline = 500;
+                //HdcpSupport = 1000; //1001-1199
+               //HdcpSupportCapability = 1200; //1201-1399
 
             }
 
@@ -94,8 +98,9 @@ namespace PepperDash.Essentials.Bridges
                 OutputCurrentVideoInputNames = OutputCurrentVideoInputNames + joinOffset;
                 OutputCurrentAudioInputNames = OutputCurrentAudioInputNames + joinOffset;
                 InputCurrentResolution = InputCurrentResolution + joinOffset;
-                HdcpSupport = HdcpSupport + joinOffset;
-                HdcpSupportCapability = HdcpSupportCapability + joinOffset;
+                InputSlotOnline = InputSlotOnline + joinOffset;
+                //HdcpSupport = HdcpSupport + joinOffset;
+                //HdcpSupportCapability = HdcpSupportCapability + joinOffset;
             }
         }
     }
