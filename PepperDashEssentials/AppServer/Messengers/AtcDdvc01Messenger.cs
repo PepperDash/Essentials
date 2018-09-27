@@ -15,18 +15,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 	{
 		BasicTriList EISC;
 
-		const uint BKeypad1 = 201;
-		const uint BKeypad2 = 202;
-		const uint BKeypad3 = 203;
-		const uint BKeypad4 = 204;
-		const uint BKeypad5 = 205;
-		const uint BKeypad6 = 206;
-		const uint BKeypad7 = 207;
-		const uint BKeypad8 = 208;
-		const uint BKeypad9 = 209;
-		const uint BKeypad0 = 210;
-		const uint BKeypadStar = 211;
-		const uint BKeypadPound = 212;
 		const uint BDialHangup = 221;
 		const uint BIncomingAnswer = 251;
 		const uint BIncomingReject = 252;
@@ -35,13 +23,37 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		const uint BSpeedDial3 = 243;
 		const uint BSpeedDial4 = 244;
 
-		const uint BIsOnHook = 222;
-		const uint BIsOffHook = 224;
-		const uint BDialHangupIsVisible = 251;
-		const uint BCallIsIncoming = 254;
-
+		/// <summary>
+		/// 201
+		/// </summary>
 		const uint SCurrentDialString = 201;
+		/// <summary>
+		/// 211
+		/// </summary>
+		const uint SCurrentCallString = 211;
+		/// <summary>
+		/// 221
+		/// </summary>
 		const uint SHookState = 221;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		Dictionary<string, uint> DTMFMap = new Dictionary<string, uint>
+		{
+			{ "1", 201 },
+			{ "2", 202 },
+			{ "3", 203 },
+			{ "4", 204 },
+			{ "5", 205 },
+			{ "6", 206 },
+			{ "7", 207 },
+			{ "8", 208 },
+			{ "9", 209 },
+			{ "0", 210 },
+			{ "*", 211 },
+			{ "#", 212 },
+		};
 
 
 		/// <summary>
@@ -53,7 +65,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			: base(messagePath)
 		{
 			EISC = eisc;
-
 		}
 
 		/// <summary>
@@ -66,10 +77,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{				
 				atc = new
 				{
-					callIsIncoming = EISC.GetBool(BCallIsIncoming),
-					isOnHook = EISC.GetBool(BIsOnHook),
-					isOffHook = EISC.GetBool(BIsOffHook),
-					dialHangupIsVisible = EISC.GetBool(BDialHangupIsVisible),
+					callStatus = EISC.GetString(SHookState),
+					currentCallString = EISC.GetString(SCurrentCallString),
 					currentDialString = EISC.GetString(SCurrentDialString),
 				}
 			});
@@ -82,33 +91,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		protected override void CustomRegisterWithAppServer(CotijaSystemController appServerController)
 		{
 			Action<object> send = this.PostStatusMessage;
-			EISC.SetBoolSigAction(BIsOffHook, b => send(new { isOffHook = b }));
-			EISC.SetBoolSigAction(BIsOnHook, b => send(new { isOnHook = b }));
-			EISC.SetBoolSigAction(BDialHangupIsVisible, b => send(new { dialHangupIsVisible = b }));
-			EISC.SetBoolSigAction(BCallIsIncoming, b => send(new { callIsIncoming = b }));
 			EISC.SetStringSigAction(SCurrentDialString, s => send(new { currentDialString = s }));
+			EISC.SetStringSigAction(SCurrentCallString, s => send(new { currentCallString = s }));
 			EISC.SetStringSigAction(SHookState, s => send(new { callStatus = s }));
 
 			// Add press and holds using helper
 			Action<string, uint> addPHAction = (s, u) => 
 				AppServerController.AddAction(MessagePath + s, new PressAndHoldAction(b => EISC.SetBool(u, b)));
-			addPHAction("/dial1", BKeypad1);
-			addPHAction("/dial2", BKeypad2);
-			addPHAction("/dial3", BKeypad3);
-			addPHAction("/dial4", BKeypad4);
-			addPHAction("/dial5", BKeypad5);
-			addPHAction("/dial6", BKeypad6);
-			addPHAction("/dial7", BKeypad7);
-			addPHAction("/dial8", BKeypad8);
-			addPHAction("/dial9", BKeypad9);
-			addPHAction("/dial0", BKeypad0);
-			addPHAction("/dialStar", BKeypadStar);
-			addPHAction("/dialPound", BKeypadPound);
 
-			// Add straight calls
+			// Add straight pulse calls
 			Action<string, uint> addAction = (s, u) =>
 				AppServerController.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
-			addAction("/dialHangup", BDialHangup);
+			addAction("/endCall", BDialHangup);
 			addAction("/incomingAnswer", BIncomingAnswer);
 			addAction("/incomingReject", BIncomingReject);
 			addAction("/speedDial1", BSpeedDial1);
@@ -116,11 +110,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			addAction("/speedDial3", BSpeedDial3);
 			addAction("/speedDial4", BSpeedDial4);
 
+			// Get status
 			AppServerController.AddAction(MessagePath + "/fullStatus", new Action(SendFullStatus));
-
 			// Dial on string
-#warning Does this need to set the string and then dial?
 			AppServerController.AddAction(MessagePath + "/dial", new Action<string>(s => EISC.SetString(SCurrentDialString, s)));
+			// Pulse DTMF
+			AppServerController.AddAction(MessagePath + "/dtmf", new Action<string>(s =>
+			{
+				if (DTMFMap.ContainsKey(s))
+				{
+					EISC.PulseBool(DTMFMap[s], 100);
+				}
+			}));
 		}
 	}
 }

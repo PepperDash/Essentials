@@ -479,7 +479,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			co.SourceLists.Add("default", newSl);
 
 			// build "audioCodec" config if we need
-			if (string.IsNullOrEmpty(rmProps.AudioCodecKey))
+			if (!string.IsNullOrEmpty(rmProps.AudioCodecKey))
 			{
 				var acFavs = new List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem>();
 				for (uint i = 0; i < 4; i++)
@@ -511,7 +511,7 @@ namespace PepperDash.Essentials.Room.Cotija
 					Properties = JToken.FromObject(acProps)
 				};
 				co.Devices.Add(acConf);
-			}
+			}	
 
 			Debug.Console(0, this, "******* CONFIG FROM DDVC: \r{0}", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
 
