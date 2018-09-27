@@ -8,6 +8,7 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -55,6 +56,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{ "#", 212 },
 		};
 
+		CodecActiveCallItem CurrentCallItem;
+
 
 		/// <summary>
 		/// 
@@ -65,6 +68,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			: base(messagePath)
 		{
 			EISC = eisc;
+
+			CurrentCallItem = new CodecActiveCallItem();
+			CurrentCallItem.Type = eCodecCallType.Audio;
+			CurrentCallItem.Id = "-audio-";
 		}
 
 		/// <summary>
@@ -72,15 +79,12 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		void SendFullStatus()
 		{
-
 			this.PostStatusMessage(new
 			{				
-				atc = new
-				{
-					callStatus = EISC.GetString(SHookState),
-					currentCallString = EISC.GetString(SCurrentCallString),
-					currentDialString = EISC.GetString(SCurrentDialString),
-				}
+				calls = GetCurrentCallList(),
+				callStatus = EISC.GetString(SHookState),
+				currentCallString = EISC.GetString(SCurrentCallString),
+				currentDialString = EISC.GetString(SCurrentDialString),
 			});
 		}
 
@@ -92,8 +96,28 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		{
 			Action<object> send = this.PostStatusMessage;
 			EISC.SetStringSigAction(SCurrentDialString, s => send(new { currentDialString = s }));
-			EISC.SetStringSigAction(SCurrentCallString, s => send(new { currentCallString = s }));
-			EISC.SetStringSigAction(SHookState, s => send(new { callStatus = s }));
+
+			EISC.SetStringSigAction(SHookState, s => 
+			{
+				CurrentCallItem.Status = (eCodecCallStatus)Enum.Parse(typeof(eCodecCallStatus), s, true);
+				GetCurrentCallList();
+				send(new 
+				{ 
+					calls = GetCurrentCallList(),
+					callStatus = s 
+				});
+			});
+
+			EISC.SetStringSigAction(SCurrentCallString, s => 
+			{
+				CurrentCallItem.Name = s;
+				CurrentCallItem.Number = s;
+				send(new 
+				{
+					calls = GetCurrentCallList(),
+					currentCallString = s 			
+				});
+			});
 
 			// Add press and holds using helper
 			Action<string, uint> addPHAction = (s, u) => 
@@ -122,6 +146,22 @@ namespace PepperDash.Essentials.AppServer.Messengers
 					EISC.PulseBool(DTMFMap[s], 100);
 				}
 			}));
+		}
+
+		/// <summary>
+		/// Turns the 
+		/// </summary>
+		/// <returns></returns>
+		List<CodecActiveCallItem> GetCurrentCallList()
+		{
+			if (CurrentCallItem.Status == eCodecCallStatus.Disconnected)
+			{
+				return new List<CodecActiveCallItem>();
+			}
+			else
+			{
+				return new List<CodecActiveCallItem>() { CurrentCallItem };
+			}
 		}
 	}
 }
