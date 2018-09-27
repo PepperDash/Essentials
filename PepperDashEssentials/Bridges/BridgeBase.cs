@@ -76,12 +76,15 @@ namespace PepperDash.Essentials.Bridges
                     {
                         if (device is GenericComm)
                         {
-
                             (device as GenericComm).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                         }
                         if (device is DmChassisController)
                         {
                             (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                        }
+                        if (device is DmTxControllerBase)
+                        {
+                            (device as DmTxControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                         }
                     }
                 }
@@ -132,69 +135,69 @@ namespace PepperDash.Essentials.Bridges
     }
 
 
-    /// <summary>
-    /// API class for IBasicCommunication devices
-    /// </summary>
-    public class IBasicCommunicationApi : DeviceApiBase
-    {
-        public IBasicCommunication Device { get; set; }
+    ///// <summary>
+    ///// API class for IBasicCommunication devices
+    ///// </summary>
+    //public class IBasicCommunicationApi : DeviceApiBase
+    //{
+    //    public IBasicCommunication Device { get; set; }
 
-        SerialFeedback TextReceivedFeedback;
+    //    SerialFeedback TextReceivedFeedback;
 
-        public IBasicCommunicationApi(IBasicCommunication dev)
-        {
-            TextReceivedFeedback = new SerialFeedback();
+    //    public IBasicCommunicationApi(IBasicCommunication dev)
+    //    {
+    //        TextReceivedFeedback = new SerialFeedback();
 
-            Device = dev;
+    //        Device = dev;
 
-            SetupFeedbacks();
+    //        SetupFeedbacks();
 
-            ActionApi = new Dictionary<string, Object>
-            {
-                { "connect", new Action(Device.Connect) },
-                { "disconnect", new Action(Device.Disconnect) },
-                { "connectstate", new Action<bool>( b => ConnectByState(b) ) },
-                { "sendtext", new Action<string>( s => Device.SendText(s) ) }
+    //        ActionApi = new Dictionary<string, Object>
+    //        {
+    //            { "connect", new Action(Device.Connect) },
+    //            { "disconnect", new Action(Device.Disconnect) },
+    //            { "connectstate", new Action<bool>( b => ConnectByState(b) ) },
+    //            { "sendtext", new Action<string>( s => Device.SendText(s) ) }
 
-            };
+    //        };
 
-            FeedbackApi = new Dictionary<string, Feedback>
-            {
-                { "isconnected", new BoolFeedback( () => Device.IsConnected ) },
-                { "textrecieved", TextReceivedFeedback }
-            };
-        }
+    //        FeedbackApi = new Dictionary<string, Feedback>
+    //        {
+    //            { "isconnected", new BoolFeedback( () => Device.IsConnected ) },
+    //            { "textrecieved", TextReceivedFeedback }
+    //        };
+    //    }
 
-        /// <summary>
-        /// Controls connection based on state of input
-        /// </summary>
-        /// <param name="state"></param>
-        void ConnectByState(bool state)
-        {
-            if (state)
-                Device.Connect();
-            else
-                Device.Disconnect();                             
-        }
+    //    /// <summary>
+    //    /// Controls connection based on state of input
+    //    /// </summary>
+    //    /// <param name="state"></param>
+    //    void ConnectByState(bool state)
+    //    {
+    //        if (state)
+    //            Device.Connect();
+    //        else
+    //            Device.Disconnect();                             
+    //    }
 
-        void SetupFeedbacks()
-        {
-            Device.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Device_TextReceived);
+    //    void SetupFeedbacks()
+    //    {
+    //        Device.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Device_TextReceived);
 
-            if(Device is ISocketStatus)
-                (Device as ISocketStatus).ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(IBasicCommunicationApi_ConnectionChange);
-        }
+    //        if(Device is ISocketStatus)
+    //            (Device as ISocketStatus).ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(IBasicCommunicationApi_ConnectionChange);
+    //    }
 
-        void IBasicCommunicationApi_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
-        {
-            FeedbackApi["isconnected"].FireUpdate();
-        }
+    //    void IBasicCommunicationApi_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+    //    {
+    //        FeedbackApi["isconnected"].FireUpdate();
+    //    }
 
-        void Device_TextReceived(object sender, GenericCommMethodReceiveTextArgs e)
-        {
-            TextReceivedFeedback.FireUpdate(e.Text);
-        }
-    }
+    //    void Device_TextReceived(object sender, GenericCommMethodReceiveTextArgs e)
+    //    {
+    //        TextReceivedFeedback.FireUpdate(e.Text);
+    //    }
+    //}
 
  
 

@@ -27,7 +27,7 @@ namespace PepperDash.Essentials.Bridges
                 return;
             }
 
-            Debug.Console(1, comm, "Linking device '{0}' to Trilist '{1}'", comm.Key, trilist.ID);
+            Debug.Console(1, comm, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             // this is a permanent event handler. This cannot be -= from event
             comm.CommPort.TextReceived += (s, a) => trilist.SetString(joinMap.TextReceived, a.Text);

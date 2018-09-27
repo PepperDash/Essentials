@@ -22,7 +22,7 @@ namespace PepperDash.Essentials.Bridges
 
             joinMap.OffsetJoinNumbers(joinStart);
 
-            Debug.Console(1, dmChassis, "Linking device '{0}' to Trilist '{1}'", dmChassis.Key, trilist.ID);
+            Debug.Console(1, dmChassis, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             dmChassis.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
 
@@ -45,7 +45,8 @@ namespace PepperDash.Essentials.Bridges
                 dmChassis.InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames + ioSlot]);
                 dmChassis.OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames + ioSlot]);
                 dmChassis.OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentAudioInputNames + ioSlot]);
-
+                dmChassis.InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+                dmChassis.OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
 
 
             }
@@ -63,7 +64,8 @@ namespace PepperDash.Essentials.Bridges
             public uint OutputCurrentVideoInputNames { get; set; }
             public uint OutputCurrentAudioInputNames { get; set; }
             public uint InputCurrentResolution { get; set; }
-            public uint InputSlotOnline { get; set; }
+            public uint InputEndpointOnline { get; set; }
+            public uint OutputEndpointOnline { get; set; }
             //public uint HdcpSupport { get; set; }
             //public uint HdcpSupportCapability { get; set; }
 
@@ -79,7 +81,8 @@ namespace PepperDash.Essentials.Bridges
                 OutputCurrentVideoInputNames = 2000; //2001-2199
                 OutputCurrentAudioInputNames = 2200; //2201-2399
                 InputCurrentResolution = 2400; // 2401-2599
-                InputSlotOnline = 500;
+                InputEndpointOnline = 500;
+                OutputEndpointOnline = 700;
                 //HdcpSupport = 1000; //1001-1199
                //HdcpSupportCapability = 1200; //1201-1399
 
@@ -98,7 +101,8 @@ namespace PepperDash.Essentials.Bridges
                 OutputCurrentVideoInputNames = OutputCurrentVideoInputNames + joinOffset;
                 OutputCurrentAudioInputNames = OutputCurrentAudioInputNames + joinOffset;
                 InputCurrentResolution = InputCurrentResolution + joinOffset;
-                InputSlotOnline = InputSlotOnline + joinOffset;
+                InputEndpointOnline = InputEndpointOnline + joinOffset;
+                OutputEndpointOnline = OutputEndpointOnline + joinOffset;
                 //HdcpSupport = HdcpSupport + joinOffset;
                 //HdcpSupportCapability = HdcpSupportCapability + joinOffset;
             }
