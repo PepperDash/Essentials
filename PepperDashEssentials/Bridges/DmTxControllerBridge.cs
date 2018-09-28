@@ -35,12 +35,11 @@ namespace PepperDash.Essentials.Bridges
                 new Action<bool>(b => tx.SetHdcpSupportAll(ePdtHdcpSupport.HdcpOff)));
             if (tx is ITxRouting)
             {
-                trilist.SetUShortSigAction(joinMap.VideoInput, 
+                trilist.SetUShortSigAction(joinMap.VideoInput,
                     new Action<ushort>(i => (tx as ITxRouting).ExecuteNumericSwitch(i, 0, eRoutingSignalType.Video)));
                 trilist.SetUShortSigAction(joinMap.AudioInput,
                     new Action<ushort>(i => (tx as ITxRouting).ExecuteNumericSwitch(i, 0, eRoutingSignalType.Audio)));
 
-#warning Deal with how to get the same numeric feedback values out
                 (tx as ITxRouting).VideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.VideoInput]);
                 (tx as ITxRouting).AudioSourceNumericFeedabck.LinkInputSig(trilist.UShortInput[joinMap.AudioInput]);
             }
