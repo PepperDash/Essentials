@@ -365,10 +365,10 @@ namespace PepperDash.Essentials.Room.Cotija
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             co.Info.RuntimeInfo.AssemblyVersion = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
 
-
 			//Room
-			if (co.Rooms == null)
-				co.Rooms = new List<EssentialsRoomConfig>();
+			//if (co.Rooms == null)
+			// always start fresh in case simpl changed
+			co.Rooms = new List<EssentialsRoomConfig>();
 			var rm = new EssentialsRoomConfig();
             if (co.Rooms.Count == 0)
             {
@@ -428,7 +428,10 @@ namespace PepperDash.Essentials.Room.Cotija
 				co.Devices = new List<DeviceConfig>();
 
 			// clear out previous DDVC devices
-			co.Devices.RemoveAll(d => d.Key.StartsWith("source-", StringComparison.OrdinalIgnoreCase));
+			co.Devices.RemoveAll(d => 
+				d.Key.StartsWith("source-", StringComparison.OrdinalIgnoreCase)
+				|| d.Key.Equals("audioCodec", StringComparison.OrdinalIgnoreCase) 
+				|| d.Key.Equals("videoCodec", StringComparison.OrdinalIgnoreCase));
 			
 			rmProps.SourceListKey = "default";
 			rm.Properties = JToken.FromObject(rmProps);
