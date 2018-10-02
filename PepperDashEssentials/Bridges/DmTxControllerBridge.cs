@@ -77,9 +77,11 @@ namespace PepperDash.Essentials.Bridges
 
                 IsOnline = IsOnline + joinOffset;
                 VideoSyncStatus = VideoSyncStatus + joinOffset;
-                CurrentInputResolution = CurrentInputResolution + joinOffset;
                 HdcpSupportOn = HdcpSupportOn + joinOffset;
                 HdcpSupportOff = HdcpSupportOff + joinOffset;
+                CurrentInputResolution = CurrentInputResolution + joinOffset;
+                VideoInput = VideoInput + joinOffset;
+                AudioInput = AudioInput + joinOffset;
                 HdcpSupportState = HdcpSupportState + joinOffset;
             }
         }
