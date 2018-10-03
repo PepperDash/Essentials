@@ -115,6 +115,7 @@
     <Compile Include="Bridges\DmChassisControllerBridge.cs" />
     <Compile Include="Bridges\DmTxControllerBridge.cs" />
     <Compile Include="Bridges\IBasicCommunicationBridge.cs" />
+    <Compile Include="Bridges\DmRmcControllerBridge.cs" />
     <Compile Include="Bridges\JoinMapBase.cs" />
     <Compile Include="Configuration ORIGINAL\Builders\TPConfig.cs" />
     <Compile Include="Configuration ORIGINAL\Configuration.cs" />

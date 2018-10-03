@@ -77,14 +77,22 @@ namespace PepperDash.Essentials.Bridges
                         if (device is GenericComm)
                         {
                             (device as GenericComm).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
                         }
-                        if (device is DmChassisController)
+                        else if (device is DmChassisController)
                         {
                             (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
                         }
-                        if (device is DmTxControllerBase)
+                        else if (device is DmTxControllerBase)
                         {
                             (device as DmTxControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is DmRmcControllerBase)
+                        {
+                            (device as DmRmcControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
                         }
                     }
                 }
