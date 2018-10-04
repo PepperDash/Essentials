@@ -28,6 +28,14 @@ namespace PepperDash.Essentials.Room.Cotija
 			public const uint RoomIsOn = 301;
 
 			/// <summary>
+			/// 41
+			/// </summary>
+			public const uint PromptForCode = 41;
+			/// <summary>
+			/// 42
+			/// </summary>
+			public const uint ClientJoined = 42;
+			/// <summary>
 			/// 51
 			/// </summary>
 			public const uint ActivitySharePress = 51;
@@ -242,6 +250,10 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		void SetupFunctions()
 		{
+#warning need join numbers for these
+			Parent.AddAction(@"/room/room1/promptForCode", new Action(() => EISC.PulseBool(12345)));
+			Parent.AddAction(@"/room/room1/clientJoined", new Action(() => EISC.PulseBool(12346)));
+
 			Parent.AddAction(@"/room/room1/status", new Action(SendFullStatus));
 
 			Parent.AddAction(@"/room/room1/source", new Action<SourceSelectMessageContent>(c =>
@@ -256,7 +268,6 @@ namespace PepperDash.Essentials.Room.Cotija
 				EISC.PulseBool(BoolJoin.ActivityVideoCallPress)));
 			Parent.AddAction(@"/room/room1/activityPhone", new Action(() =>
 				EISC.PulseBool(BoolJoin.ActivityPhoneCallPress)));
-
 
 			Parent.AddAction(@"/room/room1/volumes/master/level", new Action<ushort>(u => 
 				EISC.SetUshort(UshortJoin.MasterVolumeLevel, u)));
