@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DM;
+using Crestron.SimplSharpPro.DM.Endpoints;
+using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
 using Crestron.SimplSharpPro.DeviceSupport;
 
 using PepperDash.Core;
@@ -28,20 +31,57 @@ namespace PepperDash.Essentials.Bridges
             tx.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus]);
             tx.AnyVideoInput.VideoStatus.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentInputResolution]);
             tx.HdcpSupportAllFeedback.LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportCapability]);
-            //trilist.SetUShortSigAction(joinMap.Port1HdcpState,
-            //    new Action<ushort>(u => tx.SetPortHdcpSupport((ePdtHdcpSupport)u)));
 
-            //trilist.SetUShortSigAction(joinMap.Port2HdcpState,
-            //    new Action<ushort>(u => tx.SetHdcpSupportAll((ePdtHdcpSupport)u)));
+            bool hdcpTypeSimple;
+
+            if (tx.Hardware is DmTx4kX02CBase || tx.Hardware is DmTx4kzX02CBase)
+                hdcpTypeSimple = false;
+            else
+                hdcpTypeSimple = true;
+
             if (tx is ITxRouting)
             {
-                trilist.SetUShortSigAction(joinMap.VideoInput,
-                    new Action<ushort>(i => (tx as ITxRouting).ExecuteNumericSwitch(i, 0, eRoutingSignalType.Video)));
-                trilist.SetUShortSigAction(joinMap.AudioInput,
-                    new Action<ushort>(i => (tx as ITxRouting).ExecuteNumericSwitch(i, 0, eRoutingSignalType.Audio)));
+                var txR = tx as ITxRouting;
 
-                (tx as ITxRouting).VideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.VideoInput]);
-                (tx as ITxRouting).AudioSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioInput]);
+                trilist.SetUShortSigAction(joinMap.VideoInput,
+                    new Action<ushort>(i => txR.ExecuteNumericSwitch(i, 0, eRoutingSignalType.Video)));
+                trilist.SetUShortSigAction(joinMap.AudioInput,
+                    new Action<ushort>(i => txR.ExecuteNumericSwitch(i, 0, eRoutingSignalType.Audio)));
+
+                txR.VideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.VideoInput]);
+                txR.AudioSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioInput]);
+
+                foreach (var inputPort in txR.InputPorts)
+                {
+                    if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
+                    {
+                        var port = inputPort.Port as EndpointHdmiInput;
+
+                        if (hdcpTypeSimple)
+                        {
+                            trilist.SetUShortSigAction(joinMap.Port1HdcpState, 
+                                new Action<ushort>(s =>
+                                    {
+                                        if(s == 0)
+                                        {
+                                            port.HdcpSupportOff();
+                                        }
+                                        else if (s > 0)
+                                        {
+                                            port.HdcpSupportOn();
+                                        }
+                                    }));
+                        }
+                        else
+                        {
+                            trilist.SetUShortSigAction(joinMap.Port1HdcpState,
+                                    new Action<ushort>(s =>
+                                    {
+                                        port.HdcpCapability = (eHdcpCapabilityType)s;
+                                    }));
+                        }
+                    }
+                }
             }
         }
 
@@ -70,7 +110,6 @@ namespace PepperDash.Essentials.Bridges
                 HdcpSupportCapability = 3;
                 Port1HdcpState = 4;
                 Port2HdcpState = 5;
-
             }
 
             public override void OffsetJoinNumbers(uint joinStart)
