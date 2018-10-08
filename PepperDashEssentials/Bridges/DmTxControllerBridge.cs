@@ -51,37 +51,80 @@ namespace PepperDash.Essentials.Bridges
                 txR.VideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.VideoInput]);
                 txR.AudioSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioInput]);
 
-                foreach (var inputPort in txR.InputPorts)
+                trilist.UShortInput[joinMap.HdcpSupportCapability].UShortValue = (ushort)tx.HdcpSupportCapability;
+
+                if(txR.InputPorts[DmPortName.HdmiIn] != null)
                 {
+                    var inputPort = txR.InputPorts[DmPortName.HdmiIn];
+
+                    if (tx.Feedbacks["HdmiInHdcpCapability"] != null)
+                        (tx.Feedbacks["HdmiInHdcpCapability"] as IntFeedback).LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
+
                     if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
                     {
                         var port = inputPort.Port as EndpointHdmiInput;
 
-                        if (hdcpTypeSimple)
-                        {
-                            trilist.SetUShortSigAction(joinMap.Port1HdcpState, 
-                                new Action<ushort>(s =>
-                                    {
-                                        if(s == 0)
-                                        {
-                                            port.HdcpSupportOff();
-                                        }
-                                        else if (s > 0)
-                                        {
-                                            port.HdcpSupportOn();
-                                        }
-                                    }));
-                        }
-                        else
-                        {
-                            trilist.SetUShortSigAction(joinMap.Port1HdcpState,
-                                    new Action<ushort>(s =>
-                                    {
-                                        port.HdcpCapability = (eHdcpCapabilityType)s;
-                                    }));
-                        }
+                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port1HdcpState, trilist);
                     }
                 }
+                
+                if (txR.InputPorts[DmPortName.HdmiIn1] != null)
+                {
+                    var inputPort = txR.InputPorts[DmPortName.HdmiIn1];
+
+                    if (tx.Feedbacks["HdmiIn1HdcpCapability"] != null)
+                        (tx.Feedbacks["HdmiIn1HdcpCapability"] as IntFeedback).LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
+
+                    if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
+                    {
+                        var port = inputPort.Port as EndpointHdmiInput;
+
+                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port1HdcpState, trilist);
+                    }
+                }
+
+                if (txR.InputPorts[DmPortName.HdmiIn2] != null)
+                {
+                    var inputPort = txR.InputPorts[DmPortName.HdmiIn2];
+
+                    if (tx.Feedbacks["HdmiIn2HdcpCapability"] != null)
+                        (tx.Feedbacks["HdmiIn2HdcpCapability"] as IntFeedback).LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
+
+                    if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
+                    {
+                        var port = inputPort.Port as EndpointHdmiInput;
+
+                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port2HdcpState, trilist);
+                    }
+                }
+
+            }
+        }
+
+        static void SetHdcpCapabilityAction(bool hdcpTypeSimple, EndpointHdmiInput port, uint join, BasicTriList trilist)
+        {
+            if (hdcpTypeSimple)
+            {
+                trilist.SetUShortSigAction(join,
+                    new Action<ushort>(s =>
+                    {
+                        if (s == 0)
+                        {
+                            port.HdcpSupportOff();
+                        }
+                        else if (s > 0)
+                        {
+                            port.HdcpSupportOn();
+                        }
+                    }));
+            }
+            else
+            {
+                trilist.SetUShortSigAction(join,
+                        new Action<ushort>(s =>
+                        {
+                            port.HdcpCapability = (eHdcpCapabilityType)s;
+                        }));
             }
         }
 
