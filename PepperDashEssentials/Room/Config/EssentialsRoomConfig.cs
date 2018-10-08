@@ -272,8 +272,8 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("deviceKey")]
 		public string DeviceKey { get; set; }
 
-		[JsonProperty("timoutMinutes")]
-		public int TimoutMinutes { get; set; }
+		[JsonProperty("timeoutMinutes")]
+		public int TimeoutMinutes { get; set; }
     }
 
 	public class EssentialsRoomTechConfig
