@@ -292,7 +292,7 @@ namespace PepperDash.Essentials
             // Add Occupancy object from config
             if (PropertiesConfig.Occupancy != null)
                 this.SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
-                    PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimoutMinutes);
+                    PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimeoutMinutes);
 
             this.LogoUrl = PropertiesConfig.Logo.GetUrl();
             this.SourceListKey = PropertiesConfig.SourceListKey;
