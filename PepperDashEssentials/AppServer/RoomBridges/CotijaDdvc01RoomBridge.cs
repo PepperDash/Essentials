@@ -251,8 +251,8 @@ namespace PepperDash.Essentials.Room.Cotija
 		void SetupFunctions()
 		{
 #warning need join numbers for these
-			Parent.AddAction(@"/room/room1/promptForCode", new Action(() => EISC.PulseBool(12345)));
-			Parent.AddAction(@"/room/room1/clientJoined", new Action(() => EISC.PulseBool(12346)));
+			Parent.AddAction(@"/room/room1/promptForCode", new Action(() => EISC.PulseBool(BoolJoin.PromptForCode)));
+			Parent.AddAction(@"/room/room1/clientJoined", new Action(() => EISC.PulseBool(BoolJoin.ClientJoined)));
 
 			Parent.AddAction(@"/room/room1/status", new Action(SendFullStatus));
 
@@ -280,20 +280,25 @@ namespace PepperDash.Essentials.Room.Cotija
 				EISC.PulseBool(BoolJoin.ShutdownEnd)));
 			Parent.AddAction(@"/room/room1/shutdownCancel", new Action(() =>
 				EISC.PulseBool(BoolJoin.ShutdownCancel)));
-
-
-            // Source Device (Current Source)'
-
-            SourceDeviceMapDictionary sourceJoinMap = new SourceDeviceMapDictionary();
-
-            var prefix = @"/device/currentSource/";
-
-            foreach (var item in sourceJoinMap)
-            {
-				var join = item.Value;
-                Parent.AddAction(string.Format("{0}{1}", prefix, item.Key), new PressAndHoldAction(b => EISC.SetBool(join, b)));
-            }
 		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="devKey"></param>
+		void SetupSourceFunctions(string devKey)
+		{
+			SourceDeviceMapDictionary sourceJoinMap = new SourceDeviceMapDictionary();
+
+			var prefix = string.Format("/device/{0}/", devKey);
+
+			foreach (var item in sourceJoinMap)
+			{
+				var join = item.Value;
+				Parent.AddAction(string.Format("{0}{1}", prefix, item.Key), new PressAndHoldAction(b => EISC.SetBool(join, b)));
+			}
+		}
+
 
 		/// <summary>
 		/// Links feedbacks to whatever is gonna happen!
@@ -488,6 +493,11 @@ namespace PepperDash.Essentials.Room.Cotija
 					Type = type
 				};
 				co.Devices.Add(devConf);
+
+				if (group.ToLower().StartsWith("settopbox")) // Add others here as needed
+				{
+					SetupSourceFunctions(key);
+				}
 			}
 
 			co.SourceLists.Add("default", newSl);
