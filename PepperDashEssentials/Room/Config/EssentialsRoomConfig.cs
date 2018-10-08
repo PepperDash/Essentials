@@ -32,7 +32,7 @@ namespace PepperDash.Essentials.Room.Config
 
                 if (props.Occupancy != null)
                     huddle.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as
-                        PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, props.Occupancy.TimoutMinutes);
+                        PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, props.Occupancy.TimeoutMinutes);
                 huddle.LogoUrl = props.Logo.GetUrl();
                 huddle.SourceListKey = props.SourceListKey;
                 huddle.DefaultSourceItem = props.DefaultSourceItem;
@@ -72,7 +72,7 @@ namespace PepperDash.Essentials.Room.Config
 
                 if (props.Occupancy != null)
                     rm.SetRoomOccupancy(DeviceManager.GetDeviceForKey(props.Occupancy.DeviceKey) as
-                        PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, props.Occupancy.TimoutMinutes);
+                        PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, props.Occupancy.TimeoutMinutes);
                 rm.LogoUrl = props.Logo.GetUrl();
                 rm.SourceListKey = props.SourceListKey;
                 rm.DefaultSourceItem = props.DefaultSourceItem;
@@ -322,8 +322,8 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("deviceKey")]
 		public string DeviceKey { get; set; }
 
-		[JsonProperty("timoutMinutes")]
-		public int TimoutMinutes { get; set; }
+		[JsonProperty("timeoutMinutes")]
+		public int TimeoutMinutes { get; set; }
     }
 
 	public class EssentialsRoomTechConfig

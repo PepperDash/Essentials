@@ -159,6 +159,8 @@ namespace PepperDash.Essentials
                 ShutdownPromptTimer.SecondsToCount = ShutdownVacancySeconds;
             ShutdownType = type;
             ShutdownPromptTimer.Start();
+
+            Debug.Console(0, this, "ShutdwonPromptTimer Started. Type: {0}.  Seconds: {1}", ShutdownType, ShutdownPromptTimer.SecondsToCount);
         }
 
         public void StartRoomVacancyTimer(eVacancyMode mode)
@@ -170,7 +172,7 @@ namespace PepperDash.Essentials
             VacancyMode = mode;
             RoomVacancyShutdownTimer.Start();
 
-            Debug.Console(0, this, "Vacancy Timer Started.");
+            Debug.Console(0, this, "Vacancy Timer Started. Mode: {0}.  Seconds: {1}", VacancyMode, RoomVacancyShutdownTimer.SecondsToCount);
         }
 
         /// <summary>
@@ -212,6 +214,8 @@ namespace PepperDash.Essentials
 
             if(timeoutMinutes > 0)
                 RoomVacancyShutdownSeconds = timeoutMinutes * 60;
+
+            Debug.Console(1, this, "RoomVacancyShutdownSeconds set to {0}", RoomVacancyShutdownSeconds);
 
             RoomOccupancy = statusProvider;
 
