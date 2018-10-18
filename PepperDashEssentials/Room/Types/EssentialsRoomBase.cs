@@ -169,6 +169,8 @@ namespace PepperDash.Essentials
                 RoomVacancyShutdownTimer.SecondsToCount = RoomVacancyShutdownPromptSeconds;
             else if (mode == eVacancyMode.InInitialVacancy)
                 RoomVacancyShutdownTimer.SecondsToCount = RoomVacancyShutdownSeconds;
+            else if (mode == eVacancyMode.InShutdownWarning)
+                RoomVacancyShutdownTimer.SecondsToCount = 60;
             VacancyMode = mode;
             RoomVacancyShutdownTimer.Start();
 
