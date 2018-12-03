@@ -105,10 +105,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
+    <Compile Include="Bridges\BridgeBase.cs" />
     <Compile Include="Bridges\Bridges.BridgeFactory.cs" />
+    <Compile Include="Bridges\DigitalLoggerBridge.cs" />
+    <Compile Include="Bridges\DmChassisControllerBridge.cs" />
+    <Compile Include="Bridges\DmRmcControllerBridge.cs" />
+    <Compile Include="Bridges\DmTxControllerBridge.cs" />
     <Compile Include="Bridges\EssentialsLightsBridge.cs" />
     <Compile Include="Bridges\EssentialTVOne.cs" />
     <Compile Include="Bridges\EssentialDsp.cs" />
+    <Compile Include="Bridges\IBasicCommunicationBridge.cs" />
+    <Compile Include="Bridges\JoinMapBase.cs" />
     <Compile Include="Configuration ORIGINAL\Builders\TPConfig.cs" />
     <Compile Include="Configuration ORIGINAL\Configuration.cs" />
     <Compile Include="Configuration ORIGINAL\ConfigurationHelpers.cs" />
