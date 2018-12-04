@@ -11,6 +11,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core.Routing;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.EthernetCommunication;
+using PepperDash.Essentials.Bridges;
 
 namespace PepperDash.Essentials {
 	public class BridgeFactory {
@@ -51,6 +52,10 @@ namespace PepperDash.Essentials {
 			{
 				Debug.Console(2, "Launch essentialslighting");
 				return new EssentialsLightsBridge(key, name, properties);
+			}
+			else if (typeName == "eiscapi") 
+            {
+			    return new EiscApi(dc);
 			}
 			return null;
 			}

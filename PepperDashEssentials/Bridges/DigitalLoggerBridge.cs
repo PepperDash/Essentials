@@ -25,6 +25,12 @@ namespace PepperDash.Essentials.Bridges
             {
                 var circuit = i;
 				digitalLogger.CircuitNameFeedbacks[circuit - 1].LinkInputSig(trilist.StringInput[joinMap.CircuitNames + circuit]);
+				digitalLogger.CircuitIsCritical[circuit - 1].LinkInputSig(trilist.BooleanInput[joinMap.CircuitIsCritical + circuit]);
+				digitalLogger.CircuitState[circuit - 1].LinkInputSig(trilist.BooleanInput[joinMap.CircuitState + circuit]);
+				trilist.SetSigTrueAction(joinMap.CircuitCycle + circuit, () => digitalLogger.CycleCircuit(circuit - 1));
+				trilist.SetSigTrueAction(joinMap.CircuitOnCmd + circuit, () => digitalLogger.TurnOnCircuit(circuit - 1));
+				trilist.SetSigTrueAction(joinMap.CircuitOffCmd + circuit, () => digitalLogger.TurnOffCircuit(circuit - 1));
+
 			}
 		}
 	}
@@ -32,13 +38,22 @@ namespace PepperDash.Essentials.Bridges
 	{
 		public uint IsOnline { get; set; }
 		public uint CircuitNames { get; set; }
+		public uint CircuitState { get; set; }
+		public uint CircuitCycle { get; set; }
+		public uint CircuitIsCritical { get; set; }
+		public uint CircuitOnCmd { get; set; }
+		public uint CircuitOffCmd { get; set; }
 		public DigitalLoggerJoinMap()
 		{
 			// Digital
-			IsOnline = 1;
-
+			IsOnline = 9;
+			CircuitState = 0;
+			CircuitCycle = 0;
+			CircuitIsCritical = 10;
+			CircuitOnCmd = 10;
+			CircuitOffCmd = 20;
 			// Serial
-			CircuitNames = 1;
+			CircuitNames = 0;
 			// Analog
 		}
 
@@ -48,6 +63,14 @@ namespace PepperDash.Essentials.Bridges
 
 			IsOnline = IsOnline + joinOffset;
 			CircuitNames = CircuitNames + joinOffset;
+			CircuitState = CircuitState + joinOffset;
+			CircuitCycle = CircuitCycle + joinOffset;
+			CircuitIsCritical = CircuitIsCritical + joinOffset;
+			CircuitOnCmd = CircuitOnCmd + joinOffset;
+			CircuitOffCmd = CircuitOffCmd + joinOffset;
+
+
+
 		}
 	}
 

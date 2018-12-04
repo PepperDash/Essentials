@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.DM;
 
@@ -79,21 +80,26 @@ namespace PepperDash.Essentials.Bridges
                             (device as GenericComm).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-                        else if (device is DmChassisController)
-                        {
-                            (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                            continue;
-                        }
-                        else if (device is DmTxControllerBase)
-                        {
-                            (device as DmTxControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                            continue;
-                        }
-                        else if (device is DmRmcControllerBase)
-                        {
-                            (device as DmRmcControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                            continue;
-                        }
+						else if (device is DigitalLogger)
+						{
+							(device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+							continue;
+						}
+						else if (device is DmChassisController)
+						{
+							// (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+							continue;
+						}
+						else if (device is DmTxControllerBase)
+						{
+							// (device as DmTxControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+							continue;
+						}
+						else if (device is DmRmcControllerBase)
+						{
+							// (device as DmRmcControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+							continue;
+						}
                     }
                 }
 
