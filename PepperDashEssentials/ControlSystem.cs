@@ -4,6 +4,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
+using Crestron.SimplSharpPro.Diagnostics;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -32,6 +34,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void InitializeSystem()
 		{
+            SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
+
             DeterminePlatform();
 
             //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
@@ -141,6 +145,8 @@ namespace PepperDash.Essentials
 						"------------------------------------------------\r" +
 						"------------------------------------------------");
 				}
+
+                SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
             }
 			catch (Exception e)
 			{

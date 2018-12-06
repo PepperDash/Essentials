@@ -63,13 +63,18 @@ namespace PepperDash.Essentials.Bridges
 
         public class IBasicCommunicationJoinMap : JoinMapBase
         {
-            // Default joins
+            //Digital
+            public uint Connect { get; set; }
+            public uint Connected { get; set; }
+
+            //Analog
+            public uint Status { get; set; }
+
+            // Serial
             public uint TextReceived { get; set; }
             public uint SendText { get; set; }
             public uint SetPortConfig { get; set; }
-            public uint Connect { get; set; }
-            public uint Connected { get; set; }
-            public uint Status { get; set; }
+
 
             public IBasicCommunicationJoinMap()
             {
@@ -94,38 +99,5 @@ namespace PepperDash.Essentials.Bridges
             }
         }
     }
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //public static class DmChassisControllerApiExtensions
-    //{
-    //    public static void LinkToApi(this PepperDash.Essentials.DM.DmChassisController chassis, 
-    //        BasicTriList trilist, Dictionary<string,uint> map, uint joinstart)
-    //    {
-    //        uint joinOffset = joinstart - 1;
-
-    //        uint videoSelectOffset = 0 + joinOffset;
-    //        uint audioSelectOffset = 40 + joinOffset;
-
-
-    //        // loop chassis number of inupts
-    //        for (uint i = 1; i <= chassis.Chassis.NumberOfOutputs; i++)
-    //        {
-    //            trilist.SetUShortSigAction(videoSelectOffset + i, new Action<ushort>(u => chassis.ExecuteSwitch(u, i, eRoutingSignalType.Video)));
-    //            trilist.SetUShortSigAction(audioSelectOffset + i, new Action<ushort>(u => chassis.ExecuteSwitch(u, i, eRoutingSignalType.Audio)));
-    //        }
-
-    //        // wire up output change detection (try to add feedbacks or something to DMChassisController??
-
-    //        // names?
-
-    //        // HDCP?
-
-
-    //    }
-    //}
-
-
-
 
 }

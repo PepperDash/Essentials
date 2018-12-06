@@ -11,6 +11,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.DM;
 
 namespace PepperDash.Essentials.Bridges
@@ -93,6 +94,14 @@ namespace PepperDash.Essentials.Bridges
                         {
                             (device as DmRmcControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
+                        }
+                        else if (device is GenericRelayDevice)
+                        {
+                            (device as GenericRelayDevice).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                        }
+                        else if (device is IDigitalInput)
+                        {
+                            (device as IDigitalInput).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                         }
                     }
                 }
