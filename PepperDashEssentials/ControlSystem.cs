@@ -146,12 +146,16 @@ namespace PepperDash.Essentials
 						"------------------------------------------------");
 				}
 
-                SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
             }
 			catch (Exception e)
 			{
 				Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r{0}", e);
+
+
 			}
+
+            // Notify the 
+            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
 
 		}
 
@@ -219,6 +223,9 @@ namespace PepperDash.Essentials
 		{
             // Build the processor wrapper class
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+
+            // Add global System Monitor device
+            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));
 
 			foreach (var devConf in ConfigReader.ConfigObject.Devices)
 			{

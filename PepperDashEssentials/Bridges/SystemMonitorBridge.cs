@@ -23,7 +23,12 @@ namespace PepperDash.Essentials.Bridges
 
             joinMap.OffsetJoinNumbers(joinStart);
 
+            systemMonitorController.TimeZoneFeedback.LinkInputSig(trilist.UShortInput[joinMap.TimeZone]);
+            trilist.SetUShortSigAction(joinMap.TimeZone, new Action<ushort>(u => systemMonitorController.SetTimeZone(u)));
+            systemMonitorController.TimeZoneTextFeedback.LinkInputSig(trilist.StringInput[joinMap.TimeZoneName]);
 
+            systemMonitorController.IOControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.IOControllerVersion]);
+            systemMonitorController.SnmpVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.SnmpAppVersion]);
 
 
             foreach (var p in SystemMonitor.ProgramCollection)
@@ -47,7 +52,7 @@ namespace PepperDash.Essentials.Bridges
         //Serial
         public uint TimeZoneName { get; set; }
         public uint IOControllerVersion { get; set; }
-        public uint SNMPAppVersion { get; set; }
+        public uint SnmpAppVersion { get; set; }
         public uint BACnetAppVersion { get; set; }
         public uint ControllerVersion { get; set; }
 
@@ -63,7 +68,7 @@ namespace PepperDash.Essentials.Bridges
 
             TimeZoneName = 1;
             IOControllerVersion = 2;
-            SNMPAppVersion = 3;
+            SnmpAppVersion = 3;
             BACnetAppVersion = 4;
             ControllerVersion = 5;
 
@@ -86,7 +91,7 @@ namespace PepperDash.Essentials.Bridges
 
             TimeZoneName = TimeZoneName + joinOffset;
             IOControllerVersion = IOControllerVersion + joinOffset;
-            SNMPAppVersion = SNMPAppVersion + joinOffset;
+            SnmpAppVersion = SnmpAppVersion + joinOffset;
             BACnetAppVersion = BACnetAppVersion + joinOffset;
             ControllerVersion = ControllerVersion + joinOffset;
 
