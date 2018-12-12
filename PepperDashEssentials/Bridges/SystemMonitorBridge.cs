@@ -23,23 +23,79 @@ namespace PepperDash.Essentials.Bridges
 
             joinMap.OffsetJoinNumbers(joinStart);
 
+            Debug.Console(1, systemMonitorController, "Linking API starting at join: {0}", joinStart);
+
             systemMonitorController.TimeZoneFeedback.LinkInputSig(trilist.UShortInput[joinMap.TimeZone]);
-            trilist.SetUShortSigAction(joinMap.TimeZone, new Action<ushort>(u => systemMonitorController.SetTimeZone(u)));
+            //trilist.SetUShortSigAction(joinMap.TimeZone, new Action<ushort>(u => systemMonitorController.SetTimeZone(u)));
             systemMonitorController.TimeZoneTextFeedback.LinkInputSig(trilist.StringInput[joinMap.TimeZoneName]);
 
             systemMonitorController.IOControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.IOControllerVersion]);
             systemMonitorController.SnmpVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.SnmpAppVersion]);
+            systemMonitorController.BACnetAppVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.BACnetAppVersion]);
+            systemMonitorController.ControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.BACnetAppVersion]);
 
 
-            foreach (var p in SystemMonitor.ProgramCollection)
+            // iterate the program status feedback collection and map all the joins
+            var programSlotJoinStart = joinMap.ProgramStartJoin;
+
+            foreach (var p in systemMonitorController.ProgramStatusFeedbackCollection)
             {
-                
+
+                // TODO: link feedbacks for each program slot
+                var programNumber = p.Value.Program.Number;
+
+                Debug.Console(1, systemMonitorController, "Linking API for Program Slot: {0} starting at join: {1}", programNumber, programSlotJoinStart);
+
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStart, new Action<bool>
+                    (b => SystemMonitor.ProgramCollection[programNumber].OperatingState = eProgramOperatingState.Start));
+                p.Value.ProgramStartedFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramStart]);
+
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStop, new Action<bool>
+                    (b => SystemMonitor.ProgramCollection[programNumber].OperatingState = eProgramOperatingState.Stop));
+                p.Value.ProgramStoppedFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramStop]);
+
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramRegister, new Action<bool>
+                    (b => SystemMonitor.ProgramCollection[programNumber].RegistrationState = eProgramRegistrationState.Register));
+                p.Value.ProgramRegisteredFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramRegister]);
+
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramUnregister, new Action<bool>
+                    (b => SystemMonitor.ProgramCollection[programNumber].RegistrationState = eProgramRegistrationState.Unregister));
+                p.Value.ProgramUnregisteredFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramUnregister]);
+
+                p.Value.ProgramNameFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramName]);
+                p.Value.ProgramCompileTimeFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramCompiledTime]);
+                p.Value.CrestronDataBaseVersionFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramCrestronDatabaseVersion]);
+                p.Value.EnvironmentVersionFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramEnvironmentVersion]);
+                p.Value.AggregatedProgramInfoFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.AggregatedProgramInfo]);
+
+                programSlotJoinStart = programSlotJoinStart + joinMap.ProgramOffsetJoin;
             }
+
+            Debug.Console(1, systemMonitorController, "*****************************Manually Firing Feedback Updates....*****************************");
+
+            systemMonitorController.ControllerVersionFeedback.FireUpdate();
+            systemMonitorController.TimeZoneFeedback.FireUpdate();
+            systemMonitorController.TimeZoneTextFeedback.FireUpdate();
+            systemMonitorController.IOControllerVersionFeedback.FireUpdate();
+            systemMonitorController.SnmpVersionFeedback.FireUpdate();
+            systemMonitorController.BACnetAppVersionFeedback.FireUpdate();
         }
+
+
     }
 
     public class SystemMonitorJoinMap : JoinMapBase
     {
+        /// <summary>
+        /// Offset to indicate where the range of iterated program joins will start
+        /// </summary>
+        public uint ProgramStartJoin { get; set; }
+
+        /// <summary>
+        /// Offset between each program join set
+        /// </summary>
+        public uint ProgramOffsetJoin { get; set; }
+
         //Digital
         public uint ProgramStart { get; set; }
         public uint ProgramStop { get; set; }
@@ -60,7 +116,7 @@ namespace PepperDash.Essentials.Bridges
         public uint ProgramCompiledTime { get; set; }
         public uint ProgramCrestronDatabaseVersion { get; set; }
         public uint ProgramEnvironmentVersion { get; set; }
-
+        public uint AggregatedProgramInfo { get; set; }
 
         public SystemMonitorJoinMap()
         {
@@ -72,15 +128,22 @@ namespace PepperDash.Essentials.Bridges
             BACnetAppVersion = 4;
             ControllerVersion = 5;
 
-            ProgramStart = 11;
-            ProgramStop = 12;
-            ProgramRegister = 13;
-            ProgramUnregister = 14;
+            
+            ProgramStartJoin = 10;
+            
+            ProgramOffsetJoin = 5;
 
-            ProgramName = 11;
-            ProgramCompiledTime = 12;
-            ProgramCrestronDatabaseVersion = 13;
-            ProgramEnvironmentVersion = 14;
+            // Offset in groups of 5 joins
+            ProgramStart = 1;
+            ProgramStop = 2;
+            ProgramRegister = 3;
+            ProgramUnregister = 4;
+
+            ProgramName = 1;
+            ProgramCompiledTime = 2;
+            ProgramCrestronDatabaseVersion = 3;
+            ProgramEnvironmentVersion = 4;
+            AggregatedProgramInfo = 5;
         }
 
         public override void OffsetJoinNumbers(uint joinStart)
@@ -95,15 +158,8 @@ namespace PepperDash.Essentials.Bridges
             BACnetAppVersion = BACnetAppVersion + joinOffset;
             ControllerVersion = ControllerVersion + joinOffset;
 
-            ProgramStart = ProgramStart + joinOffset;
-            ProgramStop = ProgramStop + joinOffset;
-            ProgramRegister = ProgramRegister + joinOffset;
-            ProgramUnregister = ProgramUnregister;
-
-            ProgramName = ProgramName + joinOffset;
-            ProgramCompiledTime = ProgramCompiledTime + joinOffset;
-            ProgramCrestronDatabaseVersion = ProgramCrestronDatabaseVersion + joinOffset;
-            ProgramEnvironmentVersion = ProgramEnvironmentVersion + joinOffset;
+            // Sets the initial join value where the iterated program joins will begin
+            ProgramStartJoin = ProgramStartJoin + joinOffset;
         }
     }
 }
