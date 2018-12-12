@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
+using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Config;
@@ -26,6 +27,14 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// </summary>
 			public const uint RoomIsOn = 301;
 
+			/// <summary>
+			/// 41
+			/// </summary>
+			public const uint PromptForCode = 41;
+			/// <summary>
+			/// 42
+			/// </summary>
+			public const uint ClientJoined = 42;
 			/// <summary>
 			/// 51
 			/// </summary>
@@ -60,13 +69,14 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 63
 			/// </summary>
 			public const uint ShutdownStart = 63;
-
-
-
 			/// <summary>
 			/// 72
 			/// </summary>
 			public const uint SourceHasChanged = 72;
+			/// <summary>
+			/// 261 - The start of the range of speed dial visibles
+			/// </summary>
+			public const uint SpeedDialVisibleStartJoin = 261;
 			/// <summary>
 			/// 501
 			/// </summary>
@@ -92,6 +102,16 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 71
 			/// </summary>
 			public const uint SelectedSourceKey = 71;
+
+			/// <summary>
+			/// 241
+			/// </summary>
+			public const uint SpeedDialNameStartJoin = 241;
+
+			/// <summary>
+			/// 251
+			/// </summary>
+			public const uint SpeedDialNumberStartJoin = 251;
 			
 			/// <summary>
 			/// 501
@@ -145,6 +165,8 @@ namespace PepperDash.Essentials.Room.Cotija
 
 		CotijaDdvc01DeviceBridge SourceBridge;
 
+		Ddvc01AtcMessenger AtcMessenger;
+
 
 		/// <summary>
 		/// 
@@ -182,6 +204,9 @@ namespace PepperDash.Essentials.Room.Cotija
 			SetupFunctions();
 			SetupFeedbacks();
 
+			AtcMessenger = new Ddvc01AtcMessenger(EISC, "/device/audioCodec");
+			AtcMessenger.RegisterWithAppServer(Parent);
+
 			EISC.SigChange += EISC_SigChange;
 			EISC.OnlineStatusChange += (o, a) =>
 			{
@@ -216,8 +241,6 @@ namespace PepperDash.Essentials.Room.Cotija
 				}
 			}, "mobilebridgedump", "Dumps DDVC01 bridge EISC data b,u,s", ConsoleAccessLevelEnum.AccessOperator);
 
-			CrestronConsole.AddNewConsoleCommand(s => LoadConfigValues(), "loadddvc", "", ConsoleAccessLevelEnum.AccessOperator);
-
 			return base.CustomActivate();
 		}
 
@@ -227,6 +250,9 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		void SetupFunctions()
 		{
+#warning need join numbers for these
+			Parent.AddAction(@"/room/room1/promptForCode", new Action(() => EISC.PulseBool(BoolJoin.PromptForCode)));
+			Parent.AddAction(@"/room/room1/clientJoined", new Action(() => EISC.PulseBool(BoolJoin.ClientJoined)));
 
 			Parent.AddAction(@"/room/room1/status", new Action(SendFullStatus));
 
@@ -238,6 +264,10 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			Parent.AddAction(@"/room/room1/defaultsource", new Action(() => 
 				EISC.PulseBool(BoolJoin.ActivitySharePress)));
+			Parent.AddAction(@"/room/room1/activityVideo", new Action(() =>
+				EISC.PulseBool(BoolJoin.ActivityVideoCallPress)));
+			Parent.AddAction(@"/room/room1/activityPhone", new Action(() =>
+				EISC.PulseBool(BoolJoin.ActivityPhoneCallPress)));
 
 			Parent.AddAction(@"/room/room1/volumes/master/level", new Action<ushort>(u => 
 				EISC.SetUshort(UshortJoin.MasterVolumeLevel, u)));
@@ -250,19 +280,25 @@ namespace PepperDash.Essentials.Room.Cotija
 				EISC.PulseBool(BoolJoin.ShutdownEnd)));
 			Parent.AddAction(@"/room/room1/shutdownCancel", new Action(() =>
 				EISC.PulseBool(BoolJoin.ShutdownCancel)));
-
-
-            // Source Device (Current Source)'
-
-            SourceDeviceMapDictionary sourceJoinMap = new SourceDeviceMapDictionary();
-
-            var prefix = @"/device/currentSource/";
-
-            foreach (var item in sourceJoinMap)
-            {
-                Parent.AddAction(string.Format("{0}{1}", prefix, item.Key), new PressAndHoldAction(b => EISC.SetBool(item.Value, b)));
-            }
 		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="devKey"></param>
+		void SetupSourceFunctions(string devKey)
+		{
+			SourceDeviceMapDictionary sourceJoinMap = new SourceDeviceMapDictionary();
+
+			var prefix = string.Format("/device/{0}/", devKey);
+
+			foreach (var item in sourceJoinMap)
+			{
+				var join = item.Value;
+				Parent.AddAction(string.Format("{0}{1}", prefix, item.Key), new PressAndHoldAction(b => EISC.SetBool(join, b)));
+			}
+		}
+
 
 		/// <summary>
 		/// Links feedbacks to whatever is gonna happen!
@@ -345,11 +381,11 @@ namespace PepperDash.Essentials.Room.Cotija
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             co.Info.RuntimeInfo.AssemblyVersion = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
 
-
 			//Room
-			if (co.Rooms == null)
-				co.Rooms = new List<DeviceConfig>();
-			var rm = new DeviceConfig();
+			//if (co.Rooms == null)
+			// always start fresh in case simpl changed
+			co.Rooms = new List<EssentialsRoomConfig>();
+			var rm = new EssentialsRoomConfig();
             if (co.Rooms.Count == 0)
             {
                 Debug.Console(0, this, "Adding room to config");
@@ -388,6 +424,11 @@ namespace PepperDash.Essentials.Room.Cotija
 				var name = EISC.StringOutput[i + 1].StringValue;
 				rmProps.SpeedDials.Add(new DDVC01SpeedDial { Number = num, Name = name});
 			}
+
+			// This MAY need a check 
+			rmProps.AudioCodecKey = "audioCodec";
+			rmProps.VideoCodecKey = null; // "videoCodec";
+
 			// volume control names
 			var volCount = EISC.UShortOutput[701].UShortValue;
 
@@ -403,7 +444,10 @@ namespace PepperDash.Essentials.Room.Cotija
 				co.Devices = new List<DeviceConfig>();
 
 			// clear out previous DDVC devices
-			co.Devices.RemoveAll(d => d.Key.StartsWith("source-", StringComparison.OrdinalIgnoreCase));
+			co.Devices.RemoveAll(d => 
+				d.Key.StartsWith("source-", StringComparison.OrdinalIgnoreCase)
+				|| d.Key.Equals("audioCodec", StringComparison.OrdinalIgnoreCase) 
+				|| d.Key.Equals("videoCodec", StringComparison.OrdinalIgnoreCase));
 			
 			rmProps.SourceListKey = "default";
 			rm.Properties = JToken.FromObject(rmProps);
@@ -422,6 +466,7 @@ namespace PepperDash.Essentials.Room.Cotija
 					break;
 				var icon = EISC.StringOutput[651 + i].StringValue;
 				var key = EISC.StringOutput[671 + i].StringValue;
+
 				var type = EISC.StringOutput[701 + i].StringValue;
 
 				Debug.Console(0, this, "Adding source {0} '{1}'", key, name);
@@ -430,6 +475,7 @@ namespace PepperDash.Essentials.Room.Cotija
 					Name = name,
 					Order = (int)i + 1,
 					SourceKey = key,
+					Type = eSourceListItemType.Route
 				};
 				newSl.Add(key, newSLI);
                 
@@ -447,9 +493,49 @@ namespace PepperDash.Essentials.Room.Cotija
 					Type = type
 				};
 				co.Devices.Add(devConf);
+
+				if (group.ToLower().StartsWith("settopbox")) // Add others here as needed
+				{
+					SetupSourceFunctions(key);
+				}
 			}
 
 			co.SourceLists.Add("default", newSl);
+
+			// build "audioCodec" config if we need
+			if (!string.IsNullOrEmpty(rmProps.AudioCodecKey))
+			{
+				var acFavs = new List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem>();
+				for (uint i = 0; i < 4; i++)
+				{
+					if (!EISC.GetBool(BoolJoin.SpeedDialVisibleStartJoin + i))
+					{
+						break;
+					}
+					acFavs.Add(new PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem()
+					{
+						Name = EISC.GetString(StringJoin.SpeedDialNameStartJoin + i),
+						Number = EISC.GetString(StringJoin.SpeedDialNumberStartJoin + i),
+						Type = PepperDash.Essentials.Devices.Common.Codec.eCodecCallType.Audio
+					});
+				}
+
+				var acProps = new
+				{
+					favorites = acFavs
+				};
+
+				var acStr = "audioCodec";
+				var acConf = new DeviceConfig()
+				{
+					Group = acStr,
+					Key = acStr,
+					Name = acStr,
+					Type = acStr,
+					Properties = JToken.FromObject(acProps)
+				};
+				co.Devices.Add(acConf);
+			}	
 
 			Debug.Console(0, this, "******* CONFIG FROM DDVC: \r{0}", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
 
@@ -462,6 +548,9 @@ namespace PepperDash.Essentials.Room.Cotija
 			ConfigIsLoaded = true;
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
 		void SendFullStatus()
 		{
 			if (ConfigIsLoaded)
@@ -584,87 +673,6 @@ namespace PepperDash.Essentials.Room.Cotija
 			Debug.Console(1, this, "Server user code changed: {0}", UserCode);
 			EISC.StringInput[StringJoin.UserCodeToSystem].StringValue = UserCode;
 			EISC.StringInput[StringJoin.ServerUrl].StringValue = Parent.Config.ClientAppUrl;
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="oldKey"></param>
-		/// <param name="newKey"></param>
-		void SourceChange(string oldKey, string newKey)
-		{
-			/* Example message
-             * {
-                  "type":"/room/status",
-                  "content": {
-                    "selectedSourceKey": "off",
-                  }
-                }
-             */
-			//if (type == ChangeType.WillChange)
-			//{
-			//    // Disconnect from previous source
-
-			//    if (info != null)
-			//    {
-			//        var previousDev = info.SourceDevice;
-
-			//        // device type interfaces
-			//        if (previousDev is ISetTopBoxControls)
-			//            (previousDev as ISetTopBoxControls).UnlinkActions(Parent);
-			//        // common interfaces
-			//        if (previousDev is IChannel)
-			//            (previousDev as IChannel).UnlinkActions(Parent);
-			//        if (previousDev is IColor)
-			//            (previousDev as IColor).UnlinkActions(Parent);
-			//        if (previousDev is IDPad)
-			//            (previousDev as IDPad).UnlinkActions(Parent);
-			//        if (previousDev is IDvr)
-			//            (previousDev as IDvr).UnlinkActions(Parent);
-			//        if (previousDev is INumericKeypad)
-			//            (previousDev as INumericKeypad).UnlinkActions(Parent);
-			//        if (previousDev is IPower)
-			//            (previousDev as IPower).UnlinkActions(Parent);
-			//        if (previousDev is ITransport)
-			//            (previousDev as ITransport).UnlinkActions(Parent);
-			//    }
-
-
-			//    var huddleRoom = room as EssentialsHuddleSpaceRoom;
-			//    JObject roomStatus = new JObject();
-			//    roomStatus.Add("selectedSourceKey", huddleRoom.CurrentSourceInfoKey);
-
-			//    JObject message = new JObject();
-
-			//    message.Add("type", "/room/status/");
-			//    message.Add("content", roomStatus);
-
-			//    Parent.PostToServer(message);
-			//}
-			//else
-			//{
-			//    if (info != null)
-			//    {
-			//        var dev = info.SourceDevice;
-
-			//        if (dev is ISetTopBoxControls)
-			//            (dev as ISetTopBoxControls).LinkActions(Parent);
-			//        if (dev is IChannel)
-			//            (dev as IChannel).LinkActions(Parent);
-			//        if (dev is IColor)
-			//            (dev as IColor).LinkActions(Parent);
-			//        if (dev is IDPad)
-			//            (dev as IDPad).LinkActions(Parent);
-			//        if (dev is IDvr)
-			//            (dev as IDvr).LinkActions(Parent);
-			//        if (dev is INumericKeypad)
-			//            (dev as INumericKeypad).LinkActions(Parent);
-			//        if (dev is IPower)
-			//            (dev as IPower).LinkActions(Parent);
-			//        if (dev is ITransport)
-			//            (dev as ITransport).LinkActions(Parent);
-			//    }
-			//}
 		}
 	}
 }

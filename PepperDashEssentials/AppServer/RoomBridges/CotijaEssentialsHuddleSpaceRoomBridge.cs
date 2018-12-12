@@ -74,7 +74,7 @@ namespace PepperDash.Essentials
 			{
 				Parent.AddAction(string.Format(@"/room/{0}/volumes/master/level", Room.Key), new Action<ushort>(u =>
 					(volumeRoom.CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(u)));
-				Parent.AddAction(string.Format(@"/room/{0}/volumes/master/mute", Room.Key), new Action(() => 
+				Parent.AddAction(string.Format(@"/room/{0}/volumes/master/muteToggle", Room.Key), new Action(() => 
 					volumeRoom.CurrentVolumeControls.MuteToggle()));
 				volumeRoom.CurrentVolumeDeviceChange += new EventHandler<VolumeDeviceChangeEventArgs>(Room_CurrentVolumeDeviceChange);
 
@@ -82,7 +82,7 @@ namespace PepperDash.Essentials
 				var currentVolumeDevice = volumeRoom.CurrentVolumeControls as IBasicVolumeWithFeedback;
 				if (currentVolumeDevice != null)
 				{
-					currentVolumeDevice.MuteFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
+					currentVolumeDevice.MuteFeedback.OutputChange += MuteFeedback_OutputChange;
 					currentVolumeDevice.VolumeLevelFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
 				}
 			}
@@ -470,8 +470,7 @@ namespace PepperDash.Essentials
 				};
 			}
 			return vtc;
-		}
-     
+		}     
     }
 
 	/// <summary>

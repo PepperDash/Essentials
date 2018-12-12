@@ -15,29 +15,22 @@ namespace PepperDash.Essentials.AppServer.Messengers
 	/// <summary>
 	/// Provides a messaging bridge for a VideoCodecBase
 	/// </summary>
-	public class VideoCodecBaseMessenger
+	public class VideoCodecBaseMessenger : MessengerBase
 	{
 		/// <summary>
 		/// 
 		/// </summary>
 		public VideoCodecBase Codec { get; private set; }
 
-		public CotijaSystemController AppServerController { get; private set; }
-
-		public string MessagePath { get; private set; }
-
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="codec"></param>
-		public VideoCodecBaseMessenger(VideoCodecBase codec, string messagePath)
+		public VideoCodecBaseMessenger(VideoCodecBase codec, string messagePath) : base(messagePath)
 		{
 			if (codec == null)
 				throw new ArgumentNullException("codec");
-			if (string.IsNullOrEmpty(messagePath))
-				throw new ArgumentException("messagePath must not be empty or null");
 
-			MessagePath = messagePath;
 			Codec = codec;
 			codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
 			codec.IsReadyChange += new EventHandler<EventArgs>(codec_IsReadyChange);
@@ -77,16 +70,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		}
 
 		/// <summary>
-		/// Registers this codec's messaging with an app server controller
+		/// Called from base's RegisterWithAppServer method
 		/// </summary>
 		/// <param name="appServerController"></param>
-		public void RegisterWithAppServer(CotijaSystemController appServerController)
+		protected override void CustomRegisterWithAppServer(CotijaSystemController appServerController)
 		{
-			if (appServerController == null)
-				throw new ArgumentNullException("appServerController");
-			
-			AppServerController = appServerController;
-
 			appServerController.AddAction("/device/videoCodec/isReady", new Action(SendIsReady));
 			appServerController.AddAction("/device/videoCodec/fullStatus", new Action(SendVtcFullMessageObject));
 			appServerController.AddAction("/device/videoCodec/dial", new Action<string>(s => Codec.Dial(s)));
@@ -241,19 +229,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				showSelfViewByDefault = Codec.ShowSelfViewByDefault,
 				hasDirectory = Codec is IHasDirectory
 			});
-		}
-
-		/// <summary>
-		/// Helper for posting status message
-		/// </summary>
-		/// <param name="contentObject">The contents of the content object</param>
-		void PostStatusMessage(object contentObject)
-		{
-			AppServerController.SendMessageToServer(JObject.FromObject(new
-			{
-				type = MessagePath,
-				content = contentObject
-			}));
 		}
 	}
 }
