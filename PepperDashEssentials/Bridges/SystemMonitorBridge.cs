@@ -32,7 +32,7 @@ namespace PepperDash.Essentials.Bridges
             systemMonitorController.IOControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.IOControllerVersion]);
             systemMonitorController.SnmpVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.SnmpAppVersion]);
             systemMonitorController.BACnetAppVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.BACnetAppVersion]);
-            systemMonitorController.ControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.BACnetAppVersion]);
+            systemMonitorController.ControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.ControllerVersion]);
 
 
             // iterate the program status feedback collection and map all the joins
@@ -62,23 +62,9 @@ namespace PepperDash.Essentials.Bridges
                     (b => SystemMonitor.ProgramCollection[programNumber].RegistrationState = eProgramRegistrationState.Unregister));
                 p.Value.ProgramUnregisteredFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramUnregister]);
 
-                p.Value.ProgramNameFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramName]);
-                p.Value.ProgramCompileTimeFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramCompiledTime]);
-                p.Value.CrestronDataBaseVersionFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramCrestronDatabaseVersion]);
-                p.Value.EnvironmentVersionFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramEnvironmentVersion]);
-                p.Value.AggregatedProgramInfoFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.AggregatedProgramInfo]);
-
                 programSlotJoinStart = programSlotJoinStart + joinMap.ProgramOffsetJoin;
             }
 
-            Debug.Console(1, systemMonitorController, "*****************************Manually Firing Feedback Updates....*****************************");
-
-            systemMonitorController.ControllerVersionFeedback.FireUpdate();
-            systemMonitorController.TimeZoneFeedback.FireUpdate();
-            systemMonitorController.TimeZoneTextFeedback.FireUpdate();
-            systemMonitorController.IOControllerVersionFeedback.FireUpdate();
-            systemMonitorController.SnmpVersionFeedback.FireUpdate();
-            systemMonitorController.BACnetAppVersionFeedback.FireUpdate();
         }
 
 
@@ -150,7 +136,7 @@ namespace PepperDash.Essentials.Bridges
         {
             var joinOffset = joinStart - 1;
 
-            TimeZone = TimeZone;
+            TimeZone = TimeZone + joinOffset;
 
             TimeZoneName = TimeZoneName + joinOffset;
             IOControllerVersion = IOControllerVersion + joinOffset;
