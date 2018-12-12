@@ -64,8 +64,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		/// <param name="eisc"></param>
 		/// <param name="messagePath"></param>
-		public Ddvc01AtcMessenger(BasicTriList eisc, string messagePath)
-			: base(messagePath)
+		public Ddvc01AtcMessenger(string key, BasicTriList eisc, string messagePath)
+			: base(key, messagePath)
 		{
 			EISC = eisc;
 

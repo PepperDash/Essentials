@@ -7,6 +7,8 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using PepperDash.Core;
+
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
@@ -15,8 +17,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 	/// <summary>
 	/// Provides a messaging bridge for a VideoCodecBase
 	/// </summary>
-	public abstract class MessengerBase
+	public abstract class MessengerBase : IKeyed
 	{
+        public string Key { get; private set; }
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -28,8 +32,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// 
 		/// </summary>
 		/// <param name="codec"></param>
-		public MessengerBase(string messagePath)
+		public MessengerBase(string key, string messagePath)
 		{
+            Key = key;
+
 			if (string.IsNullOrEmpty(messagePath))
 				throw new ArgumentException("messagePath must not be empty or null");
 

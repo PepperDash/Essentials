@@ -26,7 +26,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// 
 		/// </summary>
 		/// <param name="codec"></param>
-		public VideoCodecBaseMessenger(VideoCodecBase codec, string messagePath) : base(messagePath)
+		public VideoCodecBaseMessenger(string key, VideoCodecBase codec, string messagePath)
+            : base(key, messagePath)
 		{
 			if (codec == null)
 				throw new ArgumentNullException("codec");

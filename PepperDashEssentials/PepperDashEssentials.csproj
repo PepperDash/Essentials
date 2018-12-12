@@ -110,6 +110,7 @@
   <ItemGroup>
     <Compile Include="AppServer\Messengers\AtcDdvc01Messenger.cs" />
     <Compile Include="AppServer\Messengers\MessengerBase.cs" />
+    <Compile Include="AppServer\Messengers\SystemMonitorMessenger.cs" />
     <Compile Include="AppServer\Messengers\VideoCodecBaseMessenger.cs" />
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
     <Compile Include="Bridges\BridgeBase.cs" />
@@ -142,13 +143,13 @@
     <Compile Include="Devices\NUMERIC AppleTV.cs" />
     <Compile Include="ControlSystem.cs" />
     <Compile Include="Factory\UiDeviceFactory.cs" />
-    <Compile Include="OTHER\Fusion\EssentialsHuddleVtc1FusionController.cs" />
-    <Compile Include="OTHER\Fusion\FusionCustomPropertiesBridge.cs" />
-    <Compile Include="OTHER\Fusion\FusionEventHandlers.cs" />
-    <Compile Include="OTHER\Fusion\FusionProcessorQueries.cs" />
-    <Compile Include="OTHER\Fusion\FusionRviDataClasses.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\EssentialsHuddleVtc1FusionController.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionCustomPropertiesBridge.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionEventHandlers.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionProcessorQueries.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionRviDataClasses.cs" />
     <Compile Include="REMOVE EssentialsApp.cs" />
-    <Compile Include="OTHER\Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
     <Compile Include="HttpApiHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />

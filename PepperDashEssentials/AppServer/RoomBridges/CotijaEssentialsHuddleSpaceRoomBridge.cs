@@ -95,7 +95,8 @@ namespace PepperDash.Essentials
 			if (vcRoom != null)
 			{
 				var codec = vcRoom.VideoCodec;
-				VCMessenger = new VideoCodecBaseMessenger(vcRoom.VideoCodec, "/device/videoCodec");
+                var key = vcRoom.VideoCodec.Key + "-" + parent.Key;
+				VCMessenger = new VideoCodecBaseMessenger(key, vcRoom.VideoCodec, "/device/videoCodec");
 				VCMessenger.RegisterWithAppServer(Parent);
 
 				// May need to move this or remove this 

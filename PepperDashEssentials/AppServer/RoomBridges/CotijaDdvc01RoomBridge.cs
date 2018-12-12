@@ -204,7 +204,8 @@ namespace PepperDash.Essentials.Room.Cotija
 			SetupFunctions();
 			SetupFeedbacks();
 
-			AtcMessenger = new Ddvc01AtcMessenger(EISC, "/device/audioCodec");
+            var key = this.Key + "-" + Parent.Key;
+			AtcMessenger = new Ddvc01AtcMessenger(key, EISC, "/device/audioCodec");
 			AtcMessenger.RegisterWithAppServer(Parent);
 
 			EISC.SigChange += EISC_SigChange;
@@ -384,8 +385,8 @@ namespace PepperDash.Essentials.Room.Cotija
 			//Room
 			//if (co.Rooms == null)
 			// always start fresh in case simpl changed
-			co.Rooms = new List<EssentialsRoomConfig>();
-			var rm = new EssentialsRoomConfig();
+			co.Rooms = new List<DeviceConfig>();
+			var rm = new DeviceConfig();
             if (co.Rooms.Count == 0)
             {
                 Debug.Console(0, this, "Adding room to config");

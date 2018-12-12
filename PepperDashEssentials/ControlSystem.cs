@@ -212,6 +212,7 @@ namespace PepperDash.Essentials
 		void Load()
 		{
 			LoadDevices();
+            LinkSystemMonitorToAppServer();
 			LoadTieLines();
 			LoadRooms();
 			LoadLogoServer();
@@ -219,6 +220,24 @@ namespace PepperDash.Essentials
 			DeviceManager.ActivateAll();
 		}
 
+        void LinkSystemMonitorToAppServer()
+        {
+            var sysMon = DeviceManager.GetDeviceForKey("systemMonitor") as PepperDash.Essentials.Core.Monitoring.SystemMonitorController;
+
+            var appServer = DeviceManager.GetDeviceForKey("appServer") as CotijaSystemController;
+
+
+            if (sysMon != null && appServer != null)
+            {
+                var key = sysMon.Key + "-" + appServer.Key;
+                var messenger = new PepperDash.Essentials.AppServer.Messengers.SystemMonitorMessenger
+                    (key, sysMon, "/device/systemMonitor");
+
+                DeviceManager.AddDevice(messenger);    
+                
+
+            }
+        }
 
 		/// <summary>
 		/// Reads all devices from config and adds them to DeviceManager
@@ -277,6 +296,7 @@ namespace PepperDash.Essentials
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Devices Loaded.");
 
 		}
+
 
 		/// <summary>
 		/// Helper method to load tie lines.  This should run after devices have loaded
