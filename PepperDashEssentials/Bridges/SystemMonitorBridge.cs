@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.Bridges
 
             joinMap.OffsetJoinNumbers(joinStart);
 
-            Debug.Console(1, systemMonitorController, "Linking API starting at join: {0}", joinStart);
+            //Debug.Console(1, systemMonitorController, "Linking API starting at join: {0}", joinStart);
 
             systemMonitorController.TimeZoneFeedback.LinkInputSig(trilist.UShortInput[joinMap.TimeZone]);
             //trilist.SetUShortSigAction(joinMap.TimeZone, new Action<ushort>(u => systemMonitorController.SetTimeZone(u)));
@@ -44,7 +44,7 @@ namespace PepperDash.Essentials.Bridges
                 // TODO: link feedbacks for each program slot
                 var programNumber = p.Value.Program.Number;
 
-                Debug.Console(1, systemMonitorController, "Linking API for Program Slot: {0} starting at join: {1}", programNumber, programSlotJoinStart);
+                //Debug.Console(1, systemMonitorController, "Linking API for Program Slot: {0} starting at join: {1}", programNumber, programSlotJoinStart);
 
                 trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStart, new Action<bool>
                     (b => SystemMonitor.ProgramCollection[programNumber].OperatingState = eProgramOperatingState.Start));

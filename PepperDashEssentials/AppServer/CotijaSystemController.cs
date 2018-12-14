@@ -67,6 +67,9 @@ namespace PepperDash.Essentials
         public CotijaSystemController(string key, string name, CotijaConfig config) : base(key, name)
         {
             Config = config;
+
+            SystemUuid = ConfigReader.ConfigObject.SystemUuid;
+
 			Debug.Console(0, this, "Mobile UI controller initializing for server:{0}", config.ServerUrl);
 
 			CrestronConsole.AddNewConsoleCommand(AuthorizeSystem,
@@ -95,6 +98,21 @@ namespace PepperDash.Essentials
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
 			CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
 				
+        }
+
+        /// <summary>
+        /// If config rooms is empty or null then go
+        /// </summary>
+        /// <returns></returns>
+        public override bool CustomActivate()
+        {
+            if (ConfigReader.ConfigObject.Rooms == null || ConfigReader.ConfigObject.Rooms.Count == 0)
+            {
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Config contains no rooms.  Registering with Server.");
+                RegisterSystemToServer();
+            }
+
+            return base.CustomActivate();
         }
 
 		/// <summary>
@@ -177,7 +195,7 @@ namespace PepperDash.Essentials
 			else
 			{
 				Debug.Console(0, this, "Adding room bridge and sending configuration");
-				SystemUuid = ConfigReader.ConfigObject.SystemUuid;
+                //SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 				RegisterSystemToServer();
 			}
 		}
@@ -190,7 +208,7 @@ namespace PepperDash.Essentials
 		void bridge_ConfigurationIsReady(object sender, EventArgs e)
 		{
 			Debug.Console(1, this, "Bridge ready.  Registering");
-			SystemUuid = ConfigReader.ConfigObject.SystemUuid;
+            //SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 			// send the configuration object to the server
 			RegisterSystemToServer();
 		}
@@ -210,7 +228,7 @@ namespace PepperDash.Essentials
 		/// <param name="command"></param>
 		void AuthorizeSystem(string code)
 		{
-			SystemUuid = ConfigReader.ConfigObject.SystemUuid;
+            //SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 
 			if (string.IsNullOrEmpty(SystemUuid))
 			{
@@ -314,7 +332,6 @@ namespace PepperDash.Essentials
 		/// <param name="o"></param>
 		void ConnectWebsocketClient()
 		{
-
 
 			Debug.Console(1, this, "Initializing Stream client to server.");
 

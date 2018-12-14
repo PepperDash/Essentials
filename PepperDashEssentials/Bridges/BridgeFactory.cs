@@ -30,7 +30,7 @@ namespace PepperDash.Essentials
 			var typeName = dc.Type.ToLower();
 			var groupName = dc.Group.ToLower();
 
-			Debug.Console(0, "Name {0}, Key {1}, Type {2}, Properties {3}", name, key, type, properties.ToString());
+			//Debug.Console(2, "Name {0}, Key {1}, Type {2}, Properties {3}", name, key, type, properties.ToString());
 
 			if (typeName == "eiscapi") 
             {

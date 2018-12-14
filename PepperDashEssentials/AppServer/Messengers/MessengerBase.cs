@@ -68,11 +68,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// <param name="contentObject">The contents of the content object</param>
 		protected void PostStatusMessage(object contentObject)
 		{
-			AppServerController.SendMessageToServer(JObject.FromObject(new
-			{
-				type = MessagePath,
-				content = contentObject
-			}));
+            if (AppServerController != null)
+            {
+                AppServerController.SendMessageToServer(JObject.FromObject(new
+                {
+                    type = MessagePath,
+                    content = contentObject
+                }));
+            }
 		}
 	}
 }

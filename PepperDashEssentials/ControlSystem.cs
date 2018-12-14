@@ -233,6 +233,8 @@ namespace PepperDash.Essentials
                 var messenger = new PepperDash.Essentials.AppServer.Messengers.SystemMonitorMessenger
                     (key, sysMon, "/device/systemMonitor");
 
+                messenger.RegisterWithAppServer(appServer);
+
                 DeviceManager.AddDevice(messenger);    
                 
 

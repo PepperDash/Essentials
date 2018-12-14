@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 
 using Newtonsoft.Json;
 
+using PepperDash.Core;
 using PepperDash.Essentials.Core.Monitoring;
 
 namespace PepperDash.Essentials.AppServer.Messengers
@@ -45,6 +46,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             var programInfo = JsonConvert.DeserializeObject<ProgramInfo>(serializedProgramInfo);
 
+            Debug.Console(2, "Posting Status Message: {0}", programInfo.ToString());
+
             PostStatusMessage(programInfo);
         }
 
@@ -70,6 +73,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         void SendSystemMonitorStatusMessage()
         {
+            Debug.Console(2, "Posting System Monitor Status Message.");
+
             // This takes a while, launch a new thread
             CrestronInvoke.BeginInvoke((o) =>
             {
