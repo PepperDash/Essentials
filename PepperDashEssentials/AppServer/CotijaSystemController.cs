@@ -47,6 +47,8 @@ namespace PepperDash.Essentials
 
         long ServerReconnectInterval = 5000;
 
+        DateTime LastAckMessage;
+
         string SystemUuid;
 
 		List<CotijaBridgeBase> RoomBridges = new List<CotijaBridgeBase>();
@@ -307,14 +309,17 @@ namespace PepperDash.Essentials
 				code = "Not available";
 			}
 			var conn = WSClient == null ? "No client" : (WSClient.Connected ? "Yes" : "No");
+            var secSinceLastAck = DateTime.Now - LastAckMessage;
+
 
 			CrestronConsole.ConsoleCommandResponse(@"Mobile Control Information:
 	Server address: {0}
 	System Name: {1}
 	System UUID: {2}
 	System User code: {3}
-	Connected?: {4}", url, name, SystemUuid, 
-					code, conn);
+	Connected?: {4}
+    Seconds Since Last Ack: {5}", url, name, SystemUuid,
+                    code, conn, secSinceLastAck.Seconds);
 		}
 
         /// <summary>
@@ -430,7 +435,12 @@ namespace PepperDash.Essentials
             if (WSClient != null && WSClient.Connected)
             {
                 string message = JsonConvert.SerializeObject(o, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-				Debug.Console(1, this, "Message TX: {0}", message);
+
+                if (!message.Contains("/system/heartbeat"))
+                    Debug.Console(1, this, "Message TX: {0}", message);
+                //else
+                //    Debug.Console(1, this, "TX messages contains /system/heartbeat");
+
                 var messageBytes = System.Text.Encoding.UTF8.GetBytes(message);
 				var result = WSClient.Send(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
 				if (result != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
@@ -656,7 +666,14 @@ namespace PepperDash.Essentials
             if(string.IsNullOrEmpty(message))
                 return;
 
-            Debug.Console(1, this, "Message RX: {0}", message);
+            if (!message.Contains("/system/heartbeat"))
+                Debug.Console(1, this, "Message RX: {0}", message);
+            else
+            {
+                LastAckMessage = DateTime.Now;
+                //Debug.Console(1, this, "RX message contains /system/heartbeat");
+            }
+
             try
             {
                 var messageObj = JObject.Parse(message);

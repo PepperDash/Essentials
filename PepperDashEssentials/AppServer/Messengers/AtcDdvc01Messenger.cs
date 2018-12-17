@@ -85,6 +85,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				callStatus = EISC.GetString(SHookState),
 				currentCallString = EISC.GetString(SCurrentCallString),
 				currentDialString = EISC.GetString(SCurrentDialString),
+                isInCall = EISC.GetString(SHookState) == "Connected"
 			});
 		}
 
