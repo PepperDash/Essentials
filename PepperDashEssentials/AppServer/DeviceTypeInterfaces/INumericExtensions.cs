@@ -24,8 +24,8 @@ namespace PepperDash.Essentials.Room.Cotija
             controller.AddAction(prefix + "num7", new PressAndHoldAction(dev.Digit0));
             controller.AddAction(prefix + "num8", new PressAndHoldAction(dev.Digit0));
             controller.AddAction(prefix + "num9", new PressAndHoldAction(dev.Digit0));
-            controller.AddAction(prefix + "dash", new PressAndHoldAction(dev.KeypadAccessoryButton1));
-            controller.AddAction(prefix + "enter", new PressAndHoldAction(dev.KeypadAccessoryButton2));
+            controller.AddAction(prefix + "numDash", new PressAndHoldAction(dev.KeypadAccessoryButton1));
+            controller.AddAction(prefix + "numEnter", new PressAndHoldAction(dev.KeypadAccessoryButton2));
             // Deal with the Accessory functions on the numpad later
         }
 
@@ -43,8 +43,8 @@ namespace PepperDash.Essentials.Room.Cotija
             controller.RemoveAction(prefix + "num7");
             controller.RemoveAction(prefix + "num8");
             controller.RemoveAction(prefix + "num9");
-            controller.RemoveAction(prefix + "dash");
-            controller.RemoveAction(prefix + "enter");
+            controller.RemoveAction(prefix + "numDash");
+            controller.RemoveAction(prefix + "numEnter");
         }
     }
 }

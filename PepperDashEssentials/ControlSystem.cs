@@ -4,11 +4,15 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
+using Crestron.SimplSharpPro.Diagnostics;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
+using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Room.Cotija;
 
 namespace PepperDash.Essentials
@@ -30,10 +34,18 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void InitializeSystem()
 		{
+            SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
+
             DeterminePlatform();
 
             //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
+
+           // CrestronConsole.AddNewConsoleCommand(S => { ConfigWriter.WriteConfigFile(null); }, "writeconfig", "writes the current config to a file", ConsoleAccessLevelEnum.AccessOperator);
+			CrestronConsole.AddNewConsoleCommand(s =>
+			{
+				Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s);
+			}, "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
@@ -94,7 +106,7 @@ namespace PepperDash.Essentials
             {
                 filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
 
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on XiO Edge Server", versionString);
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", versionString);
             }
 
             Global.SetFilePathPrefix(filePathPrefix);
@@ -137,11 +149,17 @@ namespace PepperDash.Essentials
 						"------------------------------------------------\r" +
 						"------------------------------------------------");
 				}
+
             }
 			catch (Exception e)
 			{
 				Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r{0}", e);
+
+
 			}
+
+            // Notify the 
+            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
 
 		}
 
@@ -194,6 +212,7 @@ namespace PepperDash.Essentials
 		void Load()
 		{
 			LoadDevices();
+            LinkSystemMonitorToAppServer();
 			LoadTieLines();
 			LoadRooms();
 			LoadLogoServer();
@@ -201,6 +220,26 @@ namespace PepperDash.Essentials
 			DeviceManager.ActivateAll();
 		}
 
+        void LinkSystemMonitorToAppServer()
+        {
+            var sysMon = DeviceManager.GetDeviceForKey("systemMonitor") as PepperDash.Essentials.Core.Monitoring.SystemMonitorController;
+
+            var appServer = DeviceManager.GetDeviceForKey("appServer") as CotijaSystemController;
+
+
+            if (sysMon != null && appServer != null)
+            {
+                var key = sysMon.Key + "-" + appServer.Key;
+                var messenger = new PepperDash.Essentials.AppServer.Messengers.SystemMonitorMessenger
+                    (key, sysMon, "/device/systemMonitor");
+
+                messenger.RegisterWithAppServer(appServer);
+
+                DeviceManager.AddDevice(messenger);    
+                
+
+            }
+        }
 
 		/// <summary>
 		/// Reads all devices from config and adds them to DeviceManager
@@ -210,6 +249,9 @@ namespace PepperDash.Essentials
 # warning Missing PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
 			// Build the processor wrapper class
             // DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+
+            // Add global System Monitor device
+            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));
 
 			foreach (var devConf in ConfigReader.ConfigObject.Devices)
 			{
@@ -228,10 +270,15 @@ namespace PepperDash.Essentials
                         continue;
                     }
 
-					// Try local factory first
+					// Try local factories first
 					var newDev = DeviceFactory.GetDevice(devConf);
 
+                    if (newDev == null)
+                        newDev = BridgeFactory.GetDevice(devConf);
+
 					// Then associated library factories
+                    if (newDev == null)
+                        newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)
@@ -253,6 +300,7 @@ namespace PepperDash.Essentials
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Devices Loaded.");
 
 		}
+
 
 		/// <summary>
 		/// Helper method to load tie lines.  This should run after devices have loaded
@@ -293,7 +341,7 @@ namespace PepperDash.Essentials
 
 			foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
 			{
-				var room = roomConfig.GetRoomObject();
+                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
 				if (room != null)
 				{
                     if (room is EssentialsHuddleSpaceRoom)
@@ -318,10 +366,16 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
+
+						Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Cotija Bridge...");
+						// Cotija bridge
+						var bridge = new CotijaEssentialsHuddleSpaceRoomBridge(room);
+						AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
+						DeviceManager.AddDevice(bridge);				
                     }					
                     else
                     {
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is NOT EssentialsHuddleSpaceRoom, attempting to add to DeviceManager w/o Fusion");
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is NOT EssentialsRoom, attempting to add to DeviceManager w/o Fusion");
                         DeviceManager.AddDevice(room);
                     }
 
@@ -345,7 +399,8 @@ namespace PepperDash.Essentials
 				var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as CotijaSystemController;
 				if (parent == null)
 				{
-					Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
+					Debug.Console(0, bridge, "ERROR: Cannot connect app server room bridge. System controller not present");
+					return;
 				}
 				Debug.Console(0, bridge, "Linking to parent controller");
 				bridge.AddParent(parent);

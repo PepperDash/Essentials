@@ -49,12 +49,12 @@ namespace PepperDash.Essentials
                         avDriver.CurrentRoom = room as EssentialsHuddleSpaceRoom;
                         
                         // Environment Driver
-                        if (avDriver.CurrentRoom.Config.Environment != null && avDriver.CurrentRoom.Config.Environment.DeviceKeys.Count > 0)
+                        if (avDriver.CurrentRoom.PropertiesConfig.Environment != null && avDriver.CurrentRoom.PropertiesConfig.Environment.DeviceKeys.Count > 0)
                         {
                             Debug.Console(0, panelController, "Adding environment driver");
                             mainDriver.EnvironmentDriver = new EssentialsEnvironmentDriver(mainDriver, props);
 
-                            mainDriver.EnvironmentDriver.GetDevicesFromConfig(avDriver.CurrentRoom.Config.Environment);
+                            mainDriver.EnvironmentDriver.GetDevicesFromConfig(avDriver.CurrentRoom.PropertiesConfig.Environment);
                         }
 
                         mainDriver.HeaderDriver.SetupHeaderButtons(avDriver, avDriver.CurrentRoom);
@@ -118,12 +118,12 @@ namespace PepperDash.Essentials
                         avDriver.CurrentRoom = room as EssentialsHuddleVtc1Room;
 
                         // Environment Driver
-                        if (avDriver.CurrentRoom.Config.Environment != null && avDriver.CurrentRoom.Config.Environment.DeviceKeys.Count > 0)
+                        if (avDriver.CurrentRoom.PropertiesConfig.Environment != null && avDriver.CurrentRoom.PropertiesConfig.Environment.DeviceKeys.Count > 0)
                         {
                             Debug.Console(0, panelController, "Adding environment driver");
                             mainDriver.EnvironmentDriver = new EssentialsEnvironmentDriver(mainDriver, props);
 
-                            mainDriver.EnvironmentDriver.GetDevicesFromConfig(avDriver.CurrentRoom.Config.Environment);
+                            mainDriver.EnvironmentDriver.GetDevicesFromConfig(avDriver.CurrentRoom.PropertiesConfig.Environment);
                         }
 
                         mainDriver.HeaderDriver.SetupHeaderButtons(avDriver, avDriver.CurrentRoom);

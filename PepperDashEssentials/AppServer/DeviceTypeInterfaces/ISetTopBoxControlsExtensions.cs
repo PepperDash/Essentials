@@ -14,7 +14,7 @@ namespace PepperDash.Essentials.Room.Cotija
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
-            controller.AddAction(prefix + "dvrlist", new PressAndHoldAction(dev.DvrList));
+            controller.AddAction(prefix + "dvrList", new PressAndHoldAction(dev.DvrList));
             controller.AddAction(prefix + "replay", new PressAndHoldAction(dev.Replay));
         }
 
@@ -22,7 +22,7 @@ namespace PepperDash.Essentials.Room.Cotija
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
-            controller.RemoveAction(prefix + "dvrlist");
+            controller.RemoveAction(prefix + "dvrList");
             controller.RemoveAction(prefix + "replay");
         }
     }

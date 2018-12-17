@@ -29,3 +29,5 @@ devjson:1 {"deviceKey":"microphonePrivacyController-1", "methodName":"TogglePriv
 devjson:1 {"deviceKey":"room1.InCallFeedback","methodName":"SetTestValue", "params": [ true ]}
 
 devjson:1 {"deviceKey":"room1.InCallFeedback","methodName":"ClearTestValue", "params": []}
+
+devjson:3 {"deviceKey":"room1.RoomOccupancy.RoomIsOccupiedFeedback","methodName":"SetTestValue", "params": [ true ]}

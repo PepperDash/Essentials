@@ -10,8 +10,8 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Devices;
-using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.DM;
 
 namespace PepperDash.Essentials.Bridges
@@ -75,31 +75,41 @@ namespace PepperDash.Essentials.Bridges
 
                     if (device != null)
                     {
-                        if (device is GenericComm)
+                        if (device is PepperDash.Essentials.Core.Monitoring.SystemMonitorController)
+                        {
+                            (device as PepperDash.Essentials.Core.Monitoring.SystemMonitorController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is GenericComm)
                         {
                             (device as GenericComm).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-						else if (device is DigitalLogger)
-						{
-							(device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-							continue;
-						}
-						else if (device is DmChassisController)
-						{
-							// (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-							continue;
-						}
-						else if (device is DmTxControllerBase)
-						{
-							// (device as DmTxControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-							continue;
-						}
-						else if (device is DmRmcControllerBase)
-						{
-							// (device as DmRmcControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-							continue;
-						}
+                        else if (device is DmChassisController)
+                        {
+                            (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is DmTxControllerBase)
+                        {
+                            (device as DmTxControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is DmRmcControllerBase)
+                        {
+                            (device as DmRmcControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is GenericRelayDevice)
+                        {
+                            (device as GenericRelayDevice).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is IDigitalInput)
+                        {
+                            (device as IDigitalInput).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
                     }
                 }
 
@@ -134,6 +144,7 @@ namespace PepperDash.Essentials.Bridges
         [JsonProperty("devices")]
         public List<ApiDevice> Devices { get; set; }
 
+
         public class ApiDevice
         {
             [JsonProperty("deviceKey")]
@@ -147,110 +158,6 @@ namespace PepperDash.Essentials.Bridges
         }
 
     }
-
-
-    ///// <summary>
-    ///// API class for IBasicCommunication devices
-    ///// </summary>
-    //public class IBasicCommunicationApi : DeviceApiBase
-    //{
-    //    public IBasicCommunication Device { get; set; }
-
-    //    SerialFeedback TextReceivedFeedback;
-
-    //    public IBasicCommunicationApi(IBasicCommunication dev)
-    //    {
-    //        TextReceivedFeedback = new SerialFeedback();
-
-    //        Device = dev;
-
-    //        SetupFeedbacks();
-
-    //        ActionApi = new Dictionary<string, Object>
-    //        {
-    //            { "connect", new Action(Device.Connect) },
-    //            { "disconnect", new Action(Device.Disconnect) },
-    //            { "connectstate", new Action<bool>( b => ConnectByState(b) ) },
-    //            { "sendtext", new Action<string>( s => Device.SendText(s) ) }
-
-    //        };
-
-    //        FeedbackApi = new Dictionary<string, Feedback>
-    //        {
-    //            { "isconnected", new BoolFeedback( () => Device.IsConnected ) },
-    //            { "textrecieved", TextReceivedFeedback }
-    //        };
-    //    }
-
-    //    /// <summary>
-    //    /// Controls connection based on state of input
-    //    /// </summary>
-    //    /// <param name="state"></param>
-    //    void ConnectByState(bool state)
-    //    {
-    //        if (state)
-    //            Device.Connect();
-    //        else
-    //            Device.Disconnect();                             
-    //    }
-
-    //    void SetupFeedbacks()
-    //    {
-    //        Device.TextReceived += new EventHandler<GenericCommMethodReceiveTextArgs>(Device_TextReceived);
-
-    //        if(Device is ISocketStatus)
-    //            (Device as ISocketStatus).ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(IBasicCommunicationApi_ConnectionChange);
-    //    }
-
-    //    void IBasicCommunicationApi_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
-    //    {
-    //        FeedbackApi["isconnected"].FireUpdate();
-    //    }
-
-    //    void Device_TextReceived(object sender, GenericCommMethodReceiveTextArgs e)
-    //    {
-    //        TextReceivedFeedback.FireUpdate(e.Text);
-    //    }
-    //}
-
- 
-
-    ///// <summary>
-    ///// Each flavor of API is a static class with static properties and a static constructor that
-    ///// links up the things to do.
-    ///// </summary>
-    //public class DmChassisControllerApi : DeviceApiBase
-    //{
-    //    IntFeedback Output1Feedback;
-    //    IntFeedback Output2Feedback;
-
-    //    public DmChassisControllerApi(DmChassisController dev)
-    //    {
-    //        Output1Feedback = new IntFeedback( new Func<int>(() => 1));
-    //        Output2Feedback = new IntFeedback( new Func<int>(() => 2));
-
-    //        ActionApi = new Dictionary<string, Object>
-    //        {
-                
-    //        };
-
-    //        FeedbackApi = new Dictionary<string, Feedback>
-    //        {
-    //            { "Output-1/fb", Output1Feedback },
-    //            { "Output-2/fb", Output2Feedback }
-    //        };
-    //    }
-
-    //    /// <summary>
-    //    /// Factory method
-    //    /// </summary>
-    //    /// <param name="dev"></param>
-    //    /// <returns></returns>
-    //    public static DmChassisControllerApi GetActionApiForDevice(DmChassisController dev)
-    //    {
-    //        return new DmChassisControllerApi(dev);
-    //    }
-    //}
 
 
 }
