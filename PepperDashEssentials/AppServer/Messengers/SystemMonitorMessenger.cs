@@ -27,8 +27,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             foreach (var p in SysMon.ProgramStatusFeedbackCollection)
             {
-                p.Value.AggregatedProgramInfoFeedback.OutputChange += new EventHandler<PepperDash.Essentials.Core.FeedbackEventArgs>(AggregatedProgramInfoFeedback_OutputChange);
+                p.Value.ProgramInfoChanged += new EventHandler<ProgramInfoEventArgs>(ProgramInfoChanged);
             }
+
+            CrestronConsole.AddNewConsoleCommand(s => SendFullStatusMessage(), "SendFullSysMonStatus", "Sends the full System Monitor Status", ConsoleAccessLevelEnum.AccessOperator);
         }
 
         /// <summary>
@@ -36,19 +38,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void AggregatedProgramInfoFeedback_OutputChange(object sender, PepperDash.Essentials.Core.FeedbackEventArgs e)
+        void ProgramInfoChanged(object sender, ProgramInfoEventArgs e)
         {
-            SendProgramInfoStatusMessage(e.StringValue);
-        }
-
-        // Deserializes the program info into an object that can be setn in a status message
-        void SendProgramInfoStatusMessage(string serializedProgramInfo)
-        {
-            var programInfo = JsonConvert.DeserializeObject<ProgramInfo>(serializedProgramInfo);
-
-            Debug.Console(2, "Posting Status Message: {0}", programInfo.ToString());
-
-            PostStatusMessage(programInfo);
+            Debug.Console(1, "Posting Status Message: {0}", e.ProgramInfo.ToString());
+            PostStatusMessage(e.ProgramInfo);
         }
 
         /// <summary>
@@ -67,13 +60,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             foreach (var p in SysMon.ProgramStatusFeedbackCollection)
             {
-                SendProgramInfoStatusMessage(p.Value.AggregatedProgramInfoFeedback.StringValue);
+                PostStatusMessage(p.Value.ProgramInfo);               
             }
         }
 
         void SendSystemMonitorStatusMessage()
         {
-            Debug.Console(2, "Posting System Monitor Status Message.");
+            Debug.Console(1, "Posting System Monitor Status Message.");
 
             // This takes a while, launch a new thread
             CrestronInvoke.BeginInvoke((o) =>
