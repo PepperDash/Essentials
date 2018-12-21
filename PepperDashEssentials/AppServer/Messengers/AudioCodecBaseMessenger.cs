@@ -49,6 +49,20 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 if (call != null)
                     Codec.EndCall(call);
             }));
+            appServerController.AddAction(MessagePath + "/endAllCalls", new Action(Codec.EndAllCalls));
+            appServerController.AddAction(MessagePath + "/dtmf", new Action<string>(s => Codec.SendDtmf(s)));
+            appServerController.AddAction(MessagePath + "/rejectById", new Action<string>(s =>
+            {
+                var call = GetCallWithId(s);
+                if (call != null)
+                    Codec.RejectCall(call);
+            }));
+            appServerController.AddAction(MessagePath + "/acceptById", new Action<string>(s =>
+            {
+                var call = GetCallWithId(s);
+                if (call != null)
+                    Codec.AcceptCall(call);
+            }));
         }
 
         /// <summary>

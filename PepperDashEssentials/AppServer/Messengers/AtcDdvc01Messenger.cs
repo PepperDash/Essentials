@@ -138,9 +138,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			// Add straight pulse calls
 			Action<string, uint> addAction = (s, u) =>
 				AppServerController.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
-			addAction("/endCall", BDialHangup);
-			addAction("/incomingAnswer", BIncomingAnswer);
-			addAction("/incomingReject", BIncomingReject);
+            addAction("/endCallById", BDialHangup);
+            addAction("/acceptById", BIncomingAnswer);
+            addAction("/rejectById", BIncomingReject);
 			addAction("/speedDial1", BSpeedDial1);
 			addAction("/speedDial2", BSpeedDial2);
 			addAction("/speedDial3", BSpeedDial3);
