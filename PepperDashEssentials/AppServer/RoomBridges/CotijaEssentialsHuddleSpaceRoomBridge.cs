@@ -12,6 +12,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Room.Cotija;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Common.AudioCodec;
 
 namespace PepperDash.Essentials
 {
@@ -21,6 +22,8 @@ namespace PepperDash.Essentials
         public EssentialsRoomBase Room { get; private set; }
 
 		public VideoCodecBaseMessenger VCMessenger { get; private set; }
+
+        public AudioCodecBaseMessenger ACMessenger { get; private set; }
 
 		/// <summary>
 		/// 
@@ -92,29 +95,24 @@ namespace PepperDash.Essentials
 				sscRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSingleSourceChange);
 
 			var vcRoom = Room as IHasVideoCodec;
-			if (vcRoom != null)
+			if (vcRoom != null && vcRoom.VideoCodec != null)
 			{
 				var codec = vcRoom.VideoCodec;
                 var key = vcRoom.VideoCodec.Key + "-" + parent.Key;
 				VCMessenger = new VideoCodecBaseMessenger(key, vcRoom.VideoCodec, "/device/videoCodec");
 				VCMessenger.RegisterWithAppServer(Parent);
 
-				// May need to move this or remove this 
-                //codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
-
 				vcRoom.IsSharingFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(IsSharingFeedback_OutputChange);
-
-				//Parent.AddAction("/device/videoCodec/dial", new Action<string>(s => codec.Dial(s)));
-				//Parent.AddAction("/device/videoCodec/endCall", new Action<string>(s =>
-				//{
-				//    var call = codec.ActiveCalls.FirstOrDefault(c => c.Id == s);
-				//    if (call != null)
-				//    {
-				//        codec.EndCall(call);
-				//    }
-				//}));
-				//Parent.AddAction("/device/videoCodec/endAllCalls", new Action(() => codec.EndAllCalls()));
 			}
+
+            var acRoom = Room as IHasAudioCodec;
+            if (acRoom != null && acRoom.AudioCodec != null)
+            {
+                var codec = acRoom.AudioCodec;
+                var key = acRoom.AudioCodec.Key + "-" + parent.Key;
+                ACMessenger = new AudioCodecBaseMessenger(key, acRoom.AudioCodec, "/device/audioCodec");
+                ACMessenger.RegisterWithAppServer(Parent);
+            }
 
 			var defCallRm = Room as IRunDefaultCallRoute;
 			if (defCallRm != null)

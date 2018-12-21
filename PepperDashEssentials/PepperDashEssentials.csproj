@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppServer\Messengers\AtcDdvc01Messenger.cs" />
+    <Compile Include="AppServer\Messengers\AudioCodecBaseMessenger.cs" />
     <Compile Include="AppServer\Messengers\MessengerBase.cs" />
     <Compile Include="AppServer\Messengers\SystemMonitorMessenger.cs" />
     <Compile Include="AppServer\Messengers\VideoCodecBaseMessenger.cs" />

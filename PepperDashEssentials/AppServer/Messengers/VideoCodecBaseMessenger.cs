@@ -13,7 +13,7 @@ using PepperDash.Essentials.Devices.Common.VideoCodec;
 namespace PepperDash.Essentials.AppServer.Messengers
 {
 	/// <summary>
-	/// Provides a messaging bridge for a VideoCodecBase
+	/// Provides a messaging bridge for a VideoCodecBase device
 	/// </summary>
 	public class VideoCodecBaseMessenger : MessengerBase
 	{
