@@ -9,7 +9,9 @@ using Newtonsoft.Json;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Lighting;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.DM;
@@ -90,6 +92,7 @@ namespace PepperDash.Essentials.Bridges
                             (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
+						
                         else if (device is DmTxControllerBase)
                         {
                             (device as DmTxControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
@@ -110,6 +113,16 @@ namespace PepperDash.Essentials.Bridges
                             (device as IDigitalInput).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
+						else if (device is LightingBase)
+						{
+							(device as LightingBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+							continue;
+						}
+						else if (device is DigitalLogger)
+						{
+							(device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+							continue;
+						}
                     }
                 }
 

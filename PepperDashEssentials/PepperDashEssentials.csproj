@@ -101,7 +101,7 @@
     </Reference>
     <Reference Include="SimplSharpTimerEventInterface, Version=1.0.6197.20052, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpTimerEventInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpTimerEventInterface.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -115,8 +115,10 @@
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
     <Compile Include="Bridges\BridgeBase.cs" />
     <Compile Include="Bridges\BridgeFactory.cs" />
+    <Compile Include="Bridges\DigitalLoggerBridge.cs" />
     <Compile Include="Bridges\DmChassisControllerBridge.cs" />
     <Compile Include="Bridges\DmTxControllerBridge.cs" />
+    <Compile Include="Bridges\GenericLightingBridge.cs" />
     <Compile Include="Bridges\GenericRelayDeviceBridge.cs" />
     <Compile Include="Bridges\IBasicCommunicationBridge.cs" />
     <Compile Include="Bridges\DmRmcControllerBridge.cs" />

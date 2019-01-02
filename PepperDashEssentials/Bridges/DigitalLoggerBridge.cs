@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Bridges
 {
 	public static class DigitalLoggerApiExtensions
 	{
-		public static void LinkToApi(this DigitalLogger digitalLogger, BasicTriList trilist, uint joinStart, string joinMapKey)
+		public static void LinkToApi(this DigitalLogger DigitalLogger, BasicTriList trilist, uint joinStart, string joinMapKey)
 		{
 			var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as DigitalLoggerJoinMap;
 
@@ -20,16 +20,16 @@ namespace PepperDash.Essentials.Bridges
 				joinMap = new DigitalLoggerJoinMap();
 
 			joinMap.OffsetJoinNumbers(joinStart);
-			Debug.Console(1, digitalLogger, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-			for (uint i = 1; i <= digitalLogger.CircuitCount; i++)
+			Debug.Console(1, DigitalLogger, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+			for (uint i = 1; i <= DigitalLogger.CircuitCount; i++)
             {
                 var circuit = i;
-				digitalLogger.CircuitNameFeedbacks[circuit - 1].LinkInputSig(trilist.StringInput[joinMap.CircuitNames + circuit]);
-				digitalLogger.CircuitIsCritical[circuit - 1].LinkInputSig(trilist.BooleanInput[joinMap.CircuitIsCritical + circuit]);
-				digitalLogger.CircuitState[circuit - 1].LinkInputSig(trilist.BooleanInput[joinMap.CircuitState + circuit]);
-				trilist.SetSigTrueAction(joinMap.CircuitCycle + circuit, () => digitalLogger.CycleCircuit(circuit - 1));
-				trilist.SetSigTrueAction(joinMap.CircuitOnCmd + circuit, () => digitalLogger.TurnOnCircuit(circuit - 1));
-				trilist.SetSigTrueAction(joinMap.CircuitOffCmd + circuit, () => digitalLogger.TurnOffCircuit(circuit - 1));
+				DigitalLogger.CircuitNameFeedbacks[circuit - 1].LinkInputSig(trilist.StringInput[joinMap.CircuitNames + circuit]);
+				DigitalLogger.CircuitIsCritical[circuit - 1].LinkInputSig(trilist.BooleanInput[joinMap.CircuitIsCritical + circuit]);
+				DigitalLogger.CircuitState[circuit - 1].LinkInputSig(trilist.BooleanInput[joinMap.CircuitState + circuit]);
+				trilist.SetSigTrueAction(joinMap.CircuitCycle + circuit, () => DigitalLogger.CycleCircuit(circuit - 1));
+				trilist.SetSigTrueAction(joinMap.CircuitOnCmd + circuit, () => DigitalLogger.TurnOnCircuit(circuit - 1));
+				trilist.SetSigTrueAction(joinMap.CircuitOffCmd + circuit, () => DigitalLogger.TurnOffCircuit(circuit - 1));
 
 			}
 		}
