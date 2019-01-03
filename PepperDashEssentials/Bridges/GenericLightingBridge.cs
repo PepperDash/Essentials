@@ -43,6 +43,7 @@ namespace PepperDash.Essentials.Bridges
 			if (lightingDevice.GetType().Name.ToString() == "LutronQuantumArea")
 			{
 				var lutronDevice = lightingDevice as PepperDash.Essentials.Devices.Common.Environment.Lutron.LutronQuantumArea;
+				lutronDevice.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
 				trilist.SetStringSigAction(joinMap.IntegrationIdSet, s => lutronDevice.IntegrationId = s);
 			}
 
@@ -75,15 +76,10 @@ namespace PepperDash.Essentials.Bridges
 		public uint ButtonVisibilityOffset { get; set; }
 		public uint IntegrationIdSet { get; set; }
 
-		public uint CircuitState { get; set; }
-		public uint CircuitCycle { get; set; }
-		public uint CircuitIsCritical { get; set; }
-		public uint CircuitOnCmd { get; set; }
-		public uint CircuitOffCmd { get; set; }
 		public GenericLightingJoinMap()
 		{
 			// Digital
-			IsOnline = 9;
+			IsOnline = 1;
 			SelectScene = 1;
 			IntegrationIdSet = 1;
 			LightingSceneOffset = 10;
