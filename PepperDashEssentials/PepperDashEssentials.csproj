@@ -115,6 +115,7 @@
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
     <Compile Include="Bridges\BridgeBase.cs" />
     <Compile Include="Bridges\BridgeFactory.cs" />
+    <Compile Include="Bridges\DisplayControllerBridge.cs" />
     <Compile Include="Bridges\DigitalLoggerBridge.cs" />
     <Compile Include="Bridges\DmChassisControllerBridge.cs" />
     <Compile Include="Bridges\DmTxControllerBridge.cs" />
