@@ -12,11 +12,12 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Common.AudioCodec;
 
 namespace PepperDash.Essentials
 {
     public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange, 
-		IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec
+		IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSingleSourceChange;
@@ -27,10 +28,10 @@ namespace PepperDash.Essentials
 
         public BoolFeedback InCallFeedback { get; private set; }
 
-        /// <summary>
-        /// Make this more specific
-        /// </summary>
-        public List<CodecActiveCallItem> ActiveCalls { get; private set; }
+        ///// <summary>
+        ///// Make this more specific
+        ///// </summary>
+        //public List<CodecActiveCallItem> ActiveCalls { get; private set; }
 
         /// <summary>
         /// States: 0 for on hook, 1 for video, 2 for audio, 3 for telekenesis
@@ -107,6 +108,8 @@ namespace PepperDash.Essentials
 		public IBasicVolumeControls DefaultVolumeControls { get; private set; }
 
         public VideoCodecBase VideoCodec { get; private set; }
+
+        public AudioCodecBase AudioCodec { get; private set; }
 
 		public bool ExcludeFromGlobalFunctions { get; set; }
 
@@ -197,7 +200,6 @@ namespace PepperDash.Essentials
 
 		CCriticalSection SourceSelectLock = new CCriticalSection();
 
-
         public EssentialsHuddleVtc1Room(DeviceConfig config)
             : base(config)
         {
@@ -211,6 +213,11 @@ namespace PepperDash.Essentials
                     PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
                 if (VideoCodec == null)
                     throw new ArgumentNullException("codec cannot be null");
+
+                AudioCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.AudioCodecKey) as
+                    PepperDash.Essentials.Devices.Common.AudioCodec.AudioCodecBase;
+                if (AudioCodec == null)
+                    Debug.Console(0, this, "No Audio Codec Found");
 
                 DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IBasicVolumeControls;
 
@@ -261,8 +268,29 @@ namespace PepperDash.Essentials
                 };
             }
 
-            InCallFeedback = new BoolFeedback(() => VideoCodec.IsInCall);
+
+            // Combines call feedback from both codecs if available
+            InCallFeedback = new BoolFeedback(() => 
+                {
+                    bool inAudioCall = false;
+                    bool inVideoCall = false;
+
+                    if(AudioCodec != null)
+                        inAudioCall = AudioCodec.IsInCall;
+
+                    if(VideoCodec != null)
+                        inVideoCall = AudioCodec.IsInCall;
+
+                    if (inAudioCall || inVideoCall)
+                        return true;
+                    else
+                        return false;
+                });
+
             VideoCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+
+            if (AudioCodec != null)
+                AudioCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
 
             IsSharingFeedback = new BoolFeedback(() => VideoCodec.SharingContentIsOnFeedback.BoolValue);
             VideoCodec.SharingContentIsOnFeedback.OutputChange += (o, a) => this.IsSharingFeedback.FireUpdate();

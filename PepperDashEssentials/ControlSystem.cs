@@ -212,12 +212,13 @@ namespace PepperDash.Essentials
 		void Load()
 		{
 			LoadDevices();
-            LinkSystemMonitorToAppServer();
 			LoadTieLines();
 			LoadRooms();
 			LoadLogoServer();
 
 			DeviceManager.ActivateAll();
+
+            LinkSystemMonitorToAppServer();
 		}
 
         void LinkSystemMonitorToAppServer()
@@ -235,9 +236,7 @@ namespace PepperDash.Essentials
 
                 messenger.RegisterWithAppServer(appServer);
 
-                DeviceManager.AddDevice(messenger);    
-                
-
+                DeviceManager.AddDevice(messenger);                  
             }
         }
 

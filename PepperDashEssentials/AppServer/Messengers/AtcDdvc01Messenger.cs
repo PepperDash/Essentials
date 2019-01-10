@@ -31,11 +31,19 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// <summary>
 		/// 211
 		/// </summary>
-		const uint SCurrentCallString = 211;
+		const uint SCurrentCallNumber = 211;
+        /// <summary>
+        /// 212
+        /// </summary>
+        const uint SCurrentCallName = 212;
 		/// <summary>
 		/// 221
 		/// </summary>
 		const uint SHookState = 221;
+        /// <summary>
+        /// 222
+        /// </summary>
+        const uint SCallDirection = 222;
 
 		/// <summary>
 		/// 
@@ -79,12 +87,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		void SendFullStatus()
 		{
+            
+
 			this.PostStatusMessage(new
 			{				
 				calls = GetCurrentCallList(),
-				callStatus = EISC.GetString(SHookState),
-				currentCallString = EISC.GetString(SCurrentCallString),
+				currentCallString = EISC.GetString(SCurrentCallNumber),
 				currentDialString = EISC.GetString(SCurrentDialString),
+                isInCall = EISC.GetString(SHookState) == "Connected"
 			});
 		}
 
@@ -94,30 +104,32 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// <param name="appServerController"></param>
 		protected override void CustomRegisterWithAppServer(CotijaSystemController appServerController)
 		{
-			Action<object> send = this.PostStatusMessage;
-			EISC.SetStringSigAction(SCurrentDialString, s => send(new { currentDialString = s }));
+            //EISC.SetStringSigAction(SCurrentDialString, s => PostStatusMessage(new { currentDialString = s }));
 
 			EISC.SetStringSigAction(SHookState, s => 
 			{
 				CurrentCallItem.Status = (eCodecCallStatus)Enum.Parse(typeof(eCodecCallStatus), s, true);
-				GetCurrentCallList();
-				send(new 
-				{ 
-					calls = GetCurrentCallList(),
-					callStatus = s 
-				});
+                //GetCurrentCallList();
+				SendCallsList();
 			});
 
-			EISC.SetStringSigAction(SCurrentCallString, s => 
+			EISC.SetStringSigAction(SCurrentCallNumber, s => 
 			{
-				CurrentCallItem.Name = s;
 				CurrentCallItem.Number = s;
-				send(new 
-				{
-					calls = GetCurrentCallList(),
-					currentCallString = s 			
-				});
+                SendCallsList();
 			});
+
+            EISC.SetStringSigAction(SCurrentCallName, s =>
+            {
+                CurrentCallItem.Name = s;
+                SendCallsList();
+            });
+
+            EISC.SetStringSigAction(SCallDirection, s =>
+            {
+                CurrentCallItem.Direction = (eCodecCallDirection)Enum.Parse(typeof(eCodecCallDirection), s, true);
+                SendCallsList();
+            });
 
 			// Add press and holds using helper
 			Action<string, uint> addPHAction = (s, u) => 
@@ -126,9 +138,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			// Add straight pulse calls
 			Action<string, uint> addAction = (s, u) =>
 				AppServerController.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
-			addAction("/endCall", BDialHangup);
-			addAction("/incomingAnswer", BIncomingAnswer);
-			addAction("/incomingReject", BIncomingReject);
+            addAction("/endCallById", BDialHangup);
+            addAction("/acceptById", BIncomingAnswer);
+            addAction("/rejectById", BIncomingReject);
 			addAction("/speedDial1", BSpeedDial1);
 			addAction("/speedDial2", BSpeedDial2);
 			addAction("/speedDial3", BSpeedDial3);
@@ -147,6 +159,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				}
 			}));
 		}
+
+        void SendCallsList()
+        {
+            PostStatusMessage(new
+            {
+                calls = GetCurrentCallList(),
+            });
+        }
 
 		/// <summary>
 		/// Turns the 
