@@ -10,7 +10,7 @@ using PepperDash.Essentials.Devices.Common;
 
 namespace PepperDash.Essentials.Bridges
 {
-	public static class SamsungDisplayControllerApiExtensions
+	public static class DisplayControllerApiExtensions
 	{
 		public static void LinkToApi(this PepperDash.Essentials.Core.TwoWayDisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey)
 		{
@@ -20,10 +20,10 @@ namespace PepperDash.Essentials.Bridges
 			{
 				joinMap = new DisplayControllerJoinMap();
 			}
-
+			
 			joinMap.OffsetJoinNumbers(joinStart);
 			Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-			Debug.Console(0, "Linking to lighting Type {0}", displayDevice.GetType().Name.ToString());
+			Debug.Console(0, "Linking to Bridge Type {0}", displayDevice.GetType().Name.ToString());
 
 			var commMonitor = displayDevice as ICommunicationMonitor;
 			commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
@@ -36,7 +36,19 @@ namespace PepperDash.Essentials.Bridges
 			// Poewer On
 			trilist.SetSigTrueAction(joinMap.PowerOn, () => displayDevice.PowerOn());
 			displayDevice.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn]);
-			
+
+
+			trilist.SetUShortSigAction(joinMap.InputSelect, (a) =>
+			{
+				if (a == 0)
+				{
+					displayDevice.PowerOff();
+				}
+				else if (a > 0 && a < displayDevice.InputPorts.Count)
+				{
+					displayDevice.ExecuteSwitch(displayDevice.InputPorts.ElementAt(a - 1).Selector);
+				}
+			});
 			// GenericLighitng Actions & FeedBack
 
 			// int sceneIndex = 1;
@@ -83,6 +95,7 @@ namespace PepperDash.Essentials.Bridges
 	{
 		public uint IsOnline { get; set; }
 		public uint PowerOff { get; set; }
+		public uint InputSelect { get; set; }
 		public uint PowerOn { get; set; }
 		public uint SelectScene { get; set; }
 		public uint LightingSceneOffset { get; set; }
@@ -95,7 +108,7 @@ namespace PepperDash.Essentials.Bridges
 			IsOnline = 1;
 			PowerOff = 1;
 			PowerOn = 2;
-			SelectScene = 1;
+			InputSelect = 1;
 			IntegrationIdSet = 1;
 			LightingSceneOffset = 10;
 			ButtonVisibilityOffset = 40;
