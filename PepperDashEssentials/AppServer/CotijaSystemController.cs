@@ -24,6 +24,8 @@ namespace PepperDash.Essentials
     {
 		WebSocketClient WSClient;
 
+		//bool LinkUp;
+
 		/// <summary>
 		/// Prevents post operations from stomping on each other and getting lost
 		/// </summary>
@@ -45,6 +47,8 @@ namespace PepperDash.Essentials
 
         long ServerReconnectInterval = 5000;
 
+        DateTime LastAckMessage;
+
         string SystemUuid;
 
 		List<CotijaBridgeBase> RoomBridges = new List<CotijaBridgeBase>();
@@ -65,6 +69,9 @@ namespace PepperDash.Essentials
         public CotijaSystemController(string key, string name, CotijaConfig config) : base(key, name)
         {
             Config = config;
+
+            SystemUuid = ConfigReader.ConfigObject.SystemUuid;
+
 			Debug.Console(0, this, "Mobile UI controller initializing for server:{0}", config.ServerUrl);
 
 			CrestronConsole.AddNewConsoleCommand(AuthorizeSystem,
@@ -83,11 +90,47 @@ namespace PepperDash.Essentials
 			CrestronConsole.AddNewConsoleCommand(TestHttpRequest,
 			"mobilehttprequest", "Tests an HTTP get to URL given", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(PrintActionDictionaryPaths, "showactionpaths", "Prints the paths in teh Action Dictionary", ConsoleAccessLevelEnum.AccessOperator);
-
+            CrestronConsole.AddNewConsoleCommand(PrintActionDictionaryPaths, "mobileshowactionpaths", 
+				"Prints the paths in the Action Dictionary", ConsoleAccessLevelEnum.AccessOperator);
+			CrestronConsole.AddNewConsoleCommand(s => ConnectWebsocketClient(), "mobileconnect", 
+				"Forces connect of websocket", ConsoleAccessLevelEnum.AccessOperator);
+			CrestronConsole.AddNewConsoleCommand(s => CleanUpWebsocketClient(), "mobiledisco",
+				"Disconnects websocket", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+			CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
+				
         }
+
+        /// <summary>
+        /// If config rooms is empty or null then go
+        /// </summary>
+        /// <returns></returns>
+        public override bool CustomActivate()
+        {
+            if (ConfigReader.ConfigObject.Rooms == null || ConfigReader.ConfigObject.Rooms.Count == 0)
+            {
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Config contains no rooms.  Registering with Server.");
+                RegisterSystemToServer();
+            }
+
+            return base.CustomActivate();
+        }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="ethernetEventArgs"></param>
+		void CrestronEnvironment_EthernetEventHandler(EthernetEventArgs args)
+		{
+			Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Ethernet status change, port {0}: {1}",
+				args.EthernetAdapter, args.EthernetEventType);
+
+			if (args.EthernetEventType == eEthernetEventType.LinkDown && WSClient != null && args.EthernetAdapter == WSClient.EthernetAdapter)
+			{
+				CleanUpWebsocketClient();
+			}
+		}
 
         /// <summary>
         /// Sends message to server to indicate the system is shutting down
@@ -97,11 +140,7 @@ namespace PepperDash.Essentials
         {
             if (programEventType == eProgramStatusEventType.Stopping && WSClient.Connected)
             {
-                SendMessageToServer(JObject.FromObject( new
-                {
-                    type = "/system/close"
-                }));
-
+				CleanUpWebsocketClient();
             }
         }
 
@@ -158,6 +197,7 @@ namespace PepperDash.Essentials
 			else
 			{
 				Debug.Console(0, this, "Adding room bridge and sending configuration");
+                //SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 				RegisterSystemToServer();
 			}
 		}
@@ -170,6 +210,7 @@ namespace PepperDash.Essentials
 		void bridge_ConfigurationIsReady(object sender, EventArgs e)
 		{
 			Debug.Console(1, this, "Bridge ready.  Registering");
+            //SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 			// send the configuration object to the server
 			RegisterSystemToServer();
 		}
@@ -189,6 +230,8 @@ namespace PepperDash.Essentials
 		/// <param name="command"></param>
 		void AuthorizeSystem(string code)
 		{
+            //SystemUuid = ConfigReader.ConfigObject.SystemUuid;
+
 			if (string.IsNullOrEmpty(SystemUuid))
 			{
 				CrestronConsole.ConsoleCommandResponse("System does not have a UUID. Please ensure proper portal-format configuration is loaded and restart.");
@@ -221,6 +264,7 @@ namespace PepperDash.Essentials
 						if (r.Code == 200)
 						{
 							Debug.Console(0, "System authorized, sending config.");
+#warning This registration may need to wait for config ready. Maybe.
 							RegisterSystemToServer();
 						}
 						else if (r.Code == 404)
@@ -265,14 +309,17 @@ namespace PepperDash.Essentials
 				code = "Not available";
 			}
 			var conn = WSClient == null ? "No client" : (WSClient.Connected ? "Yes" : "No");
+            var secSinceLastAck = DateTime.Now - LastAckMessage;
+
 
 			CrestronConsole.ConsoleCommandResponse(@"Mobile Control Information:
 	Server address: {0}
 	System Name: {1}
 	System UUID: {2}
 	System User code: {3}
-	Connected?: {4}", url, name, SystemUuid, 
-					code, conn);
+	Connected?: {4}
+    Seconds Since Last Ack: {5}", url, name, SystemUuid,
+                    code, conn, secSinceLastAck.Seconds);
 		}
 
         /// <summary>
@@ -281,57 +328,102 @@ namespace PepperDash.Essentials
         /// <param name="url">URL of the server, including the port number, if not 80.  Format: "serverUrlOrIp:port"</param>
         void RegisterSystemToServer()
         {
-
-
-			var ready = RegisterLockEvent.Wait(20000);
-			if (!ready)
-			{
-				Debug.Console(1, this, "RegisterSystemToServer failed to enter after 20 seconds.  Ignoring");
-				return;
-			}
-			RegisterLockEvent.Reset();
-
-			try
-            {
-				var confObject = ConfigReader.ConfigObject;
-                confObject.Info.RuntimeInfo.AppName = Assembly.GetExecutingAssembly().GetName().Name;
-                var version = Assembly.GetExecutingAssembly().GetName().Version;
-                confObject.Info.RuntimeInfo.AssemblyVersion = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
-
-				string postBody = JsonConvert.SerializeObject(confObject);
-				SystemUuid = confObject.SystemUuid;
-
-                if (string.IsNullOrEmpty(postBody))
-                {
-                    Debug.Console(1, this, "ERROR: Config body is empty. Cannot register with server.");
-                }
-                else
-                {
-					var regClient = new HttpClient();
-					regClient.Verbose = true;
-					regClient.KeepAlive = true;
-
-					string url = string.Format("http://{0}/api/system/join/{1}", Config.ServerUrl, SystemUuid);
-					Debug.Console(1, this, "Joining server at {0}", url);
-
-                    HttpClientRequest request = new HttpClientRequest();
-                    request.Url.Parse(url);
-                    request.RequestType = RequestType.Post;
-                    request.Header.SetHeaderValue("Content-Type", "application/json");
-                    request.ContentString = postBody;
-
-					var err = regClient.DispatchAsync(request, RegistrationConnectionCallback);
-                }
-
-            }
-            catch (Exception e)
-            {
-                Debug.Console(0, this, "ERROR: Initilizing Room: {0}", e);
-				RegisterLockEvent.Set();
-				StartReconnectTimer();
-            }
-
+			ConnectWebsocketClient();
         }
+
+		/// <summary>
+		/// Connects the Websocket Client
+		/// </summary>
+		/// <param name="o"></param>
+		void ConnectWebsocketClient()
+		{
+
+			Debug.Console(1, this, "Initializing Stream client to server.");
+
+			if (WSClient != null)
+			{
+				Debug.Console(1, this, "Cleaning up previous socket");
+				CleanUpWebsocketClient();
+			}
+
+			WSClient = new WebSocketClient();
+			WSClient.URL = string.Format("wss://{0}/system/join/{1}", Config.ServerUrl, this.SystemUuid);
+			WSClient.ConnectionCallBack = Websocket_ConnectCallback;
+			WSClient.ConnectAsync();
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="code"></param>
+		/// <returns></returns>
+		int Websocket_ConnectCallback(WebSocketClient.WEBSOCKET_RESULT_CODES code)
+		{
+			if (code == WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
+			{
+				StopServerReconnectTimer();
+				Debug.Console(1, this, "Websocket connected");
+				WSClient.DisconnectCallBack = Websocket_DisconnectCallback;
+				WSClient.SendCallBack = Websocket_SendCallback;
+				WSClient.ReceiveCallBack = Websocket_ReceiveCallback;
+				WSClient.ReceiveAsync();
+				SendMessageObjectToServer(new
+				{
+					type = "hello"
+				});
+			}
+			else
+			{
+				if (code == WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_HTTP_HANDSHAKE_TOKEN_ERROR)
+				{
+					// This is the case when app server is running behind a websever and app server is down
+					Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Web socket connection failed. Check that app server is running behind web server");
+				}
+				else if (code == WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SOCKET_CONNECTION_FAILED)
+				{
+					// this will be the case when webserver is unreachable
+					Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Web socket connection failed");
+				}
+				else
+				{
+					Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Web socket connection failure: {0}", code);
+				} 
+				StartServerReconnectTimer();
+			}
+
+			return 0;
+		}
+
+		/// <summary>
+		/// After a "hello" from the server, sends config and stuff
+		/// </summary>
+		void SendInitialMessage()
+		{
+			Debug.Console(1, this, "Sending initial join message");
+			var confObject = ConfigReader.ConfigObject;
+			confObject.Info.RuntimeInfo.AppName = Assembly.GetExecutingAssembly().GetName().Name;
+			var version = Assembly.GetExecutingAssembly().GetName().Version;
+			confObject.Info.RuntimeInfo.AssemblyVersion = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+
+			var msg = new
+			{
+				type = "join",
+				content = new
+				{
+					config = confObject
+				}
+			};
+			SendMessageObjectToServer(msg);
+		}
+
+		/// <summary>
+		/// Sends any object type to server
+		/// </summary>
+		/// <param name="o"></param>
+		public void SendMessageObjectToServer(object o)
+		{
+			SendMessageToServer(JObject.FromObject(o));
+		}
 
         /// <summary>
         /// Sends a message to the server from a room
@@ -340,78 +432,72 @@ namespace PepperDash.Essentials
         /// <param name="o">object to be serialized and sent in post body</param>
         public void SendMessageToServer(JObject o)
         {
-
             if (WSClient != null && WSClient.Connected)
             {
                 string message = JsonConvert.SerializeObject(o, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-				Debug.Console(1, this, "Message TX: {0}", message);
+
+                if (!message.Contains("/system/heartbeat"))
+                    Debug.Console(1, this, "Message TX: {0}", message);
+                //else
+                //    Debug.Console(1, this, "TX messages contains /system/heartbeat");
+
                 var messageBytes = System.Text.Encoding.UTF8.GetBytes(message);
-				WSClient.Send(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
-				//WSClient.SendAsync(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
+				var result = WSClient.Send(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
+				if (result != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
+				{
+					Debug.Console(1, this, "Socket send result error: {0}", result);
+				}
             }
- 
+			else if (!WSClient.Connected)
+			{
+				Debug.Console(1, this, "Cannot send. Not connected {0}");
+			}
         }
 
         /// <summary>
         /// Disconnects the SSE Client and stops the heartbeat timer
         /// </summary>
         /// <param name="command"></param>
-        void DisconnectStreamClient(string command)
+        void CleanUpWebsocketClient()
         {
-			//if(SseClient != null)
-			//    SseClient.Disconnect();
-
-			if (WSClient != null && WSClient.Connected)
-				WSClient.Disconnect();
-
-            if (ServerHeartbeatCheckTimer != null)
-            {
-                ServerHeartbeatCheckTimer.Stop();
-
-                ServerHeartbeatCheckTimer = null;
-            }
+			Debug.Console(1, this, "Disconnecting websocket");
+			if (WSClient != null)
+			{
+				WSClient.SendCallBack = null;
+				WSClient.ReceiveCallBack = null;
+				WSClient.ConnectionCallBack = null;
+				WSClient.DisconnectCallBack = null;
+				if (WSClient.Connected)
+				{
+					WSClient.Disconnect();
+				}
+				WSClient = null;
+			}
         }
-        
-        /// <summary>
-        /// The callback that fires when we get a response from our registration attempt
-        /// </summary>
-        /// <param name="resp"></param>
-        /// <param name="err"></param>
-        void RegistrationConnectionCallback(HttpClientResponse resp, HTTP_CALLBACK_ERROR err)
-        {
-			CheckHttpDebug(resp, err);
-			Debug.Console(1, this, "RegistrationConnectionCallback: {0}", err);
-            try
-            {
-                if (resp != null && resp.Code == 200)
-                {
-                    if(ServerReconnectTimer != null)
-                    {
-                        ServerReconnectTimer.Stop();
-                        ServerReconnectTimer = null;
-                    }
 
-					// Success here!
-                    ConnectStreamClient();
-                }
-                else
-                {
-					if (resp != null)
-						Debug.Console(1, this, "Response from server: {0}\n{1}", resp.Code, err);
-					else
-					{
-						Debug.Console(1, this, "Null response received from server.");
-					}
-					StartReconnectTimer();
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.Console(1, this, "Error Initializing Stream Client: {0}", e);
-				StartReconnectTimer();
-            }
-			RegisterLockEvent.Set();
-        }
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="dueTime"></param>
+		/// <param name="repeatTime"></param>
+		void StartServerReconnectTimer()
+		{
+			StopServerReconnectTimer();
+			ServerReconnectTimer = new CTimer(ReconnectToServerTimerCallback, ServerReconnectInterval);
+			Debug.Console(1, this, "Reconnect Timer Started.");
+		}
+
+		/// <summary>
+		/// Does what it says
+		/// </summary>
+		void StopServerReconnectTimer()
+		{
+			if (ServerReconnectTimer != null)
+			{
+				ServerReconnectTimer.Stop();
+				ServerReconnectTimer = null;
+			}
+		}
 
         /// <summary>
         /// Executes when we don't get a heartbeat message in time.  Triggers reconnect.
@@ -425,23 +511,8 @@ namespace PepperDash.Essentials
                 ServerHeartbeatCheckTimer.Stop();
                 ServerHeartbeatCheckTimer = null;
             }
-            StartReconnectTimer();
-        }
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="dueTime"></param>
-		/// <param name="repeatTime"></param>
-        void StartReconnectTimer()
-        {
-            // Start the reconnect timer
-			if (ServerReconnectTimer == null)
-			{
-				ServerReconnectTimer = new CTimer(ReconnectToServerTimerCallback, null, ServerReconnectInterval, ServerReconnectInterval);
-				Debug.Console(1, this, "Reconnect Timer Started.");
-			}
-			ServerReconnectTimer.Reset(ServerReconnectInterval, ServerReconnectInterval);
+			CleanUpWebsocketClient();
+            StartServerReconnectTimer();
         }
 
 		/// <summary>
@@ -451,36 +522,41 @@ namespace PepperDash.Essentials
 		/// <param name="repeatTime"></param>
         void ResetOrStartHearbeatTimer()
         {
-            if (ServerHeartbeatCheckTimer == null)
-            {
-				ServerHeartbeatCheckTimer = new CTimer(HeartbeatExpiredTimerCallback, null, ServerHeartbeatInterval, ServerHeartbeatInterval);
-
-                Debug.Console(1, this, "Heartbeat Timer Started.");
-            }
-
-			ServerHeartbeatCheckTimer.Reset(ServerHeartbeatInterval, ServerHeartbeatInterval);
-        }
-
-
-        /// <summary>
-        /// Connects the SSE Client
-        /// </summary>
-        /// <param name="o"></param>
-        void ConnectStreamClient()
-        {
-            Debug.Console(0, this, "Initializing Stream client to server.");
-
-			if (WSClient == null)
+			if (ServerHeartbeatCheckTimer == null)
 			{
-				WSClient = new WebSocketClient();
+				ServerHeartbeatCheckTimer = new CTimer(HeartbeatExpiredTimerCallback, null, ServerHeartbeatInterval, ServerHeartbeatInterval);
+				Debug.Console(1, this, "Heartbeat Timer Started.");
 			}
-			WSClient.URL = string.Format("wss://{0}/system/join/{1}", Config.ServerUrl, this.SystemUuid);
-			WSClient.Connect();
-			Debug.Console(0, this, "Websocket connected");
-			WSClient.ReceiveCallBack = WebsocketReceiveCallback;
-			//WSClient.SendCallBack = WebsocketSendCallback;
-			WSClient.ReceiveAsync();
+			else
+			{
+				ServerHeartbeatCheckTimer.Reset(ServerHeartbeatInterval, ServerHeartbeatInterval);
+			}
         }
+
+		/// <summary>
+		/// Waits two and goes again
+		/// </summary>
+		void ReconnectStreamClient()
+		{
+			new CTimer(o => ConnectWebsocketClient(), 2000);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="code"></param>
+		/// <returns></returns>
+		int Websocket_DisconnectCallback(WebSocketClient.WEBSOCKET_RESULT_CODES code, object o)
+		{
+			Debug.Console(1, this, Debug.ErrorLogLevel.Warning, "Websocket disconnected with code: {0}", code);
+
+			if (ServerHeartbeatCheckTimer != null)
+				ServerHeartbeatCheckTimer.Stop();
+			// Start the reconnect timer
+			StartServerReconnectTimer();
+			return 0;
+		}
+
 
 		/// <summary>
 		/// Resets reconnect timer and updates usercode
@@ -514,12 +590,26 @@ namespace PepperDash.Essentials
 		{
 			if (HttpDebugEnabled)
 			{
-				Debug.Console(0, this, "------ Begin HTTP Debug ---------------------------------------");
-				Debug.Console(0, this, "HTTP Response URL: {0}", r.ResponseUrl.ToString());
-				Debug.Console(0, this, "HTTP Response 'error' {0}", e);
-				Debug.Console(0, this, "HTTP Response code: {0}", r.Code);
-				Debug.Console(0, this, "HTTP Response content: \r{0}", r.ContentString);
-				Debug.Console(0, this, "------ End HTTP Debug -----------------------------------------");
+				try
+				{
+					Debug.Console(0, this, "------ Begin HTTP Debug ---------------------------------------");
+					if (r != null)
+					{
+						Debug.Console(0, this, "HTTP Response URL: {0}", r.ResponseUrl != null ? r.ResponseUrl.ToString() : "NONE");
+						Debug.Console(0, this, "HTTP Response code: {0}", r.Code);
+						Debug.Console(0, this, "HTTP Response content: \r{0}", r.ContentString);
+					}
+					else
+					{
+						Debug.Console(0, this, "No HTTP response");
+					}
+					Debug.Console(0, this, "HTTP Response 'error' {0}", e);
+					Debug.Console(0, this, "------ End HTTP Debug -----------------------------------------");
+				}
+				catch (Exception ex)
+				{
+					Debug.Console(0, this, "HttpDebugError: {0}", ex);
+				}
 			}
 		}
 
@@ -530,14 +620,28 @@ namespace PepperDash.Essentials
 		/// <param name="length"></param>
 		/// <param name="opcode"></param>
 		/// <param name="err"></param>
-		int WebsocketReceiveCallback(byte[] data, uint length, WebSocketClient.WEBSOCKET_PACKET_TYPES opcode,
+		int Websocket_ReceiveCallback(byte[] data, uint length, WebSocketClient.WEBSOCKET_PACKET_TYPES opcode,
 			WebSocketClient.WEBSOCKET_RESULT_CODES err)
 		{
-			var rx = System.Text.Encoding.UTF8.GetString(data, 0, (int)length);
-			if(rx.Length > 0)
-				ParseStreamRx(rx);
-			WSClient.ReceiveAsync();
-			return 1;
+			if (opcode == WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME)
+			{
+				var rx = System.Text.Encoding.UTF8.GetString(data, 0, (int)length);
+				if (rx.Length > 0)
+					ParseStreamRx(rx);
+				WSClient.ReceiveAsync();
+			}
+
+			else if (opcode == WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__CLOSE)
+			{
+				Debug.Console(1, this, "Websocket disconnect received from remote");
+				CleanUpWebsocketClient();
+			}
+			else
+			{
+				Debug.Console(1, this, "websocket rx opcode/err {0}/{1}", opcode, err);
+				WSClient.ReceiveAsync();
+			}
+			return 0;
 		}
 
         /// <summary>
@@ -545,11 +649,11 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="result"></param>
         /// <returns></returns>
-        int WebsocketSendCallback(Crestron.SimplSharp.CrestronWebSocketClient.WebSocketClient.WEBSOCKET_RESULT_CODES result)
+        int Websocket_SendCallback(Crestron.SimplSharp.CrestronWebSocketClient.WebSocketClient.WEBSOCKET_RESULT_CODES result)
         {
-            Debug.Console(1, this, "SendCallback result: {0}", result);
-
-            return 1;
+			if(result != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
+	            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "SendCallback questionable result: {0}", result);
+			return 1;
         }
 
 		/// <summary>
@@ -562,7 +666,14 @@ namespace PepperDash.Essentials
             if(string.IsNullOrEmpty(message))
                 return;
 
-            Debug.Console(1, this, "Message RX: '{0}'", message);
+            if (!message.Contains("/system/heartbeat"))
+                Debug.Console(1, this, "Message RX: {0}", message);
+            else
+            {
+                LastAckMessage = DateTime.Now;
+                //Debug.Console(1, this, "RX message contains /system/heartbeat");
+            }
+
             try
             {
                 var messageObj = JObject.Parse(message);
@@ -571,6 +682,7 @@ namespace PepperDash.Essentials
 
                 if (type == "hello")
                 {
+					SendInitialMessage();
                     ResetOrStartHearbeatTimer();
                 }
 				else if (type == "/system/heartbeat")
@@ -579,11 +691,11 @@ namespace PepperDash.Essentials
 				}
 				else if (type == "close")
 				{
-					WSClient.Disconnect();
+					Debug.Console(1, this, "Received close message from server.");
+					// DisconnectWebsocketClient();
 
-					ServerHeartbeatCheckTimer.Stop();
-					// Start the reconnect timer
-					StartReconnectTimer();
+					if (ServerHeartbeatCheckTimer != null)
+						ServerHeartbeatCheckTimer.Stop();
 				}
 				else
 				{
@@ -620,7 +732,7 @@ namespace PepperDash.Essentials
 										}
 									case "held":
 										{
-											if (!PushedActions.ContainsKey(type))
+											if (PushedActions.ContainsKey(type))
 											{
 												PushedActions[type].Reset(ButtonHeartbeatInterval, ButtonHeartbeatInterval);
 											}

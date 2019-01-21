@@ -4,6 +4,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
+using Crestron.SimplSharpPro.Diagnostics;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -32,12 +34,18 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void InitializeSystem()
 		{
+            SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
+
             DeterminePlatform();
 
             //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
 
            // CrestronConsole.AddNewConsoleCommand(S => { ConfigWriter.WriteConfigFile(null); }, "writeconfig", "writes the current config to a file", ConsoleAccessLevelEnum.AccessOperator);
+			CrestronConsole.AddNewConsoleCommand(s =>
+			{
+				Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s);
+			}, "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
@@ -141,11 +149,17 @@ namespace PepperDash.Essentials
 						"------------------------------------------------\r" +
 						"------------------------------------------------");
 				}
+
             }
 			catch (Exception e)
 			{
 				Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r{0}", e);
+
+
 			}
+
+            // Notify the 
+            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
 
 		}
 
@@ -203,16 +217,40 @@ namespace PepperDash.Essentials
 			LoadLogoServer();
 
 			DeviceManager.ActivateAll();
+
+            LinkSystemMonitorToAppServer();
 		}
 
+        void LinkSystemMonitorToAppServer()
+        {
+            var sysMon = DeviceManager.GetDeviceForKey("systemMonitor") as PepperDash.Essentials.Core.Monitoring.SystemMonitorController;
+
+            var appServer = DeviceManager.GetDeviceForKey("appServer") as CotijaSystemController;
+
+
+            if (sysMon != null && appServer != null)
+            {
+                var key = sysMon.Key + "-" + appServer.Key;
+                var messenger = new PepperDash.Essentials.AppServer.Messengers.SystemMonitorMessenger
+                    (key, sysMon, "/device/systemMonitor");
+
+                messenger.RegisterWithAppServer(appServer);
+
+                DeviceManager.AddDevice(messenger);                  
+            }
+        }
 
 		/// <summary>
 		/// Reads all devices from config and adds them to DeviceManager
 		/// </summary>
 		public void LoadDevices()
 		{
-            // Build the processor wrapper class
-            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+# warning Missing PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+			// Build the processor wrapper class
+            // DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+
+            // Add global System Monitor device
+            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));
 
 			foreach (var devConf in ConfigReader.ConfigObject.Devices)
 			{
@@ -231,17 +269,23 @@ namespace PepperDash.Essentials
                         continue;
                     }
 
-					// Try local factory first
+					// Try local factories first
 					var newDev = DeviceFactory.GetDevice(devConf);
 
+                    if (newDev == null)
+                        newDev = BridgeFactory.GetDevice(devConf);
+
 					// Then associated library factories
+                    if (newDev == null)
+                        newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
-
+					if (newDev == null)
+						newDev = PepperDash.Essentials.BridgeFactory.GetDevice(devConf);
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
 					else
@@ -255,6 +299,7 @@ namespace PepperDash.Essentials
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Devices Loaded.");
 
 		}
+
 
 		/// <summary>
 		/// Helper method to load tie lines.  This should run after devices have loaded

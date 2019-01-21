@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Devices.Common.Occupancy;
 
 namespace PepperDash.Essentials.Room.Behaviours
@@ -18,9 +19,9 @@ namespace PepperDash.Essentials.Room.Behaviours
     /// <summary>
     /// A device that when linked to a room can power the room on when enabled during scheduled hours.
     /// </summary>
-    public class RoomOnToDefaultSourceWhenOccupied : Device, IRuntimeConfigurableDevice
+    public class RoomOnToDefaultSourceWhenOccupied : ReconfigurableDevice
     {
-        RoomOnToDefaultSourceWhenOccupiedConfig Config;
+        RoomOnToDefaultSourceWhenOccupiedConfig PropertiesConfig;
 
         public bool FeatureEnabled { get; private set; }
 
@@ -42,10 +43,10 @@ namespace PepperDash.Essentials.Room.Behaviours
 
         private Fusion.EssentialsHuddleSpaceFusionSystemControllerBase FusionRoom;
 
-        public RoomOnToDefaultSourceWhenOccupied(string key, RoomOnToDefaultSourceWhenOccupiedConfig config) 
-            : base(key)
+        public RoomOnToDefaultSourceWhenOccupied(DeviceConfig config) :
+            base (config)
         {
-            Config = config;
+            PropertiesConfig = JsonConvert.DeserializeObject<RoomOnToDefaultSourceWhenOccupiedConfig>(config.Properties.ToString());
 
             FeatureEventGroup = new ScheduledEventGroup(this.Key);
 
@@ -63,7 +64,7 @@ namespace PepperDash.Essentials.Room.Behaviours
                 else
                     Debug.Console(1, this, "Room has no RoomOccupancy object set");
 
-                var fusionRoomKey = Config.RoomKey + "-fusion";
+                var fusionRoomKey = PropertiesConfig.RoomKey + "-fusion";
 
                 FusionRoom = DeviceManager.GetDeviceForKey(fusionRoomKey) as Fusion.EssentialsHuddleSpaceFusionSystemControllerBase;
 
@@ -79,45 +80,48 @@ namespace PepperDash.Essentials.Room.Behaviours
             return base.CustomActivate();
         }
 
+        /// <summary>
+        /// Sets up device based on config values
+        /// </summary>
         void SetUpDevice()
         {
-            Room = DeviceManager.GetDeviceForKey(Config.RoomKey) as EssentialsRoomBase;
+            Room = DeviceManager.GetDeviceForKey(PropertiesConfig.RoomKey) as EssentialsRoomBase;
 
             if (Room != null)
             {
                 try
                 {
-                    FeatureEnabledTime = DateTime.Parse(Config.OccupancyStartTime);
+                    FeatureEnabledTime = DateTime.Parse(PropertiesConfig.OccupancyStartTime);
 
                     if (FeatureEnabledTime != null)
                     {
                         Debug.Console(1, this, "Enabled Time: {0}", FeatureEnabledTime.ToString());
                     }
                     else
-                        Debug.Console(1, this, "Unable to parse {0} to DateTime", Config.OccupancyStartTime);
+                        Debug.Console(1, this, "Unable to parse {0} to DateTime", PropertiesConfig.OccupancyStartTime);
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(1, this, "Unable to parse OccupancyStartTime property: {0} \n Error: {1}", Config.OccupancyStartTime, e);
+                    Debug.Console(1, this, "Unable to parse OccupancyStartTime property: {0} \n Error: {1}", PropertiesConfig.OccupancyStartTime, e);
                 }
 
                 try
                 {
-                    FeatureDisabledTime = DateTime.Parse(Config.OccupancyEndTime);
+                    FeatureDisabledTime = DateTime.Parse(PropertiesConfig.OccupancyEndTime);
 
                     if (FeatureDisabledTime != null)
                     {
                         Debug.Console(1, this, "Disabled Time: {0}", FeatureDisabledTime.ToString());
                     }
                     else
-                        Debug.Console(1, this, "Unable to parse {0} to DateTime", Config.OccupancyEndTime);
+                        Debug.Console(1, this, "Unable to parse {0} to DateTime", PropertiesConfig.OccupancyEndTime);
                 }
                 catch (Exception e)
                 {
                     Debug.Console(1, this, "Unable to parse a DateTime config value \n Error: {1}", e);
                 }
 
-                if (!Config.EnableRoomOnWhenOccupied)
+                if (!PropertiesConfig.EnableRoomOnWhenOccupied)
                     FeatureEventGroup.ClearAllEvents();
                 else
                 {
@@ -133,30 +137,18 @@ namespace PepperDash.Essentials.Room.Behaviours
                 FeatureEnabled = CheckIfFeatureShouldBeEnabled();
             }
             else
-                Debug.Console(1, this, "Unable to get room from Device Manager with key: {0}", Config.RoomKey);
+                Debug.Console(1, this, "Unable to get room from Device Manager with key: {0}", PropertiesConfig.RoomKey);
         }
 
-        /// <summary>
-        /// Returns a JObject of the device config properties as they currently exist at runtime
-        /// </summary>
-        /// <returns></returns>
-        public JToken GetLocalConfigProperties()
+
+        protected override void CustomSetConfig(DeviceConfig config)
         {
-            return JToken.FromObject(Config);
-        }
+            var newPropertiesConfig = JsonConvert.DeserializeObject<RoomOnToDefaultSourceWhenOccupiedConfig>(config.Properties.ToString());
 
-        public object GetDeviceConfig()
-        {
-            return Config;
-        }
+            if(newPropertiesConfig != null)
+                PropertiesConfig = newPropertiesConfig;
 
-        public void SetDeviceConfig(object config)
-        {
-            var newConfig = config as RoomOnToDefaultSourceWhenOccupiedConfig;
-
-            Config = newConfig;
-
-            ConfigWriter.UpdateDeviceProperties(this.Key, GetLocalConfigProperties());
+            ConfigWriter.UpdateDeviceConfig(config);
 
             SetUpDevice();
         }
@@ -182,7 +174,7 @@ namespace PepperDash.Essentials.Room.Behaviours
             {
                 if (SchEvent.Name == FeatureEnableEventName)
                 {
-                    if (Config.EnableRoomOnWhenOccupied)
+                    if (PropertiesConfig.EnableRoomOnWhenOccupied)
                         FeatureEnabled = true;
 
                     Debug.Console(1, this, "*****Feature Enabled by event.*****");
@@ -204,7 +196,7 @@ namespace PepperDash.Essentials.Room.Behaviours
         {
             bool enabled = false;
 
-            if(Config.EnableRoomOnWhenOccupied)
+            if(PropertiesConfig.EnableRoomOnWhenOccupied)
             {
                 Debug.Console(1, this, "Current Time: {0} \n FeatureEnabledTime: {1} \n FeatureDisabledTime: {2}", DateTime.Now, FeatureEnabledTime, FeatureDisabledTime);
 
@@ -446,19 +438,19 @@ namespace PepperDash.Essentials.Room.Behaviours
         {
             ScheduledEventCommon.eWeekDays value = new ScheduledEventCommon.eWeekDays();
 
-            if (Config.EnableSunday)
+            if (PropertiesConfig.EnableSunday)
                 value = value | ScheduledEventCommon.eWeekDays.Sunday;
-            if (Config.EnableMonday)
+            if (PropertiesConfig.EnableMonday)
                 value = value | ScheduledEventCommon.eWeekDays.Monday;
-            if (Config.EnableTuesday)
+            if (PropertiesConfig.EnableTuesday)
                 value = value | ScheduledEventCommon.eWeekDays.Tuesday;
-            if (Config.EnableWednesday)
+            if (PropertiesConfig.EnableWednesday)
                 value = value | ScheduledEventCommon.eWeekDays.Wednesday;
-            if (Config.EnableThursday)
+            if (PropertiesConfig.EnableThursday)
                 value = value | ScheduledEventCommon.eWeekDays.Thursday;
-            if (Config.EnableFriday)
+            if (PropertiesConfig.EnableFriday)
                 value = value | ScheduledEventCommon.eWeekDays.Friday;
-            if (Config.EnableSaturday)
+            if (PropertiesConfig.EnableSaturday)
                 value = value | ScheduledEventCommon.eWeekDays.Saturday;
 
             return value;
@@ -473,7 +465,7 @@ namespace PepperDash.Essentials.Room.Behaviours
         {
             if (type == ScheduledEventCommon.eCallbackReason.NormalExpiration)
             {
-                if(Config.EnableRoomOnWhenOccupied)
+                if(PropertiesConfig.EnableRoomOnWhenOccupied)
                     FeatureEnabled = true;
 
                 Debug.Console(1, this, "RoomOnToDefaultSourceWhenOccupied Feature Enabled.");

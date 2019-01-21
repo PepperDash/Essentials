@@ -155,7 +155,7 @@ namespace PepperDash.Essentials
             get
             {
                 if (_TechDriver == null)
-                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, CurrentRoom.Config.Tech);
+                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, CurrentRoom.PropertiesConfig.Tech);
                 return _TechDriver;
             }
         }
@@ -235,9 +235,7 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            var roomConf = CurrentRoom.Config;
-
-			TriList.SetString(UIStringJoin.CurrentRoomName, CurrentRoom.Name);
+            var roomConf = CurrentRoom.PropertiesConfig;
 
             if (Config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Habanero)
             {
@@ -879,10 +877,9 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Helper for property setter. Sets the panel to the given room, latching up all functionality
         /// </summary>
-        void SetCurrentRoom(EssentialsHuddleVtc1Room room)
+        void RefreshCurrentRoom(EssentialsHuddleVtc1Room room)
         {
-            if (_CurrentRoom == room) return;
-            // Disconnect current (probably never called)
+
             if (_CurrentRoom != null)
             {
                 // Disconnect current room
@@ -894,7 +891,7 @@ namespace PepperDash.Essentials
                 _CurrentRoom.ShutdownPromptTimer.HasFinished -= ShutdownPromptTimer_HasFinished;
                 _CurrentRoom.ShutdownPromptTimer.WasCancelled -= ShutdownPromptTimer_WasCancelled;
 
-                _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
+                _CurrentRoom.OnFeedback.OutputChange -= CurrentRoom_OnFeedback_OutputChange;
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange -= CurrentRoom_IsWarmingFeedback_OutputChange;
                 _CurrentRoom.IsCoolingDownFeedback.OutputChange -= CurrentRoom_IsCoolingDownFeedback_OutputChange;
 				_CurrentRoom.InCallFeedback.OutputChange -= CurrentRoom_InCallFeedback_OutputChange;
@@ -950,6 +947,27 @@ namespace PepperDash.Essentials
                 // Clear sigs that need to be
                 TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = "Select a room";
             }
+        }
+
+        void SetCurrentRoom(EssentialsHuddleVtc1Room room)
+        {
+            if (_CurrentRoom == room) return;
+            // Disconnect current (probably never called)
+
+            room.ConfigChanged -= room_ConfigChanged;
+            room.ConfigChanged += room_ConfigChanged;
+
+            RefreshCurrentRoom(room);
+        }
+
+        /// <summary>
+        /// Fires when room config of current room has changed.  Meant to refresh room values to propegate any updates to UI
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void room_ConfigChanged(object sender, EventArgs e)
+        {
+            RefreshCurrentRoom(_CurrentRoom);
         }
 
 		/// <summary>
@@ -1065,155 +1083,6 @@ namespace PepperDash.Essentials
 
             TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = callListSharedSourceLabel;
         }
-
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //void SetupHeaderButtons()
-        //{
-        //    HeaderButtonsAreSetUp = false;
-
-        //    TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
-
-        //    var roomConf = CurrentRoom.Config;
-
-        //    // Gear
-        //    TriList.SetString(UIStringJoin.HeaderButtonIcon5, "Gear");
-        //    TriList.SetSigHeldAction(UIBoolJoin.HeaderIcon5Press, 2000,
-        //        ShowTech,
-        //        null,
-        //        () =>
-        //        {
-        //            if (CurrentRoom.OnFeedback.BoolValue)
-        //                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible);
-        //            else
-        //                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPagePowerOffVisible);
-        //        });
-        //    TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
-        //        PopupInterlock.HideAndClear());
-
-        //    // Help button and popup
-        //    if (CurrentRoom.Config.Help != null)
-        //    {
-        //        TriList.SetString(UIStringJoin.HelpMessage, roomConf.Help.Message);
-        //        TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, roomConf.Help.ShowCallButton);
-        //        TriList.SetString(UIStringJoin.HelpPageCallButtonText, roomConf.Help.CallButtonText);
-        //        if (roomConf.Help.ShowCallButton)
-        //            TriList.SetSigFalseAction(UIBoolJoin.HelpPageShowCallButtonPress, () => { }); // ************ FILL IN
-        //        else
-        //            TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
-        //    }
-        //    else // older config
-        //    {
-        //        TriList.SetString(UIStringJoin.HelpMessage, CurrentRoom.Config.HelpMessage);
-        //        TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, false);
-        //        TriList.SetString(UIStringJoin.HelpPageCallButtonText, null);
-        //        TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
-        //    }
-        //    TriList.SetString(UIStringJoin.HeaderButtonIcon4, "Help");
-        //    TriList.SetSigFalseAction(UIBoolJoin.HeaderIcon4Press, () =>
-        //    {
-        //        string message = null;
-        //        var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
-        //            as EssentialsHuddleSpaceRoom;
-        //        if (room != null)
-        //            message = room.Config.HelpMessage;
-        //        else
-        //            message = "Sorry, no help message available. No room connected.";
-        //        //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
-        //        PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
-        //    });
-        //    uint nextJoin = 3953;
-
-        //    // Calendar button
-        //    if (_CurrentRoom.ScheduleSource != null)
-        //    {
-        //        TriList.SetString(nextJoin, "Calendar");
-        //        TriList.SetSigFalseAction(nextJoin, CalendarPress);
-
-        //        nextJoin--;
-        //    }
-
-        //    // Call button
-        //    TriList.SetString(nextJoin, "DND");
-        //    TriList.SetSigFalseAction(nextJoin, ShowActiveCallsList);
-        //    HeaderCallButtonIconSig = TriList.StringInput[nextJoin];
-
-        //    nextJoin--;
-
-        //    // blank any that remain
-        //    for (var i = nextJoin; i > 3950; i--)
-        //    {
-        //        TriList.SetString(i, "Blank");
-        //        TriList.SetSigFalseAction(i, () => { });
-        //    }
-
-        //    TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusLabelPress, ShowActiveCallsList);
-
-        //    // Set Call Status Subpage Position
-
-        //    if (nextJoin == 3951)
-        //    {
-        //        // Set to right position
-        //        TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, false);
-        //        TriList.SetBool(UIBoolJoin.HeaderCallStatusRightPositionVisible, true);
-        //    }
-        //    else if (nextJoin == 3950)
-        //    {
-        //        // Set to left position
-        //        TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, true);
-        //        TriList.SetBool(UIBoolJoin.HeaderCallStatusRightPositionVisible, false);
-        //    }
-
-        //    HeaderButtonsAreSetUp = true;
-
-        //    ComputeHeaderCallStatus(CurrentRoom.VideoCodec);
-        //}
-
-        ///// <summary>
-        ///// Evaluates the call status and sets the icon mode and text label 
-        ///// </summary>
-        //public void ComputeHeaderCallStatus(VideoCodecBase codec)
-        //{
-        //    if (codec == null)
-        //    {
-        //        Debug.Console(1, "ComputeHeaderCallStatus() cannot execute.  codec is null");
-        //        return;
-        //    }
-
-        //    if (HeaderCallButtonIconSig == null)
-        //    {
-        //        Debug.Console(1, "ComputeHeaderCallStatus() cannot execute.  HeaderCallButtonIconSig is null");
-        //        return;
-        //    }
-
-        //    // Set mode of header button
-        //    if (!codec.IsInCall)
-        //    {
-        //        HeaderCallButtonIconSig.StringValue = "DND";
-        //        //HeaderCallButton.SetIcon(HeaderListButton.OnHook);
-        //    }
-        //    else if (codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
-        //        HeaderCallButtonIconSig.StringValue = "Misc-06_Dark";
-        //    //HeaderCallButton.SetIcon(HeaderListButton.Camera);
-        //    //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
-        //    else
-        //        HeaderCallButtonIconSig.StringValue = "Misc-09_Dark";
-        //    //HeaderCallButton.SetIcon(HeaderListButton.Phone);
-        //    //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
-
-        //    // Set the call status text
-        //    if (codec.ActiveCalls.Count > 0)
-        //    {
-        //        if (codec.ActiveCalls.Count == 1)
-        //            TriList.SetString(UIStringJoin.HeaderCallStatusLabel, "1 Active Call");
-        //        else if (codec.ActiveCalls.Count > 1)
-        //            TriList.SetString(UIStringJoin.HeaderCallStatusLabel, string.Format("{0} Active Calls", codec.ActiveCalls.Count));
-        //    }
-        //    else
-        //        TriList.SetString(UIStringJoin.HeaderCallStatusLabel, "No Active Calls");
-        //}
 
 		/// <summary>
 		/// 

@@ -164,7 +164,7 @@ namespace PepperDash.Essentials
             get
             {
                 if (_TechDriver == null)
-                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, CurrentRoom.Config.Tech);
+                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, CurrentRoom.PropertiesConfig.Tech);
                 return _TechDriver;
             }
         }
@@ -220,9 +220,7 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            var roomConf = CurrentRoom.Config;
-
-            TriList.SetString(UIStringJoin.CurrentRoomName, CurrentRoom.Name);
+            var roomConf = CurrentRoom.PropertiesConfig;
 
             if (Config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Habanero)
             {
@@ -724,63 +722,62 @@ namespace PepperDash.Essentials
 				CurrentRoom.CurrentVolumeControls.VolumeDown(state);
 		}
 
-		/// <summary>
-		/// Helper for property setter. Sets the panel to the given room, latching up all functionality
-		/// </summary>
-		void SetCurrentRoom(EssentialsHuddleSpaceRoom room)
-		{
-			if (_CurrentRoom == room) return;
-            // Disconnect current (probably never called)
-			if (_CurrentRoom != null)
-			{
-				// Disconnect current room
-				_CurrentRoom.CurrentVolumeDeviceChange -= this.CurrentRoom_CurrentAudioDeviceChange;
-				ClearAudioDeviceConnections();
-				_CurrentRoom.CurrentSingleSourceChange -= this.CurrentRoom_SourceInfoChange;
-				DisconnectSource(_CurrentRoom.CurrentSourceInfo);
+
+        /// <summary>
+        /// Helper for property setter. Sets the panel to the given room, latching up all functionality
+        /// </summary>
+        public void RefreshCurrentRoom(EssentialsHuddleSpaceRoom room)
+        {
+            if (_CurrentRoom != null)
+            {
+                // Disconnect current room
+                _CurrentRoom.CurrentVolumeDeviceChange -= this.CurrentRoom_CurrentAudioDeviceChange;
+                ClearAudioDeviceConnections();
+                _CurrentRoom.CurrentSingleSourceChange -= this.CurrentRoom_SourceInfoChange;
+                DisconnectSource(_CurrentRoom.CurrentSourceInfo);
                 _CurrentRoom.ShutdownPromptTimer.HasStarted -= ShutdownPromptTimer_HasStarted;
                 _CurrentRoom.ShutdownPromptTimer.HasFinished -= ShutdownPromptTimer_HasFinished;
                 _CurrentRoom.ShutdownPromptTimer.WasCancelled -= ShutdownPromptTimer_WasCancelled;
 
-                _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
+                _CurrentRoom.OnFeedback.OutputChange -= CurrentRoom_OnFeedback_OutputChange;
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange -= CurrentRoom_IsWarmingFeedback_OutputChange;
                 _CurrentRoom.IsCoolingDownFeedback.OutputChange -= IsCoolingDownFeedback_OutputChange;
             }
 
-			_CurrentRoom = room;
+            _CurrentRoom = room;
 
-			if (_CurrentRoom != null)
-			{
-				// get the source list config and set up the source list
-				var config = ConfigReader.ConfigObject.SourceLists;
-				if (config.ContainsKey(_CurrentRoom.SourceListKey))
-				{
-					var srcList = config[_CurrentRoom.SourceListKey];
-					// Setup sources list			
-					uint i = 1; // counter for UI list
-					foreach (var kvp in srcList)
-					{
-						var srcConfig = kvp.Value;
-						if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
-							continue;
+            if (_CurrentRoom != null)
+            {
+                // get the source list config and set up the source list
+                var config = ConfigReader.ConfigObject.SourceLists;
+                if (config.ContainsKey(_CurrentRoom.SourceListKey))
+                {
+                    var srcList = config[_CurrentRoom.SourceListKey];
+                    // Setup sources list			
+                    uint i = 1; // counter for UI list
+                    foreach (var kvp in srcList)
+                    {
+                        var srcConfig = kvp.Value;
+                        if (!srcConfig.IncludeInSourceList) // Skip sources marked this way
+                            continue;
 
-						var actualSource = DeviceManager.GetDeviceForKey(srcConfig.SourceKey) as Device;
-						if (actualSource == null)
-						{
-							Debug.Console(1, "Cannot assign missing source '{0}' to source UI list",
-								srcConfig.SourceKey);
-							continue;
-						}
-						var routeKey = kvp.Key;
+                        var actualSource = DeviceManager.GetDeviceForKey(srcConfig.SourceKey) as Device;
+                        if (actualSource == null)
+                        {
+                            Debug.Console(1, "Cannot assign missing source '{0}' to source UI list",
+                                srcConfig.SourceKey);
+                            continue;
+                        }
+                        var routeKey = kvp.Key;
                         var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig,
                             b => { if (!b) UiSelectSource(routeKey); });
                         SourcesSrl.AddItem(item); // add to the SRL
                         item.RegisterForSourceChange(_CurrentRoom);
-					}
+                    }
                     SourcesSrl.Count = (ushort)(i - 1);
-				}
+                }
                 // Name and logo
-				TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
+                TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
                 if (_CurrentRoom.LogoUrl == null)
                 {
                     TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = true;
@@ -804,97 +801,40 @@ namespace PepperDash.Essentials
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange += CurrentRoom_IsWarmingFeedback_OutputChange;
                 _CurrentRoom.IsCoolingDownFeedback.OutputChange += IsCoolingDownFeedback_OutputChange;
 
-				_CurrentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
-				RefreshAudioDeviceConnections();
-				_CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
-				RefreshSourceInfo();
+                _CurrentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
+                RefreshAudioDeviceConnections();
+                _CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
+                RefreshSourceInfo();
 
                 (Parent as EssentialsPanelMainInterfaceDriver).HeaderDriver.SetupHeaderButtons(this, CurrentRoom);
             }
-			else
-			{
-				// Clear sigs that need to be
-				TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = "Select a room";
-			}
+            else
+            {
+                // Clear sigs that need to be
+                TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = "Select a room";
+            }
+        }
+
+		void SetCurrentRoom(EssentialsHuddleSpaceRoom room)
+		{
+			if (_CurrentRoom == room) return;
+            // Disconnect current (probably never called)
+
+            room.ConfigChanged -= room_ConfigChanged;
+            room.ConfigChanged += room_ConfigChanged;
+
+            RefreshCurrentRoom(room);
 		}
 
-        //void SetupHeaderButtons()
-        //{
-        //    HeaderButtonsAreSetUp = false;
-
-        //    TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
-
-        //    var roomConf = CurrentRoom.Config;
-
-        //    // Gear
-        //    TriList.SetString(UIStringJoin.HeaderButtonIcon5, "Gear");
-        //    TriList.SetSigHeldAction(UIBoolJoin.HeaderIcon5Press, 2000,
-        //        ShowTech,
-        //        null,
-        //        () =>
-        //        {
-        //            if (CurrentRoom.OnFeedback.BoolValue)
-        //                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPageVisible);
-        //            else
-        //                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.VolumesPagePowerOffVisible);
-        //        });
-        //    TriList.SetSigFalseAction(UIBoolJoin.TechExitButton, () =>
-        //        PopupInterlock.HideAndClear());
-
-        //    // Help button and popup
-        //    if (CurrentRoom.Config.Help != null)
-        //    {
-        //        TriList.SetString(UIStringJoin.HelpMessage, roomConf.Help.Message);
-        //        TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, roomConf.Help.ShowCallButton);
-        //        TriList.SetString(UIStringJoin.HelpPageCallButtonText, roomConf.Help.CallButtonText);
-        //        if (roomConf.Help.ShowCallButton)
-        //            TriList.SetSigFalseAction(UIBoolJoin.HelpPageShowCallButtonPress, () => { }); // ************ FILL IN
-        //        else
-        //            TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
-        //    }
-        //    else // older config
-        //    {
-        //        TriList.SetString(UIStringJoin.HelpMessage, CurrentRoom.Config.HelpMessage);
-        //        TriList.SetBool(UIBoolJoin.HelpPageShowCallButtonVisible, false);
-        //        TriList.SetString(UIStringJoin.HelpPageCallButtonText, null);
-        //        TriList.ClearBoolSigAction(UIBoolJoin.HelpPageShowCallButtonPress);
-        //    }
-        //    TriList.SetString(UIStringJoin.HeaderButtonIcon4, "Help");
-        //    TriList.SetSigFalseAction(UIBoolJoin.HeaderIcon4Press, () =>
-        //    {
-        //        string message = null;
-        //        var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
-        //            as EssentialsHuddleSpaceRoom;
-        //        if (room != null)
-        //            message = room.Config.HelpMessage;
-        //        else
-        //            message = "Sorry, no help message available. No room connected.";
-        //        //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
-        //        PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HelpPageVisible);
-        //    });
-        //    uint nextJoin = 3953;
-
-        //    //// Calendar button
-        //    //if (_CurrentRoom.ScheduleSource != null)
-        //    //{
-        //    //    TriList.SetString(nextJoin, "Calendar");
-        //    //    TriList.SetSigFalseAction(nextJoin, CalendarPress);
-
-        //    //    nextJoin--;
-        //    //}
-
-        //    //nextJoin--;
-
-        //    // blank any that remain
-        //    for (var i = nextJoin; i > 3950; i--)
-        //    {
-        //        TriList.SetString(i, "Blank");
-        //        TriList.SetSigFalseAction(i, () => { });
-        //    }
-
-        //    HeaderButtonsAreSetUp = true;
-        //}
-
+        /// <summary>
+        /// Fires when room config of current room has changed.  Meant to refresh room values to propegate any updates to UI
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void room_ConfigChanged(object sender, EventArgs e)
+        {
+            RefreshCurrentRoom(_CurrentRoom);
+        }
 
         /// <summary>
         /// For room on/off changes

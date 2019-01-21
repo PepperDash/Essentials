@@ -12,6 +12,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Room.Cotija;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Common.AudioCodec;
 
 namespace PepperDash.Essentials
 {
@@ -21,6 +22,8 @@ namespace PepperDash.Essentials
         public EssentialsRoomBase Room { get; private set; }
 
 		public VideoCodecBaseMessenger VCMessenger { get; private set; }
+
+        public AudioCodecBaseMessenger ACMessenger { get; private set; }
 
 		/// <summary>
 		/// 
@@ -74,7 +77,7 @@ namespace PepperDash.Essentials
 			{
 				Parent.AddAction(string.Format(@"/room/{0}/volumes/master/level", Room.Key), new Action<ushort>(u =>
 					(volumeRoom.CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(u)));
-				Parent.AddAction(string.Format(@"/room/{0}/volumes/master/mute", Room.Key), new Action(() => 
+				Parent.AddAction(string.Format(@"/room/{0}/volumes/master/muteToggle", Room.Key), new Action(() => 
 					volumeRoom.CurrentVolumeControls.MuteToggle()));
 				volumeRoom.CurrentVolumeDeviceChange += new EventHandler<VolumeDeviceChangeEventArgs>(Room_CurrentVolumeDeviceChange);
 
@@ -82,7 +85,7 @@ namespace PepperDash.Essentials
 				var currentVolumeDevice = volumeRoom.CurrentVolumeControls as IBasicVolumeWithFeedback;
 				if (currentVolumeDevice != null)
 				{
-					currentVolumeDevice.MuteFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
+					currentVolumeDevice.MuteFeedback.OutputChange += MuteFeedback_OutputChange;
 					currentVolumeDevice.VolumeLevelFeedback.OutputChange += VolumeLevelFeedback_OutputChange;
 				}
 			}
@@ -92,28 +95,24 @@ namespace PepperDash.Essentials
 				sscRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSingleSourceChange);
 
 			var vcRoom = Room as IHasVideoCodec;
-			if (vcRoom != null)
+			if (vcRoom != null && vcRoom.VideoCodec != null)
 			{
 				var codec = vcRoom.VideoCodec;
-				VCMessenger = new VideoCodecBaseMessenger(vcRoom.VideoCodec, "/device/videoCodec");
+                var key = vcRoom.VideoCodec.Key + "-" + parent.Key;
+				VCMessenger = new VideoCodecBaseMessenger(key, vcRoom.VideoCodec, "/device/videoCodec");
 				VCMessenger.RegisterWithAppServer(Parent);
 
-				// May need to move this or remove this 
-				codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
-
 				vcRoom.IsSharingFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(IsSharingFeedback_OutputChange);
-
-				//Parent.AddAction("/device/videoCodec/dial", new Action<string>(s => codec.Dial(s)));
-				//Parent.AddAction("/device/videoCodec/endCall", new Action<string>(s =>
-				//{
-				//    var call = codec.ActiveCalls.FirstOrDefault(c => c.Id == s);
-				//    if (call != null)
-				//    {
-				//        codec.EndCall(call);
-				//    }
-				//}));
-				//Parent.AddAction("/device/videoCodec/endAllCalls", new Action(() => codec.EndAllCalls()));
 			}
+
+            var acRoom = Room as IHasAudioCodec;
+            if (acRoom != null && acRoom.AudioCodec != null)
+            {
+                var codec = acRoom.AudioCodec;
+                var key = acRoom.AudioCodec.Key + "-" + parent.Key;
+                ACMessenger = new AudioCodecBaseMessenger(key, acRoom.AudioCodec, "/device/audioCodec");
+                ACMessenger.RegisterWithAppServer(Parent);
+            }
 
 			var defCallRm = Room as IRunDefaultCallRoute;
 			if (defCallRm != null)
@@ -169,18 +168,18 @@ namespace PepperDash.Essentials
 			});
 		}
 
-		/// <summary>
-		/// Handler for codec changes
-		/// </summary>
-		void codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
-		{
-			PostStatusMessage(new
-			{
-				calls = GetCallsMessageObject(),
-				//vtc = GetVtcCallsMessageObject()
-			});
+        ///// <summary>
+        ///// Handler for codec changes
+        ///// </summary>
+        //void codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
+        //{
+        //    PostStatusMessage(new
+        //    {
+        //        calls = GetCallsMessageObject(),
+        //        //vtc = GetVtcCallsMessageObject()
+        //    });
 
-		}
+        //}
 
 		/// <summary>
 		/// Helper for posting status message
@@ -425,53 +424,52 @@ namespace PepperDash.Essentials
 
 			PostStatusMessage(new
 			{
-				calls = GetCallsMessageObject(),
+                //calls = GetCallsMessageObject(),
 				isOn = room.OnFeedback.BoolValue,
 				selectedSourceKey = sourceKey,
-				vtc = GetVtcCallsMessageObject(),
+                //vtc = GetVtcCallsMessageObject(),
 				volumes = volumes
 			});
         }
 
-		/// <summary>
-		/// Helper to return a anonymous object with the call data for JSON message
-		/// </summary>
-		/// <returns></returns>
-		object GetCallsMessageObject()
-		{
-			var callRm = Room as IHasVideoCodec;
-			if (callRm == null)
-				return null;
-			return new
-			{
-				activeCalls = callRm.VideoCodec.ActiveCalls,
-				callType = callRm.CallTypeFeedback.IntValue,
-				inCall = callRm.InCallFeedback.BoolValue,
-				isSharing = callRm.IsSharingFeedback.BoolValue,
-				privacyModeIsOn = callRm.PrivacyModeIsOnFeedback.BoolValue
-			};
-		}
+        ///// <summary>
+        ///// Helper to return a anonymous object with the call data for JSON message
+        ///// </summary>
+        ///// <returns></returns>
+        //object GetCallsMessageObject()
+        //{
+        //    var callRm = Room as IHasVideoCodec;
+        //    if (callRm == null)
+        //        return null;
+        //    return new
+        //    {
+        //        activeCalls = callRm.VideoCodec.ActiveCalls,
+        //        callType = callRm.CallTypeFeedback.IntValue,
+        //        inCall = callRm.InCallFeedback.BoolValue,
+        //        isSharing = callRm.IsSharingFeedback.BoolValue,
+        //        privacyModeIsOn = callRm.PrivacyModeIsOnFeedback.BoolValue
+        //    };
+        //}
 
-		/// <summary>
-		/// Helper method to build call status for vtc
-		/// </summary>
-		/// <returns></returns>
-		object GetVtcCallsMessageObject()
-		{
-			var callRm = Room as IHasVideoCodec;
-			object vtc = null;
-			if (callRm != null)
-			{
-				var codec = callRm.VideoCodec;
-				vtc = new
-				{
-					isInCall = codec.IsInCall,
-					calls = codec.ActiveCalls
-				};
-			}
-			return vtc;
-		}
-     
+        ///// <summary>
+        ///// Helper method to build call status for vtc
+        ///// </summary>
+        ///// <returns></returns>
+        //object GetVtcCallsMessageObject()
+        //{
+        //    var callRm = Room as IHasVideoCodec;
+        //    object vtc = null;
+        //    if (callRm != null)
+        //    {
+        //        var codec = callRm.VideoCodec;
+        //        vtc = new
+        //        {
+        //            isInCall = codec.IsInCall,
+        //            calls = codec.ActiveCalls
+        //        };
+        //    }
+        //    return vtc;
+        //}     
     }
 
 	/// <summary>

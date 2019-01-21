@@ -13,31 +13,25 @@ using PepperDash.Essentials.Devices.Common.VideoCodec;
 namespace PepperDash.Essentials.AppServer.Messengers
 {
 	/// <summary>
-	/// Provides a messaging bridge for a VideoCodecBase
+	/// Provides a messaging bridge for a VideoCodecBase device
 	/// </summary>
-	public class VideoCodecBaseMessenger
+	public class VideoCodecBaseMessenger : MessengerBase
 	{
 		/// <summary>
 		/// 
 		/// </summary>
 		public VideoCodecBase Codec { get; private set; }
 
-		public CotijaSystemController AppServerController { get; private set; }
-
-		public string MessagePath { get; private set; }
-
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="codec"></param>
-		public VideoCodecBaseMessenger(VideoCodecBase codec, string messagePath)
+		public VideoCodecBaseMessenger(string key, VideoCodecBase codec, string messagePath)
+            : base(key, messagePath)
 		{
 			if (codec == null)
 				throw new ArgumentNullException("codec");
-			if (string.IsNullOrEmpty(messagePath))
-				throw new ArgumentException("messagePath must not be empty or null");
 
-			MessagePath = messagePath;
 			Codec = codec;
 			codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
 			codec.IsReadyChange += new EventHandler<EventArgs>(codec_IsReadyChange);
@@ -47,7 +41,31 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{
 				dirCodec.DirectoryResultReturned += new EventHandler<DirectoryEventArgs>(dirCodec_DirectoryResultReturned);
 			}
+
+            var recCodec = codec as IHasCallHistory;
+            if (recCodec != null)
+            {
+                recCodec.CallHistory.RecentCallsListHasChanged += new EventHandler<EventArgs>(CallHistory_RecentCallsListHasChanged);
+            }
 		}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void CallHistory_RecentCallsListHasChanged(object sender, EventArgs e)
+        {
+            var recents = (sender as CodecCallHistory).RecentCalls;
+
+            if (recents != null)
+            {
+                PostStatusMessage(new
+                {
+                    recentCalls = recents
+                });
+            }
+        }
 		
 		/// <summary>
 		/// 
@@ -56,7 +74,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// <param name="e"></param>
 		void dirCodec_DirectoryResultReturned(object sender, DirectoryEventArgs e)
 		{
-			var dir = e.Directory;
 			PostStatusMessage(new
 			{
 				currentDirectory = e.Directory
@@ -77,16 +94,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		}
 
 		/// <summary>
-		/// Registers this codec's messaging with an app server controller
+		/// Called from base's RegisterWithAppServer method
 		/// </summary>
 		/// <param name="appServerController"></param>
-		public void RegisterWithAppServer(CotijaSystemController appServerController)
+		protected override void CustomRegisterWithAppServer(CotijaSystemController appServerController)
 		{
-			if (appServerController == null)
-				throw new ArgumentNullException("appServerController");
-			
-			AppServerController = appServerController;
-
 			appServerController.AddAction("/device/videoCodec/isReady", new Action(SendIsReady));
 			appServerController.AddAction("/device/videoCodec/fullStatus", new Action(SendVtcFullMessageObject));
 			appServerController.AddAction("/device/videoCodec/dial", new Action<string>(s => Codec.Dial(s)));
@@ -113,6 +125,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			appServerController.AddAction(MessagePath + "/directoryRoot", new Action(GetDirectoryRoot));			
 			appServerController.AddAction(MessagePath + "/directoryById", new Action<string>(s => GetDirectory(s)));
 			appServerController.AddAction(MessagePath + "/directorySearch", new Action<string>(s => DirectorySearch(s)));
+            appServerController.AddAction(MessagePath + "/getCallHistory", new Action(GetCallHistory));
 			appServerController.AddAction(MessagePath + "/privacyModeOn", new Action(Codec.PrivacyModeOn));
 			appServerController.AddAction(MessagePath + "/privacyModeOff", new Action(Codec.PrivacyModeOff));
 			appServerController.AddAction(MessagePath + "/privacyModeToggle", new Action(Codec.PrivacyModeToggle));
@@ -121,6 +134,24 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			appServerController.AddAction(MessagePath + "/standbyOn", new Action(Codec.StandbyActivate));
 			appServerController.AddAction(MessagePath + "/standbyOff", new Action(Codec.StandbyDeactivate));
 		}
+
+        void GetCallHistory()
+        {
+            var codec = (Codec as IHasCallHistory);
+
+            if (codec != null)
+            {
+                var recents = codec.CallHistory.RecentCalls;
+
+                if (recents != null)
+                {
+                    PostStatusMessage(new
+                    {
+                        recentCalls = recents
+                    });
+                }
+            }
+        }
 
 		public void GetFullStatusMessage()
 		{
@@ -239,21 +270,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 					sipURI = info.SipUri
 				},
 				showSelfViewByDefault = Codec.ShowSelfViewByDefault,
-				hasDirectory = Codec is IHasDirectory
+				hasDirectory = Codec is IHasDirectory,
+                hasRecents = Codec is IHasCallHistory,
+                hasCameras = Codec is IHasCameraControl
 			});
-		}
-
-		/// <summary>
-		/// Helper for posting status message
-		/// </summary>
-		/// <param name="contentObject">The contents of the content object</param>
-		void PostStatusMessage(object contentObject)
-		{
-			AppServerController.SendMessageToServer(JObject.FromObject(new
-			{
-				type = MessagePath,
-				content = contentObject
-			}));
 		}
 	}
 }
