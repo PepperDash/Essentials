@@ -15,6 +15,7 @@ using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.DM;
+using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.Bridges
 {
@@ -87,6 +88,11 @@ namespace PepperDash.Essentials.Bridges
                             (device as GenericComm).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
+						else if (device is CameraBase)
+						{
+							(device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+							continue;
+						}
 						else if (device is PepperDash.Essentials.Core.TwoWayDisplayBase)
 						{
 							(device as TwoWayDisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
