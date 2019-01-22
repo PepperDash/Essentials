@@ -81,6 +81,10 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 501
 			/// </summary>
 			public const uint ConfigIsReady = 501;
+			/// <summary>
+			/// 601
+			/// </summary>
+			public const uint SourceShareDisableStartJoin = 601;
 		}
 
 		public class UshortJoin
@@ -166,6 +170,7 @@ namespace PepperDash.Essentials.Room.Cotija
 		CotijaDdvc01DeviceBridge SourceBridge;
 
 		Ddvc01AtcMessenger AtcMessenger;
+		Ddvc01VtcMessenger VtcMessenger;
 
 
 		/// <summary>
@@ -204,9 +209,13 @@ namespace PepperDash.Essentials.Room.Cotija
 			SetupFunctions();
 			SetupFeedbacks();
 
-            var key = this.Key + "-" + Parent.Key;
-			AtcMessenger = new Ddvc01AtcMessenger(key, EISC, "/device/audioCodec");
+            var atcKey = string.Format("atc-{0}-{1}", this.Key, Parent.Key);
+			AtcMessenger = new Ddvc01AtcMessenger(atcKey, EISC, "/device/audioCodec");
 			AtcMessenger.RegisterWithAppServer(Parent);
+
+            var vtcKey = string.Format("atc-{0}-{1}", this.Key, Parent.Key);
+			VtcMessenger = new Ddvc01VtcMessenger(vtcKey, EISC, "/device/videoCodec");
+			VtcMessenger.RegisterWithAppServer(Parent);
 
 			EISC.SigChange += EISC_SigChange;
 			EISC.OnlineStatusChange += (o, a) =>
@@ -251,7 +260,6 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// </summary>
 		void SetupFunctions()
 		{
-#warning need join numbers for these
 			Parent.AddAction(@"/room/room1/promptForCode", new Action(() => EISC.PulseBool(BoolJoin.PromptForCode)));
 			Parent.AddAction(@"/room/room1/clientJoined", new Action(() => EISC.PulseBool(BoolJoin.ClientJoined)));
 
@@ -467,8 +475,8 @@ namespace PepperDash.Essentials.Room.Cotija
 					break;
 				var icon = EISC.StringOutput[651 + i].StringValue;
 				var key = EISC.StringOutput[671 + i].StringValue;
-
-				var type = EISC.StringOutput[701 + i].StringValue;
+				var type = EISC.StringOutput[BoolJoin.SourceShareDisableStartJoin + i].StringValue;
+				var disableShare = EISC.BooleanOutput[601 + i].BoolValue;
 
 				Debug.Console(0, this, "Adding source {0} '{1}'", key, name);
 				var newSLI = new SourceListItem{
@@ -476,7 +484,8 @@ namespace PepperDash.Essentials.Room.Cotija
 					Name = name,
 					Order = (int)i + 1,
 					SourceKey = key,
-					Type = eSourceListItemType.Route
+					Type = eSourceListItemType.Route,
+					DisableCodecSharing = disableShare,
 				};
 				newSl.Add(key, newSLI);
                 

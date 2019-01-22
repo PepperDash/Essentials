@@ -108,8 +108,9 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppServer\Messengers\AtcDdvc01Messenger.cs" />
+    <Compile Include="AppServer\Messengers\Ddvc01AtcMessenger.cs" />
     <Compile Include="AppServer\Messengers\AudioCodecBaseMessenger.cs" />
+    <Compile Include="AppServer\Messengers\Ddvc01VtcMessenger.cs" />
     <Compile Include="AppServer\Messengers\MessengerBase.cs" />
     <Compile Include="AppServer\Messengers\SystemMonitorMessenger.cs" />
     <Compile Include="AppServer\Messengers\VideoCodecBaseMessenger.cs" />

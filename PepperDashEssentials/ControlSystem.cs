@@ -245,9 +245,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public void LoadDevices()
 		{
-# warning Missing PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
 			// Build the processor wrapper class
-            // DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+			DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
 
             // Add global System Monitor device
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));

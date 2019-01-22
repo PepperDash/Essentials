@@ -15,7 +15,7 @@ using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.DM;
-using PepperDash.Essentials.Devices.Common.Cameras;
+//using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.Bridges
 {
@@ -88,16 +88,16 @@ namespace PepperDash.Essentials.Bridges
                             (device as GenericComm).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-						else if (device is CameraBase)
-						{
-							(device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-							continue;
-						}
-						else if (device is PepperDash.Essentials.Core.TwoWayDisplayBase)
-						{
-							(device as TwoWayDisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-							continue;
-						}
+						//else if (device is CameraBase)
+						//{
+						//    (device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+						//    continue;
+						//}
+						//else if (device is PepperDash.Essentials.Core.TwoWayDisplayBase)
+						//{
+						//    (device as TwoWayDisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+						//    continue;
+						//}
                         else if (device is DmChassisController)
                         {
                             (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
@@ -124,16 +124,16 @@ namespace PepperDash.Essentials.Bridges
                             (device as IDigitalInput).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-						else if (device is LightingBase)
-						{
-							(device as LightingBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-							continue;
-						}
-						else if (device is DigitalLogger)
-						{
-							(device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-							continue;
-						}
+						//else if (device is LightingBase)
+						//{
+						//    (device as LightingBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+						//    continue;
+						//}
+						//else if (device is DigitalLogger)
+						//{
+						//    (device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+						//    continue;
+						//}
                     }
                 }
 
