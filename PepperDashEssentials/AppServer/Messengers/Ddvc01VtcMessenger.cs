@@ -17,7 +17,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		BasicTriList EISC;
 
 		/********* Bools *********/
-
 		/// <summary>
 		/// 724
 		/// </summary>
@@ -55,13 +54,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		const uint BDirectorySearchBusy = 800;
 		/// <summary>
+		/// 801 
+		/// </summary>
+		const uint BDirectoryLineSelected = 801;
+		/// <summary>
 		/// 801 when selected entry is a contact
 		/// </summary>
 		const uint BDirectoryEntryIsContact = 801;
 		/// <summary>
 		/// 802 To show/hide back button
 		/// </summary>
-		const uint BDirectoryIsAtTop = 802;
+		const uint BDirectoryIsRoot = 802;
+		/// <summary>
+		/// 803 Pulse from system to inform us when directory is ready
+		/// </summary>
+		const uint DDirectoryHasChanged = 803;
 		/// <summary>
 		/// 811
 		/// </summary>
@@ -107,13 +114,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		const uint SCurrentDialString = 701;
 		/// <summary>
-		/// 711
+		/// 702
 		/// </summary>
-		const uint SCurrentCallNumber = 711;
+		const uint SCurrentCallNumber = 702;
         /// <summary>
-        /// 712
+		/// 703
         /// </summary>
-        const uint SCurrentCallName = 712;
+		const uint SCurrentCallName = 703;
 		/// <summary>
 		/// 731
 		/// </summary>
@@ -169,7 +176,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
 		CodecActiveCallItem CurrentCallItem;
 		CodecActiveCallItem IncomingCallItem;
-
 
 		/// <summary>
 		/// 
@@ -253,6 +259,42 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				SendCallsList();
 			});
 
+			// Directory insanity
+			EISC.SetUShortSigAction(UDirectoryRowCount, u =>
+			{
+				var items = new List<object>();
+				for (uint i = 0; i < u; i++)
+				{
+					var newItem = new
+					{
+						name = EISC.GetString(SDirectoryEntriesStart + i),
+					};
+					items.Add(newItem);
+				}
+
+				var directoryMessage = new { 
+					content = new {
+						currentDirectory = new {
+							isRootDirectory = EISC.GetBool(BDirectoryIsRoot),
+							directoryResults = items
+						}
+					}
+				};
+				PostStatusMessage(directoryMessage);
+			});
+
+			EISC.SetStringSigAction(SDirectoryEntrySelectedName, s =>
+			{
+				PostStatusMessage(new { content = new { directorySelectedEntryName = EISC.GetString(SDirectoryEntrySelectedName) } });
+			});
+
+			EISC.SetStringSigAction(SDirectoryEntrySelectedNumber, s =>
+			{
+				PostStatusMessage(new { content = new { directorySelectedEntryNumber = EISC.GetString(SDirectoryEntrySelectedNumber) } });
+			});
+
+			
+
 			// Add press and holds using helper action
 			Action<string, uint> addPHAction = (s, u) => 
 				AppServerController.AddAction(MessagePath + s, new PressAndHoldAction(b => EISC.SetBool(u, b)));
@@ -290,6 +332,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 					EISC.PulseBool(DTMFMap[s], 100);
 				}
 			}));
+
+			// Directory madness
+			AppServerController.AddAction(MessagePath + "/directorySelectLine", new Action<ushort>(u => 
+			{
+				EISC.SetUshort(UDirectorySelectRow, u);
+				EISC.PulseBool(BDirectoryLineSelected);
+			}));
+
 		}
 
         void SendCallsList()

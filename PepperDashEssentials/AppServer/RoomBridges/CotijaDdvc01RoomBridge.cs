@@ -56,7 +56,10 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 1
 			/// </summary>
 			public const uint MasterVolumeMuteToggle = 1;
-
+			/// <summary>
+			/// 1
+			/// </summary>
+			public const uint VolumeMutesJoinStart = 1;
 			/// <summary>
 			/// 61
 			/// </summary>
@@ -85,6 +88,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 601
 			/// </summary>
 			public const uint SourceShareDisableStartJoin = 601;
+
 		}
 
 		public class UshortJoin
@@ -93,15 +97,26 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 1
 			/// </summary>
 			public const uint MasterVolumeLevel = 1;
-
+			/// <summary>
+			/// 1
+			/// </summary>
+			public const uint VolumeSlidersJoinStart = 1;
 			/// <summary>
 			/// 61
 			/// </summary>
 			public const uint ShutdownPromptDuration = 61;
+			/// <summary>
+			/// 101
+			/// </summary>
+			public const uint VolumeSliderCount = 101;
 		}
 
 		public class StringJoin
 		{
+			/// <summary>
+			/// 1
+			/// </summary>
+			public const uint VolumeSliderNamesJoinStart = 1;
 			/// <summary>
 			/// 71
 			/// </summary>
@@ -145,6 +160,23 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 402
 			/// </summary>
 			public const uint ServerUrl = 402;
+			/// <summary>
+			/// 512
+			/// </summary>
+			public const uint RoomSpeedDialNamesJoinStart = 512;
+			/// <summary>
+			/// 516
+			/// </summary>
+			public const uint RoomSpeedDialNumberssJoinStart = 516;
+			/// <summary>
+			/// 601
+			/// </summary>
+			public const uint SourceNameJoinStart = 601;
+			/// <summary>
+			/// 621
+			/// </summary>
+			public const uint SourceIconJoinStart = 621;
+
 		}
 
 		/// <summary>
@@ -405,7 +437,7 @@ namespace PepperDash.Essentials.Room.Cotija
                 Debug.Console(0, this, "Replacing Room[0] in config");
                 co.Rooms[0] = rm;
             }
-			rm.Name = EISC.StringOutput[501].StringValue;
+			rm.Name = EISC.StringOutput[StringJoin.ConfigRoomName].StringValue;
 			rm.Key = "room1";
 			rm.Type = "ddvc01";
 
@@ -416,15 +448,17 @@ namespace PepperDash.Essentials.Room.Cotija
 				rmProps = JsonConvert.DeserializeObject<DDVC01RoomPropertiesConfig>(rm.Properties.ToString());
 
 			rmProps.Help = new EssentialsHelpPropertiesConfig();
-			rmProps.Help.CallButtonText = EISC.StringOutput[503].StringValue;
-			rmProps.Help.Message = EISC.StringOutput[502].StringValue;
+			rmProps.Help.CallButtonText = EISC.StringOutput[StringJoin.ConfigHelpNumber].StringValue;
+			rmProps.Help.Message = EISC.StringOutput[StringJoin.ConfigHelpMessage].StringValue;
 
 			rmProps.Environment = new EssentialsEnvironmentPropertiesConfig(); // enabled defaults to false
 
-			rmProps.RoomPhoneNumber = EISC.StringOutput[504].StringValue;
-			rmProps.RoomURI = EISC.StringOutput[505].StringValue;
+			rmProps.RoomPhoneNumber = EISC.StringOutput[StringJoin.ConfigRoomPhoneNumber].StringValue;
+			rmProps.RoomURI = EISC.StringOutput[StringJoin.ConfigRoomURI].StringValue;
 			rmProps.SpeedDials = new List<DDVC01SpeedDial>();
 			// add speed dials as long as there are more - up to 4
+
+#warning fix speed dials - 512-515 names, 516-519 numbers
 			for (uint i = 512; i <= 519; i = i + 2)
 			{
 				var num = EISC.StringOutput[i].StringValue;
@@ -436,10 +470,10 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			// This MAY need a check 
 			rmProps.AudioCodecKey = "audioCodec";
-			rmProps.VideoCodecKey = null; // "videoCodec";
+			rmProps.VideoCodecKey = "videoCodec";
 
 			// volume control names
-			var volCount = EISC.UShortOutput[701].UShortValue;
+			var volCount = EISC.UShortOutput[UshortJoin.VolumeSliderCount].UShortValue;
 
             //// use Volumes object or?
             //rmProps.VolumeSliderNames = new List<string>();
@@ -470,7 +504,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			// add sources...
 			for (uint i = 0; i<= 19; i++)
 			{
-				var name = EISC.StringOutput[601 + i].StringValue;
+				var name = EISC.StringOutput[StringJoin.SourceNameJoinStart + i].StringValue;
 				if(string.IsNullOrEmpty(name))
 					break;
 				var icon = EISC.StringOutput[651 + i].StringValue;
@@ -545,7 +579,41 @@ namespace PepperDash.Essentials.Room.Cotija
 					Properties = JToken.FromObject(acProps)
 				};
 				co.Devices.Add(acConf);
-			}	
+			}
+
+			if (!string.IsNullOrEmpty(rmProps.VideoCodecKey))
+			{
+#warning Break out these video codec favs
+				var favs = new List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem>();
+				for (uint i = 0; i < 4; i++)
+				{
+					if (!EISC.GetBool(BoolJoin.SpeedDialVisibleStartJoin + i))
+					{
+						break;
+					}
+					favs.Add(new PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem()
+					{
+						Name = EISC.GetString(StringJoin.SpeedDialNameStartJoin + i),
+						Number = EISC.GetString(StringJoin.SpeedDialNumberStartJoin + i),
+						Type = PepperDash.Essentials.Devices.Common.Codec.eCodecCallType.Audio
+					});
+				}
+
+				var props = new
+				{
+					favorites = favs
+				};
+				var str = "videoCodec";
+				var conf = new DeviceConfig()
+				{
+					Group = str,
+					Key = str,
+					Name = str,
+					Type = str,
+					Properties = JToken.FromObject(props)
+				};
+				co.Devices.Add(conf);
+			}
 
 			Debug.Console(0, this, "******* CONFIG FROM DDVC: \r{0}", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
 
