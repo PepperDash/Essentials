@@ -138,7 +138,9 @@ namespace PepperDash.Essentials
         /// <param name="programEventType"></param>
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
-            if (programEventType == eProgramStatusEventType.Stopping && WSClient.Connected)
+            if (programEventType == eProgramStatusEventType.Stopping 
+				&& WSClient != null
+				&& WSClient.Connected)
             {
 				CleanUpWebsocketClient();
             }

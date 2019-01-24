@@ -75,7 +75,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// <summary>
 			/// 72
 			/// </summary>
-			public const uint SourceHasChanged = 72;
+			public const uint SourceHasChanged = 71;
 			/// <summary>
 			/// 261 - The start of the range of speed dial visibles
 			/// </summary>
@@ -176,6 +176,15 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 621
 			/// </summary>
 			public const uint SourceIconJoinStart = 621;
+			/// <summary>
+			/// 641
+			/// </summary>
+			public const uint SourceKeyJoinStart = 641;
+			/// <summary>
+			/// 661
+			/// </summary>
+			public const uint SourceTypeJoinStart = 661;
+
 
 		}
 
@@ -507,10 +516,10 @@ namespace PepperDash.Essentials.Room.Cotija
 				var name = EISC.StringOutput[StringJoin.SourceNameJoinStart + i].StringValue;
 				if(string.IsNullOrEmpty(name))
 					break;
-				var icon = EISC.StringOutput[651 + i].StringValue;
-				var key = EISC.StringOutput[671 + i].StringValue;
-				var type = EISC.StringOutput[BoolJoin.SourceShareDisableStartJoin + i].StringValue;
-				var disableShare = EISC.BooleanOutput[601 + i].BoolValue;
+				var icon = EISC.StringOutput[StringJoin.SourceIconJoinStart + i].StringValue;
+				var key = EISC.StringOutput[StringJoin.SourceKeyJoinStart + i].StringValue;
+				var type = EISC.StringOutput[StringJoin.SourceTypeJoinStart + i].StringValue;
+				var disableShare = EISC.BooleanOutput[BoolJoin.SourceShareDisableStartJoin + i].BoolValue;
 
 				Debug.Console(0, this, "Adding source {0} '{1}'", key, name);
 				var newSLI = new SourceListItem{
