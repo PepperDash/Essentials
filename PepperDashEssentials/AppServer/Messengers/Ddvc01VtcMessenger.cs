@@ -70,6 +70,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		const uint DDirectoryHasChanged = 803;
 		/// <summary>
+		/// 804
+		/// </summary>
+		const uint BDirectoryRoot = 804;
+		/// <summary>
+		/// 805
+		/// </summary>
+		const uint BDirectoryFolderBack = 805;
+		/// <summary>
 		/// 811
 		/// </summary>
 		const uint BCameraControlUp = 811;
@@ -116,11 +124,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// <summary>
 		/// 702
 		/// </summary>
-		const uint SCurrentCallNumber = 702;
+		const uint SCurrentCallName = 702;
         /// <summary>
 		/// 703
         /// </summary>
-		const uint SCurrentCallName = 703;
+		const uint SCurrentCallNumber = 703;
 		/// <summary>
 		/// 731
 		/// </summary>
@@ -176,6 +184,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
 		CodecActiveCallItem CurrentCallItem;
 		CodecActiveCallItem IncomingCallItem;
+		ushort PreviousDirectoryLength = 0;
 
 		/// <summary>
 		/// 
@@ -209,16 +218,55 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			});
 		}
 
+		void PostDirectory()
+		{
+			var u = EISC.GetUshort(UDirectoryRowCount);
+			var items = new List<object>();
+			for (uint i = 0; i < u; i++)
+			{
+				var name = EISC.GetString(SDirectoryEntriesStart + i);
+				var id = (i + 1).ToString();
+				// is folder or contact?
+				if(name.StartsWith("[+]")) 
+				{
+					items.Add(new 
+					{
+						folderId = id,
+						name = name
+					});
+				}
+				else
+				{
+					items.Add(new
+					{
+						contactId = id,
+						name = name
+					});
+				}
+			}
+
+			var directoryMessage = new
+			{
+				currentDirectory = new
+				{
+					isRootDirectory = EISC.GetBool(BDirectoryIsRoot),
+					directoryResults = items
+				}
+			};
+			PostStatusMessage(directoryMessage);
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="appServerController"></param>
 		protected override void CustomRegisterWithAppServer(CotijaSystemController appServerController)
 		{
+			var asc = appServerController;
 			EISC.SetStringSigAction(SHookState, s => 
 			{
 				CurrentCallItem.Status = (eCodecCallStatus)Enum.Parse(typeof(eCodecCallStatus), s, true);
-				SendCallsList();
+				SendFullStatus(); // SendCallsList();
 			});
 
 			EISC.SetStringSigAction(SCurrentCallNumber, s => 
@@ -264,38 +312,29 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			// Directory insanity
 			EISC.SetUShortSigAction(UDirectoryRowCount, u =>
 			{
-				var items = new List<object>();
-				for (uint i = 0; i < u; i++)
+				// The length of the list comes in before the list does.
+				// Splice the sig change operation onto the last string sig that will be changing
+				// when the directory entries make it through.
+				if (PreviousDirectoryLength > 0)
 				{
-					var newItem = new
-					{
-						name = EISC.GetString(SDirectoryEntriesStart + i),
-					};
-					items.Add(newItem);
+					EISC.ClearStringSigAction(SDirectoryEntriesStart + PreviousDirectoryLength - 1);
 				}
-
-				var directoryMessage = new { 
-					content = new {
-						currentDirectory = new {
-							isRootDirectory = EISC.GetBool(BDirectoryIsRoot),
-							directoryResults = items
-						}
-					}
-				};
-				PostStatusMessage(directoryMessage);
+				EISC.SetStringSigAction(SDirectoryEntriesStart + u - 1, s => PostDirectory());
+				PreviousDirectoryLength = u;
+				//PostDirectory();
 			});
 
 			EISC.SetStringSigAction(SDirectoryEntrySelectedName, s =>
 			{
-				PostStatusMessage(new { content = new { directorySelectedEntryName = EISC.GetString(SDirectoryEntrySelectedName) } });
+				PostStatusMessage(new { content = new { 
+					directorySelectedEntryName = EISC.GetString(SDirectoryEntrySelectedName) } });
 			});
 
 			EISC.SetStringSigAction(SDirectoryEntrySelectedNumber, s =>
 			{
-				PostStatusMessage(new { content = new { directorySelectedEntryNumber = EISC.GetString(SDirectoryEntrySelectedNumber) } });
+				PostStatusMessage(new { content = new { 
+					directorySelectedEntryNumber = EISC.GetString(SDirectoryEntrySelectedNumber) } });
 			});
-
-			
 
 			// Add press and holds using helper action
 			Action<string, uint> addPHAction = (s, u) => 
@@ -310,7 +349,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			// Add straight pulse calls using helper action
 			Action<string, uint> addAction = (s, u) =>
 				AppServerController.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
-            addAction("/endCallById", BDialHangup);
+			addAction("/endCallById", BDialHangup);
             addAction("/acceptById", BIncomingAnswer);
             addAction("/rejectById", BIncomingReject);
 			addAction("/speedDial1", BSpeedDial1);
@@ -322,12 +361,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				addAction("/cameraPreset" + (i + 1), BCameraPresetStart + i);
 			}
 
+			asc.AddAction(MessagePath + "/isReady", new Action(SendIsReady));
 			// Get status
-			AppServerController.AddAction(MessagePath + "/fullStatus", new Action(SendFullStatus));
+			asc.AddAction(MessagePath + "/fullStatus", new Action(SendFullStatus));
 			// Dial on string
-			AppServerController.AddAction(MessagePath + "/dial", new Action<string>(s => EISC.SetString(SCurrentDialString, s)));
+			asc.AddAction(MessagePath + "/dial", new Action<string>(s => EISC.SetString(SCurrentDialString, s)));
 			// Pulse DTMF
-			AppServerController.AddAction(MessagePath + "/dtmf", new Action<string>(s =>
+			asc.AddAction(MessagePath + "/dtmf", new Action<string>(s =>
 			{
 				if (DTMFMap.ContainsKey(s))
 				{
@@ -336,14 +376,69 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			}));
 
 			// Directory madness
-			AppServerController.AddAction(MessagePath + "/directorySelectLine", new Action<ushort>(u => 
+			asc.AddAction(MessagePath + "/directoryRoot", new Action(() => EISC.PulseBool(BDirectoryRoot)));
+			asc.AddAction(MessagePath + "/directoryBack", new Action(() => EISC.PulseBool(BDirectoryFolderBack)));
+			asc.AddAction(MessagePath + "/directoryById", new Action<string>(s =>
 			{
-				EISC.SetUshort(UDirectorySelectRow, u);
-				EISC.PulseBool(BDirectoryLineSelected);
-			}));
+				// the id should contain the line number to forward to simpl
+				try
+				{
+					var u = ushort.Parse(s);
+					EISC.SetUshort(UDirectorySelectRow, u);
+					EISC.PulseBool(BDirectoryLineSelected);
+				}
+				catch (Exception)
+				{
+					Debug.Console(1, this, Debug.ErrorLogLevel.Warning, 
+						"/directoryById request contains non-numeric ID incompatible with DDVC bridge");
+				}
 
+			}));
+			asc.AddAction(MessagePath + "/directorySelectContact", new Action<string>(s =>
+			{
+				try
+				{
+					var u = ushort.Parse(s);
+					EISC.SetUshort(UDirectorySelectRow, u);
+					EISC.PulseBool(BDirectoryLineSelected);
+				}
+				catch
+				{
+					
+				}
+			}));
+			asc.AddAction(MessagePath + "/getDirectory", new Action(() =>
+			{
+				if (EISC.GetUshort(UDirectoryRowCount) > 0)
+				{
+					PostDirectory();
+				}
+				else
+				{
+					EISC.PulseBool(BDirectoryRoot);
+				}
+			}));			
+			//asc.AddAction(MessagePath + "/directorySelectLine", new Action<ushort>(u => 
+			//{
+			//    EISC.SetUshort(UDirectorySelectRow, u);
+			//    EISC.PulseBool(BDirectoryLineSelected);
+			//}));
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		void SendIsReady()
+		{
+			PostStatusMessage(new
+			{
+				isReady = true
+			});
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
         void SendCallsList()
         {
             PostStatusMessage(new
