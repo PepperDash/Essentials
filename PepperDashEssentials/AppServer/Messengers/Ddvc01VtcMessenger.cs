@@ -110,6 +110,27 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		const uint BCameraPresetStart = 821;
 
+		/// <summary>
+		/// 831
+		/// </summary>
+		const uint BCameraModeAuto = 831;
+		/// <summary>
+		/// 832
+		/// </summary>
+		const uint BCameraModeManual = 832;
+		/// <summary>
+		/// 833
+		/// </summary>
+		const uint BCameraModeOff = 833;
+		/// <summary>
+		/// 836
+		/// </summary>
+		const uint BCameraNearEnd = 836;
+		/// <summary>
+		/// 837
+		/// </summary>
+		const uint BCameraFarEnd = 837;
+
 		/********* Ushorts *********/
 		/// <summary>
 		/// 801
@@ -165,6 +186,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// 1057
 		/// </summary>
 		const uint SDirectoryEntrySelectedNumber = 1057;
+		/// <summary>
+		/// 1058
+		/// </summary>
+		const uint SDirectorySelectedFolderName = 1058;
 
 
 		/// <summary>
@@ -192,16 +217,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		ushort PreviousDirectoryLength = 0;
 
 		/// <summary>
-		/// For tracking the directory-selected name while waiting for number
-		/// </summary>
-		string QueuedDirectorySelectedName;
-
-		/// <summary>
-		/// For tracking the directory-selected number while waiting for the name
-		/// </summary>
-		string QueuedDirectorySelectedNumber;
-
-		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="eisc"></param>
@@ -226,25 +241,25 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			EISC.SetStringSigAction(SHookState, s => 
 			{
 				CurrentCallItem.Status = (eCodecCallStatus)Enum.Parse(typeof(eCodecCallStatus), s, true);
-				SendFullStatus(); // SendCallsList();
+				PostFullStatus(); // SendCallsList();
 			});
 
 			EISC.SetStringSigAction(SCurrentCallNumber, s => 
 			{
 				CurrentCallItem.Number = s;
-                SendCallsList();
+                PostCallsList();
 			});
 
             EISC.SetStringSigAction(SCurrentCallName, s =>
             {
                 CurrentCallItem.Name = s;
-                SendCallsList();
+                PostCallsList();
             });
 
             EISC.SetStringSigAction(SCallDirection, s =>
             {
                 CurrentCallItem.Direction = (eCodecCallDirection)Enum.Parse(typeof(eCodecCallDirection), s, true);
-                SendCallsList();
+                PostCallsList();
             });
 
 			EISC.SetBoolSigAction(BCallIncoming, b =>
@@ -266,7 +281,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				{
 					IncomingCallItem = null;
 				}
-				SendCallsList();
+				PostCallsList();
 			});
 
 			// Directory insanity
@@ -305,6 +320,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				});
 			});
 
+			EISC.SetStringSigAction(SDirectorySelectedFolderName, s => PostStatusMessage(new
+			{
+				directorySelectedFolderName = EISC.GetString(SDirectorySelectedFolderName)
+			}));
+
+			EISC.SetSigTrueAction(BCameraModeAuto, () => PostCameraMode());
+			EISC.SetSigTrueAction(BCameraModeManual, () => PostCameraMode());
+			EISC.SetSigTrueAction(BCameraModeOff, () => PostCameraMode());
+
+			EISC.SetSigTrueAction(BCameraNearEnd, PostSelectedCamera);
+			EISC.SetSigTrueAction(BCameraFarEnd, PostSelectedCamera);
+
 			// Add press and holds using helper action
 			Action<string, uint> addPHAction = (s, u) => 
 				AppServerController.AddAction(MessagePath + s, new PressAndHoldAction(b => EISC.SetBool(u, b)));
@@ -313,7 +340,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			addPHAction("/cameraLeft", BCameraControlLeft);
 			addPHAction("/cameraRight", BCameraControlRight);
 			addPHAction("/cameraZoomIn", BCameraControlZoomIn);
-			addPHAction("/cameraZoonOut", BCameraControlZoomOut);
+			addPHAction("/cameraZoomOut", BCameraControlZoomOut);
 
 			// Add straight pulse calls using helper action
 			Action<string, uint> addAction = (s, u) =>
@@ -325,14 +352,22 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			addAction("/speedDial2", BSpeedDial2);
 			addAction("/speedDial3", BSpeedDial3);
 			addAction("/speedDial4", BSpeedDial4);
+			addAction("/cameraModeAuto", BCameraModeAuto);
+			addAction("/cameraModeManual", BCameraModeManual);
+			addAction("/cameraModeOff", BCameraModeOff);
+			addAction("/cameraFarEnd", BCameraFarEnd);
+			addAction("/cameraNearEnd", BCameraNearEnd);
+
+
+			// camera presets
 			for(uint i = 0; i < 6; i++) 
 			{
 				addAction("/cameraPreset" + (i + 1), BCameraPresetStart + i);
 			}
 
-			asc.AddAction(MessagePath + "/isReady", new Action(SendIsReady));
+			asc.AddAction(MessagePath + "/isReady", new Action(PostIsReady));
 			// Get status
-			asc.AddAction(MessagePath + "/fullStatus", new Action(SendFullStatus));
+			asc.AddAction(MessagePath + "/fullStatus", new Action(PostFullStatus));
 			// Dial on string
 			asc.AddAction(MessagePath + "/dial", new Action<string>(s => EISC.SetString(SCurrentDialString, s)));
 			// Pulse DTMF
@@ -389,22 +424,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				{
 					EISC.PulseBool(BDirectoryRoot);
 				}
-			}));			
-			//asc.AddAction(MessagePath + "/directorySelectLine", new Action<ushort>(u => 
-			//{
-			//    EISC.SetUshort(UDirectorySelectRow, u);
-			//    EISC.PulseBool(BDirectoryLineSelected);
-			//}));
+			}));
 		}
 
 		/// <summary>
 		/// 
 		/// </summary>
-		void SendFullStatus()
+		void PostFullStatus()
 		{
 			this.PostStatusMessage(new
 			{
 				calls = GetCurrentCallList(),
+				cameraMode = GetCameraMode(),
 				currentCallString = EISC.GetString(SCurrentCallNumber),
 				currentDialString = EISC.GetString(SCurrentDialString),
 				directoryContactSelected = new
@@ -412,10 +443,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
 					name = EISC.GetString(SDirectoryEntrySelectedName),
 					number = EISC.GetString(SDirectoryEntrySelectedNumber)
 				},
+				directorySelectedFolderName = EISC.GetString(SDirectorySelectedFolderName),
 				isInCall = EISC.GetString(SHookState) == "Connected",
 				hasDirectory = true,
+				hasDirectorySearch = false,
 				hasRecents = true,
-				hasCameras = true
+				hasCameras = true,
+				selectedCamera = GetSelectedCamera(),
 			});
 		}
 
@@ -460,35 +494,53 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			PostStatusMessage(directoryMessage);
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		void PostCameraMode()
+		{
+			PostStatusMessage(new
+			{
+				cameraMode = GetCameraMode()
+			});
+		}
 
 		/// <summary>
 		/// 
 		/// </summary>
-		//void SendDirectorySelectedNameNumberWhenReady()
-		//{
-		//    if (!string.IsNullOrEmpty(QueuedDirectorySelectedName) &&
-		//        !string.IsNullOrEmpty(QueuedDirectorySelectedNumber))
-		//    {
-		//        var qName = QueuedDirectorySelectedName;
-		//        var qNum = QueuedDirectorySelectedNumber;
-		//        QueuedDirectorySelectedName = null;
-		//        QueuedDirectorySelectedNumber = null;
-		//        PostStatusMessage(new
-		//        {
-		//            directoryContactSelected = new
-		//            {
-		//                name = qName,
-		//                number = qNum
-		//            }
-		//        });
+		/// <param name="mode"></param>
+		string GetCameraMode()
+		{
+			string m;
+			if (EISC.GetBool(BCameraModeAuto)) m = "auto";
+			else if (EISC.GetBool(BCameraModeManual)) m = "manual";
+			else m = "off";
+			return m;
+		}
 
-		//    }
-		//}
+		void PostSelectedCamera()
+		{
+			PostStatusMessage(new
+			{
+				selectedCamera = GetSelectedCamera()
+			});
+		}
 
 		/// <summary>
 		/// 
 		/// </summary>
-		void SendIsReady()
+		string GetSelectedCamera()
+		{
+			string m;
+			if (EISC.GetBool(BCameraNearEnd)) m = "camera1";
+			else m = "cameraFar";
+			return m;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void PostIsReady()
 		{
 			PostStatusMessage(new
 			{
@@ -499,7 +551,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// <summary>
 		/// 
 		/// </summary>
-        void SendCallsList()
+        void PostCallsList()
         {
             PostStatusMessage(new
             {
