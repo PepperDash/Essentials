@@ -78,6 +78,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		const uint BDirectoryFolderBack = 805;
 		/// <summary>
+		/// 806
+		/// </summary>
+		const uint BDirectoryDialSelectedLine = 806;
+		/// <summary>
 		/// 811
 		/// </summary>
 		const uint BCameraControlUp = 811;
@@ -184,7 +188,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
 		CodecActiveCallItem CurrentCallItem;
 		CodecActiveCallItem IncomingCallItem;
+
 		ushort PreviousDirectoryLength = 0;
+
+		/// <summary>
+		/// For tracking the directory-selected name while waiting for number
+		/// </summary>
+		string QueuedDirectorySelectedName;
+
+		/// <summary>
+		/// For tracking the directory-selected number while waiting for the name
+		/// </summary>
+		string QueuedDirectorySelectedNumber;
 
 		/// <summary>
 		/// 
@@ -199,61 +214,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			CurrentCallItem = new CodecActiveCallItem();
 			CurrentCallItem.Type = eCodecCallType.Video;
 			CurrentCallItem.Id = "-video-";
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		void SendFullStatus()
-		{
-			this.PostStatusMessage(new
-			{				
-				calls = GetCurrentCallList(),
-				currentCallString = EISC.GetString(SCurrentCallNumber),
-				currentDialString = EISC.GetString(SCurrentDialString),
-                isInCall = EISC.GetString(SHookState) == "Connected",
-				hasDirectory = true,
-				hasRecents = true,
-				hasCameras = true
-			});
-		}
-
-		void PostDirectory()
-		{
-			var u = EISC.GetUshort(UDirectoryRowCount);
-			var items = new List<object>();
-			for (uint i = 0; i < u; i++)
-			{
-				var name = EISC.GetString(SDirectoryEntriesStart + i);
-				var id = (i + 1).ToString();
-				// is folder or contact?
-				if(name.StartsWith("[+]")) 
-				{
-					items.Add(new 
-					{
-						folderId = id,
-						name = name
-					});
-				}
-				else
-				{
-					items.Add(new
-					{
-						contactId = id,
-						name = name
-					});
-				}
-			}
-
-			var directoryMessage = new
-			{
-				currentDirectory = new
-				{
-					isRootDirectory = EISC.GetBool(BDirectoryIsRoot),
-					directoryResults = items
-				}
-			};
-			PostStatusMessage(directoryMessage);
 		}
 
 		/// <summary>
@@ -321,19 +281,28 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				}
 				EISC.SetStringSigAction(SDirectoryEntriesStart + u - 1, s => PostDirectory());
 				PreviousDirectoryLength = u;
-				//PostDirectory();
 			});
 
 			EISC.SetStringSigAction(SDirectoryEntrySelectedName, s =>
 			{
-				PostStatusMessage(new { content = new { 
-					directorySelectedEntryName = EISC.GetString(SDirectoryEntrySelectedName) } });
+				PostStatusMessage(new
+				{
+					directoryContactSelected = new
+					{
+						name = EISC.GetString(SDirectoryEntrySelectedName),
+					}
+				});
 			});
 
 			EISC.SetStringSigAction(SDirectoryEntrySelectedNumber, s =>
 			{
-				PostStatusMessage(new { content = new { 
-					directorySelectedEntryNumber = EISC.GetString(SDirectoryEntrySelectedNumber) } });
+				PostStatusMessage(new
+				{
+					directoryContactSelected = new
+					{
+						number = EISC.GetString(SDirectoryEntrySelectedNumber),
+					}
+				});
 			});
 
 			// Add press and holds using helper action
@@ -407,6 +376,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 					
 				}
 			}));
+			asc.AddAction(MessagePath + "/directoryDialContact", new Action(() => {
+				EISC.PulseBool(BDirectoryDialSelectedLine);
+			}));
 			asc.AddAction(MessagePath + "/getDirectory", new Action(() =>
 			{
 				if (EISC.GetUshort(UDirectoryRowCount) > 0)
@@ -424,6 +396,94 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			//    EISC.PulseBool(BDirectoryLineSelected);
 			//}));
 		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void SendFullStatus()
+		{
+			this.PostStatusMessage(new
+			{
+				calls = GetCurrentCallList(),
+				currentCallString = EISC.GetString(SCurrentCallNumber),
+				currentDialString = EISC.GetString(SCurrentDialString),
+				directoryContactSelected = new
+				{
+					name = EISC.GetString(SDirectoryEntrySelectedName),
+					number = EISC.GetString(SDirectoryEntrySelectedNumber)
+				},
+				isInCall = EISC.GetString(SHookState) == "Connected",
+				hasDirectory = true,
+				hasRecents = true,
+				hasCameras = true
+			});
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void PostDirectory()
+		{
+			var u = EISC.GetUshort(UDirectoryRowCount);
+			var items = new List<object>();
+			for (uint i = 0; i < u; i++)
+			{
+				var name = EISC.GetString(SDirectoryEntriesStart + i);
+				var id = (i + 1).ToString();
+				// is folder or contact?
+				if (name.StartsWith("[+]"))
+				{
+					items.Add(new
+					{
+						folderId = id,
+						name = name
+					});
+				}
+				else
+				{
+					items.Add(new
+					{
+						contactId = id,
+						name = name
+					});
+				}
+			}
+
+			var directoryMessage = new
+			{
+				currentDirectory = new
+				{
+					isRootDirectory = EISC.GetBool(BDirectoryIsRoot),
+					directoryResults = items
+				}
+			};
+			PostStatusMessage(directoryMessage);
+		}
+
+
+		/// <summary>
+		/// 
+		/// </summary>
+		//void SendDirectorySelectedNameNumberWhenReady()
+		//{
+		//    if (!string.IsNullOrEmpty(QueuedDirectorySelectedName) &&
+		//        !string.IsNullOrEmpty(QueuedDirectorySelectedNumber))
+		//    {
+		//        var qName = QueuedDirectorySelectedName;
+		//        var qNum = QueuedDirectorySelectedNumber;
+		//        QueuedDirectorySelectedName = null;
+		//        QueuedDirectorySelectedNumber = null;
+		//        PostStatusMessage(new
+		//        {
+		//            directoryContactSelected = new
+		//            {
+		//                name = qName,
+		//                number = qNum
+		//            }
+		//        });
+
+		//    }
+		//}
 
 		/// <summary>
 		/// 
