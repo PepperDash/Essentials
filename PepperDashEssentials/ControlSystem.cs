@@ -101,7 +101,7 @@ namespace PepperDash.Essentials
                 if(Directory.Exists(directoryPrefix + dirSeparator + "User" 
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                 {
-                    Debug.Console(0, @"User/programX directory found");
+                    Debug.Console(0, @"User/program{0} directory found", InitialParametersClass.ApplicationNumber);
                     filePathPrefix = directoryPrefix + dirSeparator + "User" 
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                 }
@@ -109,14 +109,14 @@ namespace PepperDash.Essentials
                 else if (Directory.Exists(directoryPrefix + dirSeparator + "Nvram"
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                 {
-                    Debug.Console(0, @"Nvram/programX directory found");
+                    Debug.Console(0, @"Nvram/program{0} directory found", InitialParametersClass.ApplicationNumber);
                     filePathPrefix = directoryPrefix + dirSeparator + "Nvram"
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                 }
                 // If neither exists, set path to User/ProgramX
                 else
                 {
-                    Debug.Console(0, @"No previous directory found.  Using User/programX");
+                    Debug.Console(0, @"No previous directory found.  Using User/program{0}", InitialParametersClass.ApplicationNumber);
                     filePathPrefix = directoryPrefix + dirSeparator + "User"
                     + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                 }
