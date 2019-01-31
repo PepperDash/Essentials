@@ -510,6 +510,20 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			co.SourceLists = new Dictionary<string,Dictionary<string,SourceListItem>>();
 			var newSl = new Dictionary<string, SourceListItem>();
+			// add "none" source if VTC present
+
+			if (!string.IsNullOrEmpty(rmProps.VideoCodecKey))
+			{
+				var codecOsd = new SourceListItem()
+				{
+					Name = "None",
+					IncludeInSourceList = true,
+					Order = 1,
+					Type = eSourceListItemType.Route,
+					SourceKey = ""
+				};
+				newSl.Add("sourceNone", codecOsd);
+			}
 			// add sources...
 			for (uint i = 0; i<= 19; i++)
 			{
@@ -525,7 +539,7 @@ namespace PepperDash.Essentials.Room.Cotija
 				var newSLI = new SourceListItem{
 					Icon = icon,
 					Name = name,
-					Order = (int)i + 1,
+					Order = (int)i + 10,
 					SourceKey = key,
 					Type = eSourceListItemType.Route,
 					DisableCodecSharing = disableShare,
