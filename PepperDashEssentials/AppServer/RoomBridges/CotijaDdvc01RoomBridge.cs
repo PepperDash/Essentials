@@ -522,7 +522,7 @@ namespace PepperDash.Essentials.Room.Cotija
 					Type = eSourceListItemType.Route,
 					SourceKey = ""
 				};
-				newSl.Add("sourceNone", codecOsd);
+				newSl.Add("Source-None", codecOsd);
 			}
 			// add sources...
 			for (uint i = 0; i<= 19; i++)
