@@ -184,8 +184,14 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 661
 			/// </summary>
 			public const uint SourceTypeJoinStart = 661;
-
-
+			/// <summary>
+			/// 761
+			/// </summary>
+			public const uint CameraNearNameStart = 761;
+			/// <summary>
+			/// 770 - presence of this name on the input will cause the camera to be added
+			/// </summary>
+			public const uint CameraFarName = 770;
 		}
 
 		/// <summary>
@@ -525,7 +531,7 @@ namespace PepperDash.Essentials.Room.Cotija
 				newSl.Add("Source-None", codecOsd);
 			}
 			// add sources...
-			for (uint i = 0; i<= 19; i++)
+			for (uint i = 0; i <= 19; i++)
 			{
 				var name = EISC.StringOutput[StringJoin.SourceNameJoinStart + i].StringValue;
 				if(string.IsNullOrEmpty(name))
@@ -622,9 +628,36 @@ namespace PepperDash.Essentials.Room.Cotija
 					});
 				}
 
+
+
+				// cameras
+				var camsProps = new List<object>();
+				for (uint i = 0; i < 9; i++)
+				{
+					var name = EISC.GetString(i + StringJoin.CameraNearNameStart);
+					if (!string.IsNullOrEmpty(name))
+					{
+						camsProps.Add(new
+						{
+							name = name,
+							selector = "camera" + (i + 1),
+						});
+					}
+				}
+				var farName = EISC.GetString(StringJoin.CameraFarName);
+				if (!string.IsNullOrEmpty(farName))
+				{
+					camsProps.Add(new
+					{
+						name = farName,
+						selector = "cameraFar",
+					});
+				}
+
 				var props = new
 				{
-					favorites = favs
+					favorites = favs,
+					cameras = camsProps,
 				};
 				var str = "videoCodec";
 				var conf = new DeviceConfig()

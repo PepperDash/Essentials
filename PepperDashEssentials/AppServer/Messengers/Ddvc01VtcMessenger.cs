@@ -122,16 +122,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// 833
 		/// </summary>
 		const uint BCameraModeOff = 833;
-		/// <summary>
-		/// 836
-		/// </summary>
-		const uint BCameraNearEnd = 836;
-		/// <summary>
-		/// 837
-		/// </summary>
-		const uint BCameraFarEnd = 837;
+
+
 
 		/********* Ushorts *********/
+		/// <summary>
+		/// 760
+		/// </summary>
+		const uint UCameraNumberSelect = 760;
 		/// <summary>
 		/// 801
 		/// </summary>
@@ -140,6 +138,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// 801
 		/// </summary>
 		const uint UDirectoryRowCount = 801;
+
+
 
 		/********* Strings *********/
 		/// <summary>
@@ -170,6 +170,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// 752
 		/// </summary>
 		const uint SIncomingCallNumber = 752;
+
 		/// <summary>
 		/// 800
 		/// </summary>
@@ -329,8 +330,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			EISC.SetSigTrueAction(BCameraModeManual, () => PostCameraMode());
 			EISC.SetSigTrueAction(BCameraModeOff, () => PostCameraMode());
 
-			EISC.SetSigTrueAction(BCameraNearEnd, PostSelectedCamera);
-			EISC.SetSigTrueAction(BCameraFarEnd, PostSelectedCamera);
+			EISC.SetUShortSigAction(UCameraNumberSelect, (u) => PostSelectedCamera());
+
 
 			// Add press and holds using helper action
 			Action<string, uint> addPHAction = (s, u) => 
@@ -355,9 +356,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			addAction("/cameraModeAuto", BCameraModeAuto);
 			addAction("/cameraModeManual", BCameraModeManual);
 			addAction("/cameraModeOff", BCameraModeOff);
-			addAction("/cameraFarEnd", BCameraFarEnd);
-			addAction("/cameraNearEnd", BCameraNearEnd);
 
+			asc.AddAction("/cameraSelect", new Action<string>(SelectCamera));
 
 			// camera presets
 			for(uint i = 0; i < 6; i++) 
@@ -369,7 +369,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			// Get status
 			asc.AddAction(MessagePath + "/fullStatus", new Action(PostFullStatus));
 			// Dial on string
-			asc.AddAction(MessagePath + "/dial", new Action<string>(s => EISC.SetString(SCurrentDialString, s)));
+			asc.AddAction(MessagePath + "/dial", new Action<string>(s => 
+				EISC.SetString(SCurrentDialString, s)));
 			// Pulse DTMF
 			asc.AddAction(MessagePath + "/dtmf", new Action<string>(s =>
 			{
@@ -531,9 +532,16 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		string GetSelectedCamera()
 		{
+			var num = EISC.GetUshort(UCameraNumberSelect);
 			string m;
-			if (EISC.GetBool(BCameraNearEnd)) m = "camera1";
-			else m = "cameraFar";
+			if (num == 100)
+			{
+				m = "cameraFar";
+			}
+			else
+			{
+				m = "camera" + num;
+			}
 			return m;
 		}
 
@@ -558,6 +566,23 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 calls = GetCurrentCallList(),
             });
         }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="s"></param>
+		void SelectCamera(string s)
+		{
+			var cam = s.Substring(6);
+			if (cam.ToLower() == "far")
+			{
+				EISC.SetUshort(UCameraNumberSelect, 100);
+			}
+			else
+			{
+				EISC.SetUshort(UCameraNumberSelect, UInt16.Parse(cam));
+			}
+		}
 
 		/// <summary>
 		/// Turns the 
