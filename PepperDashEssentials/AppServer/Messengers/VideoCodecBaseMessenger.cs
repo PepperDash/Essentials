@@ -122,10 +122,23 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				if (call != null)
 					Codec.AcceptCall(call);
 			}));
-			appServerController.AddAction(MessagePath + "/getDirectory", new Action(GetDirectoryRoot));			
-			appServerController.AddAction(MessagePath + "/directoryById", new Action<string>(s => GetDirectory(s)));
-			appServerController.AddAction(MessagePath + "/directorySearch", new Action<string>(s => DirectorySearch(s)));
-            appServerController.AddAction(MessagePath + "/getCallHistory", new Action(GetCallHistory));
+
+            // Directory actions
+            var dirCodec = Codec as IHasDirectory;
+            if (dirCodec != null)
+            {
+                appServerController.AddAction(MessagePath + "/getDirectory", new Action(GetDirectoryRoot));
+                appServerController.AddAction(MessagePath + "/directoryById", new Action<string>(s => GetDirectory(s)));
+                appServerController.AddAction(MessagePath + "/directorySearch", new Action<string>(s => DirectorySearch(s)));
+            }
+
+            // History actions
+            var recCodec = Codec as IHasCallHistory;
+            if (recCodec != null)
+            {
+                appServerController.AddAction(MessagePath + "/getCallHistory", new Action(GetCallHistory));
+            }
+
 			appServerController.AddAction(MessagePath + "/privacyModeOn", new Action(Codec.PrivacyModeOn));
 			appServerController.AddAction(MessagePath + "/privacyModeOff", new Action(Codec.PrivacyModeOff));
 			appServerController.AddAction(MessagePath + "/privacyModeToggle", new Action(Codec.PrivacyModeToggle));

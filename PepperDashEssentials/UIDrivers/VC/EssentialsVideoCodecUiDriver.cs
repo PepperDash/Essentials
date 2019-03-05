@@ -61,10 +61,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
 		CodecDirectory CurrentDirectoryResult;
 
-        /// <summary>
-        /// Tracks the directory browse history when browsing beyond the root directory
-        /// </summary>
-        List<CodecDirectory> DirectoryBrowseHistory;
+        ///// <summary>
+        ///// Tracks the directory browse history when browsing beyond the root directory
+        ///// </summary>
+        //List<CodecDirectory> DirectoryBrowseHistory;
         
         bool NextDirectoryResultIsFolderContents;
 
@@ -532,8 +532,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// </summary>
 		void SetupDirectoryList()
 		{
-            DirectoryBrowseHistory = new List<CodecDirectory>();
-
 			var codec = Codec as IHasDirectory;
 			if (codec != null)
 			{
@@ -558,12 +556,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		}
 
         /// <summary>
-        /// Sets the current directory resutls to the DirectorRoot and updates Back Button visibiltiy
+        /// Sets the current directory results to the DirectoryRoot and updates Back Button visibiltiy
         /// </summary>
         void SetCurrentDirectoryToRoot()
         {
-            DirectoryBrowseHistory.Clear();
-
             CurrentDirectoryResult = (Codec as IHasDirectory).DirectoryRoot;
 
             SearchKeypadClear();
@@ -600,7 +596,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
             if (NextDirectoryResultIsFolderContents)
             {
                 NextDirectoryResultIsFolderContents = false;
-                DirectoryBrowseHistory.Add(e.Directory);
             }
 			CurrentDirectoryResult = e.Directory;
             DirectoryBackButtonVisibleFeedback.FireUpdate();
@@ -625,18 +620,13 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             var codec = Codec as IHasDirectory;
 
-            if (DirectoryBrowseHistory.Count > 0)
+            if (codec != null)
             {
-                var lastItemIndex = DirectoryBrowseHistory.Count - 1;
-                CurrentDirectoryResult = DirectoryBrowseHistory[lastItemIndex];
-                DirectoryBrowseHistory.Remove(DirectoryBrowseHistory[lastItemIndex]);
+                CurrentDirectoryResult = codec.GetDirectoryParentFolderContents();
 
                 RefreshDirectory();
             }
-            else
-            {
-                SetCurrentDirectoryToRoot();
-            }
+ 
         }
 
 		/// <summary>
@@ -725,13 +715,13 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 Parent.MeetingOrContactMethodModalSrl.StringInputSig(i, 4).StringValue = "";
                 Parent.MeetingOrContactMethodModalSrl.StringInputSig(i, 5).StringValue = "Connect";
                 Parent.MeetingOrContactMethodModalSrl.BoolInputSig(i, 2).BoolValue = true;
-                var cc = c; // lambda scope
+                var cc = c; // to maintian lambda scope
                 Parent.MeetingOrContactMethodModalSrl.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() =>
                 {
                     Parent.PopupInterlock.Hide();
                     var codec = Codec as VideoCodecBase;
                     if (codec != null)
-                        codec.Dial(c.Number);
+                        codec.Dial(cc.Number);
                 });
             }
             Parent.MeetingOrContactMethodModalSrl.Count = i;
