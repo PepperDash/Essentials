@@ -122,7 +122,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				if (call != null)
 					Codec.AcceptCall(call);
 			}));
-			appServerController.AddAction(MessagePath + "/directoryRoot", new Action(GetDirectoryRoot));			
+			appServerController.AddAction(MessagePath + "/getDirectory", new Action(GetDirectoryRoot));			
 			appServerController.AddAction(MessagePath + "/directoryById", new Action<string>(s => GetDirectory(s)));
 			appServerController.AddAction(MessagePath + "/directorySearch", new Action<string>(s => DirectorySearch(s)));
             appServerController.AddAction(MessagePath + "/getCallHistory", new Action(GetCallHistory));
