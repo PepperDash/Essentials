@@ -34,8 +34,6 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void InitializeSystem()
 		{
-            SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
-
             DeterminePlatform();
 
             //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
