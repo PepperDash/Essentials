@@ -134,6 +134,11 @@ namespace PepperDash.Essentials.Bridges
 							(device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
 							continue;
 						}
+						else if (device is TVOneCorio)
+						{
+							(device as TVOneCorio).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+							continue;
+						}
                     }
                 }
 
