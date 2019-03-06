@@ -279,7 +279,7 @@ namespace PepperDash.Essentials
                         inAudioCall = AudioCodec.IsInCall;
 
                     if(VideoCodec != null)
-                        inVideoCall = AudioCodec.IsInCall;
+                        inVideoCall = VideoCodec.IsInCall;
 
                     if (inAudioCall || inVideoCall)
                         return true;

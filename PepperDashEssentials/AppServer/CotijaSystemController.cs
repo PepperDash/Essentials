@@ -317,10 +317,12 @@ namespace PepperDash.Essentials
 			CrestronConsole.ConsoleCommandResponse(@"Mobile Control Information:
 	Server address: {0}
 	System Name: {1}
-	System UUID: {2}
-	System User code: {3}
-	Connected?: {4}
-    Seconds Since Last Ack: {5}", url, name, SystemUuid,
+    System URL: {2}
+	System UUID: {3}
+	System User code: {4}
+	Connected?: {5}
+    Seconds Since Last Ack: {6}"
+                , url, name, ConfigReader.ConfigObject.SystemUrl, SystemUuid,
                     code, conn, secSinceLastAck.Seconds);
 		}
 

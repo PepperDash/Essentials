@@ -59,7 +59,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
 		SmartObjectDynamicList DirectoryList;
 
-		CodecDirectory CurrentDirectoryResult;
+		//CodecDirectory CurrentDirectoryResult;
 
         ///// <summary>
         ///// Tracks the directory browse history when browsing beyond the root directory
@@ -174,7 +174,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 triList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackPress, GetDirectoryParentFolderContents);
 
-                DirectoryBackButtonVisibleFeedback = new BoolFeedback(() => CurrentDirectoryResult != (codec as IHasDirectory).DirectoryRoot);
+                DirectoryBackButtonVisibleFeedback = (codec as IHasDirectory).CurrentDirectoryResultIsNotDirectoryRoot;
                 DirectoryBackButtonVisibleFeedback
                     .LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackVisible]);
 
@@ -546,12 +546,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					codec.PhonebookSyncState.InitialSyncCompleted += new EventHandler<EventArgs>(PhonebookSyncState_InitialSyncCompleted);
 				}
 
-
-				// If there is something here now, show it otherwise wait for the event
-				if (CurrentDirectoryResult != null && codec.DirectoryRoot.DirectoryResults.Count > 0)
-				{
-					RefreshDirectory();
-				}
+			    RefreshDirectory();
+				
 			}
 		}
 
@@ -560,11 +556,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void SetCurrentDirectoryToRoot()
         {
-            CurrentDirectoryResult = (Codec as IHasDirectory).DirectoryRoot;
+            (Codec as IHasDirectory).SetCurrentDirectoryToRoot();
 
             SearchKeypadClear();
-
-            DirectoryBackButtonVisibleFeedback.FireUpdate();
 
             RefreshDirectory();
         }
@@ -580,10 +574,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             SetCurrentDirectoryToRoot();
 
-            if (CurrentDirectoryResult != null && codec.DirectoryRoot.DirectoryResults.Count > 0)
-            {
-                RefreshDirectory();
-            }
+            RefreshDirectory();
+            
         }
 
 		/// <summary>
@@ -597,8 +589,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
             {
                 NextDirectoryResultIsFolderContents = false;
             }
-			CurrentDirectoryResult = e.Directory;
-            DirectoryBackButtonVisibleFeedback.FireUpdate();
 			RefreshDirectory();
 		}
 
@@ -622,7 +612,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             if (codec != null)
             {
-                CurrentDirectoryResult = codec.GetDirectoryParentFolderContents();
+                codec.GetDirectoryParentFolderContents();
 
                 RefreshDirectory();
             }
@@ -635,10 +625,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// <param name="dir"></param>
 		void RefreshDirectory()
 		{
-            if (CurrentDirectoryResult.DirectoryResults.Count > 0)
+            if ((Codec as IHasDirectory).CurrentDirectoryResult.CurrentDirectoryResults.Count > 0)
             {
                 ushort i = 0;
-                foreach (var r in CurrentDirectoryResult.DirectoryResults)
+                foreach (var r in (Codec as IHasDirectory).CurrentDirectoryResult.CurrentDirectoryResults)
                 {
                     if (i == DirectoryList.MaxCount)
                     {
@@ -1092,7 +1082,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             SearchStringFeedback.FireUpdate();
             SearchStringKeypadCheckEnables();
 
-            if(CurrentDirectoryResult != (Codec as IHasDirectory).DirectoryRoot)
+            if((Codec as IHasDirectory).CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
                 SetCurrentDirectoryToRoot();
         }
 
