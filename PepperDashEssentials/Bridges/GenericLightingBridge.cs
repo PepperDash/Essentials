@@ -27,7 +27,8 @@ namespace PepperDash.Essentials.Bridges
 			Debug.Console(0, "Linking to lighting Type {0}", lightingDevice.GetType().Name.ToString());
 			
 			// GenericLighitng Actions & FeedBack
-			trilist.SetUShortSigAction(joinMap.SelectScene, u => lightingDevice.SelectScene(lightingDevice.LightingScenes[u]));
+			trilist.SetUShortSigAction(joinMap.SelectScene, u => {if(u > 0) { lightingDevice.SelectScene(lightingDevice.LightingScenes[u-1]);}});
+			
 			
 			int sceneIndex = 1;
 			foreach (var scene in lightingDevice.LightingScenes)
