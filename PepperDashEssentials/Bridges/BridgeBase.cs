@@ -16,6 +16,7 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Devices.Common.Cameras;
+using PepperDash.Essentials.Devices.Common.DSP;
 
 namespace PepperDash.Essentials.Bridges
 {
@@ -137,6 +138,11 @@ namespace PepperDash.Essentials.Bridges
 						else if (device is TVOneCorio)
 						{
 							(device as TVOneCorio).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+							continue;
+						}
+						else if (device is QscDsp)
+						{
+							(device as QscDsp).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
 							continue;
 						}
                     }
