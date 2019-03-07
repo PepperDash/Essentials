@@ -40,6 +40,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			if (dirCodec != null)
 			{
 				dirCodec.DirectoryResultReturned += new EventHandler<DirectoryEventArgs>(dirCodec_DirectoryResultReturned);
+
 			}
 
             var recCodec = codec as IHasCallHistory;
@@ -74,11 +75,29 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// <param name="e"></param>
 		void dirCodec_DirectoryResultReturned(object sender, DirectoryEventArgs e)
 		{
-			PostStatusMessage(new
-			{
-				currentDirectory = e.Directory
-			});
+            SendDirectory((Codec as IHasDirectory).CurrentDirectoryResult, e.DirectoryIsOnRoot);
 		}
+
+        /// <summary>
+        /// Posts the current directory
+        /// </summary>
+        void SendDirectory(CodecDirectory directory, bool isRoot)
+        {
+            var dirCodec = Codec as IHasDirectory;
+
+            if (dirCodec != null)
+            {
+                var directoryMessage = new
+                {
+                    currentDirectory = new
+                    {
+                        directoryResults = directory.CurrentDirectoryResults,
+                        isRootDirectory = isRoot
+                    }
+                };
+                PostStatusMessage(directoryMessage);
+            }
+        }
 
 		/// <summary>
 		/// 
@@ -130,6 +149,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 appServerController.AddAction(MessagePath + "/getDirectory", new Action(GetDirectoryRoot));
                 appServerController.AddAction(MessagePath + "/directoryById", new Action<string>(s => GetDirectory(s)));
                 appServerController.AddAction(MessagePath + "/directorySearch", new Action<string>(s => DirectorySearch(s)));
+                appServerController.AddAction(MessagePath + "/directoryBack", new Action(GetPreviousDirectory));
             }
 
             // History actions
@@ -228,11 +248,27 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				return;
 			}
 
-			PostStatusMessage(new
-			{
-				currentDirectory = dirCodec.DirectoryRoot
-			});
+            dirCodec.SetCurrentDirectoryToRoot();
+
+            //PostStatusMessage(new
+            //{
+            //    currentDirectory = dirCodec.DirectoryRoot
+            //});
 		}
+
+        /// <summary>
+        /// Requests the parent folder contents
+        /// </summary>
+        void GetPreviousDirectory()
+        {
+            var dirCodec = Codec as IHasDirectory;
+            if (dirCodec == null)
+            {
+                return;
+            }
+
+            dirCodec.GetDirectoryParentFolderContents();
+        }
 
 		/// <summary>
 		/// Handler for codec changes
@@ -284,6 +320,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				},
 				showSelfViewByDefault = Codec.ShowSelfViewByDefault,
 				hasDirectory = Codec is IHasDirectory,
+                hasDirectorySearch = true,
                 hasRecents = Codec is IHasCallHistory,
                 hasCameras = Codec is IHasCameraControl
 			});

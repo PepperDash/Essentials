@@ -58,16 +58,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         SmartObjectDynamicList RecentCallsList;
 
 		SmartObjectDynamicList DirectoryList;
-
-		//CodecDirectory CurrentDirectoryResult;
-
-        ///// <summary>
-        ///// Tracks the directory browse history when browsing beyond the root directory
-        ///// </summary>
-        //List<CodecDirectory> DirectoryBrowseHistory;
         
-        bool NextDirectoryResultIsFolderContents;
-
         BoolFeedback DirectoryBackButtonVisibleFeedback;
 
         // These are likely temp until we get a keyboard built
@@ -558,6 +549,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             (Codec as IHasDirectory).SetCurrentDirectoryToRoot();
 
+#warning Deal with this recursive issue
             SearchKeypadClear();
 
             RefreshDirectory();
@@ -585,10 +577,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// <param name="e"></param>
 		void dir_DirectoryResultReturned(object sender, DirectoryEventArgs e)
 		{
-            if (NextDirectoryResultIsFolderContents)
-            {
-                NextDirectoryResultIsFolderContents = false;
-            }
+
 			RefreshDirectory();
 		}
 
@@ -600,7 +589,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             (Codec as IHasDirectory).GetDirectoryFolderContents(folder.FolderId);
 
-            NextDirectoryResultIsFolderContents = true;
         }
 
         /// <summary>
@@ -614,7 +602,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             {
                 codec.GetDirectoryParentFolderContents();
 
-                RefreshDirectory();
+                //RefreshDirectory();
             }
  
         }
