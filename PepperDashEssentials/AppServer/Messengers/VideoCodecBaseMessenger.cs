@@ -87,16 +87,59 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             if (dirCodec != null)
             {
+                var prefixedDirectoryResults = PrefixDirectoryFolderItems(directory);
+
                 var directoryMessage = new
                 {
                     currentDirectory = new
                     {
-                        directoryResults = directory.CurrentDirectoryResults,
+                        directoryResults = prefixedDirectoryResults,
                         isRootDirectory = isRoot
                     }
                 };
                 PostStatusMessage(directoryMessage);
             }
+        }
+
+        /// <summary>
+        /// Iterates a directory object and prefixes any folder items with "[+] "
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <returns></returns>
+         List<DirectoryItem> PrefixDirectoryFolderItems (CodecDirectory directory)
+        {
+            var tempDirectoryList = new List<DirectoryItem>();
+
+            if (directory.CurrentDirectoryResults.Count > 0)
+            {
+                foreach (var item in directory.CurrentDirectoryResults)
+                {
+                    if (item is DirectoryFolder)
+                    {
+                        var newFolder = new DirectoryFolder();
+
+                        newFolder = (DirectoryFolder)item.Clone();
+
+                        string prefixName = "[+] " + newFolder.Name;
+
+                        newFolder.Name = prefixName;
+
+                        tempDirectoryList.Add(newFolder);
+                    }
+                    else
+                    {
+                        tempDirectoryList.Add(item);
+                    }
+                }
+            }
+            //else
+            //{
+            //    DirectoryItem noResults = new DirectoryItem() { Name = "No Results Found" };
+
+            //    tempDirectoryList.Add(noResults);
+            //}
+
+            return tempDirectoryList;
         }
 
 		/// <summary>

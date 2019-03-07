@@ -549,7 +549,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             (Codec as IHasDirectory).SetCurrentDirectoryToRoot();
 
-#warning Deal with this recursive issue
             SearchKeypadClear();
 
             RefreshDirectory();
