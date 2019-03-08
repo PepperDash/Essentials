@@ -1065,12 +1065,19 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void SearchKeypadClear()
         {
-            SearchStringBuilder.Remove(0, SearchStringBuilder.Length);
-            SearchStringFeedback.FireUpdate();
-            SearchStringKeypadCheckEnables();
+            try
+            {
+                SearchStringBuilder.Remove(0, SearchStringBuilder.Length);
+                SearchStringFeedback.FireUpdate();
+                SearchStringKeypadCheckEnables();
 
-            if((Codec as IHasDirectory).CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
-                SetCurrentDirectoryToRoot();
+                if ((Codec as IHasDirectory).CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
+                    SetCurrentDirectoryToRoot();
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, "SearchKeypadClear() blew up!: {0}", e);
+            }
         }
 
         /// <summary>
