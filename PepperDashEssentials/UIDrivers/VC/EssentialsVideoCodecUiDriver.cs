@@ -102,7 +102,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 SetupCallStagingPopover();
                 SetupDialKeypad();
                 ActiveCallsSRL = new SubpageReferenceList(triList, UISmartObjectJoin.CodecActiveCallsHeaderList, 5,5,5);
-                SetupDirectoryList();
                 SetupRecentCallsList();
                 SetupFavorites();
                 SetupLayoutControls();
@@ -159,6 +158,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     }
                 });
                 SearchStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecDirectorySearchEntryText]);
+
+                SetupDirectoryList();
 
                 SearchStringBackspaceVisibleFeedback = new BoolFeedback(() => SearchStringBuilder.Length > 0);
                 SearchStringBackspaceVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackspaceVisible]);
@@ -1065,19 +1066,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void SearchKeypadClear()
         {
-            try
-            {
-                SearchStringBuilder.Remove(0, SearchStringBuilder.Length);
-                SearchStringFeedback.FireUpdate();
-                SearchStringKeypadCheckEnables();
+            SearchStringBuilder.Remove(0, SearchStringBuilder.Length);
+            SearchStringFeedback.FireUpdate();
+            SearchStringKeypadCheckEnables();
 
-                if ((Codec as IHasDirectory).CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
-                    SetCurrentDirectoryToRoot();
-            }
-            catch (Exception e)
-            {
-                Debug.Console(1, "SearchKeypadClear() blew up!: {0}", e);
-            }
+            if ((Codec as IHasDirectory).CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
+                SetCurrentDirectoryToRoot();
         }
 
         /// <summary>
