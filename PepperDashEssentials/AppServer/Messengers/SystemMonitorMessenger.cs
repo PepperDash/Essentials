@@ -40,8 +40,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <param name="e"></param>
         void ProgramInfoChanged(object sender, ProgramInfoEventArgs e)
         {
-            Debug.Console(1, "Posting Status Message: {0}", e.ProgramInfo.ToString());
-            PostStatusMessage(e.ProgramInfo);
+            if (e.ProgramInfo != null)
+            {
+                //Debug.Console(1, "Posting Status Message: {0}", e.ProgramInfo.ToString());
+                PostStatusMessage(e.ProgramInfo);
+            }
         }
 
         /// <summary>
