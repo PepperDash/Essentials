@@ -32,16 +32,24 @@ namespace PepperDash.Essentials.AppServer.Messengers
             appServerController.AddAction(MessagePath + "/updateConfig", new Action<string>(s => GetConfigFile(s)));
         }
 
+        /// <summary>
+        /// Generates or passes the URL to make the request to GET the config from a server
+        /// </summary>
+        /// <param name="url"></param>
         void GetConfigFile(string url)
         {
             try
             {
+                // Attempt to parse the URL
                 var parser = new Crestron.SimplSharp.Net.Http.UrlParser(url);
 
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Successfully parsed URL from AppServer message: {0}", parser.Url);
             }
-            catch
+            catch (Exception e)
             {
+                // If unable to parse the URL, generate it from config data
+                Debug.Console(2, "Error parsing URL: {0}", e);
+
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to parse URL from AppServer message.  Generating URL from config data");
                 url = string.Format("http://{0}/api/system/{1}/config", AppServerController.Config.ServerUrl, AppServerController.SystemUuid);
             }
