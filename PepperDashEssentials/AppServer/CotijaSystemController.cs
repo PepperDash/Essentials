@@ -458,13 +458,12 @@ namespace PepperDash.Essentials
 				var result = WSClient.Send(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
 				if (result != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
 				{
-#warning It seems like this debug statement is throwing an exception when called
 					Debug.Console(1, this, "Socket send result error: {0}", result);
 				}
             }
 			else if (WSClient == null)
 			{
-				Debug.Console(1, this, "Cannot send. Not connected {0}");
+				Debug.Console(1, this, "Cannot send. Not connected.");
 			}
         }
 
