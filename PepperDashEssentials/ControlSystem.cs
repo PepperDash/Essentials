@@ -34,8 +34,6 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void InitializeSystem()
 		{
-            SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
-
             DeterminePlatform();
 
             //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
@@ -73,7 +71,7 @@ namespace PepperDash.Essentials
 		}
 
         /// <summary>
-        /// Determines if the program is running on a processor (appliance) or server (XiO Edge).
+        /// Determines if the program is running on a processor (appliance) or server (VC-4).
         /// 
         /// Sets Global.FilePathPrefix based on platform
         /// </summary>
@@ -93,20 +91,40 @@ namespace PepperDash.Essentials
 
             directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
 
-            //directoryPrefix = "";
-
-            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)
+            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows OS
             {
-                filePathPrefix = directoryPrefix + dirSeparator + "NVRAM" 
-                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
-
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", versionString);
-            }
-            else
-            {
-                filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
 
+                // Check if User/ProgramX exists
+                if(Directory.Exists(directoryPrefix + dirSeparator + "User" 
+                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
+                {
+                    Debug.Console(0, @"User/program{0} directory found", InitialParametersClass.ApplicationNumber);
+                    filePathPrefix = directoryPrefix + dirSeparator + "User" 
+                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+                }
+                // Check if Nvram/Programx exists
+                else if (Directory.Exists(directoryPrefix + dirSeparator + "Nvram"
+                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
+                {
+                    Debug.Console(0, @"Nvram/program{0} directory found", InitialParametersClass.ApplicationNumber);
+                    filePathPrefix = directoryPrefix + dirSeparator + "Nvram"
+                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+                }
+                // If neither exists, set path to User/ProgramX
+                else
+                {
+                    Debug.Console(0, @"No previous directory found.  Using User/program{0}", InitialParametersClass.ApplicationNumber);
+                    filePathPrefix = directoryPrefix + dirSeparator + "User"
+                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+                }
+            }
+            else   // Handles Linux OS (Virtual Control)
+            {
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", versionString);
+
+                // Set path to User/
+                filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
             }
 
             Global.SetFilePathPrefix(filePathPrefix);
@@ -158,13 +176,13 @@ namespace PepperDash.Essentials
 
 			}
 
-            // Notify the 
+            // Notify the OS that the program intitialization has completed
             SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
 
 		}
 
 		/// <summary>
-		/// Verifies filesystem is set up. IR, SGD, and program1 folders
+		/// Verifies filesystem is set up. IR, SGD, and programX folders
 		/// </summary>
 		bool SetupFilesystem()
 		{
@@ -245,9 +263,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public void LoadDevices()
 		{
-# warning Missing PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
 			// Build the processor wrapper class
-            // DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+			DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
 
             // Add global System Monitor device
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));

@@ -30,7 +30,11 @@ namespace PepperDash.Essentials.Bridges
             Debug.Console(1, comm, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             // this is a permanent event handler. This cannot be -= from event
-            comm.CommPort.TextReceived += (s, a) => trilist.SetString(joinMap.TextReceived, a.Text);
+			comm.CommPort.TextReceived += (s, a) =>
+			{
+				Debug.Console(2, comm, "RX: {0}", a.Text);
+				trilist.SetString(joinMap.TextReceived, a.Text);
+			};
             trilist.SetStringSigAction(joinMap.SendText, new Action<string>(s => comm.CommPort.SendText(s)));
             trilist.SetStringSigAction(joinMap.SetPortConfig + 1, new Action<string>(s => comm.SetPortConfig(s)));
         

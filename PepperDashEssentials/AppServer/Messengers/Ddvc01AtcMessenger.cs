@@ -16,12 +16,33 @@ namespace PepperDash.Essentials.AppServer.Messengers
 	{
 		BasicTriList EISC;
 
+		/// <summary>
+		/// 221
+		/// </summary>
 		const uint BDialHangup = 221;
+		/// <summary>
+		/// 251
+		/// </summary>
 		const uint BIncomingAnswer = 251;
+		/// <summary>
+		/// 252
+		/// </summary>
 		const uint BIncomingReject = 252;
+		/// <summary>
+		/// 241
+		/// </summary>
 		const uint BSpeedDial1 = 241;
+		/// <summary>
+		/// 242
+		/// </summary>
 		const uint BSpeedDial2 = 242;
+		/// <summary>
+		/// 243
+		/// </summary>
 		const uint BSpeedDial3 = 243;
+		/// <summary>
+		/// 244
+		/// </summary>
 		const uint BSpeedDial4 = 244;
 
 		/// <summary>
@@ -46,7 +67,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         const uint SCallDirection = 222;
 
 		/// <summary>
-		/// 
+		/// 201-212 0-9*#
 		/// </summary>
 		Dictionary<string, uint> DTMFMap = new Dictionary<string, uint>
 		{
@@ -64,6 +85,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{ "#", 212 },
 		};
 
+		/// <summary>
+		/// 
+		/// </summary>
 		CodecActiveCallItem CurrentCallItem;
 
 
@@ -160,6 +184,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			}));
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
         void SendCallsList()
         {
             PostStatusMessage(new
