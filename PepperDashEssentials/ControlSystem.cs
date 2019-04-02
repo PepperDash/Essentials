@@ -71,7 +71,7 @@ namespace PepperDash.Essentials
 		}
 
         /// <summary>
-        /// Determines if the program is running on a processor (appliance) or server (XiO Edge).
+        /// Determines if the program is running on a processor (appliance) or server (VC-4).
         /// 
         /// Sets Global.FilePathPrefix based on platform
         /// </summary>
@@ -176,7 +176,7 @@ namespace PepperDash.Essentials
 
 			}
 
-            // Notify the 
+            // Notify the OS that the program intitialization has completed
             SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
 
 		}

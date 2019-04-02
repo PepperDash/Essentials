@@ -266,6 +266,16 @@ namespace PepperDash.Essentials
                 {
                     IsCoolingDownFeedback.FireUpdate(); 
                 };
+
+                // Get Microphone Privacy object, if any
+                this.MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
+
+                Debug.Console(2, this, "Microphone Privacy Config evaluated.");
+
+                // Get emergency object, if any
+                this.Emergency = EssentialsRoomConfigHelper.GetEmergency(PropertiesConfig, this);
+
+                Debug.Console(2, this, "Emergency Config evaluated.");
             }
 
 
@@ -326,12 +336,6 @@ namespace PepperDash.Essentials
             this.SourceListKey = PropertiesConfig.SourceListKey;
             this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
             this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
-
-            // Get Microphone Privacy object, if any
-            this.MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
-
-            // Get emergency object, if any
-            this.Emergency = EssentialsRoomConfigHelper.GetEmergency(PropertiesConfig, this);
 
             return base.CustomActivate();
         }

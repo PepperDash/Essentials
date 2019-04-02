@@ -71,7 +71,7 @@ namespace PepperDash.Essentials.Room.Config
 			var microphonePrivacy = props.MicrophonePrivacy;
 			if (microphonePrivacy == null)
 			{
-				Debug.Console(0, "ERROR: Cannot create microphone privacy with null properties");
+				Debug.Console(0, "Cannot create microphone privacy with null properties");
 				return null;
 			}
 			// Get the MicrophonePrivacy device from the device manager
