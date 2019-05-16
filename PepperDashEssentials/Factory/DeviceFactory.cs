@@ -85,6 +85,11 @@ namespace PepperDash.Essentials
 				return bridge;
 			}
 
+            else if (typeName == "roomonwhenoccupancydetectedfeature")
+            {
+                return new Room.Behaviours.RoomOnToDefaultSourceWhenOccupied(dc);
+            }
+
 			return null;
 		}
 	}

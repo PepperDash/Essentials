@@ -484,9 +484,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					TriList.SetString(timeTextOffset + i, timeText);
 
 					string iconName = null;
-					if (c.OccurenceType == eCodecOccurrenceType.Received)
+					if (c.OccurrenceType == eCodecOccurrenceType.Received)
                         iconName = "Misc-18_Light";
-                    else if (c.OccurenceType == eCodecOccurrenceType.Placed)
+                    else if (c.OccurrenceType == eCodecOccurrenceType.Placed)
                         iconName = "Misc-17_Light";
 					else
 						iconName = "Delete";

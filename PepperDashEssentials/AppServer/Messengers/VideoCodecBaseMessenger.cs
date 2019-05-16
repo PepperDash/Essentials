@@ -13,7 +13,7 @@ using PepperDash.Essentials.Devices.Common.VideoCodec;
 namespace PepperDash.Essentials.AppServer.Messengers
 {
 	/// <summary>
-	/// Provides a messaging bridge for a VideoCodecBase
+	/// Provides a messaging bridge for a VideoCodecBase device
 	/// </summary>
 	public class VideoCodecBaseMessenger : MessengerBase
 	{
@@ -26,7 +26,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// 
 		/// </summary>
 		/// <param name="codec"></param>
-		public VideoCodecBaseMessenger(VideoCodecBase codec, string messagePath) : base(messagePath)
+		public VideoCodecBaseMessenger(string key, VideoCodecBase codec, string messagePath)
+            : base(key, messagePath)
 		{
 			if (codec == null)
 				throw new ArgumentNullException("codec");
@@ -40,7 +41,31 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{
 				dirCodec.DirectoryResultReturned += new EventHandler<DirectoryEventArgs>(dirCodec_DirectoryResultReturned);
 			}
+
+            var recCodec = codec as IHasCallHistory;
+            if (recCodec != null)
+            {
+                recCodec.CallHistory.RecentCallsListHasChanged += new EventHandler<EventArgs>(CallHistory_RecentCallsListHasChanged);
+            }
 		}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void CallHistory_RecentCallsListHasChanged(object sender, EventArgs e)
+        {
+            var recents = (sender as CodecCallHistory).RecentCalls;
+
+            if (recents != null)
+            {
+                PostStatusMessage(new
+                {
+                    recentCalls = recents
+                });
+            }
+        }
 		
 		/// <summary>
 		/// 
@@ -49,7 +74,6 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// <param name="e"></param>
 		void dirCodec_DirectoryResultReturned(object sender, DirectoryEventArgs e)
 		{
-			var dir = e.Directory;
 			PostStatusMessage(new
 			{
 				currentDirectory = e.Directory
@@ -98,9 +122,10 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				if (call != null)
 					Codec.AcceptCall(call);
 			}));
-			appServerController.AddAction(MessagePath + "/directoryRoot", new Action(GetDirectoryRoot));			
+			appServerController.AddAction(MessagePath + "/getDirectory", new Action(GetDirectoryRoot));			
 			appServerController.AddAction(MessagePath + "/directoryById", new Action<string>(s => GetDirectory(s)));
 			appServerController.AddAction(MessagePath + "/directorySearch", new Action<string>(s => DirectorySearch(s)));
+            appServerController.AddAction(MessagePath + "/getCallHistory", new Action(GetCallHistory));
 			appServerController.AddAction(MessagePath + "/privacyModeOn", new Action(Codec.PrivacyModeOn));
 			appServerController.AddAction(MessagePath + "/privacyModeOff", new Action(Codec.PrivacyModeOff));
 			appServerController.AddAction(MessagePath + "/privacyModeToggle", new Action(Codec.PrivacyModeToggle));
@@ -109,6 +134,24 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			appServerController.AddAction(MessagePath + "/standbyOn", new Action(Codec.StandbyActivate));
 			appServerController.AddAction(MessagePath + "/standbyOff", new Action(Codec.StandbyDeactivate));
 		}
+
+        void GetCallHistory()
+        {
+            var codec = (Codec as IHasCallHistory);
+
+            if (codec != null)
+            {
+                var recents = codec.CallHistory.RecentCalls;
+
+                if (recents != null)
+                {
+                    PostStatusMessage(new
+                    {
+                        recentCalls = recents
+                    });
+                }
+            }
+        }
 
 		public void GetFullStatusMessage()
 		{
@@ -227,7 +270,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 					sipURI = info.SipUri
 				},
 				showSelfViewByDefault = Codec.ShowSelfViewByDefault,
-				hasDirectory = Codec is IHasDirectory
+				hasDirectory = Codec is IHasDirectory,
+                hasRecents = Codec is IHasCallHistory,
+                hasCameras = Codec is IHasCameraControl
 			});
 		}
 	}

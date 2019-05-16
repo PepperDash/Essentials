@@ -12,7 +12,7 @@ devjson:1 {"deviceKey":"timer","methodName":"Cancel" }
 
 devjson:1 {"deviceKey":"timer","methodName":"Reset" }
 
-devjson:10 {"deviceKey":"room1","methodName":"Shutdown" }
+devjson:1 {"deviceKey":"room1","methodName":"Shutdown" }
 
 devjson:1 {"deviceKey":"mockVc-1", "methodName":"TestIncomingVideoCall", "params": ["123-456-7890"]}
 
@@ -30,8 +30,8 @@ devjson:1 {"deviceKey":"room1.InCallFeedback","methodName":"SetTestValue", "para
 
 devjson:1 {"deviceKey":"room1.InCallFeedback","methodName":"ClearTestValue", "params": []}
 
+devjson:3 {"deviceKey":"room1.RoomOccupancy.RoomIsOccupiedFeedback","methodName":"SetTestValue", "params": [ true ]}
 
+devjson:2 {"deviceKey":"codec-comms-ssh", "methodName":"SendText", "params": ["xcommand dial number: 10.11.50.211\r"]}
 
-devjson:10 {"deviceKey":"mobileControlBridge-essentialsHuddle","methodName":"TestOne"}
-devjson:10 {"deviceKey":"mobileControlBridge-essentialsHuddle","methodName":"TestMulti"}
-  devjson:10 {"deviceKey":"room1","methodName":"RunDefaultPresentRoute"}
+devjson:2 {"deviceKey":"codec-comms-ssh", "methodName":"Connect", "params": []}

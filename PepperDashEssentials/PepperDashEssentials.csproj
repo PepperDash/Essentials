@@ -99,17 +99,36 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
     </Reference>
+    <Reference Include="SimplSharpTimerEventInterface, Version=1.0.6197.20052, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpTimerEventInterface.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppServer\Messengers\AtcDdvc01Messenger.cs" />
+    <Compile Include="AppServer\Messengers\Ddvc01AtcMessenger.cs" />
+    <Compile Include="AppServer\Messengers\AudioCodecBaseMessenger.cs" />
+    <Compile Include="AppServer\Messengers\Ddvc01VtcMessenger.cs" />
     <Compile Include="AppServer\Messengers\MessengerBase.cs" />
+    <Compile Include="AppServer\Messengers\SystemMonitorMessenger.cs" />
     <Compile Include="AppServer\Messengers\VideoCodecBaseMessenger.cs" />
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
     <Compile Include="Bridges\BridgeBase.cs" />
     <Compile Include="Bridges\BridgeFactory.cs" />
+    <Compile Include="Bridges\CameraControllerBridge.cs" />
+    <Compile Include="Bridges\DisplayControllerBridge.cs" />
+    <Compile Include="Bridges\DigitalLoggerBridge.cs" />
+    <Compile Include="Bridges\DmChassisControllerBridge.cs" />
+    <Compile Include="Bridges\DmTxControllerBridge.cs" />
+    <Compile Include="Bridges\GenericLightingBridge.cs" />
+    <Compile Include="Bridges\GenericRelayDeviceBridge.cs" />
+    <Compile Include="Bridges\IBasicCommunicationBridge.cs" />
+    <Compile Include="Bridges\DmRmcControllerBridge.cs" />
+    <Compile Include="Bridges\IDigitalInputBridge.cs" />
+    <Compile Include="Bridges\JoinMapBase.cs" />
+    <Compile Include="Bridges\SystemMonitorBridge.cs" />
     <Compile Include="Configuration ORIGINAL\Builders\TPConfig.cs" />
     <Compile Include="Configuration ORIGINAL\Configuration.cs" />
     <Compile Include="Configuration ORIGINAL\ConfigurationHelpers.cs" />
@@ -124,22 +143,22 @@
     <Compile Include="Configuration ORIGINAL\Factories\MAYBE SetTopBoxFactory.cs" />
     <Compile Include="Configuration ORIGINAL\Factories\DisplayFactory.cs" />
     <Compile Include="Configuration ORIGINAL\Factories\FactoryHelper.cs" />
-    <Compile Include="Config\ConfigReader.cs" />
-    <Compile Include="Config\EssentialsConfig.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Devices\Amplifier.cs" />
     <Compile Include="Devices\DiscPlayer\OppoExtendedBdp.cs" />
     <Compile Include="Devices\NUMERIC AppleTV.cs" />
     <Compile Include="ControlSystem.cs" />
     <Compile Include="Factory\UiDeviceFactory.cs" />
-    <Compile Include="OTHER\Fusion\EssentialsHuddleVtc1FusionController.cs" />
-    <Compile Include="OTHER\Fusion\FusionEventHandlers.cs" />
-    <Compile Include="OTHER\Fusion\FusionProcessorQueries.cs" />
-    <Compile Include="OTHER\Fusion\FusionRviDataClasses.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\EssentialsHuddleVtc1FusionController.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionCustomPropertiesBridge.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionEventHandlers.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionProcessorQueries.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionRviDataClasses.cs" />
     <Compile Include="REMOVE EssentialsApp.cs" />
-    <Compile Include="OTHER\Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
+    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
     <Compile Include="HttpApiHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />
     <Compile Include="Room\Config\DDVC01RoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsPresentationPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsHuddleRoomPropertiesConfig.cs" />

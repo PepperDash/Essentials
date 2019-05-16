@@ -4,13 +4,16 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using Newtonsoft.Json;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials
 {
-	public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange, IRunRouteAction, IRunDefaultPresentRoute
+	public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange, IRunRouteAction, IRunDefaultPresentRoute, IHasCurrentVolumeControls
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSingleSourceChange;
@@ -65,7 +68,7 @@ namespace PepperDash.Essentials
             }
         }
 
-		public EssentialsRoomPropertiesConfig Config { get; private set; }
+		public EssentialsHuddleRoomPropertiesConfig PropertiesConfig { get; private set; }
 
 		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
 		public IRoutingSinkNoSwitching DefaultAudioDevice { get; private set; }
@@ -146,22 +149,32 @@ namespace PepperDash.Essentials
 
         public string CurrentSourceInfoKey { get; private set; }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="key"></param>
-		/// <param name="name"></param>
-		public EssentialsHuddleSpaceRoom(string key, string name, IRoutingSinkWithSwitching defaultDisplay, 
-			IRoutingSinkNoSwitching defaultAudio, EssentialsRoomPropertiesConfig config)
-			: base(key, name)
+        public EssentialsHuddleSpaceRoom(DeviceConfig config)
+            : base(config)
+        {
+            try
+            {
+                PropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleRoomPropertiesConfig>
+                    (config.Properties.ToString());
+                DefaultDisplay = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
+
+
+                DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IRoutingSinkWithSwitching;
+
+                Initialize();
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "Error building room: \n{0}", e);
+            }
+        }
+
+		void Initialize()
 		{
-			Config = config;
-			DefaultDisplay = defaultDisplay;
-			DefaultAudioDevice = defaultAudio;
-			if (defaultAudio is IBasicVolumeControls)
-				DefaultVolumeControls = defaultAudio as IBasicVolumeControls;
-			else if (defaultAudio is IHasVolumeDevice)
-				DefaultVolumeControls = (defaultAudio as IHasVolumeDevice).VolumeDevice;
+            if (DefaultAudioDevice is IBasicVolumeControls)
+                DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;
+            else if (DefaultAudioDevice is IHasVolumeDevice)
+                DefaultVolumeControls = (DefaultAudioDevice as IHasVolumeDevice).VolumeDevice;
             CurrentVolumeControls = DefaultVolumeControls;
 
             var disp = DefaultDisplay as DisplayBase;
@@ -194,6 +207,15 @@ namespace PepperDash.Essentials
 			EnablePowerOnToLastSource = true;
    		}
 
+        protected override void CustomSetConfig(DeviceConfig config)
+        {
+            var newPropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleRoomPropertiesConfig>(config.Properties.ToString());
+
+            if (newPropertiesConfig != null)
+                PropertiesConfig = newPropertiesConfig;
+
+            ConfigWriter.UpdateRoomConfig(config);
+        }
 
         /// <summary>
         /// 
@@ -212,13 +234,31 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Routes the default source item, if any
         /// </summary>
-        public bool RunDefaultPresentRoute()
+        public override bool RunDefaultPresentRoute()
         {
-			if(DefaultSourceItem == null)
-				return false;
+            if (DefaultSourceItem == null)
+            {
+                Debug.Console(0, this, "Unable to run default present route, DefaultSourceItem is null.");
+                return false;
+            }
 
             RunRouteAction(DefaultSourceItem);
 			return true;
+        }
+
+        public override bool CustomActivate()
+        {
+            // Add Occupancy object from config
+            if (PropertiesConfig.Occupancy != null)
+                this.SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
+                    PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimeoutMinutes);
+
+            this.LogoUrl = PropertiesConfig.Logo.GetUrl();
+            this.SourceListKey = PropertiesConfig.SourceListKey;
+            this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
+            this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
+
+            return base.CustomActivate();
         }
 
         /// <summary>
@@ -387,7 +427,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// Will power the room on with the last-used source
 		/// </summary>
-		public void PowerOnToDefaultOrLastSource()
+		public override void PowerOnToDefaultOrLastSource()
 		{
 			if (!EnablePowerOnToLastSource || LastSourceKey == null)
 				return;

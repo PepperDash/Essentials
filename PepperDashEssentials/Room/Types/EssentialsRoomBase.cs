@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.Scheduler;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Devices.Common.Occupancy;
 
 namespace PepperDash.Essentials
@@ -12,12 +16,17 @@ namespace PepperDash.Essentials
     /// <summary>
     /// 
     /// </summary>
-    public abstract class EssentialsRoomBase : Device
+    public abstract class EssentialsRoomBase : ReconfigurableDevice
     {
         /// <summary>
         ///
         /// </summary>
         public BoolFeedback OnFeedback { get; private set; }
+
+        /// <summary>
+        /// Fires when the RoomOccupancy object is set
+        /// </summary>
+        public event EventHandler<EventArgs> RoomOccupancyIsSet;
 
         public BoolFeedback IsWarmingUpFeedback { get; private set; }
         public BoolFeedback IsCoolingDownFeedback { get; private set; }
@@ -73,12 +82,9 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; private set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="name"></param>
-        public EssentialsRoomBase(string key, string name) : base(key, name)
+
+        public EssentialsRoomBase(DeviceConfig config)
+            : base(config)
         {
             // Setup the ShutdownPromptTimer
             ShutdownPromptTimer = new SecondsCountdownTimer(Key + "-offTimer");
@@ -109,6 +115,12 @@ namespace PepperDash.Essentials
 
             IsWarmingUpFeedback = new BoolFeedback(IsWarmingFeedbackFunc);
             IsCoolingDownFeedback = new BoolFeedback(IsCoolingFeedbackFunc);
+
+            AddPostActivationAction(() =>
+            {
+                if (RoomOccupancy != null)
+                    OnRoomOccupancyIsSet();
+            });
         }
 
         void RoomVacancyShutdownPromptTimer_HasFinished(object sender, EventArgs e)
@@ -146,6 +158,8 @@ namespace PepperDash.Essentials
                 ShutdownPromptTimer.SecondsToCount = ShutdownVacancySeconds;
             ShutdownType = type;
             ShutdownPromptTimer.Start();
+
+            Debug.Console(0, this, "ShutdwonPromptTimer Started. Type: {0}.  Seconds: {1}", ShutdownType, ShutdownPromptTimer.SecondsToCount);
         }
 
         public void StartRoomVacancyTimer(eVacancyMode mode)
@@ -157,7 +171,7 @@ namespace PepperDash.Essentials
             VacancyMode = mode;
             RoomVacancyShutdownTimer.Start();
 
-            Debug.Console(0, this, "Vacancy Timer Started.");
+            Debug.Console(0, this, "Vacancy Timer Started. Mode: {0}.  Seconds: {1}", VacancyMode, RoomVacancyShutdownTimer.SecondsToCount);
         }
 
         /// <summary>
@@ -186,7 +200,7 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="statusProvider"></param>
         public void SetRoomOccupancy(IOccupancyStatusProvider statusProvider, int timeoutMinutes)
-        {
+        { 
 			if (statusProvider == null)
 			{
 				Debug.Console(0, this, "ERROR: Occupancy sensor device is null");
@@ -200,10 +214,35 @@ namespace PepperDash.Essentials
             if(timeoutMinutes > 0)
                 RoomVacancyShutdownSeconds = timeoutMinutes * 60;
 
+            Debug.Console(1, this, "RoomVacancyShutdownSeconds set to {0}", RoomVacancyShutdownSeconds);
+
             RoomOccupancy = statusProvider;
 
+            OnRoomOccupancyIsSet();
+
+            RoomOccupancy.RoomIsOccupiedFeedback.OutputChange -= RoomIsOccupiedFeedback_OutputChange;
             RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
+
+            Debug.Console(0, this, "Room Occupancy set to device: '{0}'", (statusProvider as Device).Key);
         }
+
+        void OnRoomOccupancyIsSet()
+        {
+            var handler = RoomOccupancyIsSet;
+            if (handler != null)
+                handler(this, new EventArgs());
+        }
+
+        /// <summary>
+        /// To allow base class to power room on to last source
+        /// </summary>
+        public abstract void PowerOnToDefaultOrLastSource();
+
+        /// <summary>
+        /// To allow base class to power room on to default source
+        /// </summary>
+        /// <returns></returns>
+        public abstract bool RunDefaultPresentRoute();
 
         void RoomIsOccupiedFeedback_OutputChange(object sender, EventArgs e)
         {
@@ -217,15 +256,9 @@ namespace PepperDash.Essentials
             {
                 Debug.Console(1, this, "Notice: Occupancy Detected");
                 // Reset the timer when the room is occupied
-
-                    RoomVacancyShutdownTimer.Cancel();
+                RoomVacancyShutdownTimer.Cancel();
             }
         }
-
-		//void SwapVolumeDevices(IBasicVolumeControls currentDevice, IBasicVolumeControls newDevice)
-		//{
-
-		//}
 
         /// <summary>
         /// Executes when RoomVacancyShutdownTimer expires.  Used to trigger specific room actions as needed.  Must nullify the timer object when executed

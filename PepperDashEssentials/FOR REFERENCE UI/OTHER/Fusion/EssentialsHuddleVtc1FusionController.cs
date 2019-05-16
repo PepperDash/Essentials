@@ -13,6 +13,7 @@ using Crestron.SimplSharpPro.Fusion;
 using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Devices.Common.Occupancy;
 
@@ -186,16 +187,7 @@ namespace PepperDash.Essentials.Fusion
             FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction((Room as EssentialsHuddleVtc1Room).PowerOnToDefaultOrLastSource);
             FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() => (Room as EssentialsHuddleVtc1Room).RunRouteAction("roomOff"));
             // NO!! room.RoomIsOn.LinkComplementInputSig(FusionRoom.SystemPowerOff.InputSig);
-            FusionRoom.ErrorMessage.InputSig.StringValue =
-                "3: 7 Errors: This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;";
-
-			SetUpEthernetValues();
-			
-			GetProcessorEthernetValues();
-
-            GetSystemInfo();
-
-            GetProcessorInfo();
+ 
 
             CrestronEnvironment.EthernetEventHandler += CrestronEnvironment_EthernetEventHandler;
         }

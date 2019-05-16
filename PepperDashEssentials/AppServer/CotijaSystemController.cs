@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Cotija;
 
 namespace PepperDash.Essentials
@@ -46,6 +47,8 @@ namespace PepperDash.Essentials
 
         long ServerReconnectInterval = 5000;
 
+        DateTime LastAckMessage;
+
         string SystemUuid;
 
 		List<CotijaBridgeBase> RoomBridges = new List<CotijaBridgeBase>();
@@ -66,6 +69,9 @@ namespace PepperDash.Essentials
         public CotijaSystemController(string key, string name, CotijaConfig config) : base(key, name)
         {
             Config = config;
+
+            SystemUuid = ConfigReader.ConfigObject.SystemUuid;
+
 			Debug.Console(0, this, "Mobile UI controller initializing for server:{0}", config.ServerUrl);
 
 			CrestronConsole.AddNewConsoleCommand(AuthorizeSystem,
@@ -96,6 +102,21 @@ namespace PepperDash.Essentials
 				
         }
 
+        /// <summary>
+        /// If config rooms is empty or null then go
+        /// </summary>
+        /// <returns></returns>
+        public override bool CustomActivate()
+        {
+            if (ConfigReader.ConfigObject.Rooms == null || ConfigReader.ConfigObject.Rooms.Count == 0)
+            {
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Config contains no rooms.  Registering with Server.");
+                RegisterSystemToServer();
+            }
+
+            return base.CustomActivate();
+        }
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -117,7 +138,9 @@ namespace PepperDash.Essentials
         /// <param name="programEventType"></param>
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
-            if (programEventType == eProgramStatusEventType.Stopping && WSClient.Connected)
+            if (programEventType == eProgramStatusEventType.Stopping 
+				&& WSClient != null
+				&& WSClient.Connected)
             {
 				CleanUpWebsocketClient();
             }
@@ -176,7 +199,7 @@ namespace PepperDash.Essentials
 			else
 			{
 				Debug.Console(0, this, "Adding room bridge and sending configuration");
-				SystemUuid = ConfigReader.ConfigObject.SystemUuid;
+                //SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 				RegisterSystemToServer();
 			}
 		}
@@ -189,7 +212,7 @@ namespace PepperDash.Essentials
 		void bridge_ConfigurationIsReady(object sender, EventArgs e)
 		{
 			Debug.Console(1, this, "Bridge ready.  Registering");
-			SystemUuid = ConfigReader.ConfigObject.SystemUuid;
+            //SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 			// send the configuration object to the server
 			RegisterSystemToServer();
 		}
@@ -209,7 +232,7 @@ namespace PepperDash.Essentials
 		/// <param name="command"></param>
 		void AuthorizeSystem(string code)
 		{
-			SystemUuid = ConfigReader.ConfigObject.SystemUuid;
+            //SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 
 			if (string.IsNullOrEmpty(SystemUuid))
 			{
@@ -288,14 +311,17 @@ namespace PepperDash.Essentials
 				code = "Not available";
 			}
 			var conn = WSClient == null ? "No client" : (WSClient.Connected ? "Yes" : "No");
+            var secSinceLastAck = DateTime.Now - LastAckMessage;
+
 
 			CrestronConsole.ConsoleCommandResponse(@"Mobile Control Information:
 	Server address: {0}
 	System Name: {1}
 	System UUID: {2}
 	System User code: {3}
-	Connected?: {4}", url, name, SystemUuid, 
-					code, conn);
+	Connected?: {4}
+    Seconds Since Last Ack: {5}", url, name, SystemUuid,
+                    code, conn, secSinceLastAck.Seconds);
 		}
 
         /// <summary>
@@ -313,7 +339,6 @@ namespace PepperDash.Essentials
 		/// <param name="o"></param>
 		void ConnectWebsocketClient()
 		{
-
 
 			Debug.Console(1, this, "Initializing Stream client to server.");
 
@@ -412,7 +437,12 @@ namespace PepperDash.Essentials
             if (WSClient != null && WSClient.Connected)
             {
                 string message = JsonConvert.SerializeObject(o, Formatting.None, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-				Debug.Console(1, this, "Message TX: {0}", message);
+
+                if (!message.Contains("/system/heartbeat"))
+                    Debug.Console(1, this, "Message TX: {0}", message);
+                //else
+                //    Debug.Console(1, this, "TX messages contains /system/heartbeat");
+
                 var messageBytes = System.Text.Encoding.UTF8.GetBytes(message);
 				var result = WSClient.Send(messageBytes, (uint)messageBytes.Length, WebSocketClient.WEBSOCKET_PACKET_TYPES.LWS_WS_OPCODE_07__TEXT_FRAME);
 				if (result != WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_SUCCESS)
@@ -638,7 +668,14 @@ namespace PepperDash.Essentials
             if(string.IsNullOrEmpty(message))
                 return;
 
-            Debug.Console(1, this, "Message RX: {0}", message);
+            if (!message.Contains("/system/heartbeat"))
+                Debug.Console(1, this, "Message RX: {0}", message);
+            else
+            {
+                LastAckMessage = DateTime.Now;
+                //Debug.Console(1, this, "RX message contains /system/heartbeat");
+            }
+
             try
             {
                 var messageObj = JObject.Parse(message);

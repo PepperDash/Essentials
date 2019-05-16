@@ -4,11 +4,15 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
+using Crestron.SimplSharpPro.Diagnostics;
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
+using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Room.Cotija;
 
 namespace PepperDash.Essentials
@@ -35,6 +39,7 @@ namespace PepperDash.Essentials
             //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
             //    ConsoleAccessLevelEnum.AccessOperator);
 
+           // CrestronConsole.AddNewConsoleCommand(S => { ConfigWriter.WriteConfigFile(null); }, "writeconfig", "writes the current config to a file", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(s =>
 			{
 				Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s);
@@ -86,20 +91,40 @@ namespace PepperDash.Essentials
 
             directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
 
-            //directoryPrefix = "";
-
-            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)
+            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows OS
             {
-                filePathPrefix = directoryPrefix + dirSeparator + "NVRAM" 
-                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
-
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", versionString);
-            }
-            else
-            {
-                filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
 
+                // Check if User/ProgramX exists
+                if(Directory.Exists(directoryPrefix + dirSeparator + "User" 
+                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
+                {
+                    Debug.Console(0, @"User/program{0} directory found", InitialParametersClass.ApplicationNumber);
+                    filePathPrefix = directoryPrefix + dirSeparator + "User" 
+                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+                }
+                // Check if Nvram/Programx exists
+                else if (Directory.Exists(directoryPrefix + dirSeparator + "Nvram"
+                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
+                {
+                    Debug.Console(0, @"Nvram/program{0} directory found", InitialParametersClass.ApplicationNumber);
+                    filePathPrefix = directoryPrefix + dirSeparator + "Nvram"
+                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+                }
+                // If neither exists, set path to User/ProgramX
+                else
+                {
+                    Debug.Console(0, @"No previous directory found.  Using User/program{0}", InitialParametersClass.ApplicationNumber);
+                    filePathPrefix = directoryPrefix + dirSeparator + "User"
+                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+                }
+            }
+            else   // Handles Linux OS (Virtual Control)
+            {
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", versionString);
+
+                // Set path to User/
+                filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
             }
 
             Global.SetFilePathPrefix(filePathPrefix);
@@ -142,16 +167,22 @@ namespace PepperDash.Essentials
 						"------------------------------------------------\r" +
 						"------------------------------------------------");
 				}
+
             }
 			catch (Exception e)
 			{
 				Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r{0}", e);
+
+
 			}
+
+            // Notify the 
+            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
 
 		}
 
 		/// <summary>
-		/// Verifies filesystem is set up. IR, SGD, and program1 folders
+		/// Verifies filesystem is set up. IR, SGD, and programX folders
 		/// </summary>
 		bool SetupFilesystem()
 		{
@@ -204,16 +235,39 @@ namespace PepperDash.Essentials
 			LoadLogoServer();
 
 			DeviceManager.ActivateAll();
+
+            LinkSystemMonitorToAppServer();
 		}
 
+        void LinkSystemMonitorToAppServer()
+        {
+            var sysMon = DeviceManager.GetDeviceForKey("systemMonitor") as PepperDash.Essentials.Core.Monitoring.SystemMonitorController;
+
+            var appServer = DeviceManager.GetDeviceForKey("appServer") as CotijaSystemController;
+
+
+            if (sysMon != null && appServer != null)
+            {
+                var key = sysMon.Key + "-" + appServer.Key;
+                var messenger = new PepperDash.Essentials.AppServer.Messengers.SystemMonitorMessenger
+                    (key, sysMon, "/device/systemMonitor");
+
+                messenger.RegisterWithAppServer(appServer);
+
+                DeviceManager.AddDevice(messenger);                  
+            }
+        }
 
 		/// <summary>
 		/// Reads all devices from config and adds them to DeviceManager
 		/// </summary>
 		public void LoadDevices()
 		{
-            // Build the processor wrapper class
-            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+			// Build the processor wrapper class
+			DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+
+            // Add global System Monitor device
+            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));
 
 			foreach (var devConf in ConfigReader.ConfigObject.Devices)
 			{
@@ -232,17 +286,23 @@ namespace PepperDash.Essentials
                         continue;
                     }
 
-					// Try local factory first
+					// Try local factories first
 					var newDev = DeviceFactory.GetDevice(devConf);
 
+                    if (newDev == null)
+                        newDev = BridgeFactory.GetDevice(devConf);
+
 					// Then associated library factories
+                    if (newDev == null)
+                        newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
-
+					if (newDev == null)
+						newDev = PepperDash.Essentials.BridgeFactory.GetDevice(devConf);
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
 					else
@@ -256,6 +316,7 @@ namespace PepperDash.Essentials
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Devices Loaded.");
 
 		}
+
 
 		/// <summary>
 		/// Helper method to load tie lines.  This should run after devices have loaded
@@ -296,7 +357,7 @@ namespace PepperDash.Essentials
 
 			foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
 			{
-				var room = roomConfig.GetRoomObject() as EssentialsRoomBase;
+                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
 				if (room != null)
 				{
                     if (room is EssentialsHuddleSpaceRoom)

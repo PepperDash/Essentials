@@ -4,5 +4,5 @@
 [assembly: AssemblyCompany("PepperDash Technology Corp")]
 [assembly: AssemblyProduct("PepperDashEssentials")]
 [assembly: AssemblyCopyright("Copyright © PepperDash Technology Corp 2018")]
-[assembly: AssemblyVersion("1.2.11.*")]
+[assembly: AssemblyVersion("1.3.2.*")]
 

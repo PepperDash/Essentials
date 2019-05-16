@@ -80,6 +80,16 @@ namespace PepperDash.Essentials
 					var dm = new DmMd8x8(ipId, Global.ControlSystem);
 					//dev = new DmChassisController(devKey, devName, dm);
 				}
+				else if (devType.Equals("dmmd16x16", StringComparison.OrdinalIgnoreCase))
+				{
+					var dm = new DmMd16x16(ipId, Global.ControlSystem);
+					//dev = new DmChassisController(devKey, devName, dm);
+				}
+				else if (devType.Equals("dmmd32x32", StringComparison.OrdinalIgnoreCase))
+				{
+					var dm = new DmMd32x32(ipId, Global.ControlSystem);
+					//dev = new DmChassisController(devKey, devName, dm);
+				}
 			}
 			catch (Exception e)
 			{

@@ -76,7 +76,7 @@ namespace PepperDash.Essentials
                 avDriver.PopupInterlock.HideAndClear());
         }
 
-        void SetUpHelpButton(EssentialsRoomPropertiesConfig roomConf)
+        public void SetUpHelpButton(EssentialsRoomPropertiesConfig roomConf)
         {
             // Help roomConf and popup
             if (roomConf.Help != null)
@@ -107,7 +107,7 @@ namespace PepperDash.Essentials
                 var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
                     as EssentialsHuddleSpaceRoom;
                 if (room != null)
-                    message = room.Config.HelpMessage;
+                    message = room.PropertiesConfig.HelpMessage;
                 else
                     message = "Sorry, no help message available. No room connected.";
                 //TriList.StringInput[UIStringJoin.HelpMessage].StringValue = message;
@@ -227,7 +227,7 @@ namespace PepperDash.Essentials
 
             TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
 
-            var roomConf = currentRoom.Config;
+            var roomConf = currentRoom.PropertiesConfig;
 
             // Register for the PopupInterlock IsShowsFeedback event to tie the header carets subpage visiblity to it
             Parent.AvDriver.PopupInterlock.StatusChanged -= PopupInterlock_StatusChanged;
@@ -289,7 +289,7 @@ namespace PepperDash.Essentials
 
             TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
 
-            var roomConf = currentRoom.Config;
+            var roomConf = currentRoom.PropertiesConfig;
 
             // Register for the PopupInterlock IsShowsFeedback event to tie the header carets subpage visiblity to it
             Parent.AvDriver.PopupInterlock.StatusChanged -= PopupInterlock_StatusChanged;
