@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Diagnostics;
+using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Factory;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
@@ -20,6 +23,8 @@ namespace PepperDash.Essentials
 	public class ControlSystem : CrestronControlSystem
 	{
         HttpLogoServer LogoServer;
+
+		List<object> FactoryObjects = new List<object>();
 
 		public ControlSystem()
 			: base()
@@ -137,15 +142,14 @@ namespace PepperDash.Essentials
 		{
 			try
 			{
-                CrestronConsole.AddNewConsoleCommand(EnablePortalSync, "portalsync", "Loads Portal Sync",
-                    ConsoleAccessLevelEnum.AccessOperator);
-
-                //PortalSync = new PepperDashPortalSyncClient();
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 
 				var filesReady = SetupFilesystem();
 				if (filesReady)
 				{
+					Debug.Console(0, Debug.ErrorLogLevel.Notice, "Checking for plugins");
+					LoadPlugins();
+
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Folder structure verified. Loading config...");
 					if (!ConfigReader.LoadConfig2())
 						return;
@@ -179,6 +183,42 @@ namespace PepperDash.Essentials
             // Notify the 
             SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
 
+		}
+
+		/// <summary>
+		/// Initial simple implementation.  Reads user/programN/plugins folder and 
+		/// use
+		/// </summary>
+		void LoadPlugins()
+		{
+			var dir = Global.FilePathPrefix + "plugins";
+			if (Directory.Exists(dir))
+			{
+				Debug.Console(0, Debug.ErrorLogLevel.Notice, "Plugins directory found, checking for factory plugins");
+				var di = new DirectoryInfo(dir);
+				var files = di.GetFiles("*.dll");
+				foreach (FileInfo fi in files)
+				{
+					Debug.Console(0, "Checking file '{0}' for factory", fi.Name);
+					var assy = Assembly.LoadFrom(fi.FullName);
+					//var types = assy.GetTypes();
+					//foreach (var t in types)
+					//{
+					//    Debug.Console(0, "{0}", t.FullName);
+					//}
+					var type = assy.GetType("PepperDash.Essentials.Plugin.Factory");
+					var factory = Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+					if (factory is PepperDash.Essentials.Core.Factory.IGetCrestronDevice)
+					{
+						Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded '{0}' for Crestron device(s)", fi.Name);
+						FactoryObjects.Add(factory);
+					}
+					else
+					{
+						Debug.Console(0, "Plugin '{0}' does not conform to any loadable types. Ignoring", fi.Name);
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -303,6 +343,17 @@ namespace PepperDash.Essentials
 						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.BridgeFactory.GetDevice(devConf);
+					// iterate plugin factories
+					foreach (var f in FactoryObjects)
+					{
+						var cresFactory = f as IGetCrestronDevice;
+						if (cresFactory != null)
+						{
+							newDev = cresFactory.GetDevice(devConf, this);
+						}
+					}
+
+
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
 					else
