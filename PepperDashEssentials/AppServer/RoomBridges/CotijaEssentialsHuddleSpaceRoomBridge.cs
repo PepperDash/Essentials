@@ -416,7 +416,7 @@ namespace PepperDash.Essentials
 			if (rmVc != null)
 			{
 				var vc = rmVc.CurrentVolumeControls as IBasicVolumeWithFeedback;
-				if (rmVc != null)
+				if (vc != null)
 				{
 					volumes.Master = new Volume("master", vc.VolumeLevelFeedback.UShortValue, vc.MuteFeedback.BoolValue, "Volume", true, "");
 				}
