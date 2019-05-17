@@ -201,11 +201,6 @@ namespace PepperDash.Essentials
 				{
 					Debug.Console(0, "Checking file '{0}' for factory", fi.Name);
 					var assy = Assembly.LoadFrom(fi.FullName);
-					//var types = assy.GetTypes();
-					//foreach (var t in types)
-					//{
-					//    Debug.Console(0, "{0}", t.FullName);
-					//}
 					var type = assy.GetType("PepperDash.Essentials.Plugin.Factory");
 					var factory = Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
 					if (factory is PepperDash.Essentials.Core.Factory.IGetCrestronDevice)
@@ -215,7 +210,9 @@ namespace PepperDash.Essentials
 					}
 					else
 					{
-						Debug.Console(0, "Plugin '{0}' does not conform to any loadable types. Ignoring", fi.Name);
+						Debug.Console(0, Debug.ErrorLogLevel.Warning, 
+							"Plugin '{0}' does not conform to any loadable types. DLL should be removed from plugins folder. Ignoring", 
+							fi.Name);
 					}
 				}
 			}
@@ -243,14 +240,21 @@ namespace PepperDash.Essentials
 			return configExists;
 		}
 
-        public void EnablePortalSync(string s)
-        {
-            if (s.ToLower() == "enable")
-            {
-                CrestronConsole.ConsoleCommandResponse("Portal Sync features enabled");
-            }
-        }
+		///// <summary>
+		///// 
+		///// </summary>
+		///// <param name="s"></param>
+		//public void EnablePortalSync(string s)
+		//{
+		//    if (s.ToLower() == "enable")
+		//    {
+		//        CrestronConsole.ConsoleCommandResponse("Portal Sync features enabled");
+		//    }
+		//}
 
+		/// <summary>
+		/// 
+		/// </summary>
 		public void TearDown()
 		{
 			Debug.Console(0, "Tearing down existing system");
@@ -343,16 +347,19 @@ namespace PepperDash.Essentials
 						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.BridgeFactory.GetDevice(devConf);
-					// iterate plugin factories
-					foreach (var f in FactoryObjects)
+
+					if (newDev == null) // might want to consider the ability to override an essentials "type"
 					{
-						var cresFactory = f as IGetCrestronDevice;
-						if (cresFactory != null)
+						// iterate plugin factories
+						foreach (var f in FactoryObjects)
 						{
-							newDev = cresFactory.GetDevice(devConf, this);
+							var cresFactory = f as IGetCrestronDevice;
+							if (cresFactory != null)
+							{
+								newDev = cresFactory.GetDevice(devConf, this);
+							}
 						}
 					}
-
 
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
