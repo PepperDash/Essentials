@@ -11,7 +11,6 @@ using Crestron.SimplSharp.Reflection;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Factory;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
@@ -194,26 +193,38 @@ namespace PepperDash.Essentials
 			var dir = Global.FilePathPrefix + "plugins";
 			if (Directory.Exists(dir))
 			{
+				// TODO Clear out or create localPlugins folder (maybe in program slot folder)
+
 				Debug.Console(0, Debug.ErrorLogLevel.Notice, "Plugins directory found, checking for factory plugins");
 				var di = new DirectoryInfo(dir);
 				var files = di.GetFiles("*.dll");
 				foreach (FileInfo fi in files)
 				{
-					Debug.Console(0, "Checking file '{0}' for factory", fi.Name);
+					// TODO COPY plugin to loadedPlugins folder 
+
+					// TODO LOAD that loadedPlugins dll file
+
 					var assy = Assembly.LoadFrom(fi.FullName);
-					var type = assy.GetType("PepperDash.Essentials.Plugin.Factory");
-					var factory = Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
-					if (factory is PepperDash.Essentials.Core.Factory.IGetCrestronDevice)
+					var ver = assy.GetName().Version;
+					var verStr = string.Format("{0}.{1}.{2}.{3}", ver.Major, ver.Minor, ver.Build, ver.Revision);
+					Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded plugin file '{0}', version {1}", fi.FullName, verStr);
+
+					// iteratate this assembly's classes, looking for "LoadPlugin()" methods
+					var types = assy.GetTypes();
+					foreach (var type in types)
 					{
-						Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded '{0}' for Crestron device(s)", fi.Name);
-						FactoryObjects.Add(factory);
+						var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
+						var loadPlugin = methods.FirstOrDefault(m => m.Name.Equals("LoadPlugin"));
+						if (loadPlugin != null)
+						{
+							Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding type {0}", fi.FullName, type.FullName);
+							loadPlugin.Invoke(null, null);
+						}
+
 					}
-					else
-					{
-						Debug.Console(0, Debug.ErrorLogLevel.Warning, 
-							"Plugin '{0}' does not conform to any loadable types. DLL should be removed from plugins folder. Ignoring", 
-							fi.Name);
-					}
+
+					// plugin dll will be loaded.  Any classes in plugin should have a static constructor
+					// that registers that class with the Core.DeviceFactory
 				}
 			}
 		}
@@ -318,7 +329,7 @@ namespace PepperDash.Essentials
 
 				try
 				{
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Creating device '{0}'", devConf.Key);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Creating device '{0}', type '{1}'", devConf.Key, devConf.Type);
 					// Skip this to prevent unnecessary warnings
                     if (devConf.Key == "processor")
                     {
@@ -348,18 +359,18 @@ namespace PepperDash.Essentials
 					if (newDev == null)
 						newDev = PepperDash.Essentials.BridgeFactory.GetDevice(devConf);
 
-					if (newDev == null) // might want to consider the ability to override an essentials "type"
-					{
-						// iterate plugin factories
-						foreach (var f in FactoryObjects)
-						{
-							var cresFactory = f as IGetCrestronDevice;
-							if (cresFactory != null)
-							{
-								newDev = cresFactory.GetDevice(devConf, this);
-							}
-						}
-					}
+					//if (newDev == null) // might want to consider the ability to override an essentials "type"
+					//{
+					//    // iterate plugin factories
+					//    foreach (var f in FactoryObjects)
+					//    {
+					//        var cresFactory = f as IGetCrestronDevice;
+					//        if (cresFactory != null)
+					//        {
+					//            newDev = cresFactory.GetDevice(devConf, this);
+					//        }
+					//    }
+					//}
 
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
