@@ -17,6 +17,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Cotija;
+using PepperDash.Essentials.AppServer.Messengers;
 
 namespace PepperDash.Essentials
 {
@@ -39,6 +40,8 @@ namespace PepperDash.Essentials
 
         Dictionary<string, CTimer> PushedActions = new Dictionary<string, CTimer>();
 
+        public ConfigMessenger ConfigMessenger { get; private set; }
+
         CTimer ServerHeartbeatCheckTimer;
 
         long ServerHeartbeatInterval = 20000;
@@ -49,7 +52,7 @@ namespace PepperDash.Essentials
 
         DateTime LastAckMessage;
 
-        string SystemUuid;
+        public string SystemUuid;
 
 		List<CotijaBridgeBase> RoomBridges = new List<CotijaBridgeBase>();
 
@@ -97,11 +100,15 @@ namespace PepperDash.Essentials
 			CrestronConsole.AddNewConsoleCommand(s => CleanUpWebsocketClient(), "mobiledisco",
 				"Disconnects websocket", ConsoleAccessLevelEnum.AccessOperator);
 
+            CrestronConsole.AddNewConsoleCommand(s => ParseStreamRx(s), "mobilesimulateaction", "Simulates a message from the server", ConsoleAccessLevelEnum.AccessOperator);
+
             CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
 			CrestronEnvironment.EthernetEventHandler += new EthernetEventHandler(CrestronEnvironment_EthernetEventHandler);
 
-			
-				
+            // Config Messenger
+            var cmKey = Key + "-config";
+            ConfigMessenger = new ConfigMessenger(cmKey, "/config");
+            ConfigMessenger.RegisterWithAppServer(this);			
         }
 
         /// <summary>
@@ -319,10 +326,12 @@ namespace PepperDash.Essentials
 			CrestronConsole.ConsoleCommandResponse(@"Mobile Control Information:
 	Server address: {0}
 	System Name: {1}
-	System UUID: {2}
-	System User code: {3}
-	Connected?: {4}
-    Seconds Since Last Ack: {5}", url, name, SystemUuid,
+    System URL: {2}
+	System UUID: {3}
+	System User code: {4}
+	Connected?: {5}
+    Seconds Since Last Ack: {6}"
+                , url, name, ConfigReader.ConfigObject.SystemUrl, SystemUuid,
                     code, conn, secSinceLastAck.Seconds);
 		}
 
@@ -452,9 +461,9 @@ namespace PepperDash.Essentials
 					Debug.Console(1, this, "Socket send result error: {0}", result);
 				}
             }
-			else if (!WSClient.Connected)
+			else if (WSClient == null)
 			{
-				Debug.Console(1, this, "Cannot send. Not connected {0}");
+				Debug.Console(1, this, "Cannot send. Not connected.");
 			}
         }
 

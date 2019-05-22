@@ -25,6 +25,7 @@ namespace PepperDash.Essentials
 
         public AudioCodecBaseMessenger ACMessenger { get; private set; }
 
+
 		/// <summary>
 		/// 
 		/// </summary>

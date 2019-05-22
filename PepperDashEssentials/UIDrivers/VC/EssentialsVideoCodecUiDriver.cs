@@ -58,16 +58,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         SmartObjectDynamicList RecentCallsList;
 
 		SmartObjectDynamicList DirectoryList;
-
-		CodecDirectory CurrentDirectoryResult;
-
-        /// <summary>
-        /// Tracks the directory browse history when browsing beyond the root directory
-        /// </summary>
-        List<CodecDirectory> DirectoryBrowseHistory;
         
-        bool NextDirectoryResultIsFolderContents;
-
         BoolFeedback DirectoryBackButtonVisibleFeedback;
 
         // These are likely temp until we get a keyboard built
@@ -111,7 +102,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 SetupCallStagingPopover();
                 SetupDialKeypad();
                 ActiveCallsSRL = new SubpageReferenceList(triList, UISmartObjectJoin.CodecActiveCallsHeaderList, 5,5,5);
-                SetupDirectoryList();
                 SetupRecentCallsList();
                 SetupFavorites();
                 SetupLayoutControls();
@@ -169,12 +159,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 });
                 SearchStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecDirectorySearchEntryText]);
 
+                SetupDirectoryList();
+
                 SearchStringBackspaceVisibleFeedback = new BoolFeedback(() => SearchStringBuilder.Length > 0);
                 SearchStringBackspaceVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackspaceVisible]);
 
                 triList.SetSigFalseAction(UIBoolJoin.VCDirectoryBackPress, GetDirectoryParentFolderContents);
 
-                DirectoryBackButtonVisibleFeedback = new BoolFeedback(() => CurrentDirectoryResult != (codec as IHasDirectory).DirectoryRoot);
+                DirectoryBackButtonVisibleFeedback = (codec as IHasDirectory).CurrentDirectoryResultIsNotDirectoryRoot;
                 DirectoryBackButtonVisibleFeedback
                     .LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackVisible]);
 
@@ -532,8 +524,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// </summary>
 		void SetupDirectoryList()
 		{
-            DirectoryBrowseHistory = new List<CodecDirectory>();
-
 			var codec = Codec as IHasDirectory;
 			if (codec != null)
 			{
@@ -548,27 +538,19 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					codec.PhonebookSyncState.InitialSyncCompleted += new EventHandler<EventArgs>(PhonebookSyncState_InitialSyncCompleted);
 				}
 
-
-				// If there is something here now, show it otherwise wait for the event
-				if (CurrentDirectoryResult != null && codec.DirectoryRoot.DirectoryResults.Count > 0)
-				{
-					RefreshDirectory();
-				}
+			    RefreshDirectory();
+				
 			}
 		}
 
         /// <summary>
-        /// Sets the current directory resutls to the DirectorRoot and updates Back Button visibiltiy
+        /// Sets the current directory results to the DirectoryRoot and updates Back Button visibiltiy
         /// </summary>
         void SetCurrentDirectoryToRoot()
         {
-            DirectoryBrowseHistory.Clear();
-
-            CurrentDirectoryResult = (Codec as IHasDirectory).DirectoryRoot;
+            (Codec as IHasDirectory).SetCurrentDirectoryToRoot();
 
             SearchKeypadClear();
-
-            DirectoryBackButtonVisibleFeedback.FireUpdate();
 
             RefreshDirectory();
         }
@@ -584,10 +566,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             SetCurrentDirectoryToRoot();
 
-            if (CurrentDirectoryResult != null && codec.DirectoryRoot.DirectoryResults.Count > 0)
-            {
-                RefreshDirectory();
-            }
+            RefreshDirectory();
+            
         }
 
 		/// <summary>
@@ -597,13 +577,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// <param name="e"></param>
 		void dir_DirectoryResultReturned(object sender, DirectoryEventArgs e)
 		{
-            if (NextDirectoryResultIsFolderContents)
-            {
-                NextDirectoryResultIsFolderContents = false;
-                DirectoryBrowseHistory.Add(e.Directory);
-            }
-			CurrentDirectoryResult = e.Directory;
-            DirectoryBackButtonVisibleFeedback.FireUpdate();
+
 			RefreshDirectory();
 		}
 
@@ -615,7 +589,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             (Codec as IHasDirectory).GetDirectoryFolderContents(folder.FolderId);
 
-            NextDirectoryResultIsFolderContents = true;
         }
 
         /// <summary>
@@ -625,18 +598,13 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             var codec = Codec as IHasDirectory;
 
-            if (DirectoryBrowseHistory.Count > 0)
+            if (codec != null)
             {
-                var lastItemIndex = DirectoryBrowseHistory.Count - 1;
-                CurrentDirectoryResult = DirectoryBrowseHistory[lastItemIndex];
-                DirectoryBrowseHistory.Remove(DirectoryBrowseHistory[lastItemIndex]);
+                codec.GetDirectoryParentFolderContents();
 
-                RefreshDirectory();
+                //RefreshDirectory();
             }
-            else
-            {
-                SetCurrentDirectoryToRoot();
-            }
+ 
         }
 
 		/// <summary>
@@ -645,10 +613,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// <param name="dir"></param>
 		void RefreshDirectory()
 		{
-            if (CurrentDirectoryResult.DirectoryResults.Count > 0)
+            if ((Codec as IHasDirectory).CurrentDirectoryResult.CurrentDirectoryResults.Count > 0)
             {
                 ushort i = 0;
-                foreach (var r in CurrentDirectoryResult.DirectoryResults)
+                foreach (var r in (Codec as IHasDirectory).CurrentDirectoryResult.CurrentDirectoryResults)
                 {
                     if (i == DirectoryList.MaxCount)
                     {
@@ -725,13 +693,13 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 Parent.MeetingOrContactMethodModalSrl.StringInputSig(i, 4).StringValue = "";
                 Parent.MeetingOrContactMethodModalSrl.StringInputSig(i, 5).StringValue = "Connect";
                 Parent.MeetingOrContactMethodModalSrl.BoolInputSig(i, 2).BoolValue = true;
-                var cc = c; // lambda scope
+                var cc = c; // to maintian lambda scope
                 Parent.MeetingOrContactMethodModalSrl.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() =>
                 {
                     Parent.PopupInterlock.Hide();
                     var codec = Codec as VideoCodecBase;
                     if (codec != null)
-                        codec.Dial(c.Number);
+                        codec.Dial(cc.Number);
                 });
             }
             Parent.MeetingOrContactMethodModalSrl.Count = i;
@@ -1102,7 +1070,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             SearchStringFeedback.FireUpdate();
             SearchStringKeypadCheckEnables();
 
-            if(CurrentDirectoryResult != (Codec as IHasDirectory).DirectoryRoot)
+            if ((Codec as IHasDirectory).CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
                 SetCurrentDirectoryToRoot();
         }
 

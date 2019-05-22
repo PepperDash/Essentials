@@ -927,7 +927,10 @@ namespace PepperDash.Essentials
                 _CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
                 RefreshSourceInfo();
 
-				(_CurrentRoom.VideoCodec as IHasScheduleAwareness).CodecSchedule.MeetingsListHasChanged += CodecSchedule_MeetingsListHasChanged;
+                if (_CurrentRoom.VideoCodec is IHasScheduleAwareness)
+                {
+                    (_CurrentRoom.VideoCodec as IHasScheduleAwareness).CodecSchedule.MeetingsListHasChanged += CodecSchedule_MeetingsListHasChanged;
+                }
 
                 CallSharingInfoVisibleFeedback = new BoolFeedback(() => _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue);
                 _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.OutputChange += SharingContentIsOnFeedback_OutputChange;
