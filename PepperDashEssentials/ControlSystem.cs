@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro.Diagnostics;
+using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -20,6 +22,8 @@ namespace PepperDash.Essentials
 	public class ControlSystem : CrestronControlSystem
 	{
         HttpLogoServer LogoServer;
+
+		List<object> FactoryObjects = new List<object>();
 
 		public ControlSystem()
 			: base()
@@ -137,15 +141,14 @@ namespace PepperDash.Essentials
 		{
 			try
 			{
-                CrestronConsole.AddNewConsoleCommand(EnablePortalSync, "portalsync", "Loads Portal Sync",
-                    ConsoleAccessLevelEnum.AccessOperator);
-
-                //PortalSync = new PepperDashPortalSyncClient();
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 
 				var filesReady = SetupFilesystem();
 				if (filesReady)
 				{
+					Debug.Console(0, Debug.ErrorLogLevel.Notice, "Checking for plugins");
+					LoadPlugins();
+
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Folder structure verified. Loading config...");
 					if (!ConfigReader.LoadConfig2())
 						return;
@@ -182,6 +185,51 @@ namespace PepperDash.Essentials
 		}
 
 		/// <summary>
+		/// Initial simple implementation.  Reads user/programN/plugins folder and 
+		/// use
+		/// </summary>
+		void LoadPlugins()
+		{
+			var dir = Global.FilePathPrefix + "plugins";
+			if (Directory.Exists(dir))
+			{
+				// TODO Clear out or create localPlugins folder (maybe in program slot folder)
+
+				Debug.Console(0, Debug.ErrorLogLevel.Notice, "Plugins directory found, checking for factory plugins");
+				var di = new DirectoryInfo(dir);
+				var files = di.GetFiles("*.dll");
+				foreach (FileInfo fi in files)
+				{
+					// TODO COPY plugin to loadedPlugins folder 
+
+					// TODO LOAD that loadedPlugins dll file
+
+					var assy = Assembly.LoadFrom(fi.FullName);
+					var ver = assy.GetName().Version;
+					var verStr = string.Format("{0}.{1}.{2}.{3}", ver.Major, ver.Minor, ver.Build, ver.Revision);
+					Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded plugin file '{0}', version {1}", fi.FullName, verStr);
+
+					// iteratate this assembly's classes, looking for "LoadPlugin()" methods
+					var types = assy.GetTypes();
+					foreach (var type in types)
+					{
+						var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
+						var loadPlugin = methods.FirstOrDefault(m => m.Name.Equals("LoadPlugin"));
+						if (loadPlugin != null)
+						{
+							Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding type {0}", fi.FullName, type.FullName);
+							loadPlugin.Invoke(null, null);
+						}
+
+					}
+
+					// plugin dll will be loaded.  Any classes in plugin should have a static constructor
+					// that registers that class with the Core.DeviceFactory
+				}
+			}
+		}
+
+		/// <summary>
 		/// Verifies filesystem is set up. IR, SGD, and programX folders
 		/// </summary>
 		bool SetupFilesystem()
@@ -203,14 +251,21 @@ namespace PepperDash.Essentials
 			return configExists;
 		}
 
-        public void EnablePortalSync(string s)
-        {
-            if (s.ToLower() == "enable")
-            {
-                CrestronConsole.ConsoleCommandResponse("Portal Sync features enabled");
-            }
-        }
+		///// <summary>
+		///// 
+		///// </summary>
+		///// <param name="s"></param>
+		//public void EnablePortalSync(string s)
+		//{
+		//    if (s.ToLower() == "enable")
+		//    {
+		//        CrestronConsole.ConsoleCommandResponse("Portal Sync features enabled");
+		//    }
+		//}
 
+		/// <summary>
+		/// 
+		/// </summary>
 		public void TearDown()
 		{
 			Debug.Console(0, "Tearing down existing system");
@@ -274,7 +329,7 @@ namespace PepperDash.Essentials
 
 				try
 				{
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Creating device '{0}'", devConf.Key);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Creating device '{0}', type '{1}'", devConf.Key, devConf.Type);
 					// Skip this to prevent unnecessary warnings
                     if (devConf.Key == "processor")
                     {
@@ -303,6 +358,20 @@ namespace PepperDash.Essentials
 						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.BridgeFactory.GetDevice(devConf);
+
+					//if (newDev == null) // might want to consider the ability to override an essentials "type"
+					//{
+					//    // iterate plugin factories
+					//    foreach (var f in FactoryObjects)
+					//    {
+					//        var cresFactory = f as IGetCrestronDevice;
+					//        if (cresFactory != null)
+					//        {
+					//            newDev = cresFactory.GetDevice(devConf, this);
+					//        }
+					//    }
+					//}
+
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
 					else
