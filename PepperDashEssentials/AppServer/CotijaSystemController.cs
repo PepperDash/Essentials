@@ -679,13 +679,14 @@ namespace PepperDash.Essentials
             if(string.IsNullOrEmpty(message))
                 return;
 
-            if (!message.Contains("/system/heartbeat"))
-                Debug.Console(1, this, "Message RX: {0}", message);
-            else
-            {
-                LastAckMessage = DateTime.Now;
-                //Debug.Console(1, this, "RX message contains /system/heartbeat");
-            }
+			if (!message.Contains("/system/heartbeat"))
+			{
+				Debug.Console(1, this, "Message RX: {0}", message);
+			}
+			else
+			{
+				LastAckMessage = DateTime.Now;
+			}
 
             try
             {
@@ -701,6 +702,11 @@ namespace PepperDash.Essentials
 				else if (type == "/system/heartbeat")
 				{
 					HandleHeartBeat(messageObj["content"]);
+				}
+				else if (type == "raw")
+				{
+					var wrapper = messageObj["content"].ToObject<DeviceActionWrapper>();
+					DeviceJsonApi.DoDeviceAction(wrapper);
 				}
 				else if (type == "close")
 				{
