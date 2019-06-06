@@ -35,3 +35,6 @@ devjson:3 {"deviceKey":"room1.RoomOccupancy.RoomIsOccupiedFeedback","methodName"
 devjson:2 {"deviceKey":"codec-comms-ssh", "methodName":"SendText", "params": ["xcommand dial number: 10.11.50.211\r"]}
 
 devjson:2 {"deviceKey":"codec-comms-ssh", "methodName":"Connect", "params": []}
+
+
+devjson:2 {"deviceKey":"display01Comm-com", "methodName":"SendText", "params": [ "I'M GETTING TIRED OF THIS" ]}
