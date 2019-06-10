@@ -193,17 +193,11 @@ namespace PepperDash.Essentials
 			var dir = Global.FilePathPrefix + "plugins";
 			if (Directory.Exists(dir))
 			{
-				// TODO Clear out or create localPlugins folder (maybe in program slot folder)
-
 				Debug.Console(0, Debug.ErrorLogLevel.Notice, "Plugins directory found, checking for factory plugins");
 				var di = new DirectoryInfo(dir);
 				var files = di.GetFiles("*.dll");
 				foreach (FileInfo fi in files)
 				{
-					// TODO COPY plugin to loadedPlugins folder 
-
-					// TODO LOAD that loadedPlugins dll file
-
 					var assy = Assembly.LoadFrom(fi.FullName);
 					var ver = assy.GetName().Version;
 					var verStr = string.Format("{0}.{1}.{2}.{3}", ver.Major, ver.Minor, ver.Build, ver.Revision);

@@ -123,6 +123,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		const uint BCameraModeOff = 833;
 
+		/// <summary>
+		/// 841
+		/// </summary>
+		const uint BCameraSelfView = 841;
+
+		/// <summary>
+		/// 842
+		/// </summary>
+		const uint BCameraLayout = 842;
 
 
 		/********* Ushorts *********/
@@ -330,6 +339,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			EISC.SetSigTrueAction(BCameraModeManual, () => PostCameraMode());
 			EISC.SetSigTrueAction(BCameraModeOff, () => PostCameraMode());
 
+			EISC.SetBoolSigAction(BCameraSelfView, b => PostStatusMessage(new 
+				{
+					cameraSelfView = b
+				}));
+
 			EISC.SetUShortSigAction(UCameraNumberSelect, (u) => PostSelectedCamera());
 
 
@@ -356,6 +370,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			addAction("/cameraModeAuto", BCameraModeAuto);
 			addAction("/cameraModeManual", BCameraModeManual);
 			addAction("/cameraModeOff", BCameraModeOff);
+			addAction("/cameraSelfView", BCameraSelfView);
+			addAction("/cameraLayout", BCameraLayout);
 
 			asc.AddAction("/cameraSelect", new Action<string>(SelectCamera));
 
@@ -437,6 +453,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{
 				calls = GetCurrentCallList(),
 				cameraMode = GetCameraMode(),
+				cameraSelfView = EISC.GetBool(BCameraSelfView),
 				currentCallString = EISC.GetString(SCurrentCallNumber),
 				currentDialString = EISC.GetString(SCurrentDialString),
 				directoryContactSelected = new

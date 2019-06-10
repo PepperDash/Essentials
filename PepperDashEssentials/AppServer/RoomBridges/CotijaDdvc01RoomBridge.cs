@@ -28,6 +28,11 @@ namespace PepperDash.Essentials.Room.Cotija
 			public const uint RoomIsOn = 301;
 
 			/// <summary>
+			/// 12
+			/// </summary>
+			public const uint PrivacyMute = 12;
+
+			/// <summary>
 			/// 41
 			/// </summary>
 			public const uint PromptForCode = 41;
@@ -38,15 +43,15 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// <summary>
 			/// 51
 			/// </summary>
-			public const uint ActivitySharePress = 51;
+			public const uint ActivityShare = 51;
 			/// <summary>
 			/// 52
 			/// </summary>
-			public const uint ActivityPhoneCallPress = 52;
+			public const uint ActivityPhoneCall = 52;
 			/// <summary>
 			/// 53
 			/// </summary>
-			public const uint ActivityVideoCallPress = 53;
+			public const uint ActivityVideoCall = 53;
 
 			/// <summary>
 			/// 1
@@ -84,6 +89,14 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 501
 			/// </summary>
 			public const uint ConfigIsReady = 501;
+			/// <summary>
+			/// 502
+			/// </summary>
+			public const uint HideVideoConfRecents = 502;
+			/// <summary>
+			/// 503
+			/// </summary>
+			public const uint ShowCameraWhenNotInCall = 503;
 			/// <summary>
 			/// 601
 			/// </summary>
@@ -319,16 +332,26 @@ namespace PepperDash.Essentials.Room.Cotija
 			}));
 
 			Parent.AddAction(@"/room/room1/defaultsource", new Action(() => 
-				EISC.PulseBool(BoolJoin.ActivitySharePress)));
+				EISC.PulseBool(BoolJoin.ActivityShare)));
 			Parent.AddAction(@"/room/room1/activityVideo", new Action(() =>
-				EISC.PulseBool(BoolJoin.ActivityVideoCallPress)));
+				EISC.PulseBool(BoolJoin.ActivityVideoCall)));
 			Parent.AddAction(@"/room/room1/activityPhone", new Action(() =>
-				EISC.PulseBool(BoolJoin.ActivityPhoneCallPress)));
+				EISC.PulseBool(BoolJoin.ActivityPhoneCall)));
 
 			Parent.AddAction(@"/room/room1/volumes/master/level", new Action<ushort>(u => 
 				EISC.SetUshort(UshortJoin.MasterVolumeLevel, u)));
 			Parent.AddAction(@"/room/room1/volumes/master/muteToggle", new Action(() => 
 				EISC.PulseBool(BoolJoin.MasterVolumeIsMuted)));
+			Parent.AddAction(@"/room/room1/volumes/master/privacyMuteToggle", new Action(() =>
+				EISC.PulseBool(BoolJoin.PrivacyMute)));
+			for (uint i = 2; i <= 7; i++)
+			{
+				var index = i;
+				Parent.AddAction(string.Format(@"/room/room1/volumes/level-{0}/level", index), new Action<ushort>(u =>
+					EISC.SetUshort(index, u)));
+				Parent.AddAction(string.Format(@"/room/room1/volumes/level-{0}/muteToggle", index), new Action(() =>
+					EISC.PulseBool(index)));
+			}
 
 			Parent.AddAction(@"/room/room1/shutdownStart", new Action(() =>
 				EISC.PulseBool(BoolJoin.ShutdownStart)));
@@ -387,7 +410,6 @@ namespace PepperDash.Essentials.Room.Cotija
                         }
                     }
                 }));
-
 			EISC.SetBoolSigAction(BoolJoin.MasterVolumeIsMuted, b =>
                 PostStatusMessage(new
                 {
@@ -399,6 +421,48 @@ namespace PepperDash.Essentials.Room.Cotija
                         }
                     }
                 }));
+			EISC.SetBoolSigAction(BoolJoin.PrivacyMute, b => 
+				PostStatusMessage(new
+				{
+					volumes = new 
+					{
+						master = new 
+						{
+							privacyMuted = b
+						}
+					}
+				}));
+
+			for (uint i = 2; i <= 7; i++)
+			{
+				var index = i; // local scope for lambdas
+				EISC.SetUShortSigAction(index, u => // start at join 2
+				{
+					// need a dict in order to create the level-n property on auxFaders
+					var dict = new Dictionary<string, object>();
+					dict.Add("level-" + index, new { level = u });
+					PostStatusMessage(new
+					{
+						volumes = new
+						{
+							auxFaders = dict,
+						}
+					});
+				});
+				EISC.SetBoolSigAction(index, b =>
+				{
+					// need a dict in order to create the level-n property on auxFaders
+					var dict = new Dictionary<string, object>();
+					dict.Add("level-" + index, new { muted = b });
+					PostStatusMessage(new
+					{
+						volumes = new
+						{
+							auxFaders = dict,
+						}
+					});
+				});
+			}
 
 
 			// shutdown things
@@ -421,6 +485,23 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			// Config things
 			EISC.SetSigTrueAction(BoolJoin.ConfigIsReady, LoadConfigValues);
+
+			// Activity modes
+			EISC.SetSigTrueAction(BoolJoin.ActivityPhoneCall, () => UpdateActivity(3));
+			EISC.SetSigTrueAction(BoolJoin.ActivityShare, () => UpdateActivity(1));
+			EISC.SetSigTrueAction(BoolJoin.ActivityVideoCall, () => UpdateActivity(2));
+		}
+
+
+		/// <summary>
+		/// Updates activity states
+		/// </summary>
+		void UpdateActivity(int mode)
+		{
+			PostStatusMessage(new
+			{
+				activityMode = mode,
+			});
 		}
 
 		/// <summary>
@@ -471,17 +552,6 @@ namespace PepperDash.Essentials.Room.Cotija
 			rmProps.RoomPhoneNumber = EISC.StringOutput[StringJoin.ConfigRoomPhoneNumber].StringValue;
 			rmProps.RoomURI = EISC.StringOutput[StringJoin.ConfigRoomURI].StringValue;
 			rmProps.SpeedDials = new List<DDVC01SpeedDial>();
-			// add speed dials as long as there are more - up to 4
-
-#warning fix speed dials - 512-515 names, 516-519 numbers
-			for (uint i = 512; i <= 519; i = i + 2)
-			{
-				var num = EISC.StringOutput[i].StringValue;
-				if (string.IsNullOrEmpty(num))
-					break;
-				var name = EISC.StringOutput[i + 1].StringValue;
-				rmProps.SpeedDials.Add(new DDVC01SpeedDial { Number = num, Name = name});
-			}
 
 			// This MAY need a check 
 			rmProps.AudioCodecKey = "audioCodec";
@@ -575,7 +645,7 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			co.SourceLists.Add("default", newSl);
 
-			// build "audioCodec" config if we need
+			// Build "audioCodec" config if we need
 			if (!string.IsNullOrEmpty(rmProps.AudioCodecKey))
 			{
 				var acFavs = new List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem>();
@@ -610,25 +680,11 @@ namespace PepperDash.Essentials.Room.Cotija
 				co.Devices.Add(acConf);
 			}
 
+			// Build Video codec config
 			if (!string.IsNullOrEmpty(rmProps.VideoCodecKey))
 			{
-#warning Break out these video codec favs
+				// No favorites, for now?
 				var favs = new List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem>();
-				for (uint i = 0; i < 4; i++)
-				{
-					if (!EISC.GetBool(BoolJoin.SpeedDialVisibleStartJoin + i))
-					{
-						break;
-					}
-					favs.Add(new PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem()
-					{
-						Name = EISC.GetString(StringJoin.SpeedDialNameStartJoin + i),
-						Number = EISC.GetString(StringJoin.SpeedDialNumberStartJoin + i),
-						Type = PepperDash.Essentials.Devices.Common.Codec.eCodecCallType.Audio
-					});
-				}
-
-
 
 				// cameras
 				var camsProps = new List<object>();
@@ -658,6 +714,8 @@ namespace PepperDash.Essentials.Room.Cotija
 				{
 					favorites = favs,
 					cameras = camsProps,
+					hideRecents = EISC.BooleanOutput[BoolJoin.HideVideoConfRecents].BoolValue,
+					showCamerasWhenNotInCall = EISC.BooleanOutput[BoolJoin.ShowCameraWhenNotInCall].BoolValue,
 				};
 				var str = "videoCodec";
 				var conf = new DeviceConfig()
@@ -689,39 +747,41 @@ namespace PepperDash.Essentials.Room.Cotija
 		{
 			if (ConfigIsLoaded)
 			{
-                var count = EISC.UShortOutput[801].UShortValue;
+                var count = EISC.UShortOutput[101].UShortValue;
 
                 Debug.Console(1, this, "The Fader Count is : {0}", count);
 
                 // build volumes object, serialize and put in content of method below
 
-                var auxFaders = new List<Volume>();
-
                 // Create auxFaders
-                for (uint i = 2; i <= count; i++)
-                {
-                    auxFaders.Add(
-                        new Volume(string.Format("level-{0}", i), 
-                            EISC.UShortOutput[i].UShortValue,
-                            EISC.BooleanOutput[i].BoolValue,
-                            EISC.StringOutput[800 + i].StringValue,
-                            true,
-                            "someting.png"));
-                }
+				var auxFaderDict = new Dictionary<string, Volume>();
+				for (uint i = 2; i <= count; i++)
+				{
+					auxFaderDict.Add("level-" + i,
+						new Volume("level-" + i,
+							EISC.UShortOutput[i].UShortValue,
+							EISC.BooleanOutput[i].BoolValue,
+							EISC.StringOutput[i].StringValue,
+							true,
+							"someting.png"));
+				}
 
                 var volumes = new Volumes();
 
                 volumes.Master = new Volume("master", 
                                 EISC.UShortOutput[UshortJoin.MasterVolumeLevel].UShortValue,
                                 EISC.BooleanOutput[BoolJoin.MasterVolumeIsMuted].BoolValue,
-                  				EISC.StringOutput[801].StringValue,
+                  				EISC.StringOutput[1].StringValue,
 				                true,
 				                "something.png");
+				volumes.Master.HasPrivacyMute = true;
+				volumes.Master.PrivacyMuted = EISC.BooleanOutput[BoolJoin.PrivacyMute].BoolValue;
 
-                volumes.AuxFaders = auxFaders;
+                volumes.AuxFaders = auxFaderDict;
 
                 PostStatusMessage(new
                     {
+						activityMode = GetActivityMode(),
                         isOn = EISC.BooleanOutput[BoolJoin.RoomIsOn].BoolValue,
                         selectedSourceKey = EISC.StringOutput[StringJoin.SelectedSourceKey].StringValue,
                         volumes = volumes
@@ -734,6 +794,18 @@ namespace PepperDash.Essentials.Room.Cotija
 					error = "systemNotReady"
 				});
 			}
+		}
+
+		/// <summary>
+		/// Returns the activity mode int
+		/// </summary>
+		/// <returns></returns>
+		int GetActivityMode()
+		{
+			if (EISC.BooleanOutput[BoolJoin.ActivityPhoneCall].BoolValue) return 3;
+			else if (EISC.BooleanOutput[BoolJoin.ActivityShare].BoolValue) return 1;
+			else if (EISC.BooleanOutput[BoolJoin.ActivityVideoCall].BoolValue) return 2;
+			return 0;
 		}
 
 		/// <summary>
