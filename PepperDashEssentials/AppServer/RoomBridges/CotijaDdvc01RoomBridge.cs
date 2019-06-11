@@ -333,10 +333,10 @@ namespace PepperDash.Essentials.Room.Cotija
 
 			Parent.AddAction(@"/room/room1/defaultsource", new Action(() => 
 				EISC.PulseBool(BoolJoin.ActivityShare)));
-			Parent.AddAction(@"/room/room1/activityVideo", new Action(() =>
-				EISC.PulseBool(BoolJoin.ActivityVideoCall)));
 			Parent.AddAction(@"/room/room1/activityPhone", new Action(() =>
 				EISC.PulseBool(BoolJoin.ActivityPhoneCall)));
+			Parent.AddAction(@"/room/room1/activityVideo", new Action(() =>
+				EISC.PulseBool(BoolJoin.ActivityVideoCall)));
 
 			Parent.AddAction(@"/room/room1/volumes/master/level", new Action<ushort>(u => 
 				EISC.SetUshort(UshortJoin.MasterVolumeLevel, u)));
@@ -487,9 +487,9 @@ namespace PepperDash.Essentials.Room.Cotija
 			EISC.SetSigTrueAction(BoolJoin.ConfigIsReady, LoadConfigValues);
 
 			// Activity modes
-			EISC.SetSigTrueAction(BoolJoin.ActivityPhoneCall, () => UpdateActivity(3));
 			EISC.SetSigTrueAction(BoolJoin.ActivityShare, () => UpdateActivity(1));
-			EISC.SetSigTrueAction(BoolJoin.ActivityVideoCall, () => UpdateActivity(2));
+			EISC.SetSigTrueAction(BoolJoin.ActivityPhoneCall, () => UpdateActivity(2));
+			EISC.SetSigTrueAction(BoolJoin.ActivityVideoCall, () => UpdateActivity(3));
 		}
 
 
@@ -714,8 +714,6 @@ namespace PepperDash.Essentials.Room.Cotija
 				{
 					favorites = favs,
 					cameras = camsProps,
-					hideRecents = EISC.BooleanOutput[BoolJoin.HideVideoConfRecents].BoolValue,
-					showCamerasWhenNotInCall = EISC.BooleanOutput[BoolJoin.ShowCameraWhenNotInCall].BoolValue,
 				};
 				var str = "videoCodec";
 				var conf = new DeviceConfig()
@@ -802,9 +800,9 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// <returns></returns>
 		int GetActivityMode()
 		{
-			if (EISC.BooleanOutput[BoolJoin.ActivityPhoneCall].BoolValue) return 3;
+			if (EISC.BooleanOutput[BoolJoin.ActivityPhoneCall].BoolValue) return 2;
 			else if (EISC.BooleanOutput[BoolJoin.ActivityShare].BoolValue) return 1;
-			else if (EISC.BooleanOutput[BoolJoin.ActivityVideoCall].BoolValue) return 2;
+			else if (EISC.BooleanOutput[BoolJoin.ActivityVideoCall].BoolValue) return 3;
 			return 0;
 		}
 

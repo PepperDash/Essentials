@@ -361,6 +361,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			Action<string, uint> addAction = (s, u) =>
 				AppServerController.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
 			addAction("/endCallById", BDialHangup);
+			addAction("/endAllCalls", BDialHangup);
             addAction("/acceptById", BIncomingAnswer);
             addAction("/rejectById", BIncomingReject);
 			addAction("/speedDial1", BSpeedDial1);
@@ -465,8 +466,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				isInCall = EISC.GetString(SHookState) == "Connected",
 				hasDirectory = true,
 				hasDirectorySearch = false,
-				hasRecents = true,
+				hasRecents = !EISC.BooleanOutput[502].BoolValue,
 				hasCameras = true,
+				showCamerasWhenNotInCall = EISC.BooleanOutput[503].BoolValue,
 				selectedCamera = GetSelectedCamera(),
 			});
 		}
