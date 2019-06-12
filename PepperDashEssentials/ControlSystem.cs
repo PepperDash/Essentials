@@ -356,8 +356,6 @@ namespace PepperDash.Essentials
 						newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
 					if (newDev == null)
 						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
-					if (newDev == null)
-						newDev = PepperDash.Essentials.BridgeFactory.GetDevice(devConf);
 
 					//if (newDev == null) // might want to consider the ability to override an essentials "type"
 					//{
