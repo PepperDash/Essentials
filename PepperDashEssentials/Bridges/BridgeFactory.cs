@@ -129,11 +129,11 @@ namespace PepperDash.Essentials
                 Debug.Console(1, "BridgeApiEisc change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
             var uo = args.Sig.UserObject;
             if (uo is Action<bool>)
-                CrestronInvoke.BeginInvoke(o => (uo as Action<bool>)((o as SigEventArgs).Sig.BoolValue), args);
+                (uo as Action<bool>)(args.Sig.BoolValue);
             else if (uo is Action<ushort>)
-                CrestronInvoke.BeginInvoke(o => (uo as Action<ushort>)((o as SigEventArgs).Sig.UShortValue), args);
+                (uo as Action<ushort>)(args.Sig.UShortValue);
             else if (uo is Action<string>)
-                CrestronInvoke.BeginInvoke(o => (uo as Action<string>)((o as SigEventArgs).Sig.StringValue), args);
+                (uo as Action<string>)(args.Sig.StringValue);
         }
     }
 }
