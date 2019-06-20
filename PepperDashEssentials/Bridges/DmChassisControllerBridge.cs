@@ -103,7 +103,7 @@ namespace PepperDash.Essentials.Bridges
                 InputEndpointOnline = 500;
                 OutputEndpointOnline = 700;
                 //HdcpSupport = 1000; //1001-1199
-               //HdcpSupportCapability = 1200; //1201-1399
+                //HdcpSupportCapability = 1200; //1201-1399
 
             }
 
