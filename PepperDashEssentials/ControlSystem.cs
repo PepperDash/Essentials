@@ -248,6 +248,10 @@ namespace PepperDash.Essentials
 			if (!Directory.Exists(sgdDir))
 				Directory.Create(sgdDir);
 
+            var pluginDir = Global.FilePathPrefix + "plugins";
+            if (!Directory.Exists(pluginDir))
+                Directory.Create(pluginDir);
+
 			return configExists;
 		}
 

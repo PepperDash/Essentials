@@ -18,9 +18,8 @@ namespace PepperDash.Essentials.Bridges
 		public static int InputNumber;
 		public static IntFeedback InputNumberFeedback;
 		public static List<string> InputKeys = new List<string>();
-		public static void LinkToApi(this PepperDash.Essentials.Core.TwoWayDisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey)
+		public static void LinkToApi(this PepperDash.Essentials.Core.DisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey)
 		{
-
 
 				JoinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as DisplayControllerJoinMap;
 				_TriList = trilist;
@@ -31,17 +30,31 @@ namespace PepperDash.Essentials.Bridges
 				}
 
 				JoinMap.OffsetJoinNumbers(joinStart);
+
 				Debug.Console(1, "Linking to Trilist '{0}'", _TriList.ID.ToString("X"));
 				Debug.Console(0, "Linking to Bridge Type {0}", displayDevice.GetType().Name.ToString());
 
-				_TriList.StringInput[JoinMap.Name].StringValue = displayDevice.GetType().Name.ToString();
-			
-				InputNumberFeedback = new IntFeedback(() => { return InputNumber; });
-				InputNumberFeedback.LinkInputSig(_TriList.UShortInput[JoinMap.InputSelect]);
-				var commMonitor = displayDevice as ICommunicationMonitor;
-				commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[JoinMap.IsOnline]);
+				_TriList.StringInput[JoinMap.Name].StringValue = displayDevice.GetType().Name.ToString();			
 
-				// Poewer Off
+				var commMonitor = displayDevice as ICommunicationMonitor;
+                if (commMonitor != null)
+                {
+                    commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[JoinMap.IsOnline]);
+                }
+
+                // Two way feedbacks
+                var twoWayDisplay = displayDevice as PepperDash.Essentials.Core.TwoWayDisplayBase;
+                if (twoWayDisplay != null)
+                {
+                    trilist.SetBool(JoinMap.IsTwoWayDisplay, true);
+
+                    twoWayDisplay.CurrentInputFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(CurrentInputFeedback_OutputChange);
+
+                    InputNumberFeedback = new IntFeedback(() => { return InputNumber; });
+                    InputNumberFeedback.LinkInputSig(_TriList.UShortInput[JoinMap.InputSelect]);
+                }
+
+				// Power Off
 				trilist.SetSigTrueAction(JoinMap.PowerOff, () =>
 					{
 						InputNumber = 102;
@@ -73,7 +86,6 @@ namespace PepperDash.Essentials.Bridges
 					count++;
 				}
 
-				displayDevice.CurrentInputFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(CurrentInputFeedback_OutputChange);
 				trilist.SetUShortSigAction(JoinMap.InputSelect, (a) =>
 				{
 					if (a == 0)
@@ -91,7 +103,8 @@ namespace PepperDash.Essentials.Bridges
 						displayDevice.PowerToggle();
 
 					}
-					InputNumberFeedback.FireUpdate();
+                    if (displayDevice is PepperDash.Essentials.Core.TwoWayDisplayBase)
+					    InputNumberFeedback.FireUpdate();
 				});
 				 
 
@@ -134,10 +147,9 @@ namespace PepperDash.Essentials.Bridges
 		public uint PowerOff { get; set; }
 		public uint InputSelect { get; set; }
 		public uint PowerOn { get; set; }
+        public uint IsTwoWayDisplay { get; set; }
 		public uint SelectScene { get; set; }
-		public uint LightingSceneOffset { get; set; }
 		public uint ButtonVisibilityOffset { get; set; }
-		public uint IntegrationIdSet { get; set; }
 
 		public DisplayControllerJoinMap()
 		{
@@ -145,15 +157,17 @@ namespace PepperDash.Essentials.Bridges
 			IsOnline = 50;
 			PowerOff = 1;
 			PowerOn = 2;
-			InputSelect = 4;
-			IntegrationIdSet = 1;
-			LightingSceneOffset = 10;
+            IsTwoWayDisplay = 3;
 			ButtonVisibilityOffset = 40;
-			Name = 1;
-			InputNamesOffset = 10;
-			InputSelectOffset = 4;
+            InputSelectOffset = 4;
+
 			// Analog
-		}
+            InputSelect = 4;
+
+            // Serial
+            Name = 1;
+            InputNamesOffset = 10;
+        }
 
 		public override void OffsetJoinNumbers(uint joinStart)
 		{
@@ -162,8 +176,8 @@ namespace PepperDash.Essentials.Bridges
 			IsOnline = IsOnline + joinOffset;
 			PowerOff = PowerOff + joinOffset;
 			PowerOn = PowerOn + joinOffset;
+            IsTwoWayDisplay = IsTwoWayDisplay + joinOffset;
 			SelectScene = SelectScene + joinOffset;
-			LightingSceneOffset = LightingSceneOffset + joinOffset;
 			ButtonVisibilityOffset = ButtonVisibilityOffset + joinOffset;
 			Name = Name + joinOffset;
 			InputNamesOffset = InputNamesOffset + joinOffset;
