@@ -127,6 +127,7 @@
     <Compile Include="Bridges\GenericRelayDeviceBridge.cs" />
     <Compile Include="Bridges\IBasicCommunicationBridge.cs" />
     <Compile Include="Bridges\DmRmcControllerBridge.cs" />
+    <Compile Include="Bridges\IBridge.cs" />
     <Compile Include="Bridges\IDigitalInputBridge.cs" />
     <Compile Include="Bridges\JoinMapBase.cs" />
     <Compile Include="Bridges\SystemMonitorBridge.cs" />
