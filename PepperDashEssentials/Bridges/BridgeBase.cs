@@ -56,7 +56,6 @@ namespace PepperDash.Essentials.Bridges
 
         public ThreeSeriesTcpIpEthernetIntersystemCommunications Eisc { get; private set; }
 
-
         public EiscApi(DeviceConfig dc) :
             base(dc.Key)
         {
@@ -93,9 +92,9 @@ namespace PepperDash.Essentials.Bridges
 						//    (device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
 						//    continue;
 						//}
-						else if (device is PepperDash.Essentials.Core.TwoWayDisplayBase)
+						else if (device is PepperDash.Essentials.Core.DisplayBase)
 						{
-							(device as TwoWayDisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+							(device as DisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
 							continue;
 						}
                         else if (device is DmChassisController)
@@ -142,6 +141,66 @@ namespace PepperDash.Essentials.Bridges
         }
 
         /// <summary>
+        /// Used for debugging to trigger an action based on a join number and type
+        /// </summary>
+        /// <param name="join"></param>
+        /// <param name="type"></param>
+        public void ExecuteJoinAction(uint join, string type, object state)
+        {
+            try
+            {
+                switch (type.ToLower())
+                {
+                    case "digital":
+                        {
+                            var uo = Eisc.BooleanOutput[join].UserObject as Action<bool>;
+                            if (uo != null)
+                            {
+                                Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
+                                uo(Convert.ToBoolean(state));
+                            }
+                            else
+                                Debug.Console(1, this, "User Action is null.  Nothing to Execute");
+                            break;
+                        }
+                    case "analog":
+                        {
+                            var uo = Eisc.BooleanOutput[join].UserObject as Action<ushort>;
+                            if (uo != null)
+                            {
+                                Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
+                                uo(Convert.ToUInt16(state));
+                            }
+                            else
+                                Debug.Console(1, this, "User Action is null.  Nothing to Execute"); break;
+                        }
+                    case "serial":
+                        {
+                            var uo = Eisc.BooleanOutput[join].UserObject as Action<string>;
+                            if (uo != null)
+                            {
+                                Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
+                                uo(Convert.ToString(state));
+                            }
+                            else
+                                Debug.Console(1, this, "User Action is null.  Nothing to Execute");
+                            break;
+                        }
+                    default:
+                        {
+                            Debug.Console(1, "Unknown join type.  Use digital/serial/analog");
+                            break;
+                        }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "Error: {0}", e);
+            }
+
+        }
+
+        /// <summary>
         /// Handles incoming sig changes
         /// </summary>
         /// <param name="currentDevice"></param>
@@ -151,6 +210,7 @@ namespace PepperDash.Essentials.Bridges
             if (Debug.Level >= 1)
                 Debug.Console(1, this, "EiscApi change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
             var uo = args.Sig.UserObject;
+            Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
             if (uo is Action<bool>)
                 (uo as Action<bool>)(args.Sig.BoolValue);
             else if (uo is Action<ushort>)

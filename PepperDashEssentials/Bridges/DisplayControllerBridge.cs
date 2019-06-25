@@ -42,6 +42,8 @@ namespace PepperDash.Essentials.Bridges
                     commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[JoinMap.IsOnline]);
                 }
 
+                InputNumberFeedback = new IntFeedback(() => { return InputNumber; });
+
                 // Two way feedbacks
                 var twoWayDisplay = displayDevice as PepperDash.Essentials.Core.TwoWayDisplayBase;
                 if (twoWayDisplay != null)
@@ -50,7 +52,7 @@ namespace PepperDash.Essentials.Bridges
 
                     twoWayDisplay.CurrentInputFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(CurrentInputFeedback_OutputChange);
 
-                    InputNumberFeedback = new IntFeedback(() => { return InputNumber; });
+                    
                     InputNumberFeedback.LinkInputSig(_TriList.UShortInput[JoinMap.InputSelect]);
                 }
 
