@@ -84,10 +84,12 @@ namespace PepperDash.Essentials.Bridges
 					InputKeys.Add(input.Key.ToString());
 					var tempKey = InputKeys.ElementAt(count - 1);
 					trilist.SetSigTrueAction((ushort)(JoinMap.InputSelectOffset + count), () => { displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector); });
+                    Debug.Console(2, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}", JoinMap.InputSelectOffset + count, displayDevice.InputPorts[tempKey].Key.ToString());
 					trilist.StringInput[(ushort)(JoinMap.InputNamesOffset + count)].StringValue = input.Key.ToString();
 					count++;
 				}
 
+                Debug.Console(2, displayDevice, "Setting Input Select Action on Analog Join {0}", JoinMap.InputSelect);
 				trilist.SetUShortSigAction(JoinMap.InputSelect, (a) =>
 				{
 					if (a == 0)
@@ -105,11 +107,25 @@ namespace PepperDash.Essentials.Bridges
 						displayDevice.PowerToggle();
 
 					}
-                    if (displayDevice is PepperDash.Essentials.Core.TwoWayDisplayBase)
+                    if (twoWayDisplay != null)
 					    InputNumberFeedback.FireUpdate();
 				});
-				 
 
+
+                var volumeDisplay = displayDevice as IBasicVolumeControls;
+                if (volumeDisplay != null)
+                {
+                    trilist.SetBoolSigAction(JoinMap.VolumeUp, (b) => volumeDisplay.VolumeUp(b));
+                    trilist.SetBoolSigAction(JoinMap.VolumeDown, (b) => volumeDisplay.VolumeDown(b));
+                    trilist.SetSigTrueAction(JoinMap.VolumeMute, () => volumeDisplay.MuteToggle());
+
+                    var volumeDisplayWithFeedback = volumeDisplay as IBasicVolumeWithFeedback;
+                    if(volumeDisplayWithFeedback != null)
+                    {
+                        volumeDisplayWithFeedback.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[JoinMap.VolumeLevelFB]);
+                        volumeDisplayWithFeedback.MuteFeedback.LinkInputSig(trilist.BooleanInput[JoinMap.VolumeMute]);
+                    }
+                }
 			}
 
 		static void CurrentInputFeedback_OutputChange(object sender, FeedbackEventArgs e)
@@ -142,16 +158,25 @@ namespace PepperDash.Essentials.Bridges
 	}
 	public class DisplayControllerJoinMap : JoinMapBase
 	{
-		public uint Name { get; set; }
-		public uint InputNamesOffset { get; set; }
-		public uint InputSelectOffset { get; set; }
-		public uint IsOnline { get; set; }
-		public uint PowerOff { get; set; }
-		public uint InputSelect { get; set; }
-		public uint PowerOn { get; set; }
+        // Digital
+        public uint PowerOff { get; set; }
+        public uint PowerOn { get; set; }
         public uint IsTwoWayDisplay { get; set; }
-		public uint SelectScene { get; set; }
+        public uint VolumeUp { get; set; }
+        public uint VolumeDown { get; set; }
+        public uint VolumeMute { get; set; }
+        public uint InputSelectOffset { get; set; }
 		public uint ButtonVisibilityOffset { get; set; }
+        public uint IsOnline { get; set; }
+
+        // Analog
+        public uint InputSelect { get; set; }
+        public uint VolumeLevelFB { get; set; }
+
+        // Serial
+        public uint Name { get; set; }
+        public uint InputNamesOffset { get; set; }
+
 
 		public DisplayControllerJoinMap()
 		{
@@ -160,11 +185,16 @@ namespace PepperDash.Essentials.Bridges
 			PowerOff = 1;
 			PowerOn = 2;
             IsTwoWayDisplay = 3;
+            VolumeUp = 5;
+            VolumeDown = 6;
+            VolumeMute = 7;
+
 			ButtonVisibilityOffset = 40;
-            InputSelectOffset = 4;
+            InputSelectOffset = 10;
 
 			// Analog
-            InputSelect = 4;
+            InputSelect = 11;
+            VolumeLevelFB = 5;
 
             // Serial
             Name = 1;
@@ -179,12 +209,17 @@ namespace PepperDash.Essentials.Bridges
 			PowerOff = PowerOff + joinOffset;
 			PowerOn = PowerOn + joinOffset;
             IsTwoWayDisplay = IsTwoWayDisplay + joinOffset;
-			SelectScene = SelectScene + joinOffset;
 			ButtonVisibilityOffset = ButtonVisibilityOffset + joinOffset;
 			Name = Name + joinOffset;
 			InputNamesOffset = InputNamesOffset + joinOffset;
 			InputSelectOffset = InputSelectOffset + joinOffset;
 
+            InputSelect = InputSelect + joinOffset;
+
+            VolumeUp = VolumeUp + joinOffset;
+            VolumeDown = VolumeDown + joinOffset;
+            VolumeMute = VolumeMute + joinOffset;
+            VolumeLevelFB = VolumeLevelFB + joinOffset;
 		}
 	}
 }
