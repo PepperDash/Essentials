@@ -65,6 +65,11 @@ namespace PepperDash.Essentials
                     Panel = new Tsw1052(id, Global.ControlSystem);
                 else if (type == "tsw1060")
                     Panel = new Tsw1060(id, Global.ControlSystem);
+                else if (type.Contains("dge"))
+                {
+                    // TODO: Figure out how to get the trilist from a DgeController device
+                    //Panel = 
+                }
                 else
                 {
                     Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create TSW controller with type '{0}'", type);
