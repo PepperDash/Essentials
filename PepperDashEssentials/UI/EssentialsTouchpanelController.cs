@@ -27,8 +27,16 @@ namespace PepperDash.Essentials
 		{
 			Panel = tsw;
 			tsw.LoadSmartObjects(sgdPath);
-			tsw.SigChange += new Crestron.SimplSharpPro.DeviceSupport.SigEventHandler(Tsw_SigChange);
+			tsw.SigChange += Panel_SigChange;
 		}
+
+        public EssentialsTouchpanelController(string key, string name, Dge100 panel, string projectName, string sgdPath)
+            : base(key, name)
+        {
+            Panel = panel;
+            panel.LoadSmartObjects(sgdPath);
+            panel.SigChange += Panel_SigChange;
+        }
 
 		/// <summary>
 		/// Config constructor
@@ -65,11 +73,6 @@ namespace PepperDash.Essentials
                     Panel = new Tsw1052(id, Global.ControlSystem);
                 else if (type == "tsw1060")
                     Panel = new Tsw1060(id, Global.ControlSystem);
-                else if (type.Contains("dge"))
-                {
-                    // TODO: Figure out how to get the trilist from a DgeController device
-                    //Panel = 
-                }
                 else
                 {
                     Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create TSW controller with type '{0}'", type);
@@ -107,7 +110,7 @@ namespace PepperDash.Essentials
             }
 
             Panel.LoadSmartObjects(sgdName);
-            Panel.SigChange += Tsw_SigChange;
+            Panel.SigChange += Panel_SigChange;
 
 		}
 
@@ -163,7 +166,7 @@ namespace PepperDash.Essentials
             }
         }
 
-		void Tsw_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
+		void Panel_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
 		{
 			if (Debug.Level == 2)
 				Debug.Console(2, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
