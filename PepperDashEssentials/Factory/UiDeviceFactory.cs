@@ -13,6 +13,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.PageManagers;
+using PepperDash.Essentials.DM.Endpoints.DGEs;
 
 
 namespace PepperDash.Essentials
@@ -23,9 +24,31 @@ namespace PepperDash.Essentials
         {
             var comm = CommFactory.GetControlPropertiesConfig(config);
 
+            var typeName = config.Type.ToLower();
+
+            EssentialsTouchpanelController panelController = null;
+
             var props = JsonConvert.DeserializeObject<CrestronTouchpanelPropertiesConfig>(config.Properties.ToString());
 
-            EssentialsTouchpanelController panelController = new EssentialsTouchpanelController(config.Key, config.Name, config.Type, props, comm.IpIdInt);
+            if (typeName.Contains("dge"))
+            {
+                Dge100 dgeDevice = null;
+                if (typeName == "dge100")
+                    dgeDevice = new Dge100(comm.IpIdInt, Global.ControlSystem);
+                else if (typeName == "dmdge200c")
+                    dgeDevice = new DmDge200C(comm.IpIdInt, Global.ControlSystem);
+
+                var dgeController = new DgeController(config.Key, config.Name, dgeDevice, config, props);
+
+                DeviceManager.AddDevice(dgeController);
+
+                panelController = new EssentialsTouchpanelController(config.Key, config.Name, dgeController.DigitalGraphicsEngine,
+                    props.ProjectName, props.SgdFile);
+            }
+            else
+            {
+                panelController = new EssentialsTouchpanelController(config.Key, config.Name, config.Type, props, comm.IpIdInt);
+            }
 
             panelController.AddPostActivationAction(() =>
                 {

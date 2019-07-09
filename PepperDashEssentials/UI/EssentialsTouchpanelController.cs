@@ -27,8 +27,16 @@ namespace PepperDash.Essentials
 		{
 			Panel = tsw;
 			tsw.LoadSmartObjects(sgdPath);
-			tsw.SigChange += new Crestron.SimplSharpPro.DeviceSupport.SigEventHandler(Tsw_SigChange);
+			tsw.SigChange += Panel_SigChange;
 		}
+
+        public EssentialsTouchpanelController(string key, string name, Dge100 panel, string projectName, string sgdPath)
+            : base(key, name)
+        {
+            Panel = panel;
+            panel.LoadSmartObjects(sgdPath);
+            panel.SigChange += Panel_SigChange;
+        }
 
 		/// <summary>
 		/// Config constructor
@@ -102,7 +110,7 @@ namespace PepperDash.Essentials
             }
 
             Panel.LoadSmartObjects(sgdName);
-            Panel.SigChange += Tsw_SigChange;
+            Panel.SigChange += Panel_SigChange;
 
 		}
 
@@ -158,7 +166,7 @@ namespace PepperDash.Essentials
             }
         }
 
-		void Tsw_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
+		void Panel_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
 		{
 			if (Debug.Level == 2)
 				Debug.Console(2, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
