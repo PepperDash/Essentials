@@ -13,36 +13,48 @@ namespace PepperDash.Essentials.Bridges
 	public static class DisplayControllerApiExtensions
 	{
 
-		public static BasicTriList _TriList;
-		public static DisplayControllerJoinMap JoinMap;
 		public static int InputNumber;
 		public static IntFeedback InputNumberFeedback;
 		public static List<string> InputKeys = new List<string>();
-		public static void LinkToApi(this PepperDash.Essentials.Core.TwoWayDisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey)
+		public static void LinkToApi(this PepperDash.Essentials.Core.DisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey)
 		{
 
+				var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as DisplayControllerJoinMap;
 
-				JoinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as DisplayControllerJoinMap;
-				_TriList = trilist;
-
-				if (JoinMap == null)
+				if (joinMap == null)
 				{
-					JoinMap = new DisplayControllerJoinMap();
+					joinMap = new DisplayControllerJoinMap();
 				}
 
-				JoinMap.OffsetJoinNumbers(joinStart);
-				Debug.Console(1, "Linking to Trilist '{0}'", _TriList.ID.ToString("X"));
+				joinMap.OffsetJoinNumbers(joinStart);
+
+				Debug.Console(1, "Linking to Trilist '{0}'",trilist.ID.ToString("X"));
 				Debug.Console(0, "Linking to Bridge Type {0}", displayDevice.GetType().Name.ToString());
 
-				_TriList.StringInput[JoinMap.Name].StringValue = displayDevice.GetType().Name.ToString();
-			
-				InputNumberFeedback = new IntFeedback(() => { return InputNumber; });
-				InputNumberFeedback.LinkInputSig(_TriList.UShortInput[JoinMap.InputSelect]);
-				var commMonitor = displayDevice as ICommunicationMonitor;
-				commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[JoinMap.IsOnline]);
+                trilist.StringInput[joinMap.Name].StringValue = displayDevice.GetType().Name.ToString();			
 
-				// Poewer Off
-				trilist.SetSigTrueAction(JoinMap.PowerOff, () =>
+				var commMonitor = displayDevice as ICommunicationMonitor;
+                if (commMonitor != null)
+                {
+                    commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
+                }
+
+                InputNumberFeedback = new IntFeedback(() => { return InputNumber; });
+
+                // Two way feedbacks
+                var twoWayDisplay = displayDevice as PepperDash.Essentials.Core.TwoWayDisplayBase;
+                if (twoWayDisplay != null)
+                {
+                    trilist.SetBool(joinMap.IsTwoWayDisplay, true);
+
+                    twoWayDisplay.CurrentInputFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(CurrentInputFeedback_OutputChange);
+
+
+                    InputNumberFeedback.LinkInputSig(trilist.UShortInput[joinMap.InputSelect]);
+                }
+
+				// Power Off
+				trilist.SetSigTrueAction(joinMap.PowerOff, () =>
 					{
 						InputNumber = 102;
 						InputNumberFeedback.FireUpdate();
@@ -50,10 +62,10 @@ namespace PepperDash.Essentials.Bridges
 					});
 
 				displayDevice.PowerIsOnFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(PowerIsOnFeedback_OutputChange);
-				displayDevice.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[JoinMap.PowerOff]);
+				displayDevice.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff]);
 
 				// PowerOn
-				trilist.SetSigTrueAction(JoinMap.PowerOn, () =>
+				trilist.SetSigTrueAction(joinMap.PowerOn, () =>
 					{
 						InputNumber = 0;
 						InputNumberFeedback.FireUpdate();
@@ -61,20 +73,21 @@ namespace PepperDash.Essentials.Bridges
 					});
 
 				
-				displayDevice.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[JoinMap.PowerOn]);
+				displayDevice.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn]);
 
 				int count = 1;
 				foreach (var input in displayDevice.InputPorts)
 				{
 					InputKeys.Add(input.Key.ToString());
 					var tempKey = InputKeys.ElementAt(count - 1);
-					trilist.SetSigTrueAction((ushort)(JoinMap.InputSelectOffset + count), () => { displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector); });
-					trilist.StringInput[(ushort)(JoinMap.InputNamesOffset + count)].StringValue = input.Key.ToString();
+					trilist.SetSigTrueAction((ushort)(joinMap.InputSelectOffset + count), () => { displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector); });
+                    Debug.Console(2, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}", joinMap.InputSelectOffset + count, displayDevice.InputPorts[tempKey].Key.ToString());
+					trilist.StringInput[(ushort)(joinMap.InputNamesOffset + count)].StringValue = input.Key.ToString();
 					count++;
 				}
 
-				displayDevice.CurrentInputFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(CurrentInputFeedback_OutputChange);
-				trilist.SetUShortSigAction(JoinMap.InputSelect, (a) =>
+                Debug.Console(2, displayDevice, "Setting Input Select Action on Analog Join {0}", joinMap.InputSelect);
+				trilist.SetUShortSigAction(joinMap.InputSelect, (a) =>
 				{
 					if (a == 0)
 					{
@@ -91,10 +104,25 @@ namespace PepperDash.Essentials.Bridges
 						displayDevice.PowerToggle();
 
 					}
-					InputNumberFeedback.FireUpdate();
+                    if (twoWayDisplay != null)
+					    InputNumberFeedback.FireUpdate();
 				});
-				 
 
+
+                var volumeDisplay = displayDevice as IBasicVolumeControls;
+                if (volumeDisplay != null)
+                {
+                    trilist.SetBoolSigAction(joinMap.VolumeUp, (b) => volumeDisplay.VolumeUp(b));
+                    trilist.SetBoolSigAction(joinMap.VolumeDown, (b) => volumeDisplay.VolumeDown(b));
+                    trilist.SetSigTrueAction(joinMap.VolumeMute, () => volumeDisplay.MuteToggle());
+
+                    var volumeDisplayWithFeedback = volumeDisplay as IBasicVolumeWithFeedback;
+                    if(volumeDisplayWithFeedback != null)
+                    {
+                        volumeDisplayWithFeedback.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[joinMap.VolumeLevelFB]);
+                        volumeDisplayWithFeedback.MuteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VolumeMute]);
+                    }
+                }
 			}
 
 		static void CurrentInputFeedback_OutputChange(object sender, FeedbackEventArgs e)
@@ -125,19 +153,27 @@ namespace PepperDash.Essentials.Bridges
 
 
 	}
-	public class DisplayControllerJoinMap : JoinMapBase
+    public class DisplayControllerJoinMap : JoinMapBase
 	{
-		public uint Name { get; set; }
-		public uint InputNamesOffset { get; set; }
-		public uint InputSelectOffset { get; set; }
-		public uint IsOnline { get; set; }
-		public uint PowerOff { get; set; }
-		public uint InputSelect { get; set; }
-		public uint PowerOn { get; set; }
-		public uint SelectScene { get; set; }
-		public uint LightingSceneOffset { get; set; }
+        // Digital
+        public uint PowerOff { get; set; }
+        public uint PowerOn { get; set; }
+        public uint IsTwoWayDisplay { get; set; }
+        public uint VolumeUp { get; set; }
+        public uint VolumeDown { get; set; }
+        public uint VolumeMute { get; set; }
+        public uint InputSelectOffset { get; set; }
 		public uint ButtonVisibilityOffset { get; set; }
-		public uint IntegrationIdSet { get; set; }
+        public uint IsOnline { get; set; }
+
+        // Analog
+        public uint InputSelect { get; set; }
+        public uint VolumeLevelFB { get; set; }
+
+        // Serial
+        public uint Name { get; set; }
+        public uint InputNamesOffset { get; set; }
+
 
 		public DisplayControllerJoinMap()
 		{
@@ -145,15 +181,22 @@ namespace PepperDash.Essentials.Bridges
 			IsOnline = 50;
 			PowerOff = 1;
 			PowerOn = 2;
-			InputSelect = 4;
-			IntegrationIdSet = 1;
-			LightingSceneOffset = 10;
+            IsTwoWayDisplay = 3;
+            VolumeUp = 5;
+            VolumeDown = 6;
+            VolumeMute = 7;
+
 			ButtonVisibilityOffset = 40;
-			Name = 1;
-			InputNamesOffset = 10;
-			InputSelectOffset = 4;
+            InputSelectOffset = 10;
+
 			// Analog
-		}
+            InputSelect = 11;
+            VolumeLevelFB = 5;
+
+            // Serial
+            Name = 1;
+            InputNamesOffset = 10;
+        }
 
 		public override void OffsetJoinNumbers(uint joinStart)
 		{
@@ -162,13 +205,18 @@ namespace PepperDash.Essentials.Bridges
 			IsOnline = IsOnline + joinOffset;
 			PowerOff = PowerOff + joinOffset;
 			PowerOn = PowerOn + joinOffset;
-			SelectScene = SelectScene + joinOffset;
-			LightingSceneOffset = LightingSceneOffset + joinOffset;
+            IsTwoWayDisplay = IsTwoWayDisplay + joinOffset;
 			ButtonVisibilityOffset = ButtonVisibilityOffset + joinOffset;
 			Name = Name + joinOffset;
 			InputNamesOffset = InputNamesOffset + joinOffset;
 			InputSelectOffset = InputSelectOffset + joinOffset;
 
+            InputSelect = InputSelect + joinOffset;
+
+            VolumeUp = VolumeUp + joinOffset;
+            VolumeDown = VolumeDown + joinOffset;
+            VolumeMute = VolumeMute + joinOffset;
+            VolumeLevelFB = VolumeLevelFB + joinOffset;
 		}
 	}
 }

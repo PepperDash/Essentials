@@ -14,11 +14,11 @@ namespace PepperDash.Essentials.Room.Cotija
 		public Volume Master { get; set; }
 
 		[JsonProperty("auxFaders")]
-		public List<Volume> AuxFaders { get; set; }
+		public Dictionary<string, Volume> AuxFaders { get; set; }
 
 		public Volumes()
 		{
-			AuxFaders = new List<Volume>();	
+			AuxFaders = new Dictionary<string, Volume>();	
 		}
 	}
 
@@ -38,6 +38,13 @@ namespace PepperDash.Essentials.Room.Cotija
 
 		[JsonProperty("hasMute")]
 		public bool HasMute { get; set; }
+
+		[JsonProperty("hasPrivacyMute")]
+		public bool HasPrivacyMute { get; set; }
+
+		[JsonProperty("privacyMuted")]
+		public bool PrivacyMuted { get; set; }
+
 
 		[JsonProperty("muteIcon")]
 		public string MuteIcon { get; set; }

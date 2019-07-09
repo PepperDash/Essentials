@@ -712,10 +712,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		void SetupLayoutControls()
 		{
 			TriList.SetSigFalseAction(UIBoolJoin.VCStagingSelfViewLayoutPress, this.ShowSelfViewLayout);
-			var svc = Codec as IHasCodecSelfview;
+			var svc = Codec as IHasCodecSelfView;
 			if (svc != null)
 			{
-				TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewTogglePress, svc.SelfviewModeToggle);
+				TriList.SetSigFalseAction(UIBoolJoin.VCSelfViewTogglePress, svc.SelfViewModeToggle);
 				svc.SelfviewIsOnFeedback.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCSelfViewTogglePress]);
 			}
 			var lc = Codec as IHasCodecLayouts;

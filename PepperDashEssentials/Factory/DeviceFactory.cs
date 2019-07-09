@@ -43,13 +43,13 @@ namespace PepperDash.Essentials
                 return new Device(key, name);
             }
 
-            // MOVE into something else???
-            else if (typeName == "basicirdisplay")
-            {
-                var ir = IRPortHelper.GetIrPort(properties);
-                if (ir != null)
-                    return new BasicIrDisplay(key, name, ir.Port, ir.FileName);
-            }
+            //// MOVE into something else???
+            //else if (typeName == "basicirdisplay")
+            //{
+            //    var ir = IRPortHelper.GetIrPort(properties);
+            //    if (ir != null)
+            //        return new BasicIrDisplay(key, name, ir.Port, ir.FileName);
+            //}
 
             else if (typeName == "commmock")
             {

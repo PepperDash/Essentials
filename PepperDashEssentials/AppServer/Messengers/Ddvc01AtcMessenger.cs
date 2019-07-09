@@ -19,7 +19,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// <summary>
 		/// 221
 		/// </summary>
-		const uint BDialHangup = 221;
+		const uint BDialHangupOnHook = 221;
+
 		/// <summary>
 		/// 251
 		/// </summary>
@@ -134,7 +135,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{
 				CurrentCallItem.Status = (eCodecCallStatus)Enum.Parse(typeof(eCodecCallStatus), s, true);
                 //GetCurrentCallList();
-				SendCallsList();
+				SendFullStatus();
 			});
 
 			EISC.SetStringSigAction(SCurrentCallNumber, s => 
@@ -162,7 +163,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			// Add straight pulse calls
 			Action<string, uint> addAction = (s, u) =>
 				AppServerController.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
-            addAction("/endCallById", BDialHangup);
+            addAction("/endCallById", BDialHangupOnHook);
+			addAction("/endAllCalls", BDialHangupOnHook);
             addAction("/acceptById", BIncomingAnswer);
             addAction("/rejectById", BIncomingReject);
 			addAction("/speedDial1", BSpeedDial1);
