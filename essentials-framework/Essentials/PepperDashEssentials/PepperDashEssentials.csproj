@@ -1,0 +1,224 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1BED5BA9-88C4-4365-9362-6F4B128071D3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PepperDash.Essentials</RootNamespace>
+    <AssemblyName>PepperDashEssentials</AssemblyName>
+    <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92230};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PlatformFamilyName>WindowsCE</PlatformFamilyName>
+    <PlatformID>E2BECB1F-8C8C-41ba-B736-9BE7D946A398</PlatformID>
+    <OSVersion>5.0</OSVersion>
+    <DeployDirSuffix>SmartDeviceProject1</DeployDirSuffix>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <NativePlatformName>Windows CE</NativePlatformName>
+    <FormFactorID>
+    </FormFactorID>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Crestron.SimplSharpPro.DeviceSupport, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DeviceSupport.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.DM, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DM.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.EthernetCommunications, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.EthernetCommunications.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.Fusion, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Fusion.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.Remotes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Remotes.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="PepperDash_Core, Version=1.0.3.27452, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Release Package\PepperDash_Core.dll</HintPath>
+    </Reference>
+    <Reference Include="PepperDash_Essentials_DM, Version=1.0.0.19343, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Essentials DM\Essentials_DM\bin\PepperDash_Essentials_DM.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpNewtonsoft, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpNewtonsoft.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpPro, Version=1.5.3.17, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
+    <Compile Include="Bridges\Bridges.BridgeFactory.cs" />
+    <Compile Include="Bridges\EssentialComms.cs" />
+    <Compile Include="Bridges\EssentialDM.cs" />
+    <Compile Include="Configuration ORIGINAL\Builders\TPConfig.cs" />
+    <Compile Include="Configuration ORIGINAL\Configuration.cs" />
+    <Compile Include="Configuration ORIGINAL\ConfigurationHelpers.cs" />
+    <Compile Include="Configuration ORIGINAL\ConfigTieLine.cs" />
+    <Compile Include="Configuration ORIGINAL\Factories\RemoteFactory.cs" />
+    <Compile Include="Configuration ORIGINAL\Factories\DeviceMonitorFactory.cs" />
+    <Compile Include="Configuration ORIGINAL\Factories\DmFactory.cs" />
+    <Compile Include="Configuration ORIGINAL\Factories\TouchpanelFactory.cs" />
+    <Compile Include="Configuration ORIGINAL\Factories\PcFactory.cs" />
+    <Compile Include="Configuration ORIGINAL\Factories\REMOVE DiscPlayerFactory.cs" />
+    <Compile Include="Configuration ORIGINAL\Factories\MAYBE SetTopBoxFactory.cs" />
+    <Compile Include="Configuration ORIGINAL\Factories\DisplayFactory.cs" />
+    <Compile Include="Configuration ORIGINAL\Factories\FactoryHelper.cs" />
+    <Compile Include="Config\ConfigReader.cs" />
+    <Compile Include="Config\EssentialsConfig.cs" />
+    <Compile Include="Config\DeviceFactory.cs" />
+    <Compile Include="Devices\Amplifier.cs" />
+    <Compile Include="Devices\DiscPlayer\OppoExtendedBdp.cs" />
+    <Compile Include="Devices\NUMERIC AppleTV.cs" />
+    <Compile Include="ControlSystem.cs" />
+    <Compile Include="OTHER\Fusion\EssentialsHuddleVtc1FusionController.cs" />
+    <Compile Include="OTHER\Fusion\FusionEventHandlers.cs" />
+    <Compile Include="OTHER\Fusion\FusionProcessorQueries.cs" />
+    <Compile Include="OTHER\Fusion\FusionRviDataClasses.cs" />
+    <Compile Include="REMOVE EssentialsApp.cs" />
+    <Compile Include="OTHER\Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
+    <Compile Include="HttpApiHandler.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Room\Config\DDVC01RoomPropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsPresentationPropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsHuddleRoomPropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsHuddleVtc1PropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsRoomEmergencyConfig.cs" />
+    <Compile Include="Room\Cotija\CotijaConfig.cs" />
+    <Compile Include="Room\Cotija\CotijaDdvc01DeviceBridge.cs" />
+    <Compile Include="Room\Cotija\Interfaces.cs" />
+    <Compile Include="Room\Cotija\RoomBridges\CotijaBridgeBase.cs" />
+    <Compile Include="Room\Cotija\RoomBridges\CotijaDdvc01RoomBridge.cs" />
+    <Compile Include="Room\Cotija\RoomBridges\CotijaEssentialsHuddleSpaceRoomBridge.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IChannelExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IColorExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IDPadExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IDvrExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\INumericExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\IPowerExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\ISetTopBoxControlsExtensions.cs" />
+    <Compile Include="Room\Cotija\DeviceTypeInterfaces\ITransportExtensions.cs" />
+    <Compile Include="Room\Emergency\EsentialsRoomEmergencyContactClosure.cs" />
+    <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
+    <Compile Include="Room\Types\EssentialsPresentationRoom.cs" />
+    <Compile Include="Room\Types\EssentialsRoomBase.cs" />
+    <Compile Include="Room\Config\EssentialsRoomConfig.cs" />
+    <Compile Include="FOR REFERENCE UI\PageControllers\DevicePageControllerBase.cs" />
+    <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLaptop.cs" />
+    <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLargeDvd.cs" />
+    <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLargeSetTopBoxGeneric.cs" />
+    <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
+    <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
+    <Compile Include="UIDrivers\SigInterlock.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddlePresentationUiDriver.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddle\EssentialsHuddleTechPageDriver.cs" />
+    <Compile Include="UI\HttpLogoServer.cs" />
+    <Compile Include="UI\SmartObjectHeaderButtonList.cs" />
+    <Compile Include="UI\SubpageReferenceListCallStagingItem.cs" />
+    <Compile Include="UIDrivers\VC\EssentialsVideoCodecUiDriver.cs" />
+    <Compile Include="UIDrivers\JoinedSigInterlock.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddleVtc1PanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\VolumeAndSourceChangeArgs.cs" />
+    <Compile Include="UI\JoinConstants\UISmartObjectJoin.cs" />
+    <Compile Include="UI\JoinConstants\UIStringlJoin.cs" />
+    <Compile Include="UI\JoinConstants\UIUshortJoin.cs" />
+    <Compile Include="UIDrivers\DualDisplayRouting REMOVE.cs" />
+    <Compile Include="UIDrivers\Essentials\EssentialsPresentationPanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalDriver.cs" />
+    <Compile Include="UIDrivers\Essentials\EssentialsPanelMainInterfaceDriver.cs" />
+    <Compile Include="UIDrivers\enums and base.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddle\EssentialsHuddlePanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalAndBackDriver.cs" />
+    <Compile Include="UIDrivers\SmartObjectRoomsList.cs" />
+    <Compile Include="UI\JoinConstants\UIBoolJoin.cs" />
+    <Compile Include="Room\Cotija\CotijaSystemController.cs" />
+    <Compile Include="UI\DualDisplaySourceSRLController.cs" />
+    <Compile Include="UI\SubpageReferenceListActivityItem.cs" />
+    <Compile Include="UI\CrestronTouchpanelPropertiesConfig.cs" />
+    <Compile Include="FOR REFERENCE UI\Panels\REMOVE UiCue.cs" />
+    <Compile Include="FOR REFERENCE UI\SRL\SourceListSubpageReferenceList.cs" />
+    <Compile Include="Room\Types\EssentialsHuddleSpaceRoom.cs" />
+    <Compile Include="UI\EssentialsTouchpanelController.cs" />
+    <Compile Include="UI\SubpageReferenceListSourceItem.cs" />
+    <None Include="app.config" />
+    <None Include="Properties\ControlSystem.cfg" />
+    <EmbeddedResource Include="SGD\PepperDash Essentials iPad.sgd" />
+    <EmbeddedResource Include="SGD\PepperDash Essentials TSW-560.sgd" />
+    <EmbeddedResource Include="SGD\PepperDash Essentials TSW-760.sgd" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Essentials Core\PepperDashEssentialsBase\PepperDash_Essentials_Core.csproj">
+      <Project>{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}</Project>
+      <Name>PepperDash_Essentials_Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Essentials Devices Common\Essentials Devices Common\Essentials Devices Common.csproj">
+      <Project>{892B761C-E479-44CE-BD74-243E9214AF13}</Project>
+      <Name>Essentials Devices Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>rem S# Pro preparation will execute after these operations</PostBuildEvent>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,50 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Crestron.SimplSharp;
+
+namespace PepperDash.Essentials.Devices.Common.Codec
+
+{
+    public class CodecActiveCallItem
+    {
+        public string Name { get; set; }
+
+        public string Number { get; set; }
+
+<<<<<<< HEAD:Essentials Devices Common/Essentials Devices Common/Codec/CodecActiveCallItem.cs
+        public eCodecCallType Type { get; set; }
+
+        public eCodecCallStatus Status { get; set; }
+
+        public string Id { get; set; }
+=======
+        public eCodecCallType Type { get; set; }
+
+        public eCodecCallStatus Status { get; set; }
+
+        public string Id { get; set; }
+
+        public object CallMetaData { get; set; }
+>>>>>>> origin/feature/cisco-spark-2:Essentials Devices Common/Essentials Devices Common/VideoCodec/CodecActiveCallItem.cs
+    }
+
+    public enum eCodecCallType
+    {
+        Unknown = 0, Audio, Video
+<<<<<<< HEAD:Essentials Devices Common/Essentials Devices Common/Codec/CodecActiveCallItem.cs
+    }
+
+    public enum eCodecCallStatus
+    {
+        Unknown = 0, Dialing, Connected, Incoming, OnHold, Disconnected
+=======
+    }
+
+    public enum eCodecCallStatus
+    {
+        Unknown = 0, Dialing, Connected, Incoming, OnHold, Disconnected
+>>>>>>> origin/feature/cisco-spark-2:Essentials Devices Common/Essentials Devices Common/VideoCodec/CodecActiveCallItem.cs
+    }
+}

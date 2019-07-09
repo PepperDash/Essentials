@@ -1,0 +1,47 @@
+﻿using System;
+using System.Collections.Generic;
+using Crestron.SimplSharpPro.DM;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
+using PepperDash.Essentials.DM.Cards;
+
+namespace PepperDash.Essentials.DM.Config
+{
+	/// <summary>
+	/// Represents the "properties" property of a DM device config
+	/// </summary>
+	public class DMChassisPropertiesConfig
+	{
+		[JsonProperty("control")]
+		public ControlPropertiesConfig Control { get; set; }
+
+        [JsonProperty("volumeControls")]
+        public Dictionary<uint, DmCardAudioPropertiesConfig> VolumeControls { get; set; }
+
+        [JsonProperty("inputSlots")]
+        public Dictionary<uint, string> InputSlots { get; set; }
+
+        [JsonProperty("outputSlots")]
+        public Dictionary<uint, string> OutputSlots { get; set; }
+
+		[JsonProperty("inputNames")]
+		public Dictionary<uint, string> InputNames { get; set; }
+
+		[JsonProperty("outputNames")]
+		public Dictionary<uint, string> OutputNames { get; set; }
+	}
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class DmCardAudioPropertiesConfig
+    {
+        [JsonProperty("outLevel")]
+        public int OutLevel { get; set; }
+
+        [JsonProperty("isVolumeControlPoint")]
+        public bool IsVolumeControlPoint { get; set; }
+    }
+}

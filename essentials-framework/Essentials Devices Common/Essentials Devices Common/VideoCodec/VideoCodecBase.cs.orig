@@ -1,0 +1,152 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Crestron.SimplSharp;
+
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
+
+namespace PepperDash.Essentials.Devices.Common.VideoCodec
+{
+    public abstract class VideoCodecBase : Device, IRoutingSinkWithSwitching, IUsageTracking, IHasDialer, IHasSharing, ICodecAudio
+    {
+        #region IUsageTracking Members
+
+        /// <summary>
+        /// This object can be added by outside users of this class to provide usage tracking
+        /// for various services
+        /// </summary>
+        public UsageTracking UsageTracker { get; set; }
+
+        #endregion
+
+        #region IRoutingInputs Members
+
+        public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
+
+        #endregion
+
+        /// <summary>
+        /// Returns true when ActiveCallCountFeedback is > 0
+        /// </summary>
+        public bool IsInCall { get { return ActiveCallCountFeedback.IntValue > 0; } }
+
+        public BoolFeedback IncomingCallFeedback { get; private set; }
+
+        public IntFeedback ActiveCallCountFeedback { get; private set; }
+
+        abstract protected Func<int> ActiveCallCountFeedbackFunc { get; }
+        abstract protected Func<bool> IncomingCallFeedbackFunc { get; }
+        abstract protected Func<bool> PrivacyModeIsOnFeedbackFunc { get; }
+        abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
+        abstract protected Func<bool> MuteFeedbackFunc { get; }
+        abstract protected Func<string> SharingSourceFeedbackFunc { get; }
+
+        public List<CodecActiveCallItem> ActiveCalls { get; set; }
+
+        public VideoCodecBase(string key, string name)
+            : base(key, name)
+        {
+            ActiveCallCountFeedback = new IntFeedback(ActiveCallCountFeedbackFunc);
+            IncomingCallFeedback = new BoolFeedback(IncomingCallFeedbackFunc);
+            PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeIsOnFeedbackFunc);
+            VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
+            MuteFeedback = new BoolFeedback(MuteFeedbackFunc);
+            SharingSourceFeedback = new StringFeedback(SharingSourceFeedbackFunc);
+
+            InputPorts = new RoutingPortCollection<RoutingInputPort>();
+
+            ActiveCallCountFeedback.OutputChange += new EventHandler<EventArgs>(ActiveCallCountFeedback_OutputChange);
+
+            ActiveCalls = new List<CodecActiveCallItem>();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ActiveCallCountFeedback_OutputChange(object sender, EventArgs e)
+        {
+            if (UsageTracker != null)
+            {
+                if (IsInCall)
+                    UsageTracker.StartDeviceUsage();
+                else
+                    UsageTracker.EndDeviceUsage();
+            }
+        }
+        #region IHasDialer Members
+
+        public abstract void Dial(string s);
+<<<<<<< HEAD
+        public abstract void EndCall(string s);
+=======
+        public void EndCall(object activeCall)
+        {
+
+        }
+        public abstract void EndCall(CodecActiveCallItem activeCall);
+        public abstract void EndAllCalls();
+>>>>>>> origin/feature/cisco-spark-2
+        public abstract void AcceptCall();
+        public abstract void RejectCall();
+        public abstract void SendDtmf(string s);
+
+        #endregion
+
+        public virtual List<Feedback> Feedbacks
+        {
+            get
+            {
+                return new List<Feedback>
+				{
+                    IncomingCallFeedback,
+                    PrivacyModeIsOnFeedback,
+                    SharingSourceFeedback
+				};
+            }
+        }
+
+        public abstract void ExecuteSwitch(object selector);
+
+        #region ICodecAudio Members
+
+        public abstract void PrivacyModeOn();
+        public abstract void PrivacyModeOff();
+        public abstract void PrivacyModeToggle();
+        public BoolFeedback PrivacyModeIsOnFeedback { get; private set; }
+
+
+        public BoolFeedback MuteFeedback { get; private set; }
+
+        public abstract void MuteOff();
+
+        public abstract void MuteOn();
+
+        public abstract void SetVolume(ushort level);
+
+        public IntFeedback VolumeLevelFeedback { get; private set; }
+
+        public abstract void MuteToggle();
+
+        public abstract void VolumeDown(bool pressRelease);
+
+
+        public abstract void VolumeUp(bool pressRelease);
+
+        #endregion
+
+        #region IHasSharing Members
+
+        public abstract void StartSharing();
+        public abstract void StopSharing();
+
+        public StringFeedback SharingSourceFeedback { get; private set; }
+
+        #endregion
+
+
+    }
+}
