@@ -128,6 +128,11 @@ namespace PepperDash.Essentials.Bridges
                             (device as AppleTV).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }   
+                        else if (device is IBridge)
+                        {
+                            (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
 						//else if (device is LightingBase)
 						//{
 						//    (device as LightingBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);

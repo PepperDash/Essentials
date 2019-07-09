@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.AppServer.Messengers
@@ -365,7 +366,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				hasDirectory = Codec is IHasDirectory,
                 hasDirectorySearch = true,
                 hasRecents = Codec is IHasCallHistory,
-                hasCameras = Codec is IHasCameraControl
+                hasCameras = Codec is IHasCodecCameras
 			});
 		}
 	}
