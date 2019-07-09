@@ -1,0 +1,205 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{892B761C-E479-44CE-BD74-243E9214AF13}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PepperDash.Essentials.Devices.Common</RootNamespace>
+    <AssemblyName>Essentials Devices Common</AssemblyName>
+    <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92300};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PlatformFamilyName>WindowsCE</PlatformFamilyName>
+    <PlatformID>E2BECB1F-8C8C-41ba-B736-9BE7D946A398</PlatformID>
+    <OSVersion>5.0</OSVersion>
+    <DeployDirSuffix>SmartDeviceProject1</DeployDirSuffix>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <NativePlatformName>Windows CE</NativePlatformName>
+    <FormFactorID>
+    </FormFactorID>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Crestron.SimplSharpPro.DeviceSupport, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DeviceSupport.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.Gateways, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Gateways.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.GeneralIO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.GeneralIO.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.Lighting, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Lighting.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="PepperDash_Core, Version=1.0.4.20530, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\references\PepperDash_Core.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SimplSharpNewtonsoft, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpNewtonsoft.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpPro, Version=1.5.3.17, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AudioCodec\AudioCodecBase.cs" />
+    <Compile Include="AudioCodec\Interfaces\IAudioCodecInfo.cs" />
+    <Compile Include="AudioCodec\Interfaces\IHasAudioCodec.cs" />
+    <Compile Include="AudioCodec\MockAC\MockAC.cs" />
+    <Compile Include="AudioCodec\MockAC\MockAcPropertiesConfig.cs" />
+    <Compile Include="Cameras\CameraBase.cs" />
+    <Compile Include="Cameras\CameraVisca.cs" />
+    <Compile Include="Codec\eCodecCallDirection.cs" />
+    <Compile Include="Codec\eCodecCallType.cs" />
+    <Compile Include="Codec\eCodecCallStatus.cs" />
+    <Compile Include="Codec\eMeetingPrivacy.cs" />
+    <Compile Include="Codec\iCodecAudio.cs" />
+    <Compile Include="ImageProcessors\TVOneCorio.cs" />
+    <Compile Include="ImageProcessors\TVOneCorioPropertiesConfig.cs" />
+    <Compile Include="Power Controllers\Digitallogger.cs" />
+    <Compile Include="Power Controllers\DigitalLoggerPropertiesConfig.cs" />
+    <Compile Include="Evertz\EvertsEndpointStatusServer.cs" />
+    <Compile Include="Evertz\EvertzEndpointVarIds.cs" />
+    <Compile Include="Evertz\EvertzEndpoint.cs" />
+    <Compile Include="Evertz\EvertzEndpointPropertiesConfig.cs" />
+    <Compile Include="Evertz\GenericHttpClient.cs" />
+    <Compile Include="ImageProcessors\AnalogWay\AnalongWayLiveCore.cs" />
+    <Compile Include="ImageProcessors\AnalogWay\AnalogWayLiveCorePropertiesConfig.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\CiscoCamera.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\RoomPresets.cs" />
+    <Compile Include="VideoCodec\Interfaces\CameraControl.cs" />
+    <Compile Include="Display\PanasonicThDisplay.cs" />
+    <Compile Include="VideoCodec\Interfaces\iVideoCodecInfo.cs" />
+    <Compile Include="Codec\iHasCallFavorites.cs" />
+    <Compile Include="Codec\iHasCallHistory.cs" />
+    <Compile Include="Codec\iHasContentSharing.cs" />
+    <Compile Include="Codec\iHasDialer.cs" />
+    <Compile Include="Codec\iHasDirectory.cs" />
+    <Compile Include="Codec\iHasScheduleAwareness.cs" />
+    <Compile Include="Crestron\Gateways\CenRfgwController.cs" />
+    <Compile Include="Display\ComTcpDisplayBase.cs" />
+    <Compile Include="Display\AvocorVTFDisplay.cs" />
+    <Compile Include="Display\InputInterfaces.cs" />
+    <Compile Include="Display\SamsungMDCDisplay.cs" />
+    <Compile Include="Display\DeviceFactory.cs" />
+    <Compile Include="Display\NecPaSeriesProjector.cs" />
+    <Compile Include="Display\NECPSXMDisplay.cs" />
+    <Compile Include="DSP\BiampTesira\BiampTesiraForteDspLevel.cs" />
+    <Compile Include="DSP\BiampTesira\TesiraForteControlPoint.cs" />
+    <Compile Include="DSP\BiampTesira\TesiraForteMuteControl.cs" />
+    <Compile Include="DSP\DspBase.cs" />
+    <Compile Include="DSP\BiampTesira\BiampTesiraForteDsp.cs" />
+    <Compile Include="DSP\BiampTesira\BiampTesiraFortePropertiesConfig.cs" />
+    <Compile Include="DSP\PolycomSoundStructure\SoundStructureBasics.cs" />
+    <Compile Include="Environment\Crestron Lighting\Din8sw8.cs" />
+    <Compile Include="Environment\Lutron\LutronQuantum.cs" />
+    <Compile Include="Environment\Somfy\RelayControlledShade.cs" />
+    <Compile Include="Factory\DeviceFactory.cs" />
+    <Compile Include="Generic\GenericSource.cs" />
+    <Compile Include="Microphone\MicrophonePrivacyController.cs" />
+    <Compile Include="Microphone\MicrophonePrivacyControllerConfig.cs" />
+    <Compile Include="Occupancy\EssentialsGlsOccupancySensorBaseController.cs" />
+    <Compile Include="Occupancy\EssentialsOccupancyAggregator.cs" />
+    <Compile Include="Occupancy\iOccupancyStatusProvider.cs" />
+    <Compile Include="PC\InRoomPc.cs" />
+    <Compile Include="PC\Laptop.cs" />
+    <Compile Include="SetTopBox\SetTopBoxPropertiesConfig.cs" />
+    <Compile Include="Streaming\AppleTV.cs" />
+    <Compile Include="Audio\GenericAudioOut.cs" />
+    <Compile Include="DiscPlayer\IRDiscPlayerBase.cs" />
+    <Compile Include="SetTopBox\IRSetTopBoxBase.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Streaming\Roku.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\BookingsDataClasses.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\CallHistoryDataClasses.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\CiscoSparkCodec.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\CiscoSparkCodecPropertiesConfig.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\xStatusSparkPlus.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasVideoCodec.cs" />
+    <Compile Include="VideoCodec\MockVC\MockCodecDirectory.cs" />
+    <Compile Include="VideoCodec\MockVC\MockVCCamera.cs" />
+    <Compile Include="VideoCodec\MockVC\MockVcPropertiesConfig.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\PhonebookDataClasses.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\xConfiguration.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\xEvent.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\HttpApiServer.cs" />
+    <Compile Include="Codec\CodecActiveCallItem.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasCodecLayouts.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasCodecSelfview.cs" />
+    <Compile Include="VideoCodec\MockVC\MockVC.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\xStatus.cs" />
+    <Compile Include="VideoCodec\VideoCodecBase.cs" />
+    <Compile Include="VideoCodec\ZoomRoom\ResponseObjects.cs" />
+    <Compile Include="VideoCodec\ZoomRoom\ZoomRoom.cs" />
+    <Compile Include="VideoCodec\ZoomRoom\ZoomRoomCamera.cs" />
+    <Compile Include="VideoCodec\ZoomRoom\ZoomRoomPropertiesConfig.cs" />
+    <None Include="Properties\ControlSystem.cfg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Essentials Core\PepperDashEssentialsBase\PepperDash_Essentials_Core.csproj">
+      <Project>{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}</Project>
+      <Name>PepperDash_Essentials_Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>rem S# Pro preparation will execute after these operations</PostBuildEvent>
+  </PropertyGroup>
+</Project>
