@@ -123,6 +123,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		const uint BCameraModeOff = 833;
 
+		/// <summary>
+		/// 841
+		/// </summary>
+		const uint BCameraSelfView = 841;
+
+		/// <summary>
+		/// 842
+		/// </summary>
+		const uint BCameraLayout = 842;
 
 
 		/********* Ushorts *********/
@@ -330,6 +339,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			EISC.SetSigTrueAction(BCameraModeManual, () => PostCameraMode());
 			EISC.SetSigTrueAction(BCameraModeOff, () => PostCameraMode());
 
+			EISC.SetBoolSigAction(BCameraSelfView, b => PostStatusMessage(new 
+				{
+					cameraSelfView = b
+				}));
+
 			EISC.SetUShortSigAction(UCameraNumberSelect, (u) => PostSelectedCamera());
 
 
@@ -347,6 +361,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			Action<string, uint> addAction = (s, u) =>
 				AppServerController.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
 			addAction("/endCallById", BDialHangup);
+			addAction("/endAllCalls", BDialHangup);
             addAction("/acceptById", BIncomingAnswer);
             addAction("/rejectById", BIncomingReject);
 			addAction("/speedDial1", BSpeedDial1);
@@ -356,6 +371,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			addAction("/cameraModeAuto", BCameraModeAuto);
 			addAction("/cameraModeManual", BCameraModeManual);
 			addAction("/cameraModeOff", BCameraModeOff);
+			addAction("/cameraSelfView", BCameraSelfView);
+			addAction("/cameraLayout", BCameraLayout);
 
 			asc.AddAction("/cameraSelect", new Action<string>(SelectCamera));
 
@@ -437,6 +454,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{
 				calls = GetCurrentCallList(),
 				cameraMode = GetCameraMode(),
+				cameraSelfView = EISC.GetBool(BCameraSelfView),
 				currentCallString = EISC.GetString(SCurrentCallNumber),
 				currentDialString = EISC.GetString(SCurrentDialString),
 				directoryContactSelected = new
@@ -448,8 +466,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				isInCall = EISC.GetString(SHookState) == "Connected",
 				hasDirectory = true,
 				hasDirectorySearch = false,
-				hasRecents = true,
+				hasRecents = !EISC.BooleanOutput[502].BoolValue,
 				hasCameras = true,
+				showCamerasWhenNotInCall = EISC.BooleanOutput[503].BoolValue,
 				selectedCamera = GetSelectedCamera(),
 			});
 		}
