@@ -231,9 +231,15 @@
     <Compile Include="UI\SubpageReferenceListSourceItem.cs" />
     <None Include="app.config" />
     <None Include="Properties\ControlSystem.cfg" />
-    <EmbeddedResource Include="SGD\PepperDash Essentials iPad.sgd" />
-    <EmbeddedResource Include="SGD\PepperDash Essentials TSW-560.sgd" />
-    <EmbeddedResource Include="SGD\PepperDash Essentials TSW-760.sgd" />
+    <EmbeddedResource Include="SGD\PepperDash Essentials iPad.sgd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SGD\PepperDash Essentials TSW-560.sgd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SGD\PepperDash Essentials TSW-760.sgd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\essentials-framework\Essentials Core\PepperDashEssentialsBase\PepperDash_Essentials_Core.csproj">
