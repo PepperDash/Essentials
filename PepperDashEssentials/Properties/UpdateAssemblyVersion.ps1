@@ -14,7 +14,7 @@ echo ” “;
 function Update-SourceVersion
 {
     Param ([string]$Version)
-    $NewVersion = ‘AssemblyVersion(“‘ + $Version + ‘.*”)’;
+    $NewVersion = ‘AssemblyVersion("‘ + $Version + ‘.*")’;
     foreach ($o in $input)
     {
         Write-output $o.FullName
@@ -34,7 +34,7 @@ function Update-AllAssemblyInfoFiles ( $version )
 }
 
 # validate arguments
-$r= [System.Text.RegularExpressions.Regex]::Match($args[0], “^\d+\.\d+\.\d+$”);
+$r= [System.Text.RegularExpressions.Regex]::Match($args[0], "^\d+\.\d+\.\d+$");
     if ($r.Success)
     {
         Update-AllAssemblyInfoFiles $args[0];
