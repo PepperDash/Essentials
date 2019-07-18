@@ -37,7 +37,7 @@ namespace PepperDash.Essentials.DM
 				// Catch constructor failures, mainly dues to IPID
 				try
 				{
-                    if(typeName.StartsWith("dmTx200"))
+                    if(typeName.StartsWith("dmtx200"))
                         return new DmTx200Controller(key, name, new DmTx200C2G(ipid, Global.ControlSystem));
 					if (typeName.StartsWith("dmtx201"))
 						return new DmTx201XController(key, name, new DmTx201S(ipid, Global.ControlSystem));
@@ -93,7 +93,7 @@ namespace PepperDash.Essentials.DM
 					chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
 					chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps)
 					{
-						if (typeName.StartsWith("dmTx200"))
+						if (typeName.StartsWith("dmtx200"))
 							return new DmTx200Controller(key, name, new DmTx200C2G(chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx201"))
 							return new DmTx201XController(key, name, new DmTx201C(chassis.Inputs[num]));
@@ -112,7 +112,7 @@ namespace PepperDash.Essentials.DM
 					}
 					else
 					{
-						if (typeName.StartsWith("dmTx200"))
+						if (typeName.StartsWith("dmtx200"))
 							return new DmTx200Controller(key, name, new DmTx200C2G(ipid, chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx201"))
 							return new DmTx201XController(key, name, new DmTx201C(ipid, chassis.Inputs[num]));
