@@ -21,8 +21,8 @@ namespace PepperDash.Essentials.DM
 	/// Builds a controller for basic DM-RMCs with Com and IR ports and no control functions
 	/// 
 	/// </summary>
-	public class DmChassisController : CrestronGenericBaseDevice, IRoutingInputsOutputs, IRouting, IHasFeedback//, ICardPortsDevice
-	{
+	public class DmChassisController : CrestronGenericBaseDevice, IRoutingInputsOutputs, IRouting, IHasFeedback
+    {
 		public DmMDMnxn Chassis { get; private set; }
 		
 		// Feedbacks for EssentialDM
@@ -117,82 +117,6 @@ namespace PepperDash.Essentials.DM
 				controller.InputNames = properties.InputNames;
 				controller.OutputNames = properties.OutputNames;
 				return controller;
-
-
-				//DmChassisController controller = null;
-
-				//if (type == "dmmd8x8")
-				//{
-				//    controller = new DmChassisController(key, name, new DmMd8x8(ipid, Global.ControlSystem));
-
-				//    // add the cards and port names
-				//    foreach (var kvp in properties.InputSlots)
-				//        controller.AddInputCard(kvp.Value, kvp.Key);
-				//    foreach (var kvp in properties.OutputSlots)
-				//    {
-				//        controller.AddOutputCard(kvp.Value, kvp.Key);
-
-				//    }
-
-				//    foreach (var kvp in properties.VolumeControls)
-				//    {
-				//        // get the card
-				//        // check it for an audio-compatible type
-				//        // make a something-something that will make it work
-				//        // retire to mountain village
-				//        var outNum = kvp.Key;
-				//        var card = controller.Chassis.Outputs[outNum].Card;
-				//        Audio.Output audio = null;
-				//        if (card is DmcHdo)
-				//            audio = (card as DmcHdo).Audio;
-				//        else if (card is Dmc4kHdo)
-				//            audio = (card as Dmc4kHdo).Audio;
-				//        if (audio == null)
-				//            continue;
-				//        // wire up the audio to something here...
-				//        controller.AddVolumeControl(outNum, audio);
-				//    }
-
-				//    controller.InputNames = properties.InputNames;
-				//    controller.OutputNames = properties.OutputNames;
-				//    return controller;
-				//}
-				//else if (type == "dmmd16x16")
-				//{
-				//    controller = new DmChassisController(key, name, new DmMd16x16(ipid, Global.ControlSystem));
-
-				//    // add the cards and port names
-				//    foreach (var kvp in properties.InputSlots)
-				//        controller.AddInputCard(kvp.Value, kvp.Key);
-				//    foreach (var kvp in properties.OutputSlots)
-				//    {
-				//        controller.AddOutputCard(kvp.Value, kvp.Key);
-
-				//    }
-
-				//    foreach (var kvp in properties.VolumeControls)
-				//    {
-				//        // get the card
-				//        // check it for an audio-compatible type
-				//        // make a something-something that will make it work
-				//        // retire to mountain village
-				//        var outNum = kvp.Key;
-				//        var card = controller.Chassis.Outputs[outNum].Card;
-				//        Audio.Output audio = null;
-				//        if (card is DmcHdo)
-				//            audio = (card as DmcHdo).Audio;
-				//        else if (card is Dmc4kHdo)
-				//            audio = (card as Dmc4kHdo).Audio;
-				//        if (audio == null)
-				//            continue;
-				//        // wire up the audio to something here...
-				//        controller.AddVolumeControl(outNum, audio);
-				//    }
-
-				//    controller.InputNames = properties.InputNames;
-				//    controller.OutputNames = properties.OutputNames;
-				//    return controller;
-				//}
 			}
 			catch (System.Exception e)
 			{
