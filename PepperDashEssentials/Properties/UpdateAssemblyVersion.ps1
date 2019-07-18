@@ -1,17 +1,4 @@
-﻿#Set-ExecutionPolicy RemoteSigned
-function Usage
-{
-echo "This is ";
-echo “Usage: “;
-echo ” from cmd.exe: “;
-echo ” powershell.exe SetVersion.ps1 2.8.3.0″;
-echo ” “;
-echo ” from powershell.exe prompt: “;
-echo ” .\SetVersion.ps1 2.8.3.0″;
-echo ” “;
-}
-
-function Update-SourceVersion
+﻿function Update-SourceVersion
 {
     Param ([string]$Version)
     $NewVersion = ‘AssemblyVersion("‘ + $Version + ‘.*")’;
@@ -35,14 +22,14 @@ function Update-AllAssemblyInfoFiles ( $version )
 
 # validate arguments
 $r= [System.Text.RegularExpressions.Regex]::Match($args[0], "^\d+\.\d+\.\d+$");
-    if ($r.Success)
-    {
-        Update-AllAssemblyInfoFiles $args[0];
-    }
-    else
-    {
+if ($r.Success)
+{
+    Update-AllAssemblyInfoFiles $args[0];
+}
+else
+{
     echo ” “;
-    echo “Bad Input!”
+    echo “Error: Input version does not match x.y.z format!”
     echo ” “;
-    Usage ;
+    echo "Unable to apply version to AssemblyInfo.cs files";
 }
