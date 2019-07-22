@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
+using Crestron.SimplSharpPro.DM.Cards;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
 
@@ -30,6 +31,8 @@ namespace PepperDash.Essentials.DM
         public Dictionary<uint, StringFeedback> OutputNameFeedbacks { get; private set; }
         public Dictionary<uint, StringFeedback> OutputVideoRouteNameFeedbacks { get; private set; }
         public Dictionary<uint, StringFeedback> OutputAudioRouteNameFeedbacks { get; private set; }
+
+        public FeedbackCollection<Feedback> Feedbacks { get; private set; }
 
         // Need a couple Lists of generic Backplane ports
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
@@ -107,6 +110,274 @@ namespace PepperDash.Essentials.DM
 
             Dmps.DMInputChange += new DMInputEventHandler(Dmps_DMInputChange);
             Dmps.DMOutputChange +=new DMOutputEventHandler(Dmps_DMOutputChange);
+
+            // Default to EnableAudioBreakaway
+            SystemControl.EnableAudioBreakaway.BoolValue = true;
+
+            for (uint x = 1; x <= Dmps.NumberOfSwitcherOutputs; x++)
+            {
+                var tempX = x;
+
+               Card.Dmps3OutputBase outputCard = Dmps.SwitcherOutputs[tempX] as Card.Dmps3OutputBase;
+
+               if (outputCard != null)
+               {
+                    VideoOutputFeedbacks[tempX] = new IntFeedback(() => {
+                        if(outputCard.VideoOutFeedback != null) { return (ushort)outputCard.VideoOutFeedback.Number;}
+                        else { return 0; };
+                    });
+                    AudioOutputFeedbacks[tempX] = new IntFeedback(() =>
+                    {
+                        if (outputCard.AudioOutFeedback != null) { return (ushort)outputCard.AudioOutFeedback.Number; }
+                        else { return 0; };
+                    });
+
+                    OutputNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (outputCard.NameFeedback.StringValue != null)
+                        {
+                            return outputCard.NameFeedback.StringValue;
+                        }
+                        else
+                        {
+                            return "";
+                        }
+                    });                   
+
+                    OutputVideoRouteNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (outputCard.VideoOutFeedback != null)
+                        {
+                            return outputCard.VideoOutFeedback.NameFeedback.StringValue;
+                        }
+                        else
+                        {
+                            return "";
+                        }
+                    });
+                    OutputAudioRouteNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (outputCard.AudioOutFeedback != null)
+                        {
+                            return outputCard.AudioOutFeedback.NameFeedback.StringValue;
+                        }
+                        else
+                        {
+                            return "";
+
+                        }
+                    });
+
+                    OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return outputCard.EndpointOnlineFeedback; });
+
+                    AddOutputCard(tempX, outputCard);    
+                }
+            }
+
+            for (uint x = 1; x <= Dmps.NumberOfSwitcherInputs; x++)
+            {
+                var tempX = x;
+
+                DMInput inputCard = Dmps.SwitcherInputs[tempX] as DMInput;
+
+                if (inputCard != null)
+                {
+                    InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return inputCard.EndpointOnlineFeedback; });
+
+                    VideoInputSyncFeedbacks[tempX] = new BoolFeedback(() =>
+                    {
+                        return inputCard.VideoDetectedFeedback.BoolValue;
+                    });
+                    InputNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (inputCard.NameFeedback.StringValue != null)
+                        {
+                            return inputCard.NameFeedback.StringValue;
+                        }
+                        else
+                        {
+                            return "";
+                        }
+                    });
+                }
+            }
+        }
+
+        public override bool CustomActivate()
+        {
+
+            if (InputNames != null)
+                foreach (var kvp in InputNames)
+                    (Dmps.SwitcherInputs[kvp.Key] as DMInput).Name.StringValue = kvp.Value;
+            if (OutputNames != null)
+                foreach (var kvp in OutputNames)
+                    (Dmps.SwitcherOutputs[kvp.Key] as Card.Dmps3OutputBase).Name.StringValue = kvp.Value;
+
+            return base.CustomActivate();
+        }
+
+        /// <summary>
+        /// Builds the appropriate ports aand callst the appropreate add port method
+        /// </summary>
+        /// <param name="number"></param>
+        /// <param name="inputCard"></param>
+        public void AddInputCard(uint number, DMInput inputCard)
+        {
+            if (inputCard is Card.Dmps3HdmiInputWithoutAnalogAudio)
+            {
+                var hdmiInputCard = inputCard as Card.Dmps3HdmiInput;
+
+                var cecPort = hdmiInputCard.HdmiInputPort;
+
+                AddInputPortWithDebug(number, string.Format("hdmiIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, cecPort);              
+            }
+            else if (inputCard is Card.Dmps3HdmiInput)
+            {
+                var hdmiInputCard = inputCard as Card.Dmps3HdmiInput;
+
+                var cecPort = hdmiInputCard.HdmiInputPort;
+
+                AddInputPortWithDebug(number, string.Format("hdmiIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, cecPort);
+                AddInputPortWithDebug(number, string.Format("audioIn{1}", number), eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
+            }
+            else if (inputCard is Card.Dmps3HdmiVgaInput)
+            {
+                // TODO: Build a virtual TX device and assign the ports to it
+
+                var hdmiVgaInputCard = inputCard as Card.Dmps3HdmiVgaInput;
+
+                DmpsInternalVirtualHdmiVgaInputController inputCardController = new DmpsInternalVirtualHdmiVgaInputController(Key +
+                    string.Format("-input{0}", number), string.Format("InternalInputController-{0}", number), hdmiVgaInputCard);
+
+                DeviceManager.AddDevice(inputCardController);
+
+                AddInputPortWithDebug(number, string.Format("input{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.BackplaneOnly);
+            }
+            else if (inputCard is Card.Dmps3HdmiVgaBncInput)
+            {
+                // TODO: Build a virtual TX device and assign the ports to it
+
+                var hdmiVgaBncInputCard = inputCard as Card.Dmps3HdmiVgaBncInput;
+
+                DmpsInternalVirtualHdmiVgaBncInputController inputCardController = new DmpsInternalVirtualHdmiVgaBncInputController(Key +
+                    string.Format("-input{0}", number), string.Format("InternalInputController-{0}", number), hdmiVgaBncInputCard);
+
+                DeviceManager.AddDevice(inputCardController);
+
+                AddInputPortWithDebug(number, string.Format("input{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.BackplaneOnly);
+
+            }
+            else if (inputCard is Card.Dmps3DmInput)
+            {
+                var hdmiInputCard = inputCard as Card.Dmps3DmInput;
+
+                var cecPort = hdmiInputCard.DmInputPort;
+
+                AddInputPortWithDebug(number, string.Format("dmIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat, cecPort);
+            }
+            else if (inputCard is Card.Dmps3AirMediaInput)
+            {
+                var airMediaInputCard = inputCard as Card.Dmps3AirMediaInput;
+
+                AddInputPortWithDebug(number, string.Format("airMediaIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Streaming);
+            }
+        }
+
+
+        /// <summary>
+        /// Adds InputPort
+        /// </summary>
+        void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType)
+        {
+            var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
+            Debug.Console(2, this, "Adding input port '{0}'", portKey);
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this);
+
+            InputPorts.Add(inputPort);
+        }
+
+        /// <summary>
+        /// Adds InputPort and sets Port as ICec object
+        /// </summary>
+        void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, ICec cecPort)
+        {
+            var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
+            Debug.Console(2, this, "Adding input port '{0}'", portKey);
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this);
+
+            if (cecPort != null)
+                inputPort.Port = cecPort;
+
+            InputPorts.Add(inputPort);
+        }
+
+        /// <summary>
+        /// Builds the appropriate ports and calls the appropriate add port method
+        /// </summary>
+        /// <param name="number"></param>
+        /// <param name="outputCard"></param>
+        public void AddOutputCard(uint number, Card.Dmps3OutputBase outputCard)
+        {
+            if (outputCard is Card.Dmps3HdmiOutput)
+            {
+                var hdmiOutputCard = outputCard as Card.Dmps3HdmiOutput;
+
+                var cecPort = hdmiOutputCard.HdmiOutputPort;
+
+                AddHdmiOutputPort(number, cecPort);
+            }
+            else if (outputCard is Card.Dmps3DmOutput)
+            {
+                var dmOutputCard = outputCard as Card.Dmps3DmOutput;
+
+                var cecPort = dmOutputCard.DmOutputPort;
+
+                AddDmOutputPort(number);
+            }
+        }
+
+        /// <summary>
+        /// Adds an HDMI output port
+        /// </summary>
+        /// <param name="number"></param>
+        /// <param name="cecPort"></param>
+        void AddHdmiOutputPort(uint number, ICec cecPort)
+        {
+            AddOutputPortWithDebug(number, string.Format("hdmiOut{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, number, cecPort);
+        }
+
+        /// <summary>
+        /// Adds a DM output port
+        /// </summary>
+        /// <param name="number"></param>
+        void AddDmOutputPort(uint number)
+        {
+            AddOutputPortWithDebug(number, string.Format("dmOut{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat, number);
+        }
+
+        /// <summary>
+        /// Adds OutputPort
+        /// </summary>
+        void AddOutputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, object selector)
+        {
+            var portKey = string.Format("outputCard{0}--{1}", cardNum, portName);
+            Debug.Console(2, this, "Adding output port '{0}'", portKey);
+            OutputPorts.Add(new RoutingOutputPort(portKey, sigType, portType, selector, this));
+        }
+
+        /// <summary>
+        /// Adds OutputPort and sets Port as ICec object
+        /// </summary>
+        void AddOutputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, object selector, ICec cecPort)
+        {
+            var portKey = string.Format("outputCard{0}--{1}", cardNum, portName);
+            Debug.Console(2, this, "Adding output port '{0}'", portKey);
+            var outputPort = new RoutingOutputPort(portKey, sigType, portType, selector, this);
+
+            if (cecPort != null)
+                outputPort.Port = cecPort;
+
+            OutputPorts.Add(outputPort);
         }
 
         void Dmps_DMInputChange(Switch device, DMInputEventArgs args)
@@ -140,6 +411,9 @@ namespace PepperDash.Essentials.DM
         void Dmps_DMOutputChange(Switch device, DMOutputEventArgs args)
         {
             var output = args.Number;
+
+            Card.Dmps3OutputBase outputCard = Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
+
             if (args.EventId == DMOutputEventIds.VolumeEventId &&
                 VolumeControls.ContainsKey(output))
             {
@@ -151,14 +425,13 @@ namespace PepperDash.Essentials.DM
             }
             else if (args.EventId == DMOutputEventIds.VideoOutEventId)
             {
-                if (Dmps.SwitcherOutputs[output].VideoOutFeedback != null)
+                if (outputCard != null && outputCard.VideoOutFeedback != null)
                 {
-                    Debug.Console(2, this, "DMSwitchVideo:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].VideoOutFeedback.Number, output);
+                    Debug.Console(2, this, "DMSwitchVideo:{0} Routed Input:{1} Output:{2}'", this.Name, outputCard.VideoOutFeedback.Number, output);
                 }
                 if (VideoOutputFeedbacks.ContainsKey(output))
                 {
                     VideoOutputFeedbacks[output].FireUpdate();
-
                 }
                 if (OutputVideoRouteNameFeedbacks.ContainsKey(output))
                 {
@@ -167,9 +440,9 @@ namespace PepperDash.Essentials.DM
             }
             else if (args.EventId == DMOutputEventIds.AudioOutEventId)
             {
-                if (Dmps.SwitcherOutputsoutput].AudioOutFeedback != null)
+                if (outputCard != null && outputCard.AudioOutFeedback != null)
                 {
-                    Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].AudioOutFeedback.Number, output);
+                    Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name, outputCard.AudioOutFeedback.Number, output);
                 }
                 if (AudioOutputFeedbacks.ContainsKey(output))
                 {
@@ -183,5 +456,61 @@ namespace PepperDash.Essentials.DM
             }
 
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pnt"></param>
+        void StartOffTimer(PortNumberType pnt)
+        {
+            if (RouteOffTimers.ContainsKey(pnt))
+                return;
+            RouteOffTimers[pnt] = new CTimer(o =>
+            {
+                ExecuteSwitch(0, pnt.Number, pnt.Type);
+            }, RouteOffTime);
+        }
+
+        #region IRouting Members
+
+        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType sigType)
+        {
+            Debug.Console(2, this, "Making an awesome DM route from {0} to {1} {2}", inputSelector, outputSelector, sigType);
+
+            var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
+            var output = Convert.ToUInt32(outputSelector);
+            // Check to see if there's an off timer waiting on this and if so, cancel
+            var key = new PortNumberType(output, sigType);
+            if (input == 0)
+            {
+                StartOffTimer(key);
+            }
+            else
+            {
+                if (RouteOffTimers.ContainsKey(key))
+                {
+                    Debug.Console(2, this, "{0} cancelling route off due to new source", output);
+                    RouteOffTimers[key].Stop();
+                    RouteOffTimers.Remove(key);
+                }
+            }
+
+            DMInput inCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
+
+            // NOTE THAT THESE ARE NOTS - TO CATCH THE AudioVideo TYPE
+            if (sigType != eRoutingSignalType.Audio)
+            {
+                SystemControl.VideoEnter.BoolValue = true;
+                (Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase).VideoOut = inCard;
+            }
+
+            if (sigType != eRoutingSignalType.Video)
+            {
+                SystemControl.AudioEnter.BoolValue = true;
+                (Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase).AudioOut = inCard;
+            }
+        }
+
+        #endregion
     }
 }

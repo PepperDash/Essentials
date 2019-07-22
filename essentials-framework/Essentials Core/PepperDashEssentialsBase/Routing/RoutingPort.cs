@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.Core
 	{
 		Audio = 1,
 		Video = 2,
-		AudioVideo = 3
+		AudioVideo = 4
 	}
 
 	public enum eRoutingPortConnectionType

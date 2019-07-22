@@ -48,6 +48,26 @@ namespace PepperDash.Essentials.DM
 			};
 		}
 
+        public static VideoStatusFuncsWrapper GetVgaInputStatusFuncs(VgaDviInputPort port)
+        {
+            return new VideoStatusFuncsWrapper
+            {
+                HdcpActiveFeedbackFunc = () => port.VideoAttributes.HdcpActiveFeedback.BoolValue,
+                HdcpStateFeedbackFunc = () => port.VideoAttributes.HdcpStateFeedback.ToString(),
+                VideoResolutionFeedbackFunc = () => port.VideoAttributes.GetVideoResolutionString(),
+                VideoSyncFeedbackFunc = () => port.SyncDetectedFeedback.BoolValue
+            };
+        }
+
+        public static VideoStatusFuncsWrapper GetBncInputStatusFuncs(Component port)
+        {
+            return new VideoStatusFuncsWrapper
+            {
+                VideoResolutionFeedbackFunc = () => port.VideoAttributes.GetVideoResolutionString(),
+                VideoSyncFeedbackFunc = () => port.VideoDetectedFeedback.BoolValue
+            };
+        }
+
 		public static VideoStatusFuncsWrapper GetDmInputStatusFuncs(DMInputPort port)
 		{
 			return new VideoStatusFuncsWrapper

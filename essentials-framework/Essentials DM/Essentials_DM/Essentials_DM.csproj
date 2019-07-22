@@ -97,9 +97,10 @@
     <Compile Include="Cards REMOVE\DmInputCardBase.cs" />
     <Compile Include="Chassis\DmCardAudioOutput.cs" />
     <Compile Include="Chassis\DmChassisController.cs" />
+    <Compile Include="Chassis\DmpsInternalVirtualDmTxController.cs" />
     <Compile Include="Chassis\DmpsRoutingController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
-    <Compile Include="Config\DmpsChassisConfig.cs" />
+    <Compile Include="Config\DmpsRoutingConfig.cs" />
     <Compile Include="Config\DmRmcConfig.cs" />
     <Compile Include="Config\DmTxConfig.cs" />
     <Compile Include="Config\DMChassisConfig.cs" />
