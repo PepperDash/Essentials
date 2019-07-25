@@ -49,14 +49,12 @@ namespace PepperDash.Essentials.DM
         Dictionary<PortNumberType, CTimer> RouteOffTimers = new Dictionary<PortNumberType, CTimer>();
 
         public static DmpsRoutingController GetDmpsRoutingController(string key, string name,
-            string type, DmpsRoutingPropertiesConfig properties)
+            DmpsRoutingPropertiesConfig properties)
         {
             try
             {
                 ISystemControl systemControl = null;
-
-                type = type.ToLower();
-
+ 
                 systemControl = Global.ControlSystem.SystemControl as ISystemControl;
 
                 if (systemControl == null)
@@ -90,8 +88,8 @@ namespace PepperDash.Essentials.DM
             : base(key, name)
         {
             Dmps = Global.ControlSystem;
-
             SystemControl = systemControl;
+
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
             VolumeControls = new Dictionary<uint, DmCardAudioOutputController>();
@@ -112,13 +110,27 @@ namespace PepperDash.Essentials.DM
             Dmps.DMOutputChange +=new DMOutputEventHandler(Dmps_DMOutputChange);
 
             // Default to EnableAudioBreakaway
-            SystemControl.EnableAudioBreakaway.BoolValue = true;
+            //SystemControl.EnableAudioBreakaway. = true;
 
-            for (uint x = 1; x <= Dmps.NumberOfSwitcherOutputs; x++)
+            Debug.Console(1, this, "{0} Switcher Inputs Present.", Dmps.NumberOfSwitcherInputs);
+            Debug.Console(1, this, "{0} Switcher Outputs Present.", Dmps.NumberOfSwitcherOutputs);
+
+
+
+            uint tempX = 1;
+
+            foreach (var card in Dmps.SwitcherOutputs)
             {
-                var tempX = x;
+                Debug.Console(1, this, "Output Card Type: {0}", card.CardInputOutputType);
 
-               Card.Dmps3OutputBase outputCard = Dmps.SwitcherOutputs[tempX] as Card.Dmps3OutputBase;
+                var outputCard = card as Card.Dmps3OutputBase;
+            //}
+
+            //for (uint x = 1; x <= Dmps.NumberOfSwitcherOutputs; x++)
+            //{
+                //var tempX = x;
+
+               //Card.Dmps3OutputBase outputCard = Dmps.SwitcherOutputs[tempX] as Card.Dmps3OutputBase;
 
                if (outputCard != null)
                {
@@ -170,15 +182,25 @@ namespace PepperDash.Essentials.DM
 
                     OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return outputCard.EndpointOnlineFeedback; });
 
-                    AddOutputCard(tempX, outputCard);    
+                    AddOutputCard(tempX, outputCard);  
+  
+                    tempX++;
                 }
             }
 
-            for (uint x = 1; x <= Dmps.NumberOfSwitcherInputs; x++)
-            {
-                var tempX = x;
+            tempX = 1;
 
-                DMInput inputCard = Dmps.SwitcherInputs[tempX] as DMInput;
+            foreach (var card in Dmps.SwitcherInputs)
+            {
+                var inputCard = card as DMInput;
+
+                Debug.Console(1, this, "Output Card Type: {0}", card.CardInputOutputType);
+
+            //for (uint x = 1; x <= Dmps.NumberOfSwitcherInputs; x++)
+            //{
+            //    var tempX = x;
+
+            //    DMInput inputCard = Dmps.SwitcherInputs[tempX] as DMInput;
 
                 if (inputCard != null)
                 {
@@ -200,6 +222,8 @@ namespace PepperDash.Essentials.DM
                         }
                     });
                 }
+
+                AddInputCard(tempX, inputCard);
             }
         }
 
@@ -388,7 +412,7 @@ namespace PepperDash.Essentials.DM
             {
                 case (DMInputEventIds.OnlineFeedbackEventId):
                     {
-                        Debug.Console(2, this, "DMINput OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
+                        Debug.Console(2, this, "DM Input OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
                         InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
                         break;
                     }
