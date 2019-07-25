@@ -39,7 +39,8 @@ namespace PepperDash.Essentials.Bridges
 					Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
 					var TxKey = dmChassis.TxDictionary[ioSlot];
 					var TxDevice = DeviceManager.GetDeviceForKey(TxKey) as DmTxControllerBase;
-					TxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+                    dmChassis.InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+					//TxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
 					// TxDevice.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
 					// trilist.SetUShortSigAction((ApiMap.HdcpSupport[ioSlot]), u => TxDevice.SetHdcpSupportAll((ePdtHdcpSupport)(u)));
 					// TxDevice.HdcpSupportAllFeedback.LinkInputSig(trilist.UShortInput[joinMap. + ioSlot]);
@@ -54,7 +55,9 @@ namespace PepperDash.Essentials.Bridges
 					Debug.Console(2, "Creating Rx Feedbacks {0}", ioSlot);
 					var RxKey = dmChassis.RxDictionary[ioSlot];
 					var RxDevice = DeviceManager.GetDeviceForKey(RxKey) as DmRmcControllerBase;
-					RxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
+                    dmChassis.OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
+
+					//RxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
 				}
                 // Feedback
                 dmChassis.VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo + ioSlot]);
