@@ -115,15 +115,13 @@ namespace PepperDash.Essentials.DM
             Debug.Console(1, this, "{0} Switcher Inputs Present.", Dmps.NumberOfSwitcherInputs);
             Debug.Console(1, this, "{0} Switcher Outputs Present.", Dmps.NumberOfSwitcherOutputs);
 
-
-
             uint tempX = 1;
 
             foreach (var card in Dmps.SwitcherOutputs)
             {
-                Debug.Console(1, this, "Output Card Type: {0}", card.CardInputOutputType);
+                Debug.Console(1, this, "Output Card Type: {0}", card.CardInputOutputType.ToString());
 
-                var outputCard = card as Card.Dmps3OutputBase;
+                var outputCard = card as DMOutput;
             //}
 
             //for (uint x = 1; x <= Dmps.NumberOfSwitcherOutputs; x++)
@@ -194,7 +192,7 @@ namespace PepperDash.Essentials.DM
             {
                 var inputCard = card as DMInput;
 
-                Debug.Console(1, this, "Output Card Type: {0}", card.CardInputOutputType);
+                Debug.Console(1, this, "Output Card Type: {0}", card.CardInputOutputType.ToString());
 
             //for (uint x = 1; x <= Dmps.NumberOfSwitcherInputs; x++)
             //{
@@ -340,7 +338,7 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         /// <param name="number"></param>
         /// <param name="outputCard"></param>
-        public void AddOutputCard(uint number, Card.Dmps3OutputBase outputCard)
+        public void AddOutputCard(uint number, DMOutput outputCard)
         {
             if (outputCard is Card.Dmps3HdmiOutput)
             {
@@ -349,6 +347,8 @@ namespace PepperDash.Essentials.DM
                 var cecPort = hdmiOutputCard.HdmiOutputPort;
 
                 AddHdmiOutputPort(number, cecPort);
+
+                return;
             }
             else if (outputCard is Card.Dmps3DmOutput)
             {
@@ -357,6 +357,28 @@ namespace PepperDash.Essentials.DM
                 var cecPort = dmOutputCard.DmOutputPort;
 
                 AddDmOutputPort(number);
+                return;
+
+            }
+            else if (outputCard is Card.Dmps3ProgramOutput)
+            {
+                // TODO: Deal with audio output
+            }
+            else if (outputCard is Card.Dmps3AuxOutput)
+            {
+                // TODO: Deal with audio output
+            }
+            else if (outputCard is Card.Dmps3CodecOutput)
+            {
+
+            }
+            else if (outputCard is Card.Dmps3DialerOutput)
+            {
+
+            }
+            else
+            {
+                Debug.Console(1, this, "Output Card is of a type not currently handled:", outputCard.CardInputOutputType.ToString());
             }
         }
 
