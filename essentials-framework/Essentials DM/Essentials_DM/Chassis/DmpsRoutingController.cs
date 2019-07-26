@@ -106,43 +106,73 @@ namespace PepperDash.Essentials.DM
             InputEndpointOnlineFeedbacks = new Dictionary<uint, BoolFeedback>();
             OutputEndpointOnlineFeedbacks = new Dictionary<uint, BoolFeedback>();
 
-            Dmps.DMInputChange += new DMInputEventHandler(Dmps_DMInputChange);
-            Dmps.DMOutputChange +=new DMOutputEventHandler(Dmps_DMOutputChange);
 
             // Default to EnableAudioBreakaway
-            //SystemControl.EnableAudioBreakaway. = true;
+            //if (SystemControl.EnableAudioBreakawayFeedback != null && !SystemControl.EnableAudioBreakawayFeedback.BoolValue)
+            //{
+            //    Debug.Console(1, this, "Enabling Audio Breakaway");
+            //    SystemControl.EnableAudioBreakaway.BoolValue = true;
+            //}
+            //if(!SystemControl.VideoEnter.BoolValue)
+            //    SystemControl.VideoEnter.BoolValue = true;
+            //if(!SystemControl.AudioEnter.BoolValue)
+            //    SystemControl.AudioEnter.BoolValue = true;
 
-            Debug.Console(1, this, "{0} Switcher Inputs Present.", Dmps.NumberOfSwitcherInputs);
-            Debug.Console(1, this, "{0} Switcher Outputs Present.", Dmps.NumberOfSwitcherOutputs);
+            Debug.Console(1, this, "{0} Switcher Inputs Present.", Dmps.SwitcherInputs.Count);
+            Debug.Console(1, this, "{0} Switcher Outputs Present.", Dmps.SwitcherOutputs.Count);
 
-            uint tempX = 1;
+            SetupOutputCards();
 
+            SetupInputCards();
+        }
+
+        public override bool CustomActivate()
+        {
+
+
+            // Set input and output names from config
+            if (InputNames != null)
+                foreach (var kvp in InputNames)
+                    (Dmps.SwitcherInputs[kvp.Key] as DMInput).Name.StringValue = kvp.Value;
+            if (OutputNames != null)
+                foreach (var kvp in OutputNames)
+                    (Dmps.SwitcherOutputs[kvp.Key] as Card.Dmps3OutputBase).Name.StringValue = kvp.Value;
+
+            // Subscribe to events
+            Dmps.DMInputChange += new DMInputEventHandler(Dmps_DMInputChange);
+            Dmps.DMOutputChange += new DMOutputEventHandler(Dmps_DMOutputChange);
+
+            return base.CustomActivate();
+        }
+
+
+
+        /// <summary>
+        /// Iterate the SwitcherOutputs collection to setup feedbacks and add routing ports
+        /// </summary>
+        void SetupOutputCards()
+        {
             foreach (var card in Dmps.SwitcherOutputs)
             {
-                Debug.Console(1, this, "Output Card Type: {0}", card.CardInputOutputType.ToString());
 
                 var outputCard = card as DMOutput;
-            //}
 
-            //for (uint x = 1; x <= Dmps.NumberOfSwitcherOutputs; x++)
-            //{
-                //var tempX = x;
+                Debug.Console(1, this, "Adding Output Card Number {0} Type: {1}", outputCard.Number, outputCard.CardInputOutputType.ToString());
 
-               //Card.Dmps3OutputBase outputCard = Dmps.SwitcherOutputs[tempX] as Card.Dmps3OutputBase;
-
-               if (outputCard != null)
-               {
-                    VideoOutputFeedbacks[tempX] = new IntFeedback(() => {
-                        if(outputCard.VideoOutFeedback != null) { return (ushort)outputCard.VideoOutFeedback.Number;}
+                if (outputCard != null)
+                {
+                    VideoOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
+                    {
+                        if (outputCard.VideoOutFeedback != null) { return (ushort)outputCard.VideoOutFeedback.Number; }
                         else { return 0; };
                     });
-                    AudioOutputFeedbacks[tempX] = new IntFeedback(() =>
+                    AudioOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
                     {
                         if (outputCard.AudioOutFeedback != null) { return (ushort)outputCard.AudioOutFeedback.Number; }
                         else { return 0; };
                     });
 
-                    OutputNameFeedbacks[tempX] = new StringFeedback(() =>
+                    OutputNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
                     {
                         if (outputCard.NameFeedback.StringValue != null)
                         {
@@ -152,9 +182,9 @@ namespace PepperDash.Essentials.DM
                         {
                             return "";
                         }
-                    });                   
+                    });
 
-                    OutputVideoRouteNameFeedbacks[tempX] = new StringFeedback(() =>
+                    OutputVideoRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
                     {
                         if (outputCard.VideoOutFeedback != null)
                         {
@@ -165,7 +195,7 @@ namespace PepperDash.Essentials.DM
                             return "";
                         }
                     });
-                    OutputAudioRouteNameFeedbacks[tempX] = new StringFeedback(() =>
+                    OutputAudioRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
                     {
                         if (outputCard.AudioOutFeedback != null)
                         {
@@ -178,37 +208,33 @@ namespace PepperDash.Essentials.DM
                         }
                     });
 
-                    OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return outputCard.EndpointOnlineFeedback; });
+                    OutputEndpointOnlineFeedbacks[outputCard.Number] = new BoolFeedback(() => { return outputCard.EndpointOnlineFeedback; });
 
-                    AddOutputCard(tempX, outputCard);  
-  
-                    tempX++;
+                    AddOutputCard(outputCard.Number, outputCard);
                 }
             }
+        }
 
-            tempX = 1;
-
+        /// <summary>
+        /// Iterate the SwitcherInputs collection to setup feedbacks and add routing ports
+        /// </summary>
+        void SetupInputCards()
+        {
             foreach (var card in Dmps.SwitcherInputs)
             {
                 var inputCard = card as DMInput;
 
-                Debug.Console(1, this, "Output Card Type: {0}", card.CardInputOutputType.ToString());
-
-            //for (uint x = 1; x <= Dmps.NumberOfSwitcherInputs; x++)
-            //{
-            //    var tempX = x;
-
-            //    DMInput inputCard = Dmps.SwitcherInputs[tempX] as DMInput;
+                Debug.Console(1, this, "Adding Input Card Number {0} Type: {1}", inputCard.Number, inputCard.CardInputOutputType.ToString());
 
                 if (inputCard != null)
                 {
-                    InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return inputCard.EndpointOnlineFeedback; });
+                    InputEndpointOnlineFeedbacks[inputCard.Number] = new BoolFeedback(() => { return inputCard.EndpointOnlineFeedback; });
 
-                    VideoInputSyncFeedbacks[tempX] = new BoolFeedback(() =>
+                    VideoInputSyncFeedbacks[inputCard.Number] = new BoolFeedback(() =>
                     {
                         return inputCard.VideoDetectedFeedback.BoolValue;
                     });
-                    InputNameFeedbacks[tempX] = new StringFeedback(() =>
+                    InputNameFeedbacks[inputCard.Number] = new StringFeedback(() =>
                     {
                         if (inputCard.NameFeedback.StringValue != null)
                         {
@@ -221,21 +247,8 @@ namespace PepperDash.Essentials.DM
                     });
                 }
 
-                AddInputCard(tempX, inputCard);
+                AddInputCard(inputCard.Number, inputCard);
             }
-        }
-
-        public override bool CustomActivate()
-        {
-
-            if (InputNames != null)
-                foreach (var kvp in InputNames)
-                    (Dmps.SwitcherInputs[kvp.Key] as DMInput).Name.StringValue = kvp.Value;
-            if (OutputNames != null)
-                foreach (var kvp in OutputNames)
-                    (Dmps.SwitcherOutputs[kvp.Key] as Card.Dmps3OutputBase).Name.StringValue = kvp.Value;
-
-            return base.CustomActivate();
         }
 
         /// <summary>
@@ -251,7 +264,7 @@ namespace PepperDash.Essentials.DM
 
                 var cecPort = hdmiInputCard.HdmiInputPort;
 
-                AddInputPortWithDebug(number, string.Format("hdmiIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, cecPort);              
+                AddInputPortWithDebug(number, string.Format("HdmiIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, cecPort);              
             }
             else if (inputCard is Card.Dmps3HdmiInput)
             {
@@ -259,8 +272,8 @@ namespace PepperDash.Essentials.DM
 
                 var cecPort = hdmiInputCard.HdmiInputPort;
 
-                AddInputPortWithDebug(number, string.Format("hdmiIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, cecPort);
-                AddInputPortWithDebug(number, string.Format("audioIn{1}", number), eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
+                AddInputPortWithDebug(number, string.Format("HdmiIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, cecPort);
+                AddInputPortWithDebug(number, string.Format("HudioIn{1}", number), eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
             }
             else if (inputCard is Card.Dmps3HdmiVgaInput)
             {
@@ -269,11 +282,11 @@ namespace PepperDash.Essentials.DM
                 var hdmiVgaInputCard = inputCard as Card.Dmps3HdmiVgaInput;
 
                 DmpsInternalVirtualHdmiVgaInputController inputCardController = new DmpsInternalVirtualHdmiVgaInputController(Key +
-                    string.Format("-input{0}", number), string.Format("InternalInputController-{0}", number), hdmiVgaInputCard);
+                    string.Format("-HdmiVgaIn{0}", number), string.Format("InternalInputController-{0}", number), hdmiVgaInputCard);
 
                 DeviceManager.AddDevice(inputCardController);
 
-                AddInputPortWithDebug(number, string.Format("input{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.BackplaneOnly);
+                AddInputPortWithDebug(number, string.Format("HdmiVgaIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.BackplaneOnly);
             }
             else if (inputCard is Card.Dmps3HdmiVgaBncInput)
             {
@@ -282,11 +295,11 @@ namespace PepperDash.Essentials.DM
                 var hdmiVgaBncInputCard = inputCard as Card.Dmps3HdmiVgaBncInput;
 
                 DmpsInternalVirtualHdmiVgaBncInputController inputCardController = new DmpsInternalVirtualHdmiVgaBncInputController(Key +
-                    string.Format("-input{0}", number), string.Format("InternalInputController-{0}", number), hdmiVgaBncInputCard);
+                    string.Format("-HdmiVgaBncIn{0}", number), string.Format("InternalInputController-{0}", number), hdmiVgaBncInputCard);
 
                 DeviceManager.AddDevice(inputCardController);
 
-                AddInputPortWithDebug(number, string.Format("input{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.BackplaneOnly);
+                AddInputPortWithDebug(number, string.Format("HdmiVgaBncIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.BackplaneOnly);
 
             }
             else if (inputCard is Card.Dmps3DmInput)
@@ -295,13 +308,13 @@ namespace PepperDash.Essentials.DM
 
                 var cecPort = hdmiInputCard.DmInputPort;
 
-                AddInputPortWithDebug(number, string.Format("dmIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat, cecPort);
+                AddInputPortWithDebug(number, string.Format("DmIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat, cecPort);
             }
             else if (inputCard is Card.Dmps3AirMediaInput)
             {
                 var airMediaInputCard = inputCard as Card.Dmps3AirMediaInput;
 
-                AddInputPortWithDebug(number, string.Format("airMediaIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Streaming);
+                AddInputPortWithDebug(number, string.Format("AirMediaIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Streaming);
             }
         }
 
@@ -358,28 +371,71 @@ namespace PepperDash.Essentials.DM
 
                 AddDmOutputPort(number);
                 return;
-
             }
             else if (outputCard is Card.Dmps3ProgramOutput)
             {
-                // TODO: Deal with audio output
+                AddAudioOnlyOutputPort(number, "Program");
+                return;
             }
             else if (outputCard is Card.Dmps3AuxOutput)
             {
-                // TODO: Deal with audio output
+                if(outputCard.CardInputOutputType == eCardInputOutputType.Dmps3Aux1Output)
+                    AddAudioOnlyOutputPort(number, "Aux1");
+                else if(outputCard.CardInputOutputType == eCardInputOutputType.Dmps3Aux2Output)
+                    AddAudioOnlyOutputPort(number, "Aux2");
+                return;
             }
             else if (outputCard is Card.Dmps3CodecOutput)
             {
-
+                if (number == (uint)CrestronControlSystem.eDmps300cOutputs.Codec1 
+                    || number == (uint)CrestronControlSystem.eDmps3200cOutputs.Codec1
+                    || number == (uint)CrestronControlSystem.eDmps3300cAecOutputs.Codec1
+                    || number == (uint)CrestronControlSystem.eDmps34K250COutputs.Codec1
+                    || number == (uint)CrestronControlSystem.eDmps34K350COutputs.Codec1)
+                    AddAudioOnlyOutputPort(number, CrestronControlSystem.eDmps300cOutputs.Codec1.ToString());
+                else if (number == (uint)CrestronControlSystem.eDmps300cOutputs.Codec2
+                    || number == (uint)CrestronControlSystem.eDmps3200cOutputs.Codec2
+                    || number == (uint)CrestronControlSystem.eDmps3300cAecOutputs.Codec2
+                    || number == (uint)CrestronControlSystem.eDmps34K250COutputs.Codec2
+                    || number == (uint)CrestronControlSystem.eDmps34K350COutputs.Codec2)
+                    AddAudioOnlyOutputPort(number, CrestronControlSystem.eDmps300cOutputs.Codec2.ToString());
+                return;
             }
             else if (outputCard is Card.Dmps3DialerOutput)
             {
-
+                AddAudioOnlyOutputPort(number, "Dialer");
+                return;
+            }
+            else if (outputCard is Card.Dmps3DigitalMixOutput)
+            {
+                if (number == (uint)CrestronControlSystem.eDmps34K250COutputs.Mix1
+                    || number == (uint)CrestronControlSystem.eDmps34K300COutputs.Mix1
+                    || number == (uint)CrestronControlSystem.eDmps34K350COutputs.Mix1)
+                    AddAudioOnlyOutputPort(number, CrestronControlSystem.eDmps34K250COutputs.Mix1.ToString());
+                if (number == (uint)CrestronControlSystem.eDmps34K250COutputs.Mix2
+                    || number == (uint)CrestronControlSystem.eDmps34K300COutputs.Mix2
+                    || number == (uint)CrestronControlSystem.eDmps34K350COutputs.Mix2)
+                    AddAudioOnlyOutputPort(number, CrestronControlSystem.eDmps34K250COutputs.Mix2.ToString());
+                return;
+            }
+            else if (outputCard is Card.Dmps3AecOutput)
+            {
+                AddAudioOnlyOutputPort(number, "Aec");
+                return;
             }
             else
             {
                 Debug.Console(1, this, "Output Card is of a type not currently handled:", outputCard.CardInputOutputType.ToString());
             }
+        }
+
+        /// <summary>
+        /// Adds an Audio only output port
+        /// </summary>
+        /// <param name="number"></param>
+        void AddAudioOnlyOutputPort(uint number, string portName)
+        {
+            AddOutputPortWithDebug(number, portName, eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio, number);
         }
 
         /// <summary>
@@ -456,9 +512,11 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void Dmps_DMOutputChange(Switch device, DMOutputEventArgs args)
         {
+            Debug.Console(2, this, "DMOutputChange Output: {0} EventId: {1}", args.Number, args.EventId.ToString());
+
             var output = args.Number;
 
-            Card.Dmps3OutputBase outputCard = Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
+            DMOutput outputCard = Dmps.SwitcherOutputs[output] as DMOutput;
 
             if (args.EventId == DMOutputEventIds.VolumeEventId &&
                 VolumeControls.ContainsKey(output))
@@ -543,18 +601,19 @@ namespace PepperDash.Essentials.DM
 
             DMInput inCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
 
+
             // NOTE THAT THESE ARE NOTS - TO CATCH THE AudioVideo TYPE
             if (sigType != eRoutingSignalType.Audio)
             {
-                SystemControl.VideoEnter.BoolValue = true;
+                //SystemControl.VideoEnter.BoolValue = true;
                 (Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase).VideoOut = inCard;
             }
 
             if (sigType != eRoutingSignalType.Video)
             {
-                SystemControl.AudioEnter.BoolValue = true;
+                //SystemControl.AudioEnter.BoolValue = true;
                 (Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase).AudioOut = inCard;
-            }
+            }            
         }
 
         #endregion

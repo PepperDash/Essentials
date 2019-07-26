@@ -142,7 +142,6 @@ namespace PepperDash.Essentials.DM
 			TxDictionary = new Dictionary<uint, string>();
 			RxDictionary = new Dictionary<uint, string>();
 			IsOnline.OutputChange += new EventHandler<FeedbackEventArgs>(IsOnline_OutputChange);
-            //IsOnline.OutputChange += new EventHandler<EventArgs>(this.IsOnline_OutputChange);
 			Chassis.DMInputChange += new DMInputEventHandler(Chassis_DMInputChange);
 			//Chassis.DMSystemChange += new DMSystemEventHandler(Chassis_DMSystemChange);
             Chassis.DMOutputChange += new DMOutputEventHandler(Chassis_DMOutputChange);

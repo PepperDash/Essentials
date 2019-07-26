@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.DM;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -27,7 +28,7 @@ namespace PepperDash.Essentials.Bridges
             dmChassis.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
 
             // Link up outputs
-            for (uint i = 1; i <= dmChassis.Chassis.NumberOfOutputs - 1; i++)
+            for (uint i = 1; i <= dmChassis.Chassis.NumberOfOutputs; i++)
             {
                 var ioSlot = i;
 
@@ -39,7 +40,16 @@ namespace PepperDash.Essentials.Bridges
 					Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
 					var TxKey = dmChassis.TxDictionary[ioSlot];
 					var TxDevice = DeviceManager.GetDeviceForKey(TxKey) as DmTxControllerBase;
-					TxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+                    if (dmChassis.Chassis is DmMd8x8Cpu3 || dmChassis.Chassis is DmMd8x8Cpu3rps
+                        || dmChassis.Chassis is DmMd16x16Cpu3 || dmChassis.Chassis is DmMd16x16Cpu3rps
+                        || dmChassis.Chassis is DmMd32x32Cpu3 || dmChassis.Chassis is DmMd32x32Cpu3rps)
+                    {
+                        dmChassis.InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+                    }
+                    else
+                    {
+                        TxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+                    }
 					// TxDevice.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
 					// trilist.SetUShortSigAction((ApiMap.HdcpSupport[ioSlot]), u => TxDevice.SetHdcpSupportAll((ePdtHdcpSupport)(u)));
 					// TxDevice.HdcpSupportAllFeedback.LinkInputSig(trilist.UShortInput[joinMap. + ioSlot]);
@@ -54,7 +64,16 @@ namespace PepperDash.Essentials.Bridges
 					Debug.Console(2, "Creating Rx Feedbacks {0}", ioSlot);
 					var RxKey = dmChassis.RxDictionary[ioSlot];
 					var RxDevice = DeviceManager.GetDeviceForKey(RxKey) as DmRmcControllerBase;
-					RxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
+                    if (dmChassis.Chassis is DmMd8x8Cpu3 || dmChassis.Chassis is DmMd8x8Cpu3rps
+                        || dmChassis.Chassis is DmMd16x16Cpu3 || dmChassis.Chassis is DmMd16x16Cpu3rps
+                        || dmChassis.Chassis is DmMd32x32Cpu3 || dmChassis.Chassis is DmMd32x32Cpu3rps)
+                    {
+                        dmChassis.OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
+                    }
+                    else
+                    {
+                        RxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
+                    }
 				}
                 // Feedback
                 dmChassis.VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo + ioSlot]);
@@ -66,8 +85,6 @@ namespace PepperDash.Essentials.Bridges
                 dmChassis.InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames + ioSlot]);
                 dmChassis.OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames + ioSlot]);
                 dmChassis.OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentAudioInputNames + ioSlot]);
-              //  dmChassis.InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
-               // dmChassis.OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
             }
         }
 

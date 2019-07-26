@@ -86,19 +86,24 @@ namespace PepperDash.Essentials.DM
         public DmpsInternalVirtualHdmiVgaInputController(string key, string name, DMInput inputCard)
             : base(key, name)
         {
-            var hdmiVgaInputCard = inputCard as Card.Dmps3HdmiVgaInput;
+            Feedbacks = new FeedbackCollection<Feedback>();
 
-            if(hdmiVgaInputCard != null)
+            if (inputCard is Card.Dmps3HdmiVgaInput)
             {
                 InputCard = inputCard as Card.Dmps3HdmiVgaInput;
             
                 HdmiIn = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi,
-                    eDmps3InputVideoSource.Hdmi, this, VideoStatusHelper.GetHdmiInputStatusFuncs(hdmiVgaInputCard.HdmiInputPort));
+                    eDmps3InputVideoSource.Hdmi, this, VideoStatusHelper.GetHdmiInputStatusFuncs(InputCard.HdmiInputPort));
                 VgaIn = new RoutingInputPortWithVideoStatuses(DmPortName.VgaIn,
                     eRoutingSignalType.Video, eRoutingPortConnectionType.Vga, eDmps3InputVideoSource.Vga, this,
                     VideoStatusHelper.GetVgaInputStatusFuncs(InputCard.VgaInputPort));
                 AudioIn = new RoutingInputPort(DmPortName.AudioIn, eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio,
                     eDmps3InputAudioSource.Analog, this);
+
+                if (InputCard.HdmiInputPort.HdcpSupportedLevelFeedback == eHdcpSupportedLevel.Hdcp2xSupport)
+                    HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
+                else if (InputCard.HdmiInputPort.HdcpSupportedLevelFeedback == eHdcpSupportedLevel.Hdcp1xSupport)
+                    HdcpSupportCapability = eHdcpCapabilityType.Hdcp1xSupport;
 
                 var combinedFuncs = new VideoStatusFuncsWrapper
                 {
@@ -125,61 +130,60 @@ namespace PepperDash.Essentials.DM
                         (ActualVideoInput == eDmps3InputVideoSource.Hdmi
                         && InputCard.HdmiInputPort.SyncDetectedFeedback.BoolValue)
                         || (ActualVideoInput == eDmps3InputVideoSource.Vga
-                        && InputCard.VgaInputPort.SyncDetectedFeedback.BoolValue)
+                        && InputCard.VgaInputPort.SyncDetectedFeedback.BoolValue),
+
+                    HasVideoStatusFunc = () =>
+                        (ActualVideoInput == eDmps3InputVideoSource.Hdmi
+                        && HdmiIn.VideoStatus.HasVideoStatusFeedback.BoolValue)
+                        || (ActualVideoInput == eDmps3InputVideoSource.Vga
+                        && VgaIn.VideoStatus.HasVideoStatusFeedback.BoolValue)
                 };
 
                 AnyVideoInput = new RoutingInputPortWithVideoStatuses(DmPortName.AnyVideoIn,
-                    eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.None, 0, this, combinedFuncs);
+                    eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.None, eDmps3InputVideoSource.Auto, this, combinedFuncs);
+
+                ActiveVideoInputFeedback = new StringFeedback("ActiveVideoInput", () => ActualVideoInput.ToString());
+
+                VideoSourceNumericFeedback = new IntFeedback(() =>
+                {
+                    return (int)InputCard.VideoSourceFeedback;
+                });
+                AudioSourceNumericFeedback = new IntFeedback(() =>
+                {
+                    return (int)InputCard.AudioSourceFeedback;
+                });
+
+                HdmiInHdcpCapabilityFeedback = new IntFeedback("HdmiInHdcpCapability", () =>
+                {
+                    if (InputCard.HdmiInputPort.HdcpSupportOnFeedback.BoolValue)
+                        return 1;
+                    else
+                        return 0;
+                });
+
+                // Set Ports for CEC
+                HdmiIn.Port = InputCard.HdmiInputPort;
+
+                VirtualDmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.None, null, this);
+
+                AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,
+                AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
+                AnyVideoInput.VideoStatus.HdcpStateFeedback, AnyVideoInput.VideoStatus.VideoResolutionFeedback,
+                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiInHdcpCapabilityFeedback);
+
+                //AddPostActivationAction(() =>
+                //{
+                    // Link up all of these damned events to the various RoutingPorts via a helper handler
+                    InputCard.HdmiInputPort.InputOutput.BaseDevice.BaseEvent += (o, a) => FowardInputStreamChange(HdmiIn, a.EventId);
+                    InputCard.HdmiInputPort.VideoAttributes.AttributeChange += (o, a) => ForwardVideoAttributeChange(HdmiIn, a.EventId);
+
+                    InputCard.VgaInputPort.InputOutput.BaseDevice.BaseEvent += (o, a) => FowardInputStreamChange(VgaIn, a.EventId);
+                    InputCard.VgaInputPort.VideoAttributes.AttributeChange += (o, a) => ForwardVideoAttributeChange(VgaIn, a.EventId);
+                //});
 
             }
 
-            ActiveVideoInputFeedback = new StringFeedback("ActiveVideoInput", () => ActualVideoInput.ToString());
-
-            VideoSourceNumericFeedback = new IntFeedback(() =>
-            {
-                return (int)InputCard.VideoSourceFeedback;
-            });
-            AudioSourceNumericFeedback = new IntFeedback(() =>
-            {
-                return (int)InputCard.AudioSourceFeedback;
-            });
-
-            HdmiInHdcpCapabilityFeedback = new IntFeedback("HdmiInHdcpCapability", () =>
-            {
-                if (InputCard.HdmiInputPort.HdcpSupportOnFeedback.BoolValue)
-                    return 1;
-                else
-                    return 0;
-            });
-
-            if (InputCard.HdmiInputPort.HdcpSupportedLevelFeedback == eHdcpSupportedLevel.Hdcp2xSupport)
-                HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
-            else if (InputCard.HdmiInputPort.HdcpSupportedLevelFeedback == eHdcpSupportedLevel.Hdcp1xSupport)
-                HdcpSupportCapability = eHdcpCapabilityType.Hdcp1xSupport;
-
-            VirtualDmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.None, null, this);
-
-            AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,
-            AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
-            AnyVideoInput.VideoStatus.HdcpStateFeedback, AnyVideoInput.VideoStatus.VideoResolutionFeedback,
-            AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiInHdcpCapabilityFeedback);
-
-            // Set Ports for CEC
-            HdmiIn.Port = InputCard.HdmiInputPort;
-        }
-
-        public override bool CustomActivate()
-        {
-            // Link up all of these damned events to the various RoutingPorts via a helper handler
-            InputCard.HdmiInputPort.Card.BaseEvent += (o, a) => FowardInputStreamChange(HdmiIn, a.EventId);
-            InputCard.HdmiInputPort.VideoAttributes.AttributeChange += (o, a) => ForwardVideoAttributeChange(HdmiIn, a.EventId);
-
-            InputCard.VgaInputPort.Card.BaseEvent += (o, a) => FowardInputStreamChange(VgaIn, a.EventId);
-            InputCard.VgaInputPort.VideoAttributes.AttributeChange += (o, a) => ForwardVideoAttributeChange(VgaIn, a.EventId);
-
-            // Base does register and sets up comm monitoring.
-            return base.CustomActivate();
         }
 
         /// <summary>
@@ -322,6 +326,11 @@ namespace PepperDash.Essentials.DM
             SpdifIn = new RoutingInputPort(DmPortName.SpdifIn, eRoutingSignalType.Audio, eRoutingPortConnectionType.DigitalAudio,
                 eDmps3InputAudioSource.Spdif, this);
 
+            if (InputCard.HdmiInputPort.HdcpSupportedLevelFeedback == eHdcpSupportedLevel.Hdcp2xSupport)
+                HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
+            else if (InputCard.HdmiInputPort.HdcpSupportedLevelFeedback == eHdcpSupportedLevel.Hdcp1xSupport)
+                HdcpSupportCapability = eHdcpCapabilityType.Hdcp1xSupport;
+
             var combinedFuncs = new VideoStatusFuncsWrapper
             {
                 HdcpActiveFeedbackFunc = () =>
@@ -351,21 +360,63 @@ namespace PepperDash.Essentials.DM
                     || (ActualVideoInput == eDmps3InputVideoSource.Vga
                     && InputCard.VgaInputPort.SyncDetectedFeedback.BoolValue)
                     || (ActualVideoInput == eDmps3InputVideoSource.Bnc
-                    && InputCard.BncInputPort.VideoDetectedFeedback.BoolValue)
+                    && InputCard.BncInputPort.VideoDetectedFeedback.BoolValue),
+
+                HasVideoStatusFunc = () =>
+                    (ActualVideoInput == eDmps3InputVideoSource.Hdmi 
+                    && HdmiIn.VideoStatus.HasVideoStatusFeedback.BoolValue)
+                    || (ActualVideoInput == eDmps3InputVideoSource.Vga
+                    && VgaIn.VideoStatus.HasVideoStatusFeedback.BoolValue)
+                    || (ActualVideoInput == eDmps3InputVideoSource.Bnc
+                    &&BncIn.VideoStatus.HasVideoStatusFeedback.BoolValue)
             };
 
             AnyVideoInput = new RoutingInputPortWithVideoStatuses(DmPortName.AnyVideoIn,
                 eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.None, 0, this, combinedFuncs);
-        }
 
-        public override bool CustomActivate()
-        {
-            // Link up all of these damned events to the various RoutingPorts via a helper handler
-            InputCard.BncInputPort.Card.BaseEvent += (o, a) => FowardInputStreamChange(HdmiIn, a.EventId);
-            InputCard.BncInputPort.VideoAttributes.AttributeChange += (o, a) => ForwardVideoAttributeChange(HdmiIn, a.EventId);
+            ActiveVideoInputFeedback = new StringFeedback("ActiveVideoInput", () => ActualVideoInput.ToString());
 
-            // Base does remaining inputs
-            return base.CustomActivate();
+            VideoSourceNumericFeedback = new IntFeedback(() =>
+            {
+                return (int)InputCard.VideoSourceFeedback;
+            });
+            AudioSourceNumericFeedback = new IntFeedback(() =>
+            {
+                return (int)InputCard.AudioSourceFeedback;
+            });
+
+            HdmiInHdcpCapabilityFeedback = new IntFeedback("HdmiInHdcpCapability", () =>
+            {
+                if (InputCard.HdmiInputPort.HdcpSupportOnFeedback.BoolValue)
+                    return 1;
+                else
+                    return 0;
+            });
+
+            // Set Ports for CEC
+            HdmiIn.Port = InputCard.HdmiInputPort;
+
+            VirtualDmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.None, null, this);
+
+            AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,
+            AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
+            AnyVideoInput.VideoStatus.HdcpStateFeedback, AnyVideoInput.VideoStatus.VideoResolutionFeedback,
+            AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiInHdcpCapabilityFeedback);
+
+            //AddPostActivationAction(() =>
+            //{
+                // Link up all of these damned events to the various RoutingPorts via a helper handler
+                InputCard.HdmiInputPort.InputOutput.BaseDevice.BaseEvent += (o, a) => FowardInputStreamChange(HdmiIn, a.EventId);
+                InputCard.HdmiInputPort.VideoAttributes.AttributeChange += (o, a) => ForwardVideoAttributeChange(HdmiIn, a.EventId);
+
+                InputCard.VgaInputPort.InputOutput.BaseDevice.BaseEvent += (o, a) => FowardInputStreamChange(VgaIn, a.EventId);
+                InputCard.VgaInputPort.VideoAttributes.AttributeChange += (o, a) => ForwardVideoAttributeChange(VgaIn, a.EventId);
+
+                InputCard.BncInputPort.InputOutput.BaseDevice.BaseEvent += (o, a) => FowardInputStreamChange(HdmiIn, a.EventId);
+                InputCard.BncInputPort.VideoAttributes.AttributeChange += (o, a) => ForwardVideoAttributeChange(HdmiIn, a.EventId);
+            //});
+
         }
 
         public override void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
