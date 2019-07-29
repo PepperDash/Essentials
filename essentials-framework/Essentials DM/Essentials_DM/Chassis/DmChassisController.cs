@@ -172,7 +172,7 @@ namespace PepperDash.Essentials.DM
 					return Chassis.Inputs[tempX].VideoDetectedFeedback.BoolValue;
 					});
 				InputNameFeedbacks[tempX] = new StringFeedback(() => {
-					    if (Chassis.Inputs[tempX].NameFeedback.StringValue != null) 
+					    if (Chassis.Inputs[tempX].NameFeedback != null) 
                         {
 						     return Chassis.Inputs[tempX].NameFeedback.StringValue;
 					    }
@@ -182,7 +182,7 @@ namespace PepperDash.Essentials.DM
 					    }				
 					});
 				OutputNameFeedbacks[tempX] = new StringFeedback(() => {
-					    if (Chassis.Outputs[tempX].NameFeedback.StringValue != null) 
+					    if (Chassis.Outputs[tempX].NameFeedback != null) 
                         {
 						    return Chassis.Outputs[tempX].NameFeedback.StringValue;
 					    }

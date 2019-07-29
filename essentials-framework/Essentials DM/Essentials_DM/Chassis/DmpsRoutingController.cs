@@ -106,18 +106,6 @@ namespace PepperDash.Essentials.DM
             InputEndpointOnlineFeedbacks = new Dictionary<uint, BoolFeedback>();
             OutputEndpointOnlineFeedbacks = new Dictionary<uint, BoolFeedback>();
 
-
-            // Default to EnableAudioBreakaway
-            //if (SystemControl.EnableAudioBreakawayFeedback != null && !SystemControl.EnableAudioBreakawayFeedback.BoolValue)
-            //{
-            //    Debug.Console(1, this, "Enabling Audio Breakaway");
-            //    SystemControl.EnableAudioBreakaway.BoolValue = true;
-            //}
-            //if(!SystemControl.VideoEnter.BoolValue)
-            //    SystemControl.VideoEnter.BoolValue = true;
-            //if(!SystemControl.AudioEnter.BoolValue)
-            //    SystemControl.AudioEnter.BoolValue = true;
-
             Debug.Console(1, this, "{0} Switcher Inputs Present.", Dmps.SwitcherInputs.Count);
             Debug.Console(1, this, "{0} Switcher Outputs Present.", Dmps.SwitcherOutputs.Count);
 
@@ -174,8 +162,9 @@ namespace PepperDash.Essentials.DM
 
                     OutputNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
                     {
-                        if (outputCard.NameFeedback.StringValue != null)
+                        if (outputCard.NameFeedback != null)
                         {
+                            Debug.Console(2, this, "Output Card {0} Name: {1}", outputCard.Number, outputCard.NameFeedback.StringValue);
                             return outputCard.NameFeedback.StringValue;
                         }
                         else
@@ -186,7 +175,7 @@ namespace PepperDash.Essentials.DM
 
                     OutputVideoRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
                     {
-                        if (outputCard.VideoOutFeedback != null)
+                        if (outputCard.VideoOutFeedback != null && outputCard.VideoOutFeedback.NameFeedback != null)
                         {
                             return outputCard.VideoOutFeedback.NameFeedback.StringValue;
                         }
@@ -197,7 +186,7 @@ namespace PepperDash.Essentials.DM
                     });
                     OutputAudioRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
                     {
-                        if (outputCard.AudioOutFeedback != null)
+                        if (outputCard.AudioOutFeedback != null && outputCard.AudioOutFeedback.NameFeedback != null)
                         {
                             return outputCard.AudioOutFeedback.NameFeedback.StringValue;
                         }
@@ -230,18 +219,24 @@ namespace PepperDash.Essentials.DM
                 {
                     InputEndpointOnlineFeedbacks[inputCard.Number] = new BoolFeedback(() => { return inputCard.EndpointOnlineFeedback; });
 
-                    VideoInputSyncFeedbacks[inputCard.Number] = new BoolFeedback(() =>
+                    if (inputCard.VideoDetectedFeedback != null)
                     {
-                        return inputCard.VideoDetectedFeedback.BoolValue;
-                    });
+                        VideoInputSyncFeedbacks[inputCard.Number] = new BoolFeedback(() =>
+                        {
+                            return inputCard.VideoDetectedFeedback.BoolValue;
+                        });
+                    }
                     InputNameFeedbacks[inputCard.Number] = new StringFeedback(() =>
                     {
-                        if (inputCard.NameFeedback.StringValue != null)
+                        if (inputCard.NameFeedback != null && !string.IsNullOrEmpty(inputCard.NameFeedback.StringValue))
                         {
-                            return inputCard.NameFeedback.StringValue;
+                            Debug.Console(2, this, "Input Card {0} Name: {1}", inputCard.Number, inputCard.NameFeedback.StringValue);
+                                return inputCard.NameFeedback.StringValue;
+
                         }
                         else
                         {
+                            Debug.Console(2, this, "Input Card {0} Name is null", inputCard.Number, inputCard.NameFeedback.StringValue);
                             return "";
                         }
                     });
@@ -482,6 +477,14 @@ namespace PepperDash.Essentials.DM
             OutputPorts.Add(outputPort);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        void AddVolumeControl(uint number, Audio.Output audio)
+        {
+            VolumeControls.Add(number, new DmCardAudioOutputController(audio));
+        }
+
         void Dmps_DMInputChange(Switch device, DMInputEventArgs args)
         {
             //Debug.Console(2, this, "DMSwitch:{0} Input:{1} Event:{2}'", this.Name, args.Number, args.EventId.ToString());
@@ -523,7 +526,8 @@ namespace PepperDash.Essentials.DM
             {
                 VolumeControls[args.Number].VolumeEventFromChassis();
             }
-            else if (args.EventId == DMOutputEventIds.OnlineFeedbackEventId)
+            else if (args.EventId == DMOutputEventIds.OnlineFeedbackEventId
+                && OutputEndpointOnlineFeedbacks.ContainsKey(output))
             {
                 OutputEndpointOnlineFeedbacks[output].FireUpdate();
             }
@@ -553,11 +557,12 @@ namespace PepperDash.Essentials.DM
                     AudioOutputFeedbacks[output].FireUpdate();
                 }
             }
-            else if (args.EventId == DMOutputEventIds.OutputNameEventId)
-            {
-                Debug.Console(2, this, "DM Output {0} NameFeedbackEventId", output);
-                OutputNameFeedbacks[output].FireUpdate();
-            }
+            //else if (args.EventId == DMOutputEventIds.OutputNameEventId
+            //    && OutputNameFeedbacks.ContainsKey(output))
+            //{
+            //    Debug.Console(2, this, "DM Output {0} NameFeedbackEventId", output);
+            //    OutputNameFeedbacks[output].FireUpdate();
+            //}
 
         }
 
@@ -579,41 +584,69 @@ namespace PepperDash.Essentials.DM
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType sigType)
         {
-            Debug.Console(2, this, "Making an awesome DM route from {0} to {1} {2}", inputSelector, outputSelector, sigType);
+            try
+            {
 
-            var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
-            var output = Convert.ToUInt32(outputSelector);
-            // Check to see if there's an off timer waiting on this and if so, cancel
-            var key = new PortNumberType(output, sigType);
-            if (input == 0)
-            {
-                StartOffTimer(key);
-            }
-            else
-            {
-                if (RouteOffTimers.ContainsKey(key))
+                Debug.Console(2, this, "Attempting a DM route from input {0} to output {1} {2}", inputSelector, outputSelector, sigType);
+
+                var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
+                var output = Convert.ToUInt32(outputSelector);
+
+                if (input <= Dmps.NumberOfSwitcherInputs && output <= Dmps.NumberOfSwitcherOutputs)
                 {
-                    Debug.Console(2, this, "{0} cancelling route off due to new source", output);
-                    RouteOffTimers[key].Stop();
-                    RouteOffTimers.Remove(key);
+                    // Check to see if there's an off timer waiting on this and if so, cancel
+                    var key = new PortNumberType(output, sigType);
+                    if (input == 0)
+                    {
+                        StartOffTimer(key);
+                    }
+                    else if (key.Number > 0)
+                    {
+                        if (RouteOffTimers.ContainsKey(key))
+                        {
+                            Debug.Console(2, this, "{0} cancelling route off due to new source", output);
+                            RouteOffTimers[key].Stop();
+                            RouteOffTimers.Remove(key);
+                        }
+                    }
+
+                    DMInput inCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
+
+
+                    if (inCard != null)
+                    {
+                        // NOTE THAT THESE ARE NOTS - TO CATCH THE AudioVideo TYPE
+                        if (sigType != eRoutingSignalType.Audio)
+                        {
+                            var outputCard = Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
+
+                            //SystemControl.VideoEnter.BoolValue = true;
+                            if (outputCard != null && outputCard.VideoOut != null)
+                                outputCard.VideoOut = inCard;
+                        }
+
+                        if (sigType != eRoutingSignalType.Video)
+                        {
+                            var outputCard = Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
+                            if (outputCard != null && outputCard.AudioOut != null)
+                                outputCard.AudioOut = inCard;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Console(1, this, "Unable to execute route from input {0} to output {1}.  Input card not available", inputSelector, outputSelector);
+                    }
+
+                }
+                else
+                {
+                    Debug.Console(1, this, "Unable to execute route from input {0} to output {1}", inputSelector, outputSelector);
                 }
             }
-
-            DMInput inCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-
-
-            // NOTE THAT THESE ARE NOTS - TO CATCH THE AudioVideo TYPE
-            if (sigType != eRoutingSignalType.Audio)
+            catch (Exception e)
             {
-                //SystemControl.VideoEnter.BoolValue = true;
-                (Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase).VideoOut = inCard;
+                Debug.Console(1, this, "Error executing switch: {0}", e);
             }
-
-            if (sigType != eRoutingSignalType.Video)
-            {
-                //SystemControl.AudioEnter.BoolValue = true;
-                (Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase).AudioOut = inCard;
-            }            
         }
 
         #endregion

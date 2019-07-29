@@ -27,6 +27,8 @@ namespace PepperDash.Essentials.Bridges
             // Link up outputs
             for (uint i = 1; i <= dmpsRouter.Dmps.NumberOfSwitcherInputs; i++)
             {
+                Debug.Console(2, dmpsRouter, "Linking Input Card {0}", i);
+
                 var ioSlot = i;
 
                 //if (dmpsRouter.TxDictionary.ContainsKey(ioSlot))
@@ -44,15 +46,22 @@ namespace PepperDash.Essentials.Bridges
                 //{
                 //    // dmChassis.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[ApiMap.TxVideoSyncStatus[ioSlot]]);
                 //}
+                
+                if(dmpsRouter.VideoInputSyncFeedbacks[ioSlot] != null)
+                    dmpsRouter.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
 
-                dmpsRouter.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
+                //if(dmpsRouter.InputNameFeedbacks[ioSlot] != null)
+                //    dmpsRouter.InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames + ioSlot]);
 
-                dmpsRouter.InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames + ioSlot]);
-                dmpsRouter.InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+
+                if(dmpsRouter.InputEndpointOnlineFeedbacks[ioSlot] != null)
+                    dmpsRouter.InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
             }
 
             for (uint i = 1; i <= dmpsRouter.Dmps.NumberOfSwitcherOutputs; i++)
             {
+                Debug.Console(2, dmpsRouter, "Linking Output Card {0}", i);
+
                 var ioSlot = i;
                 // Control
                 trilist.SetUShortSigAction(joinMap.OutputVideo + ioSlot, new Action<ushort>(o => dmpsRouter.ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video)));
@@ -67,12 +76,18 @@ namespace PepperDash.Essentials.Bridges
                 //}
 
                 // Feedback
-                dmpsRouter.VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo + ioSlot]);
-                dmpsRouter.AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio + ioSlot]);
-                dmpsRouter.OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames + ioSlot]);
-                dmpsRouter.OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames + ioSlot]);
-                dmpsRouter.OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentAudioInputNames + ioSlot]);
-                dmpsRouter.OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
+                if(dmpsRouter.VideoOutputFeedbacks[ioSlot] != null)
+                    dmpsRouter.VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo + ioSlot]);
+                if (dmpsRouter.AudioOutputFeedbacks[ioSlot] != null)
+                    dmpsRouter.AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio + ioSlot]);
+                //if (dmpsRouter.OutputNameFeedbacks[ioSlot] != null)
+                //    dmpsRouter.OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames + ioSlot]);
+                if (dmpsRouter.OutputVideoRouteNameFeedbacks[ioSlot] != null)
+                    dmpsRouter.OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames + ioSlot]);
+                if (dmpsRouter.OutputAudioRouteNameFeedbacks[ioSlot] != null)
+                    dmpsRouter.OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentAudioInputNames + ioSlot]);
+                if (dmpsRouter.OutputEndpointOnlineFeedbacks[ioSlot] != null)
+                    dmpsRouter.OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
             }
         }
 
