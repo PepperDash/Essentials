@@ -102,7 +102,11 @@ namespace PepperDash.Essentials.Bridges
                             (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-						
+                        else if (device is DmpsRoutingController)
+                        {
+                            (device as DmpsRoutingController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
                         else if (device is DmTxControllerBase)
                         {
                             (device as DmTxControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
@@ -127,7 +131,7 @@ namespace PepperDash.Essentials.Bridges
                         {
                             (device as AppleTV).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
-                        }   
+                        }
                         else if (device is IBridge)
                         {
                             (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
@@ -217,16 +221,26 @@ namespace PepperDash.Essentials.Bridges
         /// <param name="args"></param>
         void Eisc_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
         {
-            if (Debug.Level >= 1)
-                Debug.Console(1, this, "EiscApi change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
-            var uo = args.Sig.UserObject;
-            Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
-            if (uo is Action<bool>)
-                (uo as Action<bool>)(args.Sig.BoolValue);
-            else if (uo is Action<ushort>)
-                (uo as Action<ushort>)(args.Sig.UShortValue);
-            else if (uo is Action<string>)
-                (uo as Action<string>)(args.Sig.StringValue);
+            try
+            {
+                if (Debug.Level >= 1)
+                    Debug.Console(1, this, "EiscApi change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+                var uo = args.Sig.UserObject;
+                if (uo != null)
+                {
+                    Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
+                    if (uo is Action<bool>)
+                        (uo as Action<bool>)(args.Sig.BoolValue);
+                    else if (uo is Action<ushort>)
+                        (uo as Action<ushort>)(args.Sig.UShortValue);
+                    else if (uo is Action<string>)
+                        (uo as Action<string>)(args.Sig.StringValue);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(2, this, "Error in Eisc_SigChange handler: {0}", e);
+            }
         }
     }
 
