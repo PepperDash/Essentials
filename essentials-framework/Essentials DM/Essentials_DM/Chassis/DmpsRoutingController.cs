@@ -162,7 +162,7 @@ namespace PepperDash.Essentials.DM
 
                     OutputNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
                     {
-                        if (outputCard.NameFeedback != null)
+                        if (outputCard.NameFeedback != null && !string.IsNullOrEmpty(outputCard.NameFeedback.StringValue))
                         {
                             Debug.Console(2, this, "Output Card {0} Name: {1}", outputCard.Number, outputCard.NameFeedback.StringValue);
                             return outputCard.NameFeedback.StringValue;
@@ -557,12 +557,12 @@ namespace PepperDash.Essentials.DM
                     AudioOutputFeedbacks[output].FireUpdate();
                 }
             }
-            //else if (args.EventId == DMOutputEventIds.OutputNameEventId
-            //    && OutputNameFeedbacks.ContainsKey(output))
-            //{
-            //    Debug.Console(2, this, "DM Output {0} NameFeedbackEventId", output);
-            //    OutputNameFeedbacks[output].FireUpdate();
-            //}
+            else if (args.EventId == DMOutputEventIds.OutputNameEventId
+                && OutputNameFeedbacks.ContainsKey(output))
+            {
+                Debug.Console(2, this, "DM Output {0} NameFeedbackEventId", output);
+                OutputNameFeedbacks[output].FireUpdate();
+            }
 
         }
 

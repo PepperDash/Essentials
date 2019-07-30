@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.DM;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -50,8 +51,20 @@ namespace PepperDash.Essentials.Bridges
                 if(dmpsRouter.VideoInputSyncFeedbacks[ioSlot] != null)
                     dmpsRouter.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
 
-                //if(dmpsRouter.InputNameFeedbacks[ioSlot] != null)
-                //    dmpsRouter.InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames + ioSlot]);
+                if (dmpsRouter.InputNameFeedbacks[ioSlot] != null)
+                    dmpsRouter.InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames + ioSlot]);
+
+                trilist.SetStringSigAction(joinMap.InputNames + ioSlot, new Action<string>(s => 
+                    {
+                        var inputCard = dmpsRouter.Dmps.SwitcherInputs[ioSlot] as DMInput;
+
+                        if (inputCard != null)
+                        {
+                            if (inputCard.NameFeedback != null && !string.IsNullOrEmpty(inputCard.NameFeedback.StringValue) && inputCard.NameFeedback.StringValue != s)
+                                if(inputCard.Name != null)
+                                    inputCard.Name.StringValue = s;
+                        }
+                    }));
 
 
                 if(dmpsRouter.InputEndpointOnlineFeedbacks[ioSlot] != null)
@@ -67,21 +80,38 @@ namespace PepperDash.Essentials.Bridges
                 trilist.SetUShortSigAction(joinMap.OutputVideo + ioSlot, new Action<ushort>(o => dmpsRouter.ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video)));
                 trilist.SetUShortSigAction(joinMap.OutputAudio + ioSlot, new Action<ushort>(o => dmpsRouter.ExecuteSwitch(o, ioSlot, eRoutingSignalType.Audio)));
 
-                //if (dmpsRouter.RxDictionary.ContainsKey(ioSlot))
-                //{
-                //    Debug.Console(2, "Creating Rx Feedbacks {0}", ioSlot);
-                //    var RxKey = dmpsRouter.RxDictionary[ioSlot];
-                //    var RxDevice = DeviceManager.GetDeviceForKey(RxKey) as DmRmcControllerBase;
-                //    //RxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
-                //}
+                trilist.SetStringSigAction(joinMap.OutputNames + ioSlot, new Action<string>(s =>
+                {
+                    var outputCard = dmpsRouter.Dmps.SwitcherOutputs[ioSlot] as DMOutput;
+
+                    //Debug.Console(2, dmpsRouter, "Output Name String Sig Action for Output Card  {0}", ioSlot);
+
+                    if (outputCard != null)
+                    {
+                        //Debug.Console(2, dmpsRouter, "Card Type: {0}", outputCard.CardInputOutputType);
+
+                        if (!(outputCard is Crestron.SimplSharpPro.DM.Cards.Card.Dmps3CodecOutput) && outputCard.NameFeedback != null)
+                        {
+                            if (!string.IsNullOrEmpty(outputCard.NameFeedback.StringValue))
+                            {
+                                //Debug.Console(2, dmpsRouter, "NameFeedabck: {0}", outputCard.NameFeedback.StringValue);
+
+                                if (outputCard.NameFeedback.StringValue != s && outputCard.Name != null)
+                                {
+                                    outputCard.Name.StringValue = s;
+                                }
+                            }
+                        }
+                    }
+                }));
 
                 // Feedback
                 if(dmpsRouter.VideoOutputFeedbacks[ioSlot] != null)
                     dmpsRouter.VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo + ioSlot]);
                 if (dmpsRouter.AudioOutputFeedbacks[ioSlot] != null)
                     dmpsRouter.AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio + ioSlot]);
-                //if (dmpsRouter.OutputNameFeedbacks[ioSlot] != null)
-                //    dmpsRouter.OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames + ioSlot]);
+                if (dmpsRouter.OutputNameFeedbacks[ioSlot] != null)
+                    dmpsRouter.OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames + ioSlot]);
                 if (dmpsRouter.OutputVideoRouteNameFeedbacks[ioSlot] != null)
                     dmpsRouter.OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames + ioSlot]);
                 if (dmpsRouter.OutputAudioRouteNameFeedbacks[ioSlot] != null)
