@@ -46,7 +46,7 @@ namespace PepperDash.Essentials.Bridges
                     {
                         dmChassis.InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
                     }
-                    else
+                    else if (TxDevice != null)
                     {
                         TxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
                     }
@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.Bridges
                     {
                         dmChassis.OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
                     }
-                    else
+                    else if (RxDevice != null)
                     {
                         RxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
                     }

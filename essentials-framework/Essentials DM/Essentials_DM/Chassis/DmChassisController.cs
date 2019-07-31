@@ -588,6 +588,11 @@ namespace PepperDash.Essentials.DM
 					InputNameFeedbacks[args.Number].FireUpdate();
 					break;
 					}
+                default:
+                    {
+                        Debug.Console(2, this, "DMInputChange fired for Input {0} with Unhandled EventId: {1}", args.Number, args.EventId);
+                        break;
+                    }
 				}
 			}
         /// 
@@ -597,46 +602,69 @@ namespace PepperDash.Essentials.DM
 
 			//This should be a switch case JTA 2018-07-02
 			var output = args.Number;
-            if (args.EventId == DMOutputEventIds.VolumeEventId &&
-                VolumeControls.ContainsKey(output))
-            {
-                VolumeControls[args.Number].VolumeEventFromChassis();
-            }
-            else if (args.EventId == DMOutputEventIds.OnlineFeedbackEventId)
-            {
-                OutputEndpointOnlineFeedbacks[output].FireUpdate();
-            }
-            else if (args.EventId == DMOutputEventIds.VideoOutEventId)
-            {
-                if (Chassis.Outputs[output].VideoOutFeedback != null)
-                {
-                    Debug.Console(2, this, "DMSwitchVideo:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].VideoOutFeedback.Number, output);
-                }
-                if (VideoOutputFeedbacks.ContainsKey(output))
-                {
-                    VideoOutputFeedbacks[output].FireUpdate();
 
-                }
-                if (OutputVideoRouteNameFeedbacks.ContainsKey(output))
-                {
-                    OutputVideoRouteNameFeedbacks[output].FireUpdate();
-                }
-            }
-            else if (args.EventId == DMOutputEventIds.AudioOutEventId)
+            switch (args.EventId) 
             {
-                if (Chassis.Outputs[output].AudioOutFeedback != null)
+                case DMOutputEventIds.VolumeEventId:
+                    {
+                        if (VolumeControls.ContainsKey(output))
+                        {
+                            VolumeControls[args.Number].VolumeEventFromChassis();
+                        }
+                        break;
+                    }
+                case DMOutputEventIds.OnlineFeedbackEventId:
                 {
-                    Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].AudioOutFeedback.Number, output);
+                    Debug.Console(2, this, "Output {0} DMOutputEventIds.OnlineFeedbackEventId fired. State: {1}", args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
+                    OutputEndpointOnlineFeedbacks[output].FireUpdate();
+                    break;
                 }
-                if (AudioOutputFeedbacks.ContainsKey(output))
+                case DMInputEventIds.OnlineFeedbackEventId:
                 {
-                    AudioOutputFeedbacks[output].FireUpdate();
+                    Debug.Console(2, this, "Output {0} DMInputEventIds.OnlineFeedbackEventId fired. State: {1}", args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
+                    OutputEndpointOnlineFeedbacks[output].FireUpdate();
+                    break;
                 }
-            }
-            else if (args.EventId == DMOutputEventIds.OutputNameEventId)
-            {
-                Debug.Console(2, this, "DM Output {0} NameFeedbackEventId", output);
-                OutputNameFeedbacks[output].FireUpdate();
+                case DMOutputEventIds.VideoOutEventId:
+                {
+                    if (Chassis.Outputs[output].VideoOutFeedback != null)
+                    {
+                        Debug.Console(2, this, "DMSwitchVideo:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].VideoOutFeedback.Number, output);
+                    }
+                    if (VideoOutputFeedbacks.ContainsKey(output))
+                    {
+                        VideoOutputFeedbacks[output].FireUpdate();
+
+                    }
+                    if (OutputVideoRouteNameFeedbacks.ContainsKey(output))
+                    {
+                        OutputVideoRouteNameFeedbacks[output].FireUpdate();
+                    }
+                    break;
+                }
+                case DMOutputEventIds.AudioOutEventId:
+                {
+                    if (Chassis.Outputs[output].AudioOutFeedback != null)
+                    {
+                        Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].AudioOutFeedback.Number, output);
+                    }
+                    if (AudioOutputFeedbacks.ContainsKey(output))
+                    {
+                        AudioOutputFeedbacks[output].FireUpdate();
+                    }
+                    break;
+                }
+                case DMOutputEventIds.OutputNameEventId:
+                {
+                    Debug.Console(2, this, "DM Output {0} NameFeedbackEventId", output);
+                    OutputNameFeedbacks[output].FireUpdate();
+                    break;
+                }
+                default:
+                {
+                    Debug.Console(2, this, "DMOutputChange fired for Output {0} with Unhandled EventId: {1}", args.Number, args.EventId);
+                    break;
+                }
             }
 
         }
