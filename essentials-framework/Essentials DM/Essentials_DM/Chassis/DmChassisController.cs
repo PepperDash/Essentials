@@ -35,6 +35,8 @@ namespace PepperDash.Essentials.DM
 		public Dictionary<uint, StringFeedback> OutputNameFeedbacks { get; private set; }
 		public Dictionary<uint, StringFeedback> OutputVideoRouteNameFeedbacks { get; private set; }
         public Dictionary<uint, StringFeedback> OutputAudioRouteNameFeedbacks { get; private set; }
+
+        public Dictionary<uint, IntFeedback> InputCardHdcpStateFeedbacks { get; private set; }
 		
 		
 		// Need a couple Lists of generic Backplane ports
@@ -573,7 +575,7 @@ namespace PepperDash.Essentials.DM
 			//Debug.Console(2, this, "DMSwitch:{0} Input:{1} Event:{2}'", this.Name, args.Number, args.EventId.ToString());
 				
 			switch (args.EventId) {
-				case (DMInputEventIds.OnlineFeedbackEventId): {
+				case (DMInputEventIds.EndpointOnlineEventId): {
 					Debug.Console(2, this, "DMINput OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
 					InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
 					break;
@@ -613,7 +615,7 @@ namespace PepperDash.Essentials.DM
                         }
                         break;
                     }
-                case DMOutputEventIds.OnlineFeedbackEventId:
+                case DMOutputEventIds.EndpointOnlineEventId:
                 {
                     Debug.Console(2, this, "Output {0} DMOutputEventIds.OnlineFeedbackEventId fired. State: {1}", args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
                     OutputEndpointOnlineFeedbacks[output].FireUpdate();
