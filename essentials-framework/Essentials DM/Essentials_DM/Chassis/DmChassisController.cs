@@ -573,17 +573,23 @@ namespace PepperDash.Essentials.DM
 			//Debug.Console(2, this, "DMSwitch:{0} Input:{1} Event:{2}'", this.Name, args.Number, args.EventId.ToString());
 				
 			switch (args.EventId) {
-				case (DMInputEventIds.OnlineFeedbackEventId): {
-					Debug.Console(2, this, "DMINput OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
-					InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
-					break;
+				case DMInputEventIds.EndpointOnlineEventId: {
+					    Debug.Console(2, this, "DMINput EndpointOnlineEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
+					    InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
+					    break;
 					}
-				case (DMInputEventIds.VideoDetectedEventId): {
+                case DMInputEventIds.OnlineFeedbackEventId:
+                    {
+                        Debug.Console(2, this, "DMINput OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
+                        InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
+                        break;
+                    }
+				case DMInputEventIds.VideoDetectedEventId: {
 					Debug.Console(2, this, "DM Input {0} VideoDetectedEventId", args.Number);
 					VideoInputSyncFeedbacks[args.Number].FireUpdate();
 					break;
 					}
-				case (DMInputEventIds.InputNameEventId): {
+				case DMInputEventIds.InputNameEventId: {
 					Debug.Console(2, this, "DM Input {0} NameFeedbackEventId", args.Number);
 					InputNameFeedbacks[args.Number].FireUpdate();
 					break;
@@ -613,9 +619,9 @@ namespace PepperDash.Essentials.DM
                         }
                         break;
                     }
-                case DMOutputEventIds.OnlineFeedbackEventId:
+                case DMOutputEventIds.EndpointOnlineEventId:
                 {
-                    Debug.Console(2, this, "Output {0} DMOutputEventIds.OnlineFeedbackEventId fired. State: {1}", args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
+                    Debug.Console(2, this, "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. State: {1}", args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
                     OutputEndpointOnlineFeedbacks[output].FireUpdate();
                     break;
                 }
