@@ -65,41 +65,7 @@ namespace PepperDash.Essentials.Bridges
 
                     if (txDevice != null)
                     {
-                        bool hdcpTypeSimple;
-
-                        if (txDevice.Hardware is DmTx4kX02CBase || txDevice.Hardware is DmTx4kzX02CBase)
-                            hdcpTypeSimple = false;
-                        else
-                            hdcpTypeSimple = true;
-
                         txDevice.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
-                        //TxDevice.SetPortHdcpCapability((eHdcpCapabilityType)(u),));
-
-                        trilist.UShortInput[joinMap.HdcpSupportCapability + ioSlot].UShortValue = (ushort)txDevice.HdcpSupportCapability;
-
-                        if (txDevice is ITxRouting)
-                        {
-                            var txR = txDevice as ITxRouting;
-
-                            if (hdcpTypeSimple)
-                            {
-
-                                if (txR.InputPorts[DmPortName.HdmiIn] != null)
-                                {
-                                    var inputPort = txR.InputPorts[DmPortName.HdmiIn];
-
-                                    if (txDevice.Feedbacks["HdmiInHdcpCapability"] != null)
-                                        (txDevice.Feedbacks["HdmiInHdcpCapability"] as IntFeedback).LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState + ioSlot]);
-
-                                    if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
-                                    {
-                                        var port = inputPort.Port as EndpointHdmiInput;
-
-                                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.HdcpSupportState + ioSlot, trilist);
-                                    }
-                                }
-                            }
-                        }
                     }
                     else
                     {
@@ -115,14 +81,14 @@ namespace PepperDash.Essentials.Bridges
                                     var hdmiInPortWCec = hdmiInPort as HdmiInputWithCEC;
 
                                     if (hdmiInPortWCec.HdcpSupportedLevel != eHdcpSupportedLevel.Unknown)
+                                    {
                                         SetHdcpCapabilityAction(true, hdmiInPortWCec, joinMap.HdcpSupportState + ioSlot, trilist);
+                                    }
 
-                                    //TODO: Figure out how the heck to get feedback properly.
+                                    dmChassis.InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState]);
                                 }
-
                             }
                         }
-
                     }
 				}
 				else

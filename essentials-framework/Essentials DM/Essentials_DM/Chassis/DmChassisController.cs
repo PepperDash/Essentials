@@ -36,7 +36,7 @@ namespace PepperDash.Essentials.DM
 		public Dictionary<uint, StringFeedback> OutputVideoRouteNameFeedbacks { get; private set; }
         public Dictionary<uint, StringFeedback> OutputAudioRouteNameFeedbacks { get; private set; }
 
-        public Dictionary<uint, IntFeedback> InputCardHdcpStateFeedbacks { get; private set; }
+        public Dictionary<uint, IntFeedback> InputCardHdcpCapabilityFeedbacks { get; private set; }
 		
 		
 		// Need a couple Lists of generic Backplane ports
@@ -157,6 +157,8 @@ namespace PepperDash.Essentials.DM
             InputEndpointOnlineFeedbacks = new Dictionary<uint, BoolFeedback>();
             OutputEndpointOnlineFeedbacks = new Dictionary<uint, BoolFeedback>();
 
+            InputCardHdcpCapabilityFeedbacks = new Dictionary<uint, IntFeedback>();
+
 
 			for (uint x = 1; x <= Chassis.NumberOfOutputs; x++) 
             {
@@ -219,6 +221,32 @@ namespace PepperDash.Essentials.DM
 				InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return Chassis.Inputs[tempX].EndpointOnlineFeedback; });
 
                 OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return Chassis.Outputs[tempX].EndpointOnlineFeedback; });
+
+                InputCardHdcpCapabilityFeedbacks[tempX] = new IntFeedback(() => 
+                {
+                    var inputCard = Chassis.Inputs[tempX];
+
+                    if (inputCard.Card is DmcHd)
+                    {
+                        if ((inputCard.Card as DmcHd).HdmiInput.HdcpSupportOnFeedback.BoolValue)
+                            return 1;
+                        else
+                            return 0;
+                    }
+                    else if (inputCard.Card is DmcHdDsp)
+                    {
+                        if ((inputCard.Card as DmcHdDsp).HdmiInput.HdcpSupportOnFeedback.BoolValue)
+                            return 1;
+                        else
+                            return 0;
+                    }
+                    else if (inputCard.Card is Dmc4kHdBase)
+                    {
+                        return (int)(inputCard.Card as Dmc4kHdBase).HdmiInput.HdcpReceiveCapability;
+                    }
+                    else
+                        return 0;
+                });
 			}
 		}
 
@@ -576,20 +604,26 @@ namespace PepperDash.Essentials.DM
 				
 			switch (args.EventId) {
 				case (DMInputEventIds.EndpointOnlineEventId): {
-					Debug.Console(2, this, "DMINput OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
-					InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
-					break;
+					    Debug.Console(2, this, "DMINput OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
+					    InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
+					    break;
 					}
 				case (DMInputEventIds.VideoDetectedEventId): {
-					Debug.Console(2, this, "DM Input {0} VideoDetectedEventId", args.Number);
-					VideoInputSyncFeedbacks[args.Number].FireUpdate();
-					break;
+					    Debug.Console(2, this, "DM Input {0} VideoDetectedEventId", args.Number);
+					    VideoInputSyncFeedbacks[args.Number].FireUpdate();
+					    break;
 					}
 				case (DMInputEventIds.InputNameEventId): {
 					Debug.Console(2, this, "DM Input {0} NameFeedbackEventId", args.Number);
 					InputNameFeedbacks[args.Number].FireUpdate();
 					break;
 					}
+                case DMInputEventIds.HdcpCapabilityFeedbackEventId:
+                    {
+                        Debug.Console(2, this, "DM Input {0} HdcpCapabilityFeedbackEventId", args.Number);
+                        InputCardHdcpCapabilityFeedbacks[args.Number].FireUpdate();
+                        break;
+                    }
                 default:
                     {
                         Debug.Console(2, this, "DMInputChange fired for Input {0} with Unhandled EventId: {1}", args.Number, args.EventId);
@@ -621,7 +655,7 @@ namespace PepperDash.Essentials.DM
                     OutputEndpointOnlineFeedbacks[output].FireUpdate();
                     break;
                 }
-                case DMInputEventIds.OnlineFeedbackEventId:
+                case DMOutputEventIds.OnlineFeedbackEventId:
                 {
                     Debug.Console(2, this, "Output {0} DMInputEventIds.OnlineFeedbackEventId fired. State: {1}", args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
                     OutputEndpointOnlineFeedbacks[output].FireUpdate();
