@@ -214,6 +214,7 @@ namespace PepperDash.Essentials.DM
 
                         }
                     });
+
 				InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return Chassis.Inputs[tempX].EndpointOnlineFeedback; });
 
                 OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return Chassis.Outputs[tempX].EndpointOnlineFeedback; });
@@ -625,7 +626,7 @@ namespace PepperDash.Essentials.DM
                     OutputEndpointOnlineFeedbacks[output].FireUpdate();
                     break;
                 }
-                case DMInputEventIds.OnlineFeedbackEventId:
+                case DMOutputEventIds.OnlineFeedbackEventId:
                 {
                     Debug.Console(2, this, "Output {0} DMInputEventIds.OnlineFeedbackEventId fired. State: {1}", args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
                     OutputEndpointOnlineFeedbacks[output].FireUpdate();
