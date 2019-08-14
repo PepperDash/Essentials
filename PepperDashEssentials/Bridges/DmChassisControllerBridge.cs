@@ -41,7 +41,10 @@ namespace PepperDash.Essentials.Bridges
 				{
 					Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
 					var txKey = dmChassis.TxDictionary[ioSlot];
-					var txDevice = DeviceManager.GetDeviceForKey(txKey) as DmTxControllerBase;
+                    var basicTxDevice = DeviceManager.GetDeviceForKey(txKey) as BasicDmTxControllerBase;
+
+					var txDevice = basicTxDevice as DmTxControllerBase;
+
                     if (dmChassis.Chassis is DmMd8x8Cpu3 || dmChassis.Chassis is DmMd8x8Cpu3rps
                         || dmChassis.Chassis is DmMd16x16Cpu3 || dmChassis.Chassis is DmMd16x16Cpu3rps
                         || dmChassis.Chassis is DmMd32x32Cpu3 || dmChassis.Chassis is DmMd32x32Cpu3rps)
@@ -55,6 +58,10 @@ namespace PepperDash.Essentials.Bridges
                             txDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
                         }
                     }
+
+                    if(basicTxDevice != null && txDevice == null)
+                        trilist.BooleanInput[joinMap.TxAdvancedIsPresent + ioSlot].BoolValue = true;
+
 
                     if (txDevice != null)
                     {
@@ -73,8 +80,6 @@ namespace PepperDash.Essentials.Bridges
                         if (txDevice is ITxRouting)
                         {
                             var txR = txDevice as ITxRouting;
-
-                            trilist.BooleanInput[joinMap.TxHdcpSupportTypeSimple + ioSlot].BoolValue = hdcpTypeSimple;
 
                             if (hdcpTypeSimple)
                             {
@@ -221,7 +226,7 @@ namespace PepperDash.Essentials.Bridges
             public uint VideoSyncStatus { get; set; }
             public uint InputEndpointOnline { get; set; }
             public uint OutputEndpointOnline { get; set; }
-            public uint TxHdcpSupportTypeSimple { get; set; }
+            public uint TxAdvancedIsPresent { get; set; } // indicates that there is an attached transmitter that should be bridged to be interacted with
 
             //Analog
             public uint OutputVideo { get; set; }
@@ -245,7 +250,7 @@ namespace PepperDash.Essentials.Bridges
                 VideoSyncStatus = 100; //101-299
                 InputEndpointOnline = 500; //501-699
                 OutputEndpointOnline = 700; //701-899
-                TxHdcpSupportTypeSimple = 1000; //1001-1199
+                TxAdvancedIsPresent = 1000; //1001-1199
 
                 //Analog
                 OutputVideo = 100; //101-299
