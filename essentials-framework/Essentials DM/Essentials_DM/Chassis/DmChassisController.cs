@@ -37,6 +37,8 @@ namespace PepperDash.Essentials.DM
         public Dictionary<uint, StringFeedback> OutputAudioRouteNameFeedbacks { get; private set; }
 
         public Dictionary<uint, IntFeedback> InputCardHdcpCapabilityFeedbacks { get; private set; }
+
+        public Dictionary<uint, eHdcpCapabilityType> InputCardHdcpCapabilityTypes { get; private set; }
 		
 		
 		// Need a couple Lists of generic Backplane ports
@@ -158,6 +160,7 @@ namespace PepperDash.Essentials.DM
             OutputEndpointOnlineFeedbacks = new Dictionary<uint, BoolFeedback>();
 
             InputCardHdcpCapabilityFeedbacks = new Dictionary<uint, IntFeedback>();
+            InputCardHdcpCapabilityTypes = new Dictionary<uint, eHdcpCapabilityType>();
 
 
 			for (uint x = 1; x <= Chassis.NumberOfOutputs; x++) 
@@ -228,6 +231,8 @@ namespace PepperDash.Essentials.DM
 
                     if (inputCard.Card is DmcHd)
                     {
+                        InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+
                         if ((inputCard.Card as DmcHd).HdmiInput.HdcpSupportOnFeedback.BoolValue)
                             return 1;
                         else
@@ -235,6 +240,8 @@ namespace PepperDash.Essentials.DM
                     }
                     else if (inputCard.Card is DmcHdDsp)
                     {
+                        InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+
                         if ((inputCard.Card as DmcHdDsp).HdmiInput.HdcpSupportOnFeedback.BoolValue)
                             return 1;
                         else
@@ -242,6 +249,8 @@ namespace PepperDash.Essentials.DM
                     }
                     else if (inputCard.Card is Dmc4kHdBase)
                     {
+                        InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
+
                         return (int)(inputCard.Card as Dmc4kHdBase).HdmiInput.HdcpReceiveCapability;
                     }
                     else
