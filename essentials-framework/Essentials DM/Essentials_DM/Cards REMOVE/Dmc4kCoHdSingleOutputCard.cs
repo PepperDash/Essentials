@@ -30,11 +30,11 @@ namespace PepperDash.Essentials.DM.Cards
 			: base(key, slot)
 		{
 			Card = card;
-            //DmOut1 = new RoutingOutputPort(DmPortName.DmOut1, eRoutingSignalType.AudioVideo,
+            //DmOut1 = new RoutingOutputPort(DmPortName.DmOut1, eRoutingSignalType.Audio | eRoutingSignalType.Video,
             //    eRoutingPortConnectionType.DmCat, null, this);
-            //DmOut2 = new RoutingOutputPort(DmPortName.DmOut2, eRoutingSignalType.AudioVideo,
+            //DmOut2 = new RoutingOutputPort(DmPortName.DmOut2, eRoutingSignalType.Audio | eRoutingSignalType.Video,
             //    eRoutingPortConnectionType.DmCat, null, this);
-            //HdmiOut1 = new RoutingOutputPort(DmPortName.HdmiOut1, eRoutingSignalType.AudioVideo,
+            //HdmiOut1 = new RoutingOutputPort(DmPortName.HdmiOut1, eRoutingSignalType.Audio | eRoutingSignalType.Video,
             //    eRoutingPortConnectionType.Hdmi, null, this);
 
             //OutputPorts.AddRange(new[] { DmOut1, DmOut2, HdmiOut1 });

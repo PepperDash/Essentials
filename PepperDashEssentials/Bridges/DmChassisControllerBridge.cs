@@ -35,6 +35,9 @@ namespace PepperDash.Essentials.Bridges
                 // Control
                 trilist.SetUShortSigAction(joinMap.OutputVideo + ioSlot, new Action<ushort>(o => dmChassis.ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video)));
                 trilist.SetUShortSigAction(joinMap.OutputAudio + ioSlot, new Action<ushort>(o => dmChassis.ExecuteSwitch(o, ioSlot, eRoutingSignalType.Audio)));
+                trilist.SetUShortSigAction(joinMap.OutputUsb + ioSlot, new Action<ushort>(o => dmChassis.ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbOutput)));
+                trilist.SetUShortSigAction(joinMap.InputUsb + ioSlot, new Action<ushort>(o => dmChassis.ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbInput)));
+
 				if (dmChassis.TxDictionary.ContainsKey(ioSlot))
 				{
 					Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
@@ -78,8 +81,10 @@ namespace PepperDash.Essentials.Bridges
                 // Feedback
                 dmChassis.VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo + ioSlot]);
                 dmChassis.AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio + ioSlot]);
+                dmChassis.UsbOutputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputUsb + ioSlot]);
+                dmChassis.UsbInputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.InputUsb + ioSlot]);
 
-                 dmChassis.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
+                dmChassis.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
 
                 dmChassis.OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames + ioSlot]);
                 dmChassis.InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames + ioSlot]);
@@ -94,6 +99,8 @@ namespace PepperDash.Essentials.Bridges
             public uint IsOnline { get; set; }
             public uint OutputVideo { get; set; }
             public uint OutputAudio { get; set; }
+            public uint OutputUsb { get; set; }
+            public uint InputUsb { get; set; }
             public uint VideoSyncStatus { get; set; }
             public uint InputNames { get; set; }
             public uint OutputNames { get; set; }
@@ -111,14 +118,16 @@ namespace PepperDash.Essentials.Bridges
                 IsOnline = 11;
                 OutputVideo = 100; //101-299
                 OutputAudio = 300; //301-499
+                OutputUsb = 500; //501-699
+                InputUsb = 700; //701-899
                 VideoSyncStatus = 100; //101-299
                 InputNames = 100; //101-299
                 OutputNames = 300; //301-499
                 OutputCurrentVideoInputNames = 2000; //2001-2199
                 OutputCurrentAudioInputNames = 2200; //2201-2399
                 InputCurrentResolution = 2400; // 2401-2599
-                InputEndpointOnline = 500;
-                OutputEndpointOnline = 700;
+                InputEndpointOnline = 500; //501-699
+                OutputEndpointOnline = 700; //701-899
                 //HdcpSupport = 1000; //1001-1199
                 //HdcpSupportCapability = 1200; //1201-1399
 
@@ -131,6 +140,8 @@ namespace PepperDash.Essentials.Bridges
                 IsOnline = IsOnline + joinOffset;
                 OutputVideo = OutputVideo + joinOffset;
                 OutputAudio = OutputAudio + joinOffset;
+                OutputUsb = OutputUsb + joinOffset;
+                InputUsb = InputUsb + joinOffset;
                 VideoSyncStatus = VideoSyncStatus + joinOffset;
                 InputNames = InputNames + joinOffset;
                 OutputNames = OutputNames + joinOffset;

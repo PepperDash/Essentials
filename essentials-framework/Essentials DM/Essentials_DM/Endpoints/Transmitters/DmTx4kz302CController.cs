@@ -86,13 +86,13 @@ namespace PepperDash.Essentials.DM
             Tx = tx;
 
             HdmiIn1 = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn1,
-                eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, eVst.Hdmi1, this,
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.Hdmi1, this,
                 VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInputs[1]));
             HdmiIn2 = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn2,
-                eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, eVst.Hdmi2, this,
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.Hdmi2, this,
                 VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInputs[2]));
             DisplayPortIn = new RoutingInputPortWithVideoStatuses(DmPortName.VgaIn,
-                eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DisplayPort, eVst.DisplayPort, this,
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DisplayPort, eVst.DisplayPort, this,
                 VideoStatusHelper.GetDisplayPortInputStatusFuncs(tx.DisplayPortInput));
             ActiveVideoInputFeedback = new StringFeedback("ActiveVideoInput",
                 () => ActualActiveVideoInput.ToString());
@@ -161,11 +161,11 @@ namespace PepperDash.Essentials.DM
             };
 
             AnyVideoInput = new RoutingInputPortWithVideoStatuses(DmPortName.AnyVideoIn,
-                eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.None, 0, this, combinedFuncs);
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.None, 0, this, combinedFuncs);
 
-            DmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.AudioVideo,
+            DmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.DmCat, null, this);
-            HdmiLoopOut = new RoutingOutputPort(DmPortName.HdmiLoopOut, eRoutingSignalType.AudioVideo,
+            HdmiLoopOut = new RoutingOutputPort(DmPortName.HdmiLoopOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, null, this);
 
 
@@ -207,27 +207,27 @@ namespace PepperDash.Essentials.DM
                 {
                     case 0:
                         {
-                            ExecuteSwitch(eVst.Auto, null, eRoutingSignalType.AudioVideo);
+                            ExecuteSwitch(eVst.Auto, null, eRoutingSignalType.Audio | eRoutingSignalType.Video);
                             break;
                         }
                     case 1:
                         {
-                            ExecuteSwitch(HdmiIn1.Selector, null, eRoutingSignalType.AudioVideo);
+                            ExecuteSwitch(HdmiIn1.Selector, null, eRoutingSignalType.Audio | eRoutingSignalType.Video);
                             break;
                         }
                     case 2:
                         {
-                            ExecuteSwitch(HdmiIn2.Selector, null, eRoutingSignalType.AudioVideo);
+                            ExecuteSwitch(HdmiIn2.Selector, null, eRoutingSignalType.Audio | eRoutingSignalType.Video);
                             break;
                         }
                     case 3:
                         {
-                            ExecuteSwitch(DisplayPortIn.Selector, null, eRoutingSignalType.AudioVideo);
+                            ExecuteSwitch(DisplayPortIn.Selector, null, eRoutingSignalType.Audio | eRoutingSignalType.Video);
                             break;
                         }
                     case 4:
                         {
-                            ExecuteSwitch(eVst.AllDisabled, null, eRoutingSignalType.AudioVideo);
+                            ExecuteSwitch(eVst.AllDisabled, null, eRoutingSignalType.Audio | eRoutingSignalType.Video);
                             break;
                         }
                 }

@@ -35,7 +35,9 @@ namespace PepperDash.Essentials.DM
 		public Dictionary<uint, StringFeedback> OutputNameFeedbacks { get; private set; }
 		public Dictionary<uint, StringFeedback> OutputVideoRouteNameFeedbacks { get; private set; }
         public Dictionary<uint, StringFeedback> OutputAudioRouteNameFeedbacks { get; private set; }
-		
+        public Dictionary<uint, IntFeedback> UsbOutputRoutedToFeebacks { get; private set; }
+        public Dictionary<uint, IntFeedback> UsbInputRoutedToFeebacks { get; private set; }
+
 		
 		// Need a couple Lists of generic Backplane ports
 		public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
@@ -147,6 +149,8 @@ namespace PepperDash.Essentials.DM
             Chassis.DMOutputChange += new DMOutputEventHandler(Chassis_DMOutputChange);
 			VideoOutputFeedbacks = new Dictionary<uint, IntFeedback>();
 			AudioOutputFeedbacks = new Dictionary<uint, IntFeedback>();
+            UsbOutputRoutedToFeebacks = new Dictionary<uint, IntFeedback>();
+            UsbInputRoutedToFeebacks = new Dictionary<uint, IntFeedback>();
 			VideoInputSyncFeedbacks = new Dictionary<uint, BoolFeedback>();
 			InputNameFeedbacks = new Dictionary<uint, StringFeedback>();
 			OutputNameFeedbacks = new Dictionary<uint, StringFeedback>();
@@ -168,6 +172,14 @@ namespace PepperDash.Essentials.DM
 					if (Chassis.Outputs[tempX].AudioOutFeedback != null) { return (ushort)Chassis.Outputs[tempX].AudioOutFeedback.Number; } 
 					else { return 0; };
 					});
+                UsbOutputRoutedToFeebacks[tempX] = new IntFeedback(() => { 
+                    if(Chassis.Outputs[tempX].USBRoutedToFeedback != null) { return (ushort)Chassis.Outputs[tempX].USBRoutedToFeedback.Number; }
+                    else {return 0; };
+                    });
+                UsbInputRoutedToFeebacks[tempX] = new IntFeedback(() => { 
+                    if(Chassis.Inputs[tempX].USBRoutedToFeedback != null) { return (ushort)Chassis.Inputs[tempX].USBRoutedToFeedback.Number; }
+                    else {return 0; };
+                    });
 				VideoInputSyncFeedbacks[tempX] = new BoolFeedback(() => {			
 					return Chassis.Inputs[tempX].VideoDetectedFeedback.BoolValue;
 					});
@@ -309,38 +321,38 @@ namespace PepperDash.Essentials.DM
             else if (type == "dmcS")
             {
                 new DmcS(number, Chassis);
-                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmMmFiber);
+                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber);
                 AddInCardHdmiAndAudioLoopPorts(number);
             }
             else if (type == "dmcSDsp")
             {
                 new DmcSDsp(number, Chassis);
-                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmMmFiber);
+                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber);
                 AddInCardHdmiAndAudioLoopPorts(number);
             }
             else if (type == "dmcS2")
             {
                 new DmcS2(number, Chassis);
-                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmSmFiber);
+                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber);
                 AddInCardHdmiAndAudioLoopPorts(number);
             }
             else if (type == "dmcS2Dsp")
             {
                 new DmcS2Dsp(number, Chassis);
-                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmSmFiber);
+                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber);
                 AddInCardHdmiAndAudioLoopPorts(number);
             }
             else if (type == "dmcSdi")
             {
                 new DmcSdi(number, Chassis);
-                AddInputPortWithDebug(number, "sdiIn", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Sdi);
-                AddOutputPortWithDebug(number, "sdiOut", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Sdi, null);
+                AddInputPortWithDebug(number, "sdiIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Sdi);
+                AddOutputPortWithDebug(number, "sdiOut", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Sdi, null);
                 AddInCardHdmiAndAudioLoopPorts(number);
             }
             else if (type == "dmcDvi")
             {
                 new DmcDvi(number, Chassis);
-                AddInputPortWithDebug(number, "dviIn", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Dvi);
+                AddInputPortWithDebug(number, "dviIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Dvi);
                 AddInputPortWithDebug(number, "audioIn", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
                 AddInCardHdmiLoopPort(number);
             }
@@ -384,32 +396,32 @@ namespace PepperDash.Essentials.DM
             else if (type == "dmcStr")
             {
                 new DmcStr(number, Chassis);
-                AddInputPortWithDebug(number, "streamIn", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Streaming);
+                AddInputPortWithDebug(number, "streamIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming);
                 AddInCardHdmiAndAudioLoopPorts(number);
             }
         }
 
         void AddDmInCardPorts(uint number)
         {
-            AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat);
+            AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat);
             AddInCardHdmiAndAudioLoopPorts(number);
         }
 
         void AddHdmiInCardPorts(uint number, ICec cecPort)
         {
-            AddInputPortWithDebug(number, "hdmiIn", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, cecPort);
+            AddInputPortWithDebug(number, "hdmiIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, cecPort);
             AddInCardHdmiAndAudioLoopPorts(number);
         }
 
         void AddInCardHdmiAndAudioLoopPorts(uint number)
         {
-            AddOutputPortWithDebug(number, "hdmiLoopOut", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null);
+            AddOutputPortWithDebug(number, "hdmiLoopOut", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, null);
             AddOutputPortWithDebug(number, "audioLoopOut", eRoutingSignalType.Audio, eRoutingPortConnectionType.Hdmi, null);
         }
 
         void AddInCardHdmiLoopPort(uint number)
         {
-            AddOutputPortWithDebug(number, "hdmiLoopOut", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, null);
+            AddOutputPortWithDebug(number, "hdmiLoopOut", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, null);
         }
 
         /// <summary>
@@ -462,23 +474,23 @@ namespace PepperDash.Essentials.DM
             {
                 var outputCard = new DmcSoHdSingle(number, Chassis);
                 var cecPort1 = outputCard.Card1.HdmiOutput;
-                AddOutputPortWithDebug(number, "dmOut1", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmMmFiber, 2 * (number - 1) + 1);
-                AddOutputPortWithDebug(number, "hdmiOut1", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
-                AddOutputPortWithDebug(number, "dmOut2", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmMmFiber, 2 * (number - 1) + 2);
+                AddOutputPortWithDebug(number, "dmOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber, 2 * (number - 1) + 1);
+                AddOutputPortWithDebug(number, "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
+                AddOutputPortWithDebug(number, "dmOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber, 2 * (number - 1) + 2);
 
             }
             else if (type == "dmcS2oHd")
             {
                 var outputCard = new DmcS2oHdSingle(number, Chassis);
                 var cecPort1 = outputCard.Card1.HdmiOutput;
-                AddOutputPortWithDebug(number, "dmOut1", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmSmFiber, 2 * (number - 1) + 1);
-                AddOutputPortWithDebug(number, "hdmiOut1", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
-                AddOutputPortWithDebug(number, "dmOut2", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmSmFiber, 2 * (number - 1) + 2);
+                AddOutputPortWithDebug(number, "dmOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber, 2 * (number - 1) + 1);
+                AddOutputPortWithDebug(number, "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
+                AddOutputPortWithDebug(number, "dmOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber, 2 * (number - 1) + 2);
             }
             else if (type == "dmcStro")
             {
                 var outputCard = new DmcStroSingle(number, Chassis);
-                AddOutputPortWithDebug(number, "streamOut", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Streaming, 2 * (number - 1) + 1);
+                AddOutputPortWithDebug(number, "streamOut", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming, 2 * (number - 1) + 1);
             }
 
             else
@@ -487,17 +499,17 @@ namespace PepperDash.Essentials.DM
 
         void AddDmcHdoPorts(uint number, ICec cecPort1, ICec cecPort2)
         {
-            AddOutputPortWithDebug(number, "hdmiOut1", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
+            AddOutputPortWithDebug(number, "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
             AddOutputPortWithDebug(number, "audioOut1", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio, 2 * (number - 1) + 1);
-            AddOutputPortWithDebug(number, "hdmiOut2", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 2, cecPort2);
+            AddOutputPortWithDebug(number, "hdmiOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 2, cecPort2);
             AddOutputPortWithDebug(number, "audioOut2", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio, 2 * (number - 1) + 2);
         }
 
         void AddDmcCoPorts(uint number, ICec cecPort1)
         {
-            AddOutputPortWithDebug(number, "dmOut1", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat, 2 * (number - 1) + 1);
-            AddOutputPortWithDebug(number, "hdmiOut1", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
-            AddOutputPortWithDebug(number, "dmOut2", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat, 2 * (number - 1) + 2);
+            AddOutputPortWithDebug(number, "dmOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, 2 * (number - 1) + 1);
+            AddOutputPortWithDebug(number, "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
+            AddOutputPortWithDebug(number, "dmOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, 2 * (number - 1) + 2);
         }
 
 
@@ -697,7 +709,7 @@ namespace PepperDash.Essentials.DM
 			if (IsOnline.BoolValue)
 			{
                 Chassis.EnableAudioBreakaway.BoolValue = true;
-                //Chassis.EnableUSBBreakaway.BoolValue = true;
+                Chassis.EnableUSBBreakaway.BoolValue = true;
 
 				if (InputNames != null)
 					foreach (var kvp in InputNames)
@@ -733,19 +745,32 @@ namespace PepperDash.Essentials.DM
 			}
 
 			Card.DMICard inCard = input == 0 ? null : Chassis.Inputs[input];
+            Card.DMOCard outCard = input == 0 ? null : Chassis.Outputs[output];
 
-			// NOTE THAT THESE ARE NOTS - TO CATCH THE AudioVideo TYPE
-			if (sigType != eRoutingSignalType.Audio)
+			// NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
+			if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
 			{
 				Chassis.VideoEnter.BoolValue = true;
 				Chassis.Outputs[output].VideoOut = inCard;
 			}
 
-			if (sigType != eRoutingSignalType.Video)
+			if ((sigType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
 			{
 				Chassis.AudioEnter.BoolValue = true;
 				Chassis.Outputs[output].AudioOut = inCard;
 			}
+
+            if ((sigType | eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+            {
+                Chassis.USBEnter.BoolValue = true;
+                Chassis.Outputs[output].USBRoutedTo = inCard;
+            }
+
+            if ((sigType | eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+            {
+                Chassis.USBEnter.BoolValue = true;
+                Chassis.Inputs[input].USBRoutedTo = outCard; 
+            }
 		}
 
 		#endregion

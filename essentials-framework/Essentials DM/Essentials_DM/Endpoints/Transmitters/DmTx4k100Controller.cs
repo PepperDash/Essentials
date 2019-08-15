@@ -67,9 +67,9 @@ namespace PepperDash.Essentials.DM
             Tx = tx;
 
             HdmiIn = new RoutingInputPort(DmPortName.HdmiIn1,
-                eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, eVst.Hdmi1, this);
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.Hdmi1, this);
 
-            DmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.AudioVideo,
+            DmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.DmCat, null, this);
 
             // Set Ports for CEC

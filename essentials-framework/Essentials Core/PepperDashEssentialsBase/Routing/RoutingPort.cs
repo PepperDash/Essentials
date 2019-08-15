@@ -32,8 +32,10 @@ namespace PepperDash.Essentials.Core
 	public enum eRoutingSignalType
 	{
 		Audio = 1,
-		Video = 2,
-		AudioVideo = 4
+		Video = 2,     
+		//AudioVideo = 4,
+        UsbOutput = 4,
+        UsbInput = 8
 	}
 
 	public enum eRoutingPortConnectionType
