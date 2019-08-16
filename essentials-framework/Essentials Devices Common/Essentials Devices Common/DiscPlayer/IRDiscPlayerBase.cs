@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.Devices.Common
 
 			PowerIsOnFeedback = new BoolFeedback(() => _PowerIsOn);
 
-			HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.AudioVideo, 
+			HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, null, this);
 			AnyAudioOut = new RoutingOutputPort(RoutingPortNames.AnyAudioOut, eRoutingSignalType.Audio, 
 				eRoutingPortConnectionType.DigitalAudio, null, this);

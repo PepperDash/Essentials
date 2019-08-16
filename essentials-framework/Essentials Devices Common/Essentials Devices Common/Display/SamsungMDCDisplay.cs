@@ -98,28 +98,28 @@ namespace PepperDash.Essentials.Devices.Displays
                 v => SetVolume((ushort)v), 
                 () => _LastVolumeSent);
 
-            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo,
+            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, new Action(InputHdmi1), this), 0x21);
 
-            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn1PC, eRoutingSignalType.AudioVideo,
+            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn1PC, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, new Action(InputHdmi1PC), this), 0x22);
 
-            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo,
+            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, new Action(InputHdmi2), this), 0x23);
 
-            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn2PC, eRoutingSignalType.AudioVideo,
+            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn2PC, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, new Action(InputHdmi2PC), this), 0x24);
 
-            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.AudioVideo,
+            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, new Action(InputHdmi3), this), 0x32);
 
-            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.DisplayPortIn1, eRoutingSignalType.AudioVideo,
+            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.DisplayPortIn1, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.DisplayPort, new Action(InputDisplayPort1), this), 0x25);
 
-            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.DviIn, eRoutingSignalType.AudioVideo,
+            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.DviIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Dvi, new Action(InputDvi1), this), 0x18);
 
-            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.CompositeIn, eRoutingSignalType.AudioVideo,
+            AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.CompositeIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Composite, new Action(InputVideo1), this), 0x08);
 
 			AddRoutingInputPort(new RoutingInputPort(RoutingPortNames.RgbIn1, eRoutingSignalType.Video,

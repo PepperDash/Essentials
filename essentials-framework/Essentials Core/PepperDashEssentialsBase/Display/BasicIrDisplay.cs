@@ -50,19 +50,19 @@ namespace PepperDash.Essentials.Core
 
 			InputPorts.AddRange(new RoutingPortCollection<RoutingInputPort>
 			{
-				new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo, 
+				new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 					eRoutingPortConnectionType.Hdmi, new Action(Hdmi1), this, false),
-				new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, 
+				new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 					eRoutingPortConnectionType.Hdmi, new Action(Hdmi2), this, false),
-				new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.AudioVideo, 
+				new RoutingInputPort(RoutingPortNames.HdmiIn3, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 					eRoutingPortConnectionType.Hdmi, new Action(Hdmi3), this, false),
-				new RoutingInputPort(RoutingPortNames.HdmiIn4, eRoutingSignalType.AudioVideo, 
+				new RoutingInputPort(RoutingPortNames.HdmiIn4, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 					eRoutingPortConnectionType.Hdmi, new Action(Hdmi4), this, false),
-				new RoutingInputPort(RoutingPortNames.ComponentIn, eRoutingSignalType.AudioVideo, 
+				new RoutingInputPort(RoutingPortNames.ComponentIn, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 					eRoutingPortConnectionType.Hdmi, new Action(Component1), this, false),
-				new RoutingInputPort(RoutingPortNames.CompositeIn, eRoutingSignalType.AudioVideo, 
+				new RoutingInputPort(RoutingPortNames.CompositeIn, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 					eRoutingPortConnectionType.Hdmi, new Action(Video1), this, false),
-				new RoutingInputPort(RoutingPortNames.AntennaIn, eRoutingSignalType.AudioVideo, 
+				new RoutingInputPort(RoutingPortNames.AntennaIn, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 					eRoutingPortConnectionType.Hdmi, new Action(Antenna), this, false),
 			});
 		}

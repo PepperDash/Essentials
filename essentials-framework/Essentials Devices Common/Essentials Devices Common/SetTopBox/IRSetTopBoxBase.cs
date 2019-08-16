@@ -46,7 +46,7 @@ namespace PepperDash.Essentials.Devices.Common
 			KeypadAccessoryButton2Command = "NumericEnter";
 			KeypadAccessoryButton2Label = "Enter";
 
-			AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyVideoOut, eRoutingSignalType.AudioVideo,
+			AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyVideoOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 				eRoutingPortConnectionType.Hdmi, null, this);
 			AnyAudioOut = new RoutingOutputPort(RoutingPortNames.AnyAudioOut, eRoutingSignalType.Audio,
 				eRoutingPortConnectionType.DigitalAudio, null, this);

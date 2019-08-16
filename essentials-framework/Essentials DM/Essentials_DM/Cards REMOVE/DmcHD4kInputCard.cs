@@ -32,11 +32,11 @@
 //            : base(key, slot)
 //        {
 //            Card = card;
-//            HdmiIn = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn, eRoutingSignalType.AudioVideo,
+//            HdmiIn = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 //                eRoutingPortConnectionType.Hdmi, null, this,
 //                VideoStatusHelper.GetHdmiInputStatusFuncs(Card.HdmiInput));
 
-//            HdmiLoopOut = new RoutingOutputPort(DmPortName.HdmiLoopOut, eRoutingSignalType.AudioVideo,
+//            HdmiLoopOut = new RoutingOutputPort(DmPortName.HdmiLoopOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 //                eRoutingPortConnectionType.Hdmi, null, this);
 //            AudioLoopOut = new RoutingOutputPort(DmPortName.AudioLoopOut, eRoutingSignalType.Audio,
 //                eRoutingPortConnectionType.Hdmi, null, this);
@@ -65,11 +65,11 @@
 //            : base(key, slot)
 //        {
 //            Card = card;
-//            //HdmiIn = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn, eRoutingSignalType.AudioVideo,
+//            //HdmiIn = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 //            //    eRoutingPortConnectionType.Hdmi, null, this,
 //            //    VideoStatusHelper.GetHdmiInputStatusFuncs(Card.HdmiInput));
 
-//            //HdmiLoopOut = new RoutingOutputPort(DmPortName.HdmiLoopOut, eRoutingSignalType.AudioVideo,
+//            //HdmiLoopOut = new RoutingOutputPort(DmPortName.HdmiLoopOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 //            //    eRoutingPortConnectionType.Hdmi, null, this);
 //            //AudioLoopOut = new RoutingOutputPort(DmPortName.AudioLoopOut, eRoutingSignalType.Audio,
 //            //    eRoutingPortConnectionType.Hdmi, null, this);

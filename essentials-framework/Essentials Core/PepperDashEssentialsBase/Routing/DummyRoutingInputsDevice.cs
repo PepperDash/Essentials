@@ -29,7 +29,7 @@ namespace PepperDash.Essentials.Core.Routing
 		/// <param name="key">key for special device</param>
 		public DummyRoutingInputsDevice(string key) : base(key)
 		{
-			AudioVideoOutputPort = new RoutingOutputPort("internal", eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.BackplaneOnly,
+			AudioVideoOutputPort = new RoutingOutputPort("internal", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.BackplaneOnly,
 				null, this, true);
 		}
 	}

@@ -103,14 +103,14 @@ namespace PepperDash.Essentials.Devices.Displays
 			PortGather.LineReceived += this.Port_LineReceived;
 			CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, "\x02QPW\x03"); // Query Power
 
-			InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.AudioVideo,
+			InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn1, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 				eRoutingPortConnectionType.Hdmi, new Action(InputHdmi1), this));
-			InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.AudioVideo, 
+			InputPorts.Add(new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, new Action(InputHdmi2), this));
 
-			InputPorts.Add(new RoutingInputPort(RoutingPortNames.DviIn, eRoutingSignalType.AudioVideo,
+			InputPorts.Add(new RoutingInputPort(RoutingPortNames.DviIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Dvi, new Action(InputDvi1), this));
-			InputPorts.Add(new RoutingInputPort(RoutingPortNames.CompositeIn, eRoutingSignalType.AudioVideo,
+			InputPorts.Add(new RoutingInputPort(RoutingPortNames.CompositeIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Composite, new Action(InputVideo1), this));
 			InputPorts.Add(new RoutingInputPort(RoutingPortNames.VgaIn, eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Vga, new Action(InputVga), this));

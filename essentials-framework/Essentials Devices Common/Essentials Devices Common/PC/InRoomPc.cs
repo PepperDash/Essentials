@@ -36,7 +36,7 @@ namespace PepperDash.Essentials.Devices.Common
 			HasPowerOnFeedback = new BoolFeedback("HasPowerFeedback", 
 				() => this.GetVideoStatuses() != VideoStatusOutputs.NoStatus);
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-			OutputPorts.Add(AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyVideoOut, eRoutingSignalType.AudioVideo, 
+			OutputPorts.Add(AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyVideoOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.None, 0, this));
 		}
 
