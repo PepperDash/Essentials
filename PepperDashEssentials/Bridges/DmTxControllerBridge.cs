@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Bridges
             tx.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
             tx.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus]);
             tx.AnyVideoInput.VideoStatus.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentInputResolution]);
-            //tx.HdcpSupportAllFeedback.LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportCapability]);
+            trilist.UShortInput[joinMap.HdcpSupportCapability].UShortValue = (ushort)tx.HdcpSupportCapability;
 
             bool hdcpTypeSimple;
 

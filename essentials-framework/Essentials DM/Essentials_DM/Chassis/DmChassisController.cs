@@ -41,6 +41,11 @@ namespace PepperDash.Essentials.DM
         public IntFeedback SystemIdFeebdack { get; private set; }
         public BoolFeedback SystemIdBusyFeedback { get; private set; }
 
+
+        public Dictionary<uint, IntFeedback> InputCardHdcpCapabilityFeedbacks { get; private set; }
+
+        public Dictionary<uint, eHdcpCapabilityType> InputCardHdcpCapabilityTypes { get; private set; }
+		
 		
 		// Need a couple Lists of generic Backplane ports
 		public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
@@ -164,6 +169,9 @@ namespace PepperDash.Essentials.DM
 
             SystemIdFeebdack = new IntFeedback(() => { return Chassis.SystemIdFeedback.UShortValue; });
             SystemIdBusyFeedback = new BoolFeedback(() => { return Chassis.SystemIdBusy.BoolValue; });
+            InputCardHdcpCapabilityFeedbacks = new Dictionary<uint, IntFeedback>();
+            InputCardHdcpCapabilityTypes = new Dictionary<uint, eHdcpCapabilityType>();
+
 
 			for (uint x = 1; x <= Chassis.NumberOfOutputs; x++) 
             {
@@ -235,6 +243,38 @@ namespace PepperDash.Essentials.DM
 				InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return Chassis.Inputs[tempX].EndpointOnlineFeedback; });
 
                 OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return Chassis.Outputs[tempX].EndpointOnlineFeedback; });
+
+                InputCardHdcpCapabilityFeedbacks[tempX] = new IntFeedback(() => 
+                {
+                    var inputCard = Chassis.Inputs[tempX];
+
+                    if (inputCard.Card is DmcHd)
+                    {
+                        InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+
+                        if ((inputCard.Card as DmcHd).HdmiInput.HdcpSupportOnFeedback.BoolValue)
+                            return 1;
+                        else
+                            return 0;
+                    }
+                    else if (inputCard.Card is DmcHdDsp)
+                    {
+                        InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+
+                        if ((inputCard.Card as DmcHdDsp).HdmiInput.HdcpSupportOnFeedback.BoolValue)
+                            return 1;
+                        else
+                            return 0;
+                    }
+                    else if (inputCard.Card is Dmc4kHdBase)
+                    {
+                        InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
+
+                        return (int)(inputCard.Card as Dmc4kHdBase).HdmiInput.HdcpReceiveCapability;
+                    }
+                    else
+                        return 0;
+                });
 			}
 		}
 
@@ -607,7 +647,8 @@ namespace PepperDash.Essentials.DM
         {
 				
 		    switch (args.EventId) {
-			    case DMInputEventIds.EndpointOnlineEventId: {
+			    case DMInputEventIds.EndpointOnlineEventId: 
+                    {
 				        Debug.Console(2, this, "DM Input EndpointOnlineEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
 				        InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
 				        break;
@@ -618,20 +659,28 @@ namespace PepperDash.Essentials.DM
                         InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
                         break;
                     }
-			    case DMInputEventIds.VideoDetectedEventId: {
-				    Debug.Console(2, this, "DM Input {0} VideoDetectedEventId", args.Number);
-				    VideoInputSyncFeedbacks[args.Number].FireUpdate();
-				    break;
+			    case DMInputEventIds.VideoDetectedEventId: 
+                    {
+                        Debug.Console(2, this, "DM Input {0} VideoDetectedEventId", args.Number);
+                        VideoInputSyncFeedbacks[args.Number].FireUpdate();
+                        break;
 				    }
-			    case DMInputEventIds.InputNameEventId: {
-				    Debug.Console(2, this, "DM Input {0} NameFeedbackEventId", args.Number);
-				    InputNameFeedbacks[args.Number].FireUpdate();
-				    break;
+			    case DMInputEventIds.InputNameEventId: 
+                    {
+                        Debug.Console(2, this, "DM Input {0} NameFeedbackEventId", args.Number);
+                        InputNameFeedbacks[args.Number].FireUpdate();
+                        break;
 				    }
                 case DMInputEventIds.UsbRoutedToEventId:
                     {
                         Debug.Console(2, this, "DM Input {0} UsbRoutedToEventId", args.Number);
                         UsbInputRoutedToFeebacks[args.Number].FireUpdate();
+                        break;
+                    }
+                case DMInputEventIds.HdcpCapabilityFeedbackEventId:
+                    {
+                        Debug.Console(2, this, "DM Input {0} HdcpCapabilityFeedbackEventId", args.Number);
+                        InputCardHdcpCapabilityFeedbacks[args.Number].FireUpdate();
                         break;
                     }
                 default:
