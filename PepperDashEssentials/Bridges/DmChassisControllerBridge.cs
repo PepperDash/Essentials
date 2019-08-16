@@ -27,6 +27,12 @@ namespace PepperDash.Essentials.Bridges
 
             dmChassis.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
 
+            trilist.SetUShortSigAction(joinMap.SystemId, new Action<ushort>(o => dmChassis.Chassis.SystemId.UShortValue = o));
+            trilist.SetSigTrueAction(joinMap.SystemId, new Action(() => dmChassis.Chassis.ApplySystemId()));
+
+            dmChassis.SystemIdFeebdack.LinkInputSig(trilist.UShortInput[joinMap.SystemId]);
+            dmChassis.SystemIdBusyFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SystemId]);
+
             // Link up outputs
             for (uint i = 1; i <= dmChassis.Chassis.NumberOfOutputs; i++)
             {
@@ -97,6 +103,7 @@ namespace PepperDash.Essentials.Bridges
         public class DmChassisControllerJoinMap : JoinMapBase
         {
             public uint IsOnline { get; set; }
+            public uint SystemId { get; set; }
             public uint OutputVideo { get; set; }
             public uint OutputAudio { get; set; }
             public uint OutputUsb { get; set; }
@@ -115,6 +122,7 @@ namespace PepperDash.Essentials.Bridges
 
             public DmChassisControllerJoinMap()
             {
+                SystemId = 10;
                 IsOnline = 11;
                 OutputVideo = 100; //101-299
                 OutputAudio = 300; //301-499
@@ -137,6 +145,7 @@ namespace PepperDash.Essentials.Bridges
             {
                 var joinOffset = joinStart - 1;
 
+                SystemId = SystemId + joinOffset;
                 IsOnline = IsOnline + joinOffset;
                 OutputVideo = OutputVideo + joinOffset;
                 OutputAudio = OutputAudio + joinOffset;
