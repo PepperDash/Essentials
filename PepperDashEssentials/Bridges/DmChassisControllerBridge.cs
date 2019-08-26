@@ -106,11 +106,16 @@ namespace PepperDash.Essentials.Bridges
 				{
 					dmChassis.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
 
-                    var inputPort = dmChassis.InputPorts[string.Format("inputCard{0}-hdmiIn", ioSlot)].Port as EndpointHdmiInput;
-
+                    var inputPort = dmChassis.InputPorts[string.Format("inputCard{0}--hdmiIn", ioSlot)];
                     if (inputPort != null)
                     {
-                        //trilist.SetUShortSigAction((joinMap.HdcpSupport + ioSlot), u => 
+                        var hdmiPort = inputPort.Port as EndpointHdmiInput;
+
+                        if (hdmiPort != null)
+                        {
+                            SetHdcpCapabilityAction(true, hdmiPort, joinMap.HdcpSupportState + ioSlot, trilist);
+                            dmChassis.InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState + ioSlot]);
+                        }
                     }
 				}
 				if (dmChassis.RxDictionary.ContainsKey(ioSlot))
@@ -129,6 +134,7 @@ namespace PepperDash.Essentials.Bridges
                         RxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
                     }
 				}
+
                 // Feedback
                 dmChassis.VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo + ioSlot]);
                 dmChassis.AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio + ioSlot]);

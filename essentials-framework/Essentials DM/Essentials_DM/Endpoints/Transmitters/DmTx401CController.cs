@@ -168,6 +168,8 @@ namespace PepperDash.Essentials.DM
 					&& tx.CvbsInput.SyncDetectedFeedback.BoolValue)
 			};
 
+            AnyVideoInput = new RoutingInputPortWithVideoStatuses(DmPortName.AnyVideoIn,
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.None, 0, this, combinedFuncs);
 
             DmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.DmCat, null, this);
