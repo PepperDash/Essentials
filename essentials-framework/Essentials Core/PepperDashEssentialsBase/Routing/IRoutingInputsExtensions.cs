@@ -60,7 +60,7 @@ namespace PepperDash.Essentials.Core
 		{
 			var routeDescr = new RouteDescriptor(source, destination, signalType);
 			// if it's a single signal type, find the route
-			if (signalType != eRoutingSignalType.AudioVideo)
+			if ((signalType & (eRoutingSignalType.Audio & eRoutingSignalType.Video)) == (eRoutingSignalType.Audio & eRoutingSignalType.Video))
 			{
 				Debug.Console(1, destination, "Attempting to build source route from {0}", source.Key);
 				if (!destination.GetRouteToSource(source, null, null, signalType, 0, routeDescr))
@@ -106,7 +106,7 @@ namespace PepperDash.Essentials.Core
 
 			RoutingInputPort goodInputPort = null;
 			var destDevInputTies = TieLineCollection.Default.Where(t =>
-				t.DestinationPort.ParentDevice == destination && (t.Type == signalType || t.Type == eRoutingSignalType.AudioVideo));
+                t.DestinationPort.ParentDevice == destination && (t.Type == signalType || (t.Type & (eRoutingSignalType.Audio | eRoutingSignalType.Video)) == (eRoutingSignalType.Audio | eRoutingSignalType.Video)));
 
 			// find a direct tie
 			var directTie = destDevInputTies.FirstOrDefault(

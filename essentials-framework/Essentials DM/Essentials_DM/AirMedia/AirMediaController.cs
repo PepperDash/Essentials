@@ -46,13 +46,13 @@ namespace PepperDash.Essentials.DM.AirMedia
 
             PropertiesConfig = props;
 
-            InputPorts.Add(new RoutingInputPort(DmPortName.Osd, eRoutingSignalType.AudioVideo,
+            InputPorts.Add(new RoutingInputPort(DmPortName.Osd, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.None, new Action(SelectPinPointUxLandingPage), this));
 
-            InputPorts.Add(new RoutingInputPort(DmPortName.AirMediaIn, eRoutingSignalType.AudioVideo,
+            InputPorts.Add(new RoutingInputPort(DmPortName.AirMediaIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Streaming, new Action(SelectAirMedia), this));
 
-            InputPorts.Add(new RoutingInputPort(DmPortName.HdmiIn, eRoutingSignalType.AudioVideo,
+            InputPorts.Add(new RoutingInputPort(DmPortName.HdmiIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, new Action(SelectHdmiIn), this));
 
             InputPorts.Add(new RoutingInputPort(DmPortName.AirBoardIn, eRoutingSignalType.Video,
@@ -60,7 +60,7 @@ namespace PepperDash.Essentials.DM.AirMedia
 
             if (AirMedia is Am300)
             {
-                InputPorts.Add(new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.AudioVideo,
+                InputPorts.Add(new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                     eRoutingPortConnectionType.DmCat, new Action(SelectDmIn), this));
             }
 

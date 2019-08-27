@@ -55,7 +55,7 @@ namespace PepperDash.Essentials.DM
 				}
 				catch (Exception e)
 				{
-					Debug.Console(0, "[{0}] WARNING: Cannot create DM-TX device: {1}", key, e.Message);
+					Debug.Console(0, "[{0}] WARNING: Cannot create DM-TX device: {1}", key, e);
 				}
 			}
 			else
@@ -132,7 +132,7 @@ namespace PepperDash.Essentials.DM
 				}
 				catch (Exception e)
 				{
-					Debug.Console(0, "[{0}] WARNING: Cannot create DM-TX device: {1}", key, e.Message);
+					Debug.Console(0, "[{0}] WARNING: Cannot create DM-TX device: {1}", key, e);
 				}
 			}
 			

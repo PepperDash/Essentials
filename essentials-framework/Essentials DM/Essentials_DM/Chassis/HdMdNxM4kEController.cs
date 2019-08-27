@@ -35,11 +35,11 @@ namespace PepperDash.Essentials.DM.Chassis
 			InputPorts = new RoutingPortCollection<RoutingInputPort>();
 			for (uint i = 1; i <= 4; i++)
 			{
-				InputPorts.Add(new RoutingInputPort("hdmiIn" + i, eRoutingSignalType.AudioVideo,
+				InputPorts.Add(new RoutingInputPort("hdmiIn" + i, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 					eRoutingPortConnectionType.Hdmi, i, this));
 			}
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-			OutputPorts.Add(new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.AudioVideo,
+			OutputPorts.Add(new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 				eRoutingPortConnectionType.Hdmi, null, this));
 
 			// physical settings

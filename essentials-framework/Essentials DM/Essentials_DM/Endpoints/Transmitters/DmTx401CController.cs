@@ -92,10 +92,10 @@ namespace PepperDash.Essentials.DM
 			Tx = tx;
 
 			HdmiIn = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn,
-                eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, eVst.HDMI, this,
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.HDMI, this,
 				VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInput));
 			DisplayPortIn = new RoutingInputPortWithVideoStatuses(DmPortName.DisplayPortIn,
-                eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, eVst.DisplayPort, this,
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.DisplayPort, this,
 				VideoStatusHelper.GetDisplayPortInputStatusFuncs(tx.DisplayPortInput));
 			VgaIn = new RoutingInputPortWithVideoStatuses(DmPortName.VgaIn,
                 eRoutingSignalType.Video, eRoutingPortConnectionType.Vga, eVst.VGA, this, 
@@ -168,8 +168,10 @@ namespace PepperDash.Essentials.DM
 					&& tx.CvbsInput.SyncDetectedFeedback.BoolValue)
 			};
 
+            AnyVideoInput = new RoutingInputPortWithVideoStatuses(DmPortName.AnyVideoIn,
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.None, 0, this, combinedFuncs);
 
-            DmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.AudioVideo,
+            DmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.DmCat, null, this);
 
             AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,

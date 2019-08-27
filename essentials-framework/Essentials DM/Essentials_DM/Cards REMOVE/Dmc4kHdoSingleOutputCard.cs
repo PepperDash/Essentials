@@ -35,9 +35,9 @@
 //            //    eRoutingPortConnectionType.LineAudio, null, this);
 //            //AudioOut2 = new RoutingOutputPort(DmPortName.BalancedAudioOut2, eRoutingSignalType.Audio,
 //            //    eRoutingPortConnectionType.LineAudio, null, this);
-//            //HdmiOut1 = new RoutingOutputPort(DmPortName.HdmiOut1, eRoutingSignalType.AudioVideo,
+//            //HdmiOut1 = new RoutingOutputPort(DmPortName.HdmiOut1, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 //            //    eRoutingPortConnectionType.Hdmi, null, this);
-//            //HdmiOut2 = new RoutingOutputPort(DmPortName.HdmiOut2, eRoutingSignalType.AudioVideo,
+//            //HdmiOut2 = new RoutingOutputPort(DmPortName.HdmiOut2, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 //            //    eRoutingPortConnectionType.Hdmi, null, this);
 
 //            //OutputPorts.AddRange(new[] { AudioOut1, AudioOut2, HdmiOut1, HdmiOut2 });

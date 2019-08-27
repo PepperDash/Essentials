@@ -201,10 +201,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             PortGather.IncludeDelimiter = true;
             PortGather.LineReceived += this.Port_LineReceived;
 
-            CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.AudioVideo,
+            CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.Audio | eRoutingSignalType.Video,
             eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
  
-            Output1 = new RoutingOutputPort(RoutingPortNames.AnyVideoOut, eRoutingSignalType.AudioVideo,
+            Output1 = new RoutingOutputPort(RoutingPortNames.AnyVideoOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, null, this);
  
             SelfviewIsOnFeedback = new BoolFeedback(SelfViewIsOnFeedbackFunc);

@@ -92,7 +92,7 @@ namespace PepperDash.Essentials.DM
             {
                 InputCard = inputCard as Card.Dmps3HdmiVgaInput;
             
-                HdmiIn = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi,
+                HdmiIn = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn, eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi,
                     eDmps3InputVideoSource.Hdmi, this, VideoStatusHelper.GetHdmiInputStatusFuncs(InputCard.HdmiInputPort));
                 VgaIn = new RoutingInputPortWithVideoStatuses(DmPortName.VgaIn,
                     eRoutingSignalType.Video, eRoutingPortConnectionType.Vga, eDmps3InputVideoSource.Vga, this,
@@ -140,7 +140,7 @@ namespace PepperDash.Essentials.DM
                 };
 
                 AnyVideoInput = new RoutingInputPortWithVideoStatuses(DmPortName.AnyVideoIn,
-                    eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.None, eDmps3InputVideoSource.Auto, this, combinedFuncs);
+                    eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.None, eDmps3InputVideoSource.Auto, this, combinedFuncs);
 
                 ActiveVideoInputFeedback = new StringFeedback("ActiveVideoInput", () => ActualVideoInput.ToString());
 
@@ -164,7 +164,7 @@ namespace PepperDash.Essentials.DM
                 // Set Ports for CEC
                 HdmiIn.Port = InputCard.HdmiInputPort;
 
-                VirtualDmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.AudioVideo,
+                VirtualDmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                     eRoutingPortConnectionType.None, null, this);
 
                 AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,
@@ -316,7 +316,7 @@ namespace PepperDash.Essentials.DM
         {
             InputCard = inputCard;
 
-            HdmiIn = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn, eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi,
+            HdmiIn = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn, eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi,
                 eDmps3InputVideoSource.Hdmi, this, VideoStatusHelper.GetHdmiInputStatusFuncs(InputCard.HdmiInputPort));
             VgaIn = new RoutingInputPortWithVideoStatuses(DmPortName.VgaIn,
                 eRoutingSignalType.Video, eRoutingPortConnectionType.Vga, eDmps3InputVideoSource.Vga, this,
@@ -372,7 +372,7 @@ namespace PepperDash.Essentials.DM
             };
 
             AnyVideoInput = new RoutingInputPortWithVideoStatuses(DmPortName.AnyVideoIn,
-                eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.None, 0, this, combinedFuncs);
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.None, 0, this, combinedFuncs);
 
             ActiveVideoInputFeedback = new StringFeedback("ActiveVideoInput", () => ActualVideoInput.ToString());
 
@@ -396,7 +396,7 @@ namespace PepperDash.Essentials.DM
             // Set Ports for CEC
             HdmiIn.Port = InputCard.HdmiInputPort;
 
-            VirtualDmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.AudioVideo,
+            VirtualDmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.None, null, this);
 
             AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,

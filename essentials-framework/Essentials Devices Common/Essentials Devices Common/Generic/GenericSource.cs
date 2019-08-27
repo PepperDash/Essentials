@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Devices.Common
 			: base(key, name)
 		{
 
-            AnyOut = new RoutingOutputPort(RoutingPortNames.AnyOut, eRoutingSignalType.AudioVideo, 
+            AnyOut = new RoutingOutputPort(RoutingPortNames.AnyOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, null, this);
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort> { AnyOut };
 		}

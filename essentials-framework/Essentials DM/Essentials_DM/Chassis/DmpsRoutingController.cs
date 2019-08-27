@@ -259,7 +259,7 @@ namespace PepperDash.Essentials.DM
 
                 var cecPort = hdmiInputCard.HdmiInputPort;
 
-                AddInputPortWithDebug(number, string.Format("HdmiIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, cecPort);              
+                AddInputPortWithDebug(number, string.Format("HdmiIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, cecPort);              
             }
             else if (inputCard is Card.Dmps3HdmiInput)
             {
@@ -267,7 +267,7 @@ namespace PepperDash.Essentials.DM
 
                 var cecPort = hdmiInputCard.HdmiInputPort;
 
-                AddInputPortWithDebug(number, string.Format("HdmiIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, cecPort);
+                AddInputPortWithDebug(number, string.Format("HdmiIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, cecPort);
                 AddInputPortWithDebug(number, string.Format("HudioIn{1}", number), eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
             }
             else if (inputCard is Card.Dmps3HdmiVgaInput)
@@ -281,7 +281,7 @@ namespace PepperDash.Essentials.DM
 
                 DeviceManager.AddDevice(inputCardController);
 
-                AddInputPortWithDebug(number, string.Format("HdmiVgaIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.BackplaneOnly);
+                AddInputPortWithDebug(number, string.Format("HdmiVgaIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.BackplaneOnly);
             }
             else if (inputCard is Card.Dmps3HdmiVgaBncInput)
             {
@@ -294,7 +294,7 @@ namespace PepperDash.Essentials.DM
 
                 DeviceManager.AddDevice(inputCardController);
 
-                AddInputPortWithDebug(number, string.Format("HdmiVgaBncIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.BackplaneOnly);
+                AddInputPortWithDebug(number, string.Format("HdmiVgaBncIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.BackplaneOnly);
 
             }
             else if (inputCard is Card.Dmps3DmInput)
@@ -303,13 +303,13 @@ namespace PepperDash.Essentials.DM
 
                 var cecPort = hdmiInputCard.DmInputPort;
 
-                AddInputPortWithDebug(number, string.Format("DmIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat, cecPort);
+                AddInputPortWithDebug(number, string.Format("DmIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, cecPort);
             }
             else if (inputCard is Card.Dmps3AirMediaInput)
             {
                 var airMediaInputCard = inputCard as Card.Dmps3AirMediaInput;
 
-                AddInputPortWithDebug(number, string.Format("AirMediaIn{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Streaming);
+                AddInputPortWithDebug(number, string.Format("AirMediaIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming);
             }
         }
 
@@ -440,7 +440,7 @@ namespace PepperDash.Essentials.DM
         /// <param name="cecPort"></param>
         void AddHdmiOutputPort(uint number, ICec cecPort)
         {
-            AddOutputPortWithDebug(number, string.Format("hdmiOut{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.Hdmi, number, cecPort);
+            AddOutputPortWithDebug(number, string.Format("hdmiOut{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, number, cecPort);
         }
 
         /// <summary>
@@ -449,7 +449,7 @@ namespace PepperDash.Essentials.DM
         /// <param name="number"></param>
         void AddDmOutputPort(uint number)
         {
-            AddOutputPortWithDebug(number, string.Format("dmOut{0}", number), eRoutingSignalType.AudioVideo, eRoutingPortConnectionType.DmCat, number);
+            AddOutputPortWithDebug(number, string.Format("dmOut{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, number);
         }
 
         /// <summary>
@@ -611,25 +611,35 @@ namespace PepperDash.Essentials.DM
                     }
 
                     DMInput inCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-
+                    Card.Dmps3OutputBase outCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
 
                     if (inCard != null)
                     {
-                        // NOTE THAT THESE ARE NOTS - TO CATCH THE AudioVideo TYPE
-                        if (sigType != eRoutingSignalType.Audio)
+                        // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
+                        if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
                         {
-                            var outputCard = Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
 
                             //SystemControl.VideoEnter.BoolValue = true;
-                            if (outputCard != null && outputCard.VideoOut != null)
-                                outputCard.VideoOut = inCard;
+                            if (outCard != null && outCard.VideoOut != null)
+                                outCard.VideoOut = inCard;
                         }
 
-                        if (sigType != eRoutingSignalType.Video)
+                        if ((sigType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
                         {
-                            var outputCard = Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
-                            if (outputCard != null && outputCard.AudioOut != null)
-                                outputCard.AudioOut = inCard;
+                            if (outCard != null && outCard.AudioOut != null)
+                                outCard.AudioOut = inCard;
+                        }
+
+                        if ((sigType | eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+                        {
+                            if (outCard != null && outCard.USBRoutedTo != null)
+                                outCard.USBRoutedTo = inCard;
+                        }
+
+                        if ((sigType | eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+                        {
+                            if (inCard != null && inCard.USBRoutedTo != null)
+                                inCard.USBRoutedTo = outCard;
                         }
                     }
                     else

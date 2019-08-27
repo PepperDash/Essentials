@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.Devices.Common
 			IrPort = portCont;
 			DeviceManager.AddDevice(portCont);;
 
-			HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.AudioVideo, 
+			HdmiOut = new RoutingOutputPort(RoutingPortNames.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, null, this);
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort> { HdmiOut };
 		}
