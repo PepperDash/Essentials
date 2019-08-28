@@ -15,9 +15,12 @@ using PepperDash.Essentials.DM.Config;
 
 namespace PepperDash.Essentials.DM
 {
-    public class DmpsAudioOutputController : Device, IHasFeedback
+    /// <summary>
+    /// Exposes the volume levels for Program, Aux1 or Aux2 outputs on a DMPS3 chassis
+    /// </summary>
+    public class DmpsAudioOutputController : Device
     {
-        Card.Dmps3OutputBase Card;
+        Card.Dmps3OutputBase OutputCard;
 
         public DmpsAudioOutput MasterVolumeLevel { get; private set; }
         public DmpsAudioOutput SourceVolumeLevel { get; private set; }
@@ -28,7 +31,9 @@ namespace PepperDash.Essentials.DM
         public DmpsAudioOutputController(string key, string name, Card.Dmps3OutputBase card)
             : base(key, name)
         {
-            Card = card;
+            OutputCard = card;
+
+            OutputCard.BaseDevice.DMOutputChange += new DMOutputEventHandler(BaseDevice_DMOutputChange);
 
             MasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Master);
             SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
@@ -36,17 +41,63 @@ namespace PepperDash.Essentials.DM
             if (card is Card.Dmps3ProgramOutput)
             {
                 Codec1VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec1);
+                Codec2VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec2);
+            }
+            else if (card is Card.Dmps3Aux1Output)
+            {
+                Codec2VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec2);
+            }
+            else if (card is Card.Dmps3Aux2Output)
+            {
+                Codec1VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec1);
             }
         }
 
-        #region IHasFeedback Members
-
-        public FeedbackCollection<Feedback> Feedbacks
+        void BaseDevice_DMOutputChange(Switch device, DMOutputEventArgs args)
         {
-            get { throw new NotImplementedException(); }
+            switch (args.EventId)
+            {
+                case DMOutputEventIds.MasterVolumeFeedBackEventId:
+                {
+                    MasterVolumeLevel.VolumeLevelFeedback.FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.MasterMuteOnFeedBackEventId:
+                {
+                    MasterVolumeLevel.MuteFeedback.FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.SourceLevelFeedBackEventId:
+                {
+                    SourceVolumeLevel.VolumeLevelFeedback.FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.Codec1LevelFeedBackEventId:
+                {
+                    if(Codec1VolumeLevel != null)
+                        Codec1VolumeLevel.VolumeLevelFeedback.FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.Codec1MuteOnFeedBackEventId:
+                {
+                    if (Codec1VolumeLevel != null)
+                        Codec1VolumeLevel.MuteFeedback.FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.Codec2LevelFeedBackEventId:
+                {
+                    if (Codec2VolumeLevel != null)
+                        Codec2VolumeLevel.VolumeLevelFeedback.FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.Codec2MuteOnFeedBackEventId:
+                {
+                    if (Codec2VolumeLevel != null)
+                        Codec2VolumeLevel.MuteFeedback.FireUpdate();
+                    break;
+                }
+            }
         }
-
-        #endregion
     }
 
     public class DmpsAudioOutput : IBasicVolumeWithFeedback
@@ -81,6 +132,21 @@ namespace PepperDash.Essentials.DM
                         MuteOffAction = new Action(Output.MasterMuteOff);
                         VolumeUpAction = new Action<bool>((b) => Output.MasterVolumeUp.BoolValue = b);
                         VolumeDownAction = new Action<bool>((b) => Output.MasterVolumeDown.BoolValue = b);
+
+                        
+                        break;
+                    }
+                case eDmpsLevelType.MicsMaster:
+                    {
+                        Level = output.MicMasterLevel;
+
+                        MuteFeedback = new BoolFeedback(new Func<bool>(() => Output.MicMasterMuteOnFeedBack.BoolValue));
+                        VolumeLevelFeedback = new IntFeedback(new Func<int>(() => Output.MicMasterLevelFeedBack.UShortValue));
+                        MuteOnAction = new Action(Output.MicMasterMuteOn);
+                        MuteOffAction = new Action(Output.MicMasterMuteOff);
+                        VolumeUpAction = new Action<bool>((b) => Output.MicMasterLevelUp.BoolValue = b);
+                        VolumeDownAction = new Action<bool>((b) => Output.MicMasterLevelDown.BoolValue = b);
+
                         break;
                     }
                 case eDmpsLevelType.Source:
