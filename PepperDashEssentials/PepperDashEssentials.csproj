@@ -121,6 +121,7 @@
     <Compile Include="Bridges\BridgeFactory.cs" />
     <Compile Include="Bridges\CameraControllerBridge.cs" />
     <Compile Include="Bridges\AirMediaControllerBridge.cs" />
+    <Compile Include="Bridges\DmpsAudioOutputControllerBridge.cs" />
     <Compile Include="Bridges\DmpsRoutingControllerBridge.cs" />
     <Compile Include="Bridges\DisplayControllerBridge.cs" />
     <Compile Include="Bridges\DigitalLoggerBridge.cs" />

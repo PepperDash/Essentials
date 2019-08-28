@@ -206,8 +206,10 @@ namespace PepperDash.Essentials.Bridges
 
         public class DmChassisControllerJoinMap : JoinMapBase
         {
-            //Digital
+            // Digtal/Analog
             public uint SystemId { get; set; }
+
+            //Digital
             public uint IsOnline { get; set; }
             public uint OutputUsb { get; set; }
             public uint InputUsb { get; set; }
@@ -233,7 +235,9 @@ namespace PepperDash.Essentials.Bridges
 
             public DmChassisControllerJoinMap()
             {
-                SystemId = 10;
+                //Digital/Analog
+                SystemId = 10; // Analog sets/gets SystemId, digital input applies and provides feedback of ID change busy
+
                 //Digital 
                 IsOnline = 11;
                 VideoSyncStatus = 100; //101-299
@@ -261,8 +265,6 @@ namespace PepperDash.Essentials.Bridges
                 OutputEndpointOnline = 700; //701-899
                 HdcpSupportState = 1000; //1001-1199
                 HdcpSupportCapability = 1200; //1201-1399
-
-
             }
 
             public override void OffsetJoinNumbers(uint joinStart)

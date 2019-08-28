@@ -26,7 +26,6 @@ namespace PepperDash.Essentials.DM
         public DmpsAudioOutput SourceVolumeLevel { get; private set; }
         public DmpsAudioOutput Codec1VolumeLevel { get; private set; }
         public DmpsAudioOutput Codec2VolumeLevel { get; private set; }
-        public Dictionary<int, DmpsAudioOutput> MicVolumeLevels { get; private set; }
 
         public DmpsAudioOutputController(string key, string name, Card.Dmps3OutputBase card)
             : base(key, name)
@@ -51,6 +50,7 @@ namespace PepperDash.Essentials.DM
             {
                 Codec1VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec1);
             }
+
         }
 
         void BaseDevice_DMOutputChange(Switch device, DMOutputEventArgs args)
@@ -111,6 +111,8 @@ namespace PepperDash.Essentials.DM
         public BoolFeedback MuteFeedback { get; private set; }
         public IntFeedback VolumeLevelFeedback { get; private set; }
 
+        public Dictionary<int, DmpsAudioOutput> MicVolumeLevels { get; private set; }
+
         Action MuteOnAction;
         Action MuteOffAction;
         Action<bool> VolumeUpAction;
@@ -119,6 +121,8 @@ namespace PepperDash.Essentials.DM
         public DmpsAudioOutput(Card.Dmps3OutputBase output, eDmpsLevelType type)
         {
             Output = output;
+
+            Type = type;
 
             switch (type)
             {
@@ -224,6 +228,13 @@ namespace PepperDash.Essentials.DM
                         break;
                     }
             }
+
+            var numberOfMics = Global.ControlSystem.NumberOfMicrophones;
+
+            for (int i = 1; i <= numberOfMics; i++)
+            {
+                // Construct each mic level here
+            }
         }
 
         #region IBasicVolumeWithFeedback Members
@@ -274,6 +285,7 @@ namespace PepperDash.Essentials.DM
         Source,
         MicsMaster,
         Codec1,
-        Codec2
+        Codec2,
+        Mic
     }
 }
