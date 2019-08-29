@@ -14,7 +14,7 @@ namespace PepperDash.Essentials.Bridges
 {
     public static class DmpsAudioOutputControllerApiExtensions
     {
-        public static void LinkToApi(this DmpsAudioOutputController dmAudioOutputController, BasicTriList trilis, uint joinStart, string joinMapKey)
+        public static void LinkToApi(this DmpsAudioOutputController dmAudioOutputController, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
             var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as DmpsAudioOutputControllerJoinMap;
 
@@ -23,36 +23,76 @@ namespace PepperDash.Essentials.Bridges
 
             joinMap.OffsetJoinNumbers(joinStart);
 
-            Debug.Console(1, dmAudioOutputController, "Linking to Trilist '{0}'", trilis.ID.ToString("X"));
+            Debug.Console(1, dmAudioOutputController, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+
+            if (dmAudioOutputController.MasterVolumeLevel != null)
+            {
+                SetUpDmpsAudioOutputJoins(trilist, dmAudioOutputController.MasterVolumeLevel, joinMap.MasterVolume);
+            }
+
+            if (dmAudioOutputController.SourceVolumeLevel != null)
+            {
+                SetUpDmpsAudioOutputJoins(trilist, dmAudioOutputController.SourceVolumeLevel, joinMap.SourceVolume);
+            }
+
+            if (dmAudioOutputController.Codec1VolumeLevel != null)
+            {
+                SetUpDmpsAudioOutputJoins(trilist, dmAudioOutputController.Codec1VolumeLevel, joinMap.Codec1Volume);
+            }
+
+            if (dmAudioOutputController.Codec2VolumeLevel != null)
+            {
+                SetUpDmpsAudioOutputJoins(trilist, dmAudioOutputController.Codec2VolumeLevel, joinMap.Codec2Volume);
+            }
+
+        }
+
+        static void SetUpDmpsAudioOutputJoins(BasicTriList trilist, DmpsAudioOutput output, uint joinStart)
+        {
+            var volumeLevelJoin = joinStart;
+            var muteOnJoin = joinStart + 1;
+            var muteOffJoin = joinStart + 2;
+            var volumeUpJoin = joinStart + 3;
+            var volumeDownJoin = joinStart + 4;
 
 
+            trilist.SetUShortSigAction(volumeLevelJoin, new Action<ushort>(o => output.SetVolume(o)));
+            output.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[volumeLevelJoin]);
+
+            trilist.SetSigTrueAction(muteOnJoin, new Action(output.MuteOn));
+            output.MuteFeedback.LinkInputSig(trilist.BooleanInput[muteOnJoin]);
+            trilist.SetSigTrueAction(muteOffJoin, new Action(output.MuteOff));
+            output.MuteFeedback.LinkComplementInputSig(trilist.BooleanInput[muteOffJoin]);
+
+            trilist.SetBoolSigAction(volumeUpJoin, new Action<bool>(b => output.VolumeUp(b)));
+            trilist.SetBoolSigAction(volumeDownJoin, new Action<bool>(b => output.VolumeDown(b)));
         }
 
         public class DmpsAudioOutputControllerJoinMap: JoinMapBase
         {
             // Digital
-            public uint MasterVolumeMute { get; set; }
-            public uint SourceVolumeMute { get; set; }
-            public uint Codec1VolumeMute { get; set; }
-            public uint Codec2VolumeMute { get; set; }
+            public uint MasterVolume { get; set; }
+            public uint SourceVolume { get; set; }
+            public uint Codec1Volume { get; set; }
+            public uint Codec2Volume { get; set; }
 
 
             public DmpsAudioOutputControllerJoinMap()
             {
-                MasterVolumeMute = 1; // 1-10
-                SourceVolumeMute = 11; // 11-20
-                Codec1VolumeMute = 21; // 21-30
-                Codec2VolumeMute = 31; // 31-40
+                MasterVolume = 1; // 1-10
+                SourceVolume = 11; // 11-20
+                Codec1Volume = 21; // 21-30
+                Codec2Volume = 31; // 31-40
             }
 
             public override void  OffsetJoinNumbers(uint joinStart)
             {
  	            var joinOffset = joinStart -1;
 
-                MasterVolumeMute = MasterVolumeMute + joinOffset;
-                SourceVolumeMute = SourceVolumeMute + joinOffset;
-                Codec1VolumeMute = Codec1VolumeMute + joinOffset;
-                Codec2VolumeMute = Codec2VolumeMute + joinOffset;
+                MasterVolume = MasterVolume + joinOffset;
+                SourceVolume = SourceVolume + joinOffset;
+                Codec1Volume = Codec1Volume + joinOffset;
+                Codec2Volume = Codec2Volume + joinOffset;
             }
         }
     }
