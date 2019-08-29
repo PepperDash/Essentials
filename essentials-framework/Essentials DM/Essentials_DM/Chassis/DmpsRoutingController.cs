@@ -370,14 +370,31 @@ namespace PepperDash.Essentials.DM
             else if (outputCard is Card.Dmps3ProgramOutput)
             {
                 AddAudioOnlyOutputPort(number, "Program");
+
+                var programOutput = new DmpsAudioOutputController(string.Format("processor-programAudioOutput"), "Program Audio Output", outputCard as Card.Dmps3OutputBase);
+
+                DeviceManager.AddDevice(programOutput);
+
                 return;
             }
             else if (outputCard is Card.Dmps3AuxOutput)
             {
-                if(outputCard.CardInputOutputType == eCardInputOutputType.Dmps3Aux1Output)
+                if (outputCard.CardInputOutputType == eCardInputOutputType.Dmps3Aux1Output)
+                {
                     AddAudioOnlyOutputPort(number, "Aux1");
-                else if(outputCard.CardInputOutputType == eCardInputOutputType.Dmps3Aux2Output)
+
+                    var aux1Output = new DmpsAudioOutputController(string.Format("processor-aux1AudioOutput"), "Program Audio Output", outputCard as Card.Dmps3OutputBase);
+
+                    DeviceManager.AddDevice(aux1Output);
+                }
+                else if (outputCard.CardInputOutputType == eCardInputOutputType.Dmps3Aux2Output)
+                {
                     AddAudioOnlyOutputPort(number, "Aux2");
+
+                    var aux2Output = new DmpsAudioOutputController(string.Format("processor-aux2AudioOutput"), "Program Audio Output", outputCard as Card.Dmps3OutputBase);
+
+                    DeviceManager.AddDevice(aux2Output);
+                }
                 return;
             }
             else if (outputCard is Card.Dmps3CodecOutput)

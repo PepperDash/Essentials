@@ -365,7 +365,10 @@ namespace PepperDash.Essentials
                 Debug.Console(2, "Adding DmpsRoutingController for {0} to Device Manager.", this.ControllerPrompt);
 
                 var dmpsRoutingController = DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, new DM.Config.DmpsRoutingPropertiesConfig());
+
                 DeviceManager.AddDevice(dmpsRoutingController);
+
+
             }
             else
             {
