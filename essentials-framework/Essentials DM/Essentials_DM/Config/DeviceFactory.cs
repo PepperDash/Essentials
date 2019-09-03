@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.AirMedia;
 using Crestron.SimplSharpPro.UI;
 
@@ -68,7 +69,24 @@ namespace PepperDash.Essentials.DM
 				return PepperDash.Essentials.DM.Chassis.HdMdNxM4kEController.GetController(key, name, type, props);
 			}
 
-            
+            else if (typeName.Equals("hdmd400ce") || typeName.Equals("hdmd300ce") || typeName.Equals("hdmd200ce"))
+            {
+                var props = JsonConvert.DeserializeObject
+                    <PepperDash.Essentials.DM.HdMdxxxCEPropertiesConfig>(properties.ToString());
+
+                if (typeName.Equals("hdmd400ce"))
+                    return new PepperDash.Essentials.DM.HdMdxxxCEController(key, name,
+                        new HdMd400CE(props.Control.IpIdInt, props.Control.TcpSshProperties.Address, Global.ControlSystem));
+                else if (typeName.Equals("hdmd300ce"))
+                    return new PepperDash.Essentials.DM.HdMdxxxCEController(key, name,
+                        new HdMd300CE(props.Control.IpIdInt, props.Control.TcpSshProperties.Address, Global.ControlSystem));
+                else if (typeName.Equals("hdmd200ce"))
+                    return new PepperDash.Essentials.DM.HdMdxxxCEController(key, name,
+                        new HdMd200CE(props.Control.IpIdInt, props.Control.TcpSshProperties.Address, Global.ControlSystem));
+                else if (typeName.Equals("hdmd200c1ge"))
+                    return new PepperDash.Essentials.DM.HdMdxxxCEController(key, name,
+                        new HdMd200C1GE(props.Control.IpIdInt, props.Control.TcpSshProperties.Address, Global.ControlSystem));
+            } 
 
 			return null;
 		}

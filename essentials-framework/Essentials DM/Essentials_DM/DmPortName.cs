@@ -26,6 +26,8 @@ namespace PepperDash.Essentials.DM
 		public const string DmOut = "DmOut";
 		public const string DmOut1 = "DmOut1";
 		public const string DmOut2 = "DmOut2";
+        public const string FromTx = "FromTx";
+        public const string Hdmi = "Hdmi";
 		public const string HdmiIn = "HdmiIn";
 		public const string HdmiIn1 = "HdmiIn1";
 		public const string HdmiIn2 = "HdmiIn2";
@@ -35,6 +37,7 @@ namespace PepperDash.Essentials.DM
 		public const string HdmiOut = "HdmiOut";
         public const string Osd = "Osd";
         public const string SpdifIn = "SpdifIn";
+        public const string ToTx = "ToTx";
 		public const string VgaIn = "VgaIn";
 	}
 }

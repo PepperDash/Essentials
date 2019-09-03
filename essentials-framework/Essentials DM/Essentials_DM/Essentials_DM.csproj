@@ -113,7 +113,7 @@
     <Compile Include="Endpoints\NVX\DmNvxControllerBase.cs" />
     <Compile Include="Endpoints\DGEs\DgeController.cs" />
     <Compile Include="Endpoints\DGEs\DgePropertiesConfig.cs" />
-    <Compile Include="Endpoints\Receivers\DmHdRxX01Controller.cs" />
+    <Compile Include="DmLite\DmMdxxxCEController.cs" />
     <Compile Include="Endpoints\Receivers\DmHdBaseTEndpointController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc100SController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc150SController.cs" />
