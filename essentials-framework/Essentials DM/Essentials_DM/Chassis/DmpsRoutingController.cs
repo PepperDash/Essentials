@@ -309,6 +309,8 @@ namespace PepperDash.Essentials.DM
             {
                 var airMediaInputCard = inputCard as Card.Dmps3AirMediaInput;
 
+                
+
                 AddInputPortWithDebug(number, string.Format("AirMediaIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming);
             }
         }
