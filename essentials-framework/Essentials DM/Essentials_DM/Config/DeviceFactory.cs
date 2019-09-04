@@ -69,7 +69,7 @@ namespace PepperDash.Essentials.DM
 				return PepperDash.Essentials.DM.Chassis.HdMdNxM4kEController.GetController(key, name, type, props);
 			}
 
-            else if (typeName.Equals("hdmd400ce") || typeName.Equals("hdmd300ce") || typeName.Equals("hdmd200ce"))
+            else if (typeName.Equals("hdmd400ce") || typeName.Equals("hdmd300ce") || typeName.Equals("hdmd200ce") || typeName.Equals("hdmd200c1ge"))
             {
                 var props = JsonConvert.DeserializeObject
                     <PepperDash.Essentials.DM.HdMdxxxCEPropertiesConfig>(properties.ToString());

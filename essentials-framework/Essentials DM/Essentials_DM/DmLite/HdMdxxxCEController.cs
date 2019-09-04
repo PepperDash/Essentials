@@ -16,13 +16,13 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// Represent both a transmitter and receiver pair of the HD-MD-400-C-E / HD-MD-300-C-E / HD-MD-200-C-E kits
     /// </summary>
-    public class HdMdxxxCEController : CrestronGenericBaseDevice, IRouting //, IComPorts
+    public class HdMdxxxCEController : CrestronGenericBaseDevice, IRouting//, IComPorts
     {
         /// <summary>
-        ///  DmLite Ports
-        /// </summary>
-        public RoutingOutputPort ToRx { get; private set; }
-        public RoutingInputPort FromTx { get; private set; }
+        /////  DmLite Ports
+        ///// </summary>
+        //public RoutingOutputPort ToRx { get; private set; }
+        //public RoutingInputPort FromTx { get; private set; }
 
         public RoutingOutputPort HdmiOut { get; private set; }
 
@@ -30,16 +30,34 @@ namespace PepperDash.Essentials.DM
 
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
+        /// <summary>
+        /// The value of the current video source for the HDMI output on the receiver
+        /// </summary>
         public IntFeedback VideoSourceFeedback { get; private set; }
 
+        /// <summary>
+        /// Indicates if Auto Route is on on the transmitter
+        /// </summary>
         public BoolFeedback AutoRouteOnFeedback { get; private set; }
 
+        /// <summary>
+        /// Indicates if Priority Routing is on on the transmitter
+        /// </summary>
         public BoolFeedback PriorityRoutingOnFeedback { get; private set; }
 
+        /// <summary>
+        /// INdicates if the On Screen Display is enabled 
+        /// </summary>
         public BoolFeedback InputOnScreenDisplayEnabledFeedback { get; private set; }
 
+        /// <summary>
+        /// Indicates if video sync is detected on each of the inputs
+        /// </summary>
         public Dictionary<uint, BoolFeedback> SyncDetectedFeedbacks { get; private set; }
 
+        /// <summary>
+        /// Indicates if the remote end device is detected
+        /// </summary>
         public BoolFeedback RemoteEndDetectedFeedback { get; private set; }
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts
@@ -62,6 +80,8 @@ namespace PepperDash.Essentials.DM
             InputOnScreenDisplayEnabledFeedback = new BoolFeedback(() => TxRxPair.OnScreenDisplayEnabledFeedback.BoolValue);
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
+
+            SyncDetectedFeedbacks = new Dictionary<uint, BoolFeedback>();
 
             // Add the HDMI input port on the receiver
             InputPorts.Add(new RoutingInputPort(DmPortName.Hdmi, eRoutingSignalType.Audio | eRoutingSignalType.Video,
@@ -110,15 +130,16 @@ namespace PepperDash.Essentials.DM
                 InputPorts[DmPortName.HdmiIn].Port = TxRxPair.HdmiInputs[1];
             }
 
+            //ToRx = new RoutingOutputPort(DmPortName.ToTx, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            //    eRoutingPortConnectionType.DmCat, null, this);
 
-            ToRx = new RoutingOutputPort(DmPortName.ToTx, eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                eRoutingPortConnectionType.DmCat, null, this);
-
-            FromTx = new RoutingInputPort(DmPortName.FromTx, eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                eRoutingPortConnectionType.DmCat, null, this);
+            //FromTx = new RoutingInputPort(DmPortName.FromTx, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            //    eRoutingPortConnectionType.DmCat, null, this);
 
             HdmiOut = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, null, this);
+
+            OutputPorts[DmPortName.HdmiOut].Port = TxRxPair.HdmiOutputs[1];
 
             TxRxPair.DMInputChange += new DMInputEventHandler(TxRxPair_DMInputChange);
             TxRxPair.DMOutputChange += new DMOutputEventHandler(TxRxPair_DMOutputChange);
@@ -183,7 +204,11 @@ namespace PepperDash.Essentials.DM
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
-            TxRxPair.HdmiOutputs[1].VideoOut = TxRxPair.Inputs[(uint)inputSelector];
+            var number = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
+
+            var input = number == 0 ? null : TxRxPair.Inputs[number];
+
+            TxRxPair.HdmiOutputs[1].VideoOut = input;
         }
 
         // This device has a different class for com ports which will make it hard to implement IComPorts....

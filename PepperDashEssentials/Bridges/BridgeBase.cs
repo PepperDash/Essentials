@@ -142,6 +142,11 @@ namespace PepperDash.Essentials.Bridges
                             (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
+                        else if (device is HdMdxxxCEController)
+                        {
+                            (device as HdMdxxxCEController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
 						//else if (device is LightingBase)
 						//{
 						//    (device as LightingBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);

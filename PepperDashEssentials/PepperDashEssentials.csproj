@@ -129,6 +129,7 @@
     <Compile Include="Bridges\DmTxControllerBridge.cs" />
     <Compile Include="Bridges\GenericLightingBridge.cs" />
     <Compile Include="Bridges\GenericRelayDeviceBridge.cs" />
+    <Compile Include="Bridges\HdMdxxxCEControllerBridge.cs" />
     <Compile Include="Bridges\IBasicCommunicationBridge.cs" />
     <Compile Include="Bridges\DmRmcControllerBridge.cs" />
     <Compile Include="Bridges\IBridge.cs" />
