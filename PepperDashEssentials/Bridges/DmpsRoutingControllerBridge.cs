@@ -139,7 +139,7 @@ namespace PepperDash.Essentials.Bridges
 
 
             public DmpsRoutingControllerJoinMap()
-            {;
+            {
                 OutputVideo = 100; //101-299
                 OutputAudio = 300; //301-499
                 VideoSyncStatus = 100; //101-299
@@ -148,8 +148,8 @@ namespace PepperDash.Essentials.Bridges
                 OutputCurrentVideoInputNames = 2000; //2001-2199
                 OutputCurrentAudioInputNames = 2200; //2201-2399
                 InputCurrentResolution = 2400; // 2401-2599
-                InputEndpointOnline = 500;
-                OutputEndpointOnline = 700;
+                InputEndpointOnline = 500; //501-699
+                OutputEndpointOnline = 700; //701-899
                 //HdcpSupport = 1000; //1001-1199
                 //HdcpSupportCapability = 1200; //1201-1399
 

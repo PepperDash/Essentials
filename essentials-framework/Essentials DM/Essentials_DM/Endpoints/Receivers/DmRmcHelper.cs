@@ -112,6 +112,8 @@ namespace PepperDash.Essentials.DM
 				{
                     if (typeName.StartsWith("dmrmc100c"))
 						return new DmRmcX100CController(key, name, new DmRmc100C(ipid, Global.ControlSystem));
+                    if (typeName.StartsWith("dmrmc100s"))
+                        return new DmRmc100SController(key, name, new DmRmc100S(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmrmc4k100c"))
                         return new DmRmcX100CController(key, name, new DmRmc4k100C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmrmc4kz100c"))
@@ -182,6 +184,8 @@ namespace PepperDash.Essentials.DM
 							return new DmRmc4k100C1GController(key, name, new DmRmc4K100C1G(chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc100c"))
 							return new DmRmcX100CController(key, name, new DmRmc100C(chassis.Outputs[num]));
+                        if (typeName.StartsWith("dmrmc100s"))
+                            return new DmRmc100SController(key, name, new DmRmc100S(chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc4k100c"))
 							return new DmRmcX100CController(key, name, new DmRmc4k100C(chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc4kz100c"))
@@ -213,6 +217,8 @@ namespace PepperDash.Essentials.DM
 							return new DmRmc4k100C1GController(key, name, new DmRmc4K100C1G(ipid, chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc100c"))
 							return new DmRmcX100CController(key, name, new DmRmc100C(ipid, chassis.Outputs[num]));
+                        if (typeName.StartsWith("dmrmc100s"))
+                            return new DmRmc100SController(key, name, new DmRmc100S(ipid, chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc4k100c"))
 							return new DmRmcX100CController(key, name, new DmRmc4k100C(ipid, chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc4kz100c"))

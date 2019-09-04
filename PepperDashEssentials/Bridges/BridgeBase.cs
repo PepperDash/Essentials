@@ -107,6 +107,11 @@ namespace PepperDash.Essentials.Bridges
                             (device as DmpsRoutingController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
+                        else if (device is DmpsAudioOutputController)
+                        {
+                            (device as DmpsAudioOutputController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
                         else if (device is DmTxControllerBase)
                         {
                             (device as DmTxControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
@@ -135,6 +140,11 @@ namespace PepperDash.Essentials.Bridges
                         else if (device is IBridge)
                         {
                             (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is HdMdxxxCEController)
+                        {
+                            (device as HdMdxxxCEController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
 						//else if (device is LightingBase)
