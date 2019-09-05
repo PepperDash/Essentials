@@ -29,9 +29,9 @@ namespace PepperDash.Essentials.Bridges
 				joinMap.OffsetJoinNumbers(joinStart);
 
 				Debug.Console(1, "Linking to Trilist '{0}'",trilist.ID.ToString("X"));
-				Debug.Console(0, "Linking to Bridge Type {0}", displayDevice.GetType().Name.ToString());
+				Debug.Console(0, "Linking to Display: {0}", displayDevice.Name);
 
-                trilist.StringInput[joinMap.Name].StringValue = displayDevice.GetType().Name.ToString();			
+                trilist.StringInput[joinMap.Name].StringValue = displayDevice.Name;			
 
 				var commMonitor = displayDevice as ICommunicationMonitor;
                 if (commMonitor != null)
