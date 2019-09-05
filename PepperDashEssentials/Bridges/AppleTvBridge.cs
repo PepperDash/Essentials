@@ -36,40 +36,4 @@ namespace PepperDash.Essentials.Bridges
             trilist.SetBoolSigAction(joinMap.PlayPause, (b) => appleTv.Play(b));
         }
     }
-
-    public class AppleTvJoinMap : JoinMapBase
-    {
-        // Digital
-        public uint UpArrow { get; set; }
-        public uint DnArrow { get; set; }
-        public uint LeftArrow { get; set; }
-        public uint RightArrow { get; set; }
-        public uint Menu { get; set; }
-        public uint Select { get; set; }
-        public uint PlayPause { get; set; }
-
-        public AppleTvJoinMap()
-        {
-            UpArrow = 1;
-            DnArrow = 2;
-            LeftArrow = 3;
-            RightArrow = 4;
-            Menu = 5;
-            Select = 6;
-            PlayPause = 7;
-        }
-
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            UpArrow = UpArrow + joinOffset;
-            DnArrow = DnArrow + joinOffset;
-            LeftArrow = LeftArrow + joinOffset;
-            RightArrow = RightArrow + joinOffset;
-            Menu = Menu + joinOffset;
-            Select = Select + joinOffset;
-            PlayPause = PlayPause + joinOffset;
-        }
-    }
 }

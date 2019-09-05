@@ -50,10 +50,10 @@ namespace PepperDash.Essentials.Bridges
         static void SetUpDmpsAudioOutputJoins(BasicTriList trilist, DmpsAudioOutput output, uint joinStart)
         {
             var volumeLevelJoin = joinStart;
-            var muteOnJoin = joinStart + 1;
-            var muteOffJoin = joinStart + 2;
-            var volumeUpJoin = joinStart + 3;
-            var volumeDownJoin = joinStart + 4;
+            var muteOnJoin = joinStart;
+            var muteOffJoin = joinStart + 1;
+            var volumeUpJoin = joinStart + 2;
+            var volumeDownJoin = joinStart + 3;
 
 
             trilist.SetUShortSigAction(volumeLevelJoin, new Action<ushort>(o => output.SetVolume(o)));
@@ -66,34 +66,6 @@ namespace PepperDash.Essentials.Bridges
 
             trilist.SetBoolSigAction(volumeUpJoin, new Action<bool>(b => output.VolumeUp(b)));
             trilist.SetBoolSigAction(volumeDownJoin, new Action<bool>(b => output.VolumeDown(b)));
-        }
-
-        public class DmpsAudioOutputControllerJoinMap: JoinMapBase
-        {
-            // Digital
-            public uint MasterVolume { get; set; }
-            public uint SourceVolume { get; set; }
-            public uint Codec1Volume { get; set; }
-            public uint Codec2Volume { get; set; }
-
-
-            public DmpsAudioOutputControllerJoinMap()
-            {
-                MasterVolume = 1; // 1-10
-                SourceVolume = 11; // 11-20
-                Codec1Volume = 21; // 21-30
-                Codec2Volume = 31; // 31-40
-            }
-
-            public override void  OffsetJoinNumbers(uint joinStart)
-            {
- 	            var joinOffset = joinStart -1;
-
-                MasterVolume = MasterVolume + joinOffset;
-                SourceVolume = SourceVolume + joinOffset;
-                Codec1Volume = Codec1Volume + joinOffset;
-                Codec2Volume = Codec2Volume + joinOffset;
-            }
         }
     }
 }

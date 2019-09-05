@@ -45,22 +45,4 @@ namespace PepperDash.Essentials.Bridges
         }
 
     }
-
-    public class GenericRelayControllerJoinMap : JoinMapBase
-    {
-        //Digital
-        public uint Relay { get; set; }
-
-        public GenericRelayControllerJoinMap()
-        {
-            Relay = 1;
-        }
-
-        public override void  OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            Relay = Relay + joinOffset;
-        }
-    }
 }

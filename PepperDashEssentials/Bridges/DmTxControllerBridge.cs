@@ -128,46 +128,6 @@ namespace PepperDash.Essentials.Bridges
             }
         }
 
-        public class DmTxControllerJoinMap : JoinMapBase
-        {
-            public uint IsOnline { get; set; }
-            public uint VideoSyncStatus { get; set; }
-            public uint CurrentInputResolution { get; set; }
-            public uint HdcpSupportCapability { get; set; }
-            public uint VideoInput { get; set; }
-            public uint AudioInput { get; set; }
-            public uint Port1HdcpState { get; set; }
-            public uint Port2HdcpState { get; set; }
 
-
-            public DmTxControllerJoinMap()
-            {
-                // Digital
-                IsOnline = 1;
-                VideoSyncStatus = 2;
-                // Serial
-                CurrentInputResolution = 1;
-                // Analog
-                VideoInput = 1;
-                AudioInput = 2;
-                HdcpSupportCapability = 3;
-                Port1HdcpState = 4;
-                Port2HdcpState = 5;
-            }
-
-            public override void OffsetJoinNumbers(uint joinStart)
-            {
-                var joinOffset = joinStart - 1;
-
-                IsOnline = IsOnline + joinOffset;
-                VideoSyncStatus = VideoSyncStatus + joinOffset;
-                CurrentInputResolution = CurrentInputResolution + joinOffset;
-                VideoInput = VideoInput + joinOffset;
-                AudioInput = AudioInput + joinOffset;
-                HdcpSupportCapability = HdcpSupportCapability + joinOffset;
-                Port1HdcpState = Port1HdcpState + joinOffset;
-                Port2HdcpState = Port2HdcpState + joinOffset;
-            }
-        }
     }
 }

@@ -14,10 +14,10 @@ namespace PepperDash.Essentials.Bridges
     {
         public static void LinkToApi(this IDigitalInput input, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as IDigitalInputApiJoinMap;
+            var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as IDigitalInputJoinMap;
 
             if (joinMap == null)
-                joinMap = new IDigitalInputApiJoinMap();
+                joinMap = new IDigitalInputJoinMap();
 
             joinMap.OffsetJoinNumbers(joinStart);
 
@@ -35,25 +35,5 @@ namespace PepperDash.Essentials.Bridges
                 return;
             }
         }
-
-        
-    }
-
-    public class IDigitalInputApiJoinMap : JoinMapBase
-    {
-        //Digital
-        public uint InputState { get; set; }
-
-        public IDigitalInputApiJoinMap()
-        {
-            InputState = 1;
-        }
-
-        public override void  OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            InputState = InputState + joinOffset;
-        }
-    }
+    } 
 }

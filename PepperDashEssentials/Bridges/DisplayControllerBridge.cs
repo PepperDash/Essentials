@@ -29,9 +29,9 @@ namespace PepperDash.Essentials.Bridges
 				joinMap.OffsetJoinNumbers(joinStart);
 
 				Debug.Console(1, "Linking to Trilist '{0}'",trilist.ID.ToString("X"));
-				Debug.Console(0, "Linking to Bridge Type {0}", displayDevice.GetType().Name.ToString());
+				Debug.Console(0, "Linking to Display: {0}", displayDevice.Name);
 
-                trilist.StringInput[joinMap.Name].StringValue = displayDevice.GetType().Name.ToString();			
+                trilist.StringInput[joinMap.Name].StringValue = displayDevice.Name;			
 
 				var commMonitor = displayDevice as ICommunicationMonitor;
                 if (commMonitor != null)
@@ -119,7 +119,8 @@ namespace PepperDash.Essentials.Bridges
                     var volumeDisplayWithFeedback = volumeDisplay as IBasicVolumeWithFeedback;
                     if(volumeDisplayWithFeedback != null)
                     {
-                        volumeDisplayWithFeedback.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[joinMap.VolumeLevelFB]);
+                        trilist.SetUShortSigAction(joinMap.VolumeLevel, new Action<ushort>((u) => volumeDisplayWithFeedback.SetVolume(u)));
+                        volumeDisplayWithFeedback.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[joinMap.VolumeLevel]);
                         volumeDisplayWithFeedback.MuteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VolumeMute]);
                     }
                 }
@@ -148,75 +149,6 @@ namespace PepperDash.Essentials.Bridges
 				InputNumberFeedback.FireUpdate();
 			}
 		}
-
-
-
-
 	}
-    public class DisplayControllerJoinMap : JoinMapBase
-	{
-        // Digital
-        public uint PowerOff { get; set; }
-        public uint PowerOn { get; set; }
-        public uint IsTwoWayDisplay { get; set; }
-        public uint VolumeUp { get; set; }
-        public uint VolumeDown { get; set; }
-        public uint VolumeMute { get; set; }
-        public uint InputSelectOffset { get; set; }
-		public uint ButtonVisibilityOffset { get; set; }
-        public uint IsOnline { get; set; }
-
-        // Analog
-        public uint InputSelect { get; set; }
-        public uint VolumeLevelFB { get; set; }
-
-        // Serial
-        public uint Name { get; set; }
-        public uint InputNamesOffset { get; set; }
-
-
-		public DisplayControllerJoinMap()
-		{
-			// Digital
-			IsOnline = 50;
-			PowerOff = 1;
-			PowerOn = 2;
-            IsTwoWayDisplay = 3;
-            VolumeUp = 5;
-            VolumeDown = 6;
-            VolumeMute = 7;
-
-			ButtonVisibilityOffset = 40;
-            InputSelectOffset = 10;
-
-			// Analog
-            InputSelect = 11;
-            VolumeLevelFB = 5;
-
-            // Serial
-            Name = 1;
-            InputNamesOffset = 10;
-        }
-
-		public override void OffsetJoinNumbers(uint joinStart)
-		{
-			var joinOffset = joinStart - 1;
-
-			IsOnline = IsOnline + joinOffset;
-			PowerOff = PowerOff + joinOffset;
-			PowerOn = PowerOn + joinOffset;
-            IsTwoWayDisplay = IsTwoWayDisplay + joinOffset;
-			ButtonVisibilityOffset = ButtonVisibilityOffset + joinOffset;
-			Name = Name + joinOffset;
-			InputNamesOffset = InputNamesOffset + joinOffset;
-			InputSelectOffset = InputSelectOffset + joinOffset;
-
-            InputSelect = InputSelect + joinOffset;
-
-            VolumeUp = VolumeUp + joinOffset;
-            VolumeDown = VolumeDown + joinOffset;
-            VolumeMute = VolumeMute + joinOffset;
-            VolumeLevelFB = VolumeLevelFB + joinOffset;
-		}
-	}
+   
 }

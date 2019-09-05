@@ -36,40 +36,5 @@ namespace PepperDash.Essentials.Bridges
             if(rmc.EdidSerialNumberFeedback != null)
                 rmc.EdidSerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidSerialNumber]);
         }
-
-        public class DmRmcControllerJoinMap : JoinMapBase
-        {
-            public uint IsOnline { get; set; }
-            public uint CurrentOutputResolution { get; set; }
-            public uint EdidManufacturer { get; set; }
-            public uint EdidName { get; set; }
-            public uint EdidPrefferedTiming { get; set; }
-            public uint EdidSerialNumber { get; set; }
-
-            public DmRmcControllerJoinMap()
-            {
-                // Digital
-                IsOnline = 1;
-
-                // Serial
-                CurrentOutputResolution = 1;
-                EdidManufacturer = 2;
-                EdidName = 3;
-                EdidPrefferedTiming = 4;
-                EdidSerialNumber = 5;
-            }
-
-            public override void OffsetJoinNumbers(uint joinStart)
-            {
-                var joinOffset = joinStart - 1;
-
-                IsOnline = IsOnline + joinOffset;
-                CurrentOutputResolution = CurrentOutputResolution + joinOffset;
-                EdidManufacturer = EdidManufacturer + joinOffset;
-                EdidName = EdidName + joinOffset;
-                EdidPrefferedTiming = EdidPrefferedTiming + joinOffset;
-                EdidSerialNumber = EdidSerialNumber + joinOffset;
-            }
-        }
     }
 }
