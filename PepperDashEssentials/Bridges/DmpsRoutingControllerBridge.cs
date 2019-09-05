@@ -120,58 +120,5 @@ namespace PepperDash.Essentials.Bridges
                     dmpsRouter.OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
             }
         }
-
-
-        public class DmpsRoutingControllerJoinMap : JoinMapBase
-        {
-            public uint OutputVideo { get; set; }
-            public uint OutputAudio { get; set; }
-            public uint VideoSyncStatus { get; set; }
-            public uint InputNames { get; set; }
-            public uint OutputNames { get; set; }
-            public uint OutputCurrentVideoInputNames { get; set; }
-            public uint OutputCurrentAudioInputNames { get; set; }
-            public uint InputCurrentResolution { get; set; }
-            public uint InputEndpointOnline { get; set; }
-            public uint OutputEndpointOnline { get; set; }
-            //public uint HdcpSupport { get; set; }
-            //public uint HdcpSupportCapability { get; set; }
-
-
-            public DmpsRoutingControllerJoinMap()
-            {
-                OutputVideo = 100; //101-299
-                OutputAudio = 300; //301-499
-                VideoSyncStatus = 100; //101-299
-                InputNames = 100; //101-299
-                OutputNames = 300; //301-499
-                OutputCurrentVideoInputNames = 2000; //2001-2199
-                OutputCurrentAudioInputNames = 2200; //2201-2399
-                InputCurrentResolution = 2400; // 2401-2599
-                InputEndpointOnline = 500; //501-699
-                OutputEndpointOnline = 700; //701-899
-                //HdcpSupport = 1000; //1001-1199
-                //HdcpSupportCapability = 1200; //1201-1399
-
-            }
-
-            public override void OffsetJoinNumbers(uint joinStart)
-            {
-                var joinOffset = joinStart - 1;
-
-                OutputVideo = OutputVideo + joinOffset;
-                OutputAudio = OutputAudio + joinOffset;
-                VideoSyncStatus = VideoSyncStatus + joinOffset;
-                InputNames = InputNames + joinOffset;
-                OutputNames = OutputNames + joinOffset;
-                OutputCurrentVideoInputNames = OutputCurrentVideoInputNames + joinOffset;
-                OutputCurrentAudioInputNames = OutputCurrentAudioInputNames + joinOffset;
-                InputCurrentResolution = InputCurrentResolution + joinOffset;
-                InputEndpointOnline = InputEndpointOnline + joinOffset;
-                OutputEndpointOnline = OutputEndpointOnline + joinOffset;
-                //HdcpSupport = HdcpSupport + joinOffset;
-                //HdcpSupportCapability = HdcpSupportCapability + joinOffset;
-            }
-        }
     }
 }

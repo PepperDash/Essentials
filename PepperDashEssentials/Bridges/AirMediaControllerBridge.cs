@@ -25,9 +25,9 @@ namespace PepperDash.Essentials.Bridges
 			joinMap.OffsetJoinNumbers(joinStart);
 
 			Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-			Debug.Console(0, "Linking to Bridge Type {0}", airMedia.GetType().Name.ToString());
+			Debug.Console(0, "Linking to Airmedia: {0}", airMedia.Name);
 
-			trilist.StringInput[joinMap.Name].StringValue = airMedia.GetType().Name.ToString();			
+			trilist.StringInput[joinMap.Name].StringValue = airMedia.Name;			
 
 			var commMonitor = airMedia as ICommunicationMonitor;
             if (commMonitor != null)
@@ -55,68 +55,5 @@ namespace PepperDash.Essentials.Bridges
             airMedia.HostnameFeedback.LinkInputSig(trilist.StringInput[joinMap.HostnameFB]);
             airMedia.SerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.SerialNumberFeedback]);
 		}
-
-	}
-	public class AirMediaControllerJoinMap : JoinMapBase
-	{
-        // Digital
-        public uint IsOnline { get; set; }
-        public uint IsInSession { get; set; }
-        public uint HdmiVideoSync { get; set; }
-        public uint AutomaticInputRoutingEnabled { get; set; }
-
-        // Analog
-        public uint VideoOut { get; set; }
-        public uint ErrorFB { get; set; }
-        public uint NumberOfUsersConnectedFB { get; set; }
-        public uint LoginCode { get; set; }
-
-        // Serial
-        public uint Name { get; set; }
-        public uint ConnectionAddressFB { get; set; }
-        public uint HostnameFB { get; set; }
-        public uint SerialNumberFeedback { get; set; }
-
-
-		public AirMediaControllerJoinMap()
-		{
-			// Digital
-			IsOnline = 1;
-            IsInSession = 2;
-            HdmiVideoSync = 3;
-            AutomaticInputRoutingEnabled = 4;
-
-			// Analog
-            VideoOut = 1;
-            ErrorFB = 2;
-            NumberOfUsersConnectedFB = 3;
-            LoginCode = 4;
-
-            // Serial
-            Name = 1;
-            ConnectionAddressFB = 2;
-            HostnameFB = 3;
-            SerialNumberFeedback = 4;
-        }
-
-		public override void OffsetJoinNumbers(uint joinStart)
-		{
-			var joinOffset = joinStart - 1;
-
-			IsOnline = IsOnline + joinOffset;
-            IsInSession = IsInSession + joinOffset;
-            HdmiVideoSync = HdmiVideoSync + joinOffset;
-            AutomaticInputRoutingEnabled = AutomaticInputRoutingEnabled + joinOffset;
-
-            VideoOut = VideoOut + joinOffset;
-            ErrorFB = ErrorFB + joinOffset;
-            NumberOfUsersConnectedFB = NumberOfUsersConnectedFB + joinOffset;
-            LoginCode = LoginCode + joinOffset;
-
-			Name = Name + joinOffset;
-            ConnectionAddressFB = ConnectionAddressFB + joinOffset;
-            HostnameFB = HostnameFB + joinOffset;
-            SerialNumberFeedback = SerialNumberFeedback + joinOffset;
-		}
-	}
+	}	
 }

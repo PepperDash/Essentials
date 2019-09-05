@@ -14,7 +14,7 @@ using PepperDash.Essentials.DM;
 
 namespace PepperDash.Essentials.Bridges
 {
-    public static class DmChassisControllerApiExtentions 
+    public static class DmChassisControllerApiExtentions
     {
         public static void LinkToApi(this DmChassisController dmChassis, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
@@ -46,13 +46,13 @@ namespace PepperDash.Essentials.Bridges
                 trilist.SetUShortSigAction(joinMap.OutputUsb + ioSlot, new Action<ushort>(o => dmChassis.ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbOutput)));
                 trilist.SetUShortSigAction(joinMap.InputUsb + ioSlot, new Action<ushort>(o => dmChassis.ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbInput)));
 
-				if (dmChassis.TxDictionary.ContainsKey(ioSlot))
-				{
-					Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
-					var txKey = dmChassis.TxDictionary[ioSlot];
+                if (dmChassis.TxDictionary.ContainsKey(ioSlot))
+                {
+                    Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
+                    var txKey = dmChassis.TxDictionary[ioSlot];
                     var basicTxDevice = DeviceManager.GetDeviceForKey(txKey) as BasicDmTxControllerBase;
 
-					var txDevice = basicTxDevice as DmTxControllerBase;
+                    var txDevice = basicTxDevice as DmTxControllerBase;
 
                     if (dmChassis.Chassis is DmMd8x8Cpu3 || dmChassis.Chassis is DmMd8x8Cpu3rps
                         || dmChassis.Chassis is DmMd16x16Cpu3 || dmChassis.Chassis is DmMd16x16Cpu3rps
@@ -68,7 +68,7 @@ namespace PepperDash.Essentials.Bridges
                         }
                     }
 
-                    if(basicTxDevice != null && txDevice == null)
+                    if (basicTxDevice != null && txDevice == null)
                         trilist.BooleanInput[joinMap.TxAdvancedIsPresent + ioSlot].BoolValue = true;
 
 
@@ -79,7 +79,7 @@ namespace PepperDash.Essentials.Bridges
                     else
                     {
                         var inputPort = dmChassis.InputPorts[string.Format("inputCard{0}--hdmiIn", ioSlot)];
-                        if(inputPort != null)
+                        if (inputPort != null)
                         {
                             var hdmiInPort = inputPort.Port;
 
@@ -101,10 +101,10 @@ namespace PepperDash.Essentials.Bridges
                             }
                         }
                     }
-				}
-				else
-				{
-					dmChassis.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
+                }
+                else
+                {
+                    dmChassis.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
 
                     var inputPort = dmChassis.InputPorts[string.Format("inputCard{0}--hdmiIn", ioSlot)];
                     if (inputPort != null)
@@ -117,12 +117,12 @@ namespace PepperDash.Essentials.Bridges
                             dmChassis.InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState + ioSlot]);
                         }
                     }
-				}
-				if (dmChassis.RxDictionary.ContainsKey(ioSlot))
-				{
-					Debug.Console(2, "Creating Rx Feedbacks {0}", ioSlot);
-					var RxKey = dmChassis.RxDictionary[ioSlot];
-					var RxDevice = DeviceManager.GetDeviceForKey(RxKey) as DmRmcControllerBase;
+                }
+                if (dmChassis.RxDictionary.ContainsKey(ioSlot))
+                {
+                    Debug.Console(2, "Creating Rx Feedbacks {0}", ioSlot);
+                    var RxKey = dmChassis.RxDictionary[ioSlot];
+                    var RxDevice = DeviceManager.GetDeviceForKey(RxKey) as DmRmcControllerBase;
                     if (dmChassis.Chassis is DmMd8x8Cpu3 || dmChassis.Chassis is DmMd8x8Cpu3rps
                         || dmChassis.Chassis is DmMd16x16Cpu3 || dmChassis.Chassis is DmMd16x16Cpu3rps
                         || dmChassis.Chassis is DmMd32x32Cpu3 || dmChassis.Chassis is DmMd32x32Cpu3rps)
@@ -133,7 +133,7 @@ namespace PepperDash.Essentials.Bridges
                     {
                         RxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
                     }
-				}
+                }
 
                 // Feedback
                 dmChassis.VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo + ioSlot]);
@@ -204,90 +204,5 @@ namespace PepperDash.Essentials.Bridges
             }
         }
 
-        public class DmChassisControllerJoinMap : JoinMapBase
-        {
-            // Digtal/Analog
-            public uint SystemId { get; set; }
-
-            //Digital
-            public uint IsOnline { get; set; }
-            public uint OutputUsb { get; set; }
-            public uint InputUsb { get; set; }
-            public uint VideoSyncStatus { get; set; }
-            public uint InputEndpointOnline { get; set; }
-            public uint OutputEndpointOnline { get; set; }
-            public uint TxAdvancedIsPresent { get; set; } // indicates that there is an attached transmitter that should be bridged to be interacted with
-
-            //Analog
-            public uint OutputVideo { get; set; }
-            public uint OutputAudio { get; set; }
-            public uint HdcpSupportState { get; set; }
-            public uint HdcpSupportCapability { get; set; }
-
-            //SErial
-            public uint InputNames { get; set; }
-            public uint OutputNames { get; set; }
-            public uint OutputCurrentVideoInputNames { get; set; }
-            public uint OutputCurrentAudioInputNames { get; set; }
-            public uint InputCurrentResolution { get; set; }
-
-
-
-            public DmChassisControllerJoinMap()
-            {
-                //Digital/Analog
-                SystemId = 10; // Analog sets/gets SystemId, digital input applies and provides feedback of ID change busy
-
-                //Digital 
-                IsOnline = 11;
-                VideoSyncStatus = 100; //101-299
-                InputEndpointOnline = 500; //501-699
-                OutputEndpointOnline = 700; //701-899
-                TxAdvancedIsPresent = 1000; //1001-1199
-
-                //Analog
-                OutputVideo = 100; //101-299
-                OutputAudio = 300; //301-499
-                OutputUsb = 500; //501-699
-                InputUsb = 700; //701-899
-                VideoSyncStatus = 100; //101-299
-                HdcpSupportState = 1000; //1001-1199
-                HdcpSupportCapability = 1200; //1201-1399
-
-
-                //Serial
-                InputNames = 100; //101-299
-                OutputNames = 300; //301-499
-                OutputCurrentVideoInputNames = 2000; //2001-2199
-                OutputCurrentAudioInputNames = 2200; //2201-2399
-                InputCurrentResolution = 2400; // 2401-2599
-                InputEndpointOnline = 500; //501-699
-                OutputEndpointOnline = 700; //701-899
-                HdcpSupportState = 1000; //1001-1199
-                HdcpSupportCapability = 1200; //1201-1399
-            }
-
-            public override void OffsetJoinNumbers(uint joinStart)
-            {
-                var joinOffset = joinStart - 1;
-
-                SystemId = SystemId + joinOffset;
-                IsOnline = IsOnline + joinOffset;
-                OutputVideo = OutputVideo + joinOffset;
-                OutputAudio = OutputAudio + joinOffset;
-                OutputUsb = OutputUsb + joinOffset;
-                InputUsb = InputUsb + joinOffset;
-                VideoSyncStatus = VideoSyncStatus + joinOffset;
-                InputNames = InputNames + joinOffset;
-                OutputNames = OutputNames + joinOffset;
-                OutputCurrentVideoInputNames = OutputCurrentVideoInputNames + joinOffset;
-                OutputCurrentAudioInputNames = OutputCurrentAudioInputNames + joinOffset;
-                InputCurrentResolution = InputCurrentResolution + joinOffset;
-                InputEndpointOnline = InputEndpointOnline + joinOffset;
-                OutputEndpointOnline = OutputEndpointOnline + joinOffset;
-                HdcpSupportState = HdcpSupportState + joinOffset;
-                HdcpSupportCapability = HdcpSupportCapability + joinOffset;
-            }
-        }
     }
 }
