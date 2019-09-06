@@ -1,222 +1,225 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro.DeviceSupport;
-using PepperDash.Core;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Devices.Common;
+﻿//using system;
+//using system.collections.generic;
+//using system.linq;
+//using system.text;
+//using crestron.simplsharp;
+//using crestron.simplsharppro.devicesupport;
+//using pepperdash.core;
+//using pepperdash.essentials.core;
+//using pepperdash.essentials.devices.common;
 
-namespace PepperDash.Essentials.Bridges
-{
-	public static class DisplayControllerApiExtensions
-	{
+//namespace pepperdash.essentials.bridges
+//{
+//    public static class displaycontrollerapiextensions
+//    {
 
-		public static int InputNumber;
-		public static IntFeedback InputNumberFeedback;
-		public static List<string> InputKeys = new List<string>();
-		public static void LinkToApi(this PepperDash.Essentials.Core.DisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey)
-		{
+//        public static int inputnumber;
+//        public static intfeedback inputnumberfeedback;
+//        public static list<string> inputkeys = new list<string>();
+//        public static void linktoapi(this pepperdash.essentials.core.displaybase displaydevice, basictrilist trilist, uint joinstart, string joinmapkey)
+//        {
 
-				var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as DisplayControllerJoinMap;
+//                var joinmap = joinmaphelper.getjoinmapfordevice(joinmapkey) as displaycontrollerjoinmap;
 
-				if (joinMap == null)
-				{
-					joinMap = new DisplayControllerJoinMap();
-				}
+//                if (joinmap == null)
+//                {
+//                    joinmap = new displaycontrollerjoinmap();
+//                }
 
-				joinMap.OffsetJoinNumbers(joinStart);
+//                joinmap.offsetjoinnumbers(joinstart);
 
-				Debug.Console(1, "Linking to Trilist '{0}'",trilist.ID.ToString("X"));
-				Debug.Console(0, "Linking to Display: {0}", displayDevice.Name);
+//                debug.console(1, "linking to trilist '{0}'",trilist.id.tostring("x"));
+//                debug.console(0, "linking to display: {0}", displaydevice.name);
 
-                trilist.StringInput[joinMap.Name].StringValue = displayDevice.Name;			
+//                trilist.stringinput[joinmap.name].stringvalue = displaydevice.name;			
 
-				var commMonitor = displayDevice as ICommunicationMonitor;
-                if (commMonitor != null)
-                {
-                    commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
-                }
+//                var commmonitor = displaydevice as icommunicationmonitor;
+//                if (commmonitor != null)
+//                {
+//                    commmonitor.communicationmonitor.isonlinefeedback.linkinputsig(trilist.booleaninput[joinmap.isonline]);
+//                }
 
-                InputNumberFeedback = new IntFeedback(() => { return InputNumber; });
+//                inputnumberfeedback.linkinputsig(trilist.ushortinput[joinmap.inputselect]);
+//                // two way feedbacks
+//                var twowaydisplay = displaydevice as pepperdash.essentials.core.twowaydisplaybase;
+//                if (twowaydisplay != null)
+//                {
+//                    trilist.setbool(joinmap.istwowaydisplay, true);
 
-                // Two way feedbacks
-                var twoWayDisplay = displayDevice as PepperDash.Essentials.Core.TwoWayDisplayBase;
-                if (twoWayDisplay != null)
-                {
-                    trilist.SetBool(joinMap.IsTwoWayDisplay, true);
-
-                    twoWayDisplay.CurrentInputFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(CurrentInputFeedback_OutputChange);
+//                    twowaydisplay.currentinputfeedback.outputchange += new eventhandler<feedbackeventargs>(currentinputfeedback_outputchange);
 
 
-                    InputNumberFeedback.LinkInputSig(trilist.UShortInput[joinMap.InputSelect]);
-                }
+                   
+//                }
 
-				// Power Off
-				trilist.SetSigTrueAction(joinMap.PowerOff, () =>
-					{
-						InputNumber = 102;
-						InputNumberFeedback.FireUpdate();
-						displayDevice.PowerOff();
-					});
+//                // power off
+//                trilist.setsigtrueaction(joinmap.poweroff, () =>
+//                    {
+//                        inputnumber = 102;
+//                        inputnumberfeedback.fireupdate();
+//                        displaydevice.poweroff();
+//                    });
 
-				displayDevice.PowerIsOnFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(PowerIsOnFeedback_OutputChange);
-				displayDevice.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff]);
+//                displaydevice.powerisonfeedback.outputchange += new eventhandler<feedbackeventargs>(powerisonfeedback_outputchange);
+//                displaydevice.powerisonfeedback.linkcomplementinputsig(trilist.booleaninput[joinmap.poweroff]);
 
-				// PowerOn
-				trilist.SetSigTrueAction(joinMap.PowerOn, () =>
-					{
-						InputNumber = 0;
-						InputNumberFeedback.FireUpdate();
-						displayDevice.PowerOn();
-					});
+//                // poweron
+//                trilist.setsigtrueaction(joinmap.poweron, () =>
+//                    {
+//                        inputnumber = 0;
+//                        inputnumberfeedback.fireupdate();
+//                        displaydevice.poweron();
+//                    });
 
 				
-				displayDevice.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn]);
+//                displaydevice.powerisonfeedback.linkinputsig(trilist.booleaninput[joinmap.poweron]);
 
-				int count = 1;
-				foreach (var input in displayDevice.InputPorts)
-				{
-					InputKeys.Add(input.Key.ToString());
-					var tempKey = InputKeys.ElementAt(count - 1);
-					trilist.SetSigTrueAction((ushort)(joinMap.InputSelectOffset + count), () => { displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector); });
-                    Debug.Console(2, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}", joinMap.InputSelectOffset + count, displayDevice.InputPorts[tempKey].Key.ToString());
-					trilist.StringInput[(ushort)(joinMap.InputNamesOffset + count)].StringValue = input.Key.ToString();
-					count++;
-				}
+//                int count = 1;
+//                foreach (var input in displaydevice.inputports)
+//                {
+//                    inputkeys.add(input.key.tostring());
+//                    var tempkey = inputkeys.elementat(count - 1);
+//                    trilist.setsigtrueaction((ushort)(joinmap.inputselectoffset + count), () => { displaydevice.executeswitch(displaydevice.inputports[tempkey].selector); });
+//                    debug.console(2, displaydevice, "setting input select action on digital join {0} to input: {1}", joinmap.inputselectoffset + count, displaydevice.inputports[tempkey].key.tostring());
+//                    trilist.stringinput[(ushort)(joinmap.inputnamesoffset + count)].stringvalue = input.key.tostring();
+//                    count++;
+//                }
 
-                Debug.Console(2, displayDevice, "Setting Input Select Action on Analog Join {0}", joinMap.InputSelect);
-				trilist.SetUShortSigAction(joinMap.InputSelect, (a) =>
-				{
-					if (a == 0)
-					{
-						displayDevice.PowerOff();
-						InputNumber = 0;
-					}
-					else if (a > 0 && a < displayDevice.InputPorts.Count && a != InputNumber)
-					{
-						displayDevice.ExecuteSwitch(displayDevice.InputPorts.ElementAt(a - 1).Selector);
-						InputNumber = a;
-					}
-					else if (a == 102)
-					{
-						displayDevice.PowerToggle();
+//                debug.console(2, displaydevice, "setting input select action on analog join {0}", joinmap.inputselect);
+//                trilist.setushortsigaction(joinmap.inputselect, (a) =>
+				
+//                {
+//                        if (a == 0)
+//                        {
+//                            displaydevice.poweroff();
+//                            inputnumber = 0;
+//                            inputnumberfeedback.fireupdate();
+//                        }
+//                        else if (a > 0 && a < displaydevice.inputports.count )
+//                        {
+//                            displaydevice.executeswitch(displaydevice.inputports.elementat(a - 1).selector);
+//                            inputnumber = a;
+//                            inputnumberfeedback.fireupdate();
+//                        }
+//                        else if (a == 102)
+//                        {
+//                            displaydevice.powertoggle();
 
-					}
-                    if (twoWayDisplay != null)
-					    InputNumberFeedback.FireUpdate();
-				});
+//                        }
+	                    
+							
 
-
-                var volumeDisplay = displayDevice as IBasicVolumeControls;
-                if (volumeDisplay != null)
-                {
-                    trilist.SetBoolSigAction(joinMap.VolumeUp, (b) => volumeDisplay.VolumeUp(b));
-                    trilist.SetBoolSigAction(joinMap.VolumeDown, (b) => volumeDisplay.VolumeDown(b));
-                    trilist.SetSigTrueAction(joinMap.VolumeMute, () => volumeDisplay.MuteToggle());
-
-                    var volumeDisplayWithFeedback = volumeDisplay as IBasicVolumeWithFeedback;
-                    if(volumeDisplayWithFeedback != null)
-                    {
-                        volumeDisplayWithFeedback.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[joinMap.VolumeLevelFB]);
-                        volumeDisplayWithFeedback.MuteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VolumeMute]);
-                    }
-                }
-			}
-
-		static void CurrentInputFeedback_OutputChange(object sender, FeedbackEventArgs e)
-		{
-
-			Debug.Console(0, "CurrentInputFeedback_OutputChange {0}", e.StringValue);
-
-		}
-
-		static void PowerIsOnFeedback_OutputChange(object sender, FeedbackEventArgs e)
-		{
-
-			// Debug.Console(0, "PowerIsOnFeedback_OutputChange {0}",  e.BoolValue);
-			if (!e.BoolValue)
-			{
-				InputNumber = 102;
-				InputNumberFeedback.FireUpdate();
-
-			}
-			else
-			{
-				InputNumber = 0;
-				InputNumberFeedback.FireUpdate();
-			}
-		}
+//                });
 
 
+//                var volumedisplay = displaydevice as ibasicvolumecontrols;
+//                if (volumedisplay != null)
+//                {
+//                    trilist.setboolsigaction(joinmap.volumeup, (b) => volumedisplay.volumeup(b));
+//                    trilist.setboolsigaction(joinmap.volumedown, (b) => volumedisplay.volumedown(b));
+//                    trilist.setsigtrueaction(joinmap.volumemute, () => volumedisplay.mutetoggle());
+
+//                    var volumedisplaywithfeedback = volumedisplay as ibasicvolumewithfeedback;
+//                    if(volumedisplaywithfeedback != null)
+//                    {
+//                        volumedisplaywithfeedback.volumelevelfeedback.linkinputsig(trilist.ushortinput[joinmap.volumelevelfb]);
+//                        volumedisplaywithfeedback.mutefeedback.linkinputsig(trilist.booleaninput[joinmap.volumemute]);
+//                    }
+//                }
+//            }
+
+//        static void currentinputfeedback_outputchange(object sender, feedbackeventargs e)
+//        {
+
+//            debug.console(0, "currentinputfeedback_outputchange {0}", e.stringvalue);
+
+//        }
+
+//        static void powerisonfeedback_outputchange(object sender, feedbackeventargs e)
+//        {
+
+//            // debug.console(0, "powerisonfeedback_outputchange {0}",  e.boolvalue);
+//            if (!e.boolvalue)
+//            {
+//                inputnumber = 102;
+//                inputnumberfeedback.fireupdate();
+
+//            }
+//            else
+//            {
+//                inputnumber = 0;
+//                inputnumberfeedback.fireupdate();
+//            }
+//        }
 
 
-	}
-    public class DisplayControllerJoinMap : JoinMapBase
-	{
-        // Digital
-        public uint PowerOff { get; set; }
-        public uint PowerOn { get; set; }
-        public uint IsTwoWayDisplay { get; set; }
-        public uint VolumeUp { get; set; }
-        public uint VolumeDown { get; set; }
-        public uint VolumeMute { get; set; }
-        public uint InputSelectOffset { get; set; }
-		public uint ButtonVisibilityOffset { get; set; }
-        public uint IsOnline { get; set; }
-
-        // Analog
-        public uint InputSelect { get; set; }
-        public uint VolumeLevelFB { get; set; }
-
-        // Serial
-        public uint Name { get; set; }
-        public uint InputNamesOffset { get; set; }
 
 
-		public DisplayControllerJoinMap()
-		{
-			// Digital
-			IsOnline = 50;
-			PowerOff = 1;
-			PowerOn = 2;
-            IsTwoWayDisplay = 3;
-            VolumeUp = 5;
-            VolumeDown = 6;
-            VolumeMute = 7;
+//    }
+//    public class displaycontrollerjoinmap : joinmapbase
+//    {
+//        // digital
+//        public uint poweroff { get; set; }
+//        public uint poweron { get; set; }
+//        public uint istwowaydisplay { get; set; }
+//        public uint volumeup { get; set; }
+//        public uint volumedown { get; set; }
+//        public uint volumemute { get; set; }
+//        public uint inputselectoffset { get; set; }
+//        public uint buttonvisibilityoffset { get; set; }
+//        public uint isonline { get; set; }
 
-			ButtonVisibilityOffset = 40;
-            InputSelectOffset = 10;
+//        // analog
+//        public uint inputselect { get; set; }
+//        public uint volumelevelfb { get; set; }
 
-			// Analog
-            InputSelect = 11;
-            VolumeLevelFB = 5;
+//        // serial
+//        public uint name { get; set; }
+//        public uint inputnamesoffset { get; set; }
 
-            // Serial
-            Name = 1;
-            InputNamesOffset = 10;
-        }
 
-		public override void OffsetJoinNumbers(uint joinStart)
-		{
-			var joinOffset = joinStart - 1;
+//        public displaycontrollerjoinmap()
+//        {
+//            // digital
+//            isonline = 50;
+//            poweroff = 1;
+//            poweron = 2;
+//            istwowaydisplay = 3;
+//            volumeup = 5;
+//            volumedown = 6;
+//            volumemute = 7;
 
-			IsOnline = IsOnline + joinOffset;
-			PowerOff = PowerOff + joinOffset;
-			PowerOn = PowerOn + joinOffset;
-            IsTwoWayDisplay = IsTwoWayDisplay + joinOffset;
-			ButtonVisibilityOffset = ButtonVisibilityOffset + joinOffset;
-			Name = Name + joinOffset;
-			InputNamesOffset = InputNamesOffset + joinOffset;
-			InputSelectOffset = InputSelectOffset + joinOffset;
+//            buttonvisibilityoffset = 40;
+//            inputselectoffset = 10;
 
-            InputSelect = InputSelect + joinOffset;
+//            // analog
+//            inputselect = 11;
+//            volumelevelfb = 5;
 
-            VolumeUp = VolumeUp + joinOffset;
-            VolumeDown = VolumeDown + joinOffset;
-            VolumeMute = VolumeMute + joinOffset;
-            VolumeLevelFB = VolumeLevelFB + joinOffset;
-		}
-	}
-}
+//            // serial
+//            name = 1;
+//            inputnamesoffset = 10;
+//        }
+
+//        public override void offsetjoinnumbers(uint joinstart)
+//        {
+//            var joinoffset = joinstart - 1;
+
+//            isonline = isonline + joinoffset;
+//            poweroff = poweroff + joinoffset;
+//            poweron = poweron + joinoffset;
+//            istwowaydisplay = istwowaydisplay + joinoffset;
+//            buttonvisibilityoffset = buttonvisibilityoffset + joinoffset;
+//            name = name + joinoffset;
+//            inputnamesoffset = inputnamesoffset + joinoffset;
+//            inputselectoffset = inputselectoffset + joinoffset;
+
+//            inputselect = inputselect + joinoffset;
+
+//            volumeup = volumeup + joinoffset;
+//            volumedown = volumedown + joinoffset;
+//            volumemute = volumemute + joinoffset;
+//            volumelevelfb = volumelevelfb + joinoffset;
+//        }
+//    }
+//}
