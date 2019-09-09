@@ -78,7 +78,12 @@ namespace PepperDash.Essentials.Bridges
 
                     if (device != null)
                     {
-                        if (device is PepperDash.Essentials.Core.Monitoring.SystemMonitorController)
+                        if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
+                        {
+                            (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is PepperDash.Essentials.Core.Monitoring.SystemMonitorController)
                         {
                             (device as PepperDash.Essentials.Core.Monitoring.SystemMonitorController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
@@ -136,11 +141,6 @@ namespace PepperDash.Essentials.Bridges
                         else if (device is AppleTV)
                         {
                             (device as AppleTV).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                            continue;
-                        }
-                        else if (device is IBridge)
-                        {
-                            (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
                         else if (device is HdMdxxxCEController)
