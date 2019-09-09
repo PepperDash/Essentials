@@ -9,20 +9,25 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Monitoring;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Bridges
 {
     public static class SystemMonitorBridge
     {
         public static void LinkToApi(this SystemMonitorController systemMonitorController, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as SystemMonitorJoinMap;
+            SystemMonitorJoinMap joinMap = new SystemMonitorJoinMap();
 
-            if (joinMap == null)
-                joinMap = new SystemMonitorJoinMap();
+            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+
+            if(!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<SystemMonitorJoinMap>(joinMapSerialized);
 
             joinMap.OffsetJoinNumbers(joinStart);
 
-            //Debug.Console(1, systemMonitorController, "Linking API starting at join: {0}", joinStart);
+            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.Console(2, systemMonitorController, "Linking API starting at join: {0}", joinStart);
 
             systemMonitorController.TimeZoneFeedback.LinkInputSig(trilist.UShortInput[joinMap.TimeZone]);
             //trilist.SetUShortSigAction(joinMap.TimeZone, new Action<ushort>(u => systemMonitorController.SetTimeZone(u)));
@@ -33,17 +38,12 @@ namespace PepperDash.Essentials.Bridges
             systemMonitorController.BACnetAppVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.BACnetAppVersion]);
             systemMonitorController.ControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.ControllerVersion]);
 
-
             // iterate the program status feedback collection and map all the joins
             var programSlotJoinStart = joinMap.ProgramStartJoin;
 
             foreach (var p in systemMonitorController.ProgramStatusFeedbackCollection)
             {
-
-                // TODO: link feedbacks for each program slot
                 var programNumber = p.Value.Program.Number;
-
-                //Debug.Console(1, systemMonitorController, "Linking API for Program Slot: {0} starting at join: {1}", programNumber, programSlotJoinStart);
 
                 trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStart, new Action<bool>
                     (b => SystemMonitor.ProgramCollection[programNumber].OperatingState = eProgramOperatingState.Start));

@@ -9,18 +9,20 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Bridges
 {
     public static class AppleTvApiExtensions
     {
         public static void LinkToApi(this AppleTV appleTv, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as AppleTvJoinMap;
+            AppleTvJoinMap joinMap = new AppleTvJoinMap();
 
-            if (joinMap == null)
-            {
-                joinMap = new AppleTvJoinMap();
-            }
+            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+
+            if(!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<AppleTvJoinMap>(joinMapSerialized);
 
             joinMap.OffsetJoinNumbers(joinStart);
 

@@ -4,23 +4,30 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Bridges
+using PepperDash.Essentials.Core.Config;
+
+namespace PepperDash.Essentials.Core
 {
     public static class JoinMapHelper
     {
         /// <summary>
-        /// Attempts to get the join map from config
+        /// Attempts to get the serialized join map from config
         /// </summary>
         /// <param name="joinMapKey"></param>
         /// <returns></returns>
-        public static JoinMapBase GetJoinMapForDevice(string joinMapKey)
+        public static string GetJoinMapForDevice(string joinMapKey)
         {
-            if (!string.IsNullOrEmpty(joinMapKey))
+            if (string.IsNullOrEmpty(joinMapKey))
                 return null;
 
-            // FUTURE TODO: Get the join map from the ConfigReader.ConfigObject 
+            var joinMap = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
 
-            return null;
+            if (joinMap != null)
+            {
+                return joinMap;
+            }
+            else
+                return null;
         }
     }
 

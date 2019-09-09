@@ -8,17 +8,20 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Bridges
 {
     public static class IBasicCommunicationApiExtensions
     {
         public static void LinkToApi(this GenericComm comm, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as IBasicCommunicationJoinMap;
+            IBasicCommunicationJoinMap joinMap = new IBasicCommunicationJoinMap();
 
-            if (joinMap == null)
-                joinMap = new IBasicCommunicationJoinMap();
+            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
 
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<IBasicCommunicationJoinMap>(joinMapSerialized);
             joinMap.OffsetJoinNumbers(joinStart);
 
             if (comm.CommPort == null)

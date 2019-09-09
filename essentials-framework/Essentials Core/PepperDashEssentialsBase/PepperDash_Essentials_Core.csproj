@@ -134,6 +134,7 @@
     <Compile Include="Feedbacks\StringFeedback.cs" />
     <Compile Include="Global\JobTimer.cs" />
     <Compile Include="Global\Scheduler.cs" />
+    <Compile Include="JoinMaps\JoinMapBase.cs" />
     <Compile Include="Lighting\Lighting Interfaces.cs" />
     <Compile Include="Lighting\LightingBase.cs" />
     <Compile Include="Monitoring\SystemMonitorController.cs" />

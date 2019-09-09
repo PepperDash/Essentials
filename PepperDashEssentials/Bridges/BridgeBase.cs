@@ -12,6 +12,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Lighting;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Devices.Common;
+using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.DM;
@@ -87,11 +88,11 @@ namespace PepperDash.Essentials.Bridges
                             (device as GenericComm).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-						//else if (device is CameraBase)
-						//{
-						//    (device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-						//    continue;
-						//}
+                        else if (device is CameraBase)
+                        {
+                            (device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
 						else if (device is PepperDash.Essentials.Core.DisplayBase)
 						{
 							(device as DisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
@@ -147,16 +148,16 @@ namespace PepperDash.Essentials.Bridges
                             (device as HdMdxxxCEController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-						//else if (device is LightingBase)
-						//{
-						//    (device as LightingBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-						//    continue;
-						//}
-						//else if (device is DigitalLogger)
-						//{
-						//    (device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-						//    continue;
-						//}
+                        else if (device is LightingBase)
+                        {
+                            (device as LightingBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is DigitalLogger)
+                        {
+                            (device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
                     }
                 }
 
