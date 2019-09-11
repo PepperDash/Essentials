@@ -26,6 +26,9 @@ namespace PepperDash.Essentials.Core.Config
 		[JsonProperty("tieLines")]
 		public List<TieLineConfig> TieLines { get; set; }
 
+        [JsonProperty("joinMaps")]
+        public Dictionary<string, string> JoinMaps { get; set; }
+
 		/// <summary>
 		/// Checks SourceLists for a given list and returns it if found. Otherwise, returns null
 		/// </summary>

@@ -12,6 +12,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Lighting;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Devices.Common;
+using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.DM;
@@ -77,7 +78,12 @@ namespace PepperDash.Essentials.Bridges
 
                     if (device != null)
                     {
-                        if (device is PepperDash.Essentials.Core.Monitoring.SystemMonitorController)
+                        if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
+                        {
+                            (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is PepperDash.Essentials.Core.Monitoring.SystemMonitorController)
                         {
                             (device as PepperDash.Essentials.Core.Monitoring.SystemMonitorController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
@@ -87,11 +93,11 @@ namespace PepperDash.Essentials.Bridges
                             (device as GenericComm).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-						//else if (device is CameraBase)
-						//{
-						//    (device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-						//    continue;
-						//}
+                        else if (device is CameraBase)
+                        {
+                            (device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
 						else if (device is PepperDash.Essentials.Core.DisplayBase)
 						{
 							(device as DisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
@@ -137,26 +143,21 @@ namespace PepperDash.Essentials.Bridges
                             (device as AppleTV).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-                        else if (device is IBridge)
-                        {
-                            (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                            continue;
-                        }
                         else if (device is HdMdxxxCEController)
                         {
                             (device as HdMdxxxCEController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-						//else if (device is LightingBase)
-						//{
-						//    (device as LightingBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-						//    continue;
-						//}
-						//else if (device is DigitalLogger)
-						//{
-						//    (device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-						//    continue;
-						//}
+                        else if (device is LightingBase)
+                        {
+                            (device as LightingBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is DigitalLogger)
+                        {
+                            (device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
                     }
                 }
 

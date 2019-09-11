@@ -1,187 +1,137 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using Crestron.SimplSharp;
-//using Crestron.SimplSharpPro.DeviceSupport;
-//using PepperDash.Core;
-//using PepperDash.Essentials.Core;
-//using PepperDash.Essentials.Devices.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DeviceSupport;
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Devices.Common;
+using PepperDash.Essentials.Devices.Common.Cameras;
 
-//namespace PepperDash.Essentials.Bridges
-//{
-//    public static class CameraControllerApiExtensions
-//    {
+using Newtonsoft.Json;
 
-//        public static BasicTriList _TriList;
-//        public static CameraControllerJoinMap JoinMap; 
-//        public static void LinkToApi(this PepperDash.Essentials.Devices.Common.Cameras.CameraBase cameraDevice, BasicTriList trilist, uint joinStart, string joinMapKey)
-//        {
-//            JoinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as CameraControllerJoinMap;
-			
-//            _TriList = trilist;
-//            if (JoinMap == null)
-//            {
-//                JoinMap = new CameraControllerJoinMap();
-//            }
-			
-//            JoinMap.OffsetJoinNumbers(joinStart);
-//            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-//            Debug.Console(0, "Linking to Bridge Type {0}", cameraDevice.GetType().Name.ToString());
+namespace PepperDash.Essentials.Bridges
+{
+    public static class CameraControllerApiExtensions
+    {
 
-//            var commMonitor = cameraDevice as ICommunicationMonitor;
-//            commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[JoinMap.IsOnline]);
+        public static void LinkToApi(this PepperDash.Essentials.Devices.Common.Cameras.CameraBase cameraDevice, BasicTriList trilist, uint joinStart, string joinMapKey)
+        {
+            CameraControllerJoinMap joinMap = new CameraControllerJoinMap();
 
+            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
 
-//            trilist.SetBoolSigAction(JoinMap.Left, (b) =>
-//                {
-//                    if (b)
-//                    {
-//                        cameraDevice.PanLeft();
-//                    }
-//                    else
-//                    {
-//                        cameraDevice.Stop();
-//                    }
-//                });
-//            trilist.SetBoolSigAction(JoinMap.Right, (b) =>
-//            {
-//                if (b)
-//                {
-//                    cameraDevice.PanRight();
-//                }
-//                else
-//                {
-//                    cameraDevice.Stop();
-//                }
-//            });
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<CameraControllerJoinMap>(joinMapSerialized);
 
-//            trilist.SetBoolSigAction(JoinMap.Up, (b) =>
-//            {
-//                if (b)
-//                {
-//                    cameraDevice.TiltUp();
-//                }
-//                else
-//                {
-//                    cameraDevice.Stop();
-//                }
-//            });
-//            trilist.SetBoolSigAction(JoinMap.Down, (b) =>
-//            {
-//                if (b)
-//                {
-//                    cameraDevice.TiltDown();
-//                }
-//                else
-//                {
-//                    cameraDevice.Stop();
-//                }
-//            });
+            joinMap.OffsetJoinNumbers(joinStart);
 
-//            trilist.SetBoolSigAction(JoinMap.ZoomIn, (b) =>
-//            {
-//                if (b)
-//                {
-//                    cameraDevice.ZoomIn();
-//                }
-//                else
-//                {
-//                    cameraDevice.Stop();
-//                }
-//            });
+            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.Console(0, "Linking to Bridge Type {0}", cameraDevice.GetType().Name.ToString());
 
-//            trilist.SetBoolSigAction(JoinMap.ZoomOut, (b) =>
-//            {
-//                if (b)
-//                {
-//                    cameraDevice.ZoomOut();
-//                }
-//                else
-//                {
-//                    cameraDevice.Stop();
-//                }
-//            });
+            var commMonitor = cameraDevice as ICommunicationMonitor;
+            commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
 
+            var ptzCamera = cameraDevice as IHasCameraPtzControl;
 
-//            if (cameraDevice.GetType().Name.ToString().ToLower() == "cameravisca")
-//            {
-//                var viscaCamera = cameraDevice as PepperDash.Essentials.Devices.Common.Cameras.CameraVisca;
-//                trilist.SetSigTrueAction(JoinMap.PowerOn, () => viscaCamera.PowerOn());
-//                trilist.SetSigTrueAction(JoinMap.PowerOff, () => viscaCamera.PowerOff());
+            if (ptzCamera != null)
+            {
+                trilist.SetBoolSigAction(joinMap.Left, (b) =>
+                    {
+                        if (b)
+                        {
+                            ptzCamera.PanLeft();
+                        }
+                        else
+                        {
+                            ptzCamera.PanStop();
+                        }
+                    });
+                trilist.SetBoolSigAction(joinMap.Right, (b) =>
+                {
+                    if (b)
+                    {
+                        ptzCamera.PanRight();
+                    }
+                    else
+                    {
+                        ptzCamera.PanStop();
+                    }
+                });
 
-//                viscaCamera.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[JoinMap.PowerOn]);
-//                viscaCamera.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[JoinMap.PowerOff]);
+                trilist.SetBoolSigAction(joinMap.Up, (b) =>
+                {
+                    if (b)
+                    {
+                        ptzCamera.TiltUp();
+                    }
+                    else
+                    {
+                        ptzCamera.TiltStop();
+                    }
+                });
+                trilist.SetBoolSigAction(joinMap.Down, (b) =>
+                {
+                    if (b)
+                    {
+                        ptzCamera.TiltDown();
+                    }
+                    else
+                    {
+                        ptzCamera.TiltStop();
+                    }
+                });
 
-//                viscaCamera.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[JoinMap.IsOnline]);
-//                for (int i = 0; i < JoinMap.NumberOfPresets; i++)
-//                    {	
-//                        int tempNum = i;
-//                        trilist.SetSigTrueAction((ushort)(JoinMap.PresetRecallOffset + tempNum), () =>
-//                            {
-//                                viscaCamera.RecallPreset(tempNum);
-//                            });
-//                        trilist.SetSigTrueAction((ushort)(JoinMap.PresetSaveOffset + tempNum), () =>
-//                        {
-//                            viscaCamera.SavePreset(tempNum);
-//                        });
-//                    }
-//            }
+                trilist.SetBoolSigAction(joinMap.ZoomIn, (b) =>
+                {
+                    if (b)
+                    {
+                        ptzCamera.ZoomIn();
+                    }
+                    else
+                    {
+                        ptzCamera.ZoomStop();
+                    }
+                });
 
-			
-			
-//        }
+                trilist.SetBoolSigAction(joinMap.ZoomOut, (b) =>
+                {
+                    if (b)
+                    {
+                        ptzCamera.ZoomOut();
+                    }
+                    else
+                    {
+                        ptzCamera.ZoomStop();
+                    }
+                });
+            }
 
+            if (cameraDevice.GetType().Name.ToString().ToLower() == "cameravisca")
+            {
+                var viscaCamera = cameraDevice as PepperDash.Essentials.Devices.Common.Cameras.CameraVisca;
+                trilist.SetSigTrueAction(joinMap.PowerOn, () => viscaCamera.PowerOn());
+                trilist.SetSigTrueAction(joinMap.PowerOff, () => viscaCamera.PowerOff());
 
-//    }
-//    public class CameraControllerJoinMap : JoinMapBase
-//    {
-//        public uint IsOnline { get; set; }
-//        public uint PowerOff { get; set; }
-//        public uint PowerOn { get; set; }
-//        public uint Up { get; set; }
-//        public uint Down { get; set; }
-//        public uint Left { get; set; }
-//        public uint Right { get; set; }
-//        public uint ZoomIn { get; set; }
-//        public uint ZoomOut { get; set; }
-//        public uint PresetRecallOffset { get; set; }
-//        public uint PresetSaveOffset { get; set; }
-//        public uint NumberOfPresets { get; set;  }
+                viscaCamera.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn]);
+                viscaCamera.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff]);
 
-//        public CameraControllerJoinMap()
-//        {
-//            // Digital
-//            IsOnline = 9;
-//            PowerOff = 8;
-//            PowerOn = 7;
-//            Up = 1;
-//            Down = 2;
-//            Left = 3;
-//            Right = 4;
-//            ZoomIn = 5;
-//            ZoomOut = 6;
-//            PresetRecallOffset = 10;
-//            PresetSaveOffset = 30;
-//            NumberOfPresets = 5;
-//            // Analog
-//        }
+                viscaCamera.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
+                for (int i = 0; i < joinMap.NumberOfPresets; i++)
+                {
+                    int tempNum = i;
+                    trilist.SetSigTrueAction((ushort)(joinMap.PresetRecallOffset + tempNum), () =>
+                        {
+                            viscaCamera.RecallPreset(tempNum);
+                        });
+                    trilist.SetSigTrueAction((ushort)(joinMap.PresetSaveOffset + tempNum), () =>
+                    {
+                        viscaCamera.SavePreset(tempNum);
+                    });
+                }
+            }
+        }
+    }
 
-//        public override void OffsetJoinNumbers(uint joinStart)
-//        {
-//            var joinOffset = joinStart - 1;
-
-//            IsOnline = IsOnline + joinOffset;
-//            PowerOff = PowerOff + joinOffset;
-//            PowerOn = PowerOn + joinOffset;
-//            Up = Up + joinOffset;
-//            Down = Down + joinOffset;
-//            Left = Left + joinOffset;
-//            Right = Right + joinOffset;
-//            ZoomIn = ZoomIn + joinOffset;
-//            ZoomOut = ZoomOut + joinOffset;
-//            PresetRecallOffset = PresetRecallOffset + joinOffset;
-//            PresetSaveOffset = PresetSaveOffset + joinOffset;
-//        }
-//    }
-//}
+}

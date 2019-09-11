@@ -10,16 +10,20 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.DM;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Bridges
 {
     public static class DmpsAudioOutputControllerApiExtensions
     {
         public static void LinkToApi(this DmpsAudioOutputController dmAudioOutputController, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as DmpsAudioOutputControllerJoinMap;
+            DmpsAudioOutputControllerJoinMap joinMap = new DmpsAudioOutputControllerJoinMap();
 
-            if (joinMap == null)
-                joinMap = new DmpsAudioOutputControllerJoinMap();
+            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<DmpsAudioOutputControllerJoinMap>(joinMapSerialized);
 
             joinMap.OffsetJoinNumbers(joinStart);
 
