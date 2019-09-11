@@ -39,7 +39,7 @@ namespace PepperDash.Essentials.Bridges
                 trilist.SetString(joinMap.TextReceived, a.Text);
             };
             trilist.SetStringSigAction(joinMap.SendText, new Action<string>(s => comm.CommPort.SendText(s)));
-            trilist.SetStringSigAction(joinMap.SetPortConfig + 1, new Action<string>(s => comm.SetPortConfig(s)));
+            trilist.SetStringSigAction(joinMap.SetPortConfig, new Action<string>(s => comm.SetPortConfig(s)));
 
 
             var sComm = comm.CommPort as ISocketStatus;
