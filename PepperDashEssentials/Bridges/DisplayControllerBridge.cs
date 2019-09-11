@@ -8,123 +8,138 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common;
 
+using Newtonsoft.Json;
+
+
 namespace PepperDash.Essentials.Bridges
 {
 	public static class DisplayControllerApiExtensions
 	{
-
-		public static int InputNumber;
-		public static IntFeedback InputNumberFeedback;
-		public static List<string> InputKeys = new List<string>();
 		public static void LinkToApi(this PepperDash.Essentials.Core.DisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey)
 		{
+            int inputNumber = 0;
+            IntFeedback inputNumberFeedback;
+            List<string> inputKeys = new List<string>();
 
-				var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as DisplayControllerJoinMap;
+            DisplayControllerJoinMap joinMap = new DisplayControllerJoinMap();
 
-				if (joinMap == null)
+            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            
+            if(!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<DisplayControllerJoinMap>(joinMapSerialized);
+
+			joinMap.OffsetJoinNumbers(joinStart);
+
+			Debug.Console(1, "Linking to Trilist '{0}'",trilist.ID.ToString("X"));
+			Debug.Console(0, "Linking to Display: {0}", displayDevice.Name);
+
+            trilist.StringInput[joinMap.Name].StringValue = displayDevice.Name;			
+
+			var commMonitor = displayDevice as ICommunicationMonitor;
+            if (commMonitor != null)
+            {
+                commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
+            }
+
+            inputNumberFeedback = new IntFeedback(() => { return inputNumber; });
+
+            // Two way feedbacks
+            var twoWayDisplay = displayDevice as PepperDash.Essentials.Core.TwoWayDisplayBase;
+            if (twoWayDisplay != null)
+            {
+                trilist.SetBool(joinMap.IsTwoWayDisplay, true);
+
+                twoWayDisplay.CurrentInputFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(CurrentInputFeedback_OutputChange);
+
+
+                inputNumberFeedback.LinkInputSig(trilist.UShortInput[joinMap.InputSelect]);
+            }
+
+			// Power Off
+			trilist.SetSigTrueAction(joinMap.PowerOff, () =>
 				{
-					joinMap = new DisplayControllerJoinMap();
-				}
-
-				joinMap.OffsetJoinNumbers(joinStart);
-
-				Debug.Console(1, "Linking to Trilist '{0}'",trilist.ID.ToString("X"));
-				Debug.Console(0, "Linking to Display: {0}", displayDevice.Name);
-
-                trilist.StringInput[joinMap.Name].StringValue = displayDevice.Name;			
-
-				var commMonitor = displayDevice as ICommunicationMonitor;
-                if (commMonitor != null)
-                {
-                    commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
-                }
-
-                InputNumberFeedback = new IntFeedback(() => { return InputNumber; });
-
-                // Two way feedbacks
-                var twoWayDisplay = displayDevice as PepperDash.Essentials.Core.TwoWayDisplayBase;
-                if (twoWayDisplay != null)
-                {
-                    trilist.SetBool(joinMap.IsTwoWayDisplay, true);
-
-                    twoWayDisplay.CurrentInputFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(CurrentInputFeedback_OutputChange);
-
-
-                    InputNumberFeedback.LinkInputSig(trilist.UShortInput[joinMap.InputSelect]);
-                }
-
-				// Power Off
-				trilist.SetSigTrueAction(joinMap.PowerOff, () =>
-					{
-						InputNumber = 102;
-						InputNumberFeedback.FireUpdate();
-						displayDevice.PowerOff();
-					});
-
-				displayDevice.PowerIsOnFeedback.OutputChange += new EventHandler<FeedbackEventArgs>(PowerIsOnFeedback_OutputChange);
-				displayDevice.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff]);
-
-				// PowerOn
-				trilist.SetSigTrueAction(joinMap.PowerOn, () =>
-					{
-						InputNumber = 0;
-						InputNumberFeedback.FireUpdate();
-						displayDevice.PowerOn();
-					});
-
-				
-				displayDevice.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn]);
-
-				int count = 1;
-				foreach (var input in displayDevice.InputPorts)
-				{
-					InputKeys.Add(input.Key.ToString());
-					var tempKey = InputKeys.ElementAt(count - 1);
-					trilist.SetSigTrueAction((ushort)(joinMap.InputSelectOffset + count), () => { displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector); });
-                    Debug.Console(2, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}", joinMap.InputSelectOffset + count, displayDevice.InputPorts[tempKey].Key.ToString());
-					trilist.StringInput[(ushort)(joinMap.InputNamesOffset + count)].StringValue = input.Key.ToString();
-					count++;
-				}
-
-                Debug.Console(2, displayDevice, "Setting Input Select Action on Analog Join {0}", joinMap.InputSelect);
-				trilist.SetUShortSigAction(joinMap.InputSelect, (a) =>
-				{
-					if (a == 0)
-					{
-						displayDevice.PowerOff();
-						InputNumber = 0;
-					}
-					else if (a > 0 && a < displayDevice.InputPorts.Count && a != InputNumber)
-					{
-						displayDevice.ExecuteSwitch(displayDevice.InputPorts.ElementAt(a - 1).Selector);
-						InputNumber = a;
-					}
-					else if (a == 102)
-					{
-						displayDevice.PowerToggle();
-
-					}
-                    if (twoWayDisplay != null)
-					    InputNumberFeedback.FireUpdate();
+					inputNumber = 102;
+					inputNumberFeedback.FireUpdate();
+					displayDevice.PowerOff();
 				});
 
-
-                var volumeDisplay = displayDevice as IBasicVolumeControls;
-                if (volumeDisplay != null)
+			displayDevice.PowerIsOnFeedback.OutputChange += new EventHandler<FeedbackEventArgs>( (o,a) => {
+                if (!a.BoolValue)
                 {
-                    trilist.SetBoolSigAction(joinMap.VolumeUp, (b) => volumeDisplay.VolumeUp(b));
-                    trilist.SetBoolSigAction(joinMap.VolumeDown, (b) => volumeDisplay.VolumeDown(b));
-                    trilist.SetSigTrueAction(joinMap.VolumeMute, () => volumeDisplay.MuteToggle());
+                    inputNumber = 102;
+                    inputNumberFeedback.FireUpdate();
 
-                    var volumeDisplayWithFeedback = volumeDisplay as IBasicVolumeWithFeedback;
-                    if(volumeDisplayWithFeedback != null)
-                    {
-                        trilist.SetUShortSigAction(joinMap.VolumeLevel, new Action<ushort>((u) => volumeDisplayWithFeedback.SetVolume(u)));
-                        volumeDisplayWithFeedback.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[joinMap.VolumeLevel]);
-                        volumeDisplayWithFeedback.MuteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VolumeMute]);
-                    }
                 }
+                else
+                {
+                    inputNumber = 0;
+                    inputNumberFeedback.FireUpdate();
+                }
+            });
+
+			displayDevice.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff]);
+
+			// PowerOn
+			trilist.SetSigTrueAction(joinMap.PowerOn, () =>
+				{
+					inputNumber = 0;
+					inputNumberFeedback.FireUpdate();
+					displayDevice.PowerOn();
+				});
+
+			
+			displayDevice.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn]);
+
+			int count = 1;
+			foreach (var input in displayDevice.InputPorts)
+			{
+				inputKeys.Add(input.Key.ToString());
+				var tempKey = inputKeys.ElementAt(count - 1);
+				trilist.SetSigTrueAction((ushort)(joinMap.InputSelectOffset + count), () => { displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector); });
+                Debug.Console(2, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}", joinMap.InputSelectOffset + count, displayDevice.InputPorts[tempKey].Key.ToString());
+				trilist.StringInput[(ushort)(joinMap.InputNamesOffset + count)].StringValue = input.Key.ToString();
+				count++;
 			}
+
+            Debug.Console(2, displayDevice, "Setting Input Select Action on Analog Join {0}", joinMap.InputSelect);
+			trilist.SetUShortSigAction(joinMap.InputSelect, (a) =>
+			{
+				if (a == 0)
+				{
+					displayDevice.PowerOff();
+					inputNumber = 0;
+				}
+				else if (a > 0 && a < displayDevice.InputPorts.Count && a != inputNumber)
+				{
+					displayDevice.ExecuteSwitch(displayDevice.InputPorts.ElementAt(a - 1).Selector);
+					inputNumber = a;
+				}
+				else if (a == 102)
+				{
+					displayDevice.PowerToggle();
+
+				}
+                if (twoWayDisplay != null)
+				    inputNumberFeedback.FireUpdate();
+			});
+
+
+            var volumeDisplay = displayDevice as IBasicVolumeControls;
+            if (volumeDisplay != null)
+            {
+                trilist.SetBoolSigAction(joinMap.VolumeUp, (b) => volumeDisplay.VolumeUp(b));
+                trilist.SetBoolSigAction(joinMap.VolumeDown, (b) => volumeDisplay.VolumeDown(b));
+                trilist.SetSigTrueAction(joinMap.VolumeMute, () => volumeDisplay.MuteToggle());
+
+                var volumeDisplayWithFeedback = volumeDisplay as IBasicVolumeWithFeedback;
+                if(volumeDisplayWithFeedback != null)
+                {
+                    trilist.SetUShortSigAction(joinMap.VolumeLevel, new Action<ushort>((u) => volumeDisplayWithFeedback.SetVolume(u)));
+                    volumeDisplayWithFeedback.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[joinMap.VolumeLevel]);
+                    volumeDisplayWithFeedback.MuteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VolumeMute]);
+                }
+            }
+		}
 
 		static void CurrentInputFeedback_OutputChange(object sender, FeedbackEventArgs e)
 		{
@@ -133,22 +148,6 @@ namespace PepperDash.Essentials.Bridges
 
 		}
 
-		static void PowerIsOnFeedback_OutputChange(object sender, FeedbackEventArgs e)
-		{
-
-			// Debug.Console(0, "PowerIsOnFeedback_OutputChange {0}",  e.BoolValue);
-			if (!e.BoolValue)
-			{
-				InputNumber = 102;
-				InputNumberFeedback.FireUpdate();
-
-			}
-			else
-			{
-				InputNumber = 0;
-				InputNumberFeedback.FireUpdate();
-			}
-		}
 	}
    
 }

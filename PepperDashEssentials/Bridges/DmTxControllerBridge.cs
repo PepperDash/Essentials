@@ -12,16 +12,20 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.DM;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Bridges
 {
     public static class DmTxControllerApiExtensions
     {
         public static void LinkToApi(this DmTxControllerBase tx, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as DmTxControllerJoinMap;
+            DmTxControllerJoinMap joinMap = new DmTxControllerJoinMap();
 
-            if (joinMap == null)
-                joinMap = new DmTxControllerJoinMap();
+            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<DmTxControllerJoinMap>(joinMapSerialized);
 
             joinMap.OffsetJoinNumbers(joinStart);
 

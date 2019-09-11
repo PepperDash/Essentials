@@ -9,16 +9,20 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.DM;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Bridges
 {
     public static class DmRmcControllerApiExtensions
     {
         public static void LinkToApi(this DmRmcControllerBase rmc, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as DmRmcControllerJoinMap;
+            DmRmcControllerJoinMap joinMap = new DmRmcControllerJoinMap();
 
-            if (joinMap == null)
-                joinMap = new DmRmcControllerJoinMap();
+            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<DmRmcControllerJoinMap>(joinMapSerialized);
 
             joinMap.OffsetJoinNumbers(joinStart);
 

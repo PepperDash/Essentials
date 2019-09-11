@@ -9,18 +9,20 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM.AirMedia;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Bridges
 {
 	public static class AirMediaControllerApiExtensions
 	{
         public static void LinkToApi(this AirMediaController airMedia, BasicTriList trilist, uint joinStart, string joinMapKey)
 		{
-			var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as AirMediaControllerJoinMap;
+            AirMediaControllerJoinMap joinMap = new AirMediaControllerJoinMap();
 
-			if (joinMap == null)
-			{
-				joinMap = new AirMediaControllerJoinMap();
-			}
+            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<AirMediaControllerJoinMap>(joinMapSerialized);
 
 			joinMap.OffsetJoinNumbers(joinStart);
 

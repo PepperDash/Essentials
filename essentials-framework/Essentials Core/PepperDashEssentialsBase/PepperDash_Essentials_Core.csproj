@@ -82,7 +82,7 @@
     </Reference>
     <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimplSharpNewtonsoft, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
@@ -134,6 +134,7 @@
     <Compile Include="Feedbacks\StringFeedback.cs" />
     <Compile Include="Global\JobTimer.cs" />
     <Compile Include="Global\Scheduler.cs" />
+    <Compile Include="JoinMaps\JoinMapBase.cs" />
     <Compile Include="Lighting\Lighting Interfaces.cs" />
     <Compile Include="Lighting\LightingBase.cs" />
     <Compile Include="Monitoring\SystemMonitorController.cs" />

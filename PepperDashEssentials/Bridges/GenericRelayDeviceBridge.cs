@@ -5,10 +5,11 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 
-
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.CrestronIO;
+
+using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Bridges
 {
@@ -16,10 +17,12 @@ namespace PepperDash.Essentials.Bridges
     {
         public static void LinkToApi(this GenericRelayDevice relay, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            var joinMap = JoinMapHelper.GetJoinMapForDevice(joinMapKey) as GenericRelayControllerJoinMap;
+            GenericRelayControllerJoinMap joinMap = new GenericRelayControllerJoinMap();
 
-            if (joinMap == null)
-                joinMap = new GenericRelayControllerJoinMap();
+            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<GenericRelayControllerJoinMap>(joinMapSerialized);
 
             joinMap.OffsetJoinNumbers(joinStart);
 
