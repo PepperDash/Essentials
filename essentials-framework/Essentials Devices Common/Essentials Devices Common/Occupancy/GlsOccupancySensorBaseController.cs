@@ -222,14 +222,14 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             OccSensor.DecrementPirSensitivityInVacantState.BoolValue = pressRelease;
         }
 
-        public void ForceOccupied(bool state)
+        public void ForceOccupied()
         {
-            OccSensor.ForceOccupied.BoolValue = state;
+            OccSensor.ForceOccupied.BoolValue = true;
         }
 
-        public void ForceVacant(bool state)
+        public void ForceVacant()
         {
-            OccSensor.ForceVacant.BoolValue = state;
+            OccSensor.ForceVacant.BoolValue = true;
         }
 
         public void EnableRawStates(bool state)
