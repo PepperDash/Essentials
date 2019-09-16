@@ -73,7 +73,7 @@ namespace PepperDash.Essentials.DM
 
             RemoteEndDetectedFeedback = new BoolFeedback(() => TxRxPair.RemoteEndDetectedOnFeedback.BoolValue);
 
-            AutoRouteOnFeedback = new BoolFeedback(() => TxRxPair.ReceiverAutoModeOnFeedback.BoolValue);
+            AutoRouteOnFeedback = new BoolFeedback(() => TxRxPair.TransmitterAutoModeOnFeedback.BoolValue);
 
             PriorityRoutingOnFeedback = new BoolFeedback(() => TxRxPair.PriorityRoutingOnFeedback.BoolValue);
 
@@ -152,7 +152,7 @@ namespace PepperDash.Essentials.DM
         {
             if (args.EventId == DMSystemEventIds.RemoteEndDetectedEventId)
                 RemoteEndDetectedFeedback.FireUpdate();
-            else if (args.EventId == DMSystemEventIds.ReceiverAutoModeOnEventId)
+            else if (args.EventId == DMSystemEventIds.TransmitterAutoModeOnEventId)
                 AutoRouteOnFeedback.FireUpdate();
             else if (args.EventId == DMSystemEventIds.PriorityRoutingOnEventId)
                 PriorityRoutingOnFeedback.FireUpdate();

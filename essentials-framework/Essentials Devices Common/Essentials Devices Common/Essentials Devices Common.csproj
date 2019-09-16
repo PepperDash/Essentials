@@ -109,6 +109,7 @@
     <Compile Include="Codec\iCodecAudio.cs" />
     <Compile Include="ImageProcessors\TVOneCorio.cs" />
     <Compile Include="ImageProcessors\TVOneCorioPropertiesConfig.cs" />
+    <Compile Include="Occupancy\GlsOdtOccupancySensorController.cs" />
     <Compile Include="Power Controllers\Digitallogger.cs" />
     <Compile Include="Power Controllers\DigitalLoggerPropertiesConfig.cs" />
     <Compile Include="Evertz\EvertsEndpointStatusServer.cs" />
@@ -151,8 +152,8 @@
     <Compile Include="Generic\GenericSource.cs" />
     <Compile Include="Microphone\MicrophonePrivacyController.cs" />
     <Compile Include="Microphone\MicrophonePrivacyControllerConfig.cs" />
-    <Compile Include="Occupancy\EssentialsGlsOccupancySensorBaseController.cs" />
-    <Compile Include="Occupancy\EssentialsOccupancyAggregator.cs" />
+    <Compile Include="Occupancy\GlsOccupancySensorBaseController.cs" />
+    <Compile Include="Occupancy\IOccupancyStatusProviderAggregator.cs" />
     <Compile Include="Occupancy\iOccupancyStatusProvider.cs" />
     <Compile Include="PC\InRoomPc.cs" />
     <Compile Include="PC\Laptop.cs" />
