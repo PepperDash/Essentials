@@ -339,7 +339,7 @@ namespace PepperDash.Essentials.Devices.Common
                 occSensor = new GlsOirCCn(comm.CresnetIdInt, Global.ControlSystem);
 
                 if (occSensor != null)
-                    return new EssentialsGlsOccupancySensorBaseController(key, name, occSensor);
+                    return new GlsOccupancySensorBaseController(key, name, occSensor);
                 else
                     Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
             }
@@ -348,12 +348,10 @@ namespace PepperDash.Essentials.Devices.Common
             {
                 var comm = CommFactory.GetControlPropertiesConfig(dc);
 
-                GlsOccupancySensorBase occSensor = null;
-
-                occSensor = new GlsOdtCCn(comm.CresnetIdInt, Global.ControlSystem);
+                var occSensor = new GlsOdtCCn(comm.CresnetIdInt, Global.ControlSystem);
 
                 if (occSensor != null)
-                    return new EssentialsGlsOccupancySensorBaseController(key, name, occSensor);
+                    return new GlsOdtOccupancySensorController(key, name, occSensor);
                 else
                     Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
             }

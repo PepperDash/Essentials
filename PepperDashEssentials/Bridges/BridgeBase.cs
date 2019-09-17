@@ -158,6 +158,11 @@ namespace PepperDash.Essentials.Bridges
                             (device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
+                        else if (device is PepperDash.Essentials.Devices.Common.Occupancy.GlsOccupancySensorBaseController)
+                        {
+                            (device as PepperDash.Essentials.Devices.Common.Occupancy.GlsOccupancySensorBaseController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
                     }
                 }
 

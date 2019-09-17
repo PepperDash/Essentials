@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
     /// <summary>
     /// Aggregates the RoomIsOccupied feedbacks of one or more IOccupancyStatusProvider objects
     /// </summary>
-    public class EssentialsOccupancyAggregator : Device, IOccupancyStatusProvider
+    public class IOccupancyStatusProviderAggregator : Device, IOccupancyStatusProvider
     {
         /// <summary>
         /// Aggregated feedback of all linked IOccupancyStatusProvider devices
@@ -27,7 +27,7 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
         private BoolFeedbackOr AggregatedOccupancyStatus;
 
-        public EssentialsOccupancyAggregator(string key, string name) 
+        public IOccupancyStatusProviderAggregator(string key, string name) 
             : base(key, name)
         {
             AggregatedOccupancyStatus = new BoolFeedbackOr();

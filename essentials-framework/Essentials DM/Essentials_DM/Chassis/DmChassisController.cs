@@ -295,7 +295,7 @@ namespace PepperDash.Essentials.DM
                 var cecPort = inputCard.HdmiInput as ICec;
                 AddHdmiInCardPorts(number, cecPort);
             }
-            else if (type == "dmcHdDsp")
+            else if (type == "dmchddsp")
             {
                 var inputCard = new DmcHdDsp(number, this.Chassis);
                 var cecPort = inputCard.HdmiInput as ICec;
@@ -307,7 +307,7 @@ namespace PepperDash.Essentials.DM
                 var cecPort = inputCard.HdmiInput as ICec;
                 AddHdmiInCardPorts(number, cecPort);
             }
-            else if (type == "dmc4kHdDsp")
+            else if (type == "dmc4khddsp")
             {
                 var inputCard = new Dmc4kHdDsp(number, this.Chassis);
                 var cecPort = inputCard.HdmiInput as ICec;
@@ -604,7 +604,7 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void AddOutputPortWithDebug(string cardName, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, object selector, ICec cecPort)
         {
-            var portKey = string.Format("outputCard{0}--{1}", cardName, portName);
+            var portKey = string.Format("{0}--{1}", cardName, portName);
             Debug.Console(2, this, "Adding output port '{0}'", portKey);
             var outputPort = new RoutingOutputPort(portKey, sigType, portType, selector, this);
 
