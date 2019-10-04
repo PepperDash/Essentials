@@ -81,6 +81,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// 72
 			/// </summary>
 			public const uint SourceHasChanged = 71;
+
 			/// <summary>
 			/// 261 - The start of the range of speed dial visibles
 			/// </summary>
@@ -98,9 +99,17 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// </summary>
 			public const uint ShowCameraWhenNotInCall = 503;
 			/// <summary>
+			/// 504
+			/// </summary>
+			public const uint UseSourceEnabled = 504;
+			/// <summary>
 			/// 601
 			/// </summary>
-			public const uint SourceShareDisableStartJoin = 601;
+			public const uint SourceShareDisableJoinStart = 601;
+			/// <summary>
+			/// 621
+			/// </summary>
+			public const uint SourceIsEnabledJoinStart = 621;
 
 		}
 
@@ -121,7 +130,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			/// <summary>
 			/// 101
 			/// </summary>
-			public const uint VolumeSliderCount = 101;
+			public const uint NumberOfAuxFaders = 101;
 		}
 
 		public class StringJoin
@@ -344,6 +353,10 @@ namespace PepperDash.Essentials.Room.Cotija
 				EISC.PulseBool(BoolJoin.MasterVolumeIsMuted)));
 			Parent.AddAction(@"/room/room1/volumes/master/privacyMuteToggle", new Action(() =>
 				EISC.PulseBool(BoolJoin.PrivacyMute)));
+
+
+			// /xyzxyz/volumes/master/muteToggle ---> BoolInput[1]
+
 			for (uint i = 2; i <= 7; i++)
 			{
 				var index = i;
@@ -410,6 +423,10 @@ namespace PepperDash.Essentials.Room.Cotija
                         }
                     }
                 }));
+
+			// map MasterVolumeIsMuted join -> status/volumes/master/muted
+			// 
+
 			EISC.SetBoolSigAction(BoolJoin.MasterVolumeIsMuted, b =>
                 PostStatusMessage(new
                 {
@@ -464,6 +481,12 @@ namespace PepperDash.Essentials.Room.Cotija
 				});
 			}
 
+			EISC.SetUShortSigAction(UshortJoin.NumberOfAuxFaders, u => 
+				PostStatusMessage(new {
+					volumes = new {
+						numberOfAuxFaders = u,
+					}
+				}));
 
 			// shutdown things
 			EISC.SetSigTrueAction(BoolJoin.ShutdownCancel, new Action(() =>
@@ -558,7 +581,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			rmProps.VideoCodecKey = "videoCodec";
 
 			// volume control names
-			var volCount = EISC.UShortOutput[UshortJoin.VolumeSliderCount].UShortValue;
+			var volCount = EISC.UShortOutput[UshortJoin.NumberOfAuxFaders].UShortValue;
 
             //// use Volumes object or?
             //rmProps.VolumeSliderNames = new List<string>();
@@ -604,12 +627,17 @@ namespace PepperDash.Essentials.Room.Cotija
 			for (uint i = 0; i <= 19; i++)
 			{
 				var name = EISC.StringOutput[StringJoin.SourceNameJoinStart + i].StringValue;
-				if(string.IsNullOrEmpty(name))
+				if (EISC.BooleanOutput[BoolJoin.UseSourceEnabled].BoolValue
+					&& !EISC.BooleanOutput[BoolJoin.SourceIsEnabledJoinStart + i].BoolValue)
+				{
+					continue;
+				}		
+				else if(!EISC.BooleanOutput[BoolJoin.UseSourceEnabled].BoolValue && string.IsNullOrEmpty(name))
 					break;
 				var icon = EISC.StringOutput[StringJoin.SourceIconJoinStart + i].StringValue;
 				var key = EISC.StringOutput[StringJoin.SourceKeyJoinStart + i].StringValue;
 				var type = EISC.StringOutput[StringJoin.SourceTypeJoinStart + i].StringValue;
-				var disableShare = EISC.BooleanOutput[BoolJoin.SourceShareDisableStartJoin + i].BoolValue;
+				var disableShare = EISC.BooleanOutput[BoolJoin.SourceShareDisableJoinStart + i].BoolValue;
 
 				Debug.Console(0, this, "Adding source {0} '{1}'", key, name);
 				var newSLI = new SourceListItem{
@@ -745,7 +773,7 @@ namespace PepperDash.Essentials.Room.Cotija
 		{
 			if (ConfigIsLoaded)
 			{
-                var count = EISC.UShortOutput[101].UShortValue;
+                var count = EISC.UShortOutput[UshortJoin.NumberOfAuxFaders].UShortValue;
 
                 Debug.Console(1, this, "The Fader Count is : {0}", count);
 
@@ -776,6 +804,7 @@ namespace PepperDash.Essentials.Room.Cotija
 				volumes.Master.PrivacyMuted = EISC.BooleanOutput[BoolJoin.PrivacyMute].BoolValue;
 
                 volumes.AuxFaders = auxFaderDict;
+				volumes.NumberOfAuxFaders = EISC.UShortInput[UshortJoin.NumberOfAuxFaders].UShortValue;
 
                 PostStatusMessage(new
                     {
@@ -862,6 +891,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 			{
 				{ "laptop", "pc" },
+				{ "pc", "pc" },
 				{ "wireless", "genericsource" },
 				{ "iptv", "settopbox" }
 
