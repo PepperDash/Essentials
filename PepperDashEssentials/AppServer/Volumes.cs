@@ -16,6 +16,9 @@ namespace PepperDash.Essentials.Room.Cotija
 		[JsonProperty("auxFaders")]
 		public Dictionary<string, Volume> AuxFaders { get; set; }
 
+		[JsonProperty("numberOfAuxFaders")]
+		public int NumberOfAuxFaders { get; set; }
+
 		public Volumes()
 		{
 			AuxFaders = new Dictionary<string, Volume>();	

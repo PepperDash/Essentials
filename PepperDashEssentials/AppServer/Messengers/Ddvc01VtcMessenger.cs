@@ -132,6 +132,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// 842
 		/// </summary>
 		const uint BCameraLayout = 842;
+		/// <summary>
+		/// 843
+		/// </summary>
+		const uint BCameraSupportsAutoMode = 843;
+		/// <summary>
+		/// 844
+		/// </summary>
+		const uint BCameraSupportsOffMode = 844;
 
 
 		/********* Ushorts *********/
@@ -292,6 +300,21 @@ namespace PepperDash.Essentials.AppServer.Messengers
 					IncomingCallItem = null;
 				}
 				PostCallsList();
+			});
+
+			EISC.SetBoolSigAction(BCameraSupportsAutoMode, b =>
+			{
+				PostStatusMessage(new
+				{	
+					cameraSupportsAutoMode = b
+				});
+			});
+			EISC.SetBoolSigAction(BCameraSupportsOffMode, b =>
+			{
+				PostStatusMessage(new
+				{
+					cameraSupportsOffMode = b
+				});
 			});
 
 			// Directory insanity
@@ -455,6 +478,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				calls = GetCurrentCallList(),
 				cameraMode = GetCameraMode(),
 				cameraSelfView = EISC.GetBool(BCameraSelfView),
+				cameraSupportsAutoMode = EISC.GetBool(BCameraSupportsAutoMode),
+				cameraSupportsOffMode = EISC.GetBool(BCameraSupportsOffMode),
 				currentCallString = EISC.GetString(SCurrentCallNumber),
 				currentDialString = EISC.GetString(SCurrentDialString),
 				directoryContactSelected = new
