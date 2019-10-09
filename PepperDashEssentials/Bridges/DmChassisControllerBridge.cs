@@ -57,7 +57,7 @@ namespace PepperDash.Essentials.Bridges
                     var txKey = dmChassis.TxDictionary[ioSlot];
                     var basicTxDevice = DeviceManager.GetDeviceForKey(txKey) as BasicDmTxControllerBase;
 
-                    var txDevice = basicTxDevice as DmTxControllerBase;
+                    var advancedTxDevice = basicTxDevice as DmTxControllerBase;
 
                     if (dmChassis.Chassis is DmMd8x8Cpu3 || dmChassis.Chassis is DmMd8x8Cpu3rps
                         || dmChassis.Chassis is DmMd16x16Cpu3 || dmChassis.Chassis is DmMd16x16Cpu3rps
@@ -67,24 +67,27 @@ namespace PepperDash.Essentials.Bridges
                     }
                     else
                     {
-                        if (txDevice != null)
+                        if (advancedTxDevice != null)
                         {
-                            if(!(txDevice is BasicDmTxControllerBase))
-                                txDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
-                            else
-                                dmChassis.InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+                            advancedTxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+                            Debug.Console(2, "Linking Tx Online Feedback from Advanced Transmitter at input {0}", ioSlot);
+                        }
+                        else if (dmChassis.InputEndpointOnlineFeedbacks[ioSlot] != null)
+                        {
+                            Debug.Console(2, "Linking Tx Online Feedback from Input Card {0}", ioSlot);
+                            dmChassis.InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+                            
                         }
                     }
 
-                    if (basicTxDevice != null && txDevice == null)
+                    if (basicTxDevice != null && advancedTxDevice == null)
                         trilist.BooleanInput[joinMap.TxAdvancedIsPresent + ioSlot].BoolValue = true;
 
-
-                    if (txDevice != null)
+                    if (advancedTxDevice != null)
                     {
-                        txDevice.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
+                        advancedTxDevice.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
                     }
-                    else
+                    else if(advancedTxDevice == null || basicTxDevice != null)
                     {
                         dmChassis.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
 
@@ -131,18 +134,19 @@ namespace PepperDash.Essentials.Bridges
                 if (dmChassis.RxDictionary.ContainsKey(ioSlot))
                 {
                     Debug.Console(2, "Creating Rx Feedbacks {0}", ioSlot);
-                    var RxKey = dmChassis.RxDictionary[ioSlot];
-                    var RxDevice = DeviceManager.GetDeviceForKey(RxKey) as DmRmcControllerBase;
+                    var rxKey = dmChassis.RxDictionary[ioSlot];
+                    var rxDevice = DeviceManager.GetDeviceForKey(rxKey) as DmRmcControllerBase;
+                    var hdBaseTDevice = DeviceManager.GetDeviceForKey(rxKey) as DmHdBaseTControllerBase;
                     if (dmChassis.Chassis is DmMd8x8Cpu3 || dmChassis.Chassis is DmMd8x8Cpu3rps
                         || dmChassis.Chassis is DmMd16x16Cpu3 || dmChassis.Chassis is DmMd16x16Cpu3rps
-                        || dmChassis.Chassis is DmMd32x32Cpu3 || dmChassis.Chassis is DmMd32x32Cpu3rps)
+                        || dmChassis.Chassis is DmMd32x32Cpu3 || dmChassis.Chassis is DmMd32x32Cpu3rps || hdBaseTDevice != null)
                     {
                         dmChassis.OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
                     }
-                    else if (RxDevice != null)
+                    else if (rxDevice != null)
                     {
-                        RxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
-                    }
+                        rxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
+                    }          
                 }
 
                 // Feedback
