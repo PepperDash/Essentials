@@ -69,7 +69,10 @@ namespace PepperDash.Essentials.Bridges
                     {
                         if (txDevice != null)
                         {
-                            txDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+                            if(!(txDevice is BasicDmTxControllerBase))
+                                txDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+                            else
+                                dmChassis.InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
                         }
                     }
 

@@ -206,6 +206,7 @@
     <Compile Include="AppServer\Volumes.cs" />
     <Compile Include="Room\Emergency\EsentialsRoomEmergencyContactClosure.cs" />
     <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
+    <Compile Include="Room\Types\EssentialsNDisplayRoomBase.cs" />
     <Compile Include="Room\Types\EssentialsPresentationRoom.cs" />
     <Compile Include="Room\Types\EssentialsRoomBase.cs" />
     <Compile Include="Room\Config\EssentialsRoomConfig.cs" />
