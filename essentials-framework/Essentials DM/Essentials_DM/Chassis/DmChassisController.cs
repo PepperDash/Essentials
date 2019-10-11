@@ -600,7 +600,7 @@ namespace PepperDash.Essentials.DM
                 AddOutputPortWithDebug(string.Format("outputCard{0}", number), "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
                 AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber, 2 * (number - 1) + 2);
             }
-            else if (type == "dmcStro")
+            else if (type == "dmcstro")
             {
                 var outputCard = new DmcStroSingle(number, Chassis);
                 AddOutputPortWithDebug(string.Format("outputCard{0}", number), "streamOut", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming, 2 * (number - 1) + 1);
@@ -647,10 +647,15 @@ namespace PepperDash.Essentials.DM
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
             var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this);
 
-            if (cecPort != null)
-                inputPort.Port = cecPort;
+            if (inputPort != null)
+            {
+                if (cecPort != null)
+                    inputPort.Port = cecPort;
 
-            InputPorts.Add(inputPort);
+                InputPorts.Add(inputPort);
+            }
+            else
+                Debug.Console(2, this, "inputPort is null");
         }
 
         /// <summary>

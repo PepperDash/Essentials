@@ -183,6 +183,7 @@
     <Compile Include="HttpApiHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />
+    <Compile Include="Room\Config\EssentialsNDisplayRoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\DDVC01RoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsPresentationPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsHuddleRoomPropertiesConfig.cs" />
