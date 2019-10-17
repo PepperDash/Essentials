@@ -23,6 +23,8 @@ namespace PepperDash.Essentials.DM
 	/// </summary>
 	public class DmChassisController : CrestronGenericBaseDevice, IRoutingInputsOutputs, IRouting, IHasFeedback
     {
+        public DMChassisPropertiesConfig PropertiesConfig { get; set; }
+
 		public DmMDMnxn Chassis { get; private set; }
 		
 		// Feedbacks for EssentialDM
@@ -91,10 +93,10 @@ namespace PepperDash.Essentials.DM
 				else if (type == "dmmd32x32cpu3") { chassis = new DmMd32x32Cpu3(ipid, Global.ControlSystem); }
 				else if (type == "dmmd32x32cpu3rps") { chassis = new DmMd32x32Cpu3rps(ipid, Global.ControlSystem); }
 
-				if (chassis == null)
-				{
-					return null;
-				}
+                if (chassis == null)
+                {
+                    return null;
+                }
 
 				var controller = new DmChassisController(key, name, chassis);
 				// add the cards and port names
@@ -126,6 +128,7 @@ namespace PepperDash.Essentials.DM
 
 				controller.InputNames = properties.InputNames;
 				controller.OutputNames = properties.OutputNames;
+                controller.PropertiesConfig = properties;
 				return controller;
 			}
 			catch (System.Exception e)
@@ -177,104 +180,154 @@ namespace PepperDash.Essentials.DM
             {
 				var tempX = x;
 
-				VideoOutputFeedbacks[tempX] = new IntFeedback(() => { 
-					if (Chassis.Outputs[tempX].VideoOutFeedback != null) { return (ushort)Chassis.Outputs[tempX].VideoOutFeedback.Number;} 
-					else { return 0; };
-					});
-				AudioOutputFeedbacks[tempX] = new IntFeedback(() => {
-					if (Chassis.Outputs[tempX].AudioOutFeedback != null) { return (ushort)Chassis.Outputs[tempX].AudioOutFeedback.Number; } 
-					else { return 0; };
-					});
-                UsbOutputRoutedToFeebacks[tempX] = new IntFeedback(() => { 
-                    if(Chassis.Outputs[tempX].USBRoutedToFeedback != null) { return (ushort)Chassis.Outputs[tempX].USBRoutedToFeedback.Number; }
-                    else {return 0; };
-                    });
-                UsbInputRoutedToFeebacks[tempX] = new IntFeedback(() => { 
-                    if(Chassis.Inputs[tempX].USBRoutedToFeedback != null) { return (ushort)Chassis.Inputs[tempX].USBRoutedToFeedback.Number; }
-                    else {return 0; };
-                    });
-				VideoInputSyncFeedbacks[tempX] = new BoolFeedback(() => {			
-					return Chassis.Inputs[tempX].VideoDetectedFeedback.BoolValue;
-					});
-				InputNameFeedbacks[tempX] = new StringFeedback(() => {
-					    if (Chassis.Inputs[tempX].NameFeedback != null) 
-                        {
-						     return Chassis.Inputs[tempX].NameFeedback.StringValue;
-					    }
-					    else 
-                        {
-						    return "";
-					    }				
-					});
-				OutputNameFeedbacks[tempX] = new StringFeedback(() => {
-					    if (Chassis.Outputs[tempX].NameFeedback != null) 
-                        {
-						    return Chassis.Outputs[tempX].NameFeedback.StringValue;
-					    }
-					    else 
-                        {
-						    return "";
-					    }
-					});
-				OutputVideoRouteNameFeedbacks[tempX] = new StringFeedback(() => 
-				{
-					    if (Chassis.Outputs[tempX].VideoOutFeedback != null) 
-                        {
-						    return Chassis.Outputs[tempX].VideoOutFeedback.NameFeedback.StringValue;
-					    }
-					    else 
-                        {
-						    return "";
-					    }
-					});
-                OutputAudioRouteNameFeedbacks[tempX] = new StringFeedback(() =>
+                if (Chassis.Outputs[tempX] != null)
+                {
+                    VideoOutputFeedbacks[tempX] = new IntFeedback(() =>
                     {
-                        if (Chassis.Outputs[tempX].AudioOutFeedback != null)
+                        if (Chassis.Outputs[tempX].VideoOutFeedback != null) { return (ushort)Chassis.Outputs[tempX].VideoOutFeedback.Number; }
+                        else { return 0; };
+                    });
+                    AudioOutputFeedbacks[tempX] = new IntFeedback(() =>
+                    {
+                        if (Chassis.Outputs[tempX].AudioOutFeedback != null) { return (ushort)Chassis.Outputs[tempX].AudioOutFeedback.Number; }
+                        else { return 0; };
+                    });
+                    UsbOutputRoutedToFeebacks[tempX] = new IntFeedback(() =>
+                    {
+                        if (Chassis.Outputs[tempX].USBRoutedToFeedback != null) { return (ushort)Chassis.Outputs[tempX].USBRoutedToFeedback.Number; }
+                        else { return 0; };
+                    });
+
+                    OutputNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (Chassis.Outputs[tempX].NameFeedback != null)
                         {
-                            return Chassis.Outputs[tempX].AudioOutFeedback.NameFeedback.StringValue;
+                            return Chassis.Outputs[tempX].NameFeedback.StringValue;
                         }
                         else
                         {
                             return "";
+                        }
+                    });
+                    OutputVideoRouteNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (Chassis.Outputs[tempX].VideoOutFeedback != null)
+                        {
+                            return Chassis.Outputs[tempX].VideoOutFeedback.NameFeedback.StringValue;
+                        }
+                        else
+                        {
+                            return "";
+                        }
+                    });
+                    OutputAudioRouteNameFeedbacks[tempX] = new StringFeedback(() =>
+                        {
+                            if (Chassis.Outputs[tempX].AudioOutFeedback != null)
+                            {
+                                return Chassis.Outputs[tempX].AudioOutFeedback.NameFeedback.StringValue;
+                            }
+                            else
+                            {
+                                return "";
 
+                            }
+                        });
+
+                    OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => 
+                    {
+                        return Chassis.Outputs[tempX].EndpointOnlineFeedback;
+                    });
+                }
+
+                if (Chassis.Inputs[tempX] != null)
+                {
+                    UsbInputRoutedToFeebacks[tempX] = new IntFeedback(() =>
+                    {
+                        if (Chassis.Inputs[tempX].USBRoutedToFeedback != null) { return (ushort)Chassis.Inputs[tempX].USBRoutedToFeedback.Number; }
+                        else { return 0; };
+                    });
+                    VideoInputSyncFeedbacks[tempX] = new BoolFeedback(() =>
+                    {
+                        if (Chassis.Inputs[tempX].VideoDetectedFeedback != null)
+                            return Chassis.Inputs[tempX].VideoDetectedFeedback.BoolValue;
+                        else
+                            return false;
+                    });
+                    InputNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (Chassis.Inputs[tempX].NameFeedback != null)
+                        {
+                            return Chassis.Inputs[tempX].NameFeedback.StringValue;
+                        }
+                        else
+                        {
+                            return "";
                         }
                     });
 
-				InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return Chassis.Inputs[tempX].EndpointOnlineFeedback; });
-
-                OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return Chassis.Outputs[tempX].EndpointOnlineFeedback; });
-
-                InputCardHdcpCapabilityFeedbacks[tempX] = new IntFeedback(() => 
-                {
-                    var inputCard = Chassis.Inputs[tempX];
-
-                    if (inputCard.Card is DmcHd)
+                    InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => 
                     {
-                        InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+                        return Chassis.Inputs[tempX].EndpointOnlineFeedback;
+                    });
 
-                        if ((inputCard.Card as DmcHd).HdmiInput.HdcpSupportOnFeedback.BoolValue)
-                            return 1;
+                    InputCardHdcpCapabilityFeedbacks[tempX] = new IntFeedback(() =>
+                    {
+                        var inputCard = Chassis.Inputs[tempX];
+
+                        if (inputCard.Card is DmcHd)
+                        {
+                            InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+
+                            if ((inputCard.Card as DmcHd).HdmiInput.HdcpSupportOnFeedback.BoolValue)
+                                return 1;
+                            else
+                                return 0;
+                        }
+                        else if (inputCard.Card is DmcHdDsp)
+                        {
+                            InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+
+                            if ((inputCard.Card as DmcHdDsp).HdmiInput.HdcpSupportOnFeedback.BoolValue)
+                                return 1;
+                            else
+                                return 0;
+                        }
+                        else if (inputCard.Card is Dmc4kHdBase)
+                        {
+                            InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
+
+                            return (int)(inputCard.Card as Dmc4kHdBase).HdmiInput.HdcpReceiveCapability;
+                        }
+                        else if (inputCard.Card is Dmc4kCBase)
+                        {
+                            if (PropertiesConfig.InputSlotSupportsHdcp2[tempX])
+                            {
+                                InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+
+                                return (int)(inputCard.Card as Dmc4kCBase).DmInput.HdcpReceiveCapability;
+                            }
+                            else if ((inputCard.Card as Dmc4kCBase).DmInput.HdcpSupportOnFeedback.BoolValue)
+                                return 1;
+                            else
+                                return 0;
+                        }
+                        else if (inputCard.Card is Dmc4kCDspBase)
+                        {
+                            if (PropertiesConfig.InputSlotSupportsHdcp2[tempX])
+                            {
+                                InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+
+                                return (int)(inputCard.Card as Dmc4kCDspBase).DmInput.HdcpReceiveCapability;
+                            }
+                            else if ((inputCard.Card as Dmc4kCDspBase).DmInput.HdcpSupportOnFeedback.BoolValue)
+                                return 1;
+                            else
+                                return 0;
+                        }
                         else
                             return 0;
-                    }
-                    else if (inputCard.Card is DmcHdDsp)
-                    {
-                        InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
-
-                        if ((inputCard.Card as DmcHdDsp).HdmiInput.HdcpSupportOnFeedback.BoolValue)
-                            return 1;
-                        else
-                            return 0;
-                    }
-                    else if (inputCard.Card is Dmc4kHdBase)
-                    {
-                        InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
-
-                        return (int)(inputCard.Card as Dmc4kHdBase).HdmiInput.HdcpReceiveCapability;
-                    }
-                    else
-                        return 0;
-                });
+                    });
+                }
 			}
 		}
 
@@ -327,33 +380,39 @@ namespace PepperDash.Essentials.DM
             }
             else if (type == "dmcc")
             {
-                new DmcC(number, this.Chassis);
-                AddDmInCardPorts(number);
+                var inputCard = new DmcC(number, this.Chassis);
+                var cecPort = inputCard.DmInput as ICec;
+                AddDmInCardPorts(number, cecPort);
             }
             else if (type == "dmccdsp")
             {
-                new DmcCDsp(number, this.Chassis);
-                AddDmInCardPorts(number);
+                var inputCard = new DmcCDsp(number, this.Chassis);
+                var cecPort = inputCard.DmInput as ICec;
+                AddDmInCardPorts(number, cecPort);
             }
             else if (type == "dmc4kc")
             {
-                new Dmc4kC(number, this.Chassis);
-                AddDmInCardPorts(number);
+                var inputCard = new Dmc4kC(number, this.Chassis);
+                var cecPort = inputCard.DmInput as ICec;
+                AddDmInCardPorts(number, cecPort);
             }
             else if (type == "dmc4kcdsp")
             {
-                new Dmc4kCDsp(number, this.Chassis);
-                AddDmInCardPorts(number);
+                var inputCard = new Dmc4kCDsp(number, this.Chassis);
+                var cecPort = inputCard.DmInput as ICec;
+                AddDmInCardPorts(number, cecPort);
             }
             else if (type == "dmc4kzc")
             {
-                new Dmc4kzC(number, this.Chassis);
-                AddDmInCardPorts(number);
+                var inputCard = new Dmc4kzC(number, this.Chassis);
+                var cecPort = inputCard.DmInput as ICec;
+                AddDmInCardPorts(number, cecPort);
             }
             else if (type == "dmc4kzcdsp")
             {
-                new Dmc4kzCDsp(number, this.Chassis);
-                AddDmInCardPorts(number);
+                var inputCard = new Dmc4kzCDsp(number, this.Chassis);
+                var cecPort = inputCard.DmInput as ICec;
+                AddDmInCardPorts(number, cecPort);
             }
             else if (type == "dmccat")
             {
@@ -453,6 +512,11 @@ namespace PepperDash.Essentials.DM
             AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat);
             AddInCardHdmiAndAudioLoopPorts(number);
         }
+        void AddDmInCardPorts(uint number, ICec cecPort)
+        {
+            AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, cecPort);
+            AddInCardHdmiAndAudioLoopPorts(number);
+        }
 
         void AddHdmiInCardPorts(uint number, ICec cecPort)
         {
@@ -536,7 +600,7 @@ namespace PepperDash.Essentials.DM
                 AddOutputPortWithDebug(string.Format("outputCard{0}", number), "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
                 AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber, 2 * (number - 1) + 2);
             }
-            else if (type == "dmcStro")
+            else if (type == "dmcstro")
             {
                 var outputCard = new DmcStroSingle(number, Chassis);
                 AddOutputPortWithDebug(string.Format("outputCard{0}", number), "streamOut", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming, 2 * (number - 1) + 1);
@@ -583,10 +647,15 @@ namespace PepperDash.Essentials.DM
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
             var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this);
 
-            if (cecPort != null)
-                inputPort.Port = cecPort;
+            if (inputPort != null)
+            {
+                if (cecPort != null)
+                    inputPort.Port = cecPort;
 
-            InputPorts.Add(inputPort);
+                InputPorts.Add(inputPort);
+            }
+            else
+                Debug.Console(2, this, "inputPort is null");
         }
 
         /// <summary>

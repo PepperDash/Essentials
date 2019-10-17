@@ -31,7 +31,15 @@ namespace PepperDash.Essentials.DM.Config
 
 		[JsonProperty("outputNames")]
 		public Dictionary<uint, string> OutputNames { get; set; }
-	}
+
+        [JsonProperty("inputSlotSupportsHdcp2")]
+        public Dictionary<uint, bool> InputSlotSupportsHdcp2 { get; set; }
+
+        public DMChassisPropertiesConfig()
+        {
+            InputSlotSupportsHdcp2 = new Dictionary<uint, bool>();
+        }
+    }
 
     /// <summary>
     /// 
