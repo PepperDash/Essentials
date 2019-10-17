@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Room.Config
 
         public EssentialsNDisplayRoomPropertiesConfig()
         {
-            DisplayKeys = new List<string>();
+            Displays = new Dictionary<string, string>();
         }
     }
 }
