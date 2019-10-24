@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Fusion
+namespace PepperDash.Essentials.Core.Fusion
 {
     /// <summary>
     /// When created, runs progcomments on every slot and stores the program names in a list

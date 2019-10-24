@@ -19,12 +19,9 @@ namespace PepperDash.Essentials.Room.Types
     /// </summary>
     public abstract class EssentialsNDisplayRoomBase : EssentialsRoomBase
     {
-        public event SourceInfoChangeHandler CurrentSingleSourceChange;
+        //public event SourceInfoChangeHandler CurrentSingleSourceChange;
 
         public Dictionary<string, IRoutingSinkWithSwitching> Displays { get; protected set; }
-
-        protected override Func<bool> IsWarmingFeedbackFunc { get { return () => false; ; } }
-        protected override Func<bool> IsCoolingFeedbackFunc { get { return () => false; } }
 
         public EssentialsNDisplayRoomBase(DeviceConfig config)
             : base (config)

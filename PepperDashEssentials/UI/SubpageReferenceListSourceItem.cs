@@ -25,8 +25,8 @@ namespace PepperDash.Essentials
 
         public void RegisterForSourceChange(IHasCurrentSourceInfoChange room)
         {
-            room.CurrentSingleSourceChange -= room_CurrentSourceInfoChange;
-            room.CurrentSingleSourceChange += room_CurrentSourceInfoChange;
+            room.CurrentSingleDisplaySourceChange -= room_CurrentSourceInfoChange;
+            room.CurrentSingleDisplaySourceChange += room_CurrentSourceInfoChange;
         }
 
         void room_CurrentSourceInfoChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)

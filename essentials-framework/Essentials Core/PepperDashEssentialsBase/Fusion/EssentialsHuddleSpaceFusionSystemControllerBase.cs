@@ -18,12 +18,10 @@ using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Devices.Common;
-using PepperDash.Essentials.Devices.Common.Occupancy;
 
 
 
-namespace PepperDash.Essentials.Fusion
+namespace PepperDash.Essentials.Core.Fusion
 {
 	public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupancyStatusProvider
 	{
@@ -330,11 +328,11 @@ namespace PepperDash.Essentials.Fusion
             // Moved to 
 			CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(84, "Display 1 - Current Source", eSigIoMask.InputSigOnly);
 			// Don't think we need to get current status of this as nothing should be alive yet. 
-			(Room as EssentialsHuddleSpaceRoom).CurrentSingleSourceChange += new SourceInfoChangeHandler(Room_CurrentSourceInfoChange);
+			(Room as IHasCurrentSourceInfoChange).CurrentSourceChange += new SourceInfoChangeHandler(Room_CurrentSourceInfoChange);
 
 
-            FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction((Room as EssentialsHuddleSpaceRoom).PowerOnToDefaultOrLastSource);
-            FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() => (Room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff"));
+            FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction((Room as EssentialsRoomBase).PowerOnToDefaultOrLastSource);
+            FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() => (Room as IRunRouteAction).RunRouteAction("roomOff"));
 			// NO!! room.RoomIsOn.LinkComplementInputSig(FusionRoom.SystemPowerOff.InputSig);
 			FusionRoom.ErrorMessage.InputSig.StringValue =
 				"3: 7 Errors: This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;";
@@ -990,7 +988,7 @@ namespace PepperDash.Essentials.Fusion
 		protected virtual void SetUpSources()
 		{
 			// Sources
-            var dict = ConfigReader.ConfigObject.GetSourceListForKey((Room as EssentialsHuddleSpaceRoom).SourceListKey);
+            var dict = ConfigReader.ConfigObject.GetSourceListForKey((Room as EssentialsRoomBase).SourceListKey);
 			if (dict != null)
 			{
 				// NEW PROCESS:
@@ -1015,7 +1013,7 @@ namespace PepperDash.Essentials.Fusion
 						break;
 				}
 
-				var laptops = dict.Where(d => d.Value.SourceDevice is Laptop);
+				var laptops = dict.Where(d => d.Value.SourceDevice is Devices.Laptop);
 				i = 1;
 				foreach (var kvp in laptops)
 				{
@@ -1041,7 +1039,7 @@ namespace PepperDash.Essentials.Fusion
 			else
 			{
 				Debug.Console(1, this, "WARNING: Config source list '{0}' not found for room '{1}'",
-                    (Room as EssentialsHuddleSpaceRoom).SourceListKey, Room.Key);
+                    (Room as EssentialsRoomBase).SourceListKey, Room.Key);
 			}
 		}
 
@@ -1088,7 +1086,7 @@ namespace PepperDash.Essentials.Fusion
 				SourceToFeedbackSigs.Add(pSrc, sigD.InputSig);
 
 				// And respond to selection in Fusion
-                sigD.OutputSig.SetSigFalseAction(() => (Room as EssentialsHuddleSpaceRoom).RunRouteAction(routeKey));
+                sigD.OutputSig.SetSigFalseAction(() => (Room as IRunRouteAction).RunRouteAction(routeKey));
 			}
 			catch (Exception)
 			{
@@ -1290,7 +1288,7 @@ namespace PepperDash.Essentials.Fusion
 
                 // Current Source
                 var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 8, displayName + "Source None", eSigIoMask.InputOutputSig);
-                defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b => { if (!b) (Room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff"); }); ;
+                defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b => { if (!b) (Room as IRunRouteAction).RunRouteAction("roomOff"); }); ;
             }
         }
 

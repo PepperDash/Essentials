@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.CrestronIO;
 
 
-namespace PepperDash.Essentials.Devices.Common.Microphones
+namespace PepperDash.Essentials.Core.Privacy
 {
     /// <summary>
     /// Used for applications where one or more microphones with momentary contact closure outputs are used to

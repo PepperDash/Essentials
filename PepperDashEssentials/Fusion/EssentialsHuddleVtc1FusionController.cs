@@ -14,6 +14,7 @@ using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Core.Fusion;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Devices.Common.Occupancy;
 
@@ -181,7 +182,7 @@ namespace PepperDash.Essentials.Fusion
             // Moved to 
             CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(84, "Display 1 - Current Source", eSigIoMask.InputSigOnly);
             // Don't think we need to get current status of this as nothing should be alive yet. 
-            (Room as EssentialsHuddleVtc1Room).CurrentSingleSourceChange += Room_CurrentSourceInfoChange;
+            (Room as EssentialsHuddleVtc1Room).CurrentSourceChange += Room_CurrentSourceInfoChange;
 
 
             FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction((Room as EssentialsHuddleVtc1Room).PowerOnToDefaultOrLastSource);
@@ -220,7 +221,7 @@ namespace PepperDash.Essentials.Fusion
                         break;
                 }
 
-                var laptops = dict.Where(d => d.Value.SourceDevice is Laptop);
+                var laptops = dict.Where(d => d.Value.SourceDevice is Core.Devices.Laptop);
                 i = 1;
                 foreach (var kvp in laptops)
                 {

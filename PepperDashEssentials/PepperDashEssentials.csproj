@@ -173,16 +173,11 @@
     <Compile Include="Devices\NUMERIC AppleTV.cs" />
     <Compile Include="ControlSystem.cs" />
     <Compile Include="Factory\UiDeviceFactory.cs" />
-    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\EssentialsHuddleVtc1FusionController.cs" />
-    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionCustomPropertiesBridge.cs" />
-    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionEventHandlers.cs" />
-    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionProcessorQueries.cs" />
-    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\FusionRviDataClasses.cs" />
+    <Compile Include="Fusion\EssentialsHuddleVtc1FusionController.cs" />
     <Compile Include="REMOVE EssentialsApp.cs" />
-    <Compile Include="FOR REFERENCE UI\OTHER\Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
     <Compile Include="HttpApiHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />
+    <Compile Include="Room\Config\EssentialsDualDisplayRoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsNDisplayRoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\DDVC01RoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsPresentationPropertiesConfig.cs" />
@@ -206,10 +201,10 @@
     <Compile Include="AppServer\RoomBridges\SourceDeviceMapDictionary.cs" />
     <Compile Include="AppServer\Volumes.cs" />
     <Compile Include="Room\Emergency\EsentialsRoomEmergencyContactClosure.cs" />
+    <Compile Include="Room\Types\EssentialsDualDisplayRoom.cs" />
     <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
     <Compile Include="Room\Types\EssentialsNDisplayRoomBase.cs" />
     <Compile Include="Room\Types\EssentialsPresentationRoom.cs" />
-    <Compile Include="Room\Types\EssentialsRoomBase.cs" />
     <Compile Include="Room\Config\EssentialsRoomConfig.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\DevicePageControllerBase.cs" />
     <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLaptop.cs" />
@@ -272,6 +267,9 @@
       <Project>{892B761C-E479-44CE-BD74-243E9214AF13}</Project>
       <Name>Essentials Devices Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="FOR REFERENCE UI\OTHER\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

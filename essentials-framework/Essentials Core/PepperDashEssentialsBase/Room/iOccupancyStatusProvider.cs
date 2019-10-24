@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Devices.Common.Occupancy
+namespace PepperDash.Essentials.Core
 {
     public interface IOccupancyStatusProvider
     {

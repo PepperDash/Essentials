@@ -7,7 +7,7 @@ using Crestron.SimplSharpPro.Fusion;
 
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Fusion
+namespace PepperDash.Essentials.Core.Fusion
 {
     // Helper Classes for GUIDs
 

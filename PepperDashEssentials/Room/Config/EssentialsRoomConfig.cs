@@ -76,7 +76,7 @@ namespace PepperDash.Essentials.Room.Config
 			}
 			// Get the MicrophonePrivacy device from the device manager
 			var mP = (DeviceManager.GetDeviceForKey(props.MicrophonePrivacy.DeviceKey) as
-				PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController);
+				Core.Privacy.MicrophonePrivacyController);
 			// Set this room as the IPrivacy device
 			if (mP == null)
 			{
@@ -174,6 +174,25 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 	}
+
+    public class EssentialsAvRoomPropertiesConfig : EssentialsRoomPropertiesConfig
+    {
+        [JsonProperty("defaultAudioKey")]
+        public string DefaultAudioKey { get; set; }
+        [JsonProperty("sourceListKey")]
+        public string SourceListKey { get; set; }
+        [JsonProperty("defaultSourceItem")]
+        public string DefaultSourceItem { get; set; }
+
+    }
+
+    public class EssentialsConferenceRoomPropertiesConfig : EssentialsAvRoomPropertiesConfig
+    {
+        [JsonProperty("videoCodecKey")]
+        public string VideoCodecKey { get; set; }
+        [JsonProperty("audioCodecKey")]
+        public string AudioCodecKey { get; set; }
+    }
 
 	public class EssentialsEnvironmentPropertiesConfig
 	{

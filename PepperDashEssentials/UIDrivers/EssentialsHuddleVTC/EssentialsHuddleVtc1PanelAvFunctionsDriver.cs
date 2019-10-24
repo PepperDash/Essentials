@@ -885,7 +885,7 @@ namespace PepperDash.Essentials
                 // Disconnect current room
                 _CurrentRoom.CurrentVolumeDeviceChange -= this.CurrentRoom_CurrentAudioDeviceChange;
                 ClearAudioDeviceConnections();
-                _CurrentRoom.CurrentSingleSourceChange -= this.CurrentRoom_SourceInfoChange;
+                _CurrentRoom.CurrentSourceChange -= this.CurrentRoom_SourceInfoChange;
                 DisconnectSource(_CurrentRoom.CurrentSourceInfo);
                 _CurrentRoom.ShutdownPromptTimer.HasStarted -= ShutdownPromptTimer_HasStarted;
                 _CurrentRoom.ShutdownPromptTimer.HasFinished -= ShutdownPromptTimer_HasFinished;
@@ -924,7 +924,7 @@ namespace PepperDash.Essentials
 
                 _CurrentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
                 RefreshAudioDeviceConnections();
-                _CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
+                _CurrentRoom.CurrentSourceChange += CurrentRoom_SourceInfoChange;
                 RefreshSourceInfo();
 
                 if (_CurrentRoom.VideoCodec is IHasScheduleAwareness)
@@ -939,7 +939,7 @@ namespace PepperDash.Essentials
                 SetActiveCallListSharingContentStatus();
 
                 if (_CurrentRoom != null)
-                    _CurrentRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
+                    _CurrentRoom.CurrentSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
 
                 TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, () => _CurrentRoom.RunRouteAction("codecOsd"));
 

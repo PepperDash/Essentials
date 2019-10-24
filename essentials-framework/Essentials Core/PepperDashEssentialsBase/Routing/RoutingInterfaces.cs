@@ -11,8 +11,25 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
+
+    /// <summary>
+    /// The handler type for a Room's SourceInfoChange
+    /// </summary>
+    public delegate void SourceInfoChangeHandler(EssentialsRoomBase room, SourceListItem info, ChangeType type);
+
+
 	//*******************************************************************************************
 	// Interfaces
+
+    /// <summary>
+    /// For rooms with a single presentation source, change event
+    /// </summary>
+    public interface IHasCurrentSourceInfoChange
+    {
+        string CurrentSourceInfoKey { get; }
+        SourceListItem CurrentSourceInfo { get; }
+        event SourceInfoChangeHandler CurrentSourceChange;
+    }
 
 
 	/// <summary>
@@ -43,7 +60,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// Endpoint device like a display, that selects inputs
 	/// </summary>
-	public interface IRoutingSinkWithSwitching : IRoutingSinkNoSwitching
+	public interface IRoutingSinkWithSwitching : IRoutingSinkNoSwitching, IHasCurrentSourceInfoChange
 	{
 		//void ClearRoute();
 		void ExecuteSwitch(object inputSelector);

@@ -8,19 +8,10 @@ using Newtonsoft.Json;
 namespace PepperDash.Essentials.Room.Config
 {
 
-    public class EssentialsHuddleVtc1PropertiesConfig : EssentialsRoomPropertiesConfig
+    public class EssentialsHuddleVtc1PropertiesConfig : EssentialsConferenceRoomPropertiesConfig
     {
 		[JsonProperty("defaultDisplayKey")]
 		public string DefaultDisplayKey { get; set; }
-		[JsonProperty("defaultAudioKey")]
-		public string DefaultAudioKey { get; set; }
-		[JsonProperty("sourceListKey")]
-		public string SourceListKey { get; set; }
-		[JsonProperty("defaultSourceItem")]
-		public string DefaultSourceItem { get; set; }
-		[JsonProperty("videoCodecKey")]
-		public string VideoCodecKey { get; set; }
-		[JsonProperty("audioCodecKey")]
-		public string AudioCodecKey { get; set; }
+
     }
 }

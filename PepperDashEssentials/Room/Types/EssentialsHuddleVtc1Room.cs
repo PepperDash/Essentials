@@ -20,7 +20,7 @@ namespace PepperDash.Essentials
 		IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
-		public event SourceInfoChangeHandler CurrentSingleSourceChange;
+		public event SourceInfoChangeHandler CurrentSourceChange;
 
 
         //************************
@@ -166,7 +166,7 @@ namespace PepperDash.Essentials
 			{
 				if (value == _CurrentSourceInfo) return;
 
-				var handler = CurrentSingleSourceChange;
+				var handler = CurrentSourceChange;
 				// remove from in-use tracker, if so equipped
 				if(_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
 					(_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
@@ -330,7 +330,7 @@ namespace PepperDash.Essentials
             // Add Occupancy object from config
             if (PropertiesConfig.Occupancy != null)
                 this.SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
-                    PepperDash.Essentials.Devices.Common.Occupancy.IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimeoutMinutes);
+                    IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimeoutMinutes);
 
             this.LogoUrl = PropertiesConfig.Logo.GetUrl();
             this.SourceListKey = PropertiesConfig.SourceListKey;

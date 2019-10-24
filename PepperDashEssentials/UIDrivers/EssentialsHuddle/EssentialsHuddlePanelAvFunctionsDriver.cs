@@ -733,7 +733,7 @@ namespace PepperDash.Essentials
                 // Disconnect current room
                 _CurrentRoom.CurrentVolumeDeviceChange -= this.CurrentRoom_CurrentAudioDeviceChange;
                 ClearAudioDeviceConnections();
-                _CurrentRoom.CurrentSingleSourceChange -= this.CurrentRoom_SourceInfoChange;
+                _CurrentRoom.CurrentSourceChange -= this.CurrentRoom_SourceInfoChange;
                 DisconnectSource(_CurrentRoom.CurrentSourceInfo);
                 _CurrentRoom.ShutdownPromptTimer.HasStarted -= ShutdownPromptTimer_HasStarted;
                 _CurrentRoom.ShutdownPromptTimer.HasFinished -= ShutdownPromptTimer_HasFinished;
@@ -803,7 +803,7 @@ namespace PepperDash.Essentials
 
                 _CurrentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
                 RefreshAudioDeviceConnections();
-                _CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
+                _CurrentRoom.CurrentSourceChange += CurrentRoom_SourceInfoChange;
                 RefreshSourceInfo();
 
                 (Parent as EssentialsPanelMainInterfaceDriver).HeaderDriver.SetupHeaderButtons(this, CurrentRoom);
