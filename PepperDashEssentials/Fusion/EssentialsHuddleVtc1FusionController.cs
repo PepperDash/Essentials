@@ -14,7 +14,7 @@ using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Core.Fusion;
+using PepperDash.Essentials.Core.Fusion;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Devices.Common.Occupancy;
 

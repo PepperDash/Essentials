@@ -6,6 +6,10 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core
 {
+    public interface IHasDefaultDisplay
+    {
+        IRoutingSinkWithSwitching DefaultDisplay { get; }
+    }
 
     /// <summary>
     /// For rooms with routing

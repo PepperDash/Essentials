@@ -93,7 +93,7 @@ namespace PepperDash.Essentials
 
 			var sscRoom = Room as IHasCurrentSourceInfoChange;
 			if(sscRoom != null)
-				sscRoom.CurrentSingleDisplaySourceChange += new SourceInfoChangeHandler(Room_CurrentSingleSourceChange);
+				sscRoom.CurrentSourceChange += new SourceInfoChangeHandler(Room_CurrentSingleSourceChange);
 
 			var vcRoom = Room as IHasVideoCodec;
 			if (vcRoom != null && vcRoom.VideoCodec != null)

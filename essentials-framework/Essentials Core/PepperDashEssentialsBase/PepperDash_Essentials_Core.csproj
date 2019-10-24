@@ -229,6 +229,7 @@
     <Compile Include="Routing\TieLine.cs" />
     <Compile Include="Timers\CountdownTimer.cs" />
     <Compile Include="Touchpanels\CrestronTouchpanelPropertiesConfig.cs" />
+    <Compile Include="Touchpanels\Interfaces.cs" />
     <Compile Include="Touchpanels\Keyboards\HabaneroKeyboardController.cs" />
     <Compile Include="Touchpanels\MOVED LargeTouchpanelControllerBase.cs" />
     <Compile Include="Touchpanels\TriListExtensions.cs" />

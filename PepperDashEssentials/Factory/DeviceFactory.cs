@@ -87,7 +87,7 @@ namespace PepperDash.Essentials
 
             else if (typeName == "roomonwhenoccupancydetectedfeature")
             {
-                return new Room.Behaviours.RoomOnToDefaultSourceWhenOccupied(dc);
+                return new RoomOnToDefaultSourceWhenOccupied(dc);
             }
 
 			return null;

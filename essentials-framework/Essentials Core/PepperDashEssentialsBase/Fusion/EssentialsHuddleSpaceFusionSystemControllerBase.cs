@@ -1123,7 +1123,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 //uint attrNum = Convert.ToUInt32(keyNum);
 
                 // Check for UI devices
-                var uiDev = dev as EssentialsTouchpanelController;
+                var uiDev = dev as IHasBasicTriListWithSmartObject;
                 if (uiDev != null)
                 {
                     if (uiDev.Panel is Crestron.SimplSharpPro.UI.XpanelForSmartGraphics)
@@ -1204,7 +1204,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     display.UsageTracker.DeviceUsageEnded += new EventHandler<DeviceUsageEventArgs>(UsageTracker_DeviceUsageEnded);
                 }
 
-                var defaultDisplay = (Room as EssentialsHuddleSpaceRoom).DefaultDisplay as DisplayBase;
+                var defaultDisplay = (Room as IHasDefaultDisplay).DefaultDisplay as DisplayBase;
                 if (defaultDisplay == null)
                 {
                     Debug.Console(1, this, "Cannot link null display to Fusion because default display is null");
@@ -1269,7 +1269,7 @@ namespace PepperDash.Essentials.Core.Fusion
             string displayName = string.Format("Display {0} - ", displayIndex);
 
 
-            if (display == (Room as EssentialsHuddleSpaceRoom).DefaultDisplay)
+            if (display == (Room as IHasDefaultDisplay).DefaultDisplay)
             {
                 // Display volume
                 var defaultDisplayVolume = FusionRoom.CreateOffsetUshortSig(50, "Volume - Fader01", eSigIoMask.InputOutputSig);

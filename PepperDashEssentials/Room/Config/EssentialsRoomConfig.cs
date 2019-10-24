@@ -65,7 +65,7 @@ namespace PepperDash.Essentials.Room.Config
 		/// <param name="props"></param>
 		/// <param name="room"></param>
 		/// <returns></returns>
-		public static PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController GetMicrophonePrivacy(
+		public static Core.Privacy.MicrophonePrivacyController GetMicrophonePrivacy(
 			EssentialsRoomPropertiesConfig props, EssentialsHuddleVtc1Room room)
 		{
 			var microphonePrivacy = props.MicrophonePrivacy;

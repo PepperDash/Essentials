@@ -16,8 +16,8 @@ using PepperDash.Essentials.Devices.Common.AudioCodec;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange, 
-		IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec
+    public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange,
+        IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSourceChange;
@@ -112,11 +112,6 @@ namespace PepperDash.Essentials
         public AudioCodecBase AudioCodec { get; private set; }
 
 		public bool ExcludeFromGlobalFunctions { get; set; }
-
-		/// <summary>
-		/// The config name of the source list
-		/// </summary>
-		public string SourceListKey { get; set; }
         
         public string DefaultSourceItem { get; set; }
 
