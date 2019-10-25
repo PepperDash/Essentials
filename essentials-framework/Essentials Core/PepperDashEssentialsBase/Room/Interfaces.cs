@@ -6,6 +6,17 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// For rooms with in call feedback
+    /// </summary>
+    public interface IHasInCallFeedback
+    {
+        BoolFeedback InCallFeedback { get; }
+    }
+
+    /// <summary>
+    /// For rooms with a single display
+    /// </summary>
     public interface IHasDefaultDisplay
     {
         IRoutingSinkWithSwitching DefaultDisplay { get; }

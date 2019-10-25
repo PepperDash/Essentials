@@ -17,7 +17,7 @@ using PepperDash.Essentials.Devices.Common.AudioCodec;
 namespace PepperDash.Essentials
 {
     public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange,
-        IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay
+        IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSourceChange;
@@ -251,29 +251,28 @@ namespace PepperDash.Essentials
                         }
                     };
 
-                disp.IsWarmingUpFeedback.OutputChange += (o, a) => 
-                { 
+                disp.IsWarmingUpFeedback.OutputChange += (o, a) =>
+                {
                     IsWarmingUpFeedback.FireUpdate();
                     if (!IsWarmingUpFeedback.BoolValue)
                         (CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
                 };
-                disp.IsCoolingDownFeedback.OutputChange += (o, a) => 
+                disp.IsCoolingDownFeedback.OutputChange += (o, a) =>
                 {
-                    IsCoolingDownFeedback.FireUpdate(); 
+                    IsCoolingDownFeedback.FireUpdate();
                 };
-
-                // Get Microphone Privacy object, if any
-                this.MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
-
-                Debug.Console(2, this, "Microphone Privacy Config evaluated.");
-
-                // Get emergency object, if any
-                this.Emergency = EssentialsRoomConfigHelper.GetEmergency(PropertiesConfig, this);
-
-                Debug.Console(2, this, "Emergency Config evaluated.");
             }
 
+            // Get Microphone Privacy object, if any
+            this.MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
 
+            Debug.Console(2, this, "Microphone Privacy Config evaluated.");
+
+            // Get emergency object, if any
+            this.Emergency = EssentialsRoomConfigHelper.GetEmergency(PropertiesConfig, this);
+
+            Debug.Console(2, this, "Emergency Config evaluated.");
+            
             // Combines call feedback from both codecs if available
             InCallFeedback = new BoolFeedback(() => 
                 {
