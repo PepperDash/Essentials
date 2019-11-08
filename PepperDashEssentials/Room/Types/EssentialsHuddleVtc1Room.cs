@@ -157,7 +157,7 @@ namespace PepperDash.Essentials
 		public SourceListItem CurrentSourceInfo
 		{
 			get { return _CurrentSourceInfo; }
-			private set
+			set
 			{
 				if (value == _CurrentSourceInfo) return;
 
@@ -167,7 +167,7 @@ namespace PepperDash.Essentials
 					(_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
 
 				if (handler != null)
-					handler(this, _CurrentSourceInfo, ChangeType.WillChange);
+					handler(_CurrentSourceInfo, ChangeType.WillChange);
 
 				_CurrentSourceInfo = value;
 
@@ -175,12 +175,12 @@ namespace PepperDash.Essentials
 				if (_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
 					(_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
 				if (handler != null)
-					handler(this, _CurrentSourceInfo, ChangeType.DidChange);
+					handler(_CurrentSourceInfo, ChangeType.DidChange);
 			}
 		}
 		SourceListItem _CurrentSourceInfo;
 
-        public string CurrentSourceInfoKey { get; private set; }
+        public string CurrentSourceInfoKey { get; set; }
 
         /// <summary>
         /// "codecOsd"

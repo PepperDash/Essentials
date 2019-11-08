@@ -21,22 +21,13 @@ namespace PepperDash.Essentials.Room.Types
     {
         //public event SourceInfoChangeHandler CurrentSingleSourceChange;
 
-        public Dictionary<string, IRoutingSinkWithSwitching> Displays { get; protected set; }
 
         public EssentialsNDisplayRoomBase(DeviceConfig config)
             : base (config)
         {
-            Displays = new Dictionary<string, IRoutingSinkWithSwitching>();
 
             var propertiesConfig = JsonConvert.DeserializeObject<EssentialsNDisplayRoomPropertiesConfig>(config.Properties.ToString());
 
-            foreach (var display in propertiesConfig.Displays)
-            {
-                var displayDevice = DeviceManager.GetDeviceForKey(display.Value) as IRoutingSinkWithSwitching;
-
-                if (displayDevice != null)
-                    Displays.Add(display.Key, displayDevice);
-            }
         }
     }
 }

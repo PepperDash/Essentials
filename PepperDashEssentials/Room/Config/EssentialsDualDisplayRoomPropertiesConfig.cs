@@ -11,7 +11,5 @@ namespace PepperDash.Essentials.Room.Config
     public class EssentialsDualDisplayRoomPropertiesConfig : EssentialsNDisplayRoomPropertiesConfig
     {
 
-        public const string LeftDisplayId = "leftDisplay";
-        public const string RightDisplayId = "rightDisplay";
     }
 }

@@ -68,7 +68,7 @@ namespace PepperDash.Essentials
 			parent.SetItemButtonAction(index, buttonAction);
 		}
 
-		void room_CurrentSourceInfoChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+		void room_CurrentSourceInfoChange(SourceListItem info, ChangeType type)
 		{
 			UpdateItem(info);
 		}

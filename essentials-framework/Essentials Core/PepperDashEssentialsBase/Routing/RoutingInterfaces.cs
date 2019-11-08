@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// The handler type for a Room's SourceInfoChange
     /// </summary>
-    public delegate void SourceInfoChangeHandler(EssentialsRoomBase room, SourceListItem info, ChangeType type);
+    public delegate void SourceInfoChangeHandler(/*EssentialsRoomBase room,*/ SourceListItem info, ChangeType type);
 
 
 	//*******************************************************************************************
@@ -26,8 +26,8 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IHasCurrentSourceInfoChange
     {
-        string CurrentSourceInfoKey { get; }
-        SourceListItem CurrentSourceInfo { get; }
+        string CurrentSourceInfoKey { get; set; }
+        SourceListItem CurrentSourceInfo { get; set; }
         event SourceInfoChangeHandler CurrentSourceChange;
     }
 
@@ -52,7 +52,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// For fixed-source endpoint devices
 	/// </summary>
-	public interface IRoutingSinkNoSwitching : IRoutingInputs
+	public interface IRoutingSinkNoSwitching : IRoutingInputs, IHasCurrentSourceInfoChange
 	{
 
 	}

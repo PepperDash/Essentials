@@ -1387,7 +1387,7 @@ namespace PepperDash.Essentials.Core.Fusion
 		/// <summary>
 		/// Event handler for when room source changes
 		/// </summary>
-		protected void Room_CurrentSourceInfoChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+		protected void Room_CurrentSourceInfoChange(SourceListItem info, ChangeType type)
 		{
 			// Handle null. Nothing to do when switching from or to null
 			if (info == null || info.SourceDevice == null)
@@ -1403,7 +1403,7 @@ namespace PepperDash.Essentials.Core.Fusion
 			{
 				if (SourceToFeedbackSigs.ContainsKey(dev))
 					SourceToFeedbackSigs[dev].BoolValue = true;
-				var name = (room == null ? "" : room.Name);
+                //var name = (room == null ? "" : room.Name);
 				CurrentRoomSourceNameSig.InputSig.StringValue = info.SourceDevice.Name;
 			}
 		}

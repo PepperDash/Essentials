@@ -1050,7 +1050,7 @@ namespace PepperDash.Essentials
         /// <param name="room"></param>
         /// <param name="info"></param>
         /// <param name="type"></param>
-        void CurrentRoom_CurrentSingleSourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        void CurrentRoom_CurrentSingleSourceChange(SourceListItem info, ChangeType type)
         {
             if (_CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && _CurrentRoom.CurrentSourceInfo != null)
                 TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = _CurrentRoom.CurrentSourceInfo.PreferredName;
@@ -1363,8 +1363,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Handles source change
         /// </summary>
-        void CurrentRoom_SourceInfoChange(EssentialsRoomBase room,
-            SourceListItem info, ChangeType change)
+        void CurrentRoom_SourceInfoChange(SourceListItem info, ChangeType change)
         {
             if (change == ChangeType.WillChange)
                 DisconnectSource(info);

@@ -44,8 +44,8 @@ namespace PepperDash.Essentials.Room.Types
         /// </summary>
         public BoolFeedback IsSharingFeedback { get; private set; }
 
-        IRoutingSinkWithSwitching LeftDisplay { get; private set; }
-        IRoutingSinkWithSwitching RightDisplay { get; private set; }
+        public IRoutingSinkWithSwitching LeftDisplay { get; private set; }
+        public IRoutingSinkWithSwitching RightDisplay { get; private set; }
 
 
         protected override Func<bool> OnFeedbackFunc
@@ -171,19 +171,25 @@ namespace PepperDash.Essentials.Room.Types
                 PropertiesConfig = JsonConvert.DeserializeObject<EssentialsDualDisplayRoomPropertiesConfig>
                     (config.Properties.ToString());
 
-                var leftDispKey = PropertiesConfig.Displays[EssentialsDualDisplayRoomPropertiesConfig.LeftDisplayId];
+                var leftDisp = PropertiesConfig.Displays[eSourceListItemDestinationTypes.leftDisplay];
+                if (leftDisp != null)
+                {
 
-                if (!string.IsNullOrEmpty(leftDispKey))
-                    LeftDisplay = DeviceManager.GetDeviceForKey(leftDispKey) as IRoutingSinkWithSwitching;
-                else
-                    Debug.Console(0, this, "Unable to get LeftDisplay for Room");
+                    if (!string.IsNullOrEmpty(leftDisp.Key))
+                        LeftDisplay = DeviceManager.GetDeviceForKey(leftDisp.Key) as IRoutingSinkWithSwitching;
+                    else
+                        Debug.Console(0, this, "Unable to get LeftDisplay for Room");
+                }
 
-                var rightDispKey = PropertiesConfig.Displays[EssentialsDualDisplayRoomPropertiesConfig.RightDisplayId];
+                var rightDisp = PropertiesConfig.Displays[eSourceListItemDestinationTypes.rightDisplay];
+                if (rightDisp != null)
+                {
 
-                if (!string.IsNullOrEmpty(rightDispKey))
-                    LeftDisplay = DeviceManager.GetDeviceForKey(rightDispKey) as IRoutingSinkWithSwitching;
-                else
-                    Debug.Console(0, this, "Unable to get LeftDisplay for Room");
+                    if (!string.IsNullOrEmpty(rightDisp.Key))
+                        LeftDisplay = DeviceManager.GetDeviceForKey(rightDisp.Key) as IRoutingSinkWithSwitching;
+                    else
+                        Debug.Console(0, this, "Unable to get LeftDisplay for Room");
+                }
 
                 VideoCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.VideoCodecKey) as
                    PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
@@ -428,12 +434,12 @@ namespace PepperDash.Essentials.Room.Types
 
                         LastSourceKey = routeKey;
                     }
-                    else
-                        CurrentSourceInfoKey = null;
+                    //else
+                    //    CurrentSourceInfoKey = null;
 
                     // hand off the individual routes to this helper
                     foreach (var route in item.RouteList)
-                        DoRouteItem(route);
+                        DoRouteItem(route, item, routeKey);
 
                     // Start usage timer on routed source
                     var usageNewSource = item.SourceDevice as IUsageTracking;
@@ -451,8 +457,7 @@ namespace PepperDash.Essentials.Room.Types
                     if (string.IsNullOrEmpty(item.VolumeControlKey)
                         || item.VolumeControlKey.Equals("$defaultAudio", StringComparison.OrdinalIgnoreCase))
                         volDev = DefaultVolumeControls;
-                    else if (item.VolumeControlKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
-                        volDev = DefaultDisplay as IBasicVolumeControls;
+
                     // Or a specific device, probably rarely used.
                     else
                     {
@@ -489,14 +494,17 @@ namespace PepperDash.Essentials.Room.Types
                     // store the name and UI info for routes
                     if (item.SourceKey == "$off")
                     {
-                        CurrentSourceInfoKey = routeKey;
-                        CurrentSourceInfo = null;
+                        LeftDisplay.CurrentSourceInfoKey = routeKey;
+                        LeftDisplay.CurrentSourceInfo = null;
+                        RightDisplay.CurrentSourceInfoKey = routeKey;
+                        RightDisplay.CurrentSourceInfo = null;
                     }
-                    else if (item.SourceKey != null)
-                    {
-                        CurrentSourceInfoKey = routeKey;
-                        CurrentSourceInfo = item;
-                    }
+                    //else if (item.SourceKey != null)
+                    //{
+                    //    if(item.RouteList
+                    //    CurrentSourceInfoKey = routeKey;
+                    //    CurrentSourceInfo = item;
+                    //}
 
                     OnFeedback.FireUpdate();
 
@@ -518,7 +526,7 @@ namespace PepperDash.Essentials.Room.Types
         /// 
         /// </summary>
         /// <param name="route"></param>
-        void DoRouteItem(SourceRouteListItem route)
+        void DoRouteItem(SourceRouteListItem route, SourceListItem sourceItem, string sourceItemKey)
         {
             // if there is a $defaultAll on route, run two separate
             if (route.DestinationKey.Equals("$defaultAll", StringComparison.OrdinalIgnoreCase))
@@ -530,10 +538,10 @@ namespace PepperDash.Essentials.Room.Types
                     SourceKey = route.SourceKey,
                     Type = eRoutingSignalType.Video
                 };
-                DoRoute(tempVideo);
+                DoRoute(tempVideo, sourceItem, sourceItemKey);
             }
             else
-                DoRoute(route);
+                DoRoute(route, sourceItem, sourceItemKey);
         }
 
         /// <summary>
@@ -541,14 +549,16 @@ namespace PepperDash.Essentials.Room.Types
         /// </summary>
         /// <param name="route"></param>
         /// <returns></returns>
-        bool DoRoute(SourceRouteListItem route)
+        bool DoRoute(SourceRouteListItem route, SourceListItem sourceItem, string sourceItemKey)
         {
             IRoutingSinkNoSwitching dest = null;
 
             if (route.DestinationKey.Equals("$defaultaudio", StringComparison.OrdinalIgnoreCase))
                 dest = DefaultAudioDevice as IRoutingSinkNoSwitching;
-            else if (route.DestinationKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
-                dest = DefaultDisplay;
+            else if (route.DestinationKey.Equals(LeftDisplay.Key, StringComparison.OrdinalIgnoreCase))
+                dest = LeftDisplay;
+            else if (route.DestinationKey.Equals(RightDisplay.Key, StringComparison.OrdinalIgnoreCase))
+                dest = RightDisplay;
             else
                 dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSinkNoSwitching;
 
@@ -561,6 +571,9 @@ namespace PepperDash.Essentials.Room.Types
             if (route.SourceKey.Equals("$off", StringComparison.OrdinalIgnoreCase))
             {
                 dest.ReleaseRoute();
+
+
+
                 if (dest is IPower)
                     (dest as IPower).PowerOff();
             }
@@ -573,6 +586,9 @@ namespace PepperDash.Essentials.Room.Types
                     return false;
                 }
                 dest.ReleaseAndMakeRoute(source, route.Type);
+
+                dest.CurrentSourceInfoKey = sourceItemKey;
+                dest.CurrentSourceInfo = sourceItem;
             }
             return true;
         }

@@ -334,7 +334,7 @@ namespace PepperDash.Essentials
         }
 
 
-        void Room_CurrentSingleSourceChange(EssentialsRoomBase room, PepperDash.Essentials.Core.SourceListItem info, ChangeType type)
+        void Room_CurrentSingleSourceChange(PepperDash.Essentials.Core.SourceListItem info, ChangeType type)
         {
             /* Example message
              * {
@@ -395,11 +395,14 @@ namespace PepperDash.Essentials
                     if (dev is ITransport)
                         (dev as ITransport).LinkActions(Parent);
 
-					var srcRm = room as IHasCurrentSourceInfoChange;
-					PostStatusMessage(new
-					{
-						selectedSourceKey = srcRm.CurrentSourceInfoKey
-					});
+					var srcRm = Room as IHasCurrentSourceInfoChange;
+                    if (srcRm != null)
+                    {
+                        PostStatusMessage(new
+                        {
+                            selectedSourceKey = srcRm.CurrentSourceInfoKey
+                        });
+                    }
                 }
             }
         }

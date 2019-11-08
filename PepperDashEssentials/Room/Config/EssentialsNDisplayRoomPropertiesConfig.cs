@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
+
 using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Room.Config
@@ -18,13 +21,19 @@ namespace PepperDash.Essentials.Room.Config
         [JsonProperty("defaultVideoBehavior")]
         public string DefaultVideoBehavior { get; set; }
         [JsonProperty("displays")]
-        public Dictionary<string, string> Displays { get; set; }
+        public Dictionary<eSourceListItemDestinationTypes, DisplayItem> Displays { get; set; }
 
         public EssentialsNDisplayRoomPropertiesConfig()
         {
-            Displays = new Dictionary<string, string>();
+            Displays = new Dictionary<eSourceListItemDestinationTypes, DisplayItem>();
         }
 
+    }
+
+    public class DisplayItem : IKeyName
+    {
+        public string Key { get; set; }
+        public string Name { get; set; }
     }
 
 }

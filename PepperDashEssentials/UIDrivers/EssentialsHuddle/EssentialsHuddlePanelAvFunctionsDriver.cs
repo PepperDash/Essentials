@@ -1064,8 +1064,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// Handles source change
 		/// </summary>
-		void CurrentRoom_SourceInfoChange(EssentialsRoomBase room, 
-			SourceListItem info, ChangeType change)
+		void CurrentRoom_SourceInfoChange(SourceListItem info, ChangeType change)
 		{
 			if (change == ChangeType.WillChange)
 				DisconnectSource(info);
