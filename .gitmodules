@@ -1,4 +1,3 @@
 [submodule "essentials-framework/pepperdashcore-builds"]
 	path = essentials-framework/pepperdashcore-builds
-	url = https://ndorin@bitbucket.org/Pepperdash_Products/pepperdashcore-builds.git
-	branch = development
+	url = https://bitbucket.org/Pepperdash_Products/pepperdashcore-builds.git
