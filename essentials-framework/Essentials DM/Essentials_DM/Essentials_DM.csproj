@@ -95,12 +95,14 @@
     <Compile Include="Cards REMOVE\DmcC4kInputCard.cs" />
     <Compile Include="Cards REMOVE\DmcHD4kInputCard.cs" />
     <Compile Include="Cards REMOVE\DmInputCardBase.cs" />
+    <Compile Include="Chassis\DmBladeChassisController.cs" />
     <Compile Include="Chassis\DmCardAudioOutput.cs" />
     <Compile Include="Chassis\DmChassisController.cs" />
     <Compile Include="Chassis\DmpsAudioOutputController.cs" />
     <Compile Include="Chassis\DmpsInternalVirtualDmTxController.cs" />
     <Compile Include="Chassis\DmpsRoutingController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
+    <Compile Include="IDmSwitch.cs" />
     <Compile Include="Config\DmpsRoutingConfig.cs" />
     <Compile Include="Config\DmRmcConfig.cs" />
     <Compile Include="Config\DmTxConfig.cs" />

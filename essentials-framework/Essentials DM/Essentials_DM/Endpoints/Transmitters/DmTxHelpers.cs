@@ -61,7 +61,7 @@ namespace PepperDash.Essentials.DM
 			else
 			{
 				var parentDev = DeviceManager.GetDeviceForKey(pKey);
-				if (!(parentDev is DmChassisController))
+				if (!(parentDev is IDmSwitch))
 				{
 					Debug.Console(0, "Cannot create DM device '{0}'. '{1}' is not a DM Chassis.",
 						key, pKey);
@@ -69,7 +69,7 @@ namespace PepperDash.Essentials.DM
 				}
 
                 // Get the Crestron chassis and link stuff up
-				var switchDev = parentDev as DmChassisController;
+				var switchDev = (parentDev as IDmSwitch);
 				var chassis = switchDev.Chassis;
 
 				var num = props.ParentInputNumber;
@@ -81,7 +81,7 @@ namespace PepperDash.Essentials.DM
 				}
                 else
                 {
-                    var controller = (parentDev as DmChassisController);
+                    var controller = (parentDev as IDmSwitch);
                     controller.TxDictionary.Add(num, key);
                 }
 
@@ -91,7 +91,8 @@ namespace PepperDash.Essentials.DM
 					// Must use different constructor for CPU3 chassis types. No IPID
 					if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
 					chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
-					chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps)
+					chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps||
+                    chassis is DmMd128x128 || chassis is DmMd64x64)
 					{
 						if (typeName.StartsWith("dmtx200"))
 							return new DmTx200Controller(key, name, new DmTx200C2G(chassis.Inputs[num]));
