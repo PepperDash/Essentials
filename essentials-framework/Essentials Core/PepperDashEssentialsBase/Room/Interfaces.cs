@@ -23,6 +23,14 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
+    /// For rooms with multiple displays
+    /// </summary>
+    public interface IHasMultipleDisplays
+    {
+        Dictionary<eSourceListItemDestinationTypes, IRoutingSinkWithSwitching> Displays { get; }
+    }
+
+    /// <summary>
     /// For rooms with routing
     /// </summary>
     public interface IRunRouteAction
@@ -30,8 +38,6 @@ namespace PepperDash.Essentials.Core
         void RunRouteAction(string routeKey);
 
         void RunRouteAction(string routeKey, Action successCallback);
-
-
     }
 
     /// <summary>

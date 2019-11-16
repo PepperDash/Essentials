@@ -8,19 +8,19 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Room.Cotija
+namespace PepperDash.Essentials.Room.MobileControl
 {
 	/// <summary>
 	/// Represents a generic device connection through to and EISC for DDVC01
 	/// </summary>
-	public class CotijaDdvc01DeviceBridge : Device, IChannel, INumericKeypad 
+	public class MobileControlDdvc01DeviceBridge : Device, IChannel, INumericKeypad 
 	{
 		/// <summary>
 		/// EISC used to talk to Simpl
 		/// </summary>
 		ThreeSeriesTcpIpEthernetIntersystemCommunications EISC;
 
-		public CotijaDdvc01DeviceBridge(string key, string name, ThreeSeriesTcpIpEthernetIntersystemCommunications eisc)
+		public MobileControlDdvc01DeviceBridge(string key, string name, ThreeSeriesTcpIpEthernetIntersystemCommunications eisc)
 			: base(key, name)
 		{
 			EISC = eisc;

@@ -6,11 +6,11 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Room.Cotija
+namespace PepperDash.Essentials.Room.MobileControl
 {
     public static class ISetTopBoxControlsExtensions
     {
-        public static void LinkActions(this ISetTopBoxControls dev, CotijaSystemController controller)
+        public static void LinkActions(this ISetTopBoxControls dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Room.Cotija
             controller.AddAction(prefix + "replay", new PressAndHoldAction(dev.Replay));
         }
 
-        public static void UnlinkActions(this ISetTopBoxControls dev, CotijaSystemController controller)
+        public static void UnlinkActions(this ISetTopBoxControls dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 

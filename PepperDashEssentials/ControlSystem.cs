@@ -15,7 +15,7 @@ using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
 using PepperDash.Essentials.Room.Config;
-using PepperDash.Essentials.Room.Cotija;
+using PepperDash.Essentials.Room.MobileControl;
 
 namespace PepperDash.Essentials
 {
@@ -40,8 +40,11 @@ namespace PepperDash.Essentials
         {
             DeterminePlatform();
 
-            //CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
-            //    ConsoleAccessLevelEnum.AccessOperator);
+            //if (Debug.DoNotLoadOnNextBoot)
+            //{
+            //    CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
+            //        ConsoleAccessLevelEnum.AccessOperator);
+            //}
 
             // CrestronConsole.AddNewConsoleCommand(S => { ConfigWriter.WriteConfigFile(null); }, "writeconfig", "writes the current config to a file", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(s =>
@@ -71,7 +74,8 @@ namespace PepperDash.Essentials
                         "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
                 }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
-            GoWithLoad();
+            //if(!Debug.DoNotLoadOnNextBoot)
+                GoWithLoad();
         }
 
         /// <summary>
@@ -81,57 +85,64 @@ namespace PepperDash.Essentials
         /// </summary>
         public void DeterminePlatform()
         {
-            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Determining Platform....");
-
-            string filePathPrefix;
-
-            var dirSeparator = Global.DirectorySeparator;
-
-            var version = Crestron.SimplSharp.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-
-            var versionString = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
-
-            string directoryPrefix;
-
-            directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
-
-            if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows OS
+            try
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", versionString);
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Determining Platform....");
 
-                // Check if User/ProgramX exists
-                if (Directory.Exists(directoryPrefix + dirSeparator + "User"
-                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
+                string filePathPrefix;
+
+                var dirSeparator = Global.DirectorySeparator;
+
+                var version = Crestron.SimplSharp.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+
+                var versionString = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+
+                string directoryPrefix;
+
+                directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+
+                if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows OS
                 {
-                    Debug.Console(0, @"User/program{0} directory found", InitialParametersClass.ApplicationNumber);
-                    filePathPrefix = directoryPrefix + dirSeparator + "User"
-                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", versionString);
+
+                    // Check if User/ProgramX exists
+                    if (Directory.Exists(directoryPrefix + dirSeparator + "User"
+                        + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
+                    {
+                        Debug.Console(0, @"User/program{0} directory found", InitialParametersClass.ApplicationNumber);
+                        filePathPrefix = directoryPrefix + dirSeparator + "User"
+                        + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+                    }
+                    // Check if Nvram/Programx exists
+                    else if (Directory.Exists(directoryPrefix + dirSeparator + "Nvram"
+                        + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
+                    {
+                        Debug.Console(0, @"Nvram/program{0} directory found", InitialParametersClass.ApplicationNumber);
+                        filePathPrefix = directoryPrefix + dirSeparator + "Nvram"
+                        + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+                    }
+                    // If neither exists, set path to User/ProgramX
+                    else
+                    {
+                        Debug.Console(0, @"No previous directory found.  Using User/program{0}", InitialParametersClass.ApplicationNumber);
+                        filePathPrefix = directoryPrefix + dirSeparator + "User"
+                        + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+                    }
                 }
-                // Check if Nvram/Programx exists
-                else if (Directory.Exists(directoryPrefix + dirSeparator + "Nvram"
-                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
+                else   // Handles Linux OS (Virtual Control)
                 {
-                    Debug.Console(0, @"Nvram/program{0} directory found", InitialParametersClass.ApplicationNumber);
-                    filePathPrefix = directoryPrefix + dirSeparator + "Nvram"
-                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", versionString);
+
+                    // Set path to User/
+                    filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
                 }
-                // If neither exists, set path to User/ProgramX
-                else
-                {
-                    Debug.Console(0, @"No previous directory found.  Using User/program{0}", InitialParametersClass.ApplicationNumber);
-                    filePathPrefix = directoryPrefix + dirSeparator + "User"
-                    + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
-                }
+
+                Global.SetFilePathPrefix(filePathPrefix);
             }
-            else   // Handles Linux OS (Virtual Control)
+            catch (Exception e)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", versionString);
-
-                // Set path to User/
-                filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
+                Debug.Console(0, "Unable to Determine Platform due to Exception: {0}", e.Message);
             }
-
-            Global.SetFilePathPrefix(filePathPrefix);
         }
 
         /// <summary>
@@ -141,6 +152,8 @@ namespace PepperDash.Essentials
         {
             try
             {
+                //Debug.SetDoNotLoadOnNextBoot(false);
+
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 
                 var filesReady = SetupFilesystem();
@@ -335,7 +348,7 @@ namespace PepperDash.Essentials
         {
             var sysMon = DeviceManager.GetDeviceForKey("systemMonitor") as PepperDash.Essentials.Core.Monitoring.SystemMonitorController;
 
-            var appServer = DeviceManager.GetDeviceForKey("appServer") as CotijaSystemController;
+            var appServer = DeviceManager.GetDeviceForKey("appServer") as MobileControlSystemController;
 
 
             if (sysMon != null && appServer != null)
@@ -489,13 +502,13 @@ namespace PepperDash.Essentials
                         DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase((EssentialsHuddleSpaceRoom)room, 0xf1));
 
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Cotija Bridge...");
-                        // Cotija bridge
-                        var bridge = new CotijaEssentialsHuddleSpaceRoomBridge(room as EssentialsHuddleSpaceRoom);
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
+                        // Mobile Control bridge
+                        var bridge = new MobileConrolEssentialsHuddleSpaceRoomBridge(room as EssentialsHuddleSpaceRoom);
                         AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
                         DeviceManager.AddDevice(bridge);
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Cotija Bridge Added...");
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control Bridge Added...");
                     }
                     else if (room is EssentialsHuddleVtc1Room)
                     {
@@ -504,9 +517,9 @@ namespace PepperDash.Essentials
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Cotija Bridge...");
-                        // Cotija bridge
-                        var bridge = new CotijaEssentialsHuddleSpaceRoomBridge(room);
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
+                        // Mobile Control bridge
+                        var bridge = new MobileConrolEssentialsHuddleSpaceRoomBridge(room);
                         AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
                         DeviceManager.AddDevice(bridge);
                     }
@@ -529,11 +542,11 @@ namespace PepperDash.Essentials
         /// Helps add the post activation steps that link bridges to main controller
         /// </summary>
         /// <param name="bridge"></param>
-        void AddBridgePostActivationHelper(CotijaBridgeBase bridge)
+        void AddBridgePostActivationHelper(MobileControlBridgeBase bridge)
         {
             bridge.AddPostActivationAction(() =>
             {
-                var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as CotijaSystemController;
+                var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as MobileControlSystemController;
                 if (parent == null)
                 {
                     Debug.Console(0, bridge, "ERROR: Cannot connect app server room bridge. System controller not present");

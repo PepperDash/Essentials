@@ -184,12 +184,12 @@
     <Compile Include="Room\Config\EssentialsHuddleRoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsHuddleVtc1PropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsRoomEmergencyConfig.cs" />
-    <Compile Include="AppServer\CotijaConfig.cs" />
-    <Compile Include="AppServer\CotijaDdvc01DeviceBridge.cs" />
+    <Compile Include="AppServer\MobileControlConfig.cs" />
+    <Compile Include="AppServer\MobileControlDdvc01DeviceBridge.cs" />
     <Compile Include="AppServer\Interfaces.cs" />
-    <Compile Include="AppServer\RoomBridges\CotijaBridgeBase.cs" />
-    <Compile Include="AppServer\RoomBridges\CotijaDdvc01RoomBridge.cs" />
-    <Compile Include="AppServer\RoomBridges\CotijaEssentialsHuddleSpaceRoomBridge.cs" />
+    <Compile Include="AppServer\RoomBridges\MobileControlBridgeBase.cs" />
+    <Compile Include="AppServer\RoomBridges\MobileControlDdvc01RoomBridge.cs" />
+    <Compile Include="AppServer\RoomBridges\MobileControlEssentialsHuddleSpaceRoomBridge.cs" />
     <Compile Include="AppServer\DeviceTypeInterfaces\IChannelExtensions.cs" />
     <Compile Include="AppServer\DeviceTypeInterfaces\IColorExtensions.cs" />
     <Compile Include="AppServer\DeviceTypeInterfaces\IDPadExtensions.cs" />
@@ -238,7 +238,7 @@
     <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalAndBackDriver.cs" />
     <Compile Include="UIDrivers\SmartObjectRoomsList.cs" />
     <Compile Include="UI\JoinConstants\UIBoolJoin.cs" />
-    <Compile Include="AppServer\CotijaSystemController.cs" />
+    <Compile Include="AppServer\MobileControlSystemController.cs" />
     <Compile Include="UI\DualDisplaySourceSRLController.cs" />
     <Compile Include="UI\SubpageReferenceListActivityItem.cs" />
     <Compile Include="FOR REFERENCE UI\Panels\REMOVE UiCue.cs" />

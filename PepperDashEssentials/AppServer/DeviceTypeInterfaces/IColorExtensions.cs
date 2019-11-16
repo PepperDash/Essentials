@@ -6,11 +6,11 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Room.Cotija
+namespace PepperDash.Essentials.Room.MobileControl
 {
     public static class IColorExtensions
     {
-        public static void LinkActions(this IColor dev, CotijaSystemController controller)
+        public static void LinkActions(this IColor dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Room.Cotija
             controller.AddAction(prefix + "blue", new PressAndHoldAction(dev.Blue));
         }
 
-        public static void UnlinkActions(this IColor dev, CotijaSystemController controller)
+        public static void UnlinkActions(this IColor dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 

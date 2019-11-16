@@ -16,9 +16,9 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Config;
 
 
-namespace PepperDash.Essentials.Room.Cotija
+namespace PepperDash.Essentials.Room.MobileControl
 {
-	public class CotijaDdvc01RoomBridge : CotijaBridgeBase, IDelayedConfiguration
+	public class MobileControlDdvc01RoomBridge : MobileControlBridgeBase, IDelayedConfiguration
 	{
 		public class BoolJoin
 		{
@@ -236,7 +236,7 @@ namespace PepperDash.Essentials.Room.Cotija
 			}
 		}
 
-		CotijaDdvc01DeviceBridge SourceBridge;
+		MobileControlDdvc01DeviceBridge SourceBridge;
 
 		Ddvc01AtcMessenger AtcMessenger;
 		Ddvc01VtcMessenger VtcMessenger;
@@ -248,7 +248,7 @@ namespace PepperDash.Essentials.Room.Cotija
 		/// <param name="key"></param>
 		/// <param name="name"></param>
 		/// <param name="ipId"></param>
-		public CotijaDdvc01RoomBridge(string key, string name, uint ipId)
+		public MobileControlDdvc01RoomBridge(string key, string name, uint ipId)
 			: base(key, name)
 		{
 			try
@@ -258,7 +258,7 @@ namespace PepperDash.Essentials.Room.Cotija
 				if (reg != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
 					Debug.Console(0, this, "Cannot connect EISC at IPID {0}: \r{1}", ipId, reg);
 
-				SourceBridge = new CotijaDdvc01DeviceBridge(key + "-sourceBridge", "DDVC01 source bridge", EISC);
+				SourceBridge = new MobileControlDdvc01DeviceBridge(key + "-sourceBridge", "DDVC01 source bridge", EISC);
 				DeviceManager.AddDevice(SourceBridge);
 			}
 			catch (Exception)
@@ -590,7 +590,7 @@ namespace PepperDash.Essentials.Room.Cotija
             //    rmProps.VolumeSliderNames.Add(EISC.StringInput[i].StringValue);
             //}
 
-			// There should be cotija devices in here, I think...
+			// There should be Mobile Control devices in here, I think...
 			if(co.Devices == null)
 				co.Devices = new List<DeviceConfig>();
 

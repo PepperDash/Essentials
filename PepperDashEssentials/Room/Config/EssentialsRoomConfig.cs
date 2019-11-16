@@ -38,6 +38,12 @@ namespace PepperDash.Essentials.Room.Config
 			{
 				return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
 			}
+            else if (typeName == "dualdisplay")
+            {
+                var rm = new EssentialsDualDisplayRoom(roomConfig);
+
+                return rm;
+            }
 
             return null;
 		}

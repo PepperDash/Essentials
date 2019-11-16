@@ -253,7 +253,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// 
 		/// </summary>
 		/// <param name="appServerController"></param>
-		protected override void CustomRegisterWithAppServer(CotijaSystemController appServerController)
+		protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
 		{
 			var asc = appServerController;
 			EISC.SetStringSigAction(SHookState, s => 

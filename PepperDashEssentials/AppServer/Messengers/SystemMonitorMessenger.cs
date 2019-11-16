@@ -86,7 +86,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             });
         }
 
-        protected override void CustomRegisterWithAppServer(CotijaSystemController appServerController)
+        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
         {
             AppServerController.AddAction(MessagePath + "/fullStatus", new Action(SendFullStatusMessage));
         }

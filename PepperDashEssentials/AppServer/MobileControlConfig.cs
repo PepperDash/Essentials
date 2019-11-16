@@ -13,7 +13,7 @@ namespace PepperDash.Essentials
 	/// <summary>
 	/// 
 	/// </summary>
-    public class CotijaConfig
+    public class MobileControlConfig
     {       
 		[JsonProperty("serverUrl")]
         public string ServerUrl { get; set; }
@@ -25,7 +25,7 @@ namespace PepperDash.Essentials
 	/// <summary>
 	/// 
 	/// </summary>
-	public class CotijaDdvc01RoomBridgePropertiesConfig
+	public class MobileControlDdvc01RoomBridgePropertiesConfig
 	{
 		[JsonProperty("eiscId")]
 		public string EiscId { get; set; }

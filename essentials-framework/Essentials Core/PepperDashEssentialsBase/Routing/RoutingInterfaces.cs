@@ -31,7 +31,6 @@ namespace PepperDash.Essentials.Core
         event SourceInfoChangeHandler CurrentSourceChange;
     }
 
-
 	/// <summary>
 	/// Defines a class that has a collection of RoutingInputPorts
 	/// </summary>

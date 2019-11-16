@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Room.Cotija
+namespace PepperDash.Essentials.Room.MobileControl
 {
 	/// <summary>
 	/// Represents a room whose configuration is derived from runtime data,

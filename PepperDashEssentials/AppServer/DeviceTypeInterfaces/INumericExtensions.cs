@@ -6,11 +6,11 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Room.Cotija
+namespace PepperDash.Essentials.Room.MobileControl
 {
     public static class INumericExtensions
     {
-        public static void LinkActions(this INumericKeypad dev, CotijaSystemController controller)
+        public static void LinkActions(this INumericKeypad dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
@@ -29,7 +29,7 @@ namespace PepperDash.Essentials.Room.Cotija
             // Deal with the Accessory functions on the numpad later
         }
 
-        public static void UnlinkActions(this INumericKeypad dev, CotijaSystemController controller)
+        public static void UnlinkActions(this INumericKeypad dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 

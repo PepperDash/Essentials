@@ -15,7 +15,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 
-namespace PepperDash.Essentials.Room.Types
+namespace PepperDash.Essentials
 {
     public class EssentialsDualDisplayRoom : EssentialsNDisplayRoomBase, IHasCurrentVolumeControls,
         IRunRouteAction, IPrivacy, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasInCallFeedback
@@ -174,9 +174,11 @@ namespace PepperDash.Essentials.Room.Types
                 var leftDisp = PropertiesConfig.Displays[eSourceListItemDestinationTypes.leftDisplay];
                 if (leftDisp != null)
                 {
-
                     if (!string.IsNullOrEmpty(leftDisp.Key))
+                    {
                         LeftDisplay = DeviceManager.GetDeviceForKey(leftDisp.Key) as IRoutingSinkWithSwitching;
+                        Displays.Add(eSourceListItemDestinationTypes.leftDisplay, LeftDisplay);
+                    }
                     else
                         Debug.Console(0, this, "Unable to get LeftDisplay for Room");
                 }
@@ -184,9 +186,11 @@ namespace PepperDash.Essentials.Room.Types
                 var rightDisp = PropertiesConfig.Displays[eSourceListItemDestinationTypes.rightDisplay];
                 if (rightDisp != null)
                 {
-
                     if (!string.IsNullOrEmpty(rightDisp.Key))
+                    {
                         LeftDisplay = DeviceManager.GetDeviceForKey(rightDisp.Key) as IRoutingSinkWithSwitching;
+                        Displays.Add(eSourceListItemDestinationTypes.rightDisplay, RightDisplay);
+                    }
                     else
                         Debug.Console(0, this, "Unable to get LeftDisplay for Room");
                 }

@@ -6,11 +6,11 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Room.Cotija
+namespace PepperDash.Essentials.Room.MobileControl
 {
     public static class IDPadExtensions
     {
-        public static void LinkActions(this IDPad dev, CotijaSystemController controller)
+        public static void LinkActions(this IDPad dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.Room.Cotija
             controller.AddAction(prefix + "exit", new PressAndHoldAction(dev.Exit));
         }
 
-        public static void UnlinkActions(this IDPad dev, CotijaSystemController controller)
+        public static void UnlinkActions(this IDPad dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
