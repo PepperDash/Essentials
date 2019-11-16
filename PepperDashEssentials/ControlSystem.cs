@@ -40,11 +40,11 @@ namespace PepperDash.Essentials
         {
             DeterminePlatform();
 
-            //if (Debug.DoNotLoadOnNextBoot)
-            //{
-            //    CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
-            //        ConsoleAccessLevelEnum.AccessOperator);
-            //}
+            if (Debug.DoNotLoadOnNextBoot)
+            {
+                CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
+                    ConsoleAccessLevelEnum.AccessOperator);
+            }
 
             // CrestronConsole.AddNewConsoleCommand(S => { ConfigWriter.WriteConfigFile(null); }, "writeconfig", "writes the current config to a file", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(s =>
@@ -74,7 +74,7 @@ namespace PepperDash.Essentials
                         "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
                 }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
-            //if(!Debug.DoNotLoadOnNextBoot)
+            if (!Debug.DoNotLoadOnNextBoot)
                 GoWithLoad();
         }
 
@@ -152,7 +152,7 @@ namespace PepperDash.Essentials
         {
             try
             {
-                //Debug.SetDoNotLoadOnNextBoot(false);
+                Debug.SetDoNotLoadOnNextBoot(false);
 
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 
