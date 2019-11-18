@@ -237,7 +237,7 @@ namespace PepperDash.Essentials.DM
                         }
                         else
                         {
-                            Debug.Console(2, this, "Input Card {0} Name is null", inputCard.Number, inputCard.NameFeedback.StringValue);
+                            Debug.Console(2, this, "Input Card {0} Name is null", inputCard.Number);
                             return "";
                         }
                     });
