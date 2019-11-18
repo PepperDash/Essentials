@@ -213,10 +213,10 @@ namespace PepperDash.Essentials.DM
             {
                 var inputCard = card as DMInput;
 
-                Debug.Console(1, this, "Adding Input Card Number {0} Type: {1}", inputCard.Number, inputCard.CardInputOutputType.ToString());
-
                 if (inputCard != null)
                 {
+                    Debug.Console(1, this, "Adding Input Card Number {0} Type: {1}", inputCard.Number, inputCard.CardInputOutputType.ToString());
+
                     InputEndpointOnlineFeedbacks[inputCard.Number] = new BoolFeedback(() => { return inputCard.EndpointOnlineFeedback; });
 
                     if (inputCard.VideoDetectedFeedback != null)
@@ -226,23 +226,28 @@ namespace PepperDash.Essentials.DM
                             return inputCard.VideoDetectedFeedback.BoolValue;
                         });
                     }
+
                     InputNameFeedbacks[inputCard.Number] = new StringFeedback(() =>
                     {
                         if (inputCard.NameFeedback != null && !string.IsNullOrEmpty(inputCard.NameFeedback.StringValue))
                         {
                             Debug.Console(2, this, "Input Card {0} Name: {1}", inputCard.Number, inputCard.NameFeedback.StringValue);
-                                return inputCard.NameFeedback.StringValue;
+                            return inputCard.NameFeedback.StringValue;
 
                         }
                         else
                         {
-                            Debug.Console(2, this, "Input Card {0} Name is null", inputCard.Number, inputCard.NameFeedback.StringValue);
+                            Debug.Console(2, this, "Input Card {0} Name is null", inputCard.Number);
                             return "";
                         }
                     });
-                }
 
-                AddInputCard(inputCard.Number, inputCard);
+                    AddInputCard(inputCard.Number, inputCard);
+                }
+                else
+                {
+                    Debug.Console(2, this, "***********Input Card of type {0} is cannot be cast as DMInput*************", card.CardInputOutputType);
+                }
             }
         }
 
@@ -255,7 +260,7 @@ namespace PepperDash.Essentials.DM
         {
             if (inputCard is Card.Dmps3HdmiInputWithoutAnalogAudio)
             {
-                var hdmiInputCard = inputCard as Card.Dmps3HdmiInput;
+                var hdmiInputCard = inputCard as Card.Dmps3HdmiInputWithoutAnalogAudio;
 
                 var cecPort = hdmiInputCard.HdmiInputPort;
 
@@ -272,8 +277,6 @@ namespace PepperDash.Essentials.DM
             }
             else if (inputCard is Card.Dmps3HdmiVgaInput)
             {
-                // TODO: Build a virtual TX device and assign the ports to it
-
                 var hdmiVgaInputCard = inputCard as Card.Dmps3HdmiVgaInput;
 
                 DmpsInternalVirtualHdmiVgaInputController inputCardController = new DmpsInternalVirtualHdmiVgaInputController(Key +
@@ -285,8 +288,6 @@ namespace PepperDash.Essentials.DM
             }
             else if (inputCard is Card.Dmps3HdmiVgaBncInput)
             {
-                // TODO: Build a virtual TX device and assign the ports to it
-
                 var hdmiVgaBncInputCard = inputCard as Card.Dmps3HdmiVgaBncInput;
 
                 DmpsInternalVirtualHdmiVgaBncInputController inputCardController = new DmpsInternalVirtualHdmiVgaBncInputController(Key +
@@ -308,8 +309,6 @@ namespace PepperDash.Essentials.DM
             else if (inputCard is Card.Dmps3AirMediaInput)
             {
                 var airMediaInputCard = inputCard as Card.Dmps3AirMediaInput;
-
-                
 
                 AddInputPortWithDebug(number, string.Format("AirMediaIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming);
             }
