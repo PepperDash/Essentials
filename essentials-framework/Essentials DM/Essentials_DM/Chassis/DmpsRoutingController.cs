@@ -260,7 +260,7 @@ namespace PepperDash.Essentials.DM
         {
             if (inputCard is Card.Dmps3HdmiInputWithoutAnalogAudio)
             {
-                var hdmiInputCard = inputCard as Card.Dmps3HdmiInput;
+                var hdmiInputCard = inputCard as Card.Dmps3HdmiInputWithoutAnalogAudio;
 
                 var cecPort = hdmiInputCard.HdmiInputPort;
 
@@ -277,8 +277,6 @@ namespace PepperDash.Essentials.DM
             }
             else if (inputCard is Card.Dmps3HdmiVgaInput)
             {
-                // TODO: Build a virtual TX device and assign the ports to it
-
                 var hdmiVgaInputCard = inputCard as Card.Dmps3HdmiVgaInput;
 
                 DmpsInternalVirtualHdmiVgaInputController inputCardController = new DmpsInternalVirtualHdmiVgaInputController(Key +
@@ -290,8 +288,6 @@ namespace PepperDash.Essentials.DM
             }
             else if (inputCard is Card.Dmps3HdmiVgaBncInput)
             {
-                // TODO: Build a virtual TX device and assign the ports to it
-
                 var hdmiVgaBncInputCard = inputCard as Card.Dmps3HdmiVgaBncInput;
 
                 DmpsInternalVirtualHdmiVgaBncInputController inputCardController = new DmpsInternalVirtualHdmiVgaBncInputController(Key +
@@ -313,8 +309,6 @@ namespace PepperDash.Essentials.DM
             else if (inputCard is Card.Dmps3AirMediaInput)
             {
                 var airMediaInputCard = inputCard as Card.Dmps3AirMediaInput;
-
-                
 
                 AddInputPortWithDebug(number, string.Format("AirMediaIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming);
             }
