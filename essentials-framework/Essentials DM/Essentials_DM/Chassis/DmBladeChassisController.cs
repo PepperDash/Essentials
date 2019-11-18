@@ -150,12 +150,10 @@ namespace PepperDash.Essentials.DM {
             InputCardHdcpCapabilityFeedbacks = new Dictionary<uint, IntFeedback>();
             InputCardHdcpCapabilityTypes = new Dictionary<uint, eHdcpCapabilityType>();
 
-            CrestronConsole.PrintLine("GotHere 1");
             for (uint x = 1; x <= Chassis.NumberOfOutputs; x++) {
                 var tempX = x;
 
                 if (Chassis.Outputs[tempX] != null) {
-                    CrestronConsole.PrintLine("GotHere 2");
                     VideoOutputFeedbacks[tempX] = new IntFeedback(() => {
                         if (Chassis.Outputs[tempX].VideoOutFeedback != null) { return (ushort)Chassis.Outputs[tempX].VideoOutFeedback.Number; }
                         else { return 0; };
@@ -163,7 +161,6 @@ namespace PepperDash.Essentials.DM {
 
                     OutputNameFeedbacks[tempX] = new StringFeedback(() => {
                         if (Chassis.Outputs[tempX].NameFeedback != null) {
-                            CrestronConsole.PrintLine("GotHere 3");
                             return Chassis.Outputs[tempX].NameFeedback.StringValue;
                         }
                         else {
@@ -172,7 +169,6 @@ namespace PepperDash.Essentials.DM {
                     });
                     OutputVideoRouteNameFeedbacks[tempX] = new StringFeedback(() => {
                         if (Chassis.Outputs[tempX].VideoOutFeedback != null) {
-                            CrestronConsole.PrintLine("GotHere 4");
                             return Chassis.Outputs[tempX].VideoOutFeedback.NameFeedback.StringValue;
                         }
                         else {
@@ -188,19 +184,16 @@ namespace PepperDash.Essentials.DM {
 
                 if (Chassis.Inputs[tempX] != null) {
                     UsbInputRoutedToFeebacks[tempX] = new IntFeedback(() => {
-                        CrestronConsole.PrintLine("GotHere 6");
                         if (Chassis.Inputs[tempX].USBRoutedToFeedback != null) { return (ushort)Chassis.Inputs[tempX].USBRoutedToFeedback.Number; }
                         else { return 0; };
                     });
                     VideoInputSyncFeedbacks[tempX] = new BoolFeedback(() => {
-                        CrestronConsole.PrintLine("GotHere 7");
                         if (Chassis.Inputs[tempX].VideoDetectedFeedback != null)
                             return Chassis.Inputs[tempX].VideoDetectedFeedback.BoolValue;
                         else
                             return false;
                     });
                     InputNameFeedbacks[tempX] = new StringFeedback(() => {
-                        CrestronConsole.PrintLine("GotHere 8");
                         if (Chassis.Inputs[tempX].NameFeedback != null) {
                             return Chassis.Inputs[tempX].NameFeedback.StringValue;
                         }
@@ -210,7 +203,6 @@ namespace PepperDash.Essentials.DM {
                     });
 
                     InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => {
-                        CrestronConsole.PrintLine("GotHere 9");
                         return Chassis.Inputs[tempX].EndpointOnlineFeedback;
                     });
 
