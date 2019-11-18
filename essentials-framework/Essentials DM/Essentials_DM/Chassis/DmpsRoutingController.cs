@@ -213,10 +213,10 @@ namespace PepperDash.Essentials.DM
             {
                 var inputCard = card as DMInput;
 
-                Debug.Console(1, this, "Adding Input Card Number {0} Type: {1}", inputCard.Number, inputCard.CardInputOutputType.ToString());
-
                 if (inputCard != null)
                 {
+                    Debug.Console(1, this, "Adding Input Card Number {0} Type: {1}", inputCard.Number, inputCard.CardInputOutputType.ToString());
+
                     InputEndpointOnlineFeedbacks[inputCard.Number] = new BoolFeedback(() => { return inputCard.EndpointOnlineFeedback; });
 
                     if (inputCard.VideoDetectedFeedback != null)
@@ -226,12 +226,13 @@ namespace PepperDash.Essentials.DM
                             return inputCard.VideoDetectedFeedback.BoolValue;
                         });
                     }
+
                     InputNameFeedbacks[inputCard.Number] = new StringFeedback(() =>
                     {
                         if (inputCard.NameFeedback != null && !string.IsNullOrEmpty(inputCard.NameFeedback.StringValue))
                         {
                             Debug.Console(2, this, "Input Card {0} Name: {1}", inputCard.Number, inputCard.NameFeedback.StringValue);
-                                return inputCard.NameFeedback.StringValue;
+                            return inputCard.NameFeedback.StringValue;
 
                         }
                         else
@@ -240,9 +241,13 @@ namespace PepperDash.Essentials.DM
                             return "";
                         }
                     });
-                }
 
-                AddInputCard(inputCard.Number, inputCard);
+                    AddInputCard(inputCard.Number, inputCard);
+                }
+                else
+                {
+                    Debug.Console(2, this, "***********Input Card of type {0} is cannot be cast as DMInput*************", card.CardInputOutputType);
+                }
             }
         }
 
