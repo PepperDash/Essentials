@@ -177,8 +177,10 @@ namespace PepperDash.Essentials.DM {
                     });
 
                     OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => {
-                        CrestronConsole.PrintLine("GotHere 5");
-                        return Chassis.Outputs[tempX].EndpointOnlineFeedback;
+                        if (Chassis.Outputs[tempX].Endpoint != null)
+                            return Chassis.Outputs[tempX].Endpoint.IsOnline;
+                        else
+                            return Chassis.Outputs[tempX].EndpointOnlineFeedback;
                     });
                 }
 
