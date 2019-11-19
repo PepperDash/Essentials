@@ -140,7 +140,7 @@ namespace PepperDash.Essentials.Bridges {
                     var rxKey = dmChassis.RxDictionary[ioSlot];
                     var rxDevice = DeviceManager.GetDeviceForKey(rxKey) as DmRmcControllerBase;
                     var hdBaseTDevice = DeviceManager.GetDeviceForKey(rxKey) as DmHdBaseTControllerBase;
-                    if (dmChassis.Chassis is DmMd128x128 || dmChassis.Chassis is DmMd64x64) {
+                    if (hdBaseTDevice != null) {
                         dmChassis.OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
                     }
                     else if (rxDevice != null) {
