@@ -629,7 +629,7 @@ namespace PepperDash.Essentials.DM
                     }
 
                     DMInput inCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                    DMOutput outCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
+                    DMOutput outCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
 
                     //if (inCard != null)
                     //{
@@ -638,25 +638,25 @@ namespace PepperDash.Essentials.DM
                         {
 
                             //SystemControl.VideoEnter.BoolValue = true;
-                            if (outCard != null && outCard.VideoOut != null)
+                            if (outCard != null)
                                 outCard.VideoOut = inCard;
                         }
 
                         if ((sigType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
                         {
-                            if (outCard != null && outCard.AudioOut != null)
+                            if (outCard != null)
                                 outCard.AudioOut = inCard;
                         }
 
                         if ((sigType | eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
                         {
-                            if (outCard != null && outCard.USBRoutedTo != null)
+                            if (outCard != null)
                                 outCard.USBRoutedTo = inCard;
                         }
 
                         if ((sigType | eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
                         {
-                            if (inCard != null && inCard.USBRoutedTo != null)
+                            if (inCard != null)
                                 inCard.USBRoutedTo = outCard;
                         }
                     //}

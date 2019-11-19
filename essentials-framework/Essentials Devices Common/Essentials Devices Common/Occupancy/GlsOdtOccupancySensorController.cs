@@ -30,6 +30,8 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         public GlsOdtOccupancySensorController(string key, string name, GlsOdtCCn sensor)
             : base(key, name, sensor)
         {
+            OccSensor = sensor;
+
             AndWhenVacatedFeedback = new BoolFeedback(() => OccSensor.AndWhenVacatedFeedback.BoolValue);
 
             OrWhenVacatedFeedback = new BoolFeedback(() => OccSensor.OrWhenVacatedFeedback.BoolValue);
