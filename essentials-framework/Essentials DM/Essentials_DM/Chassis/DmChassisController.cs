@@ -767,8 +767,6 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void Chassis_DMOutputChange(Switch device, DMOutputEventArgs args)
         {
-
-			//This should be a switch case JTA 2018-07-02
 			var output = args.Number;
 
             switch (args.EventId) 

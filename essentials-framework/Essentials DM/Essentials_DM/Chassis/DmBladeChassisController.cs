@@ -458,9 +458,8 @@ namespace PepperDash.Essentials.DM {
         }
         /// 
         /// </summary>
-        void Chassis_DMOutputChange(Switch device, DMOutputEventArgs args) {
-
-            //This should be a switch case JTA 2018-07-02
+        void Chassis_DMOutputChange(Switch device, DMOutputEventArgs args) 
+        {
             var output = args.Number;
 
             switch (args.EventId) {
@@ -471,7 +470,10 @@ namespace PepperDash.Essentials.DM {
                         break;
                     }
                 case DMOutputEventIds.EndpointOnlineEventId: {
-                        Debug.Console(2, this, "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. State: {1}", args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
+                        Debug.Console(2, this, "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. EndpointOnlineFeedback State: {1}", args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
+                        if(Chassis.Outputs[output].Endpoint != null)
+                            Debug.Console(2, this, "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. Endpoint.IsOnline State: {1}", args.Number, Chassis.Outputs[output].Endpoint.IsOnline);
+
                         OutputEndpointOnlineFeedbacks[output].FireUpdate();
                         break;
                     }
