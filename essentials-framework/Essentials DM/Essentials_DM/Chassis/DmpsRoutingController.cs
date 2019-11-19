@@ -629,10 +629,10 @@ namespace PepperDash.Essentials.DM
                     }
 
                     DMInput inCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                    Card.Dmps3OutputBase outCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
+                    DMOutput outCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
 
-                    if (inCard != null)
-                    {
+                    //if (inCard != null)
+                    //{
                         // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
                         if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
                         {
@@ -659,11 +659,11 @@ namespace PepperDash.Essentials.DM
                             if (inCard != null && inCard.USBRoutedTo != null)
                                 inCard.USBRoutedTo = outCard;
                         }
-                    }
-                    else
-                    {
-                        Debug.Console(1, this, "Unable to execute route from input {0} to output {1}.  Input card not available", inputSelector, outputSelector);
-                    }
+                    //}
+                    //else
+                    //{
+                    //    Debug.Console(1, this, "Unable to execute route from input {0} to output {1}.  Input card not available", inputSelector, outputSelector);
+                    //}
 
                 }
                 else
