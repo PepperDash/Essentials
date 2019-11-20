@@ -121,10 +121,18 @@ namespace PepperDash.Essentials.DM
             // Set input and output names from config
             if (InputNames != null)
                 foreach (var kvp in InputNames)
-                    (Dmps.SwitcherInputs[kvp.Key] as DMInput).Name.StringValue = kvp.Value;
+                {
+                    var input = (Dmps.SwitcherInputs[kvp.Key] as DMInput);
+                    if(input != null)
+                        input.Name.StringValue = kvp.Value;
+                }
             if (OutputNames != null)
                 foreach (var kvp in OutputNames)
-                    (Dmps.SwitcherOutputs[kvp.Key] as Card.Dmps3OutputBase).Name.StringValue = kvp.Value;
+                {
+                    var output = (Dmps.SwitcherOutputs[kvp.Key] as DMOutput);
+                    if(output != null)
+                        output.Name.StringValue = kvp.Value;
+                }
 
             // Subscribe to events
             Dmps.DMInputChange += new DMInputEventHandler(Dmps_DMInputChange);
