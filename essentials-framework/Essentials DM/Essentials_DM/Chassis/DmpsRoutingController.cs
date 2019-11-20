@@ -116,23 +116,25 @@ namespace PepperDash.Essentials.DM
 
         public override bool CustomActivate()
         {
-
-
             // Set input and output names from config
             if (InputNames != null)
+            {
                 foreach (var kvp in InputNames)
                 {
                     var input = (Dmps.SwitcherInputs[kvp.Key] as DMInput);
-                    if(input != null)
+                    if (input != null)
                         input.Name.StringValue = kvp.Value;
                 }
+            }
             if (OutputNames != null)
+            {
                 foreach (var kvp in OutputNames)
                 {
                     var output = (Dmps.SwitcherOutputs[kvp.Key] as DMOutput);
-                    if(output != null)
+                    if (output != null)
                         output.Name.StringValue = kvp.Value;
                 }
+            }
 
             // Subscribe to events
             Dmps.DMInputChange += new DMInputEventHandler(Dmps_DMInputChange);
