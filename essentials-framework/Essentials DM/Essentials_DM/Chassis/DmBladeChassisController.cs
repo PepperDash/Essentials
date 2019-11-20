@@ -177,9 +177,9 @@ namespace PepperDash.Essentials.DM {
                     });
 
                     OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => {
-                        if (Chassis.Outputs[tempX].Endpoint != null)
-                            return Chassis.Outputs[tempX].Endpoint.IsOnline;
-                        else
+                        //if (Chassis.Outputs[tempX].Endpoint != null)
+                        //    return Chassis.Outputs[tempX].Endpoint.IsOnline;
+                        //else
                             return Chassis.Outputs[tempX].EndpointOnlineFeedback;
                     });
                 }

@@ -137,15 +137,15 @@ namespace PepperDash.Essentials.Bridges {
                 }
                 if (dmChassis.RxDictionary.ContainsKey(ioSlot)) {
                     Debug.Console(2, "Creating Rx Feedbacks {0}", ioSlot);
-                    var rxKey = dmChassis.RxDictionary[ioSlot];
-                    var rxDevice = DeviceManager.GetDeviceForKey(rxKey) as DmRmcControllerBase;
-                    var hdBaseTDevice = DeviceManager.GetDeviceForKey(rxKey) as DmHdBaseTControllerBase;
-                    if (hdBaseTDevice != null) {
+                    //var rxKey = dmChassis.RxDictionary[ioSlot];
+                    //var rxDevice = DeviceManager.GetDeviceForKey(rxKey) as DmRmcControllerBase;
+                    //var hdBaseTDevice = DeviceManager.GetDeviceForKey(rxKey) as DmHdBaseTControllerBase;
+                    //if (hdBaseTDevice != null) {
                         dmChassis.OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
-                    }
-                    else if (rxDevice != null) {
-                        rxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
-                    }
+                    //}
+                    //else if (rxDevice != null) {
+                    //    rxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
+                    //}
                 }
 
                 // Feedback
