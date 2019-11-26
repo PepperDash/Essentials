@@ -116,15 +116,25 @@ namespace PepperDash.Essentials.DM
 
         public override bool CustomActivate()
         {
-
-
             // Set input and output names from config
             if (InputNames != null)
+            {
                 foreach (var kvp in InputNames)
-                    (Dmps.SwitcherInputs[kvp.Key] as DMInput).Name.StringValue = kvp.Value;
+                {
+                    var input = (Dmps.SwitcherInputs[kvp.Key] as DMInput);
+                    if (input != null)
+                        input.Name.StringValue = kvp.Value;
+                }
+            }
             if (OutputNames != null)
+            {
                 foreach (var kvp in OutputNames)
-                    (Dmps.SwitcherOutputs[kvp.Key] as Card.Dmps3OutputBase).Name.StringValue = kvp.Value;
+                {
+                    var output = (Dmps.SwitcherOutputs[kvp.Key] as DMOutput);
+                    if (output != null)
+                        output.Name.StringValue = kvp.Value;
+                }
+            }
 
             // Subscribe to events
             Dmps.DMInputChange += new DMInputEventHandler(Dmps_DMInputChange);
@@ -213,10 +223,10 @@ namespace PepperDash.Essentials.DM
             {
                 var inputCard = card as DMInput;
 
-                Debug.Console(1, this, "Adding Input Card Number {0} Type: {1}", inputCard.Number, inputCard.CardInputOutputType.ToString());
-
                 if (inputCard != null)
                 {
+                    Debug.Console(1, this, "Adding Input Card Number {0} Type: {1}", inputCard.Number, inputCard.CardInputOutputType.ToString());
+
                     InputEndpointOnlineFeedbacks[inputCard.Number] = new BoolFeedback(() => { return inputCard.EndpointOnlineFeedback; });
 
                     if (inputCard.VideoDetectedFeedback != null)
@@ -226,23 +236,28 @@ namespace PepperDash.Essentials.DM
                             return inputCard.VideoDetectedFeedback.BoolValue;
                         });
                     }
+
                     InputNameFeedbacks[inputCard.Number] = new StringFeedback(() =>
                     {
                         if (inputCard.NameFeedback != null && !string.IsNullOrEmpty(inputCard.NameFeedback.StringValue))
                         {
                             Debug.Console(2, this, "Input Card {0} Name: {1}", inputCard.Number, inputCard.NameFeedback.StringValue);
-                                return inputCard.NameFeedback.StringValue;
+                            return inputCard.NameFeedback.StringValue;
 
                         }
                         else
                         {
-                            Debug.Console(2, this, "Input Card {0} Name is null", inputCard.Number, inputCard.NameFeedback.StringValue);
+                            Debug.Console(2, this, "Input Card {0} Name is null", inputCard.Number);
                             return "";
                         }
                     });
-                }
 
-                AddInputCard(inputCard.Number, inputCard);
+                    AddInputCard(inputCard.Number, inputCard);
+                }
+                else
+                {
+                    Debug.Console(2, this, "***********Input Card of type {0} is cannot be cast as DMInput*************", card.CardInputOutputType);
+                }
             }
         }
 
@@ -255,7 +270,7 @@ namespace PepperDash.Essentials.DM
         {
             if (inputCard is Card.Dmps3HdmiInputWithoutAnalogAudio)
             {
-                var hdmiInputCard = inputCard as Card.Dmps3HdmiInput;
+                var hdmiInputCard = inputCard as Card.Dmps3HdmiInputWithoutAnalogAudio;
 
                 var cecPort = hdmiInputCard.HdmiInputPort;
 
@@ -272,8 +287,6 @@ namespace PepperDash.Essentials.DM
             }
             else if (inputCard is Card.Dmps3HdmiVgaInput)
             {
-                // TODO: Build a virtual TX device and assign the ports to it
-
                 var hdmiVgaInputCard = inputCard as Card.Dmps3HdmiVgaInput;
 
                 DmpsInternalVirtualHdmiVgaInputController inputCardController = new DmpsInternalVirtualHdmiVgaInputController(Key +
@@ -285,8 +298,6 @@ namespace PepperDash.Essentials.DM
             }
             else if (inputCard is Card.Dmps3HdmiVgaBncInput)
             {
-                // TODO: Build a virtual TX device and assign the ports to it
-
                 var hdmiVgaBncInputCard = inputCard as Card.Dmps3HdmiVgaBncInput;
 
                 DmpsInternalVirtualHdmiVgaBncInputController inputCardController = new DmpsInternalVirtualHdmiVgaBncInputController(Key +
@@ -308,8 +319,6 @@ namespace PepperDash.Essentials.DM
             else if (inputCard is Card.Dmps3AirMediaInput)
             {
                 var airMediaInputCard = inputCard as Card.Dmps3AirMediaInput;
-
-                
 
                 AddInputPortWithDebug(number, string.Format("AirMediaIn{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming);
             }
@@ -630,41 +639,41 @@ namespace PepperDash.Essentials.DM
                     }
 
                     DMInput inCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                    Card.Dmps3OutputBase outCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
+                    DMOutput outCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
 
-                    if (inCard != null)
-                    {
+                    //if (inCard != null)
+                    //{
                         // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
                         if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
                         {
 
                             //SystemControl.VideoEnter.BoolValue = true;
-                            if (outCard != null && outCard.VideoOut != null)
+                            if (outCard != null)
                                 outCard.VideoOut = inCard;
                         }
 
                         if ((sigType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
                         {
-                            if (outCard != null && outCard.AudioOut != null)
+                            if (outCard != null)
                                 outCard.AudioOut = inCard;
                         }
 
                         if ((sigType | eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
                         {
-                            if (outCard != null && outCard.USBRoutedTo != null)
+                            if (outCard != null)
                                 outCard.USBRoutedTo = inCard;
                         }
 
                         if ((sigType | eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
                         {
-                            if (inCard != null && inCard.USBRoutedTo != null)
+                            if (inCard != null)
                                 inCard.USBRoutedTo = outCard;
                         }
-                    }
-                    else
-                    {
-                        Debug.Console(1, this, "Unable to execute route from input {0} to output {1}.  Input card not available", inputSelector, outputSelector);
-                    }
+                    //}
+                    //else
+                    //{
+                    //    Debug.Console(1, this, "Unable to execute route from input {0} to output {1}.  Input card not available", inputSelector, outputSelector);
+                    //}
 
                 }
                 else

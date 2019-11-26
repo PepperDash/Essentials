@@ -17,6 +17,8 @@ using PepperDash.Essentials.Fusion;
 using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Room.MobileControl;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials
 {
     public class ControlSystem : CrestronControlSystem
@@ -372,21 +374,7 @@ namespace PepperDash.Essentials
 
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
 
-            // Check if the processor is a DMPS model
-            if (this.ControllerPrompt.IndexOf("dmps", StringComparison.OrdinalIgnoreCase) > -1)
-            {
-                Debug.Console(2, "Adding DmpsRoutingController for {0} to Device Manager.", this.ControllerPrompt);
 
-                var dmpsRoutingController = DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, new DM.Config.DmpsRoutingPropertiesConfig());
-
-                DeviceManager.AddDevice(dmpsRoutingController);
-
-
-            }
-            else
-            {
-                Debug.Console(2, "************Processor is not DMPS type***************");
-            }
 
             // Add global System Monitor device
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));
@@ -403,7 +391,26 @@ namespace PepperDash.Essentials
                         if (devConf.Type.ToLower() != Global.ControlSystem.ControllerPrompt.ToLower())
                             Debug.Console(0,
                                 "WARNING: Config file defines processor type as '{0}' but actual processor is '{1}'!  Some ports may not be available",
-                                devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());        
+                                devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
+
+                        // Check if the processor is a DMPS model
+                        if (this.ControllerPrompt.IndexOf("dmps", StringComparison.OrdinalIgnoreCase) > -1)
+                        {
+                            Debug.Console(2, "Adding DmpsRoutingController for {0} to Device Manager.", this.ControllerPrompt);
+
+                            var propertiesConfig = JsonConvert.DeserializeObject<DM.Config.DmpsRoutingPropertiesConfig>(devConf.Properties.ToString());
+
+                            if(propertiesConfig == null)
+                                propertiesConfig =  new DM.Config.DmpsRoutingPropertiesConfig();
+
+                            var dmpsRoutingController = DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig);
+
+                            DeviceManager.AddDevice(dmpsRoutingController);
+                        }
+                        else
+                        {
+                            Debug.Console(2, "************Processor is not DMPS type***************");
+                        }
 
                         continue;
                     }

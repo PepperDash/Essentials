@@ -46,31 +46,33 @@ namespace PepperDash.Essentials.DM
 				return PepperDash.Essentials.DM.DmChassisController.
 					GetDmChassisController(key, name, type, props);
 			}
-			// Hand off to DmTxHelper class
-			else if (typeName.StartsWith("dmtx"))
-			{
-				var props = JsonConvert.DeserializeObject
-					<PepperDash.Essentials.DM.Config.DmTxPropertiesConfig>(properties.ToString());
-				return PepperDash.Essentials.DM.DmTxHelper.GetDmTxController(key, name, type, props);
-			}
+            else if (typeName.StartsWith("dmmd128x") || typeName.StartsWith("dmmd64x")) {
+                var props = JsonConvert.DeserializeObject
+					<PepperDash.Essentials.DM.Config.DMChassisPropertiesConfig>(properties.ToString());
+				return PepperDash.Essentials.DM.DmBladeChassisController.
+					GetDmChassisController(key, name, type, props);
+            }
+            // Hand off to DmTxHelper class
+            else if (typeName.StartsWith("dmtx")) {
+                var props = JsonConvert.DeserializeObject
+                    <PepperDash.Essentials.DM.Config.DmTxPropertiesConfig>(properties.ToString());
+                return PepperDash.Essentials.DM.DmTxHelper.GetDmTxController(key, name, type, props);
+            }
 
-			// Hand off to DmRmcHelper class
-			else if (typeName.StartsWith("dmrmc"))
-			{
-				var props = JsonConvert.DeserializeObject
-					<PepperDash.Essentials.DM.Config.DmRmcPropertiesConfig>(properties.ToString());
-				return PepperDash.Essentials.DM.DmRmcHelper.GetDmRmcController(key, name, type, props);
-			}
+            // Hand off to DmRmcHelper class
+            else if (typeName.StartsWith("dmrmc")) {
+                var props = JsonConvert.DeserializeObject
+                    <PepperDash.Essentials.DM.Config.DmRmcPropertiesConfig>(properties.ToString());
+                return PepperDash.Essentials.DM.DmRmcHelper.GetDmRmcController(key, name, type, props);
+            }
 
-			else if (typeName.Equals("hdmd4x14ke"))
-			{
-				var props = JsonConvert.DeserializeObject
-					<PepperDash.Essentials.DM.Config.HdMdNxM4kEPropertiesConfig>(properties.ToString());
-				return PepperDash.Essentials.DM.Chassis.HdMdNxM4kEController.GetController(key, name, type, props);
-			}
+            else if (typeName.Equals("hdmd4x14ke")) {
+                var props = JsonConvert.DeserializeObject
+                    <PepperDash.Essentials.DM.Config.HdMdNxM4kEPropertiesConfig>(properties.ToString());
+                return PepperDash.Essentials.DM.Chassis.HdMdNxM4kEController.GetController(key, name, type, props);
+            }
 
-            else if (typeName.Equals("hdmd400ce") || typeName.Equals("hdmd300ce") || typeName.Equals("hdmd200ce") || typeName.Equals("hdmd200c1ge"))
-            {
+            else if (typeName.Equals("hdmd400ce") || typeName.Equals("hdmd300ce") || typeName.Equals("hdmd200ce") || typeName.Equals("hdmd200c1ge")) {
                 var props = JsonConvert.DeserializeObject
                     <PepperDash.Essentials.DM.HdMdxxxCEPropertiesConfig>(properties.ToString());
 

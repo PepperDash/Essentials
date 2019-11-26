@@ -1,4 +1,4 @@
-﻿	using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +11,7 @@ using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.DM.Cards;
+//using PepperDash.Essentials.DM.Cards;
 
 using PepperDash.Essentials.DM.Config;
 
@@ -21,11 +21,11 @@ namespace PepperDash.Essentials.DM
 	/// Builds a controller for basic DM-RMCs with Com and IR ports and no control functions
 	/// 
 	/// </summary>
-	public class DmChassisController : CrestronGenericBaseDevice, IRoutingInputsOutputs, IRouting, IHasFeedback
+	public class DmChassisController : CrestronGenericBaseDevice, IDmSwitch, IRoutingInputsOutputs, IRouting, IHasFeedback
     {
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
-		public DmMDMnxn Chassis { get; private set; }
+		public Switch Chassis { get; private set; }
 		
 		// Feedbacks for EssentialDM
 		public Dictionary<uint, IntFeedback> VideoOutputFeedbacks { get; private set; }
@@ -170,8 +170,8 @@ namespace PepperDash.Essentials.DM
             InputEndpointOnlineFeedbacks = new Dictionary<uint, BoolFeedback>();
             OutputEndpointOnlineFeedbacks = new Dictionary<uint, BoolFeedback>();
 
-            SystemIdFeebdack = new IntFeedback(() => { return Chassis.SystemIdFeedback.UShortValue; });
-            SystemIdBusyFeedback = new BoolFeedback(() => { return Chassis.SystemIdBusy.BoolValue; });
+            SystemIdFeebdack = new IntFeedback(() => { return (Chassis as DmMDMnxn).SystemIdFeedback.UShortValue; });
+            SystemIdBusyFeedback = new BoolFeedback(() => { return (Chassis as DmMDMnxn).SystemIdBusy.BoolValue; });
             InputCardHdcpCapabilityFeedbacks = new Dictionary<uint, IntFeedback>();
             InputCardHdcpCapabilityTypes = new Dictionary<uint, eHdcpCapabilityType>();
 
@@ -703,13 +703,13 @@ namespace PepperDash.Essentials.DM
             {
                 case DMSystemEventIds.SystemIdEventId:
                     {
-                        Debug.Console(2, this, "SystemIdEvent Value: {0}", Chassis.SystemIdFeedback.UShortValue);
+                        Debug.Console(2, this, "SystemIdEvent Value: {0}", (Chassis as DmMDMnxn).SystemIdFeedback.UShortValue);
                         SystemIdFeebdack.FireUpdate();
                         break;
                     }
                 case DMSystemEventIds.SystemIdBusyEventId:
                     {
-                        Debug.Console(2, this, "SystemIdBusyEvent State: {0}", Chassis.SystemIdBusy.BoolValue);
+                        Debug.Console(2, this, "SystemIdBusyEvent State: {0}", (Chassis as DmMDMnxn).SystemIdBusy.BoolValue);
                         SystemIdBusyFeedback.FireUpdate();
                         break;
                     }
@@ -767,8 +767,6 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void Chassis_DMOutputChange(Switch device, DMOutputEventArgs args)
         {
-
-			//This should be a switch case JTA 2018-07-02
 			var output = args.Number;
 
             switch (args.EventId) 
@@ -863,8 +861,8 @@ namespace PepperDash.Essentials.DM
 		{
 			if (IsOnline.BoolValue)
 			{
-                Chassis.EnableAudioBreakaway.BoolValue = true;
-                Chassis.EnableUSBBreakaway.BoolValue = true;
+                (Chassis as DmMDMnxn).EnableAudioBreakaway.BoolValue = true;
+                (Chassis as DmMDMnxn).EnableUSBBreakaway.BoolValue = true;
 
 				if (InputNames != null)
 					foreach (var kvp in InputNames)
@@ -899,8 +897,8 @@ namespace PepperDash.Essentials.DM
 				}
 			}
 
-			Card.DMICard inCard = input == 0 ? null : Chassis.Inputs[input];
-            Card.DMOCard outCard = input == 0 ? null : Chassis.Outputs[output];
+            var inCard = input == 0 ? null : Chassis.Inputs[input];
+            var outCard = input == 0 ? null : Chassis.Outputs[output];
 
 			// NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
 			if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
@@ -911,7 +909,7 @@ namespace PepperDash.Essentials.DM
 
 			if ((sigType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
 			{
-				Chassis.AudioEnter.BoolValue = true;
+                (Chassis as DmMDMnxn).AudioEnter.BoolValue = true;
 				Chassis.Outputs[output].AudioOut = inCard;
 			}
 
@@ -931,8 +929,7 @@ namespace PepperDash.Essentials.DM
 		}
 
 		#endregion
-
-	}
+    }
 
 	public struct PortNumberType
 	{

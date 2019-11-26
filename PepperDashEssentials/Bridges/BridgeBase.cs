@@ -103,9 +103,12 @@ namespace PepperDash.Essentials.Bridges
 							(device as DisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
 							continue;
 						}
-                        else if (device is DmChassisController)
-                        {
+                        else if (device is DmChassisController) {
                             (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is DmBladeChassisController) {
+                            (device as DmBladeChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
                         else if (device is DmpsRoutingController)
