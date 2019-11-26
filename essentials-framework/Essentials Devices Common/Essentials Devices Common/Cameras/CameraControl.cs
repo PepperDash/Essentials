@@ -9,9 +9,9 @@ using PepperDash.Essentials.Core;
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
     public enum eCameraControlMode
-    {
-        Off = 0,
-        Manual,
+    {       
+        Manual = 0,
+        Off,
         Auto
     }
 

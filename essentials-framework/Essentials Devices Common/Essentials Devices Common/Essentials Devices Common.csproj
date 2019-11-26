@@ -102,6 +102,7 @@
     <Compile Include="AudioCodec\MockAC\MockAcPropertiesConfig.cs" />
     <Compile Include="Cameras\CameraBase.cs" />
     <Compile Include="Cameras\CameraVisca.cs" />
+    <Compile Include="Cameras\IHasCameraPresets.cs" />
     <Compile Include="Codec\eCodecCallDirection.cs" />
     <Compile Include="Codec\eCodecCallType.cs" />
     <Compile Include="Codec\eCodecCallStatus.cs" />
