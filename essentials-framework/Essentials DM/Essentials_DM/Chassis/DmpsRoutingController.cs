@@ -116,15 +116,25 @@ namespace PepperDash.Essentials.DM
 
         public override bool CustomActivate()
         {
-
-
             // Set input and output names from config
             if (InputNames != null)
+            {
                 foreach (var kvp in InputNames)
-                    (Dmps.SwitcherInputs[kvp.Key] as DMInput).Name.StringValue = kvp.Value;
+                {
+                    var input = (Dmps.SwitcherInputs[kvp.Key] as DMInput);
+                    if (input != null)
+                        input.Name.StringValue = kvp.Value;
+                }
+            }
             if (OutputNames != null)
+            {
                 foreach (var kvp in OutputNames)
-                    (Dmps.SwitcherOutputs[kvp.Key] as Card.Dmps3OutputBase).Name.StringValue = kvp.Value;
+                {
+                    var output = (Dmps.SwitcherOutputs[kvp.Key] as DMOutput);
+                    if (output != null)
+                        output.Name.StringValue = kvp.Value;
+                }
+            }
 
             // Subscribe to events
             Dmps.DMInputChange += new DMInputEventHandler(Dmps_DMInputChange);
@@ -629,41 +639,41 @@ namespace PepperDash.Essentials.DM
                     }
 
                     DMInput inCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                    Card.Dmps3OutputBase outCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as Card.Dmps3OutputBase;
+                    DMOutput outCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
 
-                    if (inCard != null)
-                    {
+                    //if (inCard != null)
+                    //{
                         // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
                         if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
                         {
 
                             //SystemControl.VideoEnter.BoolValue = true;
-                            if (outCard != null && outCard.VideoOut != null)
+                            if (outCard != null)
                                 outCard.VideoOut = inCard;
                         }
 
                         if ((sigType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
                         {
-                            if (outCard != null && outCard.AudioOut != null)
+                            if (outCard != null)
                                 outCard.AudioOut = inCard;
                         }
 
                         if ((sigType | eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
                         {
-                            if (outCard != null && outCard.USBRoutedTo != null)
+                            if (outCard != null)
                                 outCard.USBRoutedTo = inCard;
                         }
 
                         if ((sigType | eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
                         {
-                            if (inCard != null && inCard.USBRoutedTo != null)
+                            if (inCard != null)
                                 inCard.USBRoutedTo = outCard;
                         }
-                    }
-                    else
-                    {
-                        Debug.Console(1, this, "Unable to execute route from input {0} to output {1}.  Input card not available", inputSelector, outputSelector);
-                    }
+                    //}
+                    //else
+                    //{
+                    //    Debug.Console(1, this, "Unable to execute route from input {0} to output {1}.  Input card not available", inputSelector, outputSelector);
+                    //}
 
                 }
                 else

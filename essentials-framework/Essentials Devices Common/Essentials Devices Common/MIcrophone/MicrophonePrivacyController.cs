@@ -87,7 +87,11 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
             else
                 Debug.Console(0, this, "Unable to add Red LED device");
 
-            CheckPrivacyMode();
+            AddPostActivationAction(() => {
+                CheckPrivacyMode();
+                PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange -= PrivacyModeIsOnFeedback_OutputChange;
+                PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange += PrivacyModeIsOnFeedback_OutputChange;
+            });
 
             initialized = true;
 
@@ -97,8 +101,6 @@ namespace PepperDash.Essentials.Devices.Common.Microphones
         public void SetPrivacyDevice(IPrivacy privacyDevice)
         {
             PrivacyDevice = privacyDevice;
-
-            PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange += PrivacyModeIsOnFeedback_OutputChange;
         }
 
         void PrivacyModeIsOnFeedback_OutputChange(object sender, EventArgs e)
