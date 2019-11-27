@@ -231,64 +231,25 @@ namespace PepperDash.Essentials
 
         void Initialize()
 		{
-            if (DefaultAudioDevice is IBasicVolumeControls)
-                DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;
-            else if (DefaultAudioDevice is IHasVolumeDevice)
-                DefaultVolumeControls = (DefaultAudioDevice as IHasVolumeDevice).VolumeDevice;
-            CurrentVolumeControls = DefaultVolumeControls;
-			
-
-            var disp = DefaultDisplay as DisplayBase;
-            if (disp != null)
+            try
             {
-                // Link power, warming, cooling to display
-                disp.PowerIsOnFeedback.OutputChange += (o, a) =>
-                    {
-                        if (disp.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
-                        {
-                            if (!disp.PowerIsOnFeedback.BoolValue)
-                                CurrentSourceInfo = null;
-                            OnFeedback.FireUpdate();
-                        }
-                        if (disp.PowerIsOnFeedback.BoolValue)
-                        {
-                            SetDefaultLevels();
-                        }
-                    };
-
-                disp.IsWarmingUpFeedback.OutputChange += (o, a) => 
-                { 
-                    IsWarmingUpFeedback.FireUpdate();
-                    if (!IsWarmingUpFeedback.BoolValue)
-                        (CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
-                };
-                disp.IsCoolingDownFeedback.OutputChange += (o, a) => 
-                {
-                    IsCoolingDownFeedback.FireUpdate(); 
-                };
-
-                // Get Microphone Privacy object, if any
-                this.MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
-
-                Debug.Console(2, this, "Microphone Privacy Config evaluated.");
-
-                // Get emergency object, if any
-                this.Emergency = EssentialsRoomConfigHelper.GetEmergency(PropertiesConfig, this);
-
-                Debug.Console(2, this, "Emergency Config evaluated.");
-            }
+                if (DefaultAudioDevice is IBasicVolumeControls)
+                    DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;
+                else if (DefaultAudioDevice is IHasVolumeDevice)
+                    DefaultVolumeControls = (DefaultAudioDevice as IHasVolumeDevice).VolumeDevice;
+                CurrentVolumeControls = DefaultVolumeControls;
 
 
-            // Combines call feedback from both codecs if available
-            InCallFeedback = new BoolFeedback(() => 
+                // Combines call feedback from both codecs if available
+                InCallFeedback = new BoolFeedback(() =>
                 {
                     bool inAudioCall = false;
                     bool inVideoCall = false;
 
-                    if(AudioCodec != null)
+                    if (AudioCodec != null)
                         inAudioCall = AudioCodec.IsInCall;
 
-                    if(VideoCodec != null)
+                    if (VideoCodec != null)
                         inVideoCall = VideoCodec.IsInCall;
 
                     if (inAudioCall || inVideoCall)
@@ -297,22 +258,71 @@ namespace PepperDash.Essentials
                         return false;
                 });
 
-            VideoCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+                var disp = DefaultDisplay as DisplayBase;
+                if (disp != null)
+                {
+                    // Link power, warming, cooling to display
+                    disp.PowerIsOnFeedback.OutputChange += (o, a) =>
+                        {
+                            if (disp.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
+                            {
+                                if (!disp.PowerIsOnFeedback.BoolValue)
+                                    CurrentSourceInfo = null;
+                                OnFeedback.FireUpdate();
+                            }
+                            if (disp.PowerIsOnFeedback.BoolValue)
+                            {
+                                SetDefaultLevels();
+                            }
+                        };
 
-            if (AudioCodec != null)
-                AudioCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+                    disp.IsWarmingUpFeedback.OutputChange += (o, a) =>
+                    {
+                        IsWarmingUpFeedback.FireUpdate();
+                        if (!IsWarmingUpFeedback.BoolValue)
+                            (CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
+                    };
+                    disp.IsCoolingDownFeedback.OutputChange += (o, a) =>
+                    {
+                        IsCoolingDownFeedback.FireUpdate();
+                    };
 
-            IsSharingFeedback = new BoolFeedback(() => VideoCodec.SharingContentIsOnFeedback.BoolValue);
-            VideoCodec.SharingContentIsOnFeedback.OutputChange += (o, a) => this.IsSharingFeedback.FireUpdate();
+                }
 
-            // link privacy to VC (for now?)
-            PrivacyModeIsOnFeedback = new BoolFeedback(() => VideoCodec.PrivacyModeIsOnFeedback.BoolValue);
-            VideoCodec.PrivacyModeIsOnFeedback.OutputChange += (o, a) => this.PrivacyModeIsOnFeedback.FireUpdate();
 
-            CallTypeFeedback = new IntFeedback(() => 0);
-          
-			SourceListKey = "default";
-			EnablePowerOnToLastSource = true;
+
+                // Get Microphone Privacy object, if any  MUST HAPPEN AFTER setting InCallFeedback
+                this.MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
+
+                Debug.Console(2, this, "Microphone Privacy Config evaluated.");
+
+                // Get emergency object, if any
+                this.Emergency = EssentialsRoomConfigHelper.GetEmergency(PropertiesConfig, this);
+
+                Debug.Console(2, this, "Emergency Config evaluated.");
+
+
+                VideoCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+
+                if (AudioCodec != null)
+                    AudioCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+
+                IsSharingFeedback = new BoolFeedback(() => VideoCodec.SharingContentIsOnFeedback.BoolValue);
+                VideoCodec.SharingContentIsOnFeedback.OutputChange += (o, a) => this.IsSharingFeedback.FireUpdate();
+
+                // link privacy to VC (for now?)
+                PrivacyModeIsOnFeedback = new BoolFeedback(() => VideoCodec.PrivacyModeIsOnFeedback.BoolValue);
+                VideoCodec.PrivacyModeIsOnFeedback.OutputChange += (o, a) => this.PrivacyModeIsOnFeedback.FireUpdate();
+
+                CallTypeFeedback = new IntFeedback(() => 0);
+
+                SourceListKey = "default";
+                EnablePowerOnToLastSource = true;
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, this, "Error Initializing Room: {0}", e);
+            }
    		}
 
         protected override void CustomSetConfig(DeviceConfig config)
