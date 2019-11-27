@@ -39,7 +39,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         }
 
-        protected override void CustomRegisterWithAppServer(CotijaSystemController appServerController)
+        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
         {
             appServerController.AddAction(MessagePath + "/fullStatus", new Action(SendAtcFullMessageObject));
             appServerController.AddAction(MessagePath + "/dial", new Action<string>(s => Codec.Dial(s)));

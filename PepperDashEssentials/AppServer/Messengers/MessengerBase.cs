@@ -24,7 +24,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// <summary>
 		/// 
 		/// </summary>
-		public CotijaSystemController AppServerController { get; private set; }
+		public MobileControlSystemController AppServerController { get; private set; }
 
 		public string MessagePath { get; private set; }
 
@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// Registers this messenger with appserver controller
 		/// </summary>
 		/// <param name="appServerController"></param>
-		public void RegisterWithAppServer(CotijaSystemController appServerController)
+		public void RegisterWithAppServer(MobileControlSystemController appServerController)
 		{
 			if (appServerController == null)
 				throw new ArgumentNullException("appServerController");
@@ -60,7 +60,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// Implemented in extending classes. Wire up API calls and feedback here
 		/// </summary>
 		/// <param name="appServerController"></param>
-		abstract protected void CustomRegisterWithAppServer(CotijaSystemController appServerController);
+		abstract protected void CustomRegisterWithAppServer(MobileControlSystemController appServerController);
 
 		/// <summary>
 		/// Helper for posting status message

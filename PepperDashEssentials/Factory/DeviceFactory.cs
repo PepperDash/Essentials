@@ -61,18 +61,18 @@ namespace PepperDash.Essentials
 
             else if (typeName == "appserver")
             {
-                var props = JsonConvert.DeserializeObject<CotijaConfig>(properties.ToString());
-                return new CotijaSystemController(key, name, props);
+                var props = JsonConvert.DeserializeObject<MobileControlConfig>(properties.ToString());
+                return new MobileControlSystemController(key, name, props);
             }
 
 			else if (typeName == "mobilecontrolbridge-ddvc01")
 			{
 				var comm = CommFactory.GetControlPropertiesConfig(dc);
 
-				var bridge = new PepperDash.Essentials.Room.Cotija.CotijaDdvc01RoomBridge(key, name, comm.IpIdInt);
+				var bridge = new PepperDash.Essentials.Room.MobileControl.MobileControlDdvc01RoomBridge(key, name, comm.IpIdInt);
 				bridge.AddPreActivationAction(() =>
 				{
-					var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as CotijaSystemController;
+					var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as MobileControlSystemController;
 					if (parent == null)
 					{
 						Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
@@ -87,7 +87,7 @@ namespace PepperDash.Essentials
 
             else if (typeName == "roomonwhenoccupancydetectedfeature")
             {
-                return new Room.Behaviours.RoomOnToDefaultSourceWhenOccupied(dc);
+                return new RoomOnToDefaultSourceWhenOccupied(dc);
             }
 
 			return null;

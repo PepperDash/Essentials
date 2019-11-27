@@ -64,11 +64,11 @@ namespace PepperDash.Essentials
 			parent.SetItemMainText(index, room.Name);
 			UpdateItem(room.CurrentSourceInfo);
 			// Watch for later changes
-			room.CurrentSingleSourceChange += new SourceInfoChangeHandler(room_CurrentSourceInfoChange);
+			room.CurrentSourceChange += new SourceInfoChangeHandler(room_CurrentSourceInfoChange);
 			parent.SetItemButtonAction(index, buttonAction);
 		}
 
-		void room_CurrentSourceInfoChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+		void room_CurrentSourceInfoChange(SourceListItem info, ChangeType type)
 		{
 			UpdateItem(info);
 		}

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Room.Cotija
+namespace PepperDash.Essentials.Room.MobileControl
 {
 
     /// <summary>

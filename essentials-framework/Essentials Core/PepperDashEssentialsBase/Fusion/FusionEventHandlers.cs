@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Fusion
+namespace PepperDash.Essentials.Core.Fusion
 {
     public class ScheduleChangeEventArgs : EventArgs
     {

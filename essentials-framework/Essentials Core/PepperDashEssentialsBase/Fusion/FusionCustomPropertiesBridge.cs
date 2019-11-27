@@ -10,9 +10,8 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
-using PepperDash.Essentials.Room.Behaviours;
 
-namespace PepperDash.Essentials.Fusion
+namespace PepperDash.Essentials.Core.Fusion
 {
     /// <summary>
     /// Handles mapping Fusion Custom Property values to system properties

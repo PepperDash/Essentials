@@ -150,13 +150,8 @@
     <Compile Include="Environment\Somfy\RelayControlledShade.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Generic\GenericSource.cs" />
-    <Compile Include="Microphone\MicrophonePrivacyController.cs" />
-    <Compile Include="Microphone\MicrophonePrivacyControllerConfig.cs" />
     <Compile Include="Occupancy\GlsOccupancySensorBaseController.cs" />
     <Compile Include="Occupancy\IOccupancyStatusProviderAggregator.cs" />
-    <Compile Include="Occupancy\iOccupancyStatusProvider.cs" />
-    <Compile Include="PC\InRoomPc.cs" />
-    <Compile Include="PC\Laptop.cs" />
     <Compile Include="SetTopBox\SetTopBoxPropertiesConfig.cs" />
     <Compile Include="Streaming\AppleTV.cs" />
     <Compile Include="Audio\GenericAudioOut.cs" />

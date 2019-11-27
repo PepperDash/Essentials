@@ -6,11 +6,11 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Room.Cotija
+namespace PepperDash.Essentials.Room.MobileControl
 {
     public static class IDvrExtensions
     {
-        public static void LinkActions(this IDvr dev, CotijaSystemController controller)
+        public static void LinkActions(this IDvr dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Room.Cotija
             controller.AddAction(prefix + "record", new PressAndHoldAction(dev.Record));
         }
 
-        public static void UnlinkActions(this IDvr dev, CotijaSystemController controller)
+        public static void UnlinkActions(this IDvr dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 

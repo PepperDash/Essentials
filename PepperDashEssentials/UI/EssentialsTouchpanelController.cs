@@ -13,7 +13,7 @@ using PepperDash.Essentials.Core.PageManagers;
 
 namespace PepperDash.Essentials
 {
-	public class EssentialsTouchpanelController : Device
+    public class EssentialsTouchpanelController : Device, IHasBasicTriListWithSmartObject
 	{
 		public BasicTriListWithSmartObject Panel { get; private set; }
 

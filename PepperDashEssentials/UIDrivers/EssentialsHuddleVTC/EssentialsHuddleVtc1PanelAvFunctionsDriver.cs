@@ -885,7 +885,7 @@ namespace PepperDash.Essentials
                 // Disconnect current room
                 _CurrentRoom.CurrentVolumeDeviceChange -= this.CurrentRoom_CurrentAudioDeviceChange;
                 ClearAudioDeviceConnections();
-                _CurrentRoom.CurrentSingleSourceChange -= this.CurrentRoom_SourceInfoChange;
+                _CurrentRoom.CurrentSourceChange -= this.CurrentRoom_SourceInfoChange;
                 DisconnectSource(_CurrentRoom.CurrentSourceInfo);
                 _CurrentRoom.ShutdownPromptTimer.HasStarted -= ShutdownPromptTimer_HasStarted;
                 _CurrentRoom.ShutdownPromptTimer.HasFinished -= ShutdownPromptTimer_HasFinished;
@@ -924,7 +924,7 @@ namespace PepperDash.Essentials
 
                 _CurrentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
                 RefreshAudioDeviceConnections();
-                _CurrentRoom.CurrentSingleSourceChange += CurrentRoom_SourceInfoChange;
+                _CurrentRoom.CurrentSourceChange += CurrentRoom_SourceInfoChange;
                 RefreshSourceInfo();
 
                 if (_CurrentRoom.VideoCodec is IHasScheduleAwareness)
@@ -939,7 +939,7 @@ namespace PepperDash.Essentials
                 SetActiveCallListSharingContentStatus();
 
                 if (_CurrentRoom != null)
-                    _CurrentRoom.CurrentSingleSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
+                    _CurrentRoom.CurrentSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
 
                 TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, () => _CurrentRoom.RunRouteAction("codecOsd"));
 
@@ -1050,7 +1050,7 @@ namespace PepperDash.Essentials
         /// <param name="room"></param>
         /// <param name="info"></param>
         /// <param name="type"></param>
-        void CurrentRoom_CurrentSingleSourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+        void CurrentRoom_CurrentSingleSourceChange(SourceListItem info, ChangeType type)
         {
             if (_CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && _CurrentRoom.CurrentSourceInfo != null)
                 TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = _CurrentRoom.CurrentSourceInfo.PreferredName;
@@ -1363,8 +1363,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Handles source change
         /// </summary>
-        void CurrentRoom_SourceInfoChange(EssentialsRoomBase room,
-            SourceListItem info, ChangeType change)
+        void CurrentRoom_SourceInfoChange(SourceListItem info, ChangeType change)
         {
             if (change == ChangeType.WillChange)
                 DisconnectSource(info);

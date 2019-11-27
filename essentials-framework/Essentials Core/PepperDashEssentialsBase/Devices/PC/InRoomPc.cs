@@ -7,12 +7,12 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Devices.Common
+namespace PepperDash.Essentials.Core.Devices
 {
 	/// <summary>
 	/// This DVD class should cover most IR, one-way DVD and Bluray fuctions
 	/// </summary>
-	public class Laptop : Device, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
+	public class InRoomPc : Device, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
 		public string IconName { get; set; }
@@ -29,14 +29,14 @@ namespace PepperDash.Essentials.Devices.Common
 
 		#endregion
 
-		public Laptop(string key, string name)
+		public InRoomPc(string key, string name)
 			: base(key, name)
 		{
-			IconName = "Laptop";
+			IconName = "PC";
 			HasPowerOnFeedback = new BoolFeedback("HasPowerFeedback", 
 				() => this.GetVideoStatuses() != VideoStatusOutputs.NoStatus);
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-			OutputPorts.Add(AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
+			OutputPorts.Add(AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyVideoOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.None, 0, this));
 		}
 
@@ -46,14 +46,14 @@ namespace PepperDash.Essentials.Devices.Common
 		/// Passes through the VideoStatuses list
 		/// </summary>
         public FeedbackCollection<Feedback> Feedbacks
-        {
-            get
+		{
+			get 
             {
                 var newList = new FeedbackCollection<Feedback>();
                 newList.AddRange(this.GetVideoStatuses().ToList());
                 return newList;
             }
-        }
+		}
 
 		#endregion
 

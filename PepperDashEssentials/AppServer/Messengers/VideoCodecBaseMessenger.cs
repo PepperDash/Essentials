@@ -160,7 +160,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// Called from base's RegisterWithAppServer method
 		/// </summary>
 		/// <param name="appServerController"></param>
-		protected override void CustomRegisterWithAppServer(CotijaSystemController appServerController)
+		protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
 		{
 			appServerController.AddAction("/device/videoCodec/isReady", new Action(SendIsReady));
 			appServerController.AddAction("/device/videoCodec/fullStatus", new Action(SendVtcFullMessageObject));

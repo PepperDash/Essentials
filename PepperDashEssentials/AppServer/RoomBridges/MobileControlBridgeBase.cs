@@ -12,15 +12,15 @@ namespace PepperDash.Essentials
 	/// <summary>
 	/// 
 	/// </summary>
-	public abstract class CotijaBridgeBase: Device
+	public abstract class MobileControlBridgeBase: Device
 	{
-		public CotijaSystemController Parent { get; private set; }
+		public MobileControlSystemController Parent { get; private set; }
 
 		public string UserCode { get; private set; }
 
 		public abstract string RoomName { get; }
 
-		public CotijaBridgeBase(string key, string name)
+		public MobileControlBridgeBase(string key, string name)
 			: base(key, name)
 		{
 		}
@@ -30,7 +30,7 @@ namespace PepperDash.Essentials
 		/// as adding actions to parent
 		/// </summary>
 		/// <param name="parent"></param>
-		public virtual void AddParent(CotijaSystemController parent)
+		public virtual void AddParent(MobileControlSystemController parent)
 		{
 			Parent = parent;
 		}

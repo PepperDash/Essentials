@@ -12,7 +12,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Core
 {
-	public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IPower, IWarmingCooling, IRoutingSinkWithSwitching
+	public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IPower, IWarmingCooling
 	{
 		public IrOutputPortController IrPort { get; private set; }
 		public ushort IrPulseTime { get; set; }

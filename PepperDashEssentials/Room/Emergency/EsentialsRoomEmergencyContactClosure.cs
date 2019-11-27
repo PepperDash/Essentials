@@ -12,15 +12,7 @@ using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials.Room
 {
-    public abstract class EssentialsRoomEmergencyBase : IKeyed
-    {
-        public string Key { get; private set; }
 
-        public EssentialsRoomEmergencyBase(string key)
-        {
-            Key = key;
-        }
-    }
 
 
     public class EssentialsRoomEmergencyContactClosure : EssentialsRoomEmergencyBase
