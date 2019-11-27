@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.Core
 		public ushort Count
 		{
 			get { return SetNumberOfItemsSig.UShortValue; }
-			set { SetNumberOfItemsSig.UShortValue = value; }
+			set { SetNumberOfItemsSig.UShortValue = value;  }
 		}
 		public ushort MaxDefinedItems { get; private set; }
 
@@ -100,8 +100,9 @@ namespace PepperDash.Essentials.Core
 			// Empty the list
 			Items.Clear();
 			// Clean up the SRL
-			Count = 0;
-			ScrollToItemSig.UShortValue = 1;
+			Count = 1;
+
+		    ScrollToItemSig.UShortValue = 1;
 		}
 
 		/// <summary>
