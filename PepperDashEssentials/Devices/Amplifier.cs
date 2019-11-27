@@ -12,6 +12,32 @@ namespace PepperDash.Essentials
 {
     public class Amplifier : Device, IRoutingSinkNoSwitching
     {
+        public event SourceInfoChangeHandler CurrentSourceChange;
+
+        public string CurrentSourceInfoKey { get; set; }
+        public SourceListItem CurrentSourceInfo
+        {
+            get
+            {
+                return _CurrentSourceInfo;
+            }
+            set
+            {
+                if (value == _CurrentSourceInfo) return;
+
+                var handler = CurrentSourceChange;
+
+                if (handler != null)
+                    handler(_CurrentSourceInfo, ChangeType.WillChange);
+
+                _CurrentSourceInfo = value;
+
+                if (handler != null)
+                    handler(_CurrentSourceInfo, ChangeType.DidChange);
+            }
+        }
+        SourceListItem _CurrentSourceInfo;
+
         public RoutingInputPort AudioIn { get; private set; }
 
         public Amplifier(string key, string name)

@@ -27,7 +27,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             PostUpdateStatus(e.UpdateStatus.ToString());
         }
 
-        protected override void CustomRegisterWithAppServer(CotijaSystemController appServerController)
+        protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
         {
             appServerController.AddAction(MessagePath + "/updateConfig", new Action<string>(s => GetConfigFile(s)));
         }

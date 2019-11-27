@@ -38,6 +38,12 @@ namespace PepperDash.Essentials.Room.Config
 			{
 				return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
 			}
+            else if (typeName == "dualdisplay")
+            {
+                var rm = new EssentialsDualDisplayRoom(roomConfig);
+
+                return rm;
+            }
 
             return null;
 		}
@@ -65,8 +71,8 @@ namespace PepperDash.Essentials.Room.Config
 		/// <param name="props"></param>
 		/// <param name="room"></param>
 		/// <returns></returns>
-		public static PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController GetMicrophonePrivacy(
-			EssentialsRoomPropertiesConfig props, EssentialsHuddleVtc1Room room)
+		public static Core.Privacy.MicrophonePrivacyController GetMicrophonePrivacy(
+			EssentialsRoomPropertiesConfig props, IPrivacy room)
 		{
 			var microphonePrivacy = props.MicrophonePrivacy;
 			if (microphonePrivacy == null)
@@ -76,7 +82,7 @@ namespace PepperDash.Essentials.Room.Config
 			}
 			// Get the MicrophonePrivacy device from the device manager
 			var mP = (DeviceManager.GetDeviceForKey(props.MicrophonePrivacy.DeviceKey) as
-				PepperDash.Essentials.Devices.Common.Microphones.MicrophonePrivacyController);
+				Core.Privacy.MicrophonePrivacyController);
 			// Set this room as the IPrivacy device
 			if (mP == null)
 			{
@@ -95,28 +101,30 @@ namespace PepperDash.Essentials.Room.Config
 			if (behaviour == "trackroomstate")
 			{
 				// Tie LED enable to room power state
-				room.OnFeedback.OutputChange += (o, a) =>
+                var essRoom = room as EssentialsRoomBase;
+                essRoom.OnFeedback.OutputChange += (o, a) =>
 				{
-					if (room.OnFeedback.BoolValue)
+                    if (essRoom.OnFeedback.BoolValue)
 						mP.EnableLeds = true;
 					else
 						mP.EnableLeds = false;
 				};
 
-				mP.EnableLeds = room.OnFeedback.BoolValue;
+                mP.EnableLeds = essRoom.OnFeedback.BoolValue;
 			}
 			else if (behaviour == "trackcallstate")
 			{
 				// Tie LED enable to room power state
-				room.InCallFeedback.OutputChange += (o, a) =>
+                var inCallRoom = room as IHasInCallFeedback;
+                inCallRoom.InCallFeedback.OutputChange += (o, a) =>
 				{
-					if (room.InCallFeedback.BoolValue)
+                    if (inCallRoom.InCallFeedback.BoolValue)
 						mP.EnableLeds = true;
 					else
 						mP.EnableLeds = false;
 				};
 
-				mP.EnableLeds = room.InCallFeedback.BoolValue;
+                mP.EnableLeds = inCallRoom.InCallFeedback.BoolValue;
 			}
 
 			return mP;
@@ -174,6 +182,25 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 	}
+
+    public class EssentialsAvRoomPropertiesConfig : EssentialsRoomPropertiesConfig
+    {
+        [JsonProperty("defaultAudioKey")]
+        public string DefaultAudioKey { get; set; }
+        [JsonProperty("sourceListKey")]
+        public string SourceListKey { get; set; }
+        [JsonProperty("defaultSourceItem")]
+        public string DefaultSourceItem { get; set; }
+
+    }
+
+    public class EssentialsConferenceRoomPropertiesConfig : EssentialsAvRoomPropertiesConfig
+    {
+        [JsonProperty("videoCodecKey")]
+        public string VideoCodecKey { get; set; }
+        [JsonProperty("audioCodecKey")]
+        public string AudioCodecKey { get; set; }
+    }
 
 	public class EssentialsEnvironmentPropertiesConfig
 	{

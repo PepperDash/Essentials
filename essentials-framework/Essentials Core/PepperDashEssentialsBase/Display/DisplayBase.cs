@@ -18,6 +18,32 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public abstract class DisplayBase : Device, IHasFeedback, IRoutingSinkWithSwitching, IPower, IWarmingCooling, IUsageTracking
 	{
+        public event SourceInfoChangeHandler CurrentSourceChange;
+
+        public string CurrentSourceInfoKey { get; set; }
+        public SourceListItem CurrentSourceInfo
+        {
+            get
+            {
+                return _CurrentSourceInfo;
+            }
+            set
+            {
+                if (value == _CurrentSourceInfo) return;
+
+                var handler = CurrentSourceChange;
+
+                if (handler != null)
+                    handler(_CurrentSourceInfo, ChangeType.WillChange);
+
+                _CurrentSourceInfo = value;
+
+                if (handler != null)
+                    handler(_CurrentSourceInfo, ChangeType.DidChange);
+            }
+        }
+        SourceListItem _CurrentSourceInfo;
+
 		public BoolFeedback PowerIsOnFeedback { get; protected set; }
 		public BoolFeedback IsCoolingDownFeedback { get; protected set; }
 		public BoolFeedback IsWarmingUpFeedback { get; private set; }

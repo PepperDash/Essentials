@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Room.Cotija
+namespace PepperDash.Essentials.Room.MobileControl
 {
 	public class Volumes
 	{

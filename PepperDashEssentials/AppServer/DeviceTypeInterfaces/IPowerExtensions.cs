@@ -6,11 +6,11 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Room.Cotija
+namespace PepperDash.Essentials.Room.MobileControl
 {
     public static class IPowerExtensions
     {
-        public static void LinkActions(this IPower dev, CotijaSystemController controller)
+        public static void LinkActions(this IPower dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 
@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Room.Cotija
             controller.AddAction(prefix + "powerToggle", new Action(dev.PowerToggle));
         }
 
-        public static void UnlinkActions(this IPower dev, CotijaSystemController controller)
+        public static void UnlinkActions(this IPower dev, MobileControlSystemController controller)
         {
             var prefix = string.Format(@"/device/{0}/", (dev as IKeyed).Key);
 

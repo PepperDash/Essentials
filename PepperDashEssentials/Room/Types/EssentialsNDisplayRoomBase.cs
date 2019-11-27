@@ -12,34 +12,22 @@ using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Room.Config;
 
-namespace PepperDash.Essentials.Room.Types
+namespace PepperDash.Essentials
 {
     /// <summary>
     /// Base class for rooms with more than a single display
     /// </summary>
-    public abstract class EssentialsNDisplayRoomBase : EssentialsRoomBase
+    public abstract class EssentialsNDisplayRoomBase : EssentialsRoomBase, IHasMultipleDisplays
     {
-        public event SourceInfoChangeHandler CurrentSingleSourceChange;
+        //public event SourceInfoChangeHandler CurrentSingleSourceChange;
 
-        public Dictionary<string, IRoutingSinkWithSwitching> Displays { get; protected set; }
-
-        protected override Func<bool> IsWarmingFeedbackFunc { get { return () => false; ; } }
-        protected override Func<bool> IsCoolingFeedbackFunc { get { return () => false; } }
+        public Dictionary<eSourceListItemDestinationTypes, IRoutingSinkWithSwitching> Displays { get; protected set;}
 
         public EssentialsNDisplayRoomBase(DeviceConfig config)
             : base (config)
         {
-            Displays = new Dictionary<string, IRoutingSinkWithSwitching>();
+            Displays = new Dictionary<eSourceListItemDestinationTypes, IRoutingSinkWithSwitching>();
 
-            var propertiesConfig = JsonConvert.DeserializeObject<EssentialsNDisplayRoomPropertiesConfig>(config.Properties.ToString());
-
-            foreach (var display in propertiesConfig.Displays)
-            {
-                var displayDevice = DeviceManager.GetDeviceForKey(display.Value) as IRoutingSinkWithSwitching;
-
-                if (displayDevice != null)
-                    Displays.Add(display.Key, displayDevice);
-            }
         }
     }
 }

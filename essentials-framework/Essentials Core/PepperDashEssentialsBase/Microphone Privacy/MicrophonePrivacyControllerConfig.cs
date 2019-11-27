@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core.CrestronIO;
 
-namespace PepperDash.Essentials.Devices.Common.Microphones
+namespace PepperDash.Essentials.Core.Privacy
 {
     public class MicrophonePrivacyControllerConfig
     {

@@ -95,6 +95,9 @@ namespace PepperDash.Essentials.Core
 		[JsonProperty("disableRoutedSharing")]
 		public bool DisableRoutedSharing { get; set; }
 
+        [JsonProperty("destinations")]
+        public List<eSourceListItemDestinationTypes> Destinations { get; set; }
+
 		public SourceListItem()
 		{
 			Icon = "Blank";
@@ -112,4 +115,16 @@ namespace PepperDash.Essentials.Core
 		[JsonProperty("type")]
 		public eRoutingSignalType Type { get; set; }
 	}
+
+    /// <summary>
+    /// Defines the valid destination types for SourceListItems in a room
+    /// </summary>
+    public enum eSourceListItemDestinationTypes
+    {
+        defaultDisplay,
+        leftDisplay,
+        rightDisplay,
+        programAudio,
+        codecContent
+    }
 }

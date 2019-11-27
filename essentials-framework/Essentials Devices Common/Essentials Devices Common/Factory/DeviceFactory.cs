@@ -136,12 +136,12 @@ namespace PepperDash.Essentials.Devices.Common
 
 			else if (typeName == "inroompc")
 			{
-				return new InRoomPc(key, name);
+				return new Core.Devices.InRoomPc(key, name);
 			}
 
 			else if (typeName == "laptop")
 			{
-				return new Laptop(key, name);
+				return new Core.Devices.Laptop(key, name);
 			}
 
 			else if (typeName == "mockvc")
@@ -292,6 +292,10 @@ namespace PepperDash.Essentials.Devices.Common
                         else
                             Debug.Console(0, "Attempt to register relay {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
                     }
+                    else
+                    {
+                        return new GenericRelayDevice(key, relay);
+                    }
 
                     // Future: Check if portDevice is 3-series card or other non control system that supports versiports
                 }
@@ -299,9 +303,9 @@ namespace PepperDash.Essentials.Devices.Common
 
             else if (typeName == "microphoneprivacycontroller")
             {
-                var props = JsonConvert.DeserializeObject<Microphones.MicrophonePrivacyControllerConfig>(properties.ToString());
+                var props = JsonConvert.DeserializeObject<Core.Privacy.MicrophonePrivacyControllerConfig>(properties.ToString());
 
-                return new Microphones.MicrophonePrivacyController(key, props);
+                return new Core.Privacy.MicrophonePrivacyController(key, props);
             }
             else if (typeName == "roku")
             {
