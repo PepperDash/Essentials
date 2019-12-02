@@ -87,6 +87,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         }
     }
 
+
 	public class CameraPropertiesConfig
 	{
 		public CommunicationMonitorConfig CommunicationMonitorProperties { get; set; }

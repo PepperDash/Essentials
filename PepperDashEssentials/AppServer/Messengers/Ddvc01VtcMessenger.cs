@@ -9,6 +9,7 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -557,9 +558,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		string GetCameraMode()
 		{
 			string m;
-			if (EISC.GetBool(BCameraModeAuto)) m = "auto";
-			else if (EISC.GetBool(BCameraModeManual)) m = "manual";
-			else m = "off";
+            if (EISC.GetBool(BCameraModeAuto)) m = eCameraControlMode.Auto.ToString().ToLower();
+            else if (EISC.GetBool(BCameraModeManual)) m = eCameraControlMode.Manual.ToString().ToLower();
+            else m = eCameraControlMode.Off.ToString().ToLower();
 			return m;
 		}
 

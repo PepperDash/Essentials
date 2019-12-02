@@ -88,6 +88,8 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     /// </summary>
     public interface IHasCameraPanControl
     {
+        // void PanLeft(bool pressRelease);
+        // void PanRight(bool pressRelease);
         void PanLeft();
         void PanRight();
         void PanStop();
@@ -98,6 +100,8 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     /// </summary>
     public interface IHasCameraTiltControl
     {
+        // void TiltDown(bool pressRelease);
+        // void TildUp(bool pressRelease);
         void TiltDown();
         void TiltUp();
         void TiltStop();
@@ -108,6 +112,8 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
     /// </summary>
     public interface IHasCameraZoomControl
     {
+        // void ZoomIn(bool pressRelease);
+        // void ZoomOut(bool pressRelease);
         void ZoomIn();
         void ZoomOut();
         void ZoomStop();
