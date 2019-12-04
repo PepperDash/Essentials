@@ -25,6 +25,8 @@ namespace PepperDash.Essentials
 
         public AudioCodecBaseMessenger ACMessenger { get; private set; }
 
+        public Dictionary<string, MessengerBase> DeviceMessengers { get; private set; }
+
 
 		/// <summary>
 		/// 
@@ -115,6 +117,8 @@ namespace PepperDash.Essentials
                 ACMessenger.RegisterWithAppServer(Parent);
             }
 
+            SetupDeviceMessengers();
+
 			var defCallRm = Room as IRunDefaultCallRoute;
 			if (defCallRm != null)
 			{
@@ -133,6 +137,27 @@ namespace PepperDash.Essentials
 			Room.ShutdownPromptTimer.HasFinished += ShutdownPromptTimer_HasFinished;
 			Room.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
 		}
+
+        /// <summary>
+        /// Set up the messengers for each device type
+        /// </summary>
+        void SetupDeviceMessengers()
+        {
+            DeviceMessengers = new Dictionary<string,MessengerBase>();
+
+            foreach (var device in DeviceManager.AllDevices)
+            {
+                Debug.Console(2, this, "Attempting to set up device messenger for device: {0}", device.Key);
+
+                if (device is Essentials.Devices.Common.Cameras.CameraBase)
+                {
+                    var camDevice = device as Essentials.Devices.Common.Cameras.CameraBase;
+                    var devKey = device.Key;
+                    Debug.Console(2, this, "Adding CameraBaseMessenger for device: {0}", devKey);
+                    DeviceMessengers.Add(devKey, new CameraBaseMessenger(devKey + "-" + Parent.Key, camDevice, "/device/" + devKey));
+                }
+            }
+        }
 
 		/// <summary>
 		/// 

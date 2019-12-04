@@ -56,11 +56,73 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             if (ptzCamera != null)
             {
+                
                 //  Need to evaluate how to pass through these P&H actions.  Need a method that takes a bool maybe?
-                AppServerController.AddAction(MessagePath + "/cameraUp", new PressAndHoldAction(ptzCamera.TiltUp));
-
+                AppServerController.AddAction(MessagePath + "/cameraUp", new PressAndHoldAction((b) =>
+                    {
+                        if (b)
+                            ptzCamera.TiltUp();
+                        else
+                            ptzCamera.TiltStop();
+                    }));
+                AppServerController.AddAction(MessagePath + "/cameraDown", new PressAndHoldAction((b) =>
+                {
+                    if (b)
+                        ptzCamera.TiltDown();
+                    else
+                        ptzCamera.TiltStop();
+                }));
+                AppServerController.AddAction(MessagePath + "/cameraLeft", new PressAndHoldAction((b) =>
+                {
+                    if (b)
+                        ptzCamera.PanLeft();
+                    else
+                        ptzCamera.PanStop();
+                }));
+                AppServerController.AddAction(MessagePath + "/cameraRight", new PressAndHoldAction((b) =>
+                {
+                    if (b)
+                        ptzCamera.PanRight();
+                    else
+                        ptzCamera.PanStop();
+                }));
+                AppServerController.AddAction(MessagePath + "/cameraZoomIn", new PressAndHoldAction((b) =>
+                {
+                    if (b)
+                        ptzCamera.ZoomIn();
+                    else
+                        ptzCamera.ZoomStop();
+                }));
+                AppServerController.AddAction(MessagePath + "/cameraZoomOut", new PressAndHoldAction((b) =>
+                {
+                    if (b)
+                        ptzCamera.ZoomOut();
+                    else
+                        ptzCamera.ZoomStop();
+                }));
             }
 
+            if (Camera is IHasCameraAutoMode)
+            {
+                appServerController.AddAction(MessagePath + "/cameraModeAuto", new Action((Camera as IHasCameraAutoMode).CameraAutoModeOn));
+                appServerController.AddAction(MessagePath + "/cameraModeManual", new Action((Camera as IHasCameraAutoMode).CameraAutoModeOff));
+            }
+
+            if (Camera is IPower)
+            {
+                appServerController.AddAction(MessagePath + "/cameraModeOff", new Action((Camera as IPower).PowerOff));
+            }
+
+            var presetsCamera = Camera as IHasCameraPresets;
+
+            if (presetsCamera != null)
+            {
+                for(int i = 1; i <= 6; i++)
+                {
+                    var preset = i;
+                    appServerController.AddAction(MessagePath + "/cameraPreset" + i, new Action<int>((p) => presetsCamera.PresetSelect(preset)));
+                }
+            }
         }
 
         /// <summary>
