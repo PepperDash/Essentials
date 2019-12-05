@@ -132,17 +132,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             var presetsCamera = Camera as IHasCameraPresets;
 
-            var presets = new List<CameraPreset>();
+            var presetList = new List<CameraPreset>();
 
             if (presetsCamera != null)
-                presets = presetsCamera.Presets;
+                presetList = presetsCamera.Presets;
 
-            var info = new
+            PostStatusMessage(new
             {
                 cameraMode = GetCameraMode(),
-                hasPresets = Camera as IHasCameraPresets,
-                presets = presets
-            };
+                hasPresets = Camera is IHasCameraPresets,
+                presets = presetList
+            });
         }
 
         /// <summary>

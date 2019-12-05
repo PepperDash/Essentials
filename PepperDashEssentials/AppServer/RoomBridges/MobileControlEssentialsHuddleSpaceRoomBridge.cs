@@ -78,36 +78,6 @@ namespace PepperDash.Essentials
                         }
                     }));
 
-            //****************Temp until testing complete. Then move to own messenger***********************
-
-            var routeDevice = DeviceManager.GetDeviceForKey("inRoomPc-1") as IRunRouteAction;
-            if (routeDevice != null)
-            {
-                Parent.AddAction(string.Format(@"/device/inRoomPc-1/source"), new Action<SourceSelectMessageContent>(c =>
-                    {
-                        routeDevice.RunRouteAction(c.SourceListItem, c.SourceListKey);
-                    }));
-
-                var sinkDevice = routeDevice as IRoutingSinkNoSwitching;
-                if(sinkDevice != null)
-                {
-                    sinkDevice.CurrentSourceChange += new SourceInfoChangeHandler((o, a) =>
-                    {
-                        var contentObject = new
-                        {
-                            selectedSourceKey = sinkDevice.CurrentSourceInfoKey
-                        };
-
-                        Parent.SendMessageToServer(JObject.FromObject(new
-                        {
-                            type = "/device/inRoomPc-1/status",
-                            content = contentObject
-                        }));
-                        
-                    });
-                }
-            }
-
 
 			var defaultRoom = Room as IRunDefaultPresentRoute;
 			if(defaultRoom != null)
@@ -190,9 +160,18 @@ namespace PepperDash.Essentials
                 if (device is Essentials.Devices.Common.Cameras.CameraBase)
                 {
                     var camDevice = device as Essentials.Devices.Common.Cameras.CameraBase;
-                    var devKey = device.Key;
-                    Debug.Console(2, this, "Adding CameraBaseMessenger for device: {0}", devKey);
-                    DeviceMessengers.Add(devKey, new CameraBaseMessenger(devKey + "-" + Parent.Key, camDevice, "/device/" + devKey));
+                    Debug.Console(2, this, "Adding CameraBaseMessenger for device: {0}", device.Key);
+                    var cameraMessenger = new CameraBaseMessenger(device.Key + "-" + Parent.Key, camDevice, "/device/" + device.Key);
+                    DeviceMessengers.Add(device.Key, cameraMessenger);
+                    cameraMessenger.RegisterWithAppServer(Parent);
+                }
+                if (device is Essentials.Devices.Common.SoftCodec.BlueJeansPc)
+                {
+                    var softCodecDevice = device as Essentials.Devices.Common.SoftCodec.BlueJeansPc;
+                    Debug.Console(2, this, "Adding IRunRouteActionMessnger for device: {0}", device.Key);
+                    var routeMessenger = new IRunRouteActionMessenger(device.Key + "-" + Parent.Key, softCodecDevice, "/device/" + device.Key);
+                    DeviceMessengers.Add(device.Key, routeMessenger);
+                    routeMessenger.RegisterWithAppServer(Parent);
                 }
             }
         }
