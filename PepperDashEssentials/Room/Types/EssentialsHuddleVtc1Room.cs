@@ -348,7 +348,7 @@ namespace PepperDash.Essentials
 
             CrestronEnvironment.Sleep(1000);
 
-            RunRouteAction("roomOff");
+            RunRouteAction("roomOff", SourceListKey);
         }
 
         /// <summary>
@@ -357,7 +357,7 @@ namespace PepperDash.Essentials
         public override bool RunDefaultPresentRoute()
         {
 			if (DefaultSourceItem != null)
-                RunRouteAction(DefaultSourceItem);
+                RunRouteAction(DefaultSourceItem, SourceListKey);
 
             return DefaultSourceItem != null;
         }
@@ -368,7 +368,7 @@ namespace PepperDash.Essentials
         /// <returns></returns>
         public bool RunDefaultCallRoute()
         {
-            RunRouteAction(DefaultCodecRouteString);
+            RunRouteAction(DefaultCodecRouteString, SourceListKey);
             return true;
         }
 
@@ -376,9 +376,9 @@ namespace PepperDash.Essentials
         /// 
         /// </summary>
         /// <param name="routeKey"></param>
-		public void RunRouteAction(string routeKey)
+		public void RunRouteAction(string routeKey, string sourceListKey)
 		{
-			RunRouteAction(routeKey, null);
+			RunRouteAction(routeKey, sourceListKey, null);
 		}   
 
 		/// <summary>
@@ -386,7 +386,7 @@ namespace PepperDash.Essentials
 		/// route or commands
 		/// </summary>
 		/// <param name="name"></param>
-        public void RunRouteAction(string routeKey, Action successCallback)
+        public void RunRouteAction(string routeKey, string sourceListKey, Action successCallback)
         {
             // Run this on a separate thread
             new CTimer(o =>
@@ -398,10 +398,10 @@ namespace PepperDash.Essentials
                 {
 
                     Debug.Console(1, this, "Run route action '{0}'", routeKey);
-                    var dict = ConfigReader.ConfigObject.GetSourceListForKey(SourceListKey);
+                    var dict = ConfigReader.ConfigObject.GetSourceListForKey(sourceListKey);
                     if (dict == null)
                     {
-                        Debug.Console(1, this, "WARNING: Config source list '{0}' not found", SourceListKey);
+                        Debug.Console(1, this, "WARNING: Config source list '{0}' not found", sourceListKey);
                         return;
                     }
 
@@ -608,7 +608,7 @@ namespace PepperDash.Essentials
         {
             if (!EnablePowerOnToLastSource || LastSourceKey == null)
                 return;
-            RunRouteAction(LastSourceKey);
+            RunRouteAction(LastSourceKey, SourceListKey);
         }
 
 		/// <summary>
@@ -619,7 +619,7 @@ namespace PepperDash.Essentials
 			var allRooms = DeviceManager.AllDevices.Where(d => 
 				d is EssentialsHuddleSpaceRoom && !(d as EssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
 			foreach (var room in allRooms)
-				(room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
+				(room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff", (room as EssentialsHuddleSpaceRoom).SourceListKey);
 		}
 
         #region IPrivacy Members

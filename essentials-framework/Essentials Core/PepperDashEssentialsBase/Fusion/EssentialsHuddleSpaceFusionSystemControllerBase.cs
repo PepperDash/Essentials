@@ -332,7 +332,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
 
             FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction((Room as EssentialsRoomBase).PowerOnToDefaultOrLastSource);
-            FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() => (Room as IRunRouteAction).RunRouteAction("roomOff"));
+            FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() => (Room as IRunRouteAction).RunRouteAction("roomOff", Room.SourceListKey));
 			// NO!! room.RoomIsOn.LinkComplementInputSig(FusionRoom.SystemPowerOff.InputSig);
 			FusionRoom.ErrorMessage.InputSig.StringValue =
 				"3: 7 Errors: This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;This is a really long error message;";
@@ -1086,7 +1086,7 @@ namespace PepperDash.Essentials.Core.Fusion
 				SourceToFeedbackSigs.Add(pSrc, sigD.InputSig);
 
 				// And respond to selection in Fusion
-                sigD.OutputSig.SetSigFalseAction(() => (Room as IRunRouteAction).RunRouteAction(routeKey));
+                sigD.OutputSig.SetSigFalseAction(() => (Room as IRunRouteAction).RunRouteAction(routeKey, Room.SourceListKey));
 			}
 			catch (Exception)
 			{
@@ -1288,7 +1288,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
                 // Current Source
                 var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 8, displayName + "Source None", eSigIoMask.InputOutputSig);
-                defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b => { if (!b) (Room as IRunRouteAction).RunRouteAction("roomOff"); }); ;
+                defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b => { if (!b) (Room as IRunRouteAction).RunRouteAction("roomOff", Room.SourceListKey); }); ;
             }
         }
 

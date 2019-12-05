@@ -69,7 +69,45 @@ namespace PepperDash.Essentials
 			var routeRoom = Room as IRunRouteAction;
 			if(routeRoom != null)
 				Parent.AddAction(string.Format(@"/room/{0}/source", Room.Key), new Action<SourceSelectMessageContent>(c => 
-					routeRoom.RunRouteAction(c.SourceListItem)));
+                    {
+                        if(string.IsNullOrEmpty(c.SourceListKey))
+                            routeRoom.RunRouteAction(c.SourceListItem, Room.SourceListKey);
+                        else
+                        {
+                            routeRoom.RunRouteAction(c.SourceListItem, c.SourceListKey);
+                        }
+                    }));
+
+            //****************Temp until testing complete. Then move to own messenger***********************
+
+            var routeDevice = DeviceManager.GetDeviceForKey("inRoomPc-1") as IRunRouteAction;
+            if (routeDevice != null)
+            {
+                Parent.AddAction(string.Format(@"/device/inRoomPc-1/source"), new Action<SourceSelectMessageContent>(c =>
+                    {
+                        routeDevice.RunRouteAction(c.SourceListItem, c.SourceListKey);
+                    }));
+
+                var sinkDevice = routeDevice as IRoutingSinkNoSwitching;
+                if(sinkDevice != null)
+                {
+                    sinkDevice.CurrentSourceChange += new SourceInfoChangeHandler((o, a) =>
+                    {
+                        var contentObject = new
+                        {
+                            selectedSourceKey = sinkDevice.CurrentSourceInfoKey
+                        };
+
+                        Parent.SendMessageToServer(JObject.FromObject(new
+                        {
+                            type = "/device/inRoomPc-1/status",
+                            content = contentObject
+                        }));
+                        
+                    });
+                }
+            }
+
 
 			var defaultRoom = Room as IRunDefaultPresentRoute;
 			if(defaultRoom != null)
@@ -455,6 +493,7 @@ namespace PepperDash.Essentials
     public class SourceSelectMessageContent
     {
 		public string SourceListItem { get; set; }
+        public string SourceListKey { get; set; }
     }
 
 	/// <summary>
