@@ -45,7 +45,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
         void presetsCamera_PresetsListHasChanged(object sender, EventArgs e)
         {
-            SendCameraFullMessageObject();
+            var presetsCamera = Camera as IHasCameraPresets;
+
+            var presetList = new List<CameraPreset>();
+
+            if (presetsCamera != null)
+                presetList = presetsCamera.Presets;
+
+            PostStatusMessage(new
+            {
+                presets = presetList
+            });
         }
 
         protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)

@@ -115,6 +115,7 @@
     <Compile Include="AppServer\Messengers\Ddvc01VtcMessenger.cs" />
     <Compile Include="AppServer\Messengers\IRunRouteActionMessenger.cs" />
     <Compile Include="AppServer\Messengers\MessengerBase.cs" />
+    <Compile Include="AppServer\Messengers\SIMPLCameraBaseMessenger.cs" />
     <Compile Include="AppServer\Messengers\SystemMonitorMessenger.cs" />
     <Compile Include="AppServer\Messengers\VideoCodecBaseMessenger.cs" />
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
