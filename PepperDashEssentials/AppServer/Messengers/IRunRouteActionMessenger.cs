@@ -7,7 +7,6 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-using Newtonsoft.Json.Linq;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
@@ -16,7 +15,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         /// <summary>
         /// Device being bridged
         /// </summary>
-        public IRunRouteAction RoutingDevice {get; set;}
+        public IRunRouteAction RoutingDevice {get; private set;}
 
         public IRunRouteActionMessenger(string key, IRunRouteAction routingDevice, string messagePath)
             : base(key, messagePath)
