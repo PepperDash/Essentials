@@ -269,10 +269,10 @@ namespace PepperDash.Essentials.Bridges
         public EssentialsControlPropertiesConfig Control { get; set; }
 
         [JsonProperty("devices")]
-        public List<ApiDevice> Devices { get; set; }
+        public List<ApiDevicePropertiesConfig> Devices { get; set; }
 
 
-        public class ApiDevice
+        public class ApiDevicePropertiesConfig
         {
             [JsonProperty("deviceKey")]
             public string DeviceKey { get; set; }

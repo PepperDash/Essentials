@@ -29,7 +29,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             : base(key, messagePath)
         {
             EISC = eisc;
-            JoinStart = joinStart;
+            JoinStart = joinStart - 1;
 
             EISC.SetStringSigAction(JoinStart + StringJoin.CurrentSource, (s) => SendRoutingFullMessageObject(s));
         }

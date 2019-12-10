@@ -95,7 +95,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             : base(key, messagePath)
         {
             EISC = eisc;
-            JoinStart = joinStart;
+            JoinStart = joinStart - 1;
 
             EISC.SetUShortSigAction(UshortJoin.CameraPresetCount + JoinStart, (u) => SendCameraFullMessageObject());
 
@@ -130,7 +130,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             // camera presets
             for (uint i = 1; i <= 6; i++)
             {
-                addAction("/cameraPreset" + (i), BoolJoin.CameraPresetStart + JoinStart + i);
+                addAction("/cameraPreset" + (i), BoolJoin.CameraPresetStart + i + JoinStart);
             }
 
             asc.AddAction(MessagePath + "/fullStatus", new Action(SendCameraFullMessageObject));
@@ -150,7 +150,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 for (uint i = 1; i <= EISC.GetUshort(UshortJoin.CameraPresetCount); i++)
                 {
-                    var presetName = EISC.GetString(JoinStart + StringJoin.CameraPresetNameStart + i);
+                    var presetName = EISC.GetString(StringJoin.CameraPresetNameStart + i + JoinStart);
                     var preset = new CameraPreset((int)i, presetName, string.IsNullOrEmpty(presetName), true);
                     presetList.Add(preset);
                 }

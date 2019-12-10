@@ -110,7 +110,6 @@ namespace PepperDash.Essentials.Room.MobileControl
 			/// 621
 			/// </summary>
 			public const uint SourceIsEnabledJoinStart = 621;
-
 		}
 
 		public class UshortJoin
@@ -755,6 +754,8 @@ namespace PepperDash.Essentials.Room.MobileControl
 				co.Devices.Add(conf);
 			}
 
+            SetupDeviceMessengers();
+
 			Debug.Console(0, this, "******* CONFIG FROM DDVC: \r{0}", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
 
 			var handler = ConfigurationIsReady;
@@ -765,6 +766,63 @@ namespace PepperDash.Essentials.Room.MobileControl
 
 			ConfigIsLoaded = true;
 		}
+
+        /// <summary>
+        /// Iterates device config and adds messengers as neede for each device type
+        /// </summary>
+        void SetupDeviceMessengers()
+        {
+            try
+            {
+                foreach (var device in ConfigReader.ConfigObject.Devices)
+                {
+                    if (device.Group.Equals("appServerMessenger"))
+                    {
+                        var props = JsonConvert.DeserializeObject<SimplMessengerPropertiesConfig>(device.Properties.ToString());
+
+                        var messengerKey = string.Format("device-{0}-{1}", this.Key, Parent.Key);
+
+                        MessengerBase messenger = null;
+
+                        var dev = ConfigReader.ConfigObject.GetDeviceForKey(props.DeviceKey);
+
+                        if (dev == null)
+                        {
+                            Debug.Console(1, this, "Unable to find device config for key: '{0}'", props.DeviceKey);
+                            return;
+                        }
+
+                        var type = device.Type.ToLower();
+
+                        if (type.Equals("simplcameramessenger"))
+                        {
+                            Debug.Console(2, this, "Adding SIMPLCameraMessenger for: '{0}'", props.DeviceKey);
+                            messenger = new SIMPLCameraMessenger(messengerKey, EISC, "/device/" + props.DeviceKey, props.JoinStart);
+
+                        }
+                        else if (type.Equals("simplroutemessenger"))
+                        {
+                            Debug.Console(2, this, "Adding SIMPLRouteMessenger for: '{0}'", props.DeviceKey);
+                            messenger = new SIMPLRouteMessenger(messengerKey, EISC, "/device/" + props.DeviceKey, props.JoinStart);
+                        }
+
+                        if (messenger != null)
+                        {
+                            DeviceManager.AddDevice(messenger);
+                            messenger.RegisterWithAppServer(Parent);
+                        }
+                        else
+                        {
+                            Debug.Console(2, this, "Unable to add messenger for device: '{0}' of type: '{1}'", props.DeviceKey, type);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(2, this, "Error Setting up Device Managers: {0}", e);
+            }
+        }
 
 		/// <summary>
 		/// 
