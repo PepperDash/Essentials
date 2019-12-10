@@ -776,13 +776,12 @@ namespace PepperDash.Essentials.Room.MobileControl
             {
                 foreach (var device in ConfigReader.ConfigObject.Devices)
                 {
-                    if (device.Group.Equals("appServerMessenger"))
+                    if (device.Group.Equals("simplmessenger"))
                     {
                         var props = JsonConvert.DeserializeObject<SimplMessengerPropertiesConfig>(device.Properties.ToString());
 
                         var messengerKey = string.Format("device-{0}-{1}", this.Key, Parent.Key);
 
-                        MessengerBase messenger = null;
 
                         var dev = ConfigReader.ConfigObject.GetDeviceForKey(props.DeviceKey);
 
@@ -793,6 +792,7 @@ namespace PepperDash.Essentials.Room.MobileControl
                         }
 
                         var type = device.Type.ToLower();
+                        MessengerBase messenger = null;
 
                         if (type.Equals("simplcameramessenger"))
                         {

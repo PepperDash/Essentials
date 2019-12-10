@@ -109,10 +109,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             var asc = appServerController;
 
+            asc.AddAction(MessagePath + "/fullStatus", new Action(SendCameraFullMessageObject));
 
             // Add press and holds using helper action
             Action<string, uint> addPHAction = (s, u) =>
-                AppServerController.AddAction(MessagePath + s, new PressAndHoldAction(b => EISC.SetBool(u, b)));
+                asc.AddAction(MessagePath + s, new PressAndHoldAction(b => EISC.SetBool(u, b)));
             addPHAction("/cameraUp", BoolJoin.CameraControlUp + JoinStart);
             addPHAction("/cameraDown", BoolJoin.CameraControlDown + JoinStart);
             addPHAction("/cameraLeft", BoolJoin.CameraControlLeft + JoinStart);
@@ -121,7 +122,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             addPHAction("/cameraZoomOut", BoolJoin.CameraControlZoomOut + JoinStart);
 
             Action<string, uint> addAction = (s, u) =>
-                AppServerController.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
+                asc.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
 
             addAction("/cameraModeAuto", BoolJoin.CameraModeAuto);
             addAction("/cameraModeManual", BoolJoin.CameraModeManual);
@@ -132,10 +133,27 @@ namespace PepperDash.Essentials.AppServer.Messengers
             {
                 addAction("/cameraPreset" + (i), BoolJoin.CameraPresetStart + i + JoinStart);
             }
+        }
 
-            asc.AddAction(MessagePath + "/fullStatus", new Action(SendCameraFullMessageObject));
+        public void CustomUnregsiterWithAppServer(MobileControlSystemController appServerController)
+        {
+            appServerController.RemoveAction(MessagePath + "/fullStatus");
 
+            appServerController.RemoveAction(MessagePath + "/cameraUp");
+            appServerController.RemoveAction(MessagePath + "/cameraDown");
+            appServerController.RemoveAction(MessagePath + "/cameraLeft");
+            appServerController.RemoveAction(MessagePath + "/cameraRight");
+            appServerController.RemoveAction(MessagePath + "/cameraZoomIn");
+            appServerController.RemoveAction(MessagePath + "/cameraZoomOut");
+            appServerController.RemoveAction(MessagePath + "/cameraModeAuto");
+            appServerController.RemoveAction(MessagePath + "/cameraModeManual");
+            appServerController.RemoveAction(MessagePath + "/cameraModeOff");
 
+            EISC.SetUShortSigAction(UshortJoin.CameraPresetCount + JoinStart, null);
+
+            EISC.SetBoolSigAction(BoolJoin.CameraModeAuto, null);
+            EISC.SetBoolSigAction(BoolJoin.CameraModeManual, null);
+            EISC.SetBoolSigAction(BoolJoin.CameraModeOff, null);
         }
 
         /// <summary>
