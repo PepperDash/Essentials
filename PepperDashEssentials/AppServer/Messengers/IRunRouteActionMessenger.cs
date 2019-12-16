@@ -42,7 +42,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
         {
             appServerController.AddAction(MessagePath + "/fullStatus", new Action(SendRoutingFullMessageObject));
 
-            appServerController.AddAction(string.Format(@"/device/inRoomPc-1/source"), new Action<SourceSelectMessageContent>(c =>
+            appServerController.AddAction(MessagePath + "/source", new Action<SourceSelectMessageContent>(c =>
                     {
                         RoutingDevice.RunRouteAction(c.SourceListItem, c.SourceListKey);
                     }));

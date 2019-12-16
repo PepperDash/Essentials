@@ -13,7 +13,7 @@ using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
-	public class Ddvc01VtcMessenger : MessengerBase
+	public class SIMPLVtcMessenger : MessengerBase
 	{
 		BasicTriList EISC;
 
@@ -240,7 +240,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		/// <param name="eisc"></param>
 		/// <param name="messagePath"></param>
-		public Ddvc01VtcMessenger(string key, BasicTriList eisc, string messagePath)
+		public SIMPLVtcMessenger(string key, BasicTriList eisc, string messagePath)
 			: base(key, messagePath)
 		{
 			EISC = eisc;

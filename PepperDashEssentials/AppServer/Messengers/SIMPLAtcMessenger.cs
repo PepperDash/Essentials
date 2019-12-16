@@ -12,7 +12,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.AppServer.Messengers
 {
-	public class Ddvc01AtcMessenger : MessengerBase
+	public class SIMPLAtcMessenger : MessengerBase
 	{
 		BasicTriList EISC;
 
@@ -97,7 +97,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		/// <param name="eisc"></param>
 		/// <param name="messagePath"></param>
-		public Ddvc01AtcMessenger(string key, BasicTriList eisc, string messagePath)
+		public SIMPLAtcMessenger(string key, BasicTriList eisc, string messagePath)
 			: base(key, messagePath)
 		{
 			EISC = eisc;

@@ -110,9 +110,9 @@
   <ItemGroup>
     <Compile Include="AppServer\Messengers\CameraBaseMessenger.cs" />
     <Compile Include="AppServer\Messengers\ConfigMessenger.cs" />
-    <Compile Include="AppServer\Messengers\Ddvc01AtcMessenger.cs" />
+    <Compile Include="AppServer\Messengers\SIMPLAtcMessenger.cs" />
     <Compile Include="AppServer\Messengers\AudioCodecBaseMessenger.cs" />
-    <Compile Include="AppServer\Messengers\Ddvc01VtcMessenger.cs" />
+    <Compile Include="AppServer\Messengers\SIMPLVtcMessenger.cs" />
     <Compile Include="AppServer\Messengers\IRunRouteActionMessenger.cs" />
     <Compile Include="AppServer\Messengers\MessengerBase.cs" />
     <Compile Include="AppServer\Messengers\SIMPLCameraMessenger.cs" />

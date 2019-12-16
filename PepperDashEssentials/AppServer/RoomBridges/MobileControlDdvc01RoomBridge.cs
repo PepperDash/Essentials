@@ -18,10 +18,16 @@ using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials.Room.MobileControl
 {
-	public class MobileControlDdvc01RoomBridge : MobileControlBridgeBase, IDelayedConfiguration
+	public class MobileControlSIMPLRoomBridge : MobileControlBridgeBase, IDelayedConfiguration
 	{
 		public class BoolJoin
 		{
+
+            /// <summary>
+            /// 1
+            /// </summary>
+            public const uint ConfigIsInEssentials = 100;
+
 			/// <summary>
 			/// 301
 			/// </summary>
@@ -237,8 +243,8 @@ namespace PepperDash.Essentials.Room.MobileControl
 
 		MobileControlDdvc01DeviceBridge SourceBridge;
 
-		Ddvc01AtcMessenger AtcMessenger;
-		Ddvc01VtcMessenger VtcMessenger;
+		SIMPLAtcMessenger AtcMessenger;
+		SIMPLVtcMessenger VtcMessenger;
 
 
 		/// <summary>
@@ -247,7 +253,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 		/// <param name="key"></param>
 		/// <param name="name"></param>
 		/// <param name="ipId"></param>
-		public MobileControlDdvc01RoomBridge(string key, string name, uint ipId)
+		public MobileControlSIMPLRoomBridge(string key, string name, uint ipId)
 			: base(key, name)
 		{
 			try
@@ -278,24 +284,33 @@ namespace PepperDash.Essentials.Room.MobileControl
 			SetupFeedbacks();
 
             var atcKey = string.Format("atc-{0}-{1}", this.Key, Parent.Key);
-			AtcMessenger = new Ddvc01AtcMessenger(atcKey, EISC, "/device/audioCodec");
+			AtcMessenger = new SIMPLAtcMessenger(atcKey, EISC, "/device/audioCodec");
 			AtcMessenger.RegisterWithAppServer(Parent);
 
             var vtcKey = string.Format("atc-{0}-{1}", this.Key, Parent.Key);
-			VtcMessenger = new Ddvc01VtcMessenger(vtcKey, EISC, "/device/videoCodec");
+			VtcMessenger = new SIMPLVtcMessenger(vtcKey, EISC, "/device/videoCodec");
 			VtcMessenger.RegisterWithAppServer(Parent);
 
 			EISC.SigChange += EISC_SigChange;
 			EISC.OnlineStatusChange += (o, a) =>
 			{
-				Debug.Console(1, this, "DDVC EISC online={0}. Config is ready={1}", a.DeviceOnLine, EISC.BooleanOutput[BoolJoin.ConfigIsReady].BoolValue);
+				Debug.Console(1, this, "DDVC EISC online={0}. Config is ready={1}. Use Essentials Config={2}",
+                    a.DeviceOnLine, EISC.BooleanOutput[BoolJoin.ConfigIsReady].BoolValue, EISC.BooleanOutput[BoolJoin.ConfigIsInEssentials].BoolValue);
+
 				if (a.DeviceOnLine && EISC.BooleanOutput[BoolJoin.ConfigIsReady].BoolValue)
 					LoadConfigValues();
+
+                if (a.DeviceOnLine && EISC.BooleanOutput[BoolJoin.ConfigIsInEssentials].BoolValue)
+                    UseEssentialsConfig();
 			};
 			// load config if it's already there
 			if (EISC.IsOnline && EISC.BooleanOutput[BoolJoin.ConfigIsReady].BoolValue) // || EISC.BooleanInput[BoolJoin.ConfigIsReady].BoolValue)
 				LoadConfigValues();
 
+            if (EISC.IsOnline && EISC.BooleanOutput[BoolJoin.ConfigIsInEssentials].BoolValue)
+            {
+                UseEssentialsConfig();
+            }
 
 			CrestronConsole.AddNewConsoleCommand(s =>
 			{
@@ -322,6 +337,22 @@ namespace PepperDash.Essentials.Room.MobileControl
 			return base.CustomActivate();
 		}
 
+        void UseEssentialsConfig()
+        {
+            ConfigIsLoaded = false;
+
+            SetupDeviceMessengers();
+
+            Debug.Console(0, this, "******* ESSENTIALS CONFIG: \r{0}", JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented));
+
+            var handler = ConfigurationIsReady;
+            if (handler != null)
+            {
+                handler(this, new EventArgs());
+            }
+
+            ConfigIsLoaded = true;
+        }
 
 		/// <summary>
 		/// Setup the actions to take place on various incoming API calls
@@ -372,6 +403,9 @@ namespace PepperDash.Essentials.Room.MobileControl
 			Parent.AddAction(@"/room/room1/shutdownCancel", new Action(() =>
 				EISC.PulseBool(BoolJoin.ShutdownCancel)));
 		}
+
+
+
 
 		/// <summary>
 		/// 
@@ -782,13 +816,18 @@ namespace PepperDash.Essentials.Room.MobileControl
 
                         var messengerKey = string.Format("device-{0}-{1}", this.Key, Parent.Key);
 
+                        if (DeviceManager.GetDeviceForKey(messengerKey) != null)
+                        {
+                            Debug.Console(2, this, "Messenger with key: {0} already exists. Skipping...", messengerKey);
+                            continue;
+                        }
 
                         var dev = ConfigReader.ConfigObject.GetDeviceForKey(props.DeviceKey);
 
                         if (dev == null)
                         {
                             Debug.Console(1, this, "Unable to find device config for key: '{0}'", props.DeviceKey);
-                            return;
+                            continue;
                         }
 
                         var type = device.Type.ToLower();
@@ -798,7 +837,6 @@ namespace PepperDash.Essentials.Room.MobileControl
                         {
                             Debug.Console(2, this, "Adding SIMPLCameraMessenger for: '{0}'", props.DeviceKey);
                             messenger = new SIMPLCameraMessenger(messengerKey, EISC, "/device/" + props.DeviceKey, props.JoinStart);
-
                         }
                         else if (type.Equals("simplroutemessenger"))
                         {
@@ -931,12 +969,15 @@ namespace PepperDash.Essentials.Room.MobileControl
 			if (Debug.Level >= 1)
 				Debug.Console(1, this, "DDVC EISC change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
 			var uo = args.Sig.UserObject;
-			if (uo is Action<bool>)
-				(uo as Action<bool>)(args.Sig.BoolValue);
-			else if (uo is Action<ushort>)
-				(uo as Action<ushort>)(args.Sig.UShortValue);
-			else if (uo is Action<string>)
-				(uo as Action<string>)(args.Sig.StringValue);
+            if (uo != null)
+            {
+                if (uo is Action<bool>)
+                    (uo as Action<bool>)(args.Sig.BoolValue);
+                else if (uo is Action<ushort>)
+                    (uo as Action<ushort>)(args.Sig.UShortValue);
+                else if (uo is Action<string>)
+                    (uo as Action<string>)(args.Sig.StringValue);
+            }
 		}
 
 		/// <summary>

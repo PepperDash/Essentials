@@ -25,6 +25,19 @@ namespace PepperDash.Essentials.Bridges
 
         public CameraControllerJoinMap()
         {
+            Joins = new Dictionary<string, JoinMetadata>();
+
+            Joins.Add("isOnline", new JoinMetadata() 
+                { JoinNumber = 9, Label = "IsOnline", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add("powerOn", new JoinMetadata() 
+                { JoinNumber = 7, Label = "PowerOn", JoinCapabilities = eJoinCapabilities.Read | eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add("powerOff", new JoinMetadata() 
+                { JoinNumber = 8, Label = "PowerOff", JoinCapabilities = eJoinCapabilities.Read | eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add("up", new JoinMetadata() 
+                { JoinNumber = 1, Label = "TiltUp", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+
+
+
             // Digital
             IsOnline = 9;
             PowerOff = 8;
@@ -37,13 +50,22 @@ namespace PepperDash.Essentials.Bridges
             ZoomOut = 6;
             PresetRecallOffset = 10;
             PresetSaveOffset = 30;
-            NumberOfPresets = 5;
+
             // Analog
+            NumberOfPresets = 5;
         }
 
         public override void OffsetJoinNumbers(uint joinStart)
         {
             var joinOffset = joinStart - 1;
+
+            
+            foreach (var join in Joins)
+            {
+                join.Value.JoinNumber = join.Value.JoinNumber + joinOffset;
+            }
+
+
 
             IsOnline = IsOnline + joinOffset;
             PowerOff = PowerOff + joinOffset;

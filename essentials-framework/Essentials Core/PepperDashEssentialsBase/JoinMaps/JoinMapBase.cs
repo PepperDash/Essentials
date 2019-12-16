@@ -40,8 +40,33 @@ namespace PepperDash.Essentials.Core
         /// <param name="joinStart"></param>
         public abstract void OffsetJoinNumbers(uint joinStart);
 
+        public Dictionary<string, JoinMetadata> Joins { get; set; }
+    }
+
+    public enum eJoinCapabilities
+    {
+        Read = 1,
+        Write = 2
+    }
+
+    public enum eJoinType
+    {
+        Digital = 1,
+        Analog = 2,
+        Serial = 4
+    }
+
+    public class JoinMetadata
+    {
+        public string Label { get; set; }
+        public eJoinType JoinType { get; set; }
+        public uint JoinNumber { get; set; }
+        public uint JoinSpan { get; set; }
+        public eJoinCapabilities JoinCapabilities { get; set; }
 
     }
+
+
 
 
 }
