@@ -30,12 +30,17 @@ namespace PepperDash.Essentials
 			tsw.SigChange += Panel_SigChange;
 		}
 
-        public EssentialsTouchpanelController(string key, string name, Dge100 panel, string projectName, string sgdPath)
+        public EssentialsTouchpanelController(string key, string name, Dge100 dge, string projectName, string sgdPath)
             : base(key, name)
         {
-            Panel = panel;
-            panel.LoadSmartObjects(sgdPath);
-            panel.SigChange += Panel_SigChange;
+            Panel = dge;
+
+            if (!string.IsNullOrEmpty(sgdPath))
+                dge.LoadSmartObjects(sgdPath);
+            else
+                Debug.Console(1, this, "No SGD file path defined");
+
+            dge.SigChange += Panel_SigChange;
         }
 
 		/// <summary>
