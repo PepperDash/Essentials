@@ -38,7 +38,13 @@ namespace PepperDash.Essentials
                 else if (typeName == "dmdge200c")
                     dgeDevice = new DmDge200C(comm.IpIdInt, Global.ControlSystem);
 
-                var dgeController = new DgeController(config.Key, config.Name, dgeDevice, config, props);
+                if (dgeDevice == null)
+                {
+                    Debug.Console(1, "Unable to create DGE device");
+                    return null;
+                }
+
+                var dgeController = new DgeController(config.Key + "-comPorts", config.Name, dgeDevice, config, props);
 
                 DeviceManager.AddDevice(dgeController);
 
