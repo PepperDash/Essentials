@@ -23,20 +23,56 @@ namespace PepperDash.Essentials.Bridges
         public uint PresetSaveOffset { get; set; }
         public uint NumberOfPresets { get; set; }
 
+        public enum eCameraControllerJoinMapKey
+        {
+            IsOnline,
+            PowerOn,
+            PowerOff,
+            TiltUp,
+            TiltDown,
+            PanLeft,
+            PanRight,
+            ZoomIn,
+            ZoomOut,
+            PresetRecallStart,
+            PresetSaveStart,
+            PresetLabelStart,
+            NumberOfPresets
+        }
+
         public CameraControllerJoinMap()
         {
             Joins = new Dictionary<string, JoinMetadata>();
 
-            Joins.Add("isOnline", new JoinMetadata() 
-                { JoinNumber = 9, Label = "IsOnline", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
-            Joins.Add("powerOn", new JoinMetadata() 
-                { JoinNumber = 7, Label = "PowerOn", JoinCapabilities = eJoinCapabilities.Read | eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
-            Joins.Add("powerOff", new JoinMetadata() 
-                { JoinNumber = 8, Label = "PowerOff", JoinCapabilities = eJoinCapabilities.Read | eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
-            Joins.Add("up", new JoinMetadata() 
-                { JoinNumber = 1, Label = "TiltUp", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(eCameraControllerJoinMapKey.IsOnline.ToString(), new JoinMetadata() 
+                { JoinNumber = 9, Label = "Is Online", JoinCapabilities = eJoinCapabilities.Read, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(eCameraControllerJoinMapKey.PowerOn.ToString(), new JoinMetadata() 
+                { JoinNumber = 7, Label = "Power On", JoinCapabilities = eJoinCapabilities.Read | eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(eCameraControllerJoinMapKey.PowerOff.ToString(), new JoinMetadata() 
+                { JoinNumber = 8, Label = "Power Off", JoinCapabilities = eJoinCapabilities.Read | eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(eCameraControllerJoinMapKey.TiltUp.ToString(), new JoinMetadata() 
+                { JoinNumber = 1, Label = "Tilt Up", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(eCameraControllerJoinMapKey.TiltDown.ToString(), new JoinMetadata() 
+                { JoinNumber = 2, Label = "TiltDown", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(eCameraControllerJoinMapKey.PanLeft.ToString(), new JoinMetadata() 
+                { JoinNumber = 3, Label = "Pan Left", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(eCameraControllerJoinMapKey.PanRight.ToString(), new JoinMetadata() 
+                { JoinNumber = 4, Label = "Pan Right", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(eCameraControllerJoinMapKey.ZoomIn.ToString(), new JoinMetadata() 
+                { JoinNumber = 5, Label = "Zoom In", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(eCameraControllerJoinMapKey.ZoomOut.ToString(), new JoinMetadata() 
+                { JoinNumber = 6, Label = "Zoom Out", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Digital });
 
+            Joins.Add(eCameraControllerJoinMapKey.PresetRecallStart.ToString(), new JoinMetadata() 
+                { JoinNumber = 11, Label = "Preset Recall Start", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 20, JoinType = eJoinType.Digital });
+            Joins.Add(eCameraControllerJoinMapKey.PresetLabelStart.ToString(), new JoinMetadata() 
+                { JoinNumber = 11, Label = "Preset Label Start", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 20, JoinType = eJoinType.Serial });
 
+            Joins.Add(eCameraControllerJoinMapKey.PresetSaveStart.ToString(), new JoinMetadata() 
+                { JoinNumber = 31, Label = "Preset Save Start", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 20, JoinType = eJoinType.Digital });
+
+            Joins.Add(eCameraControllerJoinMapKey.NumberOfPresets.ToString(), new JoinMetadata() 
+                { JoinNumber = 5, Label = "Number of Presets", JoinCapabilities = eJoinCapabilities.Write, JoinSpan = 1, JoinType = eJoinType.Analog });
 
             // Digital
             IsOnline = 9;

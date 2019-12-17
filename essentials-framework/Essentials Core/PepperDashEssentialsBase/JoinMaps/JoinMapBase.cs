@@ -6,6 +6,8 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core.Config;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Core
 {
     public static class JoinMapHelper
@@ -43,6 +45,10 @@ namespace PepperDash.Essentials.Core
         public Dictionary<string, JoinMetadata> Joins { get; set; }
     }
 
+    /// <summary>
+    /// Read = Provides feedback to SIMPL
+    /// Write = Responds to sig values from SIMPL
+    /// </summary>
     public enum eJoinCapabilities
     {
         Read = 1,
@@ -56,12 +62,35 @@ namespace PepperDash.Essentials.Core
         Serial = 4
     }
 
+    /// <summary>
+    /// Data describing the join
+    /// </summary>
     public class JoinMetadata
     {
+        /// <summary>
+        /// A label for the join to better describe it's usage
+        /// </summary>
+        [JsonProperty("label")]
         public string Label { get; set; }
+        /// <summary>
+        /// Signal type(s)
+        /// </summary>
+        [JsonProperty("joinType")]
         public eJoinType JoinType { get; set; }
+        /// <summary>
+        /// Join number (based on join offset value)
+        /// </summary>
+        [JsonProperty("joinNumber")]
         public uint JoinNumber { get; set; }
+        /// <summary>
+        /// Join range span.  If join indicates the start of a range of joins, this indicated the maximum number of joins in the range
+        /// </summary>
+        [JsonProperty("joinSpan")]
         public uint JoinSpan { get; set; }
+        /// <summary>
+        /// Indicates whether the join is read and/or write
+        /// </summary>
+        [JsonProperty("joinCapabilities")]
         public eJoinCapabilities JoinCapabilities { get; set; }
 
     }
