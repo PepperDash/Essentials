@@ -111,6 +111,18 @@ namespace PepperDash.Essentials.Core
             else return 0;
         }
 
+        /// <summary>
+        /// Returns the join span for the join with the specified key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public uint GetJoinSpanForKey(string key)
+        {
+            if (Joins.ContainsKey(key))
+                return Joins[key].JoinSpan;
+
+            else return 0;
+        }
 
     }
 

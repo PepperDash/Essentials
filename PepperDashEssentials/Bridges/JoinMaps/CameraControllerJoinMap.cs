@@ -26,13 +26,19 @@ namespace PepperDash.Essentials.Bridges
         public const string PresetSaveStart = "PresetSaveStart";
         public const string PresetLabelStart = "PresetReacllStgart";
         public const string NumberOfPresets = "NumberOfPresets";
+        public const string CameraModeAuto = "CameraModeAuto";
+        public const string CameraModeManual = "CameraModeManual";
+        public const string CameraModeOff = "CameraModeOff";
+        public const string SupportsCameraModeAuto = "SupportsCameraModeAuto";
+        public const string SupportsCameraModeOff = "SupportsCameraModeOff";
+        public const string SupportsPresets = "SupportsPresets";
 
         public CameraControllerJoinMap()
         {
-            Joins.Add(TiltUp, new JoinMetadata() 
-                { JoinNumber = 1, Label = "Tilt Up", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(TiltDown, new JoinMetadata() 
-                { JoinNumber = 2, Label = "TiltDown", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            { JoinNumber = 1, Label = "Tilt Up", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(TiltDown, new JoinMetadata() 
+                { JoinNumber = 2, Label = "Tilt Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(PanLeft, new JoinMetadata() 
                 { JoinNumber = 3, Label = "Pan Left", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(PanRight, new JoinMetadata() 
@@ -60,6 +66,19 @@ namespace PepperDash.Essentials.Bridges
             Joins.Add(NumberOfPresets, new JoinMetadata() 
                 { JoinNumber = 11, Label = "Number of Presets", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Analog });
 
+            Joins.Add(CameraModeAuto, new JoinMetadata()
+                { JoinNumber = 51, Label = "Camera Mode Auto", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(CameraModeManual, new JoinMetadata()
+                { JoinNumber = 52, Label = "Camera Mode Manual", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(CameraModeOff, new JoinMetadata()
+                { JoinNumber = 53, Label = "Camera Mode Off", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+
+            Joins.Add(SupportsCameraModeAuto, new JoinMetadata()
+                { JoinNumber = 55, Label = "Supports Camera Mode Auto", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(SupportsCameraModeOff, new JoinMetadata()
+                { JoinNumber = 56, Label = "Supports Camera Mode Off", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(SupportsPresets, new JoinMetadata()
+                { JoinNumber = 57, Label = "Supports Presets", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
         }
 
         public override void OffsetJoinNumbers(uint joinStart)

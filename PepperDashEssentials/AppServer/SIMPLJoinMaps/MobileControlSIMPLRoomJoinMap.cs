@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.AppServer
         public const string ClientJoined = "ClientJoined";
         public const string ActivityShare = "ActivityShare";
         public const string ActivityPhoneCall = "ActivityPhoneCall";
-        public const string ActivtyVideoCall = "ActivityVideoCall";
+        public const string ActivityVideoCall = "ActivityVideoCall";
         public const string MasterVolume = "MasterVolumeMute";
         public const string VolumeJoinStart = "VolumeMutesJoinStart";
         public const string ShutdownCancel = "ShutdownCancel";
@@ -67,15 +67,16 @@ namespace PepperDash.Essentials.AppServer
             Joins.Add(ClientJoined, new JoinMetadata() { JoinNumber = 42, Label = "Client Joined", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(ActivityShare, new JoinMetadata() { JoinNumber = 51, Label = "Activity Share", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(ActivityPhoneCall, new JoinMetadata() { JoinNumber = 52, Label = "Activity Phone Call", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
-            Joins.Add(ActivtyVideoCall, new JoinMetadata() { JoinNumber = 53, Label = "Activity Video Call", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(ActivityVideoCall, new JoinMetadata() { JoinNumber = 53, Label = "Activity Video Call", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(MasterVolume, new JoinMetadata() { JoinNumber = 1, Label = "Master Volume Mute Toggle/FB/Level/Label", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.DigitalAnalogSerial });
-            Joins.Add(VolumeJoinStart, new JoinMetadata() { JoinNumber = 2, Label = "Volume Mute Toggle/FB/Level/Label", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 9, JoinType = eJoinType.DigitalAnalogSerial });
+            Joins.Add(VolumeJoinStart, new JoinMetadata() { JoinNumber = 2, Label = "Volume Mute Toggle/FB/Level/Label", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 8, JoinType = eJoinType.DigitalAnalogSerial });
             Joins.Add(ShutdownCancel, new JoinMetadata() { JoinNumber = 61, Label = "Shutdown Cancel", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(ShutdownEnd, new JoinMetadata() { JoinNumber = 62, Label = "Shutdown End", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(ShutdownStart, new JoinMetadata() { JoinNumber = 63, Label = "ShutdownStart", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(SourceHasChanged, new JoinMetadata() { JoinNumber = 71, Label = "Source Changed", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });            
             // Possibly move these to Audio Codec Messenger
             Joins.Add(SpeedDialVisibleStartJoin, new JoinMetadata() { JoinNumber = 261, Label = "Speed Dial Visible", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 10, JoinType = eJoinType.Digital });
+            //
             Joins.Add(ConfigIsReady, new JoinMetadata() { JoinNumber = 501, Label = "Config info from SIMPL is ready", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(HideVideoConfRecents, new JoinMetadata() { JoinNumber = 502, Label = "Hide Video Conference Recents", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(ShowCameraWhenNotInCall, new JoinMetadata() { JoinNumber = 503, Label = "Show camera when not in call", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
@@ -93,6 +94,7 @@ namespace PepperDash.Essentials.AppServer
             // Possibly move these to Audio Codec Messenger
             Joins.Add(SpeedDialNameStartJoin, new JoinMetadata() { JoinNumber = 241, Label = "Speed Dial names", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 10, JoinType = eJoinType.Serial });
             Joins.Add(SpeedDialNumberStartJoin, new JoinMetadata() { JoinNumber = 251, Label = "Speed Dial numbers", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 10, JoinType = eJoinType.Serial });
+            //
             Joins.Add(UserCodeToSystem, new JoinMetadata() { JoinNumber = 401, Label = "User Ccde", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
             Joins.Add(ServerUrl, new JoinMetadata() { JoinNumber = 402, Label = "Server URL", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
             Joins.Add(ConfigRoomName, new JoinMetadata() { JoinNumber = 501, Label = "Room Nnme", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
@@ -105,8 +107,10 @@ namespace PepperDash.Essentials.AppServer
             Joins.Add(SourceKeyJoinStart, new JoinMetadata() { JoinNumber = 641, Label = "Source Keys", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 20, JoinType = eJoinType.Serial });
             Joins.Add(SourceTypeJoinStart, new JoinMetadata() { JoinNumber = 661, Label = "Source Types", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 20, JoinType = eJoinType.Serial });
 
+            // Possibly move these to Audio Codec Messenger
             Joins.Add(CameraNearNameStart, new JoinMetadata() { JoinNumber = 761, Label = "Near End Camera Names", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 10, JoinType = eJoinType.Serial });
-            Joins.Add(CameraNearNameStart, new JoinMetadata() { JoinNumber = 770, Label = "Far End Camera Name", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
+            Joins.Add(CameraFarName, new JoinMetadata() { JoinNumber = 770, Label = "Far End Camera Name", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
+            //
         }
 
         public override void OffsetJoinNumbers(uint joinStart)

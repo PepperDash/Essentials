@@ -21,199 +21,6 @@ namespace PepperDash.Essentials.Room.MobileControl
 {
 	public class MobileControlSIMPLRoomBridge : MobileControlBridgeBase, IDelayedConfiguration
 	{
-		public class BoolJoin
-		{
-
-            /// <summary>
-            /// 1
-            /// </summary>
-            public const uint ConfigIsInEssentials = 100;
-
-			/// <summary>
-			/// 301
-			/// </summary>
-			public const uint RoomIsOn = 301;
-
-			/// <summary>
-			/// 12
-			/// </summary>
-			public const uint PrivacyMute = 12;
-
-			/// <summary>
-			/// 41
-			/// </summary>
-			public const uint PromptForCode = 41;
-			/// <summary>
-			/// 42
-			/// </summary>
-			public const uint ClientJoined = 42;
-			/// <summary>
-			/// 51
-			/// </summary>
-			public const uint ActivityShare = 51;
-			/// <summary>
-			/// 52
-			/// </summary>
-			public const uint ActivityPhoneCall = 52;
-			/// <summary>
-			/// 53
-			/// </summary>
-			public const uint ActivityVideoCall = 53;
-
-			/// <summary>
-			/// 1
-			/// </summary>
-			public const uint MasterVolumeIsMuted = 1;
-			/// <summary>
-			/// 1
-			/// </summary>
-			public const uint MasterVolumeMuteToggle = 1;
-			/// <summary>
-			/// 1
-			/// </summary>
-			public const uint VolumeMutesJoinStart = 1;
-			/// <summary>
-			/// 61
-			/// </summary>
-			public const uint ShutdownCancel = 61;
-			/// <summary>
-			/// 62
-			/// </summary>
-			public const uint ShutdownEnd = 62;			
-			/// <summary>
-			/// 63
-			/// </summary>
-			public const uint ShutdownStart = 63;
-			/// <summary>
-			/// 72
-			/// </summary>
-			public const uint SourceHasChanged = 71;
-
-			/// <summary>
-			/// 261 - The start of the range of speed dial visibles
-			/// </summary>
-			public const uint SpeedDialVisibleStartJoin = 261;
-			/// <summary>
-			/// 501
-			/// </summary>
-			public const uint ConfigIsReady = 501;
-			/// <summary>
-			/// 502
-			/// </summary>
-			public const uint HideVideoConfRecents = 502;
-			/// <summary>
-			/// 503
-			/// </summary>
-			public const uint ShowCameraWhenNotInCall = 503;
-			/// <summary>
-			/// 504
-			/// </summary>
-			public const uint UseSourceEnabled = 504;
-			/// <summary>
-			/// 601
-			/// </summary>
-			public const uint SourceShareDisableJoinStart = 601;
-			/// <summary>
-			/// 621
-			/// </summary>
-			public const uint SourceIsEnabledJoinStart = 621;
-		}
-
-		public class UshortJoin
-		{
-			/// <summary>
-			/// 1
-			/// </summary>
-			public const uint MasterVolumeLevel = 1;
-			/// <summary>
-			/// 1
-			/// </summary>
-			public const uint VolumeSlidersJoinStart = 1;
-			/// <summary>
-			/// 61
-			/// </summary>
-			public const uint ShutdownPromptDuration = 61;
-			/// <summary>
-			/// 101
-			/// </summary>
-			public const uint NumberOfAuxFaders = 101;
-		}
-
-		public class StringJoin
-		{
-			/// <summary>
-			/// 1
-			/// </summary>
-			public const uint VolumeSliderNamesJoinStart = 1;
-			/// <summary>
-			/// 71
-			/// </summary>
-			public const uint SelectedSourceKey = 71;
-
-			/// <summary>
-			/// 241
-			/// </summary>
-			public const uint SpeedDialNameStartJoin = 241;
-
-			/// <summary>
-			/// 251
-			/// </summary>
-			public const uint SpeedDialNumberStartJoin = 251;
-			
-			/// <summary>
-			/// 501
-			/// </summary>
-			public const uint ConfigRoomName = 501;
-			/// <summary>
-			/// 502
-			/// </summary>
-			public const uint ConfigHelpMessage = 502;
-			/// <summary>
-			/// 503
-			/// </summary>
-			public const uint ConfigHelpNumber = 503;
-			/// <summary>
-			/// 504
-			/// </summary>
-			public const uint ConfigRoomPhoneNumber = 504;
-			/// <summary>
-			/// 505
-			/// </summary>
-			public const uint ConfigRoomURI = 505;
-			/// <summary>
-			/// 401
-			/// </summary>
-			public const uint UserCodeToSystem = 401;
-			/// <summary>
-			/// 402
-			/// </summary>
-            public const uint ServerUrl = 402;
-			/// <summary>
-			/// 601
-			/// </summary>
-			public const uint SourceNameJoinStart = 601;
-			/// <summary>
-			/// 621
-			/// </summary>
-			public const uint SourceIconJoinStart = 621;
-			/// <summary>
-			/// 641
-			/// </summary>
-			public const uint SourceKeyJoinStart = 641;
-			/// <summary>
-			/// 661
-			/// </summary>
-			public const uint SourceTypeJoinStart = 661;
-			/// <summary>
-			/// 761
-			/// </summary>
-			public const uint CameraNearNameStart = 761;
-			/// <summary>
-			/// 770 - presence of this name on the input will cause the camera to be added
-			/// </summary>
-			public const uint CameraFarName = 770;
-		}
-
 		/// <summary>
 		/// Fires when config is ready to go
 		/// </summary>
@@ -231,7 +38,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 		public override string RoomName
 		{
 			get { 
-				var name = EISC.StringOutput[StringJoin.ConfigRoomName].StringValue;
+				var name = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigRoomName)].StringValue;
 				return string.IsNullOrEmpty(name) ? "Not Loaded" : name;
 			}
 		}
@@ -260,9 +67,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 
                 JoinMap = new MobileControlSIMPLRoomJoinMap();
 
-                // TODO: Possibly set up alternate constructor or take in joinMapKey and joinStart properties in constructor
-                
-
+                // TODO: Possibly set up alternate constructor or take in joinMapKey and joinStart properties in constructor     
                 JoinMap.OffsetJoinNumbers(1);
 
 				SourceBridge = new MobileControlDdvc01DeviceBridge(key + "-sourceBridge", "DDVC01 source bridge", EISC);
@@ -300,19 +105,19 @@ namespace PepperDash.Essentials.Room.MobileControl
 			EISC.OnlineStatusChange += (o, a) =>
 			{
 				Debug.Console(1, this, "DDVC EISC online={0}. Config is ready={1}. Use Essentials Config={2}",
-                    a.DeviceOnLine, EISC.BooleanOutput[BoolJoin.ConfigIsReady].BoolValue, EISC.BooleanOutput[BoolJoin.ConfigIsInEssentials].BoolValue);
+                    a.DeviceOnLine, EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigIsReady)].BoolValue, EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigIsLocal)].BoolValue);
 
-				if (a.DeviceOnLine && EISC.BooleanOutput[BoolJoin.ConfigIsReady].BoolValue)
+				if (a.DeviceOnLine && EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigIsReady)].BoolValue)
 					LoadConfigValues();
 
-                if (a.DeviceOnLine && EISC.BooleanOutput[BoolJoin.ConfigIsInEssentials].BoolValue)
+                if (a.DeviceOnLine && EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigIsLocal)].BoolValue)
                     UseEssentialsConfig();
 			};
 			// load config if it's already there
-			if (EISC.IsOnline && EISC.BooleanOutput[BoolJoin.ConfigIsReady].BoolValue) // || EISC.BooleanInput[BoolJoin.ConfigIsReady].BoolValue)
+			if (EISC.IsOnline && EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigIsReady)].BoolValue) // || EISC.BooleanInput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigIsReady].BoolValue)
 				LoadConfigValues();
 
-            if (EISC.IsOnline && EISC.BooleanOutput[BoolJoin.ConfigIsInEssentials].BoolValue)
+            if (EISC.IsOnline && EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigIsLocal)].BoolValue)
             {
                 UseEssentialsConfig();
             }
@@ -364,35 +169,38 @@ namespace PepperDash.Essentials.Room.MobileControl
 		/// </summary>
 		void SetupFunctions()
 		{
-			Parent.AddAction(@"/room/room1/promptForCode", new Action(() => EISC.PulseBool(BoolJoin.PromptForCode)));
-			Parent.AddAction(@"/room/room1/clientJoined", new Action(() => EISC.PulseBool(BoolJoin.ClientJoined)));
+			Parent.AddAction(@"/room/room1/promptForCode", new Action(() => EISC.PulseBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.PromptForCode))));
+			Parent.AddAction(@"/room/room1/clientJoined", new Action(() => EISC.PulseBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ClientJoined))));
 
 			Parent.AddAction(@"/room/room1/status", new Action(SendFullStatus));
 
 			Parent.AddAction(@"/room/room1/source", new Action<SourceSelectMessageContent>(c =>
 			{
-				EISC.SetString(StringJoin.SelectedSourceKey, c.SourceListItem);
-				EISC.PulseBool(BoolJoin.SourceHasChanged);
+				EISC.SetString(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SelectedSourceKey), c.SourceListItem);
+				EISC.PulseBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SourceHasChanged));
 			}));
 
 			Parent.AddAction(@"/room/room1/defaultsource", new Action(() => 
-				EISC.PulseBool(BoolJoin.ActivityShare)));
+				EISC.PulseBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ActivityShare))));
 			Parent.AddAction(@"/room/room1/activityPhone", new Action(() =>
-				EISC.PulseBool(BoolJoin.ActivityPhoneCall)));
+				EISC.PulseBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ActivityPhoneCall))));
 			Parent.AddAction(@"/room/room1/activityVideo", new Action(() =>
-				EISC.PulseBool(BoolJoin.ActivityVideoCall)));
+				EISC.PulseBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ActivityVideoCall))));
 
 			Parent.AddAction(@"/room/room1/volumes/master/level", new Action<ushort>(u => 
-				EISC.SetUshort(UshortJoin.MasterVolumeLevel, u)));
+				EISC.SetUshort(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.MasterVolume), u)));
 			Parent.AddAction(@"/room/room1/volumes/master/muteToggle", new Action(() => 
-				EISC.PulseBool(BoolJoin.MasterVolumeIsMuted)));
+				EISC.PulseBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.MasterVolume))));
 			Parent.AddAction(@"/room/room1/volumes/master/privacyMuteToggle", new Action(() =>
-				EISC.PulseBool(BoolJoin.PrivacyMute)));
+				EISC.PulseBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.PrivacyMute))));
 
 
 			// /xyzxyz/volumes/master/muteToggle ---> BoolInput[1]
 
-			for (uint i = 2; i <= 7; i++)
+            var volumeStart = JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.VolumeJoinStart);
+            var volumeEnd = JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.VolumeJoinStart) + JoinMap.GetJoinSpanForKey(MobileControlSIMPLRoomJoinMap.VolumeJoinStart);
+
+            for (uint i = volumeStart; i <= volumeEnd; i++)
 			{
 				var index = i;
 				Parent.AddAction(string.Format(@"/room/room1/volumes/level-{0}/level", index), new Action<ushort>(u =>
@@ -402,11 +210,11 @@ namespace PepperDash.Essentials.Room.MobileControl
 			}
 
 			Parent.AddAction(@"/room/room1/shutdownStart", new Action(() =>
-				EISC.PulseBool(BoolJoin.ShutdownStart)));
+				EISC.PulseBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ShutdownStart))));
 			Parent.AddAction(@"/room/room1/shutdownEnd", new Action(() =>
-				EISC.PulseBool(BoolJoin.ShutdownEnd)));
+				EISC.PulseBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ShutdownEnd))));
 			Parent.AddAction(@"/room/room1/shutdownCancel", new Action(() =>
-				EISC.PulseBool(BoolJoin.ShutdownCancel)));
+				EISC.PulseBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ShutdownCancel))));
 		}
 
 
@@ -436,21 +244,21 @@ namespace PepperDash.Essentials.Room.MobileControl
 		void SetupFeedbacks()
 		{
 			// Power 
-			EISC.SetBoolSigAction(BoolJoin.RoomIsOn, b =>
+			EISC.SetBoolSigAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.RoomIsOn), b =>
 				PostStatusMessage(new
 					{
 						isOn = b
 					}));
 
 			// Source change things
-			EISC.SetSigTrueAction(BoolJoin.SourceHasChanged, () =>
+			EISC.SetSigTrueAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SourceHasChanged), () =>
 				PostStatusMessage(new
 					{
-						selectedSourceKey = EISC.StringOutput[StringJoin.SelectedSourceKey].StringValue
+						selectedSourceKey = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SelectedSourceKey)].StringValue
 					}));
 
 			// Volume things
-			EISC.SetUShortSigAction(UshortJoin.MasterVolumeLevel, u =>
+			EISC.SetUShortSigAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.MasterVolume), u =>
                 PostStatusMessage(new
                 {
                     volumes = new
@@ -465,7 +273,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 			// map MasterVolumeIsMuted join -> status/volumes/master/muted
 			// 
 
-			EISC.SetBoolSigAction(BoolJoin.MasterVolumeIsMuted, b =>
+			EISC.SetBoolSigAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.MasterVolume), b =>
                 PostStatusMessage(new
                 {
                     volumes = new
@@ -476,7 +284,7 @@ namespace PepperDash.Essentials.Room.MobileControl
                         }
                     }
                 }));
-			EISC.SetBoolSigAction(BoolJoin.PrivacyMute, b => 
+			EISC.SetBoolSigAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.PrivacyMute), b => 
 				PostStatusMessage(new
 				{
 					volumes = new 
@@ -488,7 +296,10 @@ namespace PepperDash.Essentials.Room.MobileControl
 					}
 				}));
 
-			for (uint i = 2; i <= 7; i++)
+            var volumeStart = JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.VolumeJoinStart);
+            var volumeEnd = JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.VolumeJoinStart) + JoinMap.GetJoinSpanForKey(MobileControlSIMPLRoomJoinMap.VolumeJoinStart);
+
+            for (uint i = volumeStart; i <= volumeEnd; i++)
 			{
 				var index = i; // local scope for lambdas
 				EISC.SetUShortSigAction(index, u => // start at join 2
@@ -519,7 +330,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 				});
 			}
 
-			EISC.SetUShortSigAction(UshortJoin.NumberOfAuxFaders, u => 
+			EISC.SetUShortSigAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.NumberOfAuxFaders), u => 
 				PostStatusMessage(new {
 					volumes = new {
 						numberOfAuxFaders = u,
@@ -527,30 +338,30 @@ namespace PepperDash.Essentials.Room.MobileControl
 				}));
 
 			// shutdown things
-			EISC.SetSigTrueAction(BoolJoin.ShutdownCancel, new Action(() =>
+			EISC.SetSigTrueAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ShutdownCancel), new Action(() =>
 				PostMessage("/room/shutdown/", new
 				{
 					state = "wasCancelled"
 				})));
-			EISC.SetSigTrueAction(BoolJoin.ShutdownEnd, new Action(() =>
+			EISC.SetSigTrueAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ShutdownEnd), new Action(() =>
 				PostMessage("/room/shutdown/", new
 				{
 					state = "hasFinished"
 				})));
-			EISC.SetSigTrueAction(BoolJoin.ShutdownStart, new Action(() =>
+			EISC.SetSigTrueAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ShutdownStart), new Action(() =>
 				PostMessage("/room/shutdown/", new
 				{
 					state = "hasStarted",
-					duration = EISC.UShortOutput[UshortJoin.ShutdownPromptDuration].UShortValue
+					duration = EISC.UShortOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ShutdownPromptDuration)].UShortValue
 				})));
 
 			// Config things
-			EISC.SetSigTrueAction(BoolJoin.ConfigIsReady, LoadConfigValues);
+			EISC.SetSigTrueAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigIsReady), LoadConfigValues);
 
 			// Activity modes
-			EISC.SetSigTrueAction(BoolJoin.ActivityShare, () => UpdateActivity(1));
-			EISC.SetSigTrueAction(BoolJoin.ActivityPhoneCall, () => UpdateActivity(2));
-			EISC.SetSigTrueAction(BoolJoin.ActivityVideoCall, () => UpdateActivity(3));
+			EISC.SetSigTrueAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ActivityShare), () => UpdateActivity(1));
+			EISC.SetSigTrueAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ActivityPhoneCall), () => UpdateActivity(2));
+			EISC.SetSigTrueAction(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ActivityVideoCall), () => UpdateActivity(3));
 		}
 
 
@@ -594,7 +405,7 @@ namespace PepperDash.Essentials.Room.MobileControl
                 Debug.Console(0, this, "Replacing Room[0] in config");
                 co.Rooms[0] = rm;
             }
-			rm.Name = EISC.StringOutput[StringJoin.ConfigRoomName].StringValue;
+			rm.Name = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigRoomName)].StringValue;
 			rm.Key = "room1";
 			rm.Type = "ddvc01";
 
@@ -605,13 +416,13 @@ namespace PepperDash.Essentials.Room.MobileControl
 				rmProps = JsonConvert.DeserializeObject<DDVC01RoomPropertiesConfig>(rm.Properties.ToString());
 
 			rmProps.Help = new EssentialsHelpPropertiesConfig();
-			rmProps.Help.CallButtonText = EISC.StringOutput[StringJoin.ConfigHelpNumber].StringValue;
-			rmProps.Help.Message = EISC.StringOutput[StringJoin.ConfigHelpMessage].StringValue;
+			rmProps.Help.CallButtonText = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigHelpNumber)].StringValue;
+			rmProps.Help.Message = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigHelpMessage)].StringValue;
 
 			rmProps.Environment = new EssentialsEnvironmentPropertiesConfig(); // enabled defaults to false
 
-			rmProps.RoomPhoneNumber = EISC.StringOutput[StringJoin.ConfigRoomPhoneNumber].StringValue;
-			rmProps.RoomURI = EISC.StringOutput[StringJoin.ConfigRoomURI].StringValue;
+			rmProps.RoomPhoneNumber = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigRoomPhoneNumber)].StringValue;
+			rmProps.RoomURI = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ConfigRoomURI)].StringValue;
 			rmProps.SpeedDials = new List<DDVC01SpeedDial>();
 
 			// This MAY need a check 
@@ -619,7 +430,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 			rmProps.VideoCodecKey = "videoCodec";
 
 			// volume control names
-			var volCount = EISC.UShortOutput[UshortJoin.NumberOfAuxFaders].UShortValue;
+			var volCount = EISC.UShortOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.NumberOfAuxFaders)].UShortValue;
 
             //// use Volumes object or?
             //rmProps.VolumeSliderNames = new List<string>();
@@ -664,18 +475,18 @@ namespace PepperDash.Essentials.Room.MobileControl
 			// add sources...
 			for (uint i = 0; i <= 19; i++)
 			{
-				var name = EISC.StringOutput[StringJoin.SourceNameJoinStart + i].StringValue;
-				if (EISC.BooleanOutput[BoolJoin.UseSourceEnabled].BoolValue
-					&& !EISC.BooleanOutput[BoolJoin.SourceIsEnabledJoinStart + i].BoolValue)
+				var name = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SourceNameJoinStart) + i].StringValue;
+				if (EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.UseSourceEnabled)].BoolValue
+					&& !EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SourceIsEnabledJoinStart) + i].BoolValue)
 				{
 					continue;
 				}		
-				else if(!EISC.BooleanOutput[BoolJoin.UseSourceEnabled].BoolValue && string.IsNullOrEmpty(name))
+				else if(!EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.UseSourceEnabled)].BoolValue && string.IsNullOrEmpty(name))
 					break;
-				var icon = EISC.StringOutput[StringJoin.SourceIconJoinStart + i].StringValue;
-				var key = EISC.StringOutput[StringJoin.SourceKeyJoinStart + i].StringValue;
-				var type = EISC.StringOutput[StringJoin.SourceTypeJoinStart + i].StringValue;
-				var disableShare = EISC.BooleanOutput[BoolJoin.SourceShareDisableJoinStart + i].BoolValue;
+				var icon = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SourceIconJoinStart) + i].StringValue;
+				var key = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SourceKeyJoinStart) + i].StringValue;
+				var type = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SourceTypeJoinStart) + i].StringValue;
+				var disableShare = EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SourceShareDisableJoinStart) + i].BoolValue;
 
 				Debug.Console(0, this, "Adding source {0} '{1}'", key, name);
 				var newSLI = new SourceListItem{
@@ -717,14 +528,14 @@ namespace PepperDash.Essentials.Room.MobileControl
 				var acFavs = new List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem>();
 				for (uint i = 0; i < 4; i++)
 				{
-					if (!EISC.GetBool(BoolJoin.SpeedDialVisibleStartJoin + i))
+					if (!EISC.GetBool(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SpeedDialVisibleStartJoin) + i))
 					{
 						break;
 					}
 					acFavs.Add(new PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem()
 					{
-						Name = EISC.GetString(StringJoin.SpeedDialNameStartJoin + i),
-						Number = EISC.GetString(StringJoin.SpeedDialNumberStartJoin + i),
+						Name = EISC.GetString(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SpeedDialNameStartJoin) + i),
+						Number = EISC.GetString(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SpeedDialNumberStartJoin) + i),
 						Type = PepperDash.Essentials.Devices.Common.Codec.eCodecCallType.Audio
 					});
 				}
@@ -756,7 +567,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 				var camsProps = new List<object>();
 				for (uint i = 0; i < 9; i++)
 				{
-					var name = EISC.GetString(i + StringJoin.CameraNearNameStart);
+					var name = EISC.GetString(i + JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.CameraNearNameStart));
 					if (!string.IsNullOrEmpty(name))
 					{
 						camsProps.Add(new
@@ -766,7 +577,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 						});
 					}
 				}
-				var farName = EISC.GetString(StringJoin.CameraFarName);
+				var farName = EISC.GetString(JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.CameraFarName));
 				if (!string.IsNullOrEmpty(farName))
 				{
 					camsProps.Add(new
@@ -874,7 +685,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 		{
 			if (ConfigIsLoaded)
 			{
-                var count = EISC.UShortOutput[UshortJoin.NumberOfAuxFaders].UShortValue;
+                var count = EISC.UShortOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.NumberOfAuxFaders)].UShortValue;
 
                 Debug.Console(1, this, "The Fader Count is : {0}", count);
 
@@ -882,7 +693,11 @@ namespace PepperDash.Essentials.Room.MobileControl
 
                 // Create auxFaders
 				var auxFaderDict = new Dictionary<string, Volume>();
-				for (uint i = 2; i <= count; i++)
+
+                var volumeStart = JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.VolumeJoinStart);
+                var volumeEnd = JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.VolumeJoinStart) + JoinMap.GetJoinSpanForKey(MobileControlSIMPLRoomJoinMap.VolumeJoinStart);
+
+                for (uint i = volumeStart; i <= count; i++)
 				{
 					auxFaderDict.Add("level-" + i,
 						new Volume("level-" + i,
@@ -896,22 +711,22 @@ namespace PepperDash.Essentials.Room.MobileControl
                 var volumes = new Volumes();
 
                 volumes.Master = new Volume("master", 
-                                EISC.UShortOutput[UshortJoin.MasterVolumeLevel].UShortValue,
-                                EISC.BooleanOutput[BoolJoin.MasterVolumeIsMuted].BoolValue,
-                  				EISC.StringOutput[1].StringValue,
+                                EISC.UShortOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.MasterVolume)].UShortValue,
+                                EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.MasterVolume)].BoolValue,
+                  				EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.MasterVolume)].StringValue,
 				                true,
 				                "something.png");
 				volumes.Master.HasPrivacyMute = true;
-				volumes.Master.PrivacyMuted = EISC.BooleanOutput[BoolJoin.PrivacyMute].BoolValue;
+				volumes.Master.PrivacyMuted = EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.PrivacyMute)].BoolValue;
 
                 volumes.AuxFaders = auxFaderDict;
-				volumes.NumberOfAuxFaders = EISC.UShortInput[UshortJoin.NumberOfAuxFaders].UShortValue;
+				volumes.NumberOfAuxFaders = EISC.UShortInput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.NumberOfAuxFaders)].UShortValue;
 
                 PostStatusMessage(new
                     {
 						activityMode = GetActivityMode(),
-                        isOn = EISC.BooleanOutput[BoolJoin.RoomIsOn].BoolValue,
-                        selectedSourceKey = EISC.StringOutput[StringJoin.SelectedSourceKey].StringValue,
+                        isOn = EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.RoomIsOn)].BoolValue,
+                        selectedSourceKey = EISC.StringOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.SelectedSourceKey)].StringValue,
                         volumes = volumes
                     });			
 			}
@@ -930,9 +745,9 @@ namespace PepperDash.Essentials.Room.MobileControl
 		/// <returns></returns>
 		int GetActivityMode()
 		{
-			if (EISC.BooleanOutput[BoolJoin.ActivityPhoneCall].BoolValue) return 2;
-			else if (EISC.BooleanOutput[BoolJoin.ActivityShare].BoolValue) return 1;
-			else if (EISC.BooleanOutput[BoolJoin.ActivityVideoCall].BoolValue) return 3;
+			if (EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ActivityPhoneCall)].BoolValue) return 2;
+			else if (EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ActivityShare)].BoolValue) return 1;
+			else if (EISC.BooleanOutput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ActivityVideoCall)].BoolValue) return 3;
 			return 0;
 		}
 
@@ -1009,8 +824,8 @@ namespace PepperDash.Essentials.Room.MobileControl
 		protected override void UserCodeChange()
 		{
 			Debug.Console(1, this, "Server user code changed: {0}", UserCode);
-			EISC.StringInput[StringJoin.UserCodeToSystem].StringValue = UserCode;
-			EISC.StringInput[StringJoin.ServerUrl].StringValue = Parent.Config.ClientAppUrl;
+			EISC.StringInput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.UserCodeToSystem)].StringValue = UserCode;
+			EISC.StringInput[JoinMap.GetJoinForKey(MobileControlSIMPLRoomJoinMap.ServerUrl)].StringValue = Parent.Config.ClientAppUrl;
 		}
 	}
 }

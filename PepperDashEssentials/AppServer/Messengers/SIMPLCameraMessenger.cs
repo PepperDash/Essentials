@@ -8,6 +8,7 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Bridges;
 using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.AppServer.Messengers
@@ -16,92 +17,96 @@ namespace PepperDash.Essentials.AppServer.Messengers
     {
         BasicTriList EISC;
 
-        uint JoinStart;
+        CameraControllerJoinMap JoinMap;
 
-        public class BoolJoin
-        {
-            /// <summary>
-            /// 1
-            /// </summary>
-            public const uint CameraControlUp = 1;
-            /// <summary>
-            /// 2
-            /// </summary>
-            public const uint CameraControlDown = 2;
-            /// <summary>
-            /// 3
-            /// </summary>
-            public const uint CameraControlLeft = 3;
-            /// <summary>
-            /// 4
-            /// </summary>
-            public const uint CameraControlRight = 4;
-            /// <summary>
-            /// 5
-            /// </summary>
-            public const uint CameraControlZoomIn = 5;
-            /// <summary>
-            /// 6
-            /// </summary>
-            public const uint CameraControlZoomOut = 6;
-            /// <summary>
-            /// 10
-            /// </summary>
-            public const uint CameraHasPresets = 10;
-            /// <summary>
-            /// 11 - 20
-            /// </summary>
-            public const uint CameraPresetStart = 10;
+        //public class BoolJoin
+        //{
+        //    /// <summary>
+        //    /// 1
+        //    /// </summary>
+        //    public const uint CameraControlUp = 1;
+        //    /// <summary>
+        //    /// 2
+        //    /// </summary>
+        //    public const uint CameraControlDown = 2;
+        //    /// <summary>
+        //    /// 3
+        //    /// </summary>
+        //    public const uint CameraControlLeft = 3;
+        //    /// <summary>
+        //    /// 4
+        //    /// </summary>
+        //    public const uint CameraControlRight = 4;
+        //    /// <summary>
+        //    /// 5
+        //    /// </summary>
+        //    public const uint CameraControlZoomIn = 5;
+        //    /// <summary>
+        //    /// 6
+        //    /// </summary>
+        //    public const uint CameraControlZoomOut = 6;
+        //    /// <summary>
+        //    /// 10
+        //    /// </summary>
+        //    public const uint CameraHasPresets = 10;
+        //    /// <summary>
+        //    /// 11 - 20
+        //    /// </summary>
+        //    public const uint CameraPresetStart = 10;
 
-            /// <summary>
-            /// 21
-            /// </summary>
-            public const uint CameraModeAuto = 21;
-            /// <summary>
-            /// 22
-            /// </summary>
-            public const uint CameraModeManual = 22;
-            /// <summary>
-            /// 23
-            /// </summary>
-            public const uint CameraModeOff = 23;
-            /// <summary>
-            /// 24
-            /// </summary>
-            public const uint CameraSupportsModeAuto = 24;
-            /// <summary>
-            /// 25
-            /// </summary>
-            public const uint CameraSupportsModeOff = 25;
-        }
+        //    /// <summary>
+        //    /// 21
+        //    /// </summary>
+        //    public const uint CameraModeAuto = 21;
+        //    /// <summary>
+        //    /// 22
+        //    /// </summary>
+        //    public const uint CameraModeManual = 22;
+        //    /// <summary>
+        //    /// 23
+        //    /// </summary>
+        //    public const uint CameraModeOff = 23;
+        //    /// <summary>
+        //    /// 24
+        //    /// </summary>
+        //    public const uint CameraSupportsModeAuto = 24;
+        //    /// <summary>
+        //    /// 25
+        //    /// </summary>
+        //    public const uint CameraSupportsModeOff = 25;
+        //}
 
-        public class UshortJoin
-        {
-            /// <summary>
-            /// 10
-            /// </summary>
-            public const uint CameraPresetCount = 10;
-        }
+        //public class UshortJoin
+        //{
+        //    /// <summary>
+        //    /// 10
+        //    /// </summary>
+        //    public const uint CameraPresetCount = 10;
+        //}
 
-        public class StringJoin
-        {
-            /// <summary>
-            /// 11-20
-            /// </summary>
-            public const uint CameraPresetNameStart = 10;
-        }
+        //public class StringJoin
+        //{
+        //    /// <summary>
+        //    /// 11-20
+        //    /// </summary>
+        //    public const uint CameraPresetNameStart = 10;
+        //}
 
         public SIMPLCameraMessenger(string key, BasicTriList eisc, string messagePath, uint joinStart)
             : base(key, messagePath)
         {
             EISC = eisc;
-            JoinStart = joinStart - 1;
+            //JoinStart = joinStart - 1;
+            JoinMap = new CameraControllerJoinMap();
 
-            EISC.SetUShortSigAction(UshortJoin.CameraPresetCount + JoinStart, (u) => SendCameraFullMessageObject());
+            JoinMap.OffsetJoinNumbers(joinStart);
 
-            EISC.SetBoolSigAction(BoolJoin.CameraModeAuto, (b) => PostCameraMode());
-            EISC.SetBoolSigAction(BoolJoin.CameraModeManual, (b) => PostCameraMode());
-            EISC.SetBoolSigAction(BoolJoin.CameraModeOff, (b) => PostCameraMode());
+
+            EISC.SetUShortSigAction(JoinMap.GetJoinForKey(CameraControllerJoinMap.NumberOfPresets), (u) => SendCameraFullMessageObject());
+
+            EISC.SetBoolSigAction(JoinMap.GetJoinForKey(CameraControllerJoinMap.CameraModeAuto), (b) => PostCameraMode());
+            EISC.SetBoolSigAction(JoinMap.GetJoinForKey(CameraControllerJoinMap.CameraModeManual), (b) => PostCameraMode());
+            EISC.SetBoolSigAction(JoinMap.GetJoinForKey(CameraControllerJoinMap.CameraModeOff), (b) => PostCameraMode());
         }
 
 
@@ -114,24 +119,29 @@ namespace PepperDash.Essentials.AppServer.Messengers
             // Add press and holds using helper action
             Action<string, uint> addPHAction = (s, u) =>
                 asc.AddAction(MessagePath + s, new PressAndHoldAction(b => EISC.SetBool(u, b)));
-            addPHAction("/cameraUp", BoolJoin.CameraControlUp + JoinStart);
-            addPHAction("/cameraDown", BoolJoin.CameraControlDown + JoinStart);
-            addPHAction("/cameraLeft", BoolJoin.CameraControlLeft + JoinStart);
-            addPHAction("/cameraRight", BoolJoin.CameraControlRight + JoinStart);
-            addPHAction("/cameraZoomIn", BoolJoin.CameraControlZoomIn + JoinStart);
-            addPHAction("/cameraZoomOut", BoolJoin.CameraControlZoomOut + JoinStart);
+            addPHAction("/cameraUp", JoinMap.GetJoinForKey(CameraControllerJoinMap.TiltUp));
+            addPHAction("/cameraDown", JoinMap.GetJoinForKey(CameraControllerJoinMap.TiltDown));
+            addPHAction("/cameraLeft", JoinMap.GetJoinForKey(CameraControllerJoinMap.PanLeft));
+            addPHAction("/cameraRight", JoinMap.GetJoinForKey(CameraControllerJoinMap.PanRight));
+            addPHAction("/cameraZoomIn", JoinMap.GetJoinForKey(CameraControllerJoinMap.ZoomIn));
+            addPHAction("/cameraZoomOut", JoinMap.GetJoinForKey(CameraControllerJoinMap.ZoomOut));
 
             Action<string, uint> addAction = (s, u) =>
                 asc.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
 
-            addAction("/cameraModeAuto", BoolJoin.CameraModeAuto);
-            addAction("/cameraModeManual", BoolJoin.CameraModeManual);
-            addAction("/cameraModeOff", BoolJoin.CameraModeOff);
+            addAction("/cameraModeAuto", JoinMap.GetJoinForKey(CameraControllerJoinMap.CameraModeAuto));
+            addAction("/cameraModeManual", JoinMap.GetJoinForKey(CameraControllerJoinMap.CameraModeManual));
+            addAction("/cameraModeOff", JoinMap.GetJoinForKey(CameraControllerJoinMap.CameraModeOff));
 
+            var presetStart = JoinMap.GetJoinForKey(CameraControllerJoinMap.PresetRecallStart);
+            var presetEnd = JoinMap.GetJoinForKey(CameraControllerJoinMap.PresetRecallStart) + JoinMap.GetJoinSpanForKey(CameraControllerJoinMap.PresetRecallStart);
+
+            int presetId = 1;
             // camera presets
-            for (uint i = 1; i <= 6; i++)
+            for (uint i = presetStart; i <= presetEnd; i++)
             {
-                addAction("/cameraPreset" + (i), BoolJoin.CameraPresetStart + i + JoinStart);
+                addAction("/cameraPreset" + (presetId), i);
+                presetId++;
             }
         }
 
@@ -149,11 +159,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
             appServerController.RemoveAction(MessagePath + "/cameraModeManual");
             appServerController.RemoveAction(MessagePath + "/cameraModeOff");
 
-            EISC.SetUShortSigAction(UshortJoin.CameraPresetCount + JoinStart, null);
+            EISC.SetUShortSigAction(JoinMap.GetJoinForKey(CameraControllerJoinMap.NumberOfPresets), null);
 
-            EISC.SetBoolSigAction(BoolJoin.CameraModeAuto, null);
-            EISC.SetBoolSigAction(BoolJoin.CameraModeManual, null);
-            EISC.SetBoolSigAction(BoolJoin.CameraModeOff, null);
+            EISC.SetBoolSigAction(JoinMap.GetJoinForKey(CameraControllerJoinMap.CameraModeAuto), null);
+            EISC.SetBoolSigAction(JoinMap.GetJoinForKey(CameraControllerJoinMap.CameraModeManual), null);
+            EISC.SetBoolSigAction(JoinMap.GetJoinForKey(CameraControllerJoinMap.CameraModeOff), null);
         }
 
         /// <summary>
@@ -164,20 +174,25 @@ namespace PepperDash.Essentials.AppServer.Messengers
             var presetList = new List<CameraPreset>();
 
             // Build a list of camera presets based on the names and count 
-            if (EISC.GetBool(JoinStart + BoolJoin.CameraHasPresets))
+            if (EISC.GetBool(JoinMap.GetJoinForKey(CameraControllerJoinMap.SupportsPresets)))
             {
-                for (uint i = 1; i <= EISC.GetUshort(UshortJoin.CameraPresetCount); i++)
+                var presetStart = JoinMap.GetJoinForKey(CameraControllerJoinMap.PresetLabelStart);
+                var presetEnd = JoinMap.GetJoinForKey(CameraControllerJoinMap.PresetLabelStart) + JoinMap.GetJoinForKey(CameraControllerJoinMap.NumberOfPresets);
+
+                var presetId = 1;
+                for (uint i = presetStart; i < presetEnd; i++)
                 {
-                    var presetName = EISC.GetString(StringJoin.CameraPresetNameStart + i + JoinStart);
-                    var preset = new CameraPreset((int)i, presetName, string.IsNullOrEmpty(presetName), true);
+                    var presetName = EISC.GetString(i);
+                    var preset = new CameraPreset(presetId, presetName, string.IsNullOrEmpty(presetName), true);
                     presetList.Add(preset);
+                    presetId++;
                 }
             }
 
             PostStatusMessage(new
             {
                 cameraMode = GetCameraMode(),
-                hasPresets = EISC.GetBool(BoolJoin.CameraHasPresets),
+                hasPresets = EISC.GetBool(JoinMap.GetJoinForKey(CameraControllerJoinMap.SupportsPresets)),
                 presets = presetList
             });
         }
@@ -200,8 +215,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
         string GetCameraMode()
         {
             string m;
-            if (EISC.GetBool(BoolJoin.CameraModeAuto)) m = eCameraControlMode.Auto.ToString().ToLower();
-            else if (EISC.GetBool(BoolJoin.CameraModeManual)) m = eCameraControlMode.Manual.ToString().ToLower();
+            if (EISC.GetBool(JoinMap.GetJoinForKey(CameraControllerJoinMap.CameraModeAuto))) m = eCameraControlMode.Auto.ToString().ToLower();
+            else if (EISC.GetBool(JoinMap.GetJoinForKey(CameraControllerJoinMap.CameraModeManual))) m = eCameraControlMode.Manual.ToString().ToLower();
             else m = eCameraControlMode.Off.ToString().ToLower();
             return m;
         }
