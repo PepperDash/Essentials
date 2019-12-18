@@ -11,7 +11,7 @@ using Crestron.SimplSharp.Reflection;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
-	public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets
+	public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets, IPower
 	{
 		public IBasicCommunication Communication { get; private set; }
 		public CommunicationGather PortGather { get; private set; }
@@ -135,6 +135,15 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 		{
 			SendBytes(new Byte[] {0x81, 0x01, 0x04, 0x00, 0x03, 0xFF});
 		}
+
+        public void PowerToggle()
+        {
+            if (PowerIsOnFeedback.BoolValue)
+                PowerOff();
+            else
+                PowerOn();
+        }
+
 		public void PanLeft() 
 		{
 			SendPanTiltCommand(new byte[] {0x01, 0x03});

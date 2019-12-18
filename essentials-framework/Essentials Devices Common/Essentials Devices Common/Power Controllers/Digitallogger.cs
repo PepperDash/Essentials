@@ -103,7 +103,7 @@ namespace PepperDash.Essentials.Devices.Common
 					});
 				CircuitIsCritical[circuit] = new BoolFeedback(() =>
 				{
-					if (CircuitStatus[circuit].critical != null)
+					if (CircuitStatus[circuit] != null)
 					{
 						return CircuitStatus[circuit].critical;
 					}
@@ -114,7 +114,7 @@ namespace PepperDash.Essentials.Devices.Common
 				});
 				CircuitState[circuit] = new BoolFeedback(() =>
 				{
-					if (CircuitStatus[circuit].state != null)
+					if (CircuitStatus[circuit] != null)
 					{
 						return CircuitStatus[circuit].state;
 					}

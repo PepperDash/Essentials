@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
+using PepperDash.Essentials.AppServer;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -186,15 +187,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 			/// <summary>
 			/// 402
 			/// </summary>
-			public const uint ServerUrl = 402;
-			/// <summary>
-			/// 512
-			/// </summary>
-			public const uint RoomSpeedDialNamesJoinStart = 512;
-			/// <summary>
-			/// 516
-			/// </summary>
-			public const uint RoomSpeedDialNumberssJoinStart = 516;
+            public const uint ServerUrl = 402;
 			/// <summary>
 			/// 601
 			/// </summary>
@@ -227,6 +220,8 @@ namespace PepperDash.Essentials.Room.MobileControl
 		public event EventHandler<EventArgs> ConfigurationIsReady;
 
 		public ThreeSeriesTcpIpEthernetIntersystemCommunications EISC { get; private set; }
+
+        public MobileControlSIMPLRoomJoinMap JoinMap { get; private set; }
 
 		/// <summary>
 		/// 
@@ -263,8 +258,18 @@ namespace PepperDash.Essentials.Room.MobileControl
 				if (reg != Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
 					Debug.Console(0, this, "Cannot connect EISC at IPID {0}: \r{1}", ipId, reg);
 
+                JoinMap = new MobileControlSIMPLRoomJoinMap();
+
+                // TODO: Possibly set up alternate constructor or take in joinMapKey and joinStart properties in constructor
+                
+
+                JoinMap.OffsetJoinNumbers(1);
+
 				SourceBridge = new MobileControlDdvc01DeviceBridge(key + "-sourceBridge", "DDVC01 source bridge", EISC);
 				DeviceManager.AddDevice(SourceBridge);
+
+
+                
 			}
 			catch (Exception)
 			{

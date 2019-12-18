@@ -120,6 +120,7 @@
     <Compile Include="AppServer\Messengers\SIMPLRouteMessenger.cs" />
     <Compile Include="AppServer\Messengers\SystemMonitorMessenger.cs" />
     <Compile Include="AppServer\Messengers\VideoCodecBaseMessenger.cs" />
+    <Compile Include="AppServer\SIMPLJoinMaps\MobileControlSIMPLRoomJoinMap.cs" />
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
     <Compile Include="Bridges\AppleTvBridge.cs" />
     <Compile Include="Bridges\BridgeBase.cs" />
@@ -195,7 +196,7 @@
     <Compile Include="AppServer\MobileControlDdvc01DeviceBridge.cs" />
     <Compile Include="AppServer\Interfaces.cs" />
     <Compile Include="AppServer\RoomBridges\MobileControlBridgeBase.cs" />
-    <Compile Include="AppServer\RoomBridges\MobileControlDdvc01RoomBridge.cs" />
+    <Compile Include="AppServer\RoomBridges\MobileControlSIMPLRoomBridge.cs" />
     <Compile Include="AppServer\RoomBridges\MobileControlEssentialsHuddleSpaceRoomBridge.cs" />
     <Compile Include="AppServer\DeviceTypeInterfaces\IChannelExtensions.cs" />
     <Compile Include="AppServer\DeviceTypeInterfaces\IColorExtensions.cs" />

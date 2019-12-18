@@ -55,6 +55,8 @@ namespace PepperDash.Essentials.Bridges
     {
         public EiscApiPropertiesConfig PropertiesConfig { get; private set; }
 
+        public Dictionary<string, JoinMapBase> JoinMaps { get; set; }
+
         public ThreeSeriesTcpIpEthernetIntersystemCommunications Eisc { get; private set; }
 
         public EiscApi(DeviceConfig dc) :
