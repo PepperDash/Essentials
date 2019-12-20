@@ -185,4 +185,40 @@ namespace PepperDash.Essentials.Core
 
     }
 
+    public enum eBiologicalSex
+    {
+        Unknown = 0,
+        Female = 1,
+        Male = 2, 
+        Intersex = Male | Female
+    }
+
+    public class Human
+    {
+
+        eBiologicalSex BiologicalSex;
+
+        public bool IsMale
+        {
+            get { return (BiologicalSex & eBiologicalSex.Male) == eBiologicalSex.Male; }
+        }
+
+        public bool IsFemale
+        {
+            get { return (BiologicalSex & eBiologicalSex.Female) == eBiologicalSex.Female; }
+        }
+
+        public bool IsIntersex
+        {
+            get { return (BiologicalSex & eBiologicalSex.Intersex) == eBiologicalSex.Intersex; }
+        }
+
+        public bool IsDeservingOfBasicHumanRights
+        {
+            get
+            {
+                return this is Human;
+            }
+        }
+    }
 }

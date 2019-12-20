@@ -120,6 +120,8 @@
     <Compile Include="AppServer\Messengers\SIMPLRouteMessenger.cs" />
     <Compile Include="AppServer\Messengers\SystemMonitorMessenger.cs" />
     <Compile Include="AppServer\Messengers\VideoCodecBaseMessenger.cs" />
+    <Compile Include="AppServer\SIMPLJoinMaps\SIMPLVtcJoinMap.cs" />
+    <Compile Include="AppServer\SIMPLJoinMaps\SIMPLAtcJoinMap.cs" />
     <Compile Include="AppServer\SIMPLJoinMaps\MobileControlSIMPLRoomJoinMap.cs" />
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
     <Compile Include="Bridges\AppleTvBridge.cs" />
