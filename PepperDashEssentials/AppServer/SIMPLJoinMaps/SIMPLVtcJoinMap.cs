@@ -77,10 +77,19 @@ namespace PepperDash.Essentials.AppServer
         {
             // TODO: Set Join metedata
 
-            Joins.Add(EndCall, new JoinMetadata() { JoinNumber = 21, Label = "Hang Up", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(EndCall, new JoinMetadata() { JoinNumber = 24, Label = "Hang Up", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(IncomingCall, new JoinMetadata() { JoinNumber = 50, Label = "Incoming Call FB", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(IncomingAnswer, new JoinMetadata() { JoinNumber = 51, Label = "Answer Incoming Call", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(IncomingReject, new JoinMetadata() { JoinNumber = 52, Label = "Reject Incoming Call", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(SpeedDialStart, new JoinMetadata() { JoinNumber = 41, Label = "Speed Dial", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 4, JoinType = eJoinType.Digital });
+
+            Joins.Add(DirectorySearchBusy, new JoinMetadata() { JoinNumber = 100, Label = "Directory Search Busy FB", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(DirectoryLineSelected, new JoinMetadata() { JoinNumber = 101, Label = "Directory Line Selected FB", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(DirectoryEntryIsContact, new JoinMetadata() { JoinNumber = 101, Label = "Directory Selected Entry Is Contact FB", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(DirectoryIsRoot, new JoinMetadata() { JoinNumber = 102, Label = "Directory is on Root FB", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+            Joins.Add(DDirectoryHasChanged, new JoinMetadata() { JoinNumber = 103, Label = "Directory has changed FB", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
+
+            
             Joins.Add(CurrentDialString, new JoinMetadata() { JoinNumber = 1, Label = "Current Dial String", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
             Joins.Add(CurrentCallNumber, new JoinMetadata() { JoinNumber = 11, Label = "Current Call Number", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
             Joins.Add(CurrentCallName, new JoinMetadata() { JoinNumber = 12, Label = "Current Call Name", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
