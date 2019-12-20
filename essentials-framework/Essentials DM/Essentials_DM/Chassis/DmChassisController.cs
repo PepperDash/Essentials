@@ -747,13 +747,19 @@ namespace PepperDash.Essentials.DM
                 case DMInputEventIds.UsbRoutedToEventId:
                     {
                         Debug.Console(2, this, "DM Input {0} UsbRoutedToEventId", args.Number);
-                        UsbInputRoutedToFeebacks[args.Number].FireUpdate();
+                        if(UsbInputRoutedToFeebacks[args.Number] != null)
+                            UsbInputRoutedToFeebacks[args.Number].FireUpdate();
+                        else
+                            Debug.Console(1, this, "No index of {0} found in UsbInputRoutedToFeedbacks");
                         break;
                     }
                 case DMInputEventIds.HdcpCapabilityFeedbackEventId:
                     {
                         Debug.Console(2, this, "DM Input {0} HdcpCapabilityFeedbackEventId", args.Number);
-                        InputCardHdcpCapabilityFeedbacks[args.Number].FireUpdate();
+                        if (InputCardHdcpCapabilityFeedbacks[args.Number] != null)
+                            InputCardHdcpCapabilityFeedbacks[args.Number].FireUpdate();
+                        else
+                            Debug.Console(1, this, "No index of {0} found in InputCardHdcpCapabilityFeedbacks");
                         break;
                     }
                 default:
@@ -817,6 +823,10 @@ namespace PepperDash.Essentials.DM
                     if (AudioOutputFeedbacks.ContainsKey(output))
                     {
                         AudioOutputFeedbacks[output].FireUpdate();
+                    }
+                    if (OutputAudioRouteNameFeedbacks.ContainsKey(output))
+                    {
+                        OutputAudioRouteNameFeedbacks[output].FireUpdate();
                     }
                     break;
                 }
