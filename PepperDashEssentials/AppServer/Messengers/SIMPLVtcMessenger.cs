@@ -655,7 +655,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{
 				list.Add(CurrentCallItem);
 			}
-			if (EISC.GetBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CallIncoming))) {
+			if (EISC.GetBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.IncomingCall))) {
 
 			}
 			return list;
