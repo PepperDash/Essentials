@@ -44,7 +44,7 @@ namespace PepperDash.Essentials.AppServer
             Joins.Add(CurrentCallNumber, new JoinMetadata() { JoinNumber = 11, Label = "Current Call Number", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
             Joins.Add(CurrentCallName, new JoinMetadata() { JoinNumber = 12, Label = "Current Call Name", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
             Joins.Add(HookState, new JoinMetadata() { JoinNumber = 21, Label = "Current Hook State", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
-            Joins.Add(CallDirection, new JoinMetadata() { JoinNumber = 21, Label = "Current Call Direction", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
+            Joins.Add(CallDirection, new JoinMetadata() { JoinNumber = 22, Label = "Current Call Direction", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
             Joins.Add(Dtmf1, new JoinMetadata() { JoinNumber = 1, Label = "DTMF 1", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(Dtmf2, new JoinMetadata() { JoinNumber = 2, Label = "DTMF 2", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(Dtmf3, new JoinMetadata() { JoinNumber = 3, Label = "DTMF 3", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });

@@ -122,11 +122,11 @@ namespace PepperDash.Essentials.AppServer
             Joins.Add(IncomingCallName, new JoinMetadata() { JoinNumber = 51, Label = "Incoming Call Name", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
             Joins.Add(IncomingCallNumber, new JoinMetadata() { JoinNumber = 52, Label = "Incoming Call Number", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
 
-            Joins.Add(DirectorySearchString, new JoinMetadata() { JoinNumber = 52, Label = "Directory Search String", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
-            Joins.Add(DirectoryEntriesStart, new JoinMetadata() { JoinNumber = 52, Label = "Directory Entries", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 255, JoinType = eJoinType.Serial });
-            Joins.Add(DirectoryEntrySelectedName, new JoinMetadata() { JoinNumber = 52, Label = "Selected Directory Entry Name", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
-            Joins.Add(DirectoryEntrySelectedNumber, new JoinMetadata() { JoinNumber = 52, Label = "Selected Directory Entry Number", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
-            Joins.Add(DirectorySelectedFolderName, new JoinMetadata() { JoinNumber = 52, Label = "Selected Directory Folder Name", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
+            Joins.Add(DirectorySearchString, new JoinMetadata() { JoinNumber = 100, Label = "Directory Search String", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
+            Joins.Add(DirectoryEntriesStart, new JoinMetadata() { JoinNumber = 101, Label = "Directory Entries", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 255, JoinType = eJoinType.Serial });
+            Joins.Add(DirectoryEntrySelectedName, new JoinMetadata() { JoinNumber = 356, Label = "Selected Directory Entry Name", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
+            Joins.Add(DirectoryEntrySelectedNumber, new JoinMetadata() { JoinNumber = 357, Label = "Selected Directory Entry Number", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
+            Joins.Add(DirectorySelectedFolderName, new JoinMetadata() { JoinNumber = 358, Label = "Selected Directory Folder Name", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Serial });
 
             Joins.Add(Dtmf1, new JoinMetadata() { JoinNumber = 1, Label = "DTMF 1", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(Dtmf2, new JoinMetadata() { JoinNumber = 2, Label = "DTMF 2", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });

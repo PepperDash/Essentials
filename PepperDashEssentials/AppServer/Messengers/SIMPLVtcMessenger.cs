@@ -250,7 +250,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             JoinMap = new SIMPLVtcJoinMap();
 
             // TODO: Take in JoinStart value from config
-            JoinMap.OffsetJoinNumbers(200);
+            JoinMap.OffsetJoinNumbers(701);
 
 
 			CurrentCallItem = new CodecActiveCallItem();
@@ -404,6 +404,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             for (uint i = speeddialStart; i < speeddialEnd; i++)
             {
                 addAction(string.Format("/speedDial{0}", speedDialIndex), i);
+                speedDialIndex++;
             }
 
 			addAction("/cameraModeAuto", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraModeAuto));

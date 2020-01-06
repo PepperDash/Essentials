@@ -182,6 +182,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
             for (uint i = speeddialStart; i < speeddialEnd; i++)
             {
                 addAction(string.Format("/speedDial{0}", speedDialIndex), i);
+                speedDialIndex++;
             }
 
 			// Get status
