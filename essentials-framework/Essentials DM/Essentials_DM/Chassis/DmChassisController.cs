@@ -66,6 +66,11 @@ namespace PepperDash.Essentials.DM
 		public const int RouteOffTime = 500;
 		Dictionary<PortNumberType, CTimer> RouteOffTimers = new Dictionary<PortNumberType, CTimer>();
 
+        /// <summary>
+        /// Text that represents when an output has no source routed to it
+        /// </summary>
+        public string NoRouteText = "";
+
 		/// <summary>
 		/// Factory method to create a new chassis controller from config data. Limited to 8x8 right now
 		/// </summary>
@@ -128,6 +133,10 @@ namespace PepperDash.Essentials.DM
 
 				controller.InputNames = properties.InputNames;
 				controller.OutputNames = properties.OutputNames;
+
+                if (!string.IsNullOrEmpty(properties.NoRouteText))
+                    controller.NoRouteText = properties.NoRouteText;
+
                 controller.PropertiesConfig = properties;
 				return controller;
 			}
@@ -217,7 +226,7 @@ namespace PepperDash.Essentials.DM
                         }
                         else
                         {
-                            return "";
+                            return NoRouteText;
                         }
                     });
                     OutputAudioRouteNameFeedbacks[tempX] = new StringFeedback(() =>
@@ -228,7 +237,7 @@ namespace PepperDash.Essentials.DM
                             }
                             else
                             {
-                                return "";
+                                return NoRouteText;
 
                             }
                         });
