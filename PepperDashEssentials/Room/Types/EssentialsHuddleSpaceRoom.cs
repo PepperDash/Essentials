@@ -223,6 +223,8 @@ namespace PepperDash.Essentials
 
             CrestronEnvironment.Sleep(1000);
 
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Shutting down room");
+
             RunRouteAction("roomOff");
         }
 
@@ -275,8 +277,8 @@ namespace PepperDash.Essentials
 			// Run this on a separate thread
 			new CTimer(o =>
 				{
-					Debug.Console(1, this, "Run route action '{0}'", routeKey);
-					var dict = ConfigReader.ConfigObject.GetSourceListForKey(SourceListKey);
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Run route action '{0}'", routeKey);
+                    var dict = ConfigReader.ConfigObject.GetSourceListForKey(SourceListKey);
 					if(dict == null)
 					{
 						Debug.Console(1, this, "WARNING: Config source list '{0}' not found", SourceListKey);

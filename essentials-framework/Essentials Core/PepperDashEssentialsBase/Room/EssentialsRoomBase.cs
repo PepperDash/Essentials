@@ -164,7 +164,7 @@ namespace PepperDash.Essentials.Core
             ShutdownType = type;
             ShutdownPromptTimer.Start();
 
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "ShutdwonPromptTimer Started. Type: {0}.  Seconds: {1}", ShutdownType, ShutdownPromptTimer.SecondsToCount);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "ShutdownPromptTimer Started. Type: {0}.  Seconds: {1}", ShutdownType, ShutdownPromptTimer.SecondsToCount);
         }
 
         public void StartRoomVacancyTimer(eVacancyMode mode)
@@ -212,6 +212,9 @@ namespace PepperDash.Essentials.Core
 				return;
 			}
 
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Room Occupancy set to device: '{0}'", (statusProvider as Device).Key);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Timeout Minutes from Config is: {0}", timeoutMinutes);
+
             // If status provider is fusion, set flag to remote
             if (statusProvider is Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase)
                 OccupancyStatusProviderIsRemote = true;
@@ -223,12 +226,10 @@ namespace PepperDash.Essentials.Core
 
             RoomOccupancy = statusProvider;
 
-            OnRoomOccupancyIsSet();
-
             RoomOccupancy.RoomIsOccupiedFeedback.OutputChange -= RoomIsOccupiedFeedback_OutputChange;
             RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
 
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Room Occupancy set to device: '{0}'", (statusProvider as Device).Key);
+            OnRoomOccupancyIsSet();
         }
 
         void OnRoomOccupancyIsSet()
