@@ -256,6 +256,7 @@ namespace PepperDash.Essentials.Devices.Displays
             if (newVal != _PowerIsOn)
             {
                 _PowerIsOn = newVal;
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Feedback Power State: {0}", _PowerIsOn);
                 PowerIsOnFeedback.FireUpdate();
             }
         }
@@ -364,6 +365,8 @@ namespace PepperDash.Essentials.Devices.Displays
         /// </summary>
         public override void PowerOn()
 		{
+            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Powering On Display");
+
 			IsPoweringOnIgnorePowerFb = true;
             //Send(PowerOnCmd);
             SendBytes(new byte[] { 0xAA, 0x11, 0x00, 0x01, 0x01, 0x00 });
@@ -387,6 +390,8 @@ namespace PepperDash.Essentials.Devices.Displays
         /// </summary>
 		public override void PowerOff()
 		{
+            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Powering Off Display");
+
 			IsPoweringOnIgnorePowerFb = false;
 			// If a display has unreliable-power off feedback, just override this and
 			// remove this check.
