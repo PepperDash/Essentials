@@ -62,6 +62,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Fusion.dll</HintPath>
     </Reference>
+    <Reference Include="Crestron.SimplSharpPro.GeneralIO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.GeneralIO.dll</HintPath>
+    </Reference>
     <Reference Include="Crestron.SimplSharpPro.Remotes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Remotes.dll</HintPath>
@@ -114,6 +118,7 @@
     <Compile Include="Config\Essentials\ConfigWriter.cs" />
     <Compile Include="Config\Essentials\EssentialsConfig.cs" />
     <Compile Include="Config\SourceDevicePropertiesConfigBase.cs" />
+    <Compile Include="Crestron IO\Inputs\CenIoDigIn104Controller.cs" />
     <Compile Include="Crestron IO\Inputs\GenericDigitalInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\IDigitalInput.cs" />
