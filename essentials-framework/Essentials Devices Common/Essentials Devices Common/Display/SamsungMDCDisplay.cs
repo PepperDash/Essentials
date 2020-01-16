@@ -167,84 +167,91 @@ namespace PepperDash.Essentials.Devices.Displays
         /// <param name="sender"></param>
         void Communication_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
         {
-            // This is probably not thread-safe buffering
-            // Append the incoming bytes with whatever is in the buffer
-            var newBytes = new byte[IncomingBuffer.Length + e.Bytes.Length];
-            IncomingBuffer.CopyTo(newBytes, 0);
-            e.Bytes.CopyTo(newBytes, IncomingBuffer.Length);
-
-            if (Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
-                Debug.Console(2, this, "Received:{0}", ComTextHelper.GetEscapedText(newBytes));
-
-            // Need to find AA FF and have 
-            for (int i = 0; i < newBytes.Length; i++)
+            try
             {
-                if (newBytes[i] == 0xAA && newBytes[i + 1] == 0xFF)
+                // This is probably not thread-safe buffering
+                // Append the incoming bytes with whatever is in the buffer
+                var newBytes = new byte[IncomingBuffer.Length + e.Bytes.Length];
+                IncomingBuffer.CopyTo(newBytes, 0);
+                e.Bytes.CopyTo(newBytes, IncomingBuffer.Length);
+
+                if (Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
+                    Debug.Console(2, this, "Received:{0}", ComTextHelper.GetEscapedText(newBytes));
+
+                // Need to find AA FF and have 
+                for (int i = 0; i < newBytes.Length; i++)
                 {
-                    newBytes = newBytes.Skip(i).ToArray(); // Trim off junk if there's "dirt" in the buffer
-
-                    // parse it
-                    // If it's at least got the header, then process it, 
-                    while (newBytes.Length > 4 && newBytes[0] == 0xAA && newBytes[1] == 0xFF)
+                    if (newBytes[i] == 0xAA && newBytes[i + 1] == 0xFF)
                     {
-                        var msgLen = newBytes[3];
-                        // if the buffer is shorter than the header (3) + message (msgLen) + checksum (1),
-                        // give and save it for next time 
-                        if (newBytes.Length < msgLen + 4)
-                            break;
+                        newBytes = newBytes.Skip(i).ToArray(); // Trim off junk if there's "dirt" in the buffer
 
-                        // Good length, grab the message
-                        var message = newBytes.Skip(4).Take(msgLen).ToArray();
-
-                        // At this point, the ack/nak is the first byte
-                        if (message[0] == 0x41)
+                        // parse it
+                        // If it's at least got the header, then process it, 
+                        while (newBytes.Length > 4 && newBytes[0] == 0xAA && newBytes[1] == 0xFF)
                         {
-                            switch (message[1]) // type byte
+                            var msgLen = newBytes[3];
+                            // if the buffer is shorter than the header (3) + message (msgLen) + checksum (1),
+                            // give and save it for next time 
+                            if (newBytes.Length < msgLen + 4)
+                                break;
+
+                            // Good length, grab the message
+                            var message = newBytes.Skip(4).Take(msgLen).ToArray();
+
+                            // At this point, the ack/nak is the first byte
+                            if (message[0] == 0x41)
                             {
-                                case 0x00: // General status
-                                    //UpdatePowerFB(message[2], message[5]); // "power" can be misrepresented when the display sleeps
+                                switch (message[1]) // type byte
+                                {
+                                    case 0x00: // General status
+                                        //UpdatePowerFB(message[2], message[5]); // "power" can be misrepresented when the display sleeps
 
-									// Handle the first power on fb when waiting for it.
-									if (IsPoweringOnIgnorePowerFb && message[2] == 0x01)
-										IsPoweringOnIgnorePowerFb = false;
-									// Ignore general-status power off messages when powering up
-									if (!(IsPoweringOnIgnorePowerFb && message[2] == 0x00))
-										UpdatePowerFB(message[2]);
-                                    UpdateVolumeFB(message[3]);
-                                    UpdateMuteFb(message[4]);
-                                    UpdateInputFb(message[5]);
-                                    break;
+                                        // Handle the first power on fb when waiting for it.
+                                        if (IsPoweringOnIgnorePowerFb && message[2] == 0x01)
+                                            IsPoweringOnIgnorePowerFb = false;
+                                        // Ignore general-status power off messages when powering up
+                                        if (!(IsPoweringOnIgnorePowerFb && message[2] == 0x00))
+                                            UpdatePowerFB(message[2]);
+                                        UpdateVolumeFB(message[3]);
+                                        UpdateMuteFb(message[4]);
+                                        UpdateInputFb(message[5]);
+                                        break;
 
-                                case 0x11:
-                                    UpdatePowerFB(message[2]);
-                                    break;
+                                    case 0x11:
+                                        UpdatePowerFB(message[2]);
+                                        break;
 
-                                case 0x12:
-                                    UpdateVolumeFB(message[2]);
-                                    break;
+                                    case 0x12:
+                                        UpdateVolumeFB(message[2]);
+                                        break;
 
-                                case 0x13:
-                                    UpdateMuteFb(message[2]);
-                                    break;
+                                    case 0x13:
+                                        UpdateMuteFb(message[2]);
+                                        break;
 
-                                case 0x14:
-                                    UpdateInputFb(message[2]);
-                                    break;
+                                    case 0x14:
+                                        UpdateInputFb(message[2]);
+                                        break;
 
-                                default:
-                                    break;
+                                    default:
+                                        break;
+                                }
                             }
+                            // Skip over what we've used and save the rest for next time
+                            newBytes = newBytes.Skip(5 + msgLen).ToArray();
                         }
-                        // Skip over what we've used and save the rest for next time
-                        newBytes = newBytes.Skip(5 + msgLen).ToArray();
-                    }
-       
-                    break; // parsing will mean we can stop looking for header in loop
-                }
-            }
 
-            // Save whatever partial message is here
-            IncomingBuffer = newBytes;
+                        break; // parsing will mean we can stop looking for header in loop
+                    }
+                }
+
+                // Save whatever partial message is here
+                IncomingBuffer = newBytes;
+            }
+            catch (Exception err)
+            {
+                Debug.Console(2, this, "Error parsing feedback: {0}", err);
+            }
         }
 
         /// <summary>
