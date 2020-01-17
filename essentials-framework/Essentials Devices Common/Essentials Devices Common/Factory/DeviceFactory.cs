@@ -297,6 +297,10 @@ namespace PepperDash.Essentials.Devices.Common
                         else
                             Debug.Console(0, "Attempt to register relay {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
                     }
+                    else
+                    {
+                        return new GenericRelayDevice(key, relay);
+                    }
 
                     // Future: Check if portDevice is 3-series card or other non control system that supports versiports
                 }

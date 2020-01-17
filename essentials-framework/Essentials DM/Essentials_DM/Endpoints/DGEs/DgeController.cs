@@ -28,6 +28,8 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
         public DgeController(string key, string name, Dge100 device, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
             :base(key, name, device)
         {
+            DigitalGraphicsEngine = device;
+
             DeviceConfig = dc;
 
             PropertiesConfig = props;
