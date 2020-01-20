@@ -4,6 +4,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 using PepperDash.Core;
 using PepperDash.Core.Config;
 
@@ -91,6 +92,9 @@ namespace PepperDash.Essentials.Core.Config
                 {
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading config file: '{0}'", filePath);
 
+                    // Attempt to validate config against schema
+                    ValidateSchema(fs.ReadToEnd());
+
                     if (localConfigFound)
                     {
                         ConfigObject = JObject.Parse(fs.ReadToEnd()).ToObject<EssentialsConfig>();
@@ -128,6 +132,22 @@ namespace PepperDash.Essentials.Core.Config
 				return false;
 			}
 		}
+
+        public static void ValidateSchema(string json)
+        {
+            JToken config = JToken.Parse(json);
+
+            var deviceConfig = new DeviceConfig();
+
+            JsonSchema schema = JsonSchema.Parse(deviceConfig.SchemaJson);
+
+            config.Validate(schema, _ValidationEventHandler);
+        }
+
+        public static void _ValidationEventHandler(object sender, ValidationEventArgs args)
+        {
+            Debug.Console(0, "{0}", args.Message);
+        }
 
         /// <summary>
         /// Returns all the files from the directory specified.

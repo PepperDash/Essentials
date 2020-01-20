@@ -10,7 +10,9 @@ using PepperDash.Essentials.Core.Config;
 namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
-    /// 
+    /// This class should be inherited from when the configuration can be modified at runtime from another source other than the configuration file. 
+    /// It contains the necessary properties, methods and events to allot the initial device configuration to be overridden and then notifies the 
+    /// ConfigWriter to write out the new values to a local file to be read on next boot.
     /// </summary>
     public abstract class ReconfigurableDevice : Device
     {
