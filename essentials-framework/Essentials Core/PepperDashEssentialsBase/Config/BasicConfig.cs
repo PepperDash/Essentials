@@ -17,15 +17,27 @@ namespace PepperDash.Essentials.Core.Config
 		[JsonProperty("info")]
 		public InfoConfig Info { get; set; }
 
+        /// <summary>
+        /// Defines the devices in the system
+        /// </summary>
 		[JsonProperty("devices")]
 		public List<DeviceConfig> Devices { get; set; }
 
+        /// <summary>
+        /// Defines the source list for the system
+        /// </summary>
 		[JsonProperty("sourceLists")]
 		public Dictionary<string, Dictionary<string, SourceListItem>> SourceLists { get; set; }
 
+        /// <summary>
+        /// Defines all the tie lines for system routing
+        /// </summary>
 		[JsonProperty("tieLines")]
 		public List<TieLineConfig> TieLines { get; set; }
 
+        /// <summary>
+        /// Defines any join maps to override the default join maps
+        /// </summary>
         [JsonProperty("joinMaps")]
         public Dictionary<string, string> JoinMaps { get; set; }
 

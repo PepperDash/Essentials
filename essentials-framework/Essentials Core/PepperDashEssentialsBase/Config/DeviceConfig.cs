@@ -13,99 +13,43 @@ namespace PepperDash.Essentials.Core.Config
 {
     public class DeviceConfig : PropertiesConfigBase
     {
+        /// <summary>
+        /// The unique idendifier for the device
+        /// </summary>
         [JsonProperty("key", Required = Required.Always)]
         public string Key { get; set; }
 
+        /// <summary>
+        /// A unique ID for each device instance.  Used to differentiate between devices of the same type that may have
+        /// been added/removed from the system
+        /// </summary>
         [JsonProperty("uid")]
         public int Uid { get; set; }
 
+        /// <summary>
+        /// The name of the device
+        /// </summary>
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        /// <summary>
+        /// The group for the device
+        /// </summary>
         [JsonProperty("group")]
         public string Group { get; set; }
 
+        /// <summary>
+        /// The type of the device to instantiate
+        /// </summary>
         [JsonProperty("type", Required = Required.Always)]
         public string Type { get; set; }
 
+        /// <summary>
+        /// The properties necessary to define the device
+        /// </summary>
         [JsonProperty("properties", Required = Required.Always)]
         [JsonConverter(typeof(DevicePropertiesConverter))]
         public JToken Properties { get; set; }
-
-        public DeviceConfig()
-        {
-            SchemaJson = @"
-{
-  'definitions': {},
-  '$schema': 'http://json-schema.org/draft-07/schema#',
-  '$id': 'http://example.com/root.json',
-  'type': 'object',
-  'title': 'The Root Schema',
-  'properties': {
-    'name': {
-      '$id': '#/properties/name',
-      'type': 'string',
-      'title': 'The Name Schema',
-      'default': '',
-      'examples': [
-        'App Server'
-      ],
-      'pattern': '^(.*)$'
-    },
-    'group': {
-      '$id': '#/properties/group',
-      'type': 'string',
-      'title': 'The Group Schema',
-      'default': '',
-      'examples': [
-        'appServer'
-      ],
-      'pattern': '^(.*)$'
-    },
-    'properties': {
-      '$id': '#/properties/properties',
-      'type': 'object',
-      'title': 'The Properties Schema'
-    },
-    'uid': {
-      '$id': '#/properties/uid',
-      'type': 'integer',
-      'title': 'The Uid Schema',
-      'default': 0,
-      'examples': [
-        4
-      ]
-    },
-    'key': {
-      '$id': '#/properties/key',
-      'type': 'string',
-      'title': 'The Key Schema',
-      'default': '',
-      'examples': [
-        'display-1'
-      ],
-      'pattern': '^(.*)$'
-    },
-    'type': {
-      '$id': '#/properties/type',
-      'type': 'string',
-      'title': 'The Type Schema',
-      'default': '',
-      'examples': [
-        'appServer'
-      ],
-      'pattern': '^(.*)$'
-    }
-  },
-  'required': [
-    'group',
-    'properties',
-    'key',
-    'type'
-  ]
-}
-";
-        }
     }
 
     /// <summary>

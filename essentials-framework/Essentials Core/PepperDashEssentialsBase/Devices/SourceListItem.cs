@@ -67,34 +67,64 @@ namespace PepperDash.Essentials.Core
 		[JsonProperty("name")]
 		public string Name { get; set; }
 
+        /// <summary>
+        /// The icon to display
+        /// </summary>
 		[JsonProperty("icon")]
 		public string Icon { get; set; }
 
+        /// <summary>
+        /// Alternate icon to display
+        /// </summary>
 		[JsonProperty("altIcon")]
 		public string AltIcon { get; set; }
 
+        /// <summary>
+        /// Indicates if the source should be included in the list
+        /// </summary>
 		[JsonProperty("includeInSourceList")]
 		public bool IncludeInSourceList { get; set; }
 
+        /// <summary>
+        /// Determines the order the source appears in the list (ascending)
+        /// </summary>
 		[JsonProperty("order")]
 		public int Order { get; set; }
 
+        /// <summary>
+        /// Key of the volume control device for the source
+        /// </summary>
 		[JsonProperty("volumeControlKey")]
 		public string VolumeControlKey { get; set; }
 
+        /// <summary>
+        /// The type of source list item
+        /// </summary>
 		[JsonProperty("type")]
 		[JsonConverter(typeof(StringEnumConverter))]
 		public eSourceListItemType Type { get; set; }
 
+        /// <summary>
+        /// The list of routes to run when source is selected
+        /// </summary>
 		[JsonProperty("routeList")]
 		public List<SourceRouteListItem> RouteList { get; set; }
 
+        /// <summary>
+        /// Indicates if this source should be disabled for sharing via codec content
+        /// </summary>
 		[JsonProperty("disableCodecSharing")]
 		public bool DisableCodecSharing { get; set; }
 
+        /// <summary>
+        /// Indicates if this source should be disabled for local routing
+        /// </summary>
 		[JsonProperty("disableRoutedSharing")]
 		public bool DisableRoutedSharing { get; set; }
 
+        /// <summary>
+        /// The list of valid destination types for this source
+        /// </summary>
         [JsonProperty("destinations")]
         public List<eSourceListItemDestinationTypes> Destinations { get; set; }
 

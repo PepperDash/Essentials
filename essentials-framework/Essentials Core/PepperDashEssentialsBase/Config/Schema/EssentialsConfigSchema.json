@@ -35,43 +35,7 @@
                 "template"                
             ],
             "title": "Essentials Configuration"
-        },
-        "Info": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "name":{
-                    "type":"string"
-                },
-                "date":{
-                    "type":"string",
-                    "format": "date-time"
-                },
-                "version":{
-                    "type":"string"
-                },
-                "runtimeInfo":{
-                    "type":"object"
-                },
-                "comment":{
-                    "type":"string"
-                },
-                "hostname":{
-                    "type":"string"
-                },
-                "appNumber":{
-                    "type":"integer"
-                },
-                "lastModifiedDate": {
-                    "type": "string",
-                    "format": "date-time"
-                }
-            },
-            "required": [
-                "lastModifiedDate"
-            ],
-            "title": "SystemInfo"
-        },
+        },      
         "BasicConfig": {
             "type": "object",
             "additionalProperties": false,
@@ -96,32 +60,84 @@
                 }
             },
             "required": [
-                "devices",
-                "info",
-                "rooms",
-                "sourceLists",
-                "tieLines"
             ],
             "title": "Template"
         },
+        "Info": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+                "name":{
+                    "type":"string"
+                },
+                "date":{
+                    "type":"string",
+                    "format": "date-time"
+                },
+                "version":{
+                    "type":"string"
+                },
+                "runtimeInfo":{
+                    "$ref":"#/definitions/RuntimeInfo"
+                },
+                "comment":{
+                    "type":"string"
+                },
+                "hostname":{
+                    "type":"string"
+                },
+                "appNumber":{
+                    "type":"integer"
+                },
+                "lastModifiedDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "lastUid":{
+                    "type":"integer"
+                },
+                "processorType":{
+                    "type":"string"
+                },
+                "systemType":{
+                    "type":"string"
+                },
+                "requiredControlSoftwareVersion":{
+                    "type":"string"
+                }
+            },
+            "required": [
+             
+            ],
+            "title": "Info"
+        },
+        "RuntimeInfo":{
+            "type":"object",
+            "additionalProperties": false,
+            "properties": {
+                "appName":{
+                    "type":"string"
+                },
+                "assemblyVersion": {
+                    "type":"string"
+                },
+                "osVersion":{
+                    "type":"string"
+                }
+            }
+        },
         "Device": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
                 "name": {
                     "type": "string"
-                },
-                "supportedConfigModes": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "group": {
                     "type": "string"
                 },
                 "properties": {
-                    "$ref": "#/definitions/DeviceProperties"
+                    "type":"object"
                 },
                 "uid": {
                     "type": "integer"
@@ -131,302 +147,17 @@
                 },
                 "type": {
                     "type": "string"
-                },
-                "supportsCompliance": {
-                    "type": "boolean"
-                },
-                "supportedSystemTypes": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             },
             "required": [
                 "group",
                 "key",
-                "name",
                 "properties",
-                "type",
-                "uid"
+                "type"
             ],
             "title": "Device"
         },
-        "DeviceProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "numberOfRelays": {
-                    "type": "integer"
-                },
-                "numberOfComPorts": {
-                    "type": "integer"
-                },
-                "numberOfDIOPorts": {
-                    "type": "integer"
-                },
-                "numberOfIrPorts": {
-                    "type": "integer"
-                },
-                "hasControls": {
-                    "type": "boolean"
-                },
-                "isDefault": {
-                    "type": "boolean"
-                },
-                "hasAudio": {
-                    "type": "boolean"
-                },
-                "hasDpad": {
-                    "type": "boolean"
-                },
-                "hasNumeric": {
-                    "type": "boolean"
-                },
-                "hasDvr": {
-                    "type": "boolean"
-                },
-                "disableCodecSharing": {
-                    "type": "boolean"
-                },
-                "control": {
-                    "$ref": "#/definitions/Control"
-                },
-                "serverUrl": {
-                    "type": "string"
-                },
-                "communicationMonitorProperties": {
-                    "$ref": "#/definitions/CommunicationMonitorProperties"
-                },
-                "phonebookMode": {
-                    "type": "string"
-                },
-                "occupancy": {
-                    "$ref": "#/definitions/Occupancy"
-                },
-                "favorites": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Favorite"
-                    }
-                },
-                "sgdFile": {
-                    "type": "string"
-                },
-                "showTime": {
-                    "type": "boolean"
-                },
-                "showVolumeGauge": {
-                    "type": "boolean"
-                },
-                "sourcesOverflowCount": {
-                    "type": "integer"
-                },
-                "showDate": {
-                    "type": "boolean"
-                },
-                "headerStyle": {
-                    "type": "string"
-                },
-                "usesSplashPage": {
-                    "type": "boolean"
-                },
-                "roomListKey": {
-                    "type": "string"
-                },
-                "defaultRoomKey": {
-                    "type": "string"
-                }
-            },
-            "required": [],
-            "title": "DeviceProperties"
-        },
-        "CommunicationMonitorProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "timeToError": {
-                    "type": "integer"
-                },
-                "timeToWarning": {
-                    "type": "integer"
-                },
-                "pollInterval": {
-                    "type": "integer"
-                },
-                "pollString": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "pollInterval",
-                "pollString",
-                "timeToError",
-                "timeToWarning"
-            ],
-            "title": "CommunicationMonitorProperties"
-        },
-        "Control": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "irFile": {
-                    "type": "string"
-                },
-                "controlPortNumber": {
-                    "type": "integer"
-                },
-                "controlPortDevKey": {
-                    "type": "string"
-                },
-                "method": {
-                    "type": "string"
-                },
-                "tcpSshProperties": {
-                    "$ref": "#/definitions/TCPSSHProperties"
-                },
-                "controlPortName": {
-                    "type": "string"
-                },
-                "ipid": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "endOfLineChar": {
-                    "type": "string"
-                },
-                "endOfLineString": {
-                    "type": "string"
-                },
-                "deviceReadyResponsePattern": {
-                    "type": "string"
-                },
-                "params": {
-                    "$ref": "#/definitions/Params"
-                }
-            },
-            "required": [],
-            "title": "Control"
-        },
-        "Params": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "deviceReadyResponsePattern": {
-                    "type": "string"
-                },
-                "endOfLineString": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "deviceReadyResponsePattern",
-                "endOfLineString"
-            ],
-            "title": "Params"
-        },
-        "TCPSSHProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "username": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "address": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "autoReconnect": {
-                    "type": "boolean"
-                },
-                "autoReconnectIntervalMs": {
-                    "type": "integer"
-                },
-                "bufferSize": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "address",
-                "autoReconnect",
-                "autoReconnectIntervalMs",
-                "bufferSize",
-                "password",
-                "port",
-                "username"
-            ],
-            "title": "TCPSSHProperties"
-        },
-        "Favorite": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "number": {
-                    "type": "string",
-                    "format": "integer"
-                }
-            },
-            "required": [
-                "name",
-                "number"
-            ],
-            "title": "Favorite"
-        },
-        "Occupancy": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "available": {
-                    "type": "boolean"
-                }
-            },
-            "required": [
-                "available"
-            ],
-            "title": "Occupancy"
-        },
-        "TemplateInfo": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "lastUid": {
-                    "type": "integer"
-                },
-                "processorType": {
-                    "type": "string"
-                },
-                "systemType": {
-                    "type": "string"
-                },
-                "lastModifiedDate": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "requiredControlSofwareVersion": {
-                    "type": "string"
-                },
-                "comment": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "comment",
-                "lastModifiedDate",
-                "lastUid",
-                "processorType",
-                "requiredControlSofwareVersion",
-                "systemType"
-            ],
-            "title": "TemplateInfo"
-        },
+ 
         "Room": {
             "type": "object",
             "additionalProperties": false,
@@ -438,7 +169,7 @@
                     "type": "string"
                 },
                 "properties": {
-                    "$ref": "#/definitions/RoomProperties"
+                    "type": "object"
                 },
                 "type": {
                     "type": "string"
@@ -452,246 +183,22 @@
             ],
             "title": "Room"
         },
-        "RoomProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "volumes": {
-                    "$ref": "#/definitions/Volumes"
-                },
-                "defaultDisplayKey": {
-                    "type": "string"
-                },
-                "defaultAudioKey": {
-                    "type": "string"
-                },
-                "helpMessage": {
-                    "type": "string"
-                },
-                "hasDsp": {
-                    "type": "boolean"
-                },
-                "defaultSourceItem": {
-                    "type": "string"
-                },
-                "logo": {
-                    "$ref": "#/definitions/Logo"
-                },
-                "environment": {
-                    "$ref": "#/definitions/Environment"
-                },
-                "defaultVideoBehavior": {
-                    "type": "string"
-                },
-                "videoCodecKey": {
-                    "type": "string"
-                },
-                "sourceListKey": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "defaultAudioKey",
-                "defaultDisplayKey",
-                "defaultSourceItem",
-                "defaultVideoBehavior",
-                "description",
-                "environment",
-                "hasDsp",
-                "helpMessage",
-                "logo",
-                "sourceListKey",
-                "videoCodecKey",
-                "volumes"
-            ],
-            "title": "RoomProperties"
-        },
-        "Environment": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "deviceKeys": {
-                    "type": "array",
-                    "items": {}
-                }
-            },
-            "required": [
-                "deviceKeys"
-            ],
-            "title": "Environment"
-        },
-        "Logo": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "url": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "type",
-                "url"
-            ],
-            "title": "Logo"
-        },
-        "Volumes": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "master": {
-                    "$ref": "#/definitions/Master"
-                }
-            },
-            "required": [
-                "master"
-            ],
-            "title": "Volumes"
-        },
-        "Master": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "level": {
-                    "type": "integer"
-                },
-                "deviceKey": {
-                    "type": "string"
-                },
-                "label": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "deviceKey",
-                "label",
-                "level"
-            ],
-            "title": "Master"
-        },
         "SourceLists": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
-                "default": {
-                    "$ref": "#/definitions/Default"
+                "default":{
+                    "$ref":"#/definitions/SourceList"
                 }
             },
-            "required": [
-                "default"
-            ],
             "title": "SourceLists"
         },
-        "Default": {
+        "SourceList": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
-                "codecOsd": {
-                    "$ref": "#/definitions/CodecOsd"
-                },
-                "source-1": {
-                    "$ref": "#/definitions/Source"
-                },
-                "roomOff": {
-                    "$ref": "#/definitions/RoomOff"
-                },
-                "source-2": {
-                    "$ref": "#/definitions/Source"
-                }
             },
-            "required": [
-                "codecOsd",
-                "roomOff",
-                "source-1",
-                "source-2"
-            ],
-            "title": "Default"
-        },
-        "CodecOsd": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "sourceKey": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "routeList": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/RouteList"
-                    }
-                },
-                "includeInSourceList": {
-                    "type": "boolean"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "order": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "includeInSourceList",
-                "name",
-                "order",
-                "routeList",
-                "sourceKey",
-                "type"
-            ],
-            "title": "CodecOsd"
-        },
-        "RouteList": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "destinationKey": {
-                    "type": "string"
-                },
-                "sourceKey": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "destinationKey",
-                "sourceKey",
-                "type"
-            ],
-            "title": "RouteList"
-        },
-        "RoomOff": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "sourceKey": {
-                    "type": "string"
-                },
-                "routeList": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/RouteList"
-                    }
-                },
-                "type": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "routeList",
-                "sourceKey",
-                "type"
-            ],
-            "title": "RoomOff"
+            "title": "Source List"
         },
         "Source": {
             "type": "object",
@@ -716,7 +223,12 @@
                     "type": "boolean"
                 },
                 "type": {
-                    "type": "string"
+                    "type": "string",
+                    "enum":[
+                        "route",
+                        "off",
+                        "other"
+                    ]
                 },
                 "altIcon": {
                     "type": "string"
@@ -729,8 +241,6 @@
                 }
             },
             "required": [
-                "altIcon",
-                "icon",
                 "includeInSourceList",
                 "order",
                 "routeList",
@@ -739,6 +249,34 @@
                 "volumeControlKey"
             ],
             "title": "Source"
+        },
+        "RouteList": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "destinationKey": {
+                    "type": "string"
+                },
+                "sourceKey": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum":[
+                        "audio",
+                        "video",
+                        "audioVideo",
+                        "usbOutput",
+                        "usbInput"
+                    ]
+                }
+            },
+            "required": [
+                "destinationKey",
+                "sourceKey",
+                "type"
+            ],
+            "title": "RouteList"
         }
     }
 }

@@ -92,8 +92,18 @@ namespace PepperDash.Essentials.Core.Config
                 {
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading config file: '{0}'", filePath);
 
-                    // Attempt to validate config against schema
-                    ValidateSchema(fs.ReadToEnd());
+                    var directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+
+                    var schemaFilePath = directoryPrefix + Global.DirectorySeparator + "Config" + Global.DirectorySeparator + "Schema" + Global.DirectorySeparator + "EssentialsConfigSchema.json";
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading Schema from path: {0}", schemaFilePath);
+
+                    if(File.Exists(schemaFilePath))
+                    {
+                        // Attempt to validate config against schema
+                        ValidateSchema(fs.ReadToEnd(), schemaFilePath);
+                    }
+                    else
+                        Debug.Console(0, Debug.ErrorLogLevel.Warning, "No Schema found at path: {0}", schemaFilePath);
 
                     if (localConfigFound)
                     {
@@ -133,20 +143,31 @@ namespace PepperDash.Essentials.Core.Config
 			}
 		}
 
-        public static void ValidateSchema(string json)
+        /// <summary>
+        /// Attempts to validate the JSON against the specified schema
+        /// </summary>
+        /// <param name="json">JSON to be validated</param>
+        /// <param name="schemaFileName">File name of schema to validate against</param>
+        public static void ValidateSchema(string json, string schemaFileName)
         {
             JToken config = JToken.Parse(json);
 
-            var deviceConfig = new DeviceConfig();
+            using (StreamReader fs = new StreamReader(schemaFileName))
+            {
+                JsonSchema schema = JsonSchema.Parse(fs.ReadToEnd());
 
-            JsonSchema schema = JsonSchema.Parse(deviceConfig.SchemaJson);
-
-            config.Validate(schema, _ValidationEventHandler);
+                config.Validate(schema, Json_ValidationEventHandler);
+            }
         }
 
-        public static void _ValidationEventHandler(object sender, ValidationEventArgs args)
+        /// <summary>
+        /// Event Handler callback for JSON validation
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        public static void Json_ValidationEventHandler(object sender, ValidationEventArgs args)
         {
-            Debug.Console(0, "{0}", args.Message);
+            Debug.Console(0, "JSON Validation error at line {0} position {1}: {2}", args.Exception.LineNumber, args.Exception.LinePosition, args.Message);
         }
 
         /// <summary>

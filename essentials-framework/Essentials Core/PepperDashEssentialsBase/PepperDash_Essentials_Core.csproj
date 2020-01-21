@@ -267,11 +267,13 @@
     <Compile Include="SmartObjects\SubpageReferencList\SubpageReferenceList.cs" />
     <Compile Include="SmartObjects\SubpageReferencList\SubpageReferenceListItem.cs" />
     <None Include="app.config" />
+    <EmbeddedResource Include="Config\Schema\EssentialsConfigSchema.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\" />
-    <Folder Include="Config\Schema\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>
