@@ -92,22 +92,24 @@ namespace PepperDash.Essentials.Core.Config
                 {
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading config file: '{0}'", filePath);
 
-                    var directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+                    var directoryPrefix = string.Format("{0}Config{1}Schema{1}", Global.ApplicationDirectoryPrefix, Global.DirectorySeparator);
 
-                    var schemaFilePath = directoryPrefix + Global.DirectorySeparator + "Config" + Global.DirectorySeparator + "Schema" + Global.DirectorySeparator + "EssentialsConfigSchema.json";
+                    var schemaFilePath = directoryPrefix + "EssentialsConfigSchema.json";
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading Schema from path: {0}", schemaFilePath);
+
+                    var jsonConfig = fs.ReadToEnd();
 
                     if(File.Exists(schemaFilePath))
                     {
                         // Attempt to validate config against schema
-                        ValidateSchema(fs.ReadToEnd(), schemaFilePath);
+                        ValidateSchema(jsonConfig, schemaFilePath);
                     }
                     else
                         Debug.Console(0, Debug.ErrorLogLevel.Warning, "No Schema found at path: {0}", schemaFilePath);
 
                     if (localConfigFound)
                     {
-                        ConfigObject = JObject.Parse(fs.ReadToEnd()).ToObject<EssentialsConfig>();
+                        ConfigObject = JObject.Parse(jsonConfig).ToObject<EssentialsConfig>();
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Successfully Loaded Local Config");
 
@@ -115,7 +117,7 @@ namespace PepperDash.Essentials.Core.Config
                     }
                     else
                     {
-                        var doubleObj = JObject.Parse(fs.ReadToEnd());
+                        var doubleObj = JObject.Parse(jsonConfig);
                         ConfigObject = PortalConfigReader.MergeConfigs(doubleObj).ToObject<EssentialsConfig>();
 
                         // Extract SystemUrl and TemplateUrl into final config output
@@ -150,13 +152,20 @@ namespace PepperDash.Essentials.Core.Config
         /// <param name="schemaFileName">File name of schema to validate against</param>
         public static void ValidateSchema(string json, string schemaFileName)
         {
-            JToken config = JToken.Parse(json);
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Validating Config File against Schema...");
+            JObject config = JObject.Parse(json);
 
-            using (StreamReader fs = new StreamReader(schemaFileName))
+            using (StreamReader fileStream = new StreamReader(schemaFileName))
             {
-                JsonSchema schema = JsonSchema.Parse(fs.ReadToEnd());
+                JsonSchema schema = JsonSchema.Parse(fileStream.ReadToEnd());
 
-                config.Validate(schema, Json_ValidationEventHandler);
+                if (config.IsValid(schema))
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Configuration successfully Validated Against Schema");
+                else
+                {
+                    Debug.Console(0, Debug.ErrorLogLevel.Warning, "Validation Errors Found in Configuration:");
+                    config.Validate(schema, Json_ValidationEventHandler);
+                }              
             }
         }
 

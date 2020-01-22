@@ -9,8 +9,14 @@ using PepperDash.Essentials.License;
 
 namespace PepperDash.Essentials.Core
 {
+    /// <summary>
+    /// Global application properties
+    /// </summary>
 	public static class Global
 	{
+        /// <summary>
+        /// The control system the application is running on
+        /// </summary>
 		public static CrestronControlSystem ControlSystem { get; set; }
 
 		public static LicenseManager LicenseManager { get; set; }
@@ -28,6 +34,19 @@ namespace PepperDash.Essentials.Core
             get
             {
                 return System.IO.Path.DirectorySeparatorChar;
+            }
+        }
+
+        /// <summary>
+        /// The file path prefix to the folder containing the application files (including embedded resources)
+        /// </summary>
+        public static string ApplicationDirectoryPrefix 
+        {
+            get
+            {
+                string fmt = "00.##";
+                var appNumber = InitialParametersClass.ApplicationNumber.ToString(fmt);
+                return  string.Format("{0}{1}Simpl{1}app{2}{1}", Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory(), Global.DirectorySeparator,appNumber );
             }
         }
 

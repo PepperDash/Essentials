@@ -61,7 +61,7 @@
             },
             "required": [
             ],
-            "title": "Template"
+            "title": "Basic Config"
         },
         "Info": {
             "type": "object",

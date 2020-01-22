@@ -182,6 +182,9 @@
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoom.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoomCamera.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoomPropertiesConfig.cs" />
+    <EmbeddedResource Include="Display\Schema\SamsungMDCPropertiesConfigSchema.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>
