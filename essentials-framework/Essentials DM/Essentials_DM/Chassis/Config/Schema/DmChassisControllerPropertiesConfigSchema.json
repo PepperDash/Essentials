@@ -18,6 +18,7 @@
                     "$ref":"ControlPropertiesConfigSchema.json#definitions/ControlPropertiesConfig"
                 },
                 "volumeControls":{
+                    "title": "Volume Controls",
                     "type":"object",
                     "additionalProperties": {
                         "type":"object",
@@ -25,30 +26,35 @@
                     }
                 },
                 "inputSlots":{
+                    "title": "Input Slots",
                     "type":"object",
                     "additionalProperties": {
                         "type":"string"
                     }
                 },
                 "outputSlots":{
+                    "title": "Output Slots",
                     "type":"object",
                     "additionalProperties": {
                         "type":"string"
                     }
                 },
                 "inputNames":{
+                    "title": "Input Names",
                     "type":"object",
                     "additionalProperties": {
                         "type":"string"
                     }
                 },
                 "outputNames":{
+                    "title": "Output Names",
                     "type":"object",
                     "additionalProperties": {
                         "type":"string"
                     }
                 },
                 "noRouteText":{
+                    "title": "No Route Text",
                     "type":"string"
                 },
                 "inputSlotSupportsHdcp2":{
@@ -63,9 +69,11 @@
             "type":"object",
             "properties": {
                 "OutLevel":{
+                    "title": "Output Level",
                     "type":"integer"
                 },
                 "isVolumeControlPoint":{
+                    "title": "Volume Control Point?",
                     "type":"boolean"
                 }
             }
