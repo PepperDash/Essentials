@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "SamsungMDC Properties Config Schema",
+    "title": "SamsungMDC Properties Config Schema v1",
     "description": "",
     "$ref":"EssentialsConfigSchema.json#/definitions/Device",
     "properties":{
@@ -23,7 +23,11 @@
                     "type":"string",
                     "pattern": "^(?!FF)[0-9,A-F,a-f][0-9,A-F,a-f]$"
                 }
-            }          
+            },
+            "required": [
+                "control",
+                "id"
+            ]          
         }
     }
 }
