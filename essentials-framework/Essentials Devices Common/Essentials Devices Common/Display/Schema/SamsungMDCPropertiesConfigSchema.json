@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "SamsungMDC Properties Config Schema",
     "description": "",
-    "$ref":"EssentialsConfigSchema.json/definitions/Device",
+    "$ref":"EssentialsConfigSchema.json#/definitions/Device",
     "properties":{
         "properties":{
             "$ref":"#/definitions/propertiesConfig"
@@ -13,9 +13,13 @@
             "type":"object",
             "additionalProperties": true,
             "properties": {
+                "control":{
+                    "type":"object",
+                    "$ref":"ControlPropertiesConfigSchema.json#definitions/ControlPropertiesConfig"
+                },
                 "id":{
                     "type":"string",
-                    "pattern": "^([0-9]|0[1-9]|[2-9][0-9])$"
+                    "pattern": "^([0-9]|0[1-9]|[1-9][0-9])$"
                 }
             }          
         }
