@@ -1,0 +1,81 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "title": "TcpSshPropertiesConfig",
+    "$ref": "#/definitions/TcpSshPropertiesConfig",
+    "definitions": {
+        "TcpSshPropertiesConfig": {
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "title": "Username",
+                    "default":"",
+                    "examples": [
+                        "admin"
+                    ],
+                    "pattern": "^(.*)$"
+                },
+                "port": {
+                    "type": "integer",
+                    "title": "Port Number",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "examples": [
+                        22,
+                        23,
+                        1515
+                    ]
+                },
+                "address": {
+                    "type": "string",
+                    "title": "IP Address or Hostname",
+                    "examples": [
+                        "192.168.99.100",
+                        "myDeviceHostname"
+                    ],
+                    "pattern": "^(.*)$"
+                },
+                "password": {
+                    "type": "string",
+                    "title": "Password",
+                    "default":"",
+                    "examples": [
+                        "password"
+                    ],
+                    "pattern": "^(.*)$"
+                },
+                "autoReconnect": {
+                    "type": "boolean",
+                    "title": "Auto Reconnect",
+                    "description": "Indicates if automatic attemtps to reconnect should be made if communication is lost with the device",
+                    "default": true,
+                    "examples": [
+                        true
+                    ]
+                },
+                "autoReconnectIntervalMs": {
+                    "type": "integer",
+                    "title": "Auto Reconnect Interval (Milliseconds)",
+                    "description": "If Auto Reconnect is enabled, how often should reconnect attempts be made",
+                    "default": 5000,
+                    "examples": [
+                        2000
+                    ]
+                },
+                "bufferSize": {
+                    "type": "integer",
+                    "title": "Buffer Size",
+                    "description": "The size of the receive buffer to use",
+                    "default": 32768,
+                    "examples": [
+                        32768
+                    ]
+                }
+            },
+            "required": [
+                "port",
+                "address"
+            ]
+        }
+    }
+}

@@ -18,8 +18,10 @@
                     "$ref":"ControlPropertiesConfigSchema.json#definitions/ControlPropertiesConfig"
                 },
                 "id":{
+                    "title":"Display ID",
+                    "description": "This must match the ID set in the display's on screen menu",
                     "type":"string",
-                    "pattern": "^([0-9]|0[1-9]|[1-9][0-9])$"
+                    "pattern": "^(?!FF)[0-9,A-F,a-f][0-9,A-F,a-f]$"
                 }
             }          
         }

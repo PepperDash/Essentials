@@ -270,6 +270,12 @@
     <EmbeddedResource Include="Config\Schema\EssentialsConfigSchema.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Config\Schema\ControlPropertiesConfigSchema.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Config\Schema\TcpSshPropertiesConfigSchema.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>

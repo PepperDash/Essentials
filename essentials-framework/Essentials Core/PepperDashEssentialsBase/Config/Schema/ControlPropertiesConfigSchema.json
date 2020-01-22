@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Control Properties",
+  "$ref": "#/definitions/ControlPropertiesConfig",
+  "definitions": {
+    "ControlPropertiesConfig": {
+      "description": "The method of communicating with the device",
+      "properties": {
+        "method": {
+          "type": "string",
+          "title": "Communication Method",
+          "enum": [
+            "none",
+            "com",
+            "ipid",
+            "ipidtcp",
+            "ir",
+            "ssh",
+            "tcpip",
+            "telnet",
+            "cresnet",
+            "cec",
+            "udp"
+          ]
+        },
+        "tcpSshProperties": {
+          "$ref":"TcpSshPropertiesConfigSchema.json#definitions/TcpSshPropertiesConfig",
+          "title": "Properties for IP based communication",
+          "default": null
+        },
+        "comParams": {
+          "title":"Com Port parameters",
+          "description": "The parameters to configure the COM port",
+          "type":"object",
+          "protocol":{
+            "title":"Protocol",
+            "type":"string",
+            "enum":[
+              "RS232",
+              "RS422",
+              "RS485"
+            ]
+          },
+          "baudRate":{
+            "title":"Baud Rate",
+            "type":"integer",
+            "enum":[
+              300,
+              600,
+              1200,
+              1800,
+              2400,
+              3600,
+              4800,
+              7200,
+              9600,
+              14400,
+              19200,
+              28800,
+              38400,
+              57600,
+              115200
+            ]
+          },
+          "dataBits":{
+            "title":"Data Bits",
+            "type":"integer",
+            "enum":[
+              7,
+              8
+            ]
+          },
+          "stopBits":{
+            "title":"Stop Bits",
+            "type":"integer",
+            "enum":[
+              1,
+              2
+            ]
+          },
+          "parity":{
+            "title":"Parity",
+            "type":"string",
+            "enum":[
+              "None",
+              "Even",
+              "One"
+            ]
+          },
+          "softwareHandshake":{
+            "title":"Software Handshake",
+            "type":"string",
+            "enum":[
+              "None",
+              "RTS",
+              "CTS",
+              "RTSCTS"
+            ]
+          },
+          "hardwareHandshake":{
+            "title":"Hardware Handshake",
+            "type":"string",
+            "enum":[
+              "None",
+              "XON",
+              "XONT",
+              "XONR"
+            ]
+          },
+          "pacing":{
+            "title":"Pacing",
+            "type":"integer"
+          }
+        },
+        "cresnetId":{
+          "type": "string",
+          "title":"Cresnet ID",
+          "description": "Cresnet ID of the device",
+          "default": "",
+          "examples": [
+            "13",
+            "03",
+            "0A",
+            "F1"
+          ],
+          "pattern": "^(?!00|01|02|FF)[0-9,A-F,a-f][0-9,A-F,a-f]$"
+        },
+        "controlPortDevKey": {
+          "type": "string",
+          "title":"Port Device",
+          "description": "Key of the device where the control port is found",
+          "examples": [
+            "processor"
+          ]
+        },
+        "controlPortNumber": {
+          "type": "integer",
+          "title": "Port Number",
+          "description": "Control Port Number on the device referenced by controlPortDevKey",
+          "examples": [
+            1
+          ]
+        },
+        "controlPortName": {
+          "type": "string",
+          "title": "Port Name",
+          "description": "Control Port Name on the device referenced by controlPortDevKey",
+          "examples": [
+            "hdmi1"
+          ]
+        },
+        "irFile": {
+          "type": "string",
+          "title": "IR File",
+          "description": "IR Filename",
+          "default": "",
+          "examples": [
+            "Comcast Motorola DVR.ir"
+          ],
+          "pattern": "^(.*).ir$"
+        },
+        "ipid": {
+          "type": "string",
+          "title": "IPID",
+          "default": "",
+          "examples": [
+            "13",
+            "03",
+            "0A",
+            "F1"
+          ],
+          "pattern": "^(?!00|01|02|FF)[0-9,A-F,a-f][0-9,A-F,a-f]$"
+        }
+      },
+      "required": [
+        "method"
+      ]
+    }
+  }
+}
