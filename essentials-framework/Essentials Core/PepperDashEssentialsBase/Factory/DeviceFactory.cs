@@ -55,7 +55,7 @@ namespace PepperDash.Essentials.Core
             else if (typeName == "ceniodigin104")
             {
                 var control = CommFactory.GetControlPropertiesConfig(dc);
-                var ipid = control.CresnetIdInt;
+                var ipid = control.IpIdInt;
 
                 return new CenIoDigIn104Controller(key, name, new Crestron.SimplSharpPro.GeneralIO.CenIoDi104(ipid, Global.ControlSystem));
             }
