@@ -135,7 +135,12 @@ namespace PepperDash.Essentials.DM
 				controller.OutputNames = properties.OutputNames;
 
                 if (!string.IsNullOrEmpty(properties.NoRouteText))
+                {
                     controller.NoRouteText = properties.NoRouteText;
+                    Debug.Console(1, controller, "Setting No Route Text value to: {0}", controller.NoRouteText);
+                }
+                else
+                    Debug.Console(1, controller, "NoRouteText not specified.  Defaulting to blank string.", controller.NoRouteText);
 
                 controller.PropertiesConfig = properties;
 				return controller;
