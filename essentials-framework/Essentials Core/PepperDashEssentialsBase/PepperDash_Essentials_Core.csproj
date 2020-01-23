@@ -118,6 +118,7 @@
     <Compile Include="Config\Essentials\ConfigWriter.cs" />
     <Compile Include="Config\Essentials\EssentialsConfig.cs" />
     <Compile Include="Config\SourceDevicePropertiesConfigBase.cs" />
+    <Compile Include="Crestron IO\C2nRts\C2nRthsController.cs" />
     <Compile Include="Crestron IO\Inputs\CenIoDigIn104Controller.cs" />
     <Compile Include="Crestron IO\Inputs\GenericDigitalInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />

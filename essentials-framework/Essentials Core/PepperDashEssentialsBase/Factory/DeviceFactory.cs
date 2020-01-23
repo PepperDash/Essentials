@@ -67,6 +67,13 @@ namespace PepperDash.Essentials.Core
 
                 return  new StatusSignController(key, name, new StatusSign(cresnetId, Global.ControlSystem));
 		    }
+		    if (typeName == "c2nrths")
+		    {
+		        var control = CommFactory.GetControlPropertiesConfig(dc);
+		        var cresnetId = control.CresnetIdInt;
+
+		        return new C2nRthsController(key, name, new C2nRths(cresnetId, Global.ControlSystem));
+		    }
 
 			// then check for types that have been added by plugin dlls. 
 			if (FactoryMethods.ContainsKey(typeName))
