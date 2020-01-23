@@ -20,6 +20,9 @@ namespace PepperDash.Essentials.DM.Config
 		[JsonProperty("outputNames")]
 		public Dictionary<uint, string> OutputNames { get; set; }
 
+        [JsonProperty("noRouteText")]
+        public string NoRouteText { get; set; }
+
         public DmpsRoutingPropertiesConfig()
         {
             InputNames = new Dictionary<uint, string>();

@@ -52,6 +52,13 @@ namespace PepperDash.Essentials.Core
                 Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
                 return new GenericComm(dc);
             }
+            else if (typeName == "ceniodigin104")
+            {
+                var control = CommFactory.GetControlPropertiesConfig(dc);
+                var ipid = control.CresnetIdInt;
+
+                return new CenIoDigIn104Controller(key, name, new Crestron.SimplSharpPro.GeneralIO.CenIoDi104(ipid, Global.ControlSystem));
+            }
 
 			// then check for types that have been added by plugin dlls. 
 			if (FactoryMethods.ContainsKey(typeName))

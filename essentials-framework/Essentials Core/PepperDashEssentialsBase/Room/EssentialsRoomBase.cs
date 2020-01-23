@@ -100,7 +100,8 @@ namespace PepperDash.Essentials.Core
             ShutdownPromptTimer.HasFinished += (o, a) => Shutdown(); // Shutdown is triggered 
 
             ShutdownPromptSeconds = 60;
-            ShutdownVacancySeconds = 120;
+            ShutdownVacancySeconds = 120; 
+            
             ShutdownType = eShutdownType.None;
 
             RoomVacancyShutdownTimer = new SecondsCountdownTimer(Key + "-vacancyOffTimer");
@@ -140,7 +141,7 @@ namespace PepperDash.Essentials.Core
                 case eVacancyMode.InShutdownWarning:
                     {
                         StartShutdown(eShutdownType.Vacancy);
-                        Debug.Console(0, this, "Shutting Down due to vacancy.");
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Shutting Down due to vacancy.");
                         break;
                     }
                 default:
@@ -163,7 +164,7 @@ namespace PepperDash.Essentials.Core
             ShutdownType = type;
             ShutdownPromptTimer.Start();
 
-            Debug.Console(0, this, "ShutdwonPromptTimer Started. Type: {0}.  Seconds: {1}", ShutdownType, ShutdownPromptTimer.SecondsToCount);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "ShutdownPromptTimer Started. Type: {0}.  Seconds: {1}", ShutdownType, ShutdownPromptTimer.SecondsToCount);
         }
 
         public void StartRoomVacancyTimer(eVacancyMode mode)
@@ -175,7 +176,7 @@ namespace PepperDash.Essentials.Core
             VacancyMode = mode;
             RoomVacancyShutdownTimer.Start();
 
-            Debug.Console(0, this, "Vacancy Timer Started. Mode: {0}.  Seconds: {1}", VacancyMode, RoomVacancyShutdownTimer.SecondsToCount);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Vacancy Timer Started. Mode: {0}.  Seconds: {1}", VacancyMode, RoomVacancyShutdownTimer.SecondsToCount);
         }
 
         /// <summary>
@@ -211,6 +212,9 @@ namespace PepperDash.Essentials.Core
 				return;
 			}
 
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Room Occupancy set to device: '{0}'", (statusProvider as Device).Key);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Timeout Minutes from Config is: {0}", timeoutMinutes);
+
             // If status provider is fusion, set flag to remote
             if (statusProvider is Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase)
                 OccupancyStatusProviderIsRemote = true;
@@ -218,16 +222,14 @@ namespace PepperDash.Essentials.Core
             if(timeoutMinutes > 0)
                 RoomVacancyShutdownSeconds = timeoutMinutes * 60;
 
-            Debug.Console(1, this, "RoomVacancyShutdownSeconds set to {0}", RoomVacancyShutdownSeconds);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "RoomVacancyShutdownSeconds set to {0}", RoomVacancyShutdownSeconds);
 
             RoomOccupancy = statusProvider;
-
-            OnRoomOccupancyIsSet();
 
             RoomOccupancy.RoomIsOccupiedFeedback.OutputChange -= RoomIsOccupiedFeedback_OutputChange;
             RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
 
-            Debug.Console(0, this, "Room Occupancy set to device: '{0}'", (statusProvider as Device).Key);
+            OnRoomOccupancyIsSet();
         }
 
         void OnRoomOccupancyIsSet()
@@ -252,13 +254,13 @@ namespace PepperDash.Essentials.Core
         {
             if (RoomOccupancy.RoomIsOccupiedFeedback.BoolValue == false)
             {
-                Debug.Console(1, this, "Notice: Vacancy Detected");
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Notice: Vacancy Detected");
                 // Trigger the timer when the room is vacant
                 StartRoomVacancyTimer(eVacancyMode.InInitialVacancy);
             }
             else
             {
-                Debug.Console(1, this, "Notice: Occupancy Detected");
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "Notice: Occupancy Detected");
                 // Reset the timer when the room is occupied
                 RoomVacancyShutdownTimer.Cancel();
             }

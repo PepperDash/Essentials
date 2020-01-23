@@ -334,8 +334,11 @@ namespace PepperDash.Essentials
         {
             // Add Occupancy object from config
             if (PropertiesConfig.Occupancy != null)
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Setting Occupancy Provider for room");
                 this.SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
                     IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimeoutMinutes);
+            }
 
             this.LogoUrl = PropertiesConfig.Logo.GetUrl();
             this.SourceListKey = PropertiesConfig.SourceListKey;
@@ -358,6 +361,8 @@ namespace PepperDash.Essentials
             RunDefaultPresentRoute();
 
             CrestronEnvironment.Sleep(1000);
+
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Shutting down room");
 
             RunRouteAction("roomOff");
         }
@@ -408,7 +413,7 @@ namespace PepperDash.Essentials
                 try
                 {
 
-                    Debug.Console(1, this, "Run route action '{0}'", routeKey);
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Run route action '{0}'", routeKey);
                     var dict = ConfigReader.ConfigObject.GetSourceListForKey(SourceListKey);
                     if (dict == null)
                     {
