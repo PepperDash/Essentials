@@ -161,15 +161,14 @@ namespace PepperDash.Essentials.Bridges
             DisableUsB = 20;
             EnablePir = 21;
             DisablePir = 22;
-            DisablePir = 23;
-            IncrementUsInOccupiedState = 24;
-            DecrementUsInOccupiedState = 25;
-            IncrementUsInVacantState = 26;
-            DecrementUsInVacantState = 27;
-            IncrementPirInOccupiedState = 28;
-            DecrementPirInOccupiedState = 29;
-            IncrementPirInVacantState = 30;
-            DecrementPirInVacantState = 31;
+            IncrementUsInOccupiedState = 23;
+            DecrementUsInOccupiedState = 24;
+            IncrementUsInVacantState = 25;
+            DecrementUsInVacantState = 26;
+            IncrementPirInOccupiedState = 27;
+            DecrementPirInOccupiedState = 28;
+            IncrementPirInVacantState = 29;
+            DecrementPirInVacantState = 30;
 
             Timeout = 1;
             TimeoutLocalFeedback = 2;
