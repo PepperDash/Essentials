@@ -32,6 +32,14 @@ namespace PepperDash.Essentials.Bridges
         /// </summary>
         public uint RawOccupancyFeedback { get; set; }
         /// <summary>
+        /// High when PIR sensor detects motion
+        /// </summary>
+        public uint RawOccupancyPirFeedback { get; set; }
+        /// <summary>
+        /// High when US sensor detects motion
+        /// </summary>
+        public uint RawOccupancyUsFeedback { get; set; }
+        /// <summary>
         /// High when occupancy is detected
         /// </summary>
         public uint RoomOccupiedFeedback { get; set; }
@@ -139,6 +147,8 @@ namespace PepperDash.Essentials.Bridges
             GraceOccupancyDetectedFeedback = 3;
             RoomVacantFeedback = 4;
             RawOccupancyFeedback = 5;
+            RawOccupancyPirFeedback = 6;
+            RawOccupancyUsFeedback = 7;
             EnableLedFlash = 11;
             DisableLedFlash = 12;
             EnableShortTimeout = 13;
@@ -182,7 +192,9 @@ namespace PepperDash.Essentials.Bridges
             RoomOccupiedFeedback =              RoomOccupiedFeedback + joinOffset; 
             GraceOccupancyDetectedFeedback =    GraceOccupancyDetectedFeedback + joinOffset;
             RoomVacantFeedback =                RoomVacantFeedback + joinOffset; 
-            RawOccupancyFeedback =              RawOccupancyFeedback + joinOffset; 
+            RawOccupancyFeedback =              RawOccupancyFeedback + joinOffset;
+            RawOccupancyPirFeedback =           RawOccupancyPirFeedback + joinOffset;
+            RawOccupancyUsFeedback =            RawOccupancyUsFeedback + joinOffset;
             EnableLedFlash =                    EnableLedFlash + joinOffset; 
             DisableLedFlash =                   DisableLedFlash + joinOffset; 
             EnableShortTimeout =                EnableShortTimeout + joinOffset; 

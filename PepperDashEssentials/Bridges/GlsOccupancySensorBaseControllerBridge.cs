@@ -103,6 +103,10 @@ namespace PepperDash.Essentials.Bridges
                 trilist.SetBoolSigAction(joinMap.DecrementUsInVacantState, new Action<bool>((b) => odtOccController.DecrementUsSensitivityInVacantState(b)));
                 odtOccController.UltrasonicSensitivityInVacantStateFeedback.LinkInputSig(trilist.UShortInput[joinMap.UsSensitivityInVacantState]);
 
+                //Sensor Raw States
+                odtOccController.RawOccupancyPirFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyPirFeedback]);
+                odtOccController.RawOccupancyUsFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyUsFeedback]);
+
             }
             #endregion
         }
