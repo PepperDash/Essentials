@@ -95,15 +95,13 @@ namespace PepperDash.Essentials
 
                 var dirSeparator = Global.DirectorySeparator;
 
-                var versionString = Global.GetAssemblyVersion();
-
                 string directoryPrefix;
 
                 directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
 
                 if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows OS
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", versionString);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", Global.GetAssemblyVersion());
 
                     // Check if User/ProgramX exists
                     if (Directory.Exists(directoryPrefix + dirSeparator + "User"
@@ -131,7 +129,7 @@ namespace PepperDash.Essentials
                 }
                 else   // Handles Linux OS (Virtual Control)
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", versionString);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", Global.GetAssemblyVersion());
 
                     // Set path to User/
                     filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
@@ -282,6 +280,7 @@ namespace PepperDash.Essentials
                                 Debug.Console(2, "Load Plugin not found. {0} is not a plugin assembly", assy.Value.FullName);
                                 continue;
                             }
+
                         }
                     }
                     catch

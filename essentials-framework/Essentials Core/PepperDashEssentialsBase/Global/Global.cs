@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharpPro;
 
-//using PepperDash.Essentials.Core.Http;
+using PepperDash.Core;
 using PepperDash.Essentials.License;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 
 
 namespace PepperDash.Essentials.Core
@@ -98,56 +102,6 @@ namespace PepperDash.Essentials.Core
                 return false;
 
             return true;
-        }
-
-        /// <summary>
-        /// Attempts to validate the JSON against the specified schema
-        /// </summary>
-        /// <param name="json">JSON to be validated</param>
-        /// <param name="schemaFileName">File name of schema to validate against</param>
-        public static void ValidateSchema(string json, string schemaFileName)
-        {
-            try
-            {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Validating Config against Schema...");
-                JObject config = JObject.Parse(json);
-
-                Debug.Console(2, "Config: \n{0}", json);
-
-                using (StreamReader fileStream = new StreamReader(schemaFileName))
-                {
-                    JsonSchemaResolver resolver = new JsonSchemaResolver();
-
-                    JsonSchema schema = JsonSchema.Parse(fileStream.ReadToEnd(), resolver);
-
-                    
-                    Debug.Console(2, "Schema: \n{0}", schema.ToString());
-
-                    if (config.IsValid(schema))
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Configuration successfully Validated Against Schema");
-                    else
-                    {
-                        Debug.Console(0, Debug.ErrorLogLevel.Warning, "Validation Errors Found in Configuration:");
-                        config.Validate(schema, Json_ValidationEventHandler);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.Console(1, "Error in ValidateSchema: {0}", e);
-            }
-        }
-
-
-
-        /// <summary>
-        /// Event Handler callback for JSON validation
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        public static void Json_ValidationEventHandler(object sender, ValidationEventArgs args)
-        {
-            Debug.Console(0, Debug.ErrorLogLevel.Error, "JSON Validation error at line {0} position {1}: {2}", args.Exception.LineNumber, args.Exception.LinePosition, args.Message);
         }
 
 		static Global()
