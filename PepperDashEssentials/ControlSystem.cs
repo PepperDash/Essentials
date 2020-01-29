@@ -95,9 +95,7 @@ namespace PepperDash.Essentials
 
                 var dirSeparator = Global.DirectorySeparator;
 
-                var version = Crestron.SimplSharp.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-
-                var versionString = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+                var versionString = Global.GetAssemblyVersion();
 
                 string directoryPrefix;
 
@@ -254,6 +252,27 @@ namespace PepperDash.Essentials
                                 var loadPlugin = methods.FirstOrDefault(m => m.Name.Equals("LoadPlugin"));
                                 if (loadPlugin != null)
                                 {
+                                    var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Static);
+                                    var minimumVersion = properties.FirstOrDefault(p => p.Name.Equals("MinimumEssentialsFrameworkVersion"));
+                                    if (minimumVersion != null)
+                                    {
+                                        var minimumVersionString = minimumVersion.GetValue(null, null) as string;
+
+                                        if (!string.IsNullOrEmpty(minimumVersionString))
+                                        {
+                                            var passed = Global.IsRunningMinimumVersionOrHigher(minimumVersionString);
+
+                                            if (!passed)
+                                            {
+                                                Debug.Console(0, Debug.ErrorLogLevel.Error, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", minimumVersionString);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion not defined.  Loading plugin, but your mileage may vary.");
+                                        }
+                                    }
+
                                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding type {0}", assy.Key, type.FullName);
                                     loadPlugin.Invoke(null, null);
                                 }
@@ -263,7 +282,6 @@ namespace PepperDash.Essentials
                                 Debug.Console(2, "Load Plugin not found. {0} is not a plugin assembly", assy.Value.FullName);
                                 continue;
                             }
-
                         }
                     }
                     catch
