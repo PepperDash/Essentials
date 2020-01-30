@@ -25,8 +25,6 @@ namespace PepperDash.Essentials
     {
         HttpLogoServer LogoServer;
 
-        List<object> FactoryObjects = new List<object>();
-
         public ControlSystem()
             : base()
         {
@@ -36,7 +34,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Git 'er goin'
+        /// Entry point for the program
         /// </summary>
         public override void InitializeSystem()
         {
@@ -144,7 +142,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Do it, yo
+        /// Begins the process of loading resources including plugins and configuration data
         /// </summary>
         public void GoWithLoad()
         {
@@ -171,23 +169,21 @@ namespace PepperDash.Essentials
                 else
                 {
                     Debug.Console(0,
-                        "------------------------------------------------\r" +
-                        "------------------------------------------------\r" +
-                        "------------------------------------------------\r" +
-                        "Essentials file structure setup completed.\r" +
-                        "Please load config, sgd and ir files and\r" +
-                        "restart program.\r" +
-                        "------------------------------------------------\r" +
-                        "------------------------------------------------\r" +
-                        "------------------------------------------------");
+                        @"----------------------------------------------
+                        ------------------------------------------------
+                        ------------------------------------------------
+                        Essentials file structure setup completed.
+                        Please load config, sgd and ir files and
+                        restart program.
+                        ------------------------------------------------
+                        ------------------------------------------------
+                        ------------------------------------------------");
                 }
 
             }
             catch (Exception e)
             {
                 Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r{0}", e);
-
-
             }
 
             // Notify the OS that the program intitialization has completed
@@ -196,7 +192,7 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Initial simple implementation.  Reads user/programN/plugins folder and 
+        /// Initial simple implementation.  Reads user/programXX/plugins folder and 
         /// use
         /// </summary>
         void LoadPlugins()
@@ -319,18 +315,6 @@ namespace PepperDash.Essentials
 
 			return configExists;
 		}
-
-		///// <summary>
-		///// 
-		///// </summary>
-		///// <param name="s"></param>
-		//public void EnablePortalSync(string s)
-		//{
-		//    if (s.ToLower() == "enable")
-		//    {
-		//        CrestronConsole.ConsoleCommandResponse("Portal Sync features enabled");
-		//    }
-		//}
 
 		/// <summary>
 		/// 

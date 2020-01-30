@@ -83,16 +83,4 @@ namespace PepperDash.Essentials.License
 			return string.Format("License Status: {0}", IsValid ? "Valid" : "Not Valid");
 		}
 	}
-
-	public class EssentialsLicenseManager
-	{
-
-	}
-
-	public class LicenseCue
-	{
-		public static Cue LicenseIsValid = Cue.BoolCue("LicenseIsValid", 15991);
-
-		public static Cue LicenseMessage = Cue.StringCue("LicenseMessage", 15991);
-	}
 }
