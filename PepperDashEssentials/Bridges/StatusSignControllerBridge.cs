@@ -29,6 +29,17 @@ namespace PepperDash.Essentials.Bridges
             trilist.SetUShortSigAction(joinMap.RedLed, u => SetColor(trilist, joinMap, ssDevice));
             trilist.SetUShortSigAction(joinMap.GreenLed, u => SetColor(trilist, joinMap, ssDevice));
             trilist.SetUShortSigAction(joinMap.BlueLed, u => SetColor(trilist, joinMap, ssDevice));
+
+            trilist.StringInput[joinMap.Name].StringValue = ssDevice.Name;
+
+            ssDevice.RedLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RedControl]);
+            ssDevice.BlueLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.BlueControl]);
+            ssDevice.GreenLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.GreenControl]);
+
+            ssDevice.RedLedBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.RedLed]);
+            ssDevice.BlueLedBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.BlueLed]);
+            ssDevice.GreenLedBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.GreenLed]);
+
         }
 
         private static void EnableControl(BasicTriList triList, StatusSignControllerJoinMap joinMap,

@@ -7,6 +7,7 @@ namespace PepperDash.Essentials.Bridges
     public class StatusSignControllerJoinMap:JoinMapBase
     {
         public uint IsOnline { get; set; }
+        public uint Name { get; set; }
         public uint RedLed { get; set; }
         public uint GreenLed { get; set; }
         public uint BlueLed { get; set; }
@@ -26,6 +27,10 @@ namespace PepperDash.Essentials.Bridges
             RedLed = 2;
             GreenLed = 3;
             BlueLed = 4;
+
+            //string 
+            Name = 1;
+
 
             OffsetJoinNumbers(joinStart);
         }

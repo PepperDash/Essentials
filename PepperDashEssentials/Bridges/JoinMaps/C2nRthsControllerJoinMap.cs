@@ -7,6 +7,7 @@ namespace PepperDash.Essentials.Bridges
     public class C2nRthsControllerJoinMap:JoinMapBase
     {
         public uint IsOnline { get; set; }
+        public uint Name { get; set; }
         public uint Temperature { get; set; }
         public uint Humidity { get; set; }
         public uint TemperatureFormat { get; set; }
@@ -20,6 +21,9 @@ namespace PepperDash.Essentials.Bridges
             //Analog
             Temperature = 2;
             Humidity = 3;
+
+            //serial
+            Name = 1;
 
             OffsetJoinNumbers(joinStart);
         }

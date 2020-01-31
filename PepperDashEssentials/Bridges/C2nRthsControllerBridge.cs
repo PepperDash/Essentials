@@ -23,6 +23,13 @@ namespace PepperDash.Essentials.Bridges
             Debug.Console(1, device, "Linking to Trilist '{0}'", triList.ID.ToString("X"));
 
             triList.SetBoolSigAction(joinMap.TemperatureFormat, device.SetTemperatureFormat);
+
+            device.TemperatureFeedback.LinkInputSig(triList.UShortInput[joinMap.Temperature]);
+            device.HumidityFeedback.LinkInputSig(triList.UShortInput[joinMap.Temperature]);
+
+            triList.StringInput[joinMap.Name].StringValue = device.Name;
+
+
         }
          
     }
