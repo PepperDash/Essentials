@@ -165,18 +165,13 @@
     <Compile Include="Configuration ORIGINAL\Factories\DmFactory.cs" />
     <Compile Include="Configuration ORIGINAL\Factories\TouchpanelFactory.cs" />
     <Compile Include="Configuration ORIGINAL\Factories\PcFactory.cs" />
-    <Compile Include="Configuration ORIGINAL\Factories\REMOVE DiscPlayerFactory.cs" />
-    <Compile Include="Configuration ORIGINAL\Factories\MAYBE SetTopBoxFactory.cs" />
     <Compile Include="Configuration ORIGINAL\Factories\DisplayFactory.cs" />
     <Compile Include="Configuration ORIGINAL\Factories\FactoryHelper.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Devices\Amplifier.cs" />
-    <Compile Include="Devices\DiscPlayer\OppoExtendedBdp.cs" />
-    <Compile Include="Devices\NUMERIC AppleTV.cs" />
     <Compile Include="ControlSystem.cs" />
     <Compile Include="Factory\UiDeviceFactory.cs" />
     <Compile Include="Fusion\EssentialsHuddleVtc1FusionController.cs" />
-    <Compile Include="REMOVE EssentialsApp.cs" />
     <Compile Include="HttpApiHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Room\Config\EssentialsDualDisplayRoomPropertiesConfig.cs" />
@@ -208,12 +203,6 @@
     <Compile Include="Room\Types\EssentialsNDisplayRoomBase.cs" />
     <Compile Include="Room\Types\EssentialsPresentationRoom.cs" />
     <Compile Include="Room\Config\EssentialsRoomConfig.cs" />
-    <Compile Include="FOR REFERENCE UI\PageControllers\DevicePageControllerBase.cs" />
-    <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLaptop.cs" />
-    <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLargeDvd.cs" />
-    <Compile Include="FOR REFERENCE UI\PageControllers\PageControllerLargeSetTopBoxGeneric.cs" />
-    <Compile Include="FOR REFERENCE UI\PageControllers\LargeTouchpanelControllerBase.cs" />
-    <Compile Include="FOR REFERENCE UI\Panels\SmartGraphicsTouchpanelControllerBase.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsEnvironmentDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsLightingDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsShadeDriver.cs" />
@@ -243,8 +232,6 @@
     <Compile Include="AppServer\MobileControlSystemController.cs" />
     <Compile Include="UI\DualDisplaySourceSRLController.cs" />
     <Compile Include="UI\SubpageReferenceListActivityItem.cs" />
-    <Compile Include="FOR REFERENCE UI\Panels\REMOVE UiCue.cs" />
-    <Compile Include="FOR REFERENCE UI\SRL\SourceListSubpageReferenceList.cs" />
     <Compile Include="Room\Types\EssentialsHuddleSpaceRoom.cs" />
     <Compile Include="UI\EssentialsTouchpanelController.cs" />
     <Compile Include="UI\SubpageReferenceListSourceItem.cs" />
@@ -269,9 +256,6 @@
       <Project>{892B761C-E479-44CE-BD74-243E9214AF13}</Project>
       <Name>Essentials Devices Common</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="FOR REFERENCE UI\OTHER\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>
