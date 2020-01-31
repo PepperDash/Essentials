@@ -51,15 +51,31 @@ namespace PepperDash.Essentials.Core
             FilePathPrefix = prefix;
         }
 
+        static string _AssemblyVersion;
+
         /// <summary>
         /// Gets the Assembly Version of Essentials
         /// </summary>
         /// <returns>The Assembly Version at Runtime</returns>
-        public static string GetAssemblyVersion()
+        public static string AssemblyVersion
         {
-            var version = Crestron.SimplSharp.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            get
+            {
+                return _AssemblyVersion;
+            }
+            private set
+            {
+                _AssemblyVersion = value;
+            }
+        }
 
-            return string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+        /// <summary>
+        /// Sets the Assembly version to the version of the Essentials Library
+        /// </summary>
+        /// <param name="assemblyVersion"></param>
+        public static void SetAssemblyVersion(string assemblyVersion)
+        {
+            AssemblyVersion = assemblyVersion;
         }
 
         /// <summary>
@@ -69,11 +85,16 @@ namespace PepperDash.Essentials.Core
         /// <returns>Returns true if the running version meets or exceeds the minimum specified version</returns>
         public static bool IsRunningMinimumVersionOrHigher(string minimumVersion)
         {
-            var runtimeVersion = Crestron.SimplSharp.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            Debug.Console(2, "Comparing running version '{0}' to minimum version '{1}'", AssemblyVersion, minimumVersion);
 
-            Debug.Console(2, "Comparing running version '{0}' to minimum version '{1}'", GetAssemblyVersion(), minimumVersion);
+            var runtimeVersion = Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*)$");
 
-            if (runtimeVersion.Major == 0)
+            var runtimeVersionMajor = Int16.Parse(runtimeVersion.Groups[1].Value);
+            var runtimeVersionMinor = Int16.Parse(runtimeVersion.Groups[2].Value);
+            var runtimeVersionBuild = Int16.Parse(runtimeVersion.Groups[3].Value);
+
+            // Check for beta build version
+            if (runtimeVersionMajor == 0)
             {
                 Debug.Console(2, "Running Beta Build.  Bypassing Dependency Check.");
                 return true;
@@ -85,20 +106,21 @@ namespace PepperDash.Essentials.Core
             {
                 Debug.Console(2, "minimumVersion String does not match format xx.yy.zz");
                 return false;
-
             }
 
             var minVersionMajor = Int16.Parse(minVersion.Groups[1].Value);
             var minVersionMinor = Int16.Parse(minVersion.Groups[2].Value);
             var minVersionBuild = Int16.Parse(minVersion.Groups[3].Value);
 
-            if (minVersionMajor < runtimeVersion.Major)
+
+
+            if (minVersionMajor > runtimeVersionMajor)
                 return false;
 
-            if (minVersionMinor < runtimeVersion.Minor)
+            if (minVersionMinor > runtimeVersionMinor)
                 return false;
 
-            if (minVersionBuild < runtimeVersion.Build)
+            if (minVersionBuild > runtimeVersionBuild)
                 return false;
 
             return true;

@@ -97,9 +97,13 @@ namespace PepperDash.Essentials
 
                 directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
 
-                if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows OS
+                var version = Crestron.SimplSharp.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+
+                Global.SetAssemblyVersion(string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build));
+
+                if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", Global.GetAssemblyVersion());
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", Global.AssemblyVersion);
 
                     // Check if User/ProgramX exists
                     if (Directory.Exists(directoryPrefix + dirSeparator + "User"
@@ -127,7 +131,7 @@ namespace PepperDash.Essentials
                 }
                 else   // Handles Linux OS (Virtual Control)
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", Global.GetAssemblyVersion());
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", Global.AssemblyVersion);
 
                     // Set path to User/
                     filePathPrefix = directoryPrefix + dirSeparator + "User" + dirSeparator;
@@ -246,11 +250,16 @@ namespace PepperDash.Essentials
                                 var loadPlugin = methods.FirstOrDefault(m => m.Name.Equals("LoadPlugin"));
                                 if (loadPlugin != null)
                                 {
-                                    var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Static);
-                                    var minimumVersion = properties.FirstOrDefault(p => p.Name.Equals("MinimumEssentialsFrameworkVersion"));
+                                    Debug.Console(2, "LoadPlugin method found in {0}", type.Name);
+
+                                    var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+
+                                    var minimumVersion = fields.FirstOrDefault(p => p.Name.Equals("MinimumEssentialsFrameworkVersion"));
                                     if (minimumVersion != null)
                                     {
-                                        var minimumVersionString = minimumVersion.GetValue(null, null) as string;
+                                        Debug.Console(2, "MinimumEssentialsFrameworkVersion found");
+
+                                        var minimumVersionString = minimumVersion.GetValue(null) as string;
 
                                         if (!string.IsNullOrEmpty(minimumVersionString))
                                         {
@@ -259,15 +268,24 @@ namespace PepperDash.Essentials
                                             if (!passed)
                                             {
                                                 Debug.Console(0, Debug.ErrorLogLevel.Error, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", minimumVersionString);
+                                                continue;
+                                            }
+                                            else
+                                            {
+                                                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Passed plugin passed dependency check (required version {0})", minimumVersionString);
                                             }
                                         }
                                         else
                                         {
-                                            Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion not defined.  Loading plugin, but your mileage may vary.");
+                                            Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion found but not set.  Loading plugin, but your mileage may vary.");
                                         }
                                     }
+                                    else
+                                    {
+                                        Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion not found.  Loading plugin, but your mileage may vary.");
+                                    }
 
-                                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding type {0}", assy.Key, type.FullName);
+                                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding plugin: {0}", assy.Key);
                                     loadPlugin.Invoke(null, null);
                                 }
                             }

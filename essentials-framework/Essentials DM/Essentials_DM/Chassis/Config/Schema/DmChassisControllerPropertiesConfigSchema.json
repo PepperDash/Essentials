@@ -1,0 +1,83 @@
+{
+    "$schema": "http://json-schema.org/draft-03/schema#",
+    "title": "DmChassisController Properties Config Schema",
+    "description": "",
+    "$ref": "EssentialsConfigSchema.json#definitions/Device",
+    "properties": {
+        "properties": {
+            "$ref": "#/propertiesConfig"
+        }
+    },
+    "propertiesConfig": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+            "control": {
+                "required":true,
+                "type": "object",
+                "$ref": "../../ControlPropertiesConfigSchema.json#/ControlPropertiesConfig"
+            },
+            "volumeControls": {
+                "title": "Volume Controls",
+                "type": "object",
+                "additionalProperties": {
+                    "type": "object",
+                    "$ref": "#/dmAudioCardPropertiesConfig"
+                }
+            },
+            "inputSlots": {
+                "required":true,
+                "title": "Input Slots",
+                "type": "object",
+                "additionalProperties": {
+                    "type": "string"
+                }
+            },
+            "outputSlots": {
+                "required":true,
+                "title": "Output Slots",
+                "type": "object",
+                "additionalProperties": {
+                    "type": "string"
+                }
+            },
+            "inputNames": {
+                "title": "Input Names",
+                "type": "object",
+                "additionalProperties": {
+                    "type": "string"
+                }
+            },
+            "outputNames": {
+                "title": "Output Names",
+                "type": "object",
+                "additionalProperties": {
+                    "type": "string"
+                }
+            },
+            "noRouteText": {
+                "title": "No Route Text",
+                "type": "string"
+            },
+            "inputSlotSupportsHdcp2": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "boolean"
+                }
+            }
+        }
+    },
+    "dmAudioCardPropertiesConfig": {
+        "type": "object",
+        "properties": {
+            "OutLevel": {
+                "title": "Output Level",
+                "type": "integer"
+            },
+            "isVolumeControlPoint": {
+                "title": "Volume Control Point?",
+                "type": "boolean"
+            }
+        }
+    }
+}
