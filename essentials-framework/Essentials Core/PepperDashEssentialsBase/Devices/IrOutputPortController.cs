@@ -120,26 +120,5 @@ namespace PepperDash.Essentials.Core
 				Key, IrPort.IRDriverFileNameByIRDriverId(IrPortUid), command);
 		}
 
-
-		///// <summary>
-		///// When fed a dictionary of uint, string, will return UOs for each item, 
-		///// attached to this IrOutputPort
-		///// </summary>
-		///// <param name="numStringDict"></param>
-		///// <returns></returns>
-		//public List<CueActionPair> GetUOsForIrCommands(Dictionary<Cue, string> numStringDict)
-		//{
-		//    var funcs = new List<CueActionPair>(numStringDict.Count);
-		//    foreach (var kvp in numStringDict)
-		//    {
-		//        // Have to assign these locally because of kvp's scope
-		//        var cue = kvp.Key;
-		//        var command = kvp.Value;
-		//        funcs.Add(new BoolCueActionPair(cue, b => this.PressRelease(command, b)));
-		//    }
-		//    return funcs;
-		//}
-
-
 	}
 }

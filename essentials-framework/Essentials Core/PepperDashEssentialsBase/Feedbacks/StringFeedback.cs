@@ -12,8 +12,6 @@ namespace PepperDash.Essentials.Core
         public override string StringValue { get { return _StringValue; } } // ValueFunc.Invoke(); } }
         string _StringValue;
 
-        public override eCueType Type { get { return eCueType.String; } }
-
         /// <summary>
         /// Used in testing.  Set/Clear functions
         /// </summary>
@@ -36,13 +34,7 @@ namespace PepperDash.Essentials.Core
             ValueFunc = valueFunc;
         }
 
-        //public StringFeedback(Cue cue, Func<string> valueFunc)
-        //    : base(cue)
-        //{
-        //    if (cue == null) throw new ArgumentNullException("cue");
-        //    ValueFunc = valueFunc;
 
-        //}
 
         public override void FireUpdate()
         {

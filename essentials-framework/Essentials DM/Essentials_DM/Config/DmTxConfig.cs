@@ -4,7 +4,6 @@ using Crestron.SimplSharpPro.DM;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Core;
-using PepperDash.Essentials.DM.Cards;
 
 namespace PepperDash.Essentials.DM.Config
 {

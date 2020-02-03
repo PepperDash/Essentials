@@ -218,26 +218,5 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		}
 
-
-		#region INonStandardControls Members
-
-		public Dictionary<Cue, Action<object>> GetNonStandardControls()
-		{
-			return new Dictionary<Cue, Action<object>>
-			{
-				{ CommonBoolCue.PowerOn, o => PowerOn() },
-				{ CommonBoolCue.PowerOff, o => PowerOff() },
-				{ Cue.BoolCue("PictureMute", 0), o =>
-					{
-						if((bool)o)
-							PictureMuteOn();
-						else
-							PictureMuteOff(); } },
-				{ Cue.UShortCue("GetLampRemaining", 0), o => GetLampRemaining((int) o) },				
-				{ Cue.StringCue("SelectInput", 0), o => SelectInput((String)o) }
-			};
-		}
-
-		#endregion
 	}
 }
