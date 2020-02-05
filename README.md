@@ -26,7 +26,7 @@ Utilization of Essentials Framework falls into the following categories:
 - There may be a use case where a device can only be defined in a single application, but that device may need to be interacted with from multiple applications.  The device can be defined in an Essentials application, interacted with in that application and also "bridged" to one or more SIMPL Windows applications.
 
  ## Documentation
- For detailed documentation, follow this [LINK]() to the Wiki.
+ For detailed documentation, follow this [LINK](https://github.com/PepperDash/EssentialsFramework/wiki) to the Wiki.
 
 ## How-To (Getting Started)
 To help understand Essentials Framework, we recommend starting with the current [Example Build]() and loading it to a Crestron 3-Series processor.
