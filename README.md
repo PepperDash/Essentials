@@ -2,6 +2,8 @@
 # PepperDash Essentials Framework
 
 ## Overview
+PepperDash Essentials is an open source Crestron framework that can be configured as a standalone program capable of running a wide variety of system designs and can also be utilized as a plug-in architecture to augment other Simpl# Pro and Simpl Windows programs.
+
 Essentials Framework is a collection of C# / Simpl# Pro libraries that can be utilized in several different manners. It is currently operating as a 100% configuration-driven system, and can be extended to add different workflows and behaviors, either through the addition of further device "types" or via the plug-in mechanism. The framework is a collection of "things" that are all related and interconnected, but in general do not have dependencies on each other.
 
 ## Minimum Requirements
