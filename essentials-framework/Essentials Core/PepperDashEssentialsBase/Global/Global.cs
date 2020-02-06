@@ -27,6 +27,11 @@ namespace PepperDash.Essentials.Core
         public static string FilePathPrefix { get; private set; }
 
         /// <summary>
+        /// The file path prefix to the folder containing the running application files
+        /// </summary>
+        public static string ApplicationDirectoryPathPrefix { get; private set; }
+
+        /// <summary>
         /// Returns the directory separator character based on the running OS
         /// </summary>
         public static char DirectorySeparator
@@ -49,6 +54,15 @@ namespace PepperDash.Essentials.Core
         public static void SetFilePathPrefix(string prefix)
         {
             FilePathPrefix = prefix;
+        }
+
+        /// <summary>
+        /// Sets the file path prefix
+        /// </summary>
+        /// <param name="prefix"></param>
+        public static void SetApplicationDirectoryPathPrefix(string prefix)
+        {
+            ApplicationDirectoryPathPrefix = prefix;
         }
 
         static string _AssemblyVersion;

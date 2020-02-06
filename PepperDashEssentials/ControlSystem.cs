@@ -25,6 +25,8 @@ namespace PepperDash.Essentials
     {
         HttpLogoServer LogoServer;
 
+        List<string> LoadedAssemblies = new List<string>();
+
         public ControlSystem()
             : base()
         {
@@ -81,7 +83,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Determines if the program is running on a processor (appliance) or server (VC-4).
         /// 
-        /// Sets Global.FilePathPrefix based on platform
+        /// Sets Global.FilePathPrefix and Global.ApplicationDirectoryPathPrefix based on platform
         /// </summary>
         public void DeterminePlatform()
         {
@@ -93,9 +95,8 @@ namespace PepperDash.Essentials
 
                 var dirSeparator = Global.DirectorySeparator;
 
-                string directoryPrefix;
-
-                directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+                Global.SetApplicationDirectoryPathPrefix(Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory());
+                var directoryPrefix = Global.ApplicationDirectoryPathPrefix;
 
                 var version = Crestron.SimplSharp.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
@@ -106,7 +107,7 @@ namespace PepperDash.Essentials
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", Global.AssemblyVersion);
 
                     // Check if User/ProgramX exists
-                    if (Directory.Exists(directoryPrefix + dirSeparator + "User"
+                    if (Directory.Exists(Global.ApplicationDirectoryPathPrefix + dirSeparator + "User"
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                     {
                         Debug.Console(0, @"User/program{0} directory found", InitialParametersClass.ApplicationNumber);
@@ -156,6 +157,15 @@ namespace PepperDash.Essentials
 
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 
+                // Get the loaded assembly filenames
+                var appDi = new DirectoryInfo(Global.ApplicationDirectoryPathPrefix);
+                var assemblyFiles = appDi.GetFiles("*.dll");
+
+                foreach (var file in assemblyFiles)
+                {
+                    LoadedAssemblies.Add(file.Name);
+                }
+
                 var filesReady = SetupFilesystem();
                 if (filesReady)
                 {
@@ -196,16 +206,13 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Initial simple implementation.  Reads user/programXX/plugins folder and 
-        /// use
+        /// Loads plugins
         /// </summary>
         void LoadPlugins()
         {
             var dir = Global.FilePathPrefix + "plugins";
             if (Directory.Exists(dir))
             {
-                // TODO Clear out or create localPlugins folder (maybe in program slot folder)
-
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Plugins directory found, checking for factory plugins");
                 var di = new DirectoryInfo(dir);
                 var zFiles = di.GetFiles("*.cplz");
@@ -218,23 +225,27 @@ namespace PepperDash.Essentials
                 }
                 var files = di.GetFiles("*.dll");
                 Dictionary<string, Assembly> assyList = new Dictionary<string, Assembly>();
+
                 foreach (FileInfo fi in files)
                 {
-                    // TODO COPY plugin to loadedPlugins folder 
-                    // TODO LOAD that loadedPlugins dll file
-                    try
+                    if (!CheckIfAssemblyExists(fi.Name))
                     {
-                        var assy = Assembly.LoadFrom(fi.FullName);
-                        var ver = assy.GetName().Version;
-                        var verStr = string.Format("{0}.{1}.{2}.{3}", ver.Major, ver.Minor, ver.Build, ver.Revision);
-                        assyList.Add(fi.FullName, assy);
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded plugin file '{0}', version {1}", fi.FullName, verStr);
+                        try
+                        {
+                            var assy = Assembly.LoadFrom(fi.FullName);
+                            var ver = assy.GetName().Version;
+                            var verStr = string.Format("{0}.{1}.{2}.{3}", ver.Major, ver.Minor, ver.Build, ver.Revision);
+                            assyList.Add(fi.FullName, assy);
+                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded plugin file '{0}', version {1}", fi.FullName, verStr);
+                        }
+                        catch
+                        {
+                            Debug.Console(2, "Assembly {0} is not a custom assembly", fi.FullName);
+                            continue; //catching any load issues and continuing. There will be exceptions loading Crestron .dlls from the cplz Probably should do something different here
+                        }
                     }
-                    catch
-                    {
-                        Debug.Console(2, "Assembly {0} is not a custom assembly", fi.FullName);
-                        continue; //catching any load issues and continuing. There will be exceptions loading Crestron .dlls from the cplz Probably should do something different here
-                    }
+                    else
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Skipping plugin: {0}.  There is already an assembly with that name loaded.", fi.Name);
                 }
                 foreach (var assy in assyList)
                 {
@@ -306,6 +317,21 @@ namespace PepperDash.Essentials
                 // plugin dll will be loaded.  Any classes in plugin should have a static constructor
                 // that registers that class with the Core.DeviceFactory
             }
+        }
+
+        /// <summary>
+        /// Checks if the filename matches an already loaded assembly file's name
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns>True if file already matches loaded assembly file.</returns>
+        bool CheckIfAssemblyExists(string filename)
+        {
+            var loadedAssembly = LoadedAssemblies.FirstOrDefault(s => s.Equals(filename));
+
+            if (loadedAssembly != null)
+                return true;
+            else
+                return false;
         }
 
         /// <summary>
