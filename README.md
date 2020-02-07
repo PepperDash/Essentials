@@ -1,5 +1,8 @@
 
-# PepperDash Essentials Framework
+# PepperDash Essentials Framework (c) 2020
+
+## License
+Provided under MIT license
 
 ## Overview
 PepperDash Essentials is an open source Crestron framework that can be configured as a standalone program capable of running a wide variety of system designs and can also be utilized as a plug-in architecture to augment other Simpl# Pro and Simpl Windows programs.
