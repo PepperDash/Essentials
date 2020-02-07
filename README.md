@@ -11,6 +11,10 @@ Essentials Framework is a collection of C# / Simpl# Pro libraries that can be ut
 - To edit and compile the source, Microsoft Visual Studio 2008 Professional with SP1 is required.
 - Crestron's Simpl# Plugin is also required (must be obtained from Crestron).
 
+## Dependencies
+
+The PepperDash.Core SIMPL# library is required.  It is referenced as a submodule and will be automatically checked out when cloning this repo if set to recurse submodules.  This allows different builds of the PepperDash.Core library to be reference by checking out the desired submodule commit.
+
 ## Utilization
 Essentials was originally conceptualized as a standalone application for running control system logic entirely in Simpl# Pro. It is primarily designed around accomplishing this goal, but during development, it became obvious that it could easily be leveraged to also serve as a partner application to one or more SIMPL Windows programs.
 
