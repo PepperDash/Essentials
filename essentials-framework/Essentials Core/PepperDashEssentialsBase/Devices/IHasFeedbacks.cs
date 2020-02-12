@@ -26,9 +26,7 @@ namespace PepperDash.Essentials.Core
             // get the properties and set them into a new collection of NameType wrappers
             var props = t.GetProperties().Select(p => new PropertyNameType(p, t));
 
-
-
-			var feedbacks = source.Feedbacks.OrderBy(x => x.Type);
+			var feedbacks = source.Feedbacks;
 			if (feedbacks != null)
 			{
 				Debug.Console(0, source, "\n\nAvailable feedbacks:");

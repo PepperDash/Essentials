@@ -111,8 +111,8 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Comm and IR\CecPortController.cs" />
-    <Compile Include="Comm and IR\GenericComm.cs" />
+    <Compile Include="Config\Comm and IR\CecPortController.cs" />
+    <Compile Include="Config\Comm and IR\GenericComm.cs" />
     <Compile Include="Config\Essentials\ConfigUpdater.cs" />
     <Compile Include="Config\Essentials\ConfigReader.cs" />
     <Compile Include="Config\Essentials\ConfigWriter.cs" />
@@ -155,16 +155,15 @@
     <Compile Include="Microphone Privacy\MicrophonePrivacyController.cs" />
     <Compile Include="Microphone Privacy\MicrophonePrivacyControllerConfig.cs" />
     <Compile Include="Ramps and Increments\ActionIncrementer.cs" />
-    <Compile Include="Comm and IR\CommFactory.cs" />
-    <Compile Include="Comm and IR\CommunicationExtras.cs" />
-    <Compile Include="Comm and IR\ComSpecJsonConverter.cs" />
-    <Compile Include="Comm and IR\ConsoleCommMockDevice.cs" />
-    <Compile Include="Comm and IR\IRPortHelper.cs" />
+    <Compile Include="Config\Comm and IR\CommFactory.cs" />
+    <Compile Include="Config\Comm and IR\CommunicationExtras.cs" />
+    <Compile Include="Config\Comm and IR\ComSpecJsonConverter.cs" />
+    <Compile Include="Config\Comm and IR\ConsoleCommMockDevice.cs" />
+    <Compile Include="Config\Comm and IR\IRPortHelper.cs" />
     <Compile Include="Config\BasicConfig.cs" />
     <Compile Include="Config\ConfigPropertiesHelpers.cs" />
     <Compile Include="Config\InfoConfig.cs" />
     <Compile Include="Config\DeviceConfig.cs" />
-    <Compile Include="Constants\CommonCues.cs" />
     <Compile Include="Devices\DisplayUiConstants.cs" />
     <Compile Include="Devices\IUsageTracking.cs" />
     <Compile Include="Devices\DeviceJsonApi.cs" />
@@ -201,14 +200,13 @@
     <Compile Include="Monitoring\StatusMonitorCollection.cs" />
     <Compile Include="Monitoring\CrestronGenericBaseCommunicationMonitor.cs" />
     <Compile Include="Monitoring\StatusMonitorBase.cs" />
-    <Compile Include="Monitoring\Interfaces and things.cs" />
+    <Compile Include="Monitoring\Interfaces.cs" />
     <Compile Include="Monitoring\GenericCommunicationMonitor.cs" />
-    <Compile Include="Devices\NewInterfaces.cs" />
+    <Compile Include="Devices\AudioInterfaces.cs" />
     <Compile Include="Devices\IAttachVideoStatusExtensions.cs" />
     <Compile Include="Devices\IHasFeedbacks.cs" />
     <Compile Include="Devices\SmartObjectBaseTypes.cs" />
     <Compile Include="Devices\PresentationDeviceType.cs" />
-    <Compile Include="Display\DELETE IRDisplayBase.cs" />
     <Compile Include="Display\MockDisplay.cs" />
     <Compile Include="Ethernet\EthernetStatistics.cs" />
     <Compile Include="Global\Global.cs" />
@@ -231,25 +229,20 @@
     <Compile Include="SmartObjects\SmartObjectNumeric.cs" />
     <Compile Include="SmartObjects\SmartObjectDynamicList.cs" />
     <Compile Include="SmartObjects\SmartObjectDPad.cs" />
-    <Compile Include="SmartObjects\SmartObjectHelper.cs" />
     <Compile Include="SmartObjects\SmartObjectHelperBase.cs" />
     <Compile Include="Routing\TieLine.cs" />
     <Compile Include="Timers\CountdownTimer.cs" />
     <Compile Include="Touchpanels\CrestronTouchpanelPropertiesConfig.cs" />
     <Compile Include="Touchpanels\Interfaces.cs" />
     <Compile Include="Touchpanels\Keyboards\HabaneroKeyboardController.cs" />
-    <Compile Include="Touchpanels\MOVED LargeTouchpanelControllerBase.cs" />
     <Compile Include="Touchpanels\TriListExtensions.cs" />
-    <Compile Include="Touchpanels\MOVED UIControllers\DevicePageControllerBase.cs" />
     <Compile Include="UI PageManagers\BlurayPageManager.cs" />
     <Compile Include="UI PageManagers\SetTopBoxThreePanelPageManager.cs" />
     <Compile Include="UI PageManagers\SinglePageManager.cs" />
     <Compile Include="UI PageManagers\PageManager.cs" />
     <Compile Include="UI PageManagers\SetTopBoxTwoPanelPageManager.cs" />
     <Compile Include="VideoStatus\VideoStatusOutputs.cs" />
-    <Compile Include="VideoStatus\VideoStatusCues.cs" />
-    <Compile Include="Cues and DevAction\Cues.cs" />
-    <Compile Include="Comm and IR\ComPortController.cs" />
+    <Compile Include="Config\Comm and IR\ComPortController.cs" />
     <Compile Include="Crestron\CrestronGenericBaseDevice.cs" />
     <Compile Include="DeviceControlsParentInterfaces\IPresentationSource.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
@@ -257,22 +250,16 @@
     <Compile Include="Display\DisplayBase.cs" />
     <Compile Include="Feedbacks\FeedbackBase.cs" />
     <Compile Include="Room\Room.cs" />
-    <Compile Include="Room\RoomCues.cs" />
     <Compile Include="SmartObjects\SubpageReferencList\SourceListSubpageReferenceList.cs" />
     <Compile Include="Touchpanels\ModalDialog.cs" />
-    <Compile Include="Touchpanels\SmartGraphicsTouchpanelControllerBase.cs" />
     <Compile Include="TriListBridges\HandlerBridge.cs" />
     <Compile Include="Devices\FIND HOMES Interfaces.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SigHelper.cs" />
-    <Compile Include="REMOVE SigId.cs" />
     <Compile Include="SmartObjects\SubpageReferencList\SubpageReferenceList.cs" />
     <Compile Include="SmartObjects\SubpageReferencList\SubpageReferenceListItem.cs" />
     <None Include="app.config" />
     <None Include="Properties\ControlSystem.cfg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="bin\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

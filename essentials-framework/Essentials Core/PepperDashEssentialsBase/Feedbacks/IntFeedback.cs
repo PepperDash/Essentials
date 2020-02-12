@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Core
         int _IntValue;
         public ushort UShortValue { get { return (ushort)_IntValue; } }
 
-        public override eCueType Type { get { return eCueType.Int; } }
+        //public override eCueType Type { get { return eCueType.Int; } }
 
         public int TestValue { get; private set; }
 
@@ -33,13 +33,6 @@ namespace PepperDash.Essentials.Core
         {
             ValueFunc = valueFunc;
         }
-
-        //public IntFeedback(Cue cue, Func<int> valueFunc)
-        //    : base(cue)
-        //{
-        //    if (cue == null) throw new ArgumentNullException("cue");
-        //    ValueFunc = valueFunc;
-        //}
 
         public override void FireUpdate()
         {

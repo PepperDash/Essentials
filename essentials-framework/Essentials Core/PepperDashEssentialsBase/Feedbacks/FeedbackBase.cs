@@ -20,10 +20,6 @@ namespace PepperDash.Essentials.Core
 		public virtual string StringValue { get { return ""; } }
         public virtual string SerialValue { get { return ""; } }
 
-		//public Cue Cue { get; private set; }
-
-		public abstract eCueType Type { get; }
-
 		/// <summary>
 		/// Feedbacks can be put into test mode for simulation of events without real data. 
 		/// Using JSON debugging methods and the Set/ClearTestValue methods, we can simulate
@@ -46,10 +42,7 @@ namespace PepperDash.Essentials.Core
                 Key = key;
         }
 
-        //protected Feedback(Cue cue)
-        //{
-        //    Cue = cue;
-        //}
+
 
 		/// <summary>
 		/// Clears test mode and fires update.

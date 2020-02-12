@@ -19,8 +19,6 @@ namespace PepperDash.Essentials.Core
         public override bool BoolValue { get { return _BoolValue; } }
         bool _BoolValue;
 
-        public override eCueType Type { get { return eCueType.Bool; } }
-
         /// <summary>
         /// Fake value to be used in test mode
         /// </summary>
@@ -45,12 +43,6 @@ namespace PepperDash.Essentials.Core
             ValueFunc = valueFunc;
         }
 
-        //public BoolFeedback(Cue cue, Func<bool> valueFunc)
-        //    : base(cue)
-        //{
-        //    if (cue == null) throw new ArgumentNullException("cue");
-        //    ValueFunc = valueFunc;
-        //}
 
         public override void FireUpdate()
         {
