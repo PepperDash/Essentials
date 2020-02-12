@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.Core
                 else
                     return string.Empty;
             });
-            AddToFeedbackList(IsOnline, IsRegistered, IpConnectionsText);
+            AddToFeedbackList(IsOnline, IpConnectionsText);
 
             CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
         }
@@ -69,7 +69,10 @@ namespace PepperDash.Essentials.Core
 					//Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
 					return false;
 				}
+
+                IsRegistered.FireUpdate();
 			}
+
             foreach (var f in Feedbacks)
             {
                 f.FireUpdate();
@@ -90,7 +93,11 @@ namespace PepperDash.Essentials.Core
 			CommunicationMonitor.Stop();
 			Hardware.OnlineStatusChange -= Hardware_OnlineStatusChange;
 
-			return Hardware.UnRegister() == eDeviceRegistrationUnRegistrationResponse.Success;
+			var success = Hardware.UnRegister() == eDeviceRegistrationUnRegistrationResponse.Success;
+
+            IsRegistered.FireUpdate();
+
+            return success;
 		}
 	
         /// <summary>
@@ -113,14 +120,12 @@ namespace PepperDash.Essentials.Core
 
 		void Hardware_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
 		{
-            //if (args.DeviceOnLine)
-            //{
-                foreach (var feedback in Feedbacks)
-                {
-                    if (feedback != null)
-                        feedback.FireUpdate();
-                }
-            //}
+            Debug.Console(2, this, "OnlineStatusChange Event.  Online = {0}", args.DeviceOnLine);
+            foreach (var feedback in Feedbacks)
+            {
+                if (feedback != null)
+                    feedback.FireUpdate();
+            }         
 		}
 
 		#region IStatusMonitor Members
