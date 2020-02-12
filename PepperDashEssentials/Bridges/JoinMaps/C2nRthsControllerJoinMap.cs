@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Bridges
         public uint Humidity { get; set; }
         public uint TemperatureFormat { get; set; }
 
-        public C2nRthsControllerJoinMap(uint joinStart)
+        public C2nRthsControllerJoinMap()
         {
             //digital
             IsOnline = 1;
@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Bridges
             //serial
             Name = 1;
 
-            OffsetJoinNumbers(joinStart);
+            
         }
 
         public override void OffsetJoinNumbers(uint joinStart)

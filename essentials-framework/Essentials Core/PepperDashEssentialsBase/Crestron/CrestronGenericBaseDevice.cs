@@ -32,21 +32,25 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public bool PreventRegistration { get; protected set; }
 
-		public CrestronGenericBaseDevice(string key, string name, GenericBase hardware)
-			: base(key, name)
-		{
+        public CrestronGenericBaseDevice(string key, string name, GenericBase hardware)
+            : base(key, name)
+        {
             Feedbacks = new FeedbackCollection<Feedback>();
 
-			Hardware = hardware;
-			IsOnline = new BoolFeedback("IsOnlineFeedback", () => Hardware.IsOnline);
-			IsRegistered = new BoolFeedback("IsRegistered", () => Hardware.Registered);
-			IpConnectionsText = new StringFeedback("IpConnectionsText", () => 
-				string.Join(",", Hardware.ConnectedIpList.Select(cip => cip.DeviceIpAddress).ToArray()));
-
+            Hardware = hardware;
+            IsOnline = new BoolFeedback("IsOnlineFeedback", () => Hardware.IsOnline);
+            IsRegistered = new BoolFeedback("IsRegistered", () => Hardware.Registered);
+            IpConnectionsText = new StringFeedback("IpConnectionsText", () =>
+            {
+                if (Hardware.ConnectedIpList != null)
+                    return string.Join(",", Hardware.ConnectedIpList.Select(cip => cip.DeviceIpAddress).ToArray());
+                else
+                    return string.Empty;
+            });
             AddToFeedbackList(IsOnline, IsRegistered, IpConnectionsText);
 
-			CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
-		}
+            CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
+        }
 
 		/// <summary>
 		/// Make sure that overriding classes call this!
@@ -66,6 +70,10 @@ namespace PepperDash.Essentials.Core
 					return false;
 				}
 			}
+            foreach (var f in Feedbacks)
+            {
+                f.FireUpdate();
+            }
 
             Hardware.OnlineStatusChange += new OnlineStatusChangeEventHandler(Hardware_OnlineStatusChange);
             CommunicationMonitor.Start();    
@@ -105,14 +113,14 @@ namespace PepperDash.Essentials.Core
 
 		void Hardware_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
 		{
-            if (args.DeviceOnLine)
-            {
+            //if (args.DeviceOnLine)
+            //{
                 foreach (var feedback in Feedbacks)
                 {
                     if (feedback != null)
                         feedback.FireUpdate();
                 }
-            }
+            //}
 		}
 
 		#region IStatusMonitor Members

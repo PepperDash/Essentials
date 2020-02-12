@@ -11,7 +11,7 @@ namespace PepperDash.Essentials.Bridges
         public static void LinkToApi(this StatusSignController ssDevice, BasicTriList trilist, uint joinStart,
             string joinMapKey)
         {
-            var joinMap = new StatusSignControllerJoinMap(joinStart);
+            var joinMap = new StatusSignControllerJoinMap();
 
             var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
 
@@ -32,6 +32,7 @@ namespace PepperDash.Essentials.Bridges
 
             trilist.StringInput[joinMap.Name].StringValue = ssDevice.Name;
 
+            ssDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
             ssDevice.RedLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RedControl]);
             ssDevice.BlueLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.BlueControl]);
             ssDevice.GreenLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.GreenControl]);

@@ -11,7 +11,7 @@ namespace PepperDash.Essentials.Bridges
         public static void LinkToApi(this C2nRthsController device, BasicTriList triList, uint joinStart,
             string joinMapKey)
         {
-            var joinMap = new C2nRthsControllerJoinMap(joinStart);
+            var joinMap = new C2nRthsControllerJoinMap();
 
             var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
 
@@ -21,11 +21,13 @@ namespace PepperDash.Essentials.Bridges
             joinMap.OffsetJoinNumbers(joinStart);
 
             Debug.Console(1, device, "Linking to Trilist '{0}'", triList.ID.ToString("X"));
+            
 
             triList.SetBoolSigAction(joinMap.TemperatureFormat, device.SetTemperatureFormat);
 
+            device.IsOnline.LinkInputSig(triList.BooleanInput[joinMap.IsOnline]);
             device.TemperatureFeedback.LinkInputSig(triList.UShortInput[joinMap.Temperature]);
-            device.HumidityFeedback.LinkInputSig(triList.UShortInput[joinMap.Temperature]);
+            device.HumidityFeedback.LinkInputSig(triList.UShortInput[joinMap.Humidity]);
 
             triList.StringInput[joinMap.Name].StringValue = device.Name;
 

@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.Bridges
         public uint GreenControl { get; set; }
         public uint BlueControl { get; set; }
 
-        public StatusSignControllerJoinMap(uint joinStart)
+        public StatusSignControllerJoinMap()
         {
             //digital
             IsOnline = 1;
@@ -32,7 +32,6 @@ namespace PepperDash.Essentials.Bridges
             Name = 1;
 
 
-            OffsetJoinNumbers(joinStart);
         }
 
         public override void OffsetJoinNumbers(uint joinStart)
