@@ -1,9 +1,6 @@
 {
     "system_url": "",
-    "template": {       
-    },
-    "template_url": "",
-    "system": {
+    "template": {    
         "info": {
             "comment": "",
             "requiredControlSofwareVersion": "",
@@ -64,6 +61,10 @@
             
         },
         "tieLines": [
-        ]
+        ]   
+    },
+    "template_url": "",
+    "system": {
+        
     }
 }

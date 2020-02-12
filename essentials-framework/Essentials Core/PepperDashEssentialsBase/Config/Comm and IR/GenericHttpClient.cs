@@ -7,7 +7,7 @@ using Crestron.SimplSharp.Net.Http;
 using PepperDash.Core;
 using PepperDash.Core.DebugThings;
 
-namespace PepperDash.Essentials.Devices.Common
+namespace PepperDash.Essentials.Core
 {
 	public class GenericHttpClient : Device, IBasicCommunication
 	{

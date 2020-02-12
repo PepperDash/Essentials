@@ -1,8 +1,6 @@
 {
   "system_url": "",
-  "template": {},
-  "template_url": "",
-  "system": {
+  "template": {
     "info": {
       "comment": "",
       "requiredControlSofwareVersion": "",
@@ -434,5 +432,8 @@
     "rooms": [],
     "sourceLists": {},
     "tieLines": []
+  },
+  "template_url": "",
+  "system": {
   }
 }

@@ -47,13 +47,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         private bool isZooming;
 
-        private bool isFocusing;
+        //private bool isFocusing;
 
         private bool isMoving
         {
             get
             {
-                return isPanning || isTilting || isZooming || isFocusing;
+                return isPanning || isTilting || isZooming;
 
             }
         }
