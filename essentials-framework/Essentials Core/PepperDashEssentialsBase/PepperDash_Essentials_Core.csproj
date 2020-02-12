@@ -113,6 +113,7 @@
   <ItemGroup>
     <Compile Include="Config\Comm and IR\CecPortController.cs" />
     <Compile Include="Config\Comm and IR\GenericComm.cs" />
+    <Compile Include="Config\Comm and IR\GenericHttpClient.cs" />
     <Compile Include="Config\Essentials\ConfigUpdater.cs" />
     <Compile Include="Config\Essentials\ConfigReader.cs" />
     <Compile Include="Config\Essentials\ConfigWriter.cs" />
