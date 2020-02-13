@@ -1,0 +1,387 @@
+{
+    "system": {
+        "rooms": [
+            {
+                "name": "Example Room",
+                "key": "room1",
+                "properties": {
+                    "occupancy": {
+                        "timeoutMinutes": "60"
+                    }
+                }
+            }
+        ],
+        "devices": [
+            {
+                "key": "hdMd4x14kE-1",
+                "uid": 4,
+                "properties": {
+                    "control": {
+                        "tcpSshProperties": {
+                            "address": "0.0.0.0"
+                        }
+                    }
+                }
+            },
+            {
+                "key": "mockCodec-1",
+                "uid": 5,
+                "properties": {
+                    "control": {
+                        "tcpSshProperties": {
+                            "address": "0.0.0.0"
+                        }
+                    }
+                }
+            }
+        ],
+        "info": {
+            "lastModifiedDate": "2019-02-26T21:08:09.195Z"
+        }
+    },
+    "system_url": "",
+    "template_url": "",
+    "template": {
+        "rooms": [
+            {
+                "type": "huddleVtc1",
+                "name": "Essentials DIN-AP3 - DM4x1",
+                "key": "room1",
+                "properties": {
+                    "defaultDisplayKey": "display-1",
+                    "description": "",
+                    "helpMessage": "",
+                    "sourceListKey": "default",
+                    "defaultVideoBehavior": "basic",
+                    "logo": {
+                        "type": "system",
+                        "url": ""
+                    },
+                    "occupancy": {
+                        "timeoutMinutes": "60",
+                        "deviceKey": "glsOdtCCn-1"
+                    },
+                    "defaultSourceItem": "source-1",
+                    "videoCodecKey": "mockCodec-1",
+                    "hasDsp": false,
+                    "volumes": {
+                        "master": {
+                            "level": 40,
+                            "deviceKey": "mockCodec-1",
+                            "label": "Volume"
+                        }
+                    },
+                    "defaultAudioKey": "display-1",
+                    "tech": {
+                        "password": "1234"
+                    }
+                }
+            }
+        ],
+        "devices": [
+            {
+                "name": "DIN-AP3",
+                "key": "processor",
+                "type": "dinAp3",
+                "group": "processor",
+                "uid": 0,
+                "properties": {
+                }
+            },
+            {
+                "name": "Room PC",
+                "key": "inRoomPc-1",
+                "type": "inRoomPc",
+                "properties": {
+                    "hasAudio": true,
+                    "hasControls": false,
+                    "isDefault": true
+                },
+                "group": "pc",
+                "uid": 1
+            },
+            {
+                "name": "Laptop",
+                "key": "laptop-1",
+                "type": "laptop",
+                "properties": {
+                    "hasAudio": true,
+                    "hasControls": false
+                },
+                "group": "pc",
+                "uid": 2
+            },
+            {
+                "name": "Wireless Video",
+                "key": "wePresent-1",
+                "type": "wePresent",
+                "properties": {},
+                "group": "genericSource",
+                "uid": 3
+            },
+            {
+                "name": "HD-MD4x1-4k-E HDMI Switch 1",
+                "key": "hdMd4x14kE-1",
+                "type": "hdMd4x14kE",
+                "properties": {
+                    "control": {
+                        "params": {
+                            "deviceReadyResponsePattern": ".*>",
+                            "endOfLineString": "\n"
+                        },
+                        "ipid": "10",
+                        "method": "ipidTcp",
+                        "tcpSshProperties": {
+                            "port": 0,
+                            "address": ""
+                        }
+                    },
+                    "parentDeviceKey": "processor",
+                    "inputs": {
+                        "hdmiIn2": {
+                            "disableHdcp": true
+                        },
+                        "hdmiIn3": {
+                            "disableHdcp": true
+                        },
+                        "hdmiIn4": {
+                            "disableHdcp": true
+                        },
+                        "hdmiIn1": {
+                            "disableHdcp": true
+                        }
+                    }
+                },
+                "group": "hdMdSwitch",
+                "uid": 4
+            },
+            {
+                "name": "Mock Video Codec 1",
+                "key": "mockCodec-1",
+                "type": "mockVc",
+                "properties": {
+                    "favorites": [
+                        {
+                            "name": "Corporate WebEx",
+                            "number": "5555555555"
+                        }
+                    ]
+                },
+                "group": "videoCodec",
+                "uid": 5
+            },
+            {
+                "name": "Samsung MDC Protocol 1",
+                "key": "display-1",
+                "type": "samsungmdc",
+                "properties": {
+                    "id": "01",
+                    "control": {
+                        "controlPortDevKey": "processor",
+                        "controlPortNumber": 1,
+                        "method": "com",
+                        "comParams": {
+                            "protocol": "RS232",
+                            "baudRate": 9600,
+                            "hardwareHandshake": "None",
+                            "softwareHandshake": "None",
+                            "dataBits": 8,
+                            "parity": "None",
+                            "stopBits": 1
+                        }
+                    }
+                },
+                "group": "display",
+                "uid": 6
+            },
+            {
+                "name": "Crestron GLS-ODT-C-CN 1",
+                "key": "glsOdtCCn-1",
+                "type": "glsOdtCCn",
+                "properties": {
+                    "control": {
+                        "method": "cresnet",
+                        "cresnetId": "97"
+                    }
+                },
+                "group": "occupancy",
+                "uid": 7
+            },
+            {
+                "name": "TSW-760",
+                "key": "tsw760-1",
+                "type": "tsw760",
+                "properties": {
+                    "control": {
+                        "params": {
+                            "deviceReadyResponsePattern": ".*>",
+                            "endOfLineString": "\n"
+                        },
+                        "ipid": "03",
+                        "method": "ipid"
+                    },
+                    "showVolumeGauge": true,
+                    "sourcesOverflowCount": 4,
+                    "showDate": true,
+                    "headerStyle": "Verbose",
+                    "sgdFile": "PepperDash Essentials TSW-760.sgd",
+                    "showTime": true,
+                    "roomListKey": "",
+                    "usesSplashPage": false,
+                    "defaultRoomKey": "room1"
+                },
+                "group": "touchpanel",
+                "uid": 8
+            },
+            {
+                "name": "Crestron XPanel",
+                "key": "crestronApp-1",
+                "type": "crestronApp",
+                "properties": {
+                    "control": {
+                        "params": {
+                            "deviceReadyResponsePattern": ".*>",
+                            "endOfLineString": "\n"
+                        },
+                        "ipid": "04",
+                        "method": "ipid"
+                    },
+                    "showVolumeGauge": true,
+                    "sourcesOverflowCount": 5,
+                    "showDate": true,
+                    "headerStyle": "Verbose",
+                    "sgdFile": "PepperDash Essentials iPad.sgd",
+                    "showTime": true,
+                    "roomListKey": "",
+                    "projectName": "PepperDash Essentials iPad",
+                    "defaultRoomKey": "room1",
+                    "usesSplashPage": false
+                },
+                "group": "touchpanel",
+                "uid": 9
+            }
+        ],
+        "info": {
+            "comment": "",
+            "lastUid": 10,
+            "lastModifiedDate": "2018-07-02T17:41:06.550Z",
+            "systemType": "huddle",
+            "processorType": "dinAp3",
+            "requiredControlSofwareVersion": ""
+        },
+        "tieLines": [
+            {
+                "type": "audioVideo",
+                "sourceKey": "hdMd4x14kE-1",
+                "destinationKey": "mockCodec-1",
+                "destinationPort": "HdmiIn2",
+                "sourcePort": "hdmiOut"
+            },
+            {
+                "type": "audioVideo",
+                "sourceKey": "mockCodec-1",
+                "destinationKey": "display-1",
+                "destinationPort": "HdmiIn1",
+                "sourcePort": "HdmiOut1"
+            },
+            {
+                "type": "audioVideo",
+                "sourceKey": "laptop-1",
+                "destinationKey": "hdMd4x14kE-1",
+                "destinationPort": "hdmiIn1",
+                "sourcePort": "anyOut"
+            },
+            {
+                "type": "audioVideo",
+                "sourceKey": "inRoomPc-1",
+                "destinationKey": "mockCodec-1",
+                "destinationPort": "HdmiIn3",
+                "sourcePort": "anyVideoOut"
+            },
+            {
+                "type": "audioVideo",
+                "sourceKey": "wePresent-1",
+                "destinationKey": "hdMd4x14kE-1",
+                "destinationPort": "hdmiIn2",
+                "sourcePort": "anyOut"
+            }
+        ],
+        "sourceLists": {
+            "default": {
+                "source-2": {
+                    "order": 6,
+                    "icon": "",
+                    "altIcon": "Blank",
+                    "type": "route",
+                    "sourceKey": "laptop-1",
+                    "includeInSourceList": true,
+                    "volumeControlKey": "$defaultAudio",
+                    "routeList": [
+                        {
+                            "type": "audioVideo",
+                            "sourceKey": "laptop-1",
+                            "destinationKey": "$defaultAll"
+                        }
+                    ]
+                },
+                "source-3": {
+                    "order": 7,
+                    "icon": "",
+                    "altIcon": "Blank",
+                    "type": "route",
+                    "sourceKey": "wePresent-1",
+                    "includeInSourceList": true,
+                    "volumeControlKey": "$defaultAudio",
+                    "routeList": [
+                        {
+                            "type": "audioVideo",
+                            "sourceKey": "wePresent-1",
+                            "destinationKey": "$defaultAll"
+                        }
+                    ]
+                },
+                "source-1": {
+                    "order": 5,
+                    "icon": "",
+                    "altIcon": "Blank",
+                    "type": "route",
+                    "sourceKey": "inRoomPc-1",
+                    "includeInSourceList": true,
+                    "volumeControlKey": "$defaultAudio",
+                    "routeList": [
+                        {
+                            "type": "audioVideo",
+                            "sourceKey": "inRoomPc-1",
+                            "destinationKey": "$defaultAll"
+                        }
+                    ]
+                },
+                "roomOff": {
+                    "type": "off",
+                    "sourceKey": "$off",
+                    "routeList": [
+                        {
+                            "type": "audioVideo",
+                            "sourceKey": "$off",
+                            "destinationKey": "$defaultAll"
+                        }
+                    ]
+                },
+                "codecOsd": {
+                    "order": 1,
+                    "name": "None",
+                    "type": "route",
+                    "includeInSourceList": true,
+                    "sourceKey": "",
+                    "routeList": [
+                        {
+                            "type": "audioVideo",
+                            "sourceKey": "mockCodec-1[osd]",
+                            "destinationKey": "$defaultAll"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
