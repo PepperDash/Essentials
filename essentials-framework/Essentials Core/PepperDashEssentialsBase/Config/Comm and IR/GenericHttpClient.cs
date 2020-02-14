@@ -23,7 +23,6 @@ namespace PepperDash.Essentials.Core
 			
 		}
 
-
 		/// <summary>
 		/// 
 		/// </summary>
@@ -53,6 +52,7 @@ namespace PepperDash.Essentials.Core
 			Client.Dispatch(request);
 			Debug.Console(2, this, "GenericHttpClient SentRequest TX:'{0}'", url);
 		}
+
 		private void Response(HttpClientResponse response, HTTP_CALLBACK_ERROR error, object request)
 		{
 			if (error == HTTP_CALLBACK_ERROR.COMPLETED)
