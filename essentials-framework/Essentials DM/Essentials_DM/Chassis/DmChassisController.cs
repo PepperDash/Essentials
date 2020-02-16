@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Cards;
 using Crestron.SimplSharpPro.DM.Endpoints;
@@ -39,6 +40,7 @@ namespace PepperDash.Essentials.DM
         public Dictionary<uint, StringFeedback> OutputAudioRouteNameFeedbacks { get; private set; }
         public Dictionary<uint, IntFeedback> UsbOutputRoutedToFeebacks { get; private set; }
         public Dictionary<uint, IntFeedback> UsbInputRoutedToFeebacks { get; private set; }
+        public Dictionary<uint, BoolFeedback> OutputDisabledByHdcpFeedbacks { get; private set; }
 
         public IntFeedback SystemIdFeebdack { get; private set; }
         public BoolFeedback SystemIdBusyFeedback { get; private set; }
@@ -176,6 +178,7 @@ namespace PepperDash.Essentials.DM
 			AudioOutputFeedbacks = new Dictionary<uint, IntFeedback>();
             UsbOutputRoutedToFeebacks = new Dictionary<uint, IntFeedback>();
             UsbInputRoutedToFeebacks = new Dictionary<uint, IntFeedback>();
+            OutputDisabledByHdcpFeedbacks = new Dictionary<uint, BoolFeedback>();
 			VideoInputSyncFeedbacks = new Dictionary<uint, BoolFeedback>();
 			InputNameFeedbacks = new Dictionary<uint, StringFeedback>();
 			OutputNameFeedbacks = new Dictionary<uint, StringFeedback>();
@@ -235,21 +238,57 @@ namespace PepperDash.Essentials.DM
                         }
                     });
                     OutputAudioRouteNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (Chassis.Outputs[tempX].AudioOutFeedback != null)
                         {
-                            if (Chassis.Outputs[tempX].AudioOutFeedback != null)
-                            {
-                                return Chassis.Outputs[tempX].AudioOutFeedback.NameFeedback.StringValue;
-                            }
-                            else
-                            {
-                                return NoRouteText;
+                            return Chassis.Outputs[tempX].AudioOutFeedback.NameFeedback.StringValue;
+                        }
+                        else
+                        {
+                            return NoRouteText;
 
-                            }
-                        });
-
+                        }
+                    });
                     OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => 
                     {
                         return Chassis.Outputs[tempX].EndpointOnlineFeedback;
+                    });
+                    OutputDisabledByHdcpFeedbacks[tempX] = new BoolFeedback(() => {
+                        var output = Chassis.Outputs[tempX];
+                        
+                        var hdmiTxOutput = output as Card.HdmiTx;
+                        if (hdmiTxOutput != null)
+                            return hdmiTxOutput.HdmiOutput.DisabledByHdcp.BoolValue;
+
+                        var dmHdmiOutput = output as Card.DmHdmiOutput;
+                        if (dmHdmiOutput != null)
+                            return dmHdmiOutput.DisabledByHdcpFeedback.BoolValue;
+
+                        var dmsDmOutAdvanced = output as Card.DmsDmOutAdvanced;
+                        if (dmsDmOutAdvanced != null)
+                            return dmsDmOutAdvanced.DisabledByHdcpFeedback.BoolValue;
+                        
+                        var dmps3HdmiAudioOutput = output as Card.Dmps3HdmiAudioOutput;
+                        if (dmps3HdmiAudioOutput != null)
+                            return dmps3HdmiAudioOutput.HdmiOutputPort.DisabledByHdcpFeedback.BoolValue;
+                        
+                        var dmps3HdmiOutput = output as Card.Dmps3HdmiOutput;
+                        if (dmps3HdmiOutput != null)
+                            return dmps3HdmiOutput.HdmiOutputPort.DisabledByHdcpFeedback.BoolValue;
+
+                        var dmps3HdmiOutputBackend = output as Card.Dmps3HdmiOutputBackend;
+                        if (dmps3HdmiOutputBackend != null)
+                            return dmps3HdmiOutputBackend.HdmiOutputPort.DisabledByHdcpFeedback.BoolValue;
+                        
+                        // var hdRx4kX10HdmiOutput = output as HdRx4kX10HdmiOutput;
+                        // if (hdRx4kX10HdmiOutput != null)
+                        //     return hdRx4kX10HdmiOutput.HdmiOutputPort.DisabledByHdcpFeedback.BoolValue;
+                        //
+                        // var hdMdNxMHdmiOutput = output as HdMdNxMHdmiOutput;
+                        // if (hdMdNxMHdmiOutput != null)
+                        //     return hdMdNxMHdmiOutput.HdmiOutputPort.DisabledByHdcpFeedback.BoolValue;
+                        
+                        return false;
                     });
                 }
 
@@ -732,7 +771,6 @@ namespace PepperDash.Essentials.DM
 
 		void Chassis_DMInputChange(Switch device, DMInputEventArgs args)
         {
-				
 		    switch (args.EventId) {
 			    case DMInputEventIds.EndpointOnlineEventId: 
                     {
@@ -854,6 +892,12 @@ namespace PepperDash.Essentials.DM
                 {
                     Debug.Console(2, this, "DM Output {0} UsbRoutedToEventId", args.Number);
                     UsbOutputRoutedToFeebacks[args.Number].FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.DisabledByHdcpEventId:
+                {
+                    Debug.Console(2, this, "DM Output {0} DisabledByHdcpEventId", args.Number);
+                    OutputDisabledByHdcpFeedbacks[args.Number].FireUpdate();
                     break;
                 }
                 default:

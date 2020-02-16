@@ -38,6 +38,10 @@ namespace PepperDash.Essentials.Bridges
         /// Range reports high if corresponding input's transmitter supports bridging as a separate device for detailed AV switching, HDCP control, etc.
         /// </summary>
         public uint TxAdvancedIsPresent { get; set; } // indicates that there is an attached transmitter that should be bridged to be interacted with
+        /// <summary>
+        /// Range reports high if corresponding output is disabled by HDCP.
+        /// </summary>
+        public uint OutputDisabledByHdcp { get; set; } // indicates that there is an attached transmitter that should be bridged to be interacted with
 #endregion
 
 #region Analogs
@@ -101,6 +105,7 @@ namespace PepperDash.Essentials.Bridges
             InputEndpointOnline = 500; //501-699
             OutputEndpointOnline = 700; //701-899
             TxAdvancedIsPresent = 1000; //1001-1199
+            OutputDisabledByHdcp = 1200; //1201-1399
 
             //Analog
             OutputVideo = 100; //101-299
@@ -139,6 +144,8 @@ namespace PepperDash.Essentials.Bridges
             OutputEndpointOnline = OutputEndpointOnline + joinOffset;
             HdcpSupportState = HdcpSupportState + joinOffset;
             HdcpSupportCapability = HdcpSupportCapability + joinOffset;
+            OutputDisabledByHdcp = OutputDisabledByHdcp + joinOffset;
+            TxAdvancedIsPresent = TxAdvancedIsPresent + joinOffset;
         }
     }
 }
