@@ -336,8 +336,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 if(b.Agenda != null)
                     meeting.Agenda = b.Agenda.Value;
                 if(b.Time != null)
+                {
                     meeting.StartTime = b.Time.StartTime.Value;
                     meeting.EndTime = b.Time.EndTime.Value;
+                }
                 if(b.Privacy != null)
                     meeting.Privacy = CodecCallPrivacy.ConvertToDirectionEnum(b.Privacy.Value);
 

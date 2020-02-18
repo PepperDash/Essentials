@@ -115,7 +115,7 @@ namespace PepperDash.Essentials.DM
 
             HdmiInHdcpCapabilityFeedback = new IntFeedback("HdmiInHdcpCapability", () =>
             {
-                if (tx.HdmiInput.HdpcSupportOnFeedback.BoolValue)
+                if (tx.HdmiInput.HdcpSupportOnFeedback.BoolValue)
                     return 1;
                 else
                     return 0;
