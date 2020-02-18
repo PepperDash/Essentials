@@ -27,6 +27,17 @@ namespace PepperDash.Essentials.Core
         public static string FilePathPrefix { get; private set; }
 
         /// <summary>
+        /// The file path prefix to the applciation directory
+        /// </summary>
+        public static string ApplicationDirectoryPathPrefix 
+        {
+            get
+            {
+                return Crestron.SimplSharp.CrestronIO.Directory.GetApplicationDirectory();
+            }
+        }
+
+        /// <summary>
         /// Returns the directory separator character based on the running OS
         /// </summary>
         public static char DirectorySeparator
