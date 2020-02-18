@@ -193,7 +193,6 @@
     <Compile Include="Room\Types\EssentialsDualDisplayRoom.cs" />
     <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
     <Compile Include="Room\Types\EssentialsNDisplayRoomBase.cs" />
-    <Compile Include="Room\Types\EssentialsPresentationRoom.cs" />
     <Compile Include="Room\Config\EssentialsRoomConfig.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsEnvironmentDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsLightingDriver.cs" />
@@ -228,6 +227,18 @@
     <Compile Include="UI\EssentialsTouchpanelController.cs" />
     <Compile Include="UI\SubpageReferenceListSourceItem.cs" />
     <None Include="app.config" />
+    <EmbeddedResource Include="Example Configuration\EssentialsHuddleSpaceRoom\configurationFile-HuddleSpace-2-Source.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Example Configuration\EssentialsHuddleVtc1Room\configurationFile-mockVideoCodec_din-ap3_-_dm4x1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Example Configuration\SIMPLBridging\configurationFile-dmps3300c-avRouting.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Example Configuration\SIMPLBridging\SIMPLBridgeExample_configurationFile.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <None Include="Properties\ControlSystem.cfg" />
     <EmbeddedResource Include="SGD\PepperDash Essentials iPad.sgd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

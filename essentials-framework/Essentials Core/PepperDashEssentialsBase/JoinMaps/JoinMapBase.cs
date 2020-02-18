@@ -31,7 +31,9 @@ namespace PepperDash.Essentials.Core
         }
     }
 
-
+    /// <summary>
+    /// Base class for join maps
+    /// </summary>
     public abstract class JoinMapBase
     {
         /// <summary>
