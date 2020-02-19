@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// Controller class for all DM-TX-201C/S/F transmitters
     /// </summary>
-	public class DmTx201XController : DmTxControllerBase, ITxRouting, IHasFeedback
+    public class DmTx201XController : DmTxControllerBase, ITxRouting, IHasFeedback, IHasFreeRun
 	{
 		public DmTx201S Tx { get; private set; } // uses the 201S class as it is the base class for the 201C
 
@@ -33,8 +33,7 @@ namespace PepperDash.Essentials.DM
         public IntFeedback AudioSourceNumericFeedback { get; protected set; }
         public IntFeedback HdmiInHdcpCapabilityFeedback { get; protected set; }
 
-        //public override IntFeedback HdcpSupportAllFeedback { get; protected set; }
-        //public override ushort HdcpSupportCapability { get; protected set; }
+        public BoolFeedback FreeRunEnabledFeedback { get; protected set; }
 
 		/// <summary>
 		/// Helps get the "real" inputs, including when in Auto
@@ -122,6 +121,8 @@ namespace PepperDash.Essentials.DM
                         return 0;
                 });
 
+            FreeRunEnabledFeedback = new BoolFeedback(() => tx.VgaInput.FreeRunFeedback == eDmFreeRunSetting.Enabled);
+
             HdcpSupportCapability = eHdcpCapabilityType.HdcpAutoSupport;
 
 			var combinedFuncs = new VideoStatusFuncsWrapper
@@ -195,6 +196,28 @@ namespace PepperDash.Essentials.DM
 			return base.CustomActivate();
 		}
 
+        /// <summary>
+        /// Enables or disables free run
+        /// </summary>
+        /// <param name="enable"></param>
+        public void SetFreeRunEnabled(bool enable)
+        {
+            if (enable)
+            {
+                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Enabled;
+            }
+            else
+            {
+                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Disabled;
+            }
+        }
+
+        /// <summary>
+        /// Switches the audio/video source based on the integer value (0-Auto, 1-HDMI, 2-VGA, 3-Disable)
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
+        /// <param name="type"></param>
         public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
         {
             Debug.Console(2, this, "Executing Numeric Switch to input {0}.", input);
@@ -250,6 +273,7 @@ namespace PepperDash.Essentials.DM
 				Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
                 AudioSourceNumericFeedback.FireUpdate();
 			}
+            
 		}
 
         void InputStreamChangeEvent(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
@@ -263,6 +287,10 @@ namespace PepperDash.Essentials.DM
             else if (args.EventId == EndpointInputStreamEventIds.HdcpSupportOnFeedbackEventId)
             {
                 HdmiInHdcpCapabilityFeedback.FireUpdate();
+            }
+            else if (args.EventId == EndpointInputStreamEventIds.FreeRunFeedbackEventId)
+            {
+                FreeRunEnabledFeedback.FireUpdate();
             }
         }
 

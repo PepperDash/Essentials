@@ -96,6 +96,7 @@
     <Compile Include="Chassis\DmpsInternalVirtualDmTxController.cs" />
     <Compile Include="Chassis\DmpsRoutingController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
+    <Compile Include="Endpoints\Transmitters\IFreeRunEnabled.cs" />
     <Compile Include="IDmSwitch.cs" />
     <Compile Include="Config\DmpsRoutingConfig.cs" />
     <Compile Include="Config\DmRmcConfig.cs" />
