@@ -48,11 +48,11 @@ smooth process when submitting a patch:
   change.
   
 ## GitFlow Branch Model
-This repository adheres to the [GitFlow](https://nvie.com/posts/a-successful-git-branching-model/) branch model and is intitialized for GitFlow to make for consistend branch name prefixes.  Please take time to familiarize yourself with this model.
+This repository adheres to the [GitFlow](https://nvie.com/posts/a-successful-git-branching-model/) branch model and is intitialized for GitFlow to make for consistent branch name prefixes.  Please take time to familiarize yourself with this model.
 
 - `master` will contain the latest stable version of the framework and release builds will be created from tagged commits on `master`.
-- HotFix/Patch Pull Requests should target the `master` as the base branch.
-- All other Pull Requests (bug fixes, enhancements, etc.) should target the `development` as the base branch.
+- HotFix/Patch Pull Requests should target `master` as the base branch.
+- All other Pull Requests (bug fixes, enhancements, etc.) should target `development` as the base branch.
 - `release/vX.Y.X` branches will be used for release candidates when moving new features from `development` to `master`.  
   Beta builds will be created from tagged commits on release candidate branches.
 
