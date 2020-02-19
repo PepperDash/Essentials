@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// Controller class for all DM-TX-201C/S/F transmitters
     /// </summary>
-    public class DmTx201XController : DmTxControllerBase, ITxRouting, IHasFeedback, IHasFreeRun
+    public class DmTx201XController : DmTxControllerBase, ITxRouting, IHasFeedback, IHasFreeRun, IVgaBrightnessContrastControls
 	{
 		public DmTx201S Tx { get; private set; } // uses the 201S class as it is the base class for the 201C
 
