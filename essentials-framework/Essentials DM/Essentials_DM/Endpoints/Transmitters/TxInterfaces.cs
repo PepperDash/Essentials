@@ -17,4 +17,16 @@ namespace PepperDash.Essentials.DM
 
         void SetFreeRunEnabled(bool enable);
     }
+
+    /// <summary>
+    /// Defines a device capable of adjusting VGA settings
+    /// </summary>
+    public interface IVgaBrightnessContrastControls
+    {
+        IntFeedback VgaBrightnessFeedback { get; }
+        IntFeedback VgaContrastFeedback { get; }
+
+        void SetVgaBrightness(ushort level);
+        void SetVgaContrast(ushort level);
+    }
 }
