@@ -234,11 +234,19 @@ namespace PepperDash.Essentials.DM
             }
         }
 
+        /// <summary>
+        /// Sets the VGA brightness level
+        /// </summary>
+        /// <param name="level"></param>
         public void SetVgaBrightness(ushort level)
         {
             Tx.VgaInput.VideoControls.Brightness.UShortValue = level;
         }
 
+        /// <summary>
+        /// Sets the VGA contrast level
+        /// </summary>
+        /// <param name="level"></param>
         public void SetVgaContrast(ushort level)
         {
             Tx.VgaInput.VideoControls.Contrast.UShortValue = level;
