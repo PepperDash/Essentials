@@ -135,9 +135,24 @@ namespace PepperDash.Essentials.Bridges
 
                                     var dmInPortWCec = port as DMInputPortWithCec;
 
-                                    if (dmInPortWCec != null)
+                                    if (dmInPortWCec != null && dmChassis.PropertiesConfig.InputSlotSupportsHdcp2 != null)
                                     {
-                                        SetHdcpStateAction(dmChassis.PropertiesConfig.InputSlotSupportsHdcp2[ioSlot], dmInPortWCec, joinMap.HdcpSupportState + ioSlot, trilist);
+                                        if (dmChassis.PropertiesConfig.InputSlotSupportsHdcp2 != null)
+                                        {
+                                            bool inputSlotSupportsHdcp2;
+                                            if (dmChassis.PropertiesConfig.InputSlotSupportsHdcp2.TryGetValue(ioSlot, out inputSlotSupportsHdcp2))
+                                            {
+                                                SetHdcpStateAction(inputSlotSupportsHdcp2, dmInPortWCec, joinMap.HdcpSupportState + ioSlot, trilist);
+                                            }
+                                            else
+                                            {
+                                                Debug.Console(2, dmChassis, "It looks like you haven't defined whether InputSlot-{0} supports HDCP2 in Config...", ioSlot);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Debug.Console(2, dmChassis, "It looks like you haven't defined whether your inputSlots support HDCP2 in Config...", ioSlot);
+                                        }
                                     }
 
                                     dmChassis.InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState + ioSlot]);
