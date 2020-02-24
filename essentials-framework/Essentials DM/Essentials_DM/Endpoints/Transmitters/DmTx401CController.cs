@@ -17,7 +17,7 @@ namespace PepperDash.Essentials.DM
 {
 	using eVst = DmTx401C.eSourceSelection;
 
-    public class DmTx401CController : DmTxControllerBase, ITxRouting, IHasFeedback, IIROutputPorts, IComPorts
+    public class DmTx401CController : DmTxControllerBase, ITxRouting, IHasFeedback, IIROutputPorts, IComPorts, IHasFreeRun, IVgaBrightnessContrastControls
 	{
 		public DmTx401C Tx { get; private set; }
 
@@ -33,6 +33,11 @@ namespace PepperDash.Essentials.DM
         public IntFeedback VideoSourceNumericFeedback { get; protected set; }
         public IntFeedback AudioSourceNumericFeedback { get; protected set; }
         public IntFeedback HdmiInHdcpCapabilityFeedback { get; protected set; }
+
+        public BoolFeedback FreeRunEnabledFeedback { get; protected set; }
+
+        public IntFeedback VgaBrightnessFeedback { get; protected set; }
+        public IntFeedback VgaContrastFeedback { get; protected set; }
 
 		/// <summary>
 		/// Helps get the "real" inputs, including when in Auto
@@ -129,6 +134,13 @@ namespace PepperDash.Essentials.DM
             });
 
             HdcpSupportCapability = eHdcpCapabilityType.HdcpAutoSupport;
+
+            FreeRunEnabledFeedback = new BoolFeedback(() => tx.VgaInput.FreeRunFeedback == eDmFreeRunSetting.Enabled);
+
+            VgaBrightnessFeedback = new IntFeedback(() => tx.VgaInput.VideoControls.BrightnessFeedback.UShortValue);
+            VgaContrastFeedback = new IntFeedback(() => tx.VgaInput.VideoControls.ContrastFeedback.UShortValue);
+
+            tx.VgaInput.VideoControls.ControlChange += new Crestron.SimplSharpPro.DeviceSupport.GenericEventHandler(VideoControls_ControlChange);
 
 			var combinedFuncs = new VideoStatusFuncsWrapper
 			{
@@ -268,6 +280,55 @@ namespace PepperDash.Essentials.DM
                 AudioSourceNumericFeedback.FireUpdate();
             }
 		}
+
+        void VideoControls_ControlChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
+        {
+            var id = args.EventId;
+            Debug.Console(2, this, "EventId {0}", args.EventId);
+
+            if (id == VideoControlsEventIds.BrightnessFeedbackEventId)
+            {
+                VgaBrightnessFeedback.FireUpdate();
+            }
+            else if (id == VideoControlsEventIds.ContrastFeedbackEventId)
+            {
+                VgaContrastFeedback.FireUpdate();
+            }
+        }
+
+        /// <summary>
+        /// Enables or disables free run
+        /// </summary>
+        /// <param name="enable"></param>
+        public void SetFreeRunEnabled(bool enable)
+        {
+            if (enable)
+            {
+                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Enabled;
+            }
+            else
+            {
+                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Disabled;
+            }
+        }
+
+        /// <summary>
+        /// Sets the VGA brightness level
+        /// </summary>
+        /// <param name="level"></param>
+        public void SetVgaBrightness(ushort level)
+        {
+            Tx.VgaInput.VideoControls.Brightness.UShortValue = level;
+        }
+
+        /// <summary>
+        /// Sets the VGA contrast level
+        /// </summary>
+        /// <param name="level"></param>
+        public void SetVgaContrast(ushort level)
+        {
+            Tx.VgaInput.VideoControls.Contrast.UShortValue = level;
+        }
 
 		/// <summary>
 		/// Relays the input stream change to the appropriate RoutingInputPort.
