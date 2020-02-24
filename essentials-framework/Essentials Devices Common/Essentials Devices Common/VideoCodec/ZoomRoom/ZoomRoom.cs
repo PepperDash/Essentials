@@ -43,8 +43,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public bool CommDebuggingIsOn;
 
-        CTimer LoginMessageReceivedTimer;
-        CTimer RetryConnectionTimer;
+        //CTimer LoginMessageReceivedTimer;
+        //CTimer RetryConnectionTimer;
 
         /// <summary>
         /// Gets and returns the scaled volume of the codec
