@@ -139,6 +139,7 @@ namespace PepperDash.Essentials.Bridges
             OutputEndpointOnline = OutputEndpointOnline + joinOffset;
             HdcpSupportState = HdcpSupportState + joinOffset;
             HdcpSupportCapability = HdcpSupportCapability + joinOffset;
+            TxAdvancedIsPresent = TxAdvancedIsPresent + joinOffset;
         }
     }
 }
