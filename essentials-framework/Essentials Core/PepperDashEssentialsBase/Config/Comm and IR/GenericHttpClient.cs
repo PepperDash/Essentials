@@ -7,7 +7,7 @@ using Crestron.SimplSharp.Net.Http;
 using PepperDash.Core;
 using PepperDash.Core.DebugThings;
 
-namespace PepperDash.Essentials.Devices.Common
+namespace PepperDash.Essentials.Core
 {
 	public class GenericHttpClient : Device, IBasicCommunication
 	{
@@ -22,7 +22,6 @@ namespace PepperDash.Essentials.Devices.Common
 			
 			
 		}
-
 
 		/// <summary>
 		/// 
@@ -53,6 +52,7 @@ namespace PepperDash.Essentials.Devices.Common
 			Client.Dispatch(request);
 			Debug.Console(2, this, "GenericHttpClient SentRequest TX:'{0}'", url);
 		}
+
 		private void Response(HttpClientResponse response, HTTP_CALLBACK_ERROR error, object request)
 		{
 			if (error == HTTP_CALLBACK_ERROR.COMPLETED)

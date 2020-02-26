@@ -26,6 +26,10 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
         public IntFeedback UltrasonicSensitivityInOccupiedStateFeedback { get; private set; }
 
+        public BoolFeedback RawOccupancyPirFeedback { get; private set; }
+
+        public BoolFeedback RawOccupancyUsFeedback { get; private set; }
+
 
         public GlsOdtOccupancySensorController(string key, string name, GlsOdtCCn sensor)
             : base(key, name, sensor)
@@ -39,6 +43,10 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             UltrasonicAEnabledFeedback = new BoolFeedback(() => OccSensor.UsAEnabledFeedback.BoolValue);
 
             UltrasonicBEnabledFeedback = new BoolFeedback(() => OccSensor.UsBEnabledFeedback.BoolValue);
+
+            RawOccupancyPirFeedback = new BoolFeedback(() => OccSensor.RawOccupancyPirFeedback.BoolValue);
+
+            RawOccupancyUsFeedback = new BoolFeedback(() => OccSensor.RawOccupancyUsFeedback.BoolValue);
 
             UltrasonicSensitivityInVacantStateFeedback = new IntFeedback(() => OccSensor.UsSensitivityInVacantStateFeedback.UShortValue);
 
@@ -61,11 +69,14 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
                 UltrasonicAEnabledFeedback.FireUpdate();
             else if (args.EventId == GlsOccupancySensorBase.UsBEnabledFeedbackEventId)
                 UltrasonicBEnabledFeedback.FireUpdate();
+            else if (args.EventId == GlsOccupancySensorBase.RawOccupancyPirFeedbackEventId)
+                RawOccupancyPirFeedback.FireUpdate();
+            else if (args.EventId == GlsOccupancySensorBase.RawOccupancyUsFeedbackEventId)
+                RawOccupancyUsFeedback.FireUpdate();
             else if (args.EventId == GlsOccupancySensorBase.UsSensitivityInOccupiedStateFeedbackEventId)
                 UltrasonicSensitivityInOccupiedStateFeedback.FireUpdate();
             else if (args.EventId == GlsOccupancySensorBase.UsSensitivityInVacantStateFeedbackEventId)
                 UltrasonicSensitivityInVacantStateFeedback.FireUpdate();
-
 
             base.OccSensor_GlsOccupancySensorChange(device, args);
         }

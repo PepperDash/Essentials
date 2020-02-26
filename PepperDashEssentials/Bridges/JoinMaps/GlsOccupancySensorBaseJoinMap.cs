@@ -32,6 +32,14 @@ namespace PepperDash.Essentials.Bridges
         /// </summary>
         public uint RawOccupancyFeedback { get; set; }
         /// <summary>
+        /// High when PIR sensor detects motion
+        /// </summary>
+        public uint RawOccupancyPirFeedback { get; set; }
+        /// <summary>
+        /// High when US sensor detects motion
+        /// </summary>
+        public uint RawOccupancyUsFeedback { get; set; }
+        /// <summary>
         /// High when occupancy is detected
         /// </summary>
         public uint RoomOccupiedFeedback { get; set; }
@@ -139,6 +147,8 @@ namespace PepperDash.Essentials.Bridges
             GraceOccupancyDetectedFeedback = 3;
             RoomVacantFeedback = 4;
             RawOccupancyFeedback = 5;
+            RawOccupancyPirFeedback = 6;
+            RawOccupancyUsFeedback = 7;
             EnableLedFlash = 11;
             DisableLedFlash = 12;
             EnableShortTimeout = 13;
@@ -151,15 +161,14 @@ namespace PepperDash.Essentials.Bridges
             DisableUsB = 20;
             EnablePir = 21;
             DisablePir = 22;
-            DisablePir = 23;
-            IncrementUsInOccupiedState = 24;
-            DecrementUsInOccupiedState = 25;
-            IncrementUsInVacantState = 26;
-            DecrementUsInVacantState = 27;
-            IncrementPirInOccupiedState = 28;
-            DecrementPirInOccupiedState = 29;
-            IncrementPirInVacantState = 30;
-            DecrementPirInVacantState = 31;
+            IncrementUsInOccupiedState = 23;
+            DecrementUsInOccupiedState = 24;
+            IncrementUsInVacantState = 25;
+            DecrementUsInVacantState = 26;
+            IncrementPirInOccupiedState = 27;
+            DecrementPirInOccupiedState = 28;
+            IncrementPirInVacantState = 29;
+            DecrementPirInVacantState = 30;
 
             Timeout = 1;
             TimeoutLocalFeedback = 2;
@@ -182,7 +191,9 @@ namespace PepperDash.Essentials.Bridges
             RoomOccupiedFeedback =              RoomOccupiedFeedback + joinOffset; 
             GraceOccupancyDetectedFeedback =    GraceOccupancyDetectedFeedback + joinOffset;
             RoomVacantFeedback =                RoomVacantFeedback + joinOffset; 
-            RawOccupancyFeedback =              RawOccupancyFeedback + joinOffset; 
+            RawOccupancyFeedback =              RawOccupancyFeedback + joinOffset;
+            RawOccupancyPirFeedback =           RawOccupancyPirFeedback + joinOffset;
+            RawOccupancyUsFeedback =            RawOccupancyUsFeedback + joinOffset;
             EnableLedFlash =                    EnableLedFlash + joinOffset; 
             DisableLedFlash =                   DisableLedFlash + joinOffset; 
             EnableShortTimeout =                EnableShortTimeout + joinOffset; 

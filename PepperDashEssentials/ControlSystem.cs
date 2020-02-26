@@ -95,9 +95,10 @@ namespace PepperDash.Essentials
 
                 var dirSeparator = Global.DirectorySeparator;
 
-                Global.SetApplicationDirectoryPathPrefix(Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory());
-                var directoryPrefix = Global.ApplicationDirectoryPathPrefix;
+                string directoryPrefix;
 
+                directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+                
                 var version = Crestron.SimplSharp.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
                 Global.SetAssemblyVersion(string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build));

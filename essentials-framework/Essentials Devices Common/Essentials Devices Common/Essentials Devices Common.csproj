@@ -112,11 +112,6 @@
     <Compile Include="Occupancy\GlsOdtOccupancySensorController.cs" />
     <Compile Include="Power Controllers\Digitallogger.cs" />
     <Compile Include="Power Controllers\DigitalLoggerPropertiesConfig.cs" />
-    <Compile Include="Evertz\EvertsEndpointStatusServer.cs" />
-    <Compile Include="Evertz\EvertzEndpointVarIds.cs" />
-    <Compile Include="Evertz\EvertzEndpoint.cs" />
-    <Compile Include="Evertz\EvertzEndpointPropertiesConfig.cs" />
-    <Compile Include="Evertz\GenericHttpClient.cs" />
     <Compile Include="ImageProcessors\AnalogWay\AnalongWayLiveCore.cs" />
     <Compile Include="ImageProcessors\AnalogWay\AnalogWayLiveCorePropertiesConfig.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CiscoCamera.cs" />
