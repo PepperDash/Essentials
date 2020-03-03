@@ -31,6 +31,7 @@ namespace PepperDash.Essentials.Bridges
 
             #region Single and Dual Sensor Stuff
             occController.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
+            trilist.StringInput[joinMap.Name].StringValue = occController.Name;
 
             // Occupied status
             trilist.SetSigTrueAction(joinMap.ForceOccupied, new Action(() => occController.ForceOccupied()));
@@ -38,6 +39,7 @@ namespace PepperDash.Essentials.Bridges
             occController.RoomIsOccupiedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RoomOccupiedFeedback]);
             occController.RoomIsOccupiedFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.RoomVacantFeedback]);
             occController.RawOccupancyFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyFeedback]);
+            trilist.SetBoolSigAction(joinMap.EnableRawStates, new Action<bool>((b) => occController.EnableRawStates(b)));
 
             // Timouts
             trilist.SetUShortSigAction(joinMap.Timeout, new Action<ushort>((u) => occController.SetRemoteTimeout(u)));

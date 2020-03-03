@@ -77,6 +77,16 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
                 UltrasonicSensitivityInOccupiedStateFeedback.FireUpdate();
             else if (args.EventId == GlsOccupancySensorBase.UsSensitivityInVacantStateFeedbackEventId)
                 UltrasonicSensitivityInVacantStateFeedback.FireUpdate();
+            else if (args.EventId == GlsOccupancySensorBase.RawOccupancyPirFeedbackEventId)
+            {
+                Debug.Console(2, this, "Occsensor has had Raw PIR");
+                RawOccupancyPirFeedback.FireUpdate();
+            }
+            else if (args.EventId == GlsOccupancySensorBase.RawOccupancyUsFeedbackEventId)
+            {
+                Debug.Console(2, this, "Occsensor has had Raw US");
+                RawOccupancyUsFeedback.FireUpdate();
+            }
 
             base.OccSensor_GlsOccupancySensorChange(device, args);
         }
