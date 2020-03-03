@@ -103,6 +103,18 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
                 PirSensitivityInOccupiedStateFeedback.FireUpdate();
             else if (args.EventId == GlsOccupancySensorBase.PirSensitivityInVacantStateFeedbackEventId)
                 PirSensitivityInVacantStateFeedback.FireUpdate();
+        }
+
+        protected virtual void OccSensor_BaseEvent(Crestron.SimplSharpPro.GenericBase device, Crestron.SimplSharpPro.BaseEventArgs args)
+        {
+            Debug.Console(2, this, "GlsOccupancySensorChange  EventId: {0}", args.EventId);
+
+            if (args.EventId == Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomOccupiedFeedbackEventId 
+                || args.EventId == Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomVacantFeedbackEventId)
+            {
+                Debug.Console(1, this, "Occupancy State: {0}", OccSensor.OccupancyDetectedFeedback.BoolValue);
+                RoomIsOccupiedFeedback.FireUpdate();
+            }
             else if (args.EventId == GlsOccupancySensorBase.TimeoutFeedbackEventId)
                 CurrentTimeoutFeedback.FireUpdate();
             else if (args.EventId == GlsOccupancySensorBase.TimeoutLocalFeedbackEventId)
@@ -115,18 +127,6 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
                 InternalPhotoSensorValue.FireUpdate();
             else if (args.EventId == GlsOccupancySensorBase.ExternalPhotoSensorValueFeedbackEventId)
                 ExternalPhotoSensorValue.FireUpdate();
-        }
-
-        void OccSensor_BaseEvent(Crestron.SimplSharpPro.GenericBase device, Crestron.SimplSharpPro.BaseEventArgs args)
-        {
-            Debug.Console(2, this, "GlsOccupancySensorChange  EventId: {0}", args.EventId);
-
-            if (args.EventId == Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomOccupiedFeedbackEventId 
-                || args.EventId == Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomVacantFeedbackEventId)
-            {
-                Debug.Console(1, this, "Occupancy State: {0}", OccSensor.OccupancyDetectedFeedback.BoolValue);
-                RoomIsOccupiedFeedback.FireUpdate();
-            }
         }
 
         public void SetTestMode(bool mode)
