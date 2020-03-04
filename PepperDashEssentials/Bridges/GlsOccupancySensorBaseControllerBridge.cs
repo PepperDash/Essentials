@@ -33,6 +33,15 @@ namespace PepperDash.Essentials.Bridges
             occController.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
             trilist.StringInput[joinMap.Name].StringValue = occController.Name;
 
+            trilist.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler((d, args) =>
+            {
+                if (args.DeviceOnLine)
+                {
+                    trilist.StringInput[joinMap.Name].StringValue = occController.Name;
+                }
+            }
+            );
+
             // Occupied status
             trilist.SetSigTrueAction(joinMap.ForceOccupied, new Action(() => occController.ForceOccupied()));
             trilist.SetSigTrueAction(joinMap.ForceVacant, new Action(() => occController.ForceVacant()));

@@ -213,7 +213,6 @@ namespace PepperDash.Essentials.Bridges
             DisableUsB =                        DisableUsB + joinOffset; 
             EnablePir =                         EnablePir + joinOffset; 
             DisablePir =                        DisablePir + joinOffset; 
-            DisablePir =                        DisablePir + joinOffset; 
             IncrementUsInOccupiedState =        IncrementUsInOccupiedState + joinOffset; 
             DecrementUsInOccupiedState =        DecrementUsInOccupiedState + joinOffset; 
             IncrementUsInVacantState =          IncrementUsInVacantState + joinOffset; 
