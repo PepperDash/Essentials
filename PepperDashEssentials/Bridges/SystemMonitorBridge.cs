@@ -61,6 +61,16 @@ namespace PepperDash.Essentials.Bridges
                     (b => SystemMonitor.ProgramCollection[programNumber].RegistrationState = eProgramRegistrationState.Unregister));
                 p.Value.ProgramUnregisteredFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramUnregister]);
 
+                p.Value.ProgramNameFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramName]);
+                p.Value.ProgramCompileTimeFeedback.LinkInputSig(
+                    trilist.StringInput[programSlotJoinStart + joinMap.ProgramCompiledTime]);
+                p.Value.CrestronDataBaseVersionFeedback.LinkInputSig(
+                    trilist.StringInput[programSlotJoinStart + joinMap.ProgramCrestronDatabaseVersion]);
+                p.Value.EnvironmentVersionFeedback.LinkInputSig(
+                    trilist.StringInput[programSlotJoinStart + joinMap.ProgramEnvironmentVersion]);
+                p.Value.AggregatedProgramInfoFeedback.LinkInputSig(
+                    trilist.StringInput[programSlotJoinStart + joinMap.AggregatedProgramInfo]);
+
                 programSlotJoinStart = programSlotJoinStart + joinMap.ProgramOffsetJoin;
             }
         }
