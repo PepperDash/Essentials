@@ -52,7 +52,7 @@ namespace PepperDash.Essentials
 
         DateTime LastAckMessage;
 
-        public string SystemUuid;
+        public string SystemUuid { get; private set; }
 
 		List<MobileControlBridgeBase> RoomBridges = new List<MobileControlBridgeBase>();
 

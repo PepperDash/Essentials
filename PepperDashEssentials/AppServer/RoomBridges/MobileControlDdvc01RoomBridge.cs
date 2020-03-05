@@ -182,6 +182,10 @@ namespace PepperDash.Essentials.Room.MobileControl
 			/// 402
 			/// </summary>
 			public const uint ServerUrl = 402;
+            /// <summary>
+            /// 403
+            /// </summary>
+            public const uint QrCodeUrl = 403;
 			/// <summary>
 			/// 512
 			/// </summary>
@@ -907,6 +911,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 			Debug.Console(1, this, "Server user code changed: {0}", UserCode);
 			EISC.StringInput[StringJoin.UserCodeToSystem].StringValue = UserCode;
 			EISC.StringInput[StringJoin.ServerUrl].StringValue = Parent.Config.ClientAppUrl;
+            EISC.StringInput[StringJoin.QrCodeUrl].StringValue = string.Format("http://{0}/api/system/{1}/qr", Parent.Config.ServerUrl, Parent.SystemUuid);
 		}
 	}
 }

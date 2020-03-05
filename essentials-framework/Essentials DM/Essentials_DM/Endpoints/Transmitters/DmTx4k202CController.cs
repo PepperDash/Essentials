@@ -102,7 +102,15 @@ namespace PepperDash.Essentials.DM
             });
             AudioSourceNumericFeedback = new IntFeedback(() =>
             {
-                return (int)Tx.AudioSourceFeedback;
+                try
+                {
+                    return (int)Tx.AudioSourceFeedback;
+                }
+                catch
+                {
+                    return 0;
+                }
+
             });
 
             HdmiIn1HdcpCapabilityFeedback = new IntFeedback("HdmiIn1HdcpCapability", () =>
