@@ -23,6 +23,10 @@ namespace PepperDash.Essentials.Core
         public StringFeedback TimeRemainingFeedback { get; private set; }
 
         public bool CountsDown { get; set; }
+
+        /// <summary>
+        /// The number of seconds to countdown
+        /// </summary>
         public int SecondsToCount { get; set; }
         
         public DateTime StartTime { get; private set; }
@@ -31,7 +35,7 @@ namespace PepperDash.Essentials.Core
         CTimer SecondTimer;
 
         /// <summary>
-        /// 
+        /// Constructor
         /// </summary>
         /// <param name="key"></param>
         public SecondsCountdownTimer(string key)
@@ -61,7 +65,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// 
+        /// Starts the Timer
         /// </summary>
         public void Start()
         {
@@ -82,7 +86,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// 
+        /// Restarts the timer
         /// </summary>
         public void Reset()
         {
@@ -91,7 +95,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// 
+        /// Cancels the timer (without triggering it to finish)
         /// </summary>
         public void Cancel()
         {
