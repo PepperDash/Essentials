@@ -6,6 +6,9 @@ on:
       - feature/*
       - bugfix/*
       - hotfix/*
+      - release/*
+      - development
+      - master
 
 jobs:
   build:
