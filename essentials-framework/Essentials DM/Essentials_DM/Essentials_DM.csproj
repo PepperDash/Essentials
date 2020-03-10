@@ -82,6 +82,10 @@
       <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -89,12 +93,6 @@
   <ItemGroup>
     <Compile Include="AirMedia\AirMediaPropertiesConfig.cs" />
     <Compile Include="AirMedia\AirMediaController.cs" />
-    <Compile Include="Cards REMOVE\Dmc4kHdoSingleOutputCard.cs" />
-    <Compile Include="Cards REMOVE\Dmc4kCoHdSingleOutputCard.cs" />
-    <Compile Include="Cards REMOVE\DmOutputCardBase.cs" />
-    <Compile Include="Cards REMOVE\DmcC4kInputCard.cs" />
-    <Compile Include="Cards REMOVE\DmcHD4kInputCard.cs" />
-    <Compile Include="Cards REMOVE\DmInputCardBase.cs" />
     <Compile Include="Chassis\DmBladeChassisController.cs" />
     <Compile Include="Chassis\DmCardAudioOutput.cs" />
     <Compile Include="Chassis\DmChassisController.cs" />
@@ -102,6 +100,7 @@
     <Compile Include="Chassis\DmpsInternalVirtualDmTxController.cs" />
     <Compile Include="Chassis\DmpsRoutingController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
+    <Compile Include="Endpoints\Transmitters\TxInterfaces.cs" />
     <Compile Include="IDmSwitch.cs" />
     <Compile Include="Config\DmpsRoutingConfig.cs" />
     <Compile Include="Config\DmRmcConfig.cs" />
@@ -110,9 +109,6 @@
     <Compile Include="Config\HdMdNxM4kEPropertiesConfig.cs" />
     <Compile Include="Config\InputPropertiesConfig.cs" />
     <Compile Include="DmPortName.cs" />
-    <Compile Include="Endpoints\NVX\DmNvx35xController.cs" />
-    <Compile Include="Endpoints\NVX\DmNvxConfig.cs" />
-    <Compile Include="Endpoints\NVX\DmNvxControllerBase.cs" />
     <Compile Include="Endpoints\DGEs\DgeController.cs" />
     <Compile Include="Endpoints\DGEs\DgePropertiesConfig.cs" />
     <Compile Include="DmLite\HdMdxxxCEController.cs" />
@@ -141,10 +137,6 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="Config\DeviceFactory.cs" />
     <Compile Include="IDmHdmiInputExtensions.cs" />
-    <Compile Include="MOVE IBasicVideoStatusFeedbacks.cs" />
-    <Compile Include="Nvx\NvxDirectorController.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VideoStatusHelpers.cs" />
     <None Include="app.config" />

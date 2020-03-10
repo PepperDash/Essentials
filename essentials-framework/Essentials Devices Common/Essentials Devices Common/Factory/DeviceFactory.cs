@@ -107,21 +107,6 @@ namespace PepperDash.Essentials.Devices.Common
 					properties.ToString());
 				return new DigitalLogger(key, name, props);
 			}
-			else if (groupName == "evertzendpoint")
-			{
-				// var comm = CommFactory.CreateCommForDevice(dc);
-				var props = JsonConvert.DeserializeObject<EvertzEndpointPropertiesConfig>(
-					properties.ToString());
-				return new EvertzEndpoint(key, name, props, typeName);
-			}
-			else if (typeName == "evertzendpointstatusserver")
-			{
-				var server = CommFactory.CreateCommForDevice(dc) as GenericUdpServer;
-
-				var props = JsonConvert.DeserializeObject<EvertzEndpointStatusServerPropertiesConfig>(
-					properties.ToString());
-				return new EvertzEndpointStatusServer(key, name, server, props);
-			}
 			else if (typeName == "genericaudiooutwithvolume")
 			{
 				var zone = dc.Properties.Value<uint>("zone");
@@ -400,13 +385,6 @@ namespace PepperDash.Essentials.Devices.Common
                 }
 
             }
-            //else if (typeName == "qscdsp")
-            //{
-            //    var comm = CommFactory.CreateCommForDevice(dc);
-            //    var props = JsonConvert.DeserializeObject<QscDspPropertiesConfig>(
-            //        properties.ToString());
-            //    return new QscDsp(key, name, comm, props);
-            //}
 
 			return null;
 		}

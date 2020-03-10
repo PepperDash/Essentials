@@ -106,12 +106,18 @@ namespace PepperDash.Essentials
                 Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Registration failed. Continuing, but panel may not function: {0}", Panel.RegistrationFailureReason);
 
             // Give up cleanly if SGD is not present.
-            var sgdName = Global.FilePathPrefix
-                + Global.DirectorySeparator + "sgd" + Global.DirectorySeparator + props.SgdFile;
+            var sgdName = Global.FilePathPrefix + "sgd" + Global.DirectorySeparator + props.SgdFile;
             if (!File.Exists(sgdName))
             {
-                Debug.Console(0, this, "ERROR: Smart object file '{0}' not present. Exiting TSW load", sgdName);
-                return;
+                Debug.Console(0, this, "Smart object file '{0}' not present in User folder. Looking for embedded file", sgdName);
+
+                sgdName = Global.ApplicationDirectoryPathPrefix + Global.DirectorySeparator + "SGD" + Global.DirectorySeparator + props.SgdFile;
+
+                if (!File.Exists(sgdName))
+                {
+                    Debug.Console(0, this, "Unable to find SGD file '{0}' in User sgd or application SGD folder. Exiting touchpanel load.", sgdName);
+                    return;
+                }
             }
 
             Panel.LoadSmartObjects(sgdName);

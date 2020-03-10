@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.Devices.Common
 		public string address;
 		private bool OnlineStatus; 
 		public BoolFeedback OnlineFeedback;
-		private ushort CurrentPreset;
+		//private ushort CurrentPreset;
 		public IntFeedback PresetFeedback;
 
 		public Dictionary<uint, DigitalLoggerCircuit> CircuitStatus;
@@ -103,7 +103,7 @@ namespace PepperDash.Essentials.Devices.Common
 					});
 				CircuitIsCritical[circuit] = new BoolFeedback(() =>
 				{
-					if (CircuitStatus[circuit] != null)
+					if (CircuitStatus.ContainsKey(circuit))
 					{
 						return CircuitStatus[circuit].critical;
 					}
@@ -114,7 +114,7 @@ namespace PepperDash.Essentials.Devices.Common
 				});
 				CircuitState[circuit] = new BoolFeedback(() =>
 				{
-					if (CircuitStatus[circuit] != null)
+                    if (CircuitStatus.ContainsKey(circuit))
 					{
 						return CircuitStatus[circuit].state;
 					}

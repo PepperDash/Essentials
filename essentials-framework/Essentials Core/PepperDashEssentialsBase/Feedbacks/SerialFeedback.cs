@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.Core
         public override string SerialValue { get { return _SerialValue; } } 
         string _SerialValue;
 
-        public override eCueType Type { get { return eCueType.Serial; } }
+        //public override eCueType Type { get { return eCueType.Serial; } }
 
         /// <summary>
         /// Used in testing.  Set/Clear functions

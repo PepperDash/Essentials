@@ -66,6 +66,11 @@ namespace PepperDash.Essentials.DM
 		public const int RouteOffTime = 500;
 		Dictionary<PortNumberType, CTimer> RouteOffTimers = new Dictionary<PortNumberType, CTimer>();
 
+        /// <summary>
+        /// Text that represents when an output has no source routed to it
+        /// </summary>
+        public string NoRouteText = "";
+
 		/// <summary>
 		/// Factory method to create a new chassis controller from config data. Limited to 8x8 right now
 		/// </summary>
@@ -99,9 +104,12 @@ namespace PepperDash.Essentials.DM
                 }
 
 				var controller = new DmChassisController(key, name, chassis);
+
 				// add the cards and port names
-				foreach (var kvp in properties.InputSlots)
-					controller.AddInputCard(kvp.Value, kvp.Key);
+                foreach (var kvp in properties.InputSlots)
+                {
+                    controller.AddInputCard(kvp.Value, kvp.Key);
+                }
 				foreach (var kvp in properties.OutputSlots)
 				{
 					controller.AddOutputCard(kvp.Value, kvp.Key);
@@ -128,6 +136,15 @@ namespace PepperDash.Essentials.DM
 
 				controller.InputNames = properties.InputNames;
 				controller.OutputNames = properties.OutputNames;
+
+                if (!string.IsNullOrEmpty(properties.NoRouteText))
+                {
+                    controller.NoRouteText = properties.NoRouteText;
+                    Debug.Console(1, controller, "Setting No Route Text value to: {0}", controller.NoRouteText);
+                }
+                else
+                    Debug.Console(1, controller, "NoRouteText not specified.  Defaulting to blank string.", controller.NoRouteText);
+
                 controller.PropertiesConfig = properties;
 				return controller;
 			}
@@ -174,11 +191,18 @@ namespace PepperDash.Essentials.DM
             SystemIdBusyFeedback = new BoolFeedback(() => { return (Chassis as DmMDMnxn).SystemIdBusy.BoolValue; });
             InputCardHdcpCapabilityFeedbacks = new Dictionary<uint, IntFeedback>();
             InputCardHdcpCapabilityTypes = new Dictionary<uint, eHdcpCapabilityType>();
+		}
 
+        public override bool CustomActivate()
+        {
+            Debug.Console(2, this, "Setting up feedbacks.");
 
-			for (uint x = 1; x <= Chassis.NumberOfOutputs; x++) 
+            // Setup Output Card Feedbacks
+            for (uint x = 1; x <= Chassis.NumberOfOutputs; x++)
             {
-				var tempX = x;
+                var tempX = x;
+
+                Debug.Console(2, this, "Setting up feedbacks for output slot: {0}", tempX);
 
                 if (Chassis.Outputs[tempX] != null)
                 {
@@ -217,30 +241,45 @@ namespace PepperDash.Essentials.DM
                         }
                         else
                         {
-                            return "";
+                            return NoRouteText;
                         }
                     });
                     OutputAudioRouteNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (Chassis.Outputs[tempX].AudioOutFeedback != null)
                         {
-                            if (Chassis.Outputs[tempX].AudioOutFeedback != null)
-                            {
-                                return Chassis.Outputs[tempX].AudioOutFeedback.NameFeedback.StringValue;
-                            }
-                            else
-                            {
-                                return "";
+                            return Chassis.Outputs[tempX].AudioOutFeedback.NameFeedback.StringValue;
+                        }
+                        else
+                        {
+                            return NoRouteText;
 
-                            }
-                        });
+                        }
+                    });
 
-                    OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => 
+                    OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() =>
                     {
                         return Chassis.Outputs[tempX].EndpointOnlineFeedback;
                     });
                 }
+                else
+                {
+                    Debug.Console(2, this, "No Output Card defined in slot: {0}", tempX);
+                }
+            };
+
+            // Setup Input Card Feedbacks
+            for (uint x = 1; x <= Chassis.NumberOfInputs; x++)
+            {
+                var tempX = x;
+
+                Debug.Console(2, this, "Setting up feedbacks for input slot: {0}", tempX);
+
+                CheckForHdcp2Property(tempX);
 
                 if (Chassis.Inputs[tempX] != null)
                 {
+
                     UsbInputRoutedToFeebacks[tempX] = new IntFeedback(() =>
                     {
                         if (Chassis.Inputs[tempX].USBRoutedToFeedback != null) { return (ushort)Chassis.Inputs[tempX].USBRoutedToFeedback.Number; }
@@ -265,7 +304,7 @@ namespace PepperDash.Essentials.DM
                         }
                     });
 
-                    InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => 
+                    InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() =>
                     {
                         return Chassis.Inputs[tempX].EndpointOnlineFeedback;
                     });
@@ -273,6 +312,8 @@ namespace PepperDash.Essentials.DM
                     InputCardHdcpCapabilityFeedbacks[tempX] = new IntFeedback(() =>
                     {
                         var inputCard = Chassis.Inputs[tempX];
+
+                        Debug.Console(2, this, "Adding InputCardHdcpCapabilityFeedback for slot: {0}", inputCard);
 
                         if (inputCard.Card is DmcHd)
                         {
@@ -328,8 +369,32 @@ namespace PepperDash.Essentials.DM
                             return 0;
                     });
                 }
-			}
-		}
+                else
+                {
+                    Debug.Console(2, this, "No Input Card defined in slot: {0}", tempX);
+                }
+            }
+
+            return base.CustomActivate();
+        }
+
+        /// <summary>
+        /// Checks for presence of config property defining if the input card supports HDCP2.
+        /// If not found, assumes false.
+        /// </summary>
+        /// <param name="inputSlot">Input Slot</param>
+        void CheckForHdcp2Property(uint inputSlot)
+        {
+            if (!PropertiesConfig.InputSlotSupportsHdcp2.ContainsKey(inputSlot))
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+@"Properties Config does not define inputSlotSupportsHdcp2 entry for input card: {0}.  Assuming false.  
+If HDCP2 is required, HDCP control/feedback will not fucntion correctly!", inputSlot);
+                PropertiesConfig.InputSlotSupportsHdcp2.Add(inputSlot, false);
+            }
+            else
+                Debug.Console(2, this, "inputSlotSupportsHdcp2 for input card: {0} = {1}", inputSlot, PropertiesConfig.InputSlotSupportsHdcp2[inputSlot]);
+        }
 
 		/// <summary>
 		/// 
@@ -552,6 +617,13 @@ namespace PepperDash.Essentials.DM
                 var cecPort2 = outputCard.Card2.HdmiOutput;
                 AddDmcHdoPorts(number, cecPort1, cecPort2);
             }
+            else if (type == "dmc4kzhdo")
+            {
+                var outputCard = new Dmc4kzHdoSingle(number, Chassis);
+                var cecPort1 = outputCard.Card1.HdmiOutput;
+                var cecPort2 = outputCard.Card2.HdmiOutput;
+                AddDmcHdoPorts(number, cecPort1, cecPort2);
+            }
             else if (type == "dmchdo")
             {
                 var outputCard = new DmcHdoSingle(number, Chassis);
@@ -565,13 +637,13 @@ namespace PepperDash.Essentials.DM
                 var cecPort1 = outputCard.Card1.HdmiOutput;
                 AddDmcCoPorts(number, cecPort1);
             }
-			else if (type == "dmc4kzcohd")
-			{
+            else if (type == "dmc4kzcohd")
+            {
                 var outputCard = new Dmc4kzCoHdSingle(number, Chassis);
                 var cecPort1 = outputCard.Card1.HdmiOutput;
                 AddDmcCoPorts(number, cecPort1);
             }
-			else if (type == "dmccohd")
+            else if (type == "dmccohd")
             {
                 var outputCard = new DmcCoHdSingle(number, Chassis);
                 var cecPort1 = outputCard.Card1.HdmiOutput;

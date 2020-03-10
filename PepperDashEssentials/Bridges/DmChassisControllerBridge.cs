@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Bridges
 {
-    public static class DmChassisControllerApiExtentions
+    public static class DmChassisControllerApiExtensions
     {
         public static void LinkToApi(this DmChassisController dmChassis, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
@@ -81,14 +81,14 @@ namespace PepperDash.Essentials.Bridges
                         }
                     }
 
-                    if (basicTxDevice != null && advancedTxDevice == null)
-                        trilist.BooleanInput[joinMap.TxAdvancedIsPresent + ioSlot].BoolValue = true;
-
-                    if (advancedTxDevice != null)
+                    if (advancedTxDevice != null)   // Advanced TX device
                     {
                         advancedTxDevice.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
+
+                        // Flag if the TX is an advanced endpoint type
+                        trilist.BooleanInput[joinMap.TxAdvancedIsPresent + ioSlot].BoolValue = true;
                     }
-                    else if(advancedTxDevice == null || basicTxDevice != null)
+                    else if(advancedTxDevice == null || basicTxDevice != null)  // Basic TX device
                     {
                         Debug.Console(1, "Setting up actions and feedbacks on input card {0}", ioSlot);
                         dmChassis.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);

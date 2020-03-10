@@ -1,0 +1,70 @@
+{
+    "system_url": "",
+    "template": {    
+        "info": {
+            "comment": "",
+            "requiredControlSofwareVersion": "",
+            "systemType": "huddle",
+            "lastModifiedDate": "2018-07-09T20:00:47.873Z",
+            "lastUid": 23,
+            "processorType": "dmps3300c"
+        },
+        "devices": [
+            {
+                "key": "processor",
+                "group": "processor",
+                "uid": 0,
+                "supportsCompliance": true,
+                "type": "dmps3300c",
+                "properties": {
+                },
+                "name": "DMPS3-300-C"
+            },           
+            {
+                "key": "eisc-A",
+                "uid":4,
+                "type": "eiscApi",
+                "group":"api",
+                "properties": {
+                    "control":{
+                        "tcpSshProperties":{
+                            "address":"127.0.0.2",
+                            "port":0
+                        },
+                        "ipId":"1A"
+                    },
+                  "devices": [
+                    {
+                      "deviceKey":"processor-avRouting",
+                      "joinStart":1                    
+                    },
+                    {
+                        "deviceKey":"processor-programAudioOutput",
+                        "joinStart":3001
+                    },
+                    {
+                        "deviceKey":"processor-aux1AudioOutput",
+                        "joinStart":3011
+                    },
+                    {
+                        "deviceKey":"processor-aux2AudioOutput",
+                        "joinStart":3021
+                    }
+                  ] 
+                }
+              }            
+        ],
+        "rooms": [
+            
+        ],
+        "sourceLists": {
+            
+        },
+        "tieLines": [
+        ]   
+    },
+    "template_url": "",
+    "system": {
+        
+    }
+}

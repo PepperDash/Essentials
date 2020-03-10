@@ -1,0 +1,439 @@
+{
+  "system_url": "",
+  "template": {
+    "info": {
+      "comment": "",
+      "requiredControlSofwareVersion": "",
+      "systemType": "huddle",
+      "lastModifiedDate": "2018-07-09T20:00:47.873Z",
+      "lastUid": 23,
+      "processorType": "rmc3"
+    },
+    "devices": [
+      {
+        "key": "processor",
+        "group": "processor",
+        "uid": 0,
+        "supportsCompliance": true,
+        "type": "rmc3",
+        "properties": {},
+        "name": "RMC3"
+      },
+      {
+        "key": "comm-1",
+        "uid": 1,
+        "name": "Generic comm 1",
+        "type": "genericComm",
+        "group": "comm",
+        "properties": {
+          "control": {
+            "comParams": {
+              "hardwareHandshake": "None",
+              "parity": "None",
+              "protocol": "RS232",
+              "baudRate": 9600,
+              "dataBits": 8,
+              "softwareHandshake": "None",
+              "stopBits": 1
+            },
+            "controlPortNumber": 1,
+            "controlPortDevKey": "processor",
+            "method": "Com"
+          }
+        }
+      },
+      {
+        "key": "tcp-1",
+        "uid": 2,
+        "name": "Generic TCP 1",
+        "type": "genericComm",
+        "group": "comm",
+        "properties": {
+          "control": {
+            "tcpSshProperties": {
+              "username": "",
+              "autoReconnect": true,
+              "AutoReconnectIntervalMs": 2000,
+              "port": 23,
+              "address": "0.0.0.0",
+              "password": ""
+            },
+            "method": "Tcpip"
+          }
+        }
+      },
+      {
+        "key": "ssh-1",
+        "uid": 3,
+        "name": "Generic SSH 1",
+        "type": "genericComm",
+        "group": "comm",
+        "properties": {
+          "control": {
+            "tcpSshProperties": {
+              "username": "crestron",
+              "autoReconnect": true,
+              "AutoReconnectIntervalMs": 2000,
+              "port": 22,
+              "address": "10.11.50.135",
+              "password": "2H3Zu&OvgXp6"
+            },
+            "method": "Ssh"
+          }
+        }
+      },
+      {
+        "key": "eisc-1A",
+        "uid": 4,
+        "type": "eiscApi",
+        "group": "api",
+        "properties": {
+          "control": {
+            "tcpSshProperties": {
+              "address": "127.0.0.2",
+              "port": 0
+            },
+            "ipId": "1A"
+          },
+          "devices": [
+            {
+              "deviceKey": "comm-1",
+              "joinStart": 3001
+            },
+            {
+              "deviceKey": "tcp-1",
+              "joinStart": 3011
+            },
+            {
+              "deviceKey": "ssh-1",
+              "joinStart": 3021
+            },
+            {
+              "deviceKey": "dmMd8x8-1",
+              "joinStart": 1
+            },
+            {
+              "deviceKey": "dmTx201C-1",
+              "joinStart": 3051
+            },
+            {
+              "deviceKey": "dmRmc4kScalerC-1",
+              "joinStart": 3061
+            },
+            {
+              "deviceKey": "dmRmc200C-1",
+              "joinStart": 3071
+            },
+            {
+              "deviceKey": "dmRmc100C-1",
+              "joinStart": 3081
+            },
+            {
+              "deviceKey": "comm-2",
+              "joinStart": 2501
+            },
+            {
+              "deviceKey": "comm-3",
+              "joinStart": 2511
+            },
+            {
+              "deviceKey": "comm-4",
+              "joinStart": 2521
+            },
+            {
+              "deviceKey": "cec-1",
+              "joinStart": 2531
+            },
+            {
+              "deviceKey": "cec-2",
+              "joinStart": 2541
+            },
+            {
+              "deviceKey": "cec-3",
+              "joinStart": 2551
+            },
+            {
+              "deviceKey": "cec-4",
+              "joinStart": 2561
+            },
+            {
+              "deviceKey": "cec-5",
+              "joinStart": 2571
+            },
+            {
+              "deviceKey": "cec-6",
+              "joinStart": 2581
+            },
+            {
+              "deviceKey": "cec-7",
+              "joinStart": 2591
+            },
+            {
+              "deviceKey": "gls-oir-1",
+              "joinStart": 2701
+            },
+            {
+              "deviceKey": "gls-odt-1",
+              "joinStart": 2751
+            }
+          ]
+        }
+      },
+      {
+        "key": "dmMd8x8-1",
+        "uid": 5,
+        "name": "DM-MD8x8 Chassis 1",
+        "type": "dmMd8x8",
+        "group": "dmChassis",
+        "properties": {
+          "control": {
+            "method": "ipid",
+            "ipid": "40",
+            "params": {
+              "endOfLineString": "\n",
+              "deviceReadyResponsePattern": ".*>"
+            }
+          },
+          "volumeControls": {},
+          "inputSlots": {
+            "1": "dmcHdDsp",
+            "2": "dmcHdDsp",
+            "3": "dmcDvi",
+            "4": "dmcDvi",
+            "5": "dmcC",
+            "6": "dmcCDsp"
+          },
+          "outputSlots": {
+            "1": "dmcCoHd",
+            "2": "dmcCoHd"
+          },
+          "inputNames": {
+            "1": "Input 1",
+            "2": "Input 2",
+            "3": "Input 3",
+            "4": "Input 4",
+            "5": "Input 5",
+            "6": "Input 6"
+          },
+          "parentDeviceKey": "processor",
+          "outputNames": {
+            "1": "Output 1",
+            "2": "Output 2",
+            "3": "Output 3",
+            "4": "Output 4"
+          }
+        }
+      },
+      {
+        "key": "dmTx201C-1",
+        "uid": 6,
+        "name": "DM-TX-201C 1",
+        "type": "dmTx201C",
+        "group": "dmEndpoint",
+        "properties": {
+          "control": {
+            "method": "ipid",
+            "ipid": "45",
+            "params": {
+              "endOfLineString": "\n",
+              "deviceReadyResponsePattern": ".*>"
+            }
+          },
+          "parentDeviceKey": "dmMd8x8-1",
+          "parentInputNumber": "5"
+        }
+      },
+      {
+        "key": "dmRmc4kScalerC-1",
+        "uid": 7,
+        "name": "DM-RMC-4K-SCALER-C Out 1",
+        "type": "dmRmc4kScalerC",
+        "group": "dmEndpoint",
+        "properties": {
+          "control": {
+            "method": "ipid",
+            "ipid": "61",
+            "params": {
+              "endOfLineString": "\n",
+              "deviceReadyResponsePattern": ".*>"
+            }
+          },
+          "parentDeviceKey": "dmMd8x8-1",
+          "parentOutputNumber": "1"
+        }
+      },
+      {
+        "key": "dmRmc200C-1",
+        "uid": 8,
+        "name": "DM-RMC-200-C Out 2",
+        "type": "dmRmc200C",
+        "group": "dmEndpoint",
+        "properties": {
+          "control": {
+            "method": "ipid",
+            "ipid": "62",
+            "params": {
+              "endOfLineString": "\n",
+              "deviceReadyResponsePattern": ".*>"
+            }
+          },
+          "parentDeviceKey": "dmMd8x8-1",
+          "parentOutputNumber": "2"
+        }
+      },
+      {
+        "key": "dmRmc100C-1",
+        "uid": 9,
+        "name": "DM-RMC-100-C Out 3",
+        "type": "dmRmc100C",
+        "group": "dmEndpoint",
+        "properties": {
+          "control": {
+            "method": "ipid",
+            "ipid": "63",
+            "params": {
+              "endOfLineString": "\n",
+              "deviceReadyResponsePattern": ".*>"
+            }
+          },
+          "parentDeviceKey": "dmMd8x8-1",
+          "parentOutputNumber": "3"
+        }
+      },
+      {
+        "key": "comm-2",
+        "uid": 10,
+        "name": "Rmc comm 1",
+        "type": "genericComm",
+        "group": "comm",
+        "properties": {
+          "control": {
+            "comParams": {
+              "hardwareHandshake": "None",
+              "parity": "None",
+              "protocol": "RS232",
+              "baudRate": 9600,
+              "dataBits": 8,
+              "softwareHandshake": "None",
+              "stopBits": 1
+            },
+            "controlPortNumber": 1,
+            "controlPortDevKey": "dmRmc4kScalerC-1",
+            "method": "Com"
+          }
+        }
+      },
+      {
+        "key": "comm-3",
+        "uid": 11,
+        "name": "Rmc comm 2",
+        "type": "genericComm",
+        "group": "comm",
+        "properties": {
+          "control": {
+            "comParams": {
+              "hardwareHandshake": "None",
+              "parity": "None",
+              "protocol": "RS232",
+              "baudRate": 9600,
+              "dataBits": 8,
+              "softwareHandshake": "None",
+              "stopBits": 1
+            },
+            "controlPortNumber": 1,
+            "controlPortDevKey": "dmRmc200C-1",
+            "method": "Com"
+          }
+        }
+      },
+      {
+        "key": "cec-1",
+        "uid": 13,
+        "name": "Tx 5 cec 1",
+        "type": "genericComm",
+        "group": "comm",
+        "properties": {
+          "control": {
+            "controlPortName": "HdmiIn",
+            "controlPortDevKey": "dmTx201C-1",
+            "method": "Cec"
+          }
+        }
+      },
+      {
+        "key": "cec-5",
+        "uid": 17,
+        "name": "Rmc 1 cec 1",
+        "type": "genericComm",
+        "group": "comm",
+        "properties": {
+          "control": {
+            "controlPortName": "HdmiOut",
+            "controlPortDevKey": "dmRmc4kScalerC-1",
+            "method": "Cec"
+          }
+        }
+      },
+      {
+        "key": "cec-6",
+        "uid": 18,
+        "name": "Dm Chassis In 1 cec 1",
+        "type": "genericComm",
+        "group": "comm",
+        "properties": {
+          "control": {
+            "controlPortName": "inputCard1--hdmiIn",
+            "controlPortDevKey": "dmMd8x8-1",
+            "method": "Cec"
+          }
+        }
+      },
+      {
+        "key": "cec-7",
+        "uid": 19,
+        "name": "Dm Chassis Out 1 cec 1",
+        "type": "genericComm",
+        "group": "comm",
+        "properties": {
+          "control": {
+            "controlPortName": "outputCard1--hdmiOut1",
+            "controlPortDevKey": "dmMd8x8-1",
+            "method": "Cec"
+          }
+        }
+      },
+      {
+        "key": "gls-oir-1",
+        "uid": 19,
+        "name": "GLS-OIR-CN 1",
+        "type": "glsoirccn",
+        "group": "occupancy",
+        "properties": {
+          "control": {
+            "cresnetId": "41",
+            "method": "cresnet"
+          }
+        }
+      },
+      {
+        "key": "gls-odt-1",
+        "uid": 19,
+        "name": "GLS-ODT-CN 1",
+        "type": "glsodtccn",
+        "group": "occupancy",
+        "properties": {
+          "control": {
+            "cresnetId": "42",
+            "method": "cresnet"
+          }
+        }
+      }
+    ],
+    "rooms": [],
+    "sourceLists": {},
+    "tieLines": []
+  },
+  "template_url": "",
+  "system": {
+  }
+}

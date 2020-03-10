@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.DM
     using eAst = Crestron.SimplSharpPro.DeviceSupport.eX02AudioSourceType;
 
     public class DmTx4k302CController : DmTxControllerBase, ITxRouting, IHasFeedback, 
-		IIROutputPorts, IComPorts
+		IIROutputPorts, IComPorts, IHasFreeRun, IVgaBrightnessContrastControls
 	{
 		public DmTx4k302C Tx { get; private set; }
 
@@ -35,8 +35,10 @@ namespace PepperDash.Essentials.DM
         public IntFeedback HdmiIn1HdcpCapabilityFeedback { get; protected set; }
         public IntFeedback HdmiIn2HdcpCapabilityFeedback { get; protected set; }
 
-        //public override IntFeedback HdcpSupportAllFeedback { get; protected set; }
-        //public override ushort HdcpSupportCapability { get; protected set; }
+        public BoolFeedback FreeRunEnabledFeedback { get; protected set; }
+
+        public IntFeedback VgaBrightnessFeedback { get; protected set; }
+        public IntFeedback VgaContrastFeedback { get; protected set; }
 
 		/// <summary>
 		/// Helps get the "real" inputs, including when in Auto
@@ -122,6 +124,13 @@ namespace PepperDash.Essentials.DM
 
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
 
+            FreeRunEnabledFeedback = new BoolFeedback(() => tx.VgaInput.FreeRunFeedback == eDmFreeRunSetting.Enabled);
+
+            VgaBrightnessFeedback = new IntFeedback(() => tx.VgaInput.VideoControls.BrightnessFeedback.UShortValue);
+            VgaContrastFeedback = new IntFeedback(() => tx.VgaInput.VideoControls.ContrastFeedback.UShortValue);
+
+            tx.VgaInput.VideoControls.ControlChange += new Crestron.SimplSharpPro.DeviceSupport.GenericEventHandler(VideoControls_ControlChange);
+
 
 			var combinedFuncs = new VideoStatusFuncsWrapper
 			{
@@ -181,6 +190,21 @@ namespace PepperDash.Essentials.DM
             DmOut.Port = Tx.DmOutput;
 		}
 
+        void VideoControls_ControlChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
+        {
+            var id = args.EventId;
+            Debug.Console(2, this, "EventId {0}", args.EventId);
+
+            if (id == VideoControlsEventIds.BrightnessFeedbackEventId)
+            {
+                VgaBrightnessFeedback.FireUpdate();
+            }
+            else if (id == VideoControlsEventIds.ContrastFeedbackEventId)
+            {
+                VgaContrastFeedback.FireUpdate();
+            }
+        }
+
 
 
 		public override bool CustomActivate()
@@ -198,6 +222,42 @@ namespace PepperDash.Essentials.DM
 			// Base does register and sets up comm monitoring.
 			return base.CustomActivate();
 		}
+
+        /// <summary>
+        /// Enables or disables free run
+        /// </summary>
+        /// <param name="enable"></param>
+        public void SetFreeRunEnabled(bool enable)
+        {
+            if (enable)
+            {
+                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Enabled;
+            }
+            else
+            {
+                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Disabled;
+            }
+        }
+
+        /// <summary>
+        /// Sets the VGA brightness level
+        /// </summary>
+        /// <param name="level"></param>
+        public void SetVgaBrightness(ushort level)
+        {
+            Tx.VgaInput.VideoControls.Brightness.UShortValue = level;
+        }
+
+        /// <summary>
+        /// Sets the VGA contrast level
+        /// </summary>
+        /// <param name="level"></param>
+        public void SetVgaContrast(ushort level)
+        {
+            Tx.VgaInput.VideoControls.Contrast.UShortValue = level;
+        }
+
+
 
         public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
         {

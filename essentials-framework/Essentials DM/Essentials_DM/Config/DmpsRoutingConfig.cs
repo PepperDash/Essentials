@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.DM.Cards;
 
 namespace PepperDash.Essentials.DM.Config
 {
@@ -19,6 +18,9 @@ namespace PepperDash.Essentials.DM.Config
 
 		[JsonProperty("outputNames")]
 		public Dictionary<uint, string> OutputNames { get; set; }
+
+        [JsonProperty("noRouteText")]
+        public string NoRouteText { get; set; }
 
         public DmpsRoutingPropertiesConfig()
         {

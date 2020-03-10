@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-
+using Crestron.SimplSharpPro.GeneralIO;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.CrestronIO;
 
 namespace PepperDash.Essentials.Core
 {
@@ -52,6 +53,27 @@ namespace PepperDash.Essentials.Core
                 Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
                 return new GenericComm(dc);
             }
+            else if (typeName == "ceniodigin104")
+            {
+                var control = CommFactory.GetControlPropertiesConfig(dc);
+                var ipid = control.IpIdInt;
+
+                return new CenIoDigIn104Controller(key, name, new Crestron.SimplSharpPro.GeneralIO.CenIoDi104(ipid, Global.ControlSystem));
+            }
+		    if (typeName == "statussign")
+		    {
+		        var control = CommFactory.GetControlPropertiesConfig(dc);
+		        var cresnetId = control.CresnetIdInt;
+
+                return  new StatusSignController(key, name, new StatusSign(cresnetId, Global.ControlSystem));
+		    }
+		    if (typeName == "c2nrths")
+		    {
+		        var control = CommFactory.GetControlPropertiesConfig(dc);
+		        var cresnetId = control.CresnetIdInt;
+
+		        return new C2nRthsController(key, name, new C2nRths(cresnetId, Global.ControlSystem));
+		    }
 
 			// then check for types that have been added by plugin dlls. 
 			if (FactoryMethods.ContainsKey(typeName))
