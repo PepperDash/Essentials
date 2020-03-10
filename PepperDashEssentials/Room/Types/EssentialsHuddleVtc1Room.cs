@@ -394,8 +394,30 @@ namespace PepperDash.Essentials
         /// <param name="routeKey"></param>
 		public void RunRouteAction(string routeKey)
 		{
-			RunRouteAction(routeKey, null);
-		}   
+            RunRouteAction(routeKey, new Action(() => { }));
+		}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="routeKey"></param>
+        /// <param name="souceListKey"></param>
+        /// <param name="successCallback"></param>
+        public void RunRouteAction(string routeKey, string souceListKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="routeKey"></param>
+        /// <param name="souceListKey"></param>
+        /// <param name="successCallback"></param>
+        public void RunRouteAction(string routeKey, string souceListKey, Action successCallback)
+        {
+            throw new NotImplementedException();
+        }
 
 		/// <summary>
 		/// Gets a source from config list SourceListKey and dynamically build and executes the

@@ -163,7 +163,7 @@ namespace PepperDash.Essentials.Core
         /// A label for the join to better describe it's usage
         /// </summary>
         [JsonProperty("label")]
-        public string Label { get; protected set; }
+        public string Label { get; set; }
         /// <summary>
         /// Signal type(s)
         /// </summary>
@@ -183,12 +183,12 @@ namespace PepperDash.Essentials.Core
         /// Indicates whether the join is read and/or write
         /// </summary>
         [JsonProperty("joinCapabilities")]
-        public eJoinCapabilities JoinCapabilities { get; protected set; }
+        public eJoinCapabilities JoinCapabilities { get; set; }
         /// <summary>
         /// Indicates a set of valid values (particularly if this translates to an enum
         /// </summary>
         [JsonProperty("validValues")]
-        public string[] ValidValues { get; protected set; }
+        public string[] ValidValues { get; set; }
 
     }
 }

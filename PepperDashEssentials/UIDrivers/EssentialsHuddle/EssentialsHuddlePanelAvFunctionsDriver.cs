@@ -564,7 +564,7 @@ namespace PepperDash.Essentials
 		void UiSelectSource(string key)
 		{
 			// Run the route and when it calls back, show the source
-			CurrentRoom.RunRouteAction(key, null);
+			CurrentRoom.RunRouteAction(key, new Action(() => { }));
 		}
 
 		/// <summary>
