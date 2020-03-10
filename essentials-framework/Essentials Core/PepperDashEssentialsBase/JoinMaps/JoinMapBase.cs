@@ -161,7 +161,7 @@ namespace PepperDash.Essentials.Core
         /// A label for the join to better describe it's usage
         /// </summary>
         [JsonProperty("label")]
-        public string Label { get; set; }
+        public string Label { get; protected set; }
         /// <summary>
         /// Signal type(s)
         /// </summary>
@@ -181,44 +181,12 @@ namespace PepperDash.Essentials.Core
         /// Indicates whether the join is read and/or write
         /// </summary>
         [JsonProperty("joinCapabilities")]
-        public eJoinCapabilities JoinCapabilities { get; set; }
+        public eJoinCapabilities JoinCapabilities { get; protected set; }
+        /// <summary>
+        /// Indicates a set of valid values (particularly if this translates to an enum
+        /// </summary>
+        [JsonProperty("validValues")]
+        public string[] ValidValues { get; protected set; }
 
-    }
-
-    public enum eBiologicalSex
-    {
-        Unknown = 0,
-        Female = 1,
-        Male = 2, 
-        Intersex = Male | Female
-    }
-
-    public class Human
-    {
-
-        eBiologicalSex BiologicalSex;
-
-        public bool IsMale
-        {
-            get { return (BiologicalSex & eBiologicalSex.Male) == eBiologicalSex.Male; }
-        }
-
-        public bool IsFemale
-        {
-            get { return (BiologicalSex & eBiologicalSex.Female) == eBiologicalSex.Female; }
-        }
-
-        public bool IsIntersex
-        {
-            get { return (BiologicalSex & eBiologicalSex.Intersex) == eBiologicalSex.Intersex; }
-        }
-
-        public bool IsDeservingOfBasicHumanRights
-        {
-            get
-            {
-                return this is Human;
-            }
-        }
     }
 }
