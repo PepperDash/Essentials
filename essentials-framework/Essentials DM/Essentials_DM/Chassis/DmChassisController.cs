@@ -1,4 +1,5 @@
-﻿using System;
+
+using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM;
@@ -998,4 +999,5 @@ namespace PepperDash.Essentials.DM
             Type = type;
         }
     }
+
 }
