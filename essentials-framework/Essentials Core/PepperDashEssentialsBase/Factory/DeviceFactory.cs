@@ -83,21 +83,6 @@ namespace PepperDash.Essentials.Core
 
 		        return new C2nRthsController(key, name, new C2nRths(cresnetId, Global.ControlSystem));
 		    }
-            if (typeName.StartsWith("mpc3"))
-            {
-                var butToken = dc.Properties["buttons"];
-                if (butToken != null)
-                {
-                    var buttons = butToken.ToObject<Dictionary<uint, KeypadButton>>();
-                    return new Mpc3TouchpanelController(key, name, Global.ControlSystem, buttons);
-                }
-                else
-                {
-                    Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: Unable to deserialize buttons collection for device: {0}", key);
-                }
-            }
-
-	
 
             return null;
         }
