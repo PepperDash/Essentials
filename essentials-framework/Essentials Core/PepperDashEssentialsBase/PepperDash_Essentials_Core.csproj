@@ -236,6 +236,7 @@
     <Compile Include="Touchpanels\CrestronTouchpanelPropertiesConfig.cs" />
     <Compile Include="Touchpanels\Interfaces.cs" />
     <Compile Include="Touchpanels\Keyboards\HabaneroKeyboardController.cs" />
+    <Compile Include="Touchpanels\Mpc3Touchpanel.cs" />
     <Compile Include="Touchpanels\TriListExtensions.cs" />
     <Compile Include="UI PageManagers\BlurayPageManager.cs" />
     <Compile Include="UI PageManagers\SetTopBoxThreePanelPageManager.cs" />
