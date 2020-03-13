@@ -435,7 +435,7 @@ namespace PepperDash.Essentials
                             var butToken = devConf.Properties["buttons"];
                             if (butToken != null)
                             {
-                                var buttons = butToken.ToObject<Dictionary<uint, Essentials.Core.Touchpanels.KeypadButton>>();
+                                var buttons = butToken.ToObject<Dictionary<string, Essentials.Core.Touchpanels.KeypadButton>>();
                                 var tpController = new Essentials.Core.Touchpanels.Mpc3TouchpanelController(devConf.Key, devConf.Name, Global.ControlSystem, buttons);
                                 DeviceManager.AddDevice(tpController);
                             }
