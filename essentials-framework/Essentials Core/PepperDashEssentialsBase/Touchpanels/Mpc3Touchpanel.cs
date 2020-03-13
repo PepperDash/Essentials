@@ -18,9 +18,9 @@ namespace PepperDash.Essentials.Core.Touchpanels
     {
         MPC3Basic _Touchpanel;
 
-        Dictionary<uint, KeypadButton> _Buttons;
+        Dictionary<string, KeypadButton> _Buttons;
 
-        public Mpc3TouchpanelController(string key, string name, CrestronControlSystem processor, Dictionary<uint, KeypadButton> buttons)
+        public Mpc3TouchpanelController(string key, string name, CrestronControlSystem processor, Dictionary<string, KeypadButton> buttons)
             : base(key, name)
         {
             _Touchpanel = processor.ControllerTouchScreenSlotDevice as MPC3Basic;
@@ -38,11 +38,37 @@ namespace PepperDash.Essentials.Core.Touchpanels
                         var device = DeviceManager.GetDeviceForKey(feedbackConfig.DeviceKey) as Device;
                         if (device != null)
                         {
-                            var feedback = device.GetFeedbackProperty(feedbackConfig.BoolFeedbackName) as BoolFeedback;
-                            if (feedback != null)
+                            var bKey = button.Key.ToLower();
+
+                            var feedback = device.GetFeedbackProperty(feedbackConfig.BoolFeedbackName);
+
+                            var bFeedback = feedback as BoolFeedback;
+                            var iFeedback = feedback as IntFeedback;
+                            if (bFeedback != null)
                             {
+
+                                if (bKey == "power")
+                                {
+                                    bFeedback.LinkCrestronFeedback(_Touchpanel.FeedbackPower);
+                                    continue;
+                                }
+                                else if (bKey == "mute")
+                                {
+                                    bFeedback.LinkCrestronFeedback(_Touchpanel.FeedbackMute);
+                                    continue;
+                                }
+
                                 // Link to the Crestron Feedback corresponding to the button number
-                                feedback.LinkCrestronFeedback(_Touchpanel.Feedbacks[button.Key]);
+                                bFeedback.LinkCrestronFeedback(_Touchpanel.Feedbacks[UInt16.Parse(button.Key)]);
+                            }
+                            else if (iFeedback != null)
+                            {
+                                if (bKey == "volumefeedback")
+                                {
+                                    var volFeedback = feedback as IntFeedback;
+                                    // TODO: Figure out how to subsribe to a volume IntFeedback and link it to the voluem
+                                    volFeedback.LinkInputSig(_Touchpanel.VolumeBargraph);
+                                }
                             }
                             else
                             {
@@ -60,10 +86,15 @@ namespace PepperDash.Essentials.Core.Touchpanels
         void _Touchpanel_ButtonStateChange(GenericBase device, Crestron.SimplSharpPro.DeviceSupport.ButtonEventArgs args)
         {
             Debug.Console(1, this, "Button {0} ({1}), {2}", args.Button.Number, args.Button.Name, args.NewButtonState);
-            if (_Buttons.ContainsKey(args.Button.Number))
+            var type = args.NewButtonState.ToString();
+
+            if (_Buttons.ContainsKey(args.Button.Number.ToString()))
             {
-                var type = args.NewButtonState.ToString();
-                Press(args.Button.Number, type);
+                Press(args.Button.Number.ToString(), type);
+            }
+            else if(_Buttons.ContainsKey(args.Button.Name.ToString()))
+            {
+                Press(args.Button.Name.ToString(), type);
             }
         }
 
@@ -73,7 +104,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
         /// </summary>
         /// <param name="number"></param>
         /// <param name="type"></param>
-        public void Press(uint number, string type)
+        public void Press(string number, string type)
         {
             // TODO: In future, consider modifying this to generate actions at device activation time
             //       to prevent the need to dynamically call the method via reflection on each button press
