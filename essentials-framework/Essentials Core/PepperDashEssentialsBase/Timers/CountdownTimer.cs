@@ -50,7 +50,18 @@ namespace PepperDash.Essentials.Core
                     if (StartTime == null || FinishTime == null)
                         return "";
                     var timeSpan = FinishTime - DateTime.Now;
-                    return Math.Round(timeSpan.TotalSeconds).ToString();
+
+                    if (timeSpan.TotalSeconds < 60)
+                    {
+                        return Math.Round(timeSpan.TotalSeconds).ToString();
+                    }
+                    else
+                    {
+                        Debug.Console(2, this, "timeSpan.Minutes == {0}, timeSpan.Seconds == {1}", timeSpan.Minutes, timeSpan.Seconds);
+                        return String.Format("{0:D2}:{1:D2}",
+                            timeSpan.Minutes,
+                            timeSpan.Seconds);
+                    }
                 });
 
             PercentFeedback = new IntFeedback(() =>
