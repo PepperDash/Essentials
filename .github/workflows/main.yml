@@ -1,0 +1,21 @@
+name: Build Non-Release Branch
+
+on:
+  push:
+    branches:
+      - feature/*
+      - bugfix/*
+      - hotfix/*
+      - release/*
+      - development
+      - master
+
+jobs:
+  build:
+    name: Build
+    runs-on: self-hosted
+    steps:
+      - run: Invoke-WebRequest -URI "http://localhost:8080/job/Essentials%20Builds/build?token=$($Env:projectToken)" -Headers @{Authorization = "Basic $([System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes("ndorin:$($Env:token)")))"} -Method POST -UseBasicParsing
+        env:
+          token: ${{ secrets.TOKEN }}
+          projectToken: ${{ secrets.PROJECTTOKEN}}

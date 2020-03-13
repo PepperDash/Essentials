@@ -59,7 +59,7 @@ namespace PepperDash.Essentials.Core
 		}
 
 		/// <summary>
-		/// 
+		/// Gets the properties on a device
 		/// </summary>
 		/// <param name="key"></param>
 		/// <returns></returns>
@@ -75,8 +75,34 @@ namespace PepperDash.Essentials.Core
 			return JsonConvert.SerializeObject(props, Formatting.Indented);
 		}
 
+        /// <summary>
+        /// Gets a property from a device path by name
+        /// </summary>
+        /// <param name="deviceObjectPath"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public static object GetPropertyByName(string deviceObjectPath, string propertyName)
+        {
+            var obj = FindObjectOnPath(deviceObjectPath);
+            if(obj == null)
+                return "{ \"error\":\"No Device\"}";
+
+            CType t = obj.GetType();
+
+            var prop = t.GetProperty(propertyName);
+            if (prop != null)
+            {
+                return prop;
+            }
+            else
+            {
+                Debug.Console(1, "Unable to find Property: {0} on Device with path: {1}", propertyName, deviceObjectPath);
+                return null;
+            }
+        }
+
 		/// <summary>
-		/// 
+		/// Gets the methods on a device
 		/// </summary>
 		/// <param name="key"></param>
 		/// <returns></returns>
