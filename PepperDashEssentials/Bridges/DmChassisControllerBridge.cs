@@ -1,4 +1,5 @@
-﻿using System;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,7 @@ using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Bridges
 {
-    public static class DmChassisControllerApiExtensions
+    public static class DmChassisControllerApiExtentions
     {
         public static void LinkToApi(this DmChassisController dmChassis, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
@@ -81,14 +82,14 @@ namespace PepperDash.Essentials.Bridges
                         }
                     }
 
-                    if (advancedTxDevice != null)   // Advanced TX device
+                    if (basicTxDevice != null && advancedTxDevice == null)
+                        trilist.BooleanInput[joinMap.TxAdvancedIsPresent + ioSlot].BoolValue = true;
+
+                    if (advancedTxDevice != null)
                     {
                         advancedTxDevice.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
-
-                        // Flag if the TX is an advanced endpoint type
-                        trilist.BooleanInput[joinMap.TxAdvancedIsPresent + ioSlot].BoolValue = true;
                     }
-                    else if(advancedTxDevice == null || basicTxDevice != null)  // Basic TX device
+                    else if(advancedTxDevice == null || basicTxDevice != null)
                     {
                         Debug.Console(1, "Setting up actions and feedbacks on input card {0}", ioSlot);
                         dmChassis.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
@@ -167,6 +168,7 @@ namespace PepperDash.Essentials.Bridges
                         }
                     }
                 }
+                
                 if (dmChassis.RxDictionary.ContainsKey(ioSlot))
                 {
                     Debug.Console(2, "Creating Rx Feedbacks {0}", ioSlot);
@@ -191,11 +193,12 @@ namespace PepperDash.Essentials.Bridges
                 dmChassis.UsbOutputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputUsb + ioSlot]);
                 dmChassis.UsbInputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.InputUsb + ioSlot]);
 
-
                 dmChassis.OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames + ioSlot]);
                 dmChassis.InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames + ioSlot]);
                 dmChassis.OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames + ioSlot]);
                 dmChassis.OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentAudioInputNames + ioSlot]);
+                
+                dmChassis.OutputDisabledByHdcpFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputDisabledByHdcp + ioSlot]);
             }
         }
 
@@ -281,4 +284,5 @@ namespace PepperDash.Essentials.Bridges
         }
 
     }
+
 }

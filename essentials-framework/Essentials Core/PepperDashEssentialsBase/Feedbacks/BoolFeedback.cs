@@ -32,6 +32,8 @@ namespace PepperDash.Essentials.Core
         List<BoolInputSig> LinkedInputSigs = new List<BoolInputSig>();
         List<BoolInputSig> LinkedComplementInputSigs = new List<BoolInputSig>();
 
+        List<Crestron.SimplSharpPro.DeviceSupport.Feedback> LinkedCrestronFeedbacks = new List<Crestron.SimplSharpPro.DeviceSupport.Feedback>();
+
         public BoolFeedback(Func<bool> valueFunc)
             : this(null, valueFunc)
         {
@@ -56,26 +58,61 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// Links an input sig
+        /// </summary>
+        /// <param name="sig"></param>
         public void LinkInputSig(BoolInputSig sig)
         {
             LinkedInputSigs.Add(sig);
             UpdateSig(sig);
         }
 
+        /// <summary>
+        /// Unlinks an inputs sig
+        /// </summary>
+        /// <param name="sig"></param>
         public void UnlinkInputSig(BoolInputSig sig)
         {
             LinkedInputSigs.Remove(sig);
         }
 
+        /// <summary>
+        /// Links an input sig to the complement value
+        /// </summary>
+        /// <param name="sig"></param>
         public void LinkComplementInputSig(BoolInputSig sig)
         {
             LinkedComplementInputSigs.Add(sig);
             UpdateComplementSig(sig);
         }
 
+        /// <summary>
+        /// Unlinks an input sig to the complement value
+        /// </summary>
+        /// <param name="sig"></param>
         public void UnlinkComplementInputSig(BoolInputSig sig)
         {
             LinkedComplementInputSigs.Remove(sig);
+        }
+
+        /// <summary>
+        /// Links a Crestron Feedback object
+        /// </summary>
+        /// <param name="feedback"></param>
+        public void LinkCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
+        {
+            LinkedCrestronFeedbacks.Add(feedback);
+            UpdateCrestronFeedback(feedback);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="feedback"></param>
+        public void UnlinkCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
+        {
+            LinkedCrestronFeedbacks.Remove(feedback);
         }
 
         public override string ToString()
@@ -102,6 +139,11 @@ namespace PepperDash.Essentials.Core
         void UpdateComplementSig(BoolInputSig sig)
         {
             sig.BoolValue = !_BoolValue;
+        }
+
+        void UpdateCrestronFeedback(Crestron.SimplSharpPro.DeviceSupport.Feedback feedback)
+        {
+            feedback.State = _BoolValue;
         }
     }
 
