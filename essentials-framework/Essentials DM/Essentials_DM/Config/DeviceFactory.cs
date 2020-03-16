@@ -30,14 +30,17 @@ namespace PepperDash.Essentials.DM
 
             if (typeName.StartsWith("am"))
             {
-                var props = JsonConvert.DeserializeObject<AirMediaPropertiesConfig>(properties.ToString());
-                AmX00 amDevice = null;
-                if (typeName == "am200")
-                    amDevice = new Crestron.SimplSharpPro.DM.AirMedia.Am200(props.Control.IpIdInt, Global.ControlSystem);
-                else if(typeName == "am300")
-                    amDevice = new Crestron.SimplSharpPro.DM.AirMedia.Am300(props.Control.IpIdInt, Global.ControlSystem);
+                if (typeName == "am200" || typeName == "am300")
+                {
+                    var props = JsonConvert.DeserializeObject<AirMediaPropertiesConfig>(properties.ToString());
+                    AmX00 amDevice = null;
+                    if (typeName == "am200")
+                        amDevice = new Crestron.SimplSharpPro.DM.AirMedia.Am200(props.Control.IpIdInt, Global.ControlSystem);
+                    else if (typeName == "am300")
+                        amDevice = new Crestron.SimplSharpPro.DM.AirMedia.Am300(props.Control.IpIdInt, Global.ControlSystem);
 
-                return new AirMediaController(key, name, amDevice, dc, props);
+                    return new AirMediaController(key, name, amDevice, dc, props);
+                }
             }
 			else if (typeName.StartsWith("dmmd8x") || typeName.StartsWith("dmmd16x") || typeName.StartsWith("dmmd32x"))
 			{

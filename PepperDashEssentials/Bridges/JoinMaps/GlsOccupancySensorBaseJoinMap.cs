@@ -137,6 +137,10 @@ namespace PepperDash.Essentials.Bridges
         public uint PirSensitivityInVacantState { get; set; }
         #endregion
 
+        #region Serial
+        public uint Name { get; set; }
+        #endregion
+
         public GlsOccupancySensorBaseJoinMap()
         {
             IsOnline = 1;
@@ -177,7 +181,10 @@ namespace PepperDash.Essentials.Bridges
             UsSensitivityInOccupiedState = 5;
             UsSensitivityInVacantState = 6;
             PirSensitivityInOccupiedState = 7;
-            PirSensitivityInVacantState = 8;           
+            PirSensitivityInVacantState = 8;
+
+            Name = 1;
+            
         }
 
         public override void OffsetJoinNumbers(uint joinStart)
@@ -206,7 +213,6 @@ namespace PepperDash.Essentials.Bridges
             DisableUsB =                        DisableUsB + joinOffset; 
             EnablePir =                         EnablePir + joinOffset; 
             DisablePir =                        DisablePir + joinOffset; 
-            DisablePir =                        DisablePir + joinOffset; 
             IncrementUsInOccupiedState =        IncrementUsInOccupiedState + joinOffset; 
             DecrementUsInOccupiedState =        DecrementUsInOccupiedState + joinOffset; 
             IncrementUsInVacantState =          IncrementUsInVacantState + joinOffset; 
@@ -224,6 +230,8 @@ namespace PepperDash.Essentials.Bridges
             UsSensitivityInVacantState =        UsSensitivityInVacantState + joinOffset; 
             PirSensitivityInOccupiedState =     PirSensitivityInOccupiedState + joinOffset;
             PirSensitivityInVacantState =       PirSensitivityInVacantState + joinOffset;
+
+            Name =                              Name + joinOffset;
         }
     }    
          
