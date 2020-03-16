@@ -147,11 +147,65 @@ namespace PepperDash.Essentials.Bridges
         public override void OffsetJoinNumbers(uint joinStart)
         {
             var joinOffset = joinStart - 1;
-            var properties = this.GetType().GetCType().GetProperties().Where(o => o.PropertyType == typeof(uint)).ToList();
-            foreach (var property in properties)
-            {
-                property.SetValue(this, (uint)property.GetValue(this, null) + joinOffset, null);
-            }
+
+            PowerOn += joinOffset;
+            PowerOff += joinOffset;
+            PowerToggle += joinOffset;
+
+            HasDpad += joinOffset;
+            Up += joinOffset;
+            Down += joinOffset;
+            Left += joinOffset;
+            Right += joinOffset;
+            Select += joinOffset;
+            Menu += joinOffset;
+            Exit += joinOffset;
+
+            HasNumeric += joinOffset;
+            Digit0 += joinOffset;
+            Digit1 += joinOffset;
+            Digit2 += joinOffset;
+            Digit3 += joinOffset;
+            Digit4 += joinOffset;
+            Digit5 += joinOffset;
+            Digit6 += joinOffset;
+            Digit7 += joinOffset;
+            Digit8 += joinOffset;
+            Digit9 += joinOffset;
+            Dash += joinOffset;
+            KeypadEnter += joinOffset;
+            ChannelUp += joinOffset;
+            ChannelDown += joinOffset;
+            LastChannel += joinOffset;
+
+            Guide += joinOffset;
+            Info += joinOffset;
+            Red += joinOffset;
+            Green += joinOffset;
+            Yellow += joinOffset;
+            Blue += joinOffset;
+
+            HasDvr += joinOffset;
+            DvrList += joinOffset;
+            Play += joinOffset;
+            Pause += joinOffset;
+            Stop += joinOffset;
+            FFwd += joinOffset;
+            Rewind += joinOffset;
+            ChapPlus += joinOffset;
+            ChapMinus += joinOffset;
+            Replay += joinOffset;
+            Record += joinOffset;
+            HasKeypadAccessoryButton1 += joinOffset;
+            KeypadAccessoryButton1Press += joinOffset;
+            HasKeypadAccessoryButton2 += joinOffset;
+            KeypadAccessoryButton2Press += joinOffset;
+
+            Name += joinOffset;
+            KeypadAccessoryButton1Label += joinOffset;
+            KeypadAccessoryButton2Label += joinOffset;
+
+            LoadPresets += joinOffset;
         }
 
     }
