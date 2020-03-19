@@ -1,7 +1,7 @@
 # Uncomment these for local testing
-$Env:GITHUB_WORKSPACE = "C:\Working Directories\PD\essentials"
-$Env:SOLUTION_FILE = "PepperDashEssentials"
-$Env:VERSION = "0.0.0-buildType-test"
+# $Env:GITHUB_WORKSPACE = "C:\Working Directories\PD\essentials"
+# $Env:SOLUTION_FILE = "PepperDashEssentials"
+# $Env:VERSION = "0.0.0-buildType-test"
 
 # Sets the root directory for the operation
 $destination = "$($Env:GITHUB_WORKSPACE)\output"
