@@ -47,7 +47,7 @@ jobs:
       # Fetch all tags
       - name: Fetch tags
         run: git fetch --tags
-      # Generate the appropriate version number  
+      # Generate the appropriate version number
       - name: Set Version Number
         shell: powershell
         run: |
@@ -63,7 +63,7 @@ jobs:
       - name: Build Solution
         shell: powershell
         run: |
-          Invoke-Expression "docker run --rm --mount type=bind,source=""$($Env:GITHUB_WORKSPACE)"",target=""c:/project"" pepperdash/sspbuilder c:\cihelpers\vsidebuild.exe -Solution ""c:\project\$($Env:SOLUTION_FILE).sln"" -BuildSolutionConfiguration $($ENV:BUILD_TYPE)"    
+          Invoke-Expression "docker run --rm --mount type=bind,source=""$($Env:GITHUB_WORKSPACE)"",target=""c:/project"" pepperdash/sspbuilder c:\cihelpers\vsidebuild.exe -Solution ""c:\project\$($Env:SOLUTION_FILE).sln"" -BuildSolutionConfiguration $($ENV:BUILD_TYPE)"
       # Zip up the output files as needed
       - name: Zip Build Output
         shell: powershell
@@ -82,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: Version
-          path: $($Env:GITHUB_HOME)\output\version.txt
+          path: ${{env.GITHUB_HOME}}\output\version.txt
       # Create the release on the source repo
       - name: Create Release
         id: create_release
@@ -245,4 +245,3 @@ jobs:
         run: git push --tags origin
       - name: Check Directory
         run: Get-ChildItem ./
-          
