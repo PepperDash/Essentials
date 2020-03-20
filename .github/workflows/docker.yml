@@ -82,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: Version
-          path: $($Env:GITHUB_HOME)\output\version.txt
+          path: ./${{$Env:GITHUB_HOME}}\output\version.txt
       # Create the release on the source repo
       - name: Create Release
         id: create_release
