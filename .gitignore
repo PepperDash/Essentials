@@ -22,3 +22,6 @@ _ReSharper*/
 SIMPLSharpLogs/
 *.projectinfo
 essentials-framework/EssentialDMTestConfig/
+output/
+
+PepperDashEssentials-0.0.0-buildType-test.zip
