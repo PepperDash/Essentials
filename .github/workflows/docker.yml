@@ -70,7 +70,7 @@ jobs:
         run: ./.github/scripts/ZipBuildOutput.ps1
       # Write the version to a file to be consumed by the push jobs
       - name: Write Version
-        run: Write-Output "$($Env:VERSION)" | Out-File -FilePath ".\output\version.txt"
+        run: Write-Output "$($Env:VERSION)" | Out-File -FilePath "$($Env:GITHUB_HOME)\output\version.txt"
       # Upload the build output as an artifact
       - name: Upload Build Output
         uses: actions/upload-artifact@v1
