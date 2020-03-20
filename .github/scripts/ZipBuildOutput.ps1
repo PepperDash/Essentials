@@ -4,7 +4,7 @@
 # $Env:VERSION = "0.0.0-buildType-test"
 
 # Sets the root directory for the operation
-$destination = "$($Env:GITHUB_WORKSPACE)\output"
+$destination = "$($Env:GITHUB_HOME)\output"
 New-Item -ItemType Directory -Force -Path ($destination)
 Get-ChildItem ($destination)
 $exclusions = @(git submodule foreach --quiet 'echo $name')
@@ -33,9 +33,9 @@ Get-ChildItem -Path $destination | Where-Object { ($_.Extension -eq ".clz") -or 
   Write-Host $filenames
   if ($filenames.length -gt 0) {
     # Attempt to get the files and return them to the output directory
-    Get-ChildItem -Recurse -Path "$($Env:GITHUB_WORKSPACE)" -include $filenames | Copy-Item -Destination ($destination)
+    Get-ChildItem -Recurse -Path "$($Env:GITHUB_WORKSPACE)" -include $filenames | Copy-Item -Destination ($destination) -Force
   }
 }
-Compress-Archive -Path "$($Env:GITHUB_WORKSPACE)\output\*" -DestinationPath "$($Env:GITHUB_WORKSPACE)\$($Env:SOLUTION_FILE)-$($Env:VERSION).zip" -Force
+Compress-Archive -Path "$($Env:GITHUB_HOME)\output\*" -DestinationPath "$($Env:GITHUB_WORKSPACE)\$($Env:SOLUTION_FILE)-$($Env:VERSION).zip" -Force
 Write-Host "Output Contents post Zip"
 Get-ChildItem -Path $destination
