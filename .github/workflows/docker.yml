@@ -88,8 +88,8 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: v${{ env.VERSION  }}
-          release_name: v${{ env.VERSION }}
+          tag_name: ${{ env.VERSION  }}
+          release_name: ${{ env.VERSION }}
           prerelease: ${{contains('debug', env.BUILD_TYPE)}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
