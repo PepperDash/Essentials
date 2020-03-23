@@ -136,6 +136,11 @@ namespace PepperDash.Essentials.Bridges
                             (device as GenericRelayDevice).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
+                        else if (device is IRSetTopBoxBase)
+                        {
+                            (device as IRSetTopBoxBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
                         else if (device is IDigitalInput)
                         {
                             (device as IDigitalInput).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);

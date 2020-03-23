@@ -9,6 +9,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
+using PepperDash.Essentials.Core.Touchpanels;
 
 namespace PepperDash.Essentials.Core
 {
@@ -47,13 +48,21 @@ namespace PepperDash.Essentials.Core
 
             var typeName = dc.Type.ToLower();
 
-			// Check "core" types first
+
+            // Check for types that have been added by plugin dlls. 
+            if (FactoryMethods.ContainsKey(typeName))
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading '{0}' from plugin", dc.Type);
+                return FactoryMethods[typeName](dc);
+            }
+
+			// Check "core" types 
             if (typeName == "genericcomm")
             {
                 Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
                 return new GenericComm(dc);
             }
-            else if (typeName == "ceniodigin104")
+            if (typeName == "ceniodigin104")
             {
                 var control = CommFactory.GetControlPropertiesConfig(dc);
                 var ipid = control.IpIdInt;
@@ -74,13 +83,6 @@ namespace PepperDash.Essentials.Core
 
 		        return new C2nRthsController(key, name, new C2nRths(cresnetId, Global.ControlSystem));
 		    }
-
-			// then check for types that have been added by plugin dlls. 
-			if (FactoryMethods.ContainsKey(typeName))
-			{
-				Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading '{0}' from plugin", dc.Type);
-				return FactoryMethods[typeName](dc);
-			}
 
             return null;
         }

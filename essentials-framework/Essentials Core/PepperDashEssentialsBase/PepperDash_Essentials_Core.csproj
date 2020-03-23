@@ -131,6 +131,7 @@
     <Compile Include="Devices\CodecInterfaces.cs" />
     <Compile Include="Devices\CrestronProcessor.cs" />
     <Compile Include="Devices\DeviceApiBase.cs" />
+    <Compile Include="Devices\DeviceFeedbackExtensions.cs" />
     <Compile Include="Devices\PC\InRoomPc.cs" />
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
@@ -236,6 +237,7 @@
     <Compile Include="Touchpanels\CrestronTouchpanelPropertiesConfig.cs" />
     <Compile Include="Touchpanels\Interfaces.cs" />
     <Compile Include="Touchpanels\Keyboards\HabaneroKeyboardController.cs" />
+    <Compile Include="Touchpanels\Mpc3Touchpanel.cs" />
     <Compile Include="Touchpanels\TriListExtensions.cs" />
     <Compile Include="UI PageManagers\BlurayPageManager.cs" />
     <Compile Include="UI PageManagers\SetTopBoxThreePanelPageManager.cs" />

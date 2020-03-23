@@ -12,7 +12,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class IRSetTopBoxBase : Device, ISetTopBoxControls, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
+	public class IRSetTopBoxBase : Device, ISetTopBoxControls, IUiDisplayInfo, IRoutingOutputs, IUsageTracking, IPower
 	{
 		public IrOutputPortController IrPort { get; private set; }
 
@@ -339,5 +339,33 @@ namespace PepperDash.Essentials.Devices.Common
         public UsageTracking UsageTracker { get; set; }
 
         #endregion
-	}
+
+        #region IPower Members
+
+        public void PowerOn()
+        {
+            IrPort.PressRelease(IROutputStandardCommands.IROut_POWER_ON, true);
+            IrPort.PressRelease(IROutputStandardCommands.IROut_POWER_ON, false);
+
+        }
+
+        public void PowerOff()
+        {
+            IrPort.PressRelease(IROutputStandardCommands.IROut_POWER_OFF, true);
+            IrPort.PressRelease(IROutputStandardCommands.IROut_POWER_OFF, false);
+
+        }
+
+        public void PowerToggle()
+        {
+            throw new NotImplementedException(); 
+        }
+
+        public BoolFeedback PowerIsOnFeedback
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        #endregion
+    }
 }
