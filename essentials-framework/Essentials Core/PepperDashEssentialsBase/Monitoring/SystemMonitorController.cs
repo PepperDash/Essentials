@@ -18,13 +18,30 @@ namespace PepperDash.Essentials.Core.Monitoring
 
         public Dictionary<uint, ProgramStatusFeedbacks> ProgramStatusFeedbackCollection;
 
-        public IntFeedback TimeZoneFeedback { get; set; }
-        public StringFeedback TimeZoneTextFeedback { get; set; }
+        public IntFeedback TimeZoneFeedback { get; protected set; }
+        public StringFeedback TimeZoneTextFeedback { get; protected set; }
 
-        public StringFeedback IoControllerVersionFeedback { get; set; }
-        public StringFeedback SnmpVersionFeedback { get; set; }
-        public StringFeedback BaCnetAppVersionFeedback { get; set; }
-        public StringFeedback ControllerVersionFeedback { get; set; }
+        public StringFeedback IoControllerVersionFeedback { get; protected set; }
+        public StringFeedback SnmpVersionFeedback { get; protected set; }
+        public StringFeedback BaCnetAppVersionFeedback { get; protected set; }
+        public StringFeedback ControllerVersionFeedback { get; protected set; }
+
+        //new feedbacks. Issue #50
+        public StringFeedback FirmwareVersion { get; protected set; }
+        public StringFeedback HostName { get; protected set; }
+        public StringFeedback SerialNumber { get; protected set; }
+        public StringFeedback Model { get; set; }
+        public StringFeedback LanIpAddress { get; protected set; }
+        public StringFeedback DefaultGateway { get; protected set; }
+        public StringFeedback Domain { get; protected set; }
+        public StringFeedback DnsServer01 { get; protected set; }
+        public StringFeedback DnsServer02 { get; protected set; }
+        public StringFeedback LanMacAddress { get; protected set; }
+        public StringFeedback LanSubnetMask { get; protected set; }
+     
+        public StringFeedback CsIpAddress { get; protected set; }
+        public StringFeedback CsSubnetMask { get; protected set; }
+
 
         public SystemMonitorController(string key)
             : base(key)
@@ -49,8 +66,27 @@ namespace PepperDash.Essentials.Core.Monitoring
                 ProgramStatusFeedbackCollection.Add(prog.Number, program);
             }
 
+            CreateControllerFeedbacks();
+
             SystemMonitor.ProgramChange += SystemMonitor_ProgramChange;
             SystemMonitor.TimeZoneInformation.TimeZoneChange += TimeZoneInformation_TimeZoneChange;
+        }
+
+        private void CreateControllerFeedbacks()
+        {
+            FirmwareVersion = new StringFeedback(() => InitialParametersClass.FirmwareVersion);
+            HostName = new StringFeedback(() => String.Empty );
+            SerialNumber = new StringFeedback(()=> String.Empty);
+            Model = new StringFeedback(() => InitialParametersClass.ControllerPromptName);
+            LanIpAddress = new StringFeedback(() => String.Empty);
+            DefaultGateway = new StringFeedback(() => String.Empty);
+            Domain = new StringFeedback(() => String.Empty);
+            DnsServer01 = new StringFeedback(() => String.Empty);
+            DnsServer02 = new StringFeedback(() => String.Empty);
+            LanMacAddress = new StringFeedback(() => String.Empty);
+            LanSubnetMask = new StringFeedback(() => String.Empty);
+            CsIpAddress = new StringFeedback(() => String.Empty);
+            CsSubnetMask = new StringFeedback(() => String.Empty);
         }
 
         /// <summary>
@@ -108,31 +144,26 @@ namespace PepperDash.Essentials.Core.Monitoring
 
             var program = ProgramStatusFeedbackCollection[sender.Number];
 
-            if (args.EventType == eProgramChangeEventType.OperatingState)
+            switch (args.EventType)
             {
-                program.ProgramStartedFeedback.FireUpdate();
-                program.ProgramStoppedFeedback.FireUpdate();
-
-                program.ProgramInfo.OperatingState = args.OperatingState;
-
-                //program.GetProgramInfo();
-
-                if (args.OperatingState == eProgramOperatingState.Start)
+                case eProgramChangeEventType.OperatingState:
+                    program.ProgramStartedFeedback.FireUpdate();
+                    program.ProgramStoppedFeedback.FireUpdate();
+                    program.ProgramInfo.OperatingState = args.OperatingState;
+                    if (args.OperatingState == eProgramOperatingState.Start)
+                        program.GetProgramInfo();
+                    else
+                    {
+                        program.AggregatedProgramInfoFeedback.FireUpdate();
+                        program.OnProgramInfoChanged();
+                    }
+                    break;
+                case eProgramChangeEventType.RegistrationState:
+                    program.ProgramRegisteredFeedback.FireUpdate();
+                    program.ProgramUnregisteredFeedback.FireUpdate();
+                    program.ProgramInfo.RegistrationState = args.RegistrationState;
                     program.GetProgramInfo();
-                else
-                {
-                    program.AggregatedProgramInfoFeedback.FireUpdate();
-                    program.OnProgramInfoChanged();
-                }
-            }
-            else if (args.EventType == eProgramChangeEventType.RegistrationState)
-            {
-                program.ProgramRegisteredFeedback.FireUpdate();
-                program.ProgramUnregisteredFeedback.FireUpdate();
-
-                program.ProgramInfo.RegistrationState = args.RegistrationState;
-
-                program.GetProgramInfo();
+                    break;
             }
         }
 
