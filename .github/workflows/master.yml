@@ -9,8 +9,8 @@ on:
 env:
   # solution path doesn't need slashes unless there it is multiple folders deep
   # solution name does not include extension. .sln is assumed
-  SOLUTION_PATH: PDT.EssentialsPluginTemplate.EPI
-  SOLUTION_FILE: PDT.EssentialsPluginTemplate.EPI
+  SOLUTION_PATH: PepperDashEssentials
+  SOLUTION_FILE: PepperDashEssentials
   # Do not edit this, we're just creating it here
   VERSION: 0.0.0-buildtype-buildnumber
   # Defaults to debug for build type
@@ -51,7 +51,7 @@ jobs:
       - name: Build Solution
         shell: powershell
         run: |
-          Invoke-Expression "docker run --rm --mount type=bind,source=""$($Env:GITHUB_WORKSPACE)"",target=""c:/project"" pepperdash/sspbuilder c:\cihelpers\vsidebuild.exe -Solution ""c:\project\$($Env:SOLUTION_PATH)\$($Env:SOLUTION_FILE).sln"" -BuildSolutionConfiguration $($ENV:BUILD_TYPE)"
+          Invoke-Expression "docker run --rm --mount type=bind,source=""$($Env:GITHUB_WORKSPACE)"",target=""c:/project"" pepperdash/sspbuilder c:\cihelpers\vsidebuild.exe -Solution ""c:\project\$($Env:SOLUTION_FILE).sln"" -BuildSolutionConfiguration $($ENV:BUILD_TYPE)"
       # Zip up the output files as needed
       - name: Zip Build Output
         shell: powershell
