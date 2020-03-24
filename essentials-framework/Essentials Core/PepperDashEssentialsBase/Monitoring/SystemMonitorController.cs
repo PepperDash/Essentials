@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.Diagnostics;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -26,9 +22,9 @@ namespace PepperDash.Essentials.Core.Monitoring
         public IntFeedback TimeZoneFeedback { get; set; }
         public StringFeedback TimeZoneTextFeedback { get; set; }
 
-        public StringFeedback IOControllerVersionFeedback { get; set; }
+        public StringFeedback IoControllerVersionFeedback { get; set; }
         public StringFeedback SnmpVersionFeedback { get; set; }
-        public StringFeedback BACnetAppVersionFeedback { get; set; }
+        public StringFeedback BaCnetAppVersionFeedback { get; set; }
         public StringFeedback ControllerVersionFeedback { get; set; }
         
         public SystemMonitorController(string key)
@@ -40,13 +36,13 @@ namespace PepperDash.Essentials.Core.Monitoring
 
             //CrestronConsole.AddNewConsoleCommand(RefreshSystemMonitorData, "RefreshSystemMonitor", "Refreshes System Monitor Feedbacks", ConsoleAccessLevelEnum.AccessOperator);
 
-            TimeZoneFeedback = new IntFeedback(new Func<int>( () => SystemMonitor.TimeZoneInformation.TimeZoneNumber));
-            TimeZoneTextFeedback = new StringFeedback(new Func<string>( () => SystemMonitor.TimeZoneInformation.TimeZoneName));
+            TimeZoneFeedback = new IntFeedback(() => SystemMonitor.TimeZoneInformation.TimeZoneNumber);
+            TimeZoneTextFeedback = new StringFeedback(() => SystemMonitor.TimeZoneInformation.TimeZoneName);
 
-            IOControllerVersionFeedback = new StringFeedback(new Func<string>( () => SystemMonitor.VersionInformation.IOPVersion));
-            SnmpVersionFeedback = new StringFeedback(new Func<string>( () => SystemMonitor.VersionInformation.SNMPVersion));
-            BACnetAppVersionFeedback = new StringFeedback(new Func<string>( () => SystemMonitor.VersionInformation.BACNetVersion));
-            ControllerVersionFeedback = new StringFeedback(new Func<string>( () => SystemMonitor.VersionInformation.ControlSystemVersion));
+            IoControllerVersionFeedback = new StringFeedback(() => SystemMonitor.VersionInformation.IOPVersion);
+            SnmpVersionFeedback = new StringFeedback(() => SystemMonitor.VersionInformation.SNMPVersion);
+            BaCnetAppVersionFeedback = new StringFeedback(() => SystemMonitor.VersionInformation.BACNetVersion);
+            ControllerVersionFeedback = new StringFeedback(() => SystemMonitor.VersionInformation.ControlSystemVersion);
 
             //var status = string.Format("System Monitor Status: \r TimeZone: {0}\rTimeZoneText: {1}\rIOControllerVersion: {2}\rSnmpAppVersionFeedback: {3}\rBACnetAppVersionFeedback: {4}\rControllerVersionFeedback: {5}",
             //    SystemMonitor.TimeZoneInformation.TimeZoneNumber, SystemMonitor.TimeZoneInformation.TimeZoneName, SystemMonitor.VersionInformation.IOPVersion, SystemMonitor.VersionInformation.SNMPVersion,
@@ -62,32 +58,32 @@ namespace PepperDash.Essentials.Core.Monitoring
                 ProgramStatusFeedbackCollection.Add(prog.Number, program);
             }
 
-            SystemMonitor.ProgramChange += new ProgramStateChangeEventHandler(SystemMonitor_ProgramChange);
-            SystemMonitor.TimeZoneInformation.TimeZoneChange += new TimeZoneChangeEventHandler(TimeZoneInformation_TimeZoneChange);
+            SystemMonitor.ProgramChange += SystemMonitor_ProgramChange;
+            SystemMonitor.TimeZoneInformation.TimeZoneChange += TimeZoneInformation_TimeZoneChange;
         }
 
         /// <summary>
         /// Gets data in separate thread
         /// </summary>
-        /// <param name="command"></param>
-        void RefreshSystemMonitorData(string command)
+        private void RefreshSystemMonitorData()
         {
             // this takes a while, launch a new thread
-            CrestronInvoke.BeginInvoke((o) =>
-                {
-                    TimeZoneFeedback.FireUpdate();
-                    TimeZoneTextFeedback.FireUpdate();
-                    IOControllerVersionFeedback.FireUpdate();
-                    SnmpVersionFeedback.FireUpdate();
-                    BACnetAppVersionFeedback.FireUpdate();
-                    ControllerVersionFeedback.FireUpdate();
-
-                    OnSystemMonitorPropertiesChanged();
-                }
-            );
+            CrestronInvoke.BeginInvoke(UpdateFeedback);
         }
 
-        void OnSystemMonitorPropertiesChanged()
+        private void UpdateFeedback(object o)
+        {
+            TimeZoneFeedback.FireUpdate();
+            TimeZoneTextFeedback.FireUpdate();
+            IoControllerVersionFeedback.FireUpdate();
+            SnmpVersionFeedback.FireUpdate();
+            BaCnetAppVersionFeedback.FireUpdate();
+            ControllerVersionFeedback.FireUpdate();
+
+            OnSystemMonitorPropertiesChanged();
+        }
+
+        private void OnSystemMonitorPropertiesChanged()
         {
             var handler = SystemMonitorPropertiesChanged;
             if (handler != null)
@@ -98,7 +94,7 @@ namespace PepperDash.Essentials.Core.Monitoring
 
         public override bool CustomActivate()
         {
-            RefreshSystemMonitorData(null);
+            RefreshSystemMonitorData();
 
             return base.CustomActivate();
         }
@@ -114,7 +110,7 @@ namespace PepperDash.Essentials.Core.Monitoring
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        void SystemMonitor_ProgramChange(Program sender, ProgramEventArgs args)
+        private void SystemMonitor_ProgramChange(Program sender, ProgramEventArgs args)
         {
             Debug.Console(2, this, "Program Change Detected for slot: {0}", sender.Number);
             Debug.Console(2, this, "Event Type: {0}", args.EventType);
@@ -153,7 +149,7 @@ namespace PepperDash.Essentials.Core.Monitoring
         /// Responds to time zone changes and updates the appropriate feedbacks
         /// </summary>
         /// <param name="args"></param>
-        void TimeZoneInformation_TimeZoneChange(TimeZoneEventArgs args)
+        private void TimeZoneInformation_TimeZoneChange(TimeZoneEventArgs args)
         {
             Debug.Console(2, this, "Time Zone Change Detected.");
             TimeZoneFeedback.FireUpdate();
@@ -192,17 +188,17 @@ namespace PepperDash.Essentials.Core.Monitoring
                 ProgramInfo.OperatingState = Program.OperatingState;
                 ProgramInfo.RegistrationState = Program.RegistrationState;
 
-                ProgramStartedFeedback = new BoolFeedback(new Func<bool>( () => Program.OperatingState == eProgramOperatingState.Start));
-                ProgramStoppedFeedback = new BoolFeedback(new Func<bool>( () => Program.OperatingState == eProgramOperatingState.Stop));
-                ProgramRegisteredFeedback = new BoolFeedback(new Func<bool>( () => Program.RegistrationState == eProgramRegistrationState.Register));
-                ProgramUnregisteredFeedback = new BoolFeedback(new Func<bool>( () => Program.RegistrationState == eProgramRegistrationState.Unregister));
+                ProgramStartedFeedback = new BoolFeedback(() => Program.OperatingState == eProgramOperatingState.Start);
+                ProgramStoppedFeedback = new BoolFeedback(() => Program.OperatingState == eProgramOperatingState.Stop);
+                ProgramRegisteredFeedback = new BoolFeedback(() => Program.RegistrationState == eProgramRegistrationState.Register);
+                ProgramUnregisteredFeedback = new BoolFeedback(() => Program.RegistrationState == eProgramRegistrationState.Unregister);
 
-                ProgramNameFeedback = new StringFeedback(new Func<string>(() => ProgramInfo.ProgramFile));
-                ProgramCompileTimeFeedback = new StringFeedback(new Func<string>(() => ProgramInfo.CompileTime));
-                CrestronDataBaseVersionFeedback = new StringFeedback(new Func<string>(() => ProgramInfo.CrestronDB));
-                EnvironmentVersionFeedback = new StringFeedback(new Func<string>(() => ProgramInfo.Environment));
+                ProgramNameFeedback = new StringFeedback(() => ProgramInfo.ProgramFile);
+                ProgramCompileTimeFeedback = new StringFeedback(() => ProgramInfo.CompileTime);
+                CrestronDataBaseVersionFeedback = new StringFeedback(() => ProgramInfo.CrestronDb);
+                EnvironmentVersionFeedback = new StringFeedback(() => ProgramInfo.Environment);
 
-                AggregatedProgramInfoFeedback = new StringFeedback(new Func<string>(() => JsonConvert.SerializeObject(ProgramInfo)));
+                AggregatedProgramInfoFeedback = new StringFeedback(() => JsonConvert.SerializeObject(ProgramInfo));
 
                 GetProgramInfo();
             }
@@ -212,74 +208,75 @@ namespace PepperDash.Essentials.Core.Monitoring
             /// </summary>
             public void GetProgramInfo()
             {
-                CrestronInvoke.BeginInvoke((o) =>
+                CrestronInvoke.BeginInvoke(GetProgramInfo);
+            }
+
+            private void GetProgramInfo(object o)   
+            {
+                Debug.Console(2, "Attempting to get program info for slot: {0}", Program.Number);
+
+                string response = null;
+
+                var success = CrestronConsole.SendControlSystemCommand(string.Format("progcomments:{0}", Program.Number), ref response);
+
+                if (success)
                 {
-                    Debug.Console(2, "Attempting to get program info for slot: {0}", Program.Number);
+                    //Debug.Console(2, "Progcomments Response: \r{0}", response);
 
-                    string response = null;
-
-                    var success = CrestronConsole.SendControlSystemCommand(string.Format("progcomments:{0}", Program.Number), ref response);
-
-                    if (success)
+                    if (!response.ToLower().Contains("bad or incomplete"))
                     {
-                        //Debug.Console(2, "Progcomments Response: \r{0}", response);
+                        // Shared properteis
+                        ProgramInfo.ProgramFile = ParseConsoleData(response, "Program File", ": ", "\n");
+                        ProgramInfo.CompilerRevision = ParseConsoleData(response, "Compiler Rev", ": ", "\n");
+                        ProgramInfo.CompileTime = ParseConsoleData(response, "Compiled On", ": ", "\n");
+                        ProgramInfo.Include4Dat = ParseConsoleData(response, "Include4.dat", ": ", "\n");
 
-                        if (!response.ToLower().Contains("bad or incomplete"))
+
+                        if (ProgramInfo.ProgramFile.Contains(".dll"))
                         {
-                            // Shared properteis
-                            ProgramInfo.ProgramFile = ParseConsoleData(response, "Program File", ": ", "\n");
-                            ProgramInfo.CompilerRevision = ParseConsoleData(response, "Compiler Rev", ": ", "\n");
-                            ProgramInfo.CompileTime = ParseConsoleData(response, "Compiled On", ": ", "\n");
-                            ProgramInfo.Include4Dat = ParseConsoleData(response, "Include4.dat", ": ", "\n");
-
-
-
-                            if (ProgramInfo.ProgramFile.Contains(".dll"))
-                            {
-                                // SSP Program
-                                ProgramInfo.FriendlyName = ParseConsoleData(response, "Friendly Name", ": ", "\n");
-                                ProgramInfo.ApplicationName = ParseConsoleData(response, "Application Name", ": ", "\n");
-                                ProgramInfo.ProgramTool = ParseConsoleData(response, "Program Tool", ": ", "\n");
-                                ProgramInfo.MinFirmwareVersion = ParseConsoleData(response, "Min Firmware Version", ": ", "\n");
-                                ProgramInfo.PlugInVersion = ParseConsoleData(response, "PlugInVersion", ": ", "\n");
-                            }
-                            else if (ProgramInfo.ProgramFile.Contains(".smw"))
-                            {
-                                // SIMPL Windows Program
-                                ProgramInfo.FriendlyName = ParseConsoleData(response, "Friendly Name", ":", "\n");
-                                ProgramInfo.SystemName = ParseConsoleData(response, "System Name", ": ", "\n");
-                                ProgramInfo.CrestronDB = ParseConsoleData(response, "CrestronDB", ": ", "\n");
-                                ProgramInfo.Environment = ParseConsoleData(response, "Source Env", ": ", "\n");
-                                ProgramInfo.Programmer = ParseConsoleData(response, "Programmer", ": ", "\n");
-
-                            }
-                            //Debug.Console(2, "ProgramInfo: \r{0}", JsonConvert.SerializeObject(ProgramInfo));
+                            // SSP Program
+                            ProgramInfo.FriendlyName = ParseConsoleData(response, "Friendly Name", ": ", "\n");
+                            ProgramInfo.ApplicationName = ParseConsoleData(response, "Application Name", ": ", "\n");
+                            ProgramInfo.ProgramTool = ParseConsoleData(response, "Program Tool", ": ", "\n");
+                            ProgramInfo.MinFirmwareVersion = ParseConsoleData(response, "Min Firmware Version", ": ", "\n");
+                            ProgramInfo.PlugInVersion = ParseConsoleData(response, "PlugInVersion", ": ", "\n");
                         }
-                        else
+                        else if (ProgramInfo.ProgramFile.Contains(".smw"))
                         {
-                            Debug.Console(2, "Bad or incomplete console command response.  Initializing ProgramInfo for slot: {0}", Program.Number);
-
-                            // Assume no valid program info.  Constructing a new object will wipe all properties
-                            ProgramInfo = new ProgramInfo(Program.Number);
-
-                            ProgramInfo.OperatingState = Program.OperatingState;
-                            ProgramInfo.RegistrationState = Program.RegistrationState;
+                            // SIMPL Windows Program
+                            ProgramInfo.FriendlyName = ParseConsoleData(response, "Friendly Name", ":", "\n");
+                            ProgramInfo.SystemName = ParseConsoleData(response, "System Name", ": ", "\n");
+                            ProgramInfo.CrestronDb = ParseConsoleData(response, "CrestronDB", ": ", "\n");
+                            ProgramInfo.Environment = ParseConsoleData(response, "Source Env", ": ", "\n");
+                            ProgramInfo.Programmer = ParseConsoleData(response, "Programmer", ": ", "\n");
                         }
+                        //Debug.Console(2, "ProgramInfo: \r{0}", JsonConvert.SerializeObject(ProgramInfo));
                     }
                     else
                     {
-                        Debug.Console(2, "Progcomments Attempt Unsuccessful for slot: {0}", Program.Number);
+                        Debug.Console(2, "Bad or incomplete console command response.  Initializing ProgramInfo for slot: {0}", Program.Number);
+
+                        // Assume no valid program info.  Constructing a new object will wipe all properties
+                        ProgramInfo = new ProgramInfo(Program.Number)
+                        {
+                            OperatingState = Program.OperatingState,
+                            RegistrationState = Program.RegistrationState
+                        };
                     }
+                }
+                else
+                {
+                    Debug.Console(2, "Progcomments Attempt Unsuccessful for slot: {0}", Program.Number);
+                }
 
-                    ProgramNameFeedback.FireUpdate();
-                    ProgramCompileTimeFeedback.FireUpdate();
-                    CrestronDataBaseVersionFeedback.FireUpdate();
-                    EnvironmentVersionFeedback.FireUpdate();
+                ProgramNameFeedback.FireUpdate();
+                ProgramCompileTimeFeedback.FireUpdate();
+                CrestronDataBaseVersionFeedback.FireUpdate();
+                EnvironmentVersionFeedback.FireUpdate();
 
-                    AggregatedProgramInfoFeedback.FireUpdate();
+                AggregatedProgramInfoFeedback.FireUpdate();
 
-                    OnProgramInfoChanged();
-                });
+                OnProgramInfoChanged();
             }
 
             public void OnProgramInfoChanged()
@@ -294,24 +291,23 @@ namespace PepperDash.Essentials.Core.Monitoring
 
             private string ParseConsoleData(string data, string line, string startString, string endString)
             {
-                string outputData = "";
+                var outputData = "";
 
-                if (data.Length > 0)
+                if (data.Length <= 0) return outputData;
+
+                try
                 {
-                    try
-                    {
 
-                        //Debug.Console(2, "ParseConsoleData Data: {0}, Line {1}, startStirng {2}, endString {3}", data, line, startString, endString);
-                        var linePosition = data.IndexOf(line);
-                        var startPosition = data.IndexOf(startString, linePosition) + startString.Length;
-                        var endPosition = data.IndexOf(endString, startPosition);
-                        outputData = data.Substring(startPosition, endPosition - startPosition).Trim();
-                        //Debug.Console(2, "ParseConsoleData Return: {0}", outputData);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.Console(1, "Error Parsing Console Data:\r{0}", e);
-                    }
+                    //Debug.Console(2, "ParseConsoleData Data: {0}, Line {1}, startStirng {2}, endString {3}", data, line, startString, endString);
+                    var linePosition = data.IndexOf(line, StringComparison.Ordinal);
+                    var startPosition = data.IndexOf(startString, linePosition, StringComparison.Ordinal) + startString.Length;
+                    var endPosition = data.IndexOf(endString, startPosition, StringComparison.Ordinal);
+                    outputData = data.Substring(startPosition, endPosition - startPosition).Trim();
+                    //Debug.Console(2, "ParseConsoleData Return: {0}", outputData);
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(1, "Error Parsing Console Data:\r{0}", e);
                 }
 
                 return outputData;
@@ -353,7 +349,7 @@ namespace PepperDash.Essentials.Core.Monitoring
         [JsonProperty("systemName")]
         public string SystemName { get; set; }
         [JsonProperty("crestronDb")]
-        public string CrestronDB { get; set; }
+        public string CrestronDb { get; set; }
         [JsonProperty("environment")]
         public string Environment { get; set; }
         [JsonProperty("programmer")]
@@ -381,7 +377,7 @@ namespace PepperDash.Essentials.Core.Monitoring
             Include4Dat = "";
 
             SystemName = "";
-            CrestronDB = "";
+            CrestronDb = "";
             Environment = "";
             Programmer = "";
 
