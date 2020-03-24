@@ -14,6 +14,9 @@ namespace PepperDash.Essentials.Core.Monitoring
     /// </summary>
     public class SystemMonitorController : Device
     {
+        protected const short LanAdapterIndex = 0;
+        protected const short CsAdapterIndex = 1;
+        
         public event EventHandler<EventArgs> SystemMonitorPropertiesChanged;
 
         public Dictionary<uint, ProgramStatusFeedbacks> ProgramStatusFeedbackCollection;
@@ -74,11 +77,12 @@ namespace PepperDash.Essentials.Core.Monitoring
 
         private void CreateControllerFeedbacks()
         {
+            //assuming 0 = LAN, 1 = CS for devices that have CS
             FirmwareVersion = new StringFeedback(() => InitialParametersClass.FirmwareVersion);
-            HostName = new StringFeedback(() => String.Empty );
-            SerialNumber = new StringFeedback(()=> String.Empty);
+            HostName = new StringFeedback(() => CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, LanAdapterIndex) );
+            SerialNumber = new StringFeedback(() => CrestronEnvironment.SystemInfo.SerialNumber);
             Model = new StringFeedback(() => InitialParametersClass.ControllerPromptName);
-            LanIpAddress = new StringFeedback(() => String.Empty);
+            LanIpAddress = new StringFeedback(() => CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, LanAdapterIndex));
             DefaultGateway = new StringFeedback(() => String.Empty);
             Domain = new StringFeedback(() => String.Empty);
             DnsServer01 = new StringFeedback(() => String.Empty);
