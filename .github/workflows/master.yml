@@ -1,13 +1,11 @@
-name: Branch Build Using Docker
+name: Master Build using Docker
 
 on:
-  push:
+  release:
+    types:
+      - created
     branches:
-      - feature/*
-      - hotfix/*
-      - release/*
-      - development
-
+      - master
 env:
   # solution path doesn't need slashes unless there it is multiple folders deep
   # solution name does not include extension. .sln is assumed
@@ -16,7 +14,7 @@ env:
   # Do not edit this, we're just creating it here
   VERSION: 0.0.0-buildtype-buildnumber
   # Defaults to debug for build type
-  BUILD_TYPE: Debug
+  BUILD_TYPE: Release
   # Defaults to master as the release branch.  Change as necessary
   RELEASE_BRANCH: master
 jobs:
@@ -26,8 +24,6 @@ jobs:
       # First we checkout the source repo
       - name: Checkout repo
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
       # And any submodules
       - name: Checkout submodules
         shell: bash
@@ -36,15 +32,15 @@ jobs:
           auth_header="$(git config --local --get http.https://github.com/.extraheader)"
           git submodule sync --recursive
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
-        # Fetch all tags
+      # Fetch all tags
       - name: Fetch tags
         run: git fetch --tags
       # Generate the appropriate version number
       - name: Set Version Number
         shell: powershell
-        run: |
-          $version = ./.github/scripts/GenerateVersionNumber.ps1
-          Write-Output "::set-env name=VERSION::$version"
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: Write-Output "::set-env name=VERSION::$($Env:TAG_NAME)"
       # Use the version number to set the version of the assemblies
       - name: Update AssemblyInfo.cs
         shell: powershell
@@ -65,22 +61,12 @@ jobs:
         with:
           name: Build
           path: ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
-      # Create the release on the source repo
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ env.VERSION  }}
-          release_name: ${{ env.VERSION }}
-          prerelease: ${{contains('debug', env.BUILD_TYPE)}}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Upload the build package to the release
       - name: Upload Release Package
         id: upload_release
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
           asset_name: ${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
           asset_content_type: application/zip
