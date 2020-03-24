@@ -30,15 +30,13 @@ namespace PepperDash.Essentials.Core.Monitoring
         public StringFeedback ControllerVersionFeedback { get; protected set; }
 
         //new feedbacks. Issue #50
-        public StringFeedback FirmwareVersion { get; protected set; }
         public StringFeedback HostName { get; protected set; }
         public StringFeedback SerialNumber { get; protected set; }
         public StringFeedback Model { get; set; }
         public StringFeedback LanIpAddress { get; protected set; }
         public StringFeedback DefaultGateway { get; protected set; }
         public StringFeedback Domain { get; protected set; }
-        public StringFeedback DnsServer01 { get; protected set; }
-        public StringFeedback DnsServer02 { get; protected set; }
+        public StringFeedback DnsServer { get; protected set; }
         public StringFeedback LanMacAddress { get; protected set; }
         public StringFeedback LanSubnetMask { get; protected set; }
      
@@ -78,19 +76,55 @@ namespace PepperDash.Essentials.Core.Monitoring
         private void CreateControllerFeedbacks()
         {
             //assuming 0 = LAN, 1 = CS for devices that have CS
-            FirmwareVersion = new StringFeedback(() => InitialParametersClass.FirmwareVersion);
-            HostName = new StringFeedback(() => CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, LanAdapterIndex) );
+            HostName =
+                new StringFeedback(
+                    () =>
+                        CrestronEthernetHelper.GetEthernetParameter(
+                            CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, LanAdapterIndex));
             SerialNumber = new StringFeedback(() => CrestronEnvironment.SystemInfo.SerialNumber);
             Model = new StringFeedback(() => InitialParametersClass.ControllerPromptName);
-            LanIpAddress = new StringFeedback(() => CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, LanAdapterIndex));
-            DefaultGateway = new StringFeedback(() => String.Empty);
-            Domain = new StringFeedback(() => String.Empty);
-            DnsServer01 = new StringFeedback(() => String.Empty);
-            DnsServer02 = new StringFeedback(() => String.Empty);
-            LanMacAddress = new StringFeedback(() => String.Empty);
-            LanSubnetMask = new StringFeedback(() => String.Empty);
-            CsIpAddress = new StringFeedback(() => String.Empty);
-            CsSubnetMask = new StringFeedback(() => String.Empty);
+            LanIpAddress =
+                new StringFeedback(
+                    () =>
+                        CrestronEthernetHelper.GetEthernetParameter(
+                            CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, LanAdapterIndex));
+            DefaultGateway =
+                new StringFeedback(
+                    () =>
+                        CrestronEthernetHelper.GetEthernetParameter(
+                            CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_ROUTER, LanAdapterIndex));
+            Domain =
+                new StringFeedback(
+                    () =>
+                        CrestronEthernetHelper.GetEthernetParameter(
+                            CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, LanAdapterIndex));
+            DnsServer =
+                new StringFeedback(
+                    () =>
+                        CrestronEthernetHelper.GetEthernetParameter(
+                            CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DNS_SERVER, LanAdapterIndex));
+            LanMacAddress =
+                new StringFeedback(
+                    () =>
+                        CrestronEthernetHelper.GetEthernetParameter(
+                            CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, LanAdapterIndex));
+            LanSubnetMask =
+                new StringFeedback(
+                    () =>
+                        CrestronEthernetHelper.GetEthernetParameter(
+                            CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_STATIC_IPMASK, LanAdapterIndex));
+
+            CsIpAddress =
+                new StringFeedback(
+                    () =>
+                        InitialParametersClass.NumberOfEthernetInterfaces > 1
+                            ? CrestronEthernetHelper.GetEthernetParameter(
+                                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, CsAdapterIndex)
+                            : String.Empty);
+            CsSubnetMask = new StringFeedback(() => InitialParametersClass.NumberOfEthernetInterfaces > 1
+                            ? CrestronEthernetHelper.GetEthernetParameter(
+                                CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, CsAdapterIndex)
+                            : String.Empty);
         }
 
         /// <summary>
