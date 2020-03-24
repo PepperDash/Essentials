@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro.DeviceSupport;
+﻿using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.Diagnostics;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -17,7 +12,7 @@ namespace PepperDash.Essentials.Bridges
     {
         public static void LinkToApi(this SystemMonitorController systemMonitorController, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
-            SystemMonitorJoinMap joinMap = new SystemMonitorJoinMap();
+            var joinMap = new SystemMonitorJoinMap();
 
             var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
 
@@ -30,12 +25,11 @@ namespace PepperDash.Essentials.Bridges
             Debug.Console(2, systemMonitorController, "Linking API starting at join: {0}", joinStart);
 
             systemMonitorController.TimeZoneFeedback.LinkInputSig(trilist.UShortInput[joinMap.TimeZone]);
-            //trilist.SetUShortSigAction(joinMap.TimeZone, new Action<ushort>(u => systemMonitorController.SetTimeZone(u)));
             systemMonitorController.TimeZoneTextFeedback.LinkInputSig(trilist.StringInput[joinMap.TimeZoneName]);
 
-            systemMonitorController.IOControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.IOControllerVersion]);
+            systemMonitorController.IoControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.IOControllerVersion]);
             systemMonitorController.SnmpVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.SnmpAppVersion]);
-            systemMonitorController.BACnetAppVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.BACnetAppVersion]);
+            systemMonitorController.BaCnetAppVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.BACnetAppVersion]);
             systemMonitorController.ControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.ControllerVersion]);
 
             // iterate the program status feedback collection and map all the joins
@@ -45,20 +39,16 @@ namespace PepperDash.Essentials.Bridges
             {
                 var programNumber = p.Value.Program.Number;
 
-                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStart, new Action<bool>
-                    (b => SystemMonitor.ProgramCollection[programNumber].OperatingState = eProgramOperatingState.Start));
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStart, b => SystemMonitor.ProgramCollection[programNumber].OperatingState = eProgramOperatingState.Start);
                 p.Value.ProgramStartedFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramStart]);
 
-                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStop, new Action<bool>
-                    (b => SystemMonitor.ProgramCollection[programNumber].OperatingState = eProgramOperatingState.Stop));
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStop, b => SystemMonitor.ProgramCollection[programNumber].OperatingState = eProgramOperatingState.Stop);
                 p.Value.ProgramStoppedFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramStop]);
 
-                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramRegister, new Action<bool>
-                    (b => SystemMonitor.ProgramCollection[programNumber].RegistrationState = eProgramRegistrationState.Register));
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramRegister, b => SystemMonitor.ProgramCollection[programNumber].RegistrationState = eProgramRegistrationState.Register);
                 p.Value.ProgramRegisteredFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramRegister]);
 
-                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramUnregister, new Action<bool>
-                    (b => SystemMonitor.ProgramCollection[programNumber].RegistrationState = eProgramRegistrationState.Unregister));
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramUnregister, b => SystemMonitor.ProgramCollection[programNumber].RegistrationState = eProgramRegistrationState.Unregister);
                 p.Value.ProgramUnregisteredFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramUnregister]);
 
                 p.Value.ProgramNameFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramName]);

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.Diagnostics;
-
 using PepperDash.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -26,15 +25,13 @@ namespace PepperDash.Essentials.Core.Monitoring
         public StringFeedback SnmpVersionFeedback { get; set; }
         public StringFeedback BaCnetAppVersionFeedback { get; set; }
         public StringFeedback ControllerVersionFeedback { get; set; }
-        
+
         public SystemMonitorController(string key)
             : base(key)
         {
             Debug.Console(2, this, "Adding SystemMonitorController.");
 
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
-
-            //CrestronConsole.AddNewConsoleCommand(RefreshSystemMonitorData, "RefreshSystemMonitor", "Refreshes System Monitor Feedbacks", ConsoleAccessLevelEnum.AccessOperator);
 
             TimeZoneFeedback = new IntFeedback(() => SystemMonitor.TimeZoneInformation.TimeZoneNumber);
             TimeZoneTextFeedback = new StringFeedback(() => SystemMonitor.TimeZoneInformation.TimeZoneName);
@@ -43,12 +40,6 @@ namespace PepperDash.Essentials.Core.Monitoring
             SnmpVersionFeedback = new StringFeedback(() => SystemMonitor.VersionInformation.SNMPVersion);
             BaCnetAppVersionFeedback = new StringFeedback(() => SystemMonitor.VersionInformation.BACNetVersion);
             ControllerVersionFeedback = new StringFeedback(() => SystemMonitor.VersionInformation.ControlSystemVersion);
-
-            //var status = string.Format("System Monitor Status: \r TimeZone: {0}\rTimeZoneText: {1}\rIOControllerVersion: {2}\rSnmpAppVersionFeedback: {3}\rBACnetAppVersionFeedback: {4}\rControllerVersionFeedback: {5}",
-            //    SystemMonitor.TimeZoneInformation.TimeZoneNumber, SystemMonitor.TimeZoneInformation.TimeZoneName, SystemMonitor.VersionInformation.IOPVersion, SystemMonitor.VersionInformation.SNMPVersion,
-            //    SystemMonitor.VersionInformation.BACNetVersion, SystemMonitor.VersionInformation.ControlSystemVersion);
-                
-            //Debug.Console(1, this, status);
 
             ProgramStatusFeedbackCollection = new Dictionary<uint, ProgramStatusFeedbacks>();
 
@@ -88,7 +79,7 @@ namespace PepperDash.Essentials.Core.Monitoring
             var handler = SystemMonitorPropertiesChanged;
             if (handler != null)
             {
-                handler(this, new EventArgs());   
+                handler(this, new EventArgs());
             }
         }
 
@@ -124,15 +115,15 @@ namespace PepperDash.Essentials.Core.Monitoring
 
                 program.ProgramInfo.OperatingState = args.OperatingState;
 
-				//program.GetProgramInfo();
+                //program.GetProgramInfo();
 
-				if (args.OperatingState == eProgramOperatingState.Start)
-					program.GetProgramInfo();
-				else
-				{
-					program.AggregatedProgramInfoFeedback.FireUpdate();
-					program.OnProgramInfoChanged();
-				}
+                if (args.OperatingState == eProgramOperatingState.Start)
+                    program.GetProgramInfo();
+                else
+                {
+                    program.AggregatedProgramInfoFeedback.FireUpdate();
+                    program.OnProgramInfoChanged();
+                }
             }
             else if (args.EventType == eProgramChangeEventType.RegistrationState)
             {
@@ -142,7 +133,7 @@ namespace PepperDash.Essentials.Core.Monitoring
                 program.ProgramInfo.RegistrationState = args.RegistrationState;
 
                 program.GetProgramInfo();
-            }         
+            }
         }
 
         /// <summary>
@@ -190,8 +181,10 @@ namespace PepperDash.Essentials.Core.Monitoring
 
                 ProgramStartedFeedback = new BoolFeedback(() => Program.OperatingState == eProgramOperatingState.Start);
                 ProgramStoppedFeedback = new BoolFeedback(() => Program.OperatingState == eProgramOperatingState.Stop);
-                ProgramRegisteredFeedback = new BoolFeedback(() => Program.RegistrationState == eProgramRegistrationState.Register);
-                ProgramUnregisteredFeedback = new BoolFeedback(() => Program.RegistrationState == eProgramRegistrationState.Unregister);
+                ProgramRegisteredFeedback =
+                    new BoolFeedback(() => Program.RegistrationState == eProgramRegistrationState.Register);
+                ProgramUnregisteredFeedback =
+                    new BoolFeedback(() => Program.RegistrationState == eProgramRegistrationState.Unregister);
 
                 ProgramNameFeedback = new StringFeedback(() => ProgramInfo.ProgramFile);
                 ProgramCompileTimeFeedback = new StringFeedback(() => ProgramInfo.CompileTime);
@@ -211,13 +204,14 @@ namespace PepperDash.Essentials.Core.Monitoring
                 CrestronInvoke.BeginInvoke(GetProgramInfo);
             }
 
-            private void GetProgramInfo(object o)   
+            private void GetProgramInfo(object o)
             {
                 Debug.Console(2, "Attempting to get program info for slot: {0}", Program.Number);
 
                 string response = null;
 
-                var success = CrestronConsole.SendControlSystemCommand(string.Format("progcomments:{0}", Program.Number), ref response);
+                var success = CrestronConsole.SendControlSystemCommand(
+                    string.Format("progcomments:{0}", Program.Number), ref response);
 
                 if (success)
                 {
@@ -238,7 +232,8 @@ namespace PepperDash.Essentials.Core.Monitoring
                             ProgramInfo.FriendlyName = ParseConsoleData(response, "Friendly Name", ": ", "\n");
                             ProgramInfo.ApplicationName = ParseConsoleData(response, "Application Name", ": ", "\n");
                             ProgramInfo.ProgramTool = ParseConsoleData(response, "Program Tool", ": ", "\n");
-                            ProgramInfo.MinFirmwareVersion = ParseConsoleData(response, "Min Firmware Version", ": ", "\n");
+                            ProgramInfo.MinFirmwareVersion = ParseConsoleData(response, "Min Firmware Version", ": ",
+                                "\n");
                             ProgramInfo.PlugInVersion = ParseConsoleData(response, "PlugInVersion", ": ", "\n");
                         }
                         else if (ProgramInfo.ProgramFile.Contains(".smw"))
@@ -254,7 +249,9 @@ namespace PepperDash.Essentials.Core.Monitoring
                     }
                     else
                     {
-                        Debug.Console(2, "Bad or incomplete console command response.  Initializing ProgramInfo for slot: {0}", Program.Number);
+                        Debug.Console(2,
+                            "Bad or incomplete console command response.  Initializing ProgramInfo for slot: {0}",
+                            Program.Number);
 
                         // Assume no valid program info.  Constructing a new object will wipe all properties
                         ProgramInfo = new ProgramInfo(Program.Number)
@@ -297,10 +294,10 @@ namespace PepperDash.Essentials.Core.Monitoring
 
                 try
                 {
-
                     //Debug.Console(2, "ParseConsoleData Data: {0}, Line {1}, startStirng {2}, endString {3}", data, line, startString, endString);
                     var linePosition = data.IndexOf(line, StringComparison.Ordinal);
-                    var startPosition = data.IndexOf(startString, linePosition, StringComparison.Ordinal) + startString.Length;
+                    var startPosition = data.IndexOf(startString, linePosition, StringComparison.Ordinal) +
+                                        startString.Length;
                     var endPosition = data.IndexOf(endString, startPosition, StringComparison.Ordinal);
                     outputData = data.Substring(startPosition, endPosition - startPosition).Trim();
                     //Debug.Console(2, "ParseConsoleData Return: {0}", outputData);
@@ -313,7 +310,6 @@ namespace PepperDash.Essentials.Core.Monitoring
                 return outputData;
             }
         }
-
     }
 
     /// <summary>
@@ -326,32 +322,39 @@ namespace PepperDash.Essentials.Core.Monitoring
         [JsonProperty("programNumber")]
         public uint ProgramNumber { get; private set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof (StringEnumConverter))]
         [JsonProperty("operatingState")]
         public eProgramOperatingState OperatingState { get; set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof (StringEnumConverter))]
         [JsonProperty("registrationState")]
         public eProgramRegistrationState RegistrationState { get; set; }
 
         [JsonProperty("programFile")]
         public string ProgramFile { get; set; }
+
         [JsonProperty("friendlyName")]
         public string FriendlyName { get; set; }
+
         [JsonProperty("compilerRevision")]
         public string CompilerRevision { get; set; }
+
         [JsonProperty("compileTime")]
         public string CompileTime { get; set; }
+
         [JsonProperty("include4Dat")]
         public string Include4Dat { get; set; }
 
         // SIMPL Windows properties
         [JsonProperty("systemName")]
         public string SystemName { get; set; }
+
         [JsonProperty("crestronDb")]
         public string CrestronDb { get; set; }
+
         [JsonProperty("environment")]
         public string Environment { get; set; }
+
         [JsonProperty("programmer")]
         public string Programmer { get; set; }
 
@@ -359,10 +362,13 @@ namespace PepperDash.Essentials.Core.Monitoring
         // SSP Properties
         [JsonProperty("applicationName")]
         public string ApplicationName { get; set; }
+
         [JsonProperty("programTool")]
         public string ProgramTool { get; set; }
+
         [JsonProperty("minFirmwareVersion")]
         public string MinFirmwareVersion { get; set; }
+
         [JsonProperty("plugInVersion")]
         public string PlugInVersion { get; set; }
 
