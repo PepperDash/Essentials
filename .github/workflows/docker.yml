@@ -68,7 +68,14 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: Build
-          path: ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
+          path:
+            ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
+            # Upload the Version file as an artifact
+      - name: Upload version.txt
+        uses: actions/upload-artifact@v1
+        with:
+          name: Version
+          path: ${{env.GITHUB_HOME}}\output\version.txt
       # Create the release on the source repo
       - name: Create Release
         id: create_release
