@@ -235,11 +235,19 @@ namespace PepperDash.Essentials
                     {
                         try
                         {
+                            string assyVersion = string.Empty;
                             var assy = Assembly.LoadFrom(fi.FullName);
-                            var ver = assy.GetName().Version;
-                            var verStr = string.Format("{0}.{1}.{2}.{3}", ver.Major, ver.Minor, ver.Build, ver.Revision);
+                            var ver = assy.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
+                            if (ver != null)
+                            {
+                                AssemblyInformationalVersionAttribute verAttribute = ver[0] as AssemblyInformationalVersionAttribute;
+                                assyVersion = verAttribute.InformationalVersion;
+                            }
+                            else
+
+                            
                             assyList.Add(fi.FullName, assy);
-                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded plugin file '{0}', version {1}", fi.FullName, verStr);
+                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded plugin file '{0}', version {1}", fi.FullName, assyVersion);
                         }
                         catch
                         {
