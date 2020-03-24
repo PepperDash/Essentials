@@ -6,14 +6,13 @@ on:
       - feature/*
       - hotfix/*
       - release/*
-      - master
       - development
 
 env:
   # solution path doesn't need slashes unless there it is multiple folders deep
   # solution name does not include extension. .sln is assumed
-  SOLUTION_PATH: PepperDashEssentials
-  SOLUTION_FILE: PepperDashEssentials
+  SOLUTION_PATH: PDT.EssentialsPluginTemplate.EPI
+  SOLUTION_FILE: PDT.EssentialsPluginTemplate.EPI
   # Do not edit this, we're just creating it here
   VERSION: 0.0.0-buildtype-buildnumber
   # Defaults to debug for build type
@@ -37,14 +36,7 @@ jobs:
           auth_header="$(git config --local --get http.https://github.com/.extraheader)"
           git submodule sync --recursive
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
-      # Set the BUILD_TYPE environment variable
-      - name: Set Build to Release if triggered from Master
-        run: |
-          if("$($Env:GITHUB_REF)".contains("$($Env:RELEASE_BRANCH)")) {
-            Write-Host "Setting build type to Release"
-            Write-Output "::set-env name=BUILD_TYPE::Release"
-          }
-      # Fetch all tags
+        # Fetch all tags
       - name: Fetch tags
         run: git fetch --tags
       # Generate the appropriate version number
@@ -63,26 +55,16 @@ jobs:
       - name: Build Solution
         shell: powershell
         run: |
-          Invoke-Expression "docker run --rm --mount type=bind,source=""$($Env:GITHUB_WORKSPACE)"",target=""c:/project"" pepperdash/sspbuilder c:\cihelpers\vsidebuild.exe -Solution ""c:\project\$($Env:SOLUTION_FILE).sln"" -BuildSolutionConfiguration $($ENV:BUILD_TYPE)"
+          Invoke-Expression "docker run --rm --mount type=bind,source=""$($Env:GITHUB_WORKSPACE)"",target=""c:/project"" pepperdash/sspbuilder c:\cihelpers\vsidebuild.exe -Solution ""c:\project\$($Env:SOLUTION_PATH)\$($Env:SOLUTION_FILE).sln"" -BuildSolutionConfiguration $($ENV:BUILD_TYPE)"
       # Zip up the output files as needed
       - name: Zip Build Output
         shell: powershell
         run: ./.github/scripts/ZipBuildOutput.ps1
-      # Write the version to a file to be consumed by the push jobs
-      - name: Write Version
-        run: Write-Output "$($Env:VERSION)" | Out-File -FilePath "$($Env:GITHUB_HOME)\output\version.txt"
-      # Upload the build output as an artifact
       - name: Upload Build Output
         uses: actions/upload-artifact@v1
         with:
           name: Build
           path: ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
-      # Upload the Version file as an artifact
-      - name: Upload version.txt
-        uses: actions/upload-artifact@v1
-        with:
-          name: Version
-          path: ${{env.GITHUB_HOME}}\output\version.txt
       # Create the release on the source repo
       - name: Create Release
         id: create_release
