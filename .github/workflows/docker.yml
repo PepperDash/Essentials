@@ -78,7 +78,8 @@ jobs:
       # Create the release on the source repo
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        # using contributor's version to allow for pointing at the right commit
+        uses: fleskesvor/create-release@feature/support-target-commitish
         with:
           tag_name: ${{ env.VERSION  }}
           release_name: ${{ env.VERSION }}
