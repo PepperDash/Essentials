@@ -6,7 +6,6 @@ on:
       - feature/*
       - hotfix/*
       - release/*
-      - master
       - development
 
 env:
@@ -37,14 +36,7 @@ jobs:
           auth_header="$(git config --local --get http.https://github.com/.extraheader)"
           git submodule sync --recursive
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
-      # Set the BUILD_TYPE environment variable
-      - name: Set Build to Release if triggered from Master
-        run: |
-          if("$($Env:GITHUB_REF)".contains("$($Env:RELEASE_BRANCH)")) {
-            Write-Host "Setting build type to Release"
-            Write-Output "::set-env name=BUILD_TYPE::Release"
-          }
-      # Fetch all tags
+        # Fetch all tags
       - name: Fetch tags
         run: git fetch --tags
       # Generate the appropriate version number
@@ -88,8 +80,8 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: v${{ env.VERSION  }}
-          release_name: v${{ env.VERSION }}
+          tag_name: ${{ env.VERSION  }}
+          release_name: ${{ env.VERSION }}
           prerelease: ${{contains('debug', env.BUILD_TYPE)}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

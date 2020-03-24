@@ -1,0 +1,74 @@
+name: Master Build using Docker
+
+on:
+  release:
+    types:
+      - created
+    branches:
+      - master
+env:
+  # solution path doesn't need slashes unless there it is multiple folders deep
+  # solution name does not include extension. .sln is assumed
+  SOLUTION_PATH: PepperDashEssentials
+  SOLUTION_FILE: PepperDashEssentials
+  # Do not edit this, we're just creating it here
+  VERSION: 0.0.0-buildtype-buildnumber
+  # Defaults to debug for build type
+  BUILD_TYPE: Release
+  # Defaults to master as the release branch.  Change as necessary
+  RELEASE_BRANCH: master
+jobs:
+  Build_Project:
+    runs-on: windows-latest
+    steps:
+      # First we checkout the source repo
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      # And any submodules
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+      # Fetch all tags
+      - name: Fetch tags
+        run: git fetch --tags
+      # Generate the appropriate version number
+      - name: Set Version Number
+        shell: powershell
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: Write-Output "::set-env name=VERSION::$($Env:TAG_NAME)"
+      # Use the version number to set the version of the assemblies
+      - name: Update AssemblyInfo.cs
+        shell: powershell
+        run: |
+          Write-Output ${{ env.VERSION }}
+          ./.github/scripts/UpdateAssemblyVersion.ps1 ${{ env.VERSION }}
+      # Build the solutions in the docker image
+      - name: Build Solution
+        shell: powershell
+        run: |
+          Invoke-Expression "docker run --rm --mount type=bind,source=""$($Env:GITHUB_WORKSPACE)"",target=""c:/project"" pepperdash/sspbuilder c:\cihelpers\vsidebuild.exe -Solution ""c:\project\$($Env:SOLUTION_FILE).sln"" -BuildSolutionConfiguration $($ENV:BUILD_TYPE)"
+      # Zip up the output files as needed
+      - name: Zip Build Output
+        shell: powershell
+        run: ./.github/scripts/ZipBuildOutput.ps1
+      - name: Upload Build Output
+        uses: actions/upload-artifact@v1
+        with:
+          name: Build
+          path: ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
+      # Upload the build package to the release
+      - name: Upload Release Package
+        id: upload_release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
+          asset_name: ${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
