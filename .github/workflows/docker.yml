@@ -68,9 +68,8 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: Build
-          path:
-            ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
-            # Upload the Version file as an artifact
+          path: ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
+      # Upload the Version file as an artifact
       - name: Upload version.txt
         uses: actions/upload-artifact@v1
         with:
