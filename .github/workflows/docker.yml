@@ -144,6 +144,12 @@ jobs:
           Remove-Item -Path .\*.zip
       - name: Check directory again
         run: Get-ChildItem ./
+      # Copy Contents of output folder to root directory
+      - name: Copy Files to root & delete output directory
+        run: |
+          Remove-Item -Path .\* -Include @("*.cpz","*.md","*.cplz","*.json","*.dll","*.clz")  
+          Get-ChildItem -Path .\output\* | Copy-Item -Destination .\
+          Remove-Item -Path .\output -Recurse
       # Commits the build output to the branch and tags it with the version
       - name: Commit build output and tag the commit
         shell: powershell
