@@ -62,15 +62,6 @@ namespace PepperDash.Essentials.Core
             FilePathPrefix = prefix;
         }
 
-        /// <summary>
-        /// Sets the file path prefix
-        /// </summary>
-        /// <param name="prefix"></param>
-        public static void SetApplicationDirectoryPathPrefix(string prefix)
-        {
-            ApplicationDirectoryPathPrefix = prefix;
-        }
-
         static string _AssemblyVersion;
 
         /// <summary>
