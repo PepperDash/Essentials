@@ -187,7 +187,7 @@ namespace PepperDash.Essentials.Bridges
             ProgramEnvironmentVersion = 4;
             AggregatedProgramInfo = 5;
 
-            EthernetStartJoin = 60;
+            EthernetStartJoin = 75;
 
             EthernetOffsetJoin = 15;
 

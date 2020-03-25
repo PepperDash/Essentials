@@ -131,8 +131,11 @@ namespace PepperDash.Essentials.Core.Monitoring
         {
             EthernetStatusFeedbackCollection = new Dictionary<short, EthernetStatusFeedbacks>();
 
+            Debug.Console(2, "Creating {0} EthernetStatusFeedbacks", InitialParametersClass.NumberOfEthernetInterfaces);
+
             for (short i = 0; i < InitialParametersClass.NumberOfEthernetInterfaces; i++)
             {
+                Debug.Console(2, "Creating EthernetStatusFeedback for Interface {0}", i);
                 var ethernetInterface = new EthernetStatusFeedbacks(i);
                 EthernetStatusFeedbackCollection.Add(i, ethernetInterface);
             }
@@ -267,6 +270,29 @@ namespace PepperDash.Essentials.Core.Monitoring
 
             public EthernetStatusFeedbacks(short adapterIndex)
             {
+                Debug.Console(2, "Ethernet Information for interface {0}", adapterIndex);
+                Debug.Console(2, "Adapter Index: {1} Hostname: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, adapterIndex), adapterIndex);
+                Debug.Console(2, "Adapter Index: {1} Current IP Address: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, adapterIndex), adapterIndex);
+                Debug.Console(2, "Adapter Index: {1} Current Subnet Mask: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, adapterIndex), adapterIndex);
+                Debug.Console(2, "Adapter Index: {1} Current Router: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_ROUTER, adapterIndex), adapterIndex);
+                Debug.Console(2, "Adapter Index: {1} Static IP Address: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_STATIC_IPADDRESS, adapterIndex), adapterIndex);
+                Debug.Console(2, "Adapter Index: {1} Static Subnet Mask: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_STATIC_IPMASK, adapterIndex), adapterIndex);
+                Debug.Console(2, "Adapter Index: {1} Static Router: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_STATIC_ROUTER, adapterIndex), adapterIndex);
+                Debug.Console(2, "Adapter Index: {1} DNS Servers: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DNS_SERVER, adapterIndex), adapterIndex);
+                Debug.Console(2, "Adapter Index: {1} DHCP State: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_DHCP_STATE, adapterIndex), adapterIndex);
+                Debug.Console(2, "Adapter Index: {1} Domain Name: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, adapterIndex), adapterIndex);
+                Debug.Console(2, "Adapter Index: {1} MAC Address: {0}", CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, adapterIndex), adapterIndex);
                 HostNameFeedback =
                     new StringFeedback(
                         () =>

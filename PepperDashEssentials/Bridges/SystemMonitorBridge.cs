@@ -59,6 +59,8 @@ namespace PepperDash.Essentials.Bridges
                 fb.Value.DomainFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.Domain]);
                 fb.Value.DnsServerFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.DnsServer]);
                 fb.Value.DhcpStatusFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.DhcpStatus]);
+
+                ethernetSlotJoinStart += joinMap.EthernetOffsetJoin;
             }
         }
 
