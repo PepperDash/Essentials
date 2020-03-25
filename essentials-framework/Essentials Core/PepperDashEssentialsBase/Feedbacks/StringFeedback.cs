@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro;
 
 namespace PepperDash.Essentials.Core
 {
+
     public class StringFeedback : Feedback
     {
         public override string StringValue { get { return _StringValue; } } // ValueFunc.Invoke(); } }
@@ -18,7 +19,7 @@ namespace PepperDash.Essentials.Core
         public string TestValue { get; private set; }
 
         /// <summary>
-        /// Evalutated on FireUpdate
+        /// Evaluated on FireUpdate
         /// </summary>
         public Func<string> ValueFunc { get; private set; }
         List<StringInputSig> LinkedInputSigs = new List<StringInputSig>();
