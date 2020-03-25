@@ -10,9 +10,19 @@ namespace PepperDash.Essentials.Bridges
         public uint ProgramStartJoin { get; set; }
 
         /// <summary>
+        /// Offset to indicate where the range of iterated Ethernet joins will start
+        /// </summary>
+        public uint EthernetStartJoin { get; set; }
+
+        /// <summary>
         /// Offset between each program join set
         /// </summary>
         public uint ProgramOffsetJoin { get; set; }
+
+        /// <summary>
+        /// Offset between each Ethernet Interface join set
+        /// </summary>
+        public uint EthernetOffsetJoin { get; set; }
 
         #region Digitals
         /// <summary>
@@ -82,6 +92,58 @@ namespace PepperDash.Essentials.Bridges
         /// Serialized JSON output that aggregates the program info of the corresponding program
         /// </summary>
         public uint AggregatedProgramInfo { get; set; }
+        /// <summary>
+        /// Reports the controller serial number
+        /// </summary>
+        public uint SerialNumber { get; set; }
+        /// <summary>
+        /// Reports the controller model
+        /// </summary>
+        public uint Model { get; set; }
+        /// <summary>
+        /// Reports the Host name set on the corresponding interface
+        /// </summary>
+        public uint HostName { get; set; }
+        /// <summary>
+        /// Reports the Current IP address set on the corresponding interface. If DHCP is enabled, this will be the DHCP assigned address.
+        /// </summary>
+        public uint CurrentIpAddress { get; set; }
+        /// <summary>
+        /// Reporst the Current Default Gateway set on the corresponding interface. If DHCP is enabled, this will be the DHCP assigned gateway
+        /// </summary>
+        public uint CurrentDefaultGateway { get; set; }
+        /// <summary>
+        /// Reports the Current Subnet Mask set on the corresponding interface. If DHCP is enabled, this will be the DHCP assigned subnet mask
+        /// </summary>
+        public uint CurrentSubnetMask { get; set; }
+        /// <summary>
+        /// Reports the Static IP address set on the corresponding interface. If DHCP is disabled, this will match the Current IP address
+        /// </summary>
+        public uint StaticIpAddress { get; set; }
+        /// <summary>
+        /// Reporst the Static Default Gateway set on the corresponding interface. If DHCP is disabled, this will match the Current gateway
+        /// </summary>
+        public uint StaticDefaultGateway { get; set; }
+        /// <summary>
+        /// Reports the Current Subnet Mask set on the corresponding interface. If DHCP is enabled, this will be the DHCP assigned subnet mask
+        /// </summary>
+        public uint StaticSubnetMask { get; set; }
+        /// <summary>
+        /// Reports the current DomainFeedback on the corresponding interface
+        /// </summary>
+        public uint Domain { get; set; }
+        /// <summary>
+        /// Reports the current DNS Servers on the corresponding interface
+        /// </summary>
+        public uint DnsServer { get; set; }
+        /// <summary>
+        /// Reports the MAC Address of the corresponding interface
+        /// </summary>
+        public uint MacAddress { get; set; }
+        /// <summary>
+        /// Reports the DHCP Status of the corresponding interface
+        /// </summary>
+        public uint DhcpStatus { get; set; }
         #endregion
 
         public SystemMonitorJoinMap()
@@ -93,6 +155,8 @@ namespace PepperDash.Essentials.Bridges
             SnmpAppVersion = 3;
             BACnetAppVersion = 4;
             ControllerVersion = 5;
+            SerialNumber = 6;
+            Model = 7;
 
 
             ProgramStartJoin = 10;
@@ -110,6 +174,22 @@ namespace PepperDash.Essentials.Bridges
             ProgramCrestronDatabaseVersion = 3;
             ProgramEnvironmentVersion = 4;
             AggregatedProgramInfo = 5;
+
+            EthernetStartJoin = 60;
+
+            EthernetOffsetJoin = 15;
+
+            HostName = 1;
+            CurrentIpAddress = 2;
+            CurrentSubnetMask = 3;
+            CurrentDefaultGateway = 4;
+            StaticIpAddress = 5;
+            StaticSubnetMask = 6;
+            StaticDefaultGateway = 7;
+            Domain = 8;
+            DnsServer = 9;
+            MacAddress = 10;
+            DhcpStatus = 11;
         }
 
         public override void OffsetJoinNumbers(uint joinStart)
@@ -126,6 +206,7 @@ namespace PepperDash.Essentials.Bridges
 
             // Sets the initial join value where the iterated program joins will begin
             ProgramStartJoin = ProgramStartJoin + joinOffset;
+            EthernetStartJoin = EthernetStartJoin + joinOffset;
         }
     }
 }
