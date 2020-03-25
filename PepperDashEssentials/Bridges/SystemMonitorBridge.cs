@@ -33,6 +33,8 @@ namespace PepperDash.Essentials.Bridges
             systemMonitorController.ControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.ControllerVersion]);
             systemMonitorController.SerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.SerialNumber]);
             systemMonitorController.ModelFeedback.LinkInputSig(trilist.StringInput[joinMap.Model]);
+            systemMonitorController.UptimeFeedback.LinkInputSig(trilist.StringInput[joinMap.Uptime]);
+            systemMonitorController.LastStartFeedback.LinkInputSig(trilist.StringInput[joinMap.LastBoot]);
 
             // iterate the program status feedback collection and map all the joins
             LinkProgramInfoJoins(systemMonitorController, trilist, joinMap);

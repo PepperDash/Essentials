@@ -144,6 +144,16 @@ namespace PepperDash.Essentials.Bridges
         /// Reports the DHCP Status of the corresponding interface
         /// </summary>
         public uint DhcpStatus { get; set; }
+
+        /// <summary>
+        /// Reports the current uptime. Updated in 5 minute intervals.
+        /// </summary>
+        public uint Uptime { get; set; }
+
+        /// <summary>
+        /// Reports the date of the last boot
+        /// </summary>
+        public uint LastBoot { get; set; }
         #endregion
 
         public SystemMonitorJoinMap()
@@ -157,6 +167,8 @@ namespace PepperDash.Essentials.Bridges
             ControllerVersion = 5;
             SerialNumber = 6;
             Model = 7;
+            Uptime = 8;
+            LastBoot = 9;
 
 
             ProgramStartJoin = 10;
@@ -179,6 +191,7 @@ namespace PepperDash.Essentials.Bridges
 
             EthernetOffsetJoin = 15;
 
+            // Offset in groups of 15
             HostName = 1;
             CurrentIpAddress = 2;
             CurrentSubnetMask = 3;

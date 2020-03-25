@@ -14,6 +14,12 @@ namespace PepperDash.Essentials.Core.Monitoring
     /// </summary>
     public class SystemMonitorController : Device
     {
+        private const long UptimePollTime = 300000;
+        private CTimer _uptimePollTimer;
+
+        private string _uptime;
+        private string _lastStart;
+
         public event EventHandler<EventArgs> SystemMonitorPropertiesChanged;
 
         public Dictionary<uint, ProgramStatusFeedbacks> ProgramStatusFeedbackCollection;
@@ -31,6 +37,8 @@ namespace PepperDash.Essentials.Core.Monitoring
         public StringFeedback SerialNumberFeedback { get; protected set; }
         public StringFeedback ModelFeedback { get; set; }
 
+        public StringFeedback UptimeFeedback { get; set; }
+        public StringFeedback LastStartFeedback { get; set; }
 
         public SystemMonitorController(string key)
             : base(key)
@@ -49,6 +57,8 @@ namespace PepperDash.Essentials.Core.Monitoring
 
             SerialNumberFeedback = new StringFeedback(() => CrestronEnvironment.SystemInfo.SerialNumber);
             ModelFeedback = new StringFeedback(() => InitialParametersClass.ControllerPromptName);
+            UptimeFeedback = new StringFeedback(() => _uptime);
+            LastStartFeedback = new StringFeedback(()=> _lastStart);
 
             ProgramStatusFeedbackCollection = new Dictionary<uint, ProgramStatusFeedbacks>();
 
@@ -59,10 +69,52 @@ namespace PepperDash.Essentials.Core.Monitoring
             }
 
             CreateEthernetStatusFeedbacks();
+            UpdateEthernetStatusFeeedbacks();
+
+            _uptimePollTimer = new CTimer(PollUptime,null,0, UptimePollTime);
 
             SystemMonitor.ProgramChange += SystemMonitor_ProgramChange;
             SystemMonitor.TimeZoneInformation.TimeZoneChange += TimeZoneInformation_TimeZoneChange;
             CrestronEnvironment.EthernetEventHandler += CrestronEnvironmentOnEthernetEventHandler;
+            CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironmentOnProgramStatusEventHandler;
+        }
+
+        private void CrestronEnvironmentOnProgramStatusEventHandler(eProgramStatusEventType programEventType)
+        {
+            if (programEventType != eProgramStatusEventType.Stopping) return;
+
+            _uptimePollTimer.Stop();
+            _uptimePollTimer.Dispose();
+            _uptimePollTimer = null;
+        }
+
+        private void PollUptime(object obj)
+        {
+            var consoleResponse = string.Empty;
+
+            CrestronConsole.SendControlSystemCommand("uptime", ref consoleResponse);
+
+            ParseUptime(consoleResponse);
+
+            UptimeFeedback.FireUpdate();
+            LastStartFeedback.FireUpdate();
+        }
+
+        private void ParseUptime(string response)
+        {
+            var splitString = response.Trim().Split('\r', '\n');
+
+            var lastStartRaw = splitString[2];
+            var lastStartIndex = lastStartRaw.IndexOf(':');
+
+            _lastStart = lastStartRaw.Substring(lastStartIndex + 1).Trim();
+
+            var uptimeRaw = splitString[0];
+
+            var forIndex = uptimeRaw.IndexOf("for", StringComparison.Ordinal);
+
+            //4 => "for " to get what's on the right
+            _uptime = uptimeRaw.Substring(forIndex + 4);
         }
 
         private void CrestronEnvironmentOnEthernetEventHandler(EthernetEventArgs ethernetEventArgs)
@@ -83,6 +135,24 @@ namespace PepperDash.Essentials.Core.Monitoring
             {
                 var ethernetInterface = new EthernetStatusFeedbacks(i);
                 EthernetStatusFeedbackCollection.Add(i, ethernetInterface);
+            }
+        }
+
+        private void UpdateEthernetStatusFeeedbacks()
+        {
+            foreach (var iface in EthernetStatusFeedbackCollection)
+            {
+                iface.Value.CurrentIpAddressFeedback.FireUpdate();
+                iface.Value.CurrentSubnetMaskFeedback.FireUpdate();
+                iface.Value.CurrentDefaultGatewayFeedback.FireUpdate();
+                iface.Value.StaticIpAddressFeedback.FireUpdate();
+                iface.Value.StaticSubnetMaskFeedback.FireUpdate();
+                iface.Value.StaticDefaultGatewayFeedback.FireUpdate();
+                iface.Value.HostNameFeedback.FireUpdate();
+                iface.Value.DnsServerFeedback.FireUpdate();
+                iface.Value.DomainFeedback.FireUpdate();
+                iface.Value.DhcpStatusFeedback.FireUpdate();
+                iface.Value.MacAddressFeedback.FireUpdate();
             }
         }
 
@@ -332,62 +402,82 @@ namespace PepperDash.Essentials.Core.Monitoring
 
                 string response = null;
 
+                if (Program.RegistrationState == eProgramRegistrationState.Unregister || Program.OperatingState == eProgramOperatingState.Stop)
+                {
+                    Debug.Console(2, "Program {0} not registered. Setting default values for program information.",
+                        Program.Number);
+
+                    ProgramInfo = new ProgramInfo(Program.Number)
+                    {
+                        OperatingState = Program.OperatingState,
+                        RegistrationState = Program.RegistrationState
+                    };
+
+                    return;
+                }
+
                 var success = CrestronConsole.SendControlSystemCommand(
                     string.Format("progcomments:{0}", Program.Number), ref response);
 
-                if (success)
-                {
-                    //Debug.Console(2, "Progcomments Response: \r{0}", response);
-
-                    if (!response.ToLower().Contains("bad or incomplete"))
-                    {
-                        // Shared properteis
-                        ProgramInfo.ProgramFile = ParseConsoleData(response, "Program File", ": ", "\n");
-                        ProgramInfo.CompilerRevision = ParseConsoleData(response, "Compiler Rev", ": ", "\n");
-                        ProgramInfo.CompileTime = ParseConsoleData(response, "Compiled On", ": ", "\n");
-                        ProgramInfo.Include4Dat = ParseConsoleData(response, "Include4.dat", ": ", "\n");
-
-
-                        if (ProgramInfo.ProgramFile.Contains(".dll"))
-                        {
-                            // SSP Program
-                            ProgramInfo.FriendlyName = ParseConsoleData(response, "Friendly Name", ": ", "\n");
-                            ProgramInfo.ApplicationName = ParseConsoleData(response, "Application Name", ": ", "\n");
-                            ProgramInfo.ProgramTool = ParseConsoleData(response, "Program Tool", ": ", "\n");
-                            ProgramInfo.MinFirmwareVersion = ParseConsoleData(response, "Min Firmware Version", ": ",
-                                "\n");
-                            ProgramInfo.PlugInVersion = ParseConsoleData(response, "PlugInVersion", ": ", "\n");
-                        }
-                        else if (ProgramInfo.ProgramFile.Contains(".smw"))
-                        {
-                            // SIMPL Windows Program
-                            ProgramInfo.FriendlyName = ParseConsoleData(response, "Friendly Name", ":", "\n");
-                            ProgramInfo.SystemName = ParseConsoleData(response, "System Name", ": ", "\n");
-                            ProgramInfo.CrestronDb = ParseConsoleData(response, "CrestronDB", ": ", "\n");
-                            ProgramInfo.Environment = ParseConsoleData(response, "Source Env", ": ", "\n");
-                            ProgramInfo.Programmer = ParseConsoleData(response, "Programmer", ": ", "\n");
-                        }
-                        //Debug.Console(2, "ProgramInfo: \r{0}", JsonConvert.SerializeObject(ProgramInfo));
-                    }
-                    else
-                    {
-                        Debug.Console(2,
-                            "Bad or incomplete console command response.  Initializing ProgramInfo for slot: {0}",
-                            Program.Number);
-
-                        // Assume no valid program info.  Constructing a new object will wipe all properties
-                        ProgramInfo = new ProgramInfo(Program.Number)
-                        {
-                            OperatingState = Program.OperatingState,
-                            RegistrationState = Program.RegistrationState
-                        };
-                    }
-                }
-                else
+                if (!success)
                 {
                     Debug.Console(2, "Progcomments Attempt Unsuccessful for slot: {0}", Program.Number);
+                    UpdateFeedbacks();
+                    return;
                 }
 
+                if (response.ToLower().Contains("bad or incomplete"))
+                {
+                    Debug.Console(2,
+                        "Program in slot {0} not running.  Setting default ProgramInfo for slot: {0}",
+                        Program.Number);
+
+                    // Assume no valid program info.  Constructing a new object will wipe all properties
+                    ProgramInfo = new ProgramInfo(Program.Number)
+                    {
+                        OperatingState = Program.OperatingState,
+                        RegistrationState = Program.RegistrationState
+                    };
+
+                    UpdateFeedbacks();
+
+                    return;
+                }
+
+
+                // Shared properteis
+                ProgramInfo.ProgramFile = ParseConsoleData(response, "Program File", ": ", "\n");
+                ProgramInfo.CompilerRevision = ParseConsoleData(response, "Compiler Rev", ": ", "\n");
+                ProgramInfo.CompileTime = ParseConsoleData(response, "Compiled On", ": ", "\n");
+                ProgramInfo.Include4Dat = ParseConsoleData(response, "Include4.dat", ": ", "\n");
+
+
+                if (ProgramInfo.ProgramFile.Contains(".dll"))
+                {
+                    // SSP Program
+                    ProgramInfo.FriendlyName = ParseConsoleData(response, "Friendly Name", ": ", "\n");
+                    ProgramInfo.ApplicationName = ParseConsoleData(response, "Application Name", ": ", "\n");
+                    ProgramInfo.ProgramTool = ParseConsoleData(response, "Program Tool", ": ", "\n");
+                    ProgramInfo.MinFirmwareVersion = ParseConsoleData(response, "Min Firmware Version", ": ",
+                        "\n");
+                    ProgramInfo.PlugInVersion = ParseConsoleData(response, "PlugInVersion", ": ", "\n");
+                }
+                else if (ProgramInfo.ProgramFile.Contains(".smw"))
+                {
+                    // SIMPL Windows Program
+                    ProgramInfo.FriendlyName = ParseConsoleData(response, "Friendly Name", ":", "\n");
+                    ProgramInfo.SystemName = ParseConsoleData(response, "System Name", ": ", "\n");
+                    ProgramInfo.CrestronDb = ParseConsoleData(response, "CrestronDB", ": ", "\n");
+                    ProgramInfo.Environment = ParseConsoleData(response, "Source Env", ": ", "\n");
+                    ProgramInfo.Programmer = ParseConsoleData(response, "Programmer", ": ", "\n");
+                }
+                Debug.Console(2, "Program info for slot {0} successfully updated", Program.Number);
+
+                UpdateFeedbacks();
+            }
+
+            private void UpdateFeedbacks()
+            {
                 ProgramNameFeedback.FireUpdate();
                 ProgramCompileTimeFeedback.FireUpdate();
                 CrestronDataBaseVersionFeedback.FireUpdate();
