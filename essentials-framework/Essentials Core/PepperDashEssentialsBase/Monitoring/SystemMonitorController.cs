@@ -43,6 +43,8 @@ namespace PepperDash.Essentials.Core.Monitoring
         public StringFeedback CsIpAddress { get; protected set; }
         public StringFeedback CsSubnetMask { get; protected set; }
 
+        public BoolFeedback DhcpEnabled { get; protected set; }
+
 
         public SystemMonitorController(string key)
             : base(key)
@@ -125,6 +127,12 @@ namespace PepperDash.Essentials.Core.Monitoring
                             ? CrestronEthernetHelper.GetEthernetParameter(
                                 CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, CsAdapterIndex)
                             : String.Empty);
+
+            DhcpEnabled = new BoolFeedback(
+                () =>
+                    CrestronEthernetHelper.GetEthernetParameter(
+                        CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_DHCP_STATE, LanAdapterIndex) ==
+                    "Enabled");
         }
 
         /// <summary>
