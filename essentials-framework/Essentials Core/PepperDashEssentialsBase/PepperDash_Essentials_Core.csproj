@@ -132,6 +132,7 @@
     <Compile Include="Devices\CrestronProcessor.cs" />
     <Compile Include="Devices\DeviceApiBase.cs" />
     <Compile Include="Devices\DeviceFeedbackExtensions.cs" />
+    <Compile Include="Devices\EssentialsDevice.cs" />
     <Compile Include="Devices\PC\InRoomPc.cs" />
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />

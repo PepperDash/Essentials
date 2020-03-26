@@ -72,6 +72,11 @@ namespace PepperDash.Essentials
                             assembly = Assembly.GetExecutingAssembly();
                             break;
                         }
+                    case ("PepperDashEssentialsBase.dll"):
+                        {
+
+                            break;
+                        }
                     case ("PepperDash_Core.dll"):
                         {
                             version = PepperDash.Core.Debug.PepperDashCoreVersion;
@@ -339,9 +344,9 @@ namespace PepperDash.Essentials
                     {
                         try
                         {
-                            if (typeof(IPluginDeviceConfig).IsAssignableFrom(type))
+                            if (typeof(IPluginDeviceFactory).IsAssignableFrom(type))
                             {
-                                var plugin = (IPluginDeviceConfig)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type); 
+                                var plugin = (IPluginDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type); 
                                 LoadCustomPlugin(plugin, loadedAssembly);
                             }
                             else
@@ -377,7 +382,7 @@ namespace PepperDash.Essentials
         /// Loads a
         /// </summary>
         /// <param name="plugin"></param>
-        static void LoadCustomPlugin(IPluginDeviceConfig plugin, LoadedAssembly loadedAssembly)
+        static void LoadCustomPlugin(IPluginDeviceFactory plugin, LoadedAssembly loadedAssembly)
         {
             var passed = Global.IsRunningMinimumVersionOrHigher(plugin.MinimumEssentialsFrameworkVersion);
 
@@ -392,7 +397,7 @@ namespace PepperDash.Essentials
             }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading plugin: {0}", loadedAssembly.Name);
-            plugin.LoadPlugin();
+            plugin.LoadTypeFactories();
         }
 
         /// <summary>
