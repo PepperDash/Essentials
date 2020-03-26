@@ -339,9 +339,9 @@ namespace PepperDash.Essentials
                     {
                         try
                         {
-                            var plugin = type as IPluginDeviceConfig;
-                            if (plugin != null)
+                            if (typeof(IPluginDeviceConfig).IsAssignableFrom(type))
                             {
+                                var plugin = (IPluginDeviceConfig)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type); 
                                 LoadCustomPlugin(plugin, loadedAssembly);
                             }
                             else
