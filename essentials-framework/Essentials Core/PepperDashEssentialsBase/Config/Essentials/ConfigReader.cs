@@ -64,15 +64,22 @@ namespace PepperDash.Essentials.Core.Config
 
                     if (configFiles != null)
                     {
+                        Debug.Console(2, "{0} config files found matching pattern", configFiles.Length);
+
                         if (configFiles.Length > 1)
                         {
                             Debug.Console(0, Debug.ErrorLogLevel.Error,
                                 "****Error: Multiple Portal Configuration files present. Please ensure only a single file exists and reset program.****");
                             return false;
                         }
-                        else
+                        else if (configFiles.Length == 1)
                         {
                             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Found Portal config file: '{0}'", filePath);
+                        }
+                        else
+                        {
+                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "No config file found.");
+                            return false;
                         }
                     }
                     else

@@ -26,6 +26,20 @@ namespace PepperDash.Essentials
         /// </summary>
         static List<LoadedAssembly> LoadedPluginFolderAssemblies;
 
+        /// <summary>
+        /// The directory to look in for .cplz plugin packages
+        /// </summary>
+        static string _pluginDirectory = Global.FilePathPrefix + "plugins";
+
+        /// <summary>
+        /// The directory where plugins will be moved to and loaded from
+        /// </summary>
+        static string _loadedPluginsDirectoryPath = _pluginDirectory + Global.DirectorySeparator + "loadedAssemblies";
+
+        // The temp directory where .cplz archives will be unzipped to
+        static string _tempDirectory = _pluginDirectory + Global.DirectorySeparator + "temp";
+
+
         static PluginLoader()
         {
             LoadedAssemblies = new List<LoadedAssembly>();
@@ -37,19 +51,43 @@ namespace PepperDash.Essentials
         /// </summary>
         public static void AddProgramAssemblies()
         {
+            Debug.Console(2, "Getting Assemblies loaded with Essentials");
             // Get the loaded assembly filenames
             var appDi = new DirectoryInfo(Global.ApplicationDirectoryPathPrefix);
             var assemblyFiles = appDi.GetFiles("*.dll");
 
-            foreach (var file in assemblyFiles)
+            Debug.Console(2, "Found {0} Assemblies", assemblyFiles.Length);
+
+            foreach (var fi in assemblyFiles)
             {
-                try
+                string version = string.Empty;
+                Assembly assembly = null;
+
+                switch (fi.Name)
                 {
-                    LoadAssembly(file.FullName);
+                    case ("PepperDashEssentials.dll"):
+                        {
+                            version = Global.AssemblyVersion;
+                            assembly = Assembly.GetExecutingAssembly();
+                            break;
+                        }
+                    case ("PepperDash_Core.dll"):
+                        {
+                            version = PepperDash.Core.Debug.PepperDashCoreVersion;
+                            break;
+                        }
                 }
-                catch
+
+                LoadedAssemblies.Add(new LoadedAssembly(fi.Name, version, assembly));
+            }
+
+            if (Debug.Level > 1)
+            {
+                Debug.Console(2, "Loaded Assemblies:");
+
+                foreach (var assembly in LoadedAssemblies)
                 {
-                    Debug.Console(2, "Assembly {0} is not a custom assembly", file.FullName);
+                    Debug.Console(2, "Assembly: {0}", assembly.Name);
                 }
             }
         }
@@ -58,30 +96,23 @@ namespace PepperDash.Essentials
         /// Loads an assembly via Reflection and adds it to the list of loaded assemblies
         /// </summary>
         /// <param name="fileName"></param>
-        static LoadedAssembly LoadAssembly(string fileName)
+        static LoadedAssembly LoadAssembly(string filePath)
         {
-            if (!CheckIfAssemblyExists(fileName))
-            {
-
-                var assembly = Assembly.LoadFrom(fileName);
+                Debug.Console(2, "Attempting to load {0}", filePath);
+                var assembly = Assembly.LoadFrom(filePath);
                 if (assembly != null)
                 {
                     var assyVersion = GetAssemblyVersion(assembly);
 
                     var loadedAssembly = new LoadedAssembly(assembly.GetName().Name, assyVersion, assembly);
                     LoadedAssemblies.Add(loadedAssembly);
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded plugin file '{0}', version {1}", loadedAssembly.FileName, loadedAssembly.Version);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded assembly '{0}', version {1}", loadedAssembly.Name, loadedAssembly.Version);
                     return loadedAssembly;
                 }
                 else
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to load assembly: '{0}'", fileName);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to load assembly: '{0}'", filePath);
                 }
-            }
-            else
-            {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Skipping assembly: {0}.  There is already an assembly with that name loaded.", fileName);
-            }
 
             return null;
 
@@ -95,9 +126,9 @@ namespace PepperDash.Essentials
         static string GetAssemblyVersion(Assembly assembly)
         {
             var ver = assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
-            if (ver != null)
+            if (ver != null && ver.Length > 0)
             {
-                // Get the AssemblyInformationalVersion
+                // Get the AssemblyInformationalVersion              
                 AssemblyInformationalVersionAttribute verAttribute = ver[0] as AssemblyInformationalVersionAttribute;
                 return verAttribute.InformationalVersion;
             }
@@ -115,17 +146,19 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="filename"></param>
         /// <returns>True if file already matches loaded assembly file.</returns>
-        public static bool CheckIfAssemblyExists(string filename)
+        public static bool CheckIfAssemblyLoaded(string name)
         {
-            Debug.Console(2, "Checking if assembly: {0} is loaded...", filename);
-            var loadedAssembly = LoadedAssemblies.FirstOrDefault(s => s.FileName.Equals(filename));
+            Debug.Console(2, "Checking if assembly: {0} is loaded...", name);
+            var loadedAssembly = LoadedAssemblies.FirstOrDefault(s => s.Name.Equals(name));
 
             if (loadedAssembly != null)
             {
+                Debug.Console(2, "Assembly already loaded.");
                 return true;
             }
             else
             {
+                Debug.Console(2, "Assembly not loaded.");
                 return false;
             }
         }
@@ -139,8 +172,232 @@ namespace PepperDash.Essentials
             Debug.Console(0, "Loaded Assemblies:");
             foreach (var assembly in LoadedAssemblies)
             {
-                Debug.Console(0, "{0} Version: {1}", assembly.FileName, assembly.Version);
+                Debug.Console(0, "{0} Version: {1}", assembly.Name, assembly.Version);
             }
+        }
+
+        /// <summary>
+        /// Moves any .dll assemblies not already loaded from the plugins folder to loadedPlugins folder
+        /// </summary>
+        static void MoveDllAssemblies()
+        {
+            Debug.Console(0, "Looking for .dll assemblies from plugins folder...");
+
+            var pluginDi = new DirectoryInfo(_pluginDirectory);
+            var pluginFiles = pluginDi.GetFiles("*.dll");
+
+            if (pluginFiles.Length > 0)
+            {
+                if (!Directory.Exists(_loadedPluginsDirectoryPath))
+                {
+                    Directory.CreateDirectory(_loadedPluginsDirectoryPath);
+                }
+            }
+
+            foreach (var pluginFile in pluginFiles)
+            {
+                try
+                {
+                    Debug.Console(0, "Found .dll: {0}", pluginFile.Name);
+
+                    if (!CheckIfAssemblyLoaded(pluginFile.Name))
+                    {
+                        string filePath = string.Empty;
+
+                        filePath = _loadedPluginsDirectoryPath + Global.DirectorySeparator + pluginFile.Name;
+
+                        // Check if there is a previous file in the loadedPlugins directory and delete
+                        if (File.Exists(filePath))
+                        {
+                            Debug.Console(0, "Found existing file in loadedPlugins: {0} Deleting and moving new file to replace it", filePath);
+                            File.Delete(filePath);
+                        }
+
+                        // Move the file
+                        File.Move(pluginFile.FullName, filePath);
+                        Debug.Console(2, "Moved {0} to {1}", pluginFile.FullName, filePath);
+                    }
+                    else
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Skipping assembly: {0}.  There is already an assembly with that name loaded.", pluginFile.FullName);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(2, "Error with plugin file {0} . Exception: {1}", pluginFile.FullName, e);
+                    continue; //catching any load issues and continuing. There will be exceptions loading Crestron .dlls from the cplz Probably should do something different here
+                }
+            }
+
+            Debug.Console(0, "Done with .dll assemblies");
+        }
+
+        /// <summary>
+        /// Unzips each .cplz archive into the temp directory and moves any unloaded files into loadedPlugins
+        /// </summary>
+        static void UnzipAndMoveCplzArchives()
+        {
+            Debug.Console(0, "Looking for .cplz archives from plugins folder...");
+            var di = new DirectoryInfo(_pluginDirectory);
+            var zFiles = di.GetFiles("*.cplz");
+
+            if (zFiles.Length > 0)
+            {
+                if (!Directory.Exists(_loadedPluginsDirectoryPath))
+                {
+                    Directory.CreateDirectory(_loadedPluginsDirectoryPath);
+                }
+            }
+
+            foreach (var zfi in zFiles)
+            {
+                Directory.CreateDirectory(_tempDirectory);
+                var tempDi = new DirectoryInfo(_tempDirectory);
+
+                Debug.Console(0, "Found cplz: {0}. Unzipping into temp plugins directory", zfi.Name);
+                var result = CrestronZIP.Unzip(zfi.FullName, tempDi.FullName);
+                Debug.Console(0, "UnZip Result: {0}", result.ToString());
+
+                var tempFiles = tempDi.GetFiles("*.dll");
+                foreach (var tempFile in tempFiles)
+                {
+                    try
+                    {
+                        if (!CheckIfAssemblyLoaded(tempFile.Name))
+                        {
+                            string filePath = string.Empty;
+
+                            filePath = _loadedPluginsDirectoryPath + Global.DirectorySeparator + tempFile.Name;
+
+                            // Check if there is a previous file in the loadedPlugins directory and delete
+                            if (File.Exists(filePath))
+                            {
+                                Debug.Console(0, "Found existing file in loadedPlugins: {0} Deleting and moving new file to replace it", filePath);
+                                File.Delete(filePath);
+                            }
+
+                            // Move the file
+                            File.Move(tempFile.FullName, filePath);
+                            Debug.Console(2, "Moved {0} to {1}", tempFile.FullName, filePath);
+                        }
+                        else
+                        {
+                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Skipping assembly: {0}.  There is already an assembly with that name loaded.", tempFile.FullName);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Console(2, "Assembly {0} is not a custom assembly. Exception: {1}", tempFile.FullName, e);
+                        continue; //catching any load issues and continuing. There will be exceptions loading Crestron .dlls from the cplz Probably should do something different here
+                    }  
+                }
+
+                // Delete the .cplz and the temp directory
+                Directory.Delete(_tempDirectory, true);
+                zfi.Delete();
+            }
+
+            Debug.Console(0, "Done with .cplz archives");
+        }
+
+        /// <summary>
+        /// Attempts to load the assemblies from the loadedPlugins folder
+        /// </summary>
+        static void LoadPluginAssemblies()
+        {
+            Debug.Console(0, "Loading assemblies from loadedPlugins folder...");
+            var pluginDi = new DirectoryInfo(_loadedPluginsDirectoryPath);
+            var pluginFiles = pluginDi.GetFiles("*.dll");
+
+            Debug.Console(2, "Found {0} plugin assemblies to load", pluginFiles.Length);
+
+            foreach (var pluginFile in pluginFiles)
+            {
+                var loadedAssembly = LoadAssembly(pluginFile.FullName);
+
+                LoadedPluginFolderAssemblies.Add(loadedAssembly);
+            }
+
+            Debug.Console(0, "All Plugins Loaded.");
+        }
+
+        /// <summary>
+        /// Iterate the loaded assemblies and try to call the LoadPlugin method
+        /// </summary>
+        static void LoadCustomPluginTypes()
+        {
+            Debug.Console(0, "Loading Custom Plugin Types...");
+            foreach (var loadedAssembly in LoadedPluginFolderAssemblies)
+            {
+                // iteratate this assembly's classes, looking for "LoadPlugin()" methods
+                try
+                {
+                    var assy = loadedAssembly.Assembly;
+                    var types = assy.GetTypes();
+                    foreach (var type in types)
+                    {
+                        try
+                        {
+                            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                            var loadPlugin = methods.FirstOrDefault(m => m.Name.Equals("LoadPlugin"));
+                            if (loadPlugin != null)
+                            {
+                                Debug.Console(2, "LoadPlugin method found in {0}", type.Name);
+
+                                var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+
+                                var minimumVersion = fields.FirstOrDefault(p => p.Name.Equals("MinimumEssentialsFrameworkVersion"));
+                                if (minimumVersion != null)
+                                {
+                                    Debug.Console(2, "MinimumEssentialsFrameworkVersion found");
+
+                                    var minimumVersionString = minimumVersion.GetValue(null) as string;
+
+                                    if (!string.IsNullOrEmpty(minimumVersionString))
+                                    {
+                                        var passed = Global.IsRunningMinimumVersionOrHigher(minimumVersionString);
+
+                                        if (!passed)
+                                        {
+                                            Debug.Console(0, Debug.ErrorLogLevel.Error, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", minimumVersionString);
+                                            continue;
+                                        }
+                                        else
+                                        {
+                                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Passed plugin passed dependency check (required version {0})", minimumVersionString);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion found but not set.  Loading plugin, but your mileage may vary.");
+                                    }
+                                }
+                                else
+                                {
+                                    Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion not found.  Loading plugin, but your mileage may vary.");
+                                }
+
+                                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding plugin: {0}", loadedAssembly.Name);
+                                loadPlugin.Invoke(null, null);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.Console(2, "Load Plugin not found. {0} is not a plugin assembly. Exception: {1}", loadedAssembly.Name, e);
+                            continue;
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(2, "Error Loading Assembly: {0} Exception: (1) ", loadedAssembly.Name, e);
+                    continue;
+                }
+            }
+            // plugin dll will be loaded.  Any classes in plugin should have a static constructor
+            // that registers that class with the Core.DeviceFactory
+            Debug.Console(0, "Done Loading Custom Plugin Types.");
         }
 
          /// <summary>
@@ -148,121 +405,21 @@ namespace PepperDash.Essentials
         /// </summary>
         public static void LoadPlugins()
         {
-            var dir = Global.FilePathPrefix + "plugins";
-            var tempDir = dir + Global.DirectorySeparator + "temp";
-
-            if (Directory.Exists(dir))
+            if (Directory.Exists(_pluginDirectory))
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Plugins directory found, checking for factory plugins");
-                var di = new DirectoryInfo(dir);
-                var zFiles = di.GetFiles("*.cplz");
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Plugins directory found, checking for plugins");
 
-                foreach (var fi in zFiles)
-                {
-                    Directory.CreateDirectory(tempDir);
-                    var tempDi = new DirectoryInfo(tempDir);
+                // Deal with any .dll files
+                MoveDllAssemblies();
 
-                    Debug.Console(0, "Found cplz: {0}. Unzipping into temp plugins directory", fi.Name);
-                    var result = CrestronZIP.Unzip(fi.FullName, tempDi.FullName);
-                    Debug.Console(0, "UnZip Result: {0}", result.ToString());
+                // Deal with any .cplz files
+                UnzipAndMoveCplzArchives();
 
-                    var files = tempDi.GetFiles("*.dll");
+                // Load the assemblies from the loadedPlugins folder into the AppDomain
+                LoadPluginAssemblies();
 
-                    foreach (FileInfo file in files)
-                    {
-                        try
-                        {
-                            var pluginAssembly = LoadAssembly(fi.FullName);
-
-                            if (pluginAssembly != null)
-                            {
-                                LoadedPluginFolderAssemblies.Add(pluginAssembly);
-                            }
-                        }
-                        catch
-                        {
-                            Debug.Console(2, "Assembly {0} is not a custom assembly", file.FullName);
-                            continue; //catching any load issues and continuing. There will be exceptions loading Crestron .dlls from the cplz Probably should do something different here
-                        }
-                        
-                    }
-
-                    // Delete the .cplz and the temp directory
-                    fi.Delete();
-                    Directory.Delete(tempDir);
-                }
-
-                // Iterate the loaded assemblies and try to call the LoadPlugin method
-                foreach (var loadedAssembly in LoadedPluginFolderAssemblies)
-                {
-                    // iteratate this assembly's classes, looking for "LoadPlugin()" methods
-                    try
-                    {
-                        var assy = loadedAssembly.Assembly;
-                        var types = assy.GetTypes();
-                        foreach (var type in types)
-                        {
-                            try
-                            {
-                                var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
-                                var loadPlugin = methods.FirstOrDefault(m => m.Name.Equals("LoadPlugin"));
-                                if (loadPlugin != null)
-                                {
-                                    Debug.Console(2, "LoadPlugin method found in {0}", type.Name);
-
-                                    var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
-
-                                    var minimumVersion = fields.FirstOrDefault(p => p.Name.Equals("MinimumEssentialsFrameworkVersion"));
-                                    if (minimumVersion != null)
-                                    {
-                                        Debug.Console(2, "MinimumEssentialsFrameworkVersion found");
-
-                                        var minimumVersionString = minimumVersion.GetValue(null) as string;
-
-                                        if (!string.IsNullOrEmpty(minimumVersionString))
-                                        {
-                                            var passed = Global.IsRunningMinimumVersionOrHigher(minimumVersionString);
-
-                                            if (!passed)
-                                            {
-                                                Debug.Console(0, Debug.ErrorLogLevel.Error, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", minimumVersionString);
-                                                continue;
-                                            }
-                                            else
-                                            {
-                                                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Passed plugin passed dependency check (required version {0})", minimumVersionString);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion found but not set.  Loading plugin, but your mileage may vary.");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion not found.  Loading plugin, but your mileage may vary.");
-                                    }
-
-                                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding plugin: {0}", loadedAssembly.FileName);
-                                    loadPlugin.Invoke(null, null);
-                                }
-                            }
-                            catch
-                            {
-                                Debug.Console(2, "Load Plugin not found. {0} is not a plugin assembly", loadedAssembly.FileName);
-                                continue;
-                            }
-
-                        }
-                    }
-                    catch
-                    {
-                        Debug.Console(2, "Assembly {0} is not a custom assembly. Types cannot be loaded.", loadedAssembly.FileName);
-                        continue;
-                    }
-                }
-                // plugin dll will be loaded.  Any classes in plugin should have a static constructor
-                // that registers that class with the Core.DeviceFactory
+                // Load the types from any custom plugin assemblies
+                LoadCustomPluginTypes();
             }
         }
 
@@ -273,13 +430,13 @@ namespace PepperDash.Essentials
     /// </summary>
     public class LoadedAssembly
     {
-        public string FileName { get; private set; }
+        public string Name { get; private set; }
         public string Version { get; private set; }
         public Assembly Assembly { get; private set; }
 
-        public LoadedAssembly(string fileName, string version, Assembly assembly)
+        public LoadedAssembly(string name, string version, Assembly assembly)
         {
-            FileName = fileName;
+            Name = name;
             Version = version;
             Assembly = assembly;
         }
