@@ -98,7 +98,7 @@ namespace PepperDash.Essentials.Core
         {
             Debug.Console(2, "Comparing running version '{0}' to minimum version '{1}'", AssemblyVersion, minimumVersion);
 
-            var runtimeVersion = Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*)$");
+            var runtimeVersion = Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*");
 
             var runtimeVersionMajor = Int16.Parse(runtimeVersion.Groups[1].Value);
             var runtimeVersionMinor = Int16.Parse(runtimeVersion.Groups[2].Value);
@@ -107,7 +107,7 @@ namespace PepperDash.Essentials.Core
             // Check for beta build version
             if (runtimeVersionMajor == 0)
             {
-                Debug.Console(2, "Running Beta Build.  Bypassing Dependency Check.");
+                Debug.Console(2, "Running Local Build.  Bypassing Dependency Check.");
                 return true;
             }
 
