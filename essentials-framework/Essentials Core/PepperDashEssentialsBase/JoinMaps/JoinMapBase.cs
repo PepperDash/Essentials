@@ -203,12 +203,8 @@ namespace PepperDash.Essentials.Core
         /// <returns></returns>
         public uint GetJoinForKey(string key)
         {
-            if (Joins.ContainsKey(key))
-                return Joins[key].JoinNumber;
-            else
-                return 0;
+            return Joins.ContainsKey(key) ? Joins[key].JoinNumber : 0;
         }
-
 
 
         /// <summary>
@@ -218,12 +214,8 @@ namespace PepperDash.Essentials.Core
         /// <returns></returns>
         public uint GetJoinSpanForKey(string key)
         {
-            if (Joins.ContainsKey(key))
-                return Joins[key].JoinSpan;
-
-            else return 0;
+            return Joins.ContainsKey(key) ? Joins[key].JoinSpan : 0;
         }
-
     }
 
     /// <summary>
@@ -315,24 +307,24 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class JoinDataComplete
     {
-        JoinData _Data { get; set; }
+        private readonly JoinData _data;
         public JoinMetadata Metadata { get; set; }
 
         public JoinDataComplete(JoinData data, JoinMetadata metadata)
         {
-            _Data = data;
+            _data = data;
             Metadata = metadata;
         }
 
         public uint JoinNumber
         {
-            get { return _Data.JoinNumber; }
-            set { _Data.JoinNumber = value; }
+            get { return _data.JoinNumber; }
+            set { _data.JoinNumber = value; }
         }
 
         public uint JoinSpan
         {
-            get { return _Data.JoinSpan; }
+            get { return _data.JoinSpan; }
         }
 
         public string GetNameAttribute()
@@ -350,16 +342,11 @@ namespace PepperDash.Essentials.Core
     [AttributeUsage(AttributeTargets.Field)]
     public class JoinNameAttribute : Attribute
     {
-        private string _name;
-        public string Name
-        {
-            get { return this.Name; }
-            set { this._name = value; }
-        }
+        public string Name { get; set; }
 
         public JoinNameAttribute(string name)
         {
-            this._name = name;
+            Name = name;
         }
     }
 }
