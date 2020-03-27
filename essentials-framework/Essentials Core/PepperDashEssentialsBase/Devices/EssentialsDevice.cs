@@ -14,37 +14,34 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public abstract class EssentialsDevice : Device
     {
-        public EssentialsDevice(string key)
+        protected EssentialsDevice(string key)
             : base(key)
         {
 
         }
+    }
 
-        public abstract class Factory : IDeviceFactory
+    public abstract class Factory : IDeviceFactory
+    {
+        #region IDeviceFactory Members
+
+        public List<string> TypeNames { get; protected set; }
+
+        public virtual void LoadTypeFactories()
         {
-            #region IDeviceFactory Members
-
-            public List<string> TypeNames { get; protected set; }
-
-            public virtual void LoadTypeFactories()
+            foreach (var typeName in TypeNames)
             {
-                foreach (var typeName in TypeNames)
-                {
-                    DeviceFactory.AddFactoryForType(typeName, BuildDevice);
-                }
+                DeviceFactory.AddFactoryForType(typeName, BuildDevice);
             }
-
-            #endregion
-
-            public abstract IKeyed BuildDevice(DeviceConfig dc);
-
-            public Factory()
-            {
-                TypeNames = new List<string>();
-            }
-
         }
-        
 
+        #endregion
+
+        public abstract IKeyed BuildDevice(DeviceConfig dc);
+
+        protected Factory()
+        {
+            TypeNames = new List<string>();
+        }
     }
 }
