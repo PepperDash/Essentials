@@ -439,7 +439,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         void GetTouchpanelInfo()
         {
-            // TODO Get IP and Project Name from TP
+            // TODO: Get IP and Project Name from TP
         }
 
         protected void FusionRoom_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)

@@ -40,4 +40,5 @@ devjson:1 {"deviceKey":"commBridge", "methodName":"ExecuteJoinAction", "params":
 
 devjson:2 {"deviceKey":"display01Comm-com", "methodName":"SendText", "params": [ "I'M GETTING TIRED OF THIS" ]}
 
-devjson:10 {"deviceKey":"dmLink-ssh", "methodName":"Connect", "params": []}
+devjson:10 {"deviceKey":"dmLink-ssh", "methodName":"Connect", "params": []} 
+
