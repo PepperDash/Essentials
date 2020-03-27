@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Linq;
 using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Essentials.Core;
@@ -58,16 +54,12 @@ namespace PepperDash.Essentials.AppServer
         public SIMPLAtcJoinMap()
         {
             // Add all the JoinDataComplete properties to the Joins Dictionary
-            GetType()
+            Joins = GetType()
                 .GetCType()
                 .GetProperties()
-                .Where(x => x.PropertyType == typeof(uint))
-                .ToList()
-                .ForEach(prop => 
-                    {
-                        var join = (JoinDataComplete)prop.GetValue(this, null);
-                        Joins.Add(join.GetNameAttribute(), join);
-                    });
+                .Where(prop => prop.IsDefined(typeof (JoinNameAttribute), false))
+                .Select(prop => (JoinDataComplete) prop.GetValue(this, null))
+                .ToDictionary(join => join.GetNameAttribute(), join => join);
         }
 
         public override void OffsetJoinNumbers(uint joinStart)
