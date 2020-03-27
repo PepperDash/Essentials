@@ -124,9 +124,9 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			this.PostStatusMessage(new
 			{				
 				calls = GetCurrentCallList(),
-				currentCallString = EISC.GetString(JoinMap.GetJoinForKey(SIMPLAtcJoinMap.CurrentCallName)),
-				currentDialString = EISC.GetString(JoinMap.GetJoinForKey(SIMPLAtcJoinMap.CurrentDialString)),
-                isInCall = EISC.GetString(JoinMap.GetJoinForKey(SIMPLAtcJoinMap.HookState)) == "Connected"
+				currentCallString = EISC.GetString(JoinMap.CurrentCallName.JoinNumber),
+				currentDialString = EISC.GetString(JoinMap.CurrentDialString.JoinNumber),
+                isInCall = EISC.GetString(JoinMap.HookState.JoinNumber) == "Connected"
 			});
 		}
 
@@ -138,26 +138,26 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		{
             //EISC.SetStringSigAction(SCurrentDialString, s => PostStatusMessage(new { currentDialString = s }));
 
-            EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLAtcJoinMap.HookState), s => 
+            EISC.SetStringSigAction(JoinMap.HookState.JoinNumber, s => 
 			{
 				CurrentCallItem.Status = (eCodecCallStatus)Enum.Parse(typeof(eCodecCallStatus), s, true);
                 //GetCurrentCallList();
 				SendFullStatus();
 			});
 
-            EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLAtcJoinMap.CurrentCallNumber), s => 
+            EISC.SetStringSigAction(JoinMap.CurrentCallNumber.JoinNumber, s => 
 			{
 				CurrentCallItem.Number = s;
                 SendCallsList();
 			});
 
-            EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLAtcJoinMap.CurrentCallName), s =>
+            EISC.SetStringSigAction(JoinMap.CurrentCallName.JoinNumber, s =>
             {
                 CurrentCallItem.Name = s;
                 SendCallsList();
             });
 
-            EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLAtcJoinMap.CallDirection), s =>
+            EISC.SetStringSigAction(JoinMap.CallDirection.JoinNumber, s =>
             {
                 CurrentCallItem.Direction = (eCodecCallDirection)Enum.Parse(typeof(eCodecCallDirection), s, true);
                 SendCallsList();
@@ -170,13 +170,13 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			// Add straight pulse calls
 			Action<string, uint> addAction = (s, u) =>
 				AppServerController.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
-            addAction("/endCallById", JoinMap.GetJoinForKey(SIMPLAtcJoinMap.EndCall));
-            addAction("/endAllCalls", JoinMap.GetJoinForKey(SIMPLAtcJoinMap.EndCall));
-            addAction("/acceptById", JoinMap.GetJoinForKey(SIMPLAtcJoinMap.IncomingAnswer));
-            addAction("/rejectById", JoinMap.GetJoinForKey(SIMPLAtcJoinMap.IncomingReject));
+            addAction("/endCallById", JoinMap.EndCall.JoinNumber);
+            addAction("/endAllCalls", JoinMap.EndCall.JoinNumber);
+            addAction("/acceptById", JoinMap.IncomingAnswer.JoinNumber);
+            addAction("/rejectById", JoinMap.IncomingReject.JoinNumber);
 
-            var speeddialStart = JoinMap.GetJoinForKey(SIMPLAtcJoinMap.SpeedDialStart);
-            var speeddialEnd = JoinMap.GetJoinForKey(SIMPLAtcJoinMap.SpeedDialStart) + JoinMap.GetJoinSpanForKey(SIMPLAtcJoinMap.SpeedDialStart);
+            var speeddialStart = JoinMap.SpeedDialStart.JoinNumber;
+            var speeddialEnd = JoinMap.SpeedDialStart.JoinNumber + JoinMap.SpeedDialStart.JoinSpan;
 
             var speedDialIndex = 1;
             for (uint i = speeddialStart; i < speeddialEnd; i++)
@@ -188,7 +188,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			// Get status
 			AppServerController.AddAction(MessagePath + "/fullStatus", new Action(SendFullStatus));
 			// Dial on string
-            AppServerController.AddAction(MessagePath + "/dial", new Action<string>(s => EISC.SetString(JoinMap.GetJoinForKey(SIMPLAtcJoinMap.CurrentDialString), s)));
+            AppServerController.AddAction(MessagePath + "/dial", new Action<string>(s => EISC.SetString(JoinMap.CurrentDialString.JoinNumber, s)));
 			// Pulse DTMF
 			AppServerController.AddAction(MessagePath + "/dtmf", new Action<string>(s =>
 			{

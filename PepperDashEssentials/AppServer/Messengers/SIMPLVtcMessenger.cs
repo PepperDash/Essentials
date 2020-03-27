@@ -397,8 +397,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
             addAction("/acceptById", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.IncomingAnswer));
             addAction("/rejectById", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.IncomingReject));
 
-            var speeddialStart = JoinMap.GetJoinForKey(SIMPLAtcJoinMap.SpeedDialStart);
-            var speeddialEnd = JoinMap.GetJoinForKey(SIMPLAtcJoinMap.SpeedDialStart) + JoinMap.GetJoinSpanForKey(SIMPLAtcJoinMap.SpeedDialStart);
+            var speeddialStart = JoinMap.GetJoinForKey(SIMPLVtcJoinMap.SpeedDialStart);
+            var speeddialEnd = JoinMap.GetJoinForKey(SIMPLVtcJoinMap.SpeedDialStart) + JoinMap.GetJoinSpanForKey(SIMPLVtcJoinMap.SpeedDialStart);
 
             var speedDialIndex = 1;
             for (uint i = speeddialStart; i < speeddialEnd; i++)
