@@ -415,7 +415,8 @@ namespace PepperDash.Essentials
                 // Deal with any .cplz files
                 UnzipAndMoveCplzArchives();
 
-				if(Directory.Exists(_loadedPluginsDirectoryPath) {
+				if(Directory.Exists(_loadedPluginsDirectoryPath)) 
+				{
 					// Load the assemblies from the loadedPlugins folder into the AppDomain
 					LoadPluginAssemblies();
 

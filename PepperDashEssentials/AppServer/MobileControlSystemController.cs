@@ -10,6 +10,7 @@ using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharp.CrestronWebSocketClient;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharp.Net.Http;
+using Crestron.SimplSharp.Net.Https;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -35,6 +36,8 @@ namespace PepperDash.Essentials
 		CEvent RegisterLockEvent = new CEvent(true, true);
 
 		public MobileControlConfig Config { get; private set; }
+
+		public string Host { get; private set; }
 
         Dictionary<string, Object> ActionDictionary = new Dictionary<string, Object>(StringComparer.InvariantCultureIgnoreCase);
 
@@ -72,6 +75,12 @@ namespace PepperDash.Essentials
         public MobileControlSystemController(string key, string name, MobileControlConfig config) : base(key, name)
         {
             Config = config;
+
+			Host = config.ServerUrl;
+			if (!Host.StartsWith("http"))
+			{
+				Host = "https://" + Host;
+			}
 
             SystemUuid = ConfigReader.ConfigObject.SystemUuid;
 
@@ -241,67 +250,148 @@ namespace PepperDash.Essentials
 		/// <param name="command"></param>
 		void AuthorizeSystem(string code)
 		{
-            //SystemUuid = ConfigReader.ConfigObject.SystemUuid;
-
 			if (string.IsNullOrEmpty(SystemUuid))
 			{
-				CrestronConsole.ConsoleCommandResponse("System does not have a UUID. Please ensure proper portal-format configuration is loaded and restart.");
+				CrestronConsole.ConsoleCommandResponse("System does not have a UUID. Please ensure proper configuration is loaded and restart.");
 				return;
 			}
-
 			if (string.IsNullOrEmpty(code))
 			{
 				CrestronConsole.ConsoleCommandResponse("Please enter a user code to authorize a system");
 				return;
 			}
-
-			var req = new HttpClientRequest();
-			string url = string.Format("http://{0}/api/system/grantcode/{1}/{2}", Config.ServerUrl, code, SystemUuid);
-			Debug.Console(0, this, "Authorizing to: {0}", url);
-
 			if (string.IsNullOrEmpty(Config.ServerUrl))
 			{
-				CrestronConsole.ConsoleCommandResponse("Config URL address is not set.  Check portal configuration");
+				CrestronConsole.ConsoleCommandResponse("Mobile control API address is not set.  Check portal configuration");
 				return;
 			}
+
+
 			try
 			{
-				req.Url.Parse(url);
-				new HttpClient().DispatchAsync(req, (r, e) =>
+				string path = string.Format("/api/system/grantcode/{0}/{1}", code, SystemUuid);
+				string url = string.Format("{0}{1}", Host, path);
+				Debug.Console(0, this, "Authorizing to: {0}", url);
+
+				if (Host.StartsWith("https:"))
 				{
-					CheckHttpDebug(r, e);
-					if (e == HTTP_CALLBACK_ERROR.COMPLETED)
+					var req = new HttpsClientRequest();
+					req.Url.Parse(url);
+					var c = new HttpsClient();
+					Debug.Console(0, "  host and peer verification disabled");
+					c.HostVerification = false;
+					c.PeerVerification = false;
+					c.DispatchAsync(req, (r, e) =>
 					{
-						if (r.Code == 200)
+						if (e == HTTPS_CALLBACK_ERROR.COMPLETED)
 						{
-							Debug.Console(0, "System authorized, sending config.");
-#warning This registration may need to wait for config ready. Maybe.
-							RegisterSystemToServer();
-						}
-						else if (r.Code == 404)
-						{
-							if (r.ContentString.Contains("codeNotFound"))
+							if (r.Code == 200)
 							{
-								Debug.Console(0, "Authorization failed, code not found for system UUID {0}", SystemUuid);
+								Debug.Console(0, "System authorized, sending config.");
+								RegisterSystemToServer();
 							}
-							else if (r.ContentString.Contains("uuidNotFound"))
+							else if (r.Code == 404)
 							{
-								Debug.Console(0, "Authorization failed, uuid {0} not found. Check Essentials configuration is correct",
-									SystemUuid);
+								if (r.ContentString.Contains("codeNotFound"))
+								{
+									Debug.Console(0, "Authorization failed, code not found for system UUID {0}", SystemUuid);
+								}
+								else if (r.ContentString.Contains("uuidNotFound"))
+								{
+									Debug.Console(0, "Authorization failed, uuid {0} not found. Check Essentials configuration is correct",
+										SystemUuid);
+								}
+							}
+							else
+							{
+								if (r.Code == 301)
+								{
+									var newUrl = r.Header.GetHeaderValue("Location");
+									var newHostValue = newUrl.Substring(0, newUrl.IndexOf(path));
+									Debug.Console(0, this, "ERROR: Mobile control API has moved. Please adjust configuration to \"{0}\"", newHostValue);
+								}
+								else
+								{
+									Debug.Console(0, "http authorization failed, code {0}: {1}", r.Code, r.ContentString);
+								}
 							}
 						}
 						else
 						{
-							Debug.Console(0, "Authorization failed, code {0}: {1}", r.Code, r.ContentString);
+							if (r != null)
+							{
+								Debug.Console(0, this, "Error in http authorization (A) {0}: {1}", r.Code, e);
+							}
+							else
+							{
+								Debug.Console(0, this, "Error in http authorization (B) {0}", e);
+							}
 						}
-					}
-					else
-						Debug.Console(0, this, "Error {0} in authorizing system", e);
-				});
+					});
+				}
+
+				else
+				{
+					var req = new HttpClientRequest();
+					req.Url.Parse(url);
+
+					var c = new HttpClient();
+					c.AllowAutoRedirect = false;
+					c.DispatchAsync(req, (r, e) =>
+					{
+						CheckHttpDebug(r, e);
+						if (e == HTTP_CALLBACK_ERROR.COMPLETED)
+						{
+							if (r.Code == 200)
+							{
+								Debug.Console(0, "System authorized, sending config.");
+								RegisterSystemToServer();
+							}
+							else if (r.Code == 404)
+							{
+								if (r.ContentString.Contains("codeNotFound"))
+								{
+									Debug.Console(0, "Authorization failed, code not found for system UUID {0}", SystemUuid);
+								}
+								else if (r.ContentString.Contains("uuidNotFound"))
+								{
+									Debug.Console(0, "Authorization failed, uuid {0} not found. Check Essentials configuration is correct",
+										SystemUuid);
+								}
+							}
+							else
+							{
+								if (r.Code == 301)
+								{
+									var newUrl = r.Header.GetHeaderValue("Location");
+									var newHostValue = newUrl.Substring(0, newUrl.IndexOf(path));
+									Debug.Console(0, this, "ERROR: Mobile control API has moved. Please adjust configuration to \"{0}\"", newHostValue);
+								}
+								else
+								{
+									Debug.Console(0, "http authorization failed, code {0}: {1}", r.Code, r.ContentString);
+								}
+							}
+						}
+						else
+						{
+							if (r != null)
+							{
+								Debug.Console(0, this, "Error in http authorization (A) {0}: {1}", r.Code, e);
+							}
+							else
+							{
+								Debug.Console(0, this, "Error in http authorization (B) {0}", e);
+							}
+						}
+					});
+
+				}
+
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, this, "Error in authorizing: {0}", e);
+				Debug.Console(0, this, "Error in authorizing (C): {0}", e);
 			}
 		}
 
