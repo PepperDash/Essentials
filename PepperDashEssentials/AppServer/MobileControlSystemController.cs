@@ -278,9 +278,13 @@ namespace PepperDash.Essentials
 					var req = new HttpsClientRequest();
 					req.Url.Parse(url);
 					var c = new HttpsClient();
+
 					Debug.Console(0, "  host and peer verification disabled");
 					c.HostVerification = false;
 					c.PeerVerification = false;
+					c.Verbose = true;
+
+
 					c.DispatchAsync(req, (r, e) =>
 					{
 						if (e == HTTPS_CALLBACK_ERROR.COMPLETED)
@@ -304,27 +308,18 @@ namespace PepperDash.Essentials
 							}
 							else
 							{
-								if (r.Code == 301)
-								{
-									var newUrl = r.Header.GetHeaderValue("Location");
-									var newHostValue = newUrl.Substring(0, newUrl.IndexOf(path));
-									Debug.Console(0, this, "ERROR: Mobile control API has moved. Please adjust configuration to \"{0}\"", newHostValue);
-								}
-								else
-								{
-									Debug.Console(0, "http authorization failed, code {0}: {1}", r.Code, r.ContentString);
-								}
+								Debug.Console(0, "https authorization failed, code {0}: {1}", r.Code, r.ContentString);
 							}
 						}
 						else
 						{
 							if (r != null)
 							{
-								Debug.Console(0, this, "Error in http authorization (A) {0}: {1}", r.Code, e);
+								Debug.Console(0, this, "Error in https authorization (A) {0}: {1}", r.Code, e);
 							}
 							else
 							{
-								Debug.Console(0, this, "Error in http authorization (B) {0}", e);
+								Debug.Console(0, this, "Error in https authorization (B) {0}", e);
 							}
 						}
 					});
@@ -445,7 +440,6 @@ namespace PepperDash.Essentials
 		void ConnectWebsocketClient()
 		{
 
-			Debug.Console(1, this, "Initializing Stream client to server.");
 
 			if (WSClient != null)
 			{
@@ -454,7 +448,15 @@ namespace PepperDash.Essentials
 			}
 
 			WSClient = new WebSocketClient();
-			WSClient.URL = string.Format("wss://{0}/system/join/{1}", Config.ServerUrl, this.SystemUuid);
+			var wsHost = Host.Replace("http", "ws");
+			WSClient.URL = string.Format("{0}/system/join/{1}", wsHost, this.SystemUuid);
+			Debug.Console(1, this, "Initializing mobile control client to {0}", WSClient.URL);
+			if(wsHost.StartsWith("wss"))
+			{
+				WSClient.SSL = true;
+				Debug.Console(0, this, "Using secure websocket, cert verification disabled");
+				WSClient.VerifyServerCertificate = false;
+			}
 			WSClient.ConnectionCallBack = Websocket_ConnectCallback;
 			WSClient.ConnectAsync();
 		}
@@ -481,6 +483,7 @@ namespace PepperDash.Essentials
 			}
 			else
 			{
+				Debug.Console(1, this, "Websocket protocol: {0}", WSClient.Protocol);
 				if (code == WebSocketClient.WEBSOCKET_RESULT_CODES.WEBSOCKET_CLIENT_HTTP_HANDSHAKE_TOKEN_ERROR)
 				{
 					// This is the case when app server is running behind a websever and app server is down
