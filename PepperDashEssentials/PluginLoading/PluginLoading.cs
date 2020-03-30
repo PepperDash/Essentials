@@ -415,14 +415,15 @@ namespace PepperDash.Essentials
                 // Deal with any .cplz files
                 UnzipAndMoveCplzArchives();
 
-                // Load the assemblies from the loadedPlugins folder into the AppDomain
-                LoadPluginAssemblies();
+				if(Directory.Exists(_loadedPluginsDirectoryPath) {
+					// Load the assemblies from the loadedPlugins folder into the AppDomain
+					LoadPluginAssemblies();
 
-                // Load the types from any custom plugin assemblies
-                LoadCustomPluginTypes();
+					// Load the types from any custom plugin assemblies
+					LoadCustomPluginTypes();
+				}
             }
         }
-
     }
 
     /// <summary>
