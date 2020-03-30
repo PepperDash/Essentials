@@ -290,6 +290,10 @@ namespace PepperDash.Essentials
 									SystemUuid);
 							}
 						}
+						else
+						{
+							Debug.Console(0, "Authorization failed, code {0}: {1}", r.Code, r.ContentString);
+						}
 					}
 					else
 						Debug.Console(0, this, "Error {0} in authorizing system", e);
