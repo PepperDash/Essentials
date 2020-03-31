@@ -5,6 +5,7 @@ on:
     branches:
       - feature/*
       - hotfix/*
+      - bugfix/*
       - release/*
       - development
 
