@@ -9,7 +9,7 @@ namespace PepperDash.Essentials.AppServer
     public class SIMPLAtcJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("EndCall")]
-        public JoinDataComplete EndCall = new JoinDataComplete( new JoinData() {  JoinNumber = 21, JoinSpan = 1 }, new JoinMetadata() { Label = "Hang Up", JoinCapabilities = eJoinCapabilities.ToSIMPL,  JoinType = eJoinType.Digital });
+        public JoinDataComplete EndCall = new JoinDataComplete(new JoinData() {  JoinNumber = 21, JoinSpan = 1 }, new JoinMetadata() { Label = "Hang Up", JoinCapabilities = eJoinCapabilities.ToSIMPL,  JoinType = eJoinType.Digital });
         [JoinName("IncomingAnswer")]
         public JoinDataComplete IncomingAnswer = new JoinDataComplete(new JoinData() { JoinNumber = 51, JoinSpan = 1 }, new JoinMetadata() { Label = "Answer Incoming Call", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
         [JoinName("IncomingReject")]
@@ -51,27 +51,14 @@ namespace PepperDash.Essentials.AppServer
         [JoinName("#")]
         public JoinDataComplete DtmfPound = new JoinDataComplete(new JoinData() { JoinNumber = 12, JoinSpan = 1 }, new JoinMetadata() { Label = "DTMF #", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        public SIMPLAtcJoinMap()
+        /// <summary>
+        /// Constructor that passes the joinStart to the base class
+        /// </summary>
+        /// <param name="joinStart"></param>
+        public SIMPLAtcJoinMap(uint joinStart)
+            : base(joinStart)
         {
-            // Add all the JoinDataComplete properties to the Joins Dictionary
-            Joins = GetType()
-                .GetCType()
-                .GetProperties()
-                .Where(prop => prop.IsDefined(typeof (JoinNameAttribute), false))
-                .Select(prop => (JoinDataComplete) prop.GetValue(this, null))
-                .ToDictionary(join => join.GetNameAttribute(), join => join);
-        }
 
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            foreach (var join in Joins)
-            {
-                join.Value.JoinNumber = join.Value.JoinNumber + joinOffset;
-            }
-
-            PrintJoinMapInfo();
         }
     }
 }

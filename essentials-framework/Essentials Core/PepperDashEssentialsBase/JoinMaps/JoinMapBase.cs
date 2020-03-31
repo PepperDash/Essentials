@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="joinMapKey"></param>
         /// <returns></returns>
-        public static string GetJoinMapForDevice(string joinMapKey)
+        public static string GetSerializedJoinMapForDevice(string joinMapKey)
         {
             if (string.IsNullOrEmpty(joinMapKey))
                 return null;
@@ -29,6 +29,31 @@ namespace PepperDash.Essentials.Core
             if (joinMap != null)
             {
                 return joinMap;
+            }
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Attempts to find a custom join map by key and returns it deserialized if found
+        /// </summary>
+        /// <param name="joinMapKey"></param>
+        /// <returns></returns>
+        public static Dictionary<string, JoinData> TryGetJoinMapAdvancedForDevice(string joinMapKey)
+        {
+            if (string.IsNullOrEmpty(joinMapKey))
+                return null;
+
+            var joinMapSerialzed = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
+
+            if (joinMapSerialzed != null)
+            {
+                var joinMap = JsonConvert.DeserializeObject<Dictionary<string, JoinData>>(joinMapSerialzed);
+
+                if (joinMap != null)
+                    return joinMap;
+                else
+                    return null;
             }
             else
                 return null;
@@ -135,16 +160,31 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public abstract class JoinMapBaseAdvanced
     {
-        /// <summary>
-        /// Modifies all the join numbers by adding the offset.  This should never be called twice
-        /// </summary>
-        /// <param name="joinStart"></param>
-        public abstract void OffsetJoinNumbers(uint joinStart);
+        protected uint _joinOffset;
 
         /// <summary>
         /// The collection of joins and associated metadata
         /// </summary>
         public Dictionary<string, JoinDataComplete> Joins = new Dictionary<string, JoinDataComplete>();
+
+        protected JoinMapBaseAdvanced(uint joinStart)
+        {
+            _joinOffset = joinStart - 1;
+
+            // Add all the JoinDataComplete properties to the Joins Dictionary and pass in the offset 
+            Joins = GetType()
+                .GetCType()
+                .GetProperties()
+                .Where(prop => prop.IsDefined(typeof(JoinNameAttribute), false))
+                .Select(prop => (JoinDataComplete)prop.GetValue(this, null))
+                .ToDictionary(join => join.GetNameAttribute(), join => 
+                    {
+                        join.SetJoinOffset(_joinOffset);
+                        return join;
+                    });
+
+            PrintJoinMapInfo();
+        }
 
         /// <summary>
         /// Prints the join information to console
@@ -197,25 +237,46 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// Returns the join number for the join with the specified key
+        /// Attempts to find the matching key for the custom join and if found overwrites the default JoinData with the custom
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public uint GetJoinForKey(string key)
+        /// <param name="joinData"></param>
+        public void SetCustomJoinData(Dictionary<string, JoinData> joinData)
         {
-            return Joins.ContainsKey(key) ? Joins[key].JoinNumber : 0;
+            foreach (var customJoinData in joinData)
+            {
+                var join = Joins[customJoinData.Key];
+
+                if (join != null)
+                {
+                    join.SetCustomJoinData(customJoinData.Value);
+                }
+                else
+                {
+                    Debug.Console(2, "No mathcing key found in join map for: '{0}'", customJoinData.Key);
+                }
+            }
         }
 
+        ///// <summary>
+        ///// Returns the join number for the join with the specified key
+        ///// </summary>
+        ///// <param name="key"></param>
+        ///// <returns></returns>
+        //public uint GetJoinForKey(string key)
+        //{
+        //    return Joins.ContainsKey(key) ? Joins[key].JoinNumber : 0;
+        //}
 
-        /// <summary>
-        /// Returns the join span for the join with the specified key
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public uint GetJoinSpanForKey(string key)
-        {
-            return Joins.ContainsKey(key) ? Joins[key].JoinSpan : 0;
-        }
+
+        ///// <summary>
+        ///// Returns the join span for the join with the specified key
+        ///// </summary>
+        ///// <param name="key"></param>
+        ///// <returns></returns>
+        //public uint GetJoinSpanForKey(string key)
+        //{
+        //    return Joins.ContainsKey(key) ? Joins[key].JoinSpan : 0;
+        //}
     }
 
     /// <summary>
@@ -307,7 +368,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class JoinDataComplete
     {
-        private readonly JoinData _data;
+        private uint _joinOffset;
+
+        private JoinData _data;
         public JoinMetadata Metadata { get; set; }
 
         public JoinDataComplete(JoinData data, JoinMetadata metadata)
@@ -316,15 +379,32 @@ namespace PepperDash.Essentials.Core
             Metadata = metadata;
         }
 
+        /// <summary>
+        /// Sets the join offset value
+        /// </summary>
+        /// <param name="joinOffset"></param>
+        public void SetJoinOffset(uint joinOffset)
+        {
+            _joinOffset = joinOffset;
+        }
+
+        /// <summary>
+        /// The join number (including the offset)
+        /// </summary>
         public uint JoinNumber
         {
-            get { return _data.JoinNumber; }
+            get { return _data.JoinNumber+ _joinOffset; }
             set { _data.JoinNumber = value; }
         }
 
         public uint JoinSpan
         {
             get { return _data.JoinSpan; }
+        }
+
+        public void SetCustomJoinData(JoinData customJoinData)
+        {
+            _data = customJoinData;
         }
 
         public string GetNameAttribute()

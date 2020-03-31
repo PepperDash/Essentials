@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Bridges
         {
             IDigitalInputJoinMap joinMap = new IDigitalInputJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<IDigitalInputJoinMap>(joinMapSerialized);

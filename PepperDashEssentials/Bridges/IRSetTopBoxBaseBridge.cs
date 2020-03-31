@@ -17,7 +17,7 @@ namespace PepperDash.Essentials.Bridges
         public static void LinkToApi(this PepperDash.Essentials.Devices.Common.IRSetTopBoxBase stbDevice, BasicTriList trilist, uint joinStart, string joinMapKey)
         {
             SetTopBoxControllerJoinMap joinMap = new SetTopBoxControllerJoinMap();
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<SetTopBoxControllerJoinMap>(joinMapSerialized);

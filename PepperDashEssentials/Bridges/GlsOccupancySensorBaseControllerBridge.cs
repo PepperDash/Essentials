@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Bridges
         {
             GlsOccupancySensorBaseJoinMap joinMap = new GlsOccupancySensorBaseJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<GlsOccupancySensorBaseJoinMap>(joinMapSerialized);

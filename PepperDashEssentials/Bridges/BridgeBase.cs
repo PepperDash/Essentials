@@ -45,7 +45,6 @@ namespace PepperDash.Essentials.Bridges
         {
 
         }
-
     }
 
     /// <summary>
@@ -55,7 +54,7 @@ namespace PepperDash.Essentials.Bridges
     {
         public EiscApiPropertiesConfig PropertiesConfig { get; private set; }
 
-        public Dictionary<string, JoinMapBase> JoinMaps { get; set; }
+        protected Dictionary<string, JoinMapBaseAdvanced> JoinMaps { get; private set; }
 
         public ThreeSeriesTcpIpEthernetIntersystemCommunications Eisc { get; private set; }
 
@@ -97,7 +96,7 @@ namespace PepperDash.Essentials.Bridges
                         }
                         else if (device is CameraBase)
                         {
-                            (device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            (device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                             continue;
                         }
 						else if (device is PepperDash.Essentials.Core.DisplayBase)
@@ -188,6 +187,23 @@ namespace PepperDash.Essentials.Bridges
 
                 Debug.Console(1, this, "Devices Linked.");
             });
+        }
+
+        /// <summary>
+        /// Adds a join map
+        /// </summary>
+        /// <param name="deviceKey"></param>
+        /// <param name="joinMap"></param>
+        public void AddJoinMap(string deviceKey, JoinMapBaseAdvanced joinMap)
+        {
+            if (!JoinMaps.ContainsKey(deviceKey))
+            {
+                JoinMaps.Add(deviceKey, joinMap);
+            }
+            else
+            {
+                Debug.Console(2, this, "Unable to add join map with key '{0}'.  Key already exists in JoinMaps dictionary", deviceKey);
+            }
         }
 
         /// <summary>

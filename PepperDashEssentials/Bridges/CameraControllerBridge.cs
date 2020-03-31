@@ -15,28 +15,31 @@ namespace PepperDash.Essentials.Bridges
 {
     public static class CameraControllerApiExtensions
     {
-        public static void LinkToApi(this PepperDash.Essentials.Devices.Common.Cameras.CameraBase cameraDevice, BasicTriList trilist, uint joinStart, string joinMapKey)
+        public static void LinkToApi(this PepperDash.Essentials.Devices.Common.Cameras.CameraBase cameraDevice, BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
         {
-            CameraControllerJoinMap joinMap = new CameraControllerJoinMap();
+            CameraControllerJoinMap joinMap = new CameraControllerJoinMap(joinStart);
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            // Adds the join map to the bridge
+            bridge.AddJoinMap(cameraDevice.Key, joinMap);
 
-            if (!string.IsNullOrEmpty(joinMapSerialized))
-                joinMap = JsonConvert.DeserializeObject<CameraControllerJoinMap>(joinMapSerialized);
+            var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
 
-            joinMap.OffsetJoinNumbers(joinStart);
+            if (customJoins != null)
+            {
+                joinMap.SetCustomJoinData(customJoins);
+            }
 
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(0, "Linking to Bridge Type {0}", cameraDevice.GetType().Name.ToString());
 
             var commMonitor = cameraDevice as ICommunicationMonitor;
-            commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.GetJoinForKey(CameraControllerJoinMap.IsOnline)]);
+            commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
 
             var ptzCamera = cameraDevice as IHasCameraPtzControl;
 
             if (ptzCamera != null)
             {
-                trilist.SetBoolSigAction(joinMap.GetJoinForKey(CameraControllerJoinMap.PanLeft), (b) =>
+                trilist.SetBoolSigAction(joinMap.PanLeft.JoinNumber, (b) =>
                     {
                         if (b)
                         {
@@ -47,7 +50,7 @@ namespace PepperDash.Essentials.Bridges
                             ptzCamera.PanStop();
                         }
                     });
-                trilist.SetBoolSigAction(joinMap.GetJoinForKey(CameraControllerJoinMap.PanRight), (b) =>
+                trilist.SetBoolSigAction(joinMap.PanRight.JoinNumber, (b) =>
                 {
                     if (b)
                     {
@@ -59,7 +62,7 @@ namespace PepperDash.Essentials.Bridges
                     }
                 });
 
-                trilist.SetBoolSigAction(joinMap.GetJoinForKey(CameraControllerJoinMap.TiltUp), (b) =>
+                trilist.SetBoolSigAction(joinMap.TiltUp.JoinNumber, (b) =>
                 {
                     if (b)
                     {
@@ -70,7 +73,7 @@ namespace PepperDash.Essentials.Bridges
                         ptzCamera.TiltStop();
                     }
                 });
-                trilist.SetBoolSigAction(joinMap.GetJoinForKey(CameraControllerJoinMap.TiltDown), (b) =>
+                trilist.SetBoolSigAction(joinMap.TiltDown.JoinNumber, (b) =>
                 {
                     if (b)
                     {
@@ -82,7 +85,7 @@ namespace PepperDash.Essentials.Bridges
                     }
                 });
 
-                trilist.SetBoolSigAction(joinMap.GetJoinForKey(CameraControllerJoinMap.ZoomIn), (b) =>
+                trilist.SetBoolSigAction(joinMap.ZoomIn.JoinNumber, (b) =>
                 {
                     if (b)
                     {
@@ -94,7 +97,7 @@ namespace PepperDash.Essentials.Bridges
                     }
                 });
 
-                trilist.SetBoolSigAction(joinMap.GetJoinForKey(CameraControllerJoinMap.ZoomOut), (b) =>
+                trilist.SetBoolSigAction(joinMap.ZoomOut.JoinNumber, (b) =>
                 {
                     if (b)
                     {
@@ -110,17 +113,17 @@ namespace PepperDash.Essentials.Bridges
             if (cameraDevice is IPower)
             {
                 var powerCamera = cameraDevice as IPower;
-                trilist.SetSigTrueAction(joinMap.GetJoinForKey(CameraControllerJoinMap.PowerOn), () => powerCamera.PowerOn());
-                trilist.SetSigTrueAction(joinMap.GetJoinForKey(CameraControllerJoinMap.PowerOff), () => powerCamera.PowerOff());
+                trilist.SetSigTrueAction(joinMap.PowerOn.JoinNumber, () => powerCamera.PowerOn());
+                trilist.SetSigTrueAction(joinMap.PowerOff.JoinNumber, () => powerCamera.PowerOff());
              
-                powerCamera.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.GetJoinForKey(CameraControllerJoinMap.PowerOn)]);
-                powerCamera.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.GetJoinForKey(CameraControllerJoinMap.PowerOff)]);
+                powerCamera.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn.JoinNumber]);
+                powerCamera.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff.JoinNumber]);
             }
 
             if (cameraDevice is ICommunicationMonitor)
             {
                 var monitoredCamera = cameraDevice as ICommunicationMonitor;
-                monitoredCamera.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.GetJoinForKey(CameraControllerJoinMap.IsOnline)]);
+                monitoredCamera.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
             }
 
             if (cameraDevice is IHasCameraPresets)
@@ -129,7 +132,7 @@ namespace PepperDash.Essentials.Bridges
                 var presetsCamera = cameraDevice as IHasCameraPresets;
                 presetsCamera.PresetsListHasChanged += new EventHandler<EventArgs>((o, a) =>
                 {
-                    for (int i = 1; i <= joinMap.GetJoinForKey(CameraControllerJoinMap.NumberOfPresets); i++)
+                    for (int i = 1; i <= joinMap.NumberOfPresets.JoinNumber; i++)
                     {
                         int tempNum = i - 1;
 
@@ -140,21 +143,21 @@ namespace PepperDash.Essentials.Bridges
                         if (preset != null)
                             label = preset.Description;
 
-                        trilist.SetString((ushort)(joinMap.GetJoinForKey(CameraControllerJoinMap.PresetLabelStart) + tempNum), label);
+                        trilist.SetString((ushort)(joinMap.PresetLabelStart.JoinNumber + tempNum), label);
                     }
                 });
                 
-                for (int i = 0; i < joinMap.GetJoinForKey(CameraControllerJoinMap.NumberOfPresets); i++)
+                for (int i = 0; i < joinMap.NumberOfPresets.JoinNumber; i++)
                 {
                     int tempNum = i;
 
-                    trilist.SetSigTrueAction((ushort)(joinMap.GetJoinForKey(CameraControllerJoinMap.PresetRecallStart) + tempNum), () =>
+                    trilist.SetSigTrueAction((ushort)(joinMap.PresetRecallStart.JoinNumber + tempNum), () =>
                         {
                             presetsCamera.PresetSelect(tempNum);
                         });
-                    trilist.SetSigTrueAction((ushort)(joinMap.GetJoinForKey(CameraControllerJoinMap.PresetSaveStart) + tempNum), () =>
+                    trilist.SetSigTrueAction((ushort)(joinMap.PresetSaveStart.JoinNumber + tempNum), () =>
                         {
-                            var label = trilist.GetString(joinMap.GetJoinForKey(CameraControllerJoinMap.PresetLabelStart + tempNum));
+                            var label = trilist.GetString((ushort)(joinMap.PresetLabelStart.JoinNumber + tempNum));
 
                             presetsCamera.PresetStore(tempNum, label);
                         });

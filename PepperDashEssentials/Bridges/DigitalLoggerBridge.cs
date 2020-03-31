@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Bridges
         {
             DigitalLoggerJoinMap joinMap = new DigitalLoggerJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DigitalLoggerJoinMap>(joinMapSerialized);

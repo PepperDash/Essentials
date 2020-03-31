@@ -14,7 +14,7 @@ namespace PepperDash.Essentials.Bridges
         {
             var joinMap = new SystemMonitorJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if(!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<SystemMonitorJoinMap>(joinMapSerialized);

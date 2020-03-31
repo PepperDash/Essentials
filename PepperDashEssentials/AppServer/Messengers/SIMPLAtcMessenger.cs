@@ -104,10 +104,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		{
             EISC = eisc;
 
-            JoinMap = new SIMPLAtcJoinMap();
-
-            // TODO: Take in JoinStart value from config
-            JoinMap.OffsetJoinNumbers(201);
+            JoinMap = new SIMPLAtcJoinMap(201);
 
 			CurrentCallItem = new CodecActiveCallItem();
 			CurrentCallItem.Type = eCodecCallType.Audio;
@@ -192,11 +189,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			// Pulse DTMF
 			AppServerController.AddAction(MessagePath + "/dtmf", new Action<string>(s =>
 			{
-                var join = JoinMap.GetJoinForKey(s);
-				if (join > 0)
-				{
-					EISC.PulseBool(join, 100);
-				}
+                var join = JoinMap.Joins[s];
+                if (join != null)
+                {
+                    if (join.JoinNumber > 0)
+                    {
+                        EISC.PulseBool(join.JoinNumber, 100);
+                    }
+                }
 			}));
 		}
 
