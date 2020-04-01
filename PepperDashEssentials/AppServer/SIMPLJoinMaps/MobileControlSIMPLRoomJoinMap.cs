@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.AppServer
 {
-    public class MobileControlSIMPLRoomJoinMap : JoinMapBase
+    public class MobileControlSIMPLRoomJoinMap : JoinMapBaseAdvanced
     {
         public const string ConfigIsLocal = "ConfigIsLocal";
         public const string RoomIsOn = "RoomIsOn";
@@ -33,7 +33,6 @@ namespace PepperDash.Essentials.AppServer
         public const string SourceShareDisableJoinStart = "SourceShareDisableJoinStart";
         public const string SourceIsEnabledJoinStart = "SourceIsEnabledJoinStart";
 
-        //public const string MasterVolumeLevel = "MasterVolumeLevel";
         public const string VolumeSlidersJoinStart = "VolumeSlidersJoinStart";
         public const string ShutdownPromptDuration = "ShutdownPromptDuration";
         public const string NumberOfAuxFaders = "NumberOfAuxFaders";
@@ -58,7 +57,8 @@ namespace PepperDash.Essentials.AppServer
         public const string CameraNearNameStart = "CameraNearNameStart";
         public const string CameraFarName = "CameraFarName";
 
-        public MobileControlSIMPLRoomJoinMap()
+        public MobileControlSIMPLRoomJoinMap(uint joinStart)
+            :base(joinStart)
         {
             Joins.Add(ConfigIsLocal, new JoinMetadata() { JoinNumber = 100, Label = "Config is local to Essentials", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(RoomIsOn, new JoinMetadata() { JoinNumber = 301, Label = "Room Is On", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
@@ -76,6 +76,7 @@ namespace PepperDash.Essentials.AppServer
             Joins.Add(SourceHasChanged, new JoinMetadata() { JoinNumber = 71, Label = "Source Changed", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });            
             // Possibly move these to Audio Codec Messenger
             Joins.Add(SpeedDialVisibleStartJoin, new JoinMetadata() { JoinNumber = 261, Label = "Speed Dial Visible", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinSpan = 10, JoinType = eJoinType.Digital });
+            
             //
             Joins.Add(ConfigIsReady, new JoinMetadata() { JoinNumber = 501, Label = "Config info from SIMPL is ready", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
             Joins.Add(HideVideoConfRecents, new JoinMetadata() { JoinNumber = 502, Label = "Hide Video Conference Recents", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinSpan = 1, JoinType = eJoinType.Digital });
@@ -113,16 +114,5 @@ namespace PepperDash.Essentials.AppServer
             //
         }
 
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            foreach (var join in Joins)
-            {
-                join.Value.JoinNumber = join.Value.JoinNumber + joinOffset;
-            }
-
-            PrintJoinMapInfo();
-        }
     }
 }

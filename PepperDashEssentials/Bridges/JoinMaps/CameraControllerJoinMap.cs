@@ -33,7 +33,6 @@ namespace PepperDash.Essentials.Bridges
         [JoinName("PowerOff")]
         public JoinDataComplete PowerOff = new JoinDataComplete(new JoinData() { JoinNumber = 8, JoinSpan = 1 }, new JoinMetadata() { Label = "Power Off", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
-
         [JoinName("NumberOfPresets")]
         public JoinDataComplete NumberOfPresets = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 1 }, new JoinMetadata() { Label = "Tells Essentials the number of defined presets", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Analog });
         [JoinName("PresetRecallStart")]
@@ -56,7 +55,6 @@ namespace PepperDash.Essentials.Bridges
         public JoinDataComplete SupportsCameraModeOff = new JoinDataComplete(new JoinData() { JoinNumber = 56, JoinSpan = 1 }, new JoinMetadata() { Label = "Supports Camera Mode Off", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
         [JoinName("SupportsPresets")]
         public JoinDataComplete SupportsPresets = new JoinDataComplete(new JoinData() { JoinNumber = 57, JoinSpan = 1 }, new JoinMetadata() { Label = "Supports Presets", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
-
 
         public CameraControllerJoinMap(uint joinStart)
             :base(joinStart)

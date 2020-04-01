@@ -39,7 +39,6 @@ namespace PepperDash.Essentials
         // The temp directory where .cplz archives will be unzipped to
         static string _tempDirectory = _pluginDirectory + Global.DirectorySeparator + "temp";
 
-
         static PluginLoader()
         {
             LoadedAssemblies = new List<LoadedAssembly>();

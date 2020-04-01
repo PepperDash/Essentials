@@ -22,10 +22,15 @@ namespace PepperDash.Essentials.AppServer
         public JoinDataComplete CurrentCallNumber = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 1 }, new JoinMetadata() { Label = "Current Call Number", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
         [JoinName("CurrentCallName")]
         public JoinDataComplete CurrentCallName = new JoinDataComplete(new JoinData() { JoinNumber = 12, JoinSpan = 1 }, new JoinMetadata() { Label = "Current Call Name", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
-        [JoinName("CurrentHookStateCallName")]
+        [JoinName("HookState")]
         public JoinDataComplete HookState = new JoinDataComplete(new JoinData() { JoinNumber = 21, JoinSpan = 1 }, new JoinMetadata() { Label = "Current Hook State", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
         [JoinName("CallDirection")]
         public JoinDataComplete CallDirection = new JoinDataComplete(new JoinData() { JoinNumber = 22, JoinSpan = 1 }, new JoinMetadata() { Label = "Current Call Direction", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
+        [JoinName("IncomingCallName")]
+        public JoinDataComplete IncomingCallName = new JoinDataComplete(new JoinData() { JoinNumber = 51, JoinSpan = 1 }, new JoinMetadata() { Label = "Incoming Call Name", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
+        [JoinName("IncomingCallNumber")]
+        public JoinDataComplete IncomingCallNumber = new JoinDataComplete(new JoinData() { JoinNumber = 52, JoinSpan = 1 }, new JoinMetadata() { Label = "Incoming Call Number", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
+
         [JoinName("0")]
         public JoinDataComplete Dtmf0 = new JoinDataComplete(new JoinData() { JoinNumber = 10, JoinSpan = 1 }, new JoinMetadata() { Label = "DTMF 0", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
         [JoinName("1")]
