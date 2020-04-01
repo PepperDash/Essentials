@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Core.Devices
     /// <summary>
     /// 
     /// </summary>
-    public abstract class ReconfigurableDevice : Device
+    public abstract class ReconfigurableDevice : EssentialsDevice
     {
         public event EventHandler<EventArgs> ConfigChanged;
 
