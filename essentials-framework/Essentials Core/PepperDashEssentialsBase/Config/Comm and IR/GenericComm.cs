@@ -62,7 +62,7 @@ namespace PepperDash.Essentials.Core
             ConfigWriter.UpdateDeviceConfig(config);
         }
 
-        public class Factory : EssentialsDevice.Factory
+        public class Factory : Essentials.Core.Factory
         {
             #region IDeviceFactory Members
 
