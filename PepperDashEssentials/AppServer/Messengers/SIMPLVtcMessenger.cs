@@ -247,11 +247,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		{
 			EISC = eisc;
 
-            JoinMap = new SIMPLVtcJoinMap();
-
-            // TODO: Take in JoinStart value from config
-            JoinMap.OffsetJoinNumbers(701);
-
+            JoinMap = new SIMPLVtcJoinMap(701);
 
 			CurrentCallItem = new CodecActiveCallItem();
 			CurrentCallItem.Type = eCodecCallType.Video;
@@ -265,31 +261,31 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)
 		{
 			var asc = appServerController;
-			EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.HookState), s => 
+			EISC.SetStringSigAction(JoinMap.HookState.JoinNumber, s => 
 			{
 				CurrentCallItem.Status = (eCodecCallStatus)Enum.Parse(typeof(eCodecCallStatus), s, true);
 				PostFullStatus(); // SendCallsList();
 			});
 
-			EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CurrentCallNumber), s => 
+			EISC.SetStringSigAction(JoinMap.CurrentCallNumber.JoinNumber, s => 
 			{
 				CurrentCallItem.Number = s;
                 PostCallsList();
 			});
 
-            EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CurrentCallName), s =>
+            EISC.SetStringSigAction(JoinMap.CurrentCallName.JoinNumber, s =>
             {
                 CurrentCallItem.Name = s;
                 PostCallsList();
             });
 
-            EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CallDirection), s =>
+            EISC.SetStringSigAction(JoinMap.CallDirection.JoinNumber, s =>
             {
                 CurrentCallItem.Direction = (eCodecCallDirection)Enum.Parse(typeof(eCodecCallDirection), s, true);
                 PostCallsList();
             });
 
-			EISC.SetBoolSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.IncomingCall), b =>
+			EISC.SetBoolSigAction(JoinMap.IncomingCall.JoinNumber, b =>
 			{
 				if (b)
 				{
@@ -297,8 +293,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 					{
 						Direction = eCodecCallDirection.Incoming,
 						Id = "-video-incoming",
-						Name = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.IncomingCallName)),
-						Number = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.IncomingCallNumber)),
+						Name = EISC.GetString(JoinMap.IncomingCallName.JoinNumber),
+						Number = EISC.GetString(JoinMap.IncomingCallNumber.JoinNumber),
 						Status = eCodecCallStatus.Ringing,
 						Type = eCodecCallType.Video
 					};
@@ -311,14 +307,14 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				PostCallsList();
 			});
 
-			EISC.SetBoolSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraSupportsAutoMode), b =>
+			EISC.SetBoolSigAction(JoinMap.CameraSupportsAutoMode.JoinNumber, b =>
 			{
 				PostStatusMessage(new
 				{	
 					cameraSupportsAutoMode = b
 				});
 			});
-			EISC.SetBoolSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraSupportsOffMode), b =>
+			EISC.SetBoolSigAction(JoinMap.CameraSupportsOffMode.JoinNumber, b =>
 			{
 				PostStatusMessage(new
 				{
@@ -327,78 +323,78 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			});
 
 			// Directory insanity
-			EISC.SetUShortSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryRowCount), u =>
+			EISC.SetUShortSigAction(JoinMap.DirectoryRowCount.JoinNumber, u =>
 			{
 				// The length of the list comes in before the list does.
 				// Splice the sig change operation onto the last string sig that will be changing
 				// when the directory entries make it through.
 				if (PreviousDirectoryLength > 0)
 				{
-					EISC.ClearStringSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryEntriesStart) + PreviousDirectoryLength - 1);
+					EISC.ClearStringSigAction(JoinMap.DirectoryEntriesStart.JoinNumber + PreviousDirectoryLength - 1);
 				}
-				EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryEntriesStart) + u - 1, s => PostDirectory());
+				EISC.SetStringSigAction(JoinMap.DirectoryEntriesStart.JoinNumber + u - 1, s => PostDirectory());
 				PreviousDirectoryLength = u;
 			});
 
-			EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryEntrySelectedName), s =>
+			EISC.SetStringSigAction(JoinMap.DirectoryEntrySelectedName.JoinNumber, s =>
 			{
 				PostStatusMessage(new
 				{
 					directoryContactSelected = new
 					{
-						name = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryEntrySelectedName)),
+						name = EISC.GetString(JoinMap.DirectoryEntrySelectedName.JoinNumber),
 					}
 				});
 			});
 
-			EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryEntrySelectedNumber), s =>
+			EISC.SetStringSigAction(JoinMap.DirectoryEntrySelectedNumber.JoinNumber, s =>
 			{
 				PostStatusMessage(new
 				{
 					directoryContactSelected = new
 					{
-						number = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryEntrySelectedNumber)),
+						number = EISC.GetString(JoinMap.DirectoryEntrySelectedNumber.JoinNumber),
 					}
 				});
 			});
 
-			EISC.SetStringSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectorySelectedFolderName), s => PostStatusMessage(new
+			EISC.SetStringSigAction(JoinMap.DirectorySelectedFolderName.JoinNumber, s => PostStatusMessage(new
 			{
-				directorySelectedFolderName = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectorySelectedFolderName))
+				directorySelectedFolderName = EISC.GetString(JoinMap.DirectorySelectedFolderName.JoinNumber)
 			}));
 
-			EISC.SetSigTrueAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraModeAuto), () => PostCameraMode());
-			EISC.SetSigTrueAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraModeManual), () => PostCameraMode());
-			EISC.SetSigTrueAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraModeOff), () => PostCameraMode());
+			EISC.SetSigTrueAction(JoinMap.CameraModeAuto.JoinNumber, () => PostCameraMode());
+			EISC.SetSigTrueAction(JoinMap.CameraModeManual.JoinNumber, () => PostCameraMode());
+			EISC.SetSigTrueAction(JoinMap.CameraModeOff.JoinNumber, () => PostCameraMode());
 
-			EISC.SetBoolSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraSelfView), b => PostStatusMessage(new 
+			EISC.SetBoolSigAction(JoinMap.CameraSelfView.JoinNumber, b => PostStatusMessage(new 
 				{
 					cameraSelfView = b
 				}));
 
-			EISC.SetUShortSigAction(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraNumberSelect), (u) => PostSelectedCamera());
+			EISC.SetUShortSigAction(JoinMap.CameraNumberSelect.JoinNumber, (u) => PostSelectedCamera());
 
 
 			// Add press and holds using helper action
 			Action<string, uint> addPHAction = (s, u) => 
 				AppServerController.AddAction(MessagePath + s, new PressAndHoldAction(b => EISC.SetBool(u, b)));
-			addPHAction("/cameraUp", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraTiltUp));
-			addPHAction("/cameraDown", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraTiltDown));
-			addPHAction("/cameraLeft", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraPanLeft));
-			addPHAction("/cameraRight", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraPanRight));
-			addPHAction("/cameraZoomIn", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraZoomIn));
-			addPHAction("/cameraZoomOut", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraZoomOut));
+			addPHAction("/cameraUp", JoinMap.CameraTiltUp.JoinNumber);
+			addPHAction("/cameraDown", JoinMap.CameraTiltDown.JoinNumber);
+			addPHAction("/cameraLeft", JoinMap.CameraPanLeft.JoinNumber);
+			addPHAction("/cameraRight", JoinMap.CameraPanRight.JoinNumber);
+			addPHAction("/cameraZoomIn", JoinMap.CameraZoomIn.JoinNumber);
+			addPHAction("/cameraZoomOut", JoinMap.CameraZoomOut.JoinNumber);
 
 			// Add straight pulse calls using helper action
 			Action<string, uint> addAction = (s, u) =>
 				AppServerController.AddAction(MessagePath + s, new Action(() => EISC.PulseBool(u, 100)));
-			addAction("/endCallById", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.EndCall));
-			addAction("/endAllCalls", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.EndCall));
-            addAction("/acceptById", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.IncomingAnswer));
-            addAction("/rejectById", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.IncomingReject));
+			addAction("/endCallById", JoinMap.EndCall.JoinNumber);
+			addAction("/endAllCalls", JoinMap.EndCall.JoinNumber);
+            addAction("/acceptById", JoinMap.IncomingAnswer.JoinNumber);
+            addAction("/rejectById", JoinMap.IncomingReject.JoinNumber);
 
-            var speeddialStart = JoinMap.GetJoinForKey(SIMPLVtcJoinMap.SpeedDialStart);
-            var speeddialEnd = JoinMap.GetJoinForKey(SIMPLVtcJoinMap.SpeedDialStart) + JoinMap.GetJoinSpanForKey(SIMPLVtcJoinMap.SpeedDialStart);
+            var speeddialStart = JoinMap.SpeedDialStart.JoinNumber;
+            var speeddialEnd = JoinMap.SpeedDialStart.JoinNumber + JoinMap.SpeedDialStart.JoinSpan;
 
             var speedDialIndex = 1;
             for (uint i = speeddialStart; i < speeddialEnd; i++)
@@ -407,18 +403,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
                 speedDialIndex++;
             }
 
-			addAction("/cameraModeAuto", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraModeAuto));
-			addAction("/cameraModeManual", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraModeManual));
-			addAction("/cameraModeOff", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraModeOff));
-			addAction("/cameraSelfView", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraSelfView));
-			addAction("/cameraLayout", JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraLayout));
+			addAction("/cameraModeAuto", JoinMap.CameraModeAuto.JoinNumber);
+			addAction("/cameraModeManual", JoinMap.CameraModeManual.JoinNumber);
+			addAction("/cameraModeOff", JoinMap.CameraModeOff.JoinNumber);
+			addAction("/cameraSelfView", JoinMap.CameraSelfView.JoinNumber);
+			addAction("/cameraLayout", JoinMap.CameraLayout.JoinNumber);
 
 			asc.AddAction("/cameraSelect", new Action<string>(SelectCamera));
 
 			// camera presets
 			for(uint i = 0; i < 6; i++) 
 			{
-				addAction("/cameraPreset" + (i + 1), JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraPresetStart) + i);
+				addAction("/cameraPreset" + (i + 1), JoinMap.CameraPresetStart.JoinNumber + i);
 			}
 
 			asc.AddAction(MessagePath + "/isReady", new Action(PostIsReady));
@@ -426,28 +422,31 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			asc.AddAction(MessagePath + "/fullStatus", new Action(PostFullStatus));
 			// Dial on string
 			asc.AddAction(MessagePath + "/dial", new Action<string>(s => 
-				EISC.SetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CurrentDialString), s)));
+				EISC.SetString(JoinMap.CurrentDialString.JoinNumber, s)));
             // Pulse DTMF
             AppServerController.AddAction(MessagePath + "/dtmf", new Action<string>(s =>
             {
-                var join = JoinMap.GetJoinForKey(s);
-                if (join > 0)
+                var join = JoinMap.Joins[s];           
+                if (join != null)
                 {
-                    EISC.PulseBool(join, 100);
+                    if (join.JoinNumber > 0)
+                    {
+                        EISC.PulseBool(join.JoinNumber, 100);
+                    }
                 }
             }));
 
 			// Directory madness
-			asc.AddAction(MessagePath + "/directoryRoot", new Action(() => EISC.PulseBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryRoot))));
-			asc.AddAction(MessagePath + "/directoryBack", new Action(() => EISC.PulseBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryFolderBack))));
+			asc.AddAction(MessagePath + "/directoryRoot", new Action(() => EISC.PulseBool(JoinMap.DirectoryRoot.JoinNumber)));
+			asc.AddAction(MessagePath + "/directoryBack", new Action(() => EISC.PulseBool(JoinMap.DirectoryFolderBack.JoinNumber)));
 			asc.AddAction(MessagePath + "/directoryById", new Action<string>(s =>
 			{
 				// the id should contain the line number to forward to simpl
 				try
 				{
 					var u = ushort.Parse(s);
-					EISC.SetUshort(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectorySelectRow), u);
-					EISC.PulseBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryLineSelected));
+					EISC.SetUshort(JoinMap.DirectorySelectRow.JoinNumber, u);
+					EISC.PulseBool(JoinMap.DirectoryLineSelected.JoinNumber);
 				}
 				catch (Exception)
 				{
@@ -461,8 +460,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				try
 				{
 					var u = ushort.Parse(s);
-					EISC.SetUshort(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectorySelectRow), u);
-					EISC.PulseBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryLineSelected));
+					EISC.SetUshort(JoinMap.DirectorySelectRow.JoinNumber, u);
+					EISC.PulseBool(JoinMap.DirectoryLineSelected.JoinNumber);
 				}
 				catch
 				{
@@ -470,17 +469,17 @@ namespace PepperDash.Essentials.AppServer.Messengers
 				}
 			}));
 			asc.AddAction(MessagePath + "/directoryDialContact", new Action(() => {
-				EISC.PulseBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryDialSelectedLine));
+				EISC.PulseBool(JoinMap.DirectoryDialSelectedLine.JoinNumber);
 			}));
 			asc.AddAction(MessagePath + "/getDirectory", new Action(() =>
 			{
-				if (EISC.GetUshort(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryRowCount)) > 0)
+				if (EISC.GetUshort(JoinMap.DirectoryRowCount.JoinNumber) > 0)
 				{
 					PostDirectory();
 				}
 				else
 				{
-					EISC.PulseBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryRoot));
+                    EISC.PulseBool(JoinMap.DirectoryRoot.JoinNumber);
 				}
 			}));
 		}
@@ -494,18 +493,18 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{
 				calls = GetCurrentCallList(),
 				cameraMode = GetCameraMode(),
-				cameraSelfView = EISC.GetBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraSelfView)),
-				cameraSupportsAutoMode = EISC.GetBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraSupportsAutoMode)),
-				cameraSupportsOffMode = EISC.GetBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraSupportsOffMode)),
-				currentCallString = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CurrentCallNumber)),
-				currentDialString = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CurrentDialString)),
+				cameraSelfView = EISC.GetBool(JoinMap.CameraSelfView.JoinNumber),
+				cameraSupportsAutoMode = EISC.GetBool(JoinMap.CameraSupportsAutoMode.JoinNumber),
+				cameraSupportsOffMode = EISC.GetBool(JoinMap.CameraSupportsOffMode.JoinNumber),
+				currentCallString = EISC.GetString(JoinMap.CurrentCallNumber.JoinNumber),
+				currentDialString = EISC.GetString(JoinMap.CurrentDialString.JoinNumber),
 				directoryContactSelected = new
 				{
-					name = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryEntrySelectedName)),
-					number = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryEntrySelectedNumber))
+					name = EISC.GetString(JoinMap.DirectoryEntrySelectedName.JoinNumber),
+					number = EISC.GetString(JoinMap.DirectoryEntrySelectedNumber.JoinNumber)
 				},
-				directorySelectedFolderName = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectorySelectedFolderName)),
-				isInCall = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.HookState)) == "Connected",
+				directorySelectedFolderName = EISC.GetString(JoinMap.DirectorySelectedFolderName.JoinNumber),
+                isInCall = EISC.GetString(JoinMap.HookState.JoinNumber) == "Connected",
 				hasDirectory = true,
 				hasDirectorySearch = false,
 				hasRecents = !EISC.BooleanOutput[502].BoolValue,
@@ -520,11 +519,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		void PostDirectory()
 		{
-			var u = EISC.GetUshort(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryRowCount));
+			var u = EISC.GetUshort(JoinMap.DirectoryRowCount.JoinNumber);
 			var items = new List<object>();
 			for (uint i = 0; i < u; i++)
 			{
-				var name = EISC.GetString(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryEntriesStart) + i);
+				var name = EISC.GetString(JoinMap.DirectoryEntriesStart.JoinNumber + i);
 				var id = (i + 1).ToString();
 				// is folder or contact?
 				if (name.StartsWith("[+]"))
@@ -549,7 +548,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{
 				currentDirectory = new
 				{
-					isRootDirectory = EISC.GetBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.DirectoryIsRoot)),
+                    isRootDirectory = EISC.GetBool(JoinMap.DirectoryIsRoot.JoinNumber),
 					directoryResults = items
 				}
 			};
@@ -574,8 +573,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		string GetCameraMode()
 		{
 			string m;
-            if (EISC.GetBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraModeAuto))) m = eCameraControlMode.Auto.ToString().ToLower();
-            else if (EISC.GetBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraModeManual))) m = eCameraControlMode.Manual.ToString().ToLower();
+            if (EISC.GetBool(JoinMap.CameraModeAuto.JoinNumber)) m = eCameraControlMode.Auto.ToString().ToLower();
+            else if (EISC.GetBool(JoinMap.CameraModeManual.JoinNumber)) m = eCameraControlMode.Manual.ToString().ToLower();
             else m = eCameraControlMode.Off.ToString().ToLower();
 			return m;
 		}
@@ -593,7 +592,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 		/// </summary>
 		string GetSelectedCamera()
 		{
-			var num = EISC.GetUshort(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraNumberSelect));
+            var num = EISC.GetUshort(JoinMap.CameraNumberSelect.JoinNumber);
 			string m;
 			if (num == 100)
 			{
@@ -637,11 +636,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			var cam = s.Substring(6);
 			if (cam.ToLower() == "far")
 			{
-				EISC.SetUshort(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraNumberSelect), 100);
+				EISC.SetUshort(JoinMap.CameraNumberSelect.JoinNumber, 100);
 			}
 			else
 			{
-				EISC.SetUshort(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.CameraNumberSelect), UInt16.Parse(cam));
+                EISC.SetUshort(JoinMap.CameraNumberSelect.JoinNumber, UInt16.Parse(cam));
 			}
 		}
 
@@ -656,7 +655,8 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			{
 				list.Add(CurrentCallItem);
 			}
-			if (EISC.GetBool(JoinMap.GetJoinForKey(SIMPLVtcJoinMap.IncomingCall))) {
+            if (EISC.GetBool(JoinMap.IncomingCall.JoinNumber))
+            {
 
 			}
 			return list;

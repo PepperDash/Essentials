@@ -189,7 +189,7 @@ namespace PepperDash.Essentials.AppServer.Messengers
 			// Pulse DTMF
 			AppServerController.AddAction(MessagePath + "/dtmf", new Action<string>(s =>
 			{
-                var join = JoinMap.Joins[s];
+                var join = JoinMap.Joins[s];           
                 if (join != null)
                 {
                     if (join.JoinNumber > 0)
