@@ -69,7 +69,7 @@ namespace PepperDash.Essentials
 			{
 				var comm = CommFactory.GetControlPropertiesConfig(dc);
 
-				var bridge = new PepperDash.Essentials.Room.MobileControl.MobileControlDdvc01RoomBridge(key, name, comm.IpIdInt);
+				var bridge = new PepperDash.Essentials.Room.MobileControl.MobileControlSIMPLRoomBridge(key, name, comm.IpIdInt);
 				bridge.AddPreActivationAction(() =>
 				{
 					var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as MobileControlSystemController;

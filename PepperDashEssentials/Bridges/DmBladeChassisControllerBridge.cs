@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Bridges {
         public static void LinkToApi(this DmBladeChassisController dmChassis, BasicTriList trilist, uint joinStart, string joinMapKey) {
             DmBladeChassisControllerJoinMap joinMap = new DmBladeChassisControllerJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmBladeChassisControllerJoinMap>(joinMapSerialized);

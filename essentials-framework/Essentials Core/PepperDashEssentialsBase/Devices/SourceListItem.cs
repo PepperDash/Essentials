@@ -67,36 +67,68 @@ namespace PepperDash.Essentials.Core
 		[JsonProperty("name")]
 		public string Name { get; set; }
 
+        /// <summary>
+        /// Specifies and icon for the source list item
+        /// </summary>
 		[JsonProperty("icon")]
 		public string Icon { get; set; }
 
+        /// <summary>
+        /// Alternate icon
+        /// </summary>
 		[JsonProperty("altIcon")]
 		public string AltIcon { get; set; }
 
+        /// <summary>
+        /// Indicates if the item should be included in the source list
+        /// </summary>
 		[JsonProperty("includeInSourceList")]
 		public bool IncludeInSourceList { get; set; }
 
+        /// <summary>
+        /// Used to specify the order of the items in the source list when displayed
+        /// </summary>
 		[JsonProperty("order")]
 		public int Order { get; set; }
 
+        /// <summary>
+        /// The key of the device for volume control
+        /// </summary>
 		[JsonProperty("volumeControlKey")]
 		public string VolumeControlKey { get; set; }
 
+        /// <summary>
+        /// The type of source list item
+        /// </summary>
 		[JsonProperty("type")]
 		[JsonConverter(typeof(StringEnumConverter))]
 		public eSourceListItemType Type { get; set; }
 
+        /// <summary>
+        /// The list of routes to execute for this source list item
+        /// </summary>
 		[JsonProperty("routeList")]
 		public List<SourceRouteListItem> RouteList { get; set; }
 
+        /// <summary>
+        /// Indicates if this source should be disabled for sharing to the far end call participants via codec content
+        /// </summary>
 		[JsonProperty("disableCodecSharing")]
 		public bool DisableCodecSharing { get; set; }
 
+        /// <summary>
+        /// Indicates if this source should be disabled for routing to a shared output
+        /// </summary>
 		[JsonProperty("disableRoutedSharing")]
 		public bool DisableRoutedSharing { get; set; }
 
         [JsonProperty("destinations")]
         public List<eSourceListItemDestinationTypes> Destinations { get; set; }
+        /// <summary>
+        /// A means to reference a source list for this source item, in the event that this source has an input that can have sources routed to it
+        /// </summary>
+        [JsonProperty("sourceListKey")]
+        public string SourceListKey { get; set; }
 
 		public SourceListItem()
 		{

@@ -39,5 +39,25 @@ namespace PepperDash.Essentials.Core.Config
 			
 			return SourceLists[key];
 		}
+
+        /// <summary>
+        /// Checks Devices for an item with a Key that matches and returns it if found. Otherwise, retunes null
+        /// </summary>
+        /// <param name="key">Key of desired device</param>
+        /// <returns></returns>
+        public DeviceConfig GetDeviceForKey(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                return null;
+
+            var deviceConfig = Devices.FirstOrDefault(d => d.Key.Equals(key));
+
+            if (deviceConfig != null)
+                return deviceConfig;
+            else
+            {
+                return null;
+            }
+        }
 	}
 }

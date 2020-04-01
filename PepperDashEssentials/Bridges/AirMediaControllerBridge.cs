@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Bridges
 		{
             AirMediaControllerJoinMap joinMap = new AirMediaControllerJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<AirMediaControllerJoinMap>(joinMapSerialized);

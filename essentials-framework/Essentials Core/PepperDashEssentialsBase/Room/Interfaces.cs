@@ -35,9 +35,10 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IRunRouteAction
     {
-        void RunRouteAction(string routeKey);
+        void RunRouteAction(string routeKey, string sourceListKey);
 
-        void RunRouteAction(string routeKey, Action successCallback);
+        void RunRouteAction(string routeKey, string sourceListKey, Action successCallback);
+
     }
 
     /// <summary>

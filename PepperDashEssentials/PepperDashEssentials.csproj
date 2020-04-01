@@ -108,13 +108,21 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppServer\Messengers\CameraBaseMessenger.cs" />
     <Compile Include="AppServer\Messengers\ConfigMessenger.cs" />
-    <Compile Include="AppServer\Messengers\Ddvc01AtcMessenger.cs" />
+    <Compile Include="AppServer\Messengers\SIMPLAtcMessenger.cs" />
     <Compile Include="AppServer\Messengers\AudioCodecBaseMessenger.cs" />
-    <Compile Include="AppServer\Messengers\Ddvc01VtcMessenger.cs" />
+    <Compile Include="AppServer\Messengers\SIMPLVtcMessenger.cs" />
+    <Compile Include="AppServer\Messengers\IRunRouteActionMessenger.cs" />
     <Compile Include="AppServer\Messengers\MessengerBase.cs" />
+    <Compile Include="AppServer\Messengers\SIMPLCameraMessenger.cs" />
+    <Compile Include="AppServer\Messengers\SimplMessengerPropertiesConfig.cs" />
+    <Compile Include="AppServer\Messengers\SIMPLRouteMessenger.cs" />
     <Compile Include="AppServer\Messengers\SystemMonitorMessenger.cs" />
     <Compile Include="AppServer\Messengers\VideoCodecBaseMessenger.cs" />
+    <Compile Include="AppServer\SIMPLJoinMaps\SIMPLVtcJoinMap.cs" />
+    <Compile Include="AppServer\SIMPLJoinMaps\SIMPLAtcJoinMap.cs" />
+    <Compile Include="AppServer\SIMPLJoinMaps\MobileControlSIMPLRoomJoinMap.cs" />
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
     <Compile Include="Bridges\AppleTvBridge.cs" />
     <Compile Include="Bridges\BridgeBase.cs" />
@@ -166,7 +174,6 @@
     <Compile Include="ControlSystem.cs" />
     <Compile Include="Factory\UiDeviceFactory.cs" />
     <Compile Include="Fusion\EssentialsHuddleVtc1FusionController.cs" />
-    <Compile Include="PluginLoading\PluginLoading.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Room\Config\EssentialsDualDisplayRoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsNDisplayRoomPropertiesConfig.cs" />
@@ -179,7 +186,7 @@
     <Compile Include="AppServer\MobileControlDdvc01DeviceBridge.cs" />
     <Compile Include="AppServer\Interfaces.cs" />
     <Compile Include="AppServer\RoomBridges\MobileControlBridgeBase.cs" />
-    <Compile Include="AppServer\RoomBridges\MobileControlDdvc01RoomBridge.cs" />
+    <Compile Include="AppServer\RoomBridges\MobileControlSIMPLRoomBridge.cs" />
     <Compile Include="AppServer\RoomBridges\MobileControlEssentialsHuddleSpaceRoomBridge.cs" />
     <Compile Include="AppServer\DeviceTypeInterfaces\IChannelExtensions.cs" />
     <Compile Include="AppServer\DeviceTypeInterfaces\IColorExtensions.cs" />

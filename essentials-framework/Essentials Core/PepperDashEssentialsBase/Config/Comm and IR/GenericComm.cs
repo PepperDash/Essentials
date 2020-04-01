@@ -13,12 +13,14 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core
 {
+
+
     /// <summary>
     /// Serves as a generic wrapper class for all styles of IBasicCommuncation ports
     /// </summary>
-    public class 
-        GenericComm : ReconfigurableDevice
+    public class GenericComm : ReconfigurableDevice
     {
+
         EssentialsControlPropertiesConfig PropertiesConfig;
 
         public IBasicCommunication CommPort { get; private set; }
@@ -29,6 +31,14 @@ namespace PepperDash.Essentials.Core
             PropertiesConfig = CommFactory.GetControlPropertiesConfig(config);
 
             CommPort = CommFactory.CreateCommForDevice(config);
+
+                   
+        }
+
+        public static IKeyed BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
+            return new GenericComm(dc);
         }
 
         public void SetPortConfig(string portConfig)
@@ -51,6 +61,22 @@ namespace PepperDash.Essentials.Core
 
             ConfigWriter.UpdateDeviceConfig(config);
         }
-        
+
+        public class Factory : Essentials.Core.Factory
+        {
+            #region IDeviceFactory Members
+
+            List<string> TypeNames = new List<string>() { "genericComm" };
+
+            #endregion
+
+            public override IKeyed BuildDevice(DeviceConfig dc)
+            {
+                Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
+                return new GenericComm(dc);
+            }
+        }
      }
+
+
 }

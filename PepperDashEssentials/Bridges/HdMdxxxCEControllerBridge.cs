@@ -22,7 +22,7 @@ namespace PepperDash.Essentials.Bridges
         {
             HdMdxxxCEControllerJoinMap joinMap = new HdMdxxxCEControllerJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<HdMdxxxCEControllerJoinMap>(joinMapSerialized);

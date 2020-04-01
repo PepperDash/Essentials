@@ -129,22 +129,27 @@ namespace PepperDash.Essentials.Devices.Common
 				return new Core.Devices.Laptop(key, name);
 			}
 
-			else if (typeName == "mockvc")
-			{
-				return new VideoCodec.MockVC(dc);
-			}
+            else if (typeName == "bluejeanspc")
+            {
+                return new SoftCodec.BlueJeansPc(key, name);
+            }
 
-			else if (typeName == "mockac")
-			{
-				var props = JsonConvert.DeserializeObject<AudioCodec.MockAcPropertiesConfig>(properties.ToString());
-				return new AudioCodec.MockAC(key, name, props);
-			}
+            else if (typeName == "mockvc")
+            {
+                return new VideoCodec.MockVC(dc);
+            }
 
-			else if (typeName.StartsWith("ciscospark"))
-			{
-				var comm = CommFactory.CreateCommForDevice(dc);
-				return new VideoCodec.Cisco.CiscoSparkCodec(dc, comm);
-			}
+            else if (typeName == "mockac")
+            {
+                var props = JsonConvert.DeserializeObject<AudioCodec.MockAcPropertiesConfig>(properties.ToString());
+                return new AudioCodec.MockAC(key, name, props);
+            }
+
+            else if (typeName.StartsWith("ciscospark"))
+            {
+                var comm = CommFactory.CreateCommForDevice(dc);
+                return new VideoCodec.Cisco.CiscoSparkCodec(dc, comm);
+            }
 
             else if (typeName == "zoomroom")
             {

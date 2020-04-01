@@ -132,11 +132,13 @@
     <Compile Include="Devices\CrestronProcessor.cs" />
     <Compile Include="Devices\DeviceApiBase.cs" />
     <Compile Include="Devices\DeviceFeedbackExtensions.cs" />
+    <Compile Include="Devices\EssentialsDevice.cs" />
     <Compile Include="Devices\PC\InRoomPc.cs" />
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
+    <Compile Include="Factory\IDeviceFactory.cs" />
     <Compile Include="Feedbacks\BoolFeedback.cs" />
     <Compile Include="Feedbacks\FeedbackCollection.cs" />
     <Compile Include="Feedbacks\FeedbackEventArgs.cs" />
@@ -156,6 +158,10 @@
     <Compile Include="Monitoring\SystemMonitorController.cs" />
     <Compile Include="Microphone Privacy\MicrophonePrivacyController.cs" />
     <Compile Include="Microphone Privacy\MicrophonePrivacyControllerConfig.cs" />
+    <Compile Include="Plugins\PluginLoader.cs" />
+    <Compile Include="Presets\PresetBase.cs" />
+    <Compile Include="Plugins\IPluginDeviceFactory.cs" />
+    <Compile Include="Plugins\PluginEntrypointAttribute.cs" />
     <Compile Include="Ramps and Increments\ActionIncrementer.cs" />
     <Compile Include="Config\Comm and IR\CommFactory.cs" />
     <Compile Include="Config\Comm and IR\CommunicationExtras.cs" />

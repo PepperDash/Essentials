@@ -87,4 +87,17 @@ namespace PepperDash.Essentials.Core
             return null;
         }
     }
+
+
+    /// <summary>
+    /// Responsible for loading all of the device types
+    /// </summary>
+    public class CoreDeviceFactory
+    {
+        public CoreDeviceFactory()
+        {
+            var genComm = new GenericComm.Factory() as IDeviceFactory;
+            genComm.LoadTypeFactories();
+        }
+    }
 }

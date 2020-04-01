@@ -186,7 +186,7 @@ namespace PepperDash.Essentials.Fusion
 
 
             FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction((Room as EssentialsHuddleVtc1Room).PowerOnToDefaultOrLastSource);
-            FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() => (Room as EssentialsHuddleVtc1Room).RunRouteAction("roomOff"));
+            FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() => (Room as EssentialsHuddleVtc1Room).RunRouteAction("roomOff", Room.SourceListKey));
             // NO!! room.RoomIsOn.LinkComplementInputSig(FusionRoom.SystemPowerOff.InputSig);
  
 
@@ -342,7 +342,7 @@ namespace PepperDash.Essentials.Fusion
 
                 // Current Source
                 var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 8, displayName + "Source None", eSigIoMask.InputOutputSig);
-                defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b => { if (!b) (Room as EssentialsHuddleVtc1Room).RunRouteAction("roomOff"); }); ;
+                defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b => { if (!b) (Room as EssentialsHuddleVtc1Room).RunRouteAction("roomOff", Room.SourceListKey); }); ;
             }
         }
     }
