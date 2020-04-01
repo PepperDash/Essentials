@@ -19,9 +19,18 @@ namespace PepperDash.Essentials.Core
         {
 
         }
+
+        protected EssentialsDevice(string key, string name)
+            : base(key, name)
+        {
+
+        }
     }
 
-    public abstract class Factory : IDeviceFactory
+    /// <summary>
+    /// Devices the basic needs for a Device Factory
+    /// </summary>
+    public abstract class EssentialsDeviceFactory<T> : IDeviceFactory where T:EssentialsDevice
     {
         #region IDeviceFactory Members
 
@@ -35,13 +44,16 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        public abstract EssentialsDevice BuildDevice(DeviceConfig dc);
+
         #endregion
+    }
 
-        public abstract IKeyed BuildDevice(DeviceConfig dc);
-
-        protected Factory()
-        {
-            TypeNames = new List<string>();
-        }
+    /// <summary>
+    /// Devices the basic needs for a Device Factory
+    /// </summary>
+    public abstract class EssentialsPluginDeviceFactory<T> : EssentialsDeviceFactory<T>, IPluginDeviceFactory where T : EssentialsDevice
+    {
+        public string MinimumEssentialsFrameworkVersion { get; protected set; }
     }
 }

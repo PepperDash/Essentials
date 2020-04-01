@@ -96,7 +96,7 @@ namespace PepperDash.Essentials.Core
     {
         public CoreDeviceFactory()
         {
-            var genComm = new GenericComm.Factory() as IDeviceFactory;
+            var genComm = new GenericCommFactory() as IDeviceFactory;
             genComm.LoadTypeFactories();
         }
     }
