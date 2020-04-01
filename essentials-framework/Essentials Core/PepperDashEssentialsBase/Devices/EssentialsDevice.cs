@@ -36,7 +36,7 @@ namespace PepperDash.Essentials.Core
 
         public List<string> TypeNames { get; protected set; }
 
-        public virtual void LoadTypeFactories()
+        public void LoadTypeFactories()
         {
             foreach (var typeName in TypeNames)
             {

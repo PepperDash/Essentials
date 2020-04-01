@@ -18,7 +18,6 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class GenericComm : ReconfigurableDevice
     {
-
         EssentialsControlPropertiesConfig PropertiesConfig;
 
         public IBasicCommunication CommPort { get; private set; }
@@ -30,7 +29,6 @@ namespace PepperDash.Essentials.Core
 
             CommPort = CommFactory.CreateCommForDevice(config);
 
-                   
         }
 
         public static IKeyed BuildDevice(DeviceConfig dc)
@@ -59,20 +57,19 @@ namespace PepperDash.Essentials.Core
 
             ConfigWriter.UpdateDeviceConfig(config);
         }
-
-     }
+    }
 
     public class GenericCommFactory : Essentials.Core.EssentialsDeviceFactory<GenericComm>
     {
+        public GenericCommFactory()
+        {
+            TypeNames = new List<string>() { "genericComm" };
+        }
+
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
             return new GenericComm(dc);
-        }
-
-        public GenericCommFactory()
-        {
-            TypeNames = new List<string>() { "genericComm" };
         }
     }
 }
