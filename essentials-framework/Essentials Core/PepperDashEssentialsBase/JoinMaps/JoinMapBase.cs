@@ -48,16 +48,17 @@ namespace PepperDash.Essentials.Core
 
             if (joinMapSerialzed != null)
             {
-                var joinMap = JsonConvert.DeserializeObject<Dictionary<string, JoinData>>(joinMapSerialzed);
+                var joinMapData = JsonConvert.DeserializeObject<Dictionary<string, JoinData>>(joinMapSerialzed);
 
-                if (joinMap != null)
-                    return joinMap;
+                if (joinMapData != null)
+                    return joinMapData;
                 else
                     return null;
             }
             else
                 return null;
         }
+
     }
 
     /// <summary>
@@ -255,6 +256,8 @@ namespace PepperDash.Essentials.Core
                     Debug.Console(2, "No mathcing key found in join map for: '{0}'", customJoinData.Key);
                 }
             }
+
+            PrintJoinMapInfo();
         }
 
         ///// <summary>

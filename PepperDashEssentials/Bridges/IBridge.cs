@@ -10,5 +10,7 @@ namespace PepperDash.Essentials.Bridges
     public interface IBridge
     {
         void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey);
+
+        void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge);
     }
 }
