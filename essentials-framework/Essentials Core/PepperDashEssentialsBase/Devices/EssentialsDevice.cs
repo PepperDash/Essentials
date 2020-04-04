@@ -34,8 +34,14 @@ namespace PepperDash.Essentials.Core
     {
         #region IDeviceFactory Members
 
+        /// <summary>
+        /// A list of strings that can be used in the type property of a DeviceConfig object to build an instance of this device
+        /// </summary>
         public List<string> TypeNames { get; protected set; }
 
+        /// <summary>
+        /// Loads an item to the DeviceFactory.FactoryMethods dictionary for each entry in the TypeNames list
+        /// </summary>
         public void LoadTypeFactories()
         {
             foreach (var typeName in TypeNames)
@@ -44,6 +50,11 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// The method that will build the device
+        /// </summary>
+        /// <param name="dc">The device config</param>
+        /// <returns>An instance of the device</returns>
         public abstract EssentialsDevice BuildDevice(DeviceConfig dc);
 
         #endregion
@@ -54,6 +65,9 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public abstract class EssentialsPluginDeviceFactory<T> : EssentialsDeviceFactory<T>, IPluginDeviceFactory where T : EssentialsDevice
     {
+        /// <summary>
+        /// Specifies the minimum version of Essentials required for a plugin to run.  Must use the format Major.Minor.Build (ex. "1.4.33")
+        /// </summary>
         public string MinimumEssentialsFrameworkVersion { get; protected set; }
     }
 }

@@ -161,7 +161,6 @@
     <Compile Include="Plugins\PluginLoader.cs" />
     <Compile Include="Presets\PresetBase.cs" />
     <Compile Include="Plugins\IPluginDeviceFactory.cs" />
-    <Compile Include="Plugins\PluginEntrypointAttribute.cs" />
     <Compile Include="Ramps and Increments\ActionIncrementer.cs" />
     <Compile Include="Config\Comm and IR\CommFactory.cs" />
     <Compile Include="Config\Comm and IR\CommunicationExtras.cs" />
