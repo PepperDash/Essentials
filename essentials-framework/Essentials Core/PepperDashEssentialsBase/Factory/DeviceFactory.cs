@@ -48,7 +48,6 @@ namespace PepperDash.Essentials.Core
 
             var typeName = dc.Type.ToLower();
 
-
             // Check for types that have been added by plugin dlls. 
             if (FactoryMethods.ContainsKey(typeName))
             {
@@ -57,11 +56,11 @@ namespace PepperDash.Essentials.Core
             }
 
 			// Check "core" types 
-            if (typeName == "genericcomm")
-            {
-                Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
-                return new GenericComm(dc);
-            }
+            //if (typeName == "genericcomm")
+            //{
+            //    Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
+            //    return new GenericComm(dc);
+            //}
             if (typeName == "ceniodigin104")
             {
                 var control = CommFactory.GetControlPropertiesConfig(dc);
