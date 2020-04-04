@@ -121,7 +121,7 @@ namespace PepperDash.Essentials.Bridges
 
                     if (device != null)
                     {
-                        Debug.Console(1, this, "Linking Device: '{0}'", d.DeviceKey);
+                        Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
 
 
                         if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
@@ -131,7 +131,7 @@ namespace PepperDash.Essentials.Bridges
                         }
                         else if (device is IBridgeAdvanced)
                         {
-                            Debug.Console(2, this, "'{0}' is IBridgeAdvanced");
+                            Debug.Console(2, this, "'{0}' is IBridgeAdvanced", device.Key);
                             (device as IBridgeAdvanced).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                         }
                         else if (device is PepperDash.Essentials.Core.Monitoring.SystemMonitorController)
