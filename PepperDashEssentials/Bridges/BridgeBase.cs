@@ -21,6 +21,46 @@ using PepperDash.Essentials.DM;
 namespace PepperDash.Essentials.Bridges
 {
     /// <summary>
+    /// Helper methods for bridges
+    /// </summary>
+    public static class BridgeHelper
+    {
+        public static void PrintJoinMap(string command)
+        {
+            string bridgeKey = "";
+            string deviceKey = "";
+
+            var targets = command.Split(' ');
+
+            bridgeKey = targets[0].Trim();
+
+            var bridge = DeviceManager.GetDeviceForKey(bridgeKey) as EiscApi;
+
+            if (bridge == null)
+            {
+                Debug.Console(0, "Unable to find bridge with key: '{0}'", bridgeKey);
+                return;
+            }
+
+            if (targets.Length > 1)
+            {
+                deviceKey = targets[1].Trim();
+
+                if (!string.IsNullOrEmpty(deviceKey))
+                {
+                    bridge.PrintJoinMapForDevice(deviceKey);
+                    return;
+                }
+            }
+            else
+            {
+                bridge.PrintJoinMaps();
+            }
+        }
+    }
+
+
+    /// <summary>
     /// Base class for all bridge class variants
     /// </summary>
     public class BridgeBase : Device
@@ -61,6 +101,8 @@ namespace PepperDash.Essentials.Bridges
         public EiscApi(DeviceConfig dc) :
             base(dc.Key)
         {
+            JoinMaps = new Dictionary<string, JoinMapBaseAdvanced>();
+
             PropertiesConfig = JsonConvert.DeserializeObject<EiscApiPropertiesConfig>(dc.Properties.ToString());
 
             Eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(PropertiesConfig.Control.IpIdInt, PropertiesConfig.Control.TcpSshProperties.Address, Global.ControlSystem);
@@ -79,10 +121,18 @@ namespace PepperDash.Essentials.Bridges
 
                     if (device != null)
                     {
+                        Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
+
+
                         if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
                         {
                             (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
+                        }
+                        else if (device is IBridgeAdvanced)
+                        {
+                            Debug.Console(2, this, "'{0}' is IBridgeAdvanced", device.Key);
+                            (device as IBridgeAdvanced).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                         }
                         else if (device is PepperDash.Essentials.Core.Monitoring.SystemMonitorController)
                         {
@@ -99,16 +149,18 @@ namespace PepperDash.Essentials.Bridges
                             (device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                             continue;
                         }
-						else if (device is PepperDash.Essentials.Core.DisplayBase)
-						{
-							(device as DisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-							continue;
-						}
-                        else if (device is DmChassisController) {
+                        else if (device is PepperDash.Essentials.Core.DisplayBase)
+                        {
+                            (device as DisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is DmChassisController)
+                        {
                             (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-                        else if (device is DmBladeChassisController) {
+                        else if (device is DmBladeChassisController)
+                        {
                             (device as DmBladeChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
@@ -204,6 +256,38 @@ namespace PepperDash.Essentials.Bridges
             {
                 Debug.Console(2, this, "Unable to add join map with key '{0}'.  Key already exists in JoinMaps dictionary", deviceKey);
             }
+        }
+
+        /// <summary>
+        /// Prints all the join maps on this bridge
+        /// </summary>
+        public void PrintJoinMaps()
+        {
+            Debug.Console(0, this, "Join Maps for EISC IPID: {0}", Eisc.ID.ToString("X"));
+
+            foreach (var joinMap in JoinMaps)
+            {
+                Debug.Console(0, "Join map for device '{0}':", joinMap.Key);
+                joinMap.Value.PrintJoinMapInfo();
+            }
+        }
+
+        /// <summary>
+        /// Prints the join map for a device by key
+        /// </summary>
+        /// <param name="deviceKey"></param>
+        public void PrintJoinMapForDevice(string deviceKey)
+        {
+            var joinMap = JoinMaps[deviceKey];
+
+            if (joinMap == null)
+            {
+                Debug.Console(0, this, "Unable to find joinMap for device with key: '{0}'", deviceKey);
+                return;
+            }
+
+            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, this.Key); 
+            joinMap.PrintJoinMapInfo();
         }
 
         /// <summary>

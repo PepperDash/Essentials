@@ -71,6 +71,11 @@ namespace PepperDash.Essentials
                             assembly = Assembly.GetExecutingAssembly();
                             break;
                         }
+                    case ("PepperDashEssentialsBase.dll"):
+                        {
+
+                            break;
+                        }
                     case ("PepperDash_Core.dll"):
                         {
                             version = PepperDash.Core.Debug.PepperDashCoreVersion;
@@ -338,47 +343,19 @@ namespace PepperDash.Essentials
                     {
                         try
                         {
-                            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
-                            var loadPlugin = methods.FirstOrDefault(m => m.Name.Equals("LoadPlugin"));
-                            if (loadPlugin != null)
+                            if (typeof(IPluginDeviceFactory).IsAssignableFrom(type))
                             {
-                                Debug.Console(2, "LoadPlugin method found in {0}", type.Name);
-
-                                var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
-
-                                var minimumVersion = fields.FirstOrDefault(p => p.Name.Equals("MinimumEssentialsFrameworkVersion"));
-                                if (minimumVersion != null)
+                                var plugin = (IPluginDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+                                LoadCustomPlugin(plugin, loadedAssembly);
+                            }
+                            else
+                            {
+                                var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                                var loadPlugin = methods.FirstOrDefault(m => m.Name.Equals("LoadPlugin"));
+                                if (loadPlugin != null)
                                 {
-                                    Debug.Console(2, "MinimumEssentialsFrameworkVersion found");
-
-                                    var minimumVersionString = minimumVersion.GetValue(null) as string;
-
-                                    if (!string.IsNullOrEmpty(minimumVersionString))
-                                    {
-                                        var passed = Global.IsRunningMinimumVersionOrHigher(minimumVersionString);
-
-                                        if (!passed)
-                                        {
-                                            Debug.Console(0, Debug.ErrorLogLevel.Error, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", minimumVersionString);
-                                            continue;
-                                        }
-                                        else
-                                        {
-                                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Passed plugin passed dependency check (required version {0})", minimumVersionString);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion found but not set.  Loading plugin, but your mileage may vary.");
-                                    }
+                                    LoadCustomLegacyPlugin(type, loadPlugin, loadedAssembly);
                                 }
-                                else
-                                {
-                                    Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion not found.  Loading plugin, but your mileage may vary.");
-                                }
-
-                                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding plugin: {0}", loadedAssembly.Name);
-                                loadPlugin.Invoke(null, null);
                             }
                         }
                         catch (Exception e)
@@ -401,6 +378,75 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
+        /// Loads a
+        /// </summary>
+        /// <param name="plugin"></param>
+        static void LoadCustomPlugin(IPluginDeviceFactory plugin, LoadedAssembly loadedAssembly)
+        {
+            var passed = Global.IsRunningMinimumVersionOrHigher(plugin.MinimumEssentialsFrameworkVersion);
+
+            if (!passed)
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Error, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", plugin.MinimumEssentialsFrameworkVersion);
+                return;
+            }
+            else
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Passed plugin passed dependency check (required version {0})", plugin.MinimumEssentialsFrameworkVersion);
+            }
+
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading plugin: {0}", loadedAssembly.Name);
+            plugin.LoadTypeFactories();
+        }
+
+        /// <summary>
+        /// Loads a a custom plugin via the legacy method
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="loadPlugin"></param>
+        static void LoadCustomLegacyPlugin(CType type, MethodInfo loadPlugin, LoadedAssembly loadedAssembly)
+        {
+            Debug.Console(2, "LoadPlugin method found in {0}", type.Name);
+
+            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+
+            var minimumVersion = fields.FirstOrDefault(p => p.Name.Equals("MinimumEssentialsFrameworkVersion"));
+            if (minimumVersion != null)
+            {
+                Debug.Console(2, "MinimumEssentialsFrameworkVersion found");
+
+                var minimumVersionString = minimumVersion.GetValue(null) as string;
+
+                if (!string.IsNullOrEmpty(minimumVersionString))
+                {
+                    var passed = Global.IsRunningMinimumVersionOrHigher(minimumVersionString);
+
+                    if (!passed)
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", minimumVersionString);
+                        return;
+                    }
+                    else
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Passed plugin passed dependency check (required version {0})", minimumVersionString);
+                    }
+                }
+                else
+                {
+                    Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion found but not set.  Loading plugin, but your mileage may vary.");
+                }
+            }
+            else
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion not found.  Loading plugin, but your mileage may vary.");
+            }
+
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading legacy plugin: {0}", loadedAssembly.Name);
+            loadPlugin.Invoke(null, null);
+
+        }
+
+        /// <summary>
         /// Loads plugins
         /// </summary>
         public static void LoadPlugins()
@@ -415,15 +461,17 @@ namespace PepperDash.Essentials
                 // Deal with any .cplz files
                 UnzipAndMoveCplzArchives();
 
-				if(Directory.Exists(_loadedPluginsDirectoryPath)) {
-					// Load the assemblies from the loadedPlugins folder into the AppDomain
-					LoadPluginAssemblies();
+                if (Directory.Exists(_loadedPluginsDirectoryPath))
+                {
+                    // Load the assemblies from the loadedPlugins folder into the AppDomain
+                    LoadPluginAssemblies();
 
-					// Load the types from any custom plugin assemblies
-					LoadCustomPluginTypes();
-				}
+                    // Load the types from any custom plugin assemblies
+                    LoadCustomPluginTypes();
+                }
             }
         }
+
     }
 
     /// <summary>

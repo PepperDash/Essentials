@@ -28,7 +28,6 @@ namespace PepperDash.Essentials.Core.Touchpanels
 
             _Touchpanel.ButtonStateChange += new Crestron.SimplSharpPro.DeviceSupport.ButtonEventHandler(_Touchpanel_ButtonStateChange);
 
-
             AddPostActivationAction(() =>
                 {
                     // Link up the button feedbacks to the specified BoolFeedbacks
@@ -40,7 +39,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
                         {
                             var bKey = button.Key.ToLower();
 
-                            var feedback = device.GetFeedbackProperty(feedbackConfig.BoolFeedbackName);
+                            var feedback = device.GetFeedbackProperty(feedbackConfig.FeedbackName);
 
                             var bFeedback = feedback as BoolFeedback;
                             var iFeedback = feedback as IntFeedback;
@@ -72,7 +71,7 @@ namespace PepperDash.Essentials.Core.Touchpanels
                             }
                             else
                             {
-                                Debug.Console(1, this, "Unable to get BoolFeedback with name: {0} from device: {1}", feedbackConfig.BoolFeedbackName, device.Key);
+                                Debug.Console(1, this, "Unable to get BoolFeedback with name: {0} from device: {1}", feedbackConfig.FeedbackName, device.Key);
                             }
                         }
                         else
@@ -140,6 +139,6 @@ namespace PepperDash.Essentials.Core.Touchpanels
     public class KeypadButtonFeedback
     {
         public string DeviceKey { get; set; }
-        public string BoolFeedbackName { get; set; }
+        public string FeedbackName { get; set; }
     }
 }

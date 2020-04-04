@@ -48,7 +48,6 @@ namespace PepperDash.Essentials.Core
 
             var typeName = dc.Type.ToLower();
 
-
             // Check for types that have been added by plugin dlls. 
             if (FactoryMethods.ContainsKey(typeName))
             {
@@ -57,11 +56,11 @@ namespace PepperDash.Essentials.Core
             }
 
 			// Check "core" types 
-            if (typeName == "genericcomm")
-            {
-                Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
-                return new GenericComm(dc);
-            }
+            //if (typeName == "genericcomm")
+            //{
+            //    Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
+            //    return new GenericComm(dc);
+            //}
             if (typeName == "ceniodigin104")
             {
                 var control = CommFactory.GetControlPropertiesConfig(dc);
@@ -86,6 +85,31 @@ namespace PepperDash.Essentials.Core
 
             return null;
         }
+
+        /// <summary>
+        /// Prints the type names fromt the FactoryMethods collection.
+        /// </summary>
+        /// <param name="command"></param>
+        public static void GetDeviceFactoryTypes(string filter)
+        {
+            List<string> typeNames = new List<string>();
+
+            if (!string.IsNullOrEmpty(filter))
+            {
+                typeNames = FactoryMethods.Keys.Where(k => k.Contains(filter)).ToList();
+            }
+            else
+            {
+                typeNames = FactoryMethods.Keys.ToList();
+            }
+
+            Debug.Console(0, "Device Types:");
+
+            foreach (var type in typeNames)
+            {
+                Debug.Console(0, "type: '{0}'", type);
+            }
+        }
     }
 
 
@@ -96,7 +120,7 @@ namespace PepperDash.Essentials.Core
     {
         public CoreDeviceFactory()
         {
-            var genComm = new GenericComm.Factory() as IDeviceFactory;
+            var genComm = new GenericCommFactory() as IDeviceFactory;
             genComm.LoadTypeFactories();
         }
     }

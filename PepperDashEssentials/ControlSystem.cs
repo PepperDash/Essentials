@@ -47,9 +47,12 @@ namespace PepperDash.Essentials
                     ConsoleAccessLevelEnum.AccessOperator);
             }
 
-            CrestronConsole.AddNewConsoleCommand(PluginLoader.ReportAssemblyVersions, "reportversions", "Reports the versions of the loaded assemblies", ConsoleAccessLevelEnum.AccessOperator); 
+            CrestronConsole.AddNewConsoleCommand(PluginLoader.ReportAssemblyVersions, "reportversions", "Reports the versions of the loaded assemblies", ConsoleAccessLevelEnum.AccessOperator);
 
-            // CrestronConsole.AddNewConsoleCommand(S => { ConfigWriter.WriteConfigFile(null); }, "writeconfig", "writes the current config to a file", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(PepperDash.Essentials.Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(PepperDash.Essentials.Bridges.BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
+
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s);
@@ -287,11 +290,12 @@ namespace PepperDash.Essentials
         /// </summary>
         public void LoadDevices()
         {
+            // Instantiate the Device Factories
+            new CoreDeviceFactory();
+
+
             // Build the processor wrapper class
-
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
-
-
 
             // Add global System Monitor device
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));
