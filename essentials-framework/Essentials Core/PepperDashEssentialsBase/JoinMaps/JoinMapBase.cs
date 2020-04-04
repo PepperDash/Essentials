@@ -177,34 +177,39 @@ namespace PepperDash.Essentials.Core
 
             _joinOffset = joinStart - 1;
 
+        }
+
+        protected void AddJoins()
+        {
             // Add all the JoinDataComplete properties to the Joins Dictionary and pass in the offset 
-            Joins = this.GetType()
-                .GetCType()
-                .GetFields(BindingFlags.Public | BindingFlags.Instance)
-                .Where(field => field.IsDefined(typeof(JoinNameAttribute), false))
-                .Select(prop => (JoinDataComplete)prop.GetValue(this))
-                .ToDictionary(join => join.GetNameAttribute(), join =>
-                    {
-                        join.SetJoinOffset(_joinOffset);
-                        return join;
-                    });
-
-            //var type = this.GetType();
-            //var cType = type.GetCType();
-            //var fields = cType.GetFields(BindingFlags.Public | BindingFlags.Instance);
-            //foreach (var field in fields)
-            //{
-            //    if (field.IsDefined(typeof(JoinNameAttribute), true))
-            //    {
-            //        var value = field.GetValue(this) as JoinDataComplete;
-
-            //        if (value != null)
+            //Joins = this.GetType()
+            //    .GetCType()
+            //    .GetFields(BindingFlags.Public | BindingFlags.Instance)
+            //    .Where(field => field.IsDefined(typeof(JoinNameAttribute), true))
+            //    .Select(field => (JoinDataComplete)field.GetValue(this))
+            //    .ToDictionary(join => join.GetNameAttribute(), join =>
             //        {
-            //            value.SetJoinOffset(_joinOffset);
-            //            Joins.Add(value.GetNameAttribute(), value);
-            //        }
-            //    }
-            //}
+            //            join.SetJoinOffset(_joinOffset);
+            //            return join;
+            //        });
+
+            var type = this.GetType();
+            var cType = type.GetCType();
+            var fields = cType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var field in fields)
+            {
+                if (field.IsDefined(typeof(JoinNameAttribute), true))
+                {
+                    JoinDataComplete value = field.GetValue(this) as JoinDataComplete;
+
+                    if (value != null)
+                    {
+                        value.SetJoinOffset(_joinOffset);
+                        Joins.Add(value.GetNameAttribute(typeof(JoinDataComplete)), value);
+                    }
+                }
+            }
+
 
             PrintJoinMapInfo();
         }
@@ -435,26 +440,32 @@ namespace PepperDash.Essentials.Core
             _data = customJoinData;
         }
 
-        public string GetNameAttribute()
+        public string GetNameAttribute(Type t)
         {
             string name = string.Empty;
-            JoinNameAttribute attribute = (JoinNameAttribute)Attribute.GetCustomAttribute(typeof(JoinDataComplete), typeof(JoinNameAttribute));
+            JoinNameAttribute attribute = (JoinNameAttribute)Attribute.GetCustomAttribute(t, typeof(JoinNameAttribute));
             if (attribute != null)
             {
                 name = attribute.Name;
+                Debug.Console(2, "JoinName Attribute value: {0}", name);
             }
             return name;
         }
     }
 
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.All)]
     public class JoinNameAttribute : Attribute
     {
-        public string Name { get; set; }
+        private string _Name;
 
         public JoinNameAttribute(string name)
         {
-            Name = name;
+            _Name = name;
+        }
+
+        public string Name
+        {
+            get { return _Name; }
         }
     }
 }
