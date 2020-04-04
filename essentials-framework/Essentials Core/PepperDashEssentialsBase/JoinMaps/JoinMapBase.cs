@@ -460,6 +460,7 @@ namespace PepperDash.Essentials.Core
 
         public JoinNameAttribute(string name)
         {
+            Debug.Console(0, "Setting Attribute Name: {0}", name);
             _Name = name;
         }
 
