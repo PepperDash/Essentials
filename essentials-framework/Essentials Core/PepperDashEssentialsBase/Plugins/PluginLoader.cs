@@ -8,7 +8,6 @@ using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Plugins;
 
 namespace PepperDash.Essentials
 {

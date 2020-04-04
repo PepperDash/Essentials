@@ -124,6 +124,10 @@ namespace PepperDash.Essentials.Bridges
                             (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
+                        else if (device is IBridgeAdvanced)
+                        {
+                            (device as IBridgeAdvanced).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
+                        }
                         else if (device is PepperDash.Essentials.Core.Monitoring.SystemMonitorController)
                         {
                             (device as PepperDash.Essentials.Core.Monitoring.SystemMonitorController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
@@ -139,16 +143,18 @@ namespace PepperDash.Essentials.Bridges
                             (device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                             continue;
                         }
-						else if (device is PepperDash.Essentials.Core.DisplayBase)
-						{
-							(device as DisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-							continue;
-						}
-                        else if (device is DmChassisController) {
+                        else if (device is PepperDash.Essentials.Core.DisplayBase)
+                        {
+                            (device as DisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is DmChassisController)
+                        {
                             (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
-                        else if (device is DmBladeChassisController) {
+                        else if (device is DmBladeChassisController)
+                        {
                             (device as DmBladeChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
