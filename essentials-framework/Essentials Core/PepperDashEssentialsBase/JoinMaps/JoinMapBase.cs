@@ -88,14 +88,17 @@ namespace PepperDash.Essentials.Core
             // Get the joins of each type and print them
             Debug.Console(0, "Digitals:");
             var digitals = Joins.Where(j => (j.Value.JoinType & eJoinType.Digital) == eJoinType.Digital).ToDictionary(j => j.Key, j => j.Value);
+            Debug.Console(2, "Found {0} Digital Joins", digitals.Count); 
             PrintJoinList(GetSortedJoins(digitals));
 
             Debug.Console(0, "Analogs:");
             var analogs = Joins.Where(j => (j.Value.JoinType & eJoinType.Analog) == eJoinType.Analog).ToDictionary(j => j.Key, j => j.Value);
+            Debug.Console(2, "Found {0} Analog Joins", analogs.Count); 
             PrintJoinList(GetSortedJoins(analogs));
 
             Debug.Console(0, "Serials:");
             var serials = Joins.Where(j => (j.Value.JoinType & eJoinType.Serial) == eJoinType.Serial).ToDictionary(j => j.Key, j => j.Value);
+            Debug.Console(2, "Found {0} Serial Joins", serials.Count);
             PrintJoinList(GetSortedJoins(serials));
 
         }
@@ -166,23 +169,42 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// The collection of joins and associated metadata
         /// </summary>
-        public Dictionary<string, JoinDataComplete> Joins = new Dictionary<string, JoinDataComplete>();
+        public Dictionary<string, JoinDataComplete> Joins { get; private set; }
 
         protected JoinMapBaseAdvanced(uint joinStart)
         {
+            Joins = new Dictionary<string, JoinDataComplete>();
+
             _joinOffset = joinStart - 1;
 
             // Add all the JoinDataComplete properties to the Joins Dictionary and pass in the offset 
-            Joins = GetType()
+            Joins = this.GetType()
                 .GetCType()
-                .GetProperties()
-                .Where(prop => prop.IsDefined(typeof(JoinNameAttribute), false))
-                .Select(prop => (JoinDataComplete)prop.GetValue(this, null))
-                .ToDictionary(join => join.GetNameAttribute(), join => 
+                .GetFields(BindingFlags.Public | BindingFlags.Instance)
+                .Where(field => field.IsDefined(typeof(JoinNameAttribute), false))
+                .Select(prop => (JoinDataComplete)prop.GetValue(this))
+                .ToDictionary(join => join.GetNameAttribute(), join =>
                     {
                         join.SetJoinOffset(_joinOffset);
                         return join;
                     });
+
+            //var type = this.GetType();
+            //var cType = type.GetCType();
+            //var fields = cType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            //foreach (var field in fields)
+            //{
+            //    if (field.IsDefined(typeof(JoinNameAttribute), true))
+            //    {
+            //        var value = field.GetValue(this) as JoinDataComplete;
+
+            //        if (value != null)
+            //        {
+            //            value.SetJoinOffset(_joinOffset);
+            //            Joins.Add(value.GetNameAttribute(), value);
+            //        }
+            //    }
+            //}
 
             PrintJoinMapInfo();
         }
@@ -197,14 +219,17 @@ namespace PepperDash.Essentials.Core
             // Get the joins of each type and print them
             Debug.Console(0, "Digitals:");
             var digitals = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Digital) == eJoinType.Digital).ToDictionary(j => j.Key, j => j.Value);
+            Debug.Console(2, "Found {0} Digital Joins", digitals.Count);
             PrintJoinList(GetSortedJoins(digitals));
 
             Debug.Console(0, "Analogs:");
             var analogs = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Analog) == eJoinType.Analog).ToDictionary(j => j.Key, j => j.Value);
+            Debug.Console(2, "Found {0} Analog Joins", analogs.Count);
             PrintJoinList(GetSortedJoins(analogs));
             
             Debug.Console(0, "Serials:");
             var serials = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Serial) == eJoinType.Serial).ToDictionary(j => j.Key, j => j.Value);
+            Debug.Console(2, "Found {0} Serial Joins", serials.Count);
             PrintJoinList(GetSortedJoins(serials));
 
         }

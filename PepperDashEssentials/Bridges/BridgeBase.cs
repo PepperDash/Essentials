@@ -267,6 +267,7 @@ namespace PepperDash.Essentials.Bridges
 
             foreach (var joinMap in JoinMaps)
             {
+                Debug.Console(0, "Join map for device '{0}':", joinMap.Key);
                 joinMap.Value.PrintJoinMapInfo();
             }
         }
@@ -285,6 +286,7 @@ namespace PepperDash.Essentials.Bridges
                 return;
             }
 
+            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, this.Key); 
             joinMap.PrintJoinMapInfo();
         }
 
