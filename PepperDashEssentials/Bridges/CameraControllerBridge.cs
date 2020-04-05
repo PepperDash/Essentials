@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Bridges
         public static void LinkToApi(this PepperDash.Essentials.Devices.Common.Cameras.CameraBase cameraDevice, BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
         {
             CameraControllerJoinMap joinMap = new CameraControllerJoinMap(joinStart);
-
+            
             // Adds the join map to the bridge
             bridge.AddJoinMap(cameraDevice.Key, joinMap);
 

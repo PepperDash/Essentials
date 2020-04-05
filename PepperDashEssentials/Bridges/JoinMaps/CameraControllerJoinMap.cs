@@ -57,7 +57,7 @@ namespace PepperDash.Essentials.Bridges
         public JoinDataComplete SupportsPresets = new JoinDataComplete(new JoinData() { JoinNumber = 57, JoinSpan = 1 }, new JoinMetadata() { Label = "Supports Presets", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         public CameraControllerJoinMap(uint joinStart)
-            :base(joinStart)
+            : base(joinStart, typeof(CameraControllerJoinMap))
         {
         }
     }

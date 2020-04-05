@@ -177,7 +177,7 @@ namespace PepperDash.Essentials.Core
             //            return join;
             //        });
 
-            //type = this.GetType(); <- this wasn'memberInfo working because 'this' was always the base class, never the derived class
+            //type = this.GetType(); <- this wasn't working because 'this' was always the base class, never the derived class
             var fields =
                 type.GetCType()
                     .GetFields(BindingFlags.Public | BindingFlags.Instance)
@@ -454,7 +454,7 @@ namespace PepperDash.Essentials.Core
 
         public JoinNameAttribute(string name)
         {
-            Debug.Console(0, "Setting Attribute Name: {0}", name);
+            Debug.Console(2, "Setting Attribute Name: {0}", name);
             _Name = name;
         }
 
