@@ -164,7 +164,7 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public abstract class JoinMapBaseAdvanced
     {
-        protected uint _joinOffset;
+        protected uint JoinOffset;
 
         /// <summary>
         /// The collection of joins and associated metadata
@@ -175,11 +175,15 @@ namespace PepperDash.Essentials.Core
         {
             Joins = new Dictionary<string, JoinDataComplete>();
 
-            _joinOffset = joinStart - 1;
-
+            JoinOffset = joinStart - 1;
         }
 
-        protected void AddJoins()
+        protected JoinMapBaseAdvanced(uint joinStart, Type type):this(joinStart)
+        {
+            AddJoins(type);
+        }
+
+        protected void AddJoins(Type type)
         {
             // Add all the JoinDataComplete properties to the Joins Dictionary and pass in the offset 
             //Joins = this.GetType()
@@ -193,21 +197,26 @@ namespace PepperDash.Essentials.Core
             //            return join;
             //        });
 
-            var type = this.GetType();
+            //type = this.GetType(); <- this wasn't working because 'this' was always the base class, never the derived class
             var cType = type.GetCType();
             var fields = cType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+
             foreach (var field in fields)
             {
-                if (field.IsDefined(typeof(JoinNameAttribute), true))
-                {
-                    JoinDataComplete value = field.GetValue(this) as JoinDataComplete;
+                if (!field.IsDefined(typeof (JoinNameAttribute), true)) continue;
 
-                    if (value != null)
-                    {
-                        value.SetJoinOffset(_joinOffset);
-                        Joins.Add(value.GetNameAttribute(typeof(JoinDataComplete)), value);
-                    }
+                var childClass = Convert.ChangeType(this, type, null);
+
+                var value = field.GetValue(childClass) as JoinDataComplete; //this here is JoinMapBaseAdvanced, not the child class...which has no fields.
+
+                if (value == null)
+                {
+                    Debug.Console(0, "Unable to caset base class to {0}", type.Name);
+                    continue;
                 }
+
+                value.SetJoinOffset(JoinOffset);
+                Joins.Add(value.GetNameAttribute(typeof(JoinDataComplete)), value);
             }
 
 
