@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
@@ -26,12 +24,7 @@ namespace PepperDash.Essentials.Core
 
             var joinMap = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
 
-            if (joinMap != null)
-            {
-                return joinMap;
-            }
-            else
-                return null;
+            return joinMap;
         }
 
         /// <summary>
@@ -46,17 +39,11 @@ namespace PepperDash.Essentials.Core
 
             var joinMapSerialzed = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
 
-            if (joinMapSerialzed != null)
-            {
-                var joinMapData = JsonConvert.DeserializeObject<Dictionary<string, JoinData>>(joinMapSerialzed);
+            if (joinMapSerialzed == null) return null;
 
-                if (joinMapData != null)
-                    return joinMapData;
-                else
-                    return null;
-            }
-            else
-                return null;
+            var joinMapData = JsonConvert.DeserializeObject<Dictionary<string, JoinData>>(joinMapSerialzed);
+
+            return joinMapData;
         }
 
     }
@@ -83,7 +70,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void PrintJoinMapInfo()
         {
-            Debug.Console(0, "{0}:\n", this.GetType().Name);
+            Debug.Console(0, "{0}:\n", GetType().Name);
 
             // Get the joins of each type and print them
             Debug.Console(0, "Digitals:");
@@ -138,10 +125,7 @@ namespace PepperDash.Essentials.Core
         /// <returns></returns>
         public uint GetJoinForKey(string key)
         {
-            if (Joins.ContainsKey(key))
-                return Joins[key].JoinNumber;
-
-            else return 0;
+            return Joins.ContainsKey(key) ? Joins[key].JoinNumber : 0;
         }
 
         /// <summary>
@@ -151,12 +135,8 @@ namespace PepperDash.Essentials.Core
         /// <returns></returns>
         public uint GetJoinSpanForKey(string key)
         {
-            if (Joins.ContainsKey(key))
-                return Joins[key].JoinSpan;
-
-            else return 0;
+            return Joins.ContainsKey(key) ? Joins[key].JoinSpan : 0;
         }
-
     }
 
     /// <summary>
@@ -164,7 +144,7 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public abstract class JoinMapBaseAdvanced
     {
-        protected uint _joinOffset;
+        protected uint JoinOffset;
 
         /// <summary>
         /// The collection of joins and associated metadata
@@ -175,36 +155,55 @@ namespace PepperDash.Essentials.Core
         {
             Joins = new Dictionary<string, JoinDataComplete>();
 
-            _joinOffset = joinStart - 1;
+            JoinOffset = joinStart - 1;
+        }
 
+        protected JoinMapBaseAdvanced(uint joinStart, Type type):this(joinStart)
+        {
+            AddJoins(type);
+        }
+
+        protected void AddJoins(Type type)
+        {
             // Add all the JoinDataComplete properties to the Joins Dictionary and pass in the offset 
-            Joins = this.GetType()
-                .GetCType()
-                .GetFields(BindingFlags.Public | BindingFlags.Instance)
-                .Where(field => field.IsDefined(typeof(JoinNameAttribute), false))
-                .Select(prop => (JoinDataComplete)prop.GetValue(this))
-                .ToDictionary(join => join.GetNameAttribute(), join =>
-                    {
-                        join.SetJoinOffset(_joinOffset);
-                        return join;
-                    });
-
-            //var type = this.GetType();
-            //var cType = type.GetCType();
-            //var fields = cType.GetFields(BindingFlags.Public | BindingFlags.Instance);
-            //foreach (var field in fields)
-            //{
-            //    if (field.IsDefined(typeof(JoinNameAttribute), true))
-            //    {
-            //        var value = field.GetValue(this) as JoinDataComplete;
-
-            //        if (value != null)
+            //Joins = this.GetType()
+            //    .GetCType()
+            //    .GetFields(BindingFlags.Public | BindingFlags.Instance)
+            //    .Where(field => field.IsDefined(typeof(JoinNameAttribute), true))
+            //    .Select(field => (JoinDataComplete)field.GetValue(this))
+            //    .ToDictionary(join => join.GetNameAttribute(), join =>
             //        {
-            //            value.SetJoinOffset(_joinOffset);
-            //            Joins.Add(value.GetNameAttribute(), value);
-            //        }
-            //    }
-            //}
+            //            join.SetJoinOffset(_joinOffset);
+            //            return join;
+            //        });
+
+            //type = this.GetType(); <- this wasn't working because 'this' was always the base class, never the derived class
+            var fields =
+                type.GetCType()
+                    .GetFields(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(f => f.IsDefined(typeof (JoinNameAttribute), true));
+
+            foreach (var field in fields)
+            {
+                var childClass = Convert.ChangeType(this, type, null);
+
+                var value = field.GetValue(childClass) as JoinDataComplete; //this here is JoinMapBaseAdvanced, not the child class. JoinMapBaseAdvanced has no fields.
+
+                if (value == null)
+                {
+                    Debug.Console(0, "Unable to caset base class to {0}", type.Name);
+                    continue;
+                }
+
+                value.SetJoinOffset(JoinOffset);
+
+                var joinName = value.GetNameAttribute(field);
+
+                if (String.IsNullOrEmpty(joinName)) continue;
+
+                Joins.Add(joinName, value);
+            }
+
 
             PrintJoinMapInfo();
         }
@@ -214,7 +213,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void PrintJoinMapInfo()
         {
-            Debug.Console(0, "{0}:\n", this.GetType().Name);
+            Debug.Console(0, "{0}:\n", GetType().Name);
 
             // Get the joins of each type and print them
             Debug.Console(0, "Digitals:");
@@ -435,26 +434,33 @@ namespace PepperDash.Essentials.Core
             _data = customJoinData;
         }
 
-        public string GetNameAttribute()
+        public string GetNameAttribute(MemberInfo memberInfo)
         {
-            string name = string.Empty;
-            JoinNameAttribute attribute = (JoinNameAttribute)Attribute.GetCustomAttribute(typeof(JoinDataComplete), typeof(JoinNameAttribute));
-            if (attribute != null)
-            {
-                name = attribute.Name;
-            }
+            var name = string.Empty;
+            var attribute = (JoinNameAttribute)CAttribute.GetCustomAttribute(memberInfo, typeof(JoinNameAttribute));
+
+            if (attribute == null) return name;
+
+            name = attribute.Name;
+            Debug.Console(2, "JoinName Attribute value: {0}", name);
             return name;
         }
     }
 
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.All)]
     public class JoinNameAttribute : Attribute
     {
-        public string Name { get; set; }
+        private string _Name;
 
         public JoinNameAttribute(string name)
         {
-            Name = name;
+            Debug.Console(2, "Setting Attribute Name: {0}", name);
+            _Name = name;
+        }
+
+        public string Name
+        {
+            get { return _Name; }
         }
     }
 }
