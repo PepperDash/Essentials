@@ -161,7 +161,7 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             else if (args.EventId == GlsOccupancySensorBase.TimeoutFeedbackEventId)
                 CurrentTimeoutFeedback.FireUpdate();
             else if (args.EventId == GlsOccupancySensorBase.TimeoutLocalFeedbackEventId)
-                LocalTimoutFeedback.FireUpdate();
+                RemoteTimeoutFeedback.FireUpdate();
             else if (args.EventId == GlsOccupancySensorBase.GraceOccupancyDetectedFeedbackEventId)
                 GraceOccupancyDetectedFeedback.FireUpdate();
             else if (args.EventId == GlsOccupancySensorBase.RawOccupancyFeedbackEventId)
