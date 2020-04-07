@@ -59,31 +59,31 @@ namespace PepperDash.Essentials
                 return new ConsoleCommMockDevice(key, name, props, comm);
             }
 
-            else if (typeName == "appserver")
-            {
-                var props = JsonConvert.DeserializeObject<MobileControlConfig>(properties.ToString());
-                return new MobileControlSystemController(key, name, props);
-            }
+            //else if (typeName == "appserver")
+            //{
+            //    var props = JsonConvert.DeserializeObject<MobileControlConfig>(properties.ToString());
+            //    return new MobileControlSystemController(key, name, props);
+            //}
 
-			else if (typeName == "mobilecontrolbridge-ddvc01")
-			{
-				var comm = CommFactory.GetControlPropertiesConfig(dc);
+            //else if (typeName == "mobilecontrolbridge-ddvc01")
+            //{
+            //    var comm = CommFactory.GetControlPropertiesConfig(dc);
 
-				var bridge = new PepperDash.Essentials.Room.MobileControl.MobileControlSIMPLRoomBridge(key, name, comm.IpIdInt);
-				bridge.AddPreActivationAction(() =>
-				{
-					var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as MobileControlSystemController;
-					if (parent == null)
-					{
-						Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
-					}
-					Debug.Console(0, bridge, "Linking to parent controller");
-					bridge.AddParent(parent);
-					parent.AddBridge(bridge);
-				});
+            //    var bridge = new PepperDash.Essentials.Room.MobileControl.MobileControlSIMPLRoomBridge(key, name, comm.IpIdInt);
+            //    bridge.AddPreActivationAction(() =>
+            //    {
+            //        var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as MobileControlSystemController;
+            //        if (parent == null)
+            //        {
+            //            Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
+            //        }
+            //        Debug.Console(0, bridge, "Linking to parent controller");
+            //        bridge.AddParent(parent);
+            //        parent.AddBridge(bridge);
+            //    });
 
-				return bridge;
-			}
+            //    return bridge;
+            //}
 
             else if (typeName == "roomonwhenoccupancydetectedfeature")
             {
