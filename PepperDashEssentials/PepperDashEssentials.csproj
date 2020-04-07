@@ -130,9 +130,11 @@
     <Compile Include="Bridges\C2nRthsControllerBridge.cs" />
     <Compile Include="Bridges\CameraControllerBridge.cs" />
     <Compile Include="Bridges\AirMediaControllerBridge.cs" />
+    <Compile Include="Bridges\CenOdtOccupancySensorBaseControllerBridge.cs" />
     <Compile Include="Bridges\DmBladeChassisControllerBridge.cs" />
     <Compile Include="Bridges\IRSetTopBoxBaseBridge.cs" />
     <Compile Include="Bridges\JoinMaps\C2nRthsControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\CenOdtOccupancySensorBaseJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmBladeChassisControllerJoinMap.cs" />
     <Compile Include="Bridges\DmpsAudioOutputControllerBridge.cs" />
     <Compile Include="Bridges\DmpsRoutingControllerBridge.cs" />

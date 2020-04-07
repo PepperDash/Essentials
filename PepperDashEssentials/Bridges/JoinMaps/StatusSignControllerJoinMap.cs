@@ -37,13 +37,19 @@ namespace PepperDash.Essentials.Bridges
         public override void OffsetJoinNumbers(uint joinStart)
         {
             var joinOffset = joinStart - 1;
-            var properties =
-                GetType().GetCType().GetProperties().Where(p => p.PropertyType == typeof (uint)).ToList();
+            //digital
+            IsOnline += joinOffset;
+            RedControl += joinOffset;
+            GreenControl += joinOffset;
+            BlueControl += joinOffset;
 
-            foreach (var propertyInfo in properties)
-            {
-                propertyInfo.SetValue(this, (uint) propertyInfo.GetValue(this, null) + joinOffset, null);
-            }
+            //Analog
+            RedLed += joinOffset;
+            GreenLed += joinOffset;
+            BlueLed += joinOffset;
+
+            //string 
+            Name += joinOffset;
         }
     }
 }

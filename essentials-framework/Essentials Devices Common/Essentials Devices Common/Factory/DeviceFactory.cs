@@ -350,6 +350,18 @@ namespace PepperDash.Essentials.Devices.Common
                     Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
             }
 
+            else if (typeName == "cenodtcpoe")
+            {
+                var comm = CommFactory.GetControlPropertiesConfig(dc);
+
+                var occSensor = new CenOdtCPoe(comm.IpIdInt, Global.ControlSystem);
+
+                if (occSensor != null)
+                    return new CenOdtOccupancySensorBaseController(key, name, occSensor);
+                else
+                    Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
+            }
+
             else if (groupName == "lighting")
             {
                 if (typeName == "lutronqs")

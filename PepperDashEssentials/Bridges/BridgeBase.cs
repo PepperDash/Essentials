@@ -224,6 +224,11 @@ namespace PepperDash.Essentials.Bridges
                             (device as PepperDash.Essentials.Devices.Common.Occupancy.GlsOccupancySensorBaseController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
+                        else if (device is PepperDash.Essentials.Devices.Common.Occupancy.CenOdtOccupancySensorBaseController)
+                        {
+                            (device as PepperDash.Essentials.Devices.Common.Occupancy.CenOdtOccupancySensorBaseController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
                         else if (device is StatusSignController)
                         {
                             (device as StatusSignController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
