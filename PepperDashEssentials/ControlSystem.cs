@@ -264,8 +264,13 @@ namespace PepperDash.Essentials
 
 			DeviceManager.ActivateAll();
 
-            //LinkSystemMonitorToAppServer();
-        }
+		    var mobileControl = DeviceManager.GetDeviceForKey("appServer") as IMobileControl;
+
+		    if (mobileControl == null) return;
+
+            mobileControl.LinkSystemMonitorToAppServer();
+		    //LinkSystemMonitorToAppServer();
+		}
 
         //void LinkSystemMonitorToAppServer()
         //{
