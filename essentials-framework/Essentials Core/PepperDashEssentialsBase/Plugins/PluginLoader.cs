@@ -368,7 +368,7 @@ namespace PepperDash.Essentials
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(2, "Error Loading Assembly: {0} Exception: (1) ", loadedAssembly.Name, e);
+                    Debug.Console(2, "Error Loading Assembly: {0} Exception: {1} ", loadedAssembly.Name, e);
                     continue;
                 }
             }
