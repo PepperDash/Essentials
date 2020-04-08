@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core
 		public static void AddFactoryForType(string type, Func<DeviceConfig, IKeyed> method) 
 		{
 			Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", type);
-			DeviceFactory.FactoryMethods.Add(type, method);
+			DeviceFactory.FactoryMethods.Add(type.ToLower(), method);
 		}
 
 		/// <summary>
