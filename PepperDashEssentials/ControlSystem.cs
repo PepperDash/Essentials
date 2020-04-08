@@ -18,6 +18,7 @@ using PepperDash.Essentials.Room.Config;
 //using PepperDash.Essentials.Room.MobileControl;
 
 using Newtonsoft.Json;
+using PepperDash_Essentials_Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials
 {
@@ -455,7 +456,7 @@ namespace PepperDash.Essentials
                         //AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
                         //DeviceManager.AddDevice(bridge);
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control Bridge Added...");
+                        CreateMobileControlBridge(room);
                     }
                     else if (room is EssentialsHuddleVtc1Room)
                     {
@@ -469,6 +470,8 @@ namespace PepperDash.Essentials
                         //var bridge = new MobileConrolEssentialsHuddleSpaceRoomBridge(room);
                         //AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
                         //DeviceManager.AddDevice(bridge);
+
+                        CreateMobileControlBridge(room);
                     }
                     else
                     {
@@ -483,6 +486,17 @@ namespace PepperDash.Essentials
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");
 
+        }
+
+        private static void CreateMobileControlBridge(EssentialsRoomBase room)
+        {
+            var mobileControl = DeviceManager.GetDeviceForKey("appServer") as IMobileControl;
+
+            if (mobileControl == null) return;
+
+            mobileControl.CreateMobileControlRoomBridge(room);
+
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control Bridge Added...");
         }
 
         /// <summary>
