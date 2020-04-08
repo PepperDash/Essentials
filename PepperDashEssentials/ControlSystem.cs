@@ -96,10 +96,12 @@ namespace PepperDash.Essentials
                 string directoryPrefix;
 
                 directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
-                
-                var version = Crestron.SimplSharp.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
-                Global.SetAssemblyVersion(string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build));
+                var fullVersion = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
+
+                AssemblyInformationalVersionAttribute fullVersionAtt = fullVersion[0] as AssemblyInformationalVersionAttribute;
+
+                Global.SetAssemblyVersion(fullVersionAtt.InformationalVersion);
 
                 if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
                 {
@@ -426,10 +428,29 @@ namespace PepperDash.Essentials
 
                             DeviceManager.AddDevice(dmpsRoutingController);
                         }
+                        else if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
+                        {
+                            Debug.Console(2, "MPC3 processor type detected.  Adding Mpc3TouchpanelController.");
+
+                            var butToken = devConf.Properties["buttons"];
+                            if (butToken != null)
+                            {
+                                var buttons = butToken.ToObject<Dictionary<string, Essentials.Core.Touchpanels.KeypadButton>>();
+                                var tpController = new Essentials.Core.Touchpanels.Mpc3TouchpanelController(devConf.Key, devConf.Name, Global.ControlSystem, buttons);
+                                DeviceManager.AddDevice(tpController);
+                            }
+                            else
+                            {
+                                Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: Unable to deserialize buttons collection for device: {0}", devConf.Key);
+                            }
+                            
+                        }
                         else
                         {
                             Debug.Console(2, "************Processor is not DMPS type***************");
                         }
+
+                        
 
                         continue;
                     }

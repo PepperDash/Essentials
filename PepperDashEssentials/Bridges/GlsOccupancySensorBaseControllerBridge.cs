@@ -31,6 +31,16 @@ namespace PepperDash.Essentials.Bridges
 
             #region Single and Dual Sensor Stuff
             occController.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
+            trilist.StringInput[joinMap.Name].StringValue = occController.Name;
+
+            trilist.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler((d, args) =>
+            {
+                if (args.DeviceOnLine)
+                {
+                    trilist.StringInput[joinMap.Name].StringValue = occController.Name;
+                }
+            }
+            );
 
             // Occupied status
             trilist.SetSigTrueAction(joinMap.ForceOccupied, new Action(() => occController.ForceOccupied()));
@@ -38,6 +48,7 @@ namespace PepperDash.Essentials.Bridges
             occController.RoomIsOccupiedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RoomOccupiedFeedback]);
             occController.RoomIsOccupiedFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.RoomVacantFeedback]);
             occController.RawOccupancyFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyFeedback]);
+            trilist.SetBoolSigAction(joinMap.EnableRawStates, new Action<bool>((b) => occController.EnableRawStates(b)));
 
             // Timouts
             trilist.SetUShortSigAction(joinMap.Timeout, new Action<ushort>((u) => occController.SetRemoteTimeout(u)));
@@ -102,6 +113,10 @@ namespace PepperDash.Essentials.Bridges
                 trilist.SetBoolSigAction(joinMap.IncrementUsInVacantState, new Action<bool>((b) => odtOccController.IncrementUsSensitivityInVacantState(b)));
                 trilist.SetBoolSigAction(joinMap.DecrementUsInVacantState, new Action<bool>((b) => odtOccController.DecrementUsSensitivityInVacantState(b)));
                 odtOccController.UltrasonicSensitivityInVacantStateFeedback.LinkInputSig(trilist.UShortInput[joinMap.UsSensitivityInVacantState]);
+
+                //Sensor Raw States
+                odtOccController.RawOccupancyPirFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyPirFeedback]);
+                odtOccController.RawOccupancyUsFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyUsFeedback]);
 
             }
             #endregion

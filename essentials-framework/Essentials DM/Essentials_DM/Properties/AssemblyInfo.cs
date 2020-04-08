@@ -1,7 +1,10 @@
 ﻿using System.Reflection;
+using Crestron.SimplSharp.Reflection;
 
-[assembly: AssemblyTitle("Essentials_DM")]
-[assembly: AssemblyCompany("PepperDash Technology Corp")]
-[assembly: AssemblyProduct("Essentials_DM")]
-[assembly: AssemblyCopyright("Copyright ©  2019")]
-[assembly: AssemblyVersion("1.3.*")]
+[assembly: System.Reflection.AssemblyTitle("Essentials_DM")]
+[assembly: System.Reflection.AssemblyCompany("PepperDash Technology Corp")]
+[assembly: System.Reflection.AssemblyProduct("PepperDashEssentials")]
+[assembly: System.Reflection.AssemblyCopyright("Copyright © PepperDash Technology Corp 2020")]
+[assembly: System.Reflection.AssemblyVersion("0.0.0.*")]
+[assembly: System.Reflection.AssemblyInformationalVersion("0.0.0-buildType-buildNumber")]
+[assembly: Crestron.SimplSharp.Reflection.AssemblyInformationalVersion("0.0.0-buildType-buildNumber")]

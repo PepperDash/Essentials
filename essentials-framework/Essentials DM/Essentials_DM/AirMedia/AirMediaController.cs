@@ -46,6 +46,9 @@ namespace PepperDash.Essentials.DM.AirMedia
 
             PropertiesConfig = props;
 
+            InputPorts = new RoutingPortCollection<RoutingInputPort>();
+            OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
+
             InputPorts.Add(new RoutingInputPort(DmPortName.Osd, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.None, new Action(SelectPinPointUxLandingPage), this));
 

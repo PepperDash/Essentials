@@ -73,17 +73,18 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         {
             //  Iterate the meeting list and check if any meeting need to do anythingk
 
+            const double meetingTimeEpsilon = 0.0001;
             foreach (Meeting m in Meetings)
             {
                 eMeetingEventChangeType changeType = eMeetingEventChangeType.Unkown;
 
                 if (m.TimeToMeetingStart.TotalMinutes <= m.MeetingWarningMinutes.TotalMinutes)       // Meeting is about to start
                     changeType = eMeetingEventChangeType.MeetingStartWarning;
-                else if (m.TimeToMeetingStart.TotalMinutes == 0)                                    // Meeting Start
+                else if (Math.Abs(m.TimeToMeetingStart.TotalMinutes) < meetingTimeEpsilon)           // Meeting Start
                     changeType = eMeetingEventChangeType.MeetingStart;
                 else if (m.TimeToMeetingEnd.TotalMinutes <= m.MeetingWarningMinutes.TotalMinutes)    // Meeting is about to end
                     changeType = eMeetingEventChangeType.MeetingEndWarning;
-                else if (m.TimeToMeetingEnd.TotalMinutes == 0)                                      // Meeting has ended
+                else if (Math.Abs(m.TimeToMeetingEnd.TotalMinutes) < meetingTimeEpsilon)             // Meeting has ended
                     changeType = eMeetingEventChangeType.MeetingEnd;
 
                 if (changeType != eMeetingEventChangeType.Unkown)

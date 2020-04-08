@@ -26,6 +26,10 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
         public IntFeedback UltrasonicSensitivityInOccupiedStateFeedback { get; private set; }
 
+        public BoolFeedback RawOccupancyPirFeedback { get; private set; }
+
+        public BoolFeedback RawOccupancyUsFeedback { get; private set; }
+
 
         public GlsOdtOccupancySensorController(string key, string name, GlsOdtCCn sensor)
             : base(key, name, sensor)
@@ -39,6 +43,10 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             UltrasonicAEnabledFeedback = new BoolFeedback(() => OccSensor.UsAEnabledFeedback.BoolValue);
 
             UltrasonicBEnabledFeedback = new BoolFeedback(() => OccSensor.UsBEnabledFeedback.BoolValue);
+
+            RawOccupancyPirFeedback = new BoolFeedback(() => OccSensor.RawOccupancyPirFeedback.BoolValue);
+
+            RawOccupancyUsFeedback = new BoolFeedback(() => OccSensor.RawOccupancyUsFeedback.BoolValue);
 
             UltrasonicSensitivityInVacantStateFeedback = new IntFeedback(() => OccSensor.UsSensitivityInVacantStateFeedback.UShortValue);
 
@@ -66,8 +74,23 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             else if (args.EventId == GlsOccupancySensorBase.UsSensitivityInVacantStateFeedbackEventId)
                 UltrasonicSensitivityInVacantStateFeedback.FireUpdate();
 
-
             base.OccSensor_GlsOccupancySensorChange(device, args);
+        }
+
+        /// <summary>
+        /// Overrides the base class event delegate to fire feedbacks for event IDs that pertain to this extended class.
+        /// Then calls the base delegate method to ensure any common event IDs are captured.
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="args"></param>
+        protected override void OccSensor_BaseEvent(Crestron.SimplSharpPro.GenericBase device, Crestron.SimplSharpPro.BaseEventArgs args)
+        {
+             if (args.EventId == GlsOccupancySensorBase.RawOccupancyPirFeedbackEventId)
+                RawOccupancyPirFeedback.FireUpdate();
+            else if (args.EventId == GlsOccupancySensorBase.RawOccupancyUsFeedbackEventId)
+                RawOccupancyUsFeedback.FireUpdate();
+
+            base.OccSensor_BaseEvent(device, args);
         }
 
         /// <summary>

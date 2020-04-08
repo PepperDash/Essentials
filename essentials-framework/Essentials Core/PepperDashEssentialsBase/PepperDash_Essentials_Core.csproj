@@ -64,7 +64,7 @@
     </Reference>
     <Reference Include="Crestron.SimplSharpPro.GeneralIO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.GeneralIO.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.GeneralIO.dll</HintPath>
     </Reference>
     <Reference Include="Crestron.SimplSharpPro.Remotes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -119,6 +119,7 @@
     <Compile Include="Config\Essentials\ConfigWriter.cs" />
     <Compile Include="Config\Essentials\EssentialsConfig.cs" />
     <Compile Include="Config\SourceDevicePropertiesConfigBase.cs" />
+    <Compile Include="Crestron IO\C2nRts\C2nRthsController.cs" />
     <Compile Include="Crestron IO\Inputs\CenIoDigIn104Controller.cs" />
     <Compile Include="Crestron IO\Inputs\GenericDigitalInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />
@@ -126,9 +127,11 @@
     <Compile Include="Crestron IO\IOPortConfig.cs" />
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
+    <Compile Include="Crestron IO\StatusSign\StatusSignController.cs" />
     <Compile Include="Devices\CodecInterfaces.cs" />
     <Compile Include="Devices\CrestronProcessor.cs" />
     <Compile Include="Devices\DeviceApiBase.cs" />
+    <Compile Include="Devices\DeviceFeedbackExtensions.cs" />
     <Compile Include="Devices\PC\InRoomPc.cs" />
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
@@ -234,6 +237,7 @@
     <Compile Include="Touchpanels\CrestronTouchpanelPropertiesConfig.cs" />
     <Compile Include="Touchpanels\Interfaces.cs" />
     <Compile Include="Touchpanels\Keyboards\HabaneroKeyboardController.cs" />
+    <Compile Include="Touchpanels\Mpc3Touchpanel.cs" />
     <Compile Include="Touchpanels\TriListExtensions.cs" />
     <Compile Include="UI PageManagers\BlurayPageManager.cs" />
     <Compile Include="UI PageManagers\SetTopBoxThreePanelPageManager.cs" />

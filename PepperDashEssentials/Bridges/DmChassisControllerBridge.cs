@@ -1,4 +1,5 @@
-﻿using System;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -167,6 +168,7 @@ namespace PepperDash.Essentials.Bridges
                         }
                     }
                 }
+                
                 if (dmChassis.RxDictionary.ContainsKey(ioSlot))
                 {
                     Debug.Console(2, "Creating Rx Feedbacks {0}", ioSlot);
@@ -191,11 +193,12 @@ namespace PepperDash.Essentials.Bridges
                 dmChassis.UsbOutputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputUsb + ioSlot]);
                 dmChassis.UsbInputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.InputUsb + ioSlot]);
 
-
                 dmChassis.OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames + ioSlot]);
                 dmChassis.InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames + ioSlot]);
                 dmChassis.OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames + ioSlot]);
                 dmChassis.OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentAudioInputNames + ioSlot]);
+                
+                dmChassis.OutputDisabledByHdcpFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputDisabledByHdcp + ioSlot]);
             }
         }
 
@@ -281,4 +284,5 @@ namespace PepperDash.Essentials.Bridges
         }
 
     }
+
 }

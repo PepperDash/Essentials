@@ -136,6 +136,11 @@ namespace PepperDash.Essentials.Bridges
                             (device as GenericRelayDevice).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
+                        else if (device is IRSetTopBoxBase)
+                        {
+                            (device as IRSetTopBoxBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
                         else if (device is IDigitalInput)
                         {
                             (device as IDigitalInput).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
@@ -164,6 +169,16 @@ namespace PepperDash.Essentials.Bridges
                         else if (device is PepperDash.Essentials.Devices.Common.Occupancy.GlsOccupancySensorBaseController)
                         {
                             (device as PepperDash.Essentials.Devices.Common.Occupancy.GlsOccupancySensorBaseController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is StatusSignController)
+                        {
+                            (device as StatusSignController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                            continue;
+                        }
+                        else if (device is C2nRthsController)
+                        {
+                            (device as C2nRthsController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                             continue;
                         }
                     }

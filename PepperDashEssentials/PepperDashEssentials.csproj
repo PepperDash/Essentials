@@ -119,9 +119,12 @@
     <Compile Include="Bridges\AppleTvBridge.cs" />
     <Compile Include="Bridges\BridgeBase.cs" />
     <Compile Include="Bridges\BridgeFactory.cs" />
+    <Compile Include="Bridges\C2nRthsControllerBridge.cs" />
     <Compile Include="Bridges\CameraControllerBridge.cs" />
     <Compile Include="Bridges\AirMediaControllerBridge.cs" />
     <Compile Include="Bridges\DmBladeChassisControllerBridge.cs" />
+    <Compile Include="Bridges\IRSetTopBoxBaseBridge.cs" />
+    <Compile Include="Bridges\JoinMaps\C2nRthsControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmBladeChassisControllerJoinMap.cs" />
     <Compile Include="Bridges\DmpsAudioOutputControllerBridge.cs" />
     <Compile Include="Bridges\DmpsRoutingControllerBridge.cs" />
@@ -153,7 +156,10 @@
     <Compile Include="Bridges\JoinMaps\IBasicCommunicationJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\IDigitalInputJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\GlsOccupancySensorBaseJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\SetTopBoxControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\StatusSignControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\SystemMonitorJoinMap.cs" />
+    <Compile Include="Bridges\StatusSignControllerBridge.cs" />
     <Compile Include="Bridges\SystemMonitorBridge.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Devices\Amplifier.cs" />
