@@ -56,11 +56,21 @@ jobs:
       - name: Zip Build Output
         shell: powershell
         run: ./.github/scripts/ZipBuildOutput.ps1
+        # Write the version to a file to be consumed by the push jobs
+      - name: Write Version
+        run: Write-Output "$($Env:VERSION)" | Out-File -FilePath "$($Env:GITHUB_HOME)\output\version.txt"
+      # Upload the build output as an artifact
       - name: Upload Build Output
         uses: actions/upload-artifact@v1
         with:
           name: Build
           path: ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
+      # Upload the Version file as an artifact
+      - name: Upload version.txt
+        uses: actions/upload-artifact@v1
+        with:
+          name: Version
+          path: ${{env.GITHUB_HOME}}\output\version.txt
       # Upload the build package to the release
       - name: Upload Release Package
         id: upload_release
