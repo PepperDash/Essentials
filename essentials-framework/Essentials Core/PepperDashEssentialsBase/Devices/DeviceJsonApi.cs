@@ -19,10 +19,36 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="json"></param>
 		public static void DoDeviceActionWithJson(string json)
-		{
-			var action = JsonConvert.DeserializeObject<DeviceActionWrapper>(json);
-			DoDeviceAction(action);
-		}
+        {
+            try
+            {
+                var action = JsonConvert.DeserializeObject<DeviceActionWrapper>(json);
+                DoDeviceAction(action);
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, "Error attempting to execute device action: {0}", e);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="json"></param>
+        public static void InvokeDeviceActionWithJson(string json)
+        {
+            try
+            {
+                var action = JsonConvert.DeserializeObject<DeviceActionWrapperAdvanced>(json);
+                InvokeDeviceAction(action);
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, "Error attempting to execute device action: {0}", e);
+                // Attempt to use the old method
+                DoDeviceActionWithJson(json);
+            }
+        }
 
 
 		/// <summary>
@@ -57,6 +83,61 @@ namespace PepperDash.Essentials.Core
 								.ToArray();
 			object ret = method.Invoke(obj, convertedParams);
 		}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="methodName"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static void InvokeDeviceAction(DeviceActionWrapperAdvanced action)
+        {
+            var key = action.DeviceKey;
+            var obj = FindObjectOnPath(key);
+            if (obj == null)
+                return;
+
+
+            MethodInfo method;
+            CType t = obj.GetType();
+            if (action.Params == null) action.Params = new MethodParams[0];
+
+            if (action.Params.Length > 0)
+            {
+                // Get the types from the incoming data
+                CType[] types = new CType[action.Params.Length];
+                for (int i = 0; i < action.Params.Length; i++)
+                {
+                    types[i] = (CType)Type.GetType(action.Params[i].Type);
+                }
+                if (action.Params == null) action.Params = new MethodParams[0];
+                method = t.GetMethod(action.MethodName, types);
+            }
+            else
+            {
+                // Get the method by name only
+                method = t.GetMethod(action.MethodName);
+            }
+    
+            if (method == null)
+            {
+                Debug.Console(0, "Method '{0}' not found", action.MethodName);
+                return;
+            }
+
+            var mParams = method.GetParameters();
+            // Add empty params if not provided
+            if (mParams.Length > action.Params.Length)
+            {
+                Debug.Console(0, "Method '{0}' requires {1} params", action.MethodName, mParams.Length);
+                return;
+            }
+            object[] convertedParams = mParams
+                                .Select((p, i) => Convert.ChangeType(action.Params[i].Value, p.ParameterType,
+                                    System.Globalization.CultureInfo.InvariantCulture))
+                                .ToArray();
+            object ret = method.Invoke(obj, convertedParams);
+        }
 
 		/// <summary>
 		/// Gets the properties on a device
@@ -251,6 +332,13 @@ namespace PepperDash.Essentials.Core
 		public object[] Params { get; set; }
 	}
 
+    public class DeviceActionWrapperAdvanced
+    {
+        public string DeviceKey { get; set; }
+        public string MethodName { get; set; }
+        public MethodParams[] Params { get; set; }
+    }
+
 	public class PropertyNameType
 	{
         object Parent;
@@ -309,6 +397,11 @@ namespace PepperDash.Essentials.Core
 		public string Name { get; set; }
 		public string Type { get; set; }
 	}
+
+    public class MethodParams : NameType
+    {
+        public object Value { get; set; }
+    }
 
 	[AttributeUsage(AttributeTargets.All)]
 	public class ApiAttribute : CAttribute
