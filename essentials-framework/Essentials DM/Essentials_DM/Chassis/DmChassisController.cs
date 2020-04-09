@@ -811,6 +811,24 @@ namespace PepperDash.Essentials.DM
                         Debug.Console(1, this, "No index of {0} found in InputCardHdcpCapabilityFeedbacks");
                     break;
                 }
+                case DMInputEventIds.HdcpSupportOnEventId:
+                {
+                    Debug.Console(2, this, "DM Input {0} HdcpSupportOnEventId", args.Number);
+                    if (InputCardHdcpCapabilityFeedbacks[args.Number] != null)
+                        InputCardHdcpCapabilityFeedbacks[args.Number].FireUpdate();
+                    else
+                        Debug.Console(1, this, "No index of {0} found in InputCardHdcpCapabilityFeedbacks");
+                    break;
+                }
+                case DMInputEventIds.HdcpSupportOffEventId:
+                {
+                    Debug.Console(2, this, "DM Input {0} HdcpSupportOffEventId", args.Number);
+                    if (InputCardHdcpCapabilityFeedbacks[args.Number] != null)
+                        InputCardHdcpCapabilityFeedbacks[args.Number].FireUpdate();
+                    else
+                        Debug.Console(1, this, "No index of {0} found in InputCardHdcpCapabilityFeedbacks");
+                    break;
+                }
                 default:
                 {
                     Debug.Console(2, this, "DMInputChange fired for Input {0} with Unhandled EventId: {1}", args.Number, args.EventId);

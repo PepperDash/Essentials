@@ -112,13 +112,6 @@ namespace PepperDash.Essentials.Bridges
                                     {
                                         SetHdcpStateAction(true, hdmiInPortWCec, joinMap.HdcpSupportState + ioSlot, trilist);
                                     }
-
-                                    dmChassis.InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState + ioSlot]);
-
-                                    if(dmChassis.InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
-                                        trilist.UShortInput[joinMap.HdcpSupportCapability + ioSlot].UShortValue = (ushort)dmChassis.InputCardHdcpCapabilityTypes[ioSlot];
-                                    else
-                                        trilist.UShortInput[joinMap.HdcpSupportCapability + ioSlot].UShortValue = 1;
                                 }
                             }
                         }
@@ -140,13 +133,6 @@ namespace PepperDash.Essentials.Bridges
                                     {
                                         SetHdcpStateAction(dmChassis.PropertiesConfig.InputSlotSupportsHdcp2[ioSlot], dmInPortWCec, joinMap.HdcpSupportState + ioSlot, trilist);
                                     }
-
-                                    dmChassis.InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState + ioSlot]);
-
-                                    if (dmChassis.InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
-                                        trilist.UShortInput[joinMap.HdcpSupportCapability + ioSlot].UShortValue = (ushort)dmChassis.InputCardHdcpCapabilityTypes[ioSlot];
-                                    else
-                                        trilist.UShortInput[joinMap.HdcpSupportCapability + ioSlot].UShortValue = 1;
                                 }
                             }
                         }
@@ -154,17 +140,23 @@ namespace PepperDash.Essentials.Bridges
                 }
                 else
                 {
+                    Debug.Console(1, "Port {0} has no Tx", ioSlot);
                     dmChassis.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
 
                     var inputPort = dmChassis.InputPorts[string.Format("inputCard{0}--hdmiIn", ioSlot)];
+                    if (inputPort == null)
+                    {
+                        inputPort = dmChassis.InputPorts[string.Format("inputCard{0}--dviIn", ioSlot)];
+                    }
                     if (inputPort != null)
                     {
-                        var hdmiPort = inputPort.Port as EndpointHdmiInput;
+                        Debug.Console(2, "Found HDMI or DVI at port {0}", ioSlot);
+                        var hdmiPort = inputPort.Port as HdmiInputWithCEC;
 
                         if (hdmiPort != null)
                         {
+                            Debug.Console(2, "Creating HDCP action for port {0}", ioSlot);
                             SetHdcpStateAction(true, hdmiPort, joinMap.HdcpSupportState + ioSlot, trilist);
-                            dmChassis.InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState + ioSlot]);
                         }
                     }
                 }
@@ -192,6 +184,12 @@ namespace PepperDash.Essentials.Bridges
                 dmChassis.AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio + ioSlot]);
                 dmChassis.UsbOutputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputUsb + ioSlot]);
                 dmChassis.UsbInputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.InputUsb + ioSlot]);
+                dmChassis.InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState + ioSlot]);
+
+                if (dmChassis.InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
+                    trilist.UShortInput[joinMap.HdcpSupportCapability + ioSlot].UShortValue = (ushort)dmChassis.InputCardHdcpCapabilityTypes[ioSlot];
+                else
+                    trilist.UShortInput[joinMap.HdcpSupportCapability + ioSlot].UShortValue = 1;
 
                 dmChassis.OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames + ioSlot]);
                 dmChassis.InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames + ioSlot]);
@@ -204,6 +202,7 @@ namespace PepperDash.Essentials.Bridges
 
         static void SetHdcpStateAction(bool hdcpTypeSimple, HdmiInputWithCEC port, uint join, BasicTriList trilist)
         {
+            Debug.Console(2, "Linking port {0} with hdcp action on join {1}", port.ToString(), join);
             if (hdcpTypeSimple)
             {
                 trilist.SetUShortSigAction(join,
@@ -211,10 +210,12 @@ namespace PepperDash.Essentials.Bridges
                     {
                         if (s == 0)
                         {
+                            Debug.Console(2, "Setting Hdcp Off");
                             port.HdcpSupportOff();
                         }
                         else if (s > 0)
                         {
+                            Debug.Console(2, "Setting Hdcp On");
                             port.HdcpSupportOn();
                         }
                     }));
