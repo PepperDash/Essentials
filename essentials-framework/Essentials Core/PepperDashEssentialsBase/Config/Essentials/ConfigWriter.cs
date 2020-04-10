@@ -20,6 +20,7 @@ namespace PepperDash.Essentials.Core.Config
         public const long WriteTimeout = 30000;
 
         public static CTimer WriteTimer;
+		static CCriticalSection fileLock = new CCriticalSection();
 
         /// <summary>
         /// Updates the config properties of a device
@@ -126,8 +127,6 @@ namespace PepperDash.Essentials.Core.Config
                 WriteTimer.Stop();
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Writing Configuration to file");
-
-            var fileLock = new CCriticalSection();
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to write config file: '{0}'", filePath);
 
