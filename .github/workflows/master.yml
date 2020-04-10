@@ -112,7 +112,7 @@ jobs:
           Remove-Item -Path ./Version
       # Checkout/Create the branch
       - name: Checkout Master branch
-        run: git checkout -b master
+        run: git checkout master
       # Download the build output into the repo
       - name: Download Build output
         uses: actions/download-artifact@v1
