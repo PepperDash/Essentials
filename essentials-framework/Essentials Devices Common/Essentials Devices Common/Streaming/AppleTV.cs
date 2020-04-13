@@ -5,14 +5,16 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class AppleTV : Device, IDPad, ITransport, IUiDisplayInfo, IRoutingOutputs
+	public class AppleTV : EssentialsBridgeableDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingOutputs
 	{
 
 		public IrOutputPortController IrPort { get; private set; }
@@ -141,5 +143,28 @@ namespace PepperDash.Essentials.Devices.Common
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
 		#endregion
+
+	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+	    {
+            var joinMap = new AppleTvJoinMap();
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<AppleTvJoinMap>(joinMapSerialized);
+
+            joinMap.OffsetJoinNumbers(joinStart);
+
+            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.Console(0, "Linking to Bridge Type {0}", GetType().Name);
+
+            trilist.SetBoolSigAction(joinMap.UpArrow, Up);
+            trilist.SetBoolSigAction(joinMap.DnArrow, Down);
+            trilist.SetBoolSigAction(joinMap.LeftArrow, Left);
+            trilist.SetBoolSigAction(joinMap.RightArrow, Right);
+            trilist.SetBoolSigAction(joinMap.Select, Select);
+            trilist.SetBoolSigAction(joinMap.Menu, Menu);
+            trilist.SetBoolSigAction(joinMap.PlayPause, Play);
+	    }
 	}
 }

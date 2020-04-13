@@ -124,17 +124,12 @@
     <Compile Include="AppServer\SIMPLJoinMaps\SIMPLAtcJoinMap.cs" />
     <Compile Include="AppServer\SIMPLJoinMaps\MobileControlSIMPLRoomJoinMap.cs" />
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
-    <Compile Include="Bridges\AppleTvBridge.cs" />
     <Compile Include="Bridges\BridgeFactory.cs" />
-    <Compile Include="Bridges\C2nRthsControllerBridge.cs" />
-    <Compile Include="Bridges\CameraControllerBridge.cs" />
-    <Compile Include="Bridges\AirMediaControllerBridge.cs" />
     <Compile Include="Bridges\DmBladeChassisControllerBridge.cs" />
     <Compile Include="Bridges\IRSetTopBoxBaseBridge.cs" />
     <Compile Include="Bridges\DmpsAudioOutputControllerBridge.cs" />
     <Compile Include="Bridges\DmpsRoutingControllerBridge.cs" />
     <Compile Include="Bridges\DisplayControllerBridge.cs" />
-    <Compile Include="Bridges\DigitalLoggerBridge.cs" />
     <Compile Include="Bridges\DmChassisControllerBridge.cs" />
     <Compile Include="Bridges\DmTxControllerBridge.cs" />
     <Compile Include="Bridges\GenericLightingBridge.cs" />

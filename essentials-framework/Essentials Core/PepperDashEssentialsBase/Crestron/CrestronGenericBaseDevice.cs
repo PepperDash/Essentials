@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Core
@@ -127,6 +129,17 @@ namespace PepperDash.Essentials.Core
 
         #endregion
 	}
+
+    public abstract class CrestronGenericBridgeableBaseDevice : CrestronGenericBaseDevice, IBridgeAdvanced
+    {
+        protected CrestronGenericBridgeableBaseDevice(string key, string name, GenericBase hardware) : base(key, name, hardware)
+        {
+        }
+
+
+        public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge);
+    }
+
 
 	//***********************************************************************************
 	public class CrestronGenericBaseDeviceEventIds

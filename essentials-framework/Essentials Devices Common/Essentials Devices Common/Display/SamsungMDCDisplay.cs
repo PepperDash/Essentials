@@ -5,9 +5,12 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
+using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Devices.Displays
 {
@@ -146,7 +149,12 @@ namespace PepperDash.Essentials.Devices.Displays
 			return true;
 		}
 
-		public override FeedbackCollection<Feedback> Feedbacks
+	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+	    {
+	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
+	    }
+
+	    public override FeedbackCollection<Feedback> Feedbacks
 		{
 			get
 			{
