@@ -7,13 +7,15 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Bridges;
+using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Core
 {
 	/// <summary>
 	/// A bridge class to cover the basic features of GenericBase hardware
 	/// </summary>
-	public class CrestronGenericBaseDevice : Device, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking
+	public abstract class CrestronGenericBaseDevice : EssentialsBridgeableDevice, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking
 	{
 		public virtual GenericBase Hardware { get; protected set; }
 
@@ -99,8 +101,8 @@ namespace PepperDash.Essentials.Core
 
             return success;
 		}
-	
-        /// <summary>
+
+	    /// <summary>
         /// Adds feedback(s) to the list
         /// </summary>
         /// <param name="newFbs"></param>
