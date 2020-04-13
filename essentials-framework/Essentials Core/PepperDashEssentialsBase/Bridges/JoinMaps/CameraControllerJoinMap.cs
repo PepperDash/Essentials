@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     /// <summary>
     /// Join map for CameraBase devices

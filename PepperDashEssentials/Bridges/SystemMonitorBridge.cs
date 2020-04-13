@@ -6,7 +6,7 @@ using PepperDash.Essentials.Core.Monitoring;
 
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     public static class SystemMonitorBridge
     {

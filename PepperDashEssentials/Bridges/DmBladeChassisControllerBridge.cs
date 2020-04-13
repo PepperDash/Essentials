@@ -14,7 +14,7 @@ using PepperDash.Essentials.DM;
 
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Bridges {
+namespace PepperDash.Essentials.Core.Bridges {
     public static class DmBladeChassisControllerApiExtentions {
         public static void LinkToApi(this DmBladeChassisController dmChassis, BasicTriList trilist, uint joinStart, string joinMapKey) {
             DmBladeChassisControllerJoinMap joinMap = new DmBladeChassisControllerJoinMap();

@@ -2,7 +2,7 @@
 using Crestron.SimplSharp.Reflection;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     public class C2nRthsControllerJoinMap:JoinMapBase
     {

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp.Reflection;
+using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.EthernetCommunication;
 
 using Newtonsoft.Json;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Core.Lighting;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.CrestronIO;
 
 //using PepperDash.Essentials.Devices.Common.Cameras;
 
@@ -90,7 +89,8 @@ namespace PepperDash.Essentials.Core.Bridges
         {
             JoinMaps = new Dictionary<string, JoinMapBaseAdvanced>();
 
-            PropertiesConfig = JsonConvert.DeserializeObject<EiscApiPropertiesConfig>(dc.Properties.ToString());
+            PropertiesConfig = dc.Properties.ToObject<EiscApiPropertiesConfig>();
+            //PropertiesConfig = JsonConvert.DeserializeObject<EiscApiPropertiesConfig>(dc.Properties.ToString());
 
             Eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(PropertiesConfig.Control.IpIdInt, PropertiesConfig.Control.TcpSshProperties.Address, Global.ControlSystem);
 
@@ -285,7 +285,7 @@ namespace PepperDash.Essentials.Core.Bridges
                 return;
             }
 
-            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, this.Key); 
+            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key); 
             joinMap.PrintJoinMapInfo();
         }
 
@@ -294,6 +294,7 @@ namespace PepperDash.Essentials.Core.Bridges
         /// </summary>
         /// <param name="join"></param>
         /// <param name="type"></param>
+        /// <param name="state"></param>
         public void ExecuteJoinAction(uint join, string type, object state)
         {
             try
@@ -354,23 +355,23 @@ namespace PepperDash.Essentials.Core.Bridges
         /// </summary>
         /// <param name="currentDevice"></param>
         /// <param name="args"></param>
-        void Eisc_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
+        void Eisc_SigChange(object currentDevice, SigEventArgs args)
         {
             try
             {
                 if (Debug.Level >= 1)
                     Debug.Console(1, this, "EiscApi change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
                 var uo = args.Sig.UserObject;
-                if (uo != null)
-                {
-                    Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
-                    if (uo is Action<bool>)
-                        (uo as Action<bool>)(args.Sig.BoolValue);
-                    else if (uo is Action<ushort>)
-                        (uo as Action<ushort>)(args.Sig.UShortValue);
-                    else if (uo is Action<string>)
-                        (uo as Action<string>)(args.Sig.StringValue);
-                }
+
+                if (uo == null) return;
+
+                Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
+                if (uo is Action<bool>)
+                    (uo as Action<bool>)(args.Sig.BoolValue);
+                else if (uo is Action<ushort>)
+                    (uo as Action<ushort>)(args.Sig.UShortValue);
+                else if (uo is Action<string>)
+                    (uo as Action<string>)(args.Sig.StringValue);
             }
             catch (Exception e)
             {

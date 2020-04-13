@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     public class DigitalLoggerJoinMap : JoinMapBase
     {

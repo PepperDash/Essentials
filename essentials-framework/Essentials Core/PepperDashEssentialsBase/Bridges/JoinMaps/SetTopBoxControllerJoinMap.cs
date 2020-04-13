@@ -7,7 +7,7 @@ using PepperDash.Essentials.Core;
 using Crestron.SimplSharp.Reflection;
 
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     public class SetTopBoxControllerJoinMap : JoinMapBase
     {

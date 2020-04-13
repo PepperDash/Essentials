@@ -8,7 +8,7 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Bridges;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.AppServer.Messengers

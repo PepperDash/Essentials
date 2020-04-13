@@ -111,6 +111,29 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bridges\BridgeBase.cs" />
+    <Compile Include="Bridges\IBridge.cs" />
+    <Compile Include="Bridges\JoinMaps\AirMediaControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\AppleTvJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\C2nRthsControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\CameraControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DigitalLoggerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DisplayControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmBladeChassisControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmChassisControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmpsAudioOutputControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmpsRoutingControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmRmcControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmTxControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\GenericLightingJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\GenericRelayControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\GlsOccupancySensorBaseJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\HdMdxxxCEControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\IBasicCommunicationJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\IDigitalInputJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\SetTopBoxControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\StatusSignControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\SystemMonitorJoinMap.cs" />
     <Compile Include="Config\Comm and IR\CecPortController.cs" />
     <Compile Include="Config\Comm and IR\GenericComm.cs" />
     <Compile Include="Config\Comm and IR\GenericHttpClient.cs" />
@@ -132,6 +155,7 @@
     <Compile Include="Devices\CrestronProcessor.cs" />
     <Compile Include="Devices\DeviceApiBase.cs" />
     <Compile Include="Devices\DeviceFeedbackExtensions.cs" />
+    <Compile Include="Devices\EssentialsBridgeableDevice.cs" />
     <Compile Include="Devices\EssentialsDevice.cs" />
     <Compile Include="Devices\PC\InRoomPc.cs" />
     <Compile Include="Devices\PC\Laptop.cs" />
