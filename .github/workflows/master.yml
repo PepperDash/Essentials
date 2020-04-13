@@ -183,9 +183,9 @@ jobs:
           Write-Output "::set-env name=VERSION::$version"
           Remove-Item -Path ./Version/version.txt
           Remove-Item -Path ./Version
-      # Checkout/Create the branch
+      # Checkout master branch
       - name: Create new branch
-        run: git checkout -b master
+        run: git checkout master
       # Download the build output into the repo
       - name: Download Build output
         uses: actions/download-artifact@v1
