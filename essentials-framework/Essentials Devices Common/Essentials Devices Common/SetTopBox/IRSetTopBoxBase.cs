@@ -4,15 +4,18 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-
+using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class IRSetTopBoxBase : Device, ISetTopBoxControls, IUiDisplayInfo, IRoutingOutputs, IUsageTracking, IPower
+	public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IPower
 	{
 		public IrOutputPortController IrPort { get; private set; }
 
@@ -367,5 +370,96 @@ namespace PepperDash.Essentials.Devices.Common
         }
 
         #endregion
-    }
+
+	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+	    {
+            var joinMap = new SetTopBoxControllerJoinMap();
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<SetTopBoxControllerJoinMap>(joinMapSerialized);
+
+            joinMap.OffsetJoinNumbers(joinStart);
+
+            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.Console(0, "Linking to Display: {0}", Name);
+
+            trilist.StringInput[joinMap.Name].StringValue = Name;
+
+            var stbBase = this as ISetTopBoxControls;
+
+	        trilist.BooleanInput[joinMap.HasDpad].BoolValue = stbBase.HasDpad;
+	        trilist.BooleanInput[joinMap.HasNumeric].BoolValue = stbBase.HasNumeric;
+	        trilist.BooleanInput[joinMap.HasDvr].BoolValue = stbBase.HasDvr;
+	        trilist.BooleanInput[joinMap.HasPresets].BoolValue = stbBase.HasPresets;
+
+	        trilist.SetBoolSigAction(joinMap.DvrList, stbBase.DvrList);
+	        trilist.SetBoolSigAction(joinMap.Replay, stbBase.Replay);
+
+	        trilist.SetStringSigAction(joinMap.LoadPresets, stbBase.LoadPresets);
+
+	        var stbPower = this as IPower;
+
+	        trilist.SetSigTrueAction(joinMap.PowerOn, stbPower.PowerOn);
+	        trilist.SetSigTrueAction(joinMap.PowerOff, stbPower.PowerOff);
+	        trilist.SetSigTrueAction(joinMap.PowerToggle, stbPower.PowerToggle);
+
+	        var stbDPad = this as IDPad;
+
+	        trilist.SetBoolSigAction(joinMap.Up, stbDPad.Up);
+	        trilist.SetBoolSigAction(joinMap.Down, stbDPad.Down);
+	        trilist.SetBoolSigAction(joinMap.Left, stbDPad.Left);
+	        trilist.SetBoolSigAction(joinMap.Right, stbDPad.Right);
+	        trilist.SetBoolSigAction(joinMap.Select, stbDPad.Select);
+	        trilist.SetBoolSigAction(joinMap.Menu, stbDPad.Menu);
+	        trilist.SetBoolSigAction(joinMap.Exit, stbDPad.Exit);
+
+	        var stbChannel = this as IChannel;
+	        trilist.SetBoolSigAction(joinMap.ChannelUp, stbChannel.ChannelUp);
+	        trilist.SetBoolSigAction(joinMap.ChannelDown, stbChannel.ChannelDown);
+	        trilist.SetBoolSigAction(joinMap.LastChannel, stbChannel.LastChannel);
+	        trilist.SetBoolSigAction(joinMap.Guide, stbChannel.Guide);
+	        trilist.SetBoolSigAction(joinMap.Info, stbChannel.Info);
+	        trilist.SetBoolSigAction(joinMap.Exit, stbChannel.Exit);
+
+	        var stbColor = this as IColor;
+	        trilist.SetBoolSigAction(joinMap.Red, stbColor.Red);
+	        trilist.SetBoolSigAction(joinMap.Green, stbColor.Green);
+	        trilist.SetBoolSigAction(joinMap.Yellow, stbColor.Yellow);
+	        trilist.SetBoolSigAction(joinMap.Blue, stbColor.Blue);
+
+	        var stbKeypad = this as ISetTopBoxNumericKeypad;
+
+	        trilist.StringInput[joinMap.KeypadAccessoryButton1Label].StringValue = stbKeypad.KeypadAccessoryButton1Label;
+	        trilist.StringInput[joinMap.KeypadAccessoryButton2Label].StringValue = stbKeypad.KeypadAccessoryButton2Label;
+
+	        trilist.BooleanInput[joinMap.HasKeypadAccessoryButton1].BoolValue = stbKeypad.HasKeypadAccessoryButton1;
+	        trilist.BooleanInput[joinMap.HasKeypadAccessoryButton2].BoolValue = stbKeypad.HasKeypadAccessoryButton2;
+
+	        trilist.SetBoolSigAction(joinMap.Digit0, stbKeypad.Digit0);
+	        trilist.SetBoolSigAction(joinMap.Digit1, stbKeypad.Digit1);
+	        trilist.SetBoolSigAction(joinMap.Digit2, stbKeypad.Digit2);
+	        trilist.SetBoolSigAction(joinMap.Digit3, stbKeypad.Digit3);
+	        trilist.SetBoolSigAction(joinMap.Digit4, stbKeypad.Digit4);
+	        trilist.SetBoolSigAction(joinMap.Digit5, stbKeypad.Digit5);
+	        trilist.SetBoolSigAction(joinMap.Digit6, stbKeypad.Digit6);
+	        trilist.SetBoolSigAction(joinMap.Digit7, stbKeypad.Digit7);
+	        trilist.SetBoolSigAction(joinMap.Digit8, stbKeypad.Digit8);
+	        trilist.SetBoolSigAction(joinMap.Digit9, stbKeypad.Digit9);
+	        trilist.SetBoolSigAction(joinMap.KeypadAccessoryButton1Press, stbKeypad.KeypadAccessoryButton1);
+	        trilist.SetBoolSigAction(joinMap.KeypadAccessoryButton2Press, stbKeypad.KeypadAccessoryButton1);
+	        trilist.SetBoolSigAction(joinMap.Dash, stbKeypad.Dash);
+	        trilist.SetBoolSigAction(joinMap.KeypadEnter, stbKeypad.KeypadEnter);
+
+	        var stbTransport = this as ITransport;
+	        trilist.SetBoolSigAction(joinMap.Play, stbTransport.Play);
+	        trilist.SetBoolSigAction(joinMap.Pause, stbTransport.Pause);
+	        trilist.SetBoolSigAction(joinMap.Rewind, stbTransport.Rewind);
+	        trilist.SetBoolSigAction(joinMap.FFwd, stbTransport.FFwd);
+	        trilist.SetBoolSigAction(joinMap.ChapMinus, stbTransport.ChapMinus);
+	        trilist.SetBoolSigAction(joinMap.ChapPlus, stbTransport.ChapPlus);
+	        trilist.SetBoolSigAction(joinMap.Stop, stbTransport.Stop);
+	        trilist.SetBoolSigAction(joinMap.Record, stbTransport.Record);
+	    }
+	}
 }

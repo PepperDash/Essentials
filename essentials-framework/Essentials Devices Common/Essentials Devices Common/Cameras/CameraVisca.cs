@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Devices.Common.Codec;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp.Reflection;
@@ -78,7 +80,13 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 			CrestronConsole.AddNewConsoleCommand(s => Communication.Connect(), "con" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
 			return true;
 		}
-		void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+
+	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+	    {
+	        LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
+	    }
+
+	    void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
 		{
 			Debug.Console(2, this, "Socket Status Change: {0}", e.Client.ClientStatus.ToString());
 

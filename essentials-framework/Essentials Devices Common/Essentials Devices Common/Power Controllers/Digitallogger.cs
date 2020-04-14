@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Core.Bridges;
+using PepperDash_Essentials_Core.Devices;
 
 
 namespace PepperDash.Essentials.Devices.Common
 {
 
-    public class DigitalLogger : Device
+    public class DigitalLogger : EssentialsBridgeableDevice
     {
         public IBasicCommunication Communication { get; private set; }
         public CommunicationGather PortGather { get; private set; }
@@ -132,6 +135,31 @@ namespace PepperDash.Essentials.Devices.Common
 			
 
             return true;
+        }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        {
+            var joinMap = new DigitalLoggerJoinMap();
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<DigitalLoggerJoinMap>(joinMapSerialized);
+
+            joinMap.OffsetJoinNumbers(joinStart);
+
+            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            for (uint i = 1; i <= CircuitCount; i++)
+            {
+                var circuit = i;
+                CircuitNameFeedbacks[circuit - 1].LinkInputSig(trilist.StringInput[joinMap.CircuitNames + circuit]);
+                CircuitIsCritical[circuit - 1].LinkInputSig(trilist.BooleanInput[joinMap.CircuitIsCritical + circuit]);
+                CircuitState[circuit - 1].LinkInputSig(trilist.BooleanInput[joinMap.CircuitState + circuit]);
+                trilist.SetSigTrueAction(joinMap.CircuitCycle + circuit, () => CycleCircuit(circuit - 1));
+                trilist.SetSigTrueAction(joinMap.CircuitOnCmd + circuit, () => TurnOnCircuit(circuit - 1));
+                trilist.SetSigTrueAction(joinMap.CircuitOffCmd + circuit, () => TurnOffCircuit(circuit - 1));
+
+            }
         }
 
         void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)

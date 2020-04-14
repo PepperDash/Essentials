@@ -8,6 +8,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Core
@@ -201,5 +202,10 @@ namespace PepperDash.Essentials.Core
 		}
 
 		#endregion
+
+	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+	    {
+	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
+	    }
 	}
 }

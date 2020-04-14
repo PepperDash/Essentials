@@ -5,27 +5,27 @@ using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
-    public class IDigitalInputJoinMap : JoinMapBase
+    public class GenericRelayControllerJoinMap : JoinMapBase
     {
         #region Digitals
         /// <summary>
-        /// Reports the state of the digital input
+        /// Sets and reports the state of the relay (High = closed, Low = Open)
         /// </summary>
-        public uint InputState { get; set; }
+        public uint Relay { get; set; }
         #endregion
 
-        public IDigitalInputJoinMap()
+        public GenericRelayControllerJoinMap()
         {
-            InputState = 1;
+            Relay = 1;
         }
 
         public override void OffsetJoinNumbers(uint joinStart)
         {
             var joinOffset = joinStart - 1;
 
-            InputState = InputState + joinOffset;
+            Relay = Relay + joinOffset;
         }
     }
 }

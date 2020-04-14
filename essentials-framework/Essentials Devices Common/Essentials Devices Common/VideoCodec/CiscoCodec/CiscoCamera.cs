@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-
+using Crestron.SimplSharpPro.DeviceSupport;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
@@ -97,6 +98,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         void Stop()
         {
             ParentCodec.SendText(string.Format("xCommand Call FarEndControl Camera Stop CallId: {0}", CallId)); 
+        }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        {
+            LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
     }
 
@@ -308,5 +314,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         }
 
         #endregion
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        {
+            LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
+        }
     }
 }

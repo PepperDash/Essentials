@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Devices.Common.Occupancy
 {
@@ -117,16 +119,8 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         /// <param name="state"></param>
         public void SetUsAEnable(bool state)
         {
-            if (state)
-            {
-                OccSensor.EnableUsA.BoolValue = state;
-                OccSensor.DisableUsA.BoolValue = !state;
-            }
-            else
-            {
-                OccSensor.EnableUsA.BoolValue = state;
-                OccSensor.DisableUsA.BoolValue = !state;
-            }
+            OccSensor.EnableUsA.BoolValue = state;
+            OccSensor.DisableUsA.BoolValue = !state;
         }
 
 
@@ -136,16 +130,8 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         /// <param name="state"></param>
         public void SetUsBEnable(bool state)
         {
-            if (state)
-            {
-                OccSensor.EnableUsB.BoolValue = state;
-                OccSensor.DisableUsB.BoolValue = !state;
-            }
-            else
-            {
-                OccSensor.EnableUsB.BoolValue = state;
-                OccSensor.DisableUsB.BoolValue = !state;
-            }
+            OccSensor.EnableUsB.BoolValue = state;
+            OccSensor.DisableUsB.BoolValue = !state;
         }
 
         public void IncrementUsSensitivityInOccupiedState(bool pressRelease)
@@ -166,6 +152,11 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         public void DecrementUsSensitivityInVacantState(bool pressRelease)
         {
             OccSensor.DecrementUsSensitivityInVacantState.BoolValue = pressRelease;
+        }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        {
+            LinkOccSensorToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
     }
 }

@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
 
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.DM
 {
@@ -95,7 +97,12 @@ namespace PepperDash.Essentials.DM
 			return base.CustomActivate();
 		}
 
-		#region IIROutputPorts Members
+	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+	    {
+	        LinkDmRmcToApi(this, trilist, joinStart, joinMapKey, bridge);
+	    }
+
+	    #region IIROutputPorts Members
 		public CrestronCollection<IROutputPort> IROutputPorts { get { return Rmc.IROutputPorts; } }
 		public int NumberOfIROutputPorts { get { return Rmc.NumberOfIROutputPorts; } }
 		#endregion
