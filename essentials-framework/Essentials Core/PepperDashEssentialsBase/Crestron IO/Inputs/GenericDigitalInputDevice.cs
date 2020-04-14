@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-
+using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Bridges;
+using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
-    public class GenericDigitalInputDevice : Device, IDigitalInput
+    public class GenericDigitalInputDevice : EssentialsBridgeableDevice, IDigitalInput
     {
         public DigitalInput InputPort { get; private set; }
 
@@ -30,7 +33,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
             InputPort = inputPort;
 
-            InputPort.StateChange += new DigitalInputEventHandler(InputPort_StateChange);
+            InputPort.StateChange += InputPort_StateChange;
 
         }
 
@@ -39,5 +42,29 @@ namespace PepperDash.Essentials.Core.CrestronIO
             InputStateFeedback.FireUpdate();
         }
 
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        {
+            var joinMap = new IDigitalInputJoinMap();
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<IDigitalInputJoinMap>(joinMapSerialized);
+
+            joinMap.OffsetJoinNumbers(joinStart);
+
+            try
+            {
+                Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+
+                // Link feedback for input state
+                InputStateFeedback.LinkInputSig(trilist.BooleanInput[joinMap.InputState]);
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "Unable to link device '{0}'.  Input is null", Key);
+                Debug.Console(1, this, "Error: {0}", e);
+            }
+        }
     }
 }
