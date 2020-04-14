@@ -8,14 +8,15 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
-
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.DM.Config;
 
 namespace PepperDash.Essentials.DM
 {
-	public abstract class DmRmcControllerBase : CrestronGenericBaseDevice
+	public abstract class DmRmcControllerBase : CrestronGenericBridgeableBaseDevice
 	{
         public virtual StringFeedback VideoOutputResolutionFeedback { get; protected set; }
         public virtual StringFeedback EdidManufacturerFeedback { get; protected set; }
@@ -33,6 +34,32 @@ namespace PepperDash.Essentials.DM
 			}
             AddToFeedbackList(VideoOutputResolutionFeedback, EdidManufacturerFeedback, EdidSerialNumberFeedback, EdidNameFeedback, EdidPreferredTimingFeedback);
         }
+
+	    protected void LinkDmRmcToApi(DmRmcControllerBase rmc, BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+	    {
+            var joinMap = new DmRmcControllerJoinMap();
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<DmRmcControllerJoinMap>(joinMapSerialized);
+
+            joinMap.OffsetJoinNumbers(joinStart);
+
+            Debug.Console(1, rmc, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+
+            rmc.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
+            if (rmc.VideoOutputResolutionFeedback != null)
+                rmc.VideoOutputResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentOutputResolution]);
+            if (rmc.EdidManufacturerFeedback != null)
+                rmc.EdidManufacturerFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidManufacturer]);
+            if (rmc.EdidNameFeedback != null)
+                rmc.EdidNameFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidName]);
+            if (rmc.EdidPreferredTimingFeedback != null)
+                rmc.EdidPreferredTimingFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidPrefferedTiming]);
+            if (rmc.EdidSerialNumberFeedback != null)
+                rmc.EdidSerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidSerialNumber]);
+	    }
 	}
 
     public abstract class DmHdBaseTControllerBase : CrestronGenericBaseDevice
