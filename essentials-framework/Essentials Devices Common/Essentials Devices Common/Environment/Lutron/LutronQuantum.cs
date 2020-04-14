@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Lighting;
+using LightingBase = PepperDash.Essentials.Core.Lighting.LightingBase;
 
 namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
 {
@@ -75,6 +78,14 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
             CommunicationMonitor.Start();
 
             return true;
+        }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        {
+            var joinMap = LinkLightingToApi(this, trilist, joinStart, joinMapKey, bridge);
+
+            CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
+            trilist.SetStringSigAction(joinMap.IntegrationIdSet, s => IntegrationId = s);
         }
 
         void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
