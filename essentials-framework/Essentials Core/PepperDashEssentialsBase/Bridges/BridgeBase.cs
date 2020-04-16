@@ -119,11 +119,10 @@ namespace PepperDash.Essentials.Core.Bridges
                         continue;
                     }
 
-                    if (device.GetType().GetCType().IsAssignableFrom(typeof (IBridgeAdvanced)))
-                    {
-                        var bridge = device as IBridgeAdvanced;
-                        if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
-                    }
+                    if (!device.GetType().GetCType().IsAssignableFrom(typeof (IBridgeAdvanced))) continue;
+
+                    var bridgeAdvanced = device as IBridgeAdvanced;
+                    if (bridgeAdvanced != null) bridgeAdvanced.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
 
                     //if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
                     //{
