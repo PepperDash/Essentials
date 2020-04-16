@@ -125,6 +125,7 @@
     <Compile Include="AppServer\SIMPLJoinMaps\MobileControlSIMPLRoomJoinMap.cs" />
     <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
     <Compile Include="Bridges\BridgeFactory.cs" />
+    <Compile Include="Bridges\IBridge.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Devices\Amplifier.cs" />
     <Compile Include="ControlSystem.cs" />
