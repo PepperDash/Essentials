@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Bridges;
 
 //using PepperDash.Essentials.Devices.Common.Cameras;
 
