@@ -10,10 +10,7 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge);
     }
-}
 
-namespace PepperDash.Essentials.Bridges
-{
     /// <summary>
     /// Defines a device that uses the legacy JoinMapBase for its join map
     /// </summary>
