@@ -46,7 +46,7 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var typeName in TypeNames)
             {
-                DeviceFactory.AddFactoryForType(typeName, BuildDevice);
+                DeviceFactory.AddFactoryForType(typeName.ToLower(), BuildDevice);
             }
         }
 

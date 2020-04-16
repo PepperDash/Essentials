@@ -13,6 +13,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.DM.Config;
+using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.DM
 {
@@ -280,5 +281,26 @@ namespace PepperDash.Essentials.DM
 			return null;
 		}
 	}
+
+    public class DmRmcControllerFactory : EssentialsDeviceFactory<GenericComm>
+    {
+        public DmRmcControllerFactory()
+        {
+            TypeNames = new List<string>() { "hdbasetrx", "dmrmc4k100c1g", "dmrmc100c", "dmrmc100s", "dmrmc4k100c", "dmrmc150s",
+                "dmrmc200c", "dmrmc200s", "dmrmc200s2", "dmrmcscalerc", "dmrmcscalers", "dmrmcscalers2", "dmrmc4kscalerc", "dmrmc4kscalercdsp" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            var type = dc.Type.ToLower();
+
+            Debug.Console(1, "Factory Attempting to create new DM-RMC Device");
+
+            var props = JsonConvert.DeserializeObject
+                <PepperDash.Essentials.DM.Config.DmRmcPropertiesConfig>(dc.Properties.ToString());
+            return PepperDash.Essentials.DM.DmRmcHelper.GetDmRmcController(dc.Key, dc.Name, type, props);
+            
+        }
+    }
 
 }

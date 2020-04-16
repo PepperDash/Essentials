@@ -11,6 +11,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.DM.Config;
+using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.DM
 {
@@ -1275,4 +1276,41 @@ namespace PepperDash.Essentials.DM
         }
     }
 
+    public class DmChassisControllerFactory : EssentialsDeviceFactory<GenericComm>
+    {
+        public DmChassisControllerFactory()
+        {
+            TypeNames = new List<string>() { "dmmd8x8", "dmmd8x8rps", "dmmd8x8cpu3", "dmmd8x8cpu3rps", 
+                "dmmd16x16", "dmmd16x16rps", "dmmd16x16cpu3", "dmmd16x16cpu3rps", 
+                "dmmd32x32", "dmmd32x32rps", "dmmd32x32cpu3", "dmmd32x32cpu3rps", 
+                "dmmd64x64", "dmmd128x128" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            var type = dc.Type.ToLower();
+
+            Debug.Console(1, "Factory Attempting to create new DmChassisController Device");
+
+            if (type.StartsWith("dmmd8x") || type.StartsWith("dmmd16x") || type.StartsWith("dmmd32x"))
+            {
+
+                var props = JsonConvert.DeserializeObject
+                    <PepperDash.Essentials.DM.Config.DMChassisPropertiesConfig>(dc.Properties.ToString());
+                return PepperDash.Essentials.DM.DmChassisController.
+                    GetDmChassisController(dc.Key, dc.Name, type, props);
+            }
+            else if (type.StartsWith("dmmd128x") || type.StartsWith("dmmd64x"))
+            {
+                var props = JsonConvert.DeserializeObject
+                    <PepperDash.Essentials.DM.Config.DMChassisPropertiesConfig>(dc.Properties.ToString());
+                return PepperDash.Essentials.DM.DmBladeChassisController.
+                    GetDmChassisController(dc.Key, dc.Name, type, props);
+            }
+
+            return null;
+        }
+    }
+
 }
+
