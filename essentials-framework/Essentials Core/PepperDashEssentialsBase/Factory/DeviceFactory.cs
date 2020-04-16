@@ -55,34 +55,6 @@ namespace PepperDash.Essentials.Core
                 return FactoryMethods[typeName](dc);
             }
 
-			// Check "core" types 
-            //if (typeName == "genericcomm")
-            //{
-            //    Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
-            //    return new GenericComm(dc);
-            //}
-            if (typeName == "ceniodigin104")
-            {
-                var control = CommFactory.GetControlPropertiesConfig(dc);
-                var ipid = control.IpIdInt;
-
-                return new CenIoDigIn104Controller(key, name, new Crestron.SimplSharpPro.GeneralIO.CenIoDi104(ipid, Global.ControlSystem));
-            }
-		    if (typeName == "statussign")
-		    {
-		        var control = CommFactory.GetControlPropertiesConfig(dc);
-		        var cresnetId = control.CresnetIdInt;
-
-                return  new StatusSignController(key, name, new StatusSign(cresnetId, Global.ControlSystem));
-		    }
-		    if (typeName == "c2nrths")
-		    {
-		        var control = CommFactory.GetControlPropertiesConfig(dc);
-		        var cresnetId = control.CresnetIdInt;
-
-		        return new C2nRthsController(key, name, new C2nRths(cresnetId, Global.ControlSystem));
-		    }
-
             return null;
         }
 
@@ -112,16 +84,24 @@ namespace PepperDash.Essentials.Core
         }
     }
 
-
     /// <summary>
-    /// Responsible for loading all of the device types
+    /// Responsible for loading all of the device types for this library
     /// </summary>
     public class CoreDeviceFactory
     {
         public CoreDeviceFactory()
         {
-            var genComm = new GenericCommFactory() as IDeviceFactory;
-            genComm.LoadTypeFactories();
+            var genCommFactory = new GenericCommFactory() as IDeviceFactory;
+            genCommFactory.LoadTypeFactories();
+
+            var c2nRthsFactory = new C2nRthsControllerFactory() as IDeviceFactory;
+            c2nRthsFactory.LoadTypeFactories();
+
+            var statusSignFactory = new StatusSignControllerFactory() as IDeviceFactory;
+            statusSignFactory.LoadTypeFactories();
+
+            var cenIoControllerFactory = new CenIoDigIn104ControllerFactory() as IDeviceFactory;
+            cenIoControllerFactory.LoadTypeFactories();
         }
     }
 }

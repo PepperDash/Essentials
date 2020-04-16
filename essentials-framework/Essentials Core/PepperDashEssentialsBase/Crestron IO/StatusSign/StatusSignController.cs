@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
-    public class StatusSignController:CrestronGenericBridgeableBaseDevice
+    public class StatusSignController : CrestronGenericBridgeableBaseDevice
     {
         private readonly StatusSign _device;
 
@@ -156,6 +158,24 @@ namespace PepperDash.Essentials.Core.CrestronIO
             var blueBrightness = triList.UShortOutput[joinMap.BlueLed].UShortValue;
 
             device.SetColor(redBrightness, greenBrightness, blueBrightness);
+        }
+    }
+
+    public class StatusSignControllerFactory : EssentialsDeviceFactory<GenericComm>
+    {
+        public StatusSignControllerFactory()
+        {
+            TypeNames = new List<string>() { "statussign" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new StatusSign Device");
+
+            var control = CommFactory.GetControlPropertiesConfig(dc);
+            var cresnetId = control.CresnetIdInt;
+
+            return new StatusSignController(dc.Key, dc.Name, new StatusSign(cresnetId, Global.ControlSystem));
         }
     }
 }
