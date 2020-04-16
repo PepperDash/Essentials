@@ -109,31 +109,37 @@ namespace PepperDash.Essentials.Core.Bridges
                     if (device == null) continue;
 
                     Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
-
-                    if (device.GetType().GetCType().IsAssignableFrom(typeof (IBridge)))
+                    if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
                     {
-                        var bridge = device as IBridge;
-
-                        if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                        continue;
+                        Debug.Console(2, this, "'{0}' is IBridge", device.Key);
+                        (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                     }
-
-                    if (device.GetType().GetCType().IsAssignableFrom(typeof (IBridgeAdvanced)))
+                    else if (device is IBridgeAdvanced)
                     {
-                        var bridge = device as IBridgeAdvanced;
-                        if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
+                        Debug.Console(2, this, "'{0}' is IBridgeAdvanced", device.Key);
+                        (device as IBridgeAdvanced).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                     }
-
-                    //if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
+                    //if (device.GetType().GetCType().IsAssignableFrom(typeof (IBridge)))
                     //{
-                    //    (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                    //    var bridge = device as IBridge;
+
+                    //    if (bridge == null)
+                    //        continue;
+                    //    Debug.Console(2, this, "Linking device {0} as IBridge");
+                    //    bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                     //    continue;
                     //}
-                    //else if (device is IBridgeAdvanced)
-                    //{
-                    //    Debug.Console(2, this, "'{0}' is IBridgeAdvanced", device.Key);
-                    //    (device as IBridgeAdvanced).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
-                    //}
+
+                    //if (!device.GetType().GetCType().IsAssignableFrom(typeof (IBridgeAdvanced))) continue;
+
+                    //var bridgeAdvanced = device as IBridgeAdvanced;
+
+                    //if (bridgeAdvanced == null) continue;
+                    //Debug.Console(2, this, "Linking device {0} as IBridgeAdvanced");
+                    //bridgeAdvanced.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
+                }
+                Debug.Console(1, this, "Devices Linked.");
+                //
                     //else if (device is PepperDash.Essentials.Core.Monitoring.SystemMonitorController)
                     //{
                     //    (device as PepperDash.Essentials.Core.Monitoring.SystemMonitorController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
@@ -234,9 +240,9 @@ namespace PepperDash.Essentials.Core.Bridges
                     //    (device as C2nRthsController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                     //    continue;
                     //}
-                }
+                //}
 
-                Debug.Console(1, this, "Devices Linked.");
+                
             });
         }
 
