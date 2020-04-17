@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.GeneralIO;
+using Crestron.SimplSharp.Reflection;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -13,25 +14,52 @@ using PepperDash.Essentials.Core.Touchpanels;
 
 namespace PepperDash.Essentials.Core
 {
+    public class DeviceFactoryWrapper
+    {
+        public CType CType { get; set; }
+        public string Description { get; set; }
+        public Func<DeviceConfig, IKeyed> FactoryMethod { get; set; }
+
+        public DeviceFactoryWrapper()
+        {
+            CType = null;
+            Description = "Not Available";
+        }
+    }
+
     public class DeviceFactory
     {
 		/// <summary>
 		/// A dictionary of factory methods, keyed by config types, added by plugins.
 		/// These methods are looked up and called by GetDevice in this class.
 		/// </summary>
-		static Dictionary<string, Func<DeviceConfig, IKeyed>> FactoryMethods =
-			new Dictionary<string, Func<DeviceConfig, IKeyed>>(StringComparer.OrdinalIgnoreCase);
+		static Dictionary<string, DeviceFactoryWrapper> FactoryMethods =
+            new Dictionary<string, DeviceFactoryWrapper>(StringComparer.OrdinalIgnoreCase);
 
 		/// <summary>
 		/// Adds a plugin factory method
 		/// </summary>
 		/// <param name="dc"></param>
 		/// <returns></returns>
-		public static void AddFactoryForType(string type, Func<DeviceConfig, IKeyed> method) 
+		public static void AddFactoryForType(string typeName, Func<DeviceConfig, IKeyed> method) 
 		{
-			Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", type);
-			DeviceFactory.FactoryMethods.Add(type, method);
+			Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", typeName);
+            DeviceFactory.FactoryMethods.Add(typeName, new DeviceFactoryWrapper() { FactoryMethod = method});
 		}
+
+        public static void AddFactoryForType(string typeName, string description, CType cType, Func<DeviceConfig, IKeyed> method)
+        {
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", typeName);
+
+            if(FactoryMethods.ContainsKey(typeName))
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to add type: '{0}'.  Already exists in DeviceFactory", typeName);
+                return;
+            }
+
+            var wrapper = new DeviceFactoryWrapper() { CType = cType, Description = description, FactoryMethod = method };
+            DeviceFactory.FactoryMethods.Add(typeName, wrapper);
+        }
 
 		/// <summary>
 		/// The factory method for Core "things". Also iterates the Factory methods that have
@@ -52,34 +80,45 @@ namespace PepperDash.Essentials.Core
             if (FactoryMethods.ContainsKey(typeName))
             {
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading '{0}' from plugin", dc.Type);
-                return FactoryMethods[typeName](dc);
+                return FactoryMethods[typeName].FactoryMethod(dc);
             }
 
             return null;
         }
 
         /// <summary>
-        /// Prints the type names fromt the FactoryMethods collection.
+        /// Prints the type names and associated metadata from the FactoryMethods collection.
         /// </summary>
         /// <param name="command"></param>
         public static void GetDeviceFactoryTypes(string filter)
         {
-            List<string> typeNames = new List<string>();
+            Dictionary<string, DeviceFactoryWrapper> types = new Dictionary<string, DeviceFactoryWrapper>();
 
             if (!string.IsNullOrEmpty(filter))
             {
-                typeNames = FactoryMethods.Keys.Where(k => k.Contains(filter)).ToList();
+                types = FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value);
             }
             else
             {
-                typeNames = FactoryMethods.Keys.ToList();
+                types = FactoryMethods;
             }
 
             Debug.Console(0, "Device Types:");
 
-            foreach (var type in typeNames)
+            foreach (var type in types)
             {
-                Debug.Console(0, "type: '{0}'", type);
+                var description = type.Value.Description;
+                var cType = "Not Specified by Plugin";
+
+                if(type.Value.CType != null)
+                {
+                    cType = type.Value.CType.FullName;
+                }
+
+                Debug.Console(0, 
+                    @"Type: '{0}' 
+                    CType: '{1}' 
+                    Description: {2}", type.Key, cType, description);
             }
         }
     }
@@ -91,6 +130,8 @@ namespace PepperDash.Essentials.Core
     {
         public CoreDeviceFactory()
         {
+            Debug.Console(1, "Essentials.Core Factory Adding Types...");
+
             var genCommFactory = new GenericCommFactory() as IDeviceFactory;
             genCommFactory.LoadTypeFactories();
 

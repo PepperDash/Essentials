@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
@@ -12,6 +13,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Defines the basic needs for an EssentialsDevice to enable it to be build by an IDeviceFactory class
     /// </summary>
+    [Description("The base Essentials Device Class")]
     public abstract class EssentialsDevice : Device
     {
         protected EssentialsDevice(string key)
@@ -24,6 +26,40 @@ namespace PepperDash.Essentials.Core
             : base(key, name)
         {
 
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = true)]
+    public class DescriptionAttribute : Attribute
+    {
+        private string _Description;
+
+        public DescriptionAttribute(string description)
+        {
+            Debug.Console(2, "Setting Description: {0}", description);
+            _Description = description;
+        }
+
+        public string Description
+        {
+            get { return _Description; }
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = true)]
+    public class ConfigSnippetAttribute : Attribute
+    {
+        private string _ConfigSnippet;
+
+        public ConfigSnippetAttribute(string configSnippet)
+        {
+            Debug.Console(2, "Setting Description {0}", configSnippet);
+            _ConfigSnippet = configSnippet;
+        }
+
+        public string ConfigSnippet
+        {
+            get { return _ConfigSnippet; }
         }
     }
 
@@ -46,7 +82,10 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var typeName in TypeNames)
             {
-                DeviceFactory.AddFactoryForType(typeName.ToLower(), BuildDevice);
+                Debug.Console(2, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
+                var attributes = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
+                string description = attributes[0].Description;
+                DeviceFactory.AddFactoryForType(typeName.ToLower(), description, typeof(T), BuildDevice);
             }
         }
 

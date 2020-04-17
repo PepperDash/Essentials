@@ -10,6 +10,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
+    [Description("Wrapper class for the C2N-RTHS sensor")]
     public class C2nRthsController : CrestronGenericBridgeableBaseDevice
     {
         private readonly C2nRths _device;

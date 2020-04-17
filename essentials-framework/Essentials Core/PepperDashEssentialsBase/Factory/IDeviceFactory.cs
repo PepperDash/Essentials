@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
@@ -15,7 +16,7 @@ namespace PepperDash.Essentials.Core
     public interface IDeviceFactory
     {
         /// <summary>
-        /// Will be called when the plugin is loaded by Essentials.  Must add any new types to the DeviceFactory using DeviceFactory.AddFactoryForType() for each new type
+        /// Loads all the types to the DeviceFactory
         /// </summary>
         void LoadTypeFactories();
     }
