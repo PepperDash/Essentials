@@ -7,7 +7,6 @@ using PepperDash.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Core.Monitoring
 {

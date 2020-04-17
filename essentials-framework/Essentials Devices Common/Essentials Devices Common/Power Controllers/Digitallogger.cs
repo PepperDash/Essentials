@@ -11,7 +11,6 @@ using Crestron.SimplSharp.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash_Essentials_Core.Devices;
 
 
 namespace PepperDash.Essentials.Devices.Common

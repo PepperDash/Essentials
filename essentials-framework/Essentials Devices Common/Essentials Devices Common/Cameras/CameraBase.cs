@@ -13,7 +13,6 @@ using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Devices.Common.Codec;
 
 using Newtonsoft.Json;
-using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {

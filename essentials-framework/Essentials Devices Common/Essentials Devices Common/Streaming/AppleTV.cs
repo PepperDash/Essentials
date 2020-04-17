@@ -10,7 +10,6 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
-using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Devices.Common
 {
