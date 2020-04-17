@@ -19,6 +19,7 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// Represent both a transmitter and receiver pair of the HD-MD-400-C-E / HD-MD-300-C-E / HD-MD-200-C-E kits
     /// </summary>
+    [Description("Wrapper class for all HD-MD variants")]
     public class HdMdxxxCEController : CrestronGenericBridgeableBaseDevice, IRouting//, IComPorts
     {
         /// <summary>

@@ -10,6 +10,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
+    [Description("Wrapper class for the Crestron StatusSign device")]
     public class StatusSignController : CrestronGenericBridgeableBaseDevice
     {
         private readonly StatusSign _device;

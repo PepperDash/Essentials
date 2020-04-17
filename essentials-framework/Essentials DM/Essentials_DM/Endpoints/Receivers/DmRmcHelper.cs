@@ -17,6 +17,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.DM
 {
+    [Description("Wrapper class for all DM-RMC variants")]
 	public abstract class DmRmcControllerBase : CrestronGenericBridgeableBaseDevice
 	{
         public virtual StringFeedback VideoOutputResolutionFeedback { get; protected set; }

@@ -80,8 +80,20 @@ namespace PepperDash.Essentials
                         "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
                 }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
+            LoadDeviceTypesFromFactories();
+
             if (!Debug.DoNotLoadOnNextBoot)
                 GoWithLoad();
+        }
+
+        /// <summary>
+        /// Instantiates each of the device factories to load thier device types
+        /// </summary>
+        void LoadDeviceTypesFromFactories()
+        {
+            // Instantiate the Device Factories
+            new CoreDeviceFactory();
+            new DmDeviceFactory();
         }
 
 
@@ -290,9 +302,6 @@ namespace PepperDash.Essentials
         /// </summary>
         public void LoadDevices()
         {
-            // Instantiate the Device Factories
-            new CoreDeviceFactory();
-
 
             // Build the processor wrapper class
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));

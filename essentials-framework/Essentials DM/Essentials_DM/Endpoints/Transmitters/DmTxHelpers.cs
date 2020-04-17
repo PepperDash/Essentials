@@ -148,6 +148,7 @@ namespace PepperDash.Essentials.DM
 	/// <summary>
 	/// 
 	/// </summary>
+    [Description("Wrapper class for all DM-TX variants")]
 	public abstract class DmTxControllerBase : CrestronGenericBridgeableBaseDevice
 	{
         public virtual void SetPortHdcpCapability(eHdcpCapabilityType hdcpMode, uint port) { }

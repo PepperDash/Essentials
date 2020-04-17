@@ -19,6 +19,7 @@ namespace PepperDash.Essentials.DM
     /// Builds a controller for basic DM-RMCs with Com and IR ports and no control functions
     /// 
     /// </summary>
+    [Description("Wrapper class for all DM-MD chassis variants from 8x8 to 128x128")]
     public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingInputsOutputs, IRouting, IHasFeedback
     {
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }

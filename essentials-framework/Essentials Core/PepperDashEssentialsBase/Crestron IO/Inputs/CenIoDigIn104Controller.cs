@@ -15,6 +15,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Wrapper class for CEN-IO-DIGIN-104 digital input module
     /// </summary>
+    [Description("Wrapper class for the CEN-IO-DIGIN-104 diginal input module")]
     public class CenIoDigIn104Controller : EssentialsDevice, IDigitalInputPorts
     {
         public CenIoDi104 Di104 { get; private set; }

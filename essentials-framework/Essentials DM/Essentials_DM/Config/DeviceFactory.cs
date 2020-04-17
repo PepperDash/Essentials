@@ -24,6 +24,8 @@ namespace PepperDash.Essentials.DM
 	{
         public DmDeviceFactory()
         {
+            Debug.Console(1, "Essentials.DM Factory Adding Types...");
+
             var dmChassisFactory = new DmChassisControllerFactory() as IDeviceFactory;
             dmChassisFactory.LoadTypeFactories();
 
