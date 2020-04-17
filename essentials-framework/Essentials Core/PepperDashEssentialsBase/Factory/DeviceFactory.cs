@@ -132,6 +132,7 @@ namespace PepperDash.Essentials.Core
         {
             Debug.Console(1, "Essentials.Core Factory Adding Types...");
 
+            //cast to IDeviceFactory isn't explicitly required here...but will be when instantiating using reflection, which I'm assuming is the next step
             var genCommFactory = new GenericCommFactory() as IDeviceFactory;
             genCommFactory.LoadTypeFactories();
 

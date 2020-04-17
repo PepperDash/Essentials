@@ -162,7 +162,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
         }
     }
 
-    public class StatusSignControllerFactory : EssentialsDeviceFactory<GenericComm>
+    public class StatusSignControllerFactory : EssentialsDeviceFactory<StatusSignController>
     {
         public StatusSignControllerFactory()
         {

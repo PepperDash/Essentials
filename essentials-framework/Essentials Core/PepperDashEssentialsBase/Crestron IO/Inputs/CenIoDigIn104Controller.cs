@@ -41,7 +41,7 @@ namespace PepperDash.Essentials.Core
         #endregion
     }
 
-    public class CenIoDigIn104ControllerFactory : EssentialsDeviceFactory<GenericComm>
+    public class CenIoDigIn104ControllerFactory : EssentialsDeviceFactory<CenIoDigIn104Controller>
     {
         public CenIoDigIn104ControllerFactory()
         {
