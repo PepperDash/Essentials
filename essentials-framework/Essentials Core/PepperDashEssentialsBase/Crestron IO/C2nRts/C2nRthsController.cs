@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
         }
     }
 
-    public class C2nRthsControllerFactory : EssentialsDeviceFactory<GenericComm>
+    public class C2nRthsControllerFactory : EssentialsDeviceFactory<C2nRthsController>
     {
         public C2nRthsControllerFactory()
         {
