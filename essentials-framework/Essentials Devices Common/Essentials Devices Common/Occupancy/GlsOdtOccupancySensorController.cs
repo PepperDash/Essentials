@@ -154,7 +154,7 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             OccSensor.DecrementUsSensitivityInVacantState.BoolValue = pressRelease;
         }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             LinkOccSensorToApi(this, trilist, joinStart, joinMapKey, bridge);
         }

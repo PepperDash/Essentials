@@ -219,7 +219,7 @@ namespace PepperDash.Essentials.DM
         //public CrestronCollection<ComPort> ComPorts { get { return TxRxPair.ComPorts as CrestronCollection<ComPort>; } }
         //public int NumberOfComPorts { get { return 1; } }
         //#endregion
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new HdMdxxxCEControllerJoinMap();
 

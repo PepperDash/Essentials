@@ -79,7 +79,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         }
 
         protected void LinkCameraToApi(CameraBase cameraDevice, BasicTriList trilist, uint joinStart, string joinMapKey,
-            EiscApi bridge)
+            EiscApiAdvanced bridge)
         {
             CameraControllerJoinMap joinMap = new CameraControllerJoinMap(joinStart);
 

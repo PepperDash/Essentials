@@ -68,7 +68,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         #endregion
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new GenericRelayControllerJoinMap();
 

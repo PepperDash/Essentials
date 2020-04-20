@@ -100,7 +100,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             ParentCodec.SendText(string.Format("xCommand Call FarEndControl Camera Stop CallId: {0}", CallId)); 
         }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
@@ -315,7 +315,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         #endregion
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
         }

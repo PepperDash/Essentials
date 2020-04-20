@@ -116,7 +116,7 @@ namespace PepperDash.Essentials.Core
 		public abstract void ExecuteSwitch(object selector);
 
 	    protected void LinkDisplayToApi(DisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey,
-	        EiscApi bridge)
+	        EiscApiAdvanced bridge)
 	    {
             var inputNumber = 0;
 	        var inputKeys = new List<string>();

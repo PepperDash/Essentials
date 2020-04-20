@@ -370,7 +370,7 @@ namespace PepperDash.Essentials.Devices.Common
 
         #endregion
 
-	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
             var joinMap = new SetTopBoxControllerJoinMap();
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);

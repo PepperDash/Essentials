@@ -41,7 +41,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
             InputStateFeedback.FireUpdate();
         }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new IDigitalInputJoinMap();
 

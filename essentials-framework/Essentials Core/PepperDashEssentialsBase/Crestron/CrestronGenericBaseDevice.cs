@@ -136,7 +136,7 @@ namespace PepperDash.Essentials.Core
         }
 
 
-        public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge);
+        public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
     }
 
 

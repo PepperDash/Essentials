@@ -71,7 +71,7 @@ namespace PepperDash.Essentials.Core.Lighting
         }
 
         protected GenericLightingJoinMap LinkLightingToApi(LightingBase lightingDevice, BasicTriList trilist, uint joinStart,
-            string joinMapKey, EiscApi bridge)
+            string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new GenericLightingJoinMap();
 
