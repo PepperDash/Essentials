@@ -56,7 +56,16 @@ namespace PepperDash.Essentials.Bridges
                     Debug.Console(2, this, "'{0}' is IBridgeAdvanced", device.Key);
 
                     var advDev = device as IBridgeAdvanced;
-                    advDev.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, null);
+
+                    try
+                    {
+                        advDev.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, null);
+                    }
+                    catch (NullReferenceException)
+                    {
+                        Debug.ConsoleWithLog(0, this,
+                            "Please update the bridge config to use EiscBridgeAdvanced with this device: {0}", device.Key);
+                    }
                     //if (device.GetType().GetCType().IsAssignableFrom(typeof (IBridge)))
                     //{
                     //    var bridge = device as IBridge;
