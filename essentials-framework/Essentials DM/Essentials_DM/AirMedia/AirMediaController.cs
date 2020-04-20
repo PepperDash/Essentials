@@ -261,7 +261,7 @@ namespace PepperDash.Essentials.DM.AirMedia
 
     }
 
-    public class AirMediaControllerFactory : EssentialsDeviceFactory<GenericComm>
+    public class AirMediaControllerFactory : EssentialsDeviceFactory<AirMediaController>
     {
         public AirMediaControllerFactory()
         {
