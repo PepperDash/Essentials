@@ -283,7 +283,7 @@ namespace PepperDash.Essentials.DM
 		}
 	}
 
-    public class DmRmcControllerFactory : EssentialsDeviceFactory<GenericComm>
+    public class DmRmcControllerFactory : EssentialsDeviceFactory<DmRmcControllerBase>
     {
         public DmRmcControllerFactory()
         {

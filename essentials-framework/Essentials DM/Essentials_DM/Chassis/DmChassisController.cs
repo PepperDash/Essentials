@@ -1277,7 +1277,7 @@ namespace PepperDash.Essentials.DM
         }
     }
 
-    public class DmChassisControllerFactory : EssentialsDeviceFactory<GenericComm>
+    public class DmChassisControllerFactory : EssentialsDeviceFactory<DmChassisController>
     {
         public DmChassisControllerFactory()
         {

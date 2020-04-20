@@ -323,7 +323,7 @@ namespace PepperDash.Essentials.DM
         }
 	}
 
-    public class DmTxControllerFactory : EssentialsDeviceFactory<GenericComm>
+    public class DmTxControllerFactory : EssentialsDeviceFactory<DmTxControllerBase>
     {
         public DmTxControllerFactory()
         {
