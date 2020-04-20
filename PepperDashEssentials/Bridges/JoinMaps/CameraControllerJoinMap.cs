@@ -11,6 +11,8 @@ namespace PepperDash.Essentials.Bridges
     /// <summary>
     /// Join map for CameraBase devices
     /// </summary>
+    /// 
+    [Obsolete("Please use version PepperDash.Essentials.Core.Bridges")]
     public class CameraControllerJoinMap : JoinMapBaseAdvanced
     {
         [JoinName("TiltUp")]

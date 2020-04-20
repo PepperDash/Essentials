@@ -7,6 +7,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Bridges
 {
+    [Obsolete("Please use version PepperDash.Essentials.Core.Bridges")]
     public class GenericRelayControllerJoinMap : JoinMapBase
     {
         #region Digitals
