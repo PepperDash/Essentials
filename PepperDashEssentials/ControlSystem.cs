@@ -95,6 +95,13 @@ namespace PepperDash.Essentials
             // Instantiate the Device Factories
             new CoreDeviceFactory();
             new DmDeviceFactory();
+            new UiDeviceFactory();
+
+            new DeviceFactory();
+            new BridgeFactory();
+
+            new PepperDash.Essentials.Devices.Common.DeviceFactory();
+
         }
 
 
@@ -366,32 +373,15 @@ namespace PepperDash.Essentials
                     }
 
                     // Try local factories first
-                    var newDev = DeviceFactory.GetDevice(devConf);
+                    IKeyed newDev = null;
 
-                    if (newDev == null)
-                        newDev = BridgeFactory.GetDevice(devConf);
-
-                    // Then associated library factories
                     if (newDev == null)
                         newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
 
-					if (newDev == null)
-						newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
+                    //
 					if (newDev == null)
 						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
-
-					//if (newDev == null) // might want to consider the ability to override an essentials "type"
-					//{
-					//    // iterate plugin factories
-					//    foreach (var f in FactoryObjects)
-					//    {
-					//        var cresFactory = f as IGetCrestronDevice;
-					//        if (cresFactory != null)
-					//        {
-					//            newDev = cresFactory.GetDevice(devConf, this);
-					//        }
-					//    }
-					//}
+                    //
 
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);

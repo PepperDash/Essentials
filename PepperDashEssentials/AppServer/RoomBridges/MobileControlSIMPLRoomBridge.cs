@@ -825,4 +825,35 @@ namespace PepperDash.Essentials.Room.MobileControl
 			EISC.StringInput[JoinMap.ServerUrl.JoinNumber].StringValue = Parent.Config.ClientAppUrl;
 		}
 	}
+
+    public class MobileControlSIMPLRoomBridgeFactory : EssentialsDeviceFactory<MobileControlSIMPLRoomBridge>
+    {
+        public MobileControlSIMPLRoomBridgeFactory()
+        {
+            TypeNames = new List<string>() { "mobilecontrolbridge-ddvc01", "mobilecontrolbridge-simpl" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new MobileControlSIMPLRoomBridge Device");
+
+            var comm = CommFactory.GetControlPropertiesConfig(dc);
+
+            var bridge = new PepperDash.Essentials.Room.MobileControl.MobileControlSIMPLRoomBridge(dc.Key, dc.Name, comm.IpIdInt);
+            bridge.AddPreActivationAction(() =>
+            {
+                var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as MobileControlSystemController;
+                if (parent == null)
+                {
+                    Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
+                }
+                Debug.Console(0, bridge, "Linking to parent controller");
+                bridge.AddParent(parent);
+                parent.AddBridge(bridge);
+            });
+
+            return bridge;
+        }
+    }
+
 }

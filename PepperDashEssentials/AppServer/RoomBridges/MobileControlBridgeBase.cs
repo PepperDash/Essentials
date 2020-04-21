@@ -12,7 +12,7 @@ namespace PepperDash.Essentials
 	/// <summary>
 	/// 
 	/// </summary>
-	public abstract class MobileControlBridgeBase: Device
+	public abstract class MobileControlBridgeBase: EssentialsDevice
 	{
 		public MobileControlSystemController Parent { get; private set; }
 

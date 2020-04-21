@@ -10,88 +10,34 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Room.MobileControl;
 
 namespace PepperDash.Essentials
 {
-	public class DeviceFactory
+    /// <summary>
+    /// Responsible for loading all of the device types for this library
+    /// </summary>
+    public class DeviceFactory
 	{
-		public static IKeyed GetDevice(DeviceConfig dc)
-		{
-			var key = dc.Key;
-			var name = dc.Name;
-			var type = dc.Type;
-			var properties = dc.Properties;
+        public DeviceFactory()
+        {
+            var ampFactory = new AmplifierFactory() as IDeviceFactory;
+            ampFactory.LoadTypeFactories();
 
-			var typeName = dc.Type.ToLower();
+            var mockDisplayFactory = new MockDisplayFactory() as IDeviceFactory;
+            mockDisplayFactory.LoadTypeFactories();
 
-            if (typeName == "amplifier")
-            {
-                return new Amplifier(dc.Key, dc.Name);
-            } 
-            else if (dc.Group.ToLower() == "touchpanel") //  typeName.StartsWith("tsw"))
-            {
-                return UiDeviceFactory.GetUiDevice(dc);
-            }
+            var consoleCommMockFactroy = new ConsoleCommMockDeviceFactory() as IDeviceFactory;
+            consoleCommMockFactroy.LoadTypeFactories();
 
-            else if (typeName == "mockdisplay")
-            {
-                return new MockDisplay(key, name);
-            }
+            var mcSystemControllerFactory = new MobileControlSystemControllerFactory() as IDeviceFactory;
+            mcSystemControllerFactory.LoadTypeFactories();
 
-            else if (typeName == "generic")
-            {
-                return new Device(key, name);
-            }
+            var mcSIMPLRoomBridgeFactory = new MobileControlSIMPLRoomBridgeFactory() as IDeviceFactory;
+            mcSIMPLRoomBridgeFactory.LoadTypeFactories();
 
-            //// MOVE into something else???
-            //else if (typeName == "basicirdisplay")
-            //{
-            //    var ir = IRPortHelper.GetIrPort(properties);
-            //    if (ir != null)
-            //        return new BasicIrDisplay(key, name, ir.Port, ir.FileName);
-            //}
-
-            else if (typeName == "commmock")
-            {
-                var comm = CommFactory.CreateCommForDevice(dc);
-                var props = JsonConvert.DeserializeObject<ConsoleCommMockDevicePropertiesConfig>(
-                    properties.ToString());
-                return new ConsoleCommMockDevice(key, name, props, comm);
-            }
-
-            else if (typeName == "appserver")
-            {
-                var props = JsonConvert.DeserializeObject<MobileControlConfig>(properties.ToString());
-                return new MobileControlSystemController(key, name, props);
-            }
-
-			else if (typeName == "mobilecontrolbridge-ddvc01")
-			{
-				var comm = CommFactory.GetControlPropertiesConfig(dc);
-
-				var bridge = new PepperDash.Essentials.Room.MobileControl.MobileControlSIMPLRoomBridge(key, name, comm.IpIdInt);
-				bridge.AddPreActivationAction(() =>
-				{
-					var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as MobileControlSystemController;
-					if (parent == null)
-					{
-						Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
-					}
-					Debug.Console(0, bridge, "Linking to parent controller");
-					bridge.AddParent(parent);
-					parent.AddBridge(bridge);
-				});
-
-				return bridge;
-			}
-
-            else if (typeName == "roomonwhenoccupancydetectedfeature")
-            {
-                return new RoomOnToDefaultSourceWhenOccupied(dc);
-            }
-
-			return null;
-		}
+            var roomOnToDefSourceWhenOcc = new RoomOnToDefaultSourceWhenOccupiedFactory() as IDeviceFactory;
+            roomOnToDefSourceWhenOcc.LoadTypeFactories();
+        }
 	}
-
 }
