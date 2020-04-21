@@ -5,13 +5,18 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class IRBlurayBase : Device, IDiscPlayerControls, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
+	public class IRBlurayBase : EssentialsDevice, IDiscPlayerControls, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
 	{
 		public IrOutputPortController IrPort { get; private set; }
 
@@ -311,4 +316,30 @@ namespace PepperDash.Essentials.Devices.Common
 
         #endregion
     }
+
+    public class IRBlurayBaseFactory : EssentialsDeviceFactory<IRBlurayBase>
+    {
+        public IRBlurayBaseFactory()
+        {
+            TypeNames = new List<string>() { "discplayer", "bluray" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new IRBlurayPlayer Device");
+
+            if (dc.Properties["control"]["method"].Value<string>() == "ir")
+            {
+                var irCont = IRPortHelper.GetIrOutputPortController(dc);
+                return new IRBlurayBase(dc.Key, dc.Name, irCont);
+            }
+            else if (dc.Properties["control"]["method"].Value<string>() == "com")
+            {
+                Debug.Console(0, "[{0}] COM Device type not implemented YET!", dc.Key);
+            }
+
+            return null;
+        }
+    }
+
 }

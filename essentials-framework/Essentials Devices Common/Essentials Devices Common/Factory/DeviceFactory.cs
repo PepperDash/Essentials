@@ -18,12 +18,51 @@ using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Devices.Common.Occupancy;
 using PepperDash.Essentials.Devices.Common.Environment;
 
-
-
 namespace PepperDash.Essentials.Devices.Common
 {
 	public class DeviceFactory
 	{
+        public DeviceFactory()
+        {
+            var appleTVFactory = new AppleTVFactory() as IDeviceFactory;
+            appleTVFactory.LoadTypeFactories();
+
+            var analogWayLCFactory = new AnalogWayLiveCoreFactory() as IDeviceFactory;
+            analogWayLCFactory.LoadTypeFactories();
+
+            var basicIrDisplayFactory = new BasicIrDisplayFactory() as IDeviceFactory;
+            basicIrDisplayFactory.LoadTypeFactories();
+
+            var biampTesiraFactory = new BiampTesiraForteDspFactory() as IDeviceFactory;
+            biampTesiraFactory.LoadTypeFactories();
+
+            var cameraViscaFactory = new Cameras.CameraViscaFactory() as IDeviceFactory;
+            cameraViscaFactory.LoadTypeFactories();
+
+            var cenRfGwFactory = new CenRfgwControllerFactory() as IDeviceFactory;
+            cenRfGwFactory.LoadTypeFactories();
+
+            var irBlurayFactory = new IRBlurayBaseFactory() as IDeviceFactory;
+            irBlurayFactory.LoadTypeFactories();
+
+            var digitalLoggerFactory = new DigitalLoggerFactory() as IDeviceFactory;
+            digitalLoggerFactory.LoadTypeFactories();
+
+            var genericAudioOutFactory = new GenericAudioOutWithVolumeFactory() as IDeviceFactory;
+            genericAudioOutFactory.LoadTypeFactories();
+
+            var genericSourceFactory = new GenericSourceFactory() as IDeviceFactory;
+            genericSourceFactory.LoadTypeFactories();
+
+            var inRoomPcFactory = new Core.Devices.InRoomPcFactory() as IDeviceFactory;
+            inRoomPcFactory.LoadTypeFactories();
+
+            var laptopFactory = new Core.Devices.LaptopFactory() as IDeviceFactory;
+            laptopFactory.LoadTypeFactories();
+
+
+        }
+
 		public static IKeyed GetDevice(DeviceConfig dc)
 		{
 			var key = dc.Key;
@@ -36,100 +75,8 @@ namespace PepperDash.Essentials.Devices.Common
 			var typeName = dc.Type.ToLower();
 			var groupName = dc.Group.ToLower();
 
-			if (typeName == "appletv")
-			{
-				var irCont = IRPortHelper.GetIrOutputPortController(dc);
-				return new AppleTV(key, name, irCont);
-			}
-			else if (typeName == "analogwaylivecore")
-			{
-				var comm = CommFactory.CreateCommForDevice(dc);
-				var props = JsonConvert.DeserializeObject<AnalogWayLiveCorePropertiesConfig>(
-					properties.ToString());
-				return new AnalogWayLiveCore(key, name, comm, props);
-			}
-			else if (typeName == "basicirdisplay")
-			{
-				var ir = IRPortHelper.GetIrPort(properties);
-                if (ir != null)
-                {
-                    var display = new BasicIrDisplay(key, name, ir.Port, ir.FileName);
-                    display.IrPulseTime = 200;       // Set default pulse time for IR commands.
-                    return display;
-                }
-			}
-
-            else if (typeName == "biamptesira")
-            {
-                var comm = CommFactory.CreateCommForDevice(dc);
-                var props = JsonConvert.DeserializeObject<BiampTesiraFortePropertiesConfig>(
-                    properties.ToString());
-                return new BiampTesiraForteDsp(key, name, comm, props);
-            }
-
-
-			else if (typeName == "cameravisca")
-			{
-				var comm = CommFactory.CreateCommForDevice(dc);
-				var props = JsonConvert.DeserializeObject<Cameras.CameraPropertiesConfig>(
-					properties.ToString());
-				return new Cameras.CameraVisca(key, name, comm, props);
-			}
-
-			else if (typeName == "cenrfgwex")
-			{
-				return CenRfgwController.GetNewExGatewayController(key, name,
-					properties.Value<string>("id"), properties.Value<string>("gatewayType"));
-			}
-
-			else if (typeName == "cenerfgwpoe")
-			{
-				return CenRfgwController.GetNewErGatewayController(key, name,
-					properties.Value<string>("id"), properties.Value<string>("gatewayType"));
-			}
-
-			else if (groupName == "discplayer") // (typeName == "irbluray")
-			{
-				if (properties["control"]["method"].Value<string>() == "ir")
-				{
-					var irCont = IRPortHelper.GetIrOutputPortController(dc);
-					return new IRBlurayBase(key, name, irCont);
-				}
-				else if (properties["control"]["method"].Value<string>() == "com")
-				{
-					Debug.Console(0, "[{0}] COM Device type not implemented YET!", key);
-				}
-			}
-			else if (typeName == "digitallogger")
-			{
-				// var comm = CommFactory.CreateCommForDevice(dc);
-				var props = JsonConvert.DeserializeObject<DigitalLoggerPropertiesConfig>(
-					properties.ToString());
-				return new DigitalLogger(key, name, props);
-			}
-			else if (typeName == "genericaudiooutwithvolume")
-			{
-				var zone = dc.Properties.Value<uint>("zone");
-				return new GenericAudioOutWithVolume(key, name,
-					dc.Properties.Value<string>("volumeDeviceKey"), zone);
-			}
-
-			else if (groupName == "genericsource")
-			{
-				return new GenericSource(key, name);
-			}
-
-			else if (typeName == "inroompc")
-			{
-				return new Core.Devices.InRoomPc(key, name);
-			}
-
-			else if (typeName == "laptop")
-			{
-				return new Core.Devices.Laptop(key, name);
-			}
-
-            else if (typeName == "bluejeanspc")
+            // TODO: Continue from here
+            if (typeName == "bluejeanspc")
             {
                 return new SoftCodec.BlueJeansPc(key, name);
             }

@@ -5,13 +5,14 @@ using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using System.Text.RegularExpressions;
 
 
 namespace PepperDash.Essentials.Devices.Common
 {
 
-    public class AnalogWayLiveCore : Device
+    public class AnalogWayLiveCore : EssentialsDevice
     {
         public IBasicCommunication Communication { get; private set; }
         public CommunicationGather PortGather { get; private set; }
@@ -238,4 +239,22 @@ namespace PepperDash.Essentials.Devices.Common
            // public QscDspControlPoint ControlPoint { get; set; }
         }
     }
+
+    public class AnalogWayLiveCoreFactory : EssentialsDeviceFactory<AnalogWayLiveCore>
+    {
+        public AnalogWayLiveCoreFactory()
+        {
+            TypeNames = new List<string>() { "analogwaylivecore" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new AnalogWayLiveCore Device");
+            var comm = CommFactory.CreateCommForDevice(dc);
+            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<AnalogWayLiveCorePropertiesConfig>(
+                dc.Properties.ToString());
+            return new AnalogWayLiveCore(dc.Key, dc.Name, comm, props);
+        }
+    }
+
 }

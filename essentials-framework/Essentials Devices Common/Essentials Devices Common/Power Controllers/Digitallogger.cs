@@ -11,6 +11,7 @@ using Crestron.SimplSharp.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 using PepperDash_Essentials_Core.Devices;
 
 
@@ -337,5 +338,21 @@ namespace PepperDash.Essentials.Devices.Common
 			public bool state;
 		}
 
+    }
+
+    public class DigitalLoggerFactory : EssentialsDeviceFactory<DigitalLogger>
+    {
+        public DigitalLoggerFactory()
+        {
+            TypeNames = new List<string>() { "digitallogger" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new DigitalLogger Device");
+            var props = JsonConvert.DeserializeObject<DigitalLoggerPropertiesConfig>(
+                dc.Properties.ToString());
+            return new DigitalLogger(dc.Key, dc.Name, props);
+        }
     }
 }

@@ -123,117 +123,6 @@ namespace PepperDash.Essentials.Core.Bridges
                         var bridge = device as IBridgeAdvanced;
                         if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                     }
-
-                    //if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
-                    //{
-                    //    (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is IBridgeAdvanced)
-                    //{
-                    //    Debug.Console(2, this, "'{0}' is IBridgeAdvanced", device.Key);
-                    //    (device as IBridgeAdvanced).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
-                    //}
-                    //else if (device is PepperDash.Essentials.Core.Monitoring.SystemMonitorController)
-                    //{
-                    //    (device as PepperDash.Essentials.Core.Monitoring.SystemMonitorController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is GenericComm)
-                    //{
-                    //    (device as GenericComm).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is CameraBase)
-                    //{
-                    //    (device as CameraBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
-                    //    continue;
-                    //}
-                    //else if (device is PepperDash.Essentials.Core.DisplayBase)
-                    //{
-                    //    (device as DisplayBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is DmChassisController)
-                    //{
-                    //    (device as DmChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is DmBladeChassisController)
-                    //{
-                    //    (device as DmBladeChassisController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is DmpsRoutingController)
-                    //{
-                    //    (device as DmpsRoutingController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is DmpsAudioOutputController)
-                    //{
-                    //    (device as DmpsAudioOutputController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is DmTxControllerBase)
-                    //{
-                    //    (device as DmTxControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is DmRmcControllerBase)
-                    //{
-                    //    (device as DmRmcControllerBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is GenericRelayDevice)
-                    //{
-                    //    (device as GenericRelayDevice).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is IRSetTopBoxBase)
-                    //{
-                    //    (device as IRSetTopBoxBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is IDigitalInput)
-                    //{
-                    //    (device as IDigitalInput).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is AppleTV)
-                    //{
-                    //    (device as AppleTV).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is HdMdxxxCEController)
-                    //{
-                    //    (device as HdMdxxxCEController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is LightingBase)
-                    //{
-                    //    (device as LightingBase).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is DigitalLogger)
-                    //{
-                    //    (device as DigitalLogger).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is PepperDash.Essentials.Devices.Common.Occupancy.GlsOccupancySensorBaseController)
-                    //{
-                    //    (device as PepperDash.Essentials.Devices.Common.Occupancy.GlsOccupancySensorBaseController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is StatusSignController)
-                    //{
-                    //    (device as StatusSignController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
-                    //else if (device is C2nRthsController)
-                    //{
-                    //    (device as C2nRthsController).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    //    continue;
-                    //}
                 }
 
                 Debug.Console(1, this, "Devices Linked.");
@@ -403,5 +292,19 @@ namespace PepperDash.Essentials.Core.Bridges
 
     }
 
+    public class EiscApiFactory : EssentialsDeviceFactory<EiscApi>
+    {
+        public EiscApiFactory()
+        {
+            TypeNames = new List<string>() { "eiscapi" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new EiscApi Device");
+
+            return new EiscApi(dc);
+        }
+    }
 
 }
