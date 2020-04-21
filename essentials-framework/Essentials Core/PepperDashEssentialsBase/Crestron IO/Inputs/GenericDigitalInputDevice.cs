@@ -8,7 +8,6 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
@@ -42,7 +41,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
             InputStateFeedback.FireUpdate();
         }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new IDigitalInputJoinMap();
 

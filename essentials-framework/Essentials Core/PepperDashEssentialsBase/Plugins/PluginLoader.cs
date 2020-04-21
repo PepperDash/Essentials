@@ -360,7 +360,8 @@ namespace PepperDash.Essentials
                         }
                         catch (Exception e)
                         {
-                            Debug.Console(2, "Load Plugin not found. {0} is not a plugin assembly. Exception: {1}", loadedAssembly.Name, e);
+                            Debug.Console(2, "Load Plugin not found. {0}.{2} is not a plugin factory. Exception: {1}",
+                                loadedAssembly.Name, e, type.Name);
                             continue;
                         }
 

@@ -990,7 +990,7 @@ namespace PepperDash.Essentials.DM
         }
         #endregion
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new DmChassisControllerJoinMap();
 

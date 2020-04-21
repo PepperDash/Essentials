@@ -8,7 +8,6 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Core.Lighting
 {
@@ -72,7 +71,7 @@ namespace PepperDash.Essentials.Core.Lighting
         }
 
         protected GenericLightingJoinMap LinkLightingToApi(LightingBase lightingDevice, BasicTriList trilist, uint joinStart,
-            string joinMapKey, EiscApi bridge)
+            string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new GenericLightingJoinMap();
 

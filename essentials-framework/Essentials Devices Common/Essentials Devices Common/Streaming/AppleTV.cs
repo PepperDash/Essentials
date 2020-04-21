@@ -10,7 +10,6 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
-using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Devices.Common
 {
@@ -144,7 +143,7 @@ namespace PepperDash.Essentials.Devices.Common
 
 		#endregion
 
-	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
             var joinMap = new AppleTvJoinMap();
 

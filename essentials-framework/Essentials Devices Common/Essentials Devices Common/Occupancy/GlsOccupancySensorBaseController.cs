@@ -257,7 +257,7 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
 
         protected void LinkOccSensorToApi(GlsOccupancySensorBaseController occController, BasicTriList trilist,
-            uint joinStart, string joinMapKey, EiscApi bridge)
+            uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new GlsOccupancySensorBaseJoinMap();
 
@@ -360,7 +360,7 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             #endregion
         }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             LinkOccSensorToApi(this, trilist, joinStart, joinMapKey, bridge);
         }

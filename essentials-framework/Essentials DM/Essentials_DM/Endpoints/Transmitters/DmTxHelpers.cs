@@ -169,7 +169,7 @@ namespace PepperDash.Essentials.DM
 	    }
 
 	    protected void LinkDmTxToApi(DmTxControllerBase tx, BasicTriList trilist, uint joinStart, string joinMapKey,
-	        EiscApi bridge)
+	        EiscApiAdvanced bridge)
 	    {
             var joinMap = new DmTxControllerJoinMap();
 

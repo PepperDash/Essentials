@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.DM
         }
 
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             LinkDmTxToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
