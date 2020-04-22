@@ -9,11 +9,12 @@ using Crestron.SimplSharpPro.Lighting;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 
 namespace PepperDash.Essentials.Devices.Common.Environment.Lighting
 {
-    public class Din8sw8Controller : Device, ISwitchedOutputCollection
+    public class Din8sw8Controller : EssentialsDevice, ISwitchedOutputCollection
     {
         // Need to figure out some sort of interface to make these switched outputs behave like processor relays so they can be used interchangably
 
@@ -82,6 +83,23 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lighting
         public void Off()
         {
             SwitchedOutput.FullOff();
+        }
+    }
+
+    public class Din8sw8ControllerFactory : EssentialsDeviceFactory<Din8sw8Controller>
+    {
+        public Din8sw8ControllerFactory()
+        {
+            TypeNames = new List<string>() { "din8sw8" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new Din8sw8Controller Device");
+            var comm = CommFactory.GetControlPropertiesConfig(dc);
+
+            return new Din8sw8Controller(dc.Key, comm.CresnetIdInt);
+
         }
     }
 

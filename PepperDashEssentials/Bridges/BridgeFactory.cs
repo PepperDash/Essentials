@@ -32,7 +32,6 @@ namespace PepperDash.Essentials
 
     }
 
-
     public class CommBridge : Device
     {
         public CommBridgeProperties Properties { get; private set; }

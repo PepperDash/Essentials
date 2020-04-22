@@ -8,6 +8,8 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
+using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
@@ -100,4 +102,74 @@ namespace PepperDash.Essentials.Core.CrestronIO
             OutputIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Relay]);
         }
     }
+
+    public class GenericRelayDeviceFactory : EssentialsDeviceFactory<GenericRelayDevice>
+    {
+        public GenericRelayDeviceFactory()
+        {
+            TypeNames = new List<string>() { "relayoutput" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new Generic Relay Device");
+
+            var props = JsonConvert.DeserializeObject<IOPortConfig>(dc.Properties.ToString());
+            var key = dc.Key;
+
+            IRelayPorts portDevice;
+
+            if (props.PortDeviceKey == "processor")
+                portDevice = Global.ControlSystem as IRelayPorts;
+            else
+                portDevice = DeviceManager.GetDeviceForKey(props.PortDeviceKey) as IRelayPorts;
+
+            if (portDevice == null)
+                Debug.Console(0, "Unable to add relay device with key '{0}'. Port Device does not support relays", key);
+            else
+            {
+                var cs = (portDevice as CrestronControlSystem);
+
+                if (cs != null)
+                {
+                    // The relay is on a control system processor
+                    if (!cs.SupportsRelay || props.PortNumber > cs.NumberOfRelayPorts)
+                    {
+                        Debug.Console(0, "Port Device: {0} does not support relays or does not have enough relays");
+                        return null;
+                    }
+                }
+                else
+                {
+                    // The relay is on another device type
+
+                    if (props.PortNumber > portDevice.NumberOfRelayPorts)
+                    {
+                        Debug.Console(0, "Port Device: {0} does not have enough relays");
+                        return null;
+                    }
+                }
+
+                Relay relay = portDevice.RelayPorts[props.PortNumber];
+
+                if (!relay.Registered)
+                {
+                    if (relay.Register() == eDeviceRegistrationUnRegistrationResponse.Success)
+                        return new GenericRelayDevice(key, relay);
+                    else
+                        Debug.Console(0, "Attempt to register relay {0} on device with key '{1}' failed.", props.PortNumber, props.PortDeviceKey);
+                }
+                else
+                {
+                    return new GenericRelayDevice(key, relay);
+                }
+
+                // Future: Check if portDevice is 3-series card or other non control system that supports versiports
+            }
+
+            return null;
+
+        }
+    }
+
 }

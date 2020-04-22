@@ -8,11 +8,12 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class Roku2 : Device, IDPad, ITransport, IUiDisplayInfo, IRoutingOutputs
+	public class Roku2 : EssentialsDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingOutputs
 	{
 		[Api]
 		public IrOutputPortController IrPort { get; private set; }
@@ -145,4 +146,21 @@ namespace PepperDash.Essentials.Devices.Common
 		#endregion
 
 	}
+
+    public class Roku2Factory : EssentialsDeviceFactory<Roku2>
+    {
+        public Roku2Factory()
+        {
+            TypeNames = new List<string>() { "roku" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new Roku Device");
+            var irCont = IRPortHelper.GetIrOutputPortController(dc);
+            return new Roku2(dc.Key, dc.Name, irCont);
+
+        }
+    }
+
 }

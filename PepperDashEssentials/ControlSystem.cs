@@ -101,7 +101,7 @@ namespace PepperDash.Essentials
             new BridgeFactory();
 
             new PepperDash.Essentials.Devices.Common.DeviceFactory();
-
+            new PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory();
         }
 
 
@@ -379,8 +379,8 @@ namespace PepperDash.Essentials
                         newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
 
                     //
-					if (newDev == null)
-						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
+                    //if (newDev == null)
+                    //    newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
                     //
 
 					if (newDev != null)

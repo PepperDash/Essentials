@@ -14,51 +14,20 @@ namespace PepperDash.Essentials.Devices.Displays
 {
 	public class DisplayDeviceFactory
 	{
-		public static IKeyed GetDevice(DeviceConfig dc)
-		{
-			var key = dc.Key;
-			var name = dc.Name;
-			var type = dc.Type;
-			var properties = dc.Properties;
+        public DisplayDeviceFactory()
+        {
+            var necFactory = new NecPSXMDisplayFactory() as IDeviceFactory;
+            necFactory.LoadTypeFactories();
 
-			var typeName = dc.Type.ToLower();
+            var panasonicThFactory = new PanasonicThDisplayFactory() as IDeviceFactory;
+            panasonicThFactory.LoadTypeFactories();
 
-			try
-			{
-				if (typeName == "necmpsx")
-				{
-					var comm = CommFactory.CreateCommForDevice(dc);
-					if (comm != null)
-						return new NecPSXMDisplay(dc.Key, dc.Name, comm);
-				}
-				if (typeName == "panasonicthef")
-				{
-					var comm = CommFactory.CreateCommForDevice(dc);
-					if (comm != null)
-						return new PanasonicThefDisplay(dc.Key, dc.Name, comm);
-				}
-                else if(typeName == "samsungmdc")
-                {
-                    var comm = CommFactory.CreateCommForDevice(dc);
-                    if (comm != null)
-                        return new SamsungMDC(dc.Key, dc.Name, comm, dc.Properties["id"].Value<string>());
-                }
-                if (typeName == "avocorvtf")
-                {
-                    var comm = CommFactory.CreateCommForDevice(dc);
-                    if (comm != null)
-                        return new AvocorDisplay(dc.Key, dc.Name, comm, null);
-                }
-                   
-			}
-			catch (Exception e)
-			{
-				Debug.Console(0, "Displays factory: Exception creating device type {0}, key {1}: \nCONFIG JSON: {2} \nERROR: {3}\n\n", 
-                    dc.Type, dc.Key, JsonConvert.SerializeObject(dc), e);
-				return null;
-			}
+            var samsungMdcFactory = new SamsungMDCFactory() as IDeviceFactory;
+            samsungMdcFactory.LoadTypeFactories();
 
-			return null;
-		}
+            var avocorFactory = new AvocorDisplayFactory() as IDeviceFactory;
+            avocorFactory.LoadTypeFactories();
+        }
+
 	}
 }
