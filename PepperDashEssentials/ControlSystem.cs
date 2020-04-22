@@ -81,30 +81,51 @@ namespace PepperDash.Essentials
                         "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
                 }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
-            LoadDeviceTypesFromFactories();
 
             if (!Debug.DoNotLoadOnNextBoot)
                 GoWithLoad();
         }
 
         /// <summary>
-        /// Instantiates each of the device factories to load thier device types
+        /// Instantiates each of the device factories to load their device types
         /// </summary>
         void LoadDeviceTypesFromFactories()
         {
-            // Instantiate the Device Factories
-            new CoreDeviceFactory();
-            new DmDeviceFactory();
-            new UiDeviceFactory();
+            PluginLoader.AddProgramAssemblies();
 
-            new DeviceFactory();
-            new BridgeFactory();
 
-            new PepperDash.Essentials.Devices.Common.DeviceFactory();
-            new PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory();
+            foreach (var assembly in PluginLoader.LoadedAssemblies)
+            {
+                if (!assembly.Name.Contains("Essentials"))
+                {
+                    continue;
+                }
+                else
+                {
+                    var assy = assembly.Assembly;
+                    var types = assy.GetTypes();
+
+                    if (types != null)
+                    {
+                        foreach (var type in types)
+                        {
+                            try
+                            {
+                                if (typeof(IDeviceFactory).IsAssignableFrom(type))
+                                {
+                                    var factory = (IDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+                                    factory.LoadTypeFactories();
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to load DeviceFactory: {0}", e);
+                            }
+                        }
+                    }
+                }
+            }
         }
-
-
 
         /// <summary>
         /// Determines if the program is running on a processor (appliance) or server (VC-4).
@@ -184,9 +205,9 @@ namespace PepperDash.Essentials
             {
                 Debug.SetDoNotLoadOnNextBoot(false);
 
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
+                LoadDeviceTypesFromFactories();
 
-                PluginLoader.AddProgramAssemblies();
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 
                 var filesReady = SetupFilesystem();
                 if (filesReady)

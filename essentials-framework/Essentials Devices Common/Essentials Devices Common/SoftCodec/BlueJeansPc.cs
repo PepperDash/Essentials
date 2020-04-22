@@ -166,7 +166,7 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
     {
         public BlueJeansPcFactory()
         {
-            TypeNames = new List<string>() { "mockvc" };
+            TypeNames = new List<string>() { "bluejeanspc" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)

@@ -71,9 +71,22 @@ namespace PepperDash.Essentials
                             assembly = Assembly.GetExecutingAssembly();
                             break;
                         }
-                    case ("PepperDashEssentialsBase.dll"):
+                    case ("PepperDash_Essential_Core.dll"):
                         {
-
+                            version = Global.AssemblyVersion;
+                            assembly = System.Reflection
+                            break;
+                        }
+                    case ("PepperDash_Essentials_DM.dll"):
+                        {
+                            version = Global.AssemblyVersion;
+                            assembly = Assembly.GetExecutingAssembly();
+                            break;
+                        }
+                    case ("Essentials Devices Common.dll"):
+                        {
+                            version = Global.AssemblyVersion;
+                            assembly = Assembly.GetExecutingAssembly();
                             break;
                         }
                     case ("PepperDash_Core.dll"):
