@@ -105,7 +105,7 @@ namespace PepperDash.Essentials.Core
 
             Debug.Console(0, "Device Types:");
 
-            foreach (var type in types)
+            foreach (var type in types.OrderBy(t => t.Key))
             {
                 var description = type.Value.Description;
                 var cType = "Not Specified by Plugin";

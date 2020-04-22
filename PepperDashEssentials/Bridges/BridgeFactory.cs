@@ -22,12 +22,11 @@ namespace PepperDash.Essentials
     {
         public BridgeFactory()
         {
-            var bridgeFactory = new BridgeFactory() as IDeviceFactory;
-            bridgeFactory.LoadTypeFactories();
+            var eiscApiFactory = new EiscApiFactory() as IDeviceFactory;
+            eiscApiFactory.LoadTypeFactories();
         }
 
     }
-
 
     public class CommBridge : Device
     {

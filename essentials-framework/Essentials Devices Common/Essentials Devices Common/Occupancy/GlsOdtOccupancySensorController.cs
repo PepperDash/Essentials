@@ -8,6 +8,7 @@ using Crestron.SimplSharpPro.GeneralIO;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Devices.Common.Occupancy
@@ -159,4 +160,37 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             LinkOccSensorToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
     }
+
+    public class GlsOdtOccupancySensorControllerFactory : EssentialsDeviceFactory<GlsOdtOccupancySensorController>
+    {
+        public GlsOdtOccupancySensorControllerFactory()
+        {
+            TypeNames = new List<string>() { "glsodtccn" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
+
+            var typeName = dc.Type.ToLower();
+            var key = dc.Key;
+            var name = dc.Name;
+            var comm = CommFactory.GetControlPropertiesConfig(dc);
+
+            var occSensor = new GlsOdtCCn(comm.CresnetIdInt, Global.ControlSystem);
+
+            if (occSensor != null)
+            {
+                return new GlsOdtOccupancySensorController(key, name, occSensor);
+            }
+            else
+            {
+                Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
+                return null;
+            }
+
+
+        }
+    }
+
 }
