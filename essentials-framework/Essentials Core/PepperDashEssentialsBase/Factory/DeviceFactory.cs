@@ -29,6 +29,30 @@ namespace PepperDash.Essentials.Core
 
     public class DeviceFactory
     {
+        public DeviceFactory()
+        {
+            var assy = Assembly.GetExecutingAssembly();
+            PluginLoader.SetEssentialsAssembly(assy.GetName().Name, assy);
+
+            var types = assy.GetTypes().Where(ct => typeof(IDeviceFactory).IsAssignableFrom(ct) && !ct.IsInterface && !ct.IsAbstract);
+
+            if (types != null)
+            {
+                foreach (var type in types)
+                {
+                    try
+                    {
+                        var factory = (IDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+                        factory.LoadTypeFactories();
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to load type: '{1}' DeviceFactory: {0}", e, type.Name);
+                    }
+                }
+            }
+        }
+
 		/// <summary>
 		/// A dictionary of factory methods, keyed by config types, added by plugins.
 		/// These methods are looked up and called by GetDevice in this class.
@@ -120,30 +144,6 @@ namespace PepperDash.Essentials.Core
                     CType: '{1}' 
                     Description: {2}", type.Key, cType, description);
             }
-        }
-    }
-
-    /// <summary>
-    /// Responsible for loading all of the device types for this library
-    /// </summary>
-    public class CoreDeviceFactory
-    {
-        public CoreDeviceFactory()
-        {
-            Debug.Console(1, "Essentials.Core Factory Adding Types...");
-
-            //cast to IDeviceFactory isn't explicitly required here...but will be when instantiating using reflection, which I'm assuming is the next step
-            var genCommFactory = new GenericCommFactory() as IDeviceFactory;
-            genCommFactory.LoadTypeFactories();
-
-            var c2nRthsFactory = new C2nRthsControllerFactory() as IDeviceFactory;
-            c2nRthsFactory.LoadTypeFactories();
-
-            var statusSignFactory = new StatusSignControllerFactory() as IDeviceFactory;
-            statusSignFactory.LoadTypeFactories();
-
-            var cenIoControllerFactory = new CenIoDigIn104ControllerFactory() as IDeviceFactory;
-            cenIoControllerFactory.LoadTypeFactories();
         }
     }
 }

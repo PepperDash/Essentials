@@ -87,47 +87,6 @@ namespace PepperDash.Essentials
         }
 
         /// <summary>
-        /// Instantiates each of the device factories to load their device types
-        /// </summary>
-        void LoadDeviceTypesFromFactories()
-        {
-            PluginLoader.AddProgramAssemblies();
-
-
-            foreach (var assembly in PluginLoader.LoadedAssemblies)
-            {
-                if (!assembly.Name.Contains("Essentials"))
-                {
-                    continue;
-                }
-                else
-                {
-                    var assy = assembly.Assembly;
-                    var types = assy.GetTypes();
-
-                    if (types != null)
-                    {
-                        foreach (var type in types)
-                        {
-                            try
-                            {
-                                if (typeof(IDeviceFactory).IsAssignableFrom(type))
-                                {
-                                    var factory = (IDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
-                                    factory.LoadTypeFactories();
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to load DeviceFactory: {0}", e);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Determines if the program is running on a processor (appliance) or server (VC-4).
         /// 
         /// Sets Global.FilePathPrefix and Global.ApplicationDirectoryPathPrefix based on platform
@@ -202,10 +161,15 @@ namespace PepperDash.Essentials
         public void GoWithLoad()
         {
             try
-            {
+            {             
                 Debug.SetDoNotLoadOnNextBoot(false);
 
-                LoadDeviceTypesFromFactories();
+                PluginLoader.AddProgramAssemblies();
+
+                new Core.DeviceFactory();
+                new Devices.Common.DeviceFactory();
+                new DM.DeviceFactory();
+                new DeviceFactory();
 
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 

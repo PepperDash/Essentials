@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
@@ -6,6 +7,7 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.AirMedia;
 using Crestron.SimplSharpPro.UI;
+using Crestron.SimplSharp.Reflection;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -20,25 +22,30 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// Responsible for loading the type factories for this library
     /// </summary>
-	public class DmDeviceFactory
-	{
-        public DmDeviceFactory()
+    public class DeviceFactory
+    {
+        public DeviceFactory()
         {
-            Debug.Console(1, "Essentials.DM Factory Adding Types...");
+            var assy = Assembly.GetExecutingAssembly();
+            PluginLoader.SetEssentialsAssembly(assy.GetName().Name, assy);
+            
+            var types = assy.GetTypes().Where(ct => typeof(IDeviceFactory).IsAssignableFrom(ct) && !ct.IsInterface && !ct.IsAbstract);
 
-            var dmChassisFactory = new DmChassisControllerFactory() as IDeviceFactory;
-            dmChassisFactory.LoadTypeFactories();
-
-            var dmTxFactory = new DmTxControllerFactory() as IDeviceFactory;
-            dmTxFactory.LoadTypeFactories();
-
-            var dmRxFactory = new DmRmcControllerFactory() as IDeviceFactory;
-            dmRxFactory.LoadTypeFactories();
-
-            var hdMdFactory = new HdMdxxxCEControllerFactory() as IDeviceFactory;
-            hdMdFactory.LoadTypeFactories();
+            if (types != null)
+            {
+                foreach (var type in types)
+                {
+                    try
+                    {
+                        var factory = (IDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+                        factory.LoadTypeFactories();
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to load type: '{1}' DeviceFactory: {0}", e, type.Name);
+                    }
+                }
+            }
         }
-
-	}
-
+    }
 }

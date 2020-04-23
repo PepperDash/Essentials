@@ -68,25 +68,21 @@ namespace PepperDash.Essentials
                     case ("PepperDashEssentials.dll"):
                         {
                             version = Global.AssemblyVersion;
-                            assembly = Assembly.GetExecutingAssembly();
                             break;
                         }
-                    case ("PepperDash_Essential_Core.dll"):
+                    case ("PepperDash_Essentials_Core.dll"):
                         {
                             version = Global.AssemblyVersion;
-                            assembly = System.Reflection
                             break;
                         }
                     case ("PepperDash_Essentials_DM.dll"):
                         {
                             version = Global.AssemblyVersion;
-                            assembly = Assembly.GetExecutingAssembly();
                             break;
                         }
                     case ("Essentials Devices Common.dll"):
                         {
                             version = Global.AssemblyVersion;
-                            assembly = Assembly.GetExecutingAssembly();
                             break;
                         }
                     case ("PepperDash_Core.dll"):
@@ -107,6 +103,17 @@ namespace PepperDash.Essentials
                 {
                     Debug.Console(2, "Assembly: {0}", assembly.Name);
                 }
+            }
+        }
+
+
+        public static void SetEssentialsAssembly(string name, Assembly assembly)
+        {
+            var loadedAssembly = LoadedAssemblies.FirstOrDefault(la => la.Name.Equals(name));
+
+            if (loadedAssembly != null)
+            {
+                loadedAssembly.SetAssembly(assembly);
             }
         }
 
@@ -501,6 +508,11 @@ namespace PepperDash.Essentials
         {
             Name = name;
             Version = version;
+            Assembly = assembly;
+        }
+
+        public void SetAssembly(Assembly assembly)
+        {
             Assembly = assembly;
         }
     }
