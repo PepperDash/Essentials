@@ -165,7 +165,7 @@ namespace PepperDash.Essentials.Core
 
         [JsonConverter(typeof(ComSpecJsonConverter))]
         public ComPort.ComPortSpec ComParams { get; set; }
-
+		public uint CardSlot { get; set; } 
 		public string CresnetId { get; set; }
 
         /// <summary>

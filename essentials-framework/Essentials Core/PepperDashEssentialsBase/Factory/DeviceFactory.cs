@@ -9,7 +9,10 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
+using PepperDash.Essentials.Core.CrestronIO.Cards;
 using PepperDash.Essentials.Core.Touchpanels;
+using Crestron.SimplSharpPro.ThreeSeriesCards;
+
 
 namespace PepperDash.Essentials.Core
 {
@@ -81,6 +84,13 @@ namespace PepperDash.Essentials.Core
 		        var cresnetId = control.CresnetIdInt;
 
 		        return new C2nRthsController(key, name, new C2nRths(cresnetId, Global.ControlSystem));
+		    }
+			if (typeName == "c3com3")
+		    {
+		        var control = CommFactory.GetControlPropertiesConfig(dc);
+				var cardSlot = control.CardSlot;
+
+				return new C3Com3Controller(key, name, new C3com3(cardSlot, Global.ControlSystem));
 		    }
 
             return null;
