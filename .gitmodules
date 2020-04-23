@@ -1,3 +1,6 @@
 [submodule "essentials-framework/pepperdashcore-builds"]
 	path = essentials-framework/pepperdashcore-builds
 	url = https://github.com/ndorin/PepperDashCore-Builds.git
+[submodule "Essentials-Template-UI"]
+	path = Essentials-Template-UI
+	url = https://github.com/PepperDash/Essentials-Template-UI.git
