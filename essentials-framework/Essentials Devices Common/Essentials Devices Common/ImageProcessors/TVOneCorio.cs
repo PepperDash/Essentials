@@ -5,13 +5,14 @@ using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using System.Text.RegularExpressions;
 
 
 namespace PepperDash.Essentials.Devices.Common
 {
 
-    public class TVOneCorio : Device
+    public class TVOneCorio : EssentialsDevice
     {
         public IBasicCommunication Communication { get; private set; }
         public CommunicationGather PortGather { get; private set; }
@@ -238,4 +239,22 @@ namespace PepperDash.Essentials.Devices.Common
            // public QscDspControlPoint ControlPoint { get; set; }
         }
     }
+
+    public class TVOneCorioFactory : EssentialsDeviceFactory<TVOneCorio>
+    {
+        public TVOneCorioFactory()
+        {
+            TypeNames = new List<string>() { "tvonecorio" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new TVOneCorio Device");
+                var comm = CommFactory.CreateCommForDevice(dc);
+                var props = Newtonsoft.Json.JsonConvert.DeserializeObject<TVOneCorioPropertiesConfig>(
+                    dc.Properties.ToString());
+                return new TVOneCorio(dc.Key, dc.Name, comm, props);
+        }
+    }
+
 }

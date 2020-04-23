@@ -4,6 +4,7 @@ using System.Linq;
 using Crestron.SimplSharpPro;
 
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Core;
 
@@ -12,7 +13,7 @@ namespace PepperDash.Essentials.Core.Devices
 	/// <summary>
 	/// This DVD class should cover most IR, one-way DVD and Bluray fuctions
 	/// </summary>
-	public class InRoomPc : Device, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
+	public class InRoomPc : EssentialsDevice, IHasFeedback, IRoutingOutputs, IAttachVideoStatus, IUiDisplayInfo, IUsageTracking
 	{
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeLaptop; } }
 		public string IconName { get; set; }
@@ -63,4 +64,19 @@ namespace PepperDash.Essentials.Core.Devices
 
         #endregion
 	}
+
+    public class InRoomPcFactory : EssentialsDeviceFactory<InRoomPc>
+    {
+        public InRoomPcFactory()
+        {
+            TypeNames = new List<string>() { "inroompc" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new InRoomPc Device");
+            return new InRoomPc(dc.Key, dc.Name);
+        }
+    }
+
 }

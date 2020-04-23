@@ -81,11 +81,10 @@ namespace PepperDash.Essentials
                         "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
                 }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
+
             if (!Debug.DoNotLoadOnNextBoot)
                 GoWithLoad();
         }
-
-
 
         /// <summary>
         /// Determines if the program is running on a processor (appliance) or server (VC-4).
@@ -162,12 +161,17 @@ namespace PepperDash.Essentials
         public void GoWithLoad()
         {
             try
-            {
+            {             
                 Debug.SetDoNotLoadOnNextBoot(false);
 
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
-
                 PluginLoader.AddProgramAssemblies();
+
+                new Core.DeviceFactory();
+                new Devices.Common.DeviceFactory();
+                new DM.DeviceFactory();
+                new DeviceFactory();
+
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 
                 var filesReady = SetupFilesystem();
                 if (filesReady)
@@ -291,9 +295,6 @@ namespace PepperDash.Essentials
         /// </summary>
         public void LoadDevices()
         {
-            // Instantiate the Device Factories
-            new CoreDeviceFactory();
-
 
             // Build the processor wrapper class
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
@@ -357,33 +358,15 @@ namespace PepperDash.Essentials
                     }
 
                     // Try local factories first
-                    var newDev = DeviceFactory.GetDevice(devConf);
+                    IKeyed newDev = null;
 
-                    if (newDev == null)
-                        newDev = BridgeFactory.GetDevice(devConf);
-
-                    // Then associated library factories
                     if (newDev == null)
                         newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
-					if (newDev == null)
-						newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
-					if (newDev == null)
-						newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
-					if (newDev == null)
-						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
 
-					//if (newDev == null) // might want to consider the ability to override an essentials "type"
-					//{
-					//    // iterate plugin factories
-					//    foreach (var f in FactoryObjects)
-					//    {
-					//        var cresFactory = f as IGetCrestronDevice;
-					//        if (cresFactory != null)
-					//        {
-					//            newDev = cresFactory.GetDevice(devConf, this);
-					//        }
-					//    }
-					//}
+                    //
+                    //if (newDev == null)
+                    //    newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
+                    //
 
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);

@@ -8,6 +8,8 @@ using Crestron.SimplSharpPro.Gateways;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
+
 
 namespace PepperDash.Essentials.Devices.Common
 {
@@ -112,4 +114,20 @@ namespace PepperDash.Essentials.Devices.Common
 	{
 		Ethernet, EthernetShared, Cresnet
 	}
+
+    public class CenRfgwControllerFactory : EssentialsDeviceFactory<CenRfgwController>
+    {
+        public CenRfgwControllerFactory()
+        {
+            TypeNames = new List<string>() { "cenrfgwex", "cenerfgwpoe" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new CEN-GWEXER Device");
+            return CenRfgwController.GetNewExGatewayController(dc.Key, dc.Name,
+                dc.Properties.Value<string>("id"), dc.Properties.Value<string>("gatewayType"));
+        }
+    }
+
 }
