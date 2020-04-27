@@ -15,6 +15,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Serves as a generic wrapper class for all styles of IBasicCommuncation ports
     /// </summary>
+    [Description("Generic communication wrapper class for any IBasicCommunication type")]
     public class GenericComm : ReconfigurableBridgableDevice
     {
         EssentialsControlPropertiesConfig PropertiesConfig;

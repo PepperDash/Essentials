@@ -260,4 +260,29 @@ namespace PepperDash.Essentials.DM.AirMedia
 
 
     }
+
+    public class AirMediaControllerFactory : EssentialsDeviceFactory<AirMediaController>
+    {
+        public AirMediaControllerFactory()
+        {
+            TypeNames = new List<string>() { "am200", "am300" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            var type = dc.Type.ToLower();
+
+            Debug.Console(1, "Factory Attempting to create new AirMedia Device");
+
+            var props = JsonConvert.DeserializeObject<AirMediaPropertiesConfig>(dc.Properties.ToString());
+            AmX00 amDevice = null;
+            if (type == "am200")
+                amDevice = new Crestron.SimplSharpPro.DM.AirMedia.Am200(props.Control.IpIdInt, Global.ControlSystem);
+            else if (type == "am300")
+                amDevice = new Crestron.SimplSharpPro.DM.AirMedia.Am300(props.Control.IpIdInt, Global.ControlSystem);
+
+            return new AirMediaController(dc.Key, dc.Name, amDevice, dc, props);
+        
+        }
+    }
 }

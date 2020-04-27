@@ -10,7 +10,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.AudioCodec
 {
-    public abstract class AudioCodecBase : Device, IHasDialer, IUsageTracking, IAudioCodecInfo
+    public abstract class AudioCodecBase : EssentialsDevice, IHasDialer, IUsageTracking, IAudioCodecInfo
     {
 
         public event EventHandler<CodecCallStatusItemChangeEventArgs> CallStatusChange;

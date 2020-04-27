@@ -63,4 +63,37 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
         #endregion
     }
+
+    public class DgeControllerFactory : EssentialsDeviceFactory<DgeController>
+    {
+        public DgeControllerFactory()
+        {
+            TypeNames = new List<string>() { "dge100", "dmdge200c" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            var typeName = dc.Type.ToLower();
+            var comm = CommFactory.GetControlPropertiesConfig(dc);
+            var props = JsonConvert.DeserializeObject<CrestronTouchpanelPropertiesConfig>(dc.Properties.ToString());
+
+            Debug.Console(1, "Factory Attempting to create new DgeControllerm Device");
+
+            Dge100 dgeDevice = null;
+            if (typeName == "dge100")
+                dgeDevice = new Dge100(comm.IpIdInt, Global.ControlSystem);
+            else if (typeName == "dmdge200c")
+                dgeDevice = new DmDge200C(comm.IpIdInt, Global.ControlSystem);
+
+            if (dgeDevice == null)
+            {
+                Debug.Console(1, "Unable to create DGE device");
+                return null;
+            }
+
+            var dgeController = new DgeController(dc.Key + "-comPorts", dc.Name, dgeDevice, dc, props);
+
+            return dgeController;
+        }
+    }
 }

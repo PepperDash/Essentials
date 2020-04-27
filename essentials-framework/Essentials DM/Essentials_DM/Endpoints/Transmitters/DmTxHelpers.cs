@@ -13,6 +13,8 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.DM.Config;
+using PepperDash.Essentials.Core.Config;
+
 
 namespace PepperDash.Essentials.DM
 {
@@ -146,6 +148,7 @@ namespace PepperDash.Essentials.DM
 	/// <summary>
 	/// 
 	/// </summary>
+    [Description("Wrapper class for all DM-TX variants")]
 	public abstract class DmTxControllerBase : CrestronGenericBridgeableBaseDevice
 	{
         public virtual void SetPortHdcpCapability(eHdcpCapabilityType hdcpMode, uint port) { }
@@ -319,12 +322,25 @@ namespace PepperDash.Essentials.DM
             }
         }
 	}
-    //public enum ePdtHdcpSupport
-    //{
-    //    HdcpOff = 0,
-    //    Hdcp1 = 1,
-    //    Hdcp2 = 2,
-    //    Hdcp2_2= 3,
-    //    Auto = 99
-    //}
+
+    public class DmTxControllerFactory : EssentialsDeviceFactory<DmTxControllerBase>
+    {
+        public DmTxControllerFactory()
+        {
+            TypeNames = new List<string>() { "dmtx200c", "dmtx201c", "dmtx201s", "dmtx4k100c", "dmtx4k202c", "dmtx4kz202c", "dmtx4k302c", "dmtx4kz302c", "dmtx401c", "dmtx401s" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            var type = dc.Type.ToLower();
+
+            Debug.Console(1, "Factory Attempting to create new DM-TX Device");
+
+            var props = JsonConvert.DeserializeObject
+                <PepperDash.Essentials.DM.Config.DmTxPropertiesConfig>(dc.Properties.ToString());
+            return PepperDash.Essentials.DM.DmTxHelper.GetDmTxController(dc.Key, dc.Name, type, props);
+        }
+    }
+
 }
+

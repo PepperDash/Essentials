@@ -6,6 +6,8 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
+
 using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
@@ -13,7 +15,7 @@ namespace PepperDash.Essentials.Devices.Common
 	/// <summary>
 	/// Represents and audio endpoint
 	/// </summary>
-	public class GenericAudioOut : Device, IRoutingSinkNoSwitching
+	public class GenericAudioOut : EssentialsDevice, IRoutingSinkNoSwitching
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
 
@@ -97,5 +99,21 @@ namespace PepperDash.Essentials.Devices.Common
 		}
 
 	}
+
+    public class GenericAudioOutWithVolumeFactory : EssentialsDeviceFactory<GenericAudioOutWithVolume>
+    {
+        public GenericAudioOutWithVolumeFactory()
+        {
+            TypeNames = new List<string>() { "genericaudiooutwithvolume" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new GenericAudioOutWithVolumeFactory Device");
+            var zone = dc.Properties.Value<uint>("zone");
+            return new GenericAudioOutWithVolume(dc.Key, dc.Name,
+                dc.Properties.Value<string>("volumeDeviceKey"), zone);
+        }
+    }
 
 }

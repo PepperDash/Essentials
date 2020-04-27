@@ -132,7 +132,6 @@
     <Compile Include="Display\AvocorVTFDisplay.cs" />
     <Compile Include="Display\InputInterfaces.cs" />
     <Compile Include="Display\SamsungMDCDisplay.cs" />
-    <Compile Include="Display\DeviceFactory.cs" />
     <Compile Include="Display\NecPaSeriesProjector.cs" />
     <Compile Include="Display\NECPSXMDisplay.cs" />
     <Compile Include="DSP\BiampTesira\BiampTesiraForteDspLevel.cs" />

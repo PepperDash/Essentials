@@ -8,6 +8,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
 
@@ -166,4 +167,20 @@ namespace PepperDash.Essentials.Devices.Common
             trilist.SetBoolSigAction(joinMap.PlayPause, Play);
 	    }
 	}
+
+    public class AppleTVFactory : EssentialsDeviceFactory<AppleTV>
+    {
+        public AppleTVFactory()
+        {
+            TypeNames = new List<string>() { "appletv" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new AppleTV Device");
+            var irCont = IRPortHelper.GetIrOutputPortController(dc);
+            return new AppleTV(dc.Key, dc.Name, irCont);
+        }
+    }
+
 }

@@ -4,94 +4,45 @@ using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharp.Reflection;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Room.MobileControl;
 
 namespace PepperDash.Essentials
 {
-	public class DeviceFactory
-	{
-		public static IKeyed GetDevice(DeviceConfig dc)
-		{
-			var key = dc.Key;
-			var name = dc.Name;
-			var type = dc.Type;
-			var properties = dc.Properties;
+    /// <summary>
+    /// Responsible for loading all of the device types for this library
+    /// </summary>
+    public class DeviceFactory
+    {
 
-			var typeName = dc.Type.ToLower();
+        public DeviceFactory()
+        {
+            var assy = Assembly.GetExecutingAssembly();
+            PluginLoader.SetEssentialsAssembly(assy.GetName().Name, assy);
 
-            if (typeName == "amplifier")
+            var types = assy.GetTypes().Where(ct => typeof(IDeviceFactory).IsAssignableFrom(ct) && !ct.IsInterface && !ct.IsAbstract);
+
+            if (types != null)
             {
-                return new Amplifier(dc.Key, dc.Name);
-            } 
-            else if (dc.Group.ToLower() == "touchpanel") //  typeName.StartsWith("tsw"))
-            {
-                return UiDeviceFactory.GetUiDevice(dc);
+                foreach (var type in types)
+                {
+                    try
+                    {
+                        var factory = (IDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+                        factory.LoadTypeFactories();
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to load type: '{1}' DeviceFactory: {0}", e, type.Name);
+                    }
+                }
             }
-
-            else if (typeName == "mockdisplay")
-            {
-                return new MockDisplay(key, name);
-            }
-
-            else if (typeName == "generic")
-            {
-                return new Device(key, name);
-            }
-
-            //// MOVE into something else???
-            //else if (typeName == "basicirdisplay")
-            //{
-            //    var ir = IRPortHelper.GetIrPort(properties);
-            //    if (ir != null)
-            //        return new BasicIrDisplay(key, name, ir.Port, ir.FileName);
-            //}
-
-            else if (typeName == "commmock")
-            {
-                var comm = CommFactory.CreateCommForDevice(dc);
-                var props = JsonConvert.DeserializeObject<ConsoleCommMockDevicePropertiesConfig>(
-                    properties.ToString());
-                return new ConsoleCommMockDevice(key, name, props, comm);
-            }
-
-            else if (typeName == "appserver")
-            {
-                var props = JsonConvert.DeserializeObject<MobileControlConfig>(properties.ToString());
-                return new MobileControlSystemController(key, name, props);
-            }
-
-			else if (typeName == "mobilecontrolbridge-ddvc01")
-			{
-				var comm = CommFactory.GetControlPropertiesConfig(dc);
-
-				var bridge = new PepperDash.Essentials.Room.MobileControl.MobileControlSIMPLRoomBridge(key, name, comm.IpIdInt);
-				bridge.AddPreActivationAction(() =>
-				{
-					var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as MobileControlSystemController;
-					if (parent == null)
-					{
-						Debug.Console(0, bridge, "ERROR: Cannot connect bridge. System controller not present");
-					}
-					Debug.Console(0, bridge, "Linking to parent controller");
-					bridge.AddParent(parent);
-					parent.AddBridge(bridge);
-				});
-
-				return bridge;
-			}
-
-            else if (typeName == "roomonwhenoccupancydetectedfeature")
-            {
-                return new RoomOnToDefaultSourceWhenOccupied(dc);
-            }
-
-			return null;
-		}
-	}
-
+        }
+    }
 }

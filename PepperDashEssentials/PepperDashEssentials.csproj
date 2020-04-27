@@ -151,7 +151,6 @@
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Devices\Amplifier.cs" />
     <Compile Include="ControlSystem.cs" />
-    <Compile Include="Factory\UiDeviceFactory.cs" />
     <Compile Include="Fusion\EssentialsHuddleVtc1FusionController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Room\Config\EssentialsDualDisplayRoomPropertiesConfig.cs" />

@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Core.Shades
     /// <summary>
     /// Base class for a shade device
     /// </summary>
-    public abstract class ShadeBase : Device, IShadesOpenClose
+    public abstract class ShadeBase : EssentialsDevice, IShadesOpenClose
     {
         public ShadeBase(string key, string name)
             : base(key, name)

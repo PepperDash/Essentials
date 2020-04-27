@@ -21,7 +21,7 @@ using PepperDash.Essentials.AppServer.Messengers;
 
 namespace PepperDash.Essentials
 {
-    public class MobileControlSystemController : Device
+    public class MobileControlSystemController : EssentialsDevice
     {
 		WebSocketClient WSClient;
 
@@ -865,4 +865,20 @@ namespace PepperDash.Essentials
 			CrestronConsole.ConsoleCommandResponse("Usage: mobilehttprequest:N get/post url\r");
 		}
     }
+
+    public class MobileControlSystemControllerFactory : EssentialsDeviceFactory<MobileControlSystemController>
+    {
+        public MobileControlSystemControllerFactory()
+        {
+            TypeNames = new List<string>() { "appserver" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new MobileControlSystemController Device");
+            var props = JsonConvert.DeserializeObject<MobileControlConfig>(dc.Properties.ToString());
+            return new MobileControlSystemController(dc.Key, dc.Name, props);
+        }
+    }
+
 }

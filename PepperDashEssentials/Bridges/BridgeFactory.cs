@@ -16,25 +16,21 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 
 namespace PepperDash.Essentials
 {
+    /// <summary>
+    /// Responsible for loading all of the device types for this library
+    /// </summary>
     public class BridgeFactory
     {
-        public static IKeyed GetDevice(DeviceConfig dc)
+        public BridgeFactory()
         {
-            // ? why is this static JTA 2018-06-13? 
+            var eiscApiAdvancedFactory = new EiscApiAdvancedFactory() as IDeviceFactory;
+            eiscApiAdvancedFactory.LoadTypeFactories();
 
-            var typeName = dc.Type.ToLower();
-
-            //Debug.Console(2, "Name {0}, Key {1}, Type {2}, Properties {3}", name, key, type, properties.ToString());
-
-            if (typeName == "eiscapiadv" || typeName == "eiscapiadvanced")
-            {
-                return new EiscApiAdvanced(dc);
-            }
-
-            return typeName == "eiscapi" ? new EiscApi(dc) : null;
+            var eiscApiFactory = new EiscApiFactory() as IDeviceFactory;
+            eiscApiFactory.LoadTypeFactories();
         }
-    }
 
+    }
 
     public class CommBridge : Device
     {
