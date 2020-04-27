@@ -12,7 +12,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.DM.Config;
-using PepperDash_Essentials_Core.Devices;
+
 
 namespace PepperDash.Essentials.DM
 {
@@ -102,7 +102,7 @@ namespace PepperDash.Essentials.DM
             }
         }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new DmpsAudioOutputControllerJoinMap();
 

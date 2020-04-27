@@ -80,7 +80,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
             return true;
         }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = LinkLightingToApi(this, trilist, joinStart, joinMapKey, bridge);
 

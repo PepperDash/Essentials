@@ -1,4 +1,6 @@
-﻿namespace PepperDash.Essentials.Core.Bridges
+﻿using PepperDash.Essentials.Core;
+
+namespace PepperDash.Essentials.Core.Bridges
 {
     public class DmTxControllerJoinMap : JoinMapBase
     {

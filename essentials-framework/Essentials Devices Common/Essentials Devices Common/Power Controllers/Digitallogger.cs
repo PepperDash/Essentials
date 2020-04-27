@@ -11,7 +11,6 @@ using Crestron.SimplSharp.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash_Essentials_Core.Devices;
 
 
 namespace PepperDash.Essentials.Devices.Common
@@ -137,7 +136,7 @@ namespace PepperDash.Essentials.Devices.Common
             return true;
         }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new DigitalLoggerJoinMap();
 

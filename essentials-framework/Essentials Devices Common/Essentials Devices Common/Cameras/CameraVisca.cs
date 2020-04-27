@@ -81,7 +81,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 			return true;
 		}
 
-	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }

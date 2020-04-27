@@ -42,7 +42,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
             _device.TemperatureFormat.BoolValue = setToC;
         }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new C2nRthsControllerJoinMap();
 

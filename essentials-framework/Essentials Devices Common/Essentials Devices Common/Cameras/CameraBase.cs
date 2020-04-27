@@ -13,7 +13,6 @@ using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Devices.Common.Codec;
 
 using Newtonsoft.Json;
-using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
@@ -80,7 +79,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         }
 
         protected void LinkCameraToApi(CameraBase cameraDevice, BasicTriList trilist, uint joinStart, string joinMapKey,
-            EiscApi bridge)
+            EiscApiAdvanced bridge)
         {
             CameraControllerJoinMap joinMap = new CameraControllerJoinMap(joinStart);
 

@@ -7,7 +7,6 @@ using PepperDash.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Core.Monitoring
 {
@@ -201,7 +200,7 @@ namespace PepperDash.Essentials.Core.Monitoring
             return base.CustomActivate();
         }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApi bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new SystemMonitorJoinMap();
 

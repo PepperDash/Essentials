@@ -7,6 +7,7 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 using Newtonsoft.Json;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 //using PepperDash.Essentials.Devices.Common.Cameras;
@@ -24,11 +25,11 @@ namespace PepperDash.Essentials.Core.Bridges
 
             var bridgeKey = targets[0].Trim();
 
-            var bridge = DeviceManager.GetDeviceForKey(bridgeKey) as EiscApi;
+            var bridge = DeviceManager.GetDeviceForKey(bridgeKey) as EiscApiAdvanced;
 
             if (bridge == null)
             {
-                Debug.Console(0, "Unable to find bridge with key: '{0}'", bridgeKey);
+                Debug.Console(0, "Unable to find advanced bridge with key: '{0}'", bridgeKey);
                 return;
             }
 
@@ -76,7 +77,7 @@ namespace PepperDash.Essentials.Core.Bridges
     /// <summary>
     /// Bridge API using EISC
     /// </summary>
-    public class EiscApi : BridgeApi
+    public class EiscApiAdvanced : BridgeApi
     {
         public EiscApiPropertiesConfig PropertiesConfig { get; private set; }
 
@@ -84,7 +85,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         public ThreeSeriesTcpIpEthernetIntersystemCommunications Eisc { get; private set; }
 
-        public EiscApi(DeviceConfig dc) :
+        public EiscApiAdvanced(DeviceConfig dc) :
             base(dc.Key)
         {
             JoinMaps = new Dictionary<string, JoinMapBaseAdvanced>();
@@ -109,16 +110,17 @@ namespace PepperDash.Essentials.Core.Bridges
                     if (device == null) continue;
 
                     Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
-                    if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
+                    /*if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
                     {
                         Debug.Console(2, this, "'{0}' is IBridge", device.Key);
-                        (device as IBridge).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                    }
-                    else if (device is IBridgeAdvanced)
-                    {
-                        Debug.Console(2, this, "'{0}' is IBridgeAdvanced", device.Key);
-                        (device as IBridgeAdvanced).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
-                    }
+
+                        var dev = device as IBridge;
+
+                        dev.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                    }*/
+                    if (!(device is IBridgeAdvanced)) continue;
+                    Debug.Console(2, this, "'{0}' is IBridgeAdvanced", device.Key);
+                    (device as IBridgeAdvanced).LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                     //if (device.GetType().GetCType().IsAssignableFrom(typeof (IBridge)))
                     //{
                     //    var bridge = device as IBridge;
@@ -366,7 +368,7 @@ namespace PepperDash.Essentials.Core.Bridges
             try
             {
                 if (Debug.Level >= 1)
-                    Debug.Console(1, this, "EiscApi change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+                    Debug.Console(1, this, "EiscApiAdvanced change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
                 var uo = args.Sig.UserObject;
 
                 if (uo == null) return;
