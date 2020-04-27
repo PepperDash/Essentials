@@ -8,7 +8,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash_Essentials_Core.Devices;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core;
 using Crestron.SimplSharpPro.ThreeSeriesCards;
 
