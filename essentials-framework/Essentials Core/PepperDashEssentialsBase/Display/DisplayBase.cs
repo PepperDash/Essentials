@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// 
 	/// </summary>
-	public abstract class DisplayBase : EssentialsBridgeableDevice, IHasFeedback, IRoutingSinkWithSwitching, IPower, IWarmingCooling, IUsageTracking
+	public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IPower, IWarmingCooling, IUsageTracking
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
 
