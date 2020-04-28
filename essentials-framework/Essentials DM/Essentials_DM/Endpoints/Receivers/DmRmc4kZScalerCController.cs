@@ -16,9 +16,9 @@ using PepperDash.Core;
 namespace PepperDash.Essentials.DM
 {
     public class DmRmc4kZScalerCController : DmRmcControllerBase, IRmcRouting,
-        IIRInputPort, IComPorts, ICec
+        IIROutputPorts, IComPorts, ICec
     {
-        DmRmc4kzScalerC Rmc { get; private set; }
+        public DmRmc4kzScalerC Rmc { get; private set; }
 
         public RoutingInputPort DmIn { get; private set; }
         public RoutingInputPort HdmiIn { get; private set; }
@@ -139,7 +139,7 @@ namespace PepperDash.Essentials.DM
             Rmc.AudioVideoSource = (DmRmc4kzScalerC.eAudioVideoSource)number;
         }
 
-        public void ExecuteNumericSwitch(uint inputSelector, uint outputSelector, eRoutingSignalType signalType)
+        public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType signalType)
         {
             Debug.Console(2, this, "Attempting a route from input {0} to HDMI Output", inputSelector);
 
