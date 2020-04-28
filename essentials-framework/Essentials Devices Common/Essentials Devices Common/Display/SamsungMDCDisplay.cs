@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Devices.Displays
 	/// 
 	/// </summary>
     public class SamsungMDC : TwoWayDisplayBase, IBasicVolumeWithFeedback, ICommunicationMonitor, IInputDisplayPort1, IInputDisplayPort2,
-        IInputHdmi1, IInputHdmi2, IInputHdmi3, IInputHdmi4
+        IInputHdmi1, IInputHdmi2, IInputHdmi3, IInputHdmi4, IBridgeAdvanced
 	{
 		public IBasicCommunication Communication { get; private set; }
 				
@@ -152,7 +152,7 @@ namespace PepperDash.Essentials.Devices.Displays
 			return true;
 		}
 
-	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }

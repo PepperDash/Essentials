@@ -11,7 +11,7 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Devices.Displays
 {
-	public class NecPaSeriesProjector : ComTcpDisplayBase
+	public class NecPaSeriesProjector : ComTcpDisplayBase, IBridgeAdvanced
 	{
 		public readonly IntFeedback Lamp1RemainingPercent;
 		int _Lamp1RemainingPercent;
@@ -219,7 +219,7 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		}
 
-	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }

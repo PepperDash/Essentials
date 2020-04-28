@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core
             {
                 Port = postActivationFunc(config);
 
-                ConfigureComPort();
+                RegisterAndConfigureComPort();
             });
 	    }
 
@@ -47,16 +47,13 @@ namespace PepperDash.Essentials.Core
 			Spec = spec;
 			//IsConnected = new BoolFeedback(CommonBoolCue.IsConnected, () => true);
 
-
-			ConfigureComPort();
+			RegisterAndConfigureComPort();
 		}
 
-	    private void ConfigureComPort()
+	    private void RegisterAndConfigureComPort()
 	    {
             if (Port.Parent is CrestronControlSystem)
             {
-
-
                 var result = Port.Register();
                 if (result != eDeviceRegistrationUnRegistrationResponse.Success)
                 {

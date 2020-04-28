@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// 
 	/// </summary>
-	public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback
+	public class MockDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, IBridgeAdvanced
 
 	{
 		public RoutingInputPort HdmiIn1 { get; private set; }
@@ -177,7 +177,7 @@ namespace PepperDash.Essentials.Core
 
 		#endregion
 
-	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }

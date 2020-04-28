@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         Focus = 8
     }
 
-    public abstract class CameraBase : EssentialsBridgeableDevice, IRoutingOutputs
+    public abstract class CameraBase : EssentialsDevice, IRoutingOutputs
 	{
         public eCameraControlMode ControlMode { get; protected set; }
 
