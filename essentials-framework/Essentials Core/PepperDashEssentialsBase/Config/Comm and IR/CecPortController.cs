@@ -20,6 +20,17 @@ namespace PepperDash.Essentials.Core
 
         ICec Port;
 
+        public CecPortController(string key, Func<EssentialsControlPropertiesConfig, ICec> postActivationFunc,
+            EssentialsControlPropertiesConfig config):base(key)
+        {
+            AddPostActivationAction(() =>
+            {
+                Port = postActivationFunc(config);
+
+                Port.StreamCec.CecChange += StreamCec_CecChange;
+            });            
+        }
+
         public CecPortController(string key, ICec port)
             : base(key)
         {
