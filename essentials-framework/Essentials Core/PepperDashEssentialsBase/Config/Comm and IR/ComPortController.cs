@@ -47,22 +47,24 @@ namespace PepperDash.Essentials.Core
 			Spec = spec;
 			//IsConnected = new BoolFeedback(CommonBoolCue.IsConnected, () => true);
 
-			if (Port.Parent is CrestronControlSystem)
-			{
 
-
-				var result = Port.Register();
-				if (result != eDeviceRegistrationUnRegistrationResponse.Success)
-				{
-					Debug.Console(0, this, "ERROR: Cannot register Com port: {0}", result);
-					return; // false
-				}
-			}
 			ConfigureComPort();
 		}
 
 	    private void ConfigureComPort()
 	    {
+            if (Port.Parent is CrestronControlSystem)
+            {
+
+
+                var result = Port.Register();
+                if (result != eDeviceRegistrationUnRegistrationResponse.Success)
+                {
+                    Debug.Console(0, this, "ERROR: Cannot register Com port: {0}", result);
+                    return; // false
+                }
+            }
+
 	        var specResult = Port.SetComPortSpec(Spec);
 	        if (specResult != 0)
 	        {
