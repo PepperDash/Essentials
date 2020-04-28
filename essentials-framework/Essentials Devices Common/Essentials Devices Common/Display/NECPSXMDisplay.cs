@@ -17,7 +17,7 @@ namespace PepperDash.Essentials.Devices.Displays
 	/// <summary>
 	/// 
 	/// </summary>
-	public class NecPSXMDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, ICommunicationMonitor
+	public class NecPSXMDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, ICommunicationMonitor, IBridgeAdvanced
 	{
 		public IBasicCommunication Communication { get; private set; }
 		public CommunicationGather PortGather { get; private set; }
@@ -154,7 +154,7 @@ namespace PepperDash.Essentials.Devices.Displays
 			return true;
 		}
 
-	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }
