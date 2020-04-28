@@ -48,10 +48,10 @@ namespace PepperDash.Essentials.Core
 				switch (controlConfig.Method)
 				{
 					case eControlMethod.Com:
-						comm = new ComPortController(deviceConfig.Key + "-com", GetComPort(controlConfig), controlConfig.ComParams);
+						comm = new ComPortController(deviceConfig.Key + "-com", GetComPort, controlConfig.ComParams, controlConfig);
 						break;
                     case eControlMethod.Cec:
-                        comm = new CecPortController(deviceConfig.Key + "-cec", GetCecPort(controlConfig));
+                        comm = new CecPortController(deviceConfig.Key + "-cec", GetCecPort, controlConfig);
                         break;
 					case eControlMethod.IR:
 						break;
