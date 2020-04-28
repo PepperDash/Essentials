@@ -91,6 +91,13 @@ namespace PepperDash.Essentials.Core
         void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type);
     }
 
+    public interface IRmcRouting : IRouting
+    {
+        IntFeedback AudioVideoSourceNumericFeedback { get; }
+        void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type);
+
+    }
+
 	/// <summary>
 	/// Defines an IRoutingOutputs devices as being a source - the start of the chain
 	/// </summary>
