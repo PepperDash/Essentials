@@ -40,6 +40,10 @@ namespace PepperDash.Essentials.Bridges
         public uint EdidSerialNumber { get; set; }
         #endregion
 
+        #region Analogs
+        public uint AudioVideoSource { get; set; }
+        #endregion
+
         public DmRmcControllerJoinMap()
         {
             // Digital
@@ -51,6 +55,9 @@ namespace PepperDash.Essentials.Bridges
             EdidName = 3;
             EdidPrefferedTiming = 4;
             EdidSerialNumber = 5;
+
+            //Analog
+            AudioVideoSource = 1;
         }
 
         public override void OffsetJoinNumbers(uint joinStart)
@@ -63,6 +70,7 @@ namespace PepperDash.Essentials.Bridges
             EdidName = EdidName + joinOffset;
             EdidPrefferedTiming = EdidPrefferedTiming + joinOffset;
             EdidSerialNumber = EdidSerialNumber + joinOffset;
+            AudioVideoSource = AudioVideoSource + joinOffset;
         }
     }
 }
