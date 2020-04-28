@@ -114,11 +114,13 @@ namespace PepperDash.Essentials.Core.Bridges
                     //{
                     //    Debug.Console(2, this, "'{0}' is IBridge", device.Key);
                     //}
-                    if (device.GetType().GetCType().IsAssignableFrom(typeof (IBridgeAdvanced)))
+                    if (!typeof (IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
                     {
-                        var bridge = device as IBridgeAdvanced;
-                        if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
+                        continue;
                     }
+
+                    var bridge = device as IBridgeAdvanced;
+                    if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                 }
 
                 
