@@ -14,7 +14,7 @@ using Crestron.SimplSharp.Reflection;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
-	public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets, IPower
+	public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets, IPower, IBridgeAdvanced
 	{
 		public IBasicCommunication Communication { get; private set; }
 		public CommunicationGather PortGather { get; private set; }
@@ -82,7 +82,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 			return true;
 		}
 
-	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }
