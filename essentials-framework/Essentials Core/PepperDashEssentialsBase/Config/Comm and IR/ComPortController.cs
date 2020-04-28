@@ -21,6 +21,19 @@ namespace PepperDash.Essentials.Core
 		ComPort Port;
 		ComPort.ComPortSpec Spec;
 
+	    public ComPortController(string key, Func<EssentialsControlPropertiesConfig, ComPort> postActivationFunc,
+	        ComPort.ComPortSpec spec, EssentialsControlPropertiesConfig config) : base(key)
+	    {
+	        Spec = spec;
+
+            AddPostActivationAction(() =>
+            {
+                Port = postActivationFunc(config);
+
+                ConfigureComPort();
+            });
+	    }
+
 		public ComPortController(string key, ComPort port, ComPort.ComPortSpec spec)
 			: base(key)
 		{
@@ -45,16 +58,21 @@ namespace PepperDash.Essentials.Core
 					return; // false
 				}
 			}
-			var specResult = Port.SetComPortSpec(Spec);
-			if (specResult != 0)
-			{
-				Debug.Console(0, this, "WARNING: Cannot set comspec");
-				return; // false
-			}
-			Port.SerialDataReceived += new ComPortDataReceivedEvent(Port_SerialDataReceived);
+			ConfigureComPort();
 		}
 
-		~ComPortController()
+	    private void ConfigureComPort()
+	    {
+	        var specResult = Port.SetComPortSpec(Spec);
+	        if (specResult != 0)
+	        {
+	            Debug.Console(0, this, "WARNING: Cannot set comspec");
+	            return;
+	        }
+	        Port.SerialDataReceived += Port_SerialDataReceived;
+	    }
+
+	    ~ComPortController()
 		{
 			Port.SerialDataReceived -= Port_SerialDataReceived;
 		}
