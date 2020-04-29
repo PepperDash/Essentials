@@ -101,6 +101,7 @@
     <Compile Include="Chassis\DmpsRoutingController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc4kZ100CController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmc4kZScalerCController.cs" />
     <Compile Include="Endpoints\Transmitters\TxInterfaces.cs" />
     <Compile Include="IDmSwitch.cs" />
     <Compile Include="Config\DmpsRoutingConfig.cs" />
