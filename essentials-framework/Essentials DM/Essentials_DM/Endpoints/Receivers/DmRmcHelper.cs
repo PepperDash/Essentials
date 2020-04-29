@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.DM
         public virtual StringFeedback EdidPreferredTimingFeedback { get; protected set; }
         public virtual StringFeedback EdidSerialNumberFeedback { get; protected set; }
 
-		public DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
+        protected DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
 			: base(key, name, device)
 		{
 			// if wired to a chassis, skip registration step in base class
@@ -157,7 +157,7 @@ namespace PepperDash.Essentials.DM
                     if (typeName.StartsWith("dmrmc4k100c"))
                         return new DmRmcX100CController(key, name, new DmRmc4k100C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmrmc4kz100c"))
-                        return new DmRmcX100CController(key, name, new DmRmc4kz100C(ipid, Global.ControlSystem));
+                        return new DmRmc4kZ100CController(key, name, new DmRmc4kz100C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmrmc150s"))
                         return new DmRmc150SController(key, name, new DmRmc150S(ipid, Global.ControlSystem));
 					if (typeName.StartsWith("dmrmc200c"))
@@ -232,7 +232,7 @@ namespace PepperDash.Essentials.DM
 						if (typeName.StartsWith("dmrmc4k100c"))
 							return new DmRmcX100CController(key, name, new DmRmc4k100C(chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc4kz100c"))
-							return new DmRmcX100CController(key, name, new DmRmc4kz100C(chassis.Outputs[num]));
+                            return new DmRmc4kZ100CController(key, name, new DmRmc4kz100C(chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc150s"))
 							return new DmRmc150SController(key, name, new DmRmc150S(chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc200c"))
@@ -267,7 +267,7 @@ namespace PepperDash.Essentials.DM
 						if (typeName.StartsWith("dmrmc4k100c"))
 							return new DmRmcX100CController(key, name, new DmRmc4k100C(ipid, chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc4kz100c"))
-							return new DmRmcX100CController(key, name, new DmRmc4kz100C(ipid, chassis.Outputs[num]));
+                            return new DmRmc4kZ100CController(key, name, new DmRmc4kz100C(ipid, chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc150s"))
 							return new DmRmc150SController(key, name, new DmRmc150S(ipid, chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc200c"))
@@ -307,7 +307,7 @@ namespace PepperDash.Essentials.DM
         {
             TypeNames = new List<string>() { "hdbasetrx", "dmrmc4k100c1g", "dmrmc100c", "dmrmc100s", "dmrmc4k100c", "dmrmc150s",
                 "dmrmc200c", "dmrmc200s", "dmrmc200s2", "dmrmcscalerc", "dmrmcscalers", "dmrmcscalers2", "dmrmc4kscalerc", "dmrmc4kscalercdsp",
-                "dmrmc4kzscalerc" };
+                "dmrmc4kz100c", "dmrmckzscalerc" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
