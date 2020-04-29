@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.DM
         public virtual StringFeedback EdidPreferredTimingFeedback { get; protected set; }
         public virtual StringFeedback EdidSerialNumberFeedback { get; protected set; }
 
-		public DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
+        protected DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
 			: base(key, name, device)
 		{
 			// if wired to a chassis, skip registration step in base class
