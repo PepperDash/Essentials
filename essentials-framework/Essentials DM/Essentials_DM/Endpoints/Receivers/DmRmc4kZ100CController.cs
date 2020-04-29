@@ -22,10 +22,13 @@ namespace PepperDash.Essentials.DM
 			: base(key, name, rmc)
         {
             _rmc = rmc;
+
+            /* removed this logic because it's done in the base constructor and doesn't need to be duplicated here
 			DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.DmCat, 0, this);
 			HdmiOut = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, null, this) {Port = _rmc};
+             */
 
             // Set Ports for CEC
 
