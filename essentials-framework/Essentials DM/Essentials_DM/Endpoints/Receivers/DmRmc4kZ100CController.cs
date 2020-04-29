@@ -29,6 +29,7 @@ namespace PepperDash.Essentials.DM
 
             // Set Ports for CEC
 
+            //TODO: We need to look at this class inheritance design...not so sure these properties need to be virtual and/or abstract.
             EdidManufacturerFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.Manufacturer.StringValue);
             EdidNameFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.Name.StringValue);
             EdidPreferredTimingFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.PreferredTiming.StringValue);
