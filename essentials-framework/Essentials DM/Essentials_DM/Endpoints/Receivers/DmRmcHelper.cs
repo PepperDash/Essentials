@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
-using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
 using Newtonsoft.Json;
 using PepperDash.Core;
@@ -20,20 +15,18 @@ namespace PepperDash.Essentials.DM
     [Description("Wrapper class for all DM-RMC variants")]
 	public abstract class DmRmcControllerBase : CrestronGenericBridgeableBaseDevice
 	{
-        public virtual StringFeedback VideoOutputResolutionFeedback { get; protected set; }
-        public virtual StringFeedback EdidManufacturerFeedback { get; protected set; }
-        public virtual StringFeedback EdidNameFeedback { get; protected set; }
-        public virtual StringFeedback EdidPreferredTimingFeedback { get; protected set; }
-        public virtual StringFeedback EdidSerialNumberFeedback { get; protected set; }
+        public StringFeedback VideoOutputResolutionFeedback { get; protected set; }
+        public StringFeedback EdidManufacturerFeedback { get; protected set; }
+        public StringFeedback EdidNameFeedback { get; protected set; }
+        public StringFeedback EdidPreferredTimingFeedback { get; protected set; }
+        public StringFeedback EdidSerialNumberFeedback { get; protected set; }
 
         protected DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
 			: base(key, name, device)
 		{
 			// if wired to a chassis, skip registration step in base class
-			if (device.DMOutput != null)
-			{
-				this.PreventRegistration = true;
-			}
+            PreventRegistration = device.DMOutput != null;
+			
             AddToFeedbackList(VideoOutputResolutionFeedback, EdidManufacturerFeedback, EdidSerialNumberFeedback, EdidNameFeedback, EdidPreferredTimingFeedback);
         }
 
@@ -65,13 +58,15 @@ namespace PepperDash.Essentials.DM
             //If the device is an DM-RMC-4K-Z-SCALER-C
             var routing = rmc as IRmcRouting;
 
-            if (routing != null) 
+            if (routing == null)
             {
-                if (routing.AudioVideoSourceNumericFeedback != null)
-                    routing.AudioVideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioVideoSource]);
-
-                trilist.SetUShortSigAction(joinMap.AudioVideoSource, (a) => routing.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
+                return;
             }
+
+            if (routing.AudioVideoSourceNumericFeedback != null)
+                routing.AudioVideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioVideoSource]);
+
+            trilist.SetUShortSigAction(joinMap.AudioVideoSource, a => routing.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
         }
 	}
 
@@ -82,7 +77,7 @@ namespace PepperDash.Essentials.DM
         /// <summary>
         ///  Make a Crestron RMC and put it in here
         /// </summary>
-        public DmHdBaseTControllerBase(string key, string name, HDBaseTBase rmc)
+        protected DmHdBaseTControllerBase(string key, string name, HDBaseTBase rmc)
             : base(key, name, rmc)
         {
 
@@ -91,14 +86,15 @@ namespace PepperDash.Essentials.DM
 
 	public class DmRmcHelper
 	{
-		/// <summary>
-		/// A factory method for various DmTxControllers
-		/// </summary>
-		/// <param name="key"></param>
-		/// <param name="name"></param>
-		/// <param name="props"></param>
-		/// <returns></returns>
-		public static CrestronGenericBaseDevice GetDmRmcController(string key, string name, string typeName, DmRmcPropertiesConfig props)
+	    /// <summary>
+	    /// A factory method for various DmRmcControllers
+	    /// </summary>
+	    /// <param name="key">device key. Used to uniquely identify device</param>
+	    /// <param name="name">device name</param>
+	    /// <param name="typeName">device type name. Used to retrived the correct device</param>
+	    /// <param name="props">Config from config file</param>
+	    /// <returns></returns>
+	    public static CrestronGenericBaseDevice GetDmRmcController(string key, string name, string typeName, DmRmcPropertiesConfig props)
 		{
 			// switch on type name... later...
 
@@ -128,21 +124,10 @@ namespace PepperDash.Essentials.DM
             //  "destinationPort": "DmIn"
             //}
 
-            var tlc = TieLineCollection.Default;
-            // grab the tie line that has this key as 
+	        // grab the tie line that has this key as 
             // THIS DOESN'T WORK BECAUSE THE RMC THAT WE NEED (THIS) HASN'T BEEN MADE
             // YET AND THUS WILL NOT HAVE A TIE LINE...
-            var inputTieLine = tlc.FirstOrDefault(t => 
-                {
-                    var d = t.DestinationPort.ParentDevice;
-                    return d.Key.Equals(key, StringComparison.OrdinalIgnoreCase)
-                        && d is DmChassisController;
-                });
-
 			var pKey = props.ParentDeviceKey.ToLower();
-
-            
-
 
 			// Non-DM-chassis endpoints
 			if (pKey == "processor")
@@ -200,18 +185,17 @@ namespace PepperDash.Essentials.DM
 
                 var chassis = (parentDev as IDmSwitch).Chassis;
 				var num = props.ParentOutputNumber;
+
 				if (num <= 0 || num > chassis.NumberOfOutputs)
 				{
 					Debug.Console(0, "Cannot create DM device '{0}'. Output number '{1}' is out of range",
 						key, num);
 					return null;
 				}
-                else
-                {
-                    var controller = (parentDev as IDmSwitch);
-                    controller.RxDictionary.Add(num, key);
-                }
-								// Catch constructor failures, mainly dues to IPID
+
+			    var controller = (parentDev as IDmSwitch);
+			    controller.RxDictionary.Add(num, key);
+			    // Catch constructor failures, mainly dues to IPID
 				try
 				{
 
@@ -305,7 +289,8 @@ namespace PepperDash.Essentials.DM
     {
         public DmRmcControllerFactory()
         {
-            TypeNames = new List<string>() { "hdbasetrx", "dmrmc4k100c1g", "dmrmc100c", "dmrmc100s", "dmrmc4k100c", "dmrmc150s",
+            TypeNames = new List<string>
+            { "hdbasetrx", "dmrmc4k100c1g", "dmrmc100c", "dmrmc100s", "dmrmc4k100c", "dmrmc150s",
                 "dmrmc200c", "dmrmc200s", "dmrmc200s2", "dmrmcscalerc", "dmrmcscalers", "dmrmcscalers2", "dmrmc4kscalerc", "dmrmc4kscalercdsp",
                 "dmrmc4kz100c", "dmrmckzscalerc" };
         }
@@ -317,8 +302,8 @@ namespace PepperDash.Essentials.DM
             Debug.Console(1, "Factory Attempting to create new DM-RMC Device");
 
             var props = JsonConvert.DeserializeObject
-                <PepperDash.Essentials.DM.Config.DmRmcPropertiesConfig>(dc.Properties.ToString());
-            return PepperDash.Essentials.DM.DmRmcHelper.GetDmRmcController(dc.Key, dc.Name, type, props);
+                <DmRmcPropertiesConfig>(dc.Properties.ToString());
+            return DmRmcHelper.GetDmRmcController(dc.Key, dc.Name, type, props);
             
         }
     }
