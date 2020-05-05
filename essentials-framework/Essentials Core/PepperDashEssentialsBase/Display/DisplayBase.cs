@@ -190,17 +190,17 @@ namespace PepperDash.Essentials.Core
 
             displayDevice.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn.JoinNumber]);
 
-            var count = 0;
-            foreach (var input in displayDevice.InputPorts)
+            for (int i = 0; i < displayDevice.InputPorts.Count; i++)
             {
-                if (count < joinMap.InputSelectOffset.JoinSpan)
+                if (i < joinMap.InputNamesOffset.JoinSpan)
                 {
-                    inputKeys.Add(input.Key);
-                    var tempKey = inputKeys.ElementAt(count - 1);
-                    trilist.SetSigTrueAction((ushort)(joinMap.InputSelectOffset.JoinNumber + count), () => displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector));
-                    Debug.Console(2, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}", joinMap.InputSelectOffset.JoinNumber + count, displayDevice.InputPorts[tempKey].Key.ToString());
-                    trilist.StringInput[(ushort)(joinMap.InputNamesOffset.JoinNumber + count)].StringValue = input.Key.ToString();
-                    count++;
+                    inputKeys.Add(displayDevice.InputPorts[i].Key);
+                    var tempKey = inputKeys.ElementAt(i);
+                    trilist.SetSigTrueAction((ushort)(joinMap.InputSelectOffset.JoinNumber + i),
+                        () => displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector));
+                    Debug.Console(2, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}", 
+                        joinMap.InputSelectOffset.JoinNumber + i, displayDevice.InputPorts[tempKey].Key.ToString());
+                    trilist.StringInput[(ushort)(joinMap.InputNamesOffset.JoinNumber + i)].StringValue = displayDevice.InputPorts[i].Key.ToString();
                 }
             }
 
