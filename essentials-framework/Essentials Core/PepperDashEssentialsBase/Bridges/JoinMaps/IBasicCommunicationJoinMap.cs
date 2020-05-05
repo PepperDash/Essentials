@@ -7,61 +7,36 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class IBasicCommunicationJoinMap : JoinMapBase
+    public class IBasicCommunicationJoinMap : JoinMapBaseAdvanced
     {
-        #region Digitals
-        /// <summary>
-        /// Set High to connect, Low to disconnect
-        /// </summary>
-        public uint Connect { get; set; }
-        /// <summary>
-        /// Reports Connected State (High = Connected)
-        /// </summary>
-        public uint Connected { get; set; }
-        #endregion
+        [JoinName("TextReceived")]
+        public JoinDataComplete TextReceived = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Text Received From Remote Device", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
-        #region Analogs
-        /// <summary>
-        /// Reports the connections status value
-        /// </summary>
-        public uint Status { get; set; }
-        #endregion
+        [JoinName("SendText")]
+        public JoinDataComplete SendText = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Text Sent To Remote Device", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
 
-        #region Serials
-        /// <summary>
-        /// Data back from port
-        /// </summary>
-        public uint TextReceived { get; set; }
-        /// <summary>
-        /// Sends data to the port
-        /// </summary>
-        public uint SendText { get; set; }
-        /// <summary>
-        /// Takes a JSON serialized string that sets a COM port's parameters
-        /// </summary>
-        public uint SetPortConfig { get; set; }
-        #endregion
+        [JoinName("SetPortConfig")]
+        public JoinDataComplete SetPortConfig = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Set Port Config", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
 
-        public IBasicCommunicationJoinMap()
+        [JoinName("Connect")]
+        public JoinDataComplete Connect = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Connect", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Connected")]
+        public JoinDataComplete Connected = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Connected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Status")]
+        public JoinDataComplete Status = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+
+
+        public IBasicCommunicationJoinMap(uint joinStart)
+            : base(joinStart, typeof(IBasicCommunicationJoinMap))
         {
-            TextReceived = 1;
-            SendText = 1;
-            SetPortConfig = 2;
-            Connect = 1;
-            Connected = 1;
-            Status = 1;
-        }
-
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            TextReceived = TextReceived + joinOffset;
-            SendText = SendText + joinOffset;
-            SetPortConfig = SetPortConfig + joinOffset;
-            Connect = Connect + joinOffset;
-            Connected = Connected + joinOffset;
-            Status = Status + joinOffset;
         }
     }
 }
