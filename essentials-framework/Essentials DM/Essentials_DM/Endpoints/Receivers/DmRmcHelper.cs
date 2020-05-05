@@ -14,7 +14,8 @@ namespace PepperDash.Essentials.DM
 {
     [Description("Wrapper class for all DM-RMC variants")]
 	public abstract class DmRmcControllerBase : CrestronGenericBridgeableBaseDevice
-	{
+    {
+        protected EndpointReceiverBase Rmc;
         public StringFeedback VideoOutputResolutionFeedback { get; protected set; }
         public StringFeedback EdidManufacturerFeedback { get; protected set; }
         public StringFeedback EdidNameFeedback { get; protected set; }
@@ -23,7 +24,8 @@ namespace PepperDash.Essentials.DM
 
         protected DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
 			: base(key, name, device)
-		{
+        {
+            Rmc = device;
 			// if wired to a chassis, skip registration step in base class
             PreventRegistration = device.DMOutput != null;
 			
@@ -72,7 +74,7 @@ namespace PepperDash.Essentials.DM
 
     public abstract class DmHdBaseTControllerBase : CrestronGenericBaseDevice
     {
-        public HDBaseTBase Rmc { get; protected set; }
+        protected HDBaseTBase Rmc;
 
         /// <summary>
         ///  Make a Crestron RMC and put it in here
@@ -80,7 +82,7 @@ namespace PepperDash.Essentials.DM
         protected DmHdBaseTControllerBase(string key, string name, HDBaseTBase rmc)
             : base(key, name, rmc)
         {
-
+            Rmc = rmc;
         }
     }
 
