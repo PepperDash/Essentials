@@ -203,7 +203,7 @@ namespace PepperDash.Essentials.Core
                     trilist.StringInput[(ushort)(joinMap.InputNamesOffset.JoinNumber + i)].StringValue = displayDevice.InputPorts[i].Key.ToString();
                 }
                 else
-                    Debug.Console(2, displayDevice, "Device has {0} inputs.  The Join Map allows up to {1} inputs.  Discarding inputs {2} - {3} from bridge.",
+                    Debug.Console(0, displayDevice, Debug.ErrorLogLevel.Warning, "Device has {0} inputs.  The Join Map allows up to {1} inputs.  Discarding inputs {2} - {3} from bridge.",
                         displayDevice.InputPorts.Count, joinMap.InputNamesOffset.JoinSpan, i + 1, displayDevice.InputPorts.Count);
             }
 
