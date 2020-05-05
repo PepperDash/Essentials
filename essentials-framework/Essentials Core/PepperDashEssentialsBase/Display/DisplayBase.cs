@@ -198,10 +198,13 @@ namespace PepperDash.Essentials.Core
                     var tempKey = inputKeys.ElementAt(i);
                     trilist.SetSigTrueAction((ushort)(joinMap.InputSelectOffset.JoinNumber + i),
                         () => displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector));
-                    Debug.Console(2, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}", 
+                    Debug.Console(2, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}",
                         joinMap.InputSelectOffset.JoinNumber + i, displayDevice.InputPorts[tempKey].Key.ToString());
                     trilist.StringInput[(ushort)(joinMap.InputNamesOffset.JoinNumber + i)].StringValue = displayDevice.InputPorts[i].Key.ToString();
                 }
+                else
+                    Debug.Console(2, displayDevice, "Device has {0} inputs.  The Join Map allows up to {1} inputs.  Discarding inputs {2} - {3} from bridge.",
+                        displayDevice.InputPorts.Count, joinMap.InputNamesOffset.JoinSpan, i + 1, displayDevice.InputPorts.Count);
             }
 
             Debug.Console(2, displayDevice, "Setting Input Select Action on Analog Join {0}", joinMap.InputSelect);
