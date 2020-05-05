@@ -29,6 +29,7 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
+    [Flags]
 	public enum eRoutingSignalType
 	{
 		Audio = 1,
