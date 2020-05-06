@@ -14,7 +14,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Core
 {
-	public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IPower, IWarmingCooling
+	public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
 	{
 		public IrOutputPortController IrPort { get; private set; }
 		public ushort IrPulseTime { get; set; }
@@ -204,7 +204,7 @@ namespace PepperDash.Essentials.Core
 
 		#endregion
 
-	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }

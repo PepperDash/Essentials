@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Devices.Displays
 	/// 
 	/// </summary>
     public class AvocorDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, ICommunicationMonitor, IInputDisplayPort1,
-        IInputHdmi1, IInputHdmi2, IInputHdmi3, IInputHdmi4, IInputVga1
+        IInputHdmi1, IInputHdmi2, IInputHdmi3, IInputHdmi4, IInputVga1, IBridgeAdvanced
 	{
         public IBasicCommunication Communication { get; private set; }
         public CommunicationGather PortGather { get; private set; }
@@ -203,7 +203,7 @@ namespace PepperDash.Essentials.Devices.Displays
 			return true;
 		}
 
-	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
 	    }

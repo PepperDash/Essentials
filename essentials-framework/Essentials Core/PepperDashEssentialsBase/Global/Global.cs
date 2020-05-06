@@ -98,25 +98,47 @@ namespace PepperDash.Essentials.Core
         {
             Debug.Console(2, "Comparing running version '{0}' to minimum version '{1}'", AssemblyVersion, minimumVersion);
 
+            if (String.IsNullOrEmpty(minimumVersion))
+            {
+                Debug.Console(0,"Plugin does not specify a minimum version. Loading plugin may not work as expected. Proceeding with loading plugin");
+                return true;
+            }
+            
             var runtimeVersion = Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*");
 
             var runtimeVersionMajor = Int16.Parse(runtimeVersion.Groups[1].Value);
             var runtimeVersionMinor = Int16.Parse(runtimeVersion.Groups[2].Value);
             var runtimeVersionBuild = Int16.Parse(runtimeVersion.Groups[3].Value);
 
-            // Check for beta build version
-            if (runtimeVersionMajor == 0)
+            var runtimeVer = new Version(runtimeVersionMajor, runtimeVersionMinor, runtimeVersionBuild);
+
+            Version minimumVer;
+            try
             {
-                Debug.Console(2, "Running Local Build.  Bypassing Dependency Check.");
-                return true;
+                minimumVer = new Version(minimumVersion);
+            }
+            catch
+            {
+                Debug.Console(2, "unable to parse minimum version {0}. Bypassing plugin load.", minimumVersion);
+                return false;
             }
 
+
+            // Check for beta build version
+            if (runtimeVer.Major != 0)
+            {
+                return runtimeVer.CompareTo(minimumVer) >= 0;
+            }
+
+            Debug.Console(2, "Running Local Build.  Bypassing Dependency Check.");
+            return true;
+
+            /*
             var minVersion = Regex.Match(minimumVersion, @"^(\d*).(\d*).(\d*)$");
 
             if(!minVersion.Success)
             {
-                Debug.Console(2, "minimumVersion String does not match format xx.yy.zz");
-                return false;
+                
             }
 
             var minVersionMajor = Int16.Parse(minVersion.Groups[1].Value);
@@ -135,6 +157,7 @@ namespace PepperDash.Essentials.Core
                 return false;
 
             return true;
+             */
         }
 
 		static Global()

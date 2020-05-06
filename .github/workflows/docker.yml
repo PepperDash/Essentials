@@ -11,7 +11,7 @@ on:
 
 env:
   # solution path doesn't need slashes unless there it is multiple folders deep
-  # solution name does not include extension. .sln is assumed
+  # solution name does not include extension. .sln is assumed  
   SOLUTION_PATH: PepperDashEssentials
   SOLUTION_FILE: PepperDashEssentials
   # Do not edit this, we're just creating it here

@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
     }
 
 
-    public class ZoomRoomCamera : CameraBase, IHasCameraPtzControl
+    public class ZoomRoomCamera : CameraBase, IHasCameraPtzControl, IBridgeAdvanced
     {
         protected ZoomRoom ParentCodec { get; private set; }
 
@@ -200,7 +200,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         #endregion
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
