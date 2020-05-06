@@ -17,6 +17,7 @@ namespace PepperDash.Essentials.Core
 {
 	public static class DeviceManager
 	{
+	    private static readonly CCriticalSection DeviceCriticalSection = new CCriticalSection();
 		//public static List<Device> Devices { get { return _Devices; } }
 		//static List<Device> _Devices = new List<Device>();
 
@@ -58,47 +59,55 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public static void ActivateAll()
 		{
-            // PreActivate all devices
-            foreach (var d in Devices.Values)
-            {
-                try
-                {
-                    if (d is Device)
-                        (d as Device).PreActivate();
-                }
-                catch (Exception e)
-                {
-                    Debug.Console(0, d, "ERROR: Device PreActivation failure:\r{0}", e);
-                }
-            }
+		    try
+		    {
+		        DeviceCriticalSection.Enter();
+		        // PreActivate all devices
+		        foreach (var d in Devices.Values)
+		        {
+		            try
+		            {
+		                if (d is Device)
+		                    (d as Device).PreActivate();
+		            }
+		            catch (Exception e)
+		            {
+		                Debug.Console(0, d, "ERROR: Device PreActivation failure:\r{0}", e);
+		            }
+		        }
 
-            // Activate all devices
-			foreach (var d in Devices.Values)
-			{
-				try
-				{
-					if (d is Device)
-						(d as Device).Activate();
-				}
-				catch (Exception e)
-				{
-					Debug.Console(0, d, "ERROR: Device Activation failure:\r{0}", e);
-				}
-			}
+		        // Activate all devices
+		        foreach (var d in Devices.Values)
+		        {
+		            try
+		            {
+		                if (d is Device)
+		                    (d as Device).Activate();
+		            }
+		            catch (Exception e)
+		            {
+		                Debug.Console(0, d, "ERROR: Device Activation failure:\r{0}", e);
+		            }
+		        }
 
-            // PostActivate all devices
-            foreach (var d in Devices.Values)
-            {
-                try
-                {
-                    if (d is Device)
-                        (d as Device).PostActivate();
-                }
-                catch (Exception e)
-                {
-                    Debug.Console(0, d, "ERROR: Device PostActivation failure:\r{0}", e);
-                }
-            }
+		        // PostActivate all devices
+		        foreach (var d in Devices.Values)
+		        {
+		            try
+		            {
+		                if (d is Device)
+		                    (d as Device).PostActivate();
+		            }
+		            catch (Exception e)
+		            {
+		                Debug.Console(0, d, "ERROR: Device PostActivation failure:\r{0}", e);
+		            }
+		        }
+		    }
+		    finally
+		    {
+                DeviceCriticalSection.Leave();
+		    }
 		}
 
 		/// <summary>
@@ -106,11 +115,19 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public static void DeactivateAll()
 		{
-			foreach (var d in Devices.Values)
-			{
-				if (d is Device)
-					(d as Device).Deactivate();
-			}
+		    try
+		    {
+		        DeviceCriticalSection.Enter();
+		        foreach (var d in Devices.Values)
+		        {
+		            if (d is Device)
+		                (d as Device).Deactivate();
+		        }
+		    }
+		    finally
+		    {
+		        DeviceCriticalSection.Leave();
+		    }
 		}
 
 		//static void ListMethods(string devKey)
@@ -136,32 +153,45 @@ namespace PepperDash.Essentials.Core
 
 		static void ListDevices(string s)
 		{
-			Debug.Console(0, "{0} Devices registered with Device Mangager:",Devices.Count);
-			var sorted = Devices.Values.ToList();
-			sorted.Sort((a, b) => a.Key.CompareTo(b.Key));
+		    try
+		    {
+                DeviceCriticalSection.Enter();
+		        Debug.Console(0, "{0} Devices registered with Device Manager:", Devices.Count);
+		        var sorted = Devices.Values.ToList();
+		        sorted.Sort((a, b) => a.Key.CompareTo(b.Key));
 
-			foreach (var d in sorted)
-			{
-				var name = d is IKeyName ? (d as IKeyName).Name : "---";
-				Debug.Console(0, "  [{0}] {1}", d.Key, name);
-			}
+		        foreach (var d in sorted)
+		        {
+		            var name = d is IKeyName ? (d as IKeyName).Name : "---";
+		            Debug.Console(0, "  [{0}] {1}", d.Key, name);
+		        }
+		    }
+            finally {DeviceCriticalSection.Leave();}
 		}
 
 		static void ListDeviceFeedbacks(string devKey)
 		{
-			var dev = GetDeviceForKey(devKey);
-			if(dev == null)
-			{
-				Debug.Console(0, "Device '{0}' not found", devKey);
-				return;
-			}
-			var statusDev = dev as IHasFeedback;
-			if(statusDev == null)
-			{
-				Debug.Console(0, "Device '{0}' does not have visible feedbacks", devKey);
-				return;
-			}
-			statusDev.DumpFeedbacksToConsole(true);
+		    try
+		    {
+                DeviceCriticalSection.Enter();
+		        var dev = GetDeviceForKey(devKey);
+		        if (dev == null)
+		        {
+		            Debug.Console(0, "Device '{0}' not found", devKey);
+		            return;
+		        }
+		        var statusDev = dev as IHasFeedback;
+		        if (statusDev == null)
+		        {
+		            Debug.Console(0, "Device '{0}' does not have visible feedbacks", devKey);
+		            return;
+		        }
+		        statusDev.DumpFeedbacksToConsole(true);
+		    }
+		    finally
+		    {
+		        DeviceCriticalSection.Leave();
+		    }
 		}
 
         //static void ListDeviceCommands(string devKey)
@@ -177,13 +207,23 @@ namespace PepperDash.Essentials.Core
 
 		static void ListDeviceCommStatuses(string input)
 		{
-			var sb = new StringBuilder();
-			foreach (var dev in Devices.Values)
-			{
-				if (dev is ICommunicationMonitor)
-					sb.Append(string.Format("{0}: {1}\r", dev.Key, (dev as ICommunicationMonitor).CommunicationMonitor.Status));
-			}
-			CrestronConsole.ConsoleCommandResponse(sb.ToString());
+		    try
+		    {
+		        DeviceCriticalSection.Enter();
+
+		        var sb = new StringBuilder();
+		        foreach (var dev in Devices.Values)
+		        {
+		            if (dev is ICommunicationMonitor)
+		                sb.Append(string.Format("{0}: {1}\r", dev.Key,
+		                    (dev as ICommunicationMonitor).CommunicationMonitor.Status));
+		        }
+		        CrestronConsole.ConsoleCommandResponse(sb.ToString());
+		    }
+		    finally
+		    {
+		        DeviceCriticalSection.Leave();
+		    }
 		}
 
 
@@ -194,51 +234,85 @@ namespace PepperDash.Essentials.Core
 
 		public static void AddDevice(IKeyed newDev)
 		{
-			// Check for device with same key
-			//var existingDevice = _Devices.FirstOrDefault(d => d.Key.Equals(newDev.Key, StringComparison.OrdinalIgnoreCase));
-			////// If it exists, remove or warn??
-			//if (existingDevice != null)
-			if(Devices.ContainsKey(newDev.Key))
-			{
-				Debug.Console(0, newDev, "WARNING: A device with this key already exists.  Not added to manager");
-				return;
-			}
-			Devices.Add(newDev.Key, newDev);
-			//if (!(_Devices.Contains(newDev)))
-			//    _Devices.Add(newDev);
+		    try
+		    {
+                DeviceCriticalSection.Enter();
+		        // Check for device with same key
+		        //var existingDevice = _Devices.FirstOrDefault(d => d.Key.Equals(newDev.Key, StringComparison.OrdinalIgnoreCase));
+		        ////// If it exists, remove or warn??
+		        //if (existingDevice != null)
+		        if (Devices.ContainsKey(newDev.Key))
+		        {
+		            Debug.Console(0, newDev, "WARNING: A device with this key already exists.  Not added to manager");
+		            return;
+		        }
+		        Devices.Add(newDev.Key, newDev);
+		        //if (!(_Devices.Contains(newDev)))
+		        //    _Devices.Add(newDev);
+		    }
+            finally {DeviceCriticalSection.Leave();}
 		}
 
 		public static void RemoveDevice(IKeyed newDev)
 		{
-			if(newDev == null)
-				return;
-			if (Devices.ContainsKey(newDev.Key))
-				Devices.Remove(newDev.Key);
-			//if (_Devices.Contains(newDev))
-			//    _Devices.Remove(newDev);
-			else
-				Debug.Console(0, "Device manager: Device '{0}' does not exist in manager.  Cannot remove", newDev.Key);
+		    try
+		    {
+                DeviceCriticalSection.Enter();
+		        if (newDev == null)
+		            return;
+		        if (Devices.ContainsKey(newDev.Key))
+		            Devices.Remove(newDev.Key);
+		            //if (_Devices.Contains(newDev))
+		            //    _Devices.Remove(newDev);
+		        else
+		            Debug.Console(0, "Device manager: Device '{0}' does not exist in manager.  Cannot remove", newDev.Key);
+		    }
+		    finally
+		    {
+		        DeviceCriticalSection.Leave();
+		    }
 		}
 
 		public static IEnumerable<string> GetDeviceKeys()
 		{
-			//return _Devices.Select(d => d.Key).ToList();
-			return Devices.Keys;
+		    try
+		    {
+                DeviceCriticalSection.Enter();
+		        //return _Devices.Select(d => d.Key).ToList();
+		        return Devices.Keys;
+		    }
+		    finally
+		    {
+		        DeviceCriticalSection.Leave();
+		    }
 		}
 
 		public static IEnumerable<IKeyed> GetDevices()
 		{
-			//return _Devices.Select(d => d.Key).ToList();
-			return Devices.Values;
+		    try
+		    {
+                DeviceCriticalSection.Enter();
+		        //return _Devices.Select(d => d.Key).ToList();
+		        return Devices.Values;
+		    }
+            finally {DeviceCriticalSection.Leave();}
 		}
 
 		public static IKeyed GetDeviceForKey(string key)
 		{
-			//return _Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
-			if (key != null && Devices.ContainsKey(key))
-				return Devices[key];
+		    try
+		    {
+                DeviceCriticalSection.Enter();
+		        //return _Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+		        if (key != null && Devices.ContainsKey(key))
+		            return Devices[key];
 
-			return null;
+		        return null;
+		    }
+		    finally
+		    {
+		        DeviceCriticalSection.Leave();
+		    }
 		}
 
         /// <summary>
