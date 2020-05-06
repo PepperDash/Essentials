@@ -11,7 +11,7 @@ using PepperDash.Essentials.DM;
 
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     public static class DmRmcControllerApiExtensions
     {
@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Bridges
         {
             DmRmcControllerJoinMap joinMap = new DmRmcControllerJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmRmcControllerJoinMap>(joinMapSerialized);

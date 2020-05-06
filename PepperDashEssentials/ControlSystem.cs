@@ -10,6 +10,7 @@ using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
@@ -24,6 +25,7 @@ namespace PepperDash.Essentials
     public class ControlSystem : CrestronControlSystem
     {
         HttpLogoServer LogoServer;
+
 
         public ControlSystem()
             : base()
@@ -46,7 +48,12 @@ namespace PepperDash.Essentials
                     ConsoleAccessLevelEnum.AccessOperator);
             }
 
-            // CrestronConsole.AddNewConsoleCommand(S => { ConfigWriter.WriteConfigFile(null); }, "writeconfig", "writes the current config to a file", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(PluginLoader.ReportAssemblyVersions, "reportversions", "Reports the versions of the loaded assemblies", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(PepperDash.Essentials.Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
+
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s);
@@ -74,6 +81,7 @@ namespace PepperDash.Essentials
                         "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
                 }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
+
             if (!Debug.DoNotLoadOnNextBoot)
                 GoWithLoad();
         }
@@ -81,7 +89,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Determines if the program is running on a processor (appliance) or server (VC-4).
         /// 
-        /// Sets Global.FilePathPrefix based on platform
+        /// Sets Global.FilePathPrefix and Global.ApplicationDirectoryPathPrefix based on platform
         /// </summary>
         public void DeterminePlatform()
         {
@@ -108,7 +116,7 @@ namespace PepperDash.Essentials
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", Global.AssemblyVersion);
 
                     // Check if User/ProgramX exists
-                    if (Directory.Exists(directoryPrefix + dirSeparator + "User"
+                    if (Directory.Exists(Global.ApplicationDirectoryPathPrefix + dirSeparator + "User"
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                     {
                         Debug.Console(0, @"User/program{0} directory found", InitialParametersClass.ApplicationNumber);
@@ -153,8 +161,15 @@ namespace PepperDash.Essentials
         public void GoWithLoad()
         {
             try
-            {
+            {             
                 Debug.SetDoNotLoadOnNextBoot(false);
+
+                PluginLoader.AddProgramAssemblies();
+
+                new Core.DeviceFactory();
+                new Devices.Common.DeviceFactory();
+                new DM.DeviceFactory();
+                new DeviceFactory();
 
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
 
@@ -162,7 +177,7 @@ namespace PepperDash.Essentials
                 if (filesReady)
                 {
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Checking for plugins");
-                    LoadPlugins();
+                    PluginLoader.LoadPlugins();
 
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Folder structure verified. Loading config...");
                     if (!ConfigReader.LoadConfig2())
@@ -197,118 +212,7 @@ namespace PepperDash.Essentials
 
         }
 
-        /// <summary>
-        /// Initial simple implementation.  Reads user/programXX/plugins folder and 
-        /// use
-        /// </summary>
-        void LoadPlugins()
-        {
-            var dir = Global.FilePathPrefix + "plugins";
-            if (Directory.Exists(dir))
-            {
-                // TODO Clear out or create localPlugins folder (maybe in program slot folder)
-
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Plugins directory found, checking for factory plugins");
-                var di = new DirectoryInfo(dir);
-                var zFiles = di.GetFiles("*.cplz");
-                foreach (var fi in zFiles)
-                {
-                    Debug.Console(0, "Found cplz: {0}. Unzipping into plugins directory", fi.Name);
-                    var result = CrestronZIP.Unzip(fi.FullName, di.FullName);
-                    Debug.Console(0, "UnZip Result: {0}", result.ToString());
-                    fi.Delete();
-                }
-                var files = di.GetFiles("*.dll");
-                Dictionary<string, Assembly> assyList = new Dictionary<string, Assembly>();
-                foreach (FileInfo fi in files)
-                {
-                    // TODO COPY plugin to loadedPlugins folder 
-                    // TODO LOAD that loadedPlugins dll file
-                    try
-                    {
-                        var assy = Assembly.LoadFrom(fi.FullName);
-                        var ver = assy.GetName().Version;
-                        var verStr = string.Format("{0}.{1}.{2}.{3}", ver.Major, ver.Minor, ver.Build, ver.Revision);
-                        assyList.Add(fi.FullName, assy);
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loaded plugin file '{0}', version {1}", fi.FullName, verStr);
-                    }
-                    catch
-                    {
-                        Debug.Console(2, "Assembly {0} is not a custom assembly", fi.FullName);
-                        continue; //catching any load issues and continuing. There will be exceptions loading Crestron .dlls from the cplz Probably should do something different here
-                    }
-                }
-                foreach (var assy in assyList)
-                {
-                    // iteratate this assembly's classes, looking for "LoadPlugin()" methods
-                    try
-                    {
-                        var types = assy.Value.GetTypes();
-                        foreach (var type in types)
-                        {
-                            try
-                            {
-                                var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
-                                var loadPlugin = methods.FirstOrDefault(m => m.Name.Equals("LoadPlugin"));
-                                if (loadPlugin != null)
-                                {
-                                    Debug.Console(2, "LoadPlugin method found in {0}", type.Name);
-
-                                    var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
-
-                                    var minimumVersion = fields.FirstOrDefault(p => p.Name.Equals("MinimumEssentialsFrameworkVersion"));
-                                    if (minimumVersion != null)
-                                    {
-                                        Debug.Console(2, "MinimumEssentialsFrameworkVersion found");
-
-                                        var minimumVersionString = minimumVersion.GetValue(null) as string;
-
-                                        if (!string.IsNullOrEmpty(minimumVersionString))
-                                        {
-                                            var passed = Global.IsRunningMinimumVersionOrHigher(minimumVersionString);
-
-                                            if (!passed)
-                                            {
-                                                Debug.Console(0, Debug.ErrorLogLevel.Error, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", minimumVersionString);
-                                                continue;
-                                            }
-                                            else
-                                            {
-                                                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Passed plugin passed dependency check (required version {0})", minimumVersionString);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion found but not set.  Loading plugin, but your mileage may vary.");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Debug.Console(0, Debug.ErrorLogLevel.Warning, "MinimumEssentialsFrameworkVersion not found.  Loading plugin, but your mileage may vary.");
-                                    }
-
-                                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding plugin: {0}", assy.Key);
-                                    loadPlugin.Invoke(null, null);
-                                }
-                            }
-                            catch
-                            {
-                                Debug.Console(2, "Load Plugin not found. {0} is not a plugin assembly", assy.Value.FullName);
-                                continue;
-                            }
-
-                        }
-                    }
-                    catch
-                    {
-                        Debug.Console(2, "Assembly {0} is not a custom assembly. Types cannot be loaded.", assy.Value.FullName);
-                        continue;
-                    }
-                }
-                // plugin dll will be loaded.  Any classes in plugin should have a static constructor
-                // that registers that class with the Core.DeviceFactory
-            }
-        }
+       
 
         /// <summary>
         /// Verifies filesystem is set up. IR, SGD, and programX folders
@@ -391,11 +295,9 @@ namespace PepperDash.Essentials
         /// </summary>
         public void LoadDevices()
         {
+
             // Build the processor wrapper class
-
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
-
-
 
             // Add global System Monitor device
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));
@@ -456,33 +358,15 @@ namespace PepperDash.Essentials
                     }
 
                     // Try local factories first
-                    var newDev = DeviceFactory.GetDevice(devConf);
+                    IKeyed newDev = null;
 
-                    if (newDev == null)
-                        newDev = BridgeFactory.GetDevice(devConf);
-
-                    // Then associated library factories
                     if (newDev == null)
                         newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
-					if (newDev == null)
-						newDev = PepperDash.Essentials.Devices.Common.DeviceFactory.GetDevice(devConf);
-					if (newDev == null)
-						newDev = PepperDash.Essentials.DM.DeviceFactory.GetDevice(devConf);
-					if (newDev == null)
-						newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
 
-					//if (newDev == null) // might want to consider the ability to override an essentials "type"
-					//{
-					//    // iterate plugin factories
-					//    foreach (var f in FactoryObjects)
-					//    {
-					//        var cresFactory = f as IGetCrestronDevice;
-					//        if (cresFactory != null)
-					//        {
-					//            newDev = cresFactory.GetDevice(devConf, this);
-					//        }
-					//    }
-					//}
+                    //
+                    //if (newDev == null)
+                    //    newDev = PepperDash.Essentials.Devices.Displays.DisplayDeviceFactory.GetDevice(devConf);
+                    //
 
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);

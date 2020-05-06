@@ -12,7 +12,7 @@ using PepperDash.Essentials.DM;
 
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     public static class DmpsRoutingControllerApiExtentions 
     {
@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Bridges
         {
             DmpsRoutingControllerJoinMap joinMap = new DmpsRoutingControllerJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmpsRoutingControllerJoinMap>(joinMapSerialized);

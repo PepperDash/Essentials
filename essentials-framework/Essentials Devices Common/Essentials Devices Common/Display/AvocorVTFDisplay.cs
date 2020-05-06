@@ -5,9 +5,13 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
+using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Devices.Displays
 {
@@ -15,7 +19,7 @@ namespace PepperDash.Essentials.Devices.Displays
 	/// 
 	/// </summary>
     public class AvocorDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, ICommunicationMonitor, IInputDisplayPort1,
-        IInputHdmi1, IInputHdmi2, IInputHdmi3, IInputHdmi4, IInputVga1
+        IInputHdmi1, IInputHdmi2, IInputHdmi3, IInputHdmi4, IInputVga1, IBridgeAdvanced
 	{
         public IBasicCommunication Communication { get; private set; }
         public CommunicationGather PortGather { get; private set; }
@@ -199,7 +203,12 @@ namespace PepperDash.Essentials.Devices.Displays
 			return true;
 		}
 
-        void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    {
+	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
+	    }
+
+	    void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
         {
             if (e.Client.IsConnected)
                 StatusGet();
@@ -717,4 +726,24 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		#endregion
 	}
+
+    public class AvocorDisplayFactory : EssentialsDeviceFactory<AvocorDisplay>
+    {
+        public AvocorDisplayFactory()
+        {
+            TypeNames = new List<string>() { "avocorvtf" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
+            var comm = CommFactory.CreateCommForDevice(dc);
+            if (comm != null)
+                return new AvocorDisplay(dc.Key, dc.Name, comm, null);
+            else
+                return null;
+
+        }
+    }
+
 }

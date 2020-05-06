@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp.Reflection;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
-	public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor
+	public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets, IPower, IBridgeAdvanced
 	{
 		public IBasicCommunication Communication { get; private set; }
 		public CommunicationGather PortGather { get; private set; }
@@ -25,11 +28,14 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 		public bool PowerIsOn { get; private set; }
 
 		byte[] IncomingBuffer = new byte[] { };
-		public BoolFeedback PowerIsOnFeedback  { get; private set; } 
+		public BoolFeedback PowerIsOnFeedback  { get; private set; }
 
 		public CameraVisca(string key, string name, IBasicCommunication comm, CameraPropertiesConfig props) :
 			base(key, name)
 		{
+            Presets = props.Presets;
+
+            OutputPorts.Add(new RoutingOutputPort("videoOut", eRoutingSignalType.Video, eRoutingPortConnectionType.None, null, this, true));
 
             // Default to all capabilties
             Capabilities = eCameraCapabilities.Pan | eCameraCapabilities.Tilt | eCameraCapabilities.Zoom | eCameraCapabilities.Focus; 
@@ -75,7 +81,13 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 			CrestronConsole.AddNewConsoleCommand(s => Communication.Connect(), "con" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
 			return true;
 		}
-		void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    {
+	        LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
+	    }
+
+	    void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
 		{
 			Debug.Console(2, this, "Socket Status Change: {0}", e.Client.ClientStatus.ToString());
 
@@ -132,6 +144,15 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 		{
 			SendBytes(new Byte[] {0x81, 0x01, 0x04, 0x00, 0x03, 0xFF});
 		}
+
+        public void PowerToggle()
+        {
+            if (PowerIsOnFeedback.BoolValue)
+                PowerOff();
+            else
+                PowerOn();
+        }
+
 		public void PanLeft() 
 		{
 			SendPanTiltCommand(new byte[] {0x01, 0x03});
@@ -206,5 +227,40 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 			SendBytes(new byte[] { 0x81, 0x01, 0x04, 0x3F, 0x01, (byte)presetNumber, 0xFF });
 		}
 
-	}
+        #region IHasCameraPresets Members
+
+        public event EventHandler<EventArgs> PresetsListHasChanged;
+
+        public List<CameraPreset> Presets { get; private set; }
+
+        public void PresetSelect(int preset)
+        {
+            RecallPreset(preset);
+        }
+
+        public void PresetStore(int preset, string description)
+        {
+            SavePreset(preset);
+        }
+
+        #endregion
+    }
+
+    public class CameraViscaFactory : EssentialsDeviceFactory<CameraVisca>
+    {
+        public CameraViscaFactory()
+        {
+            TypeNames = new List<string>() { "cameravisca" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new CameraVisca Device");
+            var comm = CommFactory.CreateCommForDevice(dc);
+            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Cameras.CameraPropertiesConfig>(
+                dc.Properties.ToString());
+            return new Cameras.CameraVisca(dc.Key, dc.Name, comm, props);
+        }
+    }
+
 }

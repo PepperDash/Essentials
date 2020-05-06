@@ -4,16 +4,20 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
+using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Devices.Displays
 {
 	/// <summary>
 	/// 
 	/// </summary>
-	public class PanasonicThefDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, ICommunicationMonitor
+	public class PanasonicThDisplay : TwoWayDisplayBase, IBasicVolumeWithFeedback, ICommunicationMonitor, IBridgeAdvanced
 	{
 		public IBasicCommunication Communication { get; private set; }
 		public CommunicationGather PortGather { get; private set; }
@@ -70,7 +74,7 @@ namespace PepperDash.Essentials.Devices.Displays
 		/// <summary>
 		/// Constructor for IBasicCommunication
 		/// </summary>
-		public PanasonicThefDisplay(string key, string name, IBasicCommunication comm)
+		public PanasonicThDisplay(string key, string name, IBasicCommunication comm)
 			: base(key, name)
 		{
 			Communication = comm;
@@ -79,7 +83,7 @@ namespace PepperDash.Essentials.Devices.Displays
 		/// <summary>
 		/// Constructor for TCP
 		/// </summary>
-		public PanasonicThefDisplay(string key, string name, string hostname, int port)
+		public PanasonicThDisplay(string key, string name, string hostname, int port)
 			: base(key, name)
 		{
 			Communication = new GenericTcpIpClient(key + "-tcp", hostname, port, 5000);
@@ -90,7 +94,7 @@ namespace PepperDash.Essentials.Devices.Displays
 		/// <summary>
 		/// Constructor for COM
 		/// </summary>
-		public PanasonicThefDisplay(string key, string name, ComPort port, ComPort.ComPortSpec spec)
+		public PanasonicThDisplay(string key, string name, ComPort port, ComPort.ComPortSpec spec)
 			: base(key, name)
 		{
 			Communication = new ComPortController(key + "-com", port, spec);
@@ -129,7 +133,7 @@ namespace PepperDash.Essentials.Devices.Displays
 			//};
 		}
 
-		~PanasonicThefDisplay()
+		~PanasonicThDisplay()
 		{
 			PortGather = null;
 		}
@@ -142,7 +146,12 @@ namespace PepperDash.Essentials.Devices.Displays
 			return true;
 		}
 
-        public override FeedbackCollection<Feedback> Feedbacks
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    {
+	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
+	    }
+
+	    public override FeedbackCollection<Feedback> Feedbacks
 		{
 			get
 			{
@@ -335,4 +344,23 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		#endregion
 	}
+
+    public class PanasonicThDisplayFactory : EssentialsDeviceFactory<PanasonicThDisplay>
+    {
+        public PanasonicThDisplayFactory()
+        {
+            TypeNames = new List<string>() { "panasonicthef" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
+            var comm = CommFactory.CreateCommForDevice(dc);
+            if (comm != null)
+                return new PanasonicThDisplay(dc.Key, dc.Name, comm);
+            else
+                return null;
+        }
+    }
+
 }

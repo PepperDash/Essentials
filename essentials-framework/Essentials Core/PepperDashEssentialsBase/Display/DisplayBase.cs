@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
-
+using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Bridges;
 
 
 namespace PepperDash.Essentials.Core
@@ -16,7 +18,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// 
 	/// </summary>
-	public abstract class DisplayBase : Device, IHasFeedback, IRoutingSinkWithSwitching, IPower, IWarmingCooling, IUsageTracking
+	public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IPower, IWarmingCooling, IUsageTracking
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
 
@@ -71,7 +73,7 @@ namespace PepperDash.Essentials.Core
 
 		#endregion
 
-		public DisplayBase(string key, string name)
+	    protected DisplayBase(string key, string name)
 			: base(key, name)
 		{
 			PowerIsOnFeedback = new BoolFeedback("PowerOnFeedback", PowerIsOnFeedbackFunc);
@@ -113,6 +115,132 @@ namespace PepperDash.Essentials.Core
 
 		public abstract void ExecuteSwitch(object selector);
 
+	    protected void LinkDisplayToApi(DisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey,
+	        EiscApiAdvanced bridge)
+	    {
+            var inputNumber = 0;
+	        var inputKeys = new List<string>();
+
+            var joinMap = new DisplayControllerJoinMap();
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<DisplayControllerJoinMap>(joinMapSerialized);
+
+            joinMap.OffsetJoinNumbers(joinStart);
+
+            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.Console(0, "Linking to Display: {0}", displayDevice.Name);
+
+            trilist.StringInput[joinMap.Name].StringValue = displayDevice.Name;
+
+            var commMonitor = displayDevice as ICommunicationMonitor;
+            if (commMonitor != null)
+            {
+                commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
+            }
+
+            var inputNumberFeedback = new IntFeedback(() => inputNumber);
+
+            // Two way feedbacks
+            var twoWayDisplay = displayDevice as TwoWayDisplayBase;
+
+            if (twoWayDisplay != null)
+            {
+                trilist.SetBool(joinMap.IsTwoWayDisplay, true);
+
+                twoWayDisplay.CurrentInputFeedback.OutputChange += (o, a) => Debug.Console(0, "CurrentInputFeedback_OutputChange {0}", a.StringValue);
+
+
+                inputNumberFeedback.LinkInputSig(trilist.UShortInput[joinMap.InputSelect]);
+            }
+
+            // Power Off
+            trilist.SetSigTrueAction(joinMap.PowerOff, () =>
+            {
+                inputNumber = 102;
+                inputNumberFeedback.FireUpdate();
+                displayDevice.PowerOff();
+            });
+
+            displayDevice.PowerIsOnFeedback.OutputChange += (o, a) =>
+            {
+                if (!a.BoolValue)
+                {
+                    inputNumber = 102;
+                    inputNumberFeedback.FireUpdate();
+
+                }
+                else
+                {
+                    inputNumber = 0;
+                    inputNumberFeedback.FireUpdate();
+                }
+            };
+
+            displayDevice.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff]);
+
+            // PowerOn
+            trilist.SetSigTrueAction(joinMap.PowerOn, () =>
+            {
+                inputNumber = 0;
+                inputNumberFeedback.FireUpdate();
+                displayDevice.PowerOn();
+            });
+
+
+            displayDevice.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn]);
+
+            var count = 1;
+            foreach (var input in displayDevice.InputPorts)
+            {
+                inputKeys.Add(input.Key);
+                var tempKey = inputKeys.ElementAt(count - 1);
+                trilist.SetSigTrueAction((ushort)(joinMap.InputSelectOffset + count), () => displayDevice.ExecuteSwitch(displayDevice.InputPorts[tempKey].Selector));
+                Debug.Console(2, displayDevice, "Setting Input Select Action on Digital Join {0} to Input: {1}", joinMap.InputSelectOffset + count, displayDevice.InputPorts[tempKey].Key.ToString());
+                trilist.StringInput[(ushort)(joinMap.InputNamesOffset + count)].StringValue = input.Key.ToString();
+                count++;
+            }
+
+            Debug.Console(2, displayDevice, "Setting Input Select Action on Analog Join {0}", joinMap.InputSelect);
+            trilist.SetUShortSigAction(joinMap.InputSelect, (a) =>
+            {
+                if (a == 0)
+                {
+                    displayDevice.PowerOff();
+                    inputNumber = 0;
+                }
+                else if (a > 0 && a < displayDevice.InputPorts.Count && a != inputNumber)
+                {
+                    displayDevice.ExecuteSwitch(displayDevice.InputPorts.ElementAt(a - 1).Selector);
+                    inputNumber = a;
+                }
+                else if (a == 102)
+                {
+                    displayDevice.PowerToggle();
+
+                }
+                if (twoWayDisplay != null)
+                    inputNumberFeedback.FireUpdate();
+            });
+
+
+            var volumeDisplay = displayDevice as IBasicVolumeControls;
+	        if (volumeDisplay == null) return;
+
+	        trilist.SetBoolSigAction(joinMap.VolumeUp, volumeDisplay.VolumeUp);
+	        trilist.SetBoolSigAction(joinMap.VolumeDown, volumeDisplay.VolumeDown);
+	        trilist.SetSigTrueAction(joinMap.VolumeMute, volumeDisplay.MuteToggle);
+
+	        var volumeDisplayWithFeedback = volumeDisplay as IBasicVolumeWithFeedback;
+
+	        if (volumeDisplayWithFeedback == null) return;
+
+	        trilist.SetUShortSigAction(joinMap.VolumeLevel, volumeDisplayWithFeedback.SetVolume);
+	        volumeDisplayWithFeedback.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[joinMap.VolumeLevel]);
+	        volumeDisplayWithFeedback.MuteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VolumeMute]);
+	    }
 	}
 
 	/// <summary>

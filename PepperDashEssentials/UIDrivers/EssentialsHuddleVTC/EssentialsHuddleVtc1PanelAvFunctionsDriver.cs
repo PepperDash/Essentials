@@ -726,7 +726,7 @@ namespace PepperDash.Essentials
         void UiSelectSource(string key)
         {
             // Run the route and when it calls back, show the source
-            CurrentRoom.RunRouteAction(key, null);
+            CurrentRoom.RunRouteAction(key, new Action(() => { }));
         }
 
         /// <summary>
@@ -941,7 +941,7 @@ namespace PepperDash.Essentials
                 if (_CurrentRoom != null)
                     _CurrentRoom.CurrentSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
 
-                TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, () => _CurrentRoom.RunRouteAction("codecOsd"));
+                TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, () => _CurrentRoom.RunRouteAction("codecOsd", _CurrentRoom.SourceListKey));
 
                 (Parent as EssentialsPanelMainInterfaceDriver).HeaderDriver.SetupHeaderButtons(this, CurrentRoom);
             }
@@ -987,7 +987,7 @@ namespace PepperDash.Essentials
 				if (CurrentRoom.CurrentSourceInfo != null &&  CurrentRoom.CurrentSourceInfo.DisableCodecSharing)
 				{
 					Debug.Console(1, CurrentRoom, "Transitioning to in-call, cancelling non-sharable source");
-					CurrentRoom.RunRouteAction("codecOsd");
+					CurrentRoom.RunRouteAction("codecOsd", CurrentRoom.SourceListKey);
 				}
 			}
 

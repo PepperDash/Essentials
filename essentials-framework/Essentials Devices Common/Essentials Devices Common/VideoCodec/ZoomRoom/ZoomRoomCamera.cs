@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-
+using Crestron.SimplSharpPro.DeviceSupport;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
@@ -29,7 +30,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
     }
 
 
-    public class ZoomRoomCamera : CameraBase, IHasCameraPtzControl
+    public class ZoomRoomCamera : CameraBase, IHasCameraPtzControl, IBridgeAdvanced
     {
         protected ZoomRoom ParentCodec { get; private set; }
 
@@ -198,6 +199,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         }
 
         #endregion
+
+        public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
+        }
     }
 
     public class ZoomRoomFarEndCamera : ZoomRoomCamera, IAmFarEndCamera

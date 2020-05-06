@@ -5,9 +5,15 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.CrestronThread;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
+using Feedback = PepperDash.Essentials.Core.Feedback;
+
+using Newtonsoft.Json.Linq;
 
 namespace PepperDash.Essentials.Devices.Displays
 {
@@ -15,7 +21,7 @@ namespace PepperDash.Essentials.Devices.Displays
 	/// 
 	/// </summary>
     public class SamsungMDC : TwoWayDisplayBase, IBasicVolumeWithFeedback, ICommunicationMonitor, IInputDisplayPort1, IInputDisplayPort2,
-        IInputHdmi1, IInputHdmi2, IInputHdmi3, IInputHdmi4
+        IInputHdmi1, IInputHdmi2, IInputHdmi3, IInputHdmi4, IBridgeAdvanced
 	{
 		public IBasicCommunication Communication { get; private set; }
 				
@@ -146,7 +152,12 @@ namespace PepperDash.Essentials.Devices.Displays
 			return true;
 		}
 
-		public override FeedbackCollection<Feedback> Feedbacks
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    {
+	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
+	    }
+
+	    public override FeedbackCollection<Feedback> Feedbacks
 		{
 			get
 			{
@@ -629,4 +640,23 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		#endregion
 	}
+
+    public class SamsungMDCFactory : EssentialsDeviceFactory<SamsungMDC>
+    {
+        public SamsungMDCFactory()
+        {
+            TypeNames = new List<string>() { "samsungmdc" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
+            var comm = CommFactory.CreateCommForDevice(dc);
+            if (comm != null)
+                return new SamsungMDC(dc.Key, dc.Name, comm, dc.Properties["id"].Value<string>());
+            else
+                return null;
+        }
+    }
+
 }

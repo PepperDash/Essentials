@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
-
-using Newtonsoft.Json;
-
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Monitoring;
 
@@ -23,11 +17,11 @@ namespace PepperDash.Essentials.AppServer.Messengers
 
             SysMon = sysMon;
 
-            SysMon.SystemMonitorPropertiesChanged += new EventHandler<EventArgs>(SysMon_SystemMonitorPropertiesChanged);
+            SysMon.SystemMonitorPropertiesChanged += SysMon_SystemMonitorPropertiesChanged;
 
             foreach (var p in SysMon.ProgramStatusFeedbackCollection)
             {
-                p.Value.ProgramInfoChanged += new EventHandler<ProgramInfoEventArgs>(ProgramInfoChanged);
+                p.Value.ProgramInfoChanged += ProgramInfoChanged;
             }
 
             CrestronConsole.AddNewConsoleCommand(s => SendFullStatusMessage(), "SendFullSysMonStatus", "Sends the full System Monitor Status", ConsoleAccessLevelEnum.AccessOperator);
@@ -72,18 +66,15 @@ namespace PepperDash.Essentials.AppServer.Messengers
             Debug.Console(1, "Posting System Monitor Status Message.");
 
             // This takes a while, launch a new thread
-            CrestronInvoke.BeginInvoke((o) =>
+            CrestronInvoke.BeginInvoke(o => PostStatusMessage(new
             {
-                PostStatusMessage(new
-                {
-                    timeZone = SysMon.TimeZoneFeedback.IntValue,
-                    timeZoneName = SysMon.TimeZoneTextFeedback.StringValue,
-                    ioControllerVersion = SysMon.IOControllerVersionFeedback.StringValue,
-                    snmpVersion = SysMon.SnmpVersionFeedback.StringValue,
-                    bacnetVersion = SysMon.BACnetAppVersionFeedback.StringValue,
-                    controllerVersion = SysMon.ControllerVersionFeedback.StringValue
-                });
-            });
+                timeZone = SysMon.TimeZoneFeedback.IntValue,
+                timeZoneName = SysMon.TimeZoneTextFeedback.StringValue,
+                ioControllerVersion = SysMon.IoControllerVersionFeedback.StringValue,
+                snmpVersion = SysMon.SnmpVersionFeedback.StringValue,
+                bacnetVersion = SysMon.BaCnetAppVersionFeedback.StringValue,
+                controllerVersion = SysMon.ControllerVersionFeedback.StringValue
+            }));
         }
 
         protected override void CustomRegisterWithAppServer(MobileControlSystemController appServerController)

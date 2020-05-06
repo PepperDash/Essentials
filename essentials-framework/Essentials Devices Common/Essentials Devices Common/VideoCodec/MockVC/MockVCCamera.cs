@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
-    public class MockVCCamera : CameraBase, IHasCameraPtzControl, IHasCameraFocusControl
+    public class MockVCCamera : CameraBase, IHasCameraPtzControl, IHasCameraFocusControl, IBridgeAdvanced
     {
         protected VideoCodecBase ParentCodec { get; private set; }
 
@@ -111,9 +112,14 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         }
 
         #endregion
+
+        public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
+        }
     }
 
-    public class MockFarEndVCCamera : CameraBase, IHasCameraPtzControl, IAmFarEndCamera
+    public class MockFarEndVCCamera : CameraBase, IHasCameraPtzControl, IAmFarEndCamera, IBridgeAdvanced
     {
         protected VideoCodecBase ParentCodec { get; private set; }
 
@@ -191,5 +197,10 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         }
 
         #endregion
+
+        public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
+        }
     }
 }

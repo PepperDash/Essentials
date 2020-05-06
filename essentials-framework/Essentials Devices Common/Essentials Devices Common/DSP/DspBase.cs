@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.DSP
 {
-	public abstract class DspBase : Device
+	public abstract class DspBase : EssentialsDevice
 	{
 		public Dictionary<string, DspControlPoint> LevelControlPoints { get; private set; }
 
@@ -55,20 +55,5 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 	// VTC 
 	// ATC
 	// Mics, unusual
-
-    public interface IBiampTesiraDspLevelControl : IBasicVolumeWithFeedback
-    {
-        /// <summary>
-        /// In BiAmp: Instance Tag, QSC: Named Control, Polycom: 
-        /// </summary>
-        string ControlPointTag { get; }
-		int Index1 { get; }
-        int Index2 { get; }
-        bool HasMute { get; }
-        bool HasLevel { get; }
-        bool AutomaticUnmuteOnVolumeUp { get; }
-    }
-
-
 
 }

@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Devices.Displays
 {
-	public class NecPaSeriesProjector : ComTcpDisplayBase
+	public class NecPaSeriesProjector : ComTcpDisplayBase, IBridgeAdvanced
 	{
 		public readonly IntFeedback Lamp1RemainingPercent;
 		int _Lamp1RemainingPercent;
@@ -218,5 +219,9 @@ namespace PepperDash.Essentials.Devices.Displays
 
 		}
 
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    {
+	        LinkDisplayToApi(this, trilist, joinStart, joinMapKey, bridge);
+	    }
 	}
 }

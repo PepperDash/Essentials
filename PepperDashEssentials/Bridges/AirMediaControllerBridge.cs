@@ -11,7 +11,7 @@ using PepperDash.Essentials.DM.AirMedia;
 
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
 	public static class AirMediaControllerApiExtensions
 	{
@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Bridges
 		{
             AirMediaControllerJoinMap joinMap = new AirMediaControllerJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<AirMediaControllerJoinMap>(joinMapSerialized);

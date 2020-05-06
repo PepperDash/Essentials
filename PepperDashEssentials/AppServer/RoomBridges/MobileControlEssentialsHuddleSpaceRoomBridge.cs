@@ -25,6 +25,8 @@ namespace PepperDash.Essentials
 
         public AudioCodecBaseMessenger ACMessenger { get; private set; }
 
+        public Dictionary<string, MessengerBase> DeviceMessengers { get; private set; }
+
 
 		/// <summary>
 		/// 
@@ -67,7 +69,15 @@ namespace PepperDash.Essentials
 			var routeRoom = Room as IRunRouteAction;
 			if(routeRoom != null)
 				Parent.AddAction(string.Format(@"/room/{0}/source", Room.Key), new Action<SourceSelectMessageContent>(c => 
-					routeRoom.RunRouteAction(c.SourceListItem)));
+                    {
+                        if(string.IsNullOrEmpty(c.SourceListKey))
+                            routeRoom.RunRouteAction(c.SourceListItem, Room.SourceListKey);
+                        else
+                        {
+                            routeRoom.RunRouteAction(c.SourceListItem, c.SourceListKey);
+                        }
+                    }));
+
 
 			var defaultRoom = Room as IRunDefaultPresentRoute;
 			if(defaultRoom != null)
@@ -115,6 +125,8 @@ namespace PepperDash.Essentials
                 ACMessenger.RegisterWithAppServer(Parent);
             }
 
+            SetupDeviceMessengers();
+
 			var defCallRm = Room as IRunDefaultCallRoute;
 			if (defCallRm != null)
 			{
@@ -133,6 +145,36 @@ namespace PepperDash.Essentials
 			Room.ShutdownPromptTimer.HasFinished += ShutdownPromptTimer_HasFinished;
 			Room.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
 		}
+
+        /// <summary>
+        /// Set up the messengers for each device type
+        /// </summary>
+        void SetupDeviceMessengers()
+        {
+            DeviceMessengers = new Dictionary<string,MessengerBase>();
+
+            foreach (var device in DeviceManager.AllDevices)
+            {
+                Debug.Console(2, this, "Attempting to set up device messenger for device: {0}", device.Key);
+
+                if (device is Essentials.Devices.Common.Cameras.CameraBase)
+                {
+                    var camDevice = device as Essentials.Devices.Common.Cameras.CameraBase;
+                    Debug.Console(2, this, "Adding CameraBaseMessenger for device: {0}", device.Key);
+                    var cameraMessenger = new CameraBaseMessenger(device.Key + "-" + Parent.Key, camDevice, "/device/" + device.Key);
+                    DeviceMessengers.Add(device.Key, cameraMessenger);
+                    cameraMessenger.RegisterWithAppServer(Parent);
+                }
+                if (device is Essentials.Devices.Common.SoftCodec.BlueJeansPc)
+                {
+                    var softCodecDevice = device as Essentials.Devices.Common.SoftCodec.BlueJeansPc;
+                    Debug.Console(2, this, "Adding IRunRouteActionMessnger for device: {0}", device.Key);
+                    var routeMessenger = new IRunRouteActionMessenger(device.Key + "-" + Parent.Key, softCodecDevice, "/device/" + device.Key);
+                    DeviceMessengers.Add(device.Key, routeMessenger);
+                    routeMessenger.RegisterWithAppServer(Parent);
+                }
+            }
+        }
 
 		/// <summary>
 		/// 
@@ -430,6 +472,7 @@ namespace PepperDash.Essentials
     public class SourceSelectMessageContent
     {
 		public string SourceListItem { get; set; }
+        public string SourceListKey { get; set; }
     }
 
 	/// <summary>

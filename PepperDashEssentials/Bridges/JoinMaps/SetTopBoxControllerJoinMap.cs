@@ -9,6 +9,7 @@ using Crestron.SimplSharp.Reflection;
 
 namespace PepperDash.Essentials.Bridges
 {
+    [Obsolete("Please use version PepperDash.Essentials.Core.Bridges")]
     public class SetTopBoxControllerJoinMap : JoinMapBase
     {
         #region Digitals

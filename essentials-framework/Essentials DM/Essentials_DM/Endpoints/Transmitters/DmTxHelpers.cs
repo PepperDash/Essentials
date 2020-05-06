@@ -4,13 +4,17 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
-
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.DM.Config;
+using PepperDash.Essentials.Core.Config;
+
 
 namespace PepperDash.Essentials.DM
 {
@@ -23,7 +27,7 @@ namespace PepperDash.Essentials.DM
 		/// <param name="name"></param>
 		/// <param name="props"></param>
 		/// <returns></returns>
-        public static BasicDmTxControllerBase GetDmTxController(string key, string name, string typeName, DmTxPropertiesConfig props)
+        public static DmTxControllerBase GetDmTxController(string key, string name, string typeName, DmTxPropertiesConfig props)
 		{
 			// switch on type name... later...
 
@@ -141,26 +145,18 @@ namespace PepperDash.Essentials.DM
 		}
 	}
 
-    public abstract class BasicDmTxControllerBase : CrestronGenericBaseDevice
-    {
-        public BasicDmTxControllerBase(string key, string name, GenericBase hardware)
-            : base(key, name, hardware)
-        {
-
-        }
-    }
-
 	/// <summary>
 	/// 
 	/// </summary>
-	public abstract class DmTxControllerBase : BasicDmTxControllerBase
+    [Description("Wrapper class for all DM-TX variants")]
+	public abstract class DmTxControllerBase : CrestronGenericBridgeableBaseDevice
 	{
         public virtual void SetPortHdcpCapability(eHdcpCapabilityType hdcpMode, uint port) { }
         public virtual eHdcpCapabilityType HdcpSupportCapability { get; protected set; }
         public abstract StringFeedback ActiveVideoInputFeedback { get; protected set; }
         public RoutingInputPortWithVideoStatuses AnyVideoInput { get; protected set; }
 
-        public DmTxControllerBase(string key, string name, EndpointTransmitterBase hardware)
+	    protected DmTxControllerBase(string key, string name, EndpointTransmitterBase hardware)
 			: base(key, name, hardware) 
 		{
 			// if wired to a chassis, skip registration step in base class
@@ -170,13 +166,181 @@ namespace PepperDash.Essentials.DM
 			}
             AddToFeedbackList(ActiveVideoInputFeedback);
 		}
+
+	    protected DmTxControllerBase(string key, string name, DmHDBasedTEndPoint hardware) : base(key, name, hardware)
+	    {
+	    }
+
+	    protected void LinkDmTxToApi(DmTxControllerBase tx, BasicTriList trilist, uint joinStart, string joinMapKey,
+	        EiscApiAdvanced bridge)
+	    {
+            var joinMap = new DmTxControllerJoinMap();
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<DmTxControllerJoinMap>(joinMapSerialized);
+
+            joinMap.OffsetJoinNumbers(joinStart);
+
+	        if (tx.Hardware is DmHDBasedTEndPoint)
+	        {
+	            Debug.Console(1, tx, "No properties to link. Skipping device {0}", tx.Name);
+	            return;
+	        }
+
+            Debug.Console(1, tx, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+
+            tx.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
+            tx.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus]);
+            tx.AnyVideoInput.VideoStatus.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentInputResolution]);
+            trilist.UShortInput[joinMap.HdcpSupportCapability].UShortValue = (ushort)tx.HdcpSupportCapability;
+
+            bool hdcpTypeSimple;
+
+            if (tx.Hardware is DmTx4kX02CBase)
+                hdcpTypeSimple = false;
+            else
+                hdcpTypeSimple = true;
+
+            if (tx is ITxRouting)
+            {
+                var txR = tx as ITxRouting;
+
+                trilist.SetUShortSigAction(joinMap.VideoInput,
+                    i => txR.ExecuteNumericSwitch(i, 0, eRoutingSignalType.Video));
+                trilist.SetUShortSigAction(joinMap.AudioInput,
+                    i => txR.ExecuteNumericSwitch(i, 0, eRoutingSignalType.Audio));
+
+                txR.VideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.VideoInput]);
+                txR.AudioSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioInput]);
+
+                trilist.UShortInput[joinMap.HdcpSupportCapability].UShortValue = (ushort)tx.HdcpSupportCapability;
+
+                if (txR.InputPorts[DmPortName.HdmiIn] != null)
+                {
+                    var inputPort = txR.InputPorts[DmPortName.HdmiIn];
+
+                    if (tx.Feedbacks["HdmiInHdcpCapability"] != null)
+                    {
+                        var intFeedback = tx.Feedbacks["HdmiInHdcpCapability"] as IntFeedback;
+                        if (intFeedback != null)
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
+                    }
+
+                    if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
+                    {
+                        var port = inputPort.Port as EndpointHdmiInput;
+
+                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port1HdcpState, trilist);
+                    }
+                }
+
+                if (txR.InputPorts[DmPortName.HdmiIn1] != null)
+                {
+                    var inputPort = txR.InputPorts[DmPortName.HdmiIn1];
+
+                    if (tx.Feedbacks["HdmiIn1HdcpCapability"] != null)
+                    {
+                        var intFeedback = tx.Feedbacks["HdmiIn1HdcpCapability"] as IntFeedback;
+                        if (intFeedback != null)
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
+                    }
+
+                    if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
+                    {
+                        var port = inputPort.Port as EndpointHdmiInput;
+
+                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port1HdcpState, trilist);
+                    }
+                }
+
+                if (txR.InputPorts[DmPortName.HdmiIn2] != null)
+                {
+                    var inputPort = txR.InputPorts[DmPortName.HdmiIn2];
+
+                    if (tx.Feedbacks["HdmiIn2HdcpCapability"] != null)
+                    {
+                        var intFeedback = tx.Feedbacks["HdmiIn2HdcpCapability"] as IntFeedback;
+                        if (intFeedback != null)
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
+                    }
+
+                    if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
+                    {
+                        var port = inputPort.Port as EndpointHdmiInput;
+
+                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port2HdcpState, trilist);
+                    }
+                }
+
+            }
+
+            var txFreeRun = tx as IHasFreeRun;
+            if (txFreeRun != null)
+            {
+                txFreeRun.FreeRunEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.FreeRunEnabled]);
+                trilist.SetBoolSigAction(joinMap.FreeRunEnabled, new Action<bool>(txFreeRun.SetFreeRunEnabled));
+            }
+
+            var txVga = tx as IVgaBrightnessContrastControls;
+            {
+                if (txVga == null) return;
+
+                txVga.VgaBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.VgaBrightness]);
+                txVga.VgaContrastFeedback.LinkInputSig(trilist.UShortInput[joinMap.VgaContrast]);
+
+                trilist.SetUShortSigAction(joinMap.VgaBrightness, txVga.SetVgaBrightness);
+                trilist.SetUShortSigAction(joinMap.VgaContrast, txVga.SetVgaContrast);
+            }
+        }
+
+        private void SetHdcpCapabilityAction(bool hdcpTypeSimple, EndpointHdmiInput port, uint join, BasicTriList trilist)
+        {
+            if (hdcpTypeSimple)
+            {
+                trilist.SetUShortSigAction(join,
+                    s =>
+                    {
+                        if (s == 0)
+                        {
+                            port.HdcpSupportOff();
+                        }
+                        else if (s > 0)
+                        {
+                            port.HdcpSupportOn();
+                        }
+                    });
+            }
+            else
+            {
+                trilist.SetUShortSigAction(join,
+                        s =>
+                        {
+                            port.HdcpCapability = (eHdcpCapabilityType)s;
+                        });
+            }
+        }
 	}
-    //public enum ePdtHdcpSupport
-    //{
-    //    HdcpOff = 0,
-    //    Hdcp1 = 1,
-    //    Hdcp2 = 2,
-    //    Hdcp2_2= 3,
-    //    Auto = 99
-    //}
+
+    public class DmTxControllerFactory : EssentialsDeviceFactory<DmTxControllerBase>
+    {
+        public DmTxControllerFactory()
+        {
+            TypeNames = new List<string>() { "dmtx200c", "dmtx201c", "dmtx201s", "dmtx4k100c", "dmtx4k202c", "dmtx4kz202c", "dmtx4k302c", "dmtx4kz302c", "dmtx401c", "dmtx401s" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            var type = dc.Type.ToLower();
+
+            Debug.Console(1, "Factory Attempting to create new DM-TX Device");
+
+            var props = JsonConvert.DeserializeObject
+                <PepperDash.Essentials.DM.Config.DmTxPropertiesConfig>(dc.Properties.ToString());
+            return PepperDash.Essentials.DM.DmTxHelper.GetDmTxController(dc.Key, dc.Name, type, props);
+        }
+    }
+
 }
+

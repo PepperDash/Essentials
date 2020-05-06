@@ -39,6 +39,10 @@ switch -regex ($Env:GITHUB_REF) {
     $phase = 'hotfix'
     $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
   }
+  '^refs\/heads\/bugfix\/*.' {
+    $phase = 'hotfix'
+    $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
+  }
 }
 
 

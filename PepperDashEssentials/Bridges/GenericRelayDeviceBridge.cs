@@ -11,7 +11,7 @@ using PepperDash.Essentials.Core.CrestronIO;
 
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     public static class GenericRelayDeviceApiExtensions
     {
@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Bridges
         {
             GenericRelayControllerJoinMap joinMap = new GenericRelayControllerJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<GenericRelayControllerJoinMap>(joinMapSerialized);

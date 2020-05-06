@@ -10,7 +10,7 @@ using PepperDash.Essentials.Devices.Common;
 
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     public static class GenericLightingApiExtensions
     {
@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Bridges
         {
             GenericLightingJoinMap joinMap = new GenericLightingJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<GenericLightingJoinMap>(joinMapSerialized);

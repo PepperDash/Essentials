@@ -7,6 +7,7 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Cisco;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
@@ -67,34 +68,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     }
 
     /// <summary>
-    /// Represents a room preset on a video coded.  Typically stores camera position(s) and video routing.  Can be recalled by Far End if enabled.
+    /// Represents a room preset on a video codec.  Typically stores camera position(s) and video routing.  Can be recalled by Far End if enabled.
     /// </summary>
-    public class CodecRoomPreset
+    public class CodecRoomPreset : PresetBase
     {
-        [JsonProperty("id")]
-        public int ID { get; set; }
-        /// <summary>
-        /// Used to store the name of the preset
-        /// </summary>
-        [JsonProperty("description")]
-        public string Description { get; set; }
-        /// <summary>
-        /// Indicates if the preset is defined(stored) in the codec
-        /// </summary>
-        [JsonProperty("defined")]
-        public bool Defined { get; set; }
-        /// <summary>
-        /// Indicates if the preset has the capability to be defined
-        /// </summary>
-        [JsonProperty("isDefinable")]
-        public bool IsDefinable { get; set; }
-
         public CodecRoomPreset(int id, string description, bool def, bool isDef)
+            : base(id, description, def, isDef)
         {
-            ID = id;
-            Description = description;
-            Defined = def;
-            IsDefinable = isDef;
+
         }
     }
 }

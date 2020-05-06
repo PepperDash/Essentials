@@ -5,13 +5,14 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.Shades
 {
     /// <summary>
     /// Class that contains the shades to be controlled in a room
     /// </summary>
-    public class ShadeController : Device, IShades
+    public class ShadeController : EssentialsDevice, IShades
     {
         ShadeControllerConfigProperties Config;
 
@@ -55,4 +56,21 @@ namespace PepperDash.Essentials.Core.Shades
             public string Key { get; set; }
         }
     }
+
+    public class ShadeControllerFactory : EssentialsDeviceFactory<ShadeController>
+    {
+        public ShadeControllerFactory()
+        {
+            TypeNames = new List<string>() { "shadecontroller" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new ShadeController Device");
+            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Core.Shades.ShadeControllerConfigProperties>(dc.Properties.ToString());
+
+            return new Core.Shades.ShadeController(dc.Key, dc.Name, props);
+        }
+    }
+
 }

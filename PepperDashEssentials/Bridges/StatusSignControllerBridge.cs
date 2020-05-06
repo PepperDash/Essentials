@@ -4,7 +4,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.CrestronIO;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     public static class StatusSignDeviceApiExtensions
     {
@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Bridges
         {
             var joinMap = new StatusSignControllerJoinMap();
 
-            var joinMapSerialized = JoinMapHelper.GetJoinMapForDevice(joinMapKey);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<StatusSignControllerJoinMap>(joinMapSerialized);
