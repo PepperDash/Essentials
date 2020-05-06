@@ -91,15 +91,6 @@ namespace PepperDash.Essentials.Core
         void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type);
     }
 
-    /// <summary>
-    /// Defines a receiver that has internal routing (DM-RMC-4K-Z-SCALER-C)
-    /// </summary>
-    public interface IRmcRouting : IRouting
-    {
-        IntFeedback AudioVideoSourceNumericFeedback { get; }
-        void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type);
-    }
-
 	/// <summary>
 	/// Defines an IRoutingOutputs devices as being a source - the start of the chain
 	/// </summary>

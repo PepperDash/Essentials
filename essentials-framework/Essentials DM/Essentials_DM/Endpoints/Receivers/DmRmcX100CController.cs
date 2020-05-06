@@ -21,10 +21,10 @@ namespace PepperDash.Essentials.DM
 	public class DmRmcX100CController : DmRmcControllerBase, IRoutingInputsOutputs, 
 		IIROutputPorts, IComPorts, ICec
 	{
-		public DmRmc100C Rmc { get; protected set; }
+		public DmRmc100C Rmc { get; private set; }
 
-		public RoutingInputPort DmIn { get; protected set; }
-		public RoutingOutputPort HdmiOut { get; protected set; }
+		public RoutingInputPort DmIn { get; private set; }
+		public RoutingOutputPort HdmiOut { get; private set; }
 
 		public RoutingPortCollection<RoutingInputPort> InputPorts
 		{
