@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.DM
 	public class DmRmc200SController : DmRmcControllerBase, IRoutingInputsOutputs,
 		IIROutputPorts, IComPorts, ICec
 	{
-		public DmRmc200S Rmc { get; private set; }
+	    private readonly DmRmc200S _rmc;
 
 		public RoutingInputPort DmIn { get; private set; }
 		public RoutingOutputPort HdmiOut { get; private set; }
@@ -37,24 +37,24 @@ namespace PepperDash.Essentials.DM
 		public DmRmc200SController(string key, string name, DmRmc200S rmc)
 			: base(key, name, rmc)
 		{
-			Rmc = rmc;
+			_rmc = rmc;
 			DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 				eRoutingPortConnectionType.DmCat, 0, this);
 			HdmiOut = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 				eRoutingPortConnectionType.Hdmi, null, this);
 
-            EdidManufacturerFeedback = new StringFeedback(() => Rmc.HdmiOutput.ConnectedDevice.Manufacturer.StringValue);
-            EdidNameFeedback = new StringFeedback(() => Rmc.HdmiOutput.ConnectedDevice.Name.StringValue);
-            EdidPreferredTimingFeedback = new StringFeedback(() => Rmc.HdmiOutput.ConnectedDevice.PreferredTiming.StringValue);
-            EdidSerialNumberFeedback = new StringFeedback(() => Rmc.HdmiOutput.ConnectedDevice.SerialNumber.StringValue);
+            EdidManufacturerFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.Manufacturer.StringValue);
+            EdidNameFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.Name.StringValue);
+            EdidPreferredTimingFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.PreferredTiming.StringValue);
+            EdidSerialNumberFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.SerialNumber.StringValue);
 
-            VideoOutputResolutionFeedback = new StringFeedback(() => Rmc.HdmiOutput.GetVideoResolutionString());
+            VideoOutputResolutionFeedback = new StringFeedback(() => _rmc.HdmiOutput.GetVideoResolutionString());
 
-            Rmc.HdmiOutput.OutputStreamChange += HdmiOutput_OutputStreamChange;
-            Rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
+            _rmc.HdmiOutput.OutputStreamChange += HdmiOutput_OutputStreamChange;
+            _rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
 
             // Set Ports for CEC
-            HdmiOut.Port = Rmc.HdmiOutput;
+            HdmiOut.Port = _rmc.HdmiOutput;
         }
 
         void HdmiOutput_OutputStreamChange(EndpointOutputStream outputStream, EndpointOutputStreamEventArgs args)
@@ -98,17 +98,17 @@ namespace PepperDash.Essentials.DM
 	    }
 
 	    #region IIROutputPorts Members
-		public CrestronCollection<IROutputPort> IROutputPorts { get { return Rmc.IROutputPorts; } }
-		public int NumberOfIROutputPorts { get { return Rmc.NumberOfIROutputPorts; } }
+		public CrestronCollection<IROutputPort> IROutputPorts { get { return _rmc.IROutputPorts; } }
+		public int NumberOfIROutputPorts { get { return _rmc.NumberOfIROutputPorts; } }
 		#endregion
 
 		#region IComPorts Members
-		public CrestronCollection<ComPort> ComPorts { get { return Rmc.ComPorts; } }
-		public int NumberOfComPorts { get { return Rmc.NumberOfComPorts; } }
+		public CrestronCollection<ComPort> ComPorts { get { return _rmc.ComPorts; } }
+		public int NumberOfComPorts { get { return _rmc.NumberOfComPorts; } }
 		#endregion
 
 		#region ICec Members
-		public Cec StreamCec { get { return Rmc.HdmiOutput.StreamCec; } }
+		public Cec StreamCec { get { return _rmc.HdmiOutput.StreamCec; } }
 		#endregion
 	}
 }

@@ -26,6 +26,7 @@ namespace PepperDash.Essentials.DM
 			: base(key, name, device)
         {
             Rmc = device;
+
 			// if wired to a chassis, skip registration step in base class
             PreventRegistration = device.DMOutput != null;
 			
