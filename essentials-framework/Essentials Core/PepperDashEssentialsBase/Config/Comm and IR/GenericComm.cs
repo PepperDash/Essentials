@@ -60,13 +60,12 @@ namespace PepperDash.Essentials.Core
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new IBasicCommunicationJoinMap();
+            var joinMap = new IBasicCommunicationJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<IBasicCommunicationJoinMap>(joinMapSerialized);
-            joinMap.OffsetJoinNumbers(joinStart);
 
             if (CommPort == null)
             {
@@ -80,22 +79,22 @@ namespace PepperDash.Essentials.Core
             CommPort.TextReceived += (s, a) =>
             {
                 Debug.Console(2, this, "RX: {0}", a.Text);
-                trilist.SetString(joinMap.TextReceived, a.Text);
+                trilist.SetString(joinMap.TextReceived.JoinNumber, a.Text);
             };
-            trilist.SetStringSigAction(joinMap.SendText, s => CommPort.SendText(s));
-            trilist.SetStringSigAction(joinMap.SetPortConfig, SetPortConfig);
+            trilist.SetStringSigAction(joinMap.SendText.JoinNumber, s => CommPort.SendText(s));
+            trilist.SetStringSigAction(joinMap.SetPortConfig.JoinNumber, SetPortConfig);
 
 
             var sComm = this as ISocketStatus;
             if (sComm == null) return;
             sComm.ConnectionChange += (s, a) =>
             {
-                trilist.SetUshort(joinMap.Status, (ushort)(a.Client.ClientStatus));
-                trilist.SetBool(joinMap.Connected, a.Client.ClientStatus ==
+                trilist.SetUshort(joinMap.Status.JoinNumber, (ushort)(a.Client.ClientStatus));
+                trilist.SetBool(joinMap.Connected.JoinNumber, a.Client.ClientStatus ==
                                                    SocketStatus.SOCKET_STATUS_CONNECTED);
             };
 
-            trilist.SetBoolSigAction(joinMap.Connect, b =>
+            trilist.SetBoolSigAction(joinMap.Connect.JoinNumber, b =>
             {
                 if (b)
                 {
