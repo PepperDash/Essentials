@@ -109,7 +109,8 @@ namespace PepperDash.Essentials.DM
             });
             AudioSourceNumericFeedback = new IntFeedback(() =>
             {
-                return (int)Tx.AudioSourceFeedback;
+                //Doing this because 4kz302 does not allow for breakaway audio source selection
+                return (int)Tx.VideoSourceFeedback;
             });
 
             HdmiIn1HdcpCapabilityFeedback = new IntFeedback("HdmiIn1HdcpCapability", () =>
@@ -250,7 +251,11 @@ namespace PepperDash.Essentials.DM
             // NOTE:  It's possible that this particular TX model may not like the AudioSource property being set.  
             // The SIMPL definition only shows a single analog for AudioVideo Source
             if ((signalType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
-                Tx.AudioSource = (eAst)inputSelector;
+            {
+                //it doesn't...
+                Debug.Console(2, this, "Unable to execute audio-only switch for tx {0}", Key);
+                //Tx.AudioSource = (eAst) inputSelector;
+            }
         }
 
         void InputStreamChangeEvent(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
