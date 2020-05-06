@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.DM
         public virtual StringFeedback EdidPreferredTimingFeedback { get; protected set; }
         public virtual StringFeedback EdidSerialNumberFeedback { get; protected set; }
 
-		public DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
+        protected DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
 			: base(key, name, device)
 		{
 			// if wired to a chassis, skip registration step in base class
@@ -37,8 +37,8 @@ namespace PepperDash.Essentials.DM
             AddToFeedbackList(VideoOutputResolutionFeedback, EdidManufacturerFeedback, EdidSerialNumberFeedback, EdidNameFeedback, EdidPreferredTimingFeedback);
         }
 
-	    protected void LinkDmRmcToApi(DmRmcControllerBase rmc, BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
-	    {
+        protected void LinkDmRmcToApi(DmRmcControllerBase rmc, BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
             var joinMap = new DmRmcControllerJoinMap();
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
@@ -61,7 +61,18 @@ namespace PepperDash.Essentials.DM
                 rmc.EdidPreferredTimingFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidPrefferedTiming]);
             if (rmc.EdidSerialNumberFeedback != null)
                 rmc.EdidSerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidSerialNumber]);
-	    }
+            
+            //If the device is an DM-RMC-4K-Z-SCALER-C
+            var routing = rmc as IRmcRouting;
+
+            if (routing != null) 
+            {
+                if (routing.AudioVideoSourceNumericFeedback != null)
+                    routing.AudioVideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioVideoSource]);
+
+                trilist.SetUShortSigAction(joinMap.AudioVideoSource, (a) => routing.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
+            }
+        }
 	}
 
     public abstract class DmHdBaseTControllerBase : CrestronGenericBaseDevice
@@ -146,7 +157,7 @@ namespace PepperDash.Essentials.DM
                     if (typeName.StartsWith("dmrmc4k100c"))
                         return new DmRmcX100CController(key, name, new DmRmc4k100C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmrmc4kz100c"))
-                        return new DmRmcX100CController(key, name, new DmRmc4kz100C(ipid, Global.ControlSystem));
+                        return new DmRmc4kZ100CController(key, name, new DmRmc4kz100C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmrmc150s"))
                         return new DmRmc150SController(key, name, new DmRmc150S(ipid, Global.ControlSystem));
 					if (typeName.StartsWith("dmrmc200c"))
@@ -165,6 +176,8 @@ namespace PepperDash.Essentials.DM
 						return new DmRmc4kScalerCController(key, name, new DmRmc4kScalerC(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmrmc4kscalercdsp"))
                         return new DmRmc4kScalerCDspController(key, name, new DmRmc4kScalerCDsp(ipid, Global.ControlSystem));
+                    if (typeName.StartsWith("dmrmc4kzscalerc"))
+                        return new DmRmc4kZScalerCController(key, name, new DmRmc4kzScalerC(ipid, Global.ControlSystem));
 				}
 				catch (Exception e)
 				{
@@ -219,7 +232,7 @@ namespace PepperDash.Essentials.DM
 						if (typeName.StartsWith("dmrmc4k100c"))
 							return new DmRmcX100CController(key, name, new DmRmc4k100C(chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc4kz100c"))
-							return new DmRmcX100CController(key, name, new DmRmc4kz100C(chassis.Outputs[num]));
+                            return new DmRmc4kZ100CController(key, name, new DmRmc4kz100C(chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc150s"))
 							return new DmRmc150SController(key, name, new DmRmc150S(chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc200c"))
@@ -238,6 +251,8 @@ namespace PepperDash.Essentials.DM
 							return new DmRmc4kScalerCController(key, name, new DmRmc4kScalerC(chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc4kscalercdsp"))
 							return new DmRmc4kScalerCDspController(key, name, new DmRmc4kScalerCDsp(chassis.Outputs[num]));
+                        if (typeName.StartsWith("dmrmc4kzscalerc"))
+                            return new DmRmc4kZScalerCController(key, name, new DmRmc4kzScalerC(chassis.Outputs[num]));
 					}
 					else
 					{
@@ -252,7 +267,7 @@ namespace PepperDash.Essentials.DM
 						if (typeName.StartsWith("dmrmc4k100c"))
 							return new DmRmcX100CController(key, name, new DmRmc4k100C(ipid, chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc4kz100c"))
-							return new DmRmcX100CController(key, name, new DmRmc4kz100C(ipid, chassis.Outputs[num]));
+                            return new DmRmc4kZ100CController(key, name, new DmRmc4kz100C(ipid, chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc150s"))
 							return new DmRmc150SController(key, name, new DmRmc150S(ipid, chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc200c"))
@@ -271,6 +286,9 @@ namespace PepperDash.Essentials.DM
 							return new DmRmc4kScalerCController(key, name, new DmRmc4kScalerC(ipid, chassis.Outputs[num]));
 						if (typeName.StartsWith("dmrmc4kscalercdsp"))
 							return new DmRmc4kScalerCDspController(key, name, new DmRmc4kScalerCDsp(ipid, chassis.Outputs[num]));
+                        if (typeName.StartsWith("dmrmc4kzscalerc"))
+                            return new DmRmc4kZScalerCController(key, name, new DmRmc4kzScalerC(chassis.Outputs[num]));
+
 					}
 				}
 				catch (Exception e)
@@ -288,7 +306,8 @@ namespace PepperDash.Essentials.DM
         public DmRmcControllerFactory()
         {
             TypeNames = new List<string>() { "hdbasetrx", "dmrmc4k100c1g", "dmrmc100c", "dmrmc100s", "dmrmc4k100c", "dmrmc150s",
-                "dmrmc200c", "dmrmc200s", "dmrmc200s2", "dmrmcscalerc", "dmrmcscalers", "dmrmcscalers2", "dmrmc4kscalerc", "dmrmc4kscalercdsp" };
+                "dmrmc200c", "dmrmc200s", "dmrmc200s2", "dmrmcscalerc", "dmrmcscalers", "dmrmcscalers2", "dmrmc4kscalerc", "dmrmc4kscalercdsp",
+                "dmrmc4kz100c", "dmrmckzscalerc" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
