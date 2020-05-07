@@ -21,14 +21,11 @@ namespace PepperDash.Essentials.DM
 		public RoutingInputPort DmIn { get; private set; }
 		public RoutingOutputPort HdmiOut { get; private set; }
 
-		public RoutingPortCollection<RoutingInputPort> InputPorts
-		{
-			get { return new RoutingPortCollection<RoutingInputPort> { DmIn }; }
-		}
+		public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts
 		{
-			get { return new RoutingPortCollection<RoutingOutputPort> { HdmiOut }; }
+			get; private set;
 		}
 
 		/// <summary>
@@ -38,9 +35,9 @@ namespace PepperDash.Essentials.DM
 			: base(key, name, rmc)
 		{
 			_rmc = rmc;
-			DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+			DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.AudioVideo,
 				eRoutingPortConnectionType.DmCat, 0, this);
-			HdmiOut = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+			HdmiOut = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.AudioVideo,
 				eRoutingPortConnectionType.Hdmi, null, this);
 
             EdidManufacturerFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.Manufacturer.StringValue);
@@ -49,6 +46,9 @@ namespace PepperDash.Essentials.DM
             EdidSerialNumberFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.SerialNumber.StringValue);
 
             VideoOutputResolutionFeedback = new StringFeedback(() => _rmc.HdmiOutput.GetVideoResolutionString());
+
+		    InputPorts = new RoutingPortCollection<RoutingInputPort> {DmIn};
+		    OutputPorts = new RoutingPortCollection<RoutingOutputPort> {HdmiOut};
 
             _rmc.HdmiOutput.OutputStreamChange += HdmiOutput_OutputStreamChange;
             _rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
@@ -68,29 +68,22 @@ namespace PepperDash.Essentials.DM
 
         void ConnectedDevice_DeviceInformationChange(ConnectedDeviceInformation connectedDevice, ConnectedDeviceEventArgs args)
         {
-            if (args.EventId == ConnectedDeviceEventIds.ManufacturerEventId)
+            switch (args.EventId)
             {
-                EdidManufacturerFeedback.FireUpdate();
-            }
-            else if (args.EventId == ConnectedDeviceEventIds.NameEventId)
-            {
-                EdidNameFeedback.FireUpdate();
-            }
-            else if (args.EventId == ConnectedDeviceEventIds.PreferredTimingEventId)
-            {
-                EdidPreferredTimingFeedback.FireUpdate();
-            }
-            else if (args.EventId == ConnectedDeviceEventIds.SerialNumberEventId)
-            {
-                EdidSerialNumberFeedback.FireUpdate();
+                case ConnectedDeviceEventIds.ManufacturerEventId:
+                    EdidManufacturerFeedback.FireUpdate();
+                    break;
+                case ConnectedDeviceEventIds.NameEventId:
+                    EdidNameFeedback.FireUpdate();
+                    break;
+                case ConnectedDeviceEventIds.PreferredTimingEventId:
+                    EdidPreferredTimingFeedback.FireUpdate();
+                    break;
+                case ConnectedDeviceEventIds.SerialNumberEventId:
+                    EdidSerialNumberFeedback.FireUpdate();
+                    break;
             }
         }
-
-		public override bool CustomActivate()
-		{
-			// Base does register and sets up comm monitoring.
-			return base.CustomActivate();
-		}
 
 	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
