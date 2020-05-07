@@ -247,13 +247,6 @@ namespace PepperDash.Essentials.DM
                             intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
                     }
 
-                    if (tx.Feedbacks["HdmiInHdcpCapability"] != null)
-                    {
-                        var intFeedback = tx.Feedbacks["HdmiInHdcpCapability"] as IntFeedback;
-                        if (intFeedback != null)
-                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
-                    }
-
                     if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
                     {
                         var port = inputPort.Port as EndpointHdmiInput;
