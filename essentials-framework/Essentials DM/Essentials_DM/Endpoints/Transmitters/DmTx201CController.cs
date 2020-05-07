@@ -34,8 +34,8 @@ namespace PepperDash.Essentials.DM
         public IntFeedback VideoSourceNumericFeedback { get; protected set; }
         public IntFeedback AudioSourceNumericFeedback { get; protected set; }
         public IntFeedback HdmiInHdcpCapabilityFeedback { get; protected set; }
-        public BoolFeedback In1VideoSyncFeedback { get; protected set; }
-        public BoolFeedback In2VideoSyncFeedback { get; protected set; }
+        public BoolFeedback HdmiVideoSyncFeedback { get; protected set; }
+        public BoolFeedback VgaVideoSyncFeedback { get; protected set; }
 
         public BoolFeedback FreeRunEnabledFeedback { get; protected set; }
 
@@ -128,12 +128,12 @@ namespace PepperDash.Essentials.DM
                         return 0;
                 });
 
-            In1VideoSyncFeedback = new BoolFeedback("In1VideoSync", () =>
+            HdmiVideoSyncFeedback = new BoolFeedback(() =>
             {
                 return (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue;
             });
 
-            In2VideoSyncFeedback = new BoolFeedback("In2VideoSync", () =>
+            VgaVideoSyncFeedback = new BoolFeedback(() =>
             {
                 return (bool)tx.VgaInput.SyncDetectedFeedback.BoolValue;
             });
@@ -188,8 +188,8 @@ namespace PepperDash.Essentials.DM
             AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,
                 AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
                 AnyVideoInput.VideoStatus.HdcpStateFeedback, AnyVideoInput.VideoStatus.VideoResolutionFeedback,
-                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiInHdcpCapabilityFeedback, In1VideoSyncFeedback,
-                In2VideoSyncFeedback);
+                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiInHdcpCapabilityFeedback, HdmiVideoSyncFeedback,
+                VgaVideoSyncFeedback);
 
             // Set Ports for CEC
             HdmiInput.Port = Tx.HdmiInput;
@@ -235,7 +235,18 @@ namespace PepperDash.Essentials.DM
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            LinkDmTxToApi(this, trilist, joinStart, joinMapKey, bridge);
+            DmTxControllerJoinMap joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
+
+            if (HdmiVideoSyncFeedback != null)
+            {
+                HdmiVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input1VideoSyncStatus]);
+            }
+            if (VgaVideoSyncFeedback != null)
+            {
+                VgaVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input2VideoSyncStatus]);
+            }
+
+            LinkDmTxToApi(this, trilist, joinMap, bridge);
         }
 
         /// <summary>

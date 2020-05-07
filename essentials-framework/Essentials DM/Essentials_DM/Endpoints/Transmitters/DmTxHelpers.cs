@@ -171,9 +171,8 @@ namespace PepperDash.Essentials.DM
 	    {
 	    }
 
-	    protected void LinkDmTxToApi(DmTxControllerBase tx, BasicTriList trilist, uint joinStart, string joinMapKey,
-	        EiscApiAdvanced bridge)
-	    {
+        protected DmTxControllerJoinMap GetDmTxJoinMap(uint joinStart, string joinMapKey)
+        {
             var joinMap = new DmTxControllerJoinMap();
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
@@ -183,6 +182,11 @@ namespace PepperDash.Essentials.DM
 
             joinMap.OffsetJoinNumbers(joinStart);
 
+            return joinMap;
+        }
+
+	    protected void LinkDmTxToApi(DmTxControllerBase tx, BasicTriList trilist, DmTxControllerJoinMap joinMap, EiscApiAdvanced bridge)
+	    {
 	        if (tx.Hardware is DmHDBasedTEndPoint)
 	        {
 	            Debug.Console(1, tx, "No properties to link. Skipping device {0}", tx.Name);
@@ -216,25 +220,6 @@ namespace PepperDash.Essentials.DM
                 txR.AudioSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioInput]);
 
                 trilist.UShortInput[joinMap.HdcpSupportCapability].UShortValue = (ushort)tx.HdcpSupportCapability;
-
-                if (tx.Feedbacks["In1VideoSyncFeedback"] != null)
-                {
-                    var boolFeedback = tx.Feedbacks["In1VideoSyncFeedback"] as BoolFeedback;
-                    if (boolFeedback != null)
-                        boolFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input1VideoSyncStatus]);
-                }
-                if (tx.Feedbacks["In2VideoSyncFeedback"] != null)
-                {
-                    var boolFeedback = tx.Feedbacks["In1VideoSyncFeedback"] as BoolFeedback;
-                    if (boolFeedback != null)
-                        boolFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input2VideoSyncStatus]);
-                }
-                if (tx.Feedbacks["In3VideoSyncFeedback"] != null)
-                {
-                    var boolFeedback = tx.Feedbacks["In1VideoSyncFeedback"] as BoolFeedback;
-                    if (boolFeedback != null)
-                        boolFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input3VideoSyncStatus]);
-                }
 
                 if (txR.InputPorts[DmPortName.HdmiIn] != null)
                 {

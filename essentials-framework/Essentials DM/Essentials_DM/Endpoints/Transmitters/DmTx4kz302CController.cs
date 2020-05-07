@@ -36,9 +36,9 @@ namespace PepperDash.Essentials.DM
         public IntFeedback AudioSourceNumericFeedback { get; protected set; }
         public IntFeedback HdmiIn1HdcpCapabilityFeedback { get; protected set; }
         public IntFeedback HdmiIn2HdcpCapabilityFeedback { get; protected set; }
-        public BoolFeedback In1VideoSyncFeedback { get; protected set; }
-        public BoolFeedback In2VideoSyncFeedback { get; protected set; }
-        public BoolFeedback In3VideoSyncFeedback { get; protected set; }
+        public BoolFeedback Hdmi1VideoSyncFeedback { get; protected set; }
+        public BoolFeedback Hdmi2VideoSyncFeedback { get; protected set; }
+        public BoolFeedback DisplayPortVideoSyncFeedback { get; protected set; }
 
         //public override IntFeedback HdcpSupportAllFeedback { get; protected set; }
         //public override ushort HdcpSupportCapability { get; protected set; }
@@ -127,17 +127,17 @@ namespace PepperDash.Essentials.DM
 
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
 
-            In1VideoSyncFeedback = new BoolFeedback("In1VideoSync", () =>
+            Hdmi1VideoSyncFeedback = new BoolFeedback(() =>
             {
                 return (bool)tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue;
             });
 
-            In2VideoSyncFeedback = new BoolFeedback("In2VideoSync", () =>
+            Hdmi2VideoSyncFeedback = new BoolFeedback(() =>
             {
                 return (bool)tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue;
             });
 
-            In3VideoSyncFeedback = new BoolFeedback("In3VideoSync", () =>
+            DisplayPortVideoSyncFeedback = new BoolFeedback(() =>
             {
                 return (bool)tx.DisplayPortInput.SyncDetectedFeedback.BoolValue;
             });
@@ -193,7 +193,7 @@ namespace PepperDash.Essentials.DM
                 AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
                 AnyVideoInput.VideoStatus.HdcpStateFeedback, AnyVideoInput.VideoStatus.VideoResolutionFeedback,
                 AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiIn1HdcpCapabilityFeedback, HdmiIn2HdcpCapabilityFeedback,
-                In1VideoSyncFeedback, In2VideoSyncFeedback, In3VideoSyncFeedback);
+                Hdmi1VideoSyncFeedback, Hdmi2VideoSyncFeedback, DisplayPortVideoSyncFeedback);
 
             // Set Ports for CEC
             HdmiIn1.Port = Tx.HdmiInputs[1];
@@ -222,7 +222,22 @@ namespace PepperDash.Essentials.DM
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            LinkDmTxToApi(this, trilist, joinStart, joinMapKey, bridge);
+            DmTxControllerJoinMap joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
+
+            if (Hdmi1VideoSyncFeedback != null)
+            {
+                Hdmi1VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input1VideoSyncStatus]);
+            }
+            if (Hdmi2VideoSyncFeedback != null)
+            {
+                Hdmi2VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input2VideoSyncStatus]);
+            }
+            if (DisplayPortVideoSyncFeedback != null)
+            {
+                DisplayPortVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input3VideoSyncStatus]);
+            }
+
+            LinkDmTxToApi(this, trilist, joinMap, bridge);
         }
 
         public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
