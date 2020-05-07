@@ -71,14 +71,12 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new GenericRelayControllerJoinMap();
+            var joinMap = new GenericRelayControllerJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<GenericRelayControllerJoinMap>(joinMapSerialized);
-
-            joinMap.OffsetJoinNumbers(joinStart);
 
             if (RelayOutput == null)
             {
@@ -88,7 +86,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
-            trilist.SetBoolSigAction(joinMap.Relay, b =>
+            trilist.SetBoolSigAction(joinMap.Relay.JoinNumber, b =>
             {
                 if (b)
                     CloseRelay();
@@ -98,7 +96,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
             // feedback for relay state
 
-            OutputIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Relay]);
+            OutputIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Relay.JoinNumber]);
         }
     }
 
