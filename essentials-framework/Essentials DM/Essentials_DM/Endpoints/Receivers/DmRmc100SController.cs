@@ -35,7 +35,7 @@ namespace PepperDash.Essentials.DM
             DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.DmCat, 0, this);
             HdmiOut = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, null, this) {Port = Rmc};
+                eRoutingPortConnectionType.Hdmi, null, this) {Port = _rmc};
 
             InputPorts = new RoutingPortCollection<RoutingInputPort> {DmIn};
             OutputPorts = new RoutingPortCollection<RoutingOutputPort> {HdmiOut};
