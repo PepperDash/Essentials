@@ -103,43 +103,41 @@ namespace PepperDash.Essentials.DM.AirMedia
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new AirMediaControllerJoinMap();
+            var joinMap = new AirMediaControllerJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<AirMediaControllerJoinMap>(joinMapSerialized);
 
-            joinMap.OffsetJoinNumbers(joinStart);
-
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(0, "Linking to Airmedia: {0}", Name);
 
-            trilist.StringInput[joinMap.Name].StringValue = Name;
+            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = Name;
 
             var commMonitor = this as ICommunicationMonitor;
 
-            commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
+            commMonitor.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
 
-            IsInSessionFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsInSession]);
-            HdmiVideoSyncDetectedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.HdmiVideoSync]);
+            IsInSessionFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsInSession.JoinNumber]);
+            HdmiVideoSyncDetectedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.HdmiVideoSync.JoinNumber]);
 
-            trilist.SetSigTrueAction(joinMap.AutomaticInputRoutingEnabled, AirMedia.DisplayControl.EnableAutomaticRouting);
-            trilist.SetSigFalseAction(joinMap.AutomaticInputRoutingEnabled, AirMedia.DisplayControl.DisableAutomaticRouting);
-            AutomaticInputRoutingEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.AutomaticInputRoutingEnabled]);
+            trilist.SetSigTrueAction(joinMap.AutomaticInputRoutingEnabled.JoinNumber, AirMedia.DisplayControl.EnableAutomaticRouting);
+            trilist.SetSigFalseAction(joinMap.AutomaticInputRoutingEnabled.JoinNumber, AirMedia.DisplayControl.DisableAutomaticRouting);
+            AutomaticInputRoutingEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.AutomaticInputRoutingEnabled.JoinNumber]);
 
-            trilist.SetUShortSigAction(joinMap.VideoOut, (u) => SelectVideoOut(u));
+            trilist.SetUShortSigAction(joinMap.VideoOut.JoinNumber, (u) => SelectVideoOut(u));
 
-            VideoOutFeedback.LinkInputSig(trilist.UShortInput[joinMap.VideoOut]);
-            ErrorFeedback.LinkInputSig(trilist.UShortInput[joinMap.ErrorFB]);
-            NumberOfUsersConnectedFeedback.LinkInputSig(trilist.UShortInput[joinMap.NumberOfUsersConnectedFB]);
+            VideoOutFeedback.LinkInputSig(trilist.UShortInput[joinMap.VideoOut.JoinNumber]);
+            ErrorFeedback.LinkInputSig(trilist.UShortInput[joinMap.ErrorFB.JoinNumber]);
+            NumberOfUsersConnectedFeedback.LinkInputSig(trilist.UShortInput[joinMap.NumberOfUsersConnectedFB.JoinNumber]);
 
-            trilist.SetUShortSigAction(joinMap.LoginCode, (u) => AirMedia.AirMedia.LoginCode.UShortValue = u);
-            LoginCodeFeedback.LinkInputSig(trilist.UShortInput[joinMap.LoginCode]);
+            trilist.SetUShortSigAction(joinMap.LoginCode.JoinNumber, (u) => AirMedia.AirMedia.LoginCode.UShortValue = u);
+            LoginCodeFeedback.LinkInputSig(trilist.UShortInput[joinMap.LoginCode.JoinNumber]);
 
-            ConnectionAddressFeedback.LinkInputSig(trilist.StringInput[joinMap.ConnectionAddressFB]);
-            HostnameFeedback.LinkInputSig(trilist.StringInput[joinMap.HostnameFB]);
-            SerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.SerialNumberFeedback]);
+            ConnectionAddressFeedback.LinkInputSig(trilist.StringInput[joinMap.ConnectionAddressFB.JoinNumber]);
+            HostnameFeedback.LinkInputSig(trilist.StringInput[joinMap.HostnameFB.JoinNumber]);
+            SerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.SerialNumberFeedback.JoinNumber]);
         }
 
         void AirMedia_AirMediaChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
