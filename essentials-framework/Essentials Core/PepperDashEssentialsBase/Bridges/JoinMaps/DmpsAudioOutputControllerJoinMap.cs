@@ -7,63 +7,94 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class DmpsAudioOutputControllerJoinMap : JoinMapBase
+    public class DmpsAudioOutputControllerJoinMap : JoinMapBaseAdvanced
     {
-        #region Digital/Analog
-        /// <summary>
-        /// Range of joins for Master Volume 
-        /// Analog join 1 is volume level and feedback
-        /// Digital join 1 is Mute on and feedback
-        /// Digital join 2 is Mute off and feedback
-        /// Digital join 3 is volume up
-        /// Digital join 4 is volume down
-        /// </summary>
-        public uint MasterVolume { get; set; }
-        /// <summary>
-        /// Range of joins for Source Volume 
-        /// Analog join 11 is volume level and feedback
-        /// Digital join 11 is Mute on and feedback
-        /// Digital join 12 is Mute off and feedback
-        /// Digital join 13 is volume up
-        /// Digital join 14 is volume down
-        /// </summary>
-        public uint SourceVolume { get; set; }
-        /// <summary>
-        /// Range of joins for Codec1 Volume (if applicable)
-        /// Analog join 21 is volume level and feedback
-        /// Digital join 21 is Mute on and feedback
-        /// Digital join 22 is Mute off and feedback
-        /// Digital join 23 is volume up
-        /// Digital join 24 is volume down
-        /// </summary>
-        public uint Codec1Volume { get; set; }
-        /// <summary>
-        /// Range of joins for Codec2 Volume (if applicable)
-        /// Analog join 31 is volume level and feedback
-        /// Digital join 31 is Mute on and feedback
-        /// Digital join 32 is Mute off and feedback
-        /// Digital join 33 is volume up
-        /// Digital join 34 is volume down
-        /// </summary>
-        public uint Codec2Volume { get; set; }
-        #endregion
 
-        public DmpsAudioOutputControllerJoinMap()
+        [JoinName("MasterVolumeLevel")]
+        public JoinDataComplete MasterVolumeLevel = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Master Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("MasterVolumeMuteOn")]
+        public JoinDataComplete MasterVolumeMuteOn = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Master Volume Mute On Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("MasterVolumeMuteOff")]
+        public JoinDataComplete MasterVolumeMuteOff = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Master Volume Mute Off Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("MasterVolumeUp")]
+        public JoinDataComplete MasterVolumeUp = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Master Volume Level Up", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("MasterVolumeDown")]
+        public JoinDataComplete MasterVolumeDown = new JoinDataComplete(new JoinData() { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Master Volume Mute Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("SourceVolumeLevel")]
+        public JoinDataComplete SourceVolumeLevel = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Source Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("SourceVolumeMuteOn")]
+        public JoinDataComplete SourceVolumeMuteOn = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Source Volume Mute On Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("SourceVolumeMuteOff")]
+        public JoinDataComplete SourceVolumeMuteOff = new JoinDataComplete(new JoinData() { JoinNumber = 12, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Source Volume Mute Off Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("SourceVolumeUp")]
+        public JoinDataComplete SourceVolumeUp = new JoinDataComplete(new JoinData() { JoinNumber = 13, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Source Volume Level Up", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("SourceVolumeDown")]
+        public JoinDataComplete SourceVolumeDown = new JoinDataComplete(new JoinData() { JoinNumber = 14, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Source Volume Mute Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Codec1VolumeLevel")]
+        public JoinDataComplete Codec1VolumeLevel = new JoinDataComplete(new JoinData() { JoinNumber = 21, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Codec1 Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("Codec1VolumeMuteOn")]
+        public JoinDataComplete Codec1VolumeMuteOn = new JoinDataComplete(new JoinData() { JoinNumber = 21, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Codec1 Volume Mute On Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Codec1VolumeMuteOff")]
+        public JoinDataComplete Codec1VolumeMuteOff = new JoinDataComplete(new JoinData() { JoinNumber = 22, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Codec1 Volume Mute Off Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Codec1VolumeUp")]
+        public JoinDataComplete Codec1VolumeUp = new JoinDataComplete(new JoinData() { JoinNumber = 23, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Codec1 Volume Level Up", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Codec1VolumeDown")]
+        public JoinDataComplete Codec1VolumeDown = new JoinDataComplete(new JoinData() { JoinNumber = 24, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Codec1 Volume Mute Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Codec2VolumeLevel")]
+        public JoinDataComplete Codec2VolumeLevel = new JoinDataComplete(new JoinData() { JoinNumber = 31, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Codec2 Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("Codec2VolumeMuteOn")]
+        public JoinDataComplete Codec2VolumeMuteOn = new JoinDataComplete(new JoinData() { JoinNumber = 31, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Codec2 Volume Mute On Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Codec2VolumeMuteOff")]
+        public JoinDataComplete Codec2VolumeMuteOff = new JoinDataComplete(new JoinData() { JoinNumber = 32, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Codec2 Volume Mute Off Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Codec2VolumeUp")]
+        public JoinDataComplete Codec2VolumeUp = new JoinDataComplete(new JoinData() { JoinNumber = 33, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Codec2 Volume Level Up", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Codec2VolumeDown")]
+        public JoinDataComplete Codec2VolumeDown = new JoinDataComplete(new JoinData() { JoinNumber = 34, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Codec2 Volume Mute Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+
+
+        public DmpsAudioOutputControllerJoinMap(uint joinStart)
+            : base(joinStart, typeof(DmpsAudioOutputControllerJoinMap))
         {
-            MasterVolume = 1; // 1-10
-            SourceVolume = 11; // 11-20
-            Codec1Volume = 21; // 21-30
-            Codec2Volume = 31; // 31-40
-        }
-
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart;
-
-            MasterVolume = MasterVolume + joinOffset;
-            SourceVolume = SourceVolume + joinOffset;
-            Codec1Volume = Codec1Volume + joinOffset;
-            Codec2Volume = Codec2Volume + joinOffset;
         }
     }
 }
