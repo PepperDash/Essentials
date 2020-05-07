@@ -142,12 +142,12 @@ namespace PepperDash.Essentials.DM
 
             In1VideoSyncFeedback = new BoolFeedback("In1VideoSync", () =>
             {
-                return (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue;
+                return (bool)tx.DisplayPortInput.SyncDetectedFeedback.BoolValue;
             });
 
             In2VideoSyncFeedback = new BoolFeedback("In2VideoSync", () =>
             {
-                return (bool)tx.DisplayPortInput.SyncDetectedFeedback.BoolValue;
+                return (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue;
             });
 
             In3VideoSyncFeedback = new BoolFeedback("In3VideoSync", () =>
