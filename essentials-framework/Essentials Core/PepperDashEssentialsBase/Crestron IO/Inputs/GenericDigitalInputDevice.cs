@@ -45,21 +45,19 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new IDigitalInputJoinMap();
+            var joinMap = new IDigitalInputJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<IDigitalInputJoinMap>(joinMapSerialized);
 
-            joinMap.OffsetJoinNumbers(joinStart);
-
             try
             {
                 Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
                 // Link feedback for input state
-                InputStateFeedback.LinkInputSig(trilist.BooleanInput[joinMap.InputState]);
+                InputStateFeedback.LinkInputSig(trilist.BooleanInput[joinMap.InputState.JoinNumber]);
             }
             catch (Exception e)
             {

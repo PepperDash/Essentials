@@ -7,25 +7,17 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class IDigitalInputJoinMap : JoinMapBase
+    public class IDigitalInputJoinMap : JoinMapBaseAdvanced
     {
-        #region Digitals
-        /// <summary>
-        /// Reports the state of the digital input
-        /// </summary>
-        public uint InputState { get; set; }
-        #endregion
 
-        public IDigitalInputJoinMap()
+        [JoinName("InputState")]
+        public JoinDataComplete InputState = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Room Email Url", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+
+        public IDigitalInputJoinMap(uint joinStart)
+            : base(joinStart, typeof(IDigitalInputJoinMap))
         {
-            InputState = 1;
-        }
-
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            InputState = InputState + joinOffset;
         }
     }
 }
