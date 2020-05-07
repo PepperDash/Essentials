@@ -217,9 +217,35 @@ namespace PepperDash.Essentials.DM
 
                 trilist.UShortInput[joinMap.HdcpSupportCapability].UShortValue = (ushort)tx.HdcpSupportCapability;
 
+                if (tx.Feedbacks["In1VideoSyncFeedback"] != null)
+                {
+                    var boolFeedback = tx.Feedbacks["In1VideoSyncFeedback"] as BoolFeedback;
+                    if (boolFeedback != null)
+                        boolFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input1VideoSyncStatus]);
+                }
+                if (tx.Feedbacks["In2VideoSyncFeedback"] != null)
+                {
+                    var boolFeedback = tx.Feedbacks["In1VideoSyncFeedback"] as BoolFeedback;
+                    if (boolFeedback != null)
+                        boolFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input2VideoSyncStatus]);
+                }
+                if (tx.Feedbacks["In3VideoSyncFeedback"] != null)
+                {
+                    var boolFeedback = tx.Feedbacks["In1VideoSyncFeedback"] as BoolFeedback;
+                    if (boolFeedback != null)
+                        boolFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input3VideoSyncStatus]);
+                }
+
                 if (txR.InputPorts[DmPortName.HdmiIn] != null)
                 {
                     var inputPort = txR.InputPorts[DmPortName.HdmiIn];
+
+                    if (tx.Feedbacks["HdmiInHdcpCapability"] != null)
+                    {
+                        var intFeedback = tx.Feedbacks["HdmiInHdcpCapability"] as IntFeedback;
+                        if (intFeedback != null)
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
+                    }
 
                     if (tx.Feedbacks["HdmiInHdcpCapability"] != null)
                     {

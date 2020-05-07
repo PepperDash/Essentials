@@ -36,6 +36,9 @@ namespace PepperDash.Essentials.DM
         public IntFeedback AudioSourceNumericFeedback { get; protected set; }
         public IntFeedback HdmiIn1HdcpCapabilityFeedback { get; protected set; }
         public IntFeedback HdmiIn2HdcpCapabilityFeedback { get; protected set; }
+        public BoolFeedback In1VideoSyncFeedback { get; protected set; }
+        public BoolFeedback In2VideoSyncFeedback { get; protected set; }
+        public BoolFeedback In3VideoSyncFeedback { get; protected set; }
 
         //public override IntFeedback HdcpSupportAllFeedback { get; protected set; }
         //public override ushort HdcpSupportCapability { get; protected set; }
@@ -124,6 +127,21 @@ namespace PepperDash.Essentials.DM
 
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
 
+            In1VideoSyncFeedback = new BoolFeedback("In1VideoSync", () =>
+            {
+                return (bool)tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue;
+            });
+
+            In2VideoSyncFeedback = new BoolFeedback("In2VideoSync", () =>
+            {
+                return (bool)tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue;
+            });
+
+            In3VideoSyncFeedback = new BoolFeedback("In3VideoSync", () =>
+            {
+                return (bool)tx.DisplayPortInput.SyncDetectedFeedback.BoolValue;
+            });
+
 
             var combinedFuncs = new VideoStatusFuncsWrapper
             {
@@ -174,7 +192,8 @@ namespace PepperDash.Essentials.DM
             AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,
                 AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
                 AnyVideoInput.VideoStatus.HdcpStateFeedback, AnyVideoInput.VideoStatus.VideoResolutionFeedback,
-                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiIn1HdcpCapabilityFeedback, HdmiIn2HdcpCapabilityFeedback);
+                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiIn1HdcpCapabilityFeedback, HdmiIn2HdcpCapabilityFeedback,
+                In1VideoSyncFeedback, In2VideoSyncFeedback, In3VideoSyncFeedback);
 
             // Set Ports for CEC
             HdmiIn1.Port = Tx.HdmiInputs[1];

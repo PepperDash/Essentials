@@ -35,6 +35,9 @@ namespace PepperDash.Essentials.DM
         public IntFeedback VideoSourceNumericFeedback { get; protected set; }
         public IntFeedback AudioSourceNumericFeedback { get; protected set; }
         public IntFeedback HdmiInHdcpCapabilityFeedback { get; protected set; }
+        public BoolFeedback In1VideoSyncFeedback { get; protected set; }
+        public BoolFeedback In2VideoSyncFeedback { get; protected set; }
+        public BoolFeedback In3VideoSyncFeedback { get; protected set; }
 
         public BoolFeedback FreeRunEnabledFeedback { get; protected set; }
 
@@ -137,6 +140,21 @@ namespace PepperDash.Essentials.DM
 
             HdcpSupportCapability = eHdcpCapabilityType.HdcpAutoSupport;
 
+            In1VideoSyncFeedback = new BoolFeedback("In1VideoSync", () =>
+            {
+                return (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue;
+            });
+
+            In2VideoSyncFeedback = new BoolFeedback("In2VideoSync", () =>
+            {
+                return (bool)tx.DisplayPortInput.SyncDetectedFeedback.BoolValue;
+            });
+
+            In3VideoSyncFeedback = new BoolFeedback("In3VideoSync", () =>
+            {
+                return (bool)tx.VgaInput.SyncDetectedFeedback.BoolValue;
+            });
+
             FreeRunEnabledFeedback = new BoolFeedback(() => tx.VgaInput.FreeRunFeedback == eDmFreeRunSetting.Enabled);
 
             VgaBrightnessFeedback = new IntFeedback(() => tx.VgaInput.VideoControls.BrightnessFeedback.UShortValue);
@@ -193,7 +211,8 @@ namespace PepperDash.Essentials.DM
             AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,
                 AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
                 AnyVideoInput.VideoStatus.HdcpStateFeedback, AnyVideoInput.VideoStatus.VideoResolutionFeedback,
-                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiInHdcpCapabilityFeedback);
+                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiInHdcpCapabilityFeedback, In1VideoSyncFeedback,
+                In2VideoSyncFeedback, In3VideoSyncFeedback);
 
             // Set Ports for CEC
             DisplayPortIn.Port = Tx.DisplayPortInput;

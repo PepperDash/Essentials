@@ -17,6 +17,18 @@ namespace PepperDash.Essentials.Core.Bridges
         /// 
         /// </summary>
         public uint FreeRunEnabled { get; set; }
+        /// <summary>
+        /// High when video sync is detected on input 1 of a multi-input tx
+        /// </summary>
+        public uint Input1VideoSyncStatus { get; set; }
+        /// <summary>
+        /// High when video sync is detected on input 2 of a multi-input tx
+        /// </summary>
+        public uint Input2VideoSyncStatus { get; set; }
+        /// <summary>
+        /// High when video sync is detected on input 3 of a multi-input tx
+        /// </summary>
+        public uint Input3VideoSyncStatus { get; set; }
         #endregion
 
         #region Analogs
@@ -66,6 +78,9 @@ namespace PepperDash.Essentials.Core.Bridges
             IsOnline = 1;
             VideoSyncStatus = 2;
             FreeRunEnabled = 3;
+            Input1VideoSyncStatus = 4;
+            Input2VideoSyncStatus = 5;
+            Input3VideoSyncStatus = 6;
             // Serial
             CurrentInputResolution = 1;
             // Analog
@@ -85,6 +100,9 @@ namespace PepperDash.Essentials.Core.Bridges
             IsOnline = IsOnline + joinOffset;
             VideoSyncStatus = VideoSyncStatus + joinOffset;
             FreeRunEnabled = FreeRunEnabled + joinOffset;
+            Input1VideoSyncStatus = Input1VideoSyncStatus + joinOffset;
+            Input2VideoSyncStatus = Input2VideoSyncStatus + joinOffset;
+            Input3VideoSyncStatus = Input3VideoSyncStatus + joinOffset;
             CurrentInputResolution = CurrentInputResolution + joinOffset;
             VideoInput = VideoInput + joinOffset;
             AudioInput = AudioInput + joinOffset;
