@@ -202,29 +202,29 @@ namespace PepperDash.Essentials.Core.Monitoring
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new SystemMonitorJoinMap();
+            var joinMap = new SystemMonitorJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<SystemMonitorJoinMap>(joinMapSerialized);
 
-            joinMap.OffsetJoinNumbers(joinStart);
+            bridge.AddJoinMap(Key, joinMap);
 
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(2, this, "Linking API starting at join: {0}", joinStart);
 
-            TimeZoneFeedback.LinkInputSig(trilist.UShortInput[joinMap.TimeZone]);
-            TimeZoneTextFeedback.LinkInputSig(trilist.StringInput[joinMap.TimeZoneName]);
+            TimeZoneFeedback.LinkInputSig(trilist.UShortInput[joinMap.TimeZone.JoinNumber]);
+            TimeZoneTextFeedback.LinkInputSig(trilist.StringInput[joinMap.TimeZoneName.JoinNumber]);
 
-            IoControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.IOControllerVersion]);
-            SnmpVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.SnmpAppVersion]);
-            BaCnetAppVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.BACnetAppVersion]);
-            ControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.ControllerVersion]);
-            SerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.SerialNumber]);
-            ModelFeedback.LinkInputSig(trilist.StringInput[joinMap.Model]);
-            UptimeFeedback.LinkInputSig(trilist.StringInput[joinMap.Uptime]);
-            LastStartFeedback.LinkInputSig(trilist.StringInput[joinMap.LastBoot]);
+            IoControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.IOControllerVersion.JoinNumber]);
+            SnmpVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.SnmpAppVersion.JoinNumber]);
+            BaCnetAppVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.BACnetAppVersion.JoinNumber]);
+            ControllerVersionFeedback.LinkInputSig(trilist.StringInput[joinMap.ControllerVersion.JoinNumber]);
+            SerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.SerialNumber.JoinNumber]);
+            ModelFeedback.LinkInputSig(trilist.StringInput[joinMap.Model.JoinNumber]);
+            UptimeFeedback.LinkInputSig(trilist.StringInput[joinMap.Uptime.JoinNumber]);
+            LastStartFeedback.LinkInputSig(trilist.StringInput[joinMap.LastBoot.JoinNumber]);
 
             // iterate the program status feedback collection and map all the joins
             LinkProgramInfoJoins(this, trilist, joinMap);
@@ -234,64 +234,63 @@ namespace PepperDash.Essentials.Core.Monitoring
 
         private static void LinkEthernetInfoJoins(SystemMonitorController systemMonitorController, BasicTriList trilist, SystemMonitorJoinMap joinMap)
         {
-            var ethernetSlotJoinStart = joinMap.EthernetStartJoin;
-
+            uint ethernetSlotJoinStart = 0;
             foreach (var fb in systemMonitorController.EthernetStatusFeedbackCollection)
             {
-                fb.Value.CurrentIpAddressFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.CurrentIpAddress]);
-                fb.Value.CurrentSubnetMaskFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.CurrentSubnetMask]);
-                fb.Value.CurrentDefaultGatewayFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.CurrentDefaultGateway]);
-                fb.Value.StaticIpAddressFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.StaticIpAddress]);
-                fb.Value.StaticSubnetMaskFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.StaticSubnetMask]);
-                fb.Value.StaticDefaultGatewayFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.StaticDefaultGateway]);
-                fb.Value.HostNameFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.HostName]);
-                fb.Value.MacAddressFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.MacAddress]);
-                fb.Value.DomainFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.Domain]);
-                fb.Value.DnsServerFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.DnsServer]);
-                fb.Value.DhcpStatusFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.DhcpStatus]);
+                fb.Value.CurrentIpAddressFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.CurrentIpAddress.JoinNumber]);
+                fb.Value.CurrentSubnetMaskFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.CurrentSubnetMask.JoinNumber]);
+                fb.Value.CurrentDefaultGatewayFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.CurrentDefaultGateway.JoinNumber]);
+                fb.Value.StaticIpAddressFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.StaticIpAddress.JoinNumber]);
+                fb.Value.StaticSubnetMaskFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.StaticSubnetMask.JoinNumber]);
+                fb.Value.StaticDefaultGatewayFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.StaticDefaultGateway.JoinNumber]);
+                fb.Value.HostNameFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.HostName.JoinNumber]);
+                fb.Value.MacAddressFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.MacAddress.JoinNumber]);
+                fb.Value.DomainFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.Domain.JoinNumber]);
+                fb.Value.DnsServerFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.DnsServer.JoinNumber]);
+                fb.Value.DhcpStatusFeedback.LinkInputSig(trilist.StringInput[ethernetSlotJoinStart + joinMap.DhcpStatus.JoinNumber]);
 
-                ethernetSlotJoinStart += joinMap.EthernetOffsetJoin;
+                ethernetSlotJoinStart += joinMap.EthernetOffsetJoin.JoinNumber;
             }
         }
 
         private static void LinkProgramInfoJoins(SystemMonitorController systemMonitorController, BasicTriList trilist,
             SystemMonitorJoinMap joinMap)
         {
-            var programSlotJoinStart = joinMap.ProgramStartJoin;
+            uint programSlotJoinStart = 0;
 
             foreach (var p in systemMonitorController.ProgramStatusFeedbackCollection)
             {
                 var programNumber = p.Value.Program.Number;
 
-                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStart,
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStart.JoinNumber,
                     b => SystemMonitor.ProgramCollection[programNumber].OperatingState = eProgramOperatingState.Start);
-                p.Value.ProgramStartedFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramStart]);
+                p.Value.ProgramStartedFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramStart.JoinNumber]);
 
-                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStop,
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramStop.JoinNumber,
                     b => SystemMonitor.ProgramCollection[programNumber].OperatingState = eProgramOperatingState.Stop);
-                p.Value.ProgramStoppedFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramStop]);
+                p.Value.ProgramStoppedFeedback.LinkInputSig(trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramStop.JoinNumber]);
 
-                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramRegister,
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramRegister.JoinNumber,
                     b => SystemMonitor.ProgramCollection[programNumber].RegistrationState = eProgramRegistrationState.Register);
                 p.Value.ProgramRegisteredFeedback.LinkInputSig(
-                    trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramRegister]);
+                    trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramRegister.JoinNumber]);
 
-                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramUnregister,
+                trilist.SetBoolSigAction(programSlotJoinStart + joinMap.ProgramUnregister.JoinNumber,
                     b => SystemMonitor.ProgramCollection[programNumber].RegistrationState = eProgramRegistrationState.Unregister);
                 p.Value.ProgramUnregisteredFeedback.LinkInputSig(
-                    trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramUnregister]);
+                    trilist.BooleanInput[programSlotJoinStart + joinMap.ProgramUnregister.JoinNumber]);
 
-                p.Value.ProgramNameFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramName]);
+                p.Value.ProgramNameFeedback.LinkInputSig(trilist.StringInput[programSlotJoinStart + joinMap.ProgramName.JoinNumber]);
                 p.Value.ProgramCompileTimeFeedback.LinkInputSig(
-                    trilist.StringInput[programSlotJoinStart + joinMap.ProgramCompiledTime]);
+                    trilist.StringInput[programSlotJoinStart + joinMap.ProgramCompiledTime.JoinNumber]);
                 p.Value.CrestronDataBaseVersionFeedback.LinkInputSig(
-                    trilist.StringInput[programSlotJoinStart + joinMap.ProgramCrestronDatabaseVersion]);
+                    trilist.StringInput[programSlotJoinStart + joinMap.ProgramCrestronDatabaseVersion.JoinNumber]);
                 p.Value.EnvironmentVersionFeedback.LinkInputSig(
-                    trilist.StringInput[programSlotJoinStart + joinMap.ProgramEnvironmentVersion]);
+                    trilist.StringInput[programSlotJoinStart + joinMap.ProgramEnvironmentVersion.JoinNumber]);
                 p.Value.AggregatedProgramInfoFeedback.LinkInputSig(
-                    trilist.StringInput[programSlotJoinStart + joinMap.AggregatedProgramInfo]);
+                    trilist.StringInput[programSlotJoinStart + joinMap.AggregatedProgramInfo.JoinNumber]);
 
-                programSlotJoinStart = programSlotJoinStart + joinMap.ProgramOffsetJoin;
+                programSlotJoinStart = programSlotJoinStart + joinMap.ProgramOffsetJoin.JoinNumber;
             }
         }
 

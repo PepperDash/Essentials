@@ -67,6 +67,8 @@ namespace PepperDash.Essentials.Core
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<IBasicCommunicationJoinMap>(joinMapSerialized);
 
+            bridge.AddJoinMap(Key, joinMap);
+
             if (CommPort == null)
             {
                 Debug.Console(1, this, "Unable to link device '{0}'.  CommPort is null", Key);
