@@ -78,6 +78,8 @@ namespace PepperDash.Essentials.Core.CrestronIO
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<GenericRelayControllerJoinMap>(joinMapSerialized);
 
+            bridge.AddJoinMap(Key, joinMap);
+
             if (RelayOutput == null)
             {
                 Debug.Console(1, this, "Unable to link device '{0}'.  Relay is null", Key);

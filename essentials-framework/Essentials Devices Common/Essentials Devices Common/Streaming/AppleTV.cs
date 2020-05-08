@@ -153,6 +153,8 @@ namespace PepperDash.Essentials.Devices.Common
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<AppleTvJoinMap>(joinMapSerialized);
 
+            bridge.AddJoinMap(Key, joinMap);
+
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(0, "Linking to Bridge Type {0}", GetType().Name);
 

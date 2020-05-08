@@ -209,6 +209,8 @@ namespace PepperDash.Essentials.Core.Monitoring
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<SystemMonitorJoinMap>(joinMapSerialized);
 
+            bridge.AddJoinMap(Key, joinMap);
+
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(2, this, "Linking API starting at join: {0}", joinStart);
 

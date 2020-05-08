@@ -80,6 +80,8 @@ namespace PepperDash.Essentials.Core.Lighting
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<GenericLightingJoinMap>(joinMapSerialized);
 
+            bridge.AddJoinMap(Key, joinMap);
+
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             Debug.Console(0, "Linking to Lighting Type {0}", lightingDevice.GetType().Name.ToString());

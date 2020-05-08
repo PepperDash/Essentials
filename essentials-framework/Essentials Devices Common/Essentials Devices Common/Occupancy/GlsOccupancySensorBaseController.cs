@@ -267,6 +267,8 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<GlsOccupancySensorBaseJoinMap>(joinMapSerialized);
 
+            bridge.AddJoinMap(Key, joinMap);
+
             Debug.Console(1, occController, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             #region Single and Dual Sensor Stuff

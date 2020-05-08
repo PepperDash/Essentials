@@ -181,6 +181,8 @@ namespace PepperDash.Essentials.DM
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmTxControllerJoinMap>(joinMapSerialized);
 
+            bridge.AddJoinMap(Key, joinMap);
+
 	        if (tx.Hardware is DmHDBasedTEndPoint)
 	        {
 	            Debug.Console(1, tx, "No properties to link. Skipping device {0}", tx.Name);
