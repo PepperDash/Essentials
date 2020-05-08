@@ -171,9 +171,8 @@ namespace PepperDash.Essentials.DM
 	    {
 	    }
 
-	    protected void LinkDmTxToApi(DmTxControllerBase tx, BasicTriList trilist, uint joinStart, string joinMapKey,
-	        EiscApiAdvanced bridge)
-	    {
+        protected DmTxControllerJoinMap GetDmTxJoinMap(uint joinStart, string joinMapKey)
+        {
             var joinMap = new DmTxControllerJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
@@ -181,8 +180,11 @@ namespace PepperDash.Essentials.DM
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmTxControllerJoinMap>(joinMapSerialized);
 
-            bridge.AddJoinMap(Key, joinMap);
+            return joinMap;
+        }
 
+	    protected void LinkDmTxToApi(DmTxControllerBase tx, BasicTriList trilist, DmTxControllerJoinMap joinMap, EiscApiAdvanced bridge)
+	    {
 	        if (tx.Hardware is DmHDBasedTEndPoint)
 	        {
 	            Debug.Console(1, tx, "No properties to link. Skipping device {0}", tx.Name);

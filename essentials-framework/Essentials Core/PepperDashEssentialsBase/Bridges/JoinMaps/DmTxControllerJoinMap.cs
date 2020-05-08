@@ -16,6 +16,18 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete FreeRunEnabled = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 },
             new JoinMetadata() { Label = "DM TX Enable Free Run Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
+        [JoinName("Input1VideoSyncStatus")]
+        public JoinDataComplete Input1VideoSyncStatus = new JoinDataComplete(new JoinData() { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Input 1 Video Sync Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Input2VideoSyncStatus")]
+        public JoinDataComplete Input2VideoSyncStatus = new JoinDataComplete(new JoinData() { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Input 2 Video Sync Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Input3VideoSyncStatus")]
+        public JoinDataComplete Input3VideoSyncStatus = new JoinDataComplete(new JoinData() { JoinNumber = 6, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Input 3 Video Sync Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
         [JoinName("CurrentInputResolution")]
         public JoinDataComplete CurrentInputResolution = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata() { Label = "DM TX Current Input Resolution", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
@@ -53,7 +65,5 @@ namespace PepperDash.Essentials.Core.Bridges
             : base(joinStart, typeof(DmTxControllerJoinMap))
         {
         }
-
-
     }
 }
