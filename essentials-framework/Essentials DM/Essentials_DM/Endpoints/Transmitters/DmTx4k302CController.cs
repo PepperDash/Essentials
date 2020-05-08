@@ -250,15 +250,15 @@ namespace PepperDash.Essentials.DM
 
             if (Hdmi1VideoSyncFeedback != null)
             {
-                Hdmi1VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input1VideoSyncStatus]);
+                Hdmi1VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input1VideoSyncStatus.JoinNumber]);
             }
             if (Hdmi2VideoSyncFeedback != null)
             {
-                Hdmi2VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input2VideoSyncStatus]);
+                Hdmi2VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input2VideoSyncStatus.JoinNumber]);
             }
             if (VgaVideoSyncFeedback != null)
             {
-                VgaVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input3VideoSyncStatus]);
+                VgaVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input3VideoSyncStatus.JoinNumber]);
             }
 
             LinkDmTxToApi(this, trilist, joinMap, bridge);

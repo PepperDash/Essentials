@@ -171,18 +171,14 @@ namespace PepperDash.Essentials.DM
 	    {
 	    }
 
-
-	    protected void LinkDmTxToApi(DmTxControllerBase tx, BasicTriList trilist, uint joinStart, string joinMapKey,
-	        EiscApiAdvanced bridge)
-	    {
+        protected DmTxControllerJoinMap GetDmTxJoinMap(uint joinStart, string joinMapKey)
+        {
             var joinMap = new DmTxControllerJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmTxControllerJoinMap>(joinMapSerialized);
-
-            bridge.AddJoinMap(Key, joinMap);
 
             return joinMap;
         }

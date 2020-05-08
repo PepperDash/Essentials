@@ -237,11 +237,11 @@ namespace PepperDash.Essentials.DM
 
             if (HdmiVideoSyncFeedback != null)
             {
-                HdmiVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input1VideoSyncStatus]);
+                HdmiVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input1VideoSyncStatus.JoinNumber]);
             }
             if (VgaVideoSyncFeedback != null)
             {
-                VgaVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input2VideoSyncStatus]);
+                VgaVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input2VideoSyncStatus.JoinNumber]);
             }
 
             LinkDmTxToApi(this, trilist, joinMap, bridge);
