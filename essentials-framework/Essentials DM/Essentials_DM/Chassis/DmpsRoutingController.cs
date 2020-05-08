@@ -156,14 +156,14 @@ namespace PepperDash.Essentials.DM
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new DmpsRoutingControllerJoinMap();
+            var joinMap = new DmpsRoutingControllerJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmpsRoutingControllerJoinMap>(joinMapSerialized);
 
-            joinMap.OffsetJoinNumbers(joinStart);
+            bridge.AddJoinMap(Key, joinMap);
 
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
@@ -173,6 +173,7 @@ namespace PepperDash.Essentials.DM
                 Debug.Console(2, this, "Linking Input Card {0}", i);
 
                 var ioSlot = i;
+                var ioSlotJoin = ioSlot - 1;
 
                 //if (TxDictionary.ContainsKey(ioSlot))
                 //{
@@ -191,12 +192,12 @@ namespace PepperDash.Essentials.DM
                 //}
 
                 if (VideoInputSyncFeedbacks[ioSlot] != null)
-                    VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus + ioSlot]);
+                    VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
 
                 if (InputNameFeedbacks[ioSlot] != null)
-                    InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames + ioSlot]);
+                    InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + ioSlotJoin]);
 
-                trilist.SetStringSigAction(joinMap.InputNames + ioSlot, new Action<string>(s =>
+                trilist.SetStringSigAction(joinMap.InputNames.JoinNumber + ioSlotJoin, new Action<string>(s =>
                 {
                     var inputCard = Dmps.SwitcherInputs[ioSlot] as DMInput;
 
@@ -210,7 +211,7 @@ namespace PepperDash.Essentials.DM
 
 
                 if (InputEndpointOnlineFeedbacks[ioSlot] != null)
-                    InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
+                    InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline.JoinNumber + ioSlotJoin]);
             }
 
             for (uint i = 1; i <= Dmps.NumberOfSwitcherOutputs; i++)
@@ -218,11 +219,13 @@ namespace PepperDash.Essentials.DM
                 Debug.Console(2, this, "Linking Output Card {0}", i);
 
                 var ioSlot = i;
-                // Control
-                trilist.SetUShortSigAction(joinMap.OutputVideo + ioSlot, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video));
-                trilist.SetUShortSigAction(joinMap.OutputAudio + ioSlot, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Audio));
+                var ioSlotJoin = ioSlot - 1;
 
-                trilist.SetStringSigAction(joinMap.OutputNames + ioSlot, s =>
+                // Control
+                trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video));
+                trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + ioSlotJoin, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Audio));
+
+                trilist.SetStringSigAction(joinMap.OutputNames.JoinNumber + ioSlotJoin, s =>
                 {
                     var outputCard = Dmps.SwitcherOutputs[ioSlot] as DMOutput;
 
@@ -249,17 +252,17 @@ namespace PepperDash.Essentials.DM
 
                 // Feedback
                 if (VideoOutputFeedbacks[ioSlot] != null)
-                    VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo + ioSlot]);
+                    VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo.JoinNumber + ioSlotJoin]);
                 if (AudioOutputFeedbacks[ioSlot] != null)
-                    AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio + ioSlot]);
+                    AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio.JoinNumber + ioSlotJoin]);
                 if (OutputNameFeedbacks[ioSlot] != null)
-                    OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames + ioSlot]);
+                    OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + ioSlotJoin]);
                 if (OutputVideoRouteNameFeedbacks[ioSlot] != null)
-                    OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames + ioSlot]);
+                    OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames.JoinNumber + ioSlotJoin]);
                 if (OutputAudioRouteNameFeedbacks[ioSlot] != null)
-                    OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentAudioInputNames + ioSlot]);
+                    OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentAudioInputNames.JoinNumber + ioSlotJoin]);
                 if (OutputEndpointOnlineFeedbacks[ioSlot] != null)
-                    OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline + ioSlot]);
+                    OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline.JoinNumber + ioSlotJoin]);
             }
         }
 

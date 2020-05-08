@@ -171,16 +171,18 @@ namespace PepperDash.Essentials.DM
 	    {
 	    }
 
-        protected DmTxControllerJoinMap GetDmTxJoinMap(uint joinStart, string joinMapKey)
-        {
-            var joinMap = new DmTxControllerJoinMap();
+
+	    protected void LinkDmTxToApi(DmTxControllerBase tx, BasicTriList trilist, uint joinStart, string joinMapKey,
+	        EiscApiAdvanced bridge)
+	    {
+            var joinMap = new DmTxControllerJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmTxControllerJoinMap>(joinMapSerialized);
 
-            joinMap.OffsetJoinNumbers(joinStart);
+            bridge.AddJoinMap(Key, joinMap);
 
             return joinMap;
         }
@@ -195,10 +197,10 @@ namespace PepperDash.Essentials.DM
 
             Debug.Console(1, tx, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
-            tx.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
-            tx.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus]);
-            tx.AnyVideoInput.VideoStatus.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentInputResolution]);
-            trilist.UShortInput[joinMap.HdcpSupportCapability].UShortValue = (ushort)tx.HdcpSupportCapability;
+            tx.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+            tx.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber]);
+            tx.AnyVideoInput.VideoStatus.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentInputResolution.JoinNumber]);
+            trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber].UShortValue = (ushort)tx.HdcpSupportCapability;
 
             bool hdcpTypeSimple;
 
@@ -211,15 +213,15 @@ namespace PepperDash.Essentials.DM
             {
                 var txR = tx as ITxRouting;
 
-                trilist.SetUShortSigAction(joinMap.VideoInput,
+                trilist.SetUShortSigAction(joinMap.VideoInput.JoinNumber,
                     i => txR.ExecuteNumericSwitch(i, 0, eRoutingSignalType.Video));
-                trilist.SetUShortSigAction(joinMap.AudioInput,
+                trilist.SetUShortSigAction(joinMap.AudioInput.JoinNumber,
                     i => txR.ExecuteNumericSwitch(i, 0, eRoutingSignalType.Audio));
 
-                txR.VideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.VideoInput]);
-                txR.AudioSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioInput]);
+                txR.VideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.VideoInput.JoinNumber]);
+                txR.AudioSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioInput.JoinNumber]);
 
-                trilist.UShortInput[joinMap.HdcpSupportCapability].UShortValue = (ushort)tx.HdcpSupportCapability;
+                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber].UShortValue = (ushort)tx.HdcpSupportCapability;
 
                 if (txR.InputPorts[DmPortName.HdmiIn] != null)
                 {
@@ -229,14 +231,14 @@ namespace PepperDash.Essentials.DM
                     {
                         var intFeedback = tx.Feedbacks["HdmiInHdcpCapability"] as IntFeedback;
                         if (intFeedback != null)
-                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState.JoinNumber]);
                     }
 
                     if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
                     {
                         var port = inputPort.Port as EndpointHdmiInput;
 
-                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port1HdcpState, trilist);
+                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port1HdcpState.JoinNumber, trilist);
                     }
                 }
 
@@ -248,14 +250,14 @@ namespace PepperDash.Essentials.DM
                     {
                         var intFeedback = tx.Feedbacks["HdmiIn1HdcpCapability"] as IntFeedback;
                         if (intFeedback != null)
-                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState.JoinNumber]);
                     }
 
                     if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
                     {
                         var port = inputPort.Port as EndpointHdmiInput;
 
-                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port1HdcpState, trilist);
+                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port1HdcpState.JoinNumber, trilist);
                     }
                 }
 
@@ -267,14 +269,14 @@ namespace PepperDash.Essentials.DM
                     {
                         var intFeedback = tx.Feedbacks["HdmiIn2HdcpCapability"] as IntFeedback;
                         if (intFeedback != null)
-                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState]);
+                            intFeedback.LinkInputSig(trilist.UShortInput[joinMap.Port1HdcpState.JoinNumber]);
                     }
 
                     if (inputPort.ConnectionType == eRoutingPortConnectionType.Hdmi && inputPort.Port != null)
                     {
                         var port = inputPort.Port as EndpointHdmiInput;
 
-                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port2HdcpState, trilist);
+                        SetHdcpCapabilityAction(hdcpTypeSimple, port, joinMap.Port2HdcpState.JoinNumber, trilist);
                     }
                 }
 
@@ -283,19 +285,19 @@ namespace PepperDash.Essentials.DM
             var txFreeRun = tx as IHasFreeRun;
             if (txFreeRun != null)
             {
-                txFreeRun.FreeRunEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.FreeRunEnabled]);
-                trilist.SetBoolSigAction(joinMap.FreeRunEnabled, new Action<bool>(txFreeRun.SetFreeRunEnabled));
+                txFreeRun.FreeRunEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.FreeRunEnabled.JoinNumber]);
+                trilist.SetBoolSigAction(joinMap.FreeRunEnabled.JoinNumber, new Action<bool>(txFreeRun.SetFreeRunEnabled));
             }
 
             var txVga = tx as IVgaBrightnessContrastControls;
             {
                 if (txVga == null) return;
 
-                txVga.VgaBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.VgaBrightness]);
-                txVga.VgaContrastFeedback.LinkInputSig(trilist.UShortInput[joinMap.VgaContrast]);
+                txVga.VgaBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.VgaBrightness.JoinNumber]);
+                txVga.VgaContrastFeedback.LinkInputSig(trilist.UShortInput[joinMap.VgaContrast.JoinNumber]);
 
-                trilist.SetUShortSigAction(joinMap.VgaBrightness, txVga.SetVgaBrightness);
-                trilist.SetUShortSigAction(joinMap.VgaContrast, txVga.SetVgaContrast);
+                trilist.SetUShortSigAction(joinMap.VgaBrightness.JoinNumber, txVga.SetVgaBrightness);
+                trilist.SetUShortSigAction(joinMap.VgaContrast.JoinNumber, txVga.SetVgaContrast);
             }
         }
 

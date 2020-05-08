@@ -48,25 +48,27 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new C2nRthsControllerJoinMap();
+            var joinMap = new C2nRthsControllerJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<C2nRthsControllerJoinMap>(joinMapSerialized);
 
-            joinMap.OffsetJoinNumbers(joinStart);
+            bridge.AddJoinMap(Key, joinMap);
 
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
 
-            trilist.SetBoolSigAction(joinMap.TemperatureFormat, SetTemperatureFormat);
+            trilist.SetBoolSigAction(joinMap.TemperatureFormat.JoinNumber, SetTemperatureFormat);
 
-            IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
-            TemperatureFeedback.LinkInputSig(trilist.UShortInput[joinMap.Temperature]);
-            HumidityFeedback.LinkInputSig(trilist.UShortInput[joinMap.Humidity]);
 
-            trilist.StringInput[joinMap.Name].StringValue = Name;
+
+            IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+            TemperatureFeedback.LinkInputSig(trilist.UShortInput[joinMap.Temperature.JoinNumber]);
+            HumidityFeedback.LinkInputSig(trilist.UShortInput[joinMap.Humidity.JoinNumber]);
+
+            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = Name;
         }
     }
 

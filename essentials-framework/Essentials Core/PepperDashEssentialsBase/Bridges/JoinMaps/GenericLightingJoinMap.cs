@@ -9,33 +9,35 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class GenericLightingJoinMap : JoinMapBase
+    public class GenericLightingJoinMap : JoinMapBaseAdvanced
     {
-        public uint IsOnline { get; set; }
-        public uint SelectScene { get; set; }
-        public uint LightingSceneOffset { get; set; }
-        public uint ButtonVisibilityOffset { get; set; }
-        public uint IntegrationIdSet { get; set; }
 
-        public GenericLightingJoinMap()
+        [JoinName("IsOnline")]
+        public JoinDataComplete IsOnline = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Lighting Controller Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("SelectScene")]
+        public JoinDataComplete SelectScene = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Lighting Controller Select Scene By Index", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("SelectSceneDirect")]
+        public JoinDataComplete SelectSceneDirect = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 10 },
+            new JoinMetadata() { Label = "Lighting Controller Select Scene", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.DigitalSerial });
+
+        [JoinName("ButtonVisibility")]
+        public JoinDataComplete ButtonVisibility = new JoinDataComplete(new JoinData() { JoinNumber = 41, JoinSpan = 10 },
+            new JoinMetadata() { Label = "Lighting Controller Button Visibility", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("IntegrationIdSet")]
+        public JoinDataComplete IntegrationIdSet = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Lighting Controller Set Integration Id", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Serial });
+
+
+
+
+        public GenericLightingJoinMap(uint joinStart)
+            : base(joinStart, typeof(GenericLightingJoinMap))
         {
-            // Digital
-            IsOnline = 1;
-            SelectScene = 1;
-            IntegrationIdSet = 1;
-            LightingSceneOffset = 10;
-            ButtonVisibilityOffset = 40;
-            // Analog
-        }
-
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            IsOnline = IsOnline + joinOffset;
-            SelectScene = SelectScene + joinOffset;
-            LightingSceneOffset = LightingSceneOffset + joinOffset;
-            ButtonVisibilityOffset = ButtonVisibilityOffset + joinOffset;
         }
     }
 }
