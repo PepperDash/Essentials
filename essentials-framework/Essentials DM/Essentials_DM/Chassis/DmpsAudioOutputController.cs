@@ -104,35 +104,35 @@ namespace PepperDash.Essentials.DM
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new DmpsAudioOutputControllerJoinMap();
+            var joinMap = new DmpsAudioOutputControllerJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmpsAudioOutputControllerJoinMap>(joinMapSerialized);
 
-            joinMap.OffsetJoinNumbers(joinStart);
+            bridge.AddJoinMap(Key, joinMap);
 
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             if (MasterVolumeLevel != null)
             {
-                SetUpDmpsAudioOutputJoins(trilist, MasterVolumeLevel, joinMap.MasterVolume);
+                SetUpDmpsAudioOutputJoins(trilist, MasterVolumeLevel, joinMap.MasterVolumeLevel.JoinNumber);
             }
 
             if (SourceVolumeLevel != null)
             {
-                SetUpDmpsAudioOutputJoins(trilist, SourceVolumeLevel, joinMap.SourceVolume);
+                SetUpDmpsAudioOutputJoins(trilist, SourceVolumeLevel, joinMap.SourceVolumeLevel.JoinNumber);
             }
 
             if (Codec1VolumeLevel != null)
             {
-                SetUpDmpsAudioOutputJoins(trilist, Codec1VolumeLevel, joinMap.Codec1Volume);
+                SetUpDmpsAudioOutputJoins(trilist, Codec1VolumeLevel, joinMap.Codec1VolumeLevel.JoinNumber);
             }
 
             if (Codec2VolumeLevel != null)
             {
-                SetUpDmpsAudioOutputJoins(trilist, Codec2VolumeLevel, joinMap.Codec2Volume);
+                SetUpDmpsAudioOutputJoins(trilist, Codec2VolumeLevel, joinMap.Codec2VolumeLevel.JoinNumber);
             }
 
         }
