@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-using PepperDash.Essentials.Core;
-
 namespace PepperDash.Essentials.Core.Bridges
 {
+    [Obsolete("This Device will be moved to a plugin in a future update")]
     public class DigitalLoggerJoinMap : JoinMapBase
     {
         public uint IsOnline { get; set; }

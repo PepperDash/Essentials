@@ -10,7 +10,7 @@ Get-ChildItem ($destination)
 $exclusions = @(git submodule foreach --quiet 'echo $name')
 # Trying to get any .json schema files (not currently working)
 # Gets any files with the listed extensions.
-Get-ChildItem -recurse -Path "$($Env:GITHUB_WORKSPACE)" -include "*.clz", "*.cpz", "*.cplz" | ForEach-Object {
+Get-ChildItem -recurse -Path "$($Env:GITHUB_WORKSPACE)" -include "*.clz", "*.cpz", "*.cplz", "*.dll" | ForEach-Object {
   $allowed = $true;
   # Exclude any files in submodules
   foreach ($exclude in $exclusions) {
@@ -28,7 +28,8 @@ Write-Host "Getting matching files..."
 # Get any files from the output folder that match the following extensions
 Get-ChildItem -Path $destination | Where-Object { ($_.Extension -eq ".clz") -or ($_.Extension -eq ".cpz" -or ($_.Extension -eq ".cplz")) } | ForEach-Object { 
   # Replace the extensions with dll and xml and create an array 
-  $filenames = @($($_ -replace "cpz|clz|cplz", "dll"), $($_ -replace "cpz|clz|cplz", "xml"))
+  # Removed dll file capture, as previous step should capture all of them. Add if needed-> $($_ -replace "cpz|clz|cplz", "dll"),
+  $filenames = @($($_ -replace "cpz|clz|cplz", "xml"))
   Write-Host "Filenames:"
   Write-Host $filenames
   if ($filenames.length -gt 0) {

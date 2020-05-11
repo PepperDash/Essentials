@@ -72,7 +72,9 @@ namespace PepperDash.Essentials.DM
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            LinkDmTxToApi(this, trilist, joinStart, joinMapKey, bridge);
+            DmTxControllerJoinMap joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
+
+            LinkDmTxToApi(this, trilist, joinMap, bridge);
         }
 
         #region IIROutputPorts Members

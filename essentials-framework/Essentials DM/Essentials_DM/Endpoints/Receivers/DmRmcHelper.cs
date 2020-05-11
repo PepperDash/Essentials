@@ -35,35 +35,42 @@ namespace PepperDash.Essentials.DM
 
         protected void LinkDmRmcToApi(DmRmcControllerBase rmc, BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new DmRmcControllerJoinMap();
+            var joinMap = new DmRmcControllerJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmRmcControllerJoinMap>(joinMapSerialized);
 
-            joinMap.OffsetJoinNumbers(joinStart);
+            bridge.AddJoinMap(Key, joinMap);
 
             Debug.Console(1, rmc, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
-            rmc.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
+            rmc.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
             if (rmc.VideoOutputResolutionFeedback != null)
-                rmc.VideoOutputResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentOutputResolution]);
+                rmc.VideoOutputResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentOutputResolution.JoinNumber]);
             if (rmc.EdidManufacturerFeedback != null)
-                rmc.EdidManufacturerFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidManufacturer]);
+                rmc.EdidManufacturerFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidManufacturer.JoinNumber]);
             if (rmc.EdidNameFeedback != null)
-                rmc.EdidNameFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidName]);
+                rmc.EdidNameFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidName.JoinNumber]);
             if (rmc.EdidPreferredTimingFeedback != null)
-                rmc.EdidPreferredTimingFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidPrefferedTiming]);
+                rmc.EdidPreferredTimingFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidPrefferedTiming.JoinNumber]);
             if (rmc.EdidSerialNumberFeedback != null)
-                rmc.EdidSerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidSerialNumber]);
+                rmc.EdidSerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.EdidSerialNumber.JoinNumber]);
             
             //If the device is an DM-RMC-4K-Z-SCALER-C
             var routing = rmc as IRmcRouting;
 
             if (routing == null)
             {
-                return;
+
+       
+
+                if (routing.AudioVideoSourceNumericFeedback != null)
+                    routing.AudioVideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioVideoSource.JoinNumber]);
+
+                trilist.SetUShortSigAction(joinMap.AudioVideoSource.JoinNumber, (a) => routing.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
+
             }
 
             if (routing.AudioVideoSourceNumericFeedback != null)

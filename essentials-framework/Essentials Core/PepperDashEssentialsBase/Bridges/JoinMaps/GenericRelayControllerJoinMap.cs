@@ -7,25 +7,17 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class GenericRelayControllerJoinMap : JoinMapBase
+    public class GenericRelayControllerJoinMap : JoinMapBaseAdvanced
     {
-        #region Digitals
-        /// <summary>
-        /// Sets and reports the state of the relay (High = closed, Low = Open)
-        /// </summary>
-        public uint Relay { get; set; }
-        #endregion
 
-        public GenericRelayControllerJoinMap()
+        [JoinName("Relay")]
+        public JoinDataComplete Relay = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Device Relay State Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+
+        public GenericRelayControllerJoinMap(uint joinStart)
+            : base(joinStart, typeof(GenericRelayControllerJoinMap))
         {
-            Relay = 1;
-        }
-
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            Relay = Relay + joinOffset;
         }
     }
 }

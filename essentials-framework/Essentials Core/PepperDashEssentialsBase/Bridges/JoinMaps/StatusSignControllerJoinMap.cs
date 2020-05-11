@@ -4,46 +4,45 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class StatusSignControllerJoinMap:JoinMapBase
+    public class StatusSignControllerJoinMap : JoinMapBaseAdvanced
     {
-        public uint IsOnline { get; set; }
-        public uint Name { get; set; }
-        public uint RedLed { get; set; }
-        public uint GreenLed { get; set; }
-        public uint BlueLed { get; set; }
-        public uint RedControl { get; set; }
-        public uint GreenControl { get; set; }
-        public uint BlueControl { get; set; }
+        [JoinName("IsOnline")]
+        public JoinDataComplete IsOnline = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Status Sign Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        public StatusSignControllerJoinMap()
+        [JoinName("Name")]
+        public JoinDataComplete Name = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Status Sign Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("RedControl")]
+        public JoinDataComplete RedControl = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Status Red LED Enable / Disable", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("RedLed")]
+        public JoinDataComplete RedLed = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Status Red LED Intensity", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("GreenControl")]
+        public JoinDataComplete GreenControl = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Status Green LED Enable / Disable", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("GreenLed")]
+        public JoinDataComplete GreenLed = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Status Green LED Intensity", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("BlueControl")]
+        public JoinDataComplete BlueControl = new JoinDataComplete(new JoinData() { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Status Blue LED Enable / Disable", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("BlueLed")]
+        public JoinDataComplete BlueLed = new JoinDataComplete(new JoinData() { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Status Blue LED Intensity", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+
+        public StatusSignControllerJoinMap(uint joinStart)
+            : base(joinStart, typeof(StatusSignControllerJoinMap))
         {
-            //digital
-            IsOnline = 1;
-            RedControl = 2;
-            GreenControl = 3;
-            BlueControl = 4;
-
-            //Analog
-            RedLed = 2;
-            GreenLed = 3;
-            BlueLed = 4;
-
-            //string 
-            Name = 1;
-
-
         }
 
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-            var properties =
-                GetType().GetCType().GetProperties().Where(p => p.PropertyType == typeof (uint)).ToList();
-
-            foreach (var propertyInfo in properties)
-            {
-                propertyInfo.SetValue(this, (uint) propertyInfo.GetValue(this, null) + joinOffset, null);
-            }
-        }
     }
 }

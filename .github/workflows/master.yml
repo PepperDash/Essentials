@@ -32,9 +32,6 @@ jobs:
           auth_header="$(git config --local --get http.https://github.com/.extraheader)"
           git submodule sync --recursive
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
-      # Fetch all tags
-      - name: Fetch tags
-        run: git fetch --tags
       # Generate the appropriate version number
       - name: Set Version Number
         shell: powershell
