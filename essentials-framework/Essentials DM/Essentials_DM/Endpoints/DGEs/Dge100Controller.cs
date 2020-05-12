@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
     /// <summary>
     /// Wrapper class for DGE-100 and DM-DGE-200-C
     /// </summary>
-    public class DgeController : CrestronGenericBaseDevice, IComPorts, IIROutputPorts, IHasBasicTriListWithSmartObject
+    public class Dge100Controller : CrestronGenericBaseDevice, IComPorts, IIROutputPorts, IHasBasicTriListWithSmartObject
     {
         private readonly Dge100 _dge;
 
@@ -28,7 +28,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
         CrestronTouchpanelPropertiesConfig PropertiesConfig;
 
-        public DgeController(string key, string name, Dge100 device, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
+        public Dge100Controller(string key, string name, Dge100 device, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
             :base(key, name, device)
         {
             _dge = device;
@@ -67,11 +67,11 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
         #endregion
     }
 
-    public class DgeControllerFactory : EssentialsDeviceFactory<DgeController>
+    public class Dge100ControllerFactory : EssentialsDeviceFactory<Dge100Controller>
     {
-        public DgeControllerFactory()
+        public Dge100ControllerFactory()
         {
-            TypeNames = new List<string>() { "dge100", "dmdge200c" };
+            TypeNames = new List<string>() { "dge100" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
@@ -85,8 +85,6 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
             Dge100 dgeDevice = null;
             if (typeName == "dge100")
                 dgeDevice = new Dge100(comm.IpIdInt, Global.ControlSystem);
-            else if (typeName == "dmdge200c")
-                dgeDevice = new DmDge200C(comm.IpIdInt, Global.ControlSystem);
 
             if (dgeDevice == null)
             {
@@ -94,7 +92,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
                 return null;
             }
 
-            var dgeController = new DgeController(dc.Key + "-comPorts", dc.Name, dgeDevice, dc, props);
+            var dgeController = new Dge100Controller(dc.Key + "-comPorts", dc.Name, dgeDevice, dc, props);
 
             return dgeController;
         }

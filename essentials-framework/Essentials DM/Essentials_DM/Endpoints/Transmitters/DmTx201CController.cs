@@ -21,9 +21,9 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// Controller class for all DM-TX-201C/S/F transmitters
     /// </summary>
-    public class DmTx201XController : DmTxControllerBase, ITxRouting, IHasFeedback, IHasFreeRun, IVgaBrightnessContrastControls
+    public class DmTx201CController : DmTxControllerBase, ITxRouting, IHasFeedback, IHasFreeRun, IVgaBrightnessContrastControls
 	{
-		public DmTx201S Tx { get; private set; } // uses the 201S class as it is the base class for the 201C
+		public DmTx201C Tx { get; private set; } // uses the 201S class as it is the base class for the 201C
 
 		public RoutingInputPortWithVideoStatuses HdmiInput { get; private set; }
 		public RoutingInputPortWithVideoStatuses VgaInput { get; private set; }
@@ -92,7 +92,7 @@ namespace PepperDash.Essentials.DM
 		/// <param name="key"></param>
 		/// <param name="name"></param>
 		/// <param name="tx"></param>
-		public DmTx201XController(string key, string name, DmTx201S tx)
+		public DmTx201CController(string key, string name, DmTx201C tx)
 			: base(key, name, tx)
 		{
 			Tx = tx;
