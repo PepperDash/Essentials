@@ -21,7 +21,8 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// Controller class for all DM-TX-201C/S/F transmitters
     /// </summary>
-    public class DmTx4kz100Controller : DmTxControllerBase, IRoutingInputsOutputs, IHasFeedback
+    public class DmTx4kz100Controller : DmTxControllerBase, IRoutingInputsOutputs, IHasFeedback,
+        IIROutputPorts, IComPorts, ICec
     {
         public DmTx4kz100C1G Tx { get; private set; }
 
@@ -297,6 +298,23 @@ namespace PepperDash.Essentials.DM
                     break;
             }
         }
+        #region IIROutputPorts Members
+        public CrestronCollection<IROutputPort> IROutputPorts { get { return Tx.IROutputPorts; } }
+        public int NumberOfIROutputPorts { get { return Tx.NumberOfIROutputPorts; } }
+        #endregion
+
+        #region IComPorts Members
+        public CrestronCollection<ComPort> ComPorts { get { return Tx.ComPorts; } }
+        public int NumberOfComPorts { get { return Tx.NumberOfComPorts; } }
+        #endregion
+
+        #region ICec Members
+        /// <summary>
+        /// Gets the CEC stream directly from the HDMI port.
+        /// </summary>
+        public Cec StreamCec { get { return Tx.HdmiInput.StreamCec; } }
+        #endregion
+
 
     }
 }
