@@ -63,20 +63,13 @@ namespace PepperDash.Essentials.DM
 
             if (routing == null)
             {
-
-       
-
-                if (routing.AudioVideoSourceNumericFeedback != null)
-                    routing.AudioVideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioVideoSource.JoinNumber]);
-
-                trilist.SetUShortSigAction(joinMap.AudioVideoSource.JoinNumber, (a) => routing.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
-
+                return;
             }
 
             if (routing.AudioVideoSourceNumericFeedback != null)
-                routing.AudioVideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioVideoSource]);
+                routing.AudioVideoSourceNumericFeedback.LinkInputSig(trilist.UShortInput[joinMap.AudioVideoSource.JoinNumber]);
 
-            trilist.SetUShortSigAction(joinMap.AudioVideoSource, a => routing.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
+            trilist.SetUShortSigAction(joinMap.AudioVideoSource.JoinNumber, a => routing.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
         }
 	}
 
