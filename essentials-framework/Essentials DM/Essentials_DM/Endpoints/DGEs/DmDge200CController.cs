@@ -13,13 +13,15 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Crestron.SimplSharpPro.DeviceSupport;
 
+using Crestron.SimplSharpPro.DM;
+
 namespace PepperDash.Essentials.DM.Endpoints.DGEs
 {
     /// <summary>
     /// Wrapper class for DGE-100 and DM-DGE-200-C
     /// </summary>
-    public class DmDge200CController : CrestronGenericBaseDevice, IComPorts, IIROutputPorts, 
-        IHasBasicTriListWithSmartObject, IRoutingInputsOutputs
+    public class DmDge200CController : CrestronGenericBaseDevice, IComPorts, IIROutputPorts,
+        IHasBasicTriListWithSmartObject, IRoutingInputsOutputs, ICec
     {
         private readonly DmDge200C _dge;
 
@@ -93,6 +95,10 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
             get { return _dge.NumberOfIROutputPorts; }
         }
 
+        #endregion
+
+        #region ICec Members
+        public Cec StreamCec { get { return _dge.HdmiOut.StreamCec; } }
         #endregion
 
     }

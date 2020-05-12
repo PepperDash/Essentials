@@ -6,6 +6,9 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.UI;
 
+using Crestron.SimplSharpPro.DM;
+
+
 using Newtonsoft.Json;
 
 using PepperDash.Core;
@@ -18,7 +21,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
     /// <summary>
     /// Wrapper class for DGE-100 and DM-DGE-200-C
     /// </summary>
-    public class Dge100Controller : CrestronGenericBaseDevice, IComPorts, IIROutputPorts, IHasBasicTriListWithSmartObject
+    public class Dge100Controller : CrestronGenericBaseDevice, IComPorts, IIROutputPorts, IHasBasicTriListWithSmartObject, ICec
     {
         private readonly Dge100 _dge;
 
@@ -65,6 +68,11 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
         }
 
         #endregion
+
+        #region ICec Members
+        public Cec StreamCec { get { return _dge.HdmiOut.StreamCec; } }
+        #endregion
+
     }
 
     public class Dge100ControllerFactory : EssentialsDeviceFactory<Dge100Controller>
