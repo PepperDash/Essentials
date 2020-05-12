@@ -27,7 +27,16 @@ namespace PepperDash.Essentials.Core
         {
             PropertiesConfig = CommFactory.GetControlPropertiesConfig(config);
 
-            CommPort = CommFactory.CreateCommForDevice(config);
+            var commPort = CommFactory.CreateCommForDevice(config);
+
+            //Fixing decision to require '-comPorts' in delcaration for DGE in order to get a device with comports included
+            if (commPort == null)
+            {
+                config.Key = config.Key + "-comPorts";
+                commPort = CommFactory.CreateCommForDevice(config);
+            }
+
+            CommPort = commPort;
 
         }
 

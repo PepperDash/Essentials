@@ -88,7 +88,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
             var comm = CommFactory.GetControlPropertiesConfig(dc);
             var props = JsonConvert.DeserializeObject<CrestronTouchpanelPropertiesConfig>(dc.Properties.ToString());
 
-            Debug.Console(1, "Factory Attempting to create new DgeControllerm Device");
+            Debug.Console(1, "Factory Attempting to create new DgeController Device");
 
             Dge100 dgeDevice = null;
             if (typeName == "dge100")
@@ -100,7 +100,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
                 return null;
             }
 
-            var dgeController = new Dge100Controller(dc.Key + "-comPorts", dc.Name, dgeDevice, dc, props);
+            var dgeController = new Dge100Controller(dc.Key, dc.Name, dgeDevice, dc, props);
 
             return dgeController;
         }
