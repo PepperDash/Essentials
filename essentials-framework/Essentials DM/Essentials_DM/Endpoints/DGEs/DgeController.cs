@@ -11,26 +11,29 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace PepperDash.Essentials.DM.Endpoints.DGEs
 {
     /// <summary>
     /// Wrapper class for DGE-100 and DM-DGE-200-C
     /// </summary>
-    public class DgeController : CrestronGenericBaseDevice, IComPorts, IIROutputPorts
+    public class DgeController : CrestronGenericBaseDevice, IComPorts, IIROutputPorts, IHasBasicTriListWithSmartObject
     {
-        public Dge100 DigitalGraphicsEngine { get; private set; }
+        private readonly Dge100 _dge;
 
-        public DeviceConfig DeviceConfig { get; private set; }
+        public BasicTriListWithSmartObject Panel { get { return _dge; } }
+
+        public DeviceConfig _dc;
 
         CrestronTouchpanelPropertiesConfig PropertiesConfig;
 
         public DgeController(string key, string name, Dge100 device, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
             :base(key, name, device)
         {
-            DigitalGraphicsEngine = device;
+            _dge = device;
 
-            DeviceConfig = dc;
+            _dc = dc;
 
             PropertiesConfig = props;
         }
@@ -39,12 +42,12 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
         public CrestronCollection<ComPort> ComPorts
         {
-            get { return DigitalGraphicsEngine.ComPorts; }
+            get { return _dge.ComPorts; }
         }
 
         public int NumberOfComPorts
         {
-            get { return DigitalGraphicsEngine.NumberOfComPorts; }
+            get { return _dge.NumberOfComPorts; }
         }
 
         #endregion
@@ -53,12 +56,12 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
         public CrestronCollection<IROutputPort> IROutputPorts
         {
-            get { return DigitalGraphicsEngine.IROutputPorts; }
+            get { return _dge.IROutputPorts; }
         }
 
         public int NumberOfIROutputPorts
         {
-            get { return DigitalGraphicsEngine.NumberOfIROutputPorts; }
+            get { return _dge.NumberOfIROutputPorts; }
         }
 
         #endregion
