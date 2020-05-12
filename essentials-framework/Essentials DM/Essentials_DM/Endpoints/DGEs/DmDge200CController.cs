@@ -39,9 +39,6 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
             private set;
         }
 
-
-        CrestronTouchpanelPropertiesConfig PropertiesConfig;
-
         public DmDge200CController(string key, string name, DmDge200C device, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
             : base(key, name, device, dc, props)
         {
