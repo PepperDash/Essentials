@@ -335,7 +335,8 @@ namespace PepperDash.Essentials.DM
     {
         public DmTxControllerFactory()
         {
-            TypeNames = new List<string>() { "dmtx200c", "dmtx201c", "dmtx201s", "dmtx4k100c", "dmtx4k202c", "dmtx4kz202c", "dmtx4k302c", "dmtx4kz302c", "dmtx401c", "dmtx401s" };
+            TypeNames = new List<string>() { "dmtx200c", "dmtx201c", "dmtx201s", "dmtx4k100c", "dmtx4k202c", "dmtx4kz202c", "dmtx4k302c", "dmtx4kz302c",
+                "dmtx401c", "dmtx401s", "dmtx4k100c1g", "dmtx4kz100c1g"  };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
