@@ -27,7 +27,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
         public BasicTriListWithSmartObject Panel { get { return _dge; } }
 
-        public DeviceConfig _dc;
+        private DeviceConfig _dc;
 
         CrestronTouchpanelPropertiesConfig PropertiesConfig;
 
