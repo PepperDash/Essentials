@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -18,7 +14,7 @@ namespace PepperDash.Essentials.DM
     public class DmRmc4kZScalerCController : DmRmcControllerBase, IRmcRouting,
         IIROutputPorts, IComPorts, ICec
     {
-        public DmRmc4kzScalerC Rmc { get; private set; }
+        private readonly DmRmc4kzScalerC _rmc;
 
         public RoutingInputPort DmIn { get; private set; }
         public RoutingInputPort HdmiIn { get; private set; }
@@ -29,41 +25,38 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         public IntFeedback AudioVideoSourceNumericFeedback { get; private set; }
 
-        public RoutingPortCollection<RoutingInputPort> InputPorts
-        {
-            get { return new RoutingPortCollection<RoutingInputPort> { DmIn, HdmiIn }; }
-        }
+        public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts
-        {
-            get { return new RoutingPortCollection<RoutingOutputPort> { HdmiOut }; }
-        }
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
         public DmRmc4kZScalerCController(string key, string name, DmRmc4kzScalerC rmc)
             : base(key, name, rmc)
         {
-            Rmc = rmc;
-            DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            _rmc = rmc;
+            DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.DmCat, 0, this);
-            HdmiIn = new RoutingInputPort(DmPortName.HdmiIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            HdmiIn = new RoutingInputPort(DmPortName.HdmiIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, 0, this);
-            HdmiOut = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            HdmiOut = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, null, this);
 
-            EdidManufacturerFeedback = new StringFeedback(() => Rmc.HdmiOutput.ConnectedDevice.Manufacturer.StringValue);
-            EdidNameFeedback = new StringFeedback(() => Rmc.HdmiOutput.ConnectedDevice.Name.StringValue);
-            EdidPreferredTimingFeedback = new StringFeedback(() => Rmc.HdmiOutput.ConnectedDevice.PreferredTiming.StringValue);
-            EdidSerialNumberFeedback = new StringFeedback(() => Rmc.HdmiOutput.ConnectedDevice.SerialNumber.StringValue);
+            EdidManufacturerFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.Manufacturer.StringValue);
+            EdidNameFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.Name.StringValue);
+            EdidPreferredTimingFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.PreferredTiming.StringValue);
+            EdidSerialNumberFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.SerialNumber.StringValue);
 
-            VideoOutputResolutionFeedback = new StringFeedback(() => Rmc.HdmiOutput.GetVideoResolutionString());
+            VideoOutputResolutionFeedback = new StringFeedback(() => _rmc.HdmiOutput.GetVideoResolutionString());
 
-            Rmc.HdmiOutput.OutputStreamChange += HdmiOutput_OutputStreamChange;
-            Rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
+            InputPorts = new RoutingPortCollection<RoutingInputPort> {DmIn, HdmiIn};
+            OutputPorts = new RoutingPortCollection<RoutingOutputPort> {HdmiOut};
+
+            _rmc.HdmiOutput.OutputStreamChange += HdmiOutput_OutputStreamChange;
+            _rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
 
             // Set Ports for CEC
-            HdmiOut.Port = Rmc.HdmiOutput;
+            HdmiOut.Port = _rmc.HdmiOutput;
 
-            AudioVideoSourceNumericFeedback = new IntFeedback(() => (ushort)(Rmc.SelectedSourceFeedback));
+            AudioVideoSourceNumericFeedback = new IntFeedback(() => (ushort)(_rmc.SelectedSourceFeedback));
         }
 
         void HdmiOutput_OutputStreamChange(EndpointOutputStream outputStream, EndpointOutputStreamEventArgs args)
@@ -82,28 +75,21 @@ namespace PepperDash.Essentials.DM
 
         void ConnectedDevice_DeviceInformationChange(ConnectedDeviceInformation connectedDevice, ConnectedDeviceEventArgs args)
         {
-            if (args.EventId == ConnectedDeviceEventIds.ManufacturerEventId)
+            switch (args.EventId)
             {
-                EdidManufacturerFeedback.FireUpdate();
+                case ConnectedDeviceEventIds.ManufacturerEventId:
+                    EdidManufacturerFeedback.FireUpdate();
+                    break;
+                case ConnectedDeviceEventIds.NameEventId:
+                    EdidNameFeedback.FireUpdate();
+                    break;
+                case ConnectedDeviceEventIds.PreferredTimingEventId:
+                    EdidPreferredTimingFeedback.FireUpdate();
+                    break;
+                case ConnectedDeviceEventIds.SerialNumberEventId:
+                    EdidSerialNumberFeedback.FireUpdate();
+                    break;
             }
-            else if (args.EventId == ConnectedDeviceEventIds.NameEventId)
-            {
-                EdidNameFeedback.FireUpdate();
-            }
-            else if (args.EventId == ConnectedDeviceEventIds.PreferredTimingEventId)
-            {
-                EdidPreferredTimingFeedback.FireUpdate();
-            }
-            else if (args.EventId == ConnectedDeviceEventIds.SerialNumberEventId)
-            {
-                EdidSerialNumberFeedback.FireUpdate();
-            }
-        }
-
-        public override bool CustomActivate()
-        {
-            // Base does register and sets up comm monitoring.
-            return base.CustomActivate();
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
@@ -112,20 +98,20 @@ namespace PepperDash.Essentials.DM
         }
 
         #region IIROutputPorts Members
-        public CrestronCollection<IROutputPort> IROutputPorts { get { return Rmc.IROutputPorts; } }
-        public int NumberOfIROutputPorts { get { return Rmc.NumberOfIROutputPorts; } }
+        public CrestronCollection<IROutputPort> IROutputPorts { get { return _rmc.IROutputPorts; } }
+        public int NumberOfIROutputPorts { get { return _rmc.NumberOfIROutputPorts; } }
         #endregion
 
         #region IComPorts Members
-        public CrestronCollection<ComPort> ComPorts { get { return Rmc.ComPorts; } }
-        public int NumberOfComPorts { get { return Rmc.NumberOfComPorts; } }
+        public CrestronCollection<ComPort> ComPorts { get { return _rmc.ComPorts; } }
+        public int NumberOfComPorts { get { return _rmc.NumberOfComPorts; } }
         #endregion
 
         #region ICec Members
         /// <summary>
         /// Gets the CEC stream directly from the HDMI port.
         /// </summary>
-        public Cec StreamCec { get { return Rmc.HdmiOutput.StreamCec; } }
+        public Cec StreamCec { get { return _rmc.HdmiOutput.StreamCec; } }
         #endregion
 
 
@@ -136,14 +122,14 @@ namespace PepperDash.Essentials.DM
 
             var number = Convert.ToUInt16(inputSelector);
 
-            Rmc.AudioVideoSource = (DmRmc4kzScalerC.eAudioVideoSource)number;
+            _rmc.AudioVideoSource = (DmRmc4kzScalerC.eAudioVideoSource)number;
         }
 
         public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType signalType)
         {
             Debug.Console(2, this, "Attempting a route from input {0} to HDMI Output", inputSelector);
 
-            Rmc.AudioVideoSource = (DmRmc4kzScalerC.eAudioVideoSource)inputSelector;
+            _rmc.AudioVideoSource = (DmRmc4kzScalerC.eAudioVideoSource)inputSelector;
         }
         #endregion
 

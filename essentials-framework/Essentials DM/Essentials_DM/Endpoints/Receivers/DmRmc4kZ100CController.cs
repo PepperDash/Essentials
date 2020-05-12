@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
+﻿using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
@@ -23,16 +17,6 @@ namespace PepperDash.Essentials.DM
         {
             _rmc = rmc;
 
-            /* removed this logic because it's done in the base constructor and doesn't need to be duplicated here
-			DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
-				eRoutingPortConnectionType.DmCat, 0, this);
-			HdmiOut = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
-				eRoutingPortConnectionType.Hdmi, null, this) {Port = _rmc};
-             */
-
-            // Set Ports for CEC
-
-            //TODO: We need to look at this class inheritance design...not so sure these properties need to be virtual and/or abstract.
             EdidManufacturerFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.Manufacturer.StringValue);
             EdidNameFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.Name.StringValue);
             EdidPreferredTimingFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.PreferredTiming.StringValue);
@@ -53,21 +37,20 @@ namespace PepperDash.Essentials.DM
 
         void ConnectedDevice_DeviceInformationChange(ConnectedDeviceInformation connectedDevice, ConnectedDeviceEventArgs args)
         {
-            if (args.EventId == ConnectedDeviceEventIds.ManufacturerEventId)
+            switch (args.EventId)
             {
-                EdidManufacturerFeedback.FireUpdate();
-            }
-            else if (args.EventId == ConnectedDeviceEventIds.NameEventId)
-            {
-                EdidNameFeedback.FireUpdate();
-            }
-            else if (args.EventId == ConnectedDeviceEventIds.PreferredTimingEventId)
-            {
-                EdidPreferredTimingFeedback.FireUpdate();
-            }
-            else if (args.EventId == ConnectedDeviceEventIds.SerialNumberEventId)
-            {
-                EdidSerialNumberFeedback.FireUpdate();
+                case ConnectedDeviceEventIds.ManufacturerEventId:
+                    EdidManufacturerFeedback.FireUpdate();
+                    break;
+                case ConnectedDeviceEventIds.NameEventId:
+                    EdidNameFeedback.FireUpdate();
+                    break;
+                case ConnectedDeviceEventIds.PreferredTimingEventId:
+                    EdidPreferredTimingFeedback.FireUpdate();
+                    break;
+                case ConnectedDeviceEventIds.SerialNumberEventId:
+                    EdidSerialNumberFeedback.FireUpdate();
+                    break;
             }
         }
 
