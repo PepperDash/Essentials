@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinMetadata() { Label = "Is Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
         public DisplayControllerJoinMap(uint joinStart)
-            : base(joinStart, typeof(CameraControllerJoinMap))
+            : base(joinStart, typeof(DisplayControllerJoinMap))
         {
         }
     }
