@@ -26,6 +26,8 @@ namespace PepperDash.Essentials
     {
         HttpLogoServer LogoServer;
 
+        private CTimer _startTimer;
+        private const long StartupTime = 500;
 
         public ControlSystem()
             : base()
@@ -39,6 +41,11 @@ namespace PepperDash.Essentials
         /// Entry point for the program
         /// </summary>
         public override void InitializeSystem()
+        {
+            _startTimer = new CTimer(StartSystem,StartupTime);
+        }
+
+        private void StartSystem(object obj)
         {
             DeterminePlatform();
 
@@ -75,11 +82,11 @@ namespace PepperDash.Essentials
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
-                {
-                    CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r" +
-                        "System URL:   {0}\r" +
-                        "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
-                }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
+            {
+                CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r" +
+                    "System URL:   {0}\r" +
+                    "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
+            }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
 
             if (!Debug.DoNotLoadOnNextBoot)
