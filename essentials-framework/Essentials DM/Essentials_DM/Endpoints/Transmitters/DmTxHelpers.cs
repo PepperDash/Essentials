@@ -45,8 +45,10 @@ namespace PepperDash.Essentials.DM
                         return new DmTx200Controller(key, name, new DmTx200C2G(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmtx4kz100"))
                         return new DmTx4kz100Controller(key, name, new DmTx4kz100C1G(ipid, Global.ControlSystem));
-					if (typeName.StartsWith("dmtx201"))
-						return new DmTx201XController(key, name, new DmTx201S(ipid, Global.ControlSystem));
+					if (typeName.StartsWith("dmtx201c"))
+						return new DmTx201CController(key, name, new DmTx201C(ipid, Global.ControlSystem));
+                    if (typeName.StartsWith("dmtx201s"))
+                        return new DmTx201SController(key, name, new DmTx201S(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmtx4k202"))
                         return new DmTx4k202CController(key, name, new DmTx4k202C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmtx4kz202"))
@@ -102,8 +104,10 @@ namespace PepperDash.Essentials.DM
 					{
 						if (typeName.StartsWith("dmtx200"))
 							return new DmTx200Controller(key, name, new DmTx200C2G(chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx201"))
-							return new DmTx201XController(key, name, new DmTx201C(chassis.Inputs[num]));
+						if (typeName.StartsWith("dmtx201c"))
+							return new DmTx201CController(key, name, new DmTx201C(chassis.Inputs[num]));
+                        if (typeName.StartsWith("dmtx201s"))
+                            return new DmTx201SController(key, name, new DmTx201S(chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4k100"))
 							return new DmTx4k100Controller(key, name, new DmTx4K100C1G(chassis.Inputs[num]));
                         if (typeName.StartsWith("dmtx4kz100"))
@@ -123,8 +127,10 @@ namespace PepperDash.Essentials.DM
 					{
 						if (typeName.StartsWith("dmtx200"))
 							return new DmTx200Controller(key, name, new DmTx200C2G(ipid, chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx201"))
-							return new DmTx201XController(key, name, new DmTx201C(ipid, chassis.Inputs[num]));
+						if (typeName.StartsWith("dmtx201c"))
+							return new DmTx201CController(key, name, new DmTx201C(ipid, chassis.Inputs[num]));
+                        if (typeName.StartsWith("dmtx201s"))
+                            return new DmTx201SController(key, name, new DmTx201S(ipid, chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4k100"))
 							return new DmTx4k100Controller(key, name, new DmTx4K100C1G(ipid, chassis.Inputs[num]));
                         if (typeName.StartsWith("dmtx4kz100"))
