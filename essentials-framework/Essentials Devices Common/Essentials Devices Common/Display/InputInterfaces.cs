@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using PepperDash.Essentials.Core;
+
 
 namespace PepperDash.Essentials.Devices.Displays
 {
@@ -13,5 +15,4 @@ namespace PepperDash.Essentials.Devices.Displays
     public interface IInputDisplayPort1 { void InputDisplayPort1(); }
     public interface IInputDisplayPort2 { void InputDisplayPort2(); }
     public interface IInputVga1 { void InputVga1(); }
-
 }
