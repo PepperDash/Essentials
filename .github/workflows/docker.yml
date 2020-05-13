@@ -78,14 +78,14 @@ jobs:
           path: ${{env.GITHUB_HOME}}\output\version.txt
       # Create the release on the source repo
       - name: Create tag for non-rc builds
-        if: contains('-alpha-', env.VERSION) || contains('-beta-', env.VERSION)
+        if: contains(env.VERSION, 'alpha') || contains(env.VERSION, 'beta')
         run: |
           git tag $($Env:VERSION)
           git push --tags origin
       - name: Create Release
         id: create_release
         # using contributor's version to allow for pointing at the right commit
-        if: contains('-rc-', env.VERSION) || contains('-hotfix-', env.VERSION)
+        if: contains(env.VERSION,'-rc-') || contains(env.VERSION,'-hotfix-')
         uses: fleskesvor/create-release@feature/support-target-commitish
         with:
           tag_name: ${{ env.VERSION  }}
@@ -95,7 +95,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Upload the build package to the release
       - name: Upload Release Package
-        if: contains('-rc-', env.VERSION) || contains('-hotfix-', env.VERSION)
+        if: contains(env.VERSION,'-rc-') || contains(env.VERSION,'-hotfix-')
         id: upload_release
         uses: actions/upload-release-asset@v1
         with:
@@ -110,6 +110,8 @@ jobs:
     needs: Build_Project
     runs-on: windows-latest
     steps:
+      - name: check Github ref
+        run: ${{toJson(github.ref)}}
       # Checkout the repo
       - name: Checkout Builds Repo
         uses: actions/checkout@v2
@@ -188,6 +190,8 @@ jobs:
     if: contains(github.ref, 'master') || contains(github.ref, 'release')
     steps:
       # Checkout the repo
+      - name: check Github ref
+        run: ${{toJson(github.ref)}}
       - name: Checkout Builds Repo
         uses: actions/checkout@v2
         with:
