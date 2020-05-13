@@ -187,7 +187,7 @@ jobs:
   Public_Push_Output:
     needs: Build_Project
     runs-on: windows-latest
-    if: contains(github.ref, 'master') || contains(github.ref, 'release')
+    if: contains(github.ref, 'master') || contains(github.ref, '/release/')
     steps:
       # Checkout the repo
       - name: check Github ref
