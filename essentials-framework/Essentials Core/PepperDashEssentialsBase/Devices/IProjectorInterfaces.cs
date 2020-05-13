@@ -6,12 +6,17 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core
 {
-    public interface IHasVideoMute
+    public interface IBasicVideoMute
+    {
+        void VideoMuteToggle();
+    }
+
+    public interface IBasicVideoMuteWithFeedback : IBasicVideoMute
     {
         BoolFeedback VideoMuteIsOn { get; }
 
-        void VideoMuteOn(bool pressRelease);
-        void VideoMuteOff(bool pressRelease);
-        void VideoMuteToggle(bool pressRelease);
+        void VideoMuteOn();
+        void VideoMuteOff();
+ 
     }
 }
