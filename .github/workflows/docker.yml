@@ -84,8 +84,8 @@ jobs:
           git push --tags origin
       - name: Create Release
         id: create_release
-        if: ${{contains('rc' env.VERSION)}}
         # using contributor's version to allow for pointing at the right commit
+        if: ${{contains('rc', env.VERSION)}}
         uses: fleskesvor/create-release@feature/support-target-commitish
         with:
           tag_name: ${{ env.VERSION  }}
