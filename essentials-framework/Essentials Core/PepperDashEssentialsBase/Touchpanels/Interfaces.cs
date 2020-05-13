@@ -11,4 +11,9 @@ namespace PepperDash.Essentials.Core
     {
         BasicTriListWithSmartObject Panel { get; }
     }
+
+    public interface IHasBasicTrilist
+    {
+        BasicTriList Panel { get; }
+    }
 }
