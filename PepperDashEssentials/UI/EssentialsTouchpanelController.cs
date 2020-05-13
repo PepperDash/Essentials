@@ -211,7 +211,7 @@ namespace PepperDash.Essentials
             var comm = CommFactory.GetControlPropertiesConfig(dc);
             var props = Newtonsoft.Json.JsonConvert.DeserializeObject<CrestronTouchpanelPropertiesConfig>(dc.Properties.ToString());
 
-            Debug.Console(1, "Factory Attempting to create new Generic Comm Device");
+            Debug.Console(1, "Factory Attempting to create new EssentialsTouchpanelController");
 
             var panelController = new EssentialsTouchpanelController(dc.Key, dc.Name, dc.Type, props, comm.IpIdInt);
 
