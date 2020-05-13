@@ -4,7 +4,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.CrestronIO;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     public static class C2nRthsControllerApiExtensions
     {

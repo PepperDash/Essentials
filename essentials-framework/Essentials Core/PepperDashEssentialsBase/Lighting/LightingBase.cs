@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-
+using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core.Lighting
 {
-    public abstract class LightingBase : Device, ILightingScenes
+    public abstract class LightingBase : EssentialsBridgeableDevice, ILightingScenes
     {
         #region ILightingScenes Members
 
@@ -23,8 +25,7 @@ namespace PepperDash.Essentials.Core.Lighting
 
         #endregion
 
-
-        public LightingBase(string key, string name)
+        protected LightingBase(string key, string name)
             : base(key, name)
         {
             LightingScenes = new List<LightingScene>();
@@ -67,6 +68,38 @@ namespace PepperDash.Essentials.Core.Lighting
             {
                 handler(this, new LightingSceneChangeEventArgs(CurrentLightingScene));
             }
+        }
+
+        protected GenericLightingJoinMap LinkLightingToApi(LightingBase lightingDevice, BasicTriList trilist, uint joinStart,
+            string joinMapKey, EiscApiAdvanced bridge)
+        {
+            var joinMap = new GenericLightingJoinMap(joinStart);
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<GenericLightingJoinMap>(joinMapSerialized);
+
+            bridge.AddJoinMap(Key, joinMap);
+
+            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+
+            Debug.Console(0, "Linking to Lighting Type {0}", lightingDevice.GetType().Name.ToString());
+
+            // GenericLighitng Actions & FeedBack
+            trilist.SetUShortSigAction(joinMap.SelectScene.JoinNumber, u => lightingDevice.SelectScene(lightingDevice.LightingScenes[u]));
+
+            var sceneIndex = 0;
+            foreach (var scene in lightingDevice.LightingScenes)
+            {
+                trilist.SetSigTrueAction((uint)(joinMap.SelectSceneDirect.JoinNumber + sceneIndex), () => lightingDevice.SelectScene(lightingDevice.LightingScenes[sceneIndex]));
+                scene.IsActiveFeedback.LinkInputSig(trilist.BooleanInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + sceneIndex)]);
+                trilist.StringInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + sceneIndex)].StringValue = scene.Name;
+                trilist.BooleanInput[(uint)(joinMap.ButtonVisibility.JoinNumber + sceneIndex)].BoolValue = true;
+                sceneIndex++;
+            }
+
+            return joinMap;
         }
 
     }

@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp.Reflection;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras
 {
-	public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets, IPower
+	public class CameraVisca : CameraBase, IHasCameraPtzControl, ICommunicationMonitor, IHasCameraPresets, IPower, IBridgeAdvanced
 	{
 		public IBasicCommunication Communication { get; private set; }
 		public CommunicationGather PortGather { get; private set; }
@@ -78,7 +81,13 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 			CrestronConsole.AddNewConsoleCommand(s => Communication.Connect(), "con" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
 			return true;
 		}
-		void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+
+	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    {
+	        LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
+	    }
+
+	    void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
 		{
 			Debug.Console(2, this, "Socket Status Change: {0}", e.Client.ClientStatus.ToString());
 
@@ -236,4 +245,22 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #endregion
     }
+
+    public class CameraViscaFactory : EssentialsDeviceFactory<CameraVisca>
+    {
+        public CameraViscaFactory()
+        {
+            TypeNames = new List<string>() { "cameravisca" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new CameraVisca Device");
+            var comm = CommFactory.CreateCommForDevice(dc);
+            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Cameras.CameraPropertiesConfig>(
+                dc.Properties.ToString());
+            return new Cameras.CameraVisca(dc.Key, dc.Name, comm, props);
+        }
+    }
+
 }

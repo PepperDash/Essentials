@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
     /// <summary>
     /// Represents a generic digital input deviced tied to a versiport
     /// </summary>
-    public class GenericVersiportDigitalInputDevice : Device, IDigitalInput
+    public class GenericVersiportDigitalInputDevice : EssentialsDevice, IDigitalInput
     {
         public Versiport InputPort { get; private set; }
 

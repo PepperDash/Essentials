@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.DM.Config;
 
 namespace PepperDash.Essentials.DM
@@ -19,9 +21,9 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// Controller class for all DM-TX-201C/S/F transmitters
     /// </summary>
-    public class DmTx201XController : DmTxControllerBase, ITxRouting, IHasFeedback, IHasFreeRun, IVgaBrightnessContrastControls
+    public class DmTx201CController : DmTxControllerBase, ITxRouting, IHasFeedback, IHasFreeRun, IVgaBrightnessContrastControls
 	{
-		public DmTx201S Tx { get; private set; } // uses the 201S class as it is the base class for the 201C
+		public DmTx201C Tx { get; private set; } // uses the 201S class as it is the base class for the 201C
 
 		public RoutingInputPortWithVideoStatuses HdmiInput { get; private set; }
 		public RoutingInputPortWithVideoStatuses VgaInput { get; private set; }
@@ -32,6 +34,8 @@ namespace PepperDash.Essentials.DM
         public IntFeedback VideoSourceNumericFeedback { get; protected set; }
         public IntFeedback AudioSourceNumericFeedback { get; protected set; }
         public IntFeedback HdmiInHdcpCapabilityFeedback { get; protected set; }
+        public BoolFeedback HdmiVideoSyncFeedback { get; protected set; }
+        public BoolFeedback VgaVideoSyncFeedback { get; protected set; }
 
         public BoolFeedback FreeRunEnabledFeedback { get; protected set; }
 
@@ -88,7 +92,7 @@ namespace PepperDash.Essentials.DM
 		/// <param name="key"></param>
 		/// <param name="name"></param>
 		/// <param name="tx"></param>
-		public DmTx201XController(string key, string name, DmTx201S tx)
+		public DmTx201CController(string key, string name, DmTx201C tx)
 			: base(key, name, tx)
 		{
 			Tx = tx;
@@ -123,6 +127,16 @@ namespace PepperDash.Essentials.DM
                     else
                         return 0;
                 });
+
+            HdmiVideoSyncFeedback = new BoolFeedback(() =>
+            {
+                return (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue;
+            });
+
+            VgaVideoSyncFeedback = new BoolFeedback(() =>
+            {
+                return (bool)tx.VgaInput.SyncDetectedFeedback.BoolValue;
+            });
 
             FreeRunEnabledFeedback = new BoolFeedback(() => tx.VgaInput.FreeRunFeedback == eDmFreeRunSetting.Enabled);
 
@@ -174,7 +188,8 @@ namespace PepperDash.Essentials.DM
             AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,
                 AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
                 AnyVideoInput.VideoStatus.HdcpStateFeedback, AnyVideoInput.VideoStatus.VideoResolutionFeedback,
-                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiInHdcpCapabilityFeedback);
+                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiInHdcpCapabilityFeedback, HdmiVideoSyncFeedback,
+                VgaVideoSyncFeedback);
 
             // Set Ports for CEC
             HdmiInput.Port = Tx.HdmiInput;
@@ -217,6 +232,22 @@ namespace PepperDash.Essentials.DM
 			// Base does register and sets up comm monitoring.
 			return base.CustomActivate();
 		}
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            DmTxControllerJoinMap joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
+
+            if (HdmiVideoSyncFeedback != null)
+            {
+                HdmiVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input1VideoSyncStatus.JoinNumber]);
+            }
+            if (VgaVideoSyncFeedback != null)
+            {
+                VgaVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input2VideoSyncStatus.JoinNumber]);
+            }
+
+            LinkDmTxToApi(this, trilist, joinMap, bridge);
+        }
 
         /// <summary>
         /// Enables or disables free run

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.Devices
@@ -18,7 +19,7 @@ namespace PepperDash.Essentials.Core.Devices
 
         public DeviceConfig Config { get; private set; }
 
-        public ReconfigurableDevice(DeviceConfig config)
+        protected ReconfigurableDevice(DeviceConfig config)
             : base(config.Key)
         {
             SetNameHelper(config);
@@ -59,5 +60,14 @@ namespace PepperDash.Essentials.Core.Devices
         {
             ConfigWriter.UpdateDeviceConfig(config);
         }
+    }
+
+    public abstract class ReconfigurableBridgableDevice : ReconfigurableDevice, IBridgeAdvanced
+    {
+        protected ReconfigurableBridgableDevice(DeviceConfig config) : base(config)
+        {
+        }
+
+        public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
     }
 }

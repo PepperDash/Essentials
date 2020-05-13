@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Routing;
@@ -15,32 +16,21 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 
 namespace PepperDash.Essentials
 {
+    /// <summary>
+    /// Responsible for loading all of the device types for this library
+    /// </summary>
     public class BridgeFactory
     {
-        public static IKeyed GetDevice(DeviceConfig dc)
+        public BridgeFactory()
         {
-            // ? why is this static JTA 2018-06-13? 
+            var eiscApiAdvancedFactory = new EiscApiAdvancedFactory() as IDeviceFactory;
+            eiscApiAdvancedFactory.LoadTypeFactories();
 
-            var key = dc.Key;
-            var name = dc.Name;
-            var type = dc.Type;
-            var properties = dc.Properties;
-            var propAnon = new { };
-
-            var typeName = dc.Type.ToLower();
-            var groupName = dc.Group.ToLower();
-
-            //Debug.Console(2, "Name {0}, Key {1}, Type {2}, Properties {3}", name, key, type, properties.ToString());
-
-            if (typeName == "eiscapi")
-            {
-                return new EiscApi(dc);
-            }
-
-            return null;
+            var eiscApiFactory = new EiscApiFactory() as IDeviceFactory;
+            eiscApiFactory.LoadTypeFactories();
         }
-    }
 
+    }
 
     public class CommBridge : Device
     {

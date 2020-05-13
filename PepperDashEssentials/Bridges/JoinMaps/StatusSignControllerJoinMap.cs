@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Crestron.SimplSharp.Reflection;
 using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Bridges
 {
+    [Obsolete("Please use version PepperDash.Essentials.Core.Bridges")]
     public class StatusSignControllerJoinMap:JoinMapBase
     {
         public uint IsOnline { get; set; }

@@ -84,7 +84,7 @@
     </Reference>
     <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -100,6 +100,11 @@
     <Compile Include="Chassis\DmpsInternalVirtualDmTxController.cs" />
     <Compile Include="Chassis\DmpsRoutingController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
+    <Compile Include="Endpoints\DGEs\DmDge200CController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmc4kZ100CController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmc4kZScalerCController.cs" />
+    <Compile Include="Endpoints\Transmitters\DmTx201SController.cs" />
+    <Compile Include="Endpoints\Transmitters\DmTx4kz100Controller.cs" />
     <Compile Include="Endpoints\Transmitters\TxInterfaces.cs" />
     <Compile Include="IDmSwitch.cs" />
     <Compile Include="Config\DmpsRoutingConfig.cs" />
@@ -109,7 +114,7 @@
     <Compile Include="Config\HdMdNxM4kEPropertiesConfig.cs" />
     <Compile Include="Config\InputPropertiesConfig.cs" />
     <Compile Include="DmPortName.cs" />
-    <Compile Include="Endpoints\DGEs\DgeController.cs" />
+    <Compile Include="Endpoints\DGEs\Dge100Controller.cs" />
     <Compile Include="Endpoints\DGEs\DgePropertiesConfig.cs" />
     <Compile Include="DmLite\HdMdxxxCEController.cs" />
     <Compile Include="Endpoints\Receivers\DmHdBaseTEndpointController.cs" />

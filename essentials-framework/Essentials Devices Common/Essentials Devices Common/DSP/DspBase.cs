@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.DSP
 {
-	public abstract class DspBase : Device
+	public abstract class DspBase : EssentialsDevice
 	{
 		public Dictionary<string, DspControlPoint> LevelControlPoints { get; private set; }
 

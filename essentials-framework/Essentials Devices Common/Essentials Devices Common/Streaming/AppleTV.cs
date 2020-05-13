@@ -5,14 +5,16 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class AppleTV : Device, IDPad, ITransport, IUiDisplayInfo, IRoutingOutputs
+	public class AppleTV : EssentialsBridgeableDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingOutputs
 	{
 
 		public IrOutputPortController IrPort { get; private set; }
@@ -141,5 +143,44 @@ namespace PepperDash.Essentials.Devices.Common
 		public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
 		#endregion
+
+	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    {
+            var joinMap = new AppleTvJoinMap(joinStart);
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<AppleTvJoinMap>(joinMapSerialized);
+
+            bridge.AddJoinMap(Key, joinMap);
+
+            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.Console(0, "Linking to Bridge Type {0}", GetType().Name);
+
+            trilist.SetBoolSigAction(joinMap.UpArrow.JoinNumber, Up);
+            trilist.SetBoolSigAction(joinMap.DnArrow.JoinNumber, Down);
+            trilist.SetBoolSigAction(joinMap.LeftArrow.JoinNumber, Left);
+            trilist.SetBoolSigAction(joinMap.RightArrow.JoinNumber, Right);
+            trilist.SetBoolSigAction(joinMap.Select.JoinNumber, Select);
+            trilist.SetBoolSigAction(joinMap.Menu.JoinNumber, Menu);
+            trilist.SetBoolSigAction(joinMap.PlayPause.JoinNumber, Play);
+	    }
 	}
+
+    public class AppleTVFactory : EssentialsDeviceFactory<AppleTV>
+    {
+        public AppleTVFactory()
+        {
+            TypeNames = new List<string>() { "appletv" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new AppleTV Device");
+            var irCont = IRPortHelper.GetIrOutputPortController(dc);
+            return new AppleTV(dc.Key, dc.Name, irCont);
+        }
+    }
+
 }

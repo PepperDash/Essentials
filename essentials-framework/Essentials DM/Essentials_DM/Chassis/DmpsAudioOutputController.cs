@@ -4,21 +4,22 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Cards;
-
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.DM.Config;
+
 
 namespace PepperDash.Essentials.DM
 {
     /// <summary>
     /// Exposes the volume levels for Program, Aux1 or Aux2 outputs on a DMPS3 chassis
     /// </summary>
-    public class DmpsAudioOutputController : Device
+    public class DmpsAudioOutputController : EssentialsBridgeableDevice
     {
         Card.Dmps3OutputBase OutputCard;
 
@@ -99,6 +100,62 @@ namespace PepperDash.Essentials.DM
                     break;
                 }
             }
+        }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            var joinMap = new DmpsAudioOutputControllerJoinMap(joinStart);
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<DmpsAudioOutputControllerJoinMap>(joinMapSerialized);
+
+            bridge.AddJoinMap(Key, joinMap);
+
+            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+
+            if (MasterVolumeLevel != null)
+            {
+                SetUpDmpsAudioOutputJoins(trilist, MasterVolumeLevel, joinMap.MasterVolumeLevel.JoinNumber);
+            }
+
+            if (SourceVolumeLevel != null)
+            {
+                SetUpDmpsAudioOutputJoins(trilist, SourceVolumeLevel, joinMap.SourceVolumeLevel.JoinNumber);
+            }
+
+            if (Codec1VolumeLevel != null)
+            {
+                SetUpDmpsAudioOutputJoins(trilist, Codec1VolumeLevel, joinMap.Codec1VolumeLevel.JoinNumber);
+            }
+
+            if (Codec2VolumeLevel != null)
+            {
+                SetUpDmpsAudioOutputJoins(trilist, Codec2VolumeLevel, joinMap.Codec2VolumeLevel.JoinNumber);
+            }
+
+        }
+
+        static void SetUpDmpsAudioOutputJoins(BasicTriList trilist, DmpsAudioOutput output, uint joinStart)
+        {
+            var volumeLevelJoin = joinStart;
+            var muteOnJoin = joinStart;
+            var muteOffJoin = joinStart + 1;
+            var volumeUpJoin = joinStart + 2;
+            var volumeDownJoin = joinStart + 3;
+
+
+            trilist.SetUShortSigAction(volumeLevelJoin, output.SetVolume);
+            output.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[volumeLevelJoin]);
+
+            trilist.SetSigTrueAction(muteOnJoin, output.MuteOn);
+            output.MuteFeedback.LinkInputSig(trilist.BooleanInput[muteOnJoin]);
+            trilist.SetSigTrueAction(muteOffJoin, output.MuteOff);
+            output.MuteFeedback.LinkComplementInputSig(trilist.BooleanInput[muteOffJoin]);
+
+            trilist.SetBoolSigAction(volumeUpJoin, output.VolumeUp);
+            trilist.SetBoolSigAction(volumeDownJoin, output.VolumeDown);
         }
     }
 

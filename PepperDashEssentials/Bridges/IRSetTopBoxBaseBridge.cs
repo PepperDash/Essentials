@@ -10,7 +10,7 @@ using PepperDash.Essentials.Devices.Common;
 
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Bridges
+namespace PepperDash.Essentials.Core.Bridges
 {
     public static class IRSetTopBoxBaseApiExtensions
     {

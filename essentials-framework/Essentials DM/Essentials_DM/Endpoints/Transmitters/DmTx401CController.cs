@@ -5,12 +5,14 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 //using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.DM.Config;
 
 namespace PepperDash.Essentials.DM
@@ -33,6 +35,9 @@ namespace PepperDash.Essentials.DM
         public IntFeedback VideoSourceNumericFeedback { get; protected set; }
         public IntFeedback AudioSourceNumericFeedback { get; protected set; }
         public IntFeedback HdmiInHdcpCapabilityFeedback { get; protected set; }
+        public BoolFeedback DisplayPortVideoSyncFeedback { get; protected set; }
+        public BoolFeedback HdmiVideoSyncFeedback { get; protected set; }
+        public BoolFeedback VgaVideoSyncFeedback { get; protected set; }
 
         public BoolFeedback FreeRunEnabledFeedback { get; protected set; }
 
@@ -135,6 +140,21 @@ namespace PepperDash.Essentials.DM
 
             HdcpSupportCapability = eHdcpCapabilityType.HdcpAutoSupport;
 
+            DisplayPortVideoSyncFeedback = new BoolFeedback("DisplayPortVideoSync", () =>
+            {
+                return (bool)tx.DisplayPortInput.SyncDetectedFeedback.BoolValue;
+            });
+
+            HdmiVideoSyncFeedback = new BoolFeedback(() =>
+            {
+                return (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue;
+            });
+
+            VgaVideoSyncFeedback = new BoolFeedback(() =>
+            {
+                return (bool)tx.VgaInput.SyncDetectedFeedback.BoolValue;
+            });
+
             FreeRunEnabledFeedback = new BoolFeedback(() => tx.VgaInput.FreeRunFeedback == eDmFreeRunSetting.Enabled);
 
             VgaBrightnessFeedback = new IntFeedback(() => tx.VgaInput.VideoControls.BrightnessFeedback.UShortValue);
@@ -191,7 +211,8 @@ namespace PepperDash.Essentials.DM
             AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,
                 AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
                 AnyVideoInput.VideoStatus.HdcpStateFeedback, AnyVideoInput.VideoStatus.VideoResolutionFeedback,
-                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiInHdcpCapabilityFeedback);
+                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiInHdcpCapabilityFeedback, DisplayPortVideoSyncFeedback,
+                HdmiVideoSyncFeedback, VgaVideoSyncFeedback);
 
             // Set Ports for CEC
             DisplayPortIn.Port = Tx.DisplayPortInput;
@@ -214,6 +235,22 @@ namespace PepperDash.Essentials.DM
 			// Base does register and sets up comm monitoring.
 			return base.CustomActivate();
 		}
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            DmTxControllerJoinMap joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
+
+            if (HdmiVideoSyncFeedback != null)
+            {
+                HdmiVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input1VideoSyncStatus.JoinNumber]);
+            }
+            if (VgaVideoSyncFeedback != null)
+            {
+                VgaVideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Input2VideoSyncStatus.JoinNumber]);
+            }
+
+            LinkDmTxToApi(this, trilist, joinMap, bridge);
+        }
 
         public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type)
         {

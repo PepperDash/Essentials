@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Devices.Common.Occupancy
 {
@@ -117,16 +120,8 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         /// <param name="state"></param>
         public void SetUsAEnable(bool state)
         {
-            if (state)
-            {
-                OccSensor.EnableUsA.BoolValue = state;
-                OccSensor.DisableUsA.BoolValue = !state;
-            }
-            else
-            {
-                OccSensor.EnableUsA.BoolValue = state;
-                OccSensor.DisableUsA.BoolValue = !state;
-            }
+            OccSensor.EnableUsA.BoolValue = state;
+            OccSensor.DisableUsA.BoolValue = !state;
         }
 
 
@@ -136,16 +131,8 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         /// <param name="state"></param>
         public void SetUsBEnable(bool state)
         {
-            if (state)
-            {
-                OccSensor.EnableUsB.BoolValue = state;
-                OccSensor.DisableUsB.BoolValue = !state;
-            }
-            else
-            {
-                OccSensor.EnableUsB.BoolValue = state;
-                OccSensor.DisableUsB.BoolValue = !state;
-            }
+            OccSensor.EnableUsB.BoolValue = state;
+            OccSensor.DisableUsB.BoolValue = !state;
         }
 
         public void IncrementUsSensitivityInOccupiedState(bool pressRelease)
@@ -167,5 +154,43 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         {
             OccSensor.DecrementUsSensitivityInVacantState.BoolValue = pressRelease;
         }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            LinkOccSensorToApi(this, trilist, joinStart, joinMapKey, bridge);
+        }
     }
+
+    public class GlsOdtOccupancySensorControllerFactory : EssentialsDeviceFactory<GlsOdtOccupancySensorController>
+    {
+        public GlsOdtOccupancySensorControllerFactory()
+        {
+            TypeNames = new List<string>() { "glsodtccn" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
+
+            var typeName = dc.Type.ToLower();
+            var key = dc.Key;
+            var name = dc.Name;
+            var comm = CommFactory.GetControlPropertiesConfig(dc);
+
+            var occSensor = new GlsOdtCCn(comm.CresnetIdInt, Global.ControlSystem);
+
+            if (occSensor != null)
+            {
+                return new GlsOdtOccupancySensorController(key, name, occSensor);
+            }
+            else
+            {
+                Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
+                return null;
+            }
+
+
+        }
+    }
+
 }

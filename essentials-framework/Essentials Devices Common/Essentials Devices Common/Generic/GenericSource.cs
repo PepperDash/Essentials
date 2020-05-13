@@ -8,11 +8,12 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class GenericSource : Device, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
+	public class GenericSource : EssentialsDevice, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
 	{
 
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeNoControls; } }
@@ -39,4 +40,19 @@ namespace PepperDash.Essentials.Devices.Common
 
         #endregion
 	}
+
+    public class GenericSourceFactory : EssentialsDeviceFactory<GenericSource>
+    {
+        public GenericSourceFactory()
+        {
+            TypeNames = new List<string>() { "genericsource" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new Generic Source Device");
+            return new GenericSource(dc.Key, dc.Name);
+        }
+    }
+
 }

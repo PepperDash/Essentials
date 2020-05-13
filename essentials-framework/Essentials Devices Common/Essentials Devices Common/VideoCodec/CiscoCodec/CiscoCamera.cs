@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-
+using Crestron.SimplSharpPro.DeviceSupport;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
-    public class CiscoFarEndCamera : CameraBase, IHasCameraPtzControl, IAmFarEndCamera
+    public class CiscoFarEndCamera : CameraBase, IHasCameraPtzControl, IAmFarEndCamera, IBridgeAdvanced
     {
         protected CiscoSparkCodec ParentCodec { get; private set; }
 
@@ -98,9 +99,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             ParentCodec.SendText(string.Format("xCommand Call FarEndControl Camera Stop CallId: {0}", CallId)); 
         }
+
+        public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
+        }
     }
 
-    public class CiscoSparkCamera : CameraBase, IHasCameraPtzControl, IHasCameraFocusControl
+    public class CiscoSparkCamera : CameraBase, IHasCameraPtzControl, IHasCameraFocusControl, IBridgeAdvanced
     {
         /// <summary>
         /// The codec this camera belongs to
@@ -308,5 +314,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         }
 
         #endregion
+
+        public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
+        }
     }
 }

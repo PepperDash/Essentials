@@ -21,6 +21,19 @@ namespace PepperDash.Essentials.Core
 		ComPort Port;
 		ComPort.ComPortSpec Spec;
 
+	    public ComPortController(string key, Func<EssentialsControlPropertiesConfig, ComPort> postActivationFunc,
+	        ComPort.ComPortSpec spec, EssentialsControlPropertiesConfig config) : base(key)
+	    {
+	        Spec = spec;
+
+            AddPostActivationAction(() =>
+            {
+                Port = postActivationFunc(config);
+
+                RegisterAndConfigureComPort();
+            });
+	    }
+
 		public ComPortController(string key, ComPort port, ComPort.ComPortSpec spec)
 			: base(key)
 		{
@@ -34,27 +47,31 @@ namespace PepperDash.Essentials.Core
 			Spec = spec;
 			//IsConnected = new BoolFeedback(CommonBoolCue.IsConnected, () => true);
 
-			if (Port.Parent is CrestronControlSystem)
-			{
-
-
-				var result = Port.Register();
-				if (result != eDeviceRegistrationUnRegistrationResponse.Success)
-				{
-					Debug.Console(0, this, "ERROR: Cannot register Com port: {0}", result);
-					return; // false
-				}
-			}
-			var specResult = Port.SetComPortSpec(Spec);
-			if (specResult != 0)
-			{
-				Debug.Console(0, this, "WARNING: Cannot set comspec");
-				return; // false
-			}
-			Port.SerialDataReceived += new ComPortDataReceivedEvent(Port_SerialDataReceived);
+			RegisterAndConfigureComPort();
 		}
 
-		~ComPortController()
+	    private void RegisterAndConfigureComPort()
+	    {
+            if (Port.Parent is CrestronControlSystem)
+            {
+                var result = Port.Register();
+                if (result != eDeviceRegistrationUnRegistrationResponse.Success)
+                {
+                    Debug.Console(0, this, "ERROR: Cannot register Com port: {0}", result);
+                    return; // false
+                }
+            }
+
+	        var specResult = Port.SetComPortSpec(Spec);
+	        if (specResult != 0)
+	        {
+	            Debug.Console(0, this, "WARNING: Cannot set comspec");
+	            return;
+	        }
+	        Port.SerialDataReceived += Port_SerialDataReceived;
+	    }
+
+	    ~ComPortController()
 		{
 			Port.SerialDataReceived -= Port_SerialDataReceived;
 		}

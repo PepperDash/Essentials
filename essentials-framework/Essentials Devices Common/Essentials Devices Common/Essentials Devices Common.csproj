@@ -67,6 +67,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\pepperdashcore-builds\PepperDash_Core.dll</HintPath>
     </Reference>
+    <Reference Include="PepperDash_Essentials_Core, Version=0.0.0.22043, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Essentials Core\PepperDashEssentialsBase\bin\PepperDash_Essentials_Core.dll</HintPath>
+    </Reference>
     <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
@@ -110,6 +114,7 @@
     <Compile Include="Codec\iCodecAudio.cs" />
     <Compile Include="ImageProcessors\TVOneCorio.cs" />
     <Compile Include="ImageProcessors\TVOneCorioPropertiesConfig.cs" />
+    <Compile Include="Occupancy\CenOdtOccupancySensorBaseController.cs" />
     <Compile Include="Occupancy\GlsOdtOccupancySensorController.cs" />
     <Compile Include="Power Controllers\Digitallogger.cs" />
     <Compile Include="Power Controllers\DigitalLoggerPropertiesConfig.cs" />
@@ -132,7 +137,6 @@
     <Compile Include="Display\AvocorVTFDisplay.cs" />
     <Compile Include="Display\InputInterfaces.cs" />
     <Compile Include="Display\SamsungMDCDisplay.cs" />
-    <Compile Include="Display\DeviceFactory.cs" />
     <Compile Include="Display\NecPaSeriesProjector.cs" />
     <Compile Include="Display\NECPSXMDisplay.cs" />
     <Compile Include="DSP\BiampTesira\BiampTesiraForteDspLevel.cs" />
@@ -180,12 +184,6 @@
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoomCamera.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoomPropertiesConfig.cs" />
     <None Include="Properties\ControlSystem.cfg" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Essentials Core\PepperDashEssentialsBase\PepperDash_Essentials_Core.csproj">
-      <Project>{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}</Project>
-      <Name>PepperDash_Essentials_Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

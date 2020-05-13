@@ -4,15 +4,18 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-
+using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class IRSetTopBoxBase : Device, ISetTopBoxControls, IUiDisplayInfo, IRoutingOutputs, IUsageTracking, IPower
+	public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IPower
 	{
 		public IrOutputPortController IrPort { get; private set; }
 
@@ -367,5 +370,119 @@ namespace PepperDash.Essentials.Devices.Common
         }
 
         #endregion
+
+	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+	    {
+            var joinMap = new SetTopBoxControllerJoinMap(joinStart);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<SetTopBoxControllerJoinMap>(joinMapSerialized);
+
+            bridge.AddJoinMap(Key, joinMap);
+
+            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.Console(0, "Linking to Display: {0}", Name);
+
+            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = Name;
+
+            var stbBase = this as ISetTopBoxControls;
+
+            trilist.BooleanInput[joinMap.HasDpad.JoinNumber].BoolValue = stbBase.HasDpad;
+            trilist.BooleanInput[joinMap.HasNumeric.JoinNumber].BoolValue = stbBase.HasNumeric;
+            trilist.BooleanInput[joinMap.HasDvr.JoinNumber].BoolValue = stbBase.HasDvr;
+            trilist.BooleanInput[joinMap.HasPresets.JoinNumber].BoolValue = stbBase.HasPresets;
+
+            trilist.SetBoolSigAction(joinMap.DvrList.JoinNumber, stbBase.DvrList);
+            trilist.SetBoolSigAction(joinMap.Replay.JoinNumber, stbBase.Replay);
+
+            trilist.SetStringSigAction(joinMap.LoadPresets.JoinNumber, stbBase.LoadPresets);
+
+	        var stbPower = this as IPower;
+
+            trilist.SetSigTrueAction(joinMap.PowerOn.JoinNumber, stbPower.PowerOn);
+            trilist.SetSigTrueAction(joinMap.PowerOff.JoinNumber, stbPower.PowerOff);
+            trilist.SetSigTrueAction(joinMap.PowerToggle.JoinNumber, stbPower.PowerToggle);
+
+	        var stbDPad = this as IDPad;
+
+            trilist.SetBoolSigAction(joinMap.Up.JoinNumber, stbDPad.Up);
+            trilist.SetBoolSigAction(joinMap.Down.JoinNumber, stbDPad.Down);
+            trilist.SetBoolSigAction(joinMap.Left.JoinNumber, stbDPad.Left);
+            trilist.SetBoolSigAction(joinMap.Right.JoinNumber, stbDPad.Right);
+            trilist.SetBoolSigAction(joinMap.Select.JoinNumber, stbDPad.Select);
+            trilist.SetBoolSigAction(joinMap.Menu.JoinNumber, stbDPad.Menu);
+            trilist.SetBoolSigAction(joinMap.Exit.JoinNumber, stbDPad.Exit);
+
+	        var stbChannel = this as IChannel;
+            trilist.SetBoolSigAction(joinMap.ChannelUp.JoinNumber, stbChannel.ChannelUp);
+            trilist.SetBoolSigAction(joinMap.ChannelDown.JoinNumber, stbChannel.ChannelDown);
+            trilist.SetBoolSigAction(joinMap.LastChannel.JoinNumber, stbChannel.LastChannel);
+            trilist.SetBoolSigAction(joinMap.Guide.JoinNumber, stbChannel.Guide);
+            trilist.SetBoolSigAction(joinMap.Info.JoinNumber, stbChannel.Info);
+            trilist.SetBoolSigAction(joinMap.Exit.JoinNumber, stbChannel.Exit);
+
+	        var stbColor = this as IColor;
+            trilist.SetBoolSigAction(joinMap.Red.JoinNumber, stbColor.Red);
+            trilist.SetBoolSigAction(joinMap.Green.JoinNumber, stbColor.Green);
+            trilist.SetBoolSigAction(joinMap.Yellow.JoinNumber, stbColor.Yellow);
+            trilist.SetBoolSigAction(joinMap.Blue.JoinNumber, stbColor.Blue);
+
+	        var stbKeypad = this as ISetTopBoxNumericKeypad;
+
+	        trilist.StringInput[joinMap.KeypadAccessoryButton1Label.JoinNumber].StringValue = stbKeypad.KeypadAccessoryButton1Label;
+            trilist.StringInput[joinMap.KeypadAccessoryButton2Label.JoinNumber].StringValue = stbKeypad.KeypadAccessoryButton2Label;
+
+            trilist.BooleanInput[joinMap.HasKeypadAccessoryButton1.JoinNumber].BoolValue = stbKeypad.HasKeypadAccessoryButton1;
+            trilist.BooleanInput[joinMap.HasKeypadAccessoryButton2.JoinNumber].BoolValue = stbKeypad.HasKeypadAccessoryButton2;
+
+            trilist.SetBoolSigAction(joinMap.Digit0.JoinNumber, stbKeypad.Digit0);
+            trilist.SetBoolSigAction(joinMap.Digit1.JoinNumber, stbKeypad.Digit1);
+            trilist.SetBoolSigAction(joinMap.Digit2.JoinNumber, stbKeypad.Digit2);
+            trilist.SetBoolSigAction(joinMap.Digit3.JoinNumber, stbKeypad.Digit3);
+            trilist.SetBoolSigAction(joinMap.Digit4.JoinNumber, stbKeypad.Digit4);
+            trilist.SetBoolSigAction(joinMap.Digit5.JoinNumber, stbKeypad.Digit5);
+            trilist.SetBoolSigAction(joinMap.Digit6.JoinNumber, stbKeypad.Digit6);
+            trilist.SetBoolSigAction(joinMap.Digit7.JoinNumber, stbKeypad.Digit7);
+            trilist.SetBoolSigAction(joinMap.Digit8.JoinNumber, stbKeypad.Digit8);
+            trilist.SetBoolSigAction(joinMap.Digit9.JoinNumber, stbKeypad.Digit9);
+            trilist.SetBoolSigAction(joinMap.KeypadAccessoryButton1Press.JoinNumber, stbKeypad.KeypadAccessoryButton1);
+            trilist.SetBoolSigAction(joinMap.KeypadAccessoryButton2Press.JoinNumber, stbKeypad.KeypadAccessoryButton1);
+            trilist.SetBoolSigAction(joinMap.Dash.JoinNumber, stbKeypad.Dash);
+            trilist.SetBoolSigAction(joinMap.KeypadEnter.JoinNumber, stbKeypad.KeypadEnter);
+
+	        var stbTransport = this as ITransport;
+            trilist.SetBoolSigAction(joinMap.Play.JoinNumber, stbTransport.Play);
+            trilist.SetBoolSigAction(joinMap.Pause.JoinNumber, stbTransport.Pause);
+            trilist.SetBoolSigAction(joinMap.Rewind.JoinNumber, stbTransport.Rewind);
+            trilist.SetBoolSigAction(joinMap.FFwd.JoinNumber, stbTransport.FFwd);
+            trilist.SetBoolSigAction(joinMap.ChapMinus.JoinNumber, stbTransport.ChapMinus);
+            trilist.SetBoolSigAction(joinMap.ChapPlus.JoinNumber, stbTransport.ChapPlus);
+            trilist.SetBoolSigAction(joinMap.Stop.JoinNumber, stbTransport.Stop);
+            trilist.SetBoolSigAction(joinMap.Record.JoinNumber, stbTransport.Record);
+	    }
+	}
+
+    public class IRSetTopBoxBaseFactory : EssentialsDeviceFactory<IRSetTopBoxBase>
+    {
+        public IRSetTopBoxBaseFactory()
+        {
+            TypeNames = new List<string>() { "settopbox" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new SetTopBox Device");
+            var irCont = IRPortHelper.GetIrOutputPortController(dc);
+            var config = dc.Properties.ToObject<SetTopBoxPropertiesConfig>();
+            var stb = new IRSetTopBoxBase(dc.Key, dc.Name, irCont, config);
+
+            var listName = dc.Properties.Value<string>("presetsList");
+            if (listName != null)
+                stb.LoadPresets(listName);
+            return stb;
+
+        }
     }
+
 }

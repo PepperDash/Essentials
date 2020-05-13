@@ -9,6 +9,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Bridges
 {
+    [Obsolete("Please use version PepperDash.Essentials.Core.Bridges")]
     public class GenericLightingJoinMap : JoinMapBase
     {
         public uint IsOnline { get; set; }

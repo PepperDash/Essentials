@@ -1,7 +1,9 @@
-﻿using PepperDash.Essentials.Core;
+﻿using System;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Bridges
 {
+    [Obsolete("Please use version PepperDash.Essentials.Core.Bridges")]
     public class SystemMonitorJoinMap : JoinMapBase
     {
         /// <summary>

@@ -1,24 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
+﻿using Crestron.SimplSharpPro;
 //using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
-using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
-
-using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.DM.Config;
+using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.DM
 {
-    using eVst = Crestron.SimplSharpPro.DeviceSupport.eX02VideoSourceType;
-    using eAst = Crestron.SimplSharpPro.DeviceSupport.eX02AudioSourceType;
+    using eVst = eX02VideoSourceType;
+    using eAst = eX02AudioSourceType;
 
-    public class DmTx4k100Controller : BasicDmTxControllerBase, IRoutingInputsOutputs, IHasFeedback,
+    public class DmTx4k100Controller : DmTxControllerBase, IRoutingInputsOutputs,
         IIROutputPorts, IComPorts, ICec
     {
         public DmTx4K100C1G Tx { get; private set; }
@@ -37,7 +30,7 @@ namespace PepperDash.Essentials.DM
         /// <summary>
         /// Helps get the "real" inputs, including when in Auto
         /// </summary>
-        public Crestron.SimplSharpPro.DeviceSupport.eX02VideoSourceType ActualActiveVideoInput
+        public eX02VideoSourceType ActualActiveVideoInput
         {
             get
                 {
@@ -77,16 +70,12 @@ namespace PepperDash.Essentials.DM
         }
 
 
-
-        public override bool CustomActivate()
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            // Link up all of these damned events to the various RoutingPorts via a helper handler
+            DmTxControllerJoinMap joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
 
-
-            // Base does register and sets up comm monitoring.
-            return base.CustomActivate();
+            LinkDmTxToApi(this, trilist, joinMap, bridge);
         }
-
 
         #region IIROutputPorts Members
         public CrestronCollection<IROutputPort> IROutputPorts { get { return Tx.IROutputPorts; } }
@@ -101,5 +90,7 @@ namespace PepperDash.Essentials.DM
         #region ICec Members
         public Cec StreamCec { get { return Tx.StreamCec; } }
         #endregion
+
+        public override StringFeedback ActiveVideoInputFeedback { get; protected set; }
     }
 }

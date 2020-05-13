@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Lighting;
+using LightingBase = PepperDash.Essentials.Core.Lighting.LightingBase;
 
 namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
 {
@@ -75,6 +79,14 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
             CommunicationMonitor.Start();
 
             return true;
+        }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            var joinMap = LinkLightingToApi(this, trilist, joinStart, joinMapKey, bridge);
+
+            CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+            trilist.SetStringSigAction(joinMap.IntegrationIdSet.JoinNumber , s => IntegrationId = s);
         }
 
         void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
@@ -253,4 +265,23 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         // public string Username { get; set; } 
         // public string Password { get; set; }
     }
+
+    public class LutronQuantumAreaFactory : EssentialsDeviceFactory<LutronQuantumArea>
+    {
+        public LutronQuantumAreaFactory()
+        {
+            TypeNames = new List<string>() { "lutronqs" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new LutronQuantumArea Device");
+            var comm = CommFactory.CreateCommForDevice(dc);
+
+            var props = Newtonsoft.Json.JsonConvert.DeserializeObject<Environment.Lutron.LutronQuantumPropertiesConfig>(dc.Properties.ToString());
+
+            return new LutronQuantumArea(dc.Key, dc.Name, comm, props);
+        }
+    }
+
 }
