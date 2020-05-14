@@ -19,5 +19,8 @@ namespace PepperDash.Essentials.DM.Config
 
 		[JsonProperty("inputs")]
 		public Dictionary<string, InputPropertiesConfig> Inputs { get; set; }
+
+        [JsonProperty("outputs"]
+        public Dictionary<string, OutputPropertiesConfig>
 	}
 }
