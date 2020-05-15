@@ -964,26 +964,26 @@ namespace PepperDash.Essentials.DM
             var outCard = input == 0 ? null : Chassis.Outputs[output];
 
             // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
-            if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
+            if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
             {
                 Chassis.VideoEnter.BoolValue = true;
                 Chassis.Outputs[output].VideoOut = inCard;
             }
 
-            if ((sigType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
+            if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
             {
                 (Chassis as DmMDMnxn).AudioEnter.BoolValue = true;
                 Chassis.Outputs[output].AudioOut = inCard;
             }
 
-            if ((sigType | eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+            if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
             {
                 Chassis.USBEnter.BoolValue = true;
                 if (Chassis.Outputs[output] != null)
                     Chassis.Outputs[output].USBRoutedTo = inCard;
             }
 
-            if ((sigType | eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+            if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
             {
                 Chassis.USBEnter.BoolValue = true;
                 if (Chassis.Inputs[input] != null)
