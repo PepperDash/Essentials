@@ -112,7 +112,6 @@
     <Compile Include="Config\DmTxConfig.cs" />
     <Compile Include="Config\DMChassisConfig.cs" />
     <Compile Include="Config\HdMdNxM4kEPropertiesConfig.cs" />
-    <Compile Include="Config\InputPropertiesConfig.cs" />
     <Compile Include="DmPortName.cs" />
     <Compile Include="Endpoints\DGEs\Dge100Controller.cs" />
     <Compile Include="Endpoints\DGEs\DgePropertiesConfig.cs" />
