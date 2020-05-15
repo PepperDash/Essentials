@@ -73,7 +73,6 @@ namespace PepperDash.Essentials.DM.Chassis
                 VideoInputSyncFeedbacks.Add(new BoolFeedback(inputName, () => Chassis.Inputs[i].VideoDetectedFeedback.BoolValue));
                 InputNameFeedbacks.Add(new StringFeedback(inputName, () => Chassis.Inputs[i].Name.StringValue));
                 InputHdcpEnableFeedback.Add(new BoolFeedback(inputName, () => Chassis.HdmiInputs[i].HdmiInputPort.HdcpSupportOnFeedback.BoolValue));
-
             }
 
             for (uint i = 1; i <= Chassis.NumberOfOutputs; i++)
@@ -263,6 +262,17 @@ namespace PepperDash.Essentials.DM.Chassis
             }
 
             Chassis.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(Chassis_OnlineStatusChange);
+
+            trilist.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler((d, args) =>
+            {
+                if (args.DeviceOnLine)
+                {
+                    foreach (var feedback in Feedbacks)
+                    {
+                        feedback.FireUpdate();
+                    }
+                }
+            });
         }
 
 
