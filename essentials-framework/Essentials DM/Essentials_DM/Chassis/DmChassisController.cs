@@ -985,6 +985,8 @@ namespace PepperDash.Essentials.DM
                 //using base here because USB can be routed between 2 output cards or 2 input cards
                 DMInputOutputBase dmCard;
 
+                Debug.Console(2, this, "Executing USB Output switch.\r\n in:{0} output: {1}", input, output);
+
                 if (input > chassisSize)
                 {
                     //wanting to route an output to an output. Subtract chassis size and get output, unless it's 8x8
@@ -1010,13 +1012,18 @@ namespace PepperDash.Essentials.DM
                 }
                 Chassis.USBEnter.BoolValue = true;
                 if (Chassis.Outputs[output] != null)
+                {
+                    Debug.Console(2, this, "Routing USB for input {0} to {1}", Chassis.Outputs[input], dmCard);
                     Chassis.Outputs[output].USBRoutedTo = dmCard;
+                }
             }
 
             if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
             {
                 //using base here because USB can be routed between 2 output cards or 2 input cards
                 DMInputOutputBase dmCard;
+
+                Debug.Console(2, this, "Executing USB Input switch.\r\n in:{0} output: {1}", input, output);
 
                 if (input > chassisSize)
                 {
@@ -1042,9 +1049,16 @@ namespace PepperDash.Essentials.DM
                     dmCard = Chassis.Inputs[input];
                 }
 
+                
+
                 Chassis.USBEnter.BoolValue = true;
-                if (Chassis.Inputs[input] != null)
-                    Chassis.Inputs[input].USBRoutedTo = dmCard;
+
+                if (Chassis.Inputs[input] == null)
+                {
+                    return;
+                }
+                Debug.Console(2, this, "Routing USB for input {0} to {1}", Chassis.Inputs[input], dmCard);
+                Chassis.Inputs[input].USBRoutedTo = dmCard;
             }
         }
         #endregion
