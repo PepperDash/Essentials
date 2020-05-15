@@ -944,6 +944,10 @@ namespace PepperDash.Essentials.DM
             var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
             var output = Convert.ToUInt32(outputSelector);
 
+            var chassisSize = (uint) Chassis.NumberOfInputs; //need this to determine USB routing values 8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                                                      //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                                                      //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+
             // Check to see if there's an off timer waiting on this and if so, cancel
             var key = new PortNumberType(output, sigType);
             if (input == 0)
@@ -978,16 +982,69 @@ namespace PepperDash.Essentials.DM
 
             if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
             {
+                //using base here because USB can be routed between 2 output cards or 2 input cards
+                DMInputOutputBase dmCard;
+
+                if (input > chassisSize)
+                {
+                    //wanting to route an output to an output. Subtract chassis size and get output, unless it's 8x8
+                    //need this to determine USB routing values
+                    //8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                    //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                    //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+                    uint outputIndex;
+
+                    if (chassisSize == 8)
+                    {
+                        outputIndex = input - 16;
+                    }
+                    else
+                    {
+                        outputIndex = input - chassisSize;
+                    }
+                    dmCard = Chassis.Outputs[outputIndex];
+                }
+                else
+                {
+                    dmCard = inCard;
+                }
                 Chassis.USBEnter.BoolValue = true;
                 if (Chassis.Outputs[output] != null)
-                    Chassis.Outputs[output].USBRoutedTo = inCard;
+                    Chassis.Outputs[output].USBRoutedTo = dmCard;
             }
 
             if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
             {
+                //using base here because USB can be routed between 2 output cards or 2 input cards
+                DMInputOutputBase dmCard;
+
+                if (input > chassisSize)
+                {
+                    //wanting to route an input to an output. Subtract chassis size and get output, unless it's 8x8
+                    //need this to determine USB routing values
+                    //8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                    //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                    //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+                    uint outputIndex;
+
+                    if (chassisSize == 8)
+                    {
+                        outputIndex = input - 16;
+                    }
+                    else
+                    {
+                        outputIndex = input - chassisSize;
+                    }
+                    dmCard = Chassis.Outputs[outputIndex];
+                }
+                else
+                {
+                    dmCard = Chassis.Inputs[input];
+                }
+
                 Chassis.USBEnter.BoolValue = true;
                 if (Chassis.Inputs[input] != null)
-                    Chassis.Inputs[input].USBRoutedTo = outCard;
+                    Chassis.Inputs[input].USBRoutedTo = dmCard;
             }
         }
         #endregion
