@@ -13,6 +13,14 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete Name = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata() { Label = "Device Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
+        [JoinName("EnableAutoRoute")]
+        public JoinDataComplete EnableAutoRoute = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Enable Automatic Routing on 4x1 Switchers", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("DisableAutoRoute")]
+        public JoinDataComplete DisableAutoRoute = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Disable Automatic Routing on 4x1 Switchers", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
         [JoinName("InputName")]
         public JoinDataComplete InputName = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 8 },
             new JoinMetadata() { Label = "Device Input Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
