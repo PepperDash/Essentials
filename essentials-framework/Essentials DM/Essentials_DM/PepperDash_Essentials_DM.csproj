@@ -99,7 +99,9 @@
     <Compile Include="Chassis\DmpsAudioOutputController.cs" />
     <Compile Include="Chassis\DmpsInternalVirtualDmTxController.cs" />
     <Compile Include="Chassis\DmpsRoutingController.cs" />
+    <Compile Include="Chassis\HdMdNxM4kEBridgeableController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
+    <Compile Include="Config\InputPropertiesConfig.cs" />
     <Compile Include="Endpoints\DGEs\DmDge200CController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc4kZ100CController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc4kZScalerCController.cs" />
@@ -112,7 +114,6 @@
     <Compile Include="Config\DmTxConfig.cs" />
     <Compile Include="Config\DMChassisConfig.cs" />
     <Compile Include="Config\HdMdNxM4kEPropertiesConfig.cs" />
-    <Compile Include="Config\InputPropertiesConfig.cs" />
     <Compile Include="DmPortName.cs" />
     <Compile Include="Endpoints\DGEs\Dge100Controller.cs" />
     <Compile Include="Endpoints\DGEs\DgePropertiesConfig.cs" />
