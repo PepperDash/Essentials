@@ -27,6 +27,11 @@ namespace PepperDash.Essentials.Core
             return joinMap;
         }
 
+        public static string GetJoinMapForDevice(string joinMapKey)
+        {
+            return GetSerializedJoinMapForDevice(joinMapKey);
+        }
+
         /// <summary>
         /// Attempts to find a custom join map by key and returns it deserialized if found
         /// </summary>
