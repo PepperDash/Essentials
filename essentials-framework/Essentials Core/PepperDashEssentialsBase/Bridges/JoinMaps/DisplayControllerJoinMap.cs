@@ -7,111 +7,71 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class DisplayControllerJoinMap : JoinMapBase
+    public class DisplayControllerJoinMap : JoinMapBaseAdvanced
     {
-        #region Digitals
-        /// <summary>
-        /// Turns the display off and reports power off feedback
-        /// </summary>
-        public uint PowerOff { get; set; }
-        /// <summary>
-        /// Turns the display on and repots power on feedback
-        /// </summary>
-        public uint PowerOn { get; set; }
-        /// <summary>
-        /// Indicates that the display device supports two way communication when high
-        /// </summary>
-        public uint IsTwoWayDisplay { get; set; }
-        /// <summary>
-        /// Increments the volume while high
-        /// </summary>
-        public uint VolumeUp { get; set; }
-        /// <summary>
-        /// Decrements teh volume while high
-        /// </summary>
-        public uint VolumeDown { get; set; }
-        /// <summary>
-        /// Toggles the mute state.  Feedback is high when volume is muted
-        /// </summary>
-        public uint VolumeMute { get; set; }
-        /// <summary>
-        /// Range of digital joins to select inputs and report current input as feedback
-        /// </summary>
-        public uint InputSelectOffset { get; set; }
-        /// <summary>
-        /// Range of digital joins to report visibility for input buttons
-        /// </summary>
-        public uint ButtonVisibilityOffset { get; set; }
-        /// <summary>
-        /// High if the device is online
-        /// </summary>
-        public uint IsOnline { get; set; }
-        #endregion
+        [JoinName("Name")]
+        public JoinDataComplete Name = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
-        #region Analogs
-        /// <summary>
-        /// Analog join to set the input and report current input as feedback
-        /// </summary>
-        public uint InputSelect { get; set; }
-        /// <summary>
-        /// Sets the volume level and reports the current level as feedback 
-        /// </summary>
-        public uint VolumeLevel { get; set; }
-        #endregion
+        [JoinName("PowerOff")]
+        public JoinDataComplete PowerOff = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 }, 
+            new JoinMetadata() { Label = "Power Off", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
-        #region Serials
-        /// <summary>
-        /// Reports the name of the display as defined in config as feedback
-        /// </summary>
-        public uint Name { get; set; }
-        /// <summary>
-        /// Range of serial joins that reports the names of the inputs as feedback
-        /// </summary>
-        public uint InputNamesOffset { get; set; }
-        #endregion
+        [JoinName("PowerOn")]
+        public JoinDataComplete PowerOn = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 }, 
+            new JoinMetadata() { Label = "Power On", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
-        public DisplayControllerJoinMap()
+        [JoinName("IsTwoWayDisplay")]
+        public JoinDataComplete IsTwoWayDisplay = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 }, 
+            new JoinMetadata() { Label = "Is Two Way Display", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("VolumeUp")]
+        public JoinDataComplete VolumeUp = new JoinDataComplete(new JoinData() { JoinNumber = 5, JoinSpan = 1 }, 
+            new JoinMetadata() { Label = "Volume Up", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("VolumeLevel")]
+        public JoinDataComplete VolumeLevel = new JoinDataComplete(new JoinData() { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Volume Level", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("VolumeDown")]
+        public JoinDataComplete VolumeDown = new JoinDataComplete(new JoinData() { JoinNumber = 6, JoinSpan = 1 }, 
+            new JoinMetadata() { Label = "Volume Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("VolumeMute")]
+        public JoinDataComplete VolumeMute = new JoinDataComplete(new JoinData() { JoinNumber = 7, JoinSpan = 1 }, 
+            new JoinMetadata() { Label = "Volume Mute", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("VolumeMuteOn")]
+        public JoinDataComplete VolumeMuteOn = new JoinDataComplete(new JoinData() { JoinNumber = 8, JoinSpan = 1 }, 
+            new JoinMetadata() { Label = "Volume Mute On", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("VolumeMuteOff")]
+        public JoinDataComplete VolumeMuteOff = new JoinDataComplete(new JoinData() { JoinNumber = 9, JoinSpan = 1 }, 
+            new JoinMetadata() { Label = "Volume Mute Off", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("InputSelectOffset")]
+        public JoinDataComplete InputSelectOffset = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 10 }, 
+            new JoinMetadata() { Label = "Input Select", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("InputNamesOffset")]
+        public JoinDataComplete InputNamesOffset = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 10 }, 
+            new JoinMetadata() { Label = "Input Names Offset", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("InputSelect")]
+        public JoinDataComplete InputSelect = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Input Select", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("ButtonVisibilityOffset")]
+        public JoinDataComplete ButtonVisibilityOffset = new JoinDataComplete(new JoinData() { JoinNumber = 41, JoinSpan = 10 }, 
+            new JoinMetadata() { Label = "Button Visibility Offset", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.DigitalSerial });
+
+        [JoinName("IsOnline")]
+        public JoinDataComplete IsOnline = new JoinDataComplete(new JoinData() { JoinNumber = 50, JoinSpan = 1 }, 
+            new JoinMetadata() { Label = "Is Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+        public DisplayControllerJoinMap(uint joinStart)
+            : base(joinStart, typeof(DisplayControllerJoinMap))
         {
-            // Digital
-            IsOnline = 50;
-            PowerOff = 1;
-            PowerOn = 2;
-            IsTwoWayDisplay = 3;
-            VolumeUp = 5;
-            VolumeDown = 6;
-            VolumeMute = 7;
-
-            ButtonVisibilityOffset = 40;
-            InputSelectOffset = 10;
-
-            // Analog
-            InputSelect = 11;
-            VolumeLevel = 5;
-
-            // Serial
-            Name = 1;
-            InputNamesOffset = 10;
-        }
-
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            IsOnline = IsOnline + joinOffset;
-            PowerOff = PowerOff + joinOffset;
-            PowerOn = PowerOn + joinOffset;
-            IsTwoWayDisplay = IsTwoWayDisplay + joinOffset;
-            ButtonVisibilityOffset = ButtonVisibilityOffset + joinOffset;
-            Name = Name + joinOffset;
-            InputNamesOffset = InputNamesOffset + joinOffset;
-            InputSelectOffset = InputSelectOffset + joinOffset;
-
-            InputSelect = InputSelect + joinOffset;
-
-            VolumeUp = VolumeUp + joinOffset;
-            VolumeDown = VolumeDown + joinOffset;
-            VolumeMute = VolumeMute + joinOffset;
-            VolumeLevel = VolumeLevel + joinOffset;
         }
     }
 }

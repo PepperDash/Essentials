@@ -146,25 +146,25 @@ namespace PepperDash.Essentials.Devices.Common
 
 	    public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
-            var joinMap = new AppleTvJoinMap();
+            var joinMap = new AppleTvJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<AppleTvJoinMap>(joinMapSerialized);
 
-            joinMap.OffsetJoinNumbers(joinStart);
+            bridge.AddJoinMap(Key, joinMap);
 
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(0, "Linking to Bridge Type {0}", GetType().Name);
 
-            trilist.SetBoolSigAction(joinMap.UpArrow, Up);
-            trilist.SetBoolSigAction(joinMap.DnArrow, Down);
-            trilist.SetBoolSigAction(joinMap.LeftArrow, Left);
-            trilist.SetBoolSigAction(joinMap.RightArrow, Right);
-            trilist.SetBoolSigAction(joinMap.Select, Select);
-            trilist.SetBoolSigAction(joinMap.Menu, Menu);
-            trilist.SetBoolSigAction(joinMap.PlayPause, Play);
+            trilist.SetBoolSigAction(joinMap.UpArrow.JoinNumber, Up);
+            trilist.SetBoolSigAction(joinMap.DnArrow.JoinNumber, Down);
+            trilist.SetBoolSigAction(joinMap.LeftArrow.JoinNumber, Left);
+            trilist.SetBoolSigAction(joinMap.RightArrow.JoinNumber, Right);
+            trilist.SetBoolSigAction(joinMap.Select.JoinNumber, Select);
+            trilist.SetBoolSigAction(joinMap.Menu.JoinNumber, Menu);
+            trilist.SetBoolSigAction(joinMap.PlayPause.JoinNumber, Play);
 	    }
 	}
 

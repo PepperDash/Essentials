@@ -7,232 +7,170 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class GlsOccupancySensorBaseJoinMap : JoinMapBase
+    public class GlsOccupancySensorBaseJoinMap : JoinMapBaseAdvanced
     {
-        #region Digitals
+        [JoinName("IsOnline")]
+        public JoinDataComplete IsOnline = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Is Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        /// <summary>
-        /// High when device is online
-        /// </summary>
-        public uint IsOnline { get; set; }
-        /// <summary>
-        /// Forces the device to report occupied status
-        /// </summary>
-        public uint ForceOccupied { get; set; }
-        /// <summary>
-        /// Forces the device to report vacant status
-        /// </summary>
-        public uint ForceVacant { get; set; }
-        /// <summary>
-        /// Enables raw status reporting
-        /// </summary>
-        public uint EnableRawStates { get; set; }
-        /// <summary>
-        /// High when raw occupancy is detected
-        /// </summary>
-        public uint RawOccupancyFeedback { get; set; }
-        /// <summary>
-        /// High when PIR sensor detects motion
-        /// </summary>
-        public uint RawOccupancyPirFeedback { get; set; }
-        /// <summary>
-        /// High when US sensor detects motion
-        /// </summary>
-        public uint RawOccupancyUsFeedback { get; set; }
-        /// <summary>
-        /// High when occupancy is detected
-        /// </summary>
-        public uint RoomOccupiedFeedback { get; set; }
-        /// <summary>
-        /// Hich when occupancy is detected in the grace period
-        /// </summary>
-        public uint GraceOccupancyDetectedFeedback { get; set; }
-        /// <summary>
-        /// High when vacancy is detected
-        /// </summary>
-        public uint RoomVacantFeedback { get; set; }
+        [JoinName("ForceOccupied")]
+        public JoinDataComplete ForceOccupied = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Set to Occupied", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
-        /// <summary>
-        /// Enables the LED Flash when set high
-        /// </summary>
-        public uint EnableLedFlash { get; set; }
-        /// <summary>
-        /// Disables the LED flash when set high
-        /// </summary>
-        public uint DisableLedFlash { get; set; }
-        /// <summary>
-        /// Enables the Short Timeout
-        /// </summary>
-        public uint EnableShortTimeout { get; set; }
-        /// <summary>
-        /// Disables the Short Timout
-        /// </summary>
-        public uint DisableShortTimeout { get; set; }
-        /// <summary>
-        /// Set high to enable one technology to trigger occupancy
-        /// </summary>
-        public uint OrWhenVacated { get; set; }
-        /// <summary>
-        /// Set high to require both technologies to trigger occupancy
-        /// </summary>
-        public uint AndWhenVacated { get; set; }
-        /// <summary>
-        /// Enables Ultrasonic Sensor A
-        /// </summary>
-        public uint EnableUsA { get; set; }
-        /// <summary>
-        /// Disables Ultrasonic Sensor A
-        /// </summary>
-        public uint DisableUsA { get; set; }
-        /// <summary>
-        /// Enables Ultrasonic Sensor B
-        /// </summary>
-        public uint EnableUsB { get; set; }
-        /// <summary>
-        /// Disables Ultrasonic Sensor B
-        /// </summary>
-        public uint DisableUsB { get; set; }
-        /// <summary>
-        /// Enables Pir
-        /// </summary>
-        public uint EnablePir { get; set; }
-        /// <summary>
-        /// Disables Pir
-        /// </summary>
-        public uint DisablePir { get; set; }
-        public uint IncrementUsInOccupiedState { get; set; }
-        public uint DecrementUsInOccupiedState { get; set; }
-        public uint IncrementUsInVacantState { get; set; }
-        public uint DecrementUsInVacantState { get; set; }
-        public uint IncrementPirInOccupiedState { get; set; }
-        public uint DecrementPirInOccupiedState { get; set; }
-        public uint IncrementPirInVacantState { get; set; }
-        public uint DecrementPirInVacantState { get; set; }
-        #endregion
+        [JoinName("ForceVacant")]
+        public JoinDataComplete ForceVacant = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Set to Vacant", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
-        #region Analogs
-        /// <summary>
-        /// Sets adn reports the remote timeout value
-        /// </summary>
-        public uint Timeout { get; set; }
-        /// <summary>
-        /// Reports the local timeout value
-        /// </summary>
-        public uint TimeoutLocalFeedback { get; set; }
-        /// <summary>
-        /// Sets the minimum internal photo sensor value and reports the current level
-        /// </summary>
-        public uint InternalPhotoSensorValue { get; set; }
-        /// <summary>
-        /// Sets the minimum external photo sensor value and reports the current level
-        /// </summary>
-        public uint ExternalPhotoSensorValue { get; set; }
+        [JoinName("EnableRawStates")]
+        public JoinDataComplete EnableRawStates = new JoinDataComplete(new JoinData() { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Enable Raw", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
-        public uint UsSensitivityInOccupiedState { get; set; }
+        [JoinName("RoomOccupiedFeedback")]
+        public JoinDataComplete RoomOccupiedFeedback = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Room Is Occupied", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        public uint UsSensitivityInVacantState { get; set; }
+        [JoinName("GraceOccupancyDetectedFeedback")]
+        public JoinDataComplete GraceOccupancyDetectedFeedback = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Grace Occupancy Detected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        public uint PirSensitivityInOccupiedState { get; set; }
+        [JoinName("RoomVacantFeedback")]
+        public JoinDataComplete RoomVacantFeedback = new JoinDataComplete(new JoinData() { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Room Is Vacant", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        public uint PirSensitivityInVacantState { get; set; }
-        #endregion
+        [JoinName("RawOccupancyFeedback")]
+        public JoinDataComplete RawOccupancyFeedback = new JoinDataComplete(new JoinData() { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Raw Occupancy Detected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        #region Serial
-        public uint Name { get; set; }
-        #endregion
+        [JoinName("RawOccupancyPirFeedback")]
+        public JoinDataComplete RawOccupancyPirFeedback = new JoinDataComplete(new JoinData() { JoinNumber = 6, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Raw PIR Occupancy Detected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        public GlsOccupancySensorBaseJoinMap()
+        [JoinName("RawOccupancyUsFeedback")]
+        public JoinDataComplete RawOccupancyUsFeedback = new JoinDataComplete(new JoinData() { JoinNumber = 7, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Raw US Occupancy Detected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("EnableLedFlash")]
+        public JoinDataComplete EnableLedFlash = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Enable LED Flash", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("DisableLedFlash")]
+        public JoinDataComplete DisableLedFlash = new JoinDataComplete(new JoinData() { JoinNumber = 12, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Disable LED Flash", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("EnableShortTimeout")]
+        public JoinDataComplete EnableShortTimeout = new JoinDataComplete(new JoinData() { JoinNumber = 13, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Enable Short Timeout", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("DisableShortTimeout")]
+        public JoinDataComplete DisableShortTimeout = new JoinDataComplete(new JoinData() { JoinNumber = 14, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Disable Short Timeout", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("OrWhenVacated")]
+        public JoinDataComplete OrWhenVacated = new JoinDataComplete(new JoinData() { JoinNumber = 15, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Set To Vacant when Either Sensor is Vacant", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("AndWhenVacated")]
+        public JoinDataComplete AndWhenVacated = new JoinDataComplete(new JoinData() { JoinNumber = 16, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Set To Vacant when Both Sensors are Vacant", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("EnableUsA")]
+        public JoinDataComplete EnableUsA = new JoinDataComplete(new JoinData() { JoinNumber = 17, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Enable Ultrasonic Sensor A", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("DisableUsA")]
+        public JoinDataComplete DisableUsA = new JoinDataComplete(new JoinData() { JoinNumber = 18, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Disable Ultrasonic Sensor A", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("EnableUsB")]
+        public JoinDataComplete EnableUsB = new JoinDataComplete(new JoinData() { JoinNumber = 19, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Enable Ultrasonic Sensor B", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("DisableUsB")]
+        public JoinDataComplete DisableUsB = new JoinDataComplete(new JoinData() { JoinNumber = 20, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Disable Ultrasonic Sensor B", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("EnablePir")]
+        public JoinDataComplete EnablePir = new JoinDataComplete(new JoinData() { JoinNumber = 21, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Enable IR Sensor", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("DisablePir")]
+        public JoinDataComplete DisablePir = new JoinDataComplete(new JoinData() { JoinNumber = 22, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Disable IR Sensor", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("IncrementUsInOccupiedState")]
+        public JoinDataComplete IncrementUsInOccupiedState = new JoinDataComplete(new JoinData() { JoinNumber = 23, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Increment US Occupied State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("DecrementUsInOccupiedState")]
+        public JoinDataComplete DecrementUsInOccupiedState = new JoinDataComplete(new JoinData() { JoinNumber = 24, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Decrement US Occupied State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("IncrementUsInVacantState")]
+        public JoinDataComplete IncrementUsInVacantState = new JoinDataComplete(new JoinData() { JoinNumber = 25, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Increment US Vacant State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("DecrementUsInVacantState")]
+        public JoinDataComplete DecrementUsInVacantState = new JoinDataComplete(new JoinData() { JoinNumber = 26, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Decrement US Vacant State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("IncrementPirInOccupiedState")]
+        public JoinDataComplete IncrementPirInOccupiedState = new JoinDataComplete(new JoinData() { JoinNumber = 27, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Increment IR Occupied State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("DecrementPirInOccupiedState")]
+        public JoinDataComplete DecrementPirInOccupiedState = new JoinDataComplete(new JoinData() { JoinNumber = 28, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Decrement IR Occupied State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("IncrementPirInVacantState")]
+        public JoinDataComplete IncrementPirInVacantState = new JoinDataComplete(new JoinData() { JoinNumber = 29, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Increment IR Vacant State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("DecrementPirInVacantState")]
+        public JoinDataComplete DecrementPirInVacantState = new JoinDataComplete(new JoinData() { JoinNumber = 30, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Decrement IR Vacant State Sensitivity", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Timeout")]
+        public JoinDataComplete Timeout = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Timeout Value", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("TimeoutLocalFeedback")]
+        public JoinDataComplete TimeoutLocalFeedback = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Local Timeout Value", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("InternalPhotoSensorValue")]
+        public JoinDataComplete InternalPhotoSensorValue = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Internal PhotoSensor Value", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("ExternalPhotoSensorValue")]
+        public JoinDataComplete ExternalPhotoSensorValue = new JoinDataComplete(new JoinData() { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor External PhotoSensor Value", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("UsSensitivityInOccupiedState")]
+        public JoinDataComplete UsSensitivityInOccupiedState = new JoinDataComplete(new JoinData() { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Ultrasonic Sensitivity in Occupied State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("UsSensitivityInVacantState")]
+        public JoinDataComplete UsSensitivityInVacantState = new JoinDataComplete(new JoinData() { JoinNumber = 6, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Ultrasonic Sensitivity in Vacant State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("PirSensitivityInOccupiedState")]
+        public JoinDataComplete PirSensitivityInOccupiedState = new JoinDataComplete(new JoinData() { JoinNumber = 7, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor PIR Sensitivity in Occupied State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("PirSensitivityInVacantState")]
+        public JoinDataComplete PirSensitivityInVacantState = new JoinDataComplete(new JoinData() { JoinNumber = 8, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Ultrasonic Sensitivity in Vacant State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("Name")]
+        public JoinDataComplete Name = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Occ Sensor Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+
+
+        public GlsOccupancySensorBaseJoinMap(uint joinStart)
+            : base(joinStart, typeof(GlsOccupancySensorBaseJoinMap))
         {
-            IsOnline = 1;
-            ForceOccupied = 2;
-            ForceVacant = 3;
-            EnableRawStates = 4;
-            RoomOccupiedFeedback = 2;
-            GraceOccupancyDetectedFeedback = 3;
-            RoomVacantFeedback = 4;
-            RawOccupancyFeedback = 5;
-            RawOccupancyPirFeedback = 6;
-            RawOccupancyUsFeedback = 7;
-            EnableLedFlash = 11;
-            DisableLedFlash = 12;
-            EnableShortTimeout = 13;
-            DisableShortTimeout = 14;
-            OrWhenVacated = 15;
-            AndWhenVacated = 16;
-            EnableUsA = 17;
-            DisableUsA = 18;
-            EnableUsB = 19;
-            DisableUsB = 20;
-            EnablePir = 21;
-            DisablePir = 22;
-            IncrementUsInOccupiedState = 23;
-            DecrementUsInOccupiedState = 24;
-            IncrementUsInVacantState = 25;
-            DecrementUsInVacantState = 26;
-            IncrementPirInOccupiedState = 27;
-            DecrementPirInOccupiedState = 28;
-            IncrementPirInVacantState = 29;
-            DecrementPirInVacantState = 30;
-
-            Timeout = 1;
-            TimeoutLocalFeedback = 2;
-            InternalPhotoSensorValue = 3;
-            ExternalPhotoSensorValue = 4;
-            UsSensitivityInOccupiedState = 5;
-            UsSensitivityInVacantState = 6;
-            PirSensitivityInOccupiedState = 7;
-            PirSensitivityInVacantState = 8;
-
-            Name = 1;
-            
         }
 
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            IsOnline =                          IsOnline + joinOffset; 
-            ForceOccupied =                     ForceOccupied + joinOffset; 
-            ForceVacant =                       ForceVacant + joinOffset; 
-            EnableRawStates =                   EnableRawStates + joinOffset; 
-            RoomOccupiedFeedback =              RoomOccupiedFeedback + joinOffset; 
-            GraceOccupancyDetectedFeedback =    GraceOccupancyDetectedFeedback + joinOffset;
-            RoomVacantFeedback =                RoomVacantFeedback + joinOffset; 
-            RawOccupancyFeedback =              RawOccupancyFeedback + joinOffset;
-            RawOccupancyPirFeedback =           RawOccupancyPirFeedback + joinOffset;
-            RawOccupancyUsFeedback =            RawOccupancyUsFeedback + joinOffset;
-            EnableLedFlash =                    EnableLedFlash + joinOffset; 
-            DisableLedFlash =                   DisableLedFlash + joinOffset; 
-            EnableShortTimeout =                EnableShortTimeout + joinOffset; 
-            DisableShortTimeout =               DisableShortTimeout + joinOffset; 
-            OrWhenVacated =                     OrWhenVacated + joinOffset; 
-            AndWhenVacated =                    AndWhenVacated + joinOffset; 
-            EnableUsA =                         EnableUsA + joinOffset; 
-            DisableUsA =                        DisableUsA + joinOffset; 
-            EnableUsB =                         EnableUsB + joinOffset; 
-            DisableUsB =                        DisableUsB + joinOffset; 
-            EnablePir =                         EnablePir + joinOffset; 
-            DisablePir =                        DisablePir + joinOffset; 
-            IncrementUsInOccupiedState =        IncrementUsInOccupiedState + joinOffset; 
-            DecrementUsInOccupiedState =        DecrementUsInOccupiedState + joinOffset; 
-            IncrementUsInVacantState =          IncrementUsInVacantState + joinOffset; 
-            DecrementUsInVacantState =          DecrementUsInVacantState + joinOffset; 
-            IncrementPirInOccupiedState =       IncrementPirInOccupiedState + joinOffset;
-            DecrementPirInOccupiedState =       DecrementPirInOccupiedState + joinOffset;
-            IncrementPirInVacantState =         IncrementPirInVacantState + joinOffset; 
-            DecrementPirInVacantState =         DecrementPirInVacantState + joinOffset; 
-                                                
-            Timeout =                           Timeout + joinOffset; 
-            TimeoutLocalFeedback =              TimeoutLocalFeedback + joinOffset; 
-            InternalPhotoSensorValue =          InternalPhotoSensorValue + joinOffset; 
-            ExternalPhotoSensorValue =          ExternalPhotoSensorValue + joinOffset; 
-            UsSensitivityInOccupiedState =      UsSensitivityInOccupiedState + joinOffset;
-            UsSensitivityInVacantState =        UsSensitivityInVacantState + joinOffset; 
-            PirSensitivityInOccupiedState =     PirSensitivityInOccupiedState + joinOffset;
-            PirSensitivityInVacantState =       PirSensitivityInVacantState + joinOffset;
-
-            Name =                              Name + joinOffset;
-        }
-    }    
-         
-}        
+    }
+}   

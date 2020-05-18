@@ -7,61 +7,40 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class AppleTvJoinMap : JoinMapBase
+    public class AppleTvJoinMap : JoinMapBaseAdvanced
     {
-        #region Digitals
-        /// <summary>
-        /// Sends up arrow command while high
-        /// </summary>
-        public uint UpArrow { get; set; }
-        /// <summary>
-        /// Sends down arrow command while high
-        /// </summary>
-        public uint DnArrow { get; set; }
-        /// <summary>
-        /// Sends left arrow command while high
-        /// </summary>
-        public uint LeftArrow { get; set; }
-        /// <summary>
-        /// Sends right arrow command while high
-        /// </summary>
-        public uint RightArrow { get; set; }
-        /// <summary>
-        /// Sends menu command
-        /// </summary>
-        public uint Menu { get; set; }
-        /// <summary>
-        /// Sends select command
-        /// </summary>
-        public uint Select { get; set; }
-        /// <summary>
-        /// Sends play/pause command
-        /// </summary>
-        public uint PlayPause { get; set; }
-        #endregion
+        [JoinName("UpArrow")]
+        public JoinDataComplete UpArrow = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "AppleTv Nav Up", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
-        public AppleTvJoinMap()
+        [JoinName("DnArrow")]
+        public JoinDataComplete DnArrow = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata() { Label = "AppleTv Nav Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("LeftArrow")]
+        public JoinDataComplete LeftArrow = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 },
+            new JoinMetadata() { Label = "AppleTv Nav Left", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("RightArrow")]
+        public JoinDataComplete RightArrow = new JoinDataComplete(new JoinData() { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata() { Label = "AppleTv Nav Right", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Menu")]
+        public JoinDataComplete Menu = new JoinDataComplete(new JoinData() { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata() { Label = "AppleTv Menu", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Select")]
+        public JoinDataComplete Select = new JoinDataComplete(new JoinData() { JoinNumber = 6, JoinSpan = 1 },
+            new JoinMetadata() { Label = "AppleTv Select", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("PlayPause")]
+        public JoinDataComplete PlayPause = new JoinDataComplete(new JoinData() { JoinNumber = 7, JoinSpan = 1 },
+            new JoinMetadata() { Label = "AppleTv Play/Pause", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        public AppleTvJoinMap(uint joinStart)
+            : base(joinStart, typeof(AppleTvJoinMap))
         {
-            UpArrow = 1;
-            DnArrow = 2;
-            LeftArrow = 3;
-            RightArrow = 4;
-            Menu = 5;
-            Select = 6;
-            PlayPause = 7;
         }
 
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            UpArrow = UpArrow + joinOffset;
-            DnArrow = DnArrow + joinOffset;
-            LeftArrow = LeftArrow + joinOffset;
-            RightArrow = RightArrow + joinOffset;
-            Menu = Menu + joinOffset;
-            Select = Select + joinOffset;
-            PlayPause = PlayPause + joinOffset;
-        }
     }
 }

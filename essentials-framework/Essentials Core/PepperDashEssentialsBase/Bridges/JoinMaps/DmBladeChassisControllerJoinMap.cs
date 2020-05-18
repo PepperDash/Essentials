@@ -6,104 +6,60 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges {
-    public class DmBladeChassisControllerJoinMap : JoinMapBase {
-        #region Digital/Analogs
-        #endregion
+    public class DmBladeChassisControllerJoinMap : JoinMapBaseAdvanced {
 
-        #region Digitals
-        /// <summary>
-        /// High when device is online
-        /// </summary>
-        public uint IsOnline { get; set; }
-        /// <summary>
-        /// Range reports video sync feedback for each input
-        /// </summary>
-        public uint VideoSyncStatus { get; set; }
-        /// <summary>
-        /// Range reports high if corresponding input's endpoint is online
-        /// </summary>
-        public uint InputEndpointOnline { get; set; }
-        /// <summary>
-        /// Range reports high if corresponding output's endpoint is online
-        /// </summary>
-        public uint OutputEndpointOnline { get; set; }
-        /// <summary>
-        /// Range reports high if corresponding input's transmitter supports bridging as a separate device for detailed AV switching, HDCP control, etc.
-        /// </summary>
-        public uint TxAdvancedIsPresent { get; set; } // indicates that there is an attached transmitter that should be bridged to be interacted with
-        #endregion
+        [JoinName("IsOnline")]
+        public JoinDataComplete IsOnline = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 1 },
+            new JoinMetadata() { Label = "DM Blade Chassis Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        #region Analogs
-        /// <summary>
-        /// Range sets and reports the current video source for the corresponding output
-        /// </summary>
-        public uint OutputVideo { get; set; }
-        /// <summary>
-        /// Range sets and reports the current HDCP state for the corresponding input card
-        /// </summary>
-        public uint HdcpSupportState { get; set; }
-        /// <summary>
-        /// Range reports the highest supported HDCP state level for the corresponding input card
-        /// </summary>
-        public uint HdcpSupportCapability { get; set; }
-        #endregion
+        [JoinName("VideoSyncStatus")]
+        public JoinDataComplete VideoSyncStatus = new JoinDataComplete(new JoinData() { JoinNumber = 101, JoinSpan = 128 },
+            new JoinMetadata() { Label = "DM Blade Input Video Sync", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        #region Serials
-        /// <summary>
-        /// Range sets and reports the name for the corresponding input card
-        /// </summary>
-        public uint InputNames { get; set; }
-        /// <summary>
-        /// Range sets and reports the name for the corresponding output card
-        /// </summary>
-        public uint OutputNames { get; set; }
-        /// <summary>
-        /// Range reports the name of the current video source for the corresponding output card
-        /// </summary>
-        public uint OutputCurrentVideoInputNames { get; set; }
-        /// <summary>
-        /// Range reports the current input resolution for each corresponding input card
-        /// </summary>
-        public uint InputCurrentResolution { get; set; }
-        #endregion
+        [JoinName("InputEndpointOnline")]
+        public JoinDataComplete InputEndpointOnline = new JoinDataComplete(new JoinData() { JoinNumber = 501, JoinSpan = 128 },
+            new JoinMetadata() { Label = "DM Blade Chassis Input Endpoint Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        public DmBladeChassisControllerJoinMap() {
-            //Digital/Analog
+        [JoinName("OutputEndpointOnline")]
+        public JoinDataComplete OutputEndpointOnline = new JoinDataComplete(new JoinData() { JoinNumber = 701, JoinSpan = 128 },
+            new JoinMetadata() { Label = "DM Blade Chassis Output Endpoint Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-            //Digital 
-            IsOnline = 11;
-            VideoSyncStatus = 100; //101-299
-            InputEndpointOnline = 500; //501-699
-            OutputEndpointOnline = 700; //701-899
-            TxAdvancedIsPresent = 1000; //1001-1199
+        [JoinName("TxAdvancedIsPresent")]
+        public JoinDataComplete TxAdvancedIsPresent = new JoinDataComplete(new JoinData() { JoinNumber = 1001, JoinSpan = 128 },
+            new JoinMetadata() { Label = "DM Blade Chassis Tx Advanced Is Present", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-            //Analog
-            OutputVideo = 100; //101-299
-            HdcpSupportState = 1000; //1001-1199
-            HdcpSupportCapability = 1200; //1201-1399
+        [JoinName("OutputVideo")]
+        public JoinDataComplete OutputVideo = new JoinDataComplete(new JoinData() { JoinNumber = 101, JoinSpan = 128 },
+            new JoinMetadata() { Label = "DM Blade Chassis Output Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
+        [JoinName("HdcpSupportState")]
+        public JoinDataComplete HdcpSupportState = new JoinDataComplete(new JoinData() { JoinNumber = 1001, JoinSpan = 128 },
+            new JoinMetadata() { Label = "DM Blade Chassis Input HDCP Support State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
 
-            //Serial
-            InputNames = 100; //101-299
-            OutputNames = 300; //301-499
-            OutputCurrentVideoInputNames = 2000; //2001-2199
-            InputCurrentResolution = 2400; // 2401-2599
+        [JoinName("HdcpSupportCapability")]
+        public JoinDataComplete HdcpSupportCapability = new JoinDataComplete(new JoinData() { JoinNumber = 1201, JoinSpan = 128 },
+            new JoinMetadata() { Label = "DM Blade Chassis Input HDCP Support Capability", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("InputNames")]
+        public JoinDataComplete InputNames = new JoinDataComplete(new JoinData() { JoinNumber = 101, JoinSpan = 128 },
+            new JoinMetadata() { Label = "DM Blade Chassis Input Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("OutputNames")]
+        public JoinDataComplete OutputNames = new JoinDataComplete(new JoinData() { JoinNumber = 301, JoinSpan = 128 },
+            new JoinMetadata() { Label = "DM Blade Chassis Output Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("OutputCurrentVideoInputNames")]
+        public JoinDataComplete OutputCurrentVideoInputNames = new JoinDataComplete(new JoinData() { JoinNumber = 2001, JoinSpan = 128 },
+            new JoinMetadata() { Label = "DM Blade Chassis Video Output Currently Routed Video Input Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("InputCurrentResolution")]
+        public JoinDataComplete InputCurrentResolution = new JoinDataComplete(new JoinData() { JoinNumber = 2401, JoinSpan = 128 },
+            new JoinMetadata() { Label = "DM Blade Chassis Input Current Resolution", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        public DmBladeChassisControllerJoinMap(uint joinStart)
+            : base(joinStart, typeof(DmBladeChassisControllerJoinMap))
+        {
         }
-
-        public override void OffsetJoinNumbers(uint joinStart) {
-            var joinOffset = joinStart - 1;
-
-            IsOnline = IsOnline + joinOffset;
-            OutputVideo = OutputVideo + joinOffset;
-            VideoSyncStatus = VideoSyncStatus + joinOffset;
-            InputNames = InputNames + joinOffset;
-            OutputNames = OutputNames + joinOffset;
-            OutputCurrentVideoInputNames = OutputCurrentVideoInputNames + joinOffset;
-            InputCurrentResolution = InputCurrentResolution + joinOffset;
-            InputEndpointOnline = InputEndpointOnline + joinOffset;
-            OutputEndpointOnline = OutputEndpointOnline + joinOffset;
-            HdcpSupportState = HdcpSupportState + joinOffset;
-            HdcpSupportCapability = HdcpSupportCapability + joinOffset;
-        }
+        
     }
 }
