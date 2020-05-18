@@ -42,6 +42,8 @@ namespace PepperDash.Essentials.DM
 
         public IntFeedback SystemIdFeebdack { get; private set; }
         public BoolFeedback SystemIdBusyFeedback { get; private set; }
+        public BoolFeedback EnableAudioBreakawayFeedback { get; private set; }
+        public BoolFeedback EnableUsbBreakawayFeedback { get; private set; }
 
         public Dictionary<uint, IntFeedback> InputCardHdcpCapabilityFeedbacks { get; private set; }
 
@@ -210,6 +212,11 @@ namespace PepperDash.Essentials.DM
 
             SystemIdFeebdack = new IntFeedback(() => { return (Chassis as DmMDMnxn).SystemIdFeedback.UShortValue; });
             SystemIdBusyFeedback = new BoolFeedback(() => { return (Chassis as DmMDMnxn).SystemIdBusy.BoolValue; });
+            EnableAudioBreakawayFeedback =
+                new BoolFeedback(() => (Chassis as DmMDMnxn).EnableAudioBreakawayFeedback.BoolValue);
+            EnableUsbBreakawayFeedback =
+                new BoolFeedback(() => (Chassis as DmMDMnxn).EnableUSBBreakawayFeedback.BoolValue);
+
             InputCardHdcpCapabilityFeedbacks = new Dictionary<uint, IntFeedback>();
             InputCardHdcpCapabilityTypes = new Dictionary<uint, eHdcpCapabilityType>();
 
@@ -926,6 +933,10 @@ namespace PepperDash.Essentials.DM
             {
                 (Chassis as DmMDMnxn).EnableAudioBreakaway.BoolValue = true;
                 (Chassis as DmMDMnxn).EnableUSBBreakaway.BoolValue = true;
+
+
+                EnableAudioBreakawayFeedback.FireUpdate();
+                EnableUsbBreakawayFeedback.FireUpdate();
 
                 if (InputNames != null)
                     foreach (var kvp in InputNames)

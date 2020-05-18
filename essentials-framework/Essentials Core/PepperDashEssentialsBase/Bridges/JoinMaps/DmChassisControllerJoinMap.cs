@@ -9,6 +9,25 @@ namespace PepperDash.Essentials.Core.Bridges
 {
     public class DmChassisControllerJoinMap : JoinMapBaseAdvanced
     {
+        [JoinName("EnableAudioBreakaway")]
+        public JoinDataComplete EnableAudioBreakaway = new JoinDataComplete(
+            new JoinData {JoinNumber = 4, JoinSpan = 1},
+            new JoinMetadata
+            {
+                Label = "DM Chassis enable audio breakaway routing",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("EnableUsbBreakaway")]
+        public JoinDataComplete EnableUsbBreakaway = new JoinDataComplete(
+            new JoinData { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Label = "DM Chassis enable USB breakaway routing",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
 
         [JoinName("SystemId")]
         public JoinDataComplete SystemId = new JoinDataComplete(new JoinData() { JoinNumber = 10, JoinSpan = 1 },
