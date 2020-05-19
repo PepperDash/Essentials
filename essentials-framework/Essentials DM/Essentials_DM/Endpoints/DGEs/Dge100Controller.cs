@@ -6,31 +6,37 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.UI;
 
+using Crestron.SimplSharpPro.DM;
+
+
 using Newtonsoft.Json;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace PepperDash.Essentials.DM.Endpoints.DGEs
 {
     /// <summary>
     /// Wrapper class for DGE-100 and DM-DGE-200-C
     /// </summary>
-    public class DgeController : CrestronGenericBaseDevice, IComPorts, IIROutputPorts
+    public class Dge100Controller : CrestronGenericBaseDevice, IComPorts, IIROutputPorts, IHasBasicTriListWithSmartObject, ICec
     {
-        public Dge100 DigitalGraphicsEngine { get; private set; }
+        private readonly Dge100 _dge;
 
-        public DeviceConfig DeviceConfig { get; private set; }
+        public BasicTriListWithSmartObject Panel { get { return _dge; } }
+
+        private DeviceConfig _dc;
 
         CrestronTouchpanelPropertiesConfig PropertiesConfig;
 
-        public DgeController(string key, string name, Dge100 device, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
+        public Dge100Controller(string key, string name, Dge100 device, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
             :base(key, name, device)
         {
-            DigitalGraphicsEngine = device;
+            _dge = device;
 
-            DeviceConfig = dc;
+            _dc = dc;
 
             PropertiesConfig = props;
         }
@@ -39,12 +45,12 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
         public CrestronCollection<ComPort> ComPorts
         {
-            get { return DigitalGraphicsEngine.ComPorts; }
+            get { return _dge.ComPorts; }
         }
 
         public int NumberOfComPorts
         {
-            get { return DigitalGraphicsEngine.NumberOfComPorts; }
+            get { return _dge.NumberOfComPorts; }
         }
 
         #endregion
@@ -53,22 +59,27 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
         public CrestronCollection<IROutputPort> IROutputPorts
         {
-            get { return DigitalGraphicsEngine.IROutputPorts; }
+            get { return _dge.IROutputPorts; }
         }
 
         public int NumberOfIROutputPorts
         {
-            get { return DigitalGraphicsEngine.NumberOfIROutputPorts; }
+            get { return _dge.NumberOfIROutputPorts; }
         }
 
         #endregion
+
+        #region ICec Members
+        public Cec StreamCec { get { return _dge.HdmiOut.StreamCec; } }
+        #endregion
+
     }
 
-    public class DgeControllerFactory : EssentialsDeviceFactory<DgeController>
+    public class Dge100ControllerFactory : EssentialsDeviceFactory<Dge100Controller>
     {
-        public DgeControllerFactory()
+        public Dge100ControllerFactory()
         {
-            TypeNames = new List<string>() { "dge100", "dmdge200c" };
+            TypeNames = new List<string>() { "dge100" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
@@ -77,13 +88,11 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
             var comm = CommFactory.GetControlPropertiesConfig(dc);
             var props = JsonConvert.DeserializeObject<CrestronTouchpanelPropertiesConfig>(dc.Properties.ToString());
 
-            Debug.Console(1, "Factory Attempting to create new DgeControllerm Device");
+            Debug.Console(1, "Factory Attempting to create new DgeController Device");
 
             Dge100 dgeDevice = null;
             if (typeName == "dge100")
                 dgeDevice = new Dge100(comm.IpIdInt, Global.ControlSystem);
-            else if (typeName == "dmdge200c")
-                dgeDevice = new DmDge200C(comm.IpIdInt, Global.ControlSystem);
 
             if (dgeDevice == null)
             {
@@ -91,7 +100,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
                 return null;
             }
 
-            var dgeController = new DgeController(dc.Key + "-comPorts", dc.Name, dgeDevice, dc, props);
+            var dgeController = new Dge100Controller(dc.Key, dc.Name, dgeDevice, dc, props);
 
             return dgeController;
         }

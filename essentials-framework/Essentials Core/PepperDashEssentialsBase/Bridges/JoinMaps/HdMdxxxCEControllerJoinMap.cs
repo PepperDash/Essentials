@@ -7,113 +7,62 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class HdMdxxxCEControllerJoinMap : JoinMapBase
+    public class HdMdxxxCEControllerJoinMap : JoinMapBaseAdvanced
     {
-        #region Digitals
-        /// <summary>
-        /// High when the pair is online
-        /// </summary>
-        public uint IsOnline { get; set; }
 
-        /// <summary>
-        /// High when the remote end device is online
-        /// </summary>
-        public uint RemoteEndDetected { get; set; }
+        [JoinName("IsOnline")]
+        public JoinDataComplete IsOnline = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Device Online", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        /// <summary>
-        /// Sets Auto Route On and provides feedback
-        /// </summary>
-        public uint AutoRouteOn { get; set; }
+        [JoinName("RemoteEndDetected")]
+        public JoinDataComplete RemoteEndDetected = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Device Remote End Detected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        /// <summary>
-        /// Sets Auto Route Off and provides feedback
-        /// </summary>
-        public uint AutoRouteOff { get; set; }
+        [JoinName("AutoRouteOn")]
+        public JoinDataComplete AutoRouteOn = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Device Auto Route On", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
-        /// <summary>
-        /// Sets Priority Routing On and provides feedback
-        /// </summary>
-        public uint PriorityRoutingOn { get; set; }
+        [JoinName("AutoRouteOff")]
+        public JoinDataComplete AutoRouteOff = new JoinDataComplete(new JoinData() { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Device Auto Route Off", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
-        /// <summary>
-        /// Sets Priority Routing Off and provides feedback
-        /// </summary>
-        public uint PriorityRoutingOff { get; set; }
+        [JoinName("PriorityRoutingOn")]
+        public JoinDataComplete PriorityRoutingOn = new JoinDataComplete(new JoinData() { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Device Priority Routing On", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
-        /// <summary>
-        /// Enables OSD and provides feedback
-        /// </summary>
-        public uint InputOnScreenDisplayEnabled { get; set; }
+        [JoinName("PriorityRoutingOff")]
+        public JoinDataComplete PriorityRoutingOff = new JoinDataComplete(new JoinData() { JoinNumber = 6, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Device Priority Routing Off", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
-        /// <summary>
-        /// Disables OSD and provides feedback
-        /// </summary>
-        public uint InputOnScreenDisplayDisabled { get; set; }
+        [JoinName("InputOnScreenDisplayEnabled")]
+        public JoinDataComplete InputOnScreenDisplayEnabled = new JoinDataComplete(new JoinData() { JoinNumber = 7, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Device Input OSD Enabled", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
-        /// <summary>
-        /// Provides Video Sync Detected feedback for each input
-        /// </summary>
-        public uint SyncDetected { get; set; }
-        #endregion
+        [JoinName("InputOnScreenDisplayDisabled")]
+        public JoinDataComplete InputOnScreenDisplayDisabled = new JoinDataComplete(new JoinData() { JoinNumber = 8, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Device Input OSD Disabled", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
-        #region Analogs
-        /// <summary>
-        /// Sets the video source for the receiver's HDMI out and provides feedback
-        /// </summary>
-        public uint VideoSource { get; set; }
+        [JoinName("SyncDetected")]
+        public JoinDataComplete SyncDetected = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 5 },
+            new JoinMetadata() { Label = "Device Sync Detected", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        /// <summary>
-        /// Indicates the number of sources supported by the Tx/Rx pair
-        /// </summary>
-        public uint SourceCount { get; set; }
-        #endregion
+        [JoinName("VideoSource")]
+        public JoinDataComplete VideoSource = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 5 },
+            new JoinMetadata() { Label = "Device Video Source Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
-        #region Serials
-        /// <summary>
-        /// Indicates the name of each input port
-        /// </summary>
-        public uint SourceNames { get; set; }
-        #endregion
+        [JoinName("SourceCount")]
+        public JoinDataComplete SourceCount = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 5 },
+            new JoinMetadata() { Label = "Device Video Source Count", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
 
-        public HdMdxxxCEControllerJoinMap()
+        [JoinName("SourceNames")]
+        public JoinDataComplete SourceNames = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 5 },
+            new JoinMetadata() { Label = "Device Video Source Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+
+
+        public HdMdxxxCEControllerJoinMap(uint joinStart)
+            : base(joinStart, typeof(HdMdxxxCEControllerJoinMap))
         {
-            //Digital
-            IsOnline = 1;
-            RemoteEndDetected = 2;
-            AutoRouteOn = 3;
-            AutoRouteOff = 4;
-            PriorityRoutingOn = 5;
-            PriorityRoutingOff = 6;
-            InputOnScreenDisplayEnabled = 7;
-            InputOnScreenDisplayDisabled = 8;
-            SyncDetected = 10; // 11-15
-
-            //Analog
-            VideoSource = 1;
-            SourceCount = 2;
-
-            //Serials
-            SourceNames = 10; // 11-15
-        }
-
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            IsOnline = IsOnline + joinOffset;
-            RemoteEndDetected = RemoteEndDetected + joinOffset;
-            AutoRouteOn = AutoRouteOn + joinOffset;
-            AutoRouteOff = AutoRouteOff + joinOffset;
-            PriorityRoutingOn = PriorityRoutingOn + joinOffset;
-            PriorityRoutingOff = PriorityRoutingOff + joinOffset;
-            InputOnScreenDisplayEnabled = InputOnScreenDisplayEnabled + joinOffset;
-            InputOnScreenDisplayDisabled = InputOnScreenDisplayDisabled + joinOffset;
-            SyncDetected = SyncDetected + joinOffset;
-
-            VideoSource = VideoSource + joinOffset;
-            SourceCount = SourceCount + joinOffset;
-
-            SourceNames = SourceNames + joinOffset;
         }
     }
 }

@@ -111,52 +111,52 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new StatusSignControllerJoinMap();
+            var joinMap = new StatusSignControllerJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<StatusSignControllerJoinMap>(joinMapSerialized);
 
-            joinMap.OffsetJoinNumbers(joinStart);
+            bridge.AddJoinMap(Key, joinMap);
 
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
-            trilist.SetBoolSigAction(joinMap.RedControl, b => EnableControl(trilist, joinMap, this));
-            trilist.SetBoolSigAction(joinMap.GreenControl, b => EnableControl(trilist, joinMap, this));
-            trilist.SetBoolSigAction(joinMap.BlueControl, b => EnableControl(trilist, joinMap, this));
+            trilist.SetBoolSigAction(joinMap.RedControl.JoinNumber, b => EnableControl(trilist, joinMap, this));
+            trilist.SetBoolSigAction(joinMap.GreenControl.JoinNumber, b => EnableControl(trilist, joinMap, this));
+            trilist.SetBoolSigAction(joinMap.BlueControl.JoinNumber, b => EnableControl(trilist, joinMap, this));
 
-            trilist.SetUShortSigAction(joinMap.RedLed, u => SetColor(trilist, joinMap, this));
-            trilist.SetUShortSigAction(joinMap.GreenLed, u => SetColor(trilist, joinMap, this));
-            trilist.SetUShortSigAction(joinMap.BlueLed, u => SetColor(trilist, joinMap, this));
+            trilist.SetUShortSigAction(joinMap.RedLed.JoinNumber, u => SetColor(trilist, joinMap, this));
+            trilist.SetUShortSigAction(joinMap.GreenLed.JoinNumber, u => SetColor(trilist, joinMap, this));
+            trilist.SetUShortSigAction(joinMap.BlueLed.JoinNumber, u => SetColor(trilist, joinMap, this));
 
-            trilist.StringInput[joinMap.Name].StringValue = Name;
+            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = Name;
 
-            IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
-            RedLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RedControl]);
-            BlueLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.BlueControl]);
-            GreenLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.GreenControl]);
+            IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+            RedLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RedControl.JoinNumber]);
+            BlueLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.BlueControl.JoinNumber]);
+            GreenLedEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.GreenControl.JoinNumber]);
 
-            RedLedBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.RedLed]);
-            BlueLedBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.BlueLed]);
-            GreenLedBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.GreenLed]);
+            RedLedBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.RedLed.JoinNumber]);
+            BlueLedBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.BlueLed.JoinNumber]);
+            GreenLedBrightnessFeedback.LinkInputSig(trilist.UShortInput[joinMap.GreenLed.JoinNumber]);
         }
 
         private static void EnableControl(BasicTriList triList, StatusSignControllerJoinMap joinMap,
             StatusSignController device)
         {
-            var redEnable = triList.BooleanOutput[joinMap.RedControl].BoolValue;
-            var greenEnable = triList.BooleanOutput[joinMap.GreenControl].BoolValue;
-            var blueEnable = triList.BooleanOutput[joinMap.BlueControl].BoolValue;
+            var redEnable = triList.BooleanOutput[joinMap.RedControl.JoinNumber].BoolValue;
+            var greenEnable = triList.BooleanOutput[joinMap.GreenControl.JoinNumber].BoolValue;
+            var blueEnable = triList.BooleanOutput[joinMap.BlueControl.JoinNumber].BoolValue;
             device.EnableLedControl(redEnable, greenEnable, blueEnable);
         }
 
         private static void SetColor(BasicTriList triList, StatusSignControllerJoinMap joinMap,
             StatusSignController device)
         {
-            var redBrightness = triList.UShortOutput[joinMap.RedLed].UShortValue;
-            var greenBrightness = triList.UShortOutput[joinMap.GreenLed].UShortValue;
-            var blueBrightness = triList.UShortOutput[joinMap.BlueLed].UShortValue;
+            var redBrightness = triList.UShortOutput[joinMap.RedLed.JoinNumber].UShortValue;
+            var greenBrightness = triList.UShortOutput[joinMap.GreenLed.JoinNumber].UShortValue;
+            var blueBrightness = triList.UShortOutput[joinMap.BlueLed.JoinNumber].UShortValue;
 
             device.SetColor(redBrightness, greenBrightness, blueBrightness);
         }

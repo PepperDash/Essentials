@@ -85,8 +85,8 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         {
             var joinMap = LinkLightingToApi(this, trilist, joinStart, joinMapKey, bridge);
 
-            CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
-            trilist.SetStringSigAction(joinMap.IntegrationIdSet, s => IntegrationId = s);
+            CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+            trilist.SetStringSigAction(joinMap.IntegrationIdSet.JoinNumber , s => IntegrationId = s);
         }
 
         void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)

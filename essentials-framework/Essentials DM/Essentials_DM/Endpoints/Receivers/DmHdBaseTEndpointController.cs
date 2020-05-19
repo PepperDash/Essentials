@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using Crestron.SimplSharp.Ssh;
 using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DM;
-using Crestron.SimplSharpPro.DM.Endpoints;
 using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
 
 using PepperDash.Essentials.Core;
@@ -13,32 +7,25 @@ using PepperDash.Essentials.Core;
 namespace PepperDash.Essentials.DM
 {
     public class HDBaseTRxController : DmHdBaseTControllerBase, IRoutingInputsOutputs,
-             IComPorts
+        IComPorts
     {
         public RoutingInputPort DmIn { get; private set; }
         public RoutingOutputPort HDBaseTSink { get; private set; }
 
-        public RoutingPortCollection<RoutingInputPort> InputPorts
-        {
-            get { return new RoutingPortCollection<RoutingInputPort> { DmIn }; }
-        }
+        public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts
-        {
-            get { return new RoutingPortCollection<RoutingOutputPort> { HDBaseTSink }; }
-        }
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
         public HDBaseTRxController(string key, string name, HDRx3CB rmc)
             : base(key, name, rmc)
         {
-            Rmc = rmc;
-            DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.DmCat, 0, this);
-            HDBaseTSink = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                eRoutingPortConnectionType.Hdmi, null, this);
+            HDBaseTSink = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.Hdmi, null, this) {Port = Rmc};
 
-            // Set Ports for CEC
-            HDBaseTSink.Port = Rmc; // Unique case, this class has no HdmiOutput port and ICec is implemented on the receiver class itself
+            InputPorts = new RoutingPortCollection<RoutingInputPort> {DmIn};
+            OutputPorts = new RoutingPortCollection<RoutingOutputPort> {HDBaseTSink};
         }
 
         #region IComPorts Members

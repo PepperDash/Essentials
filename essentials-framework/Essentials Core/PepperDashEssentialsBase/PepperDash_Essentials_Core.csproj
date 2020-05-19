@@ -117,6 +117,7 @@
     <Compile Include="Bridges\JoinMaps\AppleTvJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\C2nRthsControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\CameraControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\CenOdtOccupancySensorBaseJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DigitalLoggerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DisplayControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmBladeChassisControllerJoinMap.cs" />

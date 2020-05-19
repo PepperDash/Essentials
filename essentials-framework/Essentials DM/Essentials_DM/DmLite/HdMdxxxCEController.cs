@@ -223,45 +223,46 @@ namespace PepperDash.Essentials.DM
         //#endregion
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new HdMdxxxCEControllerJoinMap();
+            var joinMap = new HdMdxxxCEControllerJoinMap(joinStart);
 
             var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
 
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<HdMdxxxCEControllerJoinMap>(joinMapSerialized);
 
-            joinMap.OffsetJoinNumbers(joinStart);
+            bridge.AddJoinMap(Key, joinMap);
 
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
-            IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline]);
-            RemoteEndDetectedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RemoteEndDetected]);
+            IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+            RemoteEndDetectedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RemoteEndDetected.JoinNumber]);
 
-            trilist.SetSigTrueAction(joinMap.AutoRouteOn, AutoRouteOn);
-            AutoRouteOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.AutoRouteOn]);
-            trilist.SetSigTrueAction(joinMap.AutoRouteOff, AutoRouteOff);
-            AutoRouteOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.AutoRouteOff]);
+            trilist.SetSigTrueAction(joinMap.AutoRouteOn.JoinNumber, AutoRouteOn);
+            AutoRouteOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.AutoRouteOn.JoinNumber]);
+            trilist.SetSigTrueAction(joinMap.AutoRouteOff.JoinNumber, AutoRouteOff);
+            AutoRouteOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.AutoRouteOff.JoinNumber]);
 
-            trilist.SetSigTrueAction(joinMap.PriorityRoutingOn, PriorityRouteOn);
-            PriorityRoutingOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PriorityRoutingOn]);
-            trilist.SetSigTrueAction(joinMap.PriorityRoutingOff, PriorityRouteOff);
-            PriorityRoutingOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PriorityRoutingOff]);
+            trilist.SetSigTrueAction(joinMap.PriorityRoutingOn.JoinNumber, PriorityRouteOn);
+            PriorityRoutingOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PriorityRoutingOn.JoinNumber]);
+            trilist.SetSigTrueAction(joinMap.PriorityRoutingOff.JoinNumber, PriorityRouteOff);
+            PriorityRoutingOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PriorityRoutingOff.JoinNumber]);
 
-            trilist.SetSigTrueAction(joinMap.InputOnScreenDisplayEnabled, OnScreenDisplayEnable);
-            InputOnScreenDisplayEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.InputOnScreenDisplayEnabled]);
-            trilist.SetSigTrueAction(joinMap.AutoRouteOff, OnScreenDisplayDisable);
-            InputOnScreenDisplayEnabledFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.InputOnScreenDisplayDisabled]);
+            trilist.SetSigTrueAction(joinMap.InputOnScreenDisplayEnabled.JoinNumber, OnScreenDisplayEnable);
+            InputOnScreenDisplayEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.InputOnScreenDisplayEnabled.JoinNumber]);
+            trilist.SetSigTrueAction(joinMap.AutoRouteOff.JoinNumber, OnScreenDisplayDisable);
+            InputOnScreenDisplayEnabledFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.InputOnScreenDisplayDisabled.JoinNumber]);
 
-            trilist.SetUShortSigAction(joinMap.VideoSource, (i) => ExecuteSwitch(i, null, eRoutingSignalType.Video | eRoutingSignalType.Audio));
-            VideoSourceFeedback.LinkInputSig(trilist.UShortInput[joinMap.VideoSource]);
+            trilist.SetUShortSigAction(joinMap.VideoSource.JoinNumber, (i) => ExecuteSwitch(i, null, eRoutingSignalType.Video | eRoutingSignalType.Audio));
+            VideoSourceFeedback.LinkInputSig(trilist.UShortInput[joinMap.VideoSource.JoinNumber]);
 
-            trilist.UShortInput[joinMap.SourceCount].UShortValue = (ushort)InputPorts.Count;
+            trilist.UShortInput[joinMap.SourceCount.JoinNumber].UShortValue = (ushort)InputPorts.Count;
 
             foreach (var input in InputPorts)
             {
                 var number = Convert.ToUInt16(input.Selector);
-                SyncDetectedFeedbacks[number].LinkInputSig(trilist.BooleanInput[joinMap.SyncDetected + number]);
-                trilist.StringInput[joinMap.SourceNames + number].StringValue = input.Key;
+                var numberJoin = (UInt16)(number - 1);
+                SyncDetectedFeedbacks[number].LinkInputSig(trilist.BooleanInput[joinMap.SyncDetected.JoinNumber + numberJoin]);
+                trilist.StringInput[joinMap.SourceNames.JoinNumber + numberJoin].StringValue = input.Key;
             }
         }
     }

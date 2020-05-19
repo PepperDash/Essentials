@@ -2,224 +2,140 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class SystemMonitorJoinMap : JoinMapBase
+    public class SystemMonitorJoinMap : JoinMapBaseAdvanced
     {
-        /// <summary>
-        /// Offset to indicate where the range of iterated program joins will start
-        /// </summary>
-        public uint ProgramStartJoin { get; set; }
+        [JoinName("TimeZone")]
+        public JoinDataComplete TimeZone = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Timezone", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
 
-        /// <summary>
-        /// Offset to indicate where the range of iterated Ethernet joins will start
-        /// </summary>
-        public uint EthernetStartJoin { get; set; }
+        [JoinName("TimeZoneName")]
+        public JoinDataComplete TimeZoneName = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Timezone Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
-        /// <summary>
-        /// Offset between each program join set
-        /// </summary>
-        public uint ProgramOffsetJoin { get; set; }
+        [JoinName("IOControllerVersion")]
+        public JoinDataComplete IOControllerVersion = new JoinDataComplete(new JoinData() { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor IO Controller Version", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
-        /// <summary>
-        /// Offset between each Ethernet Interface join set
-        /// </summary>
-        public uint EthernetOffsetJoin { get; set; }
+        [JoinName("SnmpAppVersion")]
+        public JoinDataComplete SnmpAppVersion = new JoinDataComplete(new JoinData() { JoinNumber = 3, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor SNMP App Version", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
-        #region Digitals
-        /// <summary>
-        /// Range Sets and reports whether the corresponding program slot is started
-        /// </summary>
-        public uint ProgramStart { get; set; }
-        /// <summary>
-        /// Range Sets and reports whether the corresponding program slot is stopped
-        /// </summary>
-        public uint ProgramStop { get; set; }
-        /// <summary>
-        /// Range Sets and reports whether the corresponding program is registered
-        /// </summary>
-        public uint ProgramRegister { get; set; }
-        /// <summary>
-        /// Range Sets and reports whether the corresponding program is unregistered
-        /// </summary>
-        public uint ProgramUnregister { get; set; }
-        #endregion
+        [JoinName("BACnetAppVersion")]
+        public JoinDataComplete BACnetAppVersion = new JoinDataComplete(new JoinData() { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor BACNet App Version", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
-        #region Analogs
-        /// <summary>
-        /// Sets and reports the time zone
-        /// </summary>
-        public uint TimeZone { get; set; }
-        #endregion
+        [JoinName("ControllerVersion")]
+        public JoinDataComplete ControllerVersion = new JoinDataComplete(new JoinData() { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Controller Version", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
-        #region Serials
-        /// <summary>
-        /// Reports the time zone name
-        /// </summary>
-        public uint TimeZoneName { get; set; }
-        /// <summary>
-        /// Reports the IO Controller Version
-        /// </summary>
-        public uint IOControllerVersion { get; set; }
-        /// <summary>
-        /// Reports the SNMP App Version
-        /// </summary>
-        public uint SnmpAppVersion { get; set; }
-        /// <summary>
-        /// Reports the BACnet App Version
-        /// </summary>
-        public uint BACnetAppVersion { get; set; }
-        /// <summary>
-        /// Reports the firmware version
-        /// </summary>
-        public uint ControllerVersion { get; set; }
+        [JoinName("SerialNumber")]
+        public JoinDataComplete SerialNumber = new JoinDataComplete(new JoinData() { JoinNumber = 6, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Serial Number", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
-        /// <summary>
-        /// Reports the name of the corresponding program
-        /// </summary>
-        public uint ProgramName { get; set; }
-        /// <summary>
-        /// Reports the compile time of the corresponding program
-        /// </summary>
-        public uint ProgramCompiledTime { get; set; }
-        /// <summary>
-        /// Reports the Crestron Database version of the corresponding program
-        /// </summary>
-        public uint ProgramCrestronDatabaseVersion { get; set; }
-        /// <summary>
-        /// Reports the Environment Version of the corresponding program
-        /// </summary>
-        public uint ProgramEnvironmentVersion { get; set; }
-        /// <summary>
-        /// Serialized JSON output that aggregates the program info of the corresponding program
-        /// </summary>
-        public uint AggregatedProgramInfo { get; set; }
-        /// <summary>
-        /// Reports the controller serial number
-        /// </summary>
-        public uint SerialNumber { get; set; }
-        /// <summary>
-        /// Reports the controller model
-        /// </summary>
-        public uint Model { get; set; }
-        /// <summary>
-        /// Reports the Host name set on the corresponding interface
-        /// </summary>
-        public uint HostName { get; set; }
-        /// <summary>
-        /// Reports the Current IP address set on the corresponding interface. If DHCP is enabled, this will be the DHCP assigned address.
-        /// </summary>
-        public uint CurrentIpAddress { get; set; }
-        /// <summary>
-        /// Reporst the Current Default Gateway set on the corresponding interface. If DHCP is enabled, this will be the DHCP assigned gateway
-        /// </summary>
-        public uint CurrentDefaultGateway { get; set; }
-        /// <summary>
-        /// Reports the Current Subnet Mask set on the corresponding interface. If DHCP is enabled, this will be the DHCP assigned subnet mask
-        /// </summary>
-        public uint CurrentSubnetMask { get; set; }
-        /// <summary>
-        /// Reports the Static IP address set on the corresponding interface. If DHCP is disabled, this will match the Current IP address
-        /// </summary>
-        public uint StaticIpAddress { get; set; }
-        /// <summary>
-        /// Reporst the Static Default Gateway set on the corresponding interface. If DHCP is disabled, this will match the Current gateway
-        /// </summary>
-        public uint StaticDefaultGateway { get; set; }
-        /// <summary>
-        /// Reports the Current Subnet Mask set on the corresponding interface. If DHCP is enabled, this will be the DHCP assigned subnet mask
-        /// </summary>
-        public uint StaticSubnetMask { get; set; }
-        /// <summary>
-        /// Reports the current DomainFeedback on the corresponding interface
-        /// </summary>
-        public uint Domain { get; set; }
-        /// <summary>
-        /// Reports the current DNS Servers on the corresponding interface
-        /// </summary>
-        public uint DnsServer { get; set; }
-        /// <summary>
-        /// Reports the MAC Address of the corresponding interface
-        /// </summary>
-        public uint MacAddress { get; set; }
-        /// <summary>
-        /// Reports the DHCP Status of the corresponding interface
-        /// </summary>
-        public uint DhcpStatus { get; set; }
+        [JoinName("Model")]
+        public JoinDataComplete Model = new JoinDataComplete(new JoinData() { JoinNumber = 7, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Model", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
-        /// <summary>
-        /// Reports the current uptime. Updated in 5 minute intervals.
-        /// </summary>
-        public uint Uptime { get; set; }
+        [JoinName("Uptime")]
+        public JoinDataComplete Uptime = new JoinDataComplete(new JoinData() { JoinNumber = 8, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Uptime", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
-        /// <summary>
-        /// Reports the date of the last boot
-        /// </summary>
-        public uint LastBoot { get; set; }
-        #endregion
+        [JoinName("LastBoot")]
+        public JoinDataComplete LastBoot = new JoinDataComplete(new JoinData() { JoinNumber = 9, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Last Boot", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
-        public SystemMonitorJoinMap()
+        [JoinName("ProgramOffsetJoin")]
+        public JoinDataComplete ProgramOffsetJoin = new JoinDataComplete(new JoinData() { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata() { Label = "All Program Data is offset between slots by 5 - First Joins Start at 11", JoinCapabilities = eJoinCapabilities.None, JoinType = eJoinType.None });
+
+        [JoinName("ProgramStart")]
+        public JoinDataComplete ProgramStart = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Program Start / Fb", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("ProgramStop")]
+        public JoinDataComplete ProgramStop = new JoinDataComplete(new JoinData() { JoinNumber = 12, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Program Stop / Fb", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("ProgramRegister")]
+        public JoinDataComplete ProgramRegister = new JoinDataComplete(new JoinData() { JoinNumber = 13, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Program Register / Fb", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("ProgramUnregister")]
+        public JoinDataComplete ProgramUnregister = new JoinDataComplete(new JoinData() { JoinNumber = 14, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Program UnRegister / Fb", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("ProgramName")]
+        public JoinDataComplete ProgramName = new JoinDataComplete(new JoinData() { JoinNumber = 11, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Program Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("ProgramCompiledTime")]
+        public JoinDataComplete ProgramCompiledTime = new JoinDataComplete(new JoinData() { JoinNumber = 12, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Program Compile Time", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("ProgramCrestronDatabaseVersion")]
+        public JoinDataComplete ProgramCrestronDatabaseVersion = new JoinDataComplete(new JoinData() { JoinNumber = 13, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Program Database Version", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("ProgramEnvironmentVersion")]
+        public JoinDataComplete ProgramEnvironmentVersion = new JoinDataComplete(new JoinData() { JoinNumber = 14, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Program Environment Version", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("AggregatedProgramInfo")]
+        public JoinDataComplete AggregatedProgramInfo = new JoinDataComplete(new JoinData() { JoinNumber = 15, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Program Aggregate Info Json", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("EthernetOffsetJoin")]
+        public JoinDataComplete EthernetOffsetJoin = new JoinDataComplete(new JoinData() { JoinNumber = 15, JoinSpan = 1 },
+            new JoinMetadata() { Label = "All Ethernet Data is offset between Nics by 5 - First Joins Start at 76", JoinCapabilities = eJoinCapabilities.None, JoinType = eJoinType.None });
+
+        [JoinName("HostName")]
+        public JoinDataComplete HostName = new JoinDataComplete(new JoinData() { JoinNumber = 76, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Ethernet Hostname", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("CurrentIpAddress")]
+        public JoinDataComplete CurrentIpAddress = new JoinDataComplete(new JoinData() { JoinNumber = 77, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Ethernet Current Ip Address", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("CurrentSubnetMask")]
+        public JoinDataComplete CurrentSubnetMask = new JoinDataComplete(new JoinData() { JoinNumber = 78, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Ethernet Current Subnet Mask", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("CurrentDefaultGateway")]
+        public JoinDataComplete CurrentDefaultGateway = new JoinDataComplete(new JoinData() { JoinNumber = 79, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Ethernet Current Default Gateway", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("StaticIpAddress")]
+        public JoinDataComplete StaticIpAddress = new JoinDataComplete(new JoinData() { JoinNumber = 80, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Ethernet Static Ip Address", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("StaticSubnetMask")]
+        public JoinDataComplete StaticSubnetMask = new JoinDataComplete(new JoinData() { JoinNumber = 81, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Ethernet Static Subnet Mask", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("StaticDefaultGateway")]
+        public JoinDataComplete StaticDefaultGateway = new JoinDataComplete(new JoinData() { JoinNumber = 82, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Ethernet Static Default Gateway", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("Domain")]
+        public JoinDataComplete Domain = new JoinDataComplete(new JoinData() { JoinNumber = 83, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Ethernet Domain", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("DnsServer")]
+        public JoinDataComplete DnsServer = new JoinDataComplete(new JoinData() { JoinNumber = 84, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Ethernet Dns Server", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("MacAddress")]
+        public JoinDataComplete MacAddress = new JoinDataComplete(new JoinData() { JoinNumber = 85, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Ethernet Mac Address", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("DhcpStatus")]
+        public JoinDataComplete DhcpStatus = new JoinDataComplete(new JoinData() { JoinNumber = 86, JoinSpan = 1 },
+            new JoinMetadata() { Label = "Processor Ethernet Dhcp Status", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+
+        public SystemMonitorJoinMap(uint joinStart)
+            : base(joinStart, typeof(SystemMonitorJoinMap))
         {
-            TimeZone = 1;
-
-            TimeZoneName = 1;
-            IOControllerVersion = 2;
-            SnmpAppVersion = 3;
-            BACnetAppVersion = 4;
-            ControllerVersion = 5;
-            SerialNumber = 6;
-            Model = 7;
-            Uptime = 8;
-            LastBoot = 9;
-
-
-            ProgramStartJoin = 10;
-
-            ProgramOffsetJoin = 5;
-
-            // Offset in groups of 5 joins
-            ProgramStart = 1;
-            ProgramStop = 2;
-            ProgramRegister = 3;
-            ProgramUnregister = 4;
-
-            ProgramName = 1;
-            ProgramCompiledTime = 2;
-            ProgramCrestronDatabaseVersion = 3;
-            ProgramEnvironmentVersion = 4;
-            AggregatedProgramInfo = 5;
-
-            EthernetStartJoin = 75;
-
-            EthernetOffsetJoin = 15;
-
-            // Offset in groups of 15
-            HostName = 1;
-            CurrentIpAddress = 2;
-            CurrentSubnetMask = 3;
-            CurrentDefaultGateway = 4;
-            StaticIpAddress = 5;
-            StaticSubnetMask = 6;
-            StaticDefaultGateway = 7;
-            Domain = 8;
-            DnsServer = 9;
-            MacAddress = 10;
-            DhcpStatus = 11;
-        }
-
-        public override void OffsetJoinNumbers(uint joinStart)
-        {
-            var joinOffset = joinStart - 1;
-
-            TimeZone = TimeZone + joinOffset;
-
-            TimeZoneName = TimeZoneName + joinOffset;
-            IOControllerVersion = IOControllerVersion + joinOffset;
-            SnmpAppVersion = SnmpAppVersion + joinOffset;
-            BACnetAppVersion = BACnetAppVersion + joinOffset;
-            ControllerVersion = ControllerVersion + joinOffset;
-
-            // Sets the initial join value where the iterated program joins will begin
-            ProgramStartJoin = ProgramStartJoin + joinOffset;
-            EthernetStartJoin = EthernetStartJoin + joinOffset;
         }
     }
 }
