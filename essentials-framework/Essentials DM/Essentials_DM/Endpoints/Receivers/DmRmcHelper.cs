@@ -110,9 +110,11 @@ namespace PepperDash.Essentials.DM
 	public class DmRmcHelper
 	{
 	    private static readonly Dictionary<string, Func<string, string, uint, CrestronGenericBaseDevice>> ProcessorFactoryDict;
-	    private static readonly Dictionary<string, Func<string, string, DMOutput, CrestronGenericBaseDevice>> ChassisCpu3Dict;
 
-	    private static readonly Dictionary<string, Func<string, string, uint, DMOutput, CrestronGenericBaseDevice>>
+	    private static readonly
+	        Dictionary
+	            <string,
+	                Func<string, string, DmRmcPropertiesConfig, Func<string, string, IDmSwitch>, CrestronGenericBaseDevice>>
 	        ChassisDict; 
 
 	    static DmRmcHelper()
@@ -147,7 +149,7 @@ namespace PepperDash.Essentials.DM
 	            }
 	        };
 
-            ChassisCpu3Dict = new Dictionary<string, Func<string, string, DMOutput, CrestronGenericBaseDevice>>
+            /*ChassisCpu3Dict = new Dictionary<string, Func<string, string, DMOutput, CrestronGenericBaseDevice>>
 	        {
 	            {"dmrmc100c", (k, n, d) => new DmRmcX100CController(k, n, new DmRmc100C(d))},
 	            {"dmrmc100s", (k, n, d) => new DmRmc100SController(k, n, d)},
@@ -177,9 +179,17 @@ namespace PepperDash.Essentials.DM
 	            },
                 {"hdbasetrx", (k,n,d) => new HDBaseTRxController(k,n, new HDRx3CB(d))},
                 {"dmrmc4k100c1g", (k,n,d) => new DmRmc4k100C1GController(k,n, new DmRmc4K100C1G(d))}
+	        };*/
+
+	        ChassisDict = new Dictionary
+	            <string,
+	                Func<string, string, DmRmcPropertiesConfig, Func<string, string, IDmSwitch>, CrestronGenericBaseDevice>
+	                >
+	        {
+	            {"dmrmc100s", (k, n, p, f) => new DmRmc100SController(k, n, p, f)}
 	        };
 
-	        ChassisDict = new Dictionary<string, Func<string, string, uint, DMOutput, CrestronGenericBaseDevice>>
+	        /*ChassisDict = new Dictionary<string, Func<string, string, uint, DMOutput, CrestronGenericBaseDevice>>
 	        {
 	            {"dmrmc100c", (k, n, i, d) => new DmRmcX100CController(k, n, new DmRmc100C(i, d))},
 	            {"dmrmc100s", (k, n, i, d) => new DmRmc100SController(k, n, i, d)},
@@ -209,7 +219,7 @@ namespace PepperDash.Essentials.DM
 	            },
 	            {"hdbasetrx", (k, n, i, d) => new HDBaseTRxController(k, n, new HDRx3CB(d))},
 	            {"dmrmc4k100c1g", (k, n, i, d) => new DmRmc4k100C1GController(k, n, new DmRmc4K100C1G(d))}
-	        };
+	        };*/
 	    }
 	    /// <summary>
 	    /// A factory method for various DmRmcControllers
@@ -227,74 +237,20 @@ namespace PepperDash.Essentials.DM
 			var pKey = props.ParentDeviceKey.ToLower();
 
 			// Non-DM-chassis endpoints
-			return pKey == "processor" ? GetDmRmcControllerForProcessor(key, name, typeName, ipid) : GetDmRmcControllerForChassis(key, name, typeName, props, pKey, ipid);
+			return pKey == "processor" ? GetDmRmcControllerForProcessor(key, name, typeName, ipid) : GetDmRmcControllerForChassis(key, name, typeName, props);
 		}
 
 	    private static CrestronGenericBaseDevice GetDmRmcControllerForChassis(string key, string name, string typeName,
-	        DmRmcPropertiesConfig props, string pKey, uint ipid)
+	        DmRmcPropertiesConfig props)
 	    {
-	        var parentDev = DeviceManager.GetDeviceForKey(pKey);
-	        if (!(parentDev is IDmSwitch))
-	        {
-	            Debug.Console(0, "Cannot create DM device '{0}'. '{1}' is not a DM Chassis.",
-	                key, pKey);
-	            return null;
-	        }
+	        Func<string, string, DmRmcPropertiesConfig, Func<string, string, IDmSwitch>, CrestronGenericBaseDevice> handler;
 
-	        var chassis = (parentDev as IDmSwitch).Chassis;
-	        var num = props.ParentOutputNumber;
-
-	        if (num <= 0 || num > chassis.NumberOfOutputs)
-	        {
-	            Debug.Console(0, "Cannot create DM device '{0}'. Output number '{1}' is out of range",
-	                key, num);
-	            return null;
-	        }
-
-	        var controller = parentDev as IDmSwitch;
-	        controller.RxDictionary.Add(num, key);
-	        // Catch constructor failures, mainly dues to IPID
-	        try
-	        {
-	            // Must use different constructor for CPU3 chassis types. No IPID
-	            if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
-	                chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
-	                chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
-	                chassis is DmMd128x128 || chassis is DmMd64x64)
-	            {
-	                return GetDmRmcControllerForCpu3Chassis(key, name, typeName, chassis, num, parentDev);
-	            }
-
-	            return GetDmRmcControllerForCpu2Chassis(key, name, typeName, ipid, chassis, num, parentDev);
-	        }
-	        catch (Exception e)
-	        {
-	            Debug.Console(0, "[{0}] WARNING: Cannot create DM-RMC device: {1}", key, e.Message);
-	            return null;
-	        }
-	    }
-
-	    private static CrestronGenericBaseDevice GetDmRmcControllerForCpu2Chassis(string key, string name, string typeName,
-	        uint ipid, Switch chassis, uint num, IKeyed parentDev)
-	    {
-	        Func<string, string, uint, DMOutput, CrestronGenericBaseDevice> handler;
 	        if (ChassisDict.TryGetValue(typeName.ToLower(), out handler))
 	        {
-	            return handler(key, name, ipid, chassis.Outputs[num]);
+	            return handler(key, name, props, GetDmSwitch);
 	        }
-	        Debug.Console(0, "Cannot create DM-RMC of type '{0}' with parent device {1}", typeName, parentDev.Key);
-	        return null;
-	    }
 
-	    private static CrestronGenericBaseDevice GetDmRmcControllerForCpu3Chassis(string key, string name, string typeName,
-	        Switch chassis, uint num, IKeyed parentDev)
-	    {
-	        Func<string, string, DMOutput, CrestronGenericBaseDevice> cpu3Handler;
-	        if (ChassisCpu3Dict.TryGetValue(typeName.ToLower(), out cpu3Handler))
-	        {
-	            return cpu3Handler(key, name, chassis.Outputs[num]);
-	        }
-	        Debug.Console(0, "Cannot create DM-RMC of type '{0}' with parent device {1}", typeName, parentDev.Key);
+	        Debug.Console(0, "Cannot create DM-RMC of type '{0}' with parent device {1}", typeName, props.ParentDeviceKey);
 	        return null;
 	    }
 
@@ -317,6 +273,34 @@ namespace PepperDash.Essentials.DM
 	            Debug.Console(0, "[{0}] WARNING: Cannot create DM-RMC device: {1}", key, e.Message);
                 return null;
 	        }
+	    }
+
+	    public static IDmSwitch GetDmSwitch(string key, string pKey)
+	    {
+            var parentDev = DeviceManager.GetDeviceForKey(pKey) as IDmSwitch;
+
+	        if (parentDev != null)
+	        {
+	            return parentDev;
+	        }
+
+	        Debug.Console(0, "Cannot create DM device '{0}'. '{1}' is not a DM Chassis.",
+	            key, pKey);
+	        return null;
+	    }
+
+	    public static DMOutput AddRmcAndGetDmOutput(string key, uint output, IDmSwitch dmSwitch)
+	    {
+	        var chassis = dmSwitch.Chassis;
+
+            if (output <= 0 || output > chassis.NumberOfOutputs)
+            {
+                Debug.Console(0, "Cannot add DM device '{0}' to switch '{2}'. Output number '{1}' is out of range",
+                    key, output, dmSwitch);
+            }
+            dmSwitch.RxDictionary.Add(output, key);
+
+	        return dmSwitch.Chassis.Outputs[output];
 	    }
 	}
 

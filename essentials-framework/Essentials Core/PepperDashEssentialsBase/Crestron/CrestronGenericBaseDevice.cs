@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharpPro.UI;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
 
@@ -153,6 +154,7 @@ namespace PepperDash.Essentials.Core
         }
 
         public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
+
     }
 
 

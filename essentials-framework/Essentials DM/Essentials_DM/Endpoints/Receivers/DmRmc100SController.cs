@@ -6,6 +6,7 @@ using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
 
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.DM.Config;
 
 namespace PepperDash.Essentials.DM
 {
@@ -36,23 +37,35 @@ namespace PepperDash.Essentials.DM
             InitializeRouting();
         }
 
-        public DmRmc100SController(string key, string name, DMOutput dmOutput):base(key, name)
+        /// <summary>
+        /// Defers creation of the actual hardware until the Preactivation phase
+        /// </summary>
+        /// <param name="key">Device Key</param>
+        /// <param name="name">Device Name</param>
+        /// <param name="props">Config from file</param>
+        /// <param name="preActivationFunc">Function to run to get the DM Chassis</param>
+        public DmRmc100SController(string key, string name, DmRmcPropertiesConfig props, Func<string, string, IDmSwitch> preActivationFunc ):base(key, name)
         {
             AddPreActivationAction(() =>
             {
-                _rmc = new DmRmc100S(dmOutput);
+                var dmSwitch = preActivationFunc(Key, props.ParentDeviceKey);
 
-                SetBaseClassRmcs();
+                var chassis = dmSwitch.Chassis;
 
-                InitializeRouting();
-            });
-        }
+                var dmOut = DmRmcHelper.AddRmcAndGetDmOutput(Key, props.ParentOutputNumber, dmSwitch);
 
-        public DmRmc100SController(string key, string name, uint ipId, DMOutput dmOutput) : base(key, name)
-        {
-            AddPreActivationAction(() =>
-            {
-                _rmc = new DmRmc100S(ipId, dmOutput);
+                if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
+                    chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
+                    chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
+                    chassis is DmMd128x128 || chassis is DmMd64x64)
+                {
+
+                    _rmc = new DmRmc100S(dmOut);
+                }
+                else
+                {
+                    _rmc = new DmRmc100S(props.Control.IpIdInt, dmOut);    
+                }
 
                 SetBaseClassRmcs();
 
