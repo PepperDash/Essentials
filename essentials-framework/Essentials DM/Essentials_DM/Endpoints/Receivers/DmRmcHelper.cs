@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.DM
     [Description("Wrapper class for all DM-RMC variants")]
 	public abstract class DmRmcControllerBase : CrestronGenericBridgeableBaseDevice
     {
-        private readonly EndpointReceiverBase _rmc; //kept here just in case. Only property or method on this class that's not device-specific is the DMOutput that it's attached to.
+        private EndpointReceiverBase _rmc; //kept here just in case. Only property or method on this class that's not device-specific is the DMOutput that it's attached to.
 
         public StringFeedback VideoOutputResolutionFeedback { get; protected set; }
         public StringFeedback EdidManufacturerFeedback { get; protected set; }
@@ -26,10 +26,20 @@ namespace PepperDash.Essentials.DM
         protected DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
 			: base(key, name, device)
         {
-            _rmc = device;
-			// if wired to a chassis, skip registration step in base class
+            SetRmc(device);
+        }
+
+        protected DmRmcControllerBase(string key, string name):base(key, name)
+        {
+            
+        }
+
+        protected void SetRmc(EndpointReceiverBase rmc)
+        {
+            _rmc = rmc;
+            // if wired to a chassis, skip registration step in base class
             PreventRegistration = _rmc.DMOutput != null;
-			
+
             AddToFeedbackList(VideoOutputResolutionFeedback, EdidManufacturerFeedback, EdidSerialNumberFeedback, EdidNameFeedback, EdidPreferredTimingFeedback);
         }
 
@@ -83,6 +93,16 @@ namespace PepperDash.Essentials.DM
         protected DmHdBaseTControllerBase(string key, string name, HDBaseTBase rmc)
             : base(key, name, rmc)
         {
+            SetRmc(rmc);
+        }
+
+        protected DmHdBaseTControllerBase(string key, string name) : base(key, name)
+        {
+            
+        }
+
+        protected void SetRmc(HDBaseTBase rmc)
+        {
             Rmc = rmc;
         }
     }
@@ -130,7 +150,7 @@ namespace PepperDash.Essentials.DM
             ChassisCpu3Dict = new Dictionary<string, Func<string, string, DMOutput, CrestronGenericBaseDevice>>
 	        {
 	            {"dmrmc100c", (k, n, d) => new DmRmcX100CController(k, n, new DmRmc100C(d))},
-	            {"dmrmc100s", (k, n, d) => new DmRmc100SController(k, n, new DmRmc100S(d))},
+	            {"dmrmc100s", (k, n, d) => new DmRmc100SController(k, n, d)},
 	            {"dmrmc4k100c", (k, n, d) => new DmRmcX100CController(k, n, new DmRmc4k100C(d))},
 	            {"dmrmc4kz100c", (k, n, d) => new DmRmc4kZ100CController(k, n, new DmRmc4kz100C(d))},
 	            {"dmrmc150s", (k, n, d) => new DmRmc150SController(k, n, new DmRmc150S(d))},
@@ -159,38 +179,38 @@ namespace PepperDash.Essentials.DM
                 {"dmrmc4k100c1g", (k,n,d) => new DmRmc4k100C1GController(k,n, new DmRmc4K100C1G(d))}
 	        };
 
-            ChassisDict = new Dictionary<string, Func<string, string, uint, DMOutput, CrestronGenericBaseDevice>>
+	        ChassisDict = new Dictionary<string, Func<string, string, uint, DMOutput, CrestronGenericBaseDevice>>
 	        {
-	            {"dmrmc100c", (k, n, i, d) => new DmRmcX100CController(k, n, new DmRmc100C(i,d))},
-	            {"dmrmc100s", (k, n,i, d) => new DmRmc100SController(k, n, new DmRmc100S(i,d))},
-	            {"dmrmc4k100c", (k, n,i, d) => new DmRmcX100CController(k, n, new DmRmc4k100C(i,d))},
-	            {"dmrmc4kz100c", (k, n,i, d) => new DmRmc4kZ100CController(k, n, new DmRmc4kz100C(i,d))},
-	            {"dmrmc150s", (k, n,i, d) => new DmRmc150SController(k, n, new DmRmc150S(i,d))},
-	            {"dmrmc200c", (k, n,i, d) => new DmRmc200CController(k, n, new DmRmc200C(i,d))},
-	            {"dmrmc200s", (k, n,i, d) => new DmRmc200SController(k, n, new DmRmc200S(i,d))},
-	            {"dmrmc200s2", (k, n,i, d) => new DmRmc200S2Controller(k, n, new DmRmc200S2(i,d))},
-	            {"dmrmcscalerc", (k, n,i, d) => new DmRmcScalerCController(k, n, new DmRmcScalerC(i,d))},
-	            {"dmrmcscalers", (k, n,i, d) => new DmRmcScalerSController(k, n, new DmRmcScalerS(i,d))},
+	            {"dmrmc100c", (k, n, i, d) => new DmRmcX100CController(k, n, new DmRmc100C(i, d))},
+	            {"dmrmc100s", (k, n, i, d) => new DmRmc100SController(k, n, i, d)},
+	            {"dmrmc4k100c", (k, n, i, d) => new DmRmcX100CController(k, n, new DmRmc4k100C(i, d))},
+	            {"dmrmc4kz100c", (k, n, i, d) => new DmRmc4kZ100CController(k, n, new DmRmc4kz100C(i, d))},
+	            {"dmrmc150s", (k, n, i, d) => new DmRmc150SController(k, n, new DmRmc150S(i, d))},
+	            {"dmrmc200c", (k, n, i, d) => new DmRmc200CController(k, n, new DmRmc200C(i, d))},
+	            {"dmrmc200s", (k, n, i, d) => new DmRmc200SController(k, n, new DmRmc200S(i, d))},
+	            {"dmrmc200s2", (k, n, i, d) => new DmRmc200S2Controller(k, n, new DmRmc200S2(i, d))},
+	            {"dmrmcscalerc", (k, n, i, d) => new DmRmcScalerCController(k, n, new DmRmcScalerC(i, d))},
+	            {"dmrmcscalers", (k, n, i, d) => new DmRmcScalerSController(k, n, new DmRmcScalerS(i, d))},
 	            {
 	                "dmrmcscalers2",
-	                (k, n,i, d) => new DmRmcScalerS2Controller(k, n, new DmRmcScalerS2(d))
+	                (k, n, i, d) => new DmRmcScalerS2Controller(k, n, new DmRmcScalerS2(d))
 	            },
 	            {
 	                "dmrmc4kscalerc",
-	                (k, n,i, d) => new DmRmc4kScalerCController(k, n, new DmRmc4kScalerC(d))
+	                (k, n, i, d) => new DmRmc4kScalerCController(k, n, new DmRmc4kScalerC(d))
 	            },
 	            {
 	                "dmrmc4kscalercdsp",
-	                (k, n,i, d) => new DmRmc4kScalerCDspController(k, n, new DmRmc4kScalerCDsp(d))
+	                (k, n, i, d) => new DmRmc4kScalerCDspController(k, n, new DmRmc4kScalerCDsp(d))
 	            },
 	            {
 	                "dmrmc4kzscalerc",
-	                (k, n,i, d) => new DmRmc4kZScalerCController(k, n, new DmRmc4kzScalerC(d))
+	                (k, n, i, d) => new DmRmc4kZScalerCController(k, n, new DmRmc4kzScalerC(d))
 	            },
-                {"hdbasetrx", (k,n,i,d) => new HDBaseTRxController(k,n, new HDRx3CB(d))},
-                {"dmrmc4k100c1g", (k,n,i,d) => new DmRmc4k100C1GController(k,n, new DmRmc4K100C1G(d))}
+	            {"hdbasetrx", (k, n, i, d) => new HDBaseTRxController(k, n, new HDRx3CB(d))},
+	            {"dmrmc4k100c1g", (k, n, i, d) => new DmRmc4k100C1GController(k, n, new DmRmc4K100C1G(d))}
 	        };
-        }
+	    }
 	    /// <summary>
 	    /// A factory method for various DmRmcControllers
 	    /// </summary>

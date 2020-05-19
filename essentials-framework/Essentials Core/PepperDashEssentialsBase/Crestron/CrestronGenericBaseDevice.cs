@@ -30,7 +30,19 @@ namespace PepperDash.Essentials.Core
 
 	    protected CrestronGenericBaseDevice(string key, string name, GenericBase hardware)
             : base(key, name)
-        {
+	    {
+	        SetHardwareAndRegisterEvents(hardware);
+	    }
+
+        //Added to support creating RMC and DM TX hardware during pre-activation
+	    protected CrestronGenericBaseDevice(string key, string name) : base(key, name)
+	    {
+	        
+	    }
+
+        //Added to support creating RMC and DM TX hardware during pre-activation
+	    protected void SetHardwareAndRegisterEvents(GenericBase hardware)
+	    {
             Feedbacks = new FeedbackCollection<Feedback>();
 
             Hardware = hardware;
@@ -40,7 +52,7 @@ namespace PepperDash.Essentials.Core
             AddToFeedbackList(IsOnline, IpConnectionsText);
 
             CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
-        }
+	    }
 
 		/// <summary>
 		/// Make sure that overriding classes call this!
@@ -135,6 +147,10 @@ namespace PepperDash.Essentials.Core
         {
         }
 
+        //Added to support creating RMC and DM TX hardware during pre-activation
+        protected CrestronGenericBridgeableBaseDevice(string key, string name):base(key, name)
+        {
+        }
 
         public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
     }
