@@ -367,16 +367,16 @@ namespace PepperDash.Essentials.DM
             switch (args.EventId)
             {
                 case EndpointInputStreamEventIds.HdcpSupportOffFeedbackEventId:
-                    if (inputStream == Tx.HdmiInputs[1])
-                        HdmiIn1HdcpCapabilityFeedback.FireUpdate();
-                    else if (inputStream == Tx.HdmiInputs[2])
-                        HdmiIn2HdcpCapabilityFeedback.FireUpdate();
+                    if (inputStream == Tx.HdmiInputs[1]) HdmiIn1HdcpCapabilityFeedback.FireUpdate();
+                    if (inputStream == Tx.HdmiInputs[2]) HdmiIn2HdcpCapabilityFeedback.FireUpdate();
                     break;
                 case EndpointInputStreamEventIds.HdcpSupportOnFeedbackEventId:
-                    if (inputStream == Tx.HdmiInputs[1])
-                        HdmiIn1HdcpCapabilityFeedback.FireUpdate();
-                    else if (inputStream == Tx.HdmiInputs[2])
-                        HdmiIn2HdcpCapabilityFeedback.FireUpdate();
+                    if (inputStream == Tx.HdmiInputs[1]) HdmiIn1HdcpCapabilityFeedback.FireUpdate();
+                    if (inputStream == Tx.HdmiInputs[2]) HdmiIn2HdcpCapabilityFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
+                    if (inputStream == Tx.HdmiInputs[1]) Hdmi1VideoSyncFeedback.FireUpdate();
+                    if (inputStream == Tx.HdmiInputs[2]) Hdmi2VideoSyncFeedback.FireUpdate();
                     break;
             }
         }
