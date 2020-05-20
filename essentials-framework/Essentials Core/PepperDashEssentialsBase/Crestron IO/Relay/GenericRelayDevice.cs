@@ -21,7 +21,8 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         public BoolFeedback OutputIsOnFeedback { get; private set; }
 
-        public GenericRelayDevice(string key, Relay relay):
+        //Maintained for compatibility with PepperDash.Essentials.Core.Devices.CrestronProcessor
+        public GenericRelayDevice(string key, Relay relay) :
             base(key)
         {
             OutputIsOnFeedback = new BoolFeedback(new Func<bool>(() => RelayOutput.State));
@@ -29,12 +30,12 @@ namespace PepperDash.Essentials.Core.CrestronIO
             RelayOutput = relay;
             RelayOutput.Register();
 
-            RelayOutput.StateChange += RelayOutput_StateChange;
+            RelayOutput.StateChange += new RelayEventHandler(RelayOutput_StateChange);
         }
 
         public GenericRelayDevice(string key, string name, Func<IOPortConfig, Relay> postActivationFunc,
             IOPortConfig config)
-            : base(key, name )
+            : base(key, name)
         {
 
             AddPostActivationAction(() =>
@@ -47,6 +48,8 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
             });
         }
+
+        #region PreActivate
 
         private static Relay GetRelay(IOPortConfig dc)
         {
@@ -84,13 +87,20 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
             
             return relayDevice.RelayPorts[dc.PortNumber];
-
         }
+
+        #endregion
+
+        #region Events
 
         void RelayOutput_StateChange(Relay relay, RelayEventArgs args)
         {
             OutputIsOnFeedback.FireUpdate();
         }
+
+        #endregion
+
+        #region Methods
 
         public void OpenRelay()
         {
@@ -110,6 +120,8 @@ namespace PepperDash.Essentials.Core.CrestronIO
                 CloseRelay();
         }
 
+        #endregion
+
         #region ISwitchedOutput Members
 
         void ISwitchedOutput.On()
@@ -123,6 +135,8 @@ namespace PepperDash.Essentials.Core.CrestronIO
         }
 
         #endregion
+
+        #region Bridge Linking
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
@@ -155,6 +169,10 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
             OutputIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Relay.JoinNumber]);
         }
+
+        #endregion
+
+        #region Factory
 
         public class GenericRelayDeviceFactory : EssentialsDeviceFactory<GenericRelayDevice>
         {
@@ -228,6 +246,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
             }
         }
+
+        #endregion
+
 
     }
 
