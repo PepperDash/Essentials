@@ -186,7 +186,7 @@ namespace PepperDash.Essentials.DM
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            DmTxControllerJoinMap joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
+            var joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
 
             if (Hdmi1VideoSyncFeedback != null)
             {
@@ -204,57 +204,58 @@ namespace PepperDash.Essentials.DM
         {
             Debug.Console(2, this, "Executing Numeric Switch to input {0}.", input);
 
-            if (type == eRoutingSignalType.Video)
+            switch (type)
             {
-                switch (input)
-                {
-                    case 0:
+                case eRoutingSignalType.Video:
+                    switch (input)
+                    {
+                        case 0:
                         {
                             ExecuteSwitch(eVst.Auto, null, type);
                             break;
                         }
-                    case 1:
+                        case 1:
                         {
                             ExecuteSwitch(HdmiIn1.Selector, null, type);
                             break;
                         }
-                    case 2:
+                        case 2:
                         {
                             ExecuteSwitch(HdmiIn2.Selector, null, type);
                             break;
                         }
-                    case 3:
+                        case 3:
                         {
                             ExecuteSwitch(eVst.AllDisabled, null, type);
                             break;
                         }
-                }
-            }
-            else if (type == eRoutingSignalType.Audio)
-            {
-                switch (input)
-                {
-                    case 0:
+                    }
+                    break;
+                case eRoutingSignalType.Audio:
+                    switch (input)
+                    {
+                        case 0:
                         {
                             ExecuteSwitch(eAst.Auto, null, type);
                             break;
                         }
-                    case 1:
+                        case 1:
                         {
                             ExecuteSwitch(eAst.Hdmi1, null, type);
                             break;
                         }
-                    case 2:
+                        case 2:
                         {
                             ExecuteSwitch(eAst.Hdmi2, null, type);
                             break;
                         }
-                    case 3:
+                        case 3:
                         {
                             ExecuteSwitch(eAst.AllDisabled, null, type);
                             break;
                         }
-                }
+                    }
+                    break;
             }
         }
 
