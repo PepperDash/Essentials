@@ -132,7 +132,6 @@
     <Compile Include="Codec\iHasDialer.cs" />
     <Compile Include="Codec\iHasDirectory.cs" />
     <Compile Include="Codec\iHasScheduleAwareness.cs" />
-    <Compile Include="Crestron\Gateways\CenRfgwController.cs" />
     <Compile Include="Display\ComTcpDisplayBase.cs" />
     <Compile Include="Display\AvocorVTFDisplay.cs" />
     <Compile Include="Display\InputInterfaces.cs" />
