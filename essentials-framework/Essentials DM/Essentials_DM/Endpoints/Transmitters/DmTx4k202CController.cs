@@ -100,36 +100,19 @@ namespace PepperDash.Essentials.DM
             Tx.HdmiInputs[2].InputStreamChange += InputStreamChangeEvent;
             Tx.BaseEvent += Tx_BaseEvent;
 
-            VideoSourceNumericFeedback = new IntFeedback(() =>
-            {
-                return (int)Tx.VideoSourceFeedback;
-            });
-            AudioSourceNumericFeedback = new IntFeedback(() =>
-            {
-                return (int)Tx.AudioSourceFeedback;
-            });
+            VideoSourceNumericFeedback = new IntFeedback(() => (int)Tx.VideoSourceFeedback);
 
-            HdmiIn1HdcpCapabilityFeedback = new IntFeedback("HdmiIn1HdcpCapability", () =>
-            {
-                return (int)tx.HdmiInputs[1].HdcpCapabilityFeedback;
-            });
+            AudioSourceNumericFeedback = new IntFeedback(() => (int)Tx.AudioSourceFeedback);
 
-            HdmiIn2HdcpCapabilityFeedback = new IntFeedback("HdmiIn2HdcpCapability", () =>
-            {
-                return (int)tx.HdmiInputs[2].HdcpCapabilityFeedback;
-            });
+            HdmiIn1HdcpCapabilityFeedback = new IntFeedback("HdmiIn1HdcpCapability", () => (int)tx.HdmiInputs[1].HdcpCapabilityFeedback);
+
+            HdmiIn2HdcpCapabilityFeedback = new IntFeedback("HdmiIn2HdcpCapability", () => (int)tx.HdmiInputs[2].HdcpCapabilityFeedback);
 
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
 
-            Hdmi1VideoSyncFeedback = new BoolFeedback(() =>
-            {
-                return (bool)tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue;
-            });
+            Hdmi1VideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue);
 
-            Hdmi2VideoSyncFeedback = new BoolFeedback(() =>
-            {
-                return (bool)tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue;
-            });
+            Hdmi2VideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue);
 
             var combinedFuncs = new VideoStatusFuncsWrapper
             {
@@ -287,38 +270,41 @@ namespace PepperDash.Essentials.DM
         {
             Debug.Console(2, "{0} event {1} stream {2}", this.Tx.ToString(), inputStream.ToString(), args.EventId.ToString());
 
-            if (args.EventId == EndpointInputStreamEventIds.HdcpSupportOffFeedbackEventId)
+            switch (args.EventId)
             {
-                if (inputStream == Tx.HdmiInputs[1])
-                    HdmiIn1HdcpCapabilityFeedback.FireUpdate();
-                else if (inputStream == Tx.HdmiInputs[2])
-                    HdmiIn2HdcpCapabilityFeedback.FireUpdate();
-            }
-            else if (args.EventId == EndpointInputStreamEventIds.HdcpSupportOnFeedbackEventId)
-            {
-                if (inputStream == Tx.HdmiInputs[1])
-                    HdmiIn1HdcpCapabilityFeedback.FireUpdate();
-                else if (inputStream == Tx.HdmiInputs[2])
-                    HdmiIn2HdcpCapabilityFeedback.FireUpdate();
+                case EndpointInputStreamEventIds.HdcpSupportOffFeedbackEventId:
+                    if (inputStream == Tx.HdmiInputs[1]) HdmiIn1HdcpCapabilityFeedback.FireUpdate();
+                    if (inputStream == Tx.HdmiInputs[2]) HdmiIn2HdcpCapabilityFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.HdcpSupportOnFeedbackEventId:
+                    if (inputStream == Tx.HdmiInputs[1]) HdmiIn1HdcpCapabilityFeedback.FireUpdate();
+                    if (inputStream == Tx.HdmiInputs[2]) HdmiIn2HdcpCapabilityFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
+                    if (inputStream == Tx.HdmiInputs[1]) Hdmi1VideoSyncFeedback.FireUpdate();
+                    if (inputStream == Tx.HdmiInputs[2]) Hdmi2VideoSyncFeedback.FireUpdate();
+                    break;
             }
         }
 
         void Tx_BaseEvent(GenericBase device, BaseEventArgs args)
         {
             var id = args.EventId;
-            if (id == EndpointTransmitterBase.VideoSourceFeedbackEventId)
-            {
-                Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
-                VideoSourceNumericFeedback.FireUpdate();
-                ActiveVideoInputFeedback.FireUpdate();
-            }
+            Debug.Console(2, this, "EventId {0}", args.EventId);
 
-            // ------------------------------ incomplete -----------------------------------------
-            else if (id == EndpointTransmitterBase.AudioSourceFeedbackEventId)
+            switch (id)
             {
-                Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
-                AudioSourceNumericFeedback.FireUpdate();
-            }
+                case EndpointTransmitterBase.VideoSourceFeedbackEventId:
+                    Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
+                    ActiveVideoInputFeedback.FireUpdate();
+                    VideoSourceNumericFeedback.FireUpdate();
+                    ActiveVideoInputFeedback.FireUpdate();
+                    break;
+                case EndpointTransmitterBase.AudioSourceFeedbackEventId:
+                    Debug.Console(2, this, " Audio Source : {0}", Tx.AudioSourceFeedback);
+                    AudioSourceNumericFeedback.FireUpdate();
+                    break;
+            } 
         }
 
         /// <summary>
@@ -326,11 +312,12 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void FowardInputStreamChange(RoutingInputPortWithVideoStatuses inputPort, int eventId)
         {
-            if (eventId == EndpointInputStreamEventIds.SyncDetectedFeedbackEventId)
+            if (eventId != EndpointInputStreamEventIds.SyncDetectedFeedbackEventId)
             {
-                inputPort.VideoStatus.VideoSyncFeedback.FireUpdate();
-                AnyVideoInput.VideoStatus.VideoSyncFeedback.FireUpdate();
+                return;
             }
+            inputPort.VideoStatus.VideoSyncFeedback.FireUpdate();
+            AnyVideoInput.VideoStatus.VideoSyncFeedback.FireUpdate();
         }
 
         /// <summary>
