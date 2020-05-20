@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -12,18 +8,16 @@ using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash.Essentials.DM.Config;
 
 namespace PepperDash.Essentials.DM
 {
-	// using eVst = Crestron.SimplSharpPro.DeviceSupport.eX02VideoSourceType;
-
     /// <summary>
     /// Controller class for all DM-TX-201C/S/F transmitters
     /// </summary>
+    [Description("Wrapper class for DM-TX-201-C Endpoint")]
     public class DmTx201CController : DmTxControllerBase, ITxRouting, IHasFreeRun, IVgaBrightnessContrastControls
 	{
-		public DmTx201C Tx { get; private set; } // uses the 201S class as it is the base class for the 201C
+		public DmTx201C Tx { get; private set; }
 
 		public RoutingInputPortWithVideoStatuses HdmiInput { get; private set; }
 		public RoutingInputPortWithVideoStatuses VgaInput { get; private set; }
