@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -12,7 +8,6 @@ using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash.Essentials.DM.Config;
 
 namespace PepperDash.Essentials.DM
 {
@@ -21,7 +16,7 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// Controller class for all DM-TX-201C/S/F transmitters
     /// </summary>
-    public class DmTx200Controller : DmTxControllerBase, ITxRouting, IHasFeedback, IHasFreeRun, IVgaBrightnessContrastControls
+    public class DmTx200Controller : DmTxControllerBase, ITxRouting, IHasFreeRun, IVgaBrightnessContrastControls
     {
         public DmTx200C2G Tx { get; private set; }
 
@@ -52,15 +47,10 @@ namespace PepperDash.Essentials.DM
                         Tx.VideoSourceFeedback == DmTx200Base.eSourceSelection.Analog ||
                         Tx.VideoSourceFeedback == DmTx200Base.eSourceSelection.Disable)
                     return Tx.VideoSourceFeedback;
-                else // auto
-                {
-                    if (Tx.HdmiInput.SyncDetectedFeedback.BoolValue)
-                        return DmTx200Base.eSourceSelection.Digital;
-                    else if (Tx.VgaInput.SyncDetectedFeedback.BoolValue)
-                        return DmTx200Base.eSourceSelection.Analog;
-                    else
-                        return DmTx200Base.eSourceSelection.Disable;
-                }
+                if (Tx.HdmiInput.SyncDetectedFeedback.BoolValue)
+                    return DmTx200Base.eSourceSelection.Digital;
+
+                return Tx.VgaInput.SyncDetectedFeedback.BoolValue ? DmTx200Base.eSourceSelection.Analog : DmTx200Base.eSourceSelection.Disable;
             }
         }
 
@@ -106,45 +96,28 @@ namespace PepperDash.Essentials.DM
             ActiveVideoInputFeedback = new StringFeedback("ActiveVideoInput",
                 () => ActualActiveVideoInput.ToString());
 
-            Tx.HdmiInput.InputStreamChange += new EndpointInputStreamChangeEventHandler(InputStreamChangeEvent);
+            Tx.HdmiInput.InputStreamChange += InputStreamChangeEvent;
+            Tx.VgaInput.InputStreamChange += VgaInputOnInputStreamChange;
             Tx.BaseEvent += Tx_BaseEvent;
-            Tx.OnlineStatusChange += new OnlineStatusChangeEventHandler(Tx_OnlineStatusChange);
+            Tx.OnlineStatusChange += Tx_OnlineStatusChange;
 
-            VideoSourceNumericFeedback = new IntFeedback(() =>
-            {
-                return (int)Tx.VideoSourceFeedback;
-            });
-            AudioSourceNumericFeedback = new IntFeedback(() =>
-            {
-                return (int)Tx.AudioSourceFeedback;
-            });
+            VideoSourceNumericFeedback = new IntFeedback(() => (int)Tx.VideoSourceFeedback);
+            AudioSourceNumericFeedback = new IntFeedback(() => (int)Tx.AudioSourceFeedback);
 
-            HdmiInHdcpCapabilityFeedback = new IntFeedback("HdmiInHdcpCapability", () =>
-            {
-                if (tx.HdmiInput.HdcpSupportOnFeedback.BoolValue)
-                    return 1;
-                else
-                    return 0;
-            });
+            HdmiInHdcpCapabilityFeedback = new IntFeedback("HdmiInHdcpCapability", () => tx.HdmiInput.HdcpSupportOnFeedback.BoolValue ? 1 : 0);
 
             HdcpSupportCapability = eHdcpCapabilityType.HdcpAutoSupport;
 
-            HdmiVideoSyncFeedback = new BoolFeedback(() =>
-            {
-                return (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue;
-            });
+            HdmiVideoSyncFeedback = new BoolFeedback(() => tx.HdmiInput.SyncDetectedFeedback.BoolValue);
 
-            VgaVideoSyncFeedback = new BoolFeedback(() =>
-            {
-                return (bool)tx.VgaInput.SyncDetectedFeedback.BoolValue;
-            });
+            VgaVideoSyncFeedback = new BoolFeedback(() => tx.VgaInput.SyncDetectedFeedback.BoolValue);
 
             FreeRunEnabledFeedback = new BoolFeedback(() => tx.VgaInput.FreeRunFeedback == eDmFreeRunSetting.Enabled);
 
             VgaBrightnessFeedback = new IntFeedback(() => tx.VgaInput.VideoControls.BrightnessFeedback.UShortValue);
             VgaContrastFeedback = new IntFeedback(() => tx.VgaInput.VideoControls.ContrastFeedback.UShortValue);
 
-            tx.VgaInput.VideoControls.ControlChange += new Crestron.SimplSharpPro.DeviceSupport.GenericEventHandler(VideoControls_ControlChange);
+            tx.VgaInput.VideoControls.ControlChange += VideoControls_ControlChange;
 
 
             var combinedFuncs = new VideoStatusFuncsWrapper
@@ -153,20 +126,13 @@ namespace PepperDash.Essentials.DM
                     (ActualActiveVideoInput == DmTx200Base.eSourceSelection.Digital
                     && tx.HdmiInput.VideoAttributes.HdcpActiveFeedback.BoolValue),
 
-                HdcpStateFeedbackFunc = () =>
-                {
-                    if (ActualActiveVideoInput == DmTx200Base.eSourceSelection.Digital)
-                        return tx.HdmiInput.VideoAttributes.HdcpStateFeedback.ToString();
-                    return "";
-                },
+                HdcpStateFeedbackFunc = () => ActualActiveVideoInput == DmTx200Base.eSourceSelection.Digital ? tx.HdmiInput.VideoAttributes.HdcpStateFeedback.ToString() : "",
 
                 VideoResolutionFeedbackFunc = () =>
                 {
                     if (ActualActiveVideoInput == DmTx200Base.eSourceSelection.Digital)
                         return tx.HdmiInput.VideoAttributes.GetVideoResolutionString();
-                    if (ActualActiveVideoInput == DmTx200Base.eSourceSelection.Analog)
-                        return tx.VgaInput.VideoAttributes.GetVideoResolutionString();
-                    return "";
+                    return ActualActiveVideoInput == DmTx200Base.eSourceSelection.Analog ? tx.VgaInput.VideoAttributes.GetVideoResolutionString() : "";
                 },
                 VideoSyncFeedbackFunc = () =>
                 (ActualActiveVideoInput == DmTx200Base.eSourceSelection.Digital
@@ -195,18 +161,32 @@ namespace PepperDash.Essentials.DM
             DmOutput.Port = Tx.DmOutput;
         }
 
-        void VideoControls_ControlChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
+        private void VgaInputOnInputStreamChange(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
+        {
+            switch (args.EventId)
+            {
+                case EndpointInputStreamEventIds.FreeRunFeedbackEventId:
+                    FreeRunEnabledFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
+                    VgaVideoSyncFeedback.FireUpdate();
+                    break;
+            }
+        }
+
+        void VideoControls_ControlChange(object sender, GenericEventArgs args)
         {
             var id = args.EventId;
             Debug.Console(2, this, "EventId {0}", args.EventId);
 
-            if (id == VideoControlsEventIds.BrightnessFeedbackEventId)
+            switch (id)
             {
-                VgaBrightnessFeedback.FireUpdate();
-            }
-            else if (id == VideoControlsEventIds.ContrastFeedbackEventId)
-            {
-                VgaContrastFeedback.FireUpdate();
+                case VideoControlsEventIds.BrightnessFeedbackEventId:
+                    VgaBrightnessFeedback.FireUpdate();
+                    break;
+                case VideoControlsEventIds.ContrastFeedbackEventId:
+                    VgaContrastFeedback.FireUpdate();
+                    break;
             }
         }
 
@@ -233,7 +213,7 @@ namespace PepperDash.Essentials.DM
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            DmTxControllerJoinMap joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
+            var joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
 
             if (HdmiVideoSyncFeedback != null)
             {
@@ -253,14 +233,7 @@ namespace PepperDash.Essentials.DM
         /// <param name="enable"></param>
         public void SetFreeRunEnabled(bool enable)
         {
-            if (enable)
-            {
-                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Enabled;
-            }
-            else
-            {
-                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Disabled;
-            }
+            Tx.VgaInput.FreeRun = enable ? eDmFreeRunSetting.Enabled : eDmFreeRunSetting.Disabled;
         }
 
         /// <summary>
@@ -323,32 +296,35 @@ namespace PepperDash.Essentials.DM
             var id = args.EventId;
             Debug.Console(2, this, "EventId {0}", args.EventId);
 
-            if (id == EndpointTransmitterBase.VideoSourceFeedbackEventId)
+            switch (id)
             {
-                Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
-                VideoSourceNumericFeedback.FireUpdate();
-                ActiveVideoInputFeedback.FireUpdate();
-            }
-
-            // ------------------------------ incomplete -----------------------------------------
-            else if (id == EndpointTransmitterBase.AudioSourceFeedbackEventId)
-            {
-                Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
-                AudioSourceNumericFeedback.FireUpdate();
+                case EndpointTransmitterBase.VideoSourceFeedbackEventId:
+                    Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
+                    VideoSourceNumericFeedback.FireUpdate();
+                    ActiveVideoInputFeedback.FireUpdate();
+                    break;
+                case EndpointTransmitterBase.AudioSourceFeedbackEventId:
+                    Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
+                    AudioSourceNumericFeedback.FireUpdate();
+                    break;
             }
         }
 
         void InputStreamChangeEvent(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
         {
-            Debug.Console(2, "{0} event {1} stream {2}", this.Tx.ToString(), inputStream.ToString(), args.EventId.ToString());
+            Debug.Console(2, "{0} event {1} stream {2}", Tx.ToString(), inputStream.ToString(), args.EventId.ToString());
 
-            if (args.EventId == EndpointInputStreamEventIds.HdcpSupportOffFeedbackEventId)
+            switch (args.EventId)
             {
-                HdmiInHdcpCapabilityFeedback.FireUpdate();
-            }
-            else if (args.EventId == EndpointInputStreamEventIds.HdcpSupportOnFeedbackEventId)
-            {
-                HdmiInHdcpCapabilityFeedback.FireUpdate();
+                case EndpointInputStreamEventIds.HdcpSupportOffFeedbackEventId:
+                    HdmiInHdcpCapabilityFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.HdcpSupportOnFeedbackEventId:
+                    HdmiInHdcpCapabilityFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
+                    VgaVideoSyncFeedback.FireUpdate();
+                    break;
             }
         }
 
@@ -357,11 +333,12 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void FowardInputStreamChange(RoutingInputPortWithVideoStatuses inputPort, int eventId)
         {
-            if (eventId == EndpointInputStreamEventIds.SyncDetectedFeedbackEventId)
+            if (eventId != EndpointInputStreamEventIds.SyncDetectedFeedbackEventId)
             {
-                inputPort.VideoStatus.VideoSyncFeedback.FireUpdate();
-                AnyVideoInput.VideoStatus.VideoSyncFeedback.FireUpdate();
+                return;
             }
+            inputPort.VideoStatus.VideoSyncFeedback.FireUpdate();
+            AnyVideoInput.VideoStatus.VideoSyncFeedback.FireUpdate();
         }
 
         /// <summary>
