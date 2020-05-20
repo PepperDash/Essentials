@@ -146,9 +146,10 @@ namespace PepperDash.Essentials.DM
             };
 
             AnyVideoInput = new RoutingInputPortWithVideoStatuses(DmPortName.AnyVideoIn,
-    eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.None, 0, this, combinedFuncs);
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.None, 0, this, combinedFuncs);
 
-            DmOutput = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, null, this);
+            DmOutput = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
+                eRoutingPortConnectionType.DmCat, null, this);
 
             AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,
                 AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
@@ -324,7 +325,7 @@ namespace PepperDash.Essentials.DM
                     HdmiInHdcpCapabilityFeedback.FireUpdate();
                     break;
                 case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
-                    VgaVideoSyncFeedback.FireUpdate();
+                    HdmiVideoSyncFeedback.FireUpdate();
                     break;
             }
         }

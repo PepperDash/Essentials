@@ -342,7 +342,7 @@ namespace PepperDash.Essentials.DM
                     HdmiInHdcpCapabilityFeedback.FireUpdate();
                     break;
                 case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
-                    VgaVideoSyncFeedback.FireUpdate();
+                    HdmiVideoSyncFeedback.FireUpdate();
                     break;
             }
 
