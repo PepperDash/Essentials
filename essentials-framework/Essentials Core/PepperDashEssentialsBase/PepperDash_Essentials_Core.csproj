@@ -129,6 +129,7 @@
     <Compile Include="Bridges\JoinMaps\GenericLightingJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\GenericRelayControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\GlsOccupancySensorBaseJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\HdMdNxM4kEControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\HdMdxxxCEControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\IBasicCommunicationJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\IDigitalInputJoinMap.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Devices\DeviceFeedbackExtensions.cs" />
     <Compile Include="Devices\EssentialsBridgeableDevice.cs" />
     <Compile Include="Devices\EssentialsDevice.cs" />
+    <Compile Include="Devices\IProjectorInterfaces.cs" />
     <Compile Include="Devices\PC\InRoomPc.cs" />
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
