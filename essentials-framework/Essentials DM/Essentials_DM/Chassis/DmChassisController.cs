@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Cards;
@@ -42,6 +43,8 @@ namespace PepperDash.Essentials.DM
 
         public IntFeedback SystemIdFeebdack { get; private set; }
         public BoolFeedback SystemIdBusyFeedback { get; private set; }
+        public BoolFeedback EnableAudioBreakawayFeedback { get; private set; }
+        public BoolFeedback EnableUsbBreakawayFeedback { get; private set; }
 
         public Dictionary<uint, IntFeedback> InputCardHdcpCapabilityFeedbacks { get; private set; }
 
@@ -210,6 +213,11 @@ namespace PepperDash.Essentials.DM
 
             SystemIdFeebdack = new IntFeedback(() => { return (Chassis as DmMDMnxn).SystemIdFeedback.UShortValue; });
             SystemIdBusyFeedback = new BoolFeedback(() => { return (Chassis as DmMDMnxn).SystemIdBusy.BoolValue; });
+            EnableAudioBreakawayFeedback =
+                new BoolFeedback(() => (Chassis as DmMDMnxn).EnableAudioBreakawayFeedback.BoolValue);
+            EnableUsbBreakawayFeedback =
+                new BoolFeedback(() => (Chassis as DmMDMnxn).EnableUSBBreakawayFeedback.BoolValue);
+
             InputCardHdcpCapabilityFeedbacks = new Dictionary<uint, IntFeedback>();
             InputCardHdcpCapabilityTypes = new Dictionary<uint, eHdcpCapabilityType>();
 
@@ -374,6 +382,11 @@ namespace PepperDash.Essentials.DM
                     });
                 }
             }
+        }
+
+        private void ChassisOnBaseEvent(GenericBase device, BaseEventArgs args)
+        {
+            
         }
 
         /// <summary>
@@ -768,6 +781,20 @@ namespace PepperDash.Essentials.DM
                     SystemIdBusyFeedback.FireUpdate();
                     break;
                 }
+                case DMSystemEventIds.AudioBreakawayEventId:
+                {
+                    Debug.Console(2, this, "AudioBreakaway Event: value: {0}",
+                        (Chassis as DmMDMnxn).EnableAudioBreakawayFeedback.BoolValue);
+                    EnableAudioBreakawayFeedback.FireUpdate();
+                    break;
+                }
+                case DMSystemEventIds.USBBreakawayEventId:
+                {
+                    Debug.Console(2, this, "USBBreakaway Event: value: {0}",
+                        (Chassis as DmMDMnxn).EnableUSBBreakawayFeedback.BoolValue);
+                    EnableUsbBreakawayFeedback.FireUpdate();
+                    break;
+                }
             }
         }
 
@@ -927,6 +954,10 @@ namespace PepperDash.Essentials.DM
                 (Chassis as DmMDMnxn).EnableAudioBreakaway.BoolValue = true;
                 (Chassis as DmMDMnxn).EnableUSBBreakaway.BoolValue = true;
 
+
+                EnableAudioBreakawayFeedback.FireUpdate();
+                EnableUsbBreakawayFeedback.FireUpdate();
+
                 if (InputNames != null)
                     foreach (var kvp in InputNames)
                         Chassis.Inputs[kvp.Key].Name.StringValue = kvp.Value;
@@ -943,6 +974,10 @@ namespace PepperDash.Essentials.DM
 
             var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
             var output = Convert.ToUInt32(outputSelector);
+
+            var chassisSize = (uint) Chassis.NumberOfInputs; //need this to determine USB routing values 8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                                                      //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                                                      //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
 
             // Check to see if there's an off timer waiting on this and if so, cancel
             var key = new PortNumberType(output, sigType);
@@ -964,30 +999,97 @@ namespace PepperDash.Essentials.DM
             var outCard = input == 0 ? null : Chassis.Outputs[output];
 
             // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
-            if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
+            if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
             {
                 Chassis.VideoEnter.BoolValue = true;
                 Chassis.Outputs[output].VideoOut = inCard;
             }
 
-            if ((sigType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
+            if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
             {
                 (Chassis as DmMDMnxn).AudioEnter.BoolValue = true;
                 Chassis.Outputs[output].AudioOut = inCard;
             }
 
-            if ((sigType | eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+            if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
             {
+                //using base here because USB can be routed between 2 output cards or 2 input cards
+                DMInputOutputBase dmCard;
+
+                Debug.Console(2, this, "Executing USB Output switch.\r\n in:{0} output: {1}", input, output);
+
+                if (input > chassisSize)
+                {
+                    //wanting to route an output to an output. Subtract chassis size and get output, unless it's 8x8
+                    //need this to determine USB routing values
+                    //8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                    //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                    //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+                    uint outputIndex;
+
+                    if (chassisSize == 8)
+                    {
+                        outputIndex = input - 16;
+                    }
+                    else
+                    {
+                        outputIndex = input - chassisSize;
+                    }
+                    dmCard = Chassis.Outputs[outputIndex];
+                }
+                else
+                {
+                    dmCard = inCard;
+                }
                 Chassis.USBEnter.BoolValue = true;
                 if (Chassis.Outputs[output] != null)
-                    Chassis.Outputs[output].USBRoutedTo = inCard;
+                {
+                    Debug.Console(2, this, "Routing USB for input {0} to {1}", Chassis.Outputs[input], dmCard);
+                    Chassis.Outputs[output].USBRoutedTo = dmCard;
+                }
             }
 
-            if ((sigType | eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+            if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
             {
+                //using base here because USB can be routed between 2 output cards or 2 input cards
+                DMInputOutputBase dmCard;
+
+                Debug.Console(2, this, "Executing USB Input switch.\r\n in:{0} output: {1}", input, output);
+
+                if (output > chassisSize)
+                {
+                    //wanting to route an input to an output. Subtract chassis size and get output, unless it's 8x8
+                    //need this to determine USB routing values
+                    //8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                    //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                    //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+                    uint outputIndex;
+
+                    if (chassisSize == 8)
+                    {
+                        outputIndex = input - 16;
+                    }
+                    else
+                    {
+                        outputIndex = input - chassisSize;
+                    }
+                    dmCard = Chassis.Outputs[outputIndex];
+                }
+                else
+                {
+                    dmCard = Chassis.Inputs[input];
+                }
+
+                
+
                 Chassis.USBEnter.BoolValue = true;
-                if (Chassis.Inputs[input] != null)
-                    Chassis.Inputs[input].USBRoutedTo = outCard;
+
+                if (Chassis.Inputs[output] == null)
+                {
+                    return;
+                }
+                Debug.Console(2, this, "Routing USB for input {0} to {1}", Chassis.Inputs[output], dmCard);
+                Chassis.Inputs[output].USBRoutedTo = dmCard;
             }
         }
         #endregion
@@ -1022,6 +1124,19 @@ namespace PepperDash.Essentials.DM
 
             SystemIdFeebdack.LinkInputSig(trilist.UShortInput[joinMap.SystemId.JoinNumber]);
             SystemIdBusyFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SystemId.JoinNumber]);
+
+            EnableAudioBreakawayFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableAudioBreakaway.JoinNumber]);
+            EnableUsbBreakawayFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableUsbBreakaway.JoinNumber]);
+
+            trilist.OnlineStatusChange += (o, a) =>
+            {
+                if (!a.DeviceOnLine) return;
+
+                EnableAudioBreakawayFeedback.FireUpdate();
+                EnableUsbBreakawayFeedback.FireUpdate();
+                SystemIdBusyFeedback.FireUpdate();
+                SystemIdFeebdack.FireUpdate();
+            };
 
             // Link up outputs
             for (uint i = 1; i <= Chassis.NumberOfOutputs; i++)
