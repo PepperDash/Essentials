@@ -62,6 +62,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Fusion.dll</HintPath>
     </Reference>
+    <Reference Include="Crestron.SimplSharpPro.Gateways, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Gateways.dll</HintPath>
+    </Reference>
     <Reference Include="Crestron.SimplSharpPro.GeneralIO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.GeneralIO.dll</HintPath>
@@ -131,6 +135,7 @@
     <Compile Include="Bridges\JoinMaps\GlsOccupancySensorBaseJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\HdMdNxM4kEControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\HdMdxxxCEControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\Hrxxx0WirelessRemoteControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\IBasicCommunicationJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\IDigitalInputJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\SetTopBoxControllerJoinMap.cs" />
@@ -183,6 +188,8 @@
     <Compile Include="Fusion\FusionEventHandlers.cs" />
     <Compile Include="Fusion\FusionProcessorQueries.cs" />
     <Compile Include="Fusion\FusionRviDataClasses.cs" />
+    <Compile Include="Gateways\CenRfgwController.cs" />
+    <Compile Include="Gateways\EssentialsRfGatewayConfig.cs" />
     <Compile Include="Global\JobTimer.cs" />
     <Compile Include="Global\Scheduler.cs" />
     <Compile Include="JoinMaps\JoinMapBase.cs" />
@@ -223,6 +230,9 @@
     <Compile Include="Feedbacks\BoolFeedbackOneShot.cs" />
     <Compile Include="Ramps and Increments\NumericalHelpers.cs" />
     <Compile Include="Ramps and Increments\UshortSigIncrementer.cs" />
+    <Compile Include="Remotes\ButtonExtensions.cs" />
+    <Compile Include="Remotes\CrestronRemotePropertiesConfig.cs" />
+    <Compile Include="Remotes\Hrxx0WirelessRemoteController.cs" />
     <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />
     <Compile Include="Room\EssentialsRoomBase.cs" />
     <Compile Include="Room\Interfaces.cs" />
