@@ -18,9 +18,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace PepperDash.Essentials.DM.Endpoints.DGEs
 {
-    /// <summary>
-    /// Wrapper class for DGE-100 and DM-DGE-200-C
-    /// </summary>
+    [Description("Wrapper class for DGE-100")]    
     public class Dge100Controller : CrestronGenericBaseDevice, IComPorts, IIROutputPorts, IHasBasicTriListWithSmartObject, ICec
     {
         private readonly Dge100 _dge;

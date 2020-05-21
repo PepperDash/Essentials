@@ -80,68 +80,143 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		/// <summary>
-		/// Returns a ready-to-go IrOutputPortController from a DeviceConfig object.
-		/// </summary>
-		public static IrOutputPortController GetIrOutputPortController(DeviceConfig devConf)
-		{
-			var irControllerKey = devConf.Key + "-ir";
-			if (devConf.Properties == null)
-			{
-				Debug.Console(0, "[{0}] WARNING: Device config does not include properties.  IR will not function.", devConf.Key);
-				return new IrOutputPortController(irControllerKey, null, "");
-			}
+	    public static IROutputPort GetIrOutputPort(DeviceConfig dc)
+	    {
+	        var irControllerKey = dc.Key + "-ir";
+	        if (dc.Properties == null)
+	        {
+	            Debug.Console(0, "[{0}] WARNING: Device config does not include properties.  IR will not function.", dc.Key);
+	            return null;
+	        }
 
-			var control = devConf.Properties["control"];
-			if (control == null)
-			{
-				var c = new IrOutputPortController(irControllerKey, null, "");
-				Debug.Console(0, c, "WARNING: Device config does not include control properties.  IR will not function");
-				return c;
-			}
+	        var control = dc.Properties["control"];
+	        if (control == null)
+	        {
+	            Debug.Console(0,
+	                "WARNING: Device config does not include control properties.  IR will not function for {0}", dc.Key);
+	            return null;
+	        }
 
-			var portDevKey = control.Value<string>("controlPortDevKey");
-			var portNum = control.Value<uint>("controlPortNumber");
-			IIROutputPorts irDev = null;
+	        var portDevKey = control.Value<string>("controlPortDevKey");
+	        var portNum = control.Value<uint>("controlPortNumber");
+	        IIROutputPorts irDev = null;
 
-			if (portDevKey == null)
-			{
-				var c = new IrOutputPortController(irControllerKey, null, "");
-				Debug.Console(0, c, "WARNING: control properties is missing ir device");
-				return c;
-			}
+	        if (portDevKey == null)
+	        {
+	            Debug.Console(0, "WARNING: control properties is missing ir device for {0}", dc.Key);
+	            return null;
+	        }
 
-			if (portNum == 0)
-			{
-				var c = new IrOutputPortController(irControllerKey, null, "");
-				Debug.Console(0, c, "WARNING: control properties is missing ir port number");
-				return c;
-			} 
+	        if (portNum == 0)
+	        {
+	            Debug.Console(0, "WARNING: control properties is missing ir port number for {0}", dc.Key);
+	            return null;
+	        }
 
-			if (portDevKey.Equals("controlSystem", StringComparison.OrdinalIgnoreCase)
-				|| portDevKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
-				irDev = Global.ControlSystem;
-			else
-				irDev = DeviceManager.GetDeviceForKey(portDevKey) as IIROutputPorts;
+	        if (portDevKey.Equals("controlSystem", StringComparison.OrdinalIgnoreCase)
+	            || portDevKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+	            irDev = Global.ControlSystem;
+	        else
+	            irDev = DeviceManager.GetDeviceForKey(portDevKey) as IIROutputPorts;
 
-			if (irDev == null)
-			{
-				var c = new IrOutputPortController(irControllerKey, null, "");
-				Debug.Console(0, c, "WARNING: device with IR ports '{0}' not found", portDevKey);
-				return c;
-			}
+	        if (irDev == null)
+	        {
+	            Debug.Console(0, "WARNING: device with IR ports '{0}' not found", portDevKey);
+	            return null;
+	        }
+	        if (portNum >= irDev.NumberOfIROutputPorts)
+	        {
+	            Debug.Console(0, "WARNING: device '{0}' IR port {1} out of range",
+	                portDevKey, portNum);
+	            return null;
+	        }
 
-			if (portNum <= irDev.NumberOfIROutputPorts) // success!
-				return new IrOutputPortController(irControllerKey, irDev.IROutputPorts[portNum],
-					IrDriverPathPrefix + control["irFile"].Value<string>());
-			else
-			{
-				var c = new IrOutputPortController(irControllerKey, null, "");
-				Debug.Console(0, c, "WARNING: device '{0}' IR port {1} out of range",
-					portDevKey, portNum);
-				return c;
-			}
-		}
+
+	        var port = irDev.IROutputPorts[portNum];
+
+	        port.LoadIRDriver(Global.FilePathPrefix + "IR" + Global.DirectorySeparator + control["irFile"].Value<string>());
+
+	        return port;
+
+	    }
+
+	    public static IrOutputPortController GetIrOutputPortController(DeviceConfig config)
+	    {
+            Debug.Console(1, "Attempting to create new Ir Port Controller");
+
+	        if (config == null)
+	        {
+	            return null;
+	        }
+
+	        var irDevice = new IrOutputPortController(config.Key, GetIrOutputPort, config);
+
+	        return irDevice;
+	    }
+
+	    /*
+        /// <summary>
+        /// Returns a ready-to-go IrOutputPortController from a DeviceConfig object.
+        /// </summary>	
+        public static IrOutputPortController GetIrOutputPortController(DeviceConfig devConf)
+        {
+            var irControllerKey = devConf.Key + "-ir";
+            if (devConf.Properties == null)
+            {
+                Debug.Console(0, "[{0}] WARNING: Device config does not include properties.  IR will not function.", devConf.Key);
+                return new IrOutputPortController(irControllerKey, null, "");
+            }
+
+            var control = devConf.Properties["control"];
+            if (control == null)
+            {
+                var c = new IrOutputPortController(irControllerKey, null, "");
+                Debug.Console(0, c, "WARNING: Device config does not include control properties.  IR will not function");
+                return c;
+            }
+
+            var portDevKey = control.Value<string>("controlPortDevKey");
+            var portNum = control.Value<uint>("controlPortNumber");
+            IIROutputPorts irDev = null;
+
+            if (portDevKey == null)
+            {
+                var c = new IrOutputPortController(irControllerKey, null, "");
+                Debug.Console(0, c, "WARNING: control properties is missing ir device");
+                return c;
+            }
+
+            if (portNum == 0)
+            {
+                var c = new IrOutputPortController(irControllerKey, null, "");
+                Debug.Console(0, c, "WARNING: control properties is missing ir port number");
+                return c;
+            } 
+
+            if (portDevKey.Equals("controlSystem", StringComparison.OrdinalIgnoreCase)
+                || portDevKey.Equals("processor", StringComparison.OrdinalIgnoreCase))
+                irDev = Global.ControlSystem;
+            else
+                irDev = DeviceManager.GetDeviceForKey(portDevKey) as IIROutputPorts;
+
+            if (irDev == null)
+            {
+                var c = new IrOutputPortController(irControllerKey, null, "");
+                Debug.Console(0, c, "WARNING: device with IR ports '{0}' not found", portDevKey);
+                return c;
+            }
+
+            if (portNum <= irDev.NumberOfIROutputPorts) // success!
+                return new IrOutputPortController(irControllerKey, irDev.IROutputPorts[portNum],
+                    IrDriverPathPrefix + control["irFile"].Value<string>());
+            else
+            {
+                var c = new IrOutputPortController(irControllerKey, null, "");
+                Debug.Console(0, c, "WARNING: device '{0}' IR port {1} out of range",
+                    portDevKey, portNum);
+                return c;
+            }
+        }*/
 	}
 
 	/// <summary>

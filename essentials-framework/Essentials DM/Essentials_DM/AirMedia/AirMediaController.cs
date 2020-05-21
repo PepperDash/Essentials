@@ -16,6 +16,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.DM.AirMedia
 {
+    [Description("Wrapper class for an AM-200 or AM-300")]
     public class AirMediaController : CrestronGenericBridgeableBaseDevice, IRoutingInputsOutputs, IIROutputPorts, IComPorts
     {
         public AmX00 AirMedia { get; private set; }
