@@ -12,7 +12,8 @@ namespace PepperDash.Essentials.DM
 	/// Builds a controller for basic DM-RMCs (both 4K and non-4K) with Com and IR ports and no control functions
 	/// 
 	/// </summary>
-	public class DmRmcX100CController : DmRmcControllerBase, IRoutingInputsOutputs, 
+    [Description("Wrapper Class for DM-RMC-4K-100-C & DM-RMC-100-C")]
+    public class DmRmcX100CController : DmRmcControllerBase, IRoutingInputsOutputs, 
 		IIROutputPorts, IComPorts, ICec
 	{
 	    private readonly DmRmc100C _rmc;

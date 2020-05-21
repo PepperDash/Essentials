@@ -15,6 +15,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
     /// <summary>
     /// Represents a generic device controlled by relays
     /// </summary>
+    [Description("Wrapper class for a Relay")]
     public class GenericRelayDevice : EssentialsBridgeableDevice, ISwitchedOutput
     {
         public Relay RelayOutput { get; private set; }

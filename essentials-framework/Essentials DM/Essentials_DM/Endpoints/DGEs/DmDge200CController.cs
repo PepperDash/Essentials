@@ -20,6 +20,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
     /// <summary>
     /// Wrapper class for DGE-100 and DM-DGE-200-C
     /// </summary>
+    [Description("Wrapper class for DM-DGE-200-C")]    
     public class DmDge200CController : Dge100Controller, IRoutingInputsOutputs
     {
         private readonly DmDge200C _dge;
