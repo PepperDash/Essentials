@@ -80,24 +80,26 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public interface IRouting : IRoutingInputsOutputs
 	{
-		//void ClearRoute(object outputSelector);
 		void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType);
     }
 
-    public interface ITxRouting : IRouting
+    public interface IRoutingNumeric : IRouting
+    {
+        void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type);
+    }
+
+    public interface ITxRouting : IRoutingNumeric
     {
         IntFeedback VideoSourceNumericFeedback { get; }
         IntFeedback AudioSourceNumericFeedback { get; }
-        void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type);
     }
 
     /// <summary>
     /// Defines a receiver that has internal routing (DM-RMC-4K-Z-SCALER-C)
     /// </summary>
-    public interface IRmcRouting : IRouting
+    public interface IRmcRouting : IRoutingNumeric
     {
         IntFeedback AudioVideoSourceNumericFeedback { get; }
-        void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType type);
     }
 
 	/// <summary>
