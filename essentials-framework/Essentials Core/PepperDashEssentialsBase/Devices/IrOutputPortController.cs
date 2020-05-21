@@ -4,6 +4,9 @@ using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Core.Config;
+
 
 using PepperDash.Core;
 
@@ -39,7 +42,19 @@ namespace PepperDash.Essentials.Core
 			LoadDriver(irDriverFilepath);
 		}
 
-		/// <summary>
+	    public IrOutputPortController(string key, Func<DeviceConfig, IROutputPort> postActivationFunc,
+	        DeviceConfig config)
+	        : base(key)
+	    {
+            AddPostActivationAction(() =>
+            {
+                IrPort = postActivationFunc(config);
+            });
+	    }
+
+	    
+
+	    /// <summary>
 		/// Loads the IR driver at path
 		/// </summary>
 		/// <param name="path"></param>
@@ -119,6 +134,5 @@ namespace PepperDash.Essentials.Core
 			Debug.Console(2, this, "Device {0}: IR Driver {1} does not contain command {2}",
 				Key, IrPort.IRDriverFileNameByIRDriverId(IrPortUid), command);
 		}
-
 	}
 }
