@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.DM
     /// 
     /// </summary>
     [Description("Wrapper class for all DM-MD chassis variants from 8x8 to 32x32")]
-    public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingInputsOutputs, IRouting, IHasFeedback
+    public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumeric
     {
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
@@ -1092,6 +1092,133 @@ namespace PepperDash.Essentials.DM
                 Chassis.Inputs[output].USBRoutedTo = dmCard;
             }
         }
+        #endregion
+
+        #region IRoutingNumeric Members
+
+        public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
+        {
+            Debug.Console(2, this, "Making an awesome DM route from {0} to {1} {2}", inputSelector, outputSelector, sigType);
+
+            var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
+            var output = Convert.ToUInt32(outputSelector);
+
+            var chassisSize = (uint)Chassis.NumberOfInputs; //need this to determine USB routing values 8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+            //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+            //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+
+            // Check to see if there's an off timer waiting on this and if so, cancel
+            var key = new PortNumberType(output, sigType);
+            if (input == 0)
+            {
+                StartOffTimer(key);
+            }
+            else
+            {
+                if (RouteOffTimers.ContainsKey(key))
+                {
+                    Debug.Console(2, this, "{0} cancelling route off due to new source", output);
+                    RouteOffTimers[key].Stop();
+                    RouteOffTimers.Remove(key);
+                }
+            }
+
+            var inCard = input == 0 ? null : Chassis.Inputs[input];
+            var outCard = input == 0 ? null : Chassis.Outputs[output];
+
+            // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
+            if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
+            {
+                Chassis.VideoEnter.BoolValue = true;
+                Chassis.Outputs[output].VideoOut = inCard;
+            }
+
+            if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
+            {
+                (Chassis as DmMDMnxn).AudioEnter.BoolValue = true;
+                Chassis.Outputs[output].AudioOut = inCard;
+            }
+
+            if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+            {
+                //using base here because USB can be routed between 2 output cards or 2 input cards
+                DMInputOutputBase localdmCard;
+
+                Debug.Console(2, this, "Executing USB Output switch.\r\n in:{0} output: {1}", input, output);
+
+                if (input > chassisSize)
+                {
+                    //wanting to route an output to an output. Subtract chassis size and get output, unless it's 8x8
+                    //need this to determine USB routing values
+                    //8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                    //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                    //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+                    uint outputIndex;
+
+                    if (chassisSize == 8)
+                    {
+                        outputIndex = input - 16;
+                    }
+                    else
+                    {
+                        outputIndex = input - chassisSize;
+                    }
+                    localdmCard = Chassis.Outputs[outputIndex];
+                }
+                else
+                {
+                    localdmCard = inCard;
+                }
+                Chassis.USBEnter.BoolValue = true;
+                if (Chassis.Outputs[output] != null)
+                {
+                    Debug.Console(2, this, "Routing USB for input {0} to {1}", Chassis.Outputs[input], localdmCard);
+                    Chassis.Outputs[output].USBRoutedTo = localdmCard;
+                }
+            }
+
+            if ((sigType & eRoutingSignalType.UsbInput) != eRoutingSignalType.UsbInput) return;
+            //using base here because USB can be routed between 2 output cards or 2 input cards
+            DMInputOutputBase dmCard;
+
+            Debug.Console(2, this, "Executing USB Input switch.\r\n in:{0} output: {1}", input, output);
+
+            if (output > chassisSize)
+            {
+                //wanting to route an input to an output. Subtract chassis size and get output, unless it's 8x8
+                //need this to determine USB routing values
+                //8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+                uint outputIndex;
+
+                if (chassisSize == 8)
+                {
+                    outputIndex = input - 16;
+                }
+                else
+                {
+                    outputIndex = input - chassisSize;
+                }
+                dmCard = Chassis.Outputs[outputIndex];
+            }
+            else
+            {
+                dmCard = Chassis.Inputs[input];
+            }
+
+
+
+            Chassis.USBEnter.BoolValue = true;
+
+            if (Chassis.Inputs[output] == null)
+            {
+                return;
+            }
+            Debug.Console(2, this, "Routing USB for input {0} to {1}", Chassis.Inputs[output], dmCard);
+            Chassis.Inputs[output].USBRoutedTo = dmCard;
+        }
+
         #endregion
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)

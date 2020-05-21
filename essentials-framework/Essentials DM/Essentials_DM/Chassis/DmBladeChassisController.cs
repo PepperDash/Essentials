@@ -21,7 +21,8 @@ namespace PepperDash.Essentials.DM {
     /// Builds a controller for basic DM-RMCs with Com and IR ports and no control functions
     /// 
     /// </summary>
-    public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingInputsOutputs, IRouting, IHasFeedback {
+    public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumeric
+    {
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
         public Switch Chassis { get; private set; }
@@ -563,13 +564,50 @@ namespace PepperDash.Essentials.DM {
             var outCard = input == 0 ? null : Chassis.Outputs[output];
 
             // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
-            if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video) {
-                Chassis.VideoEnter.BoolValue = true;
-                Chassis.Outputs[output].VideoOut = inCard;
-            }
+            if ((sigType | eRoutingSignalType.Video) != eRoutingSignalType.Video) return;
+            Chassis.VideoEnter.BoolValue = true;
+            Chassis.Outputs[output].VideoOut = inCard;
         }
 
         #endregion
+
+        #region IRoutingNumeric Members
+
+        public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
+        {
+            Debug.Console(2, this, "Making an awesome DM route from {0} to {1} {2}", inputSelector, outputSelector, sigType);
+
+            var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
+            var output = Convert.ToUInt32(outputSelector);
+            // Check to see if there's an off timer waiting on this and if so, cancel
+            var key = new PortNumberType(output, sigType);
+            if (input == 0)
+            {
+                StartOffTimer(key);
+            }
+            else
+            {
+                if (RouteOffTimers.ContainsKey(key))
+                {
+                    Debug.Console(2, this, "{0} cancelling route off due to new source", output);
+                    RouteOffTimers[key].Stop();
+                    RouteOffTimers.Remove(key);
+                }
+            }
+
+
+
+            var inCard = input == 0 ? null : Chassis.Inputs[input];
+            var outCard = input == 0 ? null : Chassis.Outputs[output];
+
+            // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
+            if ((sigType | eRoutingSignalType.Video) != eRoutingSignalType.Video) return;
+            Chassis.VideoEnter.BoolValue = true;
+            Chassis.Outputs[output].VideoOut = inCard;
+        }
+
+        #endregion
+
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
@@ -808,6 +846,7 @@ namespace PepperDash.Essentials.DM {
                         });
             }
         }
+
     }
 
     /*
