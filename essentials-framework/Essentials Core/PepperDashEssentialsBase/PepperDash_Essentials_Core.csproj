@@ -137,8 +137,14 @@
     <Compile Include="Bridges\JoinMaps\StatusSignControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\SystemMonitorJoinMap.cs" />
     <Compile Include="Config\Comm and IR\CecPortController.cs" />
+    <Compile Include="Config\Comm and IR\CommFactory.cs" />
+    <Compile Include="Config\Comm and IR\CommunicationExtras.cs" />
+    <Compile Include="Config\Comm and IR\ComPortController.cs" />
+    <Compile Include="Config\Comm and IR\ComSpecJsonConverter.cs" />
+    <Compile Include="Config\Comm and IR\ConsoleCommMockDevice.cs" />
     <Compile Include="Config\Comm and IR\GenericComm.cs" />
     <Compile Include="Config\Comm and IR\GenericHttpClient.cs" />
+    <Compile Include="Config\Comm and IR\IRPortHelper.cs" />
     <Compile Include="Config\Essentials\ConfigUpdater.cs" />
     <Compile Include="Config\Essentials\ConfigReader.cs" />
     <Compile Include="Config\Essentials\ConfigWriter.cs" />
@@ -189,11 +195,6 @@
     <Compile Include="Presets\PresetBase.cs" />
     <Compile Include="Plugins\IPluginDeviceFactory.cs" />
     <Compile Include="Ramps and Increments\ActionIncrementer.cs" />
-    <Compile Include="Config\Comm and IR\CommFactory.cs" />
-    <Compile Include="Config\Comm and IR\CommunicationExtras.cs" />
-    <Compile Include="Config\Comm and IR\ComSpecJsonConverter.cs" />
-    <Compile Include="Config\Comm and IR\ConsoleCommMockDevice.cs" />
-    <Compile Include="Config\Comm and IR\IRPortHelper.cs" />
     <Compile Include="Config\BasicConfig.cs" />
     <Compile Include="Config\ConfigPropertiesHelpers.cs" />
     <Compile Include="Config\InfoConfig.cs" />
@@ -277,7 +278,6 @@
     <Compile Include="UI PageManagers\PageManager.cs" />
     <Compile Include="UI PageManagers\SetTopBoxTwoPanelPageManager.cs" />
     <Compile Include="VideoStatus\VideoStatusOutputs.cs" />
-    <Compile Include="Config\Comm and IR\ComPortController.cs" />
     <Compile Include="Crestron\CrestronGenericBaseDevice.cs" />
     <Compile Include="DeviceControlsParentInterfaces\IPresentationSource.cs" />
     <Compile Include="Devices\DeviceManager.cs" />

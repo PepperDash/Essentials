@@ -13,7 +13,8 @@ namespace PepperDash.Essentials.DM
 	/// Builds a controller for basic DM-RMCs with Com and IR ports and no control functions
 	/// 
 	/// </summary>
-	public class DmRmcScalerCController : DmRmcControllerBase, IRoutingInputsOutputs, 
+    [Description("Wrapper Class for DM-RMC-SCALER-C")]
+    public class DmRmcScalerCController : DmRmcControllerBase, IRoutingInputsOutputs, 
 		IIROutputPorts, IComPorts, ICec
 	{
 	    private readonly DmRmcScalerC _rmc;

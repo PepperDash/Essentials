@@ -11,6 +11,7 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.DM
 {
+    [Description("Wrapper Class for DM-RMC-4K-Z-SCALER-C")]
     public class DmRmc4kZScalerCController : DmRmcControllerBase, IRmcRouting,
         IIROutputPorts, IComPorts, ICec
     {

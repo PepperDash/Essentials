@@ -13,6 +13,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.CrestronIO
 {
+    [Description("Wrapper class for Digital Input")]
     public class GenericDigitalInputDevice : EssentialsBridgeableDevice, IDigitalInput
     {
         public DigitalInput InputPort { get; private set; }
