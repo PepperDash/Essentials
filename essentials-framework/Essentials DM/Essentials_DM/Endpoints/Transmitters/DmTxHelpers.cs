@@ -294,7 +294,7 @@ namespace PepperDash.Essentials.DM
             if (txFreeRun != null)
             {
                 txFreeRun.FreeRunEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.FreeRunEnabled.JoinNumber]);
-                trilist.SetBoolSigAction(joinMap.FreeRunEnabled.JoinNumber, new Action<bool>(txFreeRun.SetFreeRunEnabled));
+                trilist.SetBoolSigAction(joinMap.FreeRunEnabled.JoinNumber, txFreeRun.SetFreeRunEnabled);
             }
 
             var txVga = tx as IVgaBrightnessContrastControls;
