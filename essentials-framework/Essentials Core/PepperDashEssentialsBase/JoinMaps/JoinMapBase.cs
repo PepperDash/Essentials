@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
@@ -363,8 +364,12 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// A label for the join to better describe it's usage
         /// </summary>
+        [Obsolete]
         [JsonProperty("label")]
-        public string Label { get; set; }
+        public string Label { get { return Description; } set { Description = value; } }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
         /// <summary>
         /// Signal type(s)
         /// </summary>
@@ -457,8 +462,10 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    
+
     [AttributeUsage(AttributeTargets.All)]
-    public class JoinNameAttribute : Attribute
+    public class JoinNameAttribute : CAttribute
     {
         private string _Name;
 

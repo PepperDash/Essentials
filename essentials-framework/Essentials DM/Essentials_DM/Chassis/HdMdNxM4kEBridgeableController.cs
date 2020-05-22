@@ -16,7 +16,7 @@ using PepperDash.Essentials.Core.Config;
 namespace PepperDash.Essentials.DM.Chassis
 {
     [Description("Wrapper class for all HdMdNxM4E switchers")]
-    public class HdMdNxM4kEBridgeableController : CrestronGenericBridgeableBaseDevice, IRoutingInputsOutputs, IRouting, IHasFeedback
+    public class HdMdNxM4kEBridgeableController : CrestronGenericBridgeableBaseDevice, IRoutingInputsOutputs, IRoutingNumeric, IHasFeedback
     {
         private HdMdNxM _Chassis;
         private HdMd4x14kE _Chassis4x1;
@@ -240,6 +240,15 @@ namespace PepperDash.Essentials.DM.Chassis
 
         #endregion
 
+        #region IRoutingNumeric Members
+
+        public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType signalType)
+        {
+            ExecuteSwitch(inputSelector, outputSelector, signalType);
+        }
+
+        #endregion
+
         #endregion
 
         #region Bridge Linking
@@ -389,6 +398,8 @@ namespace PepperDash.Essentials.DM.Chassis
         }
 
         #endregion
- 
+
+
+        
     }
 }
