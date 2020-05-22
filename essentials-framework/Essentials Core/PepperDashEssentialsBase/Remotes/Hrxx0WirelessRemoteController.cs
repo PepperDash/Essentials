@@ -149,7 +149,7 @@ namespace PepperDash.Essentials.Core
         }
         #endregion
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, PepperDash.Essentials.Core.Bridges.EiscApiAdvanced bridge)
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new Hrxxx0WirelessRemoteControllerJoinMap(joinStart);
 
@@ -161,33 +161,39 @@ namespace PepperDash.Essentials.Core
             bridge.AddJoinMap(Key, joinMap);
 
             //List<string> ExcludedKeys = new List<string>();
-
-            
-
-            foreach (Feedback feedback in Feedbacks)
+            foreach (var feedback in Feedbacks)
             {
-                Feedback myFeedback = feedback;
+                var myFeedback = feedback;
 
-                var join = joinMap.Joins.FirstOrDefault(x => x.Value.Metadata.Label.Equals(myFeedback.Key, StringComparison.InvariantCultureIgnoreCase)).Value;
+                var joinData =
+                    joinMap.Joins.FirstOrDefault(
+                        x => 
+                            x.Key.Equals(myFeedback.Key, StringComparison.InvariantCultureIgnoreCase));
 
-                if (join == null) continue;
+                if (string.IsNullOrEmpty((joinData.Key))) continue;
+
+                var name = joinData.Key;
+                var join = joinData.Value;
 
                 if (join.Metadata.JoinType == eJoinType.Digital)
                 {
-                    Debug.Console(0, this, "Linking Bool Feedback '{0}' to join {1}", join.Metadata.Label, join.JoinNumber);
-                    BoolFeedback someFeedback = myFeedback as BoolFeedback;
+                    Debug.Console(0, this, "Linking Bool Feedback '{0}' to join {1}", name, join.JoinNumber);
+                    var someFeedback = myFeedback as BoolFeedback;
+                    if(someFeedback == null) continue;
                     someFeedback.LinkInputSig(trilist.BooleanInput[join.JoinNumber]);
                 }
                 if (join.Metadata.JoinType == eJoinType.Analog)
                 {
-                    Debug.Console(0, this, "Linking Analog Feedback '{0}' to join {1}", join.Metadata.Label, join.JoinNumber);
-                    IntFeedback someFeedback = myFeedback as IntFeedback;
+                    Debug.Console(0, this, "Linking Analog Feedback '{0}' to join {1}", name, join.JoinNumber);
+                    var someFeedback = myFeedback as IntFeedback;
+                    if (someFeedback == null) continue;
                     someFeedback.LinkInputSig(trilist.UShortInput[join.JoinNumber]);
                 }
                 if (join.Metadata.JoinType == eJoinType.Serial)
                 {
-                    Debug.Console(0, this, "Linking Serial Feedback '{0}' to join {1}", join.Metadata.Label, join.JoinNumber);
-                    StringFeedback someFeedback = myFeedback as StringFeedback;
+                    Debug.Console(0, this, "Linking Serial Feedback '{0}' to join {1}", name, join.JoinNumber);
+                    var someFeedback = myFeedback as StringFeedback;
+                    if (someFeedback == null) continue;
                     someFeedback.LinkInputSig(trilist.StringInput[join.JoinNumber]);
                 }
             }
@@ -201,13 +207,19 @@ namespace PepperDash.Essentials.Core
             for (uint i = 1; i <= _remote.Button.Count; i++)
             {
                 Debug.Console(2, this, "Attempting to link join index {0}", i);
-                var join = joinMap.Joins.FirstOrDefault(o => o.Value.Metadata.Label.Equals(_remote.Button[i].Name.ToString(), StringComparison.InvariantCultureIgnoreCase)).Value;
-                if (join == null)
-                {
-                    Debug.Console(2, this, "Join '{0}' is null", i);
-                    continue;
-                }
-                Debug.Console(2, this, "Setting User Object for '{0}'", join.Metadata.Label);
+                var index = i;
+                var joinData =
+                    joinMap.Joins.FirstOrDefault(
+                        o =>
+                            o.Key.Equals(_remote.Button[index].Name.ToString(),
+                                StringComparison.InvariantCultureIgnoreCase));
+
+                if (string.IsNullOrEmpty((joinData.Key))) continue;
+
+                var join = joinData.Value;
+                var name = joinData.Key;
+
+                Debug.Console(2, this, "Setting User Object for '{0}'", name);
                 if (join.Metadata.JoinType == eJoinType.Digital)
                 {
                     _remote.Button[i].SetButtonAction((b) => trilist.BooleanInput[join.JoinNumber].BoolValue = b);
