@@ -348,6 +348,8 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class JoinMetadata
     {
+        private string _description;
+
         /// <summary>
         /// Join number (based on join offset value)
         /// </summary>
@@ -362,14 +364,17 @@ namespace PepperDash.Essentials.Core
         public uint JoinSpan { get; set; }
 
         /// <summary>
-        /// A label for the join to better describe it's usage
+        /// A label for the join to better describe its usage
         /// </summary>
-        [Obsolete]
+        [Obsolete("Use Description instead")]
         [JsonProperty("label")]
-        public string Label { get { return Description; } set { Description = value; } }
+        public string Label { get { return _description; } set { _description = value; } }
 
+        /// <summary>
+        /// A description for the join to better describe its usage
+        /// </summary>
         [JsonProperty("description")]
-        public string Description { get; set; }
+        public string Description { get { return _description; } set { _description = value; } }
         /// <summary>
         /// Signal type(s)
         /// </summary>
