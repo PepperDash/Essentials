@@ -19,7 +19,7 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.DM
 {
-    public class DmpsRoutingController : EssentialsBridgeableDevice, IRouting, IHasFeedback
+    public class DmpsRoutingController : EssentialsBridgeableDevice, IRoutingNumeric, IHasFeedback
     {
         public CrestronControlSystem Dmps { get; set; }
         public ISystemControl SystemControl { get; private set; }
@@ -661,8 +661,6 @@ namespace PepperDash.Essentials.DM
                     }
             }
         }
-        /// 
-        /// </summary>
         void Dmps_DMOutputChange(Switch device, DMOutputEventArgs args)
         {
             Debug.Console(2, this, "DMOutputChange Output: {0} EventId: {1}", args.Number, args.EventId.ToString());
@@ -724,10 +722,7 @@ namespace PepperDash.Essentials.DM
         {
             if (RouteOffTimers.ContainsKey(pnt))
                 return;
-            RouteOffTimers[pnt] = new CTimer(o =>
-            {
-                ExecuteSwitch(0, pnt.Number, pnt.Type);
-            }, RouteOffTime);
+            RouteOffTimers[pnt] = new CTimer(o => ExecuteSwitch(0, pnt.Number, pnt.Type), RouteOffTime);
         }
 
         #region IRouting Members
@@ -807,6 +802,15 @@ namespace PepperDash.Essentials.DM
             {
                 Debug.Console(1, this, "Error executing switch: {0}", e);
             }
+        }
+
+        #endregion
+
+        #region IRoutingNumeric Members
+
+        public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
+        {
+            ExecuteSwitch(inputSelector, outputSelector, sigType);
         }
 
         #endregion

@@ -15,7 +15,8 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IPower
+    [Description("Wrapper class for an IR Set Top Box")]
+    public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IPower
 	{
 		public IrOutputPortController IrPort { get; private set; }
 

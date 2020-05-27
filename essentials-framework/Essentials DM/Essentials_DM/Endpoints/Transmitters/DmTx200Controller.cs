@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// Controller class for all DM-TX-201C/S/F transmitters
     /// </summary>
-    [Description("Wrapper class for DM-TX-200-C Endpoint")]
+    [Description("Wrapper class for DM-TX-200-C")]
     public class DmTx200Controller : DmTxControllerBase, ITxRouting, IHasFreeRun, IVgaBrightnessContrastControls
     {
         public DmTx200C2G Tx { get; private set; }
