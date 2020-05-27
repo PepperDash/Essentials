@@ -96,7 +96,7 @@ namespace PepperDash.Essentials.Core
             trilist.SetStringSigAction(joinMap.SetPortConfig.JoinNumber, SetPortConfig);
 
 
-            var sComm = this as ISocketStatus;
+            var sComm = CommPort as ISocketStatus;
             if (sComm == null) return;
             sComm.ConnectionChange += (s, a) =>
             {
