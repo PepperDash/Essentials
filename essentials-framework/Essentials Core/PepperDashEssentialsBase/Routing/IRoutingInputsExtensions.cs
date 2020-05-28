@@ -22,7 +22,7 @@ namespace PepperDash.Essentials.Core
 		/// and then attempts a new Route and if sucessful, stores that RouteDescriptor
 		/// in RouteDescriptorCollection.DefaultCollection
 		/// </summary>
-		public static void ReleaseAndMakeRoute(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType)
+		public static void ReleaseAndMakeRoute(this IRoutingSinkNoSwitching destination, IRoutingOutputs source, eRoutingSignalType signalType)
 		{
 			destination.ReleaseRoute();
 
@@ -152,7 +152,6 @@ namespace PepperDash.Essentials.Core
 				if (outputPortToUse == null)
 				{
 					// it's a sink device
-                    if (destination is IRoutingSinkWithSwitching)
                         routeTable.Routes.Add(new RouteSwitchDescriptor(goodInputPort));
 				}
 				else if (destination is IRouting)
