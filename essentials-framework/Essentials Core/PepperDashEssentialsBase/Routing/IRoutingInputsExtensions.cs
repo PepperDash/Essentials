@@ -152,7 +152,8 @@ namespace PepperDash.Essentials.Core
 				if (outputPortToUse == null)
 				{
 					// it's a sink device
-					routeTable.Routes.Add(new RouteSwitchDescriptor(goodInputPort));
+                    if (destination is IRoutingSinkWithSwitching)
+                        routeTable.Routes.Add(new RouteSwitchDescriptor(goodInputPort));
 				}
 				else if (destination is IRouting)
 				{
