@@ -48,10 +48,19 @@ namespace PepperDash.Essentials.Core
 		RoutingPortCollection<RoutingOutputPort> OutputPorts { get; }
 	}
 
+    /// <summary>
+    /// For fixed-source endpoint devices
+    /// </summary>
+    public interface IRoutingSink : IRoutingInputs, IHasCurrentSourceInfoChange
+    {
+
+    }
+ 
 	/// <summary>
 	/// For fixed-source endpoint devices
 	/// </summary>
-	public interface IRoutingSinkNoSwitching : IRoutingInputs, IHasCurrentSourceInfoChange
+    [Obsolete]
+    public interface IRoutingSinkNoSwitching : IRoutingSink
 	{
 
 	}
@@ -59,7 +68,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// Endpoint device like a display, that selects inputs
 	/// </summary>
-	public interface IRoutingSinkWithSwitching : IRoutingSinkNoSwitching, IHasCurrentSourceInfoChange
+    public interface IRoutingSinkWithSwitching : IRoutingSink
 	{
 		//void ClearRoute();
 		void ExecuteSwitch(object inputSelector);

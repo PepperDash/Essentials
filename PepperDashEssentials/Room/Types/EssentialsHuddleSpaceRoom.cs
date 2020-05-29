@@ -71,7 +71,7 @@ namespace PepperDash.Essentials
 		public EssentialsHuddleRoomPropertiesConfig PropertiesConfig { get; private set; }
 
 		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
-		public IRoutingSinkNoSwitching DefaultAudioDevice { get; private set; }
+		public IRoutingSink DefaultAudioDevice { get; private set; }
 		public IBasicVolumeControls DefaultVolumeControls { get; private set; }
 
 		public bool ExcludeFromGlobalFunctions { get; set; }
@@ -471,14 +471,14 @@ namespace PepperDash.Essentials
 		/// <returns></returns>
 		bool DoRoute(SourceRouteListItem route)
 		{
-			IRoutingSinkNoSwitching dest = null;
+			IRoutingSink dest = null;
 
 			if (route.DestinationKey.Equals("$defaultaudio", StringComparison.OrdinalIgnoreCase))
 				dest = DefaultAudioDevice;
 			else if (route.DestinationKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
 				dest = DefaultDisplay;
 			else
-				dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSinkNoSwitching;
+				dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSink;
 
 			if (dest == null)
 			{
