@@ -103,6 +103,7 @@
     <Compile Include="Endpoints\DGEs\DmDge200CController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc4kZ100CController.cs" />
     <Compile Include="Endpoints\Receivers\DmRmc4kZScalerCController.cs" />
+    <Compile Include="Endpoints\Transmitters\DmTx4kz202CController.cs" />
     <Compile Include="Endpoints\Transmitters\DmTx201SController.cs" />
     <Compile Include="Endpoints\Transmitters\DmTx4kz100Controller.cs" />
     <Compile Include="Endpoints\Transmitters\TxInterfaces.cs" />

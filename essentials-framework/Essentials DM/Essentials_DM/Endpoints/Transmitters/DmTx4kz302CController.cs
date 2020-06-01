@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
+﻿using Crestron.SimplSharpPro;
 //using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -13,14 +8,13 @@ using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash.Essentials.DM.Config;
 
 namespace PepperDash.Essentials.DM
 {
-    using eVst = Crestron.SimplSharpPro.DeviceSupport.eX02VideoSourceType;
-    using eAst = Crestron.SimplSharpPro.DeviceSupport.eX02AudioSourceType;
+    using eVst = eX02VideoSourceType;
+    using eAst = eX02AudioSourceType;
 
-    public class DmTx4kz302CController : DmTxControllerBase, ITxRouting, IHasFeedback,
+    public class DmTx4kz302CController : DmTxControllerBase, ITxRouting,
         IIROutputPorts, IComPorts
     {
         public DmTx4kz302C Tx { get; private set; }
@@ -46,23 +40,18 @@ namespace PepperDash.Essentials.DM
         /// <summary>
         /// Helps get the "real" inputs, including when in Auto
         /// </summary>
-        public Crestron.SimplSharpPro.DeviceSupport.eX02VideoSourceType ActualActiveVideoInput
+        public eX02VideoSourceType ActualActiveVideoInput
         {
             get
             {
                 if (Tx.VideoSourceFeedback != eVst.Auto)
                     return Tx.VideoSourceFeedback;
-                else // auto
-                {
-                    if (Tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue)
-                        return eVst.Hdmi1;
-                    else if (Tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue)
-                        return eVst.Hdmi2;
-                    else if (Tx.DisplayPortInput.SyncDetectedFeedback.BoolValue)
-                        return eVst.Vga;
-                    else
-                        return eVst.AllDisabled;
-                }
+                if (Tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue)
+                    return eVst.Hdmi1;
+                if (Tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue)
+                    return eVst.Hdmi2;
+
+                return Tx.DisplayPortInput.SyncDetectedFeedback.BoolValue ? eVst.Vga : eVst.AllDisabled;
             }
         }
         public RoutingPortCollection<RoutingInputPort> InputPorts
@@ -108,7 +97,7 @@ namespace PepperDash.Essentials.DM
             Tx.BaseEvent += Tx_BaseEvent;
 
             VideoSourceNumericFeedback = new IntFeedback(() => (int)Tx.VideoSourceFeedback);
-            AudioSourceNumericFeedback = new IntFeedback(() => (int)Tx.AudioSourceFeedback);
+            AudioSourceNumericFeedback = new IntFeedback(() => (int)Tx.VideoSourceFeedback);
 
             HdmiIn1HdcpCapabilityFeedback = new IntFeedback("HdmiIn1HdcpCapability", () => (int)tx.HdmiInputs[1].HdcpCapabilityFeedback);
 
@@ -272,12 +261,14 @@ namespace PepperDash.Essentials.DM
             // NOTE:  It's possible that this particular TX model may not like the AudioSource property being set.  
             // The SIMPL definition only shows a single analog for AudioVideo Source
             if ((signalType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
-                Tx.AudioSource = (eAst)inputSelector;
+                //it doesn't
+                Debug.Console(2, this, "Unable to execute audio-only switch for tx {0}", Key);
+                //Tx.AudioSource = (eAst)inputSelector;
         }
 
         void InputStreamChangeEvent(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
         {
-            Debug.Console(2, "{0} event {1} stream {2}", this.Tx.ToString(), inputStream.ToString(), args.EventId.ToString());
+            Debug.Console(2, "{0} event {1} stream {2}", Tx.ToString(), inputStream.ToString(), args.EventId.ToString());
 
             switch (args.EventId)
             {
