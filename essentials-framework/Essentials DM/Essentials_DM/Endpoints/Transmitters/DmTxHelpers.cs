@@ -52,7 +52,7 @@ namespace PepperDash.Essentials.DM
                     if (typeName.StartsWith("dmtx4k202"))
                         return new DmTx4k202CController(key, name, new DmTx4k202C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmtx4kz202"))
-                        return new DmTx4k202CController(key, name, new DmTx4kz202C(ipid, Global.ControlSystem));
+                        return new DmTx4kz202CController(key, name, new DmTx4kz202C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmtx4k302"))
 						return new DmTx4k302CController(key, name, new DmTx4k302C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmtx4kz302"))
@@ -115,7 +115,7 @@ namespace PepperDash.Essentials.DM
 						if (typeName.StartsWith("dmtx4k202"))
 							return new DmTx4k202CController(key, name, new DmTx4k202C(chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4kz202"))
-							return new DmTx4k202CController(key, name, new DmTx4kz202C(chassis.Inputs[num]));
+							return new DmTx4kz202CController(key, name, new DmTx4kz202C(chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4k302"))
 							return new DmTx4k302CController(key, name, new DmTx4k302C(chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4kz302"))
@@ -138,7 +138,7 @@ namespace PepperDash.Essentials.DM
 						if (typeName.StartsWith("dmtx4k202"))
 							return new DmTx4k202CController(key, name, new DmTx4k202C(ipid, chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4kz202"))
-							return new DmTx4k202CController(key, name, new DmTx4kz202C(ipid, chassis.Inputs[num]));
+							return new DmTx4kz202CController(key, name, new DmTx4kz202C(ipid, chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4k302"))
 							return new DmTx4k302CController(key, name, new DmTx4k302C(ipid, chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4kz302"))
