@@ -14,7 +14,9 @@ namespace PepperDash.Essentials.DM
     using eVst = eX02VideoSourceType;
     using eAst = eX02AudioSourceType;
 
-    public class DmTx4kz302CController : DmTxControllerBase, ITxRouting,
+
+    [Description("Wrapper class for DM-TX-4K-Z-302-C")]
+    public class DmTx4kz302CController : DmTxControllerBase, ITxRouting, IHasFeedback,
         IIROutputPorts, IComPorts
     {
         public DmTx4kz302C Tx { get; private set; }

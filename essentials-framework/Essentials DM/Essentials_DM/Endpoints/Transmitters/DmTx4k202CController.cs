@@ -20,6 +20,7 @@ namespace PepperDash.Essentials.DM
     using eVst = Crestron.SimplSharpPro.DeviceSupport.eX02VideoSourceType;
     using eAst = Crestron.SimplSharpPro.DeviceSupport.eX02AudioSourceType;
 
+    [Description("Wrapper class for DM-TX-4K-202-C")]
     public class DmTx4k202CController : DmTxControllerBase, ITxRouting, IHasFeedback,
         IIROutputPorts, IComPorts
     {
@@ -98,6 +99,7 @@ namespace PepperDash.Essentials.DM
 
             Tx.HdmiInputs[1].InputStreamChange += InputStreamChangeEvent;
             Tx.HdmiInputs[2].InputStreamChange += InputStreamChangeEvent;
+
             Tx.BaseEvent += Tx_BaseEvent;
 
             VideoSourceNumericFeedback = new IntFeedback(() => (int)Tx.VideoSourceFeedback);

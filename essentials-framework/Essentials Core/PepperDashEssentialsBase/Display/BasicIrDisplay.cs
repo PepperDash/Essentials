@@ -14,7 +14,8 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Core
 {
-	public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
+    [Description("Wrapper class for a Basic IR Display")]
+    public class BasicIrDisplay : DisplayBase, IBasicVolumeControls, IBridgeAdvanced
 	{
 		public IrOutputPortController IrPort { get; private set; }
 		public ushort IrPulseTime { get; set; }

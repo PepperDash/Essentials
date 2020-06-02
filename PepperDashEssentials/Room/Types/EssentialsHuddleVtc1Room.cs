@@ -590,7 +590,7 @@ namespace PepperDash.Essentials
 		/// <returns></returns>
 		bool DoRoute(SourceRouteListItem route)
 		{
-			IRoutingSinkNoSwitching dest = null;
+			IRoutingSink dest = null;
 
 			if (route.DestinationKey.Equals("$defaultaudio", StringComparison.OrdinalIgnoreCase))
                 dest = DefaultAudioDevice as IRoutingSinkNoSwitching;

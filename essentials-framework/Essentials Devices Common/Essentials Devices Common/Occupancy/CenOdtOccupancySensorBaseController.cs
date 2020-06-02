@@ -13,6 +13,7 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Devices.Common.Occupancy
 {
+    [Description("Wrapper class for CEN-ODT-C-POE")]
     public class CenOdtOccupancySensorBaseController : CrestronGenericBridgeableBaseDevice, IOccupancyStatusProvider
     {
         public CenOdtCPoe OccSensor { get; private set; }

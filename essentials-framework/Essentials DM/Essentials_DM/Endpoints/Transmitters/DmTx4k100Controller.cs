@@ -11,6 +11,7 @@ namespace PepperDash.Essentials.DM
     using eVst = eX02VideoSourceType;
     using eAst = eX02AudioSourceType;
 
+    [Description("Wrapper class for DM-TX-4K-100-C-1G")]
     public class DmTx4k100Controller : DmTxControllerBase, IRoutingInputsOutputs,
         IIROutputPorts, IComPorts, ICec
     {
