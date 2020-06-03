@@ -24,7 +24,7 @@ namespace PepperDash.Essentials.DM
     public class DmTx4k202CController : DmTxControllerBase, ITxRouting, IHasFeedback,
         IIROutputPorts, IComPorts
     {
-        public DmTx4kX02CBase Tx { get; private set; }
+        public DmTx4k202C Tx { get; private set; }
 
         public RoutingInputPortWithVideoStatuses HdmiIn1 { get; private set; }
         public RoutingInputPortWithVideoStatuses HdmiIn2 { get; private set; }
@@ -81,7 +81,7 @@ namespace PepperDash.Essentials.DM
                 return new RoutingPortCollection<RoutingOutputPort> { DmOut, HdmiLoopOut };
             }
         }
-        public DmTx4k202CController(string key, string name, DmTx4kX02CBase tx)
+        public DmTx4k202CController(string key, string name, DmTx4k202C tx)
             : base(key, name, tx)
         {
             Tx = tx;
@@ -99,6 +99,7 @@ namespace PepperDash.Essentials.DM
 
             Tx.HdmiInputs[1].InputStreamChange += InputStreamChangeEvent;
             Tx.HdmiInputs[2].InputStreamChange += InputStreamChangeEvent;
+
             Tx.BaseEvent += Tx_BaseEvent;
 
             VideoSourceNumericFeedback = new IntFeedback(() => (int)Tx.VideoSourceFeedback);
