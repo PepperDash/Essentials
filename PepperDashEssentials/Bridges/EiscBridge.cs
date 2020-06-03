@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.EthernetCommunication;
 using PepperDash.Core;
-using PepperDash.Essentials.Bridges;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
@@ -15,15 +14,11 @@ namespace PepperDash.Essentials.Bridges
     {
         public EiscApiPropertiesConfig PropertiesConfig { get; private set; }
 
-        protected Dictionary<string, JoinMapBaseAdvanced> JoinMaps { get; private set; }
-
         public ThreeSeriesTcpIpEthernetIntersystemCommunications Eisc { get; private set; }
 
         public EiscApi(DeviceConfig dc) :
             base(dc.Key)
         {
-            JoinMaps = new Dictionary<string, JoinMapBaseAdvanced>();
-
             PropertiesConfig = dc.Properties.ToObject<EiscApiPropertiesConfig>();
             //PropertiesConfig = JsonConvert.DeserializeObject<EiscApiPropertiesConfig>(dc.Properties.ToString());
 
@@ -69,58 +64,8 @@ namespace PepperDash.Essentials.Bridges
 
                 }
                 Debug.Console(1, this, "Devices Linked.");
-     
 
             });
-        }
-
-        /// <summary>
-        /// Adds a join map
-        /// </summary>
-        /// <param name="deviceKey"></param>
-        /// <param name="joinMap"></param>
-        public void AddJoinMap(string deviceKey, JoinMapBaseAdvanced joinMap)
-        {
-            if (!JoinMaps.ContainsKey(deviceKey))
-            {
-                JoinMaps.Add(deviceKey, joinMap);
-            }
-            else
-            {
-                Debug.Console(2, this, "Unable to add join map with key '{0}'.  Key already exists in JoinMaps dictionary", deviceKey);
-            }
-        }
-
-        /// <summary>
-        /// Prints all the join maps on this bridge
-        /// </summary>
-        public void PrintJoinMaps()
-        {
-            Debug.Console(0, this, "Join Maps for EISC IPID: {0}", Eisc.ID.ToString("X"));
-
-            foreach (var joinMap in JoinMaps)
-            {
-                Debug.Console(0, "Join map for device '{0}':", joinMap.Key);
-                joinMap.Value.PrintJoinMapInfo();
-            }
-        }
-
-        /// <summary>
-        /// Prints the join map for a device by key
-        /// </summary>
-        /// <param name="deviceKey"></param>
-        public void PrintJoinMapForDevice(string deviceKey)
-        {
-            var joinMap = JoinMaps[deviceKey];
-
-            if (joinMap == null)
-            {
-                Debug.Console(0, this, "Unable to find joinMap for device with key: '{0}'", deviceKey);
-                return;
-            }
-
-            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key);
-            joinMap.PrintJoinMapInfo();
         }
 
         /// <summary>
@@ -194,7 +139,7 @@ namespace PepperDash.Essentials.Bridges
             try
             {
                 if (Debug.Level >= 1)
-                    Debug.Console(1, this, "EiscApiAdvanced change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+                    Debug.Console(1, this, "EiscApi change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
                 var uo = args.Sig.UserObject;
 
                 if (uo == null) return;
