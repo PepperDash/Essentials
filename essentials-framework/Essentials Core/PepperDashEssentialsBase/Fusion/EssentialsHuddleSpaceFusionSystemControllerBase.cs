@@ -107,6 +107,8 @@ namespace PepperDash.Essentials.Core.Fusion
 
         public long PushNotificationTimeout = 5000;
 
+	    private const string RemoteOccupancyXml = "<Occupancy><Type>Local</Type><State>{0}</State></Occupancy>";
+
         protected Dictionary<int, FusionAsset> FusionStaticAssets;
 
         // For use with local occ sensor devices which will relay to Fusion the current occupancy status
@@ -1381,8 +1383,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         void RoomIsOccupiedFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
-            _roomOccupancyRemoteString = e.BoolValue ? @"<Occupancy><Type>Local</Type><State>Occupied</State></Occupancy>" 
-                : @"<Occupancy><Type>Local</Type><State>Unoccupied</State></Occupancy>";
+            _roomOccupancyRemoteString = String.Format(RemoteOccupancyXml, e.BoolValue ? "Occupied" : "Unoccupied");
             RoomOccupancyRemoteStringFeedback.FireUpdate();
         }
 
