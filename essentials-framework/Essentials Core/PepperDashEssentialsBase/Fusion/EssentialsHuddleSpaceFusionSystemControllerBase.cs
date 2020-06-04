@@ -117,6 +117,9 @@ namespace PepperDash.Essentials.Core.Fusion
 
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
+	    private string _roomOccupancyRemoteString;
+        public StringFeedback RoomOccupancyRemoteStringFeedback { get; private set; }
+
         protected Func<bool> RoomIsOccupiedFeedbackFunc
         {
             get
@@ -1366,13 +1369,24 @@ namespace PepperDash.Essentials.Core.Fusion
                 
                 // Tie to method on occupancy object
                 //occSensorShutdownMinutes.OutputSig.UserObject(new Action(ushort)(b => Room.OccupancyObj.SetShutdownMinutes(b));
-                
 
+
+                RoomOccupancyRemoteStringFeedback = new StringFeedback(() => _roomOccupancyRemoteString);
                 Room.RoomOccupancy.RoomIsOccupiedFeedback.LinkInputSig(occSensorAsset.RoomOccupied.InputSig);
+                Room.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
+                RoomOccupancyRemoteStringFeedback.LinkInputSig(occSensorAsset.RoomOccupancyInfo.InputSig);
+                
             //}
         }
 
-		/// <summary>
+        void RoomIsOccupiedFeedback_OutputChange(object sender, FeedbackEventArgs e)
+        {
+            _roomOccupancyRemoteString = e.BoolValue ? @"<Occupancy><Type>Local</Type><State>Occupied</State></Occupancy>" 
+                : @"<Occupancy><Type>Local</Type><State>Unoccupied</State></Occupancy>";
+            RoomOccupancyRemoteStringFeedback.FireUpdate();
+        }
+
+	    /// <summary>
 		/// Helper to get the number from the end of a device's key string
 		/// </summary>
 		/// <returns>-1 if no number matched</returns>
