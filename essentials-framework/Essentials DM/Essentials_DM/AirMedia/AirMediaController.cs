@@ -52,13 +52,13 @@ namespace PepperDash.Essentials.DM.AirMedia
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
-            InputPorts.Add(new RoutingInputPort(DmPortName.Osd, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            InputPorts.Add(new RoutingInputPort(DmPortName.Osd, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.None, new Action(SelectPinPointUxLandingPage), this));
 
-            InputPorts.Add(new RoutingInputPort(DmPortName.AirMediaIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            InputPorts.Add(new RoutingInputPort(DmPortName.AirMediaIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Streaming, new Action(SelectAirMedia), this));
 
-            InputPorts.Add(new RoutingInputPort(DmPortName.HdmiIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            InputPorts.Add(new RoutingInputPort(DmPortName.HdmiIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, new Action(SelectHdmiIn), this));
 
             InputPorts.Add(new RoutingInputPort(DmPortName.AirBoardIn, eRoutingSignalType.Video,
@@ -66,9 +66,12 @@ namespace PepperDash.Essentials.DM.AirMedia
 
             if (AirMedia is Am300)
             {
-                InputPorts.Add(new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                InputPorts.Add(new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.AudioVideo,
                     eRoutingPortConnectionType.DmCat, new Action(SelectDmIn), this));
             }
+
+            OutputPorts.Add(new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.Hdmi, null, this));
 
             AirMedia.AirMedia.AirMediaChange += new Crestron.SimplSharpPro.DeviceSupport.GenericEventHandler(AirMedia_AirMediaChange);
 
