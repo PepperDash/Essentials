@@ -269,8 +269,9 @@ namespace PepperDash.Essentials.DM.Chassis
 
             if (_Chassis4x1 != null)
             {
+                trilist.SetSigTrueAction(joinMap.EnableAutoRoute.JoinNumber, () => _Chassis4x1.AutoModeOn());
+                trilist.SetSigFalseAction(joinMap.EnableAutoRoute.JoinNumber, () => _Chassis4x1.AutoModeOff());
                 AutoRouteFeedback[this.Name + "-" + InputNames[1]].LinkInputSig(trilist.BooleanInput[joinMap.EnableAutoRoute.JoinNumber]);
-                AutoRouteFeedback[this.Name + "-" + InputNames[1]].LinkComplementInputSig(trilist.BooleanInput[joinMap.DisableAutoRoute.JoinNumber]);
             }
 
             for (uint i = 1; i <= _Chassis.NumberOfInputs; i++)
