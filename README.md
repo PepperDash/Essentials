@@ -10,7 +10,7 @@ PepperDash Essentials is an open source Crestron framework that can be configure
 Essentials Framework is a collection of C# / Simpl# Pro libraries that can be utilized in several different manners. It is currently operating as a 100% configuration-driven system, and can be extended to add different workflows and behaviors, either through the addition of further device "types" or via the plug-in mechanism. The framework is a collection of "things" that are all related and interconnected, but in general do not have dependencies on each other.
 
 ## Minimum Requirements
-- Essentials Framework runs on any Crestron 3-series processor or Crestron's VC-4 platform.
+- Essentials Framework runs on any Crestron 3-series processor, **4-series** processor or Crestron's VC-4 platform.
 - To edit and compile the source, Microsoft Visual Studio 2008 Professional with SP1 is required.
 - Crestron's Simpl# Plugin is also required (must be obtained from Crestron).
 
