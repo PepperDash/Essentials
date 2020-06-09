@@ -1154,9 +1154,9 @@ namespace PepperDash.Essentials.DM
                 {
                     Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
                     var txKey = TxDictionary[ioSlot];
-                    var basicTxDevice = DeviceManager.GetDeviceForKey(txKey) as DmTxControllerBase;
+                    var basicTxDevice = DeviceManager.GetDeviceForKey(txKey) as BasicDmTxControllerBase;
 
-                    var advancedTxDevice = basicTxDevice;
+                    var advancedTxDevice = basicTxDevice as DmTxControllerBase;
 
                     if (Chassis is DmMd8x8Cpu3 || Chassis is DmMd8x8Cpu3rps
                         || Chassis is DmMd16x16Cpu3 || Chassis is DmMd16x16Cpu3rps
