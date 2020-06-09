@@ -110,15 +110,24 @@ namespace PepperDash.Essentials.Core.Bridges
                     if (device == null) continue;
 
                     Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
-                    //if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
-                    //{
-                    //    Debug.Console(2, this, "'{0}' is IBridge", device.Key);
-                    //}
+
+                    if (typeof (IBridge).IsAssignableFrom(device.GetType().GetCType()))
+                    {
+                        var basicBridge = device as IBridge;
+                        if (basicBridge != null)
+                        {
+                            Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
+                                "Linking EiscApiAdvanced {0} to device {1} using obsolete join map. Please update the device's join map.",
+                                Key, device.Key);
+                            basicBridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
+                        }
+                        continue;
+                    }
+
                     if (!typeof (IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
                     {
                         continue;
                     }
-
                     var bridge = device as IBridgeAdvanced;
                     if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                 }
