@@ -268,9 +268,9 @@ namespace PepperDash.Essentials.DM.AirMedia
 
         public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType signalType)
         {
-
-            if ((signalType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
-                AirMedia.DisplayControl.VideoOut = (AmX00DisplayControl.eAirMediaX00VideoSource)input;
+            if ((signalType & eRoutingSignalType.Video) != eRoutingSignalType.Video) return;
+            if (Enum.IsDefined(typeof (AmX00DisplayControl.eAirMediaX00VideoSource), input))
+                AirMedia.DisplayControl.VideoOut = (AmX00DisplayControl.eAirMediaX00VideoSource) input;
         }
 
         #endregion
