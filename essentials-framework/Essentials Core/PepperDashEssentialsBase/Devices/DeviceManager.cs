@@ -45,7 +45,8 @@ namespace PepperDash.Essentials.Core
                 "Simulates incoming data on a com device", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s => SetDeviceStreamDebugging(s), "setdevicestreamdebug", "set comm debug [deviceKey] [off/rx/tx/both] ([minutes])", ConsoleAccessLevelEnum.AccessOperator);
-		}
+            CrestronConsole.AddNewConsoleCommand(s => DisableAllDeviceStreamDebugging(), "disableallstreamdebug", "disables stream debugging on all devices", ConsoleAccessLevelEnum.AccessOperator);
+        }
 
 		/// <summary>
 		/// Calls activate steps on all Device class items
@@ -357,6 +358,22 @@ namespace PepperDash.Essentials.Core
                     Debug.Console(0, "Device: '{0}' debug level set to {1) for default time (30 minutes)", deviceKey, debugSetting);
                 }
                 
+            }
+        }
+
+        /// <summary>
+        /// Sets stream debugging settings to off for all devices
+        /// </summary>
+        public static void DisableAllDeviceStreamDebugging()
+        {
+            foreach (var device in AllDevices)
+            {
+                var streamDevice = device as IStreamDebugging;
+
+                if (streamDevice != null)
+                {
+                    streamDevice.StreamDebugging.SetDebuggingWithDefaultTimeout(eStreamDebuggingSetting.Off);
+                }
             }
         }
 	}
