@@ -43,7 +43,10 @@ namespace PepperDash.Essentials.Core
 			CrestronConsole.AddNewConsoleCommand(s => CrestronConsole.ConsoleCommandResponse(DeviceJsonApi.GetApiMethods(s)), "apimethods", "", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(SimulateComReceiveOnDevice, "devsimreceive",
                 "Simulates incoming data on a com device", ConsoleAccessLevelEnum.AccessOperator);
-		}
+
+            CrestronConsole.AddNewConsoleCommand(s => SetDeviceStreamDebugging(s), "setdevicestreamdebug", "set comm debug [deviceKey] [off/rx/tx/both] ([minutes])", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s => DisableAllDeviceStreamDebugging(), "disableallstreamdebug", "disables stream debugging on all devices", ConsoleAccessLevelEnum.AccessOperator);
+        }
 
 		/// <summary>
 		/// Calls activate steps on all Device class items
@@ -298,6 +301,80 @@ namespace PepperDash.Essentials.Core
                 return;
             }
             com.SimulateReceive(match.Groups[2].Value);
+        }
+
+        /// <summary>
+        /// Attempts to set the debug level of a device
+        /// </summary>
+        /// <param name="s"></param>
+        public static void SetDeviceStreamDebugging(string s)
+        {
+            var args = s.Split(' ');
+
+            var deviceKey = args[0];
+            var setting = args[1];
+            var timeout = args[2];
+
+            var device = GetDeviceForKey(deviceKey) as IStreamDebugging;
+
+            if (device == null)
+            {
+                Debug.Console(0, "Unable to get device with key: {0}", deviceKey);
+                return;
+            }
+            else
+            {
+                eStreamDebuggingSetting debugSetting = eStreamDebuggingSetting.Off;
+
+                try
+                {
+                    debugSetting = (eStreamDebuggingSetting)Enum.Parse(typeof(eStreamDebuggingSetting), setting, true);
+                }
+                catch
+                {
+                    Debug.Console(0, "Unable to convert setting value.  Please use off/rx/tx/both");
+                    return;
+                }
+
+                if (!string.IsNullOrEmpty(timeout))
+                {
+                    try
+                    {
+                        var min = Convert.ToUInt32(timeout);
+
+                        device.StreamDebugging.SetDebuggingWithSpecificTimeout(debugSetting, min);
+                        Debug.Console(0, "Device: '{0}' debug level set to {1) for {2} minutes", deviceKey, debugSetting, min);
+
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Console(0, "Unable to convert minutes or settings value.  Please use an integer value for minutes. Errro: {0}", e);
+                        return;
+                    }
+                }
+                else
+                {
+                    device.StreamDebugging.SetDebuggingWithDefaultTimeout(debugSetting);
+                    Debug.Console(0, "Device: '{0}' debug level set to {1) for default time (30 minutes)", deviceKey, debugSetting);
+                }
+                
+            }
+        }
+
+        /// <summary>
+        /// Sets stream debugging settings to off for all devices
+        /// </summary>
+        public static void DisableAllDeviceStreamDebugging()
+        {
+            foreach (var device in AllDevices)
+            {
+                var streamDevice = device as IStreamDebugging;
+
+                if (streamDevice != null)
+                {
+                    streamDevice.StreamDebugging.SetDebuggingWithDefaultTimeout(eStreamDebuggingSetting.Off);
+                }
+            }
         }
 	}
 }
