@@ -13,6 +13,7 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Devices.Common.Occupancy
 {
+    [Description("Wrapper class for Dual Technology GLS Occupancy Sensors")]
     public class GlsOdtOccupancySensorController : GlsOccupancySensorBaseController
     {
         public new GlsOdtCCn OccSensor { get; private set; }

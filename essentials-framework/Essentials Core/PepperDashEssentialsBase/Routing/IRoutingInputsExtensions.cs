@@ -22,7 +22,7 @@ namespace PepperDash.Essentials.Core
 		/// and then attempts a new Route and if sucessful, stores that RouteDescriptor
 		/// in RouteDescriptorCollection.DefaultCollection
 		/// </summary>
-		public static void ReleaseAndMakeRoute(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType)
+		public static void ReleaseAndMakeRoute(this IRoutingSink destination, IRoutingOutputs source, eRoutingSignalType signalType)
 		{
 			destination.ReleaseRoute();
 
@@ -39,7 +39,7 @@ namespace PepperDash.Essentials.Core
 		/// RouteDescriptorCollection.DefaultCollection
 		/// </summary>
 		/// <param name="destination"></param>
-		public static void ReleaseRoute(this IRoutingInputs destination)
+        public static void ReleaseRoute(this IRoutingSink destination)
 		{
 			var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination);
 			if (current != null)
@@ -56,7 +56,7 @@ namespace PepperDash.Essentials.Core
 		/// of an audio/video route are discovered a route descriptor is returned.  If no route is 
 		/// discovered, then null is returned
 		/// </summary>
-		public static RouteDescriptor GetRouteToSource(this IRoutingInputs destination, IRoutingOutputs source, eRoutingSignalType signalType)
+        public static RouteDescriptor GetRouteToSource(this IRoutingSink destination, IRoutingOutputs source, eRoutingSignalType signalType)
 		{
 			var routeDescr = new RouteDescriptor(source, destination, signalType);
 			// if it's a single signal type, find the route
@@ -152,7 +152,7 @@ namespace PepperDash.Essentials.Core
 				if (outputPortToUse == null)
 				{
 					// it's a sink device
-					routeTable.Routes.Add(new RouteSwitchDescriptor(goodInputPort));
+                        routeTable.Routes.Add(new RouteSwitchDescriptor(goodInputPort));
 				}
 				else if (destination is IRouting)
 				{
@@ -265,14 +265,20 @@ namespace PepperDash.Essentials.Core
 			foreach (var route in Routes)
 			{
 				Debug.Console(2, "ExecuteRoutes: {0}", route.ToString());
-				if (route.SwitchingDevice is IRoutingSinkWithSwitching)
-					(route.SwitchingDevice as IRoutingSinkWithSwitching).ExecuteSwitch(route.InputPort.Selector);
-				else if (route.SwitchingDevice is IRouting)
-				{
-					(route.SwitchingDevice as IRouting).ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
-					route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
-					Debug.Console(2, "Output port {0} routing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
-				}
+                if (route.SwitchingDevice is IRoutingSink)
+                {
+                    var device = route.SwitchingDevice as IRoutingSinkWithSwitching;
+                    if (device == null)
+                        continue;
+
+                    device.ExecuteSwitch(route.InputPort.Selector);
+                }
+                else if (route.SwitchingDevice is IRouting)
+                {
+                    (route.SwitchingDevice as IRouting).ExecuteSwitch(route.InputPort.Selector, route.OutputPort.Selector, SignalType);
+                    route.OutputPort.InUseTracker.AddUser(Destination, "destination-" + SignalType);
+                    Debug.Console(2, "Output port {0} routing. Count={1}", route.OutputPort.Key, route.OutputPort.InUseTracker.InUseCountFeedback.UShortValue);
+                }
 			}
 		}
 

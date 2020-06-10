@@ -19,6 +19,7 @@ namespace PepperDash.Essentials.DM
 {
 	using eVst = DmTx401C.eSourceSelection;
 
+    [Description("Wrapper class for DM-TX-401-C")]
     public class DmTx401CController : DmTxControllerBase, ITxRouting, IIROutputPorts, IComPorts, IHasFreeRun, IVgaBrightnessContrastControls
 	{
 		public DmTx401C Tx { get; private set; }

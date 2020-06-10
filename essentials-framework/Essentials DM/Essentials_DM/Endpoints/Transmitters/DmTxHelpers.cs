@@ -27,17 +27,17 @@ namespace PepperDash.Essentials.DM
 		/// <param name="name"></param>
 		/// <param name="props"></param>
 		/// <returns></returns>
-        public static BasicDmTxControllerBase GetDmTxController(string key, string name, string typeName, DmTxPropertiesConfig props)
+    public static BasicDmTxControllerBase GetDmTxController(string key, string name, string typeName, DmTxPropertiesConfig props)
 		{
 			// switch on type name... later...
 
-			typeName = typeName.ToLower();
-			//uint ipid = Convert.ToUInt16(props.Id, 16);
-			var ipid = props.Control.IpIdInt;
-			var pKey = props.ParentDeviceKey.ToLower();
+	        typeName = typeName.ToLower();
+	        //uint ipid = Convert.ToUInt16(props.Id, 16);
+	        var ipid = props.Control.IpIdInt;
+	        var pKey = props.ParentDeviceKey.ToLower();
 
-			if (pKey == "processor")
-			{
+	        if (pKey == "processor")
+	        {
 				// Catch constructor failures, mainly dues to IPID
 				try
 				{
