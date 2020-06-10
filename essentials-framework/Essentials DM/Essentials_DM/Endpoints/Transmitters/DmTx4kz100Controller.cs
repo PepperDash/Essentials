@@ -21,6 +21,7 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// Controller class for all DM-TX-201C/S/F transmitters
     /// </summary>
+    [Description("Wrapper class for DM-TX-4K-Z-100-C")]
     public class DmTx4kz100Controller : DmTxControllerBase, IRoutingInputsOutputs, IHasFeedback,
         IIROutputPorts, IComPorts, ICec
     {
@@ -93,9 +94,9 @@ namespace PepperDash.Essentials.DM
             ActiveVideoInputFeedback = new StringFeedback("ActiveVideoInput",
                 () => ActualActiveVideoInput.ToString());
 
-            Tx.HdmiInput.InputStreamChange += new EndpointInputStreamChangeEventHandler(InputStreamChangeEvent);
+            Tx.HdmiInput.InputStreamChange += InputStreamChangeEvent;
             Tx.BaseEvent += Tx_BaseEvent;
-            Tx.OnlineStatusChange += new OnlineStatusChangeEventHandler(Tx_OnlineStatusChange);
+            Tx.OnlineStatusChange += Tx_OnlineStatusChange;
 
 
             HdmiInHdcpCapabilityFeedback = new IntFeedback("HdmiInHdcpCapability", () =>
@@ -108,10 +109,7 @@ namespace PepperDash.Essentials.DM
 
             HdcpSupportCapability = eHdcpCapabilityType.HdcpAutoSupport;
 
-            HdmiVideoSyncFeedback = new BoolFeedback(() =>
-            {
-                return (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue;
-            });
+            HdmiVideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue);
 
 
             var combinedFuncs = new VideoStatusFuncsWrapper
@@ -120,20 +118,13 @@ namespace PepperDash.Essentials.DM
                     (ActualActiveVideoInput == DmTx200Base.eSourceSelection.Digital
                     && tx.HdmiInput.VideoAttributes.HdcpActiveFeedback.BoolValue),
 
-                HdcpStateFeedbackFunc = () =>
-                {
-                    if (ActualActiveVideoInput == DmTx200Base.eSourceSelection.Digital)
-                        return tx.HdmiInput.VideoAttributes.HdcpStateFeedback.ToString();
-                    return "";
-                },
+                HdcpStateFeedbackFunc = () => ActualActiveVideoInput == DmTx200Base.eSourceSelection.Digital ? tx.HdmiInput.VideoAttributes.HdcpStateFeedback.ToString() : "",
 
                 VideoResolutionFeedbackFunc = () =>
                 {
                     if (ActualActiveVideoInput == DmTx200Base.eSourceSelection.Digital)
                         return tx.HdmiInput.VideoAttributes.GetVideoResolutionString();
-                    if (ActualActiveVideoInput == DmTx200Base.eSourceSelection.Analog)
-                        return tx.VgaInput.VideoAttributes.GetVideoResolutionString();
-                    return "";
+                    return ActualActiveVideoInput == DmTx200Base.eSourceSelection.Analog ? tx.VgaInput.VideoAttributes.GetVideoResolutionString() : "";
                 },
                 VideoSyncFeedbackFunc = () =>
                 (ActualActiveVideoInput == DmTx200Base.eSourceSelection.Digital
@@ -180,7 +171,7 @@ namespace PepperDash.Essentials.DM
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            DmTxControllerJoinMap joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
+            var joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
 
             if (HdmiVideoSyncFeedback != null)
             {
@@ -196,14 +187,7 @@ namespace PepperDash.Essentials.DM
         /// <param name="enable"></param>
         public void SetFreeRunEnabled(bool enable)
         {
-            if (enable)
-            {
-                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Enabled;
-            }
-            else
-            {
-                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Disabled;
-            }
+            Tx.VgaInput.FreeRun = enable ? eDmFreeRunSetting.Enabled : eDmFreeRunSetting.Disabled;
         }
 
         /// <summary>
@@ -230,16 +214,15 @@ namespace PepperDash.Essentials.DM
             var id = args.EventId;
             Debug.Console(2, this, "EventId {0}", args.EventId);
 
-            if (id == EndpointTransmitterBase.VideoSourceFeedbackEventId)
+            switch (id)
             {
-                Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
-                ActiveVideoInputFeedback.FireUpdate();
-            }
-
-            // ------------------------------ incomplete -----------------------------------------
-            else if (id == EndpointTransmitterBase.AudioSourceFeedbackEventId)
-            {
-                Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
+                case EndpointTransmitterBase.VideoSourceFeedbackEventId:
+                    Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
+                    ActiveVideoInputFeedback.FireUpdate();
+                    break;
+                case EndpointTransmitterBase.AudioSourceFeedbackEventId:
+                    Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
+                    break;
             }
         }
 
@@ -247,13 +230,17 @@ namespace PepperDash.Essentials.DM
         {
             Debug.Console(2, "{0} event {1} stream {2}", this.Tx.ToString(), inputStream.ToString(), args.EventId.ToString());
 
-            if (args.EventId == EndpointInputStreamEventIds.HdcpSupportOffFeedbackEventId)
+            switch (args.EventId)
             {
-                HdmiInHdcpCapabilityFeedback.FireUpdate();
-            }
-            else if (args.EventId == EndpointInputStreamEventIds.HdcpSupportOnFeedbackEventId)
-            {
-                HdmiInHdcpCapabilityFeedback.FireUpdate();
+                case EndpointInputStreamEventIds.HdcpSupportOffFeedbackEventId:
+                    HdmiInHdcpCapabilityFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.HdcpSupportOnFeedbackEventId:
+                    HdmiInHdcpCapabilityFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
+                    HdmiVideoSyncFeedback.FireUpdate();
+                    break;
             }
         }
 
@@ -262,11 +249,9 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void FowardInputStreamChange(RoutingInputPortWithVideoStatuses inputPort, int eventId)
         {
-            if (eventId == EndpointInputStreamEventIds.SyncDetectedFeedbackEventId)
-            {
-                inputPort.VideoStatus.VideoSyncFeedback.FireUpdate();
-                AnyVideoInput.VideoStatus.VideoSyncFeedback.FireUpdate();
-            }
+            if (eventId != EndpointInputStreamEventIds.SyncDetectedFeedbackEventId) return;
+            inputPort.VideoStatus.VideoSyncFeedback.FireUpdate();
+            AnyVideoInput.VideoStatus.VideoSyncFeedback.FireUpdate();
         }
 
         /// <summary>

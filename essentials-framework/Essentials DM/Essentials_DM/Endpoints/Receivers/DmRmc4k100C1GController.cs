@@ -7,6 +7,8 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.DM
 {
+
+    [Description("Wrapper Class for DM-RMC-4K-100-C-1G")]
     public class DmRmc4k100C1GController : DmHdBaseTControllerBase, IRoutingInputsOutputs,
         IIROutputPorts, IComPorts, ICec
     {

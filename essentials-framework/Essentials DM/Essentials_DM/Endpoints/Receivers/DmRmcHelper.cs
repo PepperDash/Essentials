@@ -307,7 +307,7 @@ namespace PepperDash.Essentials.DM
             TypeNames = new List<string>
             { "hdbasetrx", "dmrmc4k100c1g", "dmrmc100c", "dmrmc100s", "dmrmc4k100c", "dmrmc150s",
                 "dmrmc200c", "dmrmc200s", "dmrmc200s2", "dmrmcscalerc", "dmrmcscalers", "dmrmcscalers2", "dmrmc4kscalerc", "dmrmc4kscalercdsp",
-                "dmrmc4kz100c", "dmrmckzscalerc" };
+                "dmrmc4kz100c", "dmrmc4kzscalerc" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)

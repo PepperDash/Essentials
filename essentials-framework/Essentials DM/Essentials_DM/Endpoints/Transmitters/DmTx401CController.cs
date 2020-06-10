@@ -19,11 +19,10 @@ namespace PepperDash.Essentials.DM
 {
 	using eVst = DmTx401C.eSourceSelection;
 
-    public class DmTx401CController : DmTxControllerBase, ITxRouting, IHasFeedback, IIROutputPorts, IComPorts, IHasFreeRun, IVgaBrightnessContrastControls
+    [Description("Wrapper class for DM-TX-401-C")]
+    public class DmTx401CController : DmTxControllerBase, ITxRouting, IIROutputPorts, IComPorts, IHasFreeRun, IVgaBrightnessContrastControls
 	{
 		public DmTx401C Tx { get; private set; }
-
-
 
 		public RoutingInputPortWithVideoStatuses HdmiIn { get; private set; }
 		public RoutingInputPortWithVideoStatuses DisplayPortIn { get; private set; }
@@ -116,51 +115,36 @@ namespace PepperDash.Essentials.DM
                 eRoutingSignalType.Video, eRoutingPortConnectionType.Composite, eVst.Composite, this,
 				VideoStatusHelper.GetVgaInputStatusFuncs(tx.VgaInput));
 
+            Tx.HdmiInput.InputStreamChange += HdmiInputStreamChangeEvent;
+            Tx.DisplayPortInput.InputStreamChange += DisplayPortInputStreamChangeEvent;
             Tx.BaseEvent += Tx_BaseEvent;
+            Tx.VgaInput.InputStreamChange += VgaInputOnInputStreamChange;
+            tx.VgaInput.VideoControls.ControlChange += VideoControls_ControlChange;
+
 
 			ActiveVideoInputFeedback = new StringFeedback("ActiveVideoInput",
 				() => ActualVideoInput.ToString());
 
-            VideoSourceNumericFeedback = new IntFeedback(() =>
-            {
-                return (int)Tx.VideoSourceFeedback;
-            });
-            AudioSourceNumericFeedback = new IntFeedback(() =>
-            {
-                return (int)Tx.AudioSourceFeedback;
-            });
+            VideoSourceNumericFeedback = new IntFeedback(() => (int)Tx.VideoSourceFeedback);
 
-            HdmiInHdcpCapabilityFeedback = new IntFeedback("HdmiInHdcpCapability", () =>
-            {
-                if (tx.HdmiInput.HdcpSupportOnFeedback.BoolValue)
-                    return 1;
-                else
-                    return 0;
-            });
+            AudioSourceNumericFeedback = new IntFeedback(() => (int)Tx.AudioSourceFeedback);
+
+            HdmiInHdcpCapabilityFeedback = new IntFeedback("HdmiInHdcpCapability", () => tx.HdmiInput.HdcpSupportOnFeedback.BoolValue ? 1 : 0);
 
             HdcpSupportCapability = eHdcpCapabilityType.HdcpAutoSupport;
 
-            DisplayPortVideoSyncFeedback = new BoolFeedback("DisplayPortVideoSync", () =>
-            {
-                return (bool)tx.DisplayPortInput.SyncDetectedFeedback.BoolValue;
-            });
+            DisplayPortVideoSyncFeedback = new BoolFeedback("DisplayPortVideoSync", () => (bool)tx.DisplayPortInput.SyncDetectedFeedback.BoolValue);
 
-            HdmiVideoSyncFeedback = new BoolFeedback(() =>
-            {
-                return (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue;
-            });
+            HdmiVideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue);
 
-            VgaVideoSyncFeedback = new BoolFeedback(() =>
-            {
-                return (bool)tx.VgaInput.SyncDetectedFeedback.BoolValue;
-            });
+            VgaVideoSyncFeedback = new BoolFeedback(() => (bool)tx.VgaInput.SyncDetectedFeedback.BoolValue);
 
             FreeRunEnabledFeedback = new BoolFeedback(() => tx.VgaInput.FreeRunFeedback == eDmFreeRunSetting.Enabled);
 
             VgaBrightnessFeedback = new IntFeedback(() => tx.VgaInput.VideoControls.BrightnessFeedback.UShortValue);
+
             VgaContrastFeedback = new IntFeedback(() => tx.VgaInput.VideoControls.ContrastFeedback.UShortValue);
 
-            tx.VgaInput.VideoControls.ControlChange += new Crestron.SimplSharpPro.DeviceSupport.GenericEventHandler(VideoControls_ControlChange);
 
 			var combinedFuncs = new VideoStatusFuncsWrapper
 			{
@@ -238,7 +222,7 @@ namespace PepperDash.Essentials.DM
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            DmTxControllerJoinMap joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
+            var joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
 
             if (HdmiVideoSyncFeedback != null)
             {
@@ -300,36 +284,38 @@ namespace PepperDash.Essentials.DM
                 Tx.AudioSource = (eVst)inputSelector;
         }
 
-		void Tx_BaseEvent(GenericBase device, BaseEventArgs args)
-		{
-			var id = args.EventId;
-			if (id == EndpointTransmitterBase.VideoSourceFeedbackEventId)
-			{
-				Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
-                VideoSourceNumericFeedback.FireUpdate();
-                ActiveVideoInputFeedback.FireUpdate();
-            }
-
-			// ------------------------------ incomplete -----------------------------------------
-			else if (id == EndpointTransmitterBase.AudioSourceFeedbackEventId)
-			{
-				Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
-                AudioSourceNumericFeedback.FireUpdate();
-            }
-		}
-
-        void VideoControls_ControlChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
+        void Tx_BaseEvent(GenericBase device, BaseEventArgs args)
         {
             var id = args.EventId;
             Debug.Console(2, this, "EventId {0}", args.EventId);
 
-            if (id == VideoControlsEventIds.BrightnessFeedbackEventId)
+            switch (id)
             {
-                VgaBrightnessFeedback.FireUpdate();
+                case EndpointTransmitterBase.VideoSourceFeedbackEventId:
+                    Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
+                    VideoSourceNumericFeedback.FireUpdate();
+                    ActiveVideoInputFeedback.FireUpdate();
+                    break;
+                case EndpointTransmitterBase.AudioSourceFeedbackEventId:
+                    Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
+                    AudioSourceNumericFeedback.FireUpdate();
+                    break;
             }
-            else if (id == VideoControlsEventIds.ContrastFeedbackEventId)
+        }
+
+        void VideoControls_ControlChange(object sender, GenericEventArgs args)
+        {
+            var id = args.EventId;
+            Debug.Console(2, this, "EventId {0}", args.EventId);
+
+            switch (id)
             {
-                VgaContrastFeedback.FireUpdate();
+                case VideoControlsEventIds.BrightnessFeedbackEventId:
+                    VgaBrightnessFeedback.FireUpdate();
+                    break;
+                case VideoControlsEventIds.ContrastFeedbackEventId:
+                    VgaContrastFeedback.FireUpdate();
+                    break;
             }
         }
 
@@ -339,14 +325,7 @@ namespace PepperDash.Essentials.DM
         /// <param name="enable"></param>
         public void SetFreeRunEnabled(bool enable)
         {
-            if (enable)
-            {
-                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Enabled;
-            }
-            else
-            {
-                Tx.VgaInput.FreeRun = eDmFreeRunSetting.Disabled;
-            }
+            Tx.VgaInput.FreeRun = enable ? eDmFreeRunSetting.Enabled : eDmFreeRunSetting.Disabled;
         }
 
         /// <summary>
@@ -370,14 +349,15 @@ namespace PepperDash.Essentials.DM
 		/// <summary>
 		/// Relays the input stream change to the appropriate RoutingInputPort.
 		/// </summary>
-		void FowardInputStreamChange(RoutingInputPortWithVideoStatuses inputPort, int eventId)
-		{
-			if (eventId == EndpointInputStreamEventIds.SyncDetectedFeedbackEventId)
-			{
-				inputPort.VideoStatus.VideoSyncFeedback.FireUpdate();
-				AnyVideoInput.VideoStatus.VideoSyncFeedback.FireUpdate();
-			}
-		}
+        void FowardInputStreamChange(RoutingInputPortWithVideoStatuses inputPort, int eventId)
+        {
+            if (eventId != EndpointInputStreamEventIds.SyncDetectedFeedbackEventId)
+            {
+                return;
+            }
+            inputPort.VideoStatus.VideoSyncFeedback.FireUpdate();
+            AnyVideoInput.VideoStatus.VideoSyncFeedback.FireUpdate();
+        }
 		
 		/// <summary>
 		/// Relays the VideoAttributes change to a RoutingInputPort
@@ -408,6 +388,50 @@ namespace PepperDash.Essentials.DM
                     break;
 			}
 		}
+
+        void HdmiInputStreamChangeEvent(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
+        {
+            Debug.Console(2, "{0} event {1} stream {2}", Tx.ToString(), inputStream.ToString(), args.EventId.ToString());
+
+            switch (args.EventId)
+            {
+                case EndpointInputStreamEventIds.HdcpSupportOffFeedbackEventId:
+                    HdmiInHdcpCapabilityFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.HdcpSupportOnFeedbackEventId:
+                    HdmiInHdcpCapabilityFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
+                    HdmiVideoSyncFeedback.FireUpdate();
+                    break;
+            }
+        }
+
+        void DisplayPortInputStreamChangeEvent(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
+        {
+            Debug.Console(2, "{0} event {1} stream {2}", Tx.ToString(), inputStream.ToString(), args.EventId.ToString());
+
+            switch (args.EventId)
+            {
+                case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
+                    DisplayPortVideoSyncFeedback.FireUpdate();
+                    break;
+            }
+        }
+
+        private void VgaInputOnInputStreamChange(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
+        {
+            switch (args.EventId)
+            {
+                case EndpointInputStreamEventIds.FreeRunFeedbackEventId:
+                    FreeRunEnabledFeedback.FireUpdate();
+                    break;
+                case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
+                    VgaVideoSyncFeedback.FireUpdate();
+                    break;
+            }
+        }
+
 
 
 		#region IIROutputPorts Members

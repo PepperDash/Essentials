@@ -185,6 +185,26 @@ namespace PepperDash.Essentials.Core
                 }
             }
         }
+
+        public string InfinetId { get; set; }
+
+        /// <summary>
+        /// Attepmts to provide uiont conversion of string InifinetId
+        /// </summary>
+        public uint InfinetIdInt
+        {
+            get
+            {
+                try
+                {
+                    return Convert.ToUInt32(InfinetId, 16);
+                }
+                catch (Exception)
+                {
+                    throw new FormatException(string.Format("ERROR:Unable to conver Infinet ID: {0} to hex.  Error:\n{1}", InfinetId));
+                }
+            }
+        }
     }
 
     public class IrControlSpec

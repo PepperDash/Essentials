@@ -14,9 +14,9 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
+    [Description("Wrapper class for an IR-Controlled AppleTV")]
 	public class AppleTV : EssentialsBridgeableDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingOutputs
 	{
-
 		public IrOutputPortController IrPort { get; private set; }
 		public const string StandardDriverName = "Apple AppleTV-v2.ir";
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeAppleTv; } }

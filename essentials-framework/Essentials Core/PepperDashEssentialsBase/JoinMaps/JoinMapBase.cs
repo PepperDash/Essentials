@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Crestron.SimplSharp.Reflection;
 
 using PepperDash.Core;
@@ -25,6 +26,16 @@ namespace PepperDash.Essentials.Core
             var joinMap = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
 
             return joinMap;
+        }
+
+        /// <summary>
+        /// Attempts to get the serialized join map from config
+        /// </summary>
+        /// <param name="joinMapKey"></param>
+        /// <returns></returns>
+        public static string GetJoinMapForDevice(string joinMapKey)
+        {
+            return GetSerializedJoinMapForDevice(joinMapKey);
         }
 
         /// <summary>
@@ -337,6 +348,8 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class JoinMetadata
     {
+        private string _description;
+
         /// <summary>
         /// Join number (based on join offset value)
         /// </summary>
@@ -351,10 +364,17 @@ namespace PepperDash.Essentials.Core
         public uint JoinSpan { get; set; }
 
         /// <summary>
-        /// A label for the join to better describe it's usage
+        /// A label for the join to better describe its usage
         /// </summary>
+        [Obsolete("Use Description instead")]
         [JsonProperty("label")]
-        public string Label { get; set; }
+        public string Label { get { return _description; } set { _description = value; } }
+
+        /// <summary>
+        /// A description for the join to better describe its usage
+        /// </summary>
+        [JsonProperty("description")]
+        public string Description { get { return _description; } set { _description = value; } }
         /// <summary>
         /// Signal type(s)
         /// </summary>
@@ -447,8 +467,10 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    
+
     [AttributeUsage(AttributeTargets.All)]
-    public class JoinNameAttribute : Attribute
+    public class JoinNameAttribute : CAttribute
     {
         private string _Name;
 

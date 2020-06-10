@@ -8,6 +8,7 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.DM
 {
+    [Description("Wrapper Class for DM-RMC-4K-Z-100-C")]
     public class DmRmc4kZ100CController : DmRmcX100CController
     {
         private readonly DmRmc4kz100C _rmc;
@@ -23,18 +24,31 @@ namespace PepperDash.Essentials.DM
             EdidSerialNumberFeedback = new StringFeedback(() => _rmc.HdmiOutput.ConnectedDevice.SerialNumber.StringValue);
 
             _rmc.HdmiOutput.OutputStreamChange += HdmiOutput_OutputStreamChange;
-            _rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
+
+            //removed to prevent NullReferenceException
+            //_rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
 		}
 
         void HdmiOutput_OutputStreamChange(EndpointOutputStream outputStream, EndpointOutputStreamEventArgs args)
         {
-            if (args.EventId == EndpointOutputStreamEventIds.HorizontalResolutionFeedbackEventId || args.EventId == EndpointOutputStreamEventIds.VerticalResolutionFeedbackEventId ||
-                args.EventId == EndpointOutputStreamEventIds.FramesPerSecondFeedbackEventId)
+            switch (args.EventId)
             {
-                VideoOutputResolutionFeedback.FireUpdate();
+                case EndpointOutputStreamEventIds.FramesPerSecondFeedbackEventId:
+                case EndpointOutputStreamEventIds.VerticalResolutionFeedbackEventId:
+                case EndpointOutputStreamEventIds.HorizontalResolutionFeedbackEventId:
+                    VideoOutputResolutionFeedback.FireUpdate();
+                    break;
+                case EndpointOutputStreamEventIds.HotplugDetectedEventId:
+                    if (_rmc.HdmiOutput.ConnectedDevice == null) return;
+                    EdidManufacturerFeedback.FireUpdate();
+                    EdidNameFeedback.FireUpdate();
+                    EdidPreferredTimingFeedback.FireUpdate();
+                    EdidSerialNumberFeedback.FireUpdate();
+                    break;
             }
         }
 
+        /*
         void ConnectedDevice_DeviceInformationChange(ConnectedDeviceInformation connectedDevice, ConnectedDeviceEventArgs args)
         {
             switch (args.EventId)
@@ -52,7 +66,7 @@ namespace PepperDash.Essentials.DM
                     EdidSerialNumberFeedback.FireUpdate();
                     break;
             }
-        }
+        }*/
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
