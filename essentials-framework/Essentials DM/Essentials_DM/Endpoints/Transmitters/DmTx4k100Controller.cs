@@ -3,6 +3,7 @@
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 
@@ -11,8 +12,7 @@ namespace PepperDash.Essentials.DM
     using eVst = eX02VideoSourceType;
     using eAst = eX02AudioSourceType;
 
-    [Description("Wrapper class for DM-TX-4K-100-C-1G")]
-    public class DmTx4k100Controller : DmTxControllerBase, IRoutingInputsOutputs,
+    public class DmTx4k100Controller : BasicDmTxControllerBase, IRoutingInputsOutputs,
         IIROutputPorts, IComPorts, ICec
     {
         public DmTx4K100C1G Tx { get; private set; }
@@ -73,9 +73,7 @@ namespace PepperDash.Essentials.DM
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            DmTxControllerJoinMap joinMap = GetDmTxJoinMap(joinStart, joinMapKey);
-
-            LinkDmTxToApi(this, trilist, joinMap, bridge);
+            Debug.Console(1, this, "No properties to link. Skipping device {0}", Name);
         }
 
         #region IIROutputPorts Members
@@ -91,7 +89,5 @@ namespace PepperDash.Essentials.DM
         #region ICec Members
         public Cec StreamCec { get { return Tx.StreamCec; } }
         #endregion
-
-        public override StringFeedback ActiveVideoInputFeedback { get; protected set; }
     }
 }
