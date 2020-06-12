@@ -313,7 +313,13 @@ namespace PepperDash.Essentials.Core
 
             var deviceKey = args[0];
             var setting = args[1];
-            var timeout = args[2];
+
+            var timeout= String.Empty;
+
+            if (args.Length >= 3)
+            {
+                timeout = args[2];
+            }
 
             var device = GetDeviceForKey(deviceKey) as IStreamDebugging;
 
@@ -322,42 +328,38 @@ namespace PepperDash.Essentials.Core
                 Debug.Console(0, "Unable to get device with key: {0}", deviceKey);
                 return;
             }
-            else
-            {
-                eStreamDebuggingSetting debugSetting = eStreamDebuggingSetting.Off;
 
+            eStreamDebuggingSetting debugSetting;
+
+            try
+            {
+                debugSetting = (eStreamDebuggingSetting)Enum.Parse(typeof(eStreamDebuggingSetting), setting, true);
+            }
+            catch
+            {
+                Debug.Console(0, "Unable to convert setting value.  Please use off/rx/tx/both");
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(timeout))
+            {
                 try
                 {
-                    debugSetting = (eStreamDebuggingSetting)Enum.Parse(typeof(eStreamDebuggingSetting), setting, true);
-                }
-                catch
-                {
-                    Debug.Console(0, "Unable to convert setting value.  Please use off/rx/tx/both");
-                    return;
-                }
+                    var min = Convert.ToUInt32(timeout);
 
-                if (!string.IsNullOrEmpty(timeout))
-                {
-                    try
-                    {
-                        var min = Convert.ToUInt32(timeout);
+                    device.StreamDebugging.SetDebuggingWithSpecificTimeout(debugSetting, min);
+                    Debug.Console(0, "Device: '{0}' debug level set to {1) for {2} minutes", deviceKey, debugSetting, min);
 
-                        device.StreamDebugging.SetDebuggingWithSpecificTimeout(debugSetting, min);
-                        Debug.Console(0, "Device: '{0}' debug level set to {1) for {2} minutes", deviceKey, debugSetting, min);
-
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.Console(0, "Unable to convert minutes or settings value.  Please use an integer value for minutes. Errro: {0}", e);
-                        return;
-                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    device.StreamDebugging.SetDebuggingWithDefaultTimeout(debugSetting);
-                    Debug.Console(0, "Device: '{0}' debug level set to {1) for default time (30 minutes)", deviceKey, debugSetting);
+                    Debug.Console(0, "Unable to convert minutes or settings value.  Please use an integer value for minutes. Errro: {0}", e);
                 }
-                
+            }
+            else
+            {
+                device.StreamDebugging.SetDebuggingWithDefaultTimeout(debugSetting);
+                Debug.Console(0, "Device: '{0}' debug level set to {1) for default time (30 minutes)", deviceKey, debugSetting);
             }
         }
 
