@@ -13,6 +13,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
+    [Description("Wrapper class for an IR-Controlled Roku")]
 	public class Roku2 : EssentialsDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingOutputs
 	{
 		[Api]

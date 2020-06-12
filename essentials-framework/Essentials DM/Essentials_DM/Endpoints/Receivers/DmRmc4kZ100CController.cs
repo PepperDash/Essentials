@@ -8,6 +8,7 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.DM
 {
+    [Description("Wrapper Class for DM-RMC-4K-Z-100-C")]
     public class DmRmc4kZ100CController : DmRmcX100CController
     {
         private readonly DmRmc4kz100C _rmc;

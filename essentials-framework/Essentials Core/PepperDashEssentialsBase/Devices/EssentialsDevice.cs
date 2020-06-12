@@ -53,7 +53,7 @@ namespace PepperDash.Essentials.Core
 
         public ConfigSnippetAttribute(string configSnippet)
         {
-            Debug.Console(2, "Setting Description {0}", configSnippet);
+            Debug.Console(2, "Setting Config Snippet {0}", configSnippet);
             _ConfigSnippet = configSnippet;
         }
 
@@ -83,8 +83,9 @@ namespace PepperDash.Essentials.Core
             foreach (var typeName in TypeNames)
             {
                 Debug.Console(2, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
-                var attributes = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
-                string description = attributes[0].Description;
+                var descriptionAttribute = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
+                string description = descriptionAttribute[0].Description;
+                var snippetAttribute = typeof(T).GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];
                 DeviceFactory.AddFactoryForType(typeName.ToLower(), description, typeof(T), BuildDevice);
             }
         }

@@ -21,7 +21,8 @@ namespace PepperDash.Essentials.DM {
     /// Builds a controller for basic DM-RMCs with Com and IR ports and no control functions
     /// 
     /// </summary>
-    public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingInputsOutputs, IRouting, IHasFeedback {
+    public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumeric
+    {
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
         public Switch Chassis { get; private set; }
@@ -563,13 +564,22 @@ namespace PepperDash.Essentials.DM {
             var outCard = input == 0 ? null : Chassis.Outputs[output];
 
             // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
-            if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video) {
-                Chassis.VideoEnter.BoolValue = true;
-                Chassis.Outputs[output].VideoOut = inCard;
-            }
+            if ((sigType | eRoutingSignalType.Video) != eRoutingSignalType.Video) return;
+            Chassis.VideoEnter.BoolValue = true;
+            Chassis.Outputs[output].VideoOut = inCard;
         }
 
         #endregion
+
+        #region IRoutingNumeric Members
+
+        public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
+        {
+            ExecuteSwitch(inputSelector, outputSelector, sigType);
+        }
+
+        #endregion
+
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
@@ -808,6 +818,7 @@ namespace PepperDash.Essentials.DM {
                         });
             }
         }
+
     }
 
     /*
