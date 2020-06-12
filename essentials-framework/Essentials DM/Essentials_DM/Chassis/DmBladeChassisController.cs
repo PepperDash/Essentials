@@ -599,7 +599,7 @@ namespace PepperDash.Essentials.DM {
                 {
                     Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
                     var txKey = TxDictionary[ioSlot];
-                    var basicTxDevice = DeviceManager.GetDeviceForKey(txKey) as DmTxControllerBase;
+                    var basicTxDevice = DeviceManager.GetDeviceForKey(txKey) as BasicDmTxControllerBase;
 
                     var advancedTxDevice = basicTxDevice as DmTxControllerBase;
 
