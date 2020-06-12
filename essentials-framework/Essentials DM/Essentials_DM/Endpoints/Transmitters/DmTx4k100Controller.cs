@@ -68,8 +68,9 @@ namespace PepperDash.Essentials.DM
 
             // Set Ports for CEC
             HdmiIn.Port = Tx;
-        }
 
+            PreventRegistration = true;
+        }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
