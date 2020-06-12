@@ -173,22 +173,22 @@ namespace PepperDash.Essentials.DM
 	            {"dmrmcscalers", (k, n,i, d) => new DmRmcScalerSController(k, n, new DmRmcScalerS(i,d))},
 	            {
 	                "dmrmcscalers2",
-	                (k, n,i, d) => new DmRmcScalerS2Controller(k, n, new DmRmcScalerS2(d))
+	                (k, n,i, d) => new DmRmcScalerS2Controller(k, n, new DmRmcScalerS2(i, d))
 	            },
 	            {
 	                "dmrmc4kscalerc",
-	                (k, n,i, d) => new DmRmc4kScalerCController(k, n, new DmRmc4kScalerC(d))
+	                (k, n,i, d) => new DmRmc4kScalerCController(k, n, new DmRmc4kScalerC(i, d))
 	            },
 	            {
 	                "dmrmc4kscalercdsp",
-	                (k, n,i, d) => new DmRmc4kScalerCDspController(k, n, new DmRmc4kScalerCDsp(d))
+	                (k, n,i, d) => new DmRmc4kScalerCDspController(k, n, new DmRmc4kScalerCDsp(i, d))
 	            },
 	            {
 	                "dmrmc4kzscalerc",
-	                (k, n,i, d) => new DmRmc4kZScalerCController(k, n, new DmRmc4kzScalerC(d))
+	                (k, n,i, d) => new DmRmc4kZScalerCController(k, n, new DmRmc4kzScalerC(i, d))
 	            },
-                {"hdbasetrx", (k,n,i,d) => new HDBaseTRxController(k,n, new HDRx3CB(d))},
-                {"dmrmc4k100c1g", (k,n,i,d) => new DmRmc4k100C1GController(k,n, new DmRmc4K100C1G(d))}
+                {"hdbasetrx", (k,n,i,d) => new HDBaseTRxController(k,n, new HDRx3CB(i, d))},
+                {"dmrmc4k100c1g", (k,n,i,d) => new DmRmc4k100C1GController(k,n, new DmRmc4K100C1G(i, d))}
 	        };
         }
 	    /// <summary>
