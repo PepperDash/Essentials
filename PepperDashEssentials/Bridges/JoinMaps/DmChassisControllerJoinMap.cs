@@ -77,10 +77,26 @@ namespace PepperDash.Essentials.Bridges
         /// Range sets and reports the name for the corresponding input card
         /// </summary>
         public uint InputNames { get; set; }
+		/// <summary>
+		/// Range sets and reports the name for the corresponding input card
+		/// </summary>
+		public uint InputVideoNames { get; set; }
+		/// <summary>
+		/// Range sets and reports the name for the corresponding input card
+		/// </summary>
+		public uint InputAudioNames { get; set; }
         /// <summary>
         /// Range sets and reports the name for the corresponding output card
         /// </summary>
         public uint OutputNames { get; set; }
+		/// <summary>
+		/// Range sets and reports the name for the corresponding output card
+		/// </summary>
+		public uint OutputVideoNames { get; set; }
+		/// <summary>
+		/// Range sets and reports the name for the corresponding output card
+		/// </summary>
+		public uint OutputAudioNames { get; set; }
         /// <summary>
         /// Range reports the name of the current video source for the corresponding output card
         /// </summary>
@@ -120,6 +136,10 @@ namespace PepperDash.Essentials.Bridges
             //Serial
             InputNames = 100; //101-299
             OutputNames = 300; //301-499
+			InputVideoNames = 500; //501-699
+			InputAudioNames = 700; //701-899
+			OutputVideoNames = 900; //901-1099
+			OutputAudioNames = 1100; //1101-1299
             OutputCurrentVideoInputNames = 2000; //2001-2199
             OutputCurrentAudioInputNames = 2200; //2201-2399
             InputCurrentResolution = 2400; // 2401-2599
@@ -132,6 +152,10 @@ namespace PepperDash.Essentials.Bridges
             SystemId = SystemId + joinOffset;
             IsOnline = IsOnline + joinOffset;
             OutputVideo = OutputVideo + joinOffset;
+			InputVideoNames = InputVideoNames + joinOffset;
+			InputAudioNames = InputAudioNames + joinOffset;
+			OutputVideoNames = OutputVideoNames + joinOffset;
+			OutputAudioNames = OutputAudioNames + joinOffset; 
             OutputAudio = OutputAudio + joinOffset;
             OutputUsb = OutputUsb + joinOffset;
             InputUsb = InputUsb + joinOffset;
