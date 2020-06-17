@@ -18,8 +18,8 @@ env:
   VERSION: 0.0.0-buildtype-buildnumber
   # Defaults to debug for build type
   BUILD_TYPE: Debug
-  # Defaults to master as the release branch.  Change as necessary
-  RELEASE_BRANCH: master
+  # Defaults to main as the release branch.  Change as necessary
+  RELEASE_BRANCH: main
 jobs:
   Build_Project:
     runs-on: windows-latest
@@ -189,11 +189,11 @@ jobs:
         run: git push --tags origin
       - name: Check Directory
         run: Get-ChildItem ./
-  # This step only runs if the branch is master or release/ runs and pushes the build to the public build repo
+  # This step only runs if the branch is main or release/ runs and pushes the build to the public build repo
   Public_Push_Output:
     needs: Build_Project
     runs-on: windows-latest
-    if: contains(github.ref, 'master') || contains(github.ref, '/release/')
+    if: contains(github.ref, 'main') || contains(github.ref, '/release/')
     steps:
       # Checkout the repo
       - name: check Github ref
