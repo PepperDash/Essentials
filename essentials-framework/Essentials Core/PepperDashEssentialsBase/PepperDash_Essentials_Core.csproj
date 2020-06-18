@@ -166,7 +166,10 @@
     <Compile Include="Crestron IO\Cards\C3Ir8Controller.cs" />
     <Compile Include="Crestron IO\Cards\C3Ry16Controller.cs" />
     <Compile Include="Crestron IO\Cards\C3Ry8Controller.cs" />
-    <Compile Include="Crestron IO\Cards\CenCi31Controller.cs" />
+    <Compile Include="Crestron IO\Cards\CenCi31Controller.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Crestron IO\Cards\CenCi33Controller.cs" />
     <Compile Include="Crestron IO\Inputs\CenIoDigIn104Controller.cs" />
     <Compile Include="Crestron IO\Inputs\GenericDigitalInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />
