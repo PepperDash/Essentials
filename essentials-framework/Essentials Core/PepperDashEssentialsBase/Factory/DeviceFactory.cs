@@ -103,7 +103,7 @@ namespace PepperDash.Essentials.Core
             // Check for types that have been added by plugin dlls. 
             if (FactoryMethods.ContainsKey(typeName))
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading '{0}' from plugin", dc.Type);
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading '{0}' from Essentials Core", dc.Type);
                 return FactoryMethods[typeName].FactoryMethod(dc);
             }
 
