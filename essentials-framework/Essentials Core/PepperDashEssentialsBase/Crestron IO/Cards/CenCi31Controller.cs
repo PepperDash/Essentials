@@ -1,31 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.ThreeSeriesCards;
-using Crestron.SimplSharpProInternal;
 using Newtonsoft.Json;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace PepperDash_Essentials_Core.Crestron_IO.Cards
+namespace PepperDash.Essentials.Core.CrestronIO.Cards
 {
-    public class CenCi31Controller :CrestronGenericBridgeableBaseDevice
+    public class CenCi31Controller : CrestronGenericBaseDevice
     {
         private const string CardKeyTemplate = "{0}-card{1}";
+        private const uint CardSlot = 1;
         private readonly CenCi31 _cardCage;
-        private CenCi3Configuration _config;
+        private readonly CenCi31Configuration _config;
 
-        private Dictionary<string, Func<CenCi31, uint, C3CardControllerBase>> _cardDict; 
+        private readonly Dictionary<string, Func<CenCi31, uint, C3CardControllerBase>> _cardDict; 
 
-        public CenCi31Controller(string key, string name, DeviceConfig config, CenCi31 hardware) : base(key, name, hardware)
+        public CenCi31Controller(string key, string name, CenCi31Configuration config, CenCi31 hardware) : base(key, name, hardware)
         {
             _cardCage = hardware;
-            _config = config.Properties.ToObject<CenCi3Configuration>();
+
+            _config = config;
 
             _cardDict = new Dictionary<string, Func<CenCi31, uint, C3CardControllerBase>>
             {
@@ -37,29 +32,57 @@ namespace PepperDash_Essentials_Core.Crestron_IO.Cards
                 },
             };
 
+            GetCards();
         }
 
         private void GetCards()
         {
-            foreach (var card in _config.Cards)
+            Func<CenCi31, uint, C3CardControllerBase> cardBuilder;
+
+            if (String.IsNullOrEmpty(_config.Card))
             {
                 
             }
+
+            if (!_cardDict.TryGetValue(_config.Card, out cardBuilder))
+            {
+                Debug.Console(0, "Unable to find factory for 3-Series card type {0}.", _config.Card);
+                return;
+            }
+
+            var device = cardBuilder(_cardCage, CardSlot);
+
+            DeviceManager.AddDevice(device);
         }
+    }
 
-        #region Overrides of CrestronGenericBridgeableBaseDevice
+    public class CenCi31Configuration
+    {
+        [JsonProperty("card")]
+        public string Card { get; set; }
+    }
 
-        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+    public class CenCi3ControllerFactory : EssentialsDeviceFactory<CenCi31Controller>
+    {
+        public CenCi3ControllerFactory()
         {
-            throw new NotImplementedException();
+            TypeNames = new List<string> {"cenci31"};
+        }
+        #region Overrides of EssentialsDeviceFactory<CenCi31Controller>
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory attempting to build new CEN-CI-1");
+
+            var controlProperties = CommFactory.GetControlPropertiesConfig(dc);
+            var ipId = controlProperties.IpIdInt;
+
+            var cardCage = new CenCi31(ipId, Global.ControlSystem);
+            var config = dc.Properties.ToObject<CenCi31Configuration>();
+
+            return new CenCi31Controller(dc.Key, dc.Name, config, cardCage);
         }
 
         #endregion
-    }
-
-    public class CenCi3Configuration
-    {
-        [JsonProperty("cards")]
-        public Dictionary<uint, string> Cards { get; set; }
     }
 }
