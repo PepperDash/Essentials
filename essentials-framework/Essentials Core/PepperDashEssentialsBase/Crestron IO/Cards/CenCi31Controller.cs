@@ -7,6 +7,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.CrestronIO.Cards
 {
+    [ConfigSnippet("\"properties\":{\"card\":\"c3com3\"}")]
     public class CenCi31Controller : CrestronGenericBaseDevice
     {
         private const string CardKeyTemplate = "{0}-card";
