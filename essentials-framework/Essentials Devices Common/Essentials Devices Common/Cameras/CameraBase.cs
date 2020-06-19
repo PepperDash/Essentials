@@ -83,8 +83,14 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         {
             CameraControllerJoinMap joinMap = new CameraControllerJoinMap(joinStart);
 
-            // Adds the join map to the bridge
-            bridge.AddJoinMap(cameraDevice.Key, joinMap);
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
 
             var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
 
