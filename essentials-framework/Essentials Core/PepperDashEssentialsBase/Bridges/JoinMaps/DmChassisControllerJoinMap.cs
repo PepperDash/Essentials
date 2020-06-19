@@ -89,6 +89,43 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete OutputNames = new JoinDataComplete(new JoinData() { JoinNumber = 301, JoinSpan = 32 },
             new JoinMetadata() { Label = "DM Chassis Output Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
+        [JoinName("InputVideoNames")] public JoinDataComplete InputVideoNames =
+            new JoinDataComplete(new JoinData {JoinNumber = 501, JoinSpan = 200},
+                new JoinMetadata
+                {
+                    Description = "Video Input Name",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Serial
+                });
+
+        [JoinName("InputAudioNames")]
+        public JoinDataComplete InputAudioNames =
+            new JoinDataComplete(new JoinData { JoinNumber = 701, JoinSpan = 200 },
+            new JoinMetadata
+            {
+                Description = "Video Input Name",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Serial
+            });
+        [JoinName("OutputVideoNames")]
+        public JoinDataComplete OutputVideoNames =
+            new JoinDataComplete(new JoinData { JoinNumber = 901, JoinSpan = 200 },
+            new JoinMetadata
+            {
+                Description = "Video Input Name",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Serial
+            });
+        [JoinName("OutputAudioNames")]
+        public JoinDataComplete OutputAudioNames =
+            new JoinDataComplete(new JoinData { JoinNumber = 1101, JoinSpan = 200 },
+            new JoinMetadata
+            {
+                Description = "Video Input Name",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
         [JoinName("OutputCurrentVideoInputNames")]
         public JoinDataComplete OutputCurrentVideoInputNames = new JoinDataComplete(new JoinData() { JoinNumber = 2001, JoinSpan = 32 },
             new JoinMetadata() { Label = "DM Chassis Video Output Currently Routed Video Input Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
