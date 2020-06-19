@@ -74,6 +74,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Remotes.dll</HintPath>
     </Reference>
+    <Reference Include="Crestron.SimplSharpPro.ThreeSeriesCards, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.ThreeSeriesCards.dll</HintPath>
+    </Reference>
     <Reference Include="Crestron.SimplSharpPro.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.UI.dll</HintPath>
@@ -156,6 +160,17 @@
     <Compile Include="Config\Essentials\EssentialsConfig.cs" />
     <Compile Include="Config\SourceDevicePropertiesConfigBase.cs" />
     <Compile Include="Crestron IO\C2nRts\C2nRthsController.cs" />
+    <Compile Include="Crestron IO\Cards\C3CardControllerBase.cs" />
+    <Compile Include="Crestron IO\Cards\C3Com3Controller.cs" />
+    <Compile Include="Crestron IO\Cards\C3Io16Controller.cs" />
+    <Compile Include="Crestron IO\Cards\C3Ir8Controller.cs" />
+    <Compile Include="Crestron IO\Cards\C3Ry16Controller.cs" />
+    <Compile Include="Crestron IO\Cards\C3Ry8Controller.cs" />
+    <Compile Include="Crestron IO\Cards\CenCi31Controller.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Crestron IO\Cards\CenCi33Controller.cs" />
+    <Compile Include="Crestron IO\Cards\InternalCardCageController.cs" />
     <Compile Include="Crestron IO\Inputs\CenIoDigIn104Controller.cs" />
     <Compile Include="Crestron IO\Inputs\GenericDigitalInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />
