@@ -268,7 +268,14 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<GlsOccupancySensorBaseJoinMap>(joinMapSerialized);
 
-            bridge.AddJoinMap(Key, joinMap);
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
 
             Debug.Console(1, occController, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
@@ -379,25 +386,13 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         {
             Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
 
-            var typeName = dc.Type.ToLower();
             var key = dc.Key;
             var name = dc.Name;
             var comm = CommFactory.GetControlPropertiesConfig(dc);
 
-            GlsOccupancySensorBase occSensor = null;
+            GlsOccupancySensorBase occSensor = new GlsOirCCn(comm.CresnetIdInt, Global.ControlSystem);
 
-            occSensor = new GlsOirCCn(comm.CresnetIdInt, Global.ControlSystem);
-
-            if (occSensor != null)
-            {
-                return new GlsOccupancySensorBaseController(key, name, occSensor);
-            }
-            else
-            {
-                Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
-                return null;
-            }
-
+            return new GlsOccupancySensorBaseController(key, name, occSensor);
         }
     }
 
