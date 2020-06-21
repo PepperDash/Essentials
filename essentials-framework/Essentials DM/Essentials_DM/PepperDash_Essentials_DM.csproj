@@ -61,7 +61,7 @@
     <Reference Include="mscorlib" />
     <Reference Include="PepperDash_Core, Version=1.0.38.3927, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\packages\PepperDashCore\lib\net35\PepperDash_Core.dll</HintPath>
+      <HintPath>..\..\..\packages\PepperDashCore.1.0.38-alpha-135\lib\net35\PepperDash_Core.dll</HintPath>
     </Reference>
     <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
