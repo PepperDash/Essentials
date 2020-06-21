@@ -39,6 +39,8 @@ jobs:
       #    git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
       - name: Add nuget.exe
         uses: nuget/setup-nuget@v1
+      - name: Add Github Packages source
+        run: nuget sources add -name github -source https://nuget.pkg.github.com/pepperdash/index.json -username Pepperdash -password ${{ secrets.GITHUB_TOKEN }}
       - name: restore Nuget Packages
         run: nuget restore .\PepperDashEssentials.sln -MSBuildVersion 4
         # Fetch all tags
