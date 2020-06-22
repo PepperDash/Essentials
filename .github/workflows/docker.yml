@@ -117,6 +117,45 @@ jobs:
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  Push_Nuget_Package:
+    needs: Build_Project
+    runs-on: windows-latest
+    steps:
+      - name: Download Build Version Info
+        uses: actions/download-artifact@v1
+        with:
+          name: Version
+      - name: Set Version Number
+        shell: powershell
+        run: |
+          Get-ChildItem "./Version"
+          $version = Get-Content -Path ./Version/version.txt
+          Write-Host "Version: $version"
+          Write-Output "::set-env name=VERSION::$version"
+          Remove-Item -Path ./Version/version.txt
+          Remove-Item -Path ./Version
+      - name: Download Build output
+        uses: actions/download-artifact@v1
+        with:
+          name: Build
+          path: ./
+      - name: Unzip Build file
+        run: |
+          Get-ChildItem .\*.zip | Expand-Archive -DestinationPath .\
+          Remove-Item -Path .\*.zip
+      - name: Copy Files to root & delete output directory
+        run: |
+          Remove-Item -Path .\* -Include @("*.cpz","*.md","*.cplz","*.json","*.dll","*.clz")  
+          Get-ChildItem -Path .\output\* | Copy-Item -Destination .\
+          Remove-Item -Path .\output -Recurse
+      - name: Add nuget.exe
+        uses: nuget/setup-nuget@v1
+      - name: Add Github Packages source
+        run: nuget sources add -name github -source https://nuget.pkg.github.com/pepperdash/index.json -username Pepperdash -password ${{ secrets.GITHUB_TOKEN }}
+      - name: Create nuget package
+        run: nuget pack "./PepperDash_Essentials_Core.nuspec" -version ${{ env.VERSION }}
+      - name: Publish nuget package to Github registry
+        run: nuget push **/*.nupkg -source github
   # This step always runs and pushes the build to the internal build rep
   Internal_Push_Output:
     needs: Build_Project
