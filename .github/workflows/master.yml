@@ -25,13 +25,19 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
       # And any submodules
-      - name: Checkout submodules
-        shell: bash
-        run: |
-          git config --global url."https://github.com/".insteadOf "git@github.com:"
-          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-          git submodule sync --recursive
-          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+      #- name: Checkout submodules
+      #  shell: bash
+      #  run: |
+      #    git config --global url."https://github.com/".insteadOf "git@github.com:"
+      #    auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+      #    git submodule sync --recursive
+      #    git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+      - name: Add nuget.exe
+        uses: nuget/setup-nuget@v1
+      - name: Add Github Packages source
+        run: nuget sources add -name github -source https://nuget.pkg.github.com/pepperdash/index.json -username Pepperdash -password ${{ secrets.GITHUB_TOKEN }}
+      - name: restore Nuget Packages
+        run: nuget restore .\PepperDashEssentials.sln -MSBuildVersion 4
       # Generate the appropriate version number
       - name: Set Version Number
         shell: powershell
