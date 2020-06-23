@@ -27,17 +27,17 @@ namespace PepperDash.Essentials.DM
 		/// <param name="name"></param>
 		/// <param name="props"></param>
 		/// <returns></returns>
-        public static BasicDmTxControllerBase GetDmTxController(string key, string name, string typeName, DmTxPropertiesConfig props)
+    public static BasicDmTxControllerBase GetDmTxController(string key, string name, string typeName, DmTxPropertiesConfig props)
 		{
 			// switch on type name... later...
 
-			typeName = typeName.ToLower();
-			//uint ipid = Convert.ToUInt16(props.Id, 16);
-			var ipid = props.Control.IpIdInt;
-			var pKey = props.ParentDeviceKey.ToLower();
+	        typeName = typeName.ToLower();
+	        //uint ipid = Convert.ToUInt16(props.Id, 16);
+	        var ipid = props.Control.IpIdInt;
+	        var pKey = props.ParentDeviceKey.ToLower();
 
-			if (pKey == "processor")
-			{
+	        if (pKey == "processor")
+	        {
 				// Catch constructor failures, mainly dues to IPID
 				try
 				{
@@ -206,6 +206,15 @@ namespace PepperDash.Essentials.DM
 
 	    protected void LinkDmTxToApi(DmTxControllerBase tx, BasicTriList trilist, DmTxControllerJoinMap joinMap, EiscApiAdvanced bridge)
 	    {
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
+
 	        Debug.Console(1, tx, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             tx.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);

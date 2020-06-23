@@ -16,7 +16,8 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.DM.AirMedia
 {
-    public class AirMediaController : CrestronGenericBridgeableBaseDevice, IRoutingInputsOutputs, IIROutputPorts, IComPorts
+    [Description("Wrapper class for an AM-200 or AM-300")]
+    public class AirMediaController : CrestronGenericBridgeableBaseDevice, IRoutingNumeric, IIROutputPorts, IComPorts
     {
         public AmX00 AirMedia { get; private set; }
 
@@ -40,7 +41,7 @@ namespace PepperDash.Essentials.DM.AirMedia
         public BoolFeedback AutomaticInputRoutingEnabledFeedback { get; private set; }
 
         public AirMediaController(string key, string name, AmX00 device, DeviceConfig dc, AirMediaPropertiesConfig props)
-            :base(key, name, device)
+            : base(key, name, device)
         {
             AirMedia = device;
 
@@ -51,27 +52,30 @@ namespace PepperDash.Essentials.DM.AirMedia
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
-            InputPorts.Add(new RoutingInputPort(DmPortName.Osd, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            InputPorts.Add(new RoutingInputPort(DmPortName.Osd, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.None, new Action(SelectPinPointUxLandingPage), this));
 
-            InputPorts.Add(new RoutingInputPort(DmPortName.AirMediaIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            InputPorts.Add(new RoutingInputPort(DmPortName.AirMediaIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Streaming, new Action(SelectAirMedia), this));
 
-            InputPorts.Add(new RoutingInputPort(DmPortName.HdmiIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            InputPorts.Add(new RoutingInputPort(DmPortName.HdmiIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, new Action(SelectHdmiIn), this));
 
-            InputPorts.Add(new RoutingInputPort(DmPortName.AirBoardIn, eRoutingSignalType.Video,
+            InputPorts.Add(new RoutingInputPort(DmPortName.AirBoardIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.None, new Action(SelectAirboardIn), this));
 
             if (AirMedia is Am300)
             {
-                InputPorts.Add(new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                InputPorts.Add(new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.AudioVideo,
                     eRoutingPortConnectionType.DmCat, new Action(SelectDmIn), this));
             }
 
+            OutputPorts.Add(new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.Hdmi, null, this));
+
             AirMedia.AirMedia.AirMediaChange += new Crestron.SimplSharpPro.DeviceSupport.GenericEventHandler(AirMedia_AirMediaChange);
 
-            IsInSessionFeedback = new BoolFeedback( new Func<bool>(() => AirMedia.AirMedia.StatusFeedback.UShortValue == 0 ));
+            IsInSessionFeedback = new BoolFeedback(new Func<bool>(() => AirMedia.AirMedia.StatusFeedback.UShortValue == 0));
             ErrorFeedback = new IntFeedback(new Func<int>(() => AirMedia.AirMedia.ErrorFeedback.UShortValue));
             NumberOfUsersConnectedFeedback = new IntFeedback(new Func<int>(() => AirMedia.AirMedia.NumberOfUsersConnectedFeedback.UShortValue));
             LoginCodeFeedback = new IntFeedback(new Func<int>(() => AirMedia.AirMedia.LoginCodeFeedback.UShortValue));
@@ -110,7 +114,14 @@ namespace PepperDash.Essentials.DM.AirMedia
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<AirMediaControllerJoinMap>(joinMapSerialized);
 
-            bridge.AddJoinMap(Key, joinMap);
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
 
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(0, "Linking to Airmedia: {0}", Name);
@@ -202,7 +213,7 @@ namespace PepperDash.Essentials.DM.AirMedia
         /// </summary>
         public void SelectDmIn()
         {
-            AirMedia.DisplayControl.VideoOut = AmX00DisplayControl.eAirMediaX00VideoSource.HDMI;
+            AirMedia.DisplayControl.VideoOut = AmX00DisplayControl.eAirMediaX00VideoSource.DM;
         }
 
         /// <summary>
@@ -210,7 +221,7 @@ namespace PepperDash.Essentials.DM.AirMedia
         /// </summary>
         public void SelectHdmiIn()
         {
-            AirMedia.DisplayControl.VideoOut = AmX00DisplayControl.eAirMediaX00VideoSource.DM;
+            AirMedia.DisplayControl.VideoOut = AmX00DisplayControl.eAirMediaX00VideoSource.HDMI;
         }
 
         public void SelectAirboardIn()
@@ -259,6 +270,33 @@ namespace PepperDash.Essentials.DM.AirMedia
         #endregion
 
 
+
+        #region IRoutingNumeric Members
+
+        public void ExecuteNumericSwitch(ushort input, ushort output, eRoutingSignalType signalType)
+        {
+            if ((signalType & eRoutingSignalType.Video) != eRoutingSignalType.Video) return;
+            if (!Enum.IsDefined(typeof (AmX00DisplayControl.eAirMediaX00VideoSource), input))
+            {
+                Debug.Console(2, this, "Invalid Video Source Index : {0}", input);
+                return;
+            }
+            AirMedia.DisplayControl.VideoOut = (AmX00DisplayControl.eAirMediaX00VideoSource) input;
+        }
+
+        #endregion
+
+        #region IRouting Members
+
+        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+        {
+            Debug.Console(2, this, "Input Selector = {0}", inputSelector.ToString());
+            var handler = inputSelector as Action;
+            if (handler == null) return;
+            handler();
+        }
+
+        #endregion
     }
 
     public class AirMediaControllerFactory : EssentialsDeviceFactory<AirMediaController>
@@ -282,7 +320,7 @@ namespace PepperDash.Essentials.DM.AirMedia
                 amDevice = new Crestron.SimplSharpPro.DM.AirMedia.Am300(props.Control.IpIdInt, Global.ControlSystem);
 
             return new AirMediaController(dc.Key, dc.Name, amDevice, dc, props);
-        
+
         }
     }
 }

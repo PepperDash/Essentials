@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.DM
     /// 
     /// </summary>
     [Description("Wrapper class for all DM-MD chassis variants from 8x8 to 32x32")]
-    public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingInputsOutputs, IRouting, IHasFeedback
+    public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumeric
     {
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
@@ -1094,6 +1094,15 @@ namespace PepperDash.Essentials.DM
         }
         #endregion
 
+        #region IRoutingNumeric Members
+
+        public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
+        {
+            ExecuteSwitch(inputSelector, outputSelector, sigType);
+        }
+
+        #endregion
+
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new DmChassisControllerJoinMap(joinStart);
@@ -1103,7 +1112,14 @@ namespace PepperDash.Essentials.DM
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmChassisControllerJoinMap>(joinMapSerialized);
 
-            bridge.AddJoinMap(Key, joinMap);
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
 
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 

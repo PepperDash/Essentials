@@ -7,7 +7,6 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 using Newtonsoft.Json;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 //using PepperDash.Essentials.Devices.Common.Cameras;
@@ -111,28 +110,17 @@ namespace PepperDash.Essentials.Core.Bridges
 
                     Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
 
-                    if (typeof (IBridge).IsAssignableFrom(device.GetType().GetCType()))
+                    if (!typeof (IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
                     {
-                        var basicBridge = device as IBridge;
-                        if (basicBridge != null)
-                        {
-                            Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
-                                "Linking EiscApiAdvanced {0} to device {1} using obsolete join map. Please update the device's join map.",
-                                Key, device.Key);
-                            basicBridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
-                        }
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
+                            "{0} is not compatible with this bridge type. Please use 'eiscapi' instead, or updae the device.",
+                            device.Key);
                         continue;
                     }
 
-                    if (!typeof (IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
-                    {
-                        continue;
-                    }
                     var bridge = device as IBridgeAdvanced;
                     if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                 }
-
-                
             });
         }
 
@@ -303,7 +291,7 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         public EiscApiAdvancedFactory()
         {
-            TypeNames = new List<string>() { "eiscapiadv", "eiscapiadvanced" };
+            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
