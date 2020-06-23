@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.EthernetCommunication;
 using PepperDash.Core;
@@ -39,18 +40,30 @@ namespace PepperDash.Essentials.Bridges
                     if (device == null) continue;
 
                     Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
-                    if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
+                    if (typeof(IBridge).IsAssignableFrom(device.GetType().GetCType()))      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
                     {
                         Debug.Console(2, this, "'{0}' is IBridge", device.Key);
 
                         var dev = device as IBridge;
 
+                        if (dev == null)
+                        {
+                            Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Cast to IBridge failed for {0}");
+                            continue;
+                        }
+
                         dev.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                     }
-                    if (!(device is IBridgeAdvanced)) continue;
+                    if (!typeof(IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType())) continue;
                     Debug.Console(2, this, "'{0}' is IBridgeAdvanced", device.Key);
 
                     var advDev = device as IBridgeAdvanced;
+
+                    if (advDev == null)
+                    {
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Cast to IBridgeAdvanced failed for {0}");
+                        continue;
+                    }
 
                     try
                     {
@@ -61,7 +74,6 @@ namespace PepperDash.Essentials.Bridges
                         Debug.ConsoleWithLog(0, this,
                             "Please update the bridge config to use EiscBridgeAdvanced with this device: {0}", device.Key);
                     }
-
                 }
                 Debug.Console(1, this, "Devices Linked.");
 
