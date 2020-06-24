@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials.Core.Config
 {
@@ -23,7 +24,10 @@ namespace PepperDash.Essentials.Core.Config
 		[JsonProperty("sourceLists")]
 		public Dictionary<string, Dictionary<string, SourceListItem>> SourceLists { get; set; }
 
-		[JsonProperty("tieLines")]
+        [JsonProperty("destinationLists")]
+        public Dictionary<string, Dictionary<string, DestinationListItem>> DestinationLists { get; set; }
+            
+        [JsonProperty("tieLines")]
 		public List<TieLineConfig> TieLines { get; set; }
 
         [JsonProperty("joinMaps")]
@@ -40,6 +44,14 @@ namespace PepperDash.Essentials.Core.Config
 			return SourceLists[key];
 		}
 
+	    public Dictionary<string, DestinationListItem> GetDestinationListForKey(string key)
+	    {
+	        if (string.IsNullOrEmpty(key) || !SourceLists.ContainsKey(key))
+	            return null;
+
+	        return DestinationLists[key];
+	    }
+
         /// <summary>
         /// Checks Devices for an item with a Key that matches and returns it if found. Otherwise, retunes null
         /// </summary>
@@ -52,12 +64,9 @@ namespace PepperDash.Essentials.Core.Config
 
             var deviceConfig = Devices.FirstOrDefault(d => d.Key.Equals(key));
 
-            if (deviceConfig != null)
-                return deviceConfig;
-            else
-            {
-                return null;
-            }
+            //removed if statement that was here...
+            //DeviceConfig will be null if it's not found in the list
+            return deviceConfig;
         }
 	}
 }

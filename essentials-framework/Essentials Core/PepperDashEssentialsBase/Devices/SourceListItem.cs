@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
-using Crestron.SimplSharpPro;
-
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
@@ -31,16 +24,11 @@ namespace PepperDash.Essentials.Core
 		/// Returns the source Device for this, if it exists in DeviceManager
 		/// </summary>
 		[JsonIgnore]
-		public Device SourceDevice
+		public EssentialsDevice SourceDevice
 		{
-			get
-			{
-				if (_SourceDevice == null)
-					_SourceDevice = DeviceManager.GetDeviceForKey(SourceKey) as Device;
-				return _SourceDevice;
-			}
+			get { return _sourceDevice ?? (_sourceDevice = DeviceManager.GetDeviceForKey(SourceKey) as EssentialsDevice); }
 		}
-		Device _SourceDevice;
+		private EssentialsDevice _sourceDevice;
 
 		/// <summary>
 		/// Gets either the source's Name or this AlternateName property, if 
@@ -51,13 +39,12 @@ namespace PepperDash.Essentials.Core
 		{
 			get
 			{
-				if (string.IsNullOrEmpty(Name))
-				{
-					if (SourceDevice == null)
-						return "---";
-					return SourceDevice.Name;
-				}
-				return Name;
+			    if (!string.IsNullOrEmpty(Name))
+			    {
+			        return Name;
+			    }
+
+			    return SourceDevice == null ? "---" : SourceDevice.Name;
 			}
 		}
 
