@@ -1,15 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.Scheduler;
-
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
-using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Core
 {
@@ -18,9 +11,6 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public abstract class EssentialsRoomBase : ReconfigurableDevice
     {
-        /// <summary>
-        ///
-        /// </summary>
         public BoolFeedback OnFeedback { get; private set; }
 
         /// <summary>
@@ -39,51 +29,24 @@ namespace PepperDash.Essentials.Core
         protected abstract Func<bool> IsCoolingFeedbackFunc { get; }
 
         /// <summary>
-        /// Indicates if this room is Mobile Control Enabled
-        /// </summary>
-        public bool IsMobileControlEnabled { get; private set; }
-
-        /// <summary>
-        /// The bridge for this room if Mobile Control is enabled
-        /// </summary>
-        public IMobileControlRoomBridge MobileControlRoomBridge { get; private set; }
-
-        /// <summary>
         /// The config name of the source list
         /// </summary>
-		/// 
-		protected string _SourceListKey;
-        public virtual string SourceListKey {
-			get
-			{
-				return _SourceListKey;
-			}
-			set
-			{
-				_SourceListKey = value; 
-
-			}
-		}
+        public string SourceListKey { get; set; }
 
         /// <summary>
         /// Timer used for informing the UIs of a shutdown
         /// </summary>        
         public SecondsCountdownTimer ShutdownPromptTimer { get; private set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
         public int ShutdownPromptSeconds { get; set; }
         public int ShutdownVacancySeconds { get; set; }
         public eShutdownType ShutdownType { get; private set; }
 
         public EssentialsRoomEmergencyBase Emergency { get; set; }
 
-        public Core.Privacy.MicrophonePrivacyController MicrophonePrivacy { get; set; }
+        public Privacy.MicrophonePrivacyController MicrophonePrivacy { get; set; }
 
-        public string LogoUrlLightBkgnd { get; set; }
-
-        public string LogoUrlDarkBkgnd { get; set; }
+        public string LogoUrl { get; set; }
 
         protected SecondsCountdownTimer RoomVacancyShutdownTimer { get; private set; }
 
@@ -112,7 +75,7 @@ namespace PepperDash.Essentials.Core
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; private set; }
 
 
-        public EssentialsRoomBase(DeviceConfig config)
+        protected EssentialsRoomBase(DeviceConfig config)
             : base(config)
         {
             // Setup the ShutdownPromptTimer
@@ -135,7 +98,7 @@ namespace PepperDash.Essentials.Core
             //    if (!RoomVacancyShutdownTimer.IsRunningFeedback.BoolValue)
             //        ShutdownType = ShutdownType.Vacancy;
             //};
-            RoomVacancyShutdownTimer.HasFinished += new EventHandler<EventArgs>(RoomVacancyShutdownPromptTimer_HasFinished); // Shutdown is triggered
+            RoomVacancyShutdownTimer.HasFinished += RoomVacancyShutdownPromptTimer_HasFinished; // Shutdown is triggered
 
             RoomVacancyShutdownPromptSeconds = 1500;    //  25 min to prompt warning
             RoomVacancyShutdownSeconds = 240;           //  4 min after prompt will trigger shutdown prompt
@@ -151,34 +114,6 @@ namespace PepperDash.Essentials.Core
                 if (RoomOccupancy != null)
                     OnRoomOccupancyIsSet();
             });
-        }
-
-        public override bool CustomActivate()
-        {
-            SetUpMobileControl();
-
-            return base.CustomActivate();
-        }
-
-        /// <summary>
-        /// If mobile control is enabled, sets the appropriate properties
-        /// </summary>
-        void SetUpMobileControl()
-        {
-            var mcBridgeKey = string.Format("mobileControlBridge-{0}", Key);
-            var mcBridge = DeviceManager.GetDeviceForKey(mcBridgeKey);
-            if (mcBridge == null)
-            {
-                Debug.Console(1, this, "*********************Mobile Control Bridge Not found for this room.");
-                IsMobileControlEnabled = false;
-                return;
-            }
-            else
-            {
-                MobileControlRoomBridge = mcBridge as IMobileControlRoomBridge;
-                Debug.Console(1, this, "*********************Mobile Control Bridge found and enabled for this room");
-                IsMobileControlEnabled = true;
-            }
         }
 
         void RoomVacancyShutdownPromptTimer_HasFinished(object sender, EventArgs e)
@@ -197,8 +132,6 @@ namespace PepperDash.Essentials.Core
                         Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Shutting Down due to vacancy.");
                         break;
                     }
-                default:
-                    break;
             }
         }
 
@@ -210,10 +143,15 @@ namespace PepperDash.Essentials.Core
         {
             // Check for shutdowns running. Manual should override other shutdowns
 
-            if (type == eShutdownType.Manual)
-                ShutdownPromptTimer.SecondsToCount = ShutdownPromptSeconds;
-            else if (type == eShutdownType.Vacancy)
-                ShutdownPromptTimer.SecondsToCount = ShutdownVacancySeconds;
+            switch (type)
+            {
+                case eShutdownType.Manual:
+                    ShutdownPromptTimer.SecondsToCount = ShutdownPromptSeconds;
+                    break;
+                case eShutdownType.Vacancy:
+                    ShutdownPromptTimer.SecondsToCount = ShutdownVacancySeconds;
+                    break;
+            }
             ShutdownType = type;
             ShutdownPromptTimer.Start();
 
@@ -222,12 +160,18 @@ namespace PepperDash.Essentials.Core
 
         public void StartRoomVacancyTimer(eVacancyMode mode)
         {
-            if (mode == eVacancyMode.None)
-                RoomVacancyShutdownTimer.SecondsToCount = RoomVacancyShutdownPromptSeconds;
-            else if (mode == eVacancyMode.InInitialVacancy)
-                RoomVacancyShutdownTimer.SecondsToCount = RoomVacancyShutdownSeconds;
-            else if (mode == eVacancyMode.InShutdownWarning)
-                RoomVacancyShutdownTimer.SecondsToCount = 60;
+            switch (mode)
+            {
+                case eVacancyMode.None:
+                    RoomVacancyShutdownTimer.SecondsToCount = RoomVacancyShutdownPromptSeconds;
+                    break;
+                case eVacancyMode.InInitialVacancy:
+                    RoomVacancyShutdownTimer.SecondsToCount = RoomVacancyShutdownSeconds;
+                    break;
+                case eVacancyMode.InShutdownWarning:
+                    RoomVacancyShutdownTimer.SecondsToCount = 60;
+                    break;
+            }
             VacancyMode = mode;
             RoomVacancyShutdownTimer.Start();
 
@@ -259,19 +203,22 @@ namespace PepperDash.Essentials.Core
         /// Sets the object to be used as the IOccupancyStatusProvider for the room. Can be an Occupancy Aggregator or a specific device
         /// </summary>
         /// <param name="statusProvider"></param>
+        /// <param name="timeoutMinutes"></param>
         public void SetRoomOccupancy(IOccupancyStatusProvider statusProvider, int timeoutMinutes)
-        { 
-			if (statusProvider == null)
+        {
+            var provider = statusProvider as IKeyed;
+
+			if (provider == null)
 			{
 				Debug.Console(0, this, "ERROR: Occupancy sensor device is null");
 				return;
 			}
 
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Room Occupancy set to device: '{0}'", (statusProvider as Device).Key);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Room Occupancy set to device: '{0}'", provider.Key);
             Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Timeout Minutes from Config is: {0}", timeoutMinutes);
 
             // If status provider is fusion, set flag to remote
-            if (statusProvider is Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase)
+            if (statusProvider is Fusion.EssentialsHuddleSpaceFusionSystemControllerBase)
                 OccupancyStatusProviderIsRemote = true;
 
             if(timeoutMinutes > 0)
@@ -360,7 +307,7 @@ namespace PepperDash.Essentials.Core
     {
         public string Key { get; private set; }
 
-        public EssentialsRoomEmergencyBase(string key)
+        protected EssentialsRoomEmergencyBase(string key)
         {
             Key = key;
         }
