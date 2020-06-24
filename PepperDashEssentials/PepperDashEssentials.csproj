@@ -177,9 +177,9 @@
     <Compile Include="AppServer\RoomBridges\SourceDeviceMapDictionary.cs" />
     <Compile Include="AppServer\Volumes.cs" />
     <Compile Include="Room\Emergency\EsentialsRoomEmergencyContactClosure.cs" />
-    <Compile Include="Room\Types\EssentialsDualDisplayRoom.cs" />
+    <None Include="Room\Types\EssentialsDualDisplayRoom.cs" />
     <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
-    <Compile Include="Room\Types\EssentialsNDisplayRoomBase.cs" />
+    <None Include="Room\Types\EssentialsNDisplayRoomBase.cs" />
     <Compile Include="Room\Config\EssentialsRoomConfig.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsEnvironmentDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsLightingDriver.cs" />
