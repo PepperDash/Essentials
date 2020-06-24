@@ -13,48 +13,8 @@ namespace PepperDash.Essentials
 {
     public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange, IRunRouteAction, IRunDefaultPresentRoute, IHasCurrentVolumeControls, IHasDefaultDisplay
 	{
-		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
+		//
 		public event SourceInfoChangeHandler CurrentSourceChange;
-
-        protected override Func<bool> OnFeedbackFunc
-        {
-            get
-            {
-                return () =>
-                {
-                    var disp = DefaultDisplay as DisplayBase;
-                    var val = CurrentSourceInfo != null
-                        && CurrentSourceInfo.Type == eSourceListItemType.Route
-                        && disp != null;
-                        //&& disp.PowerIsOnFeedback.BoolValue;
-                    return val;
-                };
-            }
-        }
-
-        protected override Func<bool> IsWarmingFeedbackFunc
-        {
-            get
-            {
-                return () =>
-                {
-                    var disp = DefaultDisplay as DisplayBase;
-                    return disp != null && disp.IsWarmingUpFeedback.BoolValue;
-                };
-            }
-        }
-
-        protected override Func<bool> IsCoolingFeedbackFunc
-        {
-            get
-            {
-                return () =>
-                {
-                    var disp = DefaultDisplay as DisplayBase;
-                    return disp != null && disp.IsCoolingDownFeedback.BoolValue;
-                };
-            }
-        }
 
 		public EssentialsHuddleRoomPropertiesConfig PropertiesConfig { get; private set; }
 
@@ -73,33 +33,6 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public bool EnablePowerOnToLastSource { get; set; }
 		string _lastSourceKey;
-
-		/// <summary>
-		/// 
-		/// </summary>
-		public IBasicVolumeControls CurrentVolumeControls 
-		{
-			get { return _currentAudioDevice;  }
-			set
-			{
-				if (value == _currentAudioDevice) return;
-
-				var oldDev = _currentAudioDevice;
-				// derigister this room from the device, if it can
-				if (oldDev is IInUseTracking)
-					(oldDev as IInUseTracking).InUseTracker.RemoveUser(this, "audio");
-				var handler = CurrentVolumeDeviceChange;
-				if (handler != null)
-					CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(oldDev, value, ChangeType.WillChange));
-				_currentAudioDevice = value;
-				if (handler != null)
-					CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(oldDev, value, ChangeType.DidChange));
-				// register this room with new device, if it can
-				if (_currentAudioDevice is IInUseTracking)
-					(_currentAudioDevice as IInUseTracking).InUseTracker.AddUser(this, "audio");
-			}
-		}
-		IBasicVolumeControls _currentAudioDevice;
 
 		/// <summary>
 		/// The SourceListItem last run - containing names and icons 
@@ -152,7 +85,7 @@ namespace PepperDash.Essentials
             }
         }
 
-		void Initialize()
+		private void Initialize()
 		{
             if (DefaultAudioDevice is IBasicVolumeControls)
                 DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;
@@ -160,8 +93,35 @@ namespace PepperDash.Essentials
                 DefaultVolumeControls = (DefaultAudioDevice as IHasVolumeDevice).VolumeDevice;
             CurrentVolumeControls = DefaultVolumeControls;
 
+            SourceListKey = "default";
+            EnablePowerOnToLastSource = true;
+
             var disp = DefaultDisplay as DisplayBase;
-            if (disp != null)
+		    if (disp == null) return;
+
+            IsWarmingFeedbackFunc = () => disp.IsWarmingUpFeedback.BoolValue;
+
+            IsCoolingFeedbackFunc = () => disp.IsCoolingDownFeedback.BoolValue;
+
+            OnFeedbackFunc = () => CurrentSourceInfo != null
+                                       && CurrentSourceInfo.Type == eSourceListItemType.Route;
+
+            InitializeDisplay(disp);
+		}
+
+
+        protected override void IsCoolingDownFeedbackOnOutputChange(object sender, FeedbackEventArgs feedbackEventArgs)
+        {
+            IsCoolingDownFeedback.FireUpdate();
+        }
+
+        protected override void PowerIsOnFeedbackOnOutputChange(object sender, FeedbackEventArgs feedbackEventArgs)
+        {
+            var display = sender as DisplayBase;
+
+            if (display == null) return;
+
+            if (display.PowerIsOnFeedback.BoolValue == OnFeedback.BoolValue)
             {
                 // Link power, warming, cooling to display
                  var dispTwoWay = disp as IHasPowerControlWithFeedback;
@@ -177,33 +137,35 @@ namespace PepperDash.Essentials
                              }
                          };
                  }
-
-                disp.IsWarmingUpFeedback.OutputChange += (o, a) => 
-                { 
-                    IsWarmingUpFeedback.FireUpdate();
-
-                    if (IsWarmingUpFeedback.BoolValue)
-                    {
-                        return;
-                    }
-
-                    var display = DefaultDisplay as IBasicVolumeWithFeedback;
-
-                    if (display == null)
-                    {
-                        Debug.Console(0, this, Debug.ErrorLogLevel.Error,
-                            "Default display {0} is not volume control control provider", DefaultDisplay.Key);
-                        return;
-                    }
-
-                    display.SetVolume(DefaultVolume);
-                };
-                disp.IsCoolingDownFeedback.OutputChange += (o, a) => IsCoolingDownFeedback.FireUpdate();
             }
-          
-			SourceListKey = "default";
-			EnablePowerOnToLastSource = true;
-   		}
+
+            if (!display.PowerIsOnFeedback.BoolValue)
+            {
+                CurrentSourceInfo = null;
+            }
+            OnFeedback.FireUpdate();
+        }
+
+        protected override void IsWarmingUpFeedbackOnOutputChange(object sender, FeedbackEventArgs feedbackEventArgs)
+        {
+            IsWarmingUpFeedback.FireUpdate();
+
+            if (IsWarmingUpFeedback.BoolValue)
+            {
+                return;
+            }
+
+            var displayVolumeControl = DefaultDisplay as IBasicVolumeWithFeedback;
+
+            if (displayVolumeControl == null)
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Error,
+                    "Default display {0} is not volume control control provider", DefaultDisplay.Key);
+                return;
+            }
+
+            displayVolumeControl.SetVolume(DefaultVolume);
+        }
 
         protected override void CustomSetConfig(DeviceConfig config)
         {

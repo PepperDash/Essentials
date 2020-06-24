@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Crestron.SimplSharp.Reflection;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
@@ -11,6 +12,40 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public abstract class EssentialsRoomBase : ReconfigurableDevice
     {
+        public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
+
+        /// <summary>
+        /// Sets the volume control device, and attaches/removes InUseTrackers with "audio"
+        /// tag to device.
+        /// </summary>
+        public IBasicVolumeControls CurrentVolumeControls
+        {
+            get { return CurrentAudioDevice; }
+            set
+            {
+                if (value == CurrentAudioDevice)
+                {
+                    return;
+                }
+
+                var handler = CurrentVolumeDeviceChange;
+
+                if (handler != null)
+                {
+                    CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(CurrentAudioDevice, value, ChangeType.WillChange));
+                    CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(CurrentAudioDevice, value, ChangeType.DidChange));
+                }
+
+                var oldDevice = value as IInUseTracking;
+                var newDevice = value as IInUseTracking;
+
+                UpdateInUseTracking(oldDevice, newDevice);
+
+                CurrentAudioDevice = value;
+            }
+        }
+        protected IBasicVolumeControls CurrentAudioDevice;
+
         public BoolFeedback OnFeedback { get; private set; }
 
         /// <summary>
@@ -25,9 +60,8 @@ namespace PepperDash.Essentials.Core
 
         public bool OccupancyStatusProviderIsRemote { get; private set; }
 
-        protected abstract Func<bool> IsWarmingFeedbackFunc { get; }
-        protected abstract Func<bool> IsCoolingFeedbackFunc { get; }
-
+        protected Func<bool> IsWarmingFeedbackFunc;
+        protected Func<bool> IsCoolingFeedbackFunc;
         /// <summary>
         /// The config name of the source list
         /// </summary>
@@ -65,7 +99,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// 
         /// </summary>
-        protected abstract Func<bool> OnFeedbackFunc { get; }
+        protected Func<bool> OnFeedbackFunc;
 
 		protected Dictionary<IBasicVolumeWithFeedback, uint> SavedVolumeLevels = new Dictionary<IBasicVolumeWithFeedback, uint>();
 
@@ -116,7 +150,35 @@ namespace PepperDash.Essentials.Core
             });
         }
 
-        void RoomVacancyShutdownPromptTimer_HasFinished(object sender, EventArgs e)
+        protected void InitializeDisplay(DisplayBase display)
+        {
+            // Link power, warming, cooling to display
+            display.PowerIsOnFeedback.OutputChange += PowerIsOnFeedbackOnOutputChange;
+
+            display.IsWarmingUpFeedback.OutputChange += IsWarmingUpFeedbackOnOutputChange;
+            display.IsCoolingDownFeedback.OutputChange += IsCoolingDownFeedbackOnOutputChange;
+        }
+
+        protected void UpdateInUseTracking(IInUseTracking oldDev, IInUseTracking newDev)
+        {
+            // derigister this room from the device, if it can
+            if (oldDev != null)
+            {
+                oldDev.InUseTracker.RemoveUser(this, "audio");
+            }
+
+            // register this room with new device, if it can
+            if (newDev != null)
+            {
+                newDev.InUseTracker.AddUser(this, "audio");
+            }
+        }
+
+        protected abstract void PowerIsOnFeedbackOnOutputChange(object sender, FeedbackEventArgs args);
+        protected abstract void IsWarmingUpFeedbackOnOutputChange(object sender, FeedbackEventArgs args);
+        protected abstract void IsCoolingDownFeedbackOnOutputChange(object sender, FeedbackEventArgs args);
+
+        private void RoomVacancyShutdownPromptTimer_HasFinished(object sender, EventArgs e)
         {
             switch (VacancyMode)
             {
