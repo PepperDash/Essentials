@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 
 using Newtonsoft.Json;
@@ -33,9 +31,7 @@ namespace PepperDash.Essentials
                 };
             }
         }
-        /// <summary>
-        /// 
-        /// </summary>
+
         protected override Func<bool> IsWarmingFeedbackFunc
         {
             get
@@ -43,16 +39,11 @@ namespace PepperDash.Essentials
                 return () =>
                 {
                     var disp = DefaultDisplay as DisplayBase;
-                    if (disp != null)
-                        return disp.IsWarmingUpFeedback.BoolValue;
-                    else
-                        return false;
+                    return disp != null && disp.IsWarmingUpFeedback.BoolValue;
                 };
             }
         }
-        /// <summary>
-        /// 
-        /// </summary>
+
         protected override Func<bool> IsCoolingFeedbackFunc
         {
             get
@@ -60,10 +51,7 @@ namespace PepperDash.Essentials
                 return () =>
                 {
                     var disp = DefaultDisplay as DisplayBase;
-                    if (disp != null)
-                        return disp.IsCoolingDownFeedback.BoolValue;
-                    else
-                        return false;
+                    return disp != null && disp.IsCoolingDownFeedback.BoolValue;
                 };
             }
         }
@@ -84,63 +72,63 @@ namespace PepperDash.Essentials
 		/// If room is off, enables power on to last source. Default true
 		/// </summary>
 		public bool EnablePowerOnToLastSource { get; set; }
-		string LastSourceKey;
+		string _lastSourceKey;
 
 		/// <summary>
 		/// 
 		/// </summary>
 		public IBasicVolumeControls CurrentVolumeControls 
 		{
-			get { return _CurrentAudioDevice;  }
+			get { return _currentAudioDevice;  }
 			set
 			{
-				if (value == _CurrentAudioDevice) return;
+				if (value == _currentAudioDevice) return;
 
-				var oldDev = _CurrentAudioDevice;
+				var oldDev = _currentAudioDevice;
 				// derigister this room from the device, if it can
 				if (oldDev is IInUseTracking)
 					(oldDev as IInUseTracking).InUseTracker.RemoveUser(this, "audio");
 				var handler = CurrentVolumeDeviceChange;
 				if (handler != null)
 					CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(oldDev, value, ChangeType.WillChange));
-				_CurrentAudioDevice = value;
+				_currentAudioDevice = value;
 				if (handler != null)
 					CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(oldDev, value, ChangeType.DidChange));
 				// register this room with new device, if it can
-				if (_CurrentAudioDevice is IInUseTracking)
-					(_CurrentAudioDevice as IInUseTracking).InUseTracker.AddUser(this, "audio");
+				if (_currentAudioDevice is IInUseTracking)
+					(_currentAudioDevice as IInUseTracking).InUseTracker.AddUser(this, "audio");
 			}
 		}
-		IBasicVolumeControls _CurrentAudioDevice;
+		IBasicVolumeControls _currentAudioDevice;
 
 		/// <summary>
 		/// The SourceListItem last run - containing names and icons 
 		/// </summary>
 		public SourceListItem CurrentSourceInfo
 		{
-			get { return _CurrentSourceInfo; }
+			get { return _currentSourceInfo; }
 			set
 			{
-				if (value == _CurrentSourceInfo) return;
+				if (value == _currentSourceInfo) return;
 
 				var handler = CurrentSourceChange;
 				// remove from in-use tracker, if so equipped
-				if(_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
-					(_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
+				if(_currentSourceInfo != null && _currentSourceInfo.SourceDevice is IInUseTracking)
+					(_currentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
 
 				if (handler != null)
-					handler(_CurrentSourceInfo, ChangeType.WillChange);
+					handler(_currentSourceInfo, ChangeType.WillChange);
 
-				_CurrentSourceInfo = value;
+				_currentSourceInfo = value;
 
 				// add to in-use tracking
-				if (_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
-					(_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
+				if (_currentSourceInfo != null && _currentSourceInfo.SourceDevice is IInUseTracking)
+					(_currentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
 				if (handler != null)
-					handler( _CurrentSourceInfo, ChangeType.DidChange);
+					handler( _currentSourceInfo, ChangeType.DidChange);
 			}
 		}
-		SourceListItem _CurrentSourceInfo;
+		SourceListItem _currentSourceInfo;
 
         public string CurrentSourceInfoKey { get; set; }
 
@@ -189,13 +177,24 @@ namespace PepperDash.Essentials
                 disp.IsWarmingUpFeedback.OutputChange += (o, a) => 
                 { 
                     IsWarmingUpFeedback.FireUpdate();
-                    if (!IsWarmingUpFeedback.BoolValue)
-                        (DefaultDisplay as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
+
+                    if (IsWarmingUpFeedback.BoolValue)
+                    {
+                        return;
+                    }
+
+                    var display = DefaultDisplay as IBasicVolumeWithFeedback;
+
+                    if (display == null)
+                    {
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Error,
+                            "Default display {0} is not volume control control provider", DefaultDisplay.Key);
+                        return;
+                    }
+
+                    display.SetVolume(DefaultVolume);
                 };
-                disp.IsCoolingDownFeedback.OutputChange += (o, a) => 
-                {
-                    IsCoolingDownFeedback.FireUpdate(); 
-                };
+                disp.IsCoolingDownFeedback.OutputChange += (o, a) => IsCoolingDownFeedback.FireUpdate();
             }
           
 			SourceListKey = "default";
@@ -247,13 +246,13 @@ namespace PepperDash.Essentials
         {
             // Add Occupancy object from config
             if (PropertiesConfig.Occupancy != null)
-                this.SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
+                SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
                     IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimeoutMinutes);
 
-            this.LogoUrl = PropertiesConfig.Logo.GetUrl();
-            this.SourceListKey = PropertiesConfig.SourceListKey;
-            this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
-            this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
+            LogoUrl = PropertiesConfig.Logo.GetUrl();
+            SourceListKey = PropertiesConfig.SourceListKey;
+            DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
+            DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
 
             return base.CustomActivate();
         }
@@ -264,16 +263,15 @@ namespace PepperDash.Essentials
         /// <param name="routeKey"></param>
 		public void RunRouteAction(string routeKey)
 		{
-            RunRouteAction(routeKey, new Action(() => { }));
+            RunRouteAction(routeKey, () => { });
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="routeKey"></param>
-        /// <param name="souceListKey"></param>
-        /// <param name="successCallback"></param>
-        public void RunRouteAction(string routeKey, string souceListKey)
+        /// <param name="sourceListKey"></param>
+        public void RunRouteAction(string routeKey, string sourceListKey)
         {
             throw new NotImplementedException();
         }
@@ -282,175 +280,175 @@ namespace PepperDash.Essentials
         /// 
         /// </summary>
         /// <param name="routeKey"></param>
-        /// <param name="souceListKey"></param>
+        /// <param name="sourceListKey"></param>
         /// <param name="successCallback"></param>
-        public void RunRouteAction(string routeKey, string souceListKey, Action successCallback)
+        public void RunRouteAction(string routeKey, string sourceListKey, Action successCallback)
         {
             throw new NotImplementedException();
         }
 
-		/// <summary>
-		/// Gets a source from config list SourceListKey and dynamically build and executes the
-		/// route or commands
-		/// </summary>
-		/// <param name="name"></param>
-		public void RunRouteAction(string routeKey, Action successCallback)
-		{
-			// Run this on a separate thread
-			new CTimer(o =>
-				{
-                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Run route action '{0}'", routeKey);
-                    var dict = ConfigReader.ConfigObject.GetSourceListForKey(SourceListKey);
-					if(dict == null)
-					{
-						Debug.Console(1, this, "WARNING: Config source list '{0}' not found", SourceListKey);
-						return;
-					}
+        /// <summary>
+        /// Gets a source from config list SourceListKey and dynamically build and executes the
+        /// route or commands
+        /// </summary>
+        public void RunRouteAction(string routeKey, Action successCallback)
+        {
+            // Run this on a separate thread
+            //new CTimer
+            CrestronInvoke.BeginInvoke(o =>
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Run route action '{0}'", routeKey);
+                var dict = ConfigReader.ConfigObject.GetSourceListForKey(SourceListKey);
+                if (dict == null)
+                {
+                    Debug.Console(1, this, "WARNING: Config source list '{0}' not found", SourceListKey);
+                    return;
+                }
 
-					// Try to get the list item by it's string key
-					if (!dict.ContainsKey(routeKey))
-					{
-						Debug.Console(1, this, "WARNING: No item '{0}' found on config list '{1}'", 
-							routeKey, SourceListKey);
-						return;
-					}
+                // Try to get the list item by it's string key
+                if (!dict.ContainsKey(routeKey))
+                {
+                    Debug.Console(1, this, "WARNING: No item '{0}' found on config list '{1}'",
+                        routeKey, SourceListKey);
+                    return;
+                }
 
-					var item = dict[routeKey];
-                    //Debug.Console(2, this, "Action {0} has {1} steps",
-                    //    item.SourceKey, item.RouteList.Count);
+                var item = dict[routeKey];
+                //Debug.Console(2, this, "Action {0} has {1} steps",
+                //    item.SourceKey, item.RouteList.Count);
 
-                    // End usage timer on last source
-                    if (!string.IsNullOrEmpty(LastSourceKey))
+                // End usage timer on last source
+                if (!string.IsNullOrEmpty(_lastSourceKey))
+                {
+                    var lastSource = dict[_lastSourceKey].SourceDevice;
+
+                    try
                     {
-                        var lastSource = dict[LastSourceKey].SourceDevice;
-
-                        try
-                        {
-                            if (lastSource != null && lastSource is IUsageTracking)
-                                (lastSource as IUsageTracking).UsageTracker.EndDeviceUsage();
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.Console(1, this, "*#* EXCEPTION in end usage tracking (257):\r{0}", e); 
-                        }
+                        if (lastSource is IUsageTracking)
+                            (lastSource as IUsageTracking).UsageTracker.EndDeviceUsage();
                     }
-
-					// Let's run it
-                    if (routeKey.ToLower() != "roomoff")
+                    catch (Exception e)
                     {
-                        LastSourceKey = routeKey;
+                        Debug.Console(1, this, "*#* EXCEPTION in end usage tracking (257):\r{0}", e);
+                    }
+                }
+
+                // Let's run it
+                if (routeKey.ToLower() != "roomoff")
+                {
+                    _lastSourceKey = routeKey;
+                }
+                else
+                {
+                    CurrentSourceInfoKey = null;
+                }
+
+                foreach (var route in item.RouteList)
+                {
+                    // if there is a $defaultAll on route, run two separate
+                    if (route.DestinationKey.Equals("$defaultAll", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Going to assume a single-path route for now
+                        var tempVideo = new SourceRouteListItem
+                        {
+                            DestinationKey = "$defaultDisplay",
+                            SourceKey = route.SourceKey,
+                            Type = eRoutingSignalType.Video
+                        };
+                        DoRoute(tempVideo);
+
+                        //var tempAudio = new SourceRouteListItem
+                        //{
+                        //    DestinationKey = "$defaultAudio",
+                        //    SourceKey = route.SourceKey,
+                        //    Type = eRoutingSignalType.Audio
+                        //};
+                        //DoRoute(tempAudio);
+                        //continue; -- not sure why this was here
                     }
                     else
+                        DoRoute(route);
+                }
+
+                // Start usage timer on routed source
+                if (item.SourceDevice is IUsageTracking)
+                {
+                    (item.SourceDevice as IUsageTracking).UsageTracker.StartDeviceUsage();
+                }
+
+
+
+
+                // Set volume control, using default if non provided
+                IBasicVolumeControls volDev = null;
+                // Handle special cases for volume control
+                if (string.IsNullOrEmpty(item.VolumeControlKey)
+                    || item.VolumeControlKey.Equals("$defaultAudio", StringComparison.OrdinalIgnoreCase))
+                    volDev = DefaultVolumeControls;
+                else if (item.VolumeControlKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
+                    volDev = DefaultDisplay as IBasicVolumeControls;
+                    // Or a specific device, probably rarely used.
+                else
+                {
+                    var dev = DeviceManager.GetDeviceForKey(item.VolumeControlKey);
+                    if (dev is IBasicVolumeControls)
+                        volDev = dev as IBasicVolumeControls;
+                    else if (dev is IHasVolumeDevice)
+                        volDev = (dev as IHasVolumeDevice).VolumeDevice;
+                }
+
+                if (volDev != CurrentVolumeControls)
+                {
+                    // zero the volume on the device we are leaving.  
+                    // Set the volume to default on device we are entering
+                    if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
                     {
-                        CurrentSourceInfoKey = null;
+                        var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
+                        SavedVolumeLevels[vd] = (uint) vd.VolumeLevelFeedback.IntValue;
+                        vd.SetVolume(0);
                     }
-
-					foreach (var route in item.RouteList)
-					{
-						// if there is a $defaultAll on route, run two separate
-						if (route.DestinationKey.Equals("$defaultAll", StringComparison.OrdinalIgnoreCase))
-						{
-                            // Going to assume a single-path route for now
-							var tempVideo = new SourceRouteListItem
-							{
-								DestinationKey = "$defaultDisplay",
-								SourceKey = route.SourceKey,
-								Type = eRoutingSignalType.Video
-							};
-                            DoRoute(tempVideo);
-
-                            //var tempAudio = new SourceRouteListItem
-                            //{
-                            //    DestinationKey = "$defaultAudio",
-                            //    SourceKey = route.SourceKey,
-                            //    Type = eRoutingSignalType.Audio
-                            //};
-                            //DoRoute(tempAudio);
-                            //continue; -- not sure why this was here
-						}
-						else
-							DoRoute(route);
-					}
-
-                    // Start usage timer on routed source
-                    if (item.SourceDevice is IUsageTracking)
+                    CurrentVolumeControls = volDev;
+                    if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
                     {
-                        (item.SourceDevice as IUsageTracking).UsageTracker.StartDeviceUsage();
+                        var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
+                        ushort vol = (SavedVolumeLevels.ContainsKey(vd) ? (ushort) SavedVolumeLevels[vd] : DefaultVolume);
+                        vd.SetVolume(vol);
                     }
+                }
 
 
 
+                // store the name and UI info for routes
+                if (item.SourceKey == "$off")
+                {
+                    CurrentSourceInfoKey = routeKey;
+                    CurrentSourceInfo = null;
+                }
+                else if (item.SourceKey != null)
+                {
+                    CurrentSourceInfoKey = routeKey;
+                    CurrentSourceInfo = item;
+                }
+                // And finally, set the "control".  This will trigger event
+                //CurrentControlDevice = DeviceManager.GetDeviceForKey(item.SourceKey) as Device;
 
-					// Set volume control, using default if non provided
-					IBasicVolumeControls volDev = null;
-					// Handle special cases for volume control
-					if (string.IsNullOrEmpty(item.VolumeControlKey) 
-						|| item.VolumeControlKey.Equals("$defaultAudio", StringComparison.OrdinalIgnoreCase))
-						volDev = DefaultVolumeControls;
-					else if (item.VolumeControlKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
-						volDev = DefaultDisplay as IBasicVolumeControls;
-					// Or a specific device, probably rarely used.
-					else
-					{
-						var dev = DeviceManager.GetDeviceForKey(item.VolumeControlKey);
-						if (dev is IBasicVolumeControls)
-							volDev = dev as IBasicVolumeControls;
-						else if (dev is IHasVolumeDevice)
-							volDev = (dev as IHasVolumeDevice).VolumeDevice;
-					}
+                OnFeedback.FireUpdate();
 
-					if (volDev != CurrentVolumeControls)
-					{
-						// zero the volume on the device we are leaving.  
-						// Set the volume to default on device we are entering
-						if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
-						{
-							var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
-							SavedVolumeLevels[vd] = (uint)vd.VolumeLevelFeedback.IntValue;
-							vd.SetVolume(0);
-						}
-						CurrentVolumeControls = volDev;
-						if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
-						{
-							var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
-							ushort vol = (SavedVolumeLevels.ContainsKey(vd) ? (ushort)SavedVolumeLevels[vd] : DefaultVolume);
-							vd.SetVolume(vol);
-						}
-					}
+                // report back when done
+                if (successCallback != null)
+                    successCallback();
 
+            }, 0); // end of CTimer
+        }
 
-
-					// store the name and UI info for routes
-                    if (item.SourceKey == "$off")
-                    {
-                        CurrentSourceInfoKey = routeKey;
-                        CurrentSourceInfo = null;
-                    }
-                    else if (item.SourceKey != null)
-                    {
-                        CurrentSourceInfoKey = routeKey;
-                        CurrentSourceInfo = item;
-                    }
-					// And finally, set the "control".  This will trigger event
-					//CurrentControlDevice = DeviceManager.GetDeviceForKey(item.SourceKey) as Device;
-
-					OnFeedback.FireUpdate();
-
-					// report back when done
-					if (successCallback != null)
-						successCallback();
-
-				}, 0); // end of CTimer
-		}
-
-		/// <summary>
+        /// <summary>
 		/// Will power the room on with the last-used source
 		/// </summary>
 		public override void PowerOnToDefaultOrLastSource()
 		{
-			if (!EnablePowerOnToLastSource || LastSourceKey == null)
+			if (!EnablePowerOnToLastSource || _lastSourceKey == null)
 				return;
-			RunRouteAction(LastSourceKey);
+			RunRouteAction(_lastSourceKey);
 		}
 
         /// <summary>
@@ -469,9 +467,9 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="route"></param>
 		/// <returns></returns>
-		bool DoRoute(SourceRouteListItem route)
+		private bool DoRoute(SourceRouteListItem route)
 		{
-			IRoutingSink dest = null;
+			IRoutingSink dest;
 
 			if (route.DestinationKey.Equals("$defaultaudio", StringComparison.OrdinalIgnoreCase))
 				dest = DefaultAudioDevice;
@@ -515,10 +513,10 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public static void AllRoomsOff()
 		{
-			var allRooms = DeviceManager.AllDevices.Where(d => 
-				d is EssentialsHuddleSpaceRoom && !(d as EssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
+		    var allRooms = DeviceManager.AllDevices.OfType<EssentialsHuddleSpaceRoom>().Where(d =>
+		        !d.ExcludeFromGlobalFunctions);
 			foreach (var room in allRooms)
-				(room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
+				room.RunRouteAction("roomOff");
 		}
 	}
 }
