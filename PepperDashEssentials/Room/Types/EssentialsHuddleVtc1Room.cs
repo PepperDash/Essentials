@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 
 using Newtonsoft.Json;
@@ -76,10 +74,7 @@ namespace PepperDash.Essentials
                 return () =>
                 {
                     var disp = DefaultDisplay as DisplayBase;
-                    if (disp != null)
-                        return disp.IsWarmingUpFeedback.BoolValue;
-                    else
-                        return false;
+                    return disp != null && disp.IsWarmingUpFeedback.BoolValue;
                 };
             }
         }
@@ -93,10 +88,7 @@ namespace PepperDash.Essentials
                 return () =>
                 {
                     var disp = DefaultDisplay as DisplayBase;
-                    if (disp != null)
-                        return disp.IsCoolingDownFeedback.BoolValue;
-                    else
-                        return false;
+                    return disp != null && disp.IsCoolingDownFeedback.BoolValue;
                 };
             }
         }
@@ -121,7 +113,7 @@ namespace PepperDash.Essentials
 		/// If room is off, enables power on to last source. Default true
 		/// </summary>
 		public bool EnablePowerOnToLastSource { get; set; }
-		string LastSourceKey;
+		private string _lastSourceKey;
 
 		/// <summary>
 		/// Sets the volume control device, and attaches/removes InUseTrackers with "audio"
@@ -129,56 +121,56 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public IBasicVolumeControls CurrentVolumeControls 
 		{
-			get { return _CurrentAudioDevice;  }
+			get { return _currentAudioDevice;  }
 			set
 			{
-				if (value == _CurrentAudioDevice) return;
+				if (value == _currentAudioDevice) return;
 
-				var oldDev = _CurrentAudioDevice;
+				var oldDev = _currentAudioDevice;
 				// derigister this room from the device, if it can
 				if (oldDev is IInUseTracking)
 					(oldDev as IInUseTracking).InUseTracker.RemoveUser(this, "audio");
 				var handler = CurrentVolumeDeviceChange;
 				if (handler != null)
 					CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(oldDev, value, ChangeType.WillChange));
-				_CurrentAudioDevice = value;
+				_currentAudioDevice = value;
 				if (handler != null)
 					CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(oldDev, value, ChangeType.DidChange));
 				// register this room with new device, if it can
-				if (_CurrentAudioDevice is IInUseTracking)
-					(_CurrentAudioDevice as IInUseTracking).InUseTracker.AddUser(this, "audio");
+				if (_currentAudioDevice is IInUseTracking)
+					(_currentAudioDevice as IInUseTracking).InUseTracker.AddUser(this, "audio");
 			}
 		}
-		IBasicVolumeControls _CurrentAudioDevice;
+		IBasicVolumeControls _currentAudioDevice;
 
 		/// <summary>
 		/// The SourceListItem last run - containing names and icons 
 		/// </summary>
 		public SourceListItem CurrentSourceInfo
 		{
-			get { return _CurrentSourceInfo; }
+			get { return _currentSourceInfo; }
 			set
 			{
-				if (value == _CurrentSourceInfo) return;
+				if (value == _currentSourceInfo) return;
 
 				var handler = CurrentSourceChange;
 				// remove from in-use tracker, if so equipped
-				if(_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
-					(_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
+				if(_currentSourceInfo != null && _currentSourceInfo.SourceDevice is IInUseTracking)
+					(_currentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
 
 				if (handler != null)
-					handler(_CurrentSourceInfo, ChangeType.WillChange);
+					handler(_currentSourceInfo, ChangeType.WillChange);
 
-				_CurrentSourceInfo = value;
+				_currentSourceInfo = value;
 
 				// add to in-use tracking
-				if (_CurrentSourceInfo != null && _CurrentSourceInfo.SourceDevice is IInUseTracking)
-					(_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
+				if (_currentSourceInfo != null && _currentSourceInfo.SourceDevice is IInUseTracking)
+					(_currentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
 				if (handler != null)
-					handler(_CurrentSourceInfo, ChangeType.DidChange);
+					handler(_currentSourceInfo, ChangeType.DidChange);
 			}
 		}
-		SourceListItem _CurrentSourceInfo;
+		private SourceListItem _currentSourceInfo;
 
         public string CurrentSourceInfoKey { get; set; }
 
@@ -193,7 +185,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public IHasScheduleAwareness ScheduleSource { get { return VideoCodec as IHasScheduleAwareness; } }
 
-		CCriticalSection SourceSelectLock = new CCriticalSection();
+        private readonly CCriticalSection _sourceSelectLock = new CCriticalSection();
 
         public EssentialsHuddleVtc1Room(DeviceConfig config)
             : base(config)
@@ -205,12 +197,12 @@ namespace PepperDash.Essentials
                 DefaultDisplay = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
 
                 VideoCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.VideoCodecKey) as
-                    PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
+                    VideoCodecBase;
                 if (VideoCodec == null)
                     throw new ArgumentNullException("codec cannot be null");
 
                 AudioCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.AudioCodecKey) as
-                    PepperDash.Essentials.Devices.Common.AudioCodec.AudioCodecBase;
+                    AudioCodecBase;
                 if (AudioCodec == null)
                     Debug.Console(0, this, "No Audio Codec Found");
 
@@ -228,8 +220,8 @@ namespace PepperDash.Essentials
 		{
             try
             {
-                if (DefaultAudioDevice is IBasicVolumeControls)
-                    DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;
+                if (DefaultAudioDevice != null)
+                    DefaultVolumeControls = DefaultAudioDevice;
                 else if (DefaultAudioDevice is IHasVolumeDevice)
                     DefaultVolumeControls = (DefaultAudioDevice as IHasVolumeDevice).VolumeDevice;
                 CurrentVolumeControls = DefaultVolumeControls;
@@ -238,8 +230,8 @@ namespace PepperDash.Essentials
                 // Combines call feedback from both codecs if available
                 InCallFeedback = new BoolFeedback(() =>
                 {
-                    bool inAudioCall = false;
-                    bool inVideoCall = false;
+                    var inAudioCall = false;
+                    var inVideoCall = false;
 
                     if (AudioCodec != null)
                         inAudioCall = AudioCodec.IsInCall;
@@ -247,10 +239,7 @@ namespace PepperDash.Essentials
                     if (VideoCodec != null)
                         inVideoCall = VideoCodec.IsInCall;
 
-                    if (inAudioCall || inVideoCall)
-                        return true;
-                    else
-                        return false;
+                    return inAudioCall || inVideoCall;
                 });
 
                 var disp = DefaultDisplay as DisplayBase;
@@ -274,40 +263,45 @@ namespace PepperDash.Essentials
                     disp.IsWarmingUpFeedback.OutputChange += (o, a) =>
                     {
                         IsWarmingUpFeedback.FireUpdate();
-                        if (!IsWarmingUpFeedback.BoolValue)
-                            (CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
+                        if (IsWarmingUpFeedback.BoolValue)
+                        {
+                            return;
+                        }
+
+                        var basicVolumeWithFeedback = CurrentVolumeControls as IBasicVolumeWithFeedback;
+                        if (basicVolumeWithFeedback != null)
+                        {
+                            basicVolumeWithFeedback.SetVolume(DefaultVolume);
+                        }
                     };
-                    disp.IsCoolingDownFeedback.OutputChange += (o, a) =>
-                    {
-                        IsCoolingDownFeedback.FireUpdate();
-                    };
+                    disp.IsCoolingDownFeedback.OutputChange += (o, a) => IsCoolingDownFeedback.FireUpdate();
 
                 }
 
 
 
                 // Get Microphone Privacy object, if any  MUST HAPPEN AFTER setting InCallFeedback
-                this.MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
+                MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
 
                 Debug.Console(2, this, "Microphone Privacy Config evaluated.");
 
                 // Get emergency object, if any
-                this.Emergency = EssentialsRoomConfigHelper.GetEmergency(PropertiesConfig, this);
+                Emergency = EssentialsRoomConfigHelper.GetEmergency(PropertiesConfig, this);
 
                 Debug.Console(2, this, "Emergency Config evaluated.");
 
 
-                VideoCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+                VideoCodec.CallStatusChange += (o, a) => InCallFeedback.FireUpdate();
 
                 if (AudioCodec != null)
-                    AudioCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+                    AudioCodec.CallStatusChange += (o, a) => InCallFeedback.FireUpdate();
 
                 IsSharingFeedback = new BoolFeedback(() => VideoCodec.SharingContentIsOnFeedback.BoolValue);
-                VideoCodec.SharingContentIsOnFeedback.OutputChange += (o, a) => this.IsSharingFeedback.FireUpdate();
+                VideoCodec.SharingContentIsOnFeedback.OutputChange += (o, a) => IsSharingFeedback.FireUpdate();
 
                 // link privacy to VC (for now?)
                 PrivacyModeIsOnFeedback = new BoolFeedback(() => VideoCodec.PrivacyModeIsOnFeedback.BoolValue);
-                VideoCodec.PrivacyModeIsOnFeedback.OutputChange += (o, a) => this.PrivacyModeIsOnFeedback.FireUpdate();
+                VideoCodec.PrivacyModeIsOnFeedback.OutputChange += (o, a) => PrivacyModeIsOnFeedback.FireUpdate();
 
                 CallTypeFeedback = new IntFeedback(() => 0);
 
@@ -336,14 +330,14 @@ namespace PepperDash.Essentials
             if (PropertiesConfig.Occupancy != null)
             {
                 Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Setting Occupancy Provider for room");
-                this.SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
+                SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
                     IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimeoutMinutes);
             }
 
-            this.LogoUrl = PropertiesConfig.Logo.GetUrl();
-            this.SourceListKey = PropertiesConfig.SourceListKey;
-            this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
-            this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
+            LogoUrl = PropertiesConfig.Logo.GetUrl();
+            SourceListKey = PropertiesConfig.SourceListKey;
+            DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
+            DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
 
             return base.CustomActivate();
         }
@@ -394,7 +388,7 @@ namespace PepperDash.Essentials
         /// <param name="routeKey"></param>
 		public void RunRouteAction(string routeKey)
 		{
-            RunRouteAction(routeKey, new Action(() => { }));
+            RunRouteAction(routeKey, () => { });
 		}
 
         /// <summary>
@@ -402,7 +396,6 @@ namespace PepperDash.Essentials
         /// </summary>
         /// <param name="routeKey"></param>
         /// <param name="souceListKey"></param>
-        /// <param name="successCallback"></param>
         public void RunRouteAction(string routeKey, string souceListKey)
         {
             throw new NotImplementedException();
@@ -419,18 +412,18 @@ namespace PepperDash.Essentials
             throw new NotImplementedException();
         }
 
-		/// <summary>
-		/// Gets a source from config list SourceListKey and dynamically build and executes the
-		/// route or commands
-		/// </summary>
-		/// <param name="name"></param>
+        /// <summary>
+        /// Gets a source from config list SourceListKey and dynamically build and executes the
+        /// route or commands
+        /// </summary>
         public void RunRouteAction(string routeKey, Action successCallback)
         {
             // Run this on a separate thread
-            new CTimer(o =>
+            //new CTimer
+            CrestronInvoke.BeginInvoke(o =>
             {
 				// try to prevent multiple simultaneous selections
-				SourceSelectLock.TryEnter();
+				_sourceSelectLock.TryEnter();
 
                 try
                 {
@@ -452,9 +445,9 @@ namespace PepperDash.Essentials
                     }
 
                     // End usage timer on last source
-                    if (!string.IsNullOrEmpty(LastSourceKey))
+                    if (!string.IsNullOrEmpty(_lastSourceKey))
                     {
-                        var usageLastSource = dict[LastSourceKey].SourceDevice as IUsageTracking;
+                        var usageLastSource = dict[_lastSourceKey].SourceDevice as IUsageTracking;
                         if (usageLastSource != null && usageLastSource.UsageTracker != null)
                         {
                             try
@@ -474,7 +467,7 @@ namespace PepperDash.Essentials
                     if (routeKey.ToLower() != "roomoff")
                     {
              
-                        LastSourceKey = routeKey;
+                        _lastSourceKey = routeKey;
                     }
                     else
                         CurrentSourceInfoKey = null;
@@ -526,7 +519,7 @@ namespace PepperDash.Essentials
 						if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
 						{
 							var vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
-							ushort vol = (SavedVolumeLevels.ContainsKey(vd) ? (ushort)SavedVolumeLevels[vd] : DefaultVolume);
+							var vol = (SavedVolumeLevels.ContainsKey(vd) ? (ushort)SavedVolumeLevels[vd] : DefaultVolume);
 							vd.SetVolume(vol);
 						}
 					}
@@ -557,7 +550,7 @@ namespace PepperDash.Essentials
                     Debug.Console(1, this, "ERROR in routing: {0}", e);
                 }
 
-				SourceSelectLock.Leave();
+				_sourceSelectLock.Leave();
             }, 0); // end of CTimer
         }
 
@@ -588,9 +581,9 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="route"></param>
 		/// <returns></returns>
-		bool DoRoute(SourceRouteListItem route)
+		private bool DoRoute(SourceRouteListItem route)
 		{
-			IRoutingSink dest = null;
+			IRoutingSink dest;
 
 			if (route.DestinationKey.Equals("$defaultaudio", StringComparison.OrdinalIgnoreCase))
                 dest = DefaultAudioDevice as IRoutingSinkNoSwitching;
@@ -644,9 +637,9 @@ namespace PepperDash.Essentials
         /// </summary>
         public override void PowerOnToDefaultOrLastSource()
         {
-            if (!EnablePowerOnToLastSource || LastSourceKey == null)
+            if (!EnablePowerOnToLastSource || _lastSourceKey == null)
                 return;
-            RunRouteAction(LastSourceKey);
+            RunRouteAction(_lastSourceKey);
         }
 
 		/// <summary>
@@ -657,7 +650,13 @@ namespace PepperDash.Essentials
 			var allRooms = DeviceManager.AllDevices.Where(d => 
 				d is EssentialsHuddleSpaceRoom && !(d as EssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
 			foreach (var room in allRooms)
-				(room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
+			{
+			    var essentialsHuddleSpaceRoom = room as EssentialsHuddleSpaceRoom;
+			    if (essentialsHuddleSpaceRoom != null)
+			    {
+			        essentialsHuddleSpaceRoom.RunRouteAction("roomOff");
+			    }
+			}
 		}
 
         #region IPrivacy Members
