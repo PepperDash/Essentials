@@ -181,6 +181,7 @@
     <Compile Include="Crestron IO\StatusSign\StatusSignController.cs" />
     <Compile Include="Devices\CodecInterfaces.cs" />
     <Compile Include="Devices\CrestronProcessor.cs" />
+    <Compile Include="Devices\DestinationListItem.cs" />
     <Compile Include="Devices\DeviceApiBase.cs" />
     <Compile Include="Devices\DeviceFeedbackExtensions.cs" />
     <Compile Include="Devices\EssentialsBridgeableDevice.cs" />
