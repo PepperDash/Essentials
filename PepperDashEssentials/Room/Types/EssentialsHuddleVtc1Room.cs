@@ -47,52 +47,7 @@ namespace PepperDash.Essentials
         public BoolFeedback IsSharingFeedback { get; private set; }
 
         //************************
-
-
-        protected override Func<bool> OnFeedbackFunc
-        {
-            get
-            {
-                return () =>
-                {
-                    var disp = DefaultDisplay as DisplayBase;
-                    var val = CurrentSourceInfo != null
-                        && CurrentSourceInfo.Type == eSourceListItemType.Route
-                        && disp != null;
-						//&& disp.PowerIsOnFeedback.BoolValue;
-                    return val;
-                };
-            }
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override Func<bool> IsWarmingFeedbackFunc
-        {
-            get
-            {
-                return () =>
-                {
-                    var disp = DefaultDisplay as DisplayBase;
-                    return disp != null && disp.IsWarmingUpFeedback.BoolValue;
-                };
-            }
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override Func<bool> IsCoolingFeedbackFunc
-        {
-            get
-            {
-                return () =>
-                {
-                    var disp = DefaultDisplay as DisplayBase;
-                    return disp != null && disp.IsCoolingDownFeedback.BoolValue;
-                };
-            }
-        }
-
+       
         public EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; private set; }
 
 		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
@@ -114,34 +69,6 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public bool EnablePowerOnToLastSource { get; set; }
 		private string _lastSourceKey;
-
-		/// <summary>
-		/// Sets the volume control device, and attaches/removes InUseTrackers with "audio"
-		/// tag to device.
-		/// </summary>
-		public IBasicVolumeControls CurrentVolumeControls 
-		{
-			get { return _currentAudioDevice;  }
-			set
-			{
-				if (value == _currentAudioDevice) return;
-
-				var oldDev = _currentAudioDevice;
-				// derigister this room from the device, if it can
-				if (oldDev is IInUseTracking)
-					(oldDev as IInUseTracking).InUseTracker.RemoveUser(this, "audio");
-				var handler = CurrentVolumeDeviceChange;
-				if (handler != null)
-					CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(oldDev, value, ChangeType.WillChange));
-				_currentAudioDevice = value;
-				if (handler != null)
-					CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(oldDev, value, ChangeType.DidChange));
-				// register this room with new device, if it can
-				if (_currentAudioDevice is IInUseTracking)
-					(_currentAudioDevice as IInUseTracking).InUseTracker.AddUser(this, "audio");
-			}
-		}
-		IBasicVolumeControls _currentAudioDevice;
 
 		/// <summary>
 		/// The SourceListItem last run - containing names and icons 
@@ -242,44 +169,6 @@ namespace PepperDash.Essentials
                     return inAudioCall || inVideoCall;
                 });
 
-                var disp = DefaultDisplay as DisplayBase;
-                if (disp != null)
-                {
-                    // Link power, warming, cooling to display
-                    disp.PowerIsOnFeedback.OutputChange += (o, a) =>
-                        {
-                            if (disp.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
-                            {
-                                if (!disp.PowerIsOnFeedback.BoolValue)
-                                    CurrentSourceInfo = null;
-                                OnFeedback.FireUpdate();
-                            }
-                            if (disp.PowerIsOnFeedback.BoolValue)
-                            {
-                                SetDefaultLevels();
-                            }
-                        };
-
-                    disp.IsWarmingUpFeedback.OutputChange += (o, a) =>
-                    {
-                        IsWarmingUpFeedback.FireUpdate();
-                        if (IsWarmingUpFeedback.BoolValue)
-                        {
-                            return;
-                        }
-
-                        var basicVolumeWithFeedback = CurrentVolumeControls as IBasicVolumeWithFeedback;
-                        if (basicVolumeWithFeedback != null)
-                        {
-                            basicVolumeWithFeedback.SetVolume(DefaultVolume);
-                        }
-                    };
-                    disp.IsCoolingDownFeedback.OutputChange += (o, a) => IsCoolingDownFeedback.FireUpdate();
-
-                }
-
-
-
                 // Get Microphone Privacy object, if any  MUST HAPPEN AFTER setting InCallFeedback
                 MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
 
@@ -307,12 +196,68 @@ namespace PepperDash.Essentials
 
                 SourceListKey = "default";
                 EnablePowerOnToLastSource = true;
+
+                var disp = DefaultDisplay as DisplayBase;
+                if (disp == null)
+                {
+                    return;
+                }
+
+                OnFeedbackFunc = () => CurrentSourceInfo != null
+                                       && CurrentSourceInfo.Type == eSourceListItemType.Route;
+
+                InitializeDisplay(disp);
+                
             }
             catch (Exception e)
             {
                 Debug.Console(0, this, "Error Initializing Room: {0}", e);
             }
    		}
+
+        #region Overrides of EssentialsRoomBase
+
+        protected override void PowerIsOnFeedbackOnOutputChange(object sender, FeedbackEventArgs args)
+        {
+            var disp = sender as DisplayBase;
+
+            if (disp == null) return;
+
+            if (disp.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
+            {
+                if (!disp.PowerIsOnFeedback.BoolValue)
+                    CurrentSourceInfo = null;
+                OnFeedback.FireUpdate();
+            }
+            if (disp.PowerIsOnFeedback.BoolValue)
+            {
+                SetDefaultLevels();
+            }
+        }
+
+        protected override void IsCoolingDownFeedbackOnOutputChange(object sender, FeedbackEventArgs args)
+        {
+            IsCoolingDownFeedback.FireUpdate();
+        }
+
+        protected override void IsWarmingUpFeedbackOnOutputChange(object sender, FeedbackEventArgs args)
+        {
+            IsWarmingUpFeedback.FireUpdate();
+
+            if (IsWarmingUpFeedback.BoolValue)
+            {
+                return;
+            }
+
+            var basicVolumeWithFeedback = CurrentVolumeControls as IBasicVolumeWithFeedback;
+            if (basicVolumeWithFeedback != null)
+            {
+                basicVolumeWithFeedback.SetVolume(DefaultVolume);
+            }
+        }
+
+
+        #endregion
 
         protected override void CustomSetConfig(DeviceConfig config)
         {
