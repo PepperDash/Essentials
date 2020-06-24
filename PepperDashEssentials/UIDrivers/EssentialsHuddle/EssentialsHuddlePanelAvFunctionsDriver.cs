@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.UI;
-
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
+using PepperDash.Essentials.UIDrivers;
 
 namespace PepperDash.Essentials
 {
@@ -17,7 +15,7 @@ namespace PepperDash.Essentials
 	/// </summary>
 	public class EssentialsHuddlePanelAvFunctionsDriver : PanelDriverBase, IAVDriver
 	{
-		CrestronTouchpanelPropertiesConfig Config;
+	    private readonly CrestronTouchpanelPropertiesConfig _config;
 
 		public enum UiDisplayMode
 		{
@@ -35,8 +33,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public uint VolumeButtonPopupTimeout
 		{
-			get { return VolumeButtonsPopupFeedback.TimeoutMs; }
-			set { VolumeButtonsPopupFeedback.TimeoutMs = value; }
+			get { return _volumeButtonsPopupFeedback.TimeoutMs; }
+			set { _volumeButtonsPopupFeedback.TimeoutMs = value; }
 		}
 		
 		/// <summary>
@@ -44,8 +42,8 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public uint VolumeGaugePopupTimeout
 		{
-			get { return VolumeGaugeFeedback.TimeoutMs; }
-			set { VolumeGaugeFeedback.TimeoutMs = value; }
+			get { return _volumeGaugeFeedback.TimeoutMs; }
+			set { _volumeGaugeFeedback.TimeoutMs = value; }
 		}
 
 		/// <summary>
@@ -53,21 +51,12 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public uint PowerOffTimeout { get; set; }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		public string DefaultRoomKey
-		{
-			get { return _DefaultRoomKey; }
-			set
-			{
-				_DefaultRoomKey = value;
-				//CurrentRoom = DeviceManager.GetDeviceForKey(value) as EssentialsHuddleSpaceRoom;
-			}	
-		}
-		string _DefaultRoomKey;
+	    /// <summary>
+	    /// 
+	    /// </summary>
+	    public string DefaultRoomKey { get; set; }
 
-        /// <summary>
+	    /// <summary>
         /// Indicates that the SetHeaderButtons method has completed successfully
         /// </summary>
         public bool HeaderButtonsAreSetUp { get; private set; }
@@ -77,13 +66,13 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public EssentialsHuddleSpaceRoom CurrentRoom
 		{
-			get { return _CurrentRoom; }
+			get { return _currentRoom; }
 			set
 			{
 				SetCurrentRoom(value);
 			}
 		}
-		EssentialsHuddleSpaceRoom _CurrentRoom;
+		EssentialsHuddleSpaceRoom _currentRoom;
 
         /// <summary>
         /// 
@@ -93,88 +82,86 @@ namespace PepperDash.Essentials
         /// <summary>
         /// For hitting feedback
         /// </summary>
-        BoolInputSig ShareButtonSig;
-        BoolInputSig EndMeetingButtonSig;
+        private readonly BoolInputSig _shareButtonSig;
+        private BoolInputSig _endMeetingButtonSig;
 
 		/// <summary>
 		/// Controls the extended period that the volume gauge shows on-screen,
 		/// as triggered by Volume up/down operations
 		/// </summary>
-		BoolFeedbackPulseExtender VolumeGaugeFeedback;
+		private readonly BoolFeedbackPulseExtender _volumeGaugeFeedback;
 
 		/// <summary>
 		/// Controls the period that the volume buttons show on non-hard-button
 		/// interfaces
 		/// </summary>
-		BoolFeedbackPulseExtender VolumeButtonsPopupFeedback;
+		private readonly BoolFeedbackPulseExtender _volumeButtonsPopupFeedback;
 
         /// <summary>
         /// The parent driver for this
         /// </summary>
-        PanelDriverBase Parent;
+        private readonly PanelDriverBase _parent;
 
         /// <summary>
         /// All children attached to this driver.  For hiding and showing as a group.
         /// </summary>
-        List<PanelDriverBase> ChildDrivers = new List<PanelDriverBase>();
+        private List<PanelDriverBase> _childDrivers = new List<PanelDriverBase>();
 
-		List<BoolInputSig> CurrentDisplayModeSigsInUse = new List<BoolInputSig>();
+	    private readonly List<BoolInputSig> _currentDisplayModeSigsInUse = new List<BoolInputSig>();
 
 		//// Important smart objects
 
 		/// <summary>
 		/// Smart Object 3200
 		/// </summary>
-        SubpageReferenceList SourcesSrl;
+		private readonly SubpageReferenceList _sourcesSrl;
 
         /// <summary>
         /// Smart Object 15022
         /// </summary>
-        SubpageReferenceList ActivityFooterSrl;
+        private readonly SubpageReferenceList _activityFooterSrl;
 
 		/// <summary>
 		/// Tracks which audio page group the UI is in
 		/// </summary>
-		UiDisplayMode CurrentDisplayMode;
+		private UiDisplayMode _currentDisplayMode;
 
 		/// <summary>
 		/// The AV page mangagers that have been used, to keep them alive for later
 		/// </summary>
-		Dictionary<object, PageManager> PageManagers = new Dictionary<object, PageManager>();
+		private readonly Dictionary<object, PageManager> _pageManagers = new Dictionary<object, PageManager>();
 
 		/// <summary>
 		/// Current page manager running for a source
 		/// </summary>
-		PageManager CurrentSourcePageManager;
+		private PageManager _currentSourcePageManager;
 
 		/// <summary>
 		/// Will auto-timeout a power off
 		/// </summary>
-		CTimer PowerOffTimer;
+		private CTimer _powerOffTimer;
 
-        ModalDialog PowerDownModal;
+        private ModalDialog _powerDownModal;
 
         public JoinedSigInterlock PopupInterlock { get; private set; }
 
         /// <summary>
         /// The driver for the tech page. Lazy getter for memory usage
         /// </summary>
-        PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver TechDriver
+        EssentialsHuddleTechPageDriver TechDriver
         {
-            get
-            {
-                if (_TechDriver == null)
-                    _TechDriver = new PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver(TriList, CurrentRoom.PropertiesConfig.Tech);
-                return _TechDriver;
+            get {
+                return _techDriver ??
+                       (_techDriver = new EssentialsHuddleTechPageDriver(TriList, CurrentRoom.PropertiesConfig.Tech));
             }
         }
-        PepperDash.Essentials.UIDrivers.EssentialsHuddleTechPageDriver _TechDriver;
+        private EssentialsHuddleTechPageDriver _techDriver;
 
 
         /// <summary>
         /// Controls timeout of notification ribbon timer
         /// </summary>
-        CTimer RibbonTimer;
+        private CTimer _ribbonTimer;
 
 		/// <summary>
 		/// Constructor
@@ -182,25 +169,25 @@ namespace PepperDash.Essentials
 		public EssentialsHuddlePanelAvFunctionsDriver(PanelDriverBase parent, CrestronTouchpanelPropertiesConfig config) 
 			: base(parent.TriList)
 		{
-			Config = config;
-            Parent = parent;
+			_config = config;
+            _parent = parent;
             PopupInterlock = new JoinedSigInterlock(TriList);
 
-            SourcesSrl = new SubpageReferenceList(TriList, 3200, 3, 3, 3);
-            ActivityFooterSrl = new SubpageReferenceList(TriList, 15022, 3, 3, 3);
-            ShareButtonSig = ActivityFooterSrl.BoolInputSig(1, 1);
+            _sourcesSrl = new SubpageReferenceList(TriList, 3200, 3, 3, 3);
+            _activityFooterSrl = new SubpageReferenceList(TriList, 15022, 3, 3, 3);
+            _shareButtonSig = _activityFooterSrl.BoolInputSig(1, 1);
 
             SetupActivityFooterWhenRoomOff();
 
 			ShowVolumeGauge = true;
 
 			// One-second pulse extender for volume gauge
-			VolumeGaugeFeedback = new BoolFeedbackPulseExtender(1500);
-			VolumeGaugeFeedback.Feedback
+			_volumeGaugeFeedback = new BoolFeedbackPulseExtender(1500);
+			_volumeGaugeFeedback.Feedback
 				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeGaugePopupVisible]);
 
-			VolumeButtonsPopupFeedback = new BoolFeedbackPulseExtender(4000);
-			VolumeButtonsPopupFeedback.Feedback
+			_volumeButtonsPopupFeedback = new BoolFeedbackPulseExtender(4000);
+			_volumeButtonsPopupFeedback.Feedback
 				.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VolumeButtonPopupVisible]);
 
 			PowerOffTimeout = 30000;
@@ -220,30 +207,19 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            var roomConf = CurrentRoom.PropertiesConfig;
+		    switch (_config.HeaderStyle.ToLower())
+		    {
+		        case CrestronTouchpanelPropertiesConfig.Habanero:
+		            TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, () =>
+		                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderPageVisible));
+		            break;
+		        case CrestronTouchpanelPropertiesConfig.Verbose:
+		            break;
+		    }
 
-            if (Config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Habanero)
-            {
-                TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, () =>
-                    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderPageVisible));
-            }
-            else if (Config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Verbose)
-            {
-                // room name on join 1, concat phone and sip on join 2, no button method
-                //var addr = roomConf.Addresses;
-                //if (addr == null) // protect from missing values by using default empties
-                //    addr = new EssentialsRoomAddressPropertiesConfig();
-                //// empty string when either missing, pipe when both showing
-                //TriList.SetString(UIStringJoin.RoomAddressPipeText, 
-                //    (string.IsNullOrEmpty(addr.PhoneNumber.Trim())
-                //    || string.IsNullOrEmpty(addr.SipAddress.Trim())) ? "" : " | ");
-                //TriList.SetString(UIStringJoin.RoomPhoneText, addr.PhoneNumber);
-                //TriList.SetString(UIStringJoin.RoomSipText, addr.SipAddress);
-            }
-
-            TriList.SetBool(UIBoolJoin.DateAndTimeVisible, Config.ShowDate && Config.ShowTime);
-            TriList.SetBool(UIBoolJoin.DateOnlyVisible, Config.ShowDate && !Config.ShowTime);
-            TriList.SetBool(UIBoolJoin.TimeOnlyVisible, !Config.ShowDate && Config.ShowTime);
+            TriList.SetBool(UIBoolJoin.DateAndTimeVisible, _config.ShowDate && _config.ShowTime);
+            TriList.SetBool(UIBoolJoin.DateOnlyVisible, _config.ShowDate && !_config.ShowTime);
+            TriList.SetBool(UIBoolJoin.TimeOnlyVisible, !_config.ShowDate && _config.ShowTime);
 
             TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = true;
@@ -330,7 +306,7 @@ namespace PepperDash.Essentials
             {
                 TriList.SetBool(UIBoolJoin.LogoDefaultVisible, false);
                 TriList.SetBool(UIBoolJoin.LogoUrlVisible, true);
-                TriList.SetString(UIStringJoin.LogoUrl, _CurrentRoom.LogoUrl);
+                TriList.SetString(UIStringJoin.LogoUrl, _currentRoom.LogoUrl);
             }
         }
 
@@ -355,7 +331,7 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
             //TriList.BooleanInput[UIBoolJoin.StagingPageVisible].BoolValue = false;
-			VolumeButtonsPopupFeedback.ClearNow();
+			_volumeButtonsPopupFeedback.ClearNow();
             //CancelPowerOff();
 
 			base.Hide();
@@ -372,12 +348,12 @@ namespace PepperDash.Essentials
             TriList.SetBool(UIBoolJoin.NotificationRibbonVisible, true);
             if (timeout > 0)
             {
-                if (RibbonTimer != null)
-                    RibbonTimer.Stop();
-                RibbonTimer = new CTimer(o =>
+                if (_ribbonTimer != null)
+                    _ribbonTimer.Stop();
+                _ribbonTimer = new CTimer(o =>
                 {
                     TriList.SetBool(UIBoolJoin.NotificationRibbonVisible, false);
-                    RibbonTimer = null;
+                    _ribbonTimer = null;
                 }, timeout);
             }
         }
@@ -388,10 +364,10 @@ namespace PepperDash.Essentials
         public void HideNotificationRibbon()
         {
             TriList.SetBool(UIBoolJoin.NotificationRibbonVisible, false);
-            if (RibbonTimer != null)
+            if (_ribbonTimer != null)
             {
-                RibbonTimer.Stop();
-                RibbonTimer = null;
+                _ribbonTimer.Stop();
+                _ribbonTimer = null;
             }
         }
 
@@ -403,7 +379,7 @@ namespace PepperDash.Essentials
 		{
 			//Clear whatever is showing now.
 			HideAndClearCurrentDisplayModeSigsInUse();
-			CurrentDisplayMode = mode;
+			_currentDisplayMode = mode;
 			switch (mode)
 			{
 				case UiDisplayMode.PresentationMode:
@@ -421,7 +397,7 @@ namespace PepperDash.Essentials
                         TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
                     }
                     // Date/time
-					if (Config.ShowDate && Config.ShowTime)
+					if (_config.ShowDate && _config.ShowTime)
 					{
 						TriList.BooleanInput[UIBoolJoin.DateAndTimeVisible].BoolValue = true;
 						TriList.BooleanInput[UIBoolJoin.DateOnlyVisible].BoolValue = false;
@@ -430,8 +406,8 @@ namespace PepperDash.Essentials
 					else
 					{
 						TriList.BooleanInput[UIBoolJoin.DateAndTimeVisible].BoolValue = false;
-						TriList.BooleanInput[UIBoolJoin.DateOnlyVisible].BoolValue = Config.ShowDate;
-						TriList.BooleanInput[UIBoolJoin.TimeOnlyVisible].BoolValue = Config.ShowTime;
+						TriList.BooleanInput[UIBoolJoin.DateOnlyVisible].BoolValue = _config.ShowDate;
+						TriList.BooleanInput[UIBoolJoin.TimeOnlyVisible].BoolValue = _config.ShowTime;
 					}
 
 					ShowCurrentDisplayModeSigsInUse();
@@ -444,12 +420,12 @@ namespace PepperDash.Essentials
         /// </summary>
         void SetupActivityFooterWhenRoomOff()
         {
-            ActivityFooterSrl.Clear();
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl, 0, 
+            _activityFooterSrl.Clear();
+            _activityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, _activityFooterSrl, 0, 
                 b => { if (!b) ShareButtonPressed(); }));
-            ActivityFooterSrl.Count = 1;
+            _activityFooterSrl.Count = 1;
             TriList.UShortInput[UIUshortJoin.PresentationStagingCaretMode].UShortValue = 0;
-            ShareButtonSig.BoolValue = false;
+            _shareButtonSig.BoolValue = false;
         }
 
         /// <summary>
@@ -457,15 +433,15 @@ namespace PepperDash.Essentials
         /// </summary>
         void SetupActivityFooterWhenRoomOn()
         {
-            ActivityFooterSrl.Clear();
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, ActivityFooterSrl,
+            _activityFooterSrl.Clear();
+            _activityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, _activityFooterSrl,
                 0, null));
-            ActivityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, ActivityFooterSrl,
+            _activityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, _activityFooterSrl,
                 4, b => { if (!b) PowerButtonPressed(); }));
-            ActivityFooterSrl.Count = 2;
+            _activityFooterSrl.Count = 2;
             TriList.UShortInput[UIUshortJoin.PresentationStagingCaretMode].UShortValue = 1;
-            EndMeetingButtonSig = ActivityFooterSrl.BoolInputSig(2, 1);
-            ShareButtonSig.BoolValue = CurrentRoom.OnFeedback.BoolValue;
+            _endMeetingButtonSig = _activityFooterSrl.BoolInputSig(2, 1);
+            _shareButtonSig.BoolValue = CurrentRoom.OnFeedback.BoolValue;
         }
 
         /// <summary>
@@ -473,7 +449,7 @@ namespace PepperDash.Essentials
         /// </summary>
         void ShareButtonPressed()
         {
-            ShareButtonSig.BoolValue = true;
+            _shareButtonSig.BoolValue = true;
             TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = true;
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
@@ -488,7 +464,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void ShowCurrentDisplayModeSigsInUse()
 		{
-			foreach (var sig in CurrentDisplayModeSigsInUse)
+			foreach (var sig in _currentDisplayModeSigsInUse)
 				sig.BoolValue = true;
 		}
 
@@ -497,9 +473,9 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void HideAndClearCurrentDisplayModeSigsInUse()
 		{
-			foreach (var sig in CurrentDisplayModeSigsInUse)
+			foreach (var sig in _currentDisplayModeSigsInUse)
 				sig.BoolValue = false;
-			CurrentDisplayModeSigsInUse.Clear();
+			_currentDisplayModeSigsInUse.Clear();
 		}
 
 		/// <summary>
@@ -507,7 +483,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public override void BackButtonPressed()
 		{
-			switch (CurrentDisplayMode)
+			switch (_currentDisplayMode)
 			{
 				case UiDisplayMode.PresentationMode:
 					//CancelReturnToSourceTimer();
@@ -522,7 +498,7 @@ namespace PepperDash.Essentials
 		void BackToHome()
 		{
 			Hide();
-			Parent.Show();
+			_parent.Show();
 		}
 
 		/// <summary>
@@ -534,26 +510,28 @@ namespace PepperDash.Essentials
 				return;
 
 			var uiDev = CurrentRoom.CurrentSourceInfo.SourceDevice as IUiDisplayInfo;
-			PageManager pm = null;
-			// If we need a page manager, get an appropriate one
-			if (uiDev != null)
-			{
-                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
-				// Got an existing page manager, get it
-				if (PageManagers.ContainsKey(uiDev))
-					pm = PageManagers[uiDev];
-				// Otherwise make an apporiate one
-				else if (uiDev is ISetTopBoxControls)
-					//pm = new SetTopBoxMediumPageManager(uiDev as ISetTopBoxControls, TriList);
-					pm = new SetTopBoxThreePanelPageManager(uiDev as ISetTopBoxControls, TriList);
-				else if (uiDev is IDiscPlayerControls)
-					pm = new DiscPlayerMediumPageManager(uiDev as IDiscPlayerControls, TriList);
-				else
-					pm = new DefaultPageManager(uiDev, TriList);
-				PageManagers[uiDev] = pm;
-				CurrentSourcePageManager = pm;
-				pm.Show();
-			}
+		    // If we need a page manager, get an appropriate one
+		    if (uiDev == null)
+		    {
+		        return;
+		    }
+
+		    TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
+		    // Got an existing page manager, get it
+		    PageManager pm;
+		    if (_pageManagers.ContainsKey(uiDev))
+		        pm = _pageManagers[uiDev];
+		        // Otherwise make an apporiate one
+		    else if (uiDev is ISetTopBoxControls)
+		        //pm = new SetTopBoxMediumPageManager(uiDev as ISetTopBoxControls, TriList);
+		        pm = new SetTopBoxThreePanelPageManager(uiDev as ISetTopBoxControls, TriList);
+		    else if (uiDev is IDiscPlayerControls)
+		        pm = new DiscPlayerMediumPageManager(uiDev as IDiscPlayerControls, TriList);
+		    else
+		        pm = new DefaultPageManager(uiDev, TriList);
+		    _pageManagers[uiDev] = pm;
+		    _currentSourcePageManager = pm;
+		    pm.Show();
 		}
 
 		/// <summary>
@@ -564,7 +542,7 @@ namespace PepperDash.Essentials
 		void UiSelectSource(string key)
 		{
 			// Run the route and when it calls back, show the source
-			CurrentRoom.RunRouteAction(key, new Action(() => { }));
+			CurrentRoom.RunRouteAction(key, () => { });
 		}
 
 		/// <summary>
@@ -588,12 +566,12 @@ namespace PepperDash.Essentials
         {
             // Do we need to check where the UI is? No?
             var timer = CurrentRoom.ShutdownPromptTimer;
-            EndMeetingButtonSig.BoolValue = true;
-            ShareButtonSig.BoolValue = false;
+            _endMeetingButtonSig.BoolValue = true;
+            _shareButtonSig.BoolValue = false;
 
             if (CurrentRoom.ShutdownType == eShutdownType.Manual || CurrentRoom.ShutdownType == eShutdownType.Vacancy)
             {
-                PowerDownModal = new ModalDialog(TriList);
+                _powerDownModal = new ModalDialog(TriList);
                 var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);
 
                 // Attach timer things to modal
@@ -607,15 +585,15 @@ namespace PepperDash.Essentials
                 {
                     if (!onFb.BoolValue)
                     {
-                        EndMeetingButtonSig.BoolValue = false;
-                        PowerDownModal.HideDialog();
+                        _endMeetingButtonSig.BoolValue = false;
+                        _powerDownModal.HideDialog();
                         onFb.OutputChange -= offHandler;
                         //gauge.OutputChange -= gaugeHandler;
                     }
                 };
                 onFb.OutputChange += offHandler;
 
-                PowerDownModal.PresentModalDialog(2, "End Meeting", "Power", message, "Cancel", "End Meeting Now", true, true,
+                _powerDownModal.PresentModalDialog(2, "End Meeting", "Power", message, "Cancel", "End Meeting Now", true, true,
                     but =>
                     {
                         if (but != 2) // any button except for End cancels
@@ -633,7 +611,7 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_HasFinished(object sender, EventArgs e)
         {
-            EndMeetingButtonSig.BoolValue = false;
+            _endMeetingButtonSig.BoolValue = false;
             CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange -= ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
             CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange -= ShutdownPromptTimer_PercentFeedback_OutputChange;
         }
@@ -645,10 +623,10 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void ShutdownPromptTimer_WasCancelled(object sender, EventArgs e)
         {
-            if (PowerDownModal != null)
-                PowerDownModal.HideDialog();
-            EndMeetingButtonSig.BoolValue = false;
-            ShareButtonSig.BoolValue = CurrentRoom.OnFeedback.BoolValue;
+            if (_powerDownModal != null)
+                _powerDownModal.HideDialog();
+            _endMeetingButtonSig.BoolValue = false;
+            _shareButtonSig.BoolValue = CurrentRoom.OnFeedback.BoolValue;
 
             CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange += ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
             CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange -= ShutdownPromptTimer_PercentFeedback_OutputChange;
@@ -656,27 +634,38 @@ namespace PepperDash.Essentials
 
         void ShutdownPromptTimer_TimeRemainingFeedback_OutputChange(object sender, EventArgs e)
         {
+            var stringFeedback = sender as StringFeedback;
+            if (stringFeedback == null)
+            {
+                return;
+            }
 
-            var message = string.Format("Meeting will end in {0} seconds", (sender as StringFeedback).StringValue);
+            var message = string.Format("Meeting will end in {0} seconds", stringFeedback.StringValue);
             TriList.StringInput[ModalDialog.MessageTextJoin].StringValue = message;
         }
 
-        void ShutdownPromptTimer_PercentFeedback_OutputChange(object sender, EventArgs e)
-        {
-            var value = (ushort)((sender as IntFeedback).UShortValue * 65535 / 100);
-            TriList.UShortInput[ModalDialog.TimerGaugeJoin].UShortValue = value;
-        }
+	    void ShutdownPromptTimer_PercentFeedback_OutputChange(object sender, EventArgs e)
+	    {
+	        var intFeedback = sender as IntFeedback;
+	        if (intFeedback == null)
+	        {
+	            return;
+	        }
+	        var value = (ushort)(intFeedback.UShortValue * 65535 / 100);
+	        TriList.UShortInput[ModalDialog.TimerGaugeJoin].UShortValue = value;
+	    }
 
-        /// <summary>
+	    /// <summary>
         /// 
         /// </summary>
 		void CancelPowerOffTimer()
 		{
-			if (PowerOffTimer != null)
-			{
-				PowerOffTimer.Stop();
-				PowerOffTimer = null;
-			}
+	        if (_powerOffTimer == null)
+	        {
+	            return;
+	        }
+	        _powerOffTimer.Stop();
+	        _powerOffTimer = null;
 		}
 
 		/// <summary>
@@ -684,13 +673,13 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void VolumeButtonsTogglePress()
 		{
-			if (VolumeButtonsPopupFeedback.BoolValue)
-				VolumeButtonsPopupFeedback.ClearNow();
+			if (_volumeButtonsPopupFeedback.BoolValue)
+				_volumeButtonsPopupFeedback.ClearNow();
 			else
 			{
 				// Trigger the popup
-				VolumeButtonsPopupFeedback.BoolValue = true;
-				VolumeButtonsPopupFeedback.BoolValue = false;
+				_volumeButtonsPopupFeedback.BoolValue = true;
+				_volumeButtonsPopupFeedback.BoolValue = false;
 			}
 		}
 
@@ -702,8 +691,8 @@ namespace PepperDash.Essentials
 		{
 			// extend timeouts
 			if (ShowVolumeGauge)
-				VolumeGaugeFeedback.BoolValue = state;		
-			VolumeButtonsPopupFeedback.BoolValue = state;
+				_volumeGaugeFeedback.BoolValue = state;		
+			_volumeButtonsPopupFeedback.BoolValue = state;
 			if (CurrentRoom.CurrentVolumeControls != null)
 				CurrentRoom.CurrentVolumeControls.VolumeUp(state);
 		}
@@ -716,8 +705,8 @@ namespace PepperDash.Essentials
 		{
 			// extend timeouts
 			if (ShowVolumeGauge)
-				VolumeGaugeFeedback.BoolValue = state;
-			VolumeButtonsPopupFeedback.BoolValue = state; 
+				_volumeGaugeFeedback.BoolValue = state;
+			_volumeButtonsPopupFeedback.BoolValue = state; 
 			if (CurrentRoom.CurrentVolumeControls != null)
 				CurrentRoom.CurrentVolumeControls.VolumeDown(state);
 		}
@@ -728,31 +717,31 @@ namespace PepperDash.Essentials
         /// </summary>
         public void RefreshCurrentRoom(EssentialsHuddleSpaceRoom room)
         {
-            if (_CurrentRoom != null)
+            if (_currentRoom != null)
             {
                 // Disconnect current room
-                _CurrentRoom.CurrentVolumeDeviceChange -= this.CurrentRoom_CurrentAudioDeviceChange;
+                _currentRoom.CurrentVolumeDeviceChange -= CurrentRoom_CurrentAudioDeviceChange;
                 ClearAudioDeviceConnections();
-                _CurrentRoom.CurrentSourceChange -= this.CurrentRoom_SourceInfoChange;
-                DisconnectSource(_CurrentRoom.CurrentSourceInfo);
-                _CurrentRoom.ShutdownPromptTimer.HasStarted -= ShutdownPromptTimer_HasStarted;
-                _CurrentRoom.ShutdownPromptTimer.HasFinished -= ShutdownPromptTimer_HasFinished;
-                _CurrentRoom.ShutdownPromptTimer.WasCancelled -= ShutdownPromptTimer_WasCancelled;
+                _currentRoom.CurrentSourceChange -= CurrentRoom_SourceInfoChange;
+                DisconnectSource(_currentRoom.CurrentSourceInfo);
+                _currentRoom.ShutdownPromptTimer.HasStarted -= ShutdownPromptTimer_HasStarted;
+                _currentRoom.ShutdownPromptTimer.HasFinished -= ShutdownPromptTimer_HasFinished;
+                _currentRoom.ShutdownPromptTimer.WasCancelled -= ShutdownPromptTimer_WasCancelled;
 
-                _CurrentRoom.OnFeedback.OutputChange -= CurrentRoom_OnFeedback_OutputChange;
-                _CurrentRoom.IsWarmingUpFeedback.OutputChange -= CurrentRoom_IsWarmingFeedback_OutputChange;
-                _CurrentRoom.IsCoolingDownFeedback.OutputChange -= IsCoolingDownFeedback_OutputChange;
+                _currentRoom.OnFeedback.OutputChange -= CurrentRoom_OnFeedback_OutputChange;
+                _currentRoom.IsWarmingUpFeedback.OutputChange -= CurrentRoom_IsWarmingFeedback_OutputChange;
+                _currentRoom.IsCoolingDownFeedback.OutputChange -= IsCoolingDownFeedback_OutputChange;
             }
 
-            _CurrentRoom = room;
+            _currentRoom = room;
 
-            if (_CurrentRoom != null)
+            if (_currentRoom != null)
             {
                 // get the source list config and set up the source list
                 var config = ConfigReader.ConfigObject.SourceLists;
-                if (config.ContainsKey(_CurrentRoom.SourceListKey))
+                if (config.ContainsKey(_currentRoom.SourceListKey))
                 {
-                    var srcList = config[_CurrentRoom.SourceListKey];
+                    var srcList = config[_currentRoom.SourceListKey];
                     // Setup sources list			
                     uint i = 1; // counter for UI list
                     foreach (var kvp in srcList)
@@ -769,16 +758,16 @@ namespace PepperDash.Essentials
                             continue;
                         }
                         var routeKey = kvp.Key;
-                        var item = new SubpageReferenceListSourceItem(i++, SourcesSrl, srcConfig,
+                        var item = new SubpageReferenceListSourceItem(i++, _sourcesSrl, srcConfig,
                             b => { if (!b) UiSelectSource(routeKey); });
-                        SourcesSrl.AddItem(item); // add to the SRL
-                        item.RegisterForSourceChange(_CurrentRoom);
+                        _sourcesSrl.AddItem(item); // add to the SRL
+                        item.RegisterForSourceChange(_currentRoom);
                     }
-                    SourcesSrl.Count = (ushort)(i - 1);
+                    _sourcesSrl.Count = (ushort)(i - 1);
                 }
                 // Name and logo
-                TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
-                if (_CurrentRoom.LogoUrl == null)
+                TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _currentRoom.Name;
+                if (_currentRoom.LogoUrl == null)
                 {
                     TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = true;
                     TriList.BooleanInput[UIBoolJoin.LogoUrlVisible].BoolValue = false;
@@ -787,26 +776,31 @@ namespace PepperDash.Essentials
                 {
                     TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = false;
                     TriList.BooleanInput[UIBoolJoin.LogoUrlVisible].BoolValue = true;
-                    TriList.StringInput[UIStringJoin.LogoUrl].StringValue = _CurrentRoom.LogoUrl;
+                    TriList.StringInput[UIStringJoin.LogoUrl].StringValue = _currentRoom.LogoUrl;
                 }
 
                 // Shutdown timer
-                _CurrentRoom.ShutdownPromptTimer.HasStarted += ShutdownPromptTimer_HasStarted;
-                _CurrentRoom.ShutdownPromptTimer.HasFinished += ShutdownPromptTimer_HasFinished;
-                _CurrentRoom.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
+                _currentRoom.ShutdownPromptTimer.HasStarted += ShutdownPromptTimer_HasStarted;
+                _currentRoom.ShutdownPromptTimer.HasFinished += ShutdownPromptTimer_HasFinished;
+                _currentRoom.ShutdownPromptTimer.WasCancelled += ShutdownPromptTimer_WasCancelled;
 
                 // Link up all the change events from the room
-                _CurrentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
+                _currentRoom.OnFeedback.OutputChange += CurrentRoom_OnFeedback_OutputChange;
                 CurrentRoom_SyncOnFeedback();
-                _CurrentRoom.IsWarmingUpFeedback.OutputChange += CurrentRoom_IsWarmingFeedback_OutputChange;
-                _CurrentRoom.IsCoolingDownFeedback.OutputChange += IsCoolingDownFeedback_OutputChange;
+                _currentRoom.IsWarmingUpFeedback.OutputChange += CurrentRoom_IsWarmingFeedback_OutputChange;
+                _currentRoom.IsCoolingDownFeedback.OutputChange += IsCoolingDownFeedback_OutputChange;
 
-                _CurrentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
+                _currentRoom.CurrentVolumeDeviceChange += CurrentRoom_CurrentAudioDeviceChange;
                 RefreshAudioDeviceConnections();
-                _CurrentRoom.CurrentSourceChange += CurrentRoom_SourceInfoChange;
+                _currentRoom.CurrentSourceChange += CurrentRoom_SourceInfoChange;
                 RefreshSourceInfo();
 
-                (Parent as EssentialsPanelMainInterfaceDriver).HeaderDriver.SetupHeaderButtons(this, CurrentRoom);
+                var essentialsPanelMainInterfaceDriver = _parent as EssentialsPanelMainInterfaceDriver;
+
+                if (essentialsPanelMainInterfaceDriver != null)
+                {
+                    essentialsPanelMainInterfaceDriver.HeaderDriver.SetupHeaderButtons(this, CurrentRoom);
+                }
             }
             else
             {
@@ -817,7 +811,7 @@ namespace PepperDash.Essentials
 
 		void SetCurrentRoom(EssentialsHuddleSpaceRoom room)
 		{
-			if (_CurrentRoom == room) return;
+			if (_currentRoom == room) return;
             // Disconnect current (probably never called)
 
             room.ConfigChanged -= room_ConfigChanged;
@@ -833,7 +827,7 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         void room_ConfigChanged(object sender, EventArgs e)
         {
-            RefreshCurrentRoom(_CurrentRoom);
+            RefreshCurrentRoom(_currentRoom);
         }
 
         /// <summary>
@@ -846,7 +840,7 @@ namespace PepperDash.Essentials
 
         void CurrentRoom_SyncOnFeedback()
         {
-            var value = _CurrentRoom.OnFeedback.BoolValue;
+            var value = _currentRoom.OnFeedback.BoolValue;
             //Debug.Console(2, CurrentRoom, "UI: Is on event={0}", value);
             TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
 
@@ -908,15 +902,14 @@ namespace PepperDash.Essentials
 			// Hide whatever is showing
 			if (IsVisible)
 			{
-				if (CurrentSourcePageManager != null)
+				if (_currentSourcePageManager != null)
 				{
-					CurrentSourcePageManager.Hide();
-					CurrentSourcePageManager = null;
+					_currentSourcePageManager.Hide();
+					_currentSourcePageManager = null;
 				}
 			}
 
-			if (previousInfo == null) return;
-			var previousDev = previousInfo.SourceDevice;
+		    var previousDev = previousInfo.SourceDevice;
 
 			// device type interfaces
 			if (previousDev is ISetTopBoxControls)
@@ -947,7 +940,7 @@ namespace PepperDash.Essentials
 		{
 			var routeInfo = CurrentRoom.CurrentSourceInfo;
 			// This will show off popup too
-			if (this.IsVisible)
+			if (IsVisible)
 				ShowCurrentSource();
 
 			if (routeInfo == null)// || !CurrentRoom.OnFeedback.BoolValue)
@@ -955,22 +948,23 @@ namespace PepperDash.Essentials
 				// Check for power off and insert "Room is off"
 				TriList.StringInput[UIStringJoin.CurrentSourceName].StringValue = "Room is off";
 				TriList.StringInput[UIStringJoin.CurrentSourceIcon].StringValue = "Power";
-				this.Hide();
-				Parent.Show();
+				Hide();
+				_parent.Show();
 				return;
 			}
-			else if (CurrentRoom.CurrentSourceInfo != null)
-			{
-				TriList.StringInput[UIStringJoin.CurrentSourceName].StringValue = routeInfo.PreferredName;
-				TriList.StringInput[UIStringJoin.CurrentSourceIcon].StringValue = routeInfo.Icon; // defaults to "blank"
-			}
-			else
-			{
-				TriList.StringInput[UIStringJoin.CurrentSourceName].StringValue = "---";
-				TriList.StringInput[UIStringJoin.CurrentSourceIcon].StringValue = "Blank";
-			}
-			
-			// Connect controls
+
+		    if (CurrentRoom.CurrentSourceInfo != null)
+		    {
+		        TriList.StringInput[UIStringJoin.CurrentSourceName].StringValue = routeInfo.PreferredName;
+		        TriList.StringInput[UIStringJoin.CurrentSourceIcon].StringValue = routeInfo.Icon; // defaults to "blank"
+		    }
+		    else
+		    {
+		        TriList.StringInput[UIStringJoin.CurrentSourceName].StringValue = "---";
+		        TriList.StringInput[UIStringJoin.CurrentSourceIcon].StringValue = "Blank";
+		    }
+
+		    // Connect controls
 			if (routeInfo.SourceDevice != null)
 				ConnectControlDeviceMethods(routeInfo.SourceDevice);
 		}
