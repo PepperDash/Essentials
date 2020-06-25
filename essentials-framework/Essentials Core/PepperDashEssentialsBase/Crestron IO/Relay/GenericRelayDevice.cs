@@ -31,13 +31,14 @@ namespace PepperDash.Essentials.Core.CrestronIO
             RelayOutput = relay;
             RelayOutput.Register();
 
-            RelayOutput.StateChange += new RelayEventHandler(RelayOutput_StateChange);
+            RelayOutput.StateChange += RelayOutput_StateChange;
         }
 
         public GenericRelayDevice(string key, string name, Func<IOPortConfig, Relay> postActivationFunc,
             IOPortConfig config)
             : base(key, name)
         {
+            OutputIsOnFeedback = new BoolFeedback(() => RelayOutput.State);
 
             AddPostActivationAction(() =>
             {
@@ -46,7 +47,6 @@ namespace PepperDash.Essentials.Core.CrestronIO
                 RelayOutput.Register();
 
                 RelayOutput.StateChange += RelayOutput_StateChange;
-
             });
         }
 
