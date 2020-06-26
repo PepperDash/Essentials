@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
@@ -9,9 +11,21 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// 
     /// </summary>
-    public abstract class EssentialsRoomBase : ReconfigurableDevice
+    public abstract class EssentialsRoomBase : ReconfigurableDevice, IHasCurrentSourceInfoChange
     {
         public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
+        public event SourceInfoChangeHandler CurrentSourceChange;
+        public string CurrentSourceInfoKey { get; set; }
+
+        public IRoutingSinkWithSwitching DefaultDisplay { get; protected set; }
+        public IRoutingSink DefaultAudioDevice { get; protected set; }
+        public IBasicVolumeControls DefaultVolumeControls { get; protected set; }
+
+        protected CCriticalSection RoutingLock = new CCriticalSection();
+
+        public string DefaultSourceItem { get; set; }
+
+        public ushort DefaultVolume { get; set; }
 
         /// <summary>
         /// Sets the volume control device, and attaches/removes InUseTrackers with "audio"
@@ -31,8 +45,10 @@ namespace PepperDash.Essentials.Core
 
                 if (handler != null)
                 {
-                    CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(CurrentAudioDevice, value, ChangeType.WillChange));
-                    CurrentVolumeDeviceChange(this, new VolumeDeviceChangeEventArgs(CurrentAudioDevice, value, ChangeType.DidChange));
+                    CurrentVolumeDeviceChange(this,
+                        new VolumeDeviceChangeEventArgs(CurrentAudioDevice, value, ChangeType.WillChange));
+                    CurrentVolumeDeviceChange(this,
+                        new VolumeDeviceChangeEventArgs(CurrentAudioDevice, value, ChangeType.DidChange));
                 }
 
                 var oldDevice = value as IInUseTracking;
@@ -43,6 +59,52 @@ namespace PepperDash.Essentials.Core
                 CurrentAudioDevice = value;
             }
         }
+
+        protected string LastSourceKey;
+
+        /// <summary>
+        /// The SourceListItem last run - containing names and icons 
+        /// </summary>
+        public SourceListItem CurrentSourceInfo
+        {
+            get { return _currentSourceInfo; }
+            set
+            {
+                if (value == _currentSourceInfo)
+                {
+                    return;
+                }
+
+                var handler = CurrentSourceChange;
+                // remove from in-use tracker, if so equipped
+                if (_currentSourceInfo != null && _currentSourceInfo.SourceDevice is IInUseTracking)
+                {
+                    (_currentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
+                }
+
+                if (handler != null)
+                {
+                    handler(_currentSourceInfo, ChangeType.WillChange);
+                }
+
+                _currentSourceInfo = value;
+
+                // add to in-use tracking
+                if (_currentSourceInfo != null && _currentSourceInfo.SourceDevice is IInUseTracking)
+                {
+                    (_currentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
+                }
+                if (handler != null)
+                {
+                    handler(_currentSourceInfo, ChangeType.DidChange);
+                }
+            }
+        }
+
+        private SourceListItem _currentSourceInfo;
+
+        public bool ExcludeFromGlobalFunctions { get; set; }
+
         protected IBasicVolumeControls CurrentAudioDevice;
 
         public BoolFeedback OnFeedback { get; private set; }
@@ -61,6 +123,7 @@ namespace PepperDash.Essentials.Core
 
         protected Func<bool> IsWarmingFeedbackFunc;
         protected Func<bool> IsCoolingFeedbackFunc;
+
         /// <summary>
         /// The config name of the source list
         /// </summary>
@@ -100,42 +163,21 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         protected Func<bool> OnFeedbackFunc;
 
-		protected Dictionary<IBasicVolumeWithFeedback, uint> SavedVolumeLevels = new Dictionary<IBasicVolumeWithFeedback, uint>();
+        protected Dictionary<IBasicVolumeWithFeedback, uint> SavedVolumeLevels =
+            new Dictionary<IBasicVolumeWithFeedback, uint>();
 
-		/// <summary>
-		/// When volume control devices change, should we zero the one that we are leaving?
-		/// </summary>
-		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; private set; }
+        /// <summary>
+        /// When volume control devices change, should we zero the one that we are leaving?
+        /// </summary>
+        public bool ZeroVolumeWhenSwtichingVolumeDevices { get; private set; }
 
 
         protected EssentialsRoomBase(DeviceConfig config)
             : base(config)
         {
-            // Setup the ShutdownPromptTimer
-            ShutdownPromptTimer = new SecondsCountdownTimer(Key + "-offTimer");
-            ShutdownPromptTimer.IsRunningFeedback.OutputChange += (o, a) =>
-            {
-                if (!ShutdownPromptTimer.IsRunningFeedback.BoolValue)
-                    ShutdownType = eShutdownType.None;
-            };
-            ShutdownPromptTimer.HasFinished += (o, a) => Shutdown(); // Shutdown is triggered 
+            SetupShutdownPrompt();
 
-            ShutdownPromptSeconds = 60;
-            ShutdownVacancySeconds = 120; 
-            
-            ShutdownType = eShutdownType.None;
-
-            RoomVacancyShutdownTimer = new SecondsCountdownTimer(Key + "-vacancyOffTimer");
-            //RoomVacancyShutdownTimer.IsRunningFeedback.OutputChange += (o, a) =>
-            //{
-            //    if (!RoomVacancyShutdownTimer.IsRunningFeedback.BoolValue)
-            //        ShutdownType = ShutdownType.Vacancy;
-            //};
-            RoomVacancyShutdownTimer.HasFinished += RoomVacancyShutdownPromptTimer_HasFinished; // Shutdown is triggered
-
-            RoomVacancyShutdownPromptSeconds = 1500;    //  25 min to prompt warning
-            RoomVacancyShutdownSeconds = 240;           //  4 min after prompt will trigger shutdown prompt
-            VacancyMode = eVacancyMode.None;
+            SetupRoomVacancyShutdown();
 
             OnFeedback = new BoolFeedback(OnFeedbackFunc);
 
@@ -145,8 +187,40 @@ namespace PepperDash.Essentials.Core
             AddPostActivationAction(() =>
             {
                 if (RoomOccupancy != null)
+                {
                     OnRoomOccupancyIsSet();
+                }
             });
+        }
+
+        private void SetupRoomVacancyShutdown()
+        {
+            RoomVacancyShutdownTimer = new SecondsCountdownTimer(Key + "-vacancyOffTimer");
+
+            RoomVacancyShutdownTimer.HasFinished += RoomVacancyShutdownPromptTimer_HasFinished; // Shutdown is triggered
+
+            RoomVacancyShutdownPromptSeconds = 1500; //  25 min to prompt warning
+            RoomVacancyShutdownSeconds = 240; //  4 min after prompt will trigger shutdown prompt
+            VacancyMode = eVacancyMode.None;
+        }
+
+        private void SetupShutdownPrompt()
+        {
+            // Setup the ShutdownPromptTimer
+            ShutdownPromptTimer = new SecondsCountdownTimer(Key + "-offTimer");
+            ShutdownPromptTimer.IsRunningFeedback.OutputChange += (o, a) =>
+            {
+                if (!ShutdownPromptTimer.IsRunningFeedback.BoolValue)
+                {
+                    ShutdownType = eShutdownType.None;
+                }
+            };
+            ShutdownPromptTimer.HasFinished += (o, a) => Shutdown(); // Shutdown is triggered 
+
+            ShutdownPromptSeconds = 60;
+            ShutdownVacancySeconds = 120;
+
+            ShutdownType = eShutdownType.None;
         }
 
         protected void InitializeDisplay(DisplayBase display)
@@ -188,11 +262,11 @@ namespace PepperDash.Essentials.Core
                     StartRoomVacancyTimer(eVacancyMode.InShutdownWarning);
                     break;
                 case eVacancyMode.InShutdownWarning:
-                    {
-                        StartShutdown(eShutdownType.Vacancy);
-                        Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Shutting Down due to vacancy.");
-                        break;
-                    }
+                {
+                    StartShutdown(eShutdownType.Vacancy);
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Shutting Down due to vacancy.");
+                    break;
+                }
             }
         }
 
@@ -216,7 +290,8 @@ namespace PepperDash.Essentials.Core
             ShutdownType = type;
             ShutdownPromptTimer.Start();
 
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "ShutdownPromptTimer Started. Type: {0}.  Seconds: {1}", ShutdownType, ShutdownPromptTimer.SecondsToCount);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "ShutdownPromptTimer Started. Type: {0}.  Seconds: {1}",
+                ShutdownType, ShutdownPromptTimer.SecondsToCount);
         }
 
         public void StartRoomVacancyTimer(eVacancyMode mode)
@@ -236,7 +311,8 @@ namespace PepperDash.Essentials.Core
             VacancyMode = mode;
             RoomVacancyShutdownTimer.Start();
 
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Vacancy Timer Started. Mode: {0}.  Seconds: {1}", VacancyMode, RoomVacancyShutdownTimer.SecondsToCount);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Vacancy Timer Started. Mode: {0}.  Seconds: {1}",
+                VacancyMode, RoomVacancyShutdownTimer.SecondsToCount);
         }
 
         /// <summary>
@@ -269,23 +345,28 @@ namespace PepperDash.Essentials.Core
         {
             var provider = statusProvider as IKeyed;
 
-			if (provider == null)
-			{
-				Debug.Console(0, this, "ERROR: Occupancy sensor device is null");
-				return;
-			}
+            if (provider == null)
+            {
+                Debug.Console(0, this, "ERROR: Occupancy sensor device is null");
+                return;
+            }
 
             Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Room Occupancy set to device: '{0}'", provider.Key);
             Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Timeout Minutes from Config is: {0}", timeoutMinutes);
 
             // If status provider is fusion, set flag to remote
             if (statusProvider is Fusion.EssentialsHuddleSpaceFusionSystemControllerBase)
+            {
                 OccupancyStatusProviderIsRemote = true;
+            }
 
-            if(timeoutMinutes > 0)
-                RoomVacancyShutdownSeconds = timeoutMinutes * 60;
+            if (timeoutMinutes > 0)
+            {
+                RoomVacancyShutdownSeconds = timeoutMinutes*60;
+            }
 
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "RoomVacancyShutdownSeconds set to {0}", RoomVacancyShutdownSeconds);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "RoomVacancyShutdownSeconds set to {0}",
+                RoomVacancyShutdownSeconds);
 
             RoomOccupancy = statusProvider;
 
@@ -295,11 +376,13 @@ namespace PepperDash.Essentials.Core
             OnRoomOccupancyIsSet();
         }
 
-        void OnRoomOccupancyIsSet()
+        private void OnRoomOccupancyIsSet()
         {
             var handler = RoomOccupancyIsSet;
             if (handler != null)
+            {
                 handler(this, new EventArgs());
+            }
         }
 
         /// <summary>
@@ -313,7 +396,7 @@ namespace PepperDash.Essentials.Core
         /// <returns></returns>
         public abstract bool RunDefaultPresentRoute();
 
-        void RoomIsOccupiedFeedback_OutputChange(object sender, EventArgs e)
+        private void RoomIsOccupiedFeedback_OutputChange(object sender, EventArgs e)
         {
             if (RoomOccupancy.RoomIsOccupiedFeedback.BoolValue == false)
             {
@@ -334,8 +417,303 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="o"></param>
         public abstract void RoomVacatedForTimeoutPeriod(object o);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="routeKey"></param>
+        public virtual void RunRouteAction(string routeKey)
+        {
+            RunRouteAction(routeKey, String.Empty, () => { });
+        }
+
+        /// <summary>
+        /// Gets a source from config list SourceListKey and dynamically build and executes the
+        /// route or commands
+        /// </summary>
+        public virtual void RunRouteAction(string routeKey, Action successCallback)
+        {
+            RunRouteAction(routeKey, String.Empty, successCallback);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="routeKey"></param>
+        /// <param name="sourceListKey"></param>
+        public virtual void RunRouteAction(string routeKey, string sourceListKey)
+        {
+            RunRouteAction(routeKey, sourceListKey, () => { });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="routeKey"></param>
+        /// <param name="sourceListKey"></param>
+        /// <param name="successCallback"></param>
+        public virtual void RunRouteAction(string routeKey, string sourceListKey, Action successCallback)
+        {
+            var routeObject =
+                new {RouteKey = routeKey, SourceListKey = sourceListKey, SuccessCallback = successCallback};
+            CrestronInvoke.BeginInvoke(RunRouteAction, routeObject); // end of BeginInvoke
+        }
+
+        protected virtual void RunRouteAction(object routeObject)
+        {
+            try
+            {
+                RoutingLock.Enter();
+
+                var routeObj = new {RouteKey = "", SourceListKey = "", SuccessCallback = new Action(() => { })};
+
+                routeObj = Cast(routeObj, routeObject);
+
+                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Run route action '{0}'", routeObj.RouteKey);
+                var sourceList = GetSourceListForKey(routeObj.RouteKey, routeObj.SourceListKey);
+
+                if (sourceList == null)
+                {
+                    Debug.Console(0, this, "No source list found for key {0}", routeObj.SourceListKey);
+                    return;
+                }
+
+                var item = sourceList[routeObj.RouteKey];
+
+                // End usage timer on last source
+                StopUsageTrackingOnCurrentSource(sourceList);
+
+                // Let's run it
+                if (routeObj.RouteKey.ToLower() != "roomoff")
+                {
+                    LastSourceKey = routeObj.RouteKey;
+                }
+                else
+                {
+                    CurrentSourceInfoKey = null;
+                }
+
+                foreach (var route in item.RouteList)
+                {
+                    var tempVideo = new SourceRouteListItem
+                    {
+                        DestinationKey = "$defaultDisplay",
+                        SourceKey = route.SourceKey,
+                        Type = eRoutingSignalType.Video
+                    };
+
+                    var routeItem = route.DestinationKey.Equals("$defaultAll", StringComparison.OrdinalIgnoreCase)
+                        ? tempVideo
+                        : route;
+
+                    DoRoute(routeItem);
+                }
+
+                // Start usage timer on routed source
+                if (item.SourceDevice is IUsageTracking)
+                {
+                    (item.SourceDevice as IUsageTracking).UsageTracker.StartDeviceUsage();
+                }
+
+                // Set volume control, using default if non provided
+                SetVolumeControl(item);
+
+                // store the name and UI info for routes
+                if (item.SourceKey == "$off")
+                {
+                    CurrentSourceInfoKey = routeObj.RouteKey;
+                    CurrentSourceInfo = null;
+                }
+                else if (item.SourceKey != null)
+                {
+                    CurrentSourceInfoKey = routeObj.RouteKey;
+                    CurrentSourceInfo = item;
+                }
+
+                OnFeedback.FireUpdate();
+
+                // report back when done
+                if (routeObj.SuccessCallback != null)
+                {
+                    routeObj.SuccessCallback();
+                }
+            }
+            finally
+            {
+                RoutingLock.Leave();
+            }
+        }
+
+        private static T Cast<T>(T typeHolder, object m)
+        {
+            return (T) m;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="route"></param>
+        /// <returns></returns>
+        protected void DoRoute(SourceRouteListItem route)
+        {
+            var dest = GetDestination(route);
+
+            if (route.SourceKey.Equals("$off", StringComparison.OrdinalIgnoreCase))
+            {
+                dest.ReleaseRoute();
+                if (dest is IPower)
+                {
+                    (dest as IPower).PowerOff();
+                }
+            }
+            else
+            {
+                var source = DeviceManager.GetDeviceForKey(route.SourceKey) as IRoutingOutputs;
+                if (source == null)
+                {
+                    Debug.Console(1, this, "Cannot route unknown source '{0}' to {1}", route.SourceKey,
+                        route.DestinationKey);
+                    return;
+                }
+                dest.ReleaseAndMakeRoute(source, route.Type);
+            }
+        }
+
+        private IRoutingSink GetDestination(SourceRouteListItem route)
+        {
+            IRoutingSink dest;
+            if (route.DestinationKey.Equals("$defaultaudio", StringComparison.OrdinalIgnoreCase))
+            {
+                dest = DefaultAudioDevice;
+            }
+            else if (route.DestinationKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
+            {
+                dest = DefaultDisplay;
+            }
+            else
+            {
+                dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSink;
+            }
+
+            if (dest != null)
+            {
+                return dest;
+            }
+
+            Debug.Console(1, this, "Cannot route, unknown destination '{0}'", route.DestinationKey);
+            return dest;
+        }
+
+        private void SetVolumeControl(SourceListItem item)
+        {
+            IBasicVolumeControls volDev = null;
+            // Handle special cases for volume control
+            if (string.IsNullOrEmpty(item.VolumeControlKey)
+                || item.VolumeControlKey.Equals("$defaultAudio", StringComparison.OrdinalIgnoreCase))
+            {
+                volDev = DefaultVolumeControls;
+            }
+            else if (item.VolumeControlKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
+            {
+                volDev = DefaultDisplay as IBasicVolumeControls;
+            }
+            else
+            {
+                var dev = DeviceManager.GetDeviceForKey(item.VolumeControlKey);
+                if (dev is IBasicVolumeControls)
+                {
+                    volDev = dev as IBasicVolumeControls;
+                }
+                else if (dev is IHasVolumeDevice)
+                {
+                    volDev = (dev as IHasVolumeDevice).VolumeDevice;
+                }
+            }
+
+            if (volDev == CurrentVolumeControls)
+            {
+                return;
+            }
+
+            IBasicVolumeWithFeedback vd;
+            // zero the volume on the device we are leaving.  
+            // Set the volume to default on device we are entering
+            if (ZeroVolumeWhenSwtichingVolumeDevices && CurrentVolumeControls is IBasicVolumeWithFeedback)
+            {
+                vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
+                SavedVolumeLevels[vd] = (uint) vd.VolumeLevelFeedback.IntValue;
+                vd.SetVolume(0);
+            }
+            CurrentVolumeControls = volDev;
+            if (!ZeroVolumeWhenSwtichingVolumeDevices || !(CurrentVolumeControls is IBasicVolumeWithFeedback))
+            {
+                return;
+            }
+
+            vd = CurrentVolumeControls as IBasicVolumeWithFeedback;
+            var vol = (SavedVolumeLevels.ContainsKey(vd) ? (ushort) SavedVolumeLevels[vd] : DefaultVolume);
+            vd.SetVolume(vol);
+        }
+
+        private void StopUsageTrackingOnCurrentSource(Dictionary<string, SourceListItem> sourceList)
+        {
+            if (string.IsNullOrEmpty(LastSourceKey))
+            {
+                return;
+            }
+
+            var lastSource = sourceList[LastSourceKey].SourceDevice;
+
+            try
+            {
+                if (lastSource is IUsageTracking)
+                {
+                    (lastSource as IUsageTracking).UsageTracker.EndDeviceUsage();
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "*#* EXCEPTION in end usage tracking (257):\r{0}", e);
+            }
+        }
+
+        private Dictionary<string, SourceListItem> GetSourceListForKey(string routeKey, string sourceListKey)
+        {
+            var slKey = String.IsNullOrEmpty(sourceListKey) ? SourceListKey : sourceListKey;
+
+            var sourceList = ConfigReader.ConfigObject.GetSourceListForKey(slKey);
+
+            if (sourceList == null)
+            {
+                Debug.Console(1, this, "WARNING: Config source list '{0}' not found", slKey);
+                return null;
+            }
+
+            // Try to get the list item by it's string key
+            if (sourceList.ContainsKey(routeKey))
+            {
+                return sourceList;
+            }
+
+            Debug.Console(1, this, "WARNING: No source list '{0}' found in config source lists '{1}'",
+                routeKey, SourceListKey);
+            return null;
+        }
+
+        /// <summary>
+        /// Runs "roomOff" action on all rooms not set to ExcludeFromGlobalFunctions
+        /// </summary>
+        public static void AllRoomsOff()
+        {
+            var allRooms = DeviceManager.AllDevices.OfType<EssentialsRoomBase>().Where(d =>
+                !d.ExcludeFromGlobalFunctions);
+            foreach (var room in allRooms)
+            {
+                room.RunRouteAction("roomOff");
+            }
+        }
     }
-        
+
     /// <summary>
     /// To describe the various ways a room may be shutting down
     /// </summary>
