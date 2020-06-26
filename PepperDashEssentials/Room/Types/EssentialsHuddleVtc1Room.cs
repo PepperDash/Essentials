@@ -344,7 +344,7 @@ namespace PepperDash.Essentials
         /// 
         /// </summary>
         /// <param name="routeKey"></param>
-		public void RunRouteAction(string routeKey)
+		public override void RunRouteAction(string routeKey)
 		{
             RunRouteAction(routeKey, () => { });
 		}

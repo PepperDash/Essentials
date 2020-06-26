@@ -139,7 +139,7 @@ namespace PepperDash.Essentials.Core
 		}
 	}
 
-	public class RoutingOutputPort : RoutingPort
+	public class RoutingOutputPort : RoutingPort, IInUseTracking
 	{
 		/// <summary>
 		/// The IRoutingOutputs object this port lives on
