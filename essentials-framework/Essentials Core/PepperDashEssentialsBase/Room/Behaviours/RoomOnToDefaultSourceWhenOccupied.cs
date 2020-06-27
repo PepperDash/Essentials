@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Crestron.SimplSharp;
 using Crestron.SimplSharp.Scheduler;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Rooms
 {
     /// <summary>
     /// A device that when linked to a room can power the room on when enabled during scheduled hours.
