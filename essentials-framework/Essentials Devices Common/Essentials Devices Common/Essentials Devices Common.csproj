@@ -99,9 +99,6 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AudioCodec\AudioCodecBase.cs" />
-    <Compile Include="AudioCodec\Interfaces\IAudioCodecInfo.cs" />
-    <Compile Include="AudioCodec\Interfaces\IHasAudioCodec.cs" />
     <Compile Include="AudioCodec\MockAC\MockAC.cs" />
     <Compile Include="AudioCodec\MockAC\MockAcPropertiesConfig.cs" />
     <Compile Include="Cameras\CameraBase.cs" />
@@ -111,7 +108,6 @@
     <Compile Include="Codec\eCodecCallType.cs" />
     <Compile Include="Codec\eCodecCallStatus.cs" />
     <Compile Include="Codec\eMeetingPrivacy.cs" />
-    <Compile Include="Codec\iCodecAudio.cs" />
     <Compile Include="ImageProcessors\TVOneCorio.cs" />
     <Compile Include="ImageProcessors\TVOneCorioPropertiesConfig.cs" />
     <Compile Include="Power Controllers\Digitallogger.cs" />
@@ -123,13 +119,6 @@
     <Compile Include="VideoCodec\CiscoCodec\RoomPresets.cs" />
     <Compile Include="Cameras\CameraControl.cs" />
     <Compile Include="Display\PanasonicThDisplay.cs" />
-    <Compile Include="VideoCodec\Interfaces\iVideoCodecInfo.cs" />
-    <Compile Include="Codec\iHasCallFavorites.cs" />
-    <Compile Include="Codec\iHasCallHistory.cs" />
-    <Compile Include="Codec\iHasContentSharing.cs" />
-    <Compile Include="Codec\iHasDialer.cs" />
-    <Compile Include="Codec\iHasDirectory.cs" />
-    <Compile Include="Codec\iHasScheduleAwareness.cs" />
     <Compile Include="Display\ComTcpDisplayBase.cs" />
     <Compile Include="Display\AvocorVTFDisplay.cs" />
     <Compile Include="Display\InputInterfaces.cs" />
@@ -160,7 +149,6 @@
     <Compile Include="VideoCodec\CiscoCodec\CiscoSparkCodec.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CiscoSparkCodecPropertiesConfig.cs" />
     <Compile Include="VideoCodec\CiscoCodec\xStatusSparkPlus.cs" />
-    <Compile Include="VideoCodec\Interfaces\IHasVideoCodec.cs" />
     <Compile Include="VideoCodec\MockVC\MockCodecDirectory.cs" />
     <Compile Include="VideoCodec\MockVC\MockVCCamera.cs" />
     <Compile Include="VideoCodec\MockVC\MockVcPropertiesConfig.cs" />
@@ -169,11 +157,8 @@
     <Compile Include="VideoCodec\CiscoCodec\xEvent.cs" />
     <Compile Include="VideoCodec\CiscoCodec\HttpApiServer.cs" />
     <Compile Include="Codec\CodecActiveCallItem.cs" />
-    <Compile Include="VideoCodec\Interfaces\IHasCodecLayouts.cs" />
-    <Compile Include="VideoCodec\Interfaces\IHasCodecSelfview.cs" />
     <Compile Include="VideoCodec\MockVC\MockVC.cs" />
     <Compile Include="VideoCodec\CiscoCodec\xStatus.cs" />
-    <Compile Include="VideoCodec\VideoCodecBase.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ResponseObjects.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoom.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoomCamera.cs" />

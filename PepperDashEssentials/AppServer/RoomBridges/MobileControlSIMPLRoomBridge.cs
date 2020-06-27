@@ -522,18 +522,18 @@ namespace PepperDash.Essentials.Room.MobileControl
 			// Build "audioCodec" config if we need
 			if (!string.IsNullOrEmpty(rmProps.AudioCodecKey))
 			{
-				var acFavs = new List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem>();
+				var acFavs = new List<Core.Devices.Codec.CodecActiveCallItem>();
 				for (uint i = 0; i < 4; i++)
 				{
 					if (!EISC.GetBool(JoinMap.SpeedDialVisibleStartJoin.JoinNumber + i))
 					{
 						break;
 					}
-					acFavs.Add(new PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem()
+					acFavs.Add(new Core.Devices.Codec.CodecActiveCallItem()
 					{
 						Name = EISC.GetString(JoinMap.SpeedDialNameStartJoin.JoinNumber + i),
 						Number = EISC.GetString(JoinMap.SpeedDialNumberStartJoin.JoinNumber + i),
-						Type = PepperDash.Essentials.Devices.Common.Codec.eCodecCallType.Audio
+						Type = Core.Devices.Codec.eCodecCallType.Audio
 					});
 				}
 
@@ -558,7 +558,7 @@ namespace PepperDash.Essentials.Room.MobileControl
 			if (!string.IsNullOrEmpty(rmProps.VideoCodecKey))
 			{
 				// No favorites, for now?
-				var favs = new List<PepperDash.Essentials.Devices.Common.Codec.CodecActiveCallItem>();
+				var favs = new List<Core.Devices.Codec.CodecActiveCallItem>();
 
 				// cameras
 				var camsProps = new List<object>();

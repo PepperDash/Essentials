@@ -7,10 +7,8 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Room.Config;
-using PepperDash.Essentials.Devices.Common.Codec;
-using PepperDash.Essentials.Devices.Common.VideoCodec;
-using PepperDash.Essentials.Devices.Common.AudioCodec;
+using PepperDash.Essentials.Core.Rooms;
+using PepperDash.Essentials.Core.Rooms.Config;
 
 namespace PepperDash.Essentials
 {
@@ -50,56 +48,16 @@ namespace PepperDash.Essentials
        
         public EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; private set; }
 
-		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
-		public IBasicVolumeControls DefaultAudioDevice { get; private set; }
-		public IBasicVolumeControls DefaultVolumeControls { get; private set; }
-
         public VideoCodecBase VideoCodec { get; private set; }
 
         public AudioCodecBase AudioCodec { get; private set; }
 
-		public bool ExcludeFromGlobalFunctions { get; set; }
-        
-        public string DefaultSourceItem { get; set; }
-
-        public ushort DefaultVolume { get; set; }
-
 		/// <summary>
 		/// If room is off, enables power on to last source. Default true
 		/// </summary>
-		public bool EnablePowerOnToLastSource { get; set; }
+
 		private string _lastSourceKey;
 
-		/// <summary>
-		/// The SourceListItem last run - containing names and icons 
-		/// </summary>
-		public SourceListItem CurrentSourceInfo
-		{
-			get { return _currentSourceInfo; }
-			set
-			{
-				if (value == _currentSourceInfo) return;
-
-				var handler = CurrentSourceChange;
-				// remove from in-use tracker, if so equipped
-				if(_currentSourceInfo != null && _currentSourceInfo.SourceDevice is IInUseTracking)
-					(_currentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
-
-				if (handler != null)
-					handler(_currentSourceInfo, ChangeType.WillChange);
-
-				_currentSourceInfo = value;
-
-				// add to in-use tracking
-				if (_currentSourceInfo != null && _currentSourceInfo.SourceDevice is IInUseTracking)
-					(_currentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
-				if (handler != null)
-					handler(_currentSourceInfo, ChangeType.DidChange);
-			}
-		}
-		private SourceListItem _currentSourceInfo;
-
-        public string CurrentSourceInfoKey { get; set; }
 
         /// <summary>
         /// "codecOsd"

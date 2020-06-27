@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Core.Devices.Codec;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 

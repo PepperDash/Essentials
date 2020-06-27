@@ -10,11 +10,11 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices.VideoCodec;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
-using PepperDash.Essentials.Devices.Common.Codec;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Core.Devices.Codec;
+using PepperDash.Essentials.Devices.Core.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
@@ -283,7 +283,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
 
 
-            var props = JsonConvert.DeserializeObject<Codec.CiscoSparkCodecPropertiesConfig>(config.Properties.ToString());
+            var props = JsonConvert.DeserializeObject<Essentials.Core.Devices.Codec.CiscoSparkCodecPropertiesConfig>(config.Properties.ToString());
 
             RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
             PeopleCountFeedback = new IntFeedback(PeopleCountFeedbackFunc);
@@ -396,6 +396,35 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 		}
 
         /// <summary>
+        /// Converts a list of call history entries returned by a Cisco codec to the generic list type
+        /// </summary>
+        /// <param name="entries"></param>
+        /// <returns></returns>
+        public List<CodecCallHistory.CallHistoryEntry> ConvertCiscoCallHistoryToGeneric(List<CiscoCallHistory.Entry> entries)
+        {
+            var genericEntries = new List<CodecCallHistory.CallHistoryEntry>();
+
+            foreach (CiscoCallHistory.Entry entry in entries)
+            {
+
+                genericEntries.Add(new CodecCallHistory.CallHistoryEntry()
+                {
+                    Name = entry.DisplayName.Value,
+                    Number = entry.CallbackNumber.Value,
+                    StartTime = entry.LastOccurrenceStartTime.Value,
+                    OccurrenceHistoryId = entry.LastOccurrenceHistoryId.Value,
+                    OccurrenceType = ConvertToOccurenceTypeEnum(entry.OccurrenceType.Value)
+                });
+            }
+
+            // Check if list is empty and if so, add an item to display No Recent Calls
+            if (genericEntries.Count == 0)
+                genericEntries.Add(CallHistory.ListEmptyEntry);
+
+             return genericEntries;
+        }
+
+        /// <summary>
         /// Starts the HTTP feedback server and syncronizes state of codec
         /// </summary>
         /// <returns></returns>
@@ -434,6 +463,31 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Event/CameraPresetListUpdated" + Delimiter;
 
             return base.CustomActivate();
+        }
+
+        /// <summary>
+        /// Takes the Cisco occurence type and converts it to the matching enum
+        /// </summary>
+        /// <param name="s"></param>
+        public eCodecOccurrenceType ConvertToOccurenceTypeEnum(string s)
+        {
+            switch (s)
+            {
+                case "Placed":
+                    {
+                        return eCodecOccurrenceType.Placed;
+                    }
+                case "Received":
+                    {
+                        return eCodecOccurrenceType.Received;
+                    }
+                case "NoAnswer":
+                    {
+                        return eCodecOccurrenceType.NoAnswer;
+                    }
+                default:
+                    return eCodecOccurrenceType.Unknown;
+            }
         }
 
         /// <summary>
@@ -1850,6 +1904,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             else
                 InitialSyncComplete = false;
         }
+
+        
     }
 
     public class CiscoSparkCodecFactory : EssentialsDeviceFactory<CiscoSparkCodec>

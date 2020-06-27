@@ -1,7 +1,6 @@
 ﻿using System;
-using PepperDash.Essentials.Devices.Common.Codec;
 
-namespace PepperDash.Essentials.Devices.Core.Codec
+namespace PepperDash.Essentials.Core.Devices.Codec
 {
     /// <summary>
     /// Requirements for a device that has dialing capabilities

@@ -7,7 +7,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Devices.Common.Codec
+namespace PepperDash.Essentials.Core.Devices.Codec
 {
     public class CiscoSparkCodecPropertiesConfig
     {

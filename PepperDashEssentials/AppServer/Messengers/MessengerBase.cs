@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 
-using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Core.Devices.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.AppServer.Messengers
