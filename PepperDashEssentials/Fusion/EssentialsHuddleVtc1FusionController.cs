@@ -61,7 +61,7 @@ namespace PepperDash.Essentials.Fusion
 
                 // In Call Status
                 CodecIsInCall = FusionRoom.CreateOffsetBoolSig(69, "Conf - VC 1 In Call", eSigIoMask.InputSigOnly);
-                codec.CallStatusChange += new EventHandler<PepperDash.Essentials.Devices.Common.Codec.CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
+                codec.CallStatusChange += new EventHandler<Core.Devices.Codec.CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
                 
                 // Online status
                 if (codec is ICommunicationMonitor)
@@ -139,7 +139,7 @@ namespace PepperDash.Essentials.Fusion
             }
         }
 
-        void codec_CallStatusChange(object sender, PepperDash.Essentials.Devices.Common.Codec.CodecCallStatusItemChangeEventArgs e)
+        void codec_CallStatusChange(object sender, Core.Devices.Codec.CodecCallStatusItemChangeEventArgs e)
         {
             var codec = (Room as EssentialsHuddleVtc1Room).VideoCodec;
 
@@ -273,17 +273,14 @@ namespace PepperDash.Essentials.Fusion
                 // Display to fusion room sigs
                 FusionRoom.DisplayPowerOn.OutputSig.UserObject = dispPowerOnAction;
                 FusionRoom.DisplayPowerOff.OutputSig.UserObject = dispPowerOffAction;
-
-                var defaultDisplayTwoWay = defaultDisplay as IHasPowerControlWithFeedback;
-                if (defaultDisplayTwoWay != null)
-                {
-                    defaultDisplayTwoWay.PowerIsOnFeedback.LinkInputSig(FusionRoom.DisplayPowerOn.InputSig);
-                }
-
+                defaultDisplay.PowerIsOnFeedback.LinkInputSig(FusionRoom.DisplayPowerOn.InputSig);
                 if (defaultDisplay is IDisplayUsage)
                     (defaultDisplay as IDisplayUsage).LampHours.LinkInputSig(FusionRoom.DisplayUsage.InputSig);
 
+
+
                 MapDisplayToRoomJoins(1, 158, defaultDisplay);
+
 
                 var deviceConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(defaultDisplay.Key));
 
@@ -305,18 +302,8 @@ namespace PepperDash.Essentials.Fusion
                 var dispAsset = FusionRoom.CreateStaticAsset(tempAsset.SlotNumber, tempAsset.Name, "Display", tempAsset.InstanceId);
                 dispAsset.PowerOn.OutputSig.UserObject = dispPowerOnAction;
                 dispAsset.PowerOff.OutputSig.UserObject = dispPowerOffAction;
-
-
-                var defaultTwoWayDisplay = defaultDisplay as IHasPowerControlWithFeedback;
-                if (defaultTwoWayDisplay != null)
-                {
-                    defaultTwoWayDisplay.PowerIsOnFeedback.LinkInputSig(FusionRoom.DisplayPowerOn.InputSig);
-                    if (defaultDisplay is IDisplayUsage)
-                        (defaultDisplay as IDisplayUsage).LampHours.LinkInputSig(FusionRoom.DisplayUsage.InputSig);
-
-                    defaultTwoWayDisplay.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
-                }
-
+                defaultDisplay.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
+                // NO!! display.PowerIsOn.LinkComplementInputSig(dispAsset.PowerOff.InputSig);
                 // Use extension methods
                 dispAsset.TrySetMakeModel(defaultDisplay);
                 dispAsset.TryLinkAssetErrorToCommunication(defaultDisplay);
@@ -338,17 +325,12 @@ namespace PepperDash.Essentials.Fusion
                 // Power on
                 var defaultDisplayPowerOn = FusionRoom.CreateOffsetBoolSig((uint)joinOffset, displayName + "Power On", eSigIoMask.InputOutputSig);
                 defaultDisplayPowerOn.OutputSig.UserObject = new Action<bool>(b => { if (!b) display.PowerOn(); });
+                display.PowerIsOnFeedback.LinkInputSig(defaultDisplayPowerOn.InputSig);
 
                 // Power Off
                 var defaultDisplayPowerOff = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 1, displayName + "Power Off", eSigIoMask.InputOutputSig);
                 defaultDisplayPowerOn.OutputSig.UserObject = new Action<bool>(b => { if (!b) display.PowerOff(); }); ;
-
-                var displayTwoWay = display as IHasPowerControlWithFeedback;
-                if (displayTwoWay != null)
-                {
-                    displayTwoWay.PowerIsOnFeedback.LinkInputSig(defaultDisplayPowerOn.InputSig);
-                    displayTwoWay.PowerIsOnFeedback.LinkInputSig(defaultDisplayPowerOn.InputSig);
-                }
+                display.PowerIsOnFeedback.LinkInputSig(defaultDisplayPowerOn.InputSig);
 
                 // Current Source
                 var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 8, displayName + "Source None", eSigIoMask.InputOutputSig);

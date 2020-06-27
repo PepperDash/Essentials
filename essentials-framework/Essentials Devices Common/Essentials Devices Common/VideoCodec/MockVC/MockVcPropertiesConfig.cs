@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Core.Devices.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {

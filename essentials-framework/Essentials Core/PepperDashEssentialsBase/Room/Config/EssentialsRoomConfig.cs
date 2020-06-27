@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Privacy;
 
 namespace PepperDash.Essentials.Core.Rooms.Config
 {
@@ -16,30 +17,32 @@ namespace PepperDash.Essentials.Core.Rooms.Config
 		public static Device GetRoomObject(DeviceConfig roomConfig)
 		{
 			var typeName = roomConfig.Type.ToLower();
+
+		    EssentialsRoomBase rm;
 			if (typeName == "huddle")
 			{
                 var huddle = new EssentialsHuddleSpaceRoom(roomConfig);
 
                 return huddle;
 			}
-            else if (typeName == "huddlevtc1")
-            {
-                var rm = new EssentialsHuddleVtc1Room(roomConfig);
+		    if (typeName == "huddlevtc1")
+		    {
+		        rm = new EssentialsHuddleVtc1Room(roomConfig);
                 
-                return rm;
-            }
-			else if (typeName == "ddvc01Bridge")
-			{
-				return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
-			}
-            else if (typeName == "dualdisplay")
-            {
-                var rm = new EssentialsDualDisplayRoom(roomConfig);
+		        return rm;
+		    }
+		    if (typeName == "ddvc01Bridge")
+		    {
+		        return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
+		    }
+		    if (typeName != "dualdisplay")
+		    {
+		        return null;
+		    }
 
-                return rm;
-            }
+		    rm = new EssentialsDualDisplayRoom(roomConfig);
 
-            return null;
+		    return rm;
 		}
 
         /// <summary>
@@ -50,12 +53,14 @@ namespace PepperDash.Essentials.Core.Rooms.Config
         {
             // This emergency 
             var emergency = props.Emergency;
-            if (emergency != null)
+
+            if (emergency == null)
             {
-                //switch on emergency type here.  Right now only contact and shutdown
-                var e = new EssentialsRoomEmergencyContactClosure(room.Key + "-emergency", props.Emergency, room);
-                DeviceManager.AddDevice(e);
+                return null;
             }
+            //switch on emergency type here.  Right now only contact and shutdown
+            var e = new EssentialsRoomEmergencyContactClosure(room.Key + "-emergency", props.Emergency, room);
+            DeviceManager.AddDevice(e);
             return null;
         }
 
@@ -65,7 +70,7 @@ namespace PepperDash.Essentials.Core.Rooms.Config
 		/// <param name="props"></param>
 		/// <param name="room"></param>
 		/// <returns></returns>
-		public static Core.Privacy.MicrophonePrivacyController GetMicrophonePrivacy(
+		public static MicrophonePrivacyController GetMicrophonePrivacy(
 			EssentialsRoomPropertiesConfig props, IPrivacy room)
 		{
 			var microphonePrivacy = props.MicrophonePrivacy;
@@ -76,7 +81,7 @@ namespace PepperDash.Essentials.Core.Rooms.Config
 			}
 			// Get the MicrophonePrivacy device from the device manager
 			var mP = (DeviceManager.GetDeviceForKey(props.MicrophonePrivacy.DeviceKey) as
-				Core.Privacy.MicrophonePrivacyController);
+				MicrophonePrivacyController);
 			// Set this room as the IPrivacy device
 			if (mP == null)
 			{
@@ -92,33 +97,38 @@ namespace PepperDash.Essentials.Core.Rooms.Config
 				Debug.Console(0, "WARNING: No behaviour defined for MicrophonePrivacyController");
 				return null;
 			}
-			if (behaviour == "trackroomstate")
+			switch (behaviour)
 			{
-				// Tie LED enable to room power state
-                var essRoom = room as EssentialsRoomBase;
-                essRoom.OnFeedback.OutputChange += (o, a) =>
-				{
-                    if (essRoom.OnFeedback.BoolValue)
-						mP.EnableLeds = true;
-					else
-						mP.EnableLeds = false;
-				};
+			    case "trackroomstate":
+			    {
+			        // Tie LED enable to room power state
+			        var essRoom = room as EssentialsRoomBase;
+			        if (essRoom != null)
+			        {
+			            essRoom.OnFeedback.OutputChange += (o, a) =>
+			            {
+			                mP.EnableLeds = essRoom.OnFeedback.BoolValue;
+			            };
 
-                mP.EnableLeds = essRoom.OnFeedback.BoolValue;
-			}
-			else if (behaviour == "trackcallstate")
-			{
-				// Tie LED enable to room power state
-                var inCallRoom = room as IHasInCallFeedback;
-                inCallRoom.InCallFeedback.OutputChange += (o, a) =>
-				{
-                    if (inCallRoom.InCallFeedback.BoolValue)
-						mP.EnableLeds = true;
-					else
-						mP.EnableLeds = false;
-				};
+			            mP.EnableLeds = essRoom.OnFeedback.BoolValue;
+			        }
+			    }
+			        break;
+			    case "trackcallstate":
+			    {
+			        // Tie LED enable to room power state
+			        var inCallRoom = room as IHasInCallFeedback;
+			        if (inCallRoom != null)
+			        {
+			            inCallRoom.InCallFeedback.OutputChange += (o, a) =>
+			            {
+			                mP.EnableLeds = inCallRoom.InCallFeedback.BoolValue;
+			            };
 
-                mP.EnableLeds = inCallRoom.InCallFeedback.BoolValue;
+			            mP.EnableLeds = inCallRoom.InCallFeedback.BoolValue;
+			        }
+			    }
+			        break;
 			}
 
 			return mP;
@@ -176,25 +186,6 @@ namespace PepperDash.Essentials.Core.Rooms.Config
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 	}
-
-    public class EssentialsAvRoomPropertiesConfig : EssentialsRoomPropertiesConfig
-    {
-        [JsonProperty("defaultAudioKey")]
-        public string DefaultAudioKey { get; set; }
-        [JsonProperty("sourceListKey")]
-        public string SourceListKey { get; set; }
-        [JsonProperty("defaultSourceItem")]
-        public string DefaultSourceItem { get; set; }
-
-    }
-
-    public class EssentialsConferenceRoomPropertiesConfig : EssentialsAvRoomPropertiesConfig
-    {
-        [JsonProperty("videoCodecKey")]
-        public string VideoCodecKey { get; set; }
-        [JsonProperty("audioCodecKey")]
-        public string AudioCodecKey { get; set; }
-    }
 
 	public class EssentialsEnvironmentPropertiesConfig
 	{

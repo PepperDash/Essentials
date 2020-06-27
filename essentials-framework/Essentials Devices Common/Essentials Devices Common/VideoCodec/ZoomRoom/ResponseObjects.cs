@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Core.Devices.Codec;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -260,9 +260,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             /// <returns></returns>
             public static CodecDirectory ConvertZoomContactsToGeneric(List<Contact> zoomContacts)
             {
-                var directory = new CodecDirectory();
+                var directory = new Essentials.Core.Devices.Codec.CodecDirectory();
 
-                var folders = new List<DirectoryItem>();
+                var folders = new List<Essentials.Core.Devices.Codec.DirectoryItem>();
 
                 var roomFolder = new DirectoryFolder();
 
