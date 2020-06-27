@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json;
-using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.Rooms.Config
 {
-
-    public class EssentialsHuddleVtc1PropertiesConfig : EssentialsConferenceRoomPropertiesConfig
+    public class EssentialsHuddleVtc1PropertiesConfig : EssentialsHuddleRoomPropertiesConfig
     {
-		[JsonProperty("defaultDisplayKey")]
-		public string DefaultDisplayKey { get; set; }
+        [JsonProperty("videoCodecKey")]
+        public string VideoCodecKey { get; set; }
+        [JsonProperty("audioCodecKey")]
+        public string AudioCodecKey { get; set; }
     }
 }

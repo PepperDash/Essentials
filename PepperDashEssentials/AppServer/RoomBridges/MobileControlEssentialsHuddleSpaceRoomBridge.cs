@@ -10,7 +10,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Room.MobileControl;
-using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Core.Devices.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 

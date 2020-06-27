@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Rooms
 {
     /// <summary>
     /// For rooms with in call feedback

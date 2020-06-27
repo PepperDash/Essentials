@@ -5,7 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Core.Devices.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
@@ -352,7 +352,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 {
                     foreach (Call c in b.DialInfo.Calls.Call)
                     {
-                        meeting.Calls.Add(new PepperDash.Essentials.Devices.Common.Codec.Call()
+                        meeting.Calls.Add(new Essentials.Core.Devices.Codec.Call()
                         {
                             Number = c.Number.Value,
                             Protocol = c.Protocol.Value,

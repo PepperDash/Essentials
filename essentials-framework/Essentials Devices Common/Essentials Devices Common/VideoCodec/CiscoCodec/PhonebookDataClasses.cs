@@ -5,7 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Core.Devices.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
@@ -240,7 +240,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         foreach (ContactMethod m in c.ContactMethod)
                         {
 
-                            var tempContactMethod = new PepperDash.Essentials.Devices.Common.Codec.ContactMethod();
+                            var tempContactMethod = new Essentials.Core.Devices.Codec.ContactMethod();
 
                             eContactMethodCallType callType = eContactMethodCallType.Unknown;
                             if (!string.IsNullOrEmpty(m.CallType.Value))
@@ -299,11 +299,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <returns></returns>
         public static CodecDirectory ConvertCiscoPhonebookToGeneric(PhonebookSearchResult result)
         {
-            var directory = new Codec.CodecDirectory();
+            var directory = new Essentials.Core.Devices.Codec.CodecDirectory();
 
-            var folders = new List<Codec.DirectoryItem>();
+            var folders = new List<Essentials.Core.Devices.Codec.DirectoryItem>();
 
-            var contacts = new List<Codec.DirectoryItem>();
+            var contacts = new List<Essentials.Core.Devices.Codec.DirectoryItem>();
 
             try
             {
@@ -370,7 +370,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                                     device = eContactMethodDevice.Other;
                             }
 
-                            contact.ContactMethods.Add(new PepperDash.Essentials.Devices.Common.Codec.ContactMethod()
+                            contact.ContactMethods.Add(new Essentials.Core.Devices.Codec.ContactMethod()
                             {
                                 Number = m.Number.Value,
                                 ContactMethodId = m.ContactMethodId.Value,

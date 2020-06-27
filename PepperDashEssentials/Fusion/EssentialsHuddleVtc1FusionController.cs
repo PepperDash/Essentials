@@ -69,7 +69,7 @@ namespace PepperDash.Essentials.Fusion
 
                 // In Call Status
                 CodecIsInCall = FusionRoom.CreateOffsetBoolSig(69, "Conf - VC 1 In Call", eSigIoMask.InputSigOnly);
-                codec.CallStatusChange += new EventHandler<PepperDash.Essentials.Devices.Common.Codec.CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
+                codec.CallStatusChange += new EventHandler<Core.Devices.Codec.CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
                 
                 // Online status
                 if (codec is ICommunicationMonitor)
@@ -147,7 +147,7 @@ namespace PepperDash.Essentials.Fusion
             }
         }
 
-        void codec_CallStatusChange(object sender, PepperDash.Essentials.Devices.Common.Codec.CodecCallStatusItemChangeEventArgs e)
+        void codec_CallStatusChange(object sender, Core.Devices.Codec.CodecCallStatusItemChangeEventArgs e)
         {
             var codec = (Room as EssentialsHuddleVtc1Room).VideoCodec;
 

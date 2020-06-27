@@ -123,7 +123,6 @@
     <Compile Include="AppServer\SIMPLJoinMaps\SIMPLVtcJoinMap.cs" />
     <Compile Include="AppServer\SIMPLJoinMaps\SIMPLAtcJoinMap.cs" />
     <Compile Include="AppServer\SIMPLJoinMaps\MobileControlSIMPLRoomJoinMap.cs" />
-    <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
     <Compile Include="Bridges\EiscBridge.cs" />
     <Compile Include="Bridges\JoinMaps\AirMediaControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\AppleTvJoinMap.cs" />

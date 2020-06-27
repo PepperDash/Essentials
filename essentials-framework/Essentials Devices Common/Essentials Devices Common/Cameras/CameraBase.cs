@@ -10,7 +10,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Presets;
-using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Core.Devices.Codec;
 
 using Newtonsoft.Json;
 
