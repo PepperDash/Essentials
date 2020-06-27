@@ -175,7 +175,6 @@
     <Compile Include="UI\JoinConstants\UIBoolJoin.cs" />
     <Compile Include="UI\DualDisplaySourceSRLController.cs" />
     <Compile Include="UI\SubpageReferenceListActivityItem.cs" />
-    <Compile Include="Room\Types\EssentialsHuddleSpaceRoom.cs" />
     <Compile Include="UI\EssentialsTouchpanelController.cs" />
     <Compile Include="UI\SubpageReferenceListSourceItem.cs" />
     <None Include="app.config" />

@@ -5,23 +5,75 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Rooms.Config;
 
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// 
     /// </summary>
-    public abstract class EssentialsRoomBase : ReconfigurableDevice, IHasCurrentSourceInfoChange
+    public abstract class EssentialsRoomBase : ReconfigurableDevice
     {
-        public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
-        public event SourceInfoChangeHandler CurrentSourceChange;
-        public string CurrentSourceInfoKey { get; set; }
+        protected EssentialsRoomPropertiesConfig BaseConfig;
+        protected IBasicVolumeControls CurrentAudioDevice;
+        protected Func<bool> IsCoolingFeedbackFunc;
+        protected Func<bool> IsWarmingFeedbackFunc;
+        protected string LastSourceKey;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected Func<bool> OnFeedbackFunc;
+
+        /// <summary>
+        /// Seconds after vacancy detected until prompt is displayed
+        /// </summary>
+        protected int RoomVacancyShutdownPromptSeconds;
+
+        /// <summary>
+        /// Seconds after vacancy prompt is displayed until shutdown
+        /// </summary>
+        protected int RoomVacancyShutdownSeconds;
+
+        protected CCriticalSection RoutingLock = new CCriticalSection();
+
+        protected Dictionary<IBasicVolumeWithFeedback, uint> SavedVolumeLevels =
+            new Dictionary<IBasicVolumeWithFeedback, uint>();
+
+        private SourceListItem _currentSourceInfo;
+
+        /// <summary>
+        /// If room is off, enables power on to last source. Default true
+        /// </summary>
+        public bool EnablePowerOnToLastSource { get; set; }
+
+        protected EssentialsRoomBase(DeviceConfig config)
+            : base(config)
+        {
+            BaseConfig = config.Properties.ToObject<EssentialsRoomPropertiesConfig>();
+
+            ZeroVolumeWhenSwtichingVolumeDevices = BaseConfig.ZeroVolumeWhenSwtichingVolumeDevices;
+            SetupShutdownPrompt();
+
+            SetupRoomVacancyShutdown();
+
+            OnFeedback = new BoolFeedback(OnFeedbackFunc);
+
+            IsWarmingUpFeedback = new BoolFeedback(IsWarmingFeedbackFunc);
+            IsCoolingDownFeedback = new BoolFeedback(IsCoolingFeedbackFunc);
+
+            AddPostActivationAction(() =>
+            {
+                if (RoomOccupancy != null)
+                {
+                    OnRoomOccupancyIsSet();
+                }
+            });
+        }
 
         public IRoutingSinkWithSwitching DefaultDisplay { get; protected set; }
         public IRoutingSink DefaultAudioDevice { get; protected set; }
         public IBasicVolumeControls DefaultVolumeControls { get; protected set; }
-
-        protected CCriticalSection RoutingLock = new CCriticalSection();
 
         public string DefaultSourceItem { get; set; }
 
@@ -45,74 +97,30 @@ namespace PepperDash.Essentials.Core
 
                 if (handler != null)
                 {
-                    CurrentVolumeDeviceChange(this,
+                    handler(this,
                         new VolumeDeviceChangeEventArgs(CurrentAudioDevice, value, ChangeType.WillChange));
-                    CurrentVolumeDeviceChange(this,
-                        new VolumeDeviceChangeEventArgs(CurrentAudioDevice, value, ChangeType.DidChange));
                 }
 
-                var oldDevice = value as IInUseTracking;
+                var oldDevice = CurrentAudioDevice as IInUseTracking;
                 var newDevice = value as IInUseTracking;
 
                 UpdateInUseTracking(oldDevice, newDevice);
 
                 CurrentAudioDevice = value;
-            }
-        }
 
-        protected string LastSourceKey;
-
-        /// <summary>
-        /// The SourceListItem last run - containing names and icons 
-        /// </summary>
-        public SourceListItem CurrentSourceInfo
-        {
-            get { return _currentSourceInfo; }
-            set
-            {
-                if (value == _currentSourceInfo)
+                if (handler == null)
                 {
                     return;
                 }
 
-                var handler = CurrentSourceChange;
-                // remove from in-use tracker, if so equipped
-                if (_currentSourceInfo != null && _currentSourceInfo.SourceDevice is IInUseTracking)
-                {
-                    (_currentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.RemoveUser(this, "control");
-                }
-
-                if (handler != null)
-                {
-                    handler(_currentSourceInfo, ChangeType.WillChange);
-                }
-
-                _currentSourceInfo = value;
-
-                // add to in-use tracking
-                if (_currentSourceInfo != null && _currentSourceInfo.SourceDevice is IInUseTracking)
-                {
-                    (_currentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
-                }
-                if (handler != null)
-                {
-                    handler(_currentSourceInfo, ChangeType.DidChange);
-                }
+                handler(this,
+                    new VolumeDeviceChangeEventArgs(CurrentAudioDevice, value, ChangeType.DidChange));
             }
         }
 
-        private SourceListItem _currentSourceInfo;
-
         public bool ExcludeFromGlobalFunctions { get; set; }
 
-        protected IBasicVolumeControls CurrentAudioDevice;
-
         public BoolFeedback OnFeedback { get; private set; }
-
-        /// <summary>
-        /// Fires when the RoomOccupancy object is set
-        /// </summary>
-        public event EventHandler<EventArgs> RoomOccupancyIsSet;
 
         public BoolFeedback IsWarmingUpFeedback { get; private set; }
         public BoolFeedback IsCoolingDownFeedback { get; private set; }
@@ -120,9 +128,6 @@ namespace PepperDash.Essentials.Core
         public IOccupancyStatusProvider RoomOccupancy { get; private set; }
 
         public bool OccupancyStatusProviderIsRemote { get; private set; }
-
-        protected Func<bool> IsWarmingFeedbackFunc;
-        protected Func<bool> IsCoolingFeedbackFunc;
 
         /// <summary>
         /// The config name of the source list
@@ -149,49 +154,60 @@ namespace PepperDash.Essentials.Core
         public eVacancyMode VacancyMode { get; private set; }
 
         /// <summary>
-        /// Seconds after vacancy prompt is displayed until shutdown
-        /// </summary>
-        protected int RoomVacancyShutdownSeconds;
-
-        /// <summary>
-        /// Seconds after vacancy detected until prompt is displayed
-        /// </summary>
-        protected int RoomVacancyShutdownPromptSeconds;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected Func<bool> OnFeedbackFunc;
-
-        protected Dictionary<IBasicVolumeWithFeedback, uint> SavedVolumeLevels =
-            new Dictionary<IBasicVolumeWithFeedback, uint>();
-
-        /// <summary>
         /// When volume control devices change, should we zero the one that we are leaving?
         /// </summary>
         public bool ZeroVolumeWhenSwtichingVolumeDevices { get; private set; }
 
+        #region IHasCurrentSourceInfoChange Members
 
-        protected EssentialsRoomBase(DeviceConfig config)
-            : base(config)
+        public event SourceInfoChangeHandler CurrentSourceChange;
+        public string CurrentSourceInfoKey { get; set; }
+
+        /// <summary>
+        /// The SourceListItem last run - containing names and icons 
+        /// </summary>
+        public SourceListItem CurrentSourceInfo
         {
-            SetupShutdownPrompt();
-
-            SetupRoomVacancyShutdown();
-
-            OnFeedback = new BoolFeedback(OnFeedbackFunc);
-
-            IsWarmingUpFeedback = new BoolFeedback(IsWarmingFeedbackFunc);
-            IsCoolingDownFeedback = new BoolFeedback(IsCoolingFeedbackFunc);
-
-            AddPostActivationAction(() =>
+            get { return _currentSourceInfo; }
+            set
             {
-                if (RoomOccupancy != null)
+                if (value == _currentSourceInfo)
                 {
-                    OnRoomOccupancyIsSet();
+                    return;
                 }
-            });
+
+                var handler = CurrentSourceChange;
+
+                if (handler != null)
+                {
+                    handler(_currentSourceInfo, ChangeType.WillChange);
+                }
+
+                var oldSource = _currentSourceInfo as IInUseTracking;
+                var newSource = value as IInUseTracking;
+
+                UpdateInUseTracking(oldSource, newSource);
+
+                _currentSourceInfo = value;
+
+                if (handler == null)
+                {
+                    return;
+                }
+
+                handler(_currentSourceInfo, ChangeType.DidChange);
+            }
         }
+
+        #endregion
+
+        public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
+
+        /// <summary>
+        /// Fires when the RoomOccupancy object is set
+        /// </summary>
+        public event EventHandler<EventArgs> RoomOccupancyIsSet;
+
 
         private void SetupRoomVacancyShutdown()
         {
@@ -328,13 +344,32 @@ namespace PepperDash.Essentials.Core
         /// This method is for the derived class to define it's specific shutdown
         /// requirements but should not be called directly.  It is called by Shutdown()
         /// </summary>
-        protected abstract void EndShutdown();
+        protected virtual void EndShutdown()
+        {
+            SetDefaultLevels();
+
+            RunDefaultPresentRoute();
+
+            //CrestronEnvironment.Sleep(1000); //why?
+
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Shutting down room");
+
+            RunRouteAction("roomOff");
+        }
 
 
         /// <summary>
         /// Override this to implement a default volume level(s) method
         /// </summary>
-        public abstract void SetDefaultLevels();
+        public virtual void SetDefaultLevels()
+        {
+            Debug.Console(1, this, "Restoring default levels");
+            var vc = CurrentVolumeControls as IBasicVolumeWithFeedback;
+            if (vc != null)
+            {
+                vc.SetVolume(DefaultVolume);
+            }
+        }
 
         /// <summary>
         /// Sets the object to be used as the IOccupancyStatusProvider for the room. Can be an Occupancy Aggregator or a specific device
@@ -388,13 +423,30 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// To allow base class to power room on to last source
         /// </summary>
-        public abstract void PowerOnToDefaultOrLastSource();
+        public virtual void PowerOnToDefaultOrLastSource()
+        {
+            if (!EnablePowerOnToLastSource || LastSourceKey == null)
+            {
+                return;
+            }
+            RunRouteAction(LastSourceKey);   
+        }
 
         /// <summary>
         /// To allow base class to power room on to default source
         /// </summary>
         /// <returns></returns>
-        public abstract bool RunDefaultPresentRoute();
+        public virtual bool RunDefaultPresentRoute()
+        {
+            if (DefaultSourceItem == null)
+            {
+                Debug.Console(0, this, "Unable to run default present route, DefaultSourceItem is null.");
+                return false;
+            }
+
+            RunRouteAction(DefaultSourceItem);
+            return true;
+        }
 
         private void RoomIsOccupiedFeedback_OutputChange(object sender, EventArgs e)
         {
@@ -744,11 +796,15 @@ namespace PepperDash.Essentials.Core
 
     public abstract class EssentialsRoomEmergencyBase : IKeyed
     {
-        public string Key { get; private set; }
-
         protected EssentialsRoomEmergencyBase(string key)
         {
             Key = key;
         }
+
+        #region IKeyed Members
+
+        public string Key { get; private set; }
+
+        #endregion
     }
 }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -10,25 +8,17 @@ using PepperDash.Essentials.Room.Config;
 namespace PepperDash.Essentials
 {
     public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IRunRouteAction,
-        IRunDefaultPresentRoute, IHasCurrentVolumeControls, IHasDefaultDisplay
+        IRunDefaultPresentRoute, IHasCurrentVolumeControls, IHasDefaultDisplay, IHasCurrentSourceInfoChange
     {
-        public EssentialsHuddleRoomPropertiesConfig PropertiesConfig { get; private set; }
-
-        /// <summary>
-        /// If room is off, enables power on to last source. Default true
-        /// </summary>
-        public bool EnablePowerOnToLastSource { get; set; }
-
         public EssentialsHuddleSpaceRoom(DeviceConfig config)
             : base(config)
         {
             try
             {
-                PropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleRoomPropertiesConfig>
-                    (config.Properties.ToString());
+                PropertiesConfig = config.Properties.ToObject<EssentialsHuddleRoomPropertiesConfig>();
                 DefaultDisplay =
                     DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
-
+                    //why are we assuming IRoutingSinkWithSwitching here?
 
                 DefaultAudioDevice =
                     DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IRoutingSinkWithSwitching;
@@ -40,6 +30,8 @@ namespace PepperDash.Essentials
                 Debug.Console(1, this, "Error building room: \n{0}", e);
             }
         }
+
+        public EssentialsHuddleRoomPropertiesConfig PropertiesConfig { get; private set; }
 
         private void Initialize()
         {
@@ -53,7 +45,10 @@ namespace PepperDash.Essentials
             }
             CurrentVolumeControls = DefaultVolumeControls;
 
-            SourceListKey = "default";
+            SourceListKey = String.IsNullOrEmpty(PropertiesConfig.SourceListKey)
+                ? "default"
+                : PropertiesConfig.SourceListKey;
+
             EnablePowerOnToLastSource = true;
 
             var disp = DefaultDisplay as DisplayBase;
@@ -145,37 +140,6 @@ namespace PepperDash.Essentials
             ConfigWriter.UpdateRoomConfig(config);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        protected override void EndShutdown()
-        {
-            SetDefaultLevels();
-
-            RunDefaultPresentRoute();
-
-            //CrestronEnvironment.Sleep(1000); //why?
-
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Shutting down room");
-
-            RunRouteAction("roomOff");
-        }
-
-        /// <summary>
-        /// Routes the default source item, if any
-        /// </summary>
-        public override bool RunDefaultPresentRoute()
-        {
-            if (DefaultSourceItem == null)
-            {
-                Debug.Console(0, this, "Unable to run default present route, DefaultSourceItem is null.");
-                return false;
-            }
-
-            RunRouteAction(DefaultSourceItem);
-            return true;
-        }
-
         public override bool CustomActivate()
         {
             // Add Occupancy object from config
@@ -192,31 +156,6 @@ namespace PepperDash.Essentials
             this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
 
             return base.CustomActivate();
-        }
-
-        /// <summary>
-        /// Will power the room on with the last-used source
-        /// </summary>
-        public override void PowerOnToDefaultOrLastSource()
-        {
-            if (!EnablePowerOnToLastSource || LastSourceKey == null)
-            {
-                return;
-            }
-            RunRouteAction(LastSourceKey);
-        }
-
-        /// <summary>
-        /// Does what it says
-        /// </summary>
-        public override void SetDefaultLevels()
-        {
-            Debug.Console(1, this, "Restoring default levels");
-            var vc = CurrentVolumeControls as IBasicVolumeWithFeedback;
-            if (vc != null)
-            {
-                vc.SetVolume(DefaultVolume);
-            }
         }
 
         public override void RoomVacatedForTimeoutPeriod(object o)
