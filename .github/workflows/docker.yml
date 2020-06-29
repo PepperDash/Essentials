@@ -44,10 +44,7 @@ jobs:
       - name: Fetch tags
         run: git fetch --tags
       - name: print env info
-        run: |
-          ${{ env.GITHUB_REF }}
-          ${{ env.GITHUB_HEAD_REF }}
-          ${{ env.GITHUB_BASE_REF }}
+        run: ${{ env }}
       # Generate the appropriate version number
       - name: Set Version Number
         shell: powershell
