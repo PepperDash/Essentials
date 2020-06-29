@@ -17,7 +17,7 @@ Foreach ($version in $latestVersions) {
 $newVersion = [version]$latestVersion
 $phase = ""
 $newVersionString = ""
-if(!$Env:GITHUB_REF) {
+if([string]::IsNullOrEmpty($Env:GITHUB_REF)) {
   $phase = 'fork'
   $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
 } else {
