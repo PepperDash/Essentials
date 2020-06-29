@@ -7,6 +7,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices.AudioCodec;
 using PepperDash.Essentials.Core.Devices.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.AudioCodec

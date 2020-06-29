@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.Core.Rooms.Config
     /// <summary>
     /// 
     /// </summary>
-    public class EssentialsNDisplayRoomPropertiesConfig : EssentialsConferenceRoomPropertiesConfig
+    public class EssentialsNDisplayRoomPropertiesConfig : EssentialsHuddleRoomPropertiesConfig
     {
         [JsonProperty("defaultAudioBehavior")]
         public string DefaultAudioBehavior { get; set; }

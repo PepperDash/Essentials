@@ -61,7 +61,12 @@ namespace PepperDash.Essentials.Core.Devices.Codec
             OnRecentCallsListChange();
         }
 
-        
+        public void UpdateCallHistory(List<CallHistoryEntry> newList)
+        {
+            RecentCalls = newList;
+
+            OnRecentCallsListChange();
+        }
 
         /// <summary>
         /// Generic call history entry, not device specific

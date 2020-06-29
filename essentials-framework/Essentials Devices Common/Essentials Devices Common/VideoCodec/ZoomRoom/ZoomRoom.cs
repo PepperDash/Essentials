@@ -15,8 +15,7 @@ using PepperDash.Essentials.Core.Devices.VideoCodec;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Core.Devices.Codec;
-using PepperDash.Essentials.Devices.Common.Occupancy;
-using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Core.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {

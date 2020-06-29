@@ -111,7 +111,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Reads the device keys from the config and gets the devices by key
         /// </summary>
-        public void GetDevicesFromConfig(Room.Config.EssentialsEnvironmentPropertiesConfig EnvironmentPropertiesConfig)
+        public void GetDevicesFromConfig(Core.Rooms.Config.EssentialsEnvironmentPropertiesConfig EnvironmentPropertiesConfig)
         {
             if (EnvironmentPropertiesConfig != null)
             {

@@ -13,7 +13,7 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.Touchpanels.Keyboards;
 using PepperDash.Essentials.Devices.Displays;
-using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Core.Rooms.Config;
 
 namespace PepperDash.Essentials.UIDrivers
 {
