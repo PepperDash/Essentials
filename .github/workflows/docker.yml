@@ -43,8 +43,6 @@ jobs:
         # Fetch all tags
       - name: Fetch tags
         run: git fetch --tags
-      - name: print env info
-        run: ${{ toJson() }}
       # Generate the appropriate version number
       - name: Set Version Number
         shell: powershell
