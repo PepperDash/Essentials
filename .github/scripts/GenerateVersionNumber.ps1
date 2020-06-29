@@ -20,37 +20,39 @@ Foreach ($version in $latestVersions) {
 $newVersion = [version]$latestVersion
 $phase = ""
 $newVersionString = ""
-if([string]::IsNullOrEmpty($Env:GITHUB_REF)) {
-  $phase = 'fork'
-  $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
-} else {
-  switch -regex ($Env:GITHUB_REF) {
-    '^refs\/heads\/main*.' {
-      $newVersionString = "{0}.{1}.{2}" -f $newVersion.Major, $newVersion.Minor, $newVersion.Build
-    }
-    '^refs\/heads\/feature\/*.' {
-      $phase = 'alpha'
-      $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
-    }
-    '^refs\/heads\/release\/*.' {
-      $splitRef = $Env:GITHUB_REF -split "/"
-      $version = [version]($splitRef[-1] -replace "v", "")
-      $phase = 'rc'
-      $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $version.Major, $version.Minor, $version.Build, $phase, $Env:GITHUB_RUN_NUMBER
-    }
-    '^refs\/heads\/development*.' {
-      $phase = 'beta'
-      $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
-    }
-    '^refs\/heads\/hotfix\/*.' {
-      $phase = 'hotfix'
-      $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
-    }
-    '^refs\/heads\/bugfix\/*.' {
-      $phase = 'hotfix'
-      $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
-    }
+
+switch -regex ($Env:GITHUB_REF) {
+  '^refs\/pull\/*.' {
+    $splitRef = $Env:GITHUB_REF -split "/"
+    $phase = "pr$($splitRef[2])"
+    $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
   }
+  '^refs\/heads\/main*.' {
+    $newVersionString = "{0}.{1}.{2}" -f $newVersion.Major, $newVersion.Minor, $newVersion.Build
+  }
+  '^refs\/heads\/feature\/*.' {
+    $phase = 'alpha'
+    $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
+  }
+  '^refs\/heads\/release\/*.' {
+    $splitRef = $Env:GITHUB_REF -split "/"
+    $version = [version]($splitRef[-1] -replace "v", "")
+    $phase = 'rc'
+    $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $version.Major, $version.Minor, $version.Build, $phase, $Env:GITHUB_RUN_NUMBER
+  }
+  '^refs\/heads\/development*.' {
+    $phase = 'beta'
+    $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
+  }
+  '^refs\/heads\/hotfix\/*.' {
+    $phase = 'hotfix'
+    $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
+  }
+  '^refs\/heads\/bugfix\/*.' {
+    $phase = 'hotfix'
+    $newVersionString = "{0}.{1}.{2}-{3}-{4}" -f $newVersion.Major, $newVersion.Minor, ($newVersion.Build + 1), $phase, $Env:GITHUB_RUN_NUMBER
+  }
+  
 }
 
 
