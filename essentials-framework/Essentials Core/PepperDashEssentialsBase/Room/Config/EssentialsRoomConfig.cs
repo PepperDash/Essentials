@@ -40,9 +40,9 @@ namespace PepperDash.Essentials.Core.Rooms.Config
 		        return null;
 		    }
 
-		    rm = new EssentialsDualDisplayRoom(roomConfig);
+		    //rm = new EssentialsDualDisplayRoom();
 
-		    return rm;
+		    return null;
 		}
 
         /// <summary>

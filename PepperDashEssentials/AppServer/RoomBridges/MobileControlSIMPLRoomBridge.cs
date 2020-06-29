@@ -14,7 +14,7 @@ using PepperDash.Essentials.AppServer;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Core.Rooms.Config;
 
 
 namespace PepperDash.Essentials.Room.MobileControl

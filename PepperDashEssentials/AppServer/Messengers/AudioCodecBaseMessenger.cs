@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
+using PepperDash.Essentials.Core.Devices.AudioCodec;
 using PepperDash.Essentials.Core.Devices.Codec;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
 

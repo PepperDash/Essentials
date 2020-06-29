@@ -7,6 +7,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices.VideoCodec;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.Devices.Codec;
 using PepperDash.Essentials.Devices.Common.Cameras;

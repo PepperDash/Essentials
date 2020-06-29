@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Rooms;
 
 namespace PepperDash.Essentials
 {

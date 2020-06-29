@@ -104,10 +104,6 @@
     <Compile Include="Cameras\CameraBase.cs" />
     <Compile Include="Cameras\CameraVisca.cs" />
     <Compile Include="Cameras\IHasCameraPresets.cs" />
-    <Compile Include="Codec\eCodecCallDirection.cs" />
-    <Compile Include="Codec\eCodecCallType.cs" />
-    <Compile Include="Codec\eCodecCallStatus.cs" />
-    <Compile Include="Codec\eMeetingPrivacy.cs" />
     <Compile Include="ImageProcessors\TVOneCorio.cs" />
     <Compile Include="ImageProcessors\TVOneCorioPropertiesConfig.cs" />
     <Compile Include="Power Controllers\Digitallogger.cs" />
@@ -156,7 +152,6 @@
     <Compile Include="VideoCodec\CiscoCodec\xConfiguration.cs" />
     <Compile Include="VideoCodec\CiscoCodec\xEvent.cs" />
     <Compile Include="VideoCodec\CiscoCodec\HttpApiServer.cs" />
-    <Compile Include="Codec\CodecActiveCallItem.cs" />
     <Compile Include="VideoCodec\MockVC\MockVC.cs" />
     <Compile Include="VideoCodec\CiscoCodec\xStatus.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ResponseObjects.cs" />
