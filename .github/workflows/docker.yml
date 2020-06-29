@@ -43,11 +43,12 @@ jobs:
         # Fetch all tags
       - name: Fetch tags
         run: git fetch --tags
+      - name: print Info
+        run: toJson(${{ github }})
       # Generate the appropriate version number
       - name: Set Version Number
         shell: powershell
         run: |
-          Write-Output ${{ env.GITHUB_REF }}
           $version = ./.github/scripts/GenerateVersionNumber.ps1
           Write-Output "::set-env name=VERSION::$version"
       # Use the version number to set the version of the assemblies
