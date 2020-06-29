@@ -7,6 +7,9 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices.AudioCodec;
+using PepperDash.Essentials.Core.Devices.Codec;
+using PepperDash.Essentials.Core.Devices.VideoCodec;
 using PepperDash.Essentials.Core.Rooms;
 using PepperDash.Essentials.Core.Rooms.Config;
 
@@ -91,7 +94,7 @@ namespace PepperDash.Essentials
                 if (AudioCodec == null)
                     Debug.Console(0, this, "No Audio Codec Found");
 
-                DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IBasicVolumeControls;
+                DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IRoutingSink;
 
                 Initialize();
             }
@@ -106,7 +109,7 @@ namespace PepperDash.Essentials
             try
             {
                 if (DefaultAudioDevice != null)
-                    DefaultVolumeControls = DefaultAudioDevice;
+                    DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;
                 else if (DefaultAudioDevice is IHasVolumeDevice)
                     DefaultVolumeControls = (DefaultAudioDevice as IHasVolumeDevice).VolumeDevice;
                 CurrentVolumeControls = DefaultVolumeControls;

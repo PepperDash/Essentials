@@ -3,7 +3,8 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Core.Rooms;
+using PepperDash.Essentials.Core.Rooms.Config;
 
 namespace PepperDash.Essentials
 {

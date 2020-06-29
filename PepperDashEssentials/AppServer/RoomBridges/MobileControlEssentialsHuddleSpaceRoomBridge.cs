@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.AppServer.Messengers;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices.AudioCodec;
+using PepperDash.Essentials.Core.Devices.VideoCodec;
+using PepperDash.Essentials.Core.Rooms;
 using PepperDash.Essentials.Room.MobileControl;
-using PepperDash.Essentials.Core.Devices.Codec;
-using PepperDash.Essentials.Devices.Common.VideoCodec;
-using PepperDash.Essentials.Devices.Common.AudioCodec;
 
 namespace PepperDash.Essentials
 {

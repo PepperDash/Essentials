@@ -18,7 +18,7 @@ using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-
+using PepperDash.Essentials.Core.Rooms;
 
 
 namespace PepperDash.Essentials.Core.Fusion

@@ -402,20 +402,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <returns></returns>
         public List<CodecCallHistory.CallHistoryEntry> ConvertCiscoCallHistoryToGeneric(List<CiscoCallHistory.Entry> entries)
         {
-            var genericEntries = new List<CodecCallHistory.CallHistoryEntry>();
-
-            foreach (CiscoCallHistory.Entry entry in entries)
+            var genericEntries = entries.Select(entry => new CodecCallHistory.CallHistoryEntry
             {
-
-                genericEntries.Add(new CodecCallHistory.CallHistoryEntry()
-                {
-                    Name = entry.DisplayName.Value,
-                    Number = entry.CallbackNumber.Value,
-                    StartTime = entry.LastOccurrenceStartTime.Value,
-                    OccurrenceHistoryId = entry.LastOccurrenceHistoryId.Value,
-                    OccurrenceType = ConvertToOccurenceTypeEnum(entry.OccurrenceType.Value)
-                });
-            }
+                Name = entry.DisplayName.Value,
+                Number = entry.CallbackNumber.Value,
+                StartTime = entry.LastOccurrenceStartTime.Value,
+                OccurrenceHistoryId = entry.LastOccurrenceHistoryId.Value,
+                OccurrenceType = ConvertToOccurenceTypeEnum(entry.OccurrenceType.Value)
+            }).ToList();
 
             // Check if list is empty and if so, add an item to display No Recent Calls
             if (genericEntries.Count == 0)
@@ -871,7 +865,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                         JsonConvert.PopulateObject(response, codecCallHistory);
 
-                        CallHistory.ConvertCiscoCallHistoryToGeneric(codecCallHistory.CommandResponse.CallHistoryRecentsResult.Entry);
+                        var tempRecentCallsList =
+                            ConvertCiscoCallHistoryToGeneric(
+                                codecCallHistory.CommandResponse.CallHistoryRecentsResult.Entry);
+                        CallHistory.UpdateCallHistory(tempRecentCallsList);
                     }
                     else if (response.IndexOf("\"CallHistoryDeleteEntryResult\":{") > -1)
                     {
