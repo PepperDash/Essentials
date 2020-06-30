@@ -112,17 +112,29 @@ namespace PepperDash.Essentials.Core
                 return null;
             }
 
+            Hr1x0WirelessRemoteBase remoteBase;
             switch (type)
             {
                 case ("hr100"):
-                    return new Hr100(rfId, gateway);
+                    remoteBase = new Hr100(rfId, gateway);
+                    break;
                 case ("hr150"):
-                    return new Hr150(rfId, gateway);
+                    remoteBase = new Hr150(rfId, gateway);
+                    break;
                 case ("hr310"):
-                    return new Hr310(rfId, gateway);
+                    remoteBase = new Hr310(rfId, gateway);
+                    break;
                 default:
                     return null;
             }
+
+            // register the device when using an internal RF gateway
+            if (props.GatewayDeviceKey == "processor")
+            {
+                remoteBase.RegisterWithLogging(config.Key);
+            }
+
+            return remoteBase;            
         }
 
         static void gateway_BaseEvent(GenericBase device, BaseEventArgs args)
