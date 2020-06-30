@@ -1,0 +1,87 @@
+{
+    "system": {},
+    "system_url": "http://portal-QA.devcloud.pepperdash.com/templates/0f50640b-bc89-42d5-998f-81d137d3fc98#/template_summary",
+    "template": {
+        "devices": [
+            {
+                "key": "processor",
+                "uid": 0,
+                "type": "cp3n",
+                "name": "CP3N",
+                "group": "processor",
+                "supportedConfigModes": [
+                    "compliance",
+                    "essentials"
+                ],
+                "supportedSystemTypes": [
+                    "hudType",
+                    "presType",
+                    "vtcType",
+                    "custom"
+                ],
+                "supportsCompliance": true,
+                "properties": {}
+            },
+            {
+                "key": "app1-occsensor1",
+                "uid": 1,
+                "type": "glsodtccn",
+                "group": "api",
+                "properties" : {
+                    "control": {
+                        "cresnetId": "91"
+                    }
+                }
+			},
+			{
+                "key": "app1-partitionsensor1",
+                "uid": 1,
+                "type": "glspartcn",
+                "group": "api",
+                "properties" : {
+                    "control": {
+                        "cresnetId": "90"
+                    }
+                }
+			},
+			{
+				"key": "app1-device-bridge",
+				"uid": 3,
+				"name": "Communication Bridge",
+				"group": "api",
+                "type": "eiscApiAdvanced",
+				"properties": {
+					"control": {
+						"tcpSshProperties": {
+							"address": "127.0.0.2",
+							"port": 0
+						},
+						"ipid": "A1",
+						"method": "ipidTcp"
+                    },
+                    "comment": "genericComm device joinStart is different than plugin device joinStart",
+					"devices": [						
+						{
+							"deviceKey": "app1-occsensor1",
+							"joinStart": 201
+						},
+						{
+							"deviceKey": "app1-partitionsensor1",
+							"joinStart": 271
+						}
+					]
+				}
+			}
+        ],
+        "info": {
+            "comment": "",
+            "lastModifiedDate": "2017-03-06T23:14:40.290Z",
+            "lastUid": 12,
+            "processorType": "Cp3n",
+            "requiredControlSofwareVersion": "",
+            "systemType": "huddle"
+        },
+        "rooms": [],
+        "tieLines": []
+    }
+}

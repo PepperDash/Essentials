@@ -159,8 +159,8 @@ namespace PepperDash.Essentials.DM
 
     public abstract class BasicDmTxControllerBase : CrestronGenericBridgeableBaseDevice
     {
-        protected BasicDmTxControllerBase(string key, string name, GenericBase hardware)
-            : base(key, name, hardware)
+        protected BasicDmTxControllerBase(string key, string name, GenericBase sensor)
+            : base(key, name, sensor)
         {
 
         }
@@ -177,18 +177,18 @@ namespace PepperDash.Essentials.DM
         public abstract StringFeedback ActiveVideoInputFeedback { get; protected set; }
         public RoutingInputPortWithVideoStatuses AnyVideoInput { get; protected set; }
 
-	    protected DmTxControllerBase(string key, string name, EndpointTransmitterBase hardware)
-			: base(key, name, hardware) 
+	    protected DmTxControllerBase(string key, string name, EndpointTransmitterBase sensor)
+			: base(key, name, sensor) 
 		{
 			// if wired to a chassis, skip registration step in base class
-			if (hardware.DMInput != null)
+			if (sensor.DMInput != null)
 			{
 				this.PreventRegistration = true;
 			}
             AddToFeedbackList(ActiveVideoInputFeedback);
 		}
 
-	    protected DmTxControllerBase(string key, string name, DmHDBasedTEndPoint hardware) : base(key, name, hardware)
+	    protected DmTxControllerBase(string key, string name, DmHDBasedTEndPoint sensor) : base(key, name, sensor)
 	    {
 	    }
 
@@ -224,7 +224,7 @@ namespace PepperDash.Essentials.DM
 
             bool hdcpTypeSimple;
 
-            if (tx.Hardware is DmTx4kX02CBase)
+            if (tx.Sensor is DmTx4kX02CBase)
                 hdcpTypeSimple = false;
             else
                 hdcpTypeSimple = true;

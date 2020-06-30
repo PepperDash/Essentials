@@ -11,7 +11,7 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public abstract class CrestronGenericBaseDevice : EssentialsDevice, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking
 	{
-		public virtual GenericBase Hardware { get; protected set; }
+		public virtual GenericBase Sensor { get; protected set; }
 
         /// <summary>
         /// Returns a list containing the Outputs that we want to expose.
@@ -28,18 +28,18 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public bool PreventRegistration { get; protected set; }
 
-	    protected CrestronGenericBaseDevice(string key, string name, GenericBase hardware)
+	    protected CrestronGenericBaseDevice(string key, string name, GenericBase sensor)
             : base(key, name)
         {
             Feedbacks = new FeedbackCollection<Feedback>();
 
-            Hardware = hardware;
-            IsOnline = new BoolFeedback("IsOnlineFeedback", () => Hardware.IsOnline);
-            IsRegistered = new BoolFeedback("IsRegistered", () => Hardware.Registered);
-            IpConnectionsText = new StringFeedback("IpConnectionsText", () => Hardware.ConnectedIpList != null ? string.Join(",", Hardware.ConnectedIpList.Select(cip => cip.DeviceIpAddress).ToArray()) : string.Empty);
+            Sensor = sensor;
+            IsOnline = new BoolFeedback("IsOnlineFeedback", () => Sensor.IsOnline);
+            IsRegistered = new BoolFeedback("IsRegistered", () => Sensor.Registered);
+            IpConnectionsText = new StringFeedback("IpConnectionsText", () => Sensor.ConnectedIpList != null ? string.Join(",", Sensor.ConnectedIpList.Select(cip => cip.DeviceIpAddress).ToArray()) : string.Empty);
             AddToFeedbackList(IsOnline, IpConnectionsText);
 
-            CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
+            CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, sensor, 120000, 300000);
         }
 
 		/// <summary>
@@ -53,7 +53,7 @@ namespace PepperDash.Essentials.Core
 			{
                 //Debug.Console(1, this, "  Does not require registration. Skipping");
 
-				var response = Hardware.RegisterWithLogging(Key);
+				var response = Sensor.RegisterWithLogging(Key);
 				if (response != eDeviceRegistrationUnRegistrationResponse.Success)
 				{
 					//Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
@@ -68,7 +68,7 @@ namespace PepperDash.Essentials.Core
                 f.FireUpdate();
             }
 
-            Hardware.OnlineStatusChange += Hardware_OnlineStatusChange;
+            Sensor.OnlineStatusChange += Hardware_OnlineStatusChange;
             CommunicationMonitor.Start();    
 
 			return true;
@@ -81,9 +81,9 @@ namespace PepperDash.Essentials.Core
 		public override bool Deactivate()
 		{
 			CommunicationMonitor.Stop();
-			Hardware.OnlineStatusChange -= Hardware_OnlineStatusChange;
+			Sensor.OnlineStatusChange -= Hardware_OnlineStatusChange;
 
-			var success = Hardware.UnRegister() == eDeviceRegistrationUnRegistrationResponse.Success;
+			var success = Sensor.UnRegister() == eDeviceRegistrationUnRegistrationResponse.Success;
 
             IsRegistered.FireUpdate();
 
@@ -131,7 +131,7 @@ namespace PepperDash.Essentials.Core
 
     public abstract class CrestronGenericBridgeableBaseDevice : CrestronGenericBaseDevice, IBridgeAdvanced
     {
-        protected CrestronGenericBridgeableBaseDevice(string key, string name, GenericBase hardware) : base(key, name, hardware)
+        protected CrestronGenericBridgeableBaseDevice(string key, string name, GenericBase sensor) : base(key, name, sensor)
         {
         }
 

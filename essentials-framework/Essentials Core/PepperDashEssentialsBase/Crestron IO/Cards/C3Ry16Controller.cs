@@ -7,9 +7,9 @@ namespace PepperDash.Essentials.Core.CrestronIO.Cards
     {
         private readonly C3ry16 _card;
 
-        public C3Ry16Controller(string key, string name, C3ry16 hardware) : base(key, name, hardware)
+        public C3Ry16Controller(string key, string name, C3ry16 sensor) : base(key, name, sensor)
         {
-            _card = hardware;
+            _card = sensor;
         }
 
         #region Implementation of IRelayPorts

@@ -7,9 +7,9 @@ namespace PepperDash.Essentials.Core.CrestronIO.Cards
     {
         private readonly C3ir8 _card;
 
-        public C3Ir8Controller(string key, string name, C3ir8 hardware) : base(key, name, hardware)
+        public C3Ir8Controller(string key, string name, C3ir8 sensor) : base(key, name, sensor)
         {
-            _card = hardware;
+            _card = sensor;
         }
 
         #region Implementation of IIROutputPorts

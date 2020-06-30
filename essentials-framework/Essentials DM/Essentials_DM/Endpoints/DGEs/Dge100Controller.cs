@@ -29,10 +29,10 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
         CrestronTouchpanelPropertiesConfig PropertiesConfig;
 
-        public Dge100Controller(string key, string name, Dge100 device, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
-            :base(key, name, device)
+        public Dge100Controller(string key, string name, Dge100 sensor, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
+            :base(key, name, sensor)
         {
-            _dge = device;
+            _dge = sensor;
 
             _dc = dc;
 

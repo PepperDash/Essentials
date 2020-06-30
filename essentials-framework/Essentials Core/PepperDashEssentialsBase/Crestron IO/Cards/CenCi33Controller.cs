@@ -18,9 +18,9 @@ namespace PepperDash.Essentials.Core.CrestronIO.Cards
 
         private readonly Dictionary<string, Func<CenCi33, uint, C3CardControllerBase>> _cardDict; 
 
-        public CenCi33Controller(string key, string name, CenCi33Configuration config, CenCi33 hardware) : base(key, name, hardware)
+        public CenCi33Controller(string key, string name, CenCi33Configuration config, CenCi33 sensor) : base(key, name, sensor)
         {
-            _cardCage = hardware;
+            _cardCage = sensor;
 
             _config = config;
 

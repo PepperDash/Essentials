@@ -40,10 +40,10 @@ namespace PepperDash.Essentials.DM.AirMedia
         public StringFeedback SerialNumberFeedback { get; private set; }
         public BoolFeedback AutomaticInputRoutingEnabledFeedback { get; private set; }
 
-        public AirMediaController(string key, string name, AmX00 device, DeviceConfig dc, AirMediaPropertiesConfig props)
-            : base(key, name, device)
+        public AirMediaController(string key, string name, AmX00 sensor, DeviceConfig dc, AirMediaPropertiesConfig props)
+            : base(key, name, sensor)
         {
-            AirMedia = device;
+            AirMedia = sensor;
 
             DeviceConfig = dc;
 

@@ -7,9 +7,9 @@ namespace PepperDash.Essentials.Core.CrestronIO.Cards
     {
         private readonly C3Card _card;
 
-        public C3CardControllerBase(string key, string name, C3Card hardware) : base(key, name, hardware)
+        public C3CardControllerBase(string key, string name, C3Card sensor) : base(key, name, sensor)
         {
-            _card = hardware;
+            _card = sensor;
         }
 
         #region Overrides of Object

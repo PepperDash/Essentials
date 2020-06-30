@@ -18,9 +18,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
         public IntFeedback TemperatureFeedback { get; private set; }
         public IntFeedback HumidityFeedback { get; private set; }
 
-        public C2nRthsController(string key, string name, GenericBase hardware) : base(key, name, hardware)
+        public C2nRthsController(string key, string name, GenericBase sensor) : base(key, name, sensor)
         {
-            _device = hardware as C2nRths;
+            _device = sensor as C2nRths;
 
             TemperatureFeedback = new IntFeedback(() => _device.TemperatureFeedback.UShortValue);
             HumidityFeedback = new IntFeedback(() => _device.HumidityFeedback.UShortValue);

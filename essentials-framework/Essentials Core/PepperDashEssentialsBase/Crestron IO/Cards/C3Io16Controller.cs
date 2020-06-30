@@ -7,9 +7,9 @@ namespace PepperDash.Essentials.Core.CrestronIO.Cards
     {
         private readonly C3io16 _card;
 
-        public C3Io16Controller(string key, string name, C3io16 hardware) : base(key, name, hardware)
+        public C3Io16Controller(string key, string name, C3io16 sensor) : base(key, name, sensor)
         {
-            _card = hardware;
+            _card = sensor;
         }
 
         #region Implementation of IIOPorts

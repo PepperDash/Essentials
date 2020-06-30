@@ -40,10 +40,10 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
             private set;
         }
 
-        public DmDge200CController(string key, string name, DmDge200C device, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
-            : base(key, name, device, dc, props)
+        public DmDge200CController(string key, string name, DmDge200C sensor, DeviceConfig dc, CrestronTouchpanelPropertiesConfig props)
+            : base(key, name, sensor, dc, props)
         {
-            _dge = device;
+            _dge = sensor;
 
             DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.DmCat, 0, this);

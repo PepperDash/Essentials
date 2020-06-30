@@ -7,9 +7,9 @@ namespace PepperDash.Essentials.Core.CrestronIO.Cards
     {
         private readonly C3com3 _card;
 
-        public C3Com3Controller(string key, string name, C3com3 hardware) : base(key, name, hardware)
+        public C3Com3Controller(string key, string name, C3com3 sensor) : base(key, name, sensor)
         {
-            _card = hardware;
+            _card = sensor;
         }
 
         #region Implementation of IComPorts

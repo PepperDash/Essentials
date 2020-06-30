@@ -23,10 +23,10 @@ namespace PepperDash.Essentials.DM
         public StringFeedback EdidPreferredTimingFeedback { get; protected set; }
         public StringFeedback EdidSerialNumberFeedback { get; protected set; }
 
-        protected DmRmcControllerBase(string key, string name, EndpointReceiverBase device)
-			: base(key, name, device)
+        protected DmRmcControllerBase(string key, string name, EndpointReceiverBase sensor)
+			: base(key, name, sensor)
         {
-            _rmc = device;
+            _rmc = sensor;
 			// if wired to a chassis, skip registration step in base class
             PreventRegistration = _rmc.DMOutput != null;
 			

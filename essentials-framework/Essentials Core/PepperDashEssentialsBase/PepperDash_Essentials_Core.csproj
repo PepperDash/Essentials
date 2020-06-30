@@ -136,7 +136,8 @@
     <Compile Include="Bridges\JoinMaps\DmTxControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\GenericLightingJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\GenericRelayControllerJoinMap.cs" />
-    <Compile Include="Bridges\JoinMaps\GlsOccupancySensorBaseJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\GlsOccupancySensorJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\GlsPartitionSensorJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\HdMdNxM4kEControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\HdMdxxxCEControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\Hrxxx0WirelessRemoteControllerJoinMap.cs" />

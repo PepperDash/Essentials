@@ -23,9 +23,9 @@ namespace PepperDash.Essentials.Core.CrestronIO
         public IntFeedback GreenLedBrightnessFeedback { get; private set; }
         public IntFeedback BlueLedBrightnessFeedback { get; private set; }
 
-        public StatusSignController(string key, string name, GenericBase hardware) : base(key, name, hardware)
+        public StatusSignController(string key, string name, GenericBase sensor) : base(key, name, sensor)
         {
-            _device = hardware as StatusSign;
+            _device = sensor as StatusSign;
 
             RedLedEnabledFeedback =
                 new BoolFeedback(
