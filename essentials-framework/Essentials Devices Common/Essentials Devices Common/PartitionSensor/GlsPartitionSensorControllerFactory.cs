@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Collections.Generic;
 using Crestron.SimplSharpPro.GeneralIO;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Devices.Common.Occupancy;
 
 namespace PepperDash.Essentials.Devices.Common.PartitionSensor
 {
@@ -21,14 +16,11 @@ namespace PepperDash.Essentials.Devices.Common.PartitionSensor
 		public override EssentialsDevice BuildDevice(DeviceConfig dc)
 		{
 			Debug.Console(2, "Factory Attempting to create new GLS-PART-CN Device");
-
-			var typeName = dc.Type.ToLower();
-			var key = dc.Key;
-			var name = dc.Name;
+			
 			var comm = CommFactory.GetControlPropertiesConfig(dc);
 			if (comm == null)
 			{
-				Debug.Console(0, "ERROR: Control Properties Config are null");
+				Debug.Console(0, "ERROR: Control Properties Config for {0} is null", dc.Key);
 				return null;
 			}
 

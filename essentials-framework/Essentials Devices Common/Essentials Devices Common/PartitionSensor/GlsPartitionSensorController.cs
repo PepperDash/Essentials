@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
+﻿using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash_Essentials_Core.Bridges.JoinMaps;
 
@@ -18,46 +12,18 @@ namespace PepperDash.Essentials.Devices.Common.PartitionSensor
 	[Description("Wrapper class for GLS Cresnet Partition Sensor")]
 	public class GlsPartitionSensorController : CrestronGenericBridgeableBaseDevice
 	{
-		public GlsPartCn PartitionSensor { get; private set; }
+		private readonly GlsPartCn _partitionSensor;
 
 		public StringFeedback NameFeedback { get; private set; }
-
 		public BoolFeedback EnableFeedback { get; private set; }
-
 		public BoolFeedback PartitionSensedFeedback { get; private set; }
 		public BoolFeedback PartitionNotSensedFeedback { get; private set; }
-
 		public IntFeedback SensitivityFeedback { get; private set; }
 
 		public bool InTestMode { get; private set; }
 		public bool TestEnableFeedback { get; private set; }
 		public bool TestPartitionSensedFeedback { get; private set; }
 		public int TestSensitivityFeedback { get; private set; }
-
-		public Func<string> NameFeedbackFunc
-		{
-			get { return () => Name; }
-		}
-
-		public Func<bool> EnableFeedbackFunc
-		{
-			get { return () => InTestMode ? TestEnableFeedback : PartitionSensor.EnableFeedback.BoolValue; }
-		}
-
-		public Func<bool> PartitionSensedFeedbackFunc
-		{
-			get { return () => InTestMode ? TestPartitionSensedFeedback : PartitionSensor.PartitionSensedFeedback.BoolValue; }
-		}
-
-		public Func<bool> PartitionNotSensedFeedbackFunc
-		{
-			get { return () => InTestMode ? TestPartitionSensedFeedback : PartitionSensor.PartitionNotSensedFeedback.BoolValue; }
-		}
-
-		public Func<int> SensitivityFeedbackFunc
-		{
-			get { return () => InTestMode ? TestSensitivityFeedback : PartitionSensor.SensitivityFeedback.UShortValue; }
-		}
 
 		/// <summary>
 		/// Constructor
@@ -68,15 +34,15 @@ namespace PepperDash.Essentials.Devices.Common.PartitionSensor
 		public GlsPartitionSensorController(string key, string name, GlsPartCn hardware)
 			: base(key, name, hardware)
 		{
-			PartitionSensor = hardware;
+			_partitionSensor = hardware;
 
-			NameFeedback = new StringFeedback(NameFeedbackFunc);
-			EnableFeedback = new BoolFeedback(EnableFeedbackFunc);
-			PartitionSensedFeedback = new BoolFeedback(PartitionSensedFeedbackFunc);
-			PartitionNotSensedFeedback = new BoolFeedback(PartitionNotSensedFeedbackFunc);
-			SensitivityFeedback = new IntFeedback(SensitivityFeedbackFunc);
+			NameFeedback = new StringFeedback(() => Name);
+			EnableFeedback = new BoolFeedback(() => _partitionSensor.EnableFeedback.BoolValue);
+			PartitionSensedFeedback = new BoolFeedback(() => _partitionSensor.PartitionSensedFeedback.BoolValue);
+			PartitionNotSensedFeedback = new BoolFeedback(() => _partitionSensor.PartitionNotSensedFeedback.BoolValue);
+			SensitivityFeedback = new IntFeedback(() => _partitionSensor.SensitivityFeedback.UShortValue);
 
-			if (PartitionSensor != null) PartitionSensor.BaseEvent += PartitionSensor_BaseEvent;
+			if (_partitionSensor != null) _partitionSensor.BaseEvent += PartitionSensor_BaseEvent;
 		}
 
 
@@ -108,7 +74,7 @@ namespace PepperDash.Essentials.Devices.Common.PartitionSensor
 					}
 				default:
 					{
-						Debug.Console(2, this, "args.EventId: {0}", args.EventId);
+						Debug.Console(2, this, "Unhandled args.EventId: {0}", args.EventId);
 						break;
 					}
 			}
@@ -158,36 +124,35 @@ namespace PepperDash.Essentials.Devices.Common.PartitionSensor
 
 		public void SetEnableState(bool state)
 		{
-			if (PartitionSensor == null)
+			if (_partitionSensor == null)
 				return;
 
-			PartitionSensor.Enable.BoolValue = state;
+			_partitionSensor.Enable.BoolValue = state;
 		}
 
 		public void IncreaseSensitivity()
 		{
-			if (PartitionSensor == null)
+			if (_partitionSensor == null)
 				return;
 
-			PartitionSensor.IncreaseSensitivity();
+			_partitionSensor.IncreaseSensitivity();
 		}
 
 		public void DecreaseSensitivity()
 		{
-			if (PartitionSensor == null)
+			if (_partitionSensor == null)
 				return;
 
-			PartitionSensor.DecreaseSensitivity();
+			_partitionSensor.DecreaseSensitivity();
 		}
 
 		public void SetSensitivity(ushort value)
 		{
-			if (PartitionSensor == null)
+			if (_partitionSensor == null)
 				return;
 
-			PartitionSensor.Sensitivity.UShortValue = (ushort)value;
+			_partitionSensor.Sensitivity.UShortValue = value;
 		}
-
 
 		public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 		{
@@ -220,13 +185,13 @@ namespace PepperDash.Essentials.Devices.Common.PartitionSensor
 			IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
 			EnableFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Enable.JoinNumber]);
 			PartitionSensedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PartitionSensed.JoinNumber]);
-			PartitionNotSensedFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PartitionNotSensed.JoinNumber]);
+			PartitionNotSensedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PartitionNotSensed.JoinNumber]);
 			SensitivityFeedback.LinkInputSig(trilist.UShortInput[joinMap.Sensitivity.JoinNumber]);
 
 			FeedbacksFireUpdates();
 
 			// update when device is online
-			PartitionSensor.OnlineStatusChange += (o, a) =>
+			_partitionSensor.OnlineStatusChange += (o, a) =>
 			{
 				if (a.DeviceOnLine)
 				{
