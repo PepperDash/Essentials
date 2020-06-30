@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
+using PepperDash.Core.JsonStandardObjects;
 using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core
@@ -41,6 +43,24 @@ namespace PepperDash.Essentials.Core
 
             CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
         }
+
+        protected CrestronGenericBaseDevice(string key, string name)
+            : base(key, name)
+        {
+            Feedbacks = new FeedbackCollection<Feedback>();
+
+        }
+
+	    protected void RegisterCrestronGenericBase(GenericBase hardware)
+	    {
+            Hardware = hardware;
+            IsOnline = new BoolFeedback("IsOnlineFeedback", () => Hardware.IsOnline);
+            IsRegistered = new BoolFeedback("IsRegistered", () => Hardware.Registered);
+            IpConnectionsText = new StringFeedback("IpConnectionsText", () => Hardware.ConnectedIpList != null ? string.Join(",", Hardware.ConnectedIpList.Select(cip => cip.DeviceIpAddress).ToArray()) : string.Empty);
+            AddToFeedbackList(IsOnline, IpConnectionsText);
+
+            CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
+	    }
 
 		/// <summary>
 		/// Make sure that overriding classes call this!
@@ -132,6 +152,11 @@ namespace PepperDash.Essentials.Core
     public abstract class CrestronGenericBridgeableBaseDevice : CrestronGenericBaseDevice, IBridgeAdvanced
     {
         protected CrestronGenericBridgeableBaseDevice(string key, string name, GenericBase hardware) : base(key, name, hardware)
+        {
+        }
+
+        protected CrestronGenericBridgeableBaseDevice(string key, string name)
+            : base(key, name)
         {
         }
 

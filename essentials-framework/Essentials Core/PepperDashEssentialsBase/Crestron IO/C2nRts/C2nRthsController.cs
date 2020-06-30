@@ -18,7 +18,8 @@ namespace PepperDash.Essentials.Core.CrestronIO
         public IntFeedback TemperatureFeedback { get; private set; }
         public IntFeedback HumidityFeedback { get; private set; }
 
-        public C2nRthsController(string key, string name, GenericBase hardware) : base(key, name, hardware)
+        public C2nRthsController(string key, string name, GenericBase hardware)
+            : base(key, name, hardware)
         {
             _device = hardware as C2nRths;
 
