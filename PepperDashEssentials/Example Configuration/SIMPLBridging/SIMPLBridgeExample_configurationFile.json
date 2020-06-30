@@ -175,6 +175,10 @@
             {
               "deviceKey": "gls-odt-1",
               "joinStart": 2751
+            },
+            {
+				"deviceKey": "gls-part-1",
+				"joinStart": 2781
             }
           ]
         }
@@ -424,6 +428,19 @@
         "properties": {
           "control": {
             "cresnetId": "42",
+            "method": "cresnet"
+          }
+        }
+      },
+      {
+        "key": "gls-part-1",
+        "uid": 19,
+        "name": "GLS-PART-CN 1",
+        "type": "glspartcn",
+        "group": "partition",
+        "properties": {
+          "control": {
+            "cresnetId": "90",
             "method": "cresnet"
           }
         }
