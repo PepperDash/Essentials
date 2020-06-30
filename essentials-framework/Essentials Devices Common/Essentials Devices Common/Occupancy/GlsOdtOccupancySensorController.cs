@@ -35,26 +35,35 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         public BoolFeedback RawOccupancyUsFeedback { get; private set; }
 
 
-        public GlsOdtOccupancySensorController(string key, string name, GlsOdtCCn sensor)
-            : base(key, name, sensor)
+        public GlsOdtOccupancySensorController(string key, Func<DeviceConfig, GlsOdtCCn> preActivationFunc,
+            DeviceConfig config)
+            : base(key, config.Name)
         {
-            OccSensor = sensor;
+            AddPreActivationAction(() =>
+            {
+                OccSensor = preActivationFunc(config);
 
-            AndWhenVacatedFeedback = new BoolFeedback(() => OccSensor.AndWhenVacatedFeedback.BoolValue);
+                RegisterCrestronGenericBase(OccSensor);
 
-            OrWhenVacatedFeedback = new BoolFeedback(() => OccSensor.OrWhenVacatedFeedback.BoolValue);
+                RegisterGlsOdtSensorBaseController();
 
-            UltrasonicAEnabledFeedback = new BoolFeedback(() => OccSensor.UsAEnabledFeedback.BoolValue);
+                AndWhenVacatedFeedback = new BoolFeedback(() => OccSensor.AndWhenVacatedFeedback.BoolValue);
 
-            UltrasonicBEnabledFeedback = new BoolFeedback(() => OccSensor.UsBEnabledFeedback.BoolValue);
+                OrWhenVacatedFeedback = new BoolFeedback(() => OccSensor.OrWhenVacatedFeedback.BoolValue);
 
-            RawOccupancyPirFeedback = new BoolFeedback(() => OccSensor.RawOccupancyPirFeedback.BoolValue);
+                UltrasonicAEnabledFeedback = new BoolFeedback(() => OccSensor.UsAEnabledFeedback.BoolValue);
 
-            RawOccupancyUsFeedback = new BoolFeedback(() => OccSensor.RawOccupancyUsFeedback.BoolValue);
+                UltrasonicBEnabledFeedback = new BoolFeedback(() => OccSensor.UsBEnabledFeedback.BoolValue);
 
-            UltrasonicSensitivityInVacantStateFeedback = new IntFeedback(() => OccSensor.UsSensitivityInVacantStateFeedback.UShortValue);
+                RawOccupancyPirFeedback = new BoolFeedback(() => OccSensor.RawOccupancyPirFeedback.BoolValue);
 
-            UltrasonicSensitivityInOccupiedStateFeedback = new IntFeedback(() => OccSensor.UsSensitivityInOccupiedStateFeedback.UShortValue);
+                RawOccupancyUsFeedback = new BoolFeedback(() => OccSensor.RawOccupancyUsFeedback.BoolValue);
+
+                UltrasonicSensitivityInVacantStateFeedback = new IntFeedback(() => OccSensor.UsSensitivityInVacantStateFeedback.UShortValue);
+
+                UltrasonicSensitivityInOccupiedStateFeedback = new IntFeedback(() => OccSensor.UsSensitivityInOccupiedStateFeedback.UShortValue);
+
+            });       
         }
 
         /// <summary>
@@ -160,38 +169,51 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         {
             LinkOccSensorToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
+
+        #region PreActivation
+
+        private static GlsOdtCCn GetGlsOdtCCn(DeviceConfig dc)
+        {
+            var control = CommFactory.GetControlPropertiesConfig(dc);
+            var cresnetId = control.CresnetIdInt;
+            var branchId = control.ControlPortNumber;
+            var parentKey = string.IsNullOrEmpty(control.ControlPortDevKey) ? "processor" : control.ControlPortDevKey;
+
+            if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
+            {
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOdtCCn");
+                return new GlsOdtCCn(cresnetId, Global.ControlSystem);
+            }
+            var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as ICresnetBridge;
+
+            if (cresnetBridge != null)
+            {
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOdtCCn");
+                return new GlsOdtCCn(cresnetId, cresnetBridge.Branches[branchId]);
+            }
+            Debug.Console(0, "Device {0} is not a valid cresnet master", branchId);
+            return null;
+        }
+        #endregion
+
+        public class GlsOdtOccupancySensorControllerFactory : EssentialsDeviceFactory<GlsOdtOccupancySensorController>
+        {
+            public GlsOdtOccupancySensorControllerFactory()
+            {
+                TypeNames = new List<string>() { "glsodtccn" };
+            }
+
+
+            public override EssentialsDevice BuildDevice(DeviceConfig dc)
+            {
+                Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
+
+                return new GlsOdtOccupancySensorController(dc.Key, GetGlsOdtCCn, dc);
+            }
+
+        }
     }
 
-    public class GlsOdtOccupancySensorControllerFactory : EssentialsDeviceFactory<GlsOdtOccupancySensorController>
-    {
-        public GlsOdtOccupancySensorControllerFactory()
-        {
-            TypeNames = new List<string>() { "glsodtccn" };
-        }
 
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
-
-            var typeName = dc.Type.ToLower();
-            var key = dc.Key;
-            var name = dc.Name;
-            var comm = CommFactory.GetControlPropertiesConfig(dc);
-
-            var occSensor = new GlsOdtCCn(comm.CresnetIdInt, Global.ControlSystem);
-
-            if (occSensor != null)
-            {
-                return new GlsOdtOccupancySensorController(key, name, occSensor);
-            }
-            else
-            {
-                Debug.Console(0, "ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
-                return null;
-            }
-
-
-        }
-    }
 
 }
