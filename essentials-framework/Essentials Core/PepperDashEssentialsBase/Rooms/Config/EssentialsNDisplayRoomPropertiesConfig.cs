@@ -16,14 +16,8 @@ namespace PepperDash.Essentials.Core.Rooms.Config
         public string DefaultAudioBehavior { get; set; }
         [JsonProperty("defaultVideoBehavior")]
         public string DefaultVideoBehavior { get; set; }
-        [JsonProperty("displays")]
-        public Dictionary<eSourceListItemDestinationTypes, DisplayItem> Displays { get; set; }
-
-        public EssentialsNDisplayRoomPropertiesConfig()
-        {
-            Displays = new Dictionary<eSourceListItemDestinationTypes, DisplayItem>();
-        }
-
+        [JsonProperty("destinationListKey")]
+        public string DestinationListKey { get; set; }
     }
 
     public class DisplayItem : IKeyName
@@ -31,5 +25,4 @@ namespace PepperDash.Essentials.Core.Rooms.Config
         public string Key { get; set; }
         public string Name { get; set; }
     }
-
 }
