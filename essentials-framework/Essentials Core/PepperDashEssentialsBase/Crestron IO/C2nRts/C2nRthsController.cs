@@ -12,13 +12,12 @@ using PepperDash.Essentials.Core.Config;
 namespace PepperDash.Essentials.Core.CrestronIO
 {
     [Description("Wrapper class for the C2N-RTHS sensor")]
-    public class C2nRthsController : CrestronGenericBridgeableBaseDevice, IOnline
+    public class C2nRthsController : CrestronGenericBridgeableBaseDevice
     {
         private C2nRths _device;
 
         public IntFeedback TemperatureFeedback { get; private set; }
         public IntFeedback HumidityFeedback { get; private set; }
-        public BoolFeedback IsOnline { get; private set; }
 
         public C2nRthsController(string key, Func<DeviceConfig, C2nRths> preActivationFunc,
             DeviceConfig config)
@@ -33,18 +32,11 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
                 TemperatureFeedback = new IntFeedback(() => _device.TemperatureFeedback.UShortValue);
                 HumidityFeedback = new IntFeedback(() => _device.HumidityFeedback.UShortValue);
-                IsOnline = new BoolFeedback(() => _device.IsOnline);
 
                 if (_device != null) _device.BaseEvent += DeviceOnBaseEvent;
-                if (_device != null) _device.OnlineStatusChange += _device_OnlineStatusChange;
-
             });
         }
 
-        void _device_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
-        {
-            IsOnline.FireUpdate();
-        }
 
         private void DeviceOnBaseEvent(GenericBase device, BaseEventArgs args)
         {
@@ -148,9 +140,6 @@ namespace PepperDash.Essentials.Core.CrestronIO
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
                 Debug.Console(1, "Factory Attempting to create new C2N-RTHS Device");
-
-                var control = CommFactory.GetControlPropertiesConfig(dc);
-                var cresnetId = control.CresnetIdInt;
 
                 return new C2nRthsController(dc.Key, GetC2nRthsDevice, dc);
             }
