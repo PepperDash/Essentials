@@ -47,7 +47,7 @@ namespace PepperDash.Essentials
             CurrentVolumeControls = DefaultVolumeControls;
 
             SourceListKey = String.IsNullOrEmpty(PropertiesConfig.SourceListKey)
-                ? "default"
+                ? DefaultSourceListKey
                 : PropertiesConfig.SourceListKey;
 
             EnablePowerOnToLastSource = true;

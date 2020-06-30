@@ -47,6 +47,8 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public bool EnablePowerOnToLastSource { get; set; }
 
+        public const string DefaultSourceListKey = "default";
+
         protected EssentialsRoomBase(DeviceConfig config)
             : base(config)
         {
