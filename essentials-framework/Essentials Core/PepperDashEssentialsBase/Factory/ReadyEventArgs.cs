@@ -6,25 +6,19 @@ using Crestron.SimplSharp;
 
 namespace PepperDash_Essentials_Core
 {
-    public delegate void IsReadyEventHandler(object source, IsReadyEventArgs e);
-
     public class IsReadyEventArgs : EventArgs
     {
-        private readonly bool _EventData;
+        public bool IsReady { get; set; }
 
         public IsReadyEventArgs(bool data)
         {
-            _EventData = data;
-        }
-
-        public bool GetData()
-        {
-            return _EventData;
+            IsReady = data;
         }
     }
 
     public interface IHasReady
     {
-        event IsReadyEventHandler IsReady;
+        event EventHandler<IsReadyEventArgs> IsReadyEvent;
+        bool IsReady { get; }
     }
 }

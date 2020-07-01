@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Core
 	/// </summary>
 	public abstract class CrestronGenericBaseDevice : EssentialsDevice, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking
 	{
-		public virtual GenericBase Hardware { get; protected set; }
+	    protected GenericBase Hardware;
 
         /// <summary>
         /// Returns a list containing the Outputs that we want to expose.

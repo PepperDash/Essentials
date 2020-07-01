@@ -20,7 +20,9 @@ namespace PepperDash.Essentials.Core
     [Description("Wrapper class for Crestron Infinet-EX Gateways")]
     public class CenRfgwController : CrestronGenericBaseDevice, IHasReady
     {
-        public event IsReadyEventHandler IsReady;
+        public event EventHandler<IsReadyEventArgs> IsReadyEvent;
+
+        public bool IsReady { get; private set; }
 
         private GatewayBase _gateway;
 
@@ -34,23 +36,27 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="key"></param>
         /// <param name="name"></param>
+        /// <param name="gateway"></param>
         public CenRfgwController(string key, string name, GatewayBase gateway) :
             base(key, name, gateway)
         {
             _gateway = gateway;
-            IsReady(this, new IsReadyEventArgs(true));
+            IsReady = true;
+            FireIsReadyEvent(IsReady);
         }
 
         public CenRfgwController(string key, Func<DeviceConfig, GatewayBase> preActivationFunc, DeviceConfig config) :
             base(key, config.Name)
         {
-            IsReady(this, new IsReadyEventArgs(false));
+            IsReady = false;
+            FireIsReadyEvent(IsReady);
             AddPreActivationAction(() =>
             {
                 _gateway = preActivationFunc(config);
 
+                IsReady = true;
                 RegisterCrestronGenericBase(_gateway);
-                IsReady(this, new IsReadyEventArgs(true));
+                FireIsReadyEvent(IsReady);
 
             });
         }
@@ -58,9 +64,7 @@ namespace PepperDash.Essentials.Core
         public static GatewayBase GetNewIpRfGateway(DeviceConfig dc)
         {
             var control = CommFactory.GetControlPropertiesConfig(dc);
-            var name = dc.Name;
             var type = dc.Type;
-            var key = dc.Key;
             var ipId = control.IpIdInt;
 
             if (type.Equals("cenrfgwex", StringComparison.InvariantCultureIgnoreCase))
@@ -72,6 +76,15 @@ namespace PepperDash.Essentials.Core
                 return new CenErfgwPoe(ipId, Global.ControlSystem);
             }
             return null;
+        }
+
+        private void FireIsReadyEvent(bool data)
+        {
+            var handler = IsReadyEvent;
+            if (handler == null) return;
+
+            handler(this, new IsReadyEventArgs(data));
+
         }
 
         public static GatewayBase GetNewSharedIpRfGateway(DeviceConfig dc)
@@ -135,7 +148,7 @@ namespace PepperDash.Essentials.Core
 
 
 
-        public enum eExGatewayType
+        public enum EExGatewayType
         {
             Ethernet,
             EthernetShared,
@@ -159,22 +172,17 @@ namespace PepperDash.Essentials.Core
 
                 var props = JsonConvert.DeserializeObject<EssentialsRfGatewayConfig>(dc.Properties.ToString());
 
-                var type = dc.Type.ToLower();
-                var control = props.Control;
-                var ipid = control.IpIdInt;
-                var cresnetId = control.CresnetIdInt;
-
-                eExGatewayType gatewayType =
-                    (eExGatewayType) Enum.Parse(typeof (eExGatewayType), props.GatewayType, true);
+                EExGatewayType gatewayType =
+                    (EExGatewayType) Enum.Parse(typeof (EExGatewayType), props.GatewayType, true);
 
                 switch (gatewayType)
                 {
-                    case (eExGatewayType.Ethernet):
-                        return new CenRfgwController(dc.Key, dc.Name, CenRfgwController.GetNewIpRfGateway(dc));
-                    case (eExGatewayType.EthernetShared):
-                        return new CenRfgwController(dc.Key, dc.Name, CenRfgwController.GetNewSharedIpRfGateway(dc));
-                    case (eExGatewayType.Cresnet):
-                        return new CenRfgwController(dc.Key, CenRfgwController.GetCenRfgwCresnetController, dc);
+                    case (EExGatewayType.Ethernet):
+                        return new CenRfgwController(dc.Key, dc.Name, GetNewIpRfGateway(dc));
+                    case (EExGatewayType.EthernetShared):
+                        return new CenRfgwController(dc.Key, dc.Name, GetNewSharedIpRfGateway(dc));
+                    case (EExGatewayType.Cresnet):
+                        return new CenRfgwController(dc.Key, GetCenRfgwCresnetController, dc);
                 }
                 return null;
             }
