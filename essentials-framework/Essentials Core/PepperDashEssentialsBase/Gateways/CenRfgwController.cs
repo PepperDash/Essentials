@@ -113,7 +113,7 @@ namespace PepperDash.Essentials.Core
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOdtCCn");
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new CenRfgw", parentKey);
                 if (type.Equals("cenerfgwpoe", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return new CenErfgwPoeCresnet(cresnetId, Global.ControlSystem);
@@ -127,7 +127,7 @@ namespace PepperDash.Essentials.Core
 
             if (cresnetBridge != null)
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOdtCCn");
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new CenRfgw", parentKey);
 
                 if (type.Equals("cenerfgwpoe", StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -138,7 +138,7 @@ namespace PepperDash.Essentials.Core
                     return new CenRfgwExCresnet(cresnetId, cresnetBridge.Branches[branchId]);
                 }
             }
-            Debug.Console(0, "Device {0} is not a valid cresnet master", branchId);
+            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
             return null;
         }
 

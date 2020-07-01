@@ -67,45 +67,47 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
                 RegisterCrestronGenericBase(OccSensor);
 
-                RegisterGlsOdtSensorBaseController();
+                RegisterGlsOdtSensorBaseController(OccSensor);
 
             });
         }
 
         public GlsOccupancySensorBaseController(string key, string name) : base(key, name) {}
 
-        protected void RegisterGlsOdtSensorBaseController()
+        protected void RegisterGlsOdtSensorBaseController(GlsOccupancySensorBase occSensor)
         {
+            OccSensor = occSensor;
+
             RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
 
-                PirSensorEnabledFeedback = new BoolFeedback(() => OccSensor.PirEnabledFeedback.BoolValue);
+            PirSensorEnabledFeedback = new BoolFeedback(() => OccSensor.PirEnabledFeedback.BoolValue);
 
-                LedFlashEnabledFeedback = new BoolFeedback(() => OccSensor.LedFlashEnabledFeedback.BoolValue);
+            LedFlashEnabledFeedback = new BoolFeedback(() => OccSensor.LedFlashEnabledFeedback.BoolValue);
 
-                ShortTimeoutEnabledFeedback = new BoolFeedback(() => OccSensor.ShortTimeoutEnabledFeedback.BoolValue);
+            ShortTimeoutEnabledFeedback = new BoolFeedback(() => OccSensor.ShortTimeoutEnabledFeedback.BoolValue);
 
-                PirSensitivityInVacantStateFeedback =
-                    new IntFeedback(() => OccSensor.PirSensitivityInVacantStateFeedback.UShortValue);
+            PirSensitivityInVacantStateFeedback =
+                new IntFeedback(() => OccSensor.PirSensitivityInVacantStateFeedback.UShortValue);
 
-                PirSensitivityInOccupiedStateFeedback =
-                    new IntFeedback(() => OccSensor.PirSensitivityInOccupiedStateFeedback.UShortValue);
+            PirSensitivityInOccupiedStateFeedback =
+                new IntFeedback(() => OccSensor.PirSensitivityInOccupiedStateFeedback.UShortValue);
 
-                CurrentTimeoutFeedback = new IntFeedback(() => OccSensor.CurrentTimeoutFeedback.UShortValue);
+            CurrentTimeoutFeedback = new IntFeedback(() => OccSensor.CurrentTimeoutFeedback.UShortValue);
 
-                LocalTimoutFeedback = new IntFeedback(() => OccSensor.LocalTimeoutFeedback.UShortValue);
+            LocalTimoutFeedback = new IntFeedback(() => OccSensor.LocalTimeoutFeedback.UShortValue);
 
-                GraceOccupancyDetectedFeedback =
-                    new BoolFeedback(() => OccSensor.GraceOccupancyDetectedFeedback.BoolValue);
+            GraceOccupancyDetectedFeedback =
+                new BoolFeedback(() => OccSensor.GraceOccupancyDetectedFeedback.BoolValue);
 
-                RawOccupancyFeedback = new BoolFeedback(() => OccSensor.RawOccupancyFeedback.BoolValue);
+            RawOccupancyFeedback = new BoolFeedback(() => OccSensor.RawOccupancyFeedback.BoolValue);
 
-                InternalPhotoSensorValue = new IntFeedback(() => OccSensor.InternalPhotoSensorValueFeedback.UShortValue);
+            InternalPhotoSensorValue = new IntFeedback(() => OccSensor.InternalPhotoSensorValueFeedback.UShortValue);
 
-                ExternalPhotoSensorValue = new IntFeedback(() => OccSensor.ExternalPhotoSensorValueFeedback.UShortValue);
+            ExternalPhotoSensorValue = new IntFeedback(() => OccSensor.ExternalPhotoSensorValueFeedback.UShortValue);
 
-                OccSensor.BaseEvent += new Crestron.SimplSharpPro.BaseEventHandler(OccSensor_BaseEvent);
+            OccSensor.BaseEvent += OccSensor_BaseEvent;
 
-                OccSensor.GlsOccupancySensorChange += OccSensor_GlsOccupancySensorChange;
+            OccSensor.GlsOccupancySensorChange += OccSensor_GlsOccupancySensorChange;
         }
 
 
@@ -420,17 +422,17 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn");
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
                 return new GlsOirCCn(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as ICresnetBridge;
 
             if (cresnetBridge != null)
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn");
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
                 return new GlsOirCCn(cresnetId, cresnetBridge.Branches[branchId]);
             }
-            Debug.Console(0, "Device {0} is not a valid cresnet master", branchId);
+            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
             return null;
         }
         #endregion
