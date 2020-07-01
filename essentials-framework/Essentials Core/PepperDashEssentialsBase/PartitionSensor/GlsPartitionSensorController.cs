@@ -49,6 +49,8 @@ namespace PepperDash.Essentials.Core
             {
                 _partitionSensor = preActivationFunc(config);
 
+                RegisterCrestronGenericBase(_partitionSensor);
+
                 NameFeedback = new StringFeedback(() => Name);
                 EnableFeedback = new BoolFeedback(() => _partitionSensor.EnableFeedback.BoolValue);
                 PartitionSensedFeedback = new BoolFeedback(() => _partitionSensor.PartitionSensedFeedback.BoolValue);

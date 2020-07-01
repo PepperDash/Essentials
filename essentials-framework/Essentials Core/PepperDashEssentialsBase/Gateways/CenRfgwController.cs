@@ -162,7 +162,7 @@ namespace PepperDash.Essentials.Core
         {
             public CenRfgwControllerFactory()
             {
-                TypeNames = new List<string>() {"cenrfgwex", "cenerfgwpoe"};
+                TypeNames = new List<string> {"cenrfgwex", "cenerfgwpoe"};
             }
 
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
@@ -187,9 +187,11 @@ namespace PepperDash.Essentials.Core
                 return null;
             }
         }
+
+        #endregion
     }
 
-    #endregion
+    
 }
 
 
