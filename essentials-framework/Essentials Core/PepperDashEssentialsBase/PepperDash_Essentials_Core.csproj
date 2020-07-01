@@ -215,6 +215,7 @@
     <Compile Include="Monitoring\SystemMonitorController.cs" />
     <Compile Include="Microphone Privacy\MicrophonePrivacyController.cs" />
     <Compile Include="Microphone Privacy\MicrophonePrivacyControllerConfig.cs" />
+    <Compile Include="PartitionSensor\GlsPartitionSensorController.cs" />
     <Compile Include="Plugins\PluginLoader.cs" />
     <Compile Include="Presets\PresetBase.cs" />
     <Compile Include="Plugins\IPluginDeviceFactory.cs" />
