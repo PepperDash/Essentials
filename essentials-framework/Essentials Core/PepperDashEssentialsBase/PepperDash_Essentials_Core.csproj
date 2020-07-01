@@ -192,6 +192,7 @@
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Factory\IDeviceFactory.cs" />
+    <Compile Include="Factory\ReadyEventArgs.cs" />
     <Compile Include="Feedbacks\BoolFeedback.cs" />
     <Compile Include="Feedbacks\FeedbackCollection.cs" />
     <Compile Include="Feedbacks\FeedbackEventArgs.cs" />

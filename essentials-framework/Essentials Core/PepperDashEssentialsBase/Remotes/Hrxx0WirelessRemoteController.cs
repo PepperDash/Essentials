@@ -21,6 +21,8 @@ namespace PepperDash.Essentials.Core
     [Description("Wrapper class for all HR-Series remotes")]
     public class Hrxx0WirelessRemoteController : EssentialsBridgeableDevice, IHasFeedback
     {
+        private CenRfgwController _gateway;
+
         private Hr1x0WirelessRemoteBase _remote;
 
         public FeedbackCollection<Feedback> Feedbacks { get; set; }
@@ -32,6 +34,39 @@ namespace PepperDash.Essentials.Core
             : base(key, config.Name)
         {
             Feedbacks = new FeedbackCollection<Feedback>();
+
+            var props = JsonConvert.DeserializeObject<CrestronRemotePropertiesConfig>(config.Properties.ToString());
+
+            var type = config.Type;
+            var rfId = (uint)props.Control.InfinetIdInt;
+
+            GatewayBase gateway;
+
+            if (props.GatewayDeviceKey == "processor")
+            {
+                gateway = Global.ControlSystem.ControllerRFGatewayDevice;
+            }
+
+            else
+            {
+                var gatewayDev = DeviceManager.GetDeviceForKey(props.GatewayDeviceKey) as CenRfgwController;
+                if (gatewayDev == null)
+                {
+                    Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is not a valid device", props.GatewayDeviceKey);
+                }
+                if (gatewayDev != null)
+                {
+                    Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is a valid device", props.GatewayDeviceKey);
+                    gateway = gatewayDev.GateWay;
+                    _gateway = gatewayDev;
+                }
+            }
+
+            if (_gateway != null)
+            {
+                _gateway.IsReady += new PepperDash_Essentials_Core.IsReadyEventHandler(_gateway_IsReady);
+            }
+
 
             AddPreActivationAction(() =>
             {
@@ -45,6 +80,11 @@ namespace PepperDash.Essentials.Core
 
                 _remote.BaseEvent += new BaseEventHandler(_remote_BaseEvent);
             });
+        }
+
+        void _gateway_IsReady(object source, PepperDash_Essentials_Core.IsReadyEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         void _remote_BaseEvent(GenericBase device, BaseEventArgs args)
@@ -135,11 +175,6 @@ namespace PepperDash.Essentials.Core
             }
 
             return remoteBase;            
-        }
-
-        static void gateway_BaseEvent(GenericBase device, BaseEventArgs args)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
