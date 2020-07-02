@@ -7,12 +7,28 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash_Essentials_Core.Bridges.JoinMaps;
 
-namespace PepperDash.Essentials.Devices.Common.PartitionSensor
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.Gateways;
+using Newtonsoft.Json;
+using Crestron.SimplSharpPro.DeviceSupport;
+
+
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
+using PepperDash_Essentials_Core;
+
+namespace PepperDash.Essentials.Core
 {
 	[Description("Wrapper class for GLS Cresnet Partition Sensor")]
 	public class GlsPartitionSensorController : CrestronGenericBridgeableBaseDevice
 	{
-		private readonly GlsPartCn _partitionSensor;
+		private GlsPartCn _partitionSensor;
 
 		public StringFeedback NameFeedback { get; private set; }
 		public BoolFeedback EnableFeedback { get; private set; }
@@ -25,26 +41,25 @@ namespace PepperDash.Essentials.Devices.Common.PartitionSensor
 		public bool TestPartitionSensedFeedback { get; private set; }
 		public int TestSensitivityFeedback { get; private set; }
 
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="key"></param>
-		/// <param name="name"></param>
-		/// <param name="hardware"></param>
-		public GlsPartitionSensorController(string key, string name, GlsPartCn hardware)
-			: base(key, name, hardware)
+
+		public GlsPartitionSensorController(string key, Func<DeviceConfig, GlsPartCn> preActivationFunc, DeviceConfig config)
+			: base(key, config.Name)
 		{
-			_partitionSensor = hardware;
+            AddPreActivationAction(() =>
+            {
+                _partitionSensor = preActivationFunc(config);
 
-			NameFeedback = new StringFeedback(() => Name);
-			EnableFeedback = new BoolFeedback(() => _partitionSensor.EnableFeedback.BoolValue);
-			PartitionSensedFeedback = new BoolFeedback(() => _partitionSensor.PartitionSensedFeedback.BoolValue);
-			PartitionNotSensedFeedback = new BoolFeedback(() => _partitionSensor.PartitionNotSensedFeedback.BoolValue);
-			SensitivityFeedback = new IntFeedback(() => _partitionSensor.SensitivityFeedback.UShortValue);
+                RegisterCrestronGenericBase(_partitionSensor);
 
-			if (_partitionSensor != null) _partitionSensor.BaseEvent += PartitionSensor_BaseEvent;
+                NameFeedback = new StringFeedback(() => Name);
+                EnableFeedback = new BoolFeedback(() => _partitionSensor.EnableFeedback.BoolValue);
+                PartitionSensedFeedback = new BoolFeedback(() => _partitionSensor.PartitionSensedFeedback.BoolValue);
+                PartitionNotSensedFeedback = new BoolFeedback(() => _partitionSensor.PartitionNotSensedFeedback.BoolValue);
+                SensitivityFeedback = new IntFeedback(() => _partitionSensor.SensitivityFeedback.UShortValue);
+
+                if (_partitionSensor != null) _partitionSensor.BaseEvent += PartitionSensor_BaseEvent;
+            });
 		}
-
 
 		private void PartitionSensor_BaseEvent(GenericBase device, BaseEventArgs args)
 		{
@@ -218,5 +233,48 @@ namespace PepperDash.Essentials.Devices.Common.PartitionSensor
 			PartitionNotSensedFeedback.FireUpdate();
 			SensitivityFeedback.FireUpdate();
 		}
+
+        #region PreActivation
+
+        private static GlsPartCn GetGlsPartCnDevice(DeviceConfig dc)
+        {
+            var control = CommFactory.GetControlPropertiesConfig(dc);
+            var cresnetId = control.CresnetIdInt;
+            var branchId = control.ControlPortNumber;
+            var parentKey = string.IsNullOrEmpty(control.ControlPortDevKey) ? "processor" : control.ControlPortDevKey;
+
+            if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
+            {
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
+                return new GlsPartCn(cresnetId, Global.ControlSystem);
+            }
+            var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as ICresnetBridge;
+
+            if (cresnetBridge != null)
+            {
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
+                return new GlsPartCn(cresnetId, cresnetBridge.Branches[branchId]);
+            }
+            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+            return null;
+        }
+        #endregion
+
+
+        public class GlsPartitionSensorControllerFactory : EssentialsDeviceFactory<GlsPartitionSensorController>
+        {
+            public GlsPartitionSensorControllerFactory()
+            {
+                TypeNames = new List<string>() { "glspartcn" };
+            }
+
+            public override EssentialsDevice BuildDevice(DeviceConfig dc)
+            {
+                Debug.Console(1, "Factory Attempting to create new C2N-RTHS Device");
+
+                return new GlsPartitionSensorController(dc.Key, GetGlsPartCnDevice, dc);
+            }
+        }
+
 	}
 }
