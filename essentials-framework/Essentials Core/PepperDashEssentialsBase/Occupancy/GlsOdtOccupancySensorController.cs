@@ -11,7 +11,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 
-namespace PepperDash.Essentials.Devices.Common.Occupancy
+namespace PepperDash.Essentials.Core
 {
     [Description("Wrapper class for Dual Technology GLS Occupancy Sensors")]
     public class GlsOdtOccupancySensorController : GlsOccupancySensorBaseController
