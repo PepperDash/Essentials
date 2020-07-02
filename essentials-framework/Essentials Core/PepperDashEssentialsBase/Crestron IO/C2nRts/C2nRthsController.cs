@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
@@ -13,20 +14,29 @@ namespace PepperDash.Essentials.Core.CrestronIO
     [Description("Wrapper class for the C2N-RTHS sensor")]
     public class C2nRthsController : CrestronGenericBridgeableBaseDevice
     {
-        private readonly C2nRths _device;
+        private C2nRths _device;
 
         public IntFeedback TemperatureFeedback { get; private set; }
         public IntFeedback HumidityFeedback { get; private set; }
 
-        public C2nRthsController(string key, string name, GenericBase hardware) : base(key, name, hardware)
+        public C2nRthsController(string key, Func<DeviceConfig, C2nRths> preActivationFunc,
+            DeviceConfig config)
+            : base(key, config.Name)
         {
-            _device = hardware as C2nRths;
 
-            TemperatureFeedback = new IntFeedback(() => _device.TemperatureFeedback.UShortValue);
-            HumidityFeedback = new IntFeedback(() => _device.HumidityFeedback.UShortValue);
+            AddPreActivationAction(() =>
+            {
+                _device = preActivationFunc(config);
 
-            if (_device != null) _device.BaseEvent += DeviceOnBaseEvent;
+                RegisterCrestronGenericBase(_device);
+
+                TemperatureFeedback = new IntFeedback(() => _device.TemperatureFeedback.UShortValue);
+                HumidityFeedback = new IntFeedback(() => _device.HumidityFeedback.UShortValue);
+
+                if (_device != null) _device.BaseEvent += DeviceOnBaseEvent;
+            });
         }
+
 
         private void DeviceOnBaseEvent(GenericBase device, BaseEventArgs args)
         {
@@ -76,24 +86,63 @@ namespace PepperDash.Essentials.Core.CrestronIO
             HumidityFeedback.LinkInputSig(trilist.UShortInput[joinMap.Humidity.JoinNumber]);
 
             trilist.StringInput[joinMap.Name.JoinNumber].StringValue = Name;
+
+            trilist.OnlineStatusChange += (d, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                UpdateFeedbacksWhenOnline();
+
+                trilist.StringInput[joinMap.Name.JoinNumber].StringValue = Name;
+            };
         }
-    }
 
-    public class C2nRthsControllerFactory : EssentialsDeviceFactory<C2nRthsController>
-    {
-        public C2nRthsControllerFactory()
+        private void UpdateFeedbacksWhenOnline()
         {
-            TypeNames = new List<string>() { "c2nrths" };
+            IsOnline.FireUpdate();
+            TemperatureFeedback.FireUpdate();
+            HumidityFeedback.FireUpdate();
         }
 
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new C2N-RTHS Device");
+        #region PreActivation
 
+        private static C2nRths GetC2nRthsDevice(DeviceConfig dc)
+        {
             var control = CommFactory.GetControlPropertiesConfig(dc);
             var cresnetId = control.CresnetIdInt;
+            var branchId = control.ControlPortNumber;
+            var parentKey = string.IsNullOrEmpty(control.ControlPortDevKey) ? "processor" : control.ControlPortDevKey;
 
-            return new C2nRthsController(dc.Key, dc.Name, new C2nRths(cresnetId, Global.ControlSystem));
+            if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
+            {
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new C2nRths", parentKey);
+                return new C2nRths(cresnetId, Global.ControlSystem);
+            }
+            var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as ICresnetBridge;
+
+            if (cresnetBridge != null)
+            {
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new C2nRths", parentKey);
+                return new C2nRths(cresnetId, cresnetBridge.Branches[branchId]);
+            }
+            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+            return null;
+        }
+        #endregion
+
+        public class C2nRthsControllerFactory : EssentialsDeviceFactory<C2nRthsController>
+        {
+            public C2nRthsControllerFactory()
+            {
+                TypeNames = new List<string>() { "c2nrths" };
+            }
+
+            public override EssentialsDevice BuildDevice(DeviceConfig dc)
+            {
+                Debug.Console(1, "Factory Attempting to create new C2N-RTHS Device");
+
+                return new C2nRthsController(dc.Key, GetC2nRthsDevice, dc);
+            }
         }
     }
 }
