@@ -188,12 +188,12 @@ namespace PepperDash.Essentials.Core.CrestronIO
                 Debug.Console(0, "Device {0} is a valid cresnet master - creating new StatusSign", parentKey);
                 return new StatusSign(cresnetId, Global.ControlSystem);
             }
-            var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as ICresnetBridge;
+            var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
                 Debug.Console(0, "Device {0} is a valid cresnet master - creating new StatusSign", parentKey);
-                return new StatusSign(cresnetId, cresnetBridge.Branches[branchId]);
+                return new StatusSign(cresnetId, cresnetBridge.CresnetBranches[branchId]);
             }
             Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
             return null;
