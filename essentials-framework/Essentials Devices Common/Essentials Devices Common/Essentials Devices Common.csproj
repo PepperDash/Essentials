@@ -114,13 +114,6 @@
     <Compile Include="Codec\iCodecAudio.cs" />
     <Compile Include="ImageProcessors\TVOneCorio.cs" />
     <Compile Include="ImageProcessors\TVOneCorioPropertiesConfig.cs" />
-<<<<<<< HEAD
-    <Compile Include="PartitionSensor\GlsPartitionSensorController.cs" />
-    <Compile Include="PartitionSensor\GlsPartitionSensorControllerFactory.cs" />
-=======
-    <Compile Include="Occupancy\CenOdtOccupancySensorBaseController.cs" />
-    <Compile Include="Occupancy\GlsOdtOccupancySensorController.cs" />
->>>>>>> development
     <Compile Include="Power Controllers\Digitallogger.cs" />
     <Compile Include="Power Controllers\DigitalLoggerPropertiesConfig.cs" />
     <Compile Include="ImageProcessors\AnalogWay\AnalongWayLiveCore.cs" />
