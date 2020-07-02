@@ -1658,7 +1658,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    if (CodecStatus.Status.SIP.Registration.Count > 0)
+                    if (CodecStatus.Status.SIP != null && CodecStatus.Status.SIP.Registration.Count > 0)
                     {
                         var match = Regex.Match(CodecStatus.Status.SIP.Registration[0].URI.Value, @"(\d+)"); // extract numbers only
                         if (match.Success)
@@ -1679,16 +1679,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     }
                 }
             }
+
             public override string SipUri
             {
                 get
                 {
-                    if (CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value != null)
+                    if (CodecStatus.Status.SIP != null && CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value != null)
+                    {
                         return CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value;
+                    }
+                    else if (CodecStatus.Status.UserInterface != null &&
+                             CodecStatus.Status.UserInterface.ContactInfo.ContactMethod[0].Number.Value != null)
+                    {
+                        return CodecStatus.Status.UserInterface.ContactInfo.ContactMethod[0].Number.Value;
+                    }
                     else
                         return string.Empty;
                 }
             }
+
             public override bool AutoAnswerEnabled
             {
                 get

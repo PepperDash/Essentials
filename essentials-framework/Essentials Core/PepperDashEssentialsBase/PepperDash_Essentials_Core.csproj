@@ -193,6 +193,7 @@
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Factory\IDeviceFactory.cs" />
+    <Compile Include="Factory\ReadyEventArgs.cs" />
     <Compile Include="Feedbacks\BoolFeedback.cs" />
     <Compile Include="Feedbacks\FeedbackCollection.cs" />
     <Compile Include="Feedbacks\FeedbackEventArgs.cs" />
@@ -214,10 +215,14 @@
     <Compile Include="Monitoring\SystemMonitorController.cs" />
     <Compile Include="Microphone Privacy\MicrophonePrivacyController.cs" />
     <Compile Include="Microphone Privacy\MicrophonePrivacyControllerConfig.cs" />
+<<<<<<< HEAD
     <Compile Include="Occupancy\CenOdtOccupancySensorBaseController.cs" />
     <Compile Include="Occupancy\GlsOccupancySensorBaseController.cs" />
     <Compile Include="Occupancy\GlsOdtOccupancySensorController.cs" />
     <Compile Include="Occupancy\IOccupancyStatusProviderAggregator.cs" />
+=======
+    <Compile Include="PartitionSensor\GlsPartitionSensorController.cs" />
+>>>>>>> development
     <Compile Include="Plugins\PluginLoader.cs" />
     <Compile Include="Presets\PresetBase.cs" />
     <Compile Include="Plugins\IPluginDeviceFactory.cs" />
