@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
-namespace PepperDash_Essentials_Core.Crestron_IO.DinCenCn
+namespace PepperDash.Essentials.Core
 {
     public interface IHasCresnetBranches
     {
