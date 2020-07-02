@@ -12,7 +12,7 @@ using PepperDash.Essentials.Room.MobileControl;
 
 namespace PepperDash.Essentials
 {
-    public class MobileConrolEssentialsHuddleSpaceRoomBridge : MobileControlBridgeBase
+    public class MobileControlEssentialsHuddleSpaceRoomBridge : MobileControlBridgeBase
     {
 
         public EssentialsRoomBase Room { get; private set; }
@@ -40,7 +40,7 @@ namespace PepperDash.Essentials
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="room"></param>
-        public MobileConrolEssentialsHuddleSpaceRoomBridge(EssentialsRoomBase room):
+        public MobileControlEssentialsHuddleSpaceRoomBridge(EssentialsRoomBase room):
 			base("mobileControlBridge-essentialsHuddle", "Essentials Mobile Control Bridge-Huddle")
         {
             Room = room;   
