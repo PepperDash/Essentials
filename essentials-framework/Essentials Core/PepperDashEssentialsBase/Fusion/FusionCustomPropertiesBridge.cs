@@ -41,43 +41,43 @@ namespace PepperDash.Essentials.Core.Fusion
 
                         var devProps = JsonConvert.DeserializeObject<RoomOnToDefaultSourceWhenOccupiedConfig>(deviceConfig.Properties.ToString());
 
-                        var enableFeature = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupied"));
+                        var enableFeature = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.Id.Equals("EnRoomOnWhenOccupied"));
                         if (enableFeature != null)
                             devProps.EnableRoomOnWhenOccupied = bool.Parse(enableFeature.CustomFieldValue);
 
-                        var enableTime = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("RoomOnWhenOccupiedStartTime"));
+                        var enableTime = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.Id.Equals("RoomOnWhenOccupiedStartTime"));
                         if (enableTime != null)
                             devProps.OccupancyStartTime = enableTime.CustomFieldValue;
 
-                        var disableTime = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("RoomOnWhenOccupiedEndTime"));
+                        var disableTime = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.Id.Equals("RoomOnWhenOccupiedEndTime"));
                         if (disableTime != null)
                             devProps.OccupancyEndTime = disableTime.CustomFieldValue;
 
-                        var enableSunday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedSun"));
+                        var enableSunday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.Id.Equals("EnRoomOnWhenOccupiedSun"));
                         if (enableSunday != null)
                             devProps.EnableSunday = bool.Parse(enableSunday.CustomFieldValue);
 
-                        var enableMonday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedMon"));
+                        var enableMonday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.Id.Equals("EnRoomOnWhenOccupiedMon"));
                         if (enableMonday != null)
                             devProps.EnableMonday = bool.Parse(enableMonday.CustomFieldValue);
 
-                        var enableTuesday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedTue"));
+                        var enableTuesday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.Id.Equals("EnRoomOnWhenOccupiedTue"));
                         if (enableTuesday != null)
                             devProps.EnableTuesday = bool.Parse(enableTuesday.CustomFieldValue);
 
-                        var enableWednesday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedWed"));
+                        var enableWednesday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.Id.Equals("EnRoomOnWhenOccupiedWed"));
                         if (enableWednesday != null)
                             devProps.EnableWednesday = bool.Parse(enableWednesday.CustomFieldValue);
 
-                        var enableThursday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedThu"));
+                        var enableThursday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.Id.Equals("EnRoomOnWhenOccupiedThu"));
                         if (enableThursday != null)
                             devProps.EnableThursday = bool.Parse(enableThursday.CustomFieldValue);
 
-                        var enableFriday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedFri"));
+                        var enableFriday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.Id.Equals("EnRoomOnWhenOccupiedFri"));
                         if (enableFriday != null)
                             devProps.EnableFriday = bool.Parse(enableFriday.CustomFieldValue);
 
-                        var enableSaturday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("EnRoomOnWhenOccupiedSat"));
+                        var enableSaturday = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.Id.Equals("EnRoomOnWhenOccupiedSat"));
                         if (enableSaturday != null)
                             devProps.EnableSaturday = bool.Parse(enableSaturday.CustomFieldValue);
 
@@ -96,7 +96,7 @@ namespace PepperDash.Essentials.Core.Fusion
                         }
 
                         // Set the help message
-                        var helpMessage = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.ID.Equals("RoomHelpMessage"));
+                        var helpMessage = roomInfo.FusionCustomProperties.FirstOrDefault(p => p.Id.Equals("RoomHelpMessage"));
                         if (helpMessage != null)
                         {
                             //Debug.Console(1, "Current Help Message: {0}. New Help Message: {1}", deviceConfig.Properties["help"]["message"].Value<string>(ToString()), helpMessage.CustomFieldValue);
