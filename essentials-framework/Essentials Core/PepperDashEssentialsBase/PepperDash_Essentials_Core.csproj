@@ -214,6 +214,10 @@
     <Compile Include="Monitoring\SystemMonitorController.cs" />
     <Compile Include="Microphone Privacy\MicrophonePrivacyController.cs" />
     <Compile Include="Microphone Privacy\MicrophonePrivacyControllerConfig.cs" />
+    <Compile Include="Occupancy\CenOdtOccupancySensorBaseController.cs" />
+    <Compile Include="Occupancy\GlsOccupancySensorBaseController.cs" />
+    <Compile Include="Occupancy\GlsOdtOccupancySensorController.cs" />
+    <Compile Include="Occupancy\IOccupancyStatusProviderAggregator.cs" />
     <Compile Include="Plugins\PluginLoader.cs" />
     <Compile Include="Presets\PresetBase.cs" />
     <Compile Include="Plugins\IPluginDeviceFactory.cs" />
