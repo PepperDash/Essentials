@@ -614,7 +614,13 @@ namespace PepperDash.Essentials.DM
                 var cecPort2 = outputCard.Card2.HdmiOutput;
                 AddDmcHdoPorts(number, cecPort1, cecPort2);
             }
-            
+            else if (type == "dmc4kzhdo")
+            {
+                var outputCard = new Dmc4kzHdoSingle(number, Chassis);
+                var cecPort1 = outputCard.Card1.HdmiOutput;
+                var cecPort2 = outputCard.Card2.HdmiOutput;
+                AddDmcHdoPorts(number, cecPort1, cecPort2);
+            }
             else if (type == "dmchdo")
             {
                 var outputCard = new DmcHdoSingle(number, Chassis);
