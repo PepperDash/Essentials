@@ -248,12 +248,12 @@ namespace PepperDash.Essentials.Core
                 Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
                 return new GlsPartCn(cresnetId, Global.ControlSystem);
             }
-            var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as ICresnetBridge;
+            var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
                 Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
-                return new GlsPartCn(cresnetId, cresnetBridge.Branches[branchId]);
+                return new GlsPartCn(cresnetId, cresnetBridge.CresnetBranches[branchId]);
             }
             Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
             return null;
