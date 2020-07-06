@@ -429,15 +429,18 @@ namespace PepperDash.Essentials
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
                 var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
-                if (room != null)
+                if (room == null)
                 {
-                    if (room is EssentialsHuddleSpaceRoom)
-                    {
-                        DeviceManager.AddDevice(room);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create room from config, key '{0}'", roomConfig.Key);'
+                    return;
+                }
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase((EssentialsHuddleSpaceRoom)room, 0xf1));
+                var huddleRoom = room as EssentialsHuddleSpaceRoom;
+                var vtcRoom = room as EssentialsHuddleVtc1Room;
 
+                if (huddleRoom != null)
+                {
+                    DeviceManager.AddDevice(huddleRoom);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
@@ -447,8 +450,11 @@ namespace PepperDash.Essentials
                     {
                         DeviceManager.AddDevice(room);
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
+                    // Mobile Control bridge
+                    var bridge = new MobileControlEssentialsHuddleSpaceRoomBridge(huddleRoom);
+                    AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
+                    DeviceManager.AddDevice(bridge);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
@@ -460,6 +466,15 @@ namespace PepperDash.Essentials
                         DeviceManager.AddDevice(room);
                     }
 
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
+                    DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController(vtcRoom, 0xf1));
+
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
+                    // Mobile Control bridge
+                    var bridge = new MobileControlEssentialsHuddleSpaceRoomBridge(room);
+                    AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
+                    DeviceManager.AddDevice(bridge);
+                    continue;
                 }
                 else
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Cannot create room from config, key '{0}' - Is this intentional?  This may be a valid configuration.", roomConfig.Key);
