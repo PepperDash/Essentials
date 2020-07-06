@@ -223,7 +223,9 @@
     <Compile Include="Feedbacks\IntFeedback.cs" />
     <Compile Include="Feedbacks\SerialFeedback.cs" />
     <Compile Include="Feedbacks\StringFeedback.cs" />
+    <Compile Include="Fusion\EssentialsDualDisplayFusionController.cs" />
     <Compile Include="Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
+    <Compile Include="Fusion\EssentialsHuddleVtc1FusionController.cs" />
     <Compile Include="Fusion\FusionCustomPropertiesBridge.cs" />
     <Compile Include="Fusion\FusionEventHandlers.cs" />
     <Compile Include="Fusion\FusionProcessorQueries.cs" />
