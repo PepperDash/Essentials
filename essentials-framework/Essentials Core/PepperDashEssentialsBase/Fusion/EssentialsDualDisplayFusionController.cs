@@ -20,7 +20,12 @@ namespace PepperDash.Essentials.Core.Fusion
 
         protected override void ExecuteCustomSteps()
         {
+            var leftDisplay = _room.LeftDisplay as DisplayBase;
+            var rightDisplay = _room.RightDisplay as DisplayBase;
+
             SetUpCodec();
+            SetUpDisplay(leftDisplay);
+            SetUpDisplay(rightDisplay);
             base.ExecuteCustomSteps();
         }
 
@@ -30,7 +35,12 @@ namespace PepperDash.Essentials.Core.Fusion
 
         protected override void SetUpDisplay()
         {
-            base.SetUpDisplay();
+            //todo figure out what to do here...
+        }
+
+        private void SetUpDisplay(DisplayBase display)
+        {
+            FusionAsset tempAsset;
 
 
         }

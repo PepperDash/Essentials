@@ -34,13 +34,7 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             try
             {
-                var essentialsHuddleVtc1Room = Room as EssentialsHuddleVtc1Room;
-                if (essentialsHuddleVtc1Room == null)
-                {
-                    return;
-                }
-
-                var codec = essentialsHuddleVtc1Room.VideoCodec;
+                var codec = _room.VideoCodec;
 
                 if (codec == null)
                 {
