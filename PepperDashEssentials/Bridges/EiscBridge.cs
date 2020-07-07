@@ -27,8 +27,6 @@ namespace PepperDash.Essentials.Bridges
 
             Eisc.SigChange += Eisc_SigChange;
 
-            Eisc.Register();
-
             AddPostActivationAction(() =>
             {
                 Debug.Console(1, this, "Linking Devices...");
@@ -76,7 +74,7 @@ namespace PepperDash.Essentials.Bridges
                     }
                 }
                 Debug.Console(1, this, "Devices Linked.");
-
+                Eisc.Register();
             });
         }
 
