@@ -1132,8 +1132,6 @@ namespace PepperDash.Essentials.DM
                 {
                     LinkRxToApi(trilist, ioSlot, joinMap, ioSlotJoin);
                 }
-
-                LinkInOutFeedbackToApi(trilist, ioSlot, joinMap, ioSlotJoin);
             }
         }
 
@@ -1156,26 +1154,6 @@ namespace PepperDash.Essentials.DM
             SetHdcpStateAction(true, hdmiPort, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
             InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(
                 trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
-        }
-
-        private void LinkInOutFeedbackToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap,
-            uint ioSlotJoin)
-        {
-// Feedback
-            VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo.JoinNumber + ioSlotJoin]);
-            AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio.JoinNumber + ioSlotJoin]);
-            UsbOutputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputUsb.JoinNumber + ioSlotJoin]);
-            UsbInputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.InputUsb.JoinNumber + ioSlotJoin]);
-
-            OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + ioSlotJoin]);
-            InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + ioSlotJoin]);
-            OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(
-                trilist.StringInput[joinMap.OutputCurrentVideoInputNames.JoinNumber + ioSlotJoin]);
-            OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(
-                trilist.StringInput[joinMap.OutputCurrentAudioInputNames.JoinNumber + ioSlotJoin]);
-
-            OutputDisabledByHdcpFeedbacks[ioSlot].LinkInputSig(
-                trilist.BooleanInput[joinMap.OutputDisabledByHdcp.JoinNumber + ioSlotJoin]);
         }
 
         private void LinkRxToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap, uint ioSlotJoin)
@@ -1272,7 +1250,13 @@ namespace PepperDash.Essentials.DM
 
                 var dmInPortWCec = port as DMInputPortWithCec;
 
-                SetHdcpStateAction(PropertiesConfig.InputSlotSupportsHdcp2[ioSlot], dmInPortWCec,
+                bool supportsHdcp2;
+
+                //added in case the InputSlotSupportsHdcp2 section isn't included in the config, or this slot is left out.
+                //if the key isn't in the dictionary, supportsHdcp2 will be false
+                PropertiesConfig.InputSlotSupportsHdcp2.TryGetValue(ioSlot, out supportsHdcp2);
+
+                SetHdcpStateAction(supportsHdcp2, dmInPortWCec,
                     joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
 
                 InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(
@@ -1327,7 +1311,7 @@ namespace PepperDash.Essentials.DM
         private void LinkRoutingJoinsToApi(BasicTriList trilist, DmChassisControllerJoinMap joinMap, uint ioSlotJoin,
             uint ioSlot)
         {
-// Control
+            // Routing Control
             trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin,
                 o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video));
             trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + ioSlotJoin,
@@ -1336,6 +1320,22 @@ namespace PepperDash.Essentials.DM
                 o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbOutput));
             trilist.SetUShortSigAction(joinMap.InputUsb.JoinNumber + ioSlotJoin,
                 o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbInput));
+
+            //Routing Feedbacks
+            VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo.JoinNumber + ioSlotJoin]);
+            AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio.JoinNumber + ioSlotJoin]);
+            UsbOutputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputUsb.JoinNumber + ioSlotJoin]);
+            UsbInputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.InputUsb.JoinNumber + ioSlotJoin]);
+
+            OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + ioSlotJoin]);
+            InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + ioSlotJoin]);
+            OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(
+                trilist.StringInput[joinMap.OutputCurrentVideoInputNames.JoinNumber + ioSlotJoin]);
+            OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(
+                trilist.StringInput[joinMap.OutputCurrentAudioInputNames.JoinNumber + ioSlotJoin]);
+
+            OutputDisabledByHdcpFeedbacks[ioSlot].LinkInputSig(
+                trilist.BooleanInput[joinMap.OutputDisabledByHdcp.JoinNumber + ioSlotJoin]);
         }
 
         private void LinkChassisToApi(BasicTriList trilist, DmChassisControllerJoinMap joinMap)
