@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -1144,16 +1145,42 @@ namespace PepperDash.Essentials.DM
             {
                 return;
             }
-            var hdmiPort = inputPort.Port as EndpointHdmiInput;
 
-            if (hdmiPort == null)
+            Debug.Console(1, "Port value for input card {0} is set", ioSlot);
+            var port = inputPort.Port;
+
+            if (port == null)
             {
                 return;
             }
+            if (!(port is HdmiInputWithCEC))
+            {
+                Debug.Console(0, this, "HDMI Input port on card {0} does not support HDCP settings.", ioSlot);
+                return;
+            }
 
-            SetHdcpStateAction(true, hdmiPort, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
+            Debug.Console(1, "Port is HdmiInputWithCec");
+
+            var hdmiInPortWCec = port as HdmiInputWithCEC;
+
+            if (hdmiInPortWCec.HdcpSupportedLevel != eHdcpSupportedLevel.Unknown)
+            {
+                SetHdcpStateAction(true, hdmiInPortWCec, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin,
+                    trilist);
+            }
+
             InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(
                 trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
+
+            if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
+            {
+                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue =
+                    (ushort)InputCardHdcpCapabilityTypes[ioSlot];
+            }
+            else
+            {
+                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = 1;
+            }
         }
 
         private void LinkRxToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap, uint ioSlotJoin)
@@ -1177,6 +1204,10 @@ namespace PepperDash.Essentials.DM
 
         private void LinkTxToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap, uint ioSlotJoin)
         {
+            Debug.Console(1, "Setting up actions and feedbacks on input card {0}", ioSlot);
+            VideoInputSyncFeedbacks[ioSlot].LinkInputSig(
+                trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
+
             Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
             var txKey = TxDictionary[ioSlot];
             var txDevice = DeviceManager.GetDeviceForKey(txKey) as BasicDmTxControllerBase;
@@ -1190,13 +1221,7 @@ namespace PepperDash.Essentials.DM
 
             LinkBasicTxToApi(trilist, joinMap, ioSlot, ioSlotJoin, txDevice);
 
-            LinkAdvancedTxToApi(trilist, joinMap, ioSlotJoin, txDevice);
-
-            Debug.Console(1, "Setting up actions and feedbacks on input card {0}", ioSlot);
-            VideoInputSyncFeedbacks[ioSlot].LinkInputSig(
-                trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
-
-            
+            LinkAdvancedTxToApi(trilist, joinMap, ioSlot, ioSlotJoin, txDevice);
         }
 
         private void LinkBasicTxToApi(BasicTriList trilist, DmChassisControllerJoinMap joinMap, uint ioSlot,
@@ -1206,94 +1231,56 @@ namespace PepperDash.Essentials.DM
 
             if (advTx != null)
             {
-
                 return;
             }
-            var inputPort = InputPorts[string.Format("inputCard{0}--hdmiIn", ioSlot)];
-            if (inputPort != null)
+            var inputPort = InputPorts[string.Format("inputCard{0}--dmIn", ioSlot)];
+
+            if (inputPort == null)
             {
-                Debug.Console(1, "Port value for input card {0} is set", ioSlot);
-                var port = inputPort.Port;
+                return;
+            }
+            var port = inputPort.Port;
 
-                if (port == null)
-                {
-                    return;
-                }
-                if (!(port is HdmiInputWithCEC))
-                {
-                    Debug.Console(0, this, "HDMI Input port on card {0} does not support HDCP settings.", ioSlot);
-                    return;
-                }
+            if (!(port is DMInputPortWithCec))
+            {
+                Debug.Console(0, this, "DM Input port on card {0} does not support HDCP settings.", ioSlot);
+                return;
+            }
+            Debug.Console(1, "Port is DMInputPortWithCec");
 
-                Debug.Console(1, "Port is HdmiInputWithCec");
+            var dmInPortWCec = port as DMInputPortWithCec;
 
-                var hdmiInPortWCec = port as HdmiInputWithCEC;
+            bool supportsHdcp2;
 
-                if (hdmiInPortWCec.HdcpSupportedLevel != eHdcpSupportedLevel.Unknown)
-                {
-                    SetHdcpStateAction(true, hdmiInPortWCec, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin,
-                        trilist);
-                }
+            //added in case the InputSlotSupportsHdcp2 section isn't included in the config, or this slot is left out.
+            //if the key isn't in the dictionary, supportsHdcp2 will be false
+            
+            if(!PropertiesConfig.InputSlotSupportsHdcp2.TryGetValue(ioSlot, out supportsHdcp2))
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+                    "Input Slot Supports HDCP2 setting not found for slot {0}. Setting to false. Program may not function as intended.",
+                    ioSlot);
+            }
 
-                InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(
-                    trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
+            SetHdcpStateAction(supportsHdcp2, dmInPortWCec,
+                joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
 
-                if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
-                {
-                    trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue =
-                        (ushort)InputCardHdcpCapabilityTypes[ioSlot];
-                }
-                else
-                {
-                    trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = 1;
-                }
+            InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(
+                trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
+
+            if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
+            {
+                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue =
+                    (ushort) InputCardHdcpCapabilityTypes[ioSlot];
             }
             else
             {
-                inputPort = InputPorts[string.Format("inputCard{0}--dmIn", ioSlot)];
-
-                if (inputPort == null)
-                {
-                    return;
-                }
-                var port = inputPort.Port;
-
-                if (!(port is DMInputPortWithCec))
-                {
-                    Debug.Console(0, this, "DM Input port on card {0} does not support HDCP settings.", ioSlot);
-                    return;
-                }
-                Debug.Console(1, "Port is DMInputPortWithCec");
-
-                var dmInPortWCec = port as DMInputPortWithCec;
-
-                bool supportsHdcp2;
-
-                //added in case the InputSlotSupportsHdcp2 section isn't included in the config, or this slot is left out.
-                //if the key isn't in the dictionary, supportsHdcp2 will be false
-                //todo add if statement
-                PropertiesConfig.InputSlotSupportsHdcp2.TryGetValue(ioSlot, out supportsHdcp2);
-
-                SetHdcpStateAction(supportsHdcp2, dmInPortWCec,
-                    joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
-
-                InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(
-                    trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
-
-                if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
-                {
-                    trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue =
-                        (ushort)InputCardHdcpCapabilityTypes[ioSlot];
-                }
-                else
-                {
-                    trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = 1;
-                }
+                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = 1;
             }
         }
 
         private void LinkAdvancedTxToApi(BasicTriList trilist, DmChassisControllerJoinMap joinMap,
-            uint ioSlotJoin, BasicDmTxControllerBase basicTransmitter)
+           uint ioSlot, uint ioSlotJoin, BasicDmTxControllerBase basicTransmitter)
         {
             var transmitter = basicTransmitter as DmTxControllerBase;
             if (transmitter == null) return;
@@ -1303,7 +1290,41 @@ namespace PepperDash.Essentials.DM
             transmitter.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(
                 trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
 
-            //todo add HDCP Stuff here
+            var txRoutingInputs = transmitter as IRoutingInputs;
+
+            if (txRoutingInputs == null) return;
+
+            var inputPorts = txRoutingInputs.InputPorts.Where((p) => p.Port is EndpointHdmiInput || p.Port is EndpointDisplayPortInput).ToList();
+
+            if (inputPorts.Count == 0)
+            {
+                Debug.Console(1, this, "No HDCP-capable input ports found on transmitter for slot {0}", ioSlot);
+                return;
+            }
+
+            bool supportsHdcp2;
+
+            if (!PropertiesConfig.InputSlotSupportsHdcp2.TryGetValue(ioSlot, out supportsHdcp2))
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+                    "Input Slot Supports HDCP2 setting not found for slot {0}. Setting to false. Program may not function as intended.",
+                    ioSlot);
+            }
+
+            SetHdcpStateAction(supportsHdcp2, inputPorts, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
+
+            InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(
+                trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
+
+            if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
+            {
+                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue =
+                    (ushort)InputCardHdcpCapabilityTypes[ioSlot];
+            }
+            else
+            {
+                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = 1;
+            }
         }
 
         private void LinkTxOnlineFeedbackToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap,
@@ -1474,6 +1495,38 @@ namespace PepperDash.Essentials.DM
                         {
                             port.HdcpCapability = (eHdcpCapabilityType)u;
                         });
+            }
+        }
+
+        private void SetHdcpStateAction(bool hdcpTypeSimple, List<RoutingInputPort> ports, uint join,
+            BasicTriList triList)
+        {
+            if (hdcpTypeSimple)
+            {
+                triList.SetUShortSigAction(join, a =>
+                {
+                    foreach (var tempPort in ports.Select(port => port.Port).OfType<EndpointHdmiInput>())
+                    {
+                        if (a == 0)
+                        {
+                            tempPort.HdcpSupportOff();
+                        }
+                        else if (a > 0)
+                        {
+                            tempPort.HdcpSupportOn();
+                        }
+                    }
+                });
+            }
+            else
+            {
+                triList.SetUShortSigAction(join, a =>
+                {
+                    foreach (var tempPort in ports.Select(port => port.Port).OfType<EndpointHdmiInput>())
+                    {
+                        tempPort.HdcpCapability = (eHdcpCapabilityType) a;
+                    }
+                });
             }
         }
 
