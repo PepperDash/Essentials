@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.DM
         public BoolFeedback EnableAudioBreakawayFeedback { get; private set; }
         public BoolFeedback EnableUsbBreakawayFeedback { get; private set; }
 
-        public Dictionary<uint, IntFeedback> InputCardHdcpCapabilityFeedbacks { get; private set; }
+        public Dictionary<uint, IntFeedback> InputCardHdcpStateFeedbacks { get; private set; }
 
         public Dictionary<uint, eHdcpCapabilityType> InputCardHdcpCapabilityTypes { get; private set; }
 
@@ -219,7 +219,7 @@ namespace PepperDash.Essentials.DM
             EnableUsbBreakawayFeedback =
                 new BoolFeedback(() => (Chassis as DmMDMnxn).EnableUSBBreakawayFeedback.BoolValue);
 
-            InputCardHdcpCapabilityFeedbacks = new Dictionary<uint, IntFeedback>();
+            InputCardHdcpStateFeedbacks = new Dictionary<uint, IntFeedback>();
             InputCardHdcpCapabilityTypes = new Dictionary<uint, eHdcpCapabilityType>();
 
             for (uint x = 1; x <= Chassis.NumberOfOutputs; x++)
@@ -329,7 +329,7 @@ namespace PepperDash.Essentials.DM
 
                     InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return Chassis.Inputs[tempX].EndpointOnlineFeedback; });
 
-                    InputCardHdcpCapabilityFeedbacks[tempX] = new IntFeedback(() => {
+                    InputCardHdcpStateFeedbacks[tempX] = new IntFeedback(() => {
                         var inputCard = Chassis.Inputs[tempX];
 
                         if (inputCard.Card is DmcHd)
@@ -839,10 +839,10 @@ namespace PepperDash.Essentials.DM
                 case DMInputEventIds.HdcpCapabilityFeedbackEventId:
                 {
                     Debug.Console(2, this, "DM Input {0} HdcpCapabilityFeedbackEventId", args.Number);
-                    if (InputCardHdcpCapabilityFeedbacks[args.Number] != null)
-                        InputCardHdcpCapabilityFeedbacks[args.Number].FireUpdate();
+                    if (InputCardHdcpStateFeedbacks[args.Number] != null)
+                        InputCardHdcpStateFeedbacks[args.Number].FireUpdate();
                     else
-                        Debug.Console(1, this, "No index of {0} found in InputCardHdcpCapabilityFeedbacks");
+                        Debug.Console(1, this, "No index of {0} found in InputCardHdcpStateFeedbacks");
                     break;
                 }
                 default:
@@ -1169,7 +1169,7 @@ namespace PepperDash.Essentials.DM
                     trilist);
             }
 
-            InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(
+            InputCardHdcpStateFeedbacks[ioSlot].LinkInputSig(
                 trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
 
             if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
@@ -1265,7 +1265,7 @@ namespace PepperDash.Essentials.DM
             SetHdcpStateAction(supportsHdcp2, dmInPortWCec,
                 joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
 
-            InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(
+            InputCardHdcpStateFeedbacks[ioSlot].LinkInputSig(
                 trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
 
             if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
@@ -1313,18 +1313,20 @@ namespace PepperDash.Essentials.DM
 
             SetHdcpStateAction(supportsHdcp2, inputPorts, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
 
-            InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(
-                trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
-
-            if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
+            if (transmitter.HdcpStateFeedback != null)
             {
-                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue =
-                    (ushort)InputCardHdcpCapabilityTypes[ioSlot];
+                transmitter.HdcpStateFeedback.LinkInputSig(
+                    trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
             }
             else
             {
-                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = 1;
+                Debug.Console(2, this, "Transmitter Hdcp Feedback null. Linking to card's feedback");
+                InputCardHdcpStateFeedbacks[ioSlot].LinkInputSig(
+                    trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
             }
+
+            trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue =
+                (ushort) transmitter.HdcpSupportCapability;
         }
 
         private void LinkTxOnlineFeedbackToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap,
@@ -1444,9 +1446,9 @@ namespace PepperDash.Essentials.DM
             return joinMap;
         }
 
-        private void SetHdcpStateAction(bool hdcpTypeSimple, HdmiInputWithCEC port, uint join, BasicTriList trilist)
+        private void SetHdcpStateAction(bool supportsHdcp2, HdmiInputWithCEC port, uint join, BasicTriList trilist)
         {
-            if (hdcpTypeSimple)
+            if (!supportsHdcp2)
             {
                 trilist.SetUShortSigAction(join,
                     s =>
@@ -1471,9 +1473,9 @@ namespace PepperDash.Essentials.DM
             }
         }
 
-        private void SetHdcpStateAction(bool hdcpTypeSimple, EndpointHdmiInput port, uint join, BasicTriList trilist)
+        private void SetHdcpStateAction(bool supportsHdcp2, EndpointHdmiInput port, uint join, BasicTriList trilist)
         {
-            if (hdcpTypeSimple)
+            if (!supportsHdcp2)
             {
                 trilist.SetUShortSigAction(join,
                     s =>
@@ -1498,10 +1500,10 @@ namespace PepperDash.Essentials.DM
             }
         }
 
-        private void SetHdcpStateAction(bool hdcpTypeSimple, List<RoutingInputPort> ports, uint join,
+        private void SetHdcpStateAction(bool supportsHdcp2, List<RoutingInputPort> ports, uint join,
             BasicTriList triList)
         {
-            if (hdcpTypeSimple)
+            if (!supportsHdcp2)
             {
                 triList.SetUShortSigAction(join, a =>
                 {
