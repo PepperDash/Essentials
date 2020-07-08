@@ -153,10 +153,10 @@
     <Compile Include="UIDrivers\Environment Drivers\EssentialsEnvironmentDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsLightingDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsShadeDriver.cs" />
+    <Compile Include="UIDrivers\EssentialsDualDisplay\EssentialsDualDisplayPanelAvFunctionsDriver.cs" />
     <Compile Include="UIDrivers\Essentials\EssentialsHeaderDriver.cs" />
     <Compile Include="UIDrivers\JoinedSigInterlock.cs" />
     <Compile Include="UIDrivers\SigInterlock.cs" />
-    <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddlePresentationUiDriver.cs" />
     <Compile Include="UIDrivers\EssentialsHuddle\EssentialsHuddleTechPageDriver.cs" />
     <Compile Include="UI\HttpLogoServer.cs" />
     <Compile Include="UI\SmartObjectHeaderButtonList.cs" />
@@ -213,9 +213,6 @@
       <Project>{892B761C-E479-44CE-BD74-243E9214AF13}</Project>
       <Name>Essentials Devices Common</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="UIDrivers\EssentialsDualDisplay\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

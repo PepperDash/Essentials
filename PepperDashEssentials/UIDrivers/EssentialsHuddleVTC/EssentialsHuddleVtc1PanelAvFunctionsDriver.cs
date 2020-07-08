@@ -128,7 +128,7 @@ namespace PepperDash.Essentials
 
         private EssentialsHuddleVtc1Room _currentRoom;
 
-        private EssentialsHuddleTechPageDriver _TechDriver;
+        private EssentialsHuddleTechPageDriver _techDriver;
 
         /// <summary>
         /// Constructor
@@ -186,7 +186,7 @@ namespace PepperDash.Essentials
         {
             get
             {
-                return _TechDriver ?? (_TechDriver = new EssentialsHuddleTechPageDriver(TriList,
+                return _techDriver ?? (_techDriver = new EssentialsHuddleTechPageDriver(TriList,
                     CurrentRoom.PropertiesConfig.Tech));
             }
         }
@@ -530,15 +530,10 @@ namespace PepperDash.Essentials
                     var indexOfNext = meetings.IndexOf(meeting) + 1;
 
                     // indexOf = 3, 4 meetings :  
-                    if (indexOfNext < meetings.Count)
-                    {
-                        TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
-                            meetings[indexOfNext].StartTime.ToShortTimeString());
-                    }
-                    else
-                    {
-                        TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText, "No more meetings today");
-                    }
+                    TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
+                        indexOfNext < meetings.Count
+                            ? meetings[indexOfNext].StartTime.ToShortTimeString()
+                            : "No more meetings today");
 
                     TriList.SetSigFalseAction(UIBoolJoin.NextMeetingModalClosePress, () =>
                     {
@@ -1421,7 +1416,7 @@ namespace PepperDash.Essentials
             TriList.StringInput[UIStringJoin.CurrentSourceName].StringValue = routeInfo.PreferredName;
             TriList.StringInput[UIStringJoin.CurrentSourceIcon].StringValue = routeInfo.Icon; // defaults to "blank"
 
-            //code that was here was unreachable becuase if we get past the if statement, routeInfo is not null...no third option.
+            //code that was here was unreachable becuase if we get past the if statement, routeInfo is
 
             // Connect controls
             if (routeInfo.SourceDevice != null)
