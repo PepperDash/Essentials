@@ -17,7 +17,7 @@ using PepperDash.Essentials.Core.CrestronIO;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Devices.Common.DSP;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
-using PepperDash.Essentials.Devices.Common.Occupancy;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.Environment;
 
 namespace PepperDash.Essentials.Devices.Common

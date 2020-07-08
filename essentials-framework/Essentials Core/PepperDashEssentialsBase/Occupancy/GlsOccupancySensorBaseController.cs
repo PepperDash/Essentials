@@ -11,7 +11,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 
-namespace PepperDash.Essentials.Devices.Common.Occupancy
+namespace PepperDash.Essentials.Core
 {
     [Description("Wrapper class for Single Technology GLS Occupancy Sensors")]
     public class GlsOccupancySensorBaseController : CrestronGenericBridgeableBaseDevice, IOccupancyStatusProvider
@@ -55,11 +55,29 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
             }
         }
 
-        public GlsOccupancySensorBaseController(string key, string name, GlsOccupancySensorBase sensor)
-            : base(key, name, sensor)
+        public GlsOccupancySensorBaseController(string key, Func<DeviceConfig, GlsOccupancySensorBase> preActivationFunc,
+            DeviceConfig config)
+            : base(key, config.Name)
         {
-            OccSensor = sensor;
-            
+
+
+            AddPreActivationAction(() =>
+            {
+                OccSensor = preActivationFunc(config);
+
+                RegisterCrestronGenericBase(OccSensor);
+
+                RegisterGlsOdtSensorBaseController(OccSensor);
+
+            });
+        }
+
+        public GlsOccupancySensorBaseController(string key, string name) : base(key, name) {}
+
+        protected void RegisterGlsOdtSensorBaseController(GlsOccupancySensorBase occSensor)
+        {
+            OccSensor = occSensor;
+
             RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
 
             PirSensorEnabledFeedback = new BoolFeedback(() => OccSensor.PirEnabledFeedback.BoolValue);
@@ -68,15 +86,18 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
             ShortTimeoutEnabledFeedback = new BoolFeedback(() => OccSensor.ShortTimeoutEnabledFeedback.BoolValue);
 
-            PirSensitivityInVacantStateFeedback = new IntFeedback(() => OccSensor.PirSensitivityInVacantStateFeedback.UShortValue);
+            PirSensitivityInVacantStateFeedback =
+                new IntFeedback(() => OccSensor.PirSensitivityInVacantStateFeedback.UShortValue);
 
-            PirSensitivityInOccupiedStateFeedback = new IntFeedback(() => OccSensor.PirSensitivityInOccupiedStateFeedback.UShortValue);
+            PirSensitivityInOccupiedStateFeedback =
+                new IntFeedback(() => OccSensor.PirSensitivityInOccupiedStateFeedback.UShortValue);
 
             CurrentTimeoutFeedback = new IntFeedback(() => OccSensor.CurrentTimeoutFeedback.UShortValue);
 
             LocalTimoutFeedback = new IntFeedback(() => OccSensor.LocalTimeoutFeedback.UShortValue);
 
-            GraceOccupancyDetectedFeedback = new BoolFeedback(() => OccSensor.GraceOccupancyDetectedFeedback.BoolValue);
+            GraceOccupancyDetectedFeedback =
+                new BoolFeedback(() => OccSensor.GraceOccupancyDetectedFeedback.BoolValue);
 
             RawOccupancyFeedback = new BoolFeedback(() => OccSensor.RawOccupancyFeedback.BoolValue);
 
@@ -84,9 +105,9 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
 
             ExternalPhotoSensorValue = new IntFeedback(() => OccSensor.ExternalPhotoSensorValueFeedback.UShortValue);
 
-            OccSensor.BaseEvent += new Crestron.SimplSharpPro.BaseEventHandler(OccSensor_BaseEvent);
+            OccSensor.BaseEvent += OccSensor_BaseEvent;
 
-            OccSensor.GlsOccupancySensorChange += new GlsOccupancySensorChangeEventHandler(OccSensor_GlsOccupancySensorChange);
+            OccSensor.GlsOccupancySensorChange += OccSensor_GlsOccupancySensorChange;
         }
 
 
@@ -97,40 +118,56 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         /// <param name="args"></param>
         protected virtual void OccSensor_GlsOccupancySensorChange(GlsOccupancySensorBase device, GlsOccupancySensorChangeEventArgs args)
         {
-            if (args.EventId == GlsOccupancySensorBase.PirEnabledFeedbackEventId)
-                PirSensorEnabledFeedback.FireUpdate();
-            else if (args.EventId == GlsOccupancySensorBase.LedFlashEnabledFeedbackEventId)
-                LedFlashEnabledFeedback.FireUpdate();
-            else if (args.EventId == GlsOccupancySensorBase.ShortTimeoutEnabledFeedbackEventId)
-                ShortTimeoutEnabledFeedback.FireUpdate();
-            else if (args.EventId == GlsOccupancySensorBase.PirSensitivityInOccupiedStateFeedbackEventId)
-                PirSensitivityInOccupiedStateFeedback.FireUpdate();
-            else if (args.EventId == GlsOccupancySensorBase.PirSensitivityInVacantStateFeedbackEventId)
-                PirSensitivityInVacantStateFeedback.FireUpdate();
+            switch (args.EventId)
+            {
+                case GlsOccupancySensorBase.PirEnabledFeedbackEventId:
+                    PirSensorEnabledFeedback.FireUpdate();
+                    break;
+                case GlsOccupancySensorBase.LedFlashEnabledFeedbackEventId:
+                    LedFlashEnabledFeedback.FireUpdate();
+                    break;
+                case GlsOccupancySensorBase.ShortTimeoutEnabledFeedbackEventId:
+                    ShortTimeoutEnabledFeedback.FireUpdate();
+                    break;
+                case GlsOccupancySensorBase.PirSensitivityInOccupiedStateFeedbackEventId:
+                    PirSensitivityInOccupiedStateFeedback.FireUpdate();
+                    break;
+                case GlsOccupancySensorBase.PirSensitivityInVacantStateFeedbackEventId:
+                    PirSensitivityInVacantStateFeedback.FireUpdate();
+                    break;
+            }
         }
 
         protected virtual void OccSensor_BaseEvent(Crestron.SimplSharpPro.GenericBase device, Crestron.SimplSharpPro.BaseEventArgs args)
         {
             Debug.Console(2, this, "GlsOccupancySensorChange  EventId: {0}", args.EventId);
 
-            if (args.EventId == Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomOccupiedFeedbackEventId 
-                || args.EventId == Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomVacantFeedbackEventId)
+            switch (args.EventId)
             {
-                Debug.Console(1, this, "Occupancy State: {0}", OccSensor.OccupancyDetectedFeedback.BoolValue);
-                RoomIsOccupiedFeedback.FireUpdate();
+                case Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomVacantFeedbackEventId:
+                case Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomOccupiedFeedbackEventId:
+                    Debug.Console(1, this, "Occupancy State: {0}", OccSensor.OccupancyDetectedFeedback.BoolValue);
+                    RoomIsOccupiedFeedback.FireUpdate();
+                    break;
+                case GlsOccupancySensorBase.TimeoutFeedbackEventId:
+                    CurrentTimeoutFeedback.FireUpdate();
+                    break;
+                case GlsOccupancySensorBase.TimeoutLocalFeedbackEventId:
+                    LocalTimoutFeedback.FireUpdate();
+                    break;
+                case GlsOccupancySensorBase.GraceOccupancyDetectedFeedbackEventId:
+                    GraceOccupancyDetectedFeedback.FireUpdate();
+                    break;
+                case GlsOccupancySensorBase.RawOccupancyFeedbackEventId:
+                    RawOccupancyFeedback.FireUpdate();
+                    break;
+                case GlsOccupancySensorBase.InternalPhotoSensorValueFeedbackEventId:
+                    InternalPhotoSensorValue.FireUpdate();
+                    break;
+                case GlsOccupancySensorBase.ExternalPhotoSensorValueFeedbackEventId:
+                    ExternalPhotoSensorValue.FireUpdate();
+                    break;
             }
-            else if (args.EventId == GlsOccupancySensorBase.TimeoutFeedbackEventId)
-                CurrentTimeoutFeedback.FireUpdate();
-            else if (args.EventId == GlsOccupancySensorBase.TimeoutLocalFeedbackEventId)
-                LocalTimoutFeedback.FireUpdate();
-            else if (args.EventId == GlsOccupancySensorBase.GraceOccupancyDetectedFeedbackEventId)
-                GraceOccupancyDetectedFeedback.FireUpdate();
-            else if (args.EventId == GlsOccupancySensorBase.RawOccupancyFeedbackEventId)
-                RawOccupancyFeedback.FireUpdate();
-            else if (args.EventId == GlsOccupancySensorBase.InternalPhotoSensorValueFeedbackEventId)
-                InternalPhotoSensorValue.FireUpdate();
-            else if (args.EventId == GlsOccupancySensorBase.ExternalPhotoSensorValueFeedbackEventId)
-                ExternalPhotoSensorValue.FireUpdate();
         }
 
         public void SetTestMode(bool mode)
@@ -373,27 +410,51 @@ namespace PepperDash.Essentials.Devices.Common.Occupancy
         {
             LinkOccSensorToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
+
+        #region PreActivation
+
+        private static GlsOirCCn GetGlsOirCCn(DeviceConfig dc)
+        {
+            var control = CommFactory.GetControlPropertiesConfig(dc);
+            var cresnetId = control.CresnetIdInt;
+            var branchId = control.ControlPortNumber;
+            var parentKey = string.IsNullOrEmpty(control.ControlPortDevKey) ? "processor" : control.ControlPortDevKey;
+
+            if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
+            {
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
+                return new GlsOirCCn(cresnetId, Global.ControlSystem);
+            }
+            var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
+
+            if (cresnetBridge != null)
+            {
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
+                return new GlsOirCCn(cresnetId, cresnetBridge.CresnetBranches[branchId]);
+            }
+            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+            return null;
+        }
+        #endregion
+
+        public class GlsOccupancySensorBaseControllerFactory : EssentialsDeviceFactory<GlsOccupancySensorBaseController>
+        {
+            public GlsOccupancySensorBaseControllerFactory()
+            {
+                TypeNames = new List<string>() { "glsoirccn" };
+            }
+
+
+            public override EssentialsDevice BuildDevice(DeviceConfig dc)
+            {
+                Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
+
+                return new GlsOccupancySensorBaseController(dc.Key, GetGlsOirCCn, dc);
+            }
+
+        }
     }
 
-    public class GlsOccupancySensorBaseControllerFactory : EssentialsDeviceFactory<GlsOccupancySensorBaseController>
-    {
-        public GlsOccupancySensorBaseControllerFactory()
-        {
-            TypeNames = new List<string>() { "glsoirccn" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
-
-            var key = dc.Key;
-            var name = dc.Name;
-            var comm = CommFactory.GetControlPropertiesConfig(dc);
-
-            GlsOccupancySensorBase occSensor = new GlsOirCCn(comm.CresnetIdInt, Global.ControlSystem);
-
-            return new GlsOccupancySensorBaseController(key, name, occSensor);
-        }
-    }
+    
 
 }
