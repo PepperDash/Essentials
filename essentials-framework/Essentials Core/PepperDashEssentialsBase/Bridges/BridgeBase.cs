@@ -122,7 +122,13 @@ namespace PepperDash.Essentials.Core.Bridges
 
                 var registerResult = Eisc.Register();
 
-                Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Registration result: {0}", registerResult);
+                if (registerResult != eDeviceRegistrationUnRegistrationResponse.Success)
+                {
+                    Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Registration result: {0}", registerResult);
+                    return;
+                }
+
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "EISC registration successful");
             });
         }
 
