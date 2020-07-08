@@ -74,7 +74,10 @@ namespace PepperDash.Essentials.Bridges
                     }
                 }
                 Debug.Console(1, this, "Devices Linked.");
-                Eisc.Register();
+                
+                var registerResult = Eisc.Register();
+
+                Debug.Console(2, this, "Registration result: {0}", registerResult);
             });
         }
 

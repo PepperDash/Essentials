@@ -120,7 +120,9 @@ namespace PepperDash.Essentials.Core.Bridges
                     if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                 }
 
-                Eisc.Register();
+                var registerResult = Eisc.Register();
+
+                Debug.Console(2, this, "Registration result: {0}", registerResult);
             });
         }
 
