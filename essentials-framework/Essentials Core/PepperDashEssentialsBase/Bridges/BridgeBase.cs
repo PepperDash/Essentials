@@ -96,8 +96,6 @@ namespace PepperDash.Essentials.Core.Bridges
 
             Eisc.SigChange += Eisc_SigChange;
 
-            Eisc.Register();
-
             AddPostActivationAction( () =>
             {
                 Debug.Console(1, this, "Linking Devices...");
@@ -121,6 +119,16 @@ namespace PepperDash.Essentials.Core.Bridges
                     var bridge = device as IBridgeAdvanced;
                     if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                 }
+
+                var registerResult = Eisc.Register();
+
+                if (registerResult != eDeviceRegistrationUnRegistrationResponse.Success)
+                {
+                    Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Registration result: {0}", registerResult);
+                    return;
+                }
+
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "EISC registration successful");
             });
         }
 
