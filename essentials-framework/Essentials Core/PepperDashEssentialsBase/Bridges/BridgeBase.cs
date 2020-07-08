@@ -122,7 +122,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
                 var registerResult = Eisc.Register();
 
-                Debug.Console(2, this, "Registration result: {0}", registerResult);
+                Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Registration result: {0}", registerResult);
             });
         }
 
