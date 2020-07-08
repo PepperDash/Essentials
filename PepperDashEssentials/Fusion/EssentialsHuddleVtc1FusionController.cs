@@ -1,22 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.Fusion;
 
 
 using PepperDash.Core;
-using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Fusion;
-using PepperDash.Essentials.Devices.Common;
-using PepperDash.Essentials.Devices.Common.Occupancy;
 
 namespace PepperDash.Essentials.Fusion
 {

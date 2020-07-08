@@ -151,12 +151,12 @@ namespace PepperDash.Essentials.Bridges
             try
             {
                 if (Debug.Level >= 1)
-                    Debug.Console(1, this, "EiscApi change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+                    Debug.Console(2, this, "EiscApi change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
                 var uo = args.Sig.UserObject;
 
                 if (uo == null) return;
 
-                Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
+                Debug.Console(2, this, "Executing Action: {0}", uo.ToString());
                 if (uo is Action<bool>)
                     (uo as Action<bool>)(args.Sig.BoolValue);
                 else if (uo is Action<ushort>)

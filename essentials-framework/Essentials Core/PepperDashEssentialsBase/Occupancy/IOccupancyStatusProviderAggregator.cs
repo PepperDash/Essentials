@@ -7,7 +7,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash.Essentials.Devices.Common.Occupancy
+namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// Aggregates the RoomIsOccupied feedbacks of one or more IOccupancyStatusProvider objects
