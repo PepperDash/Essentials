@@ -35,6 +35,7 @@ namespace PepperDash.Essentials
             Thread.MaxNumberOfUserThreads = 400;
             Global.ControlSystem = this;
             DeviceManager.Initialize(this);
+            SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
         }
 
         /// <summary>
@@ -90,7 +91,12 @@ namespace PepperDash.Essentials
 
 
             if (!Debug.DoNotLoadOnNextBoot)
+            {
                 GoWithLoad();
+                return;
+            }
+
+            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
         }
 
         /// <summary>
@@ -168,7 +174,7 @@ namespace PepperDash.Essentials
         public void GoWithLoad()
         {
             try
-            {             
+            {
                 Debug.SetDoNotLoadOnNextBoot(false);
 
                 PluginLoader.AddProgramAssemblies();
@@ -188,11 +194,14 @@ namespace PepperDash.Essentials
 
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Folder structure verified. Loading config...");
                     if (!ConfigReader.LoadConfig2())
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Essentials Load complete with errors");
                         return;
+                    }
 
                     Load();
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Essentials load complete\r" +
-                        "-------------------------------------------------------------");
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Essentials load complete\r\n" +
+                                                                 "-------------------------------------------------------------");
                 }
                 else
                 {
@@ -211,11 +220,13 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r{0}", e);
+                Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r\n{0}", e);
             }
-
-            // Notify the OS that the program intitialization has completed
-            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            finally
+            {
+                // Notify the OS that the program intitialization has completed
+                SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            }
 
         }
 
