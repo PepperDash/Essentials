@@ -21,33 +21,33 @@ namespace PepperDash.Essentials
         /// </summary>
         public const string DefaultCodecRouteString = "codecOsd";
 
-        private EssentialsHuddleVtc1PropertiesConfig _propertiesConfig;
+        public EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; private set; }
 
         public EssentialsHuddleVtc1Room(DeviceConfig config)
             : base(config)
         {
             try
             {
-                _propertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
+                PropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
                     (config.Properties.ToString());
                 DefaultDisplay =
-                    DeviceManager.GetDeviceForKey(_propertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
+                    DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
 
-                VideoCodec = DeviceManager.GetDeviceForKey(_propertiesConfig.VideoCodecKey) as
+                VideoCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.VideoCodecKey) as
                     VideoCodecBase;
                 if (VideoCodec == null)
                 {
                     throw new ArgumentNullException("codec cannot be null");
                 }
 
-                AudioCodec = DeviceManager.GetDeviceForKey(_propertiesConfig.AudioCodecKey) as
+                AudioCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.AudioCodecKey) as
                     AudioCodecBase;
                 if (AudioCodec == null)
                 {
                     Debug.Console(0, this, "No Audio Codec Found");
                 }
 
-                DefaultAudioDevice = DeviceManager.GetDeviceForKey(_propertiesConfig.DefaultAudioKey) as IRoutingSink;
+                DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IRoutingSink;
 
                 Initialize();
             }
@@ -166,12 +166,12 @@ namespace PepperDash.Essentials
                 });
 
                 // Get Microphone Privacy object, if any  MUST HAPPEN AFTER setting InCallFeedback
-                MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(_propertiesConfig, this);
+                MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
 
                 Debug.Console(2, this, "Microphone Privacy Config evaluated.");
 
                 // Get emergency object, if any
-                Emergency = EssentialsRoomConfigHelper.GetEmergency(_propertiesConfig, this);
+                Emergency = EssentialsRoomConfigHelper.GetEmergency(PropertiesConfig, this);
 
                 Debug.Console(2, this, "Emergency Config evaluated.");
 
@@ -222,7 +222,7 @@ namespace PepperDash.Essentials
 
             if (newPropertiesConfig != null)
             {
-                _propertiesConfig = newPropertiesConfig;
+                PropertiesConfig = newPropertiesConfig;
             }
 
             ConfigWriter.UpdateRoomConfig(config);
@@ -231,17 +231,17 @@ namespace PepperDash.Essentials
         public override bool CustomActivate()
         {
             // Add Occupancy object from config
-            if (_propertiesConfig.Occupancy != null)
+            if (PropertiesConfig.Occupancy != null)
             {
                 Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Setting Occupancy Provider for room");
-                SetRoomOccupancy(DeviceManager.GetDeviceForKey(_propertiesConfig.Occupancy.DeviceKey) as
-                    IOccupancyStatusProvider, _propertiesConfig.Occupancy.TimeoutMinutes);
+                SetRoomOccupancy(DeviceManager.GetDeviceForKey(PropertiesConfig.Occupancy.DeviceKey) as
+                    IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimeoutMinutes);
             }
 
-            LogoUrl = _propertiesConfig.Logo.GetUrl();
-            SourceListKey = _propertiesConfig.SourceListKey;
-            DefaultSourceItem = _propertiesConfig.DefaultSourceItem;
-            DefaultVolume = (ushort) (_propertiesConfig.Volumes.Master.Level*65535/100);
+            LogoUrl = PropertiesConfig.Logo.GetUrl();
+            SourceListKey = PropertiesConfig.SourceListKey;
+            DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
+            DefaultVolume = (ushort) (PropertiesConfig.Volumes.Master.Level*65535/100);
 
             return base.CustomActivate();
         }
