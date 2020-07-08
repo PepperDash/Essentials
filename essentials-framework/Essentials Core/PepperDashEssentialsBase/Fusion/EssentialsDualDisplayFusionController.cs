@@ -35,7 +35,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         protected override void SetUpDisplay()
         {
-            //todo figure out what to do here...
+            Debug.Console(1, this, "No default Display fo this room");
         }
 
         private void SetUpDisplay(DisplayBase display)
@@ -60,6 +60,20 @@ namespace PepperDash.Essentials.Core.Fusion
             displayAsset.PowerOn.OutputSig.UserObject = new Action<bool>(b => { if (b) display.PowerOn(); });
             displayAsset.PowerOff.OutputSig.UserObject = new Action<bool>(b => { if (b) display.PowerOff(); });
 
+            if (!(display is ICommunicationMonitor))
+            {
+                return;
+            }
+
+            var displayCommMonitor = display as ICommunicationMonitor;
+
+            displayAsset.Connected.InputSig.BoolValue = displayCommMonitor.CommunicationMonitor.Status ==
+                                                        MonitorStatus.IsOk;
+            displayCommMonitor.CommunicationMonitor.StatusChange += (o, a) =>
+            {
+                displayAsset.Connected.InputSig.BoolValue = displayCommMonitor.CommunicationMonitor.Status ==
+                                                            MonitorStatus.IsOk;
+            };
         }
 
         private void UsageTrackerOnDeviceUsageEnded(object sender, DeviceUsageEventArgs deviceUsageEventArgs)
