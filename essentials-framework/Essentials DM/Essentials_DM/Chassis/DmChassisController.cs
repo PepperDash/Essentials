@@ -1162,8 +1162,9 @@ namespace PepperDash.Essentials.DM
             Debug.Console(1, "Port is HdmiInputWithCec");
 
             var hdmiInPortWCec = port as HdmiInputWithCEC;
-
-            if (hdmiInPortWCec.HdcpSupportedLevel != eHdcpSupportedLevel.Unknown)
+            
+            Debug.Console(0,this,"Input card slot: {0} HdcpSupportedLevel: {1}", ioSlot, hdmiInPortWCec.HdcpSupportedLevelFeedback);
+            if (hdmiInPortWCec.HdcpSupportedLevelFeedback != eHdcpSupportedLevel.Unknown)
             {
                 SetHdcpStateAction(true, hdmiInPortWCec, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin,
                     trilist);
