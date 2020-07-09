@@ -238,6 +238,42 @@ namespace PepperDash.Essentials.Core
 		    }
 		}
 
+	    public static void AddDevice(IEnumerable<IKeyed> devicesToAdd)
+	    {
+	        try
+	        {
+	            if (!DeviceCriticalSection.TryEnter())
+	            {
+	                Debug.Console(0, Debug.ErrorLogLevel.Error,
+	                    "Currently unable to add devices to Device Manager. Please try again");
+	                return;
+	            }
+	            if (!AddDeviceEnabled)
+	            {
+	                Debug.Console(0, Debug.ErrorLogLevel.Error,
+	                    "All devices have been activated. Adding new devices is not allowed.");
+	                return;
+	            }
+
+	            foreach (var dev in devicesToAdd)
+	            {
+	                try
+	                {
+	                    Devices.Add(dev.Key, dev);
+	                }
+	                catch (ArgumentException ex)
+	                {
+	                    Debug.Console(0, "Error adding device with key {0} to Device Manager: {1}\r\nStack Trace: {2}",
+	                        dev.Key, ex.Message, ex.StackTrace);
+	                }
+	            }
+	        }
+	        finally
+	        {
+	            DeviceCriticalSection.Leave();
+	        }
+	    }
+
 		public static void RemoveDevice(IKeyed newDev)
 		{
 		    try
