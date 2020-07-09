@@ -27,8 +27,6 @@ namespace PepperDash.Essentials.Bridges
 
             Eisc.SigChange += Eisc_SigChange;
 
-            Eisc.Register();
-
             AddPostActivationAction(() =>
             {
                 Debug.Console(1, this, "Linking Devices...");
@@ -77,6 +75,15 @@ namespace PepperDash.Essentials.Bridges
                 }
                 Debug.Console(1, this, "Devices Linked.");
 
+                var registerResult = Eisc.Register();
+
+                if (registerResult != eDeviceRegistrationUnRegistrationResponse.Success)
+                {
+                    Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Registration result: {0}", registerResult);
+                    return;
+                }
+
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "EISC registration successful");
             });
         }
 
