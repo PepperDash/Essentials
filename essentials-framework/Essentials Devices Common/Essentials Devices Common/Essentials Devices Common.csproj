@@ -114,8 +114,6 @@
     <Compile Include="Codec\iCodecAudio.cs" />
     <Compile Include="ImageProcessors\TVOneCorio.cs" />
     <Compile Include="ImageProcessors\TVOneCorioPropertiesConfig.cs" />
-    <Compile Include="Occupancy\CenOdtOccupancySensorBaseController.cs" />
-    <Compile Include="Occupancy\GlsOdtOccupancySensorController.cs" />
     <Compile Include="Power Controllers\Digitallogger.cs" />
     <Compile Include="Power Controllers\DigitalLoggerPropertiesConfig.cs" />
     <Compile Include="ImageProcessors\AnalogWay\AnalongWayLiveCore.cs" />
@@ -150,8 +148,6 @@
     <Compile Include="Environment\Somfy\RelayControlledShade.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Generic\GenericSource.cs" />
-    <Compile Include="Occupancy\GlsOccupancySensorBaseController.cs" />
-    <Compile Include="Occupancy\IOccupancyStatusProviderAggregator.cs" />
     <Compile Include="SetTopBox\SetTopBoxPropertiesConfig.cs" />
     <Compile Include="Streaming\AppleTV.cs" />
     <Compile Include="Audio\GenericAudioOut.cs" />

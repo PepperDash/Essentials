@@ -4,14 +4,16 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM;
+using Newtonsoft.Json;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.DM.Config;
 
 namespace PepperDash.Essentials.DM.Chassis
 {
-    public class HdMdNxM4kEController : Device, IRoutingInputsOutputs, IRouting
+    public class HdMdNxM4kEController : CrestronGenericBaseDevice, IRoutingInputsOutputs, IRouting
     {
         public HdMdNxM Chassis { get; private set; }
 
@@ -27,7 +29,7 @@ namespace PepperDash.Essentials.DM.Chassis
         /// <param name="chassis"></param>
         public HdMdNxM4kEController(string key, string name, HdMdNxM chassis,
             HdMdNxM4kEPropertiesConfig props)
-            : base(key, name)
+            : base(key, name, chassis)
         {
             Chassis = chassis;
 
@@ -99,6 +101,8 @@ namespace PepperDash.Essentials.DM.Chassis
         /// <param name="type"></param>
         /// <param name="properties"></param>
         /// <returns></returns>
+        /// /*
+        /*
         public static HdMdNxM4kEController GetController(string key, string name,
             string type, HdMdNxM4kEPropertiesConfig properties)
         {
@@ -123,6 +127,35 @@ namespace PepperDash.Essentials.DM.Chassis
                 Debug.Console(0, "ERROR Creating device key {0}: \r{1}", key, e);
                 return null;
             }
+        }*/
+
+        #region Factory
+
+        public class HdMdNxM4kEFactory : EssentialsDeviceFactory<HdMdNxM4kEController>
+        {
+            public HdMdNxM4kEFactory()
+            {
+                TypeNames = new List<string>() {"hdmd4x14ke"};
+            }
+
+
+            public override EssentialsDevice BuildDevice(DeviceConfig dc)
+            {
+                Debug.Console(1, "Factory Attempting to create new HD-MD-NxM-4K-E Device");
+
+                var props = JsonConvert.DeserializeObject<HdMdNxM4kEPropertiesConfig>(dc.Properties.ToString());
+
+                var type = dc.Type.ToLower();
+                var control = props.Control;
+                var ipid = control.IpIdInt;
+                var address = control.TcpSshProperties.Address;
+
+                return new HdMdNxM4kEController(dc.Key, dc.Name, new HdMd4x14kE(ipid, address, Global.ControlSystem), props);
+
+            }
         }
+
+        #endregion
+
     }
 }
