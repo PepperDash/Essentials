@@ -8,6 +8,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.PageManagers;
+using PepperDash.Essentials.Core.Touchpanels.Keyboards;
 using PepperDash.Essentials.UIDrivers;
 using PepperDash.Essentials.UIDrivers.VC;
 
@@ -46,11 +47,33 @@ namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
         private ModalDialog _powerDownModal;
         private EssentialsVideoCodecUiDriver _vcDriver;
         private EssentialsHuddleTechPageDriver _techDriver;
- 
+
+        public bool ShowVolumeGauge { get; set; }
+        public uint PowerOffTimeout { get; set; }
+        public string DefaultRoomKey { get; set; }
+
+        public EssentialsRoomBase CurrentRoom
+        {
+            get { return _currentRoom; }
+            set { SetCurrentRoom(value); }
+        }
+
+        public SubpageReferenceList MeetingOrContactMethodModalSrl { get; set; }
+        public JoinedSigInterlock PopupInterlock { get; private set; }
+        public HabaneroKeyboardController Keyboard { get; private set; }
 
         public EssentialsDualDisplayPanelAvFunctionsDriver(PanelDriverBase parent, CrestronTouchpanelPropertiesConfig config) : base(parent.TriList)
         {
+            _config = config;
+            _parent = parent;
 
+            _sourceStagingSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.SourceStagingSRL, 3, 3, 3);
+            _activityFooterSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.ActivityFooterSRL, 3, 3, 3);
+            _callButtonSig = _activityFooterSrl.BoolInputSig(2, 1);
+            _shareButtonSig = _activityFooterSrl.BoolInputSig(1, 1);
+            _endMeetingButtonSig = _activityFooterSrl.BoolInputSig(3, 1);
+
+            MeetingOrContactMethodModalSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.MeetingListSRL, 3, 3, 3);
         }
     }
 }

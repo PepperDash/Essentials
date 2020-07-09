@@ -187,7 +187,7 @@ namespace PepperDash.Essentials
             get
             {
                 return _techDriver ?? (_techDriver = new EssentialsHuddleTechPageDriver(TriList,
-                    CurrentRoom.PropertiesConfig.Tech));
+                    _currentRoom.PropertiesConfig.Tech));
             }
         }
 
@@ -196,10 +196,10 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        public EssentialsHuddleVtc1Room CurrentRoom
+        public EssentialsRoomBase CurrentRoom
         {
             get { return _currentRoom; }
-            set { SetCurrentRoom(value); }
+            set { SetCurrentRoom(value as EssentialsHuddleVtc1Room); }
         }
 
         /// <summary>
@@ -344,8 +344,8 @@ namespace PepperDash.Essentials
             TriList.SetBool(UIBoolJoin.ActivityFooterVisible, true);
 
             // Privacy mute button
-            TriList.SetSigFalseAction(UIBoolJoin.Volume1SpeechMutePressAndFB, CurrentRoom.PrivacyModeToggle);
-            CurrentRoom.PrivacyModeIsOnFeedback.LinkInputSig(
+            TriList.SetSigFalseAction(UIBoolJoin.Volume1SpeechMutePressAndFB, _currentRoom.PrivacyModeToggle);
+            _currentRoom.PrivacyModeIsOnFeedback.LinkInputSig(
                 TriList.BooleanInput[UIBoolJoin.Volume1SpeechMutePressAndFB]);
 
             // Default to showing rooms/sources now.
@@ -406,7 +406,7 @@ namespace PepperDash.Essentials
             }
             else
             {
-                var videoCodecBase = CurrentRoom.ScheduleSource as VideoCodecBase;
+                var videoCodecBase = _currentRoom.ScheduleSource as VideoCodecBase;
                 if (videoCodecBase != null && videoCodecBase.IsInCall)
                 {
                     PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
@@ -462,7 +462,7 @@ namespace PepperDash.Essentials
 
         private void SetupNextMeetingTimer()
         {
-            var ss = CurrentRoom.ScheduleSource;
+            var ss = _currentRoom.ScheduleSource;
             if (ss != null)
             {
                 _nextMeetingTimer = new CTimer(o => ShowNextMeetingTimerCallback(), null, 0, 60000);
@@ -477,7 +477,7 @@ namespace PepperDash.Essentials
             // Every 60 seconds, refresh the calendar
             RefreshMeetingsList();
             // check meetings list for the closest, joinable meeting
-            var ss = CurrentRoom.ScheduleSource;
+            var ss = _currentRoom.ScheduleSource;
             var meetings = ss.CodecSchedule.Meetings;
 
             if (meetings.Count > 0)
@@ -574,7 +574,7 @@ namespace PepperDash.Essentials
         {
             Action dialAction = () =>
             {
-                var d = CurrentRoom.ScheduleSource as VideoCodecBase;
+                var d = _currentRoom.ScheduleSource as VideoCodecBase;
                 if (d != null)
                 {
                     d.Dial(meeting);
@@ -726,7 +726,7 @@ namespace PepperDash.Essentials
         {
             if (!CurrentRoom.OnFeedback.BoolValue)
             {
-                CurrentRoom.RunDefaultCallRoute();
+                _currentRoom.RunDefaultCallRoute();
             }
         }
 
@@ -1054,7 +1054,7 @@ namespace PepperDash.Essentials
                 var essentialsPanelMainInterfaceDriver = _parent as EssentialsPanelMainInterfaceDriver;
                 if (essentialsPanelMainInterfaceDriver != null)
                 {
-                    essentialsPanelMainInterfaceDriver.HeaderDriver.SetupHeaderButtons(this, CurrentRoom);
+                    essentialsPanelMainInterfaceDriver.HeaderDriver.SetupHeaderButtons(this, _currentRoom);
                 }
             }
             else
@@ -1066,7 +1066,7 @@ namespace PepperDash.Essentials
 
         private void SetCurrentRoom(EssentialsHuddleVtc1Room room)
         {
-            if (_currentRoom == room)
+            if (_currentRoom == room || room == null)
             {
                 return;
             }
@@ -1095,7 +1095,7 @@ namespace PepperDash.Essentials
         /// <param name="e"></param>
         private void CurrentRoom_InCallFeedback_OutputChange(object sender, EventArgs e)
         {
-            var inCall = CurrentRoom.InCallFeedback.BoolValue;
+            var inCall = _currentRoom.InCallFeedback.BoolValue;
             if (inCall)
             {
                 // Check if transitioning to in call - and non-sharable source is in use
@@ -1114,7 +1114,7 @@ namespace PepperDash.Essentials
         /// </summary>
         private void SetupSourceList()
         {
-            var inCall = CurrentRoom.InCallFeedback.BoolValue;
+            var inCall = _currentRoom.InCallFeedback.BoolValue;
             var config = ConfigReader.ConfigObject.SourceLists;
             if (config.ContainsKey(_currentRoom.SourceListKey))
             {
@@ -1224,7 +1224,7 @@ namespace PepperDash.Essentials
             TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Today's Meetings");
 
             ushort i = 0;
-            foreach (var m in CurrentRoom.ScheduleSource.CodecSchedule.Meetings)
+            foreach (var m in _currentRoom.ScheduleSource.CodecSchedule.Meetings)
             {
                 i++;
                 MeetingOrContactMethodModalSrl.StringInputSig(i, 1).StringValue = m.StartTime.ToShortTimeString();
@@ -1238,7 +1238,7 @@ namespace PepperDash.Essentials
                 {
                     PopupInterlock.Hide();
                     ActivityCallButtonPressed();
-                    var d = CurrentRoom.ScheduleSource as VideoCodecBase;
+                    var d = _currentRoom.ScheduleSource as VideoCodecBase;
                     if (d != null)
                     {
                         RoomOnAndDialMeeting(mm);
@@ -1558,7 +1558,7 @@ namespace PepperDash.Essentials
     /// </summary>
     public interface IAVWithVCDriver : IAVDriver
     {
-        EssentialsHuddleVtc1Room CurrentRoom { get; }
+        EssentialsRoomBase CurrentRoom { get; }
 
         HabaneroKeyboardController Keyboard { get; }
         SubpageReferenceList MeetingOrContactMethodModalSrl { get; }
