@@ -117,6 +117,13 @@ namespace PepperDash.Essentials.DM
 
             HdmiIn2HdcpCapabilityFeedback = new IntFeedback("HdmiIn2HdcpCapability", () => (int)tx.HdmiInputs[2].HdcpCapabilityFeedback);
 
+            HdcpStateFeedback =
+                new IntFeedback(
+                    () =>
+                        tx.HdmiInputs[1].HdcpCapabilityFeedback > tx.HdmiInputs[2].HdcpCapabilityFeedback
+                            ? (int)tx.HdmiInputs[1].HdcpCapabilityFeedback
+                            : (int)tx.HdmiInputs[2].HdcpCapabilityFeedback);
+
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
 
             Hdmi1VideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue);
@@ -368,12 +375,11 @@ namespace PepperDash.Essentials.DM
             switch (args.EventId)
             {
                 case EndpointInputStreamEventIds.HdcpSupportOffFeedbackEventId:
-                    if (inputStream == Tx.HdmiInputs[1]) HdmiIn1HdcpCapabilityFeedback.FireUpdate();
-                    if (inputStream == Tx.HdmiInputs[2]) HdmiIn2HdcpCapabilityFeedback.FireUpdate();
-                    break;
                 case EndpointInputStreamEventIds.HdcpSupportOnFeedbackEventId:
+                case EndpointInputStreamEventIds.HdcpCapabilityFeedbackEventId:
                     if (inputStream == Tx.HdmiInputs[1]) HdmiIn1HdcpCapabilityFeedback.FireUpdate();
                     if (inputStream == Tx.HdmiInputs[2]) HdmiIn2HdcpCapabilityFeedback.FireUpdate();
+                    HdcpStateFeedback.FireUpdate();
                     break;
                 case EndpointInputStreamEventIds.SyncDetectedFeedbackEventId:
                     if (inputStream == Tx.HdmiInputs[1]) Hdmi1VideoSyncFeedback.FireUpdate();
