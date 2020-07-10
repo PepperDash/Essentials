@@ -22,7 +22,9 @@ namespace PepperDash.Essentials.Core
     public class Hrxx0WirelessRemoteController : EssentialsBridgeableDevice, IHasFeedback
     {
         private CenRfgwController _gateway;
+
         private GatewayBase _gatewayBase;
+
 
         private Hr1x0WirelessRemoteBase _remote;
 
@@ -43,7 +45,7 @@ namespace PepperDash.Essentials.Core
             var type = config.Type;
             var rfId = (uint)props.Control.InfinetIdInt;
             _config = config;
-
+            
             if (props.GatewayDeviceKey == "processor")
             {
                 {
