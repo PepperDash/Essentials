@@ -176,6 +176,7 @@ namespace PepperDash.Essentials.DM
         public virtual eHdcpCapabilityType HdcpSupportCapability { get; protected set; }
         public abstract StringFeedback ActiveVideoInputFeedback { get; protected set; }
         public RoutingInputPortWithVideoStatuses AnyVideoInput { get; protected set; }
+        public IntFeedback HdcpStateFeedback { get; protected set; }
 
 	    protected DmTxControllerBase(string key, string name, EndpointTransmitterBase hardware)
 			: base(key, name, hardware) 

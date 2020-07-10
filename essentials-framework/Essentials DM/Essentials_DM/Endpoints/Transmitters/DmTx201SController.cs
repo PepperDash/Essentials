@@ -113,6 +113,8 @@ namespace PepperDash.Essentials.DM
             HdmiInHdcpCapabilityFeedback = new IntFeedback("HdmiInHdcpCapability", () =>
                 (tx.HdmiInput.HdcpSupportOnFeedback.BoolValue ? 1 : 0));
 
+            HdcpStateFeedback = HdmiInHdcpCapabilityFeedback;
+
             HdmiVideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInput.SyncDetectedFeedback.BoolValue);
 
             VgaVideoSyncFeedback = new BoolFeedback(() => (bool)tx.VgaInput.SyncDetectedFeedback.BoolValue);
