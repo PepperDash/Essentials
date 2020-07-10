@@ -22,6 +22,7 @@ namespace PepperDash.Essentials.Core
     public class Hrxx0WirelessRemoteController : EssentialsBridgeableDevice, IHasFeedback
     {
         private CenRfgwController _gateway;
+        private GatewayBase _gatewayBase;
 
         private Hr1x0WirelessRemoteBase _remote;
 
@@ -43,27 +44,31 @@ namespace PepperDash.Essentials.Core
             var rfId = (uint)props.Control.InfinetIdInt;
             _config = config;
 
-            GatewayBase gateway;
-
             if (props.GatewayDeviceKey == "processor")
             {
-                gateway = Global.ControlSystem.ControllerRFGatewayDevice;
+                {
+                    AddPreActivationAction(() =>
+                    {
+                        _remote = preActivationFunc(config);
+                        RegisterEvents();
+                    });
+
+                    return;
+                }
             }
 
-            else
+
+            var gatewayDev = DeviceManager.GetDeviceForKey(props.GatewayDeviceKey) as CenRfgwController;
+            if (gatewayDev == null)
             {
-                var gatewayDev = DeviceManager.GetDeviceForKey(props.GatewayDeviceKey) as CenRfgwController;
-                if (gatewayDev == null)
-                {
-                    Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is not a valid device", props.GatewayDeviceKey);
-                }
-                if (gatewayDev != null)
-                {
-                    Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is a valid device", props.GatewayDeviceKey);
-                    gateway = gatewayDev.GateWay;
-                    _gateway = gatewayDev;
-                }
+                Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is not a valid device", props.GatewayDeviceKey);
             }
+            if (gatewayDev != null)
+            {
+                Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is a valid device", props.GatewayDeviceKey);
+                _gateway = gatewayDev;
+            }
+
 
             if (_gateway == null) return;
 
