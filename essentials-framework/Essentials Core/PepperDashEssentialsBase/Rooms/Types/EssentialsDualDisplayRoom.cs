@@ -4,26 +4,16 @@ using System.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Devices.AudioCodec;
-using PepperDash.Essentials.Core.Devices.VideoCodec;
-using PepperDash.Essentials.Core.Rooms;
 using PepperDash.Essentials.Core.Rooms.Config;
 using PepperDash_Essentials_Core.Devices;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsDualDisplayRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange,
-        IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec,
-        IHasDefaultDisplay, IHasInCallFeedback
+    public class EssentialsDualDisplayRoom : EssentialsHuddleVtc1Room
     {
         public const string DefaultDestinationListKey = "default";
         private const string LeftDestinationKey = "leftDisplay";
         private const string RightDestinationKey = "rightDisplay";
-
-        /// <summary>
-        /// "codecOsd"
-        /// </summary>
-        public const string DefaultCodecRouteString = "codecOsd";
 
         private readonly EssentialsDualDisplayRoomPropertiesConfig _config;
 
@@ -32,23 +22,6 @@ namespace PepperDash.Essentials
         public EssentialsDualDisplayRoom(DeviceConfig config) : base(config)
         {
             _config = config.Properties.ToObject<EssentialsDualDisplayRoomPropertiesConfig>();
-
-            DefaultDisplay = DeviceManager.GetDeviceForKey(_config.DefaultDisplayKey) as IRoutingSinkWithSwitching;
-            DefaultAudioDevice = DeviceManager.GetDeviceForKey(_config.DefaultAudioKey) as IRoutingSinkWithSwitching;
-
-            VideoCodec = DeviceManager.GetDeviceForKey(_config.VideoCodecKey) as VideoCodecBase;
-
-            if (VideoCodec == null)
-            {
-                throw new ArgumentNullException("codec cannot be null");
-            }
-
-            AudioCodec = DeviceManager.GetDeviceForKey(_config.AudioCodecKey) as AudioCodecBase;
-
-            if (AudioCodec == null)
-            {
-                Debug.Console(0, this, "No audio codec found");
-            }
 
             Initialize();
         }
@@ -63,109 +36,15 @@ namespace PepperDash.Essentials
         public IRoutingSinkWithSwitching LeftDisplay { get; private set; }
         public IRoutingSinkWithSwitching RightDisplay { get; private set; }
 
-        #region IHasAudioCodec Members
-
-        public AudioCodecBase AudioCodec { get; private set; }
-
-        #endregion
-
-        #region IHasVideoCodec Members
-
-        public BoolFeedback InCallFeedback { get; private set; }
-
-        public IntFeedback CallTypeFeedback { get; private set; }
-
-        public BoolFeedback IsSharingFeedback { get; private set; }
-
-        public VideoCodecBase VideoCodec { get; private set; }
-
-        #endregion
-
-        #region IPrivacy Members
-
-        public BoolFeedback PrivacyModeIsOnFeedback { get; private set; }
-
-        public void PrivacyModeOff()
-        {
-            VideoCodec.PrivacyModeOff();
-        }
-
-        public void PrivacyModeOn()
-        {
-            VideoCodec.PrivacyModeOn();
-        }
-
-        public void PrivacyModeToggle()
-        {
-            VideoCodec.PrivacyModeToggle();
-        }
-
-        #endregion
-
-        #region IRunDefaultCallRoute Members
-
-        /// <summary>
-        /// Sets up the room when started into call mode without presenting a source
-        /// </summary>
-        /// <returns></returns>
-        public bool RunDefaultCallRoute()
-        {
-            RunRouteAction(DefaultCodecRouteString);
-            return true;
-        }
-
-        #endregion
-
         private void Initialize()
         {
             try
             {
-                if (DefaultAudioDevice is IBasicVolumeControls)
-                {
-                    DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;
-                }
-                else if (DefaultAudioDevice is IHasVolumeDevice)
-                {
-                    DefaultVolumeControls = (DefaultAudioDevice as IHasVolumeDevice).VolumeDevice;
-                }
-
-                CurrentVolumeControls = DefaultVolumeControls;
-
                 _destinationListKey = String.IsNullOrEmpty(_config.DestinationListKey)
                     ? DefaultDestinationListKey
                     : _config.DestinationListKey;
 
-                SourceListKey = String.IsNullOrEmpty(_config.SourceListKey)
-                    ? DefaultSourceListKey
-                    : _config.SourceListKey;
-
                 InitializeDestinations();
-
-                InCallFeedback = new BoolFeedback(() =>
-                {
-                    var inAudioCall = AudioCodec != null && AudioCodec.IsInCall;
-                    var inVideoCall = VideoCodec != null && VideoCodec.IsInCall;
-
-                    return inAudioCall || inVideoCall;
-                });
-
-                MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(_config, this);
-                Emergency = EssentialsRoomConfigHelper.GetEmergency(_config, this);
-
-                VideoCodec.CallStatusChange += (o, a) => InCallFeedback.FireUpdate();
-
-                if (AudioCodec != null)
-                {
-                    AudioCodec.CallStatusChange += (o, a) => InCallFeedback.FireUpdate();
-                }
-
-                IsSharingFeedback = new BoolFeedback(() => VideoCodec.SharingContentIsOnFeedback.BoolValue);
-                VideoCodec.SharingContentIsOnFeedback.OutputChange += (o, a) => IsSharingFeedback.FireUpdate();
-
-                PrivacyModeIsOnFeedback = new BoolFeedback(() => VideoCodec.PrivacyModeIsOnFeedback.BoolValue);
-                VideoCodec.PrivacyModeIsOnFeedback.OutputChange += (o, a) => PrivacyModeIsOnFeedback.FireUpdate();
-
-                CallTypeFeedback = new IntFeedback(() => 0);
             }
             catch (Exception e)
             {

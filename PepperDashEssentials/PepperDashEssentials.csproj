@@ -155,6 +155,7 @@
     <Compile Include="UIDrivers\Environment Drivers\EssentialsShadeDriver.cs" />
     <Compile Include="UIDrivers\EssentialsDualDisplay\EssentialsDualDisplayPanelAvFunctionsDriver.cs" />
     <Compile Include="UIDrivers\Essentials\EssentialsHeaderDriver.cs" />
+    <Compile Include="UIDrivers\IHasCalendarButton.cs" />
     <Compile Include="UIDrivers\JoinedSigInterlock.cs" />
     <Compile Include="UIDrivers\SigInterlock.cs" />
     <Compile Include="UIDrivers\EssentialsHuddle\EssentialsHuddleTechPageDriver.cs" />

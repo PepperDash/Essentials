@@ -16,6 +16,7 @@ using PepperDash.Essentials.Core.PageManagers;
 using PepperDash.Essentials.Core.Rooms.Config;
 using PepperDash.Essentials.Core.Devices.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDashEssentials.UIDrivers.EssentialsDualDisplay;
 
 
 namespace PepperDash.Essentials
@@ -136,37 +137,39 @@ namespace PepperDash.Essentials
                 return nextJoin;
         }
 
-        uint SetUpCalendarButton(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, uint nextJoin)
+        uint SetUpCalendarButton(IHasCalendarButton avDriver, uint nextJoin)
         {
             // Calendar button
-            if (avDriver.CurrentRoom.ScheduleSource != null)
+            var room = avDriver.CurrentRoom as EssentialsHuddleVtc1Room;
+            if (room != null && room.ScheduleSource == null)
             {
-                var tempJoin = nextJoin;
-                TriList.SetString(tempJoin, "Calendar");
-                CalendarCaretVisible = tempJoin + 10;
-                TriList.SetSigFalseAction(tempJoin, () =>
-                    {
-                        avDriver.CalendarPress();
-                        CaretInterlock.ShowInterlocked(CalendarCaretVisible);
-                    });
-
-                nextJoin--;
                 return nextJoin;
             }
-            else
-                return nextJoin;
+
+            var tempJoin = nextJoin;
+            TriList.SetString(tempJoin, "Calendar");
+            CalendarCaretVisible = tempJoin + 10;
+            TriList.SetSigFalseAction(tempJoin, () =>
+            {
+                avDriver.CalendarPress();
+                CaretInterlock.ShowInterlocked(CalendarCaretVisible);
+            });
+
+            nextJoin--;
+            return nextJoin;
         }
 
-        uint SetUpCallButton(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, uint nextJoin)
+        uint SetUpCallButton(IHasCallButton avDriver, uint nextJoin)
         {
             // Call button
+            var room = avDriver.CurrentRoom as EssentialsHuddleVtc1Room;
             var tempJoin = nextJoin;
             TriList.SetString(tempJoin, "DND");
             CallCaretVisible = tempJoin + 10;
             TriList.SetSigFalseAction(tempJoin, () =>
                 {
                     avDriver.ShowActiveCallsList();
-                    if(avDriver.CurrentRoom.InCallFeedback.BoolValue)
+                    if(room != null && room.InCallFeedback.BoolValue)
                         CaretInterlock.ShowInterlocked(CallCaretVisible);
                 });
             HeaderCallButtonIconSig = TriList.StringInput[tempJoin];
@@ -225,6 +228,7 @@ namespace PepperDash.Essentials
         public void SetupHeaderButtons(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, EssentialsHuddleVtc1Room currentRoom)
         {
             HeaderButtonsAreSetUp = false;
+            var room = avDriver.CurrentRoom as EssentialsHuddleVtc1Room;
 
             TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
 
@@ -257,7 +261,67 @@ namespace PepperDash.Essentials
                 () =>
                 {
                     avDriver.ShowActiveCallsList();
-                    if (avDriver.CurrentRoom.InCallFeedback.BoolValue)
+                    if (room != null && room.InCallFeedback.BoolValue)
+                        CaretInterlock.ShowInterlocked(CallCaretVisible);
+                });
+
+            // Set Call Status Subpage Position
+
+            if (nextJoin == 3951)
+            {
+                // Set to right position
+                TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, false);
+                TriList.SetBool(UIBoolJoin.HeaderCallStatusRightPositionVisible, true);
+            }
+            else if (nextJoin == 3950)
+            {
+                // Set to left position
+                TriList.SetBool(UIBoolJoin.HeaderCallStatusLeftPositionVisible, true);
+                TriList.SetBool(UIBoolJoin.HeaderCallStatusRightPositionVisible, false);
+            }
+
+            HeaderButtonsAreSetUp = true;
+
+            ComputeHeaderCallStatus(currentRoom.VideoCodec);
+        }
+
+        public void SetupHeaderButtons(EssentialsDualDisplayPanelAvFunctionsDriver avDriver, EssentialsHuddleVtc1Room currentRoom)
+        {
+            HeaderButtonsAreSetUp = false;
+            var room = avDriver.CurrentRoom as EssentialsHuddleVtc1Room;
+
+            TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
+
+            var roomConf = currentRoom.PropertiesConfig;
+
+            // Register for the PopupInterlock IsShowsFeedback event to tie the header carets subpage visiblity to it
+            Parent.AvDriver.PopupInterlock.StatusChanged -= PopupInterlock_StatusChanged;
+            Parent.AvDriver.PopupInterlock.StatusChanged += PopupInterlock_StatusChanged;
+
+            SetUpGear(avDriver, currentRoom);
+
+            SetUpHelpButton(roomConf);
+
+            uint nextJoin = 3953;
+
+            nextJoin = SetUpEnvironmentButton(Parent.EnvironmentDriver, nextJoin);
+
+            nextJoin = SetUpCalendarButton(avDriver, nextJoin);
+
+            nextJoin = SetUpCallButton(avDriver, nextJoin);
+
+            // blank any that remain
+            for (var i = nextJoin; i > 3950; i--)
+            {
+                TriList.SetString(i, "Blank");
+                TriList.SetSigFalseAction(i, () => { });
+            }
+
+            TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusLabelPress,
+                () =>
+                {
+                    avDriver.ShowActiveCallsList();
+                    if (room != null && room.InCallFeedback.BoolValue)
                         CaretInterlock.ShowInterlocked(CallCaretVisible);
                 });
 

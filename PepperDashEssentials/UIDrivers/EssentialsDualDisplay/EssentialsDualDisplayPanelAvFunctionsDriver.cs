@@ -8,6 +8,7 @@ using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices.Codec;
+using PepperDash.Essentials.Core.Devices.VideoCodec;
 using PepperDash.Essentials.Core.PageManagers;
 using PepperDash.Essentials.Core.Touchpanels.Keyboards;
 using PepperDash.Essentials.UIDrivers;
@@ -15,7 +16,7 @@ using PepperDash.Essentials.UIDrivers.VC;
 
 namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
 {
-    public class EssentialsDualDisplayPanelAvFunctionsDriver : PanelDriverBase, IAVWithVCDriver
+    public class EssentialsDualDisplayPanelAvFunctionsDriver : PanelDriverBase, IAVWithVCDriver, IHasCalendarButton, IHasCallButton
     {
         #region UiDisplayMode enum
 
@@ -86,6 +87,28 @@ namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
             set { SetCurrentRoom(value as EssentialsDualDisplayRoom); }
         }
 
+        public void ShowActiveCallsList()
+        {
+            TriList.SetBool(UIBoolJoin.CallEndAllConfirmVisible, true);
+            if (PopupInterlock.CurrentJoin == UIBoolJoin.HeaderActiveCallsListVisible)
+            {
+                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
+            }
+            else
+            {
+                var videoCodecBase = _currentRoom.ScheduleSource as VideoCodecBase;
+                if (videoCodecBase != null && videoCodecBase.IsInCall)
+                {
+                    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
+                }
+            }
+        }
+
+        public void CalendarPress()
+        {
+            PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsOrContacMethodsListVisible);
+        }
+
         public SubpageReferenceList MeetingOrContactMethodModalSrl { get; set; }
         public JoinedSigInterlock PopupInterlock { get; private set; }
 
@@ -107,30 +130,6 @@ namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
                 TriList.SetBool(UIBoolJoin.NotificationRibbonVisible, false);
                 _ribbonTimer = null;
             }, timeout);
-        }
-
-                private void SetupActivityFooterWhenRoomOff()
-        {
-            _activityFooterSrl.Clear();
-            _activityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, _activityFooterSrl, 0,
-                b =>
-                {
-                    if (!b)
-                    {
-                        ActivityShareButtonPressed();
-                    }
-                }));
-            _activityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, _activityFooterSrl, 3,
-                b =>
-                {
-                    if (!b)
-                    {
-                        ActivityCallButtonPressed();
-                    }
-                }));
-            _activityFooterSrl.Count = 2;
-            TriList.SetUshort(UIUshortJoin.PresentationStagingCaretMode, 1); // right one slot
-            TriList.SetUshort(UIUshortJoin.CallStagingCaretMode, 5); // left one slot
         }
 
         public void HideNotificationRibbon()
@@ -184,6 +183,30 @@ namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
 
         #endregion
 
+        private void SetupActivityFooterWhenRoomOff()
+        {
+            _activityFooterSrl.Clear();
+            _activityFooterSrl.AddItem(new SubpageReferenceListActivityItem(1, _activityFooterSrl, 0,
+                b =>
+                {
+                    if (!b)
+                    {
+                        ActivityShareButtonPressed();
+                    }
+                }));
+            _activityFooterSrl.AddItem(new SubpageReferenceListActivityItem(2, _activityFooterSrl, 3,
+                b =>
+                {
+                    if (!b)
+                    {
+                        ActivityCallButtonPressed();
+                    }
+                }));
+            _activityFooterSrl.Count = 2;
+            TriList.SetUshort(UIUshortJoin.PresentationStagingCaretMode, 1); // right one slot
+            TriList.SetUshort(UIUshortJoin.CallStagingCaretMode, 5); // left one slot
+        }
+
         private void HideLogo()
         {
             TriList.SetBool(UIBoolJoin.LogoDefaultVisible, false);
@@ -211,7 +234,7 @@ namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
                                         && CurrentRoom.ShutdownType == eShutdownType.None;
             _endMeetingButtonSig.BoolValue = CurrentRoom.ShutdownType != eShutdownType.None;
         }
-        
+
         private void UiSelectSource(string key)
         {
             // Run the route and when it calls back, show the source
@@ -361,6 +384,7 @@ namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
         {
             RefreshCurrentRoom(_currentRoom);
         }
+
         private void CurrentRoom_CurrentAudioDeviceChange(object sender, VolumeDeviceChangeEventArgs args)
         {
             if (args.Type == ChangeType.WillChange)
@@ -372,6 +396,7 @@ namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
                 RefreshAudioDeviceConnections();
             }
         }
+
         public void VolumeUpPress(bool state)
         {
             if (CurrentRoom.CurrentVolumeControls != null)
@@ -524,7 +549,7 @@ namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
             {
                 pm = _pageManagers[uiDev];
             }
-            // Otherwise make an apporiate one
+                // Otherwise make an apporiate one
             else if (uiDev is ISetTopBoxControls)
             {
                 pm = new SetTopBoxThreePanelPageManager(uiDev as ISetTopBoxControls, TriList);
@@ -629,8 +654,123 @@ namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
             {
                 return;
             }
-            var value = (ushort)(intFeedback.UShortValue * 65535 / 100);
+            var value = (ushort) (intFeedback.UShortValue*65535/100);
             TriList.UShortInput[ModalDialog.TimerGaugeJoin].UShortValue = value;
+        }
+
+        private void ShutdownPromptTimer_HasStarted(object sender, EventArgs e)
+        {
+            // Do we need to check where the UI is? No?
+            var timer = CurrentRoom.ShutdownPromptTimer;
+            SetActivityFooterFeedbacks();
+
+            if (CurrentRoom.ShutdownType == eShutdownType.Manual || CurrentRoom.ShutdownType == eShutdownType.Vacancy)
+            {
+                _powerDownModal = new ModalDialog(TriList);
+                var message = string.Format("Meeting will end in {0} seconds", CurrentRoom.ShutdownPromptSeconds);
+
+                // Attach timer things to modal
+                CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange +=
+                    ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
+                CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange +=
+                    ShutdownPromptTimer_PercentFeedback_OutputChange;
+
+                // respond to offs by cancelling dialog
+                var onFb = CurrentRoom.OnFeedback;
+                EventHandler<FeedbackEventArgs> offHandler = null;
+                offHandler = (o, a) =>
+                {
+                    if (!onFb.BoolValue)
+                    {
+                        _powerDownModal.HideDialog();
+                        SetActivityFooterFeedbacks();
+                        onFb.OutputChange -= offHandler;
+                    }
+                };
+                onFb.OutputChange += offHandler;
+
+                _powerDownModal.PresentModalDialog(2, "End Meeting", "Power", message, "Cancel", "End Meeting Now", true,
+                    true,
+                    but =>
+                    {
+                        if (but != 2) // any button except for End cancels
+                        {
+                            timer.Cancel();
+                        }
+                        else
+                        {
+                            timer.Finish();
+                        }
+                    });
+            }
+        }
+
+        private void ShutdownPromptTimer_HasFinished(object sender, EventArgs e)
+        {
+            SetActivityFooterFeedbacks();
+            CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange -=
+                ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
+            CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange -=
+                ShutdownPromptTimer_PercentFeedback_OutputChange;
+        }
+
+        private void ShutdownPromptTimer_WasCancelled(object sender, EventArgs e)
+        {
+            if (_powerDownModal != null)
+            {
+                _powerDownModal.HideDialog();
+            }
+            SetActivityFooterFeedbacks();
+
+            CurrentRoom.ShutdownPromptTimer.TimeRemainingFeedback.OutputChange +=
+                ShutdownPromptTimer_TimeRemainingFeedback_OutputChange;
+            CurrentRoom.ShutdownPromptTimer.PercentFeedback.OutputChange -=
+                ShutdownPromptTimer_PercentFeedback_OutputChange;
+        }
+
+        private void CurrentRoom_IsWarmingFeedback_OutputChange(object sender, EventArgs e)
+        {
+            if (CurrentRoom.IsWarmingUpFeedback.BoolValue)
+            {
+                ShowNotificationRibbon("Room is powering on. Please wait...", 0);
+            }
+            else
+            {
+                ShowNotificationRibbon("Room is powered on. Welcome.", 2000);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CurrentRoom_IsCoolingDownFeedback_OutputChange(object sender, EventArgs e)
+        {
+            if (CurrentRoom.IsCoolingDownFeedback.BoolValue)
+            {
+                ShowNotificationRibbon("Room is powering off. Please wait.", 0);
+            }
+            else
+            {
+                HideNotificationRibbon();
+            }
+        }
+
+        private void CurrentRoom_InCallFeedback_OutputChange(object sender, EventArgs e)
+        {
+            var inCall = _currentRoom.InCallFeedback.BoolValue;
+            if (inCall)
+            {
+                // Check if transitioning to in call - and non-sharable source is in use
+                if (CurrentRoom.CurrentSourceInfo != null && CurrentRoom.CurrentSourceInfo.DisableCodecSharing)
+                {
+                    Debug.Console(1, CurrentRoom, "Transitioning to in-call, cancelling non-sharable source");
+                    CurrentRoom.RunRouteAction("codecOsd", CurrentRoom.SourceListKey);
+                }
+            }
+
+            SetupSourceList();
         }
 
         private void RefreshCurrentRoom(EssentialsDualDisplayRoom room)
@@ -716,6 +856,173 @@ namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
             {
                 // Clear sigs that need to be
                 TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = "Select a room";
+            }
+        }
+
+        private void SharingContentIsOnFeedback_OutputChange(object sender, EventArgs e)
+        {
+            SetActiveCallListSharingContentStatus();
+        }
+
+        private void SetActiveCallListSharingContentStatus()
+        {
+            _callSharingInfoVisibleFeedback.FireUpdate();
+
+            string callListSharedSourceLabel;
+
+            if (_currentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && _currentRoom.CurrentSourceInfo != null)
+            {
+                Debug.Console(0, "*#* CurrentRoom.CurrentSourceInfo = {0}",
+                    _currentRoom.CurrentSourceInfo != null ? _currentRoom.CurrentSourceInfo.SourceKey : "Nada!");
+                callListSharedSourceLabel = _currentRoom.CurrentSourceInfo.PreferredName;
+            }
+            else
+            {
+                callListSharedSourceLabel = "None";
+            }
+
+            TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = callListSharedSourceLabel;
+        }
+
+        private void CurrentRoom_CurrentSingleSourceChange(SourceListItem info, ChangeType type)
+        {
+            if (_currentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && _currentRoom.CurrentSourceInfo != null)
+            {
+                TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue =
+                    _currentRoom.CurrentSourceInfo.PreferredName;
+            }
+        }
+
+        private void CodecSchedule_MeetingsListHasChanged(object sender, EventArgs e)
+        {
+            RefreshMeetingsList();
+        }
+
+        private void ShowLogo()
+        {
+            if (CurrentRoom.LogoUrl == null)
+            {
+                TriList.SetBool(UIBoolJoin.LogoDefaultVisible, true);
+                TriList.SetBool(UIBoolJoin.LogoUrlVisible, false);
+            }
+            else
+            {
+                TriList.SetBool(UIBoolJoin.LogoDefaultVisible, false);
+                TriList.SetBool(UIBoolJoin.LogoUrlVisible, true);
+                TriList.SetString(UIStringJoin.LogoUrl, _currentRoom.LogoUrl);
+            }
+        }
+
+        private void RefreshMeetingsList()
+        {
+            // See if this is helpful or if the callback response in the codec class maybe doesn't come it time?
+            // Let's build list from event
+            // CurrentRoom.ScheduleSource.GetSchedule();
+
+            TriList.SetString(UIStringJoin.MeetingsOrContactMethodListIcon, "Calendar");
+            TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Today's Meetings");
+
+            ushort i = 0;
+            foreach (var m in _currentRoom.ScheduleSource.CodecSchedule.Meetings)
+            {
+                i++;
+                MeetingOrContactMethodModalSrl.StringInputSig(i, 1).StringValue = m.StartTime.ToShortTimeString();
+                MeetingOrContactMethodModalSrl.StringInputSig(i, 2).StringValue = m.EndTime.ToShortTimeString();
+                MeetingOrContactMethodModalSrl.StringInputSig(i, 3).StringValue = m.Title;
+                MeetingOrContactMethodModalSrl.StringInputSig(i, 4).StringValue = string.Format("<br>{0}", m.Organizer);
+                MeetingOrContactMethodModalSrl.StringInputSig(i, 5).StringValue = "Join";
+                MeetingOrContactMethodModalSrl.BoolInputSig(i, 2).BoolValue = m.Joinable;
+                var mm = m; // lambda scope
+                MeetingOrContactMethodModalSrl.GetBoolFeedbackSig(i, 1).SetSigFalseAction(() =>
+                {
+                    PopupInterlock.Hide();
+                    ActivityCallButtonPressed();
+                    var d = _currentRoom.ScheduleSource as VideoCodecBase;
+                    if (d != null)
+                    {
+                        RoomOnAndDialMeeting(mm);
+                    }
+                });
+            }
+            MeetingOrContactMethodModalSrl.Count = i;
+
+            if (i == 0) // Show item indicating no meetings are booked for rest of day
+            {
+                MeetingOrContactMethodModalSrl.Count = 1;
+
+                MeetingOrContactMethodModalSrl.StringInputSig(1, 1).StringValue = string.Empty;
+                MeetingOrContactMethodModalSrl.StringInputSig(1, 2).StringValue = string.Empty;
+                MeetingOrContactMethodModalSrl.StringInputSig(1, 3).StringValue =
+                    "No Meetings are booked for the remainder of the day.";
+                MeetingOrContactMethodModalSrl.StringInputSig(1, 4).StringValue = string.Empty;
+                MeetingOrContactMethodModalSrl.StringInputSig(1, 5).StringValue = string.Empty;
+            }
+        }
+
+        private void CurrentRoom_OnFeedback_OutputChange(object sender, EventArgs e)
+        {
+            CurrentRoom_SyncOnFeedback();
+        }
+
+        private void RoomOnAndDialMeeting(Meeting meeting)
+        {
+            Action dialAction = () =>
+            {
+                var d = _currentRoom.ScheduleSource as VideoCodecBase;
+                if (d != null)
+                {
+                    d.Dial(meeting);
+                    _lastMeetingDismissedId = meeting.Id; // To prevent prompts for already-joined call
+                }
+            };
+            if (CurrentRoom.OnFeedback.BoolValue)
+            {
+                dialAction();
+            }
+            else
+            {
+                // Rig a one-time handler to catch when the room is warmed and then dial call
+                EventHandler<FeedbackEventArgs> oneTimeHandler = null;
+                oneTimeHandler = (o, a) =>
+                {
+                    if (!CurrentRoom.IsWarmingUpFeedback.BoolValue)
+                    {
+                        CurrentRoom.IsWarmingUpFeedback.OutputChange -= oneTimeHandler;
+                        dialAction();
+                    }
+                };
+                CurrentRoom.IsWarmingUpFeedback.OutputChange += oneTimeHandler;
+                ActivityCallButtonPressed();
+            }
+        }
+
+        private void CurrentRoom_SyncOnFeedback()
+        {
+            var value = _currentRoom.OnFeedback.BoolValue;
+            TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
+
+            TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = !value;
+
+            if (value) //ON
+            {
+                SetupActivityFooterWhenRoomOn();
+                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
+                TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = true;
+            }
+            else
+            {
+                _currentMode = UiDisplayMode.Start;
+                if (_vcDriver.IsVisible)
+                {
+                    _vcDriver.Hide();
+                }
+                SetupActivityFooterWhenRoomOff();
+                ShowLogo();
+                SetActivityFooterFeedbacks();
+                TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
+                TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
+                // Clear this so that the pesky meeting warning can resurface every minute when off
+                _lastMeetingDismissedId = null;
             }
         }
     }

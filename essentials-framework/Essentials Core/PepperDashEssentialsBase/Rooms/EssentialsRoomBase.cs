@@ -210,7 +210,6 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public event EventHandler<EventArgs> RoomOccupancyIsSet;
 
-
         private void SetupRoomVacancyShutdown()
         {
             RoomVacancyShutdownTimer = new SecondsCountdownTimer(Key + "-vacancyOffTimer");

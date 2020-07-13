@@ -18,7 +18,7 @@ namespace PepperDash.Essentials
     /// <summary>
     /// 
     /// </summary>
-    public class EssentialsHuddleVtc1PanelAvFunctionsDriver : PanelDriverBase, IAVWithVCDriver
+    public class EssentialsHuddleVtc1PanelAvFunctionsDriver : PanelDriverBase, IAVWithVCDriver,IHasCallButton, IHasCalendarButton
     {
         #region UiDisplayMode enum
 
@@ -196,10 +196,10 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        public EssentialsRoomBase CurrentRoom
+        public EssentialsHuddleVtc1Room CurrentRoom
         {
             get { return _currentRoom; }
-            set { SetCurrentRoom(value as EssentialsHuddleVtc1Room); }
+            set { SetCurrentRoom(value); }
         }
 
         /// <summary>
@@ -1558,7 +1558,7 @@ namespace PepperDash.Essentials
     /// </summary>
     public interface IAVWithVCDriver : IAVDriver
     {
-        EssentialsRoomBase CurrentRoom { get; }
+        EssentialsHuddleVtc1Room CurrentRoom { get; }
 
         HabaneroKeyboardController Keyboard { get; }
         SubpageReferenceList MeetingOrContactMethodModalSrl { get; }

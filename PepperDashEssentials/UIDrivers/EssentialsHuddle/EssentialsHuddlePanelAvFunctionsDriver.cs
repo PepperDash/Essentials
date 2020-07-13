@@ -10,9 +10,6 @@ using PepperDash.Essentials.UIDrivers;
 
 namespace PepperDash.Essentials
 {
-	/// <summary>
-	/// 
-	/// </summary>
 	public class EssentialsHuddlePanelAvFunctionsDriver : PanelDriverBase, IAVDriver
 	{
 	    private readonly CrestronTouchpanelPropertiesConfig _config;

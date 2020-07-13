@@ -231,8 +231,10 @@ namespace PepperDash.Essentials
 
                     // AV Driver
                     Debug.Console(0, panelController, "Adding huddle space AV driver");
-                    var avDriver = new EssentialsHuddlePanelAvFunctionsDriver(mainDriver, props);
-                    avDriver.DefaultRoomKey = props.DefaultRoomKey;
+                    var avDriver = new EssentialsHuddlePanelAvFunctionsDriver(mainDriver, props)
+                    {
+                        DefaultRoomKey = props.DefaultRoomKey
+                    };
                     mainDriver.AvDriver = avDriver;
                     avDriver.CurrentRoom = room as EssentialsHuddleSpaceRoom;
 
@@ -249,24 +251,25 @@ namespace PepperDash.Essentials
 
                     panelController.LoadAndShowDriver(mainDriver);  // This is a little convoluted.
 
-                    if (panelController.Panel is TswFt5ButtonSystem)
+                    if (!(panelController.Panel is TswFt5ButtonSystem))
                     {
-                        var tsw = panelController.Panel as TswFt5ButtonSystem;
-                        // Wire up hard keys
-                        tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.PowerButtonPressed(); });
-                        //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
-                        if (mainDriver.EnvironmentDriver != null)
-                            tsw.Lights.UserObject = new Action<bool>(b =>
-                            {
-                                if (!b)
-                                {
-                                    //mainDriver.AvDriver.PopupInterlock.ShowInterlockedWithToggle(mainDriver.EnvironmentDriver.BackgroundSubpageJoin);
-                                    mainDriver.EnvironmentDriver.Toggle();
-                                }
-                            });
-                        tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
-                        tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
+                        return;
                     }
+                    var tsw = panelController.Panel as TswFt5ButtonSystem;
+                    // Wire up hard keys
+                    tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.PowerButtonPressed(); });
+                    //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
+                    if (mainDriver.EnvironmentDriver != null)
+                        tsw.Lights.UserObject = new Action<bool>(b =>
+                        {
+                            if (!b)
+                            {
+                                //mainDriver.AvDriver.PopupInterlock.ShowInterlockedWithToggle(mainDriver.EnvironmentDriver.BackgroundSubpageJoin);
+                                mainDriver.EnvironmentDriver.Toggle();
+                            }
+                        });
+                    tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
+                    tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
                 }
                 else if (room is EssentialsHuddleVtc1Room)
                 {
@@ -278,7 +281,7 @@ namespace PepperDash.Essentials
                     // AV Driver
                     var avDriver = new EssentialsHuddleVtc1PanelAvFunctionsDriver(mainDriver, props);
 
-                    var codecDriver = new PepperDash.Essentials.UIDrivers.VC.EssentialsVideoCodecUiDriver(panelController.Panel, avDriver,
+                    var codecDriver = new UIDrivers.VC.EssentialsVideoCodecUiDriver(panelController.Panel, avDriver,
                         (room as EssentialsHuddleVtc1Room).VideoCodec, mainDriver.HeaderDriver);
                     avDriver.SetVideoCodecDriver(codecDriver);
                     avDriver.DefaultRoomKey = props.DefaultRoomKey;
@@ -298,24 +301,25 @@ namespace PepperDash.Essentials
 
                     panelController.LoadAndShowDriver(mainDriver);  // This is a little convoluted.
 
-                    if (panelController.Panel is TswFt5ButtonSystem)
+                    if (!(panelController.Panel is TswFt5ButtonSystem))
                     {
-                        var tsw = panelController.Panel as TswFt5ButtonSystem;
-                        // Wire up hard keys
-                        tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.EndMeetingPress(); });
-                        //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
-                        if (mainDriver.EnvironmentDriver != null)
-                            tsw.Lights.UserObject = new Action<bool>(b =>
-                            {
-                                if (!b)
-                                {
-                                    //mainDriver.AvDriver.PopupInterlock.ShowInterlockedWithToggle(mainDriver.EnvironmentDriver.BackgroundSubpageJoin);
-                                    mainDriver.EnvironmentDriver.Toggle();
-                                }
-                            });
-                        tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
-                        tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
+                        return;
                     }
+                    var tsw = panelController.Panel as TswFt5ButtonSystem;
+                    // Wire up hard keys
+                    tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.EndMeetingPress(); });
+                    //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
+                    if (mainDriver.EnvironmentDriver != null)
+                        tsw.Lights.UserObject = new Action<bool>(b =>
+                        {
+                            if (!b)
+                            {
+                                //mainDriver.AvDriver.PopupInterlock.ShowInterlockedWithToggle(mainDriver.EnvironmentDriver.BackgroundSubpageJoin);
+                                mainDriver.EnvironmentDriver.Toggle();
+                            }
+                        });
+                    tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
+                    tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
                 }
                 else
                 {

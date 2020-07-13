@@ -21,15 +21,14 @@ namespace PepperDash.Essentials
         /// </summary>
         public const string DefaultCodecRouteString = "codecOsd";
 
-        public EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; private set; }
+        public EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; protected set; }
 
         public EssentialsHuddleVtc1Room(DeviceConfig config)
             : base(config)
         {
             try
             {
-                PropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
-                    (config.Properties.ToString());
+                PropertiesConfig = config.Properties.ToObject<EssentialsHuddleVtc1PropertiesConfig>();
                 DefaultDisplay =
                     DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
 
@@ -68,28 +67,28 @@ namespace PepperDash.Essentials
 
         #region IHasAudioCodec Members
 
-        public AudioCodecBase AudioCodec { get; private set; }
+        public AudioCodecBase AudioCodec { get; protected set; }
 
         #endregion
 
         #region IHasVideoCodec Members
 
-        public BoolFeedback InCallFeedback { get; private set; }
+        public BoolFeedback InCallFeedback { get; protected set; }
 
 
         /// <summary>
         /// States: 0 for on hook, 1 for video, 2 for audio, 3 for telekenesis
         /// </summary>
-        public IntFeedback CallTypeFeedback { get; private set; }
+        public IntFeedback CallTypeFeedback { get; protected set; }
 
         /// <summary>
         /// When something in the room is sharing with the far end or through other means
         /// </summary>
-        public BoolFeedback IsSharingFeedback { get; private set; }
+        public BoolFeedback IsSharingFeedback { get; protected set; }
 
         //************************
 
-        public VideoCodecBase VideoCodec { get; private set; }
+        public VideoCodecBase VideoCodec { get; protected set; }
 
         #endregion
 
@@ -98,7 +97,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        public BoolFeedback PrivacyModeIsOnFeedback { get; private set; }
+        public BoolFeedback PrivacyModeIsOnFeedback { get; protected set; }
 
         public void PrivacyModeOff()
         {
@@ -149,18 +148,8 @@ namespace PepperDash.Essentials
                 // Combines call feedback from both codecs if available
                 InCallFeedback = new BoolFeedback(() =>
                 {
-                    var inAudioCall = false;
-                    var inVideoCall = false;
-
-                    if (AudioCodec != null)
-                    {
-                        inAudioCall = AudioCodec.IsInCall;
-                    }
-
-                    if (VideoCodec != null)
-                    {
-                        inVideoCall = VideoCodec.IsInCall;
-                    }
+                    var inAudioCall = AudioCodec != null && AudioCodec.IsInCall;
+                    var inVideoCall = VideoCodec != null && VideoCodec.IsInCall;
 
                     return inAudioCall || inVideoCall;
                 });
@@ -192,7 +181,9 @@ namespace PepperDash.Essentials
 
                 CallTypeFeedback = new IntFeedback(() => 0);
 
-                SourceListKey = "default";
+                SourceListKey = String.IsNullOrEmpty(PropertiesConfig.SourceListKey)
+                    ? DefaultSourceListKey
+                    : PropertiesConfig.SourceListKey;
                 EnablePowerOnToLastSource = true;
 
                 var disp = DefaultDisplay as DisplayBase;
