@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.Core
 			triList.SetBoolSigAction(141, dev.Right);
 			triList.SetBoolSigAction(142, dev.Select);
 			triList.SetBoolSigAction(130, dev.Menu);
-			triList.SetBoolSigAction(134, dev.Exit);
+			triList.SetBoolSigAction(134, dev.Exit);        
 		}
 
 		public static void UnlinkButtons(this IDPad dev, BasicTriList triList)

@@ -21,7 +21,8 @@ namespace PepperDash.Essentials.DM {
     /// Builds a controller for basic DM-RMCs with Com and IR ports and no control functions
     /// 
     /// </summary>
-    public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingInputsOutputs, IRouting, IHasFeedback {
+    public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumeric
+    {
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
         public Switch Chassis { get; private set; }
@@ -563,13 +564,22 @@ namespace PepperDash.Essentials.DM {
             var outCard = input == 0 ? null : Chassis.Outputs[output];
 
             // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
-            if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video) {
-                Chassis.VideoEnter.BoolValue = true;
-                Chassis.Outputs[output].VideoOut = inCard;
-            }
+            if ((sigType | eRoutingSignalType.Video) != eRoutingSignalType.Video) return;
+            Chassis.VideoEnter.BoolValue = true;
+            Chassis.Outputs[output].VideoOut = inCard;
         }
 
         #endregion
+
+        #region IRoutingNumeric Members
+
+        public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
+        {
+            ExecuteSwitch(inputSelector, outputSelector, sigType);
+        }
+
+        #endregion
+
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
@@ -580,7 +590,14 @@ namespace PepperDash.Essentials.DM {
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<DmBladeChassisControllerJoinMap>(joinMapSerialized);
 
-            bridge.AddJoinMap(Key, joinMap);
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
 
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
@@ -599,7 +616,7 @@ namespace PepperDash.Essentials.DM {
                 {
                     Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
                     var txKey = TxDictionary[ioSlot];
-                    var basicTxDevice = DeviceManager.GetDeviceForKey(txKey) as DmTxControllerBase;
+                    var basicTxDevice = DeviceManager.GetDeviceForKey(txKey) as BasicDmTxControllerBase;
 
                     var advancedTxDevice = basicTxDevice as DmTxControllerBase;
 
@@ -808,6 +825,7 @@ namespace PepperDash.Essentials.DM {
                         });
             }
         }
+
     }
 
     /*

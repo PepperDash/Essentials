@@ -7,7 +7,6 @@ using Crestron.SimplSharpPro.EthernetCommunication;
 using Newtonsoft.Json;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
 //using PepperDash.Essentials.Devices.Common.Cameras;
@@ -97,8 +96,6 @@ namespace PepperDash.Essentials.Core.Bridges
 
             Eisc.SigChange += Eisc_SigChange;
 
-            Eisc.Register();
-
             AddPostActivationAction( () =>
             {
                 Debug.Console(1, this, "Linking Devices...");
@@ -110,12 +107,12 @@ namespace PepperDash.Essentials.Core.Bridges
                     if (device == null) continue;
 
                     Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
-                    //if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
-                    //{
-                    //    Debug.Console(2, this, "'{0}' is IBridge", device.Key);
-                    //}
+
                     if (!typeof (IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
                     {
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
+                            "{0} is not compatible with this bridge type. Please use 'eiscapi' instead, or updae the device.",
+                            device.Key);
                         continue;
                     }
 
@@ -123,7 +120,15 @@ namespace PepperDash.Essentials.Core.Bridges
                     if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                 }
 
-                
+                var registerResult = Eisc.Register();
+
+                if (registerResult != eDeviceRegistrationUnRegistrationResponse.Success)
+                {
+                    Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Registration result: {0}", registerResult);
+                    return;
+                }
+
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "EISC registration successful");
             });
         }
 
@@ -193,11 +198,11 @@ namespace PepperDash.Essentials.Core.Bridges
                             var uo = Eisc.BooleanOutput[join].UserObject as Action<bool>;
                             if (uo != null)
                             {
-                                Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
+                                Debug.Console(2, this, "Executing Action: {0}", uo.ToString());
                                 uo(Convert.ToBoolean(state));
                             }
                             else
-                                Debug.Console(1, this, "User Action is null.  Nothing to Execute");
+                                Debug.Console(2, this, "User Action is null.  Nothing to Execute");
                             break;
                         }
                     case "analog":
@@ -205,27 +210,27 @@ namespace PepperDash.Essentials.Core.Bridges
                             var uo = Eisc.BooleanOutput[join].UserObject as Action<ushort>;
                             if (uo != null)
                             {
-                                Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
+                                Debug.Console(2, this, "Executing Action: {0}", uo.ToString());
                                 uo(Convert.ToUInt16(state));
                             }
                             else
-                                Debug.Console(1, this, "User Action is null.  Nothing to Execute"); break;
+                                Debug.Console(2, this, "User Action is null.  Nothing to Execute"); break;
                         }
                     case "serial":
                         {
                             var uo = Eisc.BooleanOutput[join].UserObject as Action<string>;
                             if (uo != null)
                             {
-                                Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
+                                Debug.Console(2, this, "Executing Action: {0}", uo.ToString());
                                 uo(Convert.ToString(state));
                             }
                             else
-                                Debug.Console(1, this, "User Action is null.  Nothing to Execute");
+                                Debug.Console(2, this, "User Action is null.  Nothing to Execute");
                             break;
                         }
                     default:
                         {
-                            Debug.Console(1, "Unknown join type.  Use digital/serial/analog");
+                            Debug.Console(2, "Unknown join type.  Use digital/serial/analog");
                             break;
                         }
                 }
@@ -294,7 +299,7 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         public EiscApiAdvancedFactory()
         {
-            TypeNames = new List<string>() { "eiscapiadv", "eiscapiadvanced" };
+            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)

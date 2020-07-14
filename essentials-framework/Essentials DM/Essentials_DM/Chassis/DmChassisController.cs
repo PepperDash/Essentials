@@ -1,7 +1,8 @@
-
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Cards;
@@ -20,7 +21,7 @@ namespace PepperDash.Essentials.DM
     /// 
     /// </summary>
     [Description("Wrapper class for all DM-MD chassis variants from 8x8 to 32x32")]
-    public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingInputsOutputs, IRouting, IHasFeedback
+    public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumeric
     {
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
@@ -42,8 +43,10 @@ namespace PepperDash.Essentials.DM
 
         public IntFeedback SystemIdFeebdack { get; private set; }
         public BoolFeedback SystemIdBusyFeedback { get; private set; }
+        public BoolFeedback EnableAudioBreakawayFeedback { get; private set; }
+        public BoolFeedback EnableUsbBreakawayFeedback { get; private set; }
 
-        public Dictionary<uint, IntFeedback> InputCardHdcpCapabilityFeedbacks { get; private set; }
+        public Dictionary<uint, IntFeedback> InputCardHdcpStateFeedbacks { get; private set; }
 
         public Dictionary<uint, eHdcpCapabilityType> InputCardHdcpCapabilityTypes { get; private set; }
 
@@ -210,7 +213,12 @@ namespace PepperDash.Essentials.DM
 
             SystemIdFeebdack = new IntFeedback(() => { return (Chassis as DmMDMnxn).SystemIdFeedback.UShortValue; });
             SystemIdBusyFeedback = new BoolFeedback(() => { return (Chassis as DmMDMnxn).SystemIdBusy.BoolValue; });
-            InputCardHdcpCapabilityFeedbacks = new Dictionary<uint, IntFeedback>();
+            EnableAudioBreakawayFeedback =
+                new BoolFeedback(() => (Chassis as DmMDMnxn).EnableAudioBreakawayFeedback.BoolValue);
+            EnableUsbBreakawayFeedback =
+                new BoolFeedback(() => (Chassis as DmMDMnxn).EnableUSBBreakawayFeedback.BoolValue);
+
+            InputCardHdcpStateFeedbacks = new Dictionary<uint, IntFeedback>();
             InputCardHdcpCapabilityTypes = new Dictionary<uint, eHdcpCapabilityType>();
 
             for (uint x = 1; x <= Chassis.NumberOfOutputs; x++)
@@ -320,7 +328,7 @@ namespace PepperDash.Essentials.DM
 
                     InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return Chassis.Inputs[tempX].EndpointOnlineFeedback; });
 
-                    InputCardHdcpCapabilityFeedbacks[tempX] = new IntFeedback(() => {
+                    InputCardHdcpStateFeedbacks[tempX] = new IntFeedback(() => {
                         var inputCard = Chassis.Inputs[tempX];
 
                         if (inputCard.Card is DmcHd)
@@ -374,6 +382,11 @@ namespace PepperDash.Essentials.DM
                     });
                 }
             }
+        }
+
+        private void ChassisOnBaseEvent(GenericBase device, BaseEventArgs args)
+        {
+            
         }
 
         /// <summary>
@@ -768,6 +781,20 @@ namespace PepperDash.Essentials.DM
                     SystemIdBusyFeedback.FireUpdate();
                     break;
                 }
+                case DMSystemEventIds.AudioBreakawayEventId:
+                {
+                    Debug.Console(2, this, "AudioBreakaway Event: value: {0}",
+                        (Chassis as DmMDMnxn).EnableAudioBreakawayFeedback.BoolValue);
+                    EnableAudioBreakawayFeedback.FireUpdate();
+                    break;
+                }
+                case DMSystemEventIds.USBBreakawayEventId:
+                {
+                    Debug.Console(2, this, "USBBreakaway Event: value: {0}",
+                        (Chassis as DmMDMnxn).EnableUSBBreakawayFeedback.BoolValue);
+                    EnableUsbBreakawayFeedback.FireUpdate();
+                    break;
+                }
             }
         }
 
@@ -811,10 +838,10 @@ namespace PepperDash.Essentials.DM
                 case DMInputEventIds.HdcpCapabilityFeedbackEventId:
                 {
                     Debug.Console(2, this, "DM Input {0} HdcpCapabilityFeedbackEventId", args.Number);
-                    if (InputCardHdcpCapabilityFeedbacks[args.Number] != null)
-                        InputCardHdcpCapabilityFeedbacks[args.Number].FireUpdate();
+                    if (InputCardHdcpStateFeedbacks[args.Number] != null)
+                        InputCardHdcpStateFeedbacks[args.Number].FireUpdate();
                     else
-                        Debug.Console(1, this, "No index of {0} found in InputCardHdcpCapabilityFeedbacks");
+                        Debug.Console(1, this, "No index of {0} found in InputCardHdcpStateFeedbacks");
                     break;
                 }
                 default:
@@ -927,6 +954,10 @@ namespace PepperDash.Essentials.DM
                 (Chassis as DmMDMnxn).EnableAudioBreakaway.BoolValue = true;
                 (Chassis as DmMDMnxn).EnableUSBBreakaway.BoolValue = true;
 
+
+                EnableAudioBreakawayFeedback.FireUpdate();
+                EnableUsbBreakawayFeedback.FireUpdate();
+
                 if (InputNames != null)
                     foreach (var kvp in InputNames)
                         Chassis.Inputs[kvp.Key].Name.StringValue = kvp.Value;
@@ -943,6 +974,10 @@ namespace PepperDash.Essentials.DM
 
             var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
             var output = Convert.ToUInt32(outputSelector);
+
+            var chassisSize = (uint) Chassis.NumberOfInputs; //need this to determine USB routing values 8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                                                      //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                                                      //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
 
             // Check to see if there's an off timer waiting on this and if so, cancel
             var key = new PortNumberType(output, sigType);
@@ -964,47 +999,387 @@ namespace PepperDash.Essentials.DM
             var outCard = input == 0 ? null : Chassis.Outputs[output];
 
             // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
-            if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
+            if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
             {
                 Chassis.VideoEnter.BoolValue = true;
                 Chassis.Outputs[output].VideoOut = inCard;
             }
 
-            if ((sigType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
+            if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
             {
                 (Chassis as DmMDMnxn).AudioEnter.BoolValue = true;
                 Chassis.Outputs[output].AudioOut = inCard;
             }
 
-            if ((sigType | eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+            if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
             {
+                //using base here because USB can be routed between 2 output cards or 2 input cards
+                DMInputOutputBase dmCard;
+
+                Debug.Console(2, this, "Executing USB Output switch.\r\n in:{0} output: {1}", input, output);
+
+                if (input > chassisSize)
+                {
+                    //wanting to route an output to an output. Subtract chassis size and get output, unless it's 8x8
+                    //need this to determine USB routing values
+                    //8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                    //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                    //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+                    uint outputIndex;
+
+                    if (chassisSize == 8)
+                    {
+                        outputIndex = input - 16;
+                    }
+                    else
+                    {
+                        outputIndex = input - chassisSize;
+                    }
+                    dmCard = Chassis.Outputs[outputIndex];
+                }
+                else
+                {
+                    dmCard = inCard;
+                }
                 Chassis.USBEnter.BoolValue = true;
                 if (Chassis.Outputs[output] != null)
-                    Chassis.Outputs[output].USBRoutedTo = inCard;
+                {
+                    Debug.Console(2, this, "Routing USB for input {0} to {1}", Chassis.Outputs[input], dmCard);
+                    Chassis.Outputs[output].USBRoutedTo = dmCard;
+                }
             }
 
-            if ((sigType | eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+            if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
             {
+                //using base here because USB can be routed between 2 output cards or 2 input cards
+                DMInputOutputBase dmCard;
+
+                Debug.Console(2, this, "Executing USB Input switch.\r\n in:{0} output: {1}", input, output);
+
+                if (output > chassisSize)
+                {
+                    //wanting to route an input to an output. Subtract chassis size and get output, unless it's 8x8
+                    //need this to determine USB routing values
+                    //8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                    //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                    //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+                    uint outputIndex;
+
+                    if (chassisSize == 8)
+                    {
+                        outputIndex = input - 16;
+                    }
+                    else
+                    {
+                        outputIndex = input - chassisSize;
+                    }
+                    dmCard = Chassis.Outputs[outputIndex];
+                }
+                else
+                {
+                    dmCard = Chassis.Inputs[input];
+                }
+
+                
+
                 Chassis.USBEnter.BoolValue = true;
-                if (Chassis.Inputs[input] != null)
-                    Chassis.Inputs[input].USBRoutedTo = outCard;
+
+                if (Chassis.Inputs[output] == null)
+                {
+                    return;
+                }
+                Debug.Console(2, this, "Routing USB for input {0} to {1}", Chassis.Inputs[output], dmCard);
+                Chassis.Inputs[output].USBRoutedTo = dmCard;
             }
         }
         #endregion
 
+        #region IRoutingNumeric Members
+
+        public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
+        {
+            ExecuteSwitch(inputSelector, outputSelector, sigType);
+        }
+
+        #endregion
+
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new DmChassisControllerJoinMap(joinStart);
-
-            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
-
-            if (!string.IsNullOrEmpty(joinMapSerialized))
-                joinMap = JsonConvert.DeserializeObject<DmChassisControllerJoinMap>(joinMapSerialized);
-
-            bridge.AddJoinMap(Key, joinMap);
+            var joinMap = GetJoinMap(joinStart, joinMapKey, bridge);
 
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
+            LinkChassisToApi(trilist, joinMap);
+
+            // Link up inputs & outputs
+            for (uint i = 1; i <= Chassis.NumberOfOutputs; i++)
+            {
+                var ioSlot = i;
+                var ioSlotJoin = ioSlot - 1;
+
+                LinkRoutingJoinsToApi(trilist, joinMap, ioSlotJoin, ioSlot);
+
+                if (TxDictionary.ContainsKey(ioSlot))
+                {
+                    LinkTxToApi(trilist, ioSlot, joinMap, ioSlotJoin);
+                }
+                else
+                {
+                    LinkHdmiInputToApi(trilist, ioSlot, joinMap, ioSlotJoin);
+                }
+
+                if (RxDictionary.ContainsKey(ioSlot))
+                {
+                    LinkRxToApi(trilist, ioSlot, joinMap, ioSlotJoin);
+                }
+            }
+        }
+
+        private void LinkHdmiInputToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap, uint ioSlotJoin)
+        {
+            VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
+
+            var inputPort = InputPorts[string.Format("inputCard{0}--hdmiIn", ioSlot)];
+            if (inputPort == null)
+            {
+                return;
+            }
+
+            Debug.Console(1, "Port value for input card {0} is set", ioSlot);
+            var port = inputPort.Port;
+
+            if (port == null)
+            {
+                return;
+            }
+            if (!(port is HdmiInputWithCEC))
+            {
+                Debug.Console(0, this, "HDMI Input port on card {0} does not support HDCP settings.", ioSlot);
+                return;
+            }
+
+            Debug.Console(1, "Port is HdmiInputWithCec");
+
+            var hdmiInPortWCec = port as HdmiInputWithCEC;
+            
+ 
+            SetHdcpStateAction(true, hdmiInPortWCec, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
+            
+
+            InputCardHdcpStateFeedbacks[ioSlot].LinkInputSig(
+                trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
+
+            if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
+            {
+                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue =
+                    (ushort)InputCardHdcpCapabilityTypes[ioSlot];
+            }
+            else
+            {
+                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = 1;
+            }
+        }
+
+        private void LinkRxToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap, uint ioSlotJoin)
+        {
+            Debug.Console(2, "Creating Rx Feedbacks {0}", ioSlot);
+            var rxKey = RxDictionary[ioSlot];
+            var rxDevice = DeviceManager.GetDeviceForKey(rxKey) as DmRmcControllerBase;
+            var hdBaseTDevice = DeviceManager.GetDeviceForKey(rxKey) as DmHdBaseTControllerBase;
+            if (Chassis is DmMd8x8Cpu3 || Chassis is DmMd8x8Cpu3rps
+                || Chassis is DmMd16x16Cpu3 || Chassis is DmMd16x16Cpu3rps
+                || Chassis is DmMd32x32Cpu3 || Chassis is DmMd32x32Cpu3rps || hdBaseTDevice != null)
+            {
+                OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(
+                    trilist.BooleanInput[joinMap.OutputEndpointOnline.JoinNumber + ioSlotJoin]);
+            }
+            else if (rxDevice != null)
+            {
+                rxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline.JoinNumber + ioSlotJoin]);
+            }
+        }
+
+        private void LinkTxToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap, uint ioSlotJoin)
+        {
+            Debug.Console(1, "Setting up actions and feedbacks on input card {0}", ioSlot);
+            VideoInputSyncFeedbacks[ioSlot].LinkInputSig(
+                trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
+
+            Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
+            var txKey = TxDictionary[ioSlot];
+            var txDevice = DeviceManager.GetDeviceForKey(txKey) as BasicDmTxControllerBase;
+
+            if (txDevice == null)
+            {
+                return;
+            }
+
+            LinkTxOnlineFeedbackToApi(trilist, ioSlot, joinMap, ioSlotJoin, txDevice);
+
+            LinkBasicTxToApi(trilist, joinMap, ioSlot, ioSlotJoin, txDevice);
+
+            LinkAdvancedTxToApi(trilist, joinMap, ioSlot, ioSlotJoin, txDevice);
+        }
+
+        private void LinkBasicTxToApi(BasicTriList trilist, DmChassisControllerJoinMap joinMap, uint ioSlot,
+            uint ioSlotJoin, BasicDmTxControllerBase basicTransmitter)
+        {
+            var advTx = basicTransmitter as DmTxControllerBase;
+
+            if (advTx != null)
+            {
+                return;
+            }
+            var inputPort = InputPorts[string.Format("inputCard{0}--dmIn", ioSlot)];
+
+            if (inputPort == null)
+            {
+                return;
+            }
+            var port = inputPort.Port;
+
+            if (!(port is DMInputPortWithCec))
+            {
+                Debug.Console(0, this, "DM Input port on card {0} does not support HDCP settings.", ioSlot);
+                return;
+            }
+            Debug.Console(1, "Port is DMInputPortWithCec");
+
+            var dmInPortWCec = port as DMInputPortWithCec;
+
+            bool supportsHdcp2;
+
+            //added in case the InputSlotSupportsHdcp2 section isn't included in the config, or this slot is left out.
+            //if the key isn't in the dictionary, supportsHdcp2 will be false
+            
+            if(!PropertiesConfig.InputSlotSupportsHdcp2.TryGetValue(ioSlot, out supportsHdcp2))
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+                    "Input Slot Supports HDCP2 setting not found for slot {0}. Setting to false. Program may not function as intended.",
+                    ioSlot);
+            }
+
+            SetHdcpStateAction(supportsHdcp2, dmInPortWCec,
+                joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
+
+            InputCardHdcpStateFeedbacks[ioSlot].LinkInputSig(
+                trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
+
+            if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
+            {
+                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue =
+                    (ushort) InputCardHdcpCapabilityTypes[ioSlot];
+            }
+            else
+            {
+                trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = 1;
+            }
+        }
+
+        private void LinkAdvancedTxToApi(BasicTriList trilist, DmChassisControllerJoinMap joinMap,
+           uint ioSlot, uint ioSlotJoin, BasicDmTxControllerBase basicTransmitter)
+        {
+            var transmitter = basicTransmitter as DmTxControllerBase;
+            if (transmitter == null) return;
+
+            trilist.BooleanInput[joinMap.TxAdvancedIsPresent.JoinNumber + ioSlotJoin].BoolValue = true;
+
+            transmitter.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(
+                trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
+
+            var txRoutingInputs = transmitter as IRoutingInputs;
+
+            if (txRoutingInputs == null) return;
+
+            var inputPorts = txRoutingInputs.InputPorts.Where((p) => p.Port is EndpointHdmiInput || p.Port is EndpointDisplayPortInput).ToList();
+
+            if (inputPorts.Count == 0)
+            {
+                Debug.Console(1, this, "No HDCP-capable input ports found on transmitter for slot {0}", ioSlot);
+                return;
+            }
+
+            bool supportsHdcp2;
+
+            if (!PropertiesConfig.InputSlotSupportsHdcp2.TryGetValue(ioSlot, out supportsHdcp2))
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+                    "Input Slot Supports HDCP2 setting not found for slot {0}. Setting to false. Program may not function as intended.",
+                    ioSlot);
+            }
+
+            SetHdcpStateAction(supportsHdcp2, inputPorts, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
+
+            if (transmitter.HdcpStateFeedback != null)
+            {
+                transmitter.HdcpStateFeedback.LinkInputSig(
+                    trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
+            }
+            else
+            {
+                Debug.Console(2, this, "Transmitter Hdcp Feedback null. Linking to card's feedback");
+                InputCardHdcpStateFeedbacks[ioSlot].LinkInputSig(
+                    trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
+            }
+
+            trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue =
+                (ushort) transmitter.HdcpSupportCapability;
+        }
+
+        private void LinkTxOnlineFeedbackToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap,
+            uint ioSlotJoin, BasicDmTxControllerBase txDevice)
+        {
+            var advancedTxDevice = txDevice as DmTxControllerBase;
+
+            if ((Chassis is DmMd8x8Cpu3 || Chassis is DmMd8x8Cpu3rps
+                 || Chassis is DmMd16x16Cpu3 || Chassis is DmMd16x16Cpu3rps
+                 || Chassis is DmMd32x32Cpu3 || Chassis is DmMd32x32Cpu3rps) ||
+                advancedTxDevice == null)
+            {
+                Debug.Console(2, "Linking Tx Online Feedback from Input Card {0}", ioSlot);
+                InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(
+                    trilist.BooleanInput[joinMap.InputEndpointOnline.JoinNumber + ioSlotJoin]);
+                return;
+            }
+
+            Debug.Console(2, "Linking Tx Online Feedback from Advanced Transmitter at input {0}", ioSlot);
+
+            advancedTxDevice.IsOnline.LinkInputSig(
+                trilist.BooleanInput[joinMap.InputEndpointOnline.JoinNumber + ioSlotJoin]);
+        }
+
+        private void LinkRoutingJoinsToApi(BasicTriList trilist, DmChassisControllerJoinMap joinMap, uint ioSlotJoin,
+            uint ioSlot)
+        {
+            // Routing Control
+            trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin,
+                o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video));
+            trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + ioSlotJoin,
+                o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Audio));
+            trilist.SetUShortSigAction(joinMap.OutputUsb.JoinNumber + ioSlotJoin,
+                o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbOutput));
+            trilist.SetUShortSigAction(joinMap.InputUsb.JoinNumber + ioSlotJoin,
+                o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbInput));
+
+            //Routing Feedbacks
+            VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo.JoinNumber + ioSlotJoin]);
+            AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio.JoinNumber + ioSlotJoin]);
+            UsbOutputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputUsb.JoinNumber + ioSlotJoin]);
+            UsbInputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.InputUsb.JoinNumber + ioSlotJoin]);
+
+            OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + ioSlotJoin]);
+            InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + ioSlotJoin]);
+            OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(
+                trilist.StringInput[joinMap.OutputCurrentVideoInputNames.JoinNumber + ioSlotJoin]);
+            OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(
+                trilist.StringInput[joinMap.OutputCurrentAudioInputNames.JoinNumber + ioSlotJoin]);
+
+            OutputDisabledByHdcpFeedbacks[ioSlot].LinkInputSig(
+                trilist.BooleanInput[joinMap.OutputDisabledByHdcp.JoinNumber + ioSlotJoin]);
+        }
+
+        private void LinkChassisToApi(BasicTriList trilist, DmChassisControllerJoinMap joinMap)
+        {
             var chassis = Chassis as DmMDMnxn;
 
             IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
@@ -1012,180 +1387,65 @@ namespace PepperDash.Essentials.DM
             trilist.SetUShortSigAction(joinMap.SystemId.JoinNumber, o =>
             {
                 if (chassis != null)
+                {
                     chassis.SystemId.UShortValue = o;
+                }
             });
 
             trilist.SetSigTrueAction(joinMap.SystemId.JoinNumber, () =>
             {
-                                                                 if (chassis != null) chassis.ApplySystemId();
+                if (chassis != null)
+                {
+                    chassis.ApplySystemId();
+                }
             });
 
             SystemIdFeebdack.LinkInputSig(trilist.UShortInput[joinMap.SystemId.JoinNumber]);
             SystemIdBusyFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SystemId.JoinNumber]);
 
-            // Link up outputs
-            for (uint i = 1; i <= Chassis.NumberOfOutputs; i++)
+            EnableAudioBreakawayFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableAudioBreakaway.JoinNumber]);
+            EnableUsbBreakawayFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableUsbBreakaway.JoinNumber]);
+
+            trilist.OnlineStatusChange += (o, a) =>
             {
-                var ioSlot = i;
-                var ioSlotJoin = ioSlot - 1;
-
-                // Control
-                trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video));
-                trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + ioSlotJoin, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Audio));
-                trilist.SetUShortSigAction(joinMap.OutputUsb.JoinNumber + ioSlotJoin, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbOutput));
-                trilist.SetUShortSigAction(joinMap.InputUsb.JoinNumber + ioSlotJoin, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbInput));
-
-                if (TxDictionary.ContainsKey(ioSlot))
+                if (!a.DeviceOnLine)
                 {
-                    Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
-                    var txKey = TxDictionary[ioSlot];
-                    var basicTxDevice = DeviceManager.GetDeviceForKey(txKey) as DmTxControllerBase;
-
-                    var advancedTxDevice = basicTxDevice;
-
-                    if (Chassis is DmMd8x8Cpu3 || Chassis is DmMd8x8Cpu3rps
-                        || Chassis is DmMd16x16Cpu3 || Chassis is DmMd16x16Cpu3rps
-                        || Chassis is DmMd32x32Cpu3 || Chassis is DmMd32x32Cpu3rps)
-                    {
-                        InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline.JoinNumber + ioSlotJoin]);
-                    }
-                    else
-                    {
-                        if (advancedTxDevice != null)
-                        {
-                            advancedTxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline.JoinNumber + ioSlotJoin]);
-                            Debug.Console(2, "Linking Tx Online Feedback from Advanced Transmitter at input {0}", ioSlot);
-                        }
-                        else if (InputEndpointOnlineFeedbacks[ioSlot] != null)
-                        {
-                            Debug.Console(2, "Linking Tx Online Feedback from Input Card {0}", ioSlot);
-                            InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline.JoinNumber + ioSlotJoin]);
-                        }
-                    }
-
-                    if (basicTxDevice != null && advancedTxDevice == null)
-                        trilist.BooleanInput[joinMap.TxAdvancedIsPresent.JoinNumber + ioSlotJoin].BoolValue = true;
-
-                    if (advancedTxDevice != null)
-                    {
-                        advancedTxDevice.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
-                    }
-                    else if (advancedTxDevice == null || basicTxDevice != null)
-                    {
-                        Debug.Console(1, "Setting up actions and feedbacks on input card {0}", ioSlot);
-                        VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
-
-                        var inputPort = InputPorts[string.Format("inputCard{0}--hdmiIn", ioSlot)];
-                        if (inputPort != null)
-                        {
-                            Debug.Console(1, "Port value for input card {0} is set", ioSlot);
-                            var port = inputPort.Port;
-
-                            if (port != null)
-                            {
-                                if (port is HdmiInputWithCEC)
-                                {
-                                    Debug.Console(1, "Port is HdmiInputWithCec");
-
-                                    var hdmiInPortWCec = port as HdmiInputWithCEC;
-
-                                    if (hdmiInPortWCec.HdcpSupportedLevel != eHdcpSupportedLevel.Unknown)
-                                    {
-                                        SetHdcpStateAction(true, hdmiInPortWCec, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
-                                    }
-
-                                    InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
-
-                                    if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
-                                        trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = (ushort)InputCardHdcpCapabilityTypes[ioSlot];
-                                    else
-                                        trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = 1;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            inputPort = InputPorts[string.Format("inputCard{0}--dmIn", ioSlot)];
-
-                            if (inputPort != null)
-                            {
-                                var port = inputPort.Port;
-
-                                if (port is DMInputPortWithCec)
-                                {
-                                    Debug.Console(1, "Port is DMInputPortWithCec");
-
-                                    var dmInPortWCec = port as DMInputPortWithCec;
-
-                                    if (dmInPortWCec != null)
-                                    {
-                                        SetHdcpStateAction(PropertiesConfig.InputSlotSupportsHdcp2[ioSlot], dmInPortWCec, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
-                                    }
-
-                                    InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
-
-                                    if (InputCardHdcpCapabilityTypes.ContainsKey(ioSlot))
-                                        trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = (ushort)InputCardHdcpCapabilityTypes[ioSlot];
-                                    else
-                                        trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = 1;
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
-
-                    var inputPort = InputPorts[string.Format("inputCard{0}--hdmiIn", ioSlot)];
-                    if (inputPort != null)
-                    {
-                        var hdmiPort = inputPort.Port as EndpointHdmiInput;
-
-                        if (hdmiPort != null)
-                        {
-                            SetHdcpStateAction(true, hdmiPort, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
-                            InputCardHdcpCapabilityFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.HdcpSupportState.JoinNumber + ioSlotJoin]);
-                        }
-                    }
+                    return;
                 }
 
-                if (RxDictionary.ContainsKey(ioSlot))
-                {
-                    Debug.Console(2, "Creating Rx Feedbacks {0}", ioSlot);
-                    var rxKey = RxDictionary[ioSlot];
-                    var rxDevice = DeviceManager.GetDeviceForKey(rxKey) as DmRmcControllerBase;
-                    var hdBaseTDevice = DeviceManager.GetDeviceForKey(rxKey) as DmHdBaseTControllerBase;
-                    if (Chassis is DmMd8x8Cpu3 || Chassis is DmMd8x8Cpu3rps
-                        || Chassis is DmMd16x16Cpu3 || Chassis is DmMd16x16Cpu3rps
-                        || Chassis is DmMd32x32Cpu3 || Chassis is DmMd32x32Cpu3rps || hdBaseTDevice != null)
-                    {
-                        OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline.JoinNumber + ioSlotJoin]);
-                    }
-                    else if (rxDevice != null)
-                    {
-                        rxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline.JoinNumber + ioSlotJoin]);
-                    }
-                }
-
-                // Feedback
-                VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo.JoinNumber + ioSlotJoin]);
-                AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio.JoinNumber + ioSlotJoin]);
-                UsbOutputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputUsb.JoinNumber + ioSlotJoin]);
-                UsbInputRoutedToFeebacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.InputUsb.JoinNumber + ioSlotJoin]);
-
-                OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + ioSlotJoin]);
-                InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + ioSlotJoin]);
-                OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames.JoinNumber + ioSlotJoin]);
-                OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentAudioInputNames.JoinNumber + ioSlotJoin]);
-
-                OutputDisabledByHdcpFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputDisabledByHdcp.JoinNumber + ioSlotJoin]);
-            }
+                EnableAudioBreakawayFeedback.FireUpdate();
+                EnableUsbBreakawayFeedback.FireUpdate();
+                SystemIdBusyFeedback.FireUpdate();
+                SystemIdFeebdack.FireUpdate();
+            };
         }
 
-        private void SetHdcpStateAction(bool hdcpTypeSimple, HdmiInputWithCEC port, uint join, BasicTriList trilist)
+        private DmChassisControllerJoinMap GetJoinMap(uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            if (hdcpTypeSimple)
+            var joinMap = new DmChassisControllerJoinMap(joinStart);
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+            {
+                joinMap = JsonConvert.DeserializeObject<DmChassisControllerJoinMap>(joinMapSerialized);
+            }
+
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this,
+                    "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
+            return joinMap;
+        }
+
+        private void SetHdcpStateAction(bool supportsHdcp2, HdmiInputWithCEC port, uint join, BasicTriList trilist)
+        {
+            if (!supportsHdcp2)
             {
                 trilist.SetUShortSigAction(join,
                     s =>
@@ -1210,9 +1470,9 @@ namespace PepperDash.Essentials.DM
             }
         }
 
-        private void SetHdcpStateAction(bool hdcpTypeSimple, EndpointHdmiInput port, uint join, BasicTriList trilist)
+        private void SetHdcpStateAction(bool supportsHdcp2, EndpointHdmiInput port, uint join, BasicTriList trilist)
         {
-            if (hdcpTypeSimple)
+            if (!supportsHdcp2)
             {
                 trilist.SetUShortSigAction(join,
                     s =>
@@ -1234,6 +1494,38 @@ namespace PepperDash.Essentials.DM
                         {
                             port.HdcpCapability = (eHdcpCapabilityType)u;
                         });
+            }
+        }
+
+        private void SetHdcpStateAction(bool supportsHdcp2, List<RoutingInputPort> ports, uint join,
+            BasicTriList triList)
+        {
+            if (!supportsHdcp2)
+            {
+                triList.SetUShortSigAction(join, a =>
+                {
+                    foreach (var tempPort in ports.Select(port => port.Port).OfType<EndpointHdmiInput>())
+                    {
+                        if (a == 0)
+                        {
+                            tempPort.HdcpSupportOff();
+                        }
+                        else if (a > 0)
+                        {
+                            tempPort.HdcpSupportOn();
+                        }
+                    }
+                });
+            }
+            else
+            {
+                triList.SetUShortSigAction(join, a =>
+                {
+                    foreach (var tempPort in ports.Select(port => port.Port).OfType<EndpointHdmiInput>())
+                    {
+                        tempPort.HdcpCapability = (eHdcpCapabilityType) a;
+                    }
+                });
             }
         }
 
@@ -1315,4 +1607,3 @@ namespace PepperDash.Essentials.DM
     }
 
 }
-

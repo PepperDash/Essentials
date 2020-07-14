@@ -27,17 +27,17 @@ namespace PepperDash.Essentials.DM
 		/// <param name="name"></param>
 		/// <param name="props"></param>
 		/// <returns></returns>
-        public static DmTxControllerBase GetDmTxController(string key, string name, string typeName, DmTxPropertiesConfig props)
+    public static BasicDmTxControllerBase GetDmTxController(string key, string name, string typeName, DmTxPropertiesConfig props)
 		{
 			// switch on type name... later...
 
-			typeName = typeName.ToLower();
-			//uint ipid = Convert.ToUInt16(props.Id, 16);
-			var ipid = props.Control.IpIdInt;
-			var pKey = props.ParentDeviceKey.ToLower();
+	        typeName = typeName.ToLower();
+	        //uint ipid = Convert.ToUInt16(props.Id, 16);
+	        var ipid = props.Control.IpIdInt;
+	        var pKey = props.ParentDeviceKey.ToLower();
 
-			if (pKey == "processor")
-			{
+	        if (pKey == "processor")
+	        {
 				// Catch constructor failures, mainly dues to IPID
 				try
 				{
@@ -52,7 +52,7 @@ namespace PepperDash.Essentials.DM
                     if (typeName.StartsWith("dmtx4k202"))
                         return new DmTx4k202CController(key, name, new DmTx4k202C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmtx4kz202"))
-                        return new DmTx4k202CController(key, name, new DmTx4kz202C(ipid, Global.ControlSystem));
+                        return new DmTx4kz202CController(key, name, new DmTx4kz202C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmtx4k302"))
 						return new DmTx4k302CController(key, name, new DmTx4k302C(ipid, Global.ControlSystem));
                     if (typeName.StartsWith("dmtx4kz302"))
@@ -115,7 +115,7 @@ namespace PepperDash.Essentials.DM
 						if (typeName.StartsWith("dmtx4k202"))
 							return new DmTx4k202CController(key, name, new DmTx4k202C(chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4kz202"))
-							return new DmTx4k202CController(key, name, new DmTx4kz202C(chassis.Inputs[num]));
+							return new DmTx4kz202CController(key, name, new DmTx4kz202C(chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4k302"))
 							return new DmTx4k302CController(key, name, new DmTx4k302C(chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4kz302"))
@@ -138,7 +138,7 @@ namespace PepperDash.Essentials.DM
 						if (typeName.StartsWith("dmtx4k202"))
 							return new DmTx4k202CController(key, name, new DmTx4k202C(ipid, chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4kz202"))
-							return new DmTx4k202CController(key, name, new DmTx4kz202C(ipid, chassis.Inputs[num]));
+							return new DmTx4kz202CController(key, name, new DmTx4kz202C(ipid, chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4k302"))
 							return new DmTx4k302CController(key, name, new DmTx4k302C(ipid, chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx4kz302"))
@@ -157,16 +157,26 @@ namespace PepperDash.Essentials.DM
 		}
 	}
 
+    public abstract class BasicDmTxControllerBase : CrestronGenericBridgeableBaseDevice
+    {
+        protected BasicDmTxControllerBase(string key, string name, GenericBase hardware)
+            : base(key, name, hardware)
+        {
+
+        }
+    }
+
 	/// <summary>
 	/// 
 	/// </summary>
     [Description("Wrapper class for all DM-TX variants")]
-	public abstract class DmTxControllerBase : CrestronGenericBridgeableBaseDevice
+	public abstract class DmTxControllerBase : BasicDmTxControllerBase
 	{
         public virtual void SetPortHdcpCapability(eHdcpCapabilityType hdcpMode, uint port) { }
         public virtual eHdcpCapabilityType HdcpSupportCapability { get; protected set; }
         public abstract StringFeedback ActiveVideoInputFeedback { get; protected set; }
         public RoutingInputPortWithVideoStatuses AnyVideoInput { get; protected set; }
+        public IntFeedback HdcpStateFeedback { get; protected set; }
 
 	    protected DmTxControllerBase(string key, string name, EndpointTransmitterBase hardware)
 			: base(key, name, hardware) 
@@ -197,13 +207,16 @@ namespace PepperDash.Essentials.DM
 
 	    protected void LinkDmTxToApi(DmTxControllerBase tx, BasicTriList trilist, DmTxControllerJoinMap joinMap, EiscApiAdvanced bridge)
 	    {
-	        if (tx.Hardware is DmHDBasedTEndPoint)
-	        {
-	            Debug.Console(1, tx, "No properties to link. Skipping device {0}", tx.Name);
-	            return;
-	        }
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
 
-            Debug.Console(1, tx, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+	        Debug.Console(1, tx, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             tx.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
             tx.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber]);
@@ -294,7 +307,7 @@ namespace PepperDash.Essentials.DM
             if (txFreeRun != null)
             {
                 txFreeRun.FreeRunEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.FreeRunEnabled.JoinNumber]);
-                trilist.SetBoolSigAction(joinMap.FreeRunEnabled.JoinNumber, new Action<bool>(txFreeRun.SetFreeRunEnabled));
+                trilist.SetBoolSigAction(joinMap.FreeRunEnabled.JoinNumber, txFreeRun.SetFreeRunEnabled);
             }
 
             var txVga = tx as IVgaBrightnessContrastControls;

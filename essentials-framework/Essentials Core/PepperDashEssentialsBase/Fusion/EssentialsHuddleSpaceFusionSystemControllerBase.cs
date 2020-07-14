@@ -107,6 +107,8 @@ namespace PepperDash.Essentials.Core.Fusion
 
         public long PushNotificationTimeout = 5000;
 
+	    private const string RemoteOccupancyXml = "<Occupancy><Type>Local</Type><State>{0}</State></Occupancy>";
+
         protected Dictionary<int, FusionAsset> FusionStaticAssets;
 
         // For use with local occ sensor devices which will relay to Fusion the current occupancy status
@@ -116,6 +118,9 @@ namespace PepperDash.Essentials.Core.Fusion
         protected FusionOccupancySensorAsset FusionOccSensor;
 
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
+
+	    private string _roomOccupancyRemoteString;
+        public StringFeedback RoomOccupancyRemoteStringFeedback { get; private set; }
 
         protected Func<bool> RoomIsOccupiedFeedbackFunc
         {
@@ -1366,13 +1371,23 @@ namespace PepperDash.Essentials.Core.Fusion
                 
                 // Tie to method on occupancy object
                 //occSensorShutdownMinutes.OutputSig.UserObject(new Action(ushort)(b => Room.OccupancyObj.SetShutdownMinutes(b));
-                
 
+
+                RoomOccupancyRemoteStringFeedback = new StringFeedback(() => _roomOccupancyRemoteString);
                 Room.RoomOccupancy.RoomIsOccupiedFeedback.LinkInputSig(occSensorAsset.RoomOccupied.InputSig);
+                Room.RoomOccupancy.RoomIsOccupiedFeedback.OutputChange += RoomIsOccupiedFeedback_OutputChange;
+                RoomOccupancyRemoteStringFeedback.LinkInputSig(occSensorAsset.RoomOccupancyInfo.InputSig);
+                
             //}
         }
 
-		/// <summary>
+        void RoomIsOccupiedFeedback_OutputChange(object sender, FeedbackEventArgs e)
+        {
+            _roomOccupancyRemoteString = String.Format(RemoteOccupancyXml, e.BoolValue ? "Occupied" : "Unoccupied");
+            RoomOccupancyRemoteStringFeedback.FireUpdate();
+        }
+
+	    /// <summary>
 		/// Helper to get the number from the end of a device's key string
 		/// </summary>
 		/// <returns>-1 if no number matched</returns>

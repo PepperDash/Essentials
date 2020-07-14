@@ -15,7 +15,8 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IPower
+    [Description("Wrapper class for an IR Set Top Box")]
+    public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IPower
 	{
 		public IrOutputPortController IrPort { get; private set; }
 
@@ -379,7 +380,14 @@ namespace PepperDash.Essentials.Devices.Common
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<SetTopBoxControllerJoinMap>(joinMapSerialized);
 
-            bridge.AddJoinMap(Key, joinMap);
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
 
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(0, "Linking to Display: {0}", Name);

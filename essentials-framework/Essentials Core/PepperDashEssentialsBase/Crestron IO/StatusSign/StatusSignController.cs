@@ -13,7 +13,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
     [Description("Wrapper class for the Crestron StatusSign device")]
     public class StatusSignController : CrestronGenericBridgeableBaseDevice
     {
-        private readonly StatusSign _device;
+        private StatusSign _device;
 
         public BoolFeedback RedLedEnabledFeedback { get; private set; }
         public BoolFeedback GreenLedEnabledFeedback { get; private set; }
@@ -23,34 +23,40 @@ namespace PepperDash.Essentials.Core.CrestronIO
         public IntFeedback GreenLedBrightnessFeedback { get; private set; }
         public IntFeedback BlueLedBrightnessFeedback { get; private set; }
 
-        public StatusSignController(string key, string name, GenericBase hardware) : base(key, name, hardware)
+        public StatusSignController(string key, Func<DeviceConfig, StatusSign> preActivationFunc, DeviceConfig config) : base(key, config.Name)
         {
-            _device = hardware as StatusSign;
+            AddPreActivationAction(() =>
+            {
+                _device = preActivationFunc(config);
 
-            RedLedEnabledFeedback =
+                RegisterCrestronGenericBase(_device);
+
+                RedLedEnabledFeedback =
                 new BoolFeedback(
                     () =>
-                        _device.Leds[(uint) StatusSign.Led.eLedColor.Red]
+                        _device.Leds[(uint)StatusSign.Led.eLedColor.Red]
                             .ControlFeedback.BoolValue);
-            GreenLedEnabledFeedback =
-                new BoolFeedback(
-                    () =>
-                        _device.Leds[(uint) StatusSign.Led.eLedColor.Green]
-                            .ControlFeedback.BoolValue);
-            BlueLedEnabledFeedback =
-                new BoolFeedback(
-                    () =>
-                        _device.Leds[(uint) StatusSign.Led.eLedColor.Blue]
-                            .ControlFeedback.BoolValue);
+                GreenLedEnabledFeedback =
+                    new BoolFeedback(
+                        () =>
+                            _device.Leds[(uint)StatusSign.Led.eLedColor.Green]
+                                .ControlFeedback.BoolValue);
+                BlueLedEnabledFeedback =
+                    new BoolFeedback(
+                        () =>
+                            _device.Leds[(uint)StatusSign.Led.eLedColor.Blue]
+                                .ControlFeedback.BoolValue);
 
-            RedLedBrightnessFeedback =
-                new IntFeedback(() => (int) _device.Leds[(uint) StatusSign.Led.eLedColor.Red].BrightnessFeedback);
-            GreenLedBrightnessFeedback =
-                new IntFeedback(() => (int) _device.Leds[(uint) StatusSign.Led.eLedColor.Green].BrightnessFeedback);
-            BlueLedBrightnessFeedback =
-                new IntFeedback(() => (int) _device.Leds[(uint) StatusSign.Led.eLedColor.Blue].BrightnessFeedback);
+                RedLedBrightnessFeedback =
+                    new IntFeedback(() => (int)_device.Leds[(uint)StatusSign.Led.eLedColor.Red].BrightnessFeedback);
+                GreenLedBrightnessFeedback =
+                    new IntFeedback(() => (int)_device.Leds[(uint)StatusSign.Led.eLedColor.Green].BrightnessFeedback);
+                BlueLedBrightnessFeedback =
+                    new IntFeedback(() => (int)_device.Leds[(uint)StatusSign.Led.eLedColor.Blue].BrightnessFeedback);
 
-            if (_device != null) _device.BaseEvent += _device_BaseEvent;
+                if (_device != null) _device.BaseEvent += _device_BaseEvent;
+
+            });
         }
 
         void _device_BaseEvent(GenericBase device, BaseEventArgs args)
@@ -118,7 +124,14 @@ namespace PepperDash.Essentials.Core.CrestronIO
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<StatusSignControllerJoinMap>(joinMapSerialized);
 
-            bridge.AddJoinMap(Key, joinMap);
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
 
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
@@ -160,23 +173,51 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
             device.SetColor(redBrightness, greenBrightness, blueBrightness);
         }
-    }
 
-    public class StatusSignControllerFactory : EssentialsDeviceFactory<StatusSignController>
-    {
-        public StatusSignControllerFactory()
+        #region PreActivation
+
+        private static StatusSign GetStatusSignDevice(DeviceConfig dc)
         {
-            TypeNames = new List<string>() { "statussign" };
-        }
-
-        public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.Console(1, "Factory Attempting to create new StatusSign Device");
-
             var control = CommFactory.GetControlPropertiesConfig(dc);
             var cresnetId = control.CresnetIdInt;
+            var branchId = control.ControlPortNumber;
+            var parentKey = string.IsNullOrEmpty(control.ControlPortDevKey) ? "processor" : control.ControlPortDevKey;
 
-            return new StatusSignController(dc.Key, dc.Name, new StatusSign(cresnetId, Global.ControlSystem));
+            if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
+            {
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new StatusSign", parentKey);
+                return new StatusSign(cresnetId, Global.ControlSystem);
+            }
+            var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
+
+            if (cresnetBridge != null)
+            {
+                Debug.Console(0, "Device {0} is a valid cresnet master - creating new StatusSign", parentKey);
+                return new StatusSign(cresnetId, cresnetBridge.CresnetBranches[branchId]);
+            }
+            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+            return null;
+        }
+        #endregion
+
+        public class StatusSignControllerFactory : EssentialsDeviceFactory<StatusSignController>
+        {
+            public StatusSignControllerFactory()
+            {
+                TypeNames = new List<string>() { "statussign" };
+            }
+
+            public override EssentialsDevice BuildDevice(DeviceConfig dc)
+            {
+                Debug.Console(1, "Factory Attempting to create new StatusSign Device");
+
+                var control = CommFactory.GetControlPropertiesConfig(dc);
+                var cresnetId = control.CresnetIdInt;
+
+                return new StatusSignController(dc.Key, GetStatusSignDevice, dc);
+            }
         }
     }
+
+    
 }

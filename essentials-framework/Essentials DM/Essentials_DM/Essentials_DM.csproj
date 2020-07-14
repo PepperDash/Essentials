@@ -1,0 +1,159 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9199CE8A-0C9F-4952-8672-3EED798B284F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PepperDash.Essentials.DM</RootNamespace>
+    <AssemblyName>PepperDash_Essentials_DM</AssemblyName>
+    <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92300};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PlatformFamilyName>WindowsCE</PlatformFamilyName>
+    <PlatformID>E2BECB1F-8C8C-41ba-B736-9BE7D946A398</PlatformID>
+    <OSVersion>5.0</OSVersion>
+    <DeployDirSuffix>SmartDeviceProject1</DeployDirSuffix>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <NativePlatformName>Windows CE</NativePlatformName>
+    <FormFactorID>
+    </FormFactorID>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Crestron.SimplSharpPro.DeviceSupport, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DeviceSupport.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.DM, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DM.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="PepperDash_Core, Version=1.0.26.30384, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\pepperdashcore-builds\PepperDash_Core.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SimplSharpNewtonsoft, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpNewtonsoft.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpPro, Version=1.5.3.17, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AirMedia\AirMediaPropertiesConfig.cs" />
+    <Compile Include="AirMedia\AirMediaController.cs" />
+    <Compile Include="Chassis\DmBladeChassisController.cs" />
+    <Compile Include="Chassis\DmCardAudioOutput.cs" />
+    <Compile Include="Chassis\DmChassisController.cs" />
+    <Compile Include="Chassis\DmpsAudioOutputController.cs" />
+    <Compile Include="Chassis\DmpsInternalVirtualDmTxController.cs" />
+    <Compile Include="Chassis\DmpsRoutingController.cs" />
+    <Compile Include="Chassis\HdMdNxM4kEController.cs" />
+    <Compile Include="Endpoints\Transmitters\TxInterfaces.cs" />
+    <Compile Include="IDmSwitch.cs" />
+    <Compile Include="Config\DmpsRoutingConfig.cs" />
+    <Compile Include="Config\DmRmcConfig.cs" />
+    <Compile Include="Config\DmTxConfig.cs" />
+    <Compile Include="Config\DMChassisConfig.cs" />
+    <Compile Include="Config\HdMdNxM4kEPropertiesConfig.cs" />
+    <Compile Include="Config\InputPropertiesConfig.cs" />
+    <Compile Include="DmPortName.cs" />
+    <Compile Include="Endpoints\DGEs\DgeController.cs" />
+    <Compile Include="Endpoints\DGEs\DgePropertiesConfig.cs" />
+    <Compile Include="DmLite\HdMdxxxCEController.cs" />
+    <Compile Include="Endpoints\Receivers\DmHdBaseTEndpointController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmc100SController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmc150SController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmc200CController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmc200S2Controller.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmc200SController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmc4k100C1GController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmc4KScalerCController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmc4kScalerCDspController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmcScalerCController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmcX100CController.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmcHelper.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmcScalerS2Controller.cs" />
+    <Compile Include="Endpoints\Receivers\DmRmcScalerSController.cs" />
+    <Compile Include="Endpoints\Transmitters\DmTx200Controller.cs" />
+    <Compile Include="Endpoints\Transmitters\DmTx401CController.cs" />
+    <Compile Include="Endpoints\Transmitters\DmTx4k100Controller.cs" />
+    <Compile Include="Endpoints\Transmitters\DmTx4k202CController.cs" />
+    <Compile Include="Endpoints\Transmitters\DmTx4k302CController.cs" />
+    <Compile Include="Endpoints\Transmitters\DmTx201CController.cs" />
+    <Compile Include="Endpoints\Transmitters\DmTx4kz302CController.cs" />
+    <Compile Include="Endpoints\Transmitters\DmTxHelpers.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Config\DeviceFactory.cs" />
+    <Compile Include="IDmHdmiInputExtensions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VideoStatusHelpers.cs" />
+    <None Include="app.config" />
+    <None Include="Properties\ControlSystem.cfg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Essentials Core\PepperDashEssentialsBase\PepperDash_Essentials_Core.csproj">
+      <Project>{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}</Project>
+      <Name>PepperDash_Essentials_Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>rem S# Pro preparation will execute after these operations</PostBuildEvent>
+  </PropertyGroup>
+</Project>

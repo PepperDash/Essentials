@@ -1,11 +1,11 @@
-name: Master Build using Docker
+name: main Build using Docker
 
 on:
   release:
     types:
       - created
     branches:
-      - master
+      - main
 env:
   # solution path doesn't need slashes unless there it is multiple folders deep
   # solution name does not include extension. .sln is assumed
@@ -15,8 +15,8 @@ env:
   VERSION: 0.0.0-buildtype-buildnumber
   # Defaults to debug for build type
   BUILD_TYPE: Release
-  # Defaults to master as the release branch.  Change as necessary
-  RELEASE_BRANCH: master
+  # Defaults to main as the release branch.  Change as necessary
+  RELEASE_BRANCH: main
 jobs:
   Build_Project:
     runs-on: windows-latest
@@ -44,6 +44,12 @@ jobs:
         run: |
           Write-Output ${{ env.VERSION }}
           ./.github/scripts/UpdateAssemblyVersion.ps1 ${{ env.VERSION }}
+      # Login to Docker
+      - name: Login to Docker
+        uses: azure/docker-login@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
       # Build the solutions in the docker image
       - name: Build Solution
         shell: powershell
@@ -108,8 +114,8 @@ jobs:
           Remove-Item -Path ./Version/version.txt
           Remove-Item -Path ./Version
       # Checkout/Create the branch
-      - name: Checkout Master branch
-        run: git checkout master
+      - name: Checkout main branch
+        run: git checkout main
       # Download the build output into the repo
       - name: Download Build output
         uses: actions/download-artifact@v1
@@ -145,13 +151,13 @@ jobs:
       # Push the commit
       - name: Push to Builds Repo
         shell: powershell
-        run: git push -u origin master --force
+        run: git push -u origin main --force
       # Push the tags
       - name: Push tags
         run: git push --tags origin
       - name: Check Directory
         run: Get-ChildItem ./
-  # This step only runs if the branch is master or release/ runs and pushes the build to the public build repo
+  # This step only runs if the branch is main or release/ runs and pushes the build to the public build repo
   Public_Push_Output:
     needs: Build_Project
     runs-on: windows-latest
@@ -180,9 +186,9 @@ jobs:
           Write-Output "::set-env name=VERSION::$version"
           Remove-Item -Path ./Version/version.txt
           Remove-Item -Path ./Version
-      # Checkout master branch
+      # Checkout main branch
       - name: Create new branch
-        run: git checkout master
+        run: git checkout main
       # Download the build output into the repo
       - name: Download Build output
         uses: actions/download-artifact@v1
@@ -218,7 +224,7 @@ jobs:
       # Push the commit
       - name: Push to Builds Repo
         shell: powershell
-        run: git push -u origin master --force
+        run: git push -u origin main --force
       # Push the tags
       - name: Push tags
         run: git push --tags origin

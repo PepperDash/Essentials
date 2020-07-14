@@ -8,6 +8,9 @@ on:
       - bugfix/*
       - release/*
       - development
+  pull_request:
+    branches:
+      - development
 
 env:
   # solution path doesn't need slashes unless there it is multiple folders deep
@@ -18,8 +21,8 @@ env:
   VERSION: 0.0.0-buildtype-buildnumber
   # Defaults to debug for build type
   BUILD_TYPE: Debug
-  # Defaults to master as the release branch.  Change as necessary
-  RELEASE_BRANCH: master
+  # Defaults to main as the release branch.  Change as necessary
+  RELEASE_BRANCH: main
 jobs:
   Build_Project:
     runs-on: windows-latest
@@ -29,14 +32,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      # And any submodules
-      - name: Checkout submodules
-        shell: bash
-        run: |
-          git config --global url."https://github.com/".insteadOf "git@github.com:"
-          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-          git submodule sync --recursive
-          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+          submodules: true
         # Fetch all tags
       - name: Fetch tags
         run: git fetch --tags
@@ -52,6 +48,12 @@ jobs:
         run: |
           Write-Output ${{ env.VERSION }}
           ./.github/scripts/UpdateAssemblyVersion.ps1 ${{ env.VERSION }}
+      # Login to Docker
+      - name: Login to Docker
+        uses: azure/docker-login@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
       # Build the solutions in the docker image
       - name: Build Solution
         shell: powershell
@@ -183,11 +185,11 @@ jobs:
         run: git push --tags origin
       - name: Check Directory
         run: Get-ChildItem ./
-  # This step only runs if the branch is master or release/ runs and pushes the build to the public build repo
+  # This step only runs if the branch is main or release/ runs and pushes the build to the public build repo
   Public_Push_Output:
     needs: Build_Project
     runs-on: windows-latest
-    if: contains(github.ref, 'master') || contains(github.ref, '/release/')
+    if: contains(github.ref, 'main') || contains(github.ref, '/release/')
     steps:
       # Checkout the repo
       - name: check Github ref

@@ -76,7 +76,14 @@ namespace PepperDash.Essentials.Core
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<IBasicCommunicationJoinMap>(joinMapSerialized);
 
-            bridge.AddJoinMap(Key, joinMap);
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
 
             if (CommPort == null)
             {
@@ -96,7 +103,7 @@ namespace PepperDash.Essentials.Core
             trilist.SetStringSigAction(joinMap.SetPortConfig.JoinNumber, SetPortConfig);
 
 
-            var sComm = this as ISocketStatus;
+            var sComm = CommPort as ISocketStatus;
             if (sComm == null) return;
             sComm.ConnectionChange += (s, a) =>
             {

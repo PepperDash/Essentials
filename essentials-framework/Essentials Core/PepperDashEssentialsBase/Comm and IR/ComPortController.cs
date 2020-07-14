@@ -11,8 +11,10 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
-	public class ComPortController : Device, IBasicCommunication
+	public class ComPortController : Device, IBasicCommunicationWithStreamDebugging
 	{
+        public CommunicationStreamDebugging StreamDebugging { get; private set; }
+
 		public event EventHandler<GenericCommMethodReceiveBytesArgs> BytesReceived;
 		public event EventHandler<GenericCommMethodReceiveTextArgs> TextReceived;
 
@@ -24,6 +26,8 @@ namespace PepperDash.Essentials.Core
 	    public ComPortController(string key, Func<EssentialsControlPropertiesConfig, ComPort> postActivationFunc,
 	        ComPort.ComPortSpec spec, EssentialsControlPropertiesConfig config) : base(key)
 	    {
+            StreamDebugging = new CommunicationStreamDebugging(key);
+
 	        Spec = spec;
 
             AddPostActivationAction(() =>
@@ -91,7 +95,12 @@ namespace PepperDash.Essentials.Core
             }
             var textHandler = TextReceived;
             if (textHandler != null)
+            {
+                if (StreamDebugging.RxStreamDebuggingIsEnabled)
+                    Debug.Console(0, this, "Recevied: '{0}'", s);
+
                 textHandler(this, new GenericCommMethodReceiveTextArgs(s));
+            }
         }
 
 		public override bool Deactivate()
@@ -105,7 +114,10 @@ namespace PepperDash.Essentials.Core
 		{
 			if (Port == null)
 				return;
-			Port.Send(text);
+
+            if (StreamDebugging.TxStreamDebuggingIsEnabled)
+                Debug.Console(0, this, "Sending {0} characters of text: '{1}'", text.Length, text);
+            Port.Send(text);
 		}
 
 		public void SendBytes(byte[] bytes)
@@ -113,6 +125,9 @@ namespace PepperDash.Essentials.Core
 			if (Port == null)
 				return;
 			var text = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
+            if (StreamDebugging.TxStreamDebuggingIsEnabled)
+                Debug.Console(0, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
+
 			Port.Send(text);
 		}
 

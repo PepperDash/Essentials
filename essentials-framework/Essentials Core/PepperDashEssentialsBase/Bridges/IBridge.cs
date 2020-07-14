@@ -1,5 +1,4 @@
-﻿using System;
-using Crestron.SimplSharpPro.DeviceSupport;
+﻿using Crestron.SimplSharpPro.DeviceSupport;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
