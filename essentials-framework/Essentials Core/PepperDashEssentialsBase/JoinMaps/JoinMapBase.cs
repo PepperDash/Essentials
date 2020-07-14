@@ -263,10 +263,10 @@ namespace PepperDash.Essentials.Core
             foreach (var join in joins)
             {
                 Debug.Console(0,
-                    @"Join Number: {0} | JoinSpan: '{1}' | Label: '{2}' | Type: '{3}' | Capabilities: '{4}'",
+                    @"Join Number: {0} | JoinSpan: '{1}' | Description: '{2}' | Type: '{3}' | Capabilities: '{4}'",
                         join.Value.JoinNumber,
                         join.Value.JoinSpan,
-                        join.Value.Metadata.Label,
+                        String.IsNullOrEmpty(join.Value.Metadata.Description) ? join.Value.Metadata.Label: join.Value.Metadata.Description,
                         join.Value.Metadata.JoinType.ToString(),
                         join.Value.Metadata.JoinCapabilities.ToString());
             }
