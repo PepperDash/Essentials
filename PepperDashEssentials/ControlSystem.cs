@@ -19,7 +19,7 @@ using PepperDash.Essentials.Room.Config;
 //using PepperDash.Essentials.Room.MobileControl;
 
 using Newtonsoft.Json;
-using PepperDash_Essentials_Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials
 {

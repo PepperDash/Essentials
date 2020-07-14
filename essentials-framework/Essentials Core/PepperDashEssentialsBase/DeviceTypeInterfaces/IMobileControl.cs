@@ -1,7 +1,6 @@
 ﻿using PepperDash.Core;
-using PepperDash.Essentials.Core;
 
-namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     public interface IMobileControl:IKeyed
     {
