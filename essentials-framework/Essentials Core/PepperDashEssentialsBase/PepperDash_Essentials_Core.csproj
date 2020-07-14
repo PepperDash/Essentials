@@ -214,6 +214,7 @@
     <Compile Include="DeviceTypeInterfaces\Codec\iHasScheduleAwareness.cs" />
     <Compile Include="DeviceTypeInterfaces\IHasVideoCodec.cs" />
     <Compile Include="DeviceTypeInterfaces\iVideoCodecInfo.cs" />
+    <Compile Include="DeviceTypeInterfaces\IMobileControl.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Factory\IDeviceFactory.cs" />
     <Compile Include="Factory\ReadyEventArgs.cs" />

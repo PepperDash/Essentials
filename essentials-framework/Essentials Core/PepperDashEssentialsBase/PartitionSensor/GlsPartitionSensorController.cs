@@ -3,25 +3,12 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash_Essentials_Core.Bridges.JoinMaps;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharpPro;
-using Crestron.SimplSharpPro.Gateways;
-using Newtonsoft.Json;
-using Crestron.SimplSharpPro.DeviceSupport;
-
-
-using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash_Essentials_Core;
 
 namespace PepperDash.Essentials.Core
 {
@@ -265,7 +252,7 @@ namespace PepperDash.Essentials.Core
         {
             public GlsPartitionSensorControllerFactory()
             {
-                TypeNames = new List<string>() { "glspartcn" };
+                TypeNames = new List<string> { "glspartcn" };
             }
 
             public override EssentialsDevice BuildDevice(DeviceConfig dc)

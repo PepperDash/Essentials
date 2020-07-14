@@ -12,12 +12,17 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("Relay")]
         public JoinDataComplete Relay = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Device Relay State Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Device Relay State Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
 
-        public GenericRelayControllerJoinMap(uint joinStart)
+        internal GenericRelayControllerJoinMap(uint joinStart)
             : base(joinStart, typeof(GenericRelayControllerJoinMap))
         {
+        }
+
+        public GenericRelayControllerJoinMap(uint joinStart, Type type) : base(joinStart, type)
+        {
+            
         }
     }
 }

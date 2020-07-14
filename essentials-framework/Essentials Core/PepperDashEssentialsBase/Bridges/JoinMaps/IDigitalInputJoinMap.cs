@@ -12,11 +12,16 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("InputState")]
         public JoinDataComplete InputState = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Label = "Room Email Url", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata() { Description = "Room Email Url", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
 
-        public IDigitalInputJoinMap(uint joinStart)
+        internal IDigitalInputJoinMap(uint joinStart)
             : base(joinStart, typeof(IDigitalInputJoinMap))
+        {
+        }
+
+        public IDigitalInputJoinMap(uint joinStart, Type type)
+            : base(joinStart, type)
         {
         }
     }

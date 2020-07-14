@@ -121,10 +121,16 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				JoinType = eJoinType.Analog
 			});
 
-		public GlsPartitionSensorJoinMap(uint joinStart)
+		internal GlsPartitionSensorJoinMap(uint joinStart)
 			: base(joinStart, typeof (GlsPartitionSensorJoinMap))
 		{
 
 		}
+
+        public GlsPartitionSensorJoinMap(uint joinStart, Type type)
+            : base(joinStart, type)
+        {
+
+        }
 	}
 }
