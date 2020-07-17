@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro;
@@ -12,10 +11,9 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Fusion;
 using PepperDash.Essentials.Core.Rooms.Config;
 using PepperDash.Essentials.DM;
-using PepperDash.Essentials.Fusion;
-using PepperDash.Essentials.Room.Config;
 //using PepperDash.Essentials.Room.MobileControl;
 
 using Newtonsoft.Json;
@@ -440,68 +438,71 @@ namespace PepperDash.Essentials
         {
             if (ConfigReader.ConfigObject.Rooms == null)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "NOTICE: No Essentials Rooms found in current configuration.");
+                Debug.Console(0, Debug.ErrorLogLevel.Warning, "WARNING: Configuration contains no rooms");
                 return;
             }
 
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
                 var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
-                if (room == null)
+                if (room != null)
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create room from config, key '{0}'", roomConfig.Key);
-                    return;
-                }
+                    var huddleRoom = room as EssentialsHuddleSpaceRoom;
+                    if (huddleRoom != null)
+                    {
+                        DeviceManager.AddDevice(huddleRoom);
 
-                var huddleRoom = room as EssentialsHuddleSpaceRoom;
-                var vtcRoom = room as EssentialsHuddleVtc1Room;
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                            "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
+                        DeviceManager.AddDevice(
+                            new EssentialsHuddleSpaceFusionSystemControllerBase(huddleRoom, 0xf1));
 
-                if (huddleRoom != null)
-                {
-                    DeviceManager.AddDevice(huddleRoom);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
-                        // Mobile Control bridge
-                        //var bridge = new MobileConrolEssentialsHuddleSpaceRoomBridge(room as EssentialsHuddleSpaceRoom);
-                        //AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
-                        //DeviceManager.AddDevice(bridge);
 
-                        CreateMobileControlBridge(room);
+                        CreateMobileControlBridge(huddleRoom);
+                        continue;
                     }
-                    else if (room is EssentialsHuddleVtc1Room)
-                    {
-                        DeviceManager.AddDevice(room);
 
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
-                    // Mobile Control bridge
-                    var bridge = new MobileControlEssentialsHuddleSpaceRoomBridge(huddleRoom);
-                    AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
-                    DeviceManager.AddDevice(bridge);
+                    var ddRoom = room as EssentialsDualDisplayRoom;
+                        //checking for dual display room first, as it inherits from EssentialsHuddleVtc1Room
+                    if (ddRoom != null)
+                    {
+                        DeviceManager.AddDevice(ddRoom);
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                            "Room is EssentialsDualDisplayRoom, attempting to add to DeviceManager with Fusion");
+                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController(ddRoom, 0xf1));
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
-                        // Mobile Control bridge
-                        //var bridge = new MobileConrolEssentialsHuddleSpaceRoomBridge(room);
-                        //AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
-                        //DeviceManager.AddDevice(bridge);
 
-                        CreateMobileControlBridge(room);
+                        CreateMobileControlBridge(ddRoom);
+                        continue;
                     }
-                    else
+
+                    var vtc1Room = room as EssentialsHuddleVtc1Room;
+                    if (vtc1Room != null)
                     {
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is NOT EssentialsRoom, attempting to add to DeviceManager w/o Fusion");
-                        DeviceManager.AddDevice(room);
+                        DeviceManager.AddDevice(vtc1Room);
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                            "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
+                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController(vtc1Room, 0xf1));
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
+
+                        CreateMobileControlBridge(vtc1Room);
+                        continue;
                     }
 
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
-                    // Mobile Control bridge
-                    var bridge = new MobileControlEssentialsHuddleSpaceRoomBridge(room);
-                    AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
-                    DeviceManager.AddDevice(bridge);
-                    continue;
-                }
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                        "Room is NOT EssentialsRoom, attempting to add to DeviceManager w/o Fusion");
+                    DeviceManager.AddDevice(room);
 
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is NOT EssentialsRoom, attempting to add to DeviceManager w/o Fusion");
-                DeviceManager.AddDevice(room);
+                }
+                else
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create room from config, key '{0}'",
+                        roomConfig.Key);
             }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");

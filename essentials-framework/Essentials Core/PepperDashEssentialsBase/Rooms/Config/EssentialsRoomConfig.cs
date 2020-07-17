@@ -18,8 +18,7 @@ namespace PepperDash.Essentials.Core.Rooms.Config
 		{
 			var typeName = roomConfig.Type.ToLower();
 
-		    EssentialsRoomBase rm;
-			if (typeName == "huddle")
+		    if (typeName == "huddle")
 			{
                 var huddle = new EssentialsHuddleSpaceRoom(roomConfig);
 
@@ -27,22 +26,22 @@ namespace PepperDash.Essentials.Core.Rooms.Config
 			}
 		    if (typeName == "huddlevtc1")
 		    {
-		        rm = new EssentialsHuddleVtc1Room(roomConfig);
-                
+		        EssentialsRoomBase rm = new EssentialsHuddleVtc1Room(roomConfig);
+
 		        return rm;
 		    }
 		    if (typeName == "ddvc01Bridge")
 		    {
 		        return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
 		    }
+
 		    if (typeName != "dualdisplay")
 		    {
 		        return null;
 		    }
 
-		    //rm = new EssentialsDualDisplayRoom();
-
-		    return null;
+		    var dualDisplay = new EssentialsDualDisplayRoom(roomConfig);
+		    return dualDisplay;
 		}
 
         /// <summary>

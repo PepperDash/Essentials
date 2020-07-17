@@ -11,6 +11,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.PageManagers;
+using PepperDashEssentials.UIDrivers.EssentialsDualDisplay;
 
 namespace PepperDash.Essentials
 {
@@ -178,7 +179,7 @@ namespace PepperDash.Essentials
             }
         }
 
-		void Panel_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
+		void Panel_SigChange(object currentDevice, SigEventArgs args)
 		{
 			if (Debug.Level == 2)
 				Debug.Console(2, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
@@ -258,6 +259,56 @@ namespace PepperDash.Essentials
                     var tsw = panelController.Panel as TswFt5ButtonSystem;
                     // Wire up hard keys
                     tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.PowerButtonPressed(); });
+                    //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
+                    if (mainDriver.EnvironmentDriver != null)
+                        tsw.Lights.UserObject = new Action<bool>(b =>
+                        {
+                            if (!b)
+                            {
+                                //mainDriver.AvDriver.PopupInterlock.ShowInterlockedWithToggle(mainDriver.EnvironmentDriver.BackgroundSubpageJoin);
+                                mainDriver.EnvironmentDriver.Toggle();
+                            }
+                        });
+                    tsw.Up.UserObject = new Action<bool>(avDriver.VolumeUpPress);
+                    tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
+                }
+                else if (room is EssentialsDualDisplayRoom)
+                {
+                    Debug.Console(0, panelController, "Adding Dual Display VTC AV driver");
+
+                    // Header Driver
+                    mainDriver.HeaderDriver = new EssentialsHeaderDriver(mainDriver, props);
+
+                    // AV Driver
+                    var avDriver = new EssentialsDualDisplayPanelAvFunctionsDriver(mainDriver, props);
+
+                    var codecDriver = new UIDrivers.VC.EssentialsVideoCodecUiDriver(panelController.Panel, avDriver,
+                        (room as EssentialsDualDisplayRoom).VideoCodec, mainDriver.HeaderDriver);
+                    avDriver.SetVideoCodecDriver(codecDriver);
+                    avDriver.DefaultRoomKey = props.DefaultRoomKey;
+                    mainDriver.AvDriver = avDriver;
+                    avDriver.CurrentRoom = room as EssentialsHuddleVtc1Room;
+
+                    // Environment Driver
+                    if (avDriver.CurrentRoom.PropertiesConfig.Environment != null && avDriver.CurrentRoom.PropertiesConfig.Environment.DeviceKeys.Count > 0)
+                    {
+                        Debug.Console(0, panelController, "Adding environment driver");
+                        mainDriver.EnvironmentDriver = new EssentialsEnvironmentDriver(mainDriver, props);
+
+                        mainDriver.EnvironmentDriver.GetDevicesFromConfig(avDriver.CurrentRoom.PropertiesConfig.Environment);
+                    }
+
+                    mainDriver.HeaderDriver.SetupHeaderButtons(avDriver, avDriver.CurrentRoom);
+
+                    panelController.LoadAndShowDriver(mainDriver);  // This is a little convoluted.
+
+                    if (!(panelController.Panel is TswFt5ButtonSystem))
+                    {
+                        return;
+                    }
+                    var tsw = panelController.Panel as TswFt5ButtonSystem;
+                    // Wire up hard keys
+                    tsw.Power.UserObject = new Action<bool>(b => { if (!b) avDriver.EndMeetingPress(); });
                     //tsw.Home.UserObject = new Action<bool>(b => { if (!b) HomePressed(); });
                     if (mainDriver.EnvironmentDriver != null)
                         tsw.Lights.UserObject = new Action<bool>(b =>

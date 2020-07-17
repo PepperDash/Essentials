@@ -46,14 +46,14 @@ namespace PepperDash.Essentials.Core.Config
 
 	    public Dictionary<string, DestinationListItem> GetDestinationListForKey(string key)
 	    {
-	        if (string.IsNullOrEmpty(key) || !SourceLists.ContainsKey(key))
+	        if (string.IsNullOrEmpty(key) || !DestinationLists.ContainsKey(key))
 	            return null;
 
 	        return DestinationLists[key];
 	    }
 
         /// <summary>
-        /// Checks Devices for an item with a Key that matches and returns it if found. Otherwise, retunes null
+        /// Checks Devices for an item with a Key that matches and returns it if found. Otherwise, returns null
         /// </summary>
         /// <param name="key">Key of desired device</param>
         /// <returns></returns>

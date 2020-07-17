@@ -12,7 +12,7 @@ namespace PepperDashEssentials.UIDrivers.EssentialsDualDisplay
     {
         private EssentialsDualDisplayRoom _currentRoom;
 
-        private BoolInputSig _routeToggleVisibility;
+        private readonly BoolInputSig _routeToggleVisibility;
 
         private readonly BoolFeedback _sharingMode;
 
