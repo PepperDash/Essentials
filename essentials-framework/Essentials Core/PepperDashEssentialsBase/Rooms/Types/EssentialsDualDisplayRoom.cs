@@ -15,13 +15,16 @@ namespace PepperDash.Essentials
         private const string LeftDestinationKey = "leftDisplay";
         private const string RightDestinationKey = "rightDisplay";
 
-        private readonly EssentialsDualDisplayRoomPropertiesConfig _config;
+        public EssentialsDualDisplayRoomPropertiesConfig RoomConfig { get; private set; }
+
+        public EAudioBehavior AudioRoutingBehavior { get; set; }
+        public EVideoBehavior VideoRoutingBehavior { get; set; }
 
         private string _destinationListKey;
 
         public EssentialsDualDisplayRoom(DeviceConfig config) : base(config)
         {
-            _config = config.Properties.ToObject<EssentialsDualDisplayRoomPropertiesConfig>();
+            RoomConfig = config.Properties.ToObject<EssentialsDualDisplayRoomPropertiesConfig>();
 
             Initialize();
         }
@@ -40,9 +43,12 @@ namespace PepperDash.Essentials
         {
             try
             {
-                _destinationListKey = String.IsNullOrEmpty(_config.DestinationListKey)
+                _destinationListKey = String.IsNullOrEmpty(RoomConfig.DestinationListKey)
                     ? DefaultDestinationListKey
-                    : _config.DestinationListKey;
+                    : RoomConfig.DestinationListKey;
+
+                AudioRoutingBehavior = RoomConfig.DefaultAudioBehavior;
+                VideoRoutingBehavior = RoomConfig.DefaultVideoBehavior;
 
                 InitializeDestinations();
             }
@@ -191,6 +197,34 @@ namespace PepperDash.Essentials
             };
 
             DoRoute(routeItem);
+        }
+
+        public void SelectSource(string sourceKey, string sourceListKey)
+        {
+            var srcList = GetSourceListForKey(sourceKey, sourceListKey);
+
+            var src = srcList[sourceKey];
+
+            if (src.SourceKey != "roomoff")
+            {
+                LastSourceKey = sourceKey;
+            }
+            else
+            {
+                CurrentSourceInfoKey = null;
+            }
+
+            SetVolumeControl(src);
+
+            if (src.SourceKey == "$off")
+            {
+                CurrentSourceInfo = null;
+            } else if (src.SourceKey != null)
+            {
+                CurrentSourceInfo = src;
+            }
+
+            OnFeedback.FireUpdate();
         }
     }
 }

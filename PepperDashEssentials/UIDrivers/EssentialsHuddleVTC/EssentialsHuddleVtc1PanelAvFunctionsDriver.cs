@@ -67,7 +67,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Smart Object 3200
         /// </summary>
-        private readonly SubpageReferenceList _sourceStagingSrl;
+        protected readonly SubpageReferenceList SourceStagingSrl;
 
         private readonly CrestronTouchpanelPropertiesConfig _config;
 
@@ -86,7 +86,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// The mode showing. Presentation or call.
         /// </summary>
-        private UiDisplayMode _currentMode = UiDisplayMode.Start;
+        protected UiDisplayMode CurrentMode = UiDisplayMode.Start;
 
         /// <summary>
         /// Current page manager running for a source
@@ -124,7 +124,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// The Video codec driver
         /// </summary>
-        private EssentialsVideoCodecUiDriver _vcDriver;
+        protected EssentialsVideoCodecUiDriver VcDriver;
 
         private EssentialsHuddleVtc1Room _currentRoom;
 
@@ -144,7 +144,7 @@ namespace PepperDash.Essentials
             _stagingBarInterlock = new JoinedSigInterlock(TriList);
             _callPagesInterlock = new JoinedSigInterlock(TriList);
 
-            _sourceStagingSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.SourceStagingSRL, 3, 3, 3);
+            SourceStagingSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.SourceStagingSRL, 3, 3, 3);
 
             _activityFooterSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.ActivityFooterSRL, 3, 3, 3);
             _callButtonSig = _activityFooterSrl.BoolInputSig(2, 1);
@@ -272,7 +272,7 @@ namespace PepperDash.Essentials
         /// </summary>
         public void ActivityCallButtonPressed()
         {
-            if (_vcDriver.IsVisible)
+            if (VcDriver.IsVisible)
             {
                 return;
             }
@@ -286,9 +286,9 @@ namespace PepperDash.Essentials
                 _currentSourcePageManager.Hide();
             }
             PowerOnFromCall();
-            _currentMode = UiDisplayMode.Call;
+            CurrentMode = UiDisplayMode.Call;
             SetActivityFooterFeedbacks();
-            _vcDriver.Show();
+            VcDriver.Show();
         }
 
         /// <summary>
@@ -311,7 +311,7 @@ namespace PepperDash.Essentials
         /// <param name="vcd"></param>
         public void SetVideoCodecDriver(EssentialsVideoCodecUiDriver vcd)
         {
-            _vcDriver = vcd;
+            VcDriver = vcd;
         }
 
         /// <summary>
@@ -553,7 +553,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        private void HideNextMeetingPopup()
+        protected void HideNextMeetingPopup()
         {
             TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, false);
         }
@@ -669,9 +669,9 @@ namespace PepperDash.Essentials
         /// </summary>
         private void SetActivityFooterFeedbacks()
         {
-            _callButtonSig.BoolValue = _currentMode == UiDisplayMode.Call
+            _callButtonSig.BoolValue = CurrentMode == UiDisplayMode.Call
                                       && CurrentRoom.ShutdownType == eShutdownType.None;
-            _shareButtonSig.BoolValue = _currentMode == UiDisplayMode.Presentation
+            _shareButtonSig.BoolValue = CurrentMode == UiDisplayMode.Presentation
                                        && CurrentRoom.ShutdownType == eShutdownType.None;
             _endMeetingButtonSig.BoolValue = CurrentRoom.ShutdownType != eShutdownType.None;
         }
@@ -679,12 +679,12 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Attached to activity list share button
         /// </summary>
-        private void ActivityShareButtonPressed()
+        protected virtual void ActivityShareButtonPressed()
         {
             SetupSourceList();
-            if (_vcDriver.IsVisible)
+            if (VcDriver.IsVisible)
             {
-                _vcDriver.Hide();
+                VcDriver.Hide();
             }
             HideNextMeetingPopup();
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
@@ -693,13 +693,10 @@ namespace PepperDash.Essentials
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
             {
-                if (!CurrentRoom.OnFeedback.BoolValue)
+                // If there's no default, show UI elements
+                if (!CurrentRoom.RunDefaultPresentRoute())
                 {
-                    // If there's no default, show UI elements
-                    if (!CurrentRoom.RunDefaultPresentRoute())
-                    {
-                        TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
-                    }
+                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
                 }
             }
             else // room is on show what's active or select a source if nothing is yet active
@@ -714,7 +711,7 @@ namespace PepperDash.Essentials
                     _currentSourcePageManager.Show();
                 }
             }
-            _currentMode = UiDisplayMode.Presentation;
+            CurrentMode = UiDisplayMode.Presentation;
             SetupSourceList();
             SetActivityFooterFeedbacks();
         }
@@ -810,7 +807,7 @@ namespace PepperDash.Essentials
         private void UiSelectSource(string key)
         {
             // Run the route and when it calls back, show the source
-            CurrentRoom.RunRouteAction(key, () => { });
+            CurrentRoom.RunRouteAction(key);
         }
 
         /// <summary>
@@ -979,7 +976,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Helper for property setter. Sets the panel to the given room, latching up all functionality
         /// </summary>
-        private void RefreshCurrentRoom(EssentialsHuddleVtc1Room room)
+        protected void RefreshCurrentRoom(EssentialsHuddleVtc1Room room)
         {
             if (_currentRoom != null)
             {
@@ -1112,46 +1109,48 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        private void SetupSourceList()
+        protected virtual void SetupSourceList()
         {
             var inCall = _currentRoom.InCallFeedback.BoolValue;
             var config = ConfigReader.ConfigObject.SourceLists;
-            if (config.ContainsKey(_currentRoom.SourceListKey))
+            if (!config.ContainsKey(_currentRoom.SourceListKey))
             {
-                var srcList = config[_currentRoom.SourceListKey].OrderBy(kv => kv.Value.Order);
-
-                // Setup sources list			
-                _sourceStagingSrl.Clear();
-                uint i = 1; // counter for UI list
-                foreach (var kvp in srcList)
-                {
-                    var srcConfig = kvp.Value;
-                    Debug.Console(1, "**** {0}, {1}, {2}, {3}, {4}", srcConfig.PreferredName,
-                        srcConfig.IncludeInSourceList,
-                        srcConfig.DisableCodecSharing, inCall, _currentMode);
-                    // Skip sources marked as not included, and filter list of non-sharable sources when in call
-                    // or on share screen
-                    if (!srcConfig.IncludeInSourceList || (inCall && srcConfig.DisableCodecSharing)
-                        || _currentMode == UiDisplayMode.Call && srcConfig.DisableCodecSharing)
-                    {
-                        Debug.Console(1, "Skipping {0}", srcConfig.PreferredName);
-                        continue;
-                    }
-
-                    var routeKey = kvp.Key;
-                    var item = new SubpageReferenceListSourceItem(i++, _sourceStagingSrl, srcConfig,
-                        b =>
-                        {
-                            if (!b)
-                            {
-                                UiSelectSource(routeKey);
-                            }
-                        });
-                    _sourceStagingSrl.AddItem(item); // add to the SRL
-                    item.RegisterForSourceChange(_currentRoom);
-                }
-                _sourceStagingSrl.Count = (ushort) (i - 1);
+                return;
             }
+
+            var srcList = config[_currentRoom.SourceListKey].OrderBy(kv => kv.Value.Order);
+
+            // Setup sources list			
+            SourceStagingSrl.Clear();
+            uint i = 1; // counter for UI list
+            foreach (var kvp in srcList)
+            {
+                var srcConfig = kvp.Value;
+                Debug.Console(1, "**** {0}, {1}, {2}, {3}, {4}", srcConfig.PreferredName,
+                    srcConfig.IncludeInSourceList,
+                    srcConfig.DisableCodecSharing, inCall, CurrentMode);
+                // Skip sources marked as not included, and filter list of non-sharable sources when in call
+                // or on share screen
+                if (!srcConfig.IncludeInSourceList || (inCall && srcConfig.DisableCodecSharing)
+                    || CurrentMode == UiDisplayMode.Call && srcConfig.DisableCodecSharing)
+                {
+                    Debug.Console(1, "Skipping {0}", srcConfig.PreferredName);
+                    continue;
+                }
+
+                var routeKey = kvp.Key;
+                var item = new SubpageReferenceListSourceItem(i++, SourceStagingSrl, srcConfig,
+                    b =>
+                    {
+                        if (!b)
+                        {
+                            UiSelectSource(routeKey);
+                        }
+                    });
+                SourceStagingSrl.AddItem(item); // add to the SRL
+                item.RegisterForSourceChange(_currentRoom);
+            }
+            SourceStagingSrl.Count = (ushort) (i - 1);
         }
 
         /// <summary>
@@ -1286,10 +1285,10 @@ namespace PepperDash.Essentials
             }
             else
             {
-                _currentMode = UiDisplayMode.Start;
-                if (_vcDriver.IsVisible)
+                CurrentMode = UiDisplayMode.Start;
+                if (VcDriver.IsVisible)
                 {
-                    _vcDriver.Hide();
+                    VcDriver.Hide();
                 }
                 SetupActivityFooterWhenRoomOff();
                 ShowLogo();
@@ -1399,7 +1398,7 @@ namespace PepperDash.Essentials
         {
             var routeInfo = CurrentRoom.CurrentSourceInfo;
             // This will show off popup too
-            if (IsVisible && !_vcDriver.IsVisible)
+            if (IsVisible && !VcDriver.IsVisible)
             {
                 ShowCurrentSource();
             }

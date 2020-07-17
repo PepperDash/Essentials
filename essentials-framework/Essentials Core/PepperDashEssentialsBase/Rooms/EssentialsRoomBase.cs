@@ -474,41 +474,41 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="routeKey"></param>
-        public virtual void RunRouteAction(string routeKey)
+        /// <param name="sourceKey"></param>
+        public virtual void RunRouteAction(string sourceKey)
         {
-            RunRouteAction(routeKey, String.Empty, () => { });
+            RunRouteAction(sourceKey, String.Empty, () => { });
         }
 
         /// <summary>
         /// Gets a source from config list SourceListKey and dynamically build and executes the
         /// route or commands
         /// </summary>
-        public virtual void RunRouteAction(string routeKey, Action successCallback)
+        public virtual void RunRouteAction(string sourceKey, Action successCallback)
         {
-            RunRouteAction(routeKey, String.Empty, successCallback);
+            RunRouteAction(sourceKey, String.Empty, successCallback);
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="routeKey"></param>
+        /// <param name="sourceKey"></param>
         /// <param name="sourceListKey"></param>
-        public virtual void RunRouteAction(string routeKey, string sourceListKey)
+        public virtual void RunRouteAction(string sourceKey, string sourceListKey)
         {
-            RunRouteAction(routeKey, sourceListKey, () => { });
+            RunRouteAction(sourceKey, sourceListKey, () => { });
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="routeKey"></param>
+        /// <param name="sourceKey"></param>
         /// <param name="sourceListKey"></param>
         /// <param name="successCallback"></param>
-        public virtual void RunRouteAction(string routeKey, string sourceListKey, Action successCallback)
+        public virtual void RunRouteAction(string sourceKey, string sourceListKey, Action successCallback)
         {
             var routeObject =
-                new {RouteKey = routeKey, SourceListKey = sourceListKey, SuccessCallback = successCallback};
+                new {RouteKey = sourceKey, SourceListKey = sourceListKey, SuccessCallback = successCallback};
             CrestronInvoke.BeginInvoke(RunRouteAction, routeObject); // end of BeginInvoke
         }
 
@@ -572,14 +572,13 @@ namespace PepperDash.Essentials.Core
                 SetVolumeControl(item);
 
                 // store the name and UI info for routes
+                CurrentSourceInfoKey = routeObj.RouteKey;
                 if (item.SourceKey == "$off")
                 {
-                    CurrentSourceInfoKey = routeObj.RouteKey;
                     CurrentSourceInfo = null;
                 }
                 else if (item.SourceKey != null)
                 {
-                    CurrentSourceInfoKey = routeObj.RouteKey;
                     CurrentSourceInfo = item;
                 }
 
@@ -657,7 +656,7 @@ namespace PepperDash.Essentials.Core
             return dest;
         }
 
-        private void SetVolumeControl(SourceListItem item)
+        protected void SetVolumeControl(SourceListItem item)
         {
             IBasicVolumeControls volDev = null;
             // Handle special cases for volume control
@@ -730,7 +729,7 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-        private Dictionary<string, SourceListItem> GetSourceListForKey(string routeKey, string sourceListKey)
+        protected Dictionary<string, SourceListItem> GetSourceListForKey(string routeKey, string sourceListKey)
         {
             var slKey = String.IsNullOrEmpty(sourceListKey) ? SourceListKey : sourceListKey;
 
