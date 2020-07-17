@@ -56,12 +56,20 @@ namespace PepperDash.Essentials.Core.Bridges
         [JoinName("SerialNumberFeedback")]
         public JoinDataComplete SerialNumberFeedback = new JoinDataComplete(new JoinData() { JoinNumber = 4, JoinSpan = 1 },
             new JoinMetadata() { Description = "Air Media Serial Number", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
-
-        internal AirMediaControllerJoinMap(uint joinStart)
+        /// <summary>
+        /// Constructor to use when instantiating this Join Map without inheriting from it
+        /// </summary>
+        /// <param name="joinStart">Join this join map will start at</param>
+        public AirMediaControllerJoinMap(uint joinStart)
             : base(joinStart, typeof(AirMediaControllerJoinMap))
         {
         }
 
+        /// <summary>
+        /// Constructor to use when extending this Join map
+        /// </summary>
+        /// <param name="joinStart">Join this join map will start at</param>
+        /// <param name="type">Type of the child join map</param>
         public AirMediaControllerJoinMap(uint joinStart, Type type) : base(joinStart, type){}
     }
 }
