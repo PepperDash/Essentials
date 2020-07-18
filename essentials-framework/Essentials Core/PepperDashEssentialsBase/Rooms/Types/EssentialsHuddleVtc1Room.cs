@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core.Devices.VideoCodec;
 using PepperDash.Essentials.Core.Rooms;
 using PepperDash.Essentials.Core.Rooms.Config;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.Core
 {
     public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange,
         IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec,

@@ -1,12 +1,11 @@
 ﻿using System;
 using Newtonsoft.Json;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Rooms;
 using PepperDash.Essentials.Core.Rooms.Config;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.Core
 {
     public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IRunRouteAction,
         IRunDefaultPresentRoute, IHasCurrentVolumeControls, IHasDefaultDisplay, IHasCurrentSourceInfoChange

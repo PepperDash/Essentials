@@ -1,4 +1,6 @@
-﻿namespace PepperDash.Essentials
+﻿using PepperDash.Essentials.Core;
+
+namespace PepperDash.Essentials
 {
     public interface IHasCalendarButton
     {

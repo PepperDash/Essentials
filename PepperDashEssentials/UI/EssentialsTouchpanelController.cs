@@ -287,7 +287,7 @@ namespace PepperDash.Essentials
                     avDriver.SetVideoCodecDriver(codecDriver);
                     avDriver.DefaultRoomKey = props.DefaultRoomKey;
                     mainDriver.AvDriver = avDriver;
-                    avDriver.CurrentRoom = room as EssentialsHuddleVtc1Room;
+                    avDriver.CurrentRoom = room as EssentialsDualDisplayRoom;
 
                     // Environment Driver
                     if (avDriver.CurrentRoom.PropertiesConfig.Environment != null && avDriver.CurrentRoom.PropertiesConfig.Environment.DeviceKeys.Count > 0)

@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Rooms.Config;
 using PepperDash_Essentials_Core.Devices;
 
-namespace PepperDash.Essentials
+namespace PepperDash.Essentials.Core
 {
     public class EssentialsDualDisplayRoom : EssentialsHuddleVtc1Room
     {
