@@ -14,26 +14,40 @@ namespace PepperDash.Essentials.Core.Fusion
             _room = room;
         }
 
-        #region Overrides of EssentialsHuddleSpaceFusionSystemControllerBase
+        #region Overrides of EssentialsHuddleVtc1FusionController
 
         protected override void ExecuteCustomSteps()
         {
-            var leftDisplay = _room.LeftDisplay as DisplayBase;
-            var rightDisplay = _room.RightDisplay as DisplayBase;
-
-            SetUpDisplay(leftDisplay);
-            SetUpDisplay(rightDisplay);
+            SetUpDisplays();
             base.ExecuteCustomSteps();
         }
 
         #endregion
 
-        #region Overrides of EssentialsHuddleSpaceFusionSystemControllerBase
-
-        protected override void SetUpDisplay()
+        private void SetUpDisplays()
         {
-            Debug.Console(1, this, "No default Display fo this room");
+            if (_room == null) return;
+
+            var leftDisplay = _room.LeftDisplay as DisplayBase;
+            var rightDisplay = _room.RightDisplay as DisplayBase;
+
+            SetUpDisplay(leftDisplay);
+            SetUpDisplay(rightDisplay);
         }
+
+        protected override void SetUpDefaultDisplay()
+        {
+            Debug.Console(0, this, "No default display for Dual Display Room");
+        }
+
+        #region Overrides of EssentialsFusionSystemControllerBase
+
+        protected override void SetUpDefaultDisplayAsset()
+        {
+            Debug.Console(0, this, "No default display for Dual Display Room");
+        }
+
+        #endregion
 
         private void SetUpDisplay(DisplayBase display)
         {
@@ -77,7 +91,5 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             throw new NotImplementedException();
         }
-
-        #endregion
     }
 }

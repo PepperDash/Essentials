@@ -6,11 +6,10 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
-    public class EssentialsHuddleVtc1FusionController : EssentialsHuddleSpaceFusionSystemControllerBase
+    public class EssentialsHuddleVtc1FusionController : EssentialsFusionSystemControllerBase
     {
-        private BooleanSigData _codecIsInCall;
-
         private readonly EssentialsHuddleVtc1Room _room;
+        private BooleanSigData _codecIsInCall;
 
         public EssentialsHuddleVtc1FusionController(EssentialsHuddleVtc1Room room, uint ipId)
             : base(room, ipId)
@@ -147,67 +146,6 @@ namespace PepperDash.Essentials.Core.Fusion
                 Debug.Console(1, this, "Error setting up codec in Fusion: {0}", e);
             }
         }
-
-        #region Overrides of EssentialsHuddleSpaceFusionSystemControllerBase
-
-        protected override void SetUpDisplay()
-        {
-            base.SetUpDisplay();
-
-            var defaultDisplay = _room.DefaultDisplay as DisplayBase;
-
-            if (defaultDisplay == null)
-            {
-                Debug.Console(1, this, "Cannot link null display to Fusion because default display is null");
-                return;
-            }
-
-            var deviceConfig =
-                    ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(defaultDisplay.Key));
-
-            //Check for existing asset in GUIDs collection
-
-            FusionAsset tempAsset;
-
-            if (FusionStaticAssets.ContainsKey(deviceConfig.Uid))
-            {
-                tempAsset = FusionStaticAssets[deviceConfig.Uid];
-            }
-            else
-            {
-                // Create a new asset
-                tempAsset = new FusionAsset(FusionRoomGuids.GetNextAvailableAssetNumber(FusionRoom),
-                    defaultDisplay.Name, "Display", "");
-                FusionStaticAssets.Add(deviceConfig.Uid, tempAsset);
-            }
-
-            var dispPowerOnAction = new Action<bool>(b =>
-            {
-                if (!b)
-                {
-                    defaultDisplay.PowerOn();
-                }
-            });
-            var dispPowerOffAction = new Action<bool>(b =>
-            {
-                if (!b)
-                {
-                    defaultDisplay.PowerOff();
-                }
-            });
-
-            var dispAsset = FusionRoom.CreateStaticAsset(tempAsset.SlotNumber, tempAsset.Name, "Display",
-                tempAsset.InstanceId);
-            dispAsset.PowerOn.OutputSig.UserObject = dispPowerOnAction;
-            dispAsset.PowerOff.OutputSig.UserObject = dispPowerOffAction;
-            defaultDisplay.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
-            // NO!! display.PowerIsOn.LinkComplementInputSig(dispAsset.PowerOff.InputSig);
-            // Use extension methods
-            dispAsset.TrySetMakeModel(defaultDisplay);
-            dispAsset.TryLinkAssetErrorToCommunication(defaultDisplay);
-        }
-
-        #endregion
 
         private void codec_CallStatusChange(object sender, Devices.Codec.CodecCallStatusItemChangeEventArgs e)
         {

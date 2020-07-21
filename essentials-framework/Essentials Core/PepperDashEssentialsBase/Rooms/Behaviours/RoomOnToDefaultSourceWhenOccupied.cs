@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.Core.Rooms
 
         public EssentialsRoomBase Room { get; private set; }
 
-        private Fusion.EssentialsHuddleSpaceFusionSystemControllerBase FusionRoom;
+        private Fusion.EssentialsFusionSystemControllerBase FusionRoom;
 
         public RoomOnToDefaultSourceWhenOccupied(DeviceConfig config) :
             base (config)
@@ -58,7 +58,7 @@ namespace PepperDash.Essentials.Core.Rooms
 
                 var fusionRoomKey = PropertiesConfig.RoomKey + "-fusion";
 
-                FusionRoom = DeviceManager.GetDeviceForKey(fusionRoomKey) as Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase;
+                FusionRoom = DeviceManager.GetDeviceForKey(fusionRoomKey) as Core.Fusion.EssentialsFusionSystemControllerBase;
 
                 if (FusionRoom == null)
                     Debug.Console(1, this, "Unable to get Fusion Room from Device Manager with key: {0}", fusionRoomKey);

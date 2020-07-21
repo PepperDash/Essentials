@@ -13,11 +13,26 @@ namespace PepperDash.Essentials.Core
         public const string DefaultDestinationListKey = "default";
         private const string LeftDestinationKey = "leftDisplay";
         private const string RightDestinationKey = "rightDisplay";
+        private EVideoBehavior _videoRoutingBehavior;
 
         public EssentialsDualDisplayRoomPropertiesConfig RoomConfig { get; private set; }
 
         public EAudioBehavior AudioRoutingBehavior { get; set; }
-        public EVideoBehavior VideoRoutingBehavior { get; set; }
+
+        public EVideoBehavior VideoRoutingBehavior
+        {
+            get { return _videoRoutingBehavior; }
+            set
+            {
+                _videoRoutingBehavior = value;
+                var handler = VideoRoutingBehaviorChanged;
+
+                if (handler == null) return;
+                handler(this, new EventArgs());
+            } 
+        }
+
+        public event EventHandler VideoRoutingBehaviorChanged;
 
         private string _destinationListKey;
 
@@ -152,7 +167,6 @@ namespace PepperDash.Essentials.Core
         {
             throw new NotImplementedException();
         }
-
 
         protected override void IsWarmingUpFeedbackOnOutputChange(object sender, FeedbackEventArgs args)
         {

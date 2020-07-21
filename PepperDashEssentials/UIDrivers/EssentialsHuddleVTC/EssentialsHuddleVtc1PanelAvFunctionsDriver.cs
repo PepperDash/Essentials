@@ -91,7 +91,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Current page manager running for a source
         /// </summary>
-        private PageManager _currentSourcePageManager;
+        protected PageManager CurrentSourcePageManager;
 
         /// <summary>
         /// Tracks the last meeting that was cancelled
@@ -270,7 +270,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        public void ActivityCallButtonPressed()
+        public virtual void ActivityCallButtonPressed()
         {
             if (VcDriver.IsVisible)
             {
@@ -281,9 +281,9 @@ namespace PepperDash.Essentials
             TriList.SetBool(UIBoolJoin.StartPageVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
-            if (_currentSourcePageManager != null)
+            if (CurrentSourcePageManager != null)
             {
-                _currentSourcePageManager.Hide();
+                CurrentSourcePageManager.Hide();
             }
             PowerOnFromCall();
             CurrentMode = UiDisplayMode.Call;
@@ -691,6 +691,14 @@ namespace PepperDash.Essentials
             TriList.SetBool(UIBoolJoin.CallStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
             // Run default source when room is off and share is pressed
+            SetSourceFeedback();
+            CurrentMode = UiDisplayMode.Presentation;
+            SetupSourceList();
+            SetActivityFooterFeedbacks();
+        }
+
+        protected virtual void SetSourceFeedback()
+        {
             if (!CurrentRoom.OnFeedback.BoolValue)
             {
                 // If there's no default, show UI elements
@@ -706,14 +714,11 @@ namespace PepperDash.Essentials
                 {
                     TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
                 }
-                else if (_currentSourcePageManager != null)
+                else if (CurrentSourcePageManager != null)
                 {
-                    _currentSourcePageManager.Show();
+                    CurrentSourcePageManager.Show();
                 }
             }
-            CurrentMode = UiDisplayMode.Presentation;
-            SetupSourceList();
-            SetActivityFooterFeedbacks();
         }
 
         /// <summary>
@@ -754,7 +759,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Loads the appropriate Sigs into CurrentDisplayModeSigsInUse and shows them
         /// </summary>
-        private void ShowCurrentSource()
+        protected virtual void ShowCurrentSource()
         {
             if (CurrentRoom.CurrentSourceInfo == null)
             {
@@ -795,7 +800,7 @@ namespace PepperDash.Essentials
                 pm = new DefaultPageManager(uiDev, TriList);
             }
             _pageManagers[uiDev] = pm;
-            _currentSourcePageManager = pm;
+            CurrentSourcePageManager = pm;
             pm.Show();
         }
 
@@ -1061,7 +1066,7 @@ namespace PepperDash.Essentials
             }
         }
 
-        private void SetCurrentRoom(EssentialsHuddleVtc1Room room)
+        protected virtual void SetCurrentRoom(EssentialsHuddleVtc1Room room)
         {
             if (_currentRoom == room || room == null)
             {
@@ -1346,10 +1351,10 @@ namespace PepperDash.Essentials
             // Hide whatever is showing
             if (IsVisible)
             {
-                if (_currentSourcePageManager != null)
+                if (CurrentSourcePageManager != null)
                 {
-                    _currentSourcePageManager.Hide();
-                    _currentSourcePageManager = null;
+                    CurrentSourcePageManager.Hide();
+                    CurrentSourcePageManager = null;
                 }
             }
 
@@ -1394,7 +1399,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Refreshes and shows the room's current source
         /// </summary>
-        private void RefreshSourceInfo()
+        protected virtual void RefreshSourceInfo()
         {
             var routeInfo = CurrentRoom.CurrentSourceInfo;
             // This will show off popup too

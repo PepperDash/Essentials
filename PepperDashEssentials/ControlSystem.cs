@@ -11,13 +11,18 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Fusion;
+using PepperDash.Essentials.Core.Monitoring;
 using PepperDash.Essentials.Core.Rooms.Config;
+using PepperDash.Essentials.Core.Touchpanels;
 using PepperDash.Essentials.DM;
 //using PepperDash.Essentials.Room.MobileControl;
 
 using Newtonsoft.Json;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.DM.Config;
+using PepperDash_Essentials_Core.Fusion;
 
 namespace PepperDash.Essentials
 {
@@ -51,20 +56,17 @@ namespace PepperDash.Essentials
 
             if (Debug.DoNotLoadOnNextBoot)
             {
-                CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
+                CrestronConsole.AddNewConsoleCommand(s => GoWithLoadDeferred(), "go", "Loads configuration file",
                     ConsoleAccessLevelEnum.AccessOperator);
             }
 
             CrestronConsole.AddNewConsoleCommand(PluginLoader.ReportAssemblyVersions, "reportversions", "Reports the versions of the loaded assemblies", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(PepperDash.Essentials.Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-            {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s);
-            }, "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s => Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s), "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
@@ -77,25 +79,27 @@ namespace PepperDash.Essentials
             {
                 CrestronConsole.ConsoleCommandResponse
                     ("Current running configuration. This is the merged system and template configuration");
-                CrestronConsole.ConsoleCommandResponse(Newtonsoft.Json.JsonConvert.SerializeObject
-                    (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
+                CrestronConsole.ConsoleCommandResponse(JsonConvert.SerializeObject
+                    (ConfigReader.ConfigObject, Formatting.Indented));
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-            {
-                CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r" +
-                    "System URL:   {0}\r" +
-                    "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
-            }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s => CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r" +
+                                                                                             "System URL:   {0}\r" +
+                                                                                             "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl), "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
 
             if (!Debug.DoNotLoadOnNextBoot)
             {
-                GoWithLoad();
+                GoWithLoad(null);
                 return;
             }
 
             SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+        }
+
+        private void GoWithLoadDeferred()
+        {
+            CrestronInvoke.BeginInvoke(GoWithLoad);
         }
 
         /// <summary>
@@ -113,13 +117,11 @@ namespace PepperDash.Essentials
 
                 var dirSeparator = Global.DirectorySeparator;
 
-                string directoryPrefix;
-
-                directoryPrefix = Crestron.SimplSharp.CrestronIO.Directory.GetApplicationRootDirectory();
+                var directoryPrefix = Directory.GetApplicationRootDirectory();
 
                 var fullVersion = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
 
-                AssemblyInformationalVersionAttribute fullVersionAtt = fullVersion[0] as AssemblyInformationalVersionAttribute;
+                var fullVersionAtt = fullVersion[0] as AssemblyInformationalVersionAttribute;
 
                 Global.SetAssemblyVersion(fullVersionAtt.InformationalVersion);
 
@@ -170,7 +172,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Begins the process of loading resources including plugins and configuration data
         /// </summary>
-        public void GoWithLoad()
+        public void GoWithLoad(object notUsed)
         {
             try
             {
@@ -319,10 +321,10 @@ namespace PepperDash.Essentials
         {
 
             // Build the processor wrapper class
-            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+            DeviceManager.AddDevice(new CrestronProcessor("processor"));
 
             // Add global System Monitor device
-            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));
+            DeviceManager.AddDevice(new SystemMonitorController("systemMonitor"));
 
             foreach (var devConf in ConfigReader.ConfigObject.Devices)
             {
@@ -339,28 +341,28 @@ namespace PepperDash.Essentials
                                 devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
 
                         // Check if the processor is a DMPS model
-                        if (this.ControllerPrompt.IndexOf("dmps", StringComparison.OrdinalIgnoreCase) > -1)
+                        if (ControllerPrompt.IndexOf("dmps", StringComparison.OrdinalIgnoreCase) > -1)
                         {
-                            Debug.Console(2, "Adding DmpsRoutingController for {0} to Device Manager.", this.ControllerPrompt);
+                            Debug.Console(2, "Adding DmpsRoutingController for {0} to Device Manager.", ControllerPrompt);
 
-                            var propertiesConfig = JsonConvert.DeserializeObject<DM.Config.DmpsRoutingPropertiesConfig>(devConf.Properties.ToString());
+                            var propertiesConfig = JsonConvert.DeserializeObject<DmpsRoutingPropertiesConfig>(devConf.Properties.ToString());
 
                             if(propertiesConfig == null)
-                                propertiesConfig =  new DM.Config.DmpsRoutingPropertiesConfig();
+                                propertiesConfig =  new DmpsRoutingPropertiesConfig();
 
-                            var dmpsRoutingController = DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig);
+                            var dmpsRoutingController = DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", ControllerPrompt, propertiesConfig);
 
                             DeviceManager.AddDevice(dmpsRoutingController);
                         }
-                        else if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
+                        else if (ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
                         {
                             Debug.Console(2, "MPC3 processor type detected.  Adding Mpc3TouchpanelController.");
 
                             var butToken = devConf.Properties["buttons"];
                             if (butToken != null)
                             {
-                                var buttons = butToken.ToObject<Dictionary<string, Essentials.Core.Touchpanels.KeypadButton>>();
-                                var tpController = new Essentials.Core.Touchpanels.Mpc3TouchpanelController(devConf.Key, devConf.Name, Global.ControlSystem, buttons);
+                                var buttons = butToken.ToObject<Dictionary<string, KeypadButton>>();
+                                var tpController = new Mpc3TouchpanelController(devConf.Key, devConf.Name, Global.ControlSystem, buttons);
                                 DeviceManager.AddDevice(tpController);
                             }
                             else
@@ -383,7 +385,7 @@ namespace PepperDash.Essentials
                     IKeyed newDev = null;
 
                     if (newDev == null)
-                        newDev = PepperDash.Essentials.Core.DeviceFactory.GetDevice(devConf);
+                        newDev = Core.DeviceFactory.GetDevice(devConf);
 
                     //
                     //if (newDev == null)
@@ -455,7 +457,7 @@ namespace PepperDash.Essentials
                         Debug.Console(0, Debug.ErrorLogLevel.Notice,
                             "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(
-                            new EssentialsHuddleSpaceFusionSystemControllerBase(huddleRoom, 0xf1));
+                            new EssentialsHuddleSpaceFusionController(huddleRoom, 0xf1));
 
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
@@ -472,7 +474,7 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice,
                             "Room is EssentialsDualDisplayRoom, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController(ddRoom, 0xf1));
+                        DeviceManager.AddDevice(new EssentialsDualDisplayFusionController(ddRoom, 0xf1));
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 

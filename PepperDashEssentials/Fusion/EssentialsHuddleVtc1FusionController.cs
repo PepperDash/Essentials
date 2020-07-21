@@ -10,7 +10,7 @@ using PepperDash.Essentials.Core.Fusion;
 
 namespace PepperDash.Essentials.Fusion
 {
-    public class EssentialsHuddleVtc1FusionController : EssentialsHuddleSpaceFusionSystemControllerBase
+    public class EssentialsHuddleVtc1FusionController : EssentialsFusionSystemControllerBase
     {
         private BooleanSigData _codecIsInCall;
 
@@ -167,53 +167,6 @@ namespace PepperDash.Essentials.Fusion
         }
 
         // These methods are overridden because they access the room class which is of a different type
-
-        protected override void CreateSymbolAndBasicSigs(uint ipId)
-        {
-            Debug.Console(1, this, "Creating Fusion Room symbol with GUID: {0}", RoomGuid);
-
-            FusionRoom = new FusionRoom(ipId, Global.ControlSystem, Room.Name, RoomGuid);
-            FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.Use();
-            FusionRoom.ExtenderFusionRoomDataReservedSigs.Use();
-
-            FusionRoom.Register();
-
-            FusionRoom.FusionStateChange += FusionRoom_FusionStateChange;
-
-            FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.DeviceExtenderSigChange +=
-                FusionRoomSchedule_DeviceExtenderSigChange;
-            FusionRoom.ExtenderFusionRoomDataReservedSigs.DeviceExtenderSigChange +=
-                ExtenderFusionRoomDataReservedSigs_DeviceExtenderSigChange;
-            FusionRoom.OnlineStatusChange += FusionRoom_OnlineStatusChange;
-
-            CrestronConsole.AddNewConsoleCommand(RequestFullRoomSchedule, "FusReqRoomSchedule",
-                "Requests schedule of the room for the next 24 hours", ConsoleAccessLevelEnum.AccessOperator);
-            CrestronConsole.AddNewConsoleCommand(ModifyMeetingEndTimeConsoleHelper, "FusReqRoomSchMod",
-                "Ends or extends a meeting by the specified time", ConsoleAccessLevelEnum.AccessOperator);
-            CrestronConsole.AddNewConsoleCommand(CreateAdHocMeeting, "FusCreateMeeting",
-                "Creates and Ad Hoc meeting for on hour or until the next meeting",
-                ConsoleAccessLevelEnum.AccessOperator);
-
-            // Room to fusion room
-            Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
-
-            // Moved to 
-            CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(84, "Display 1 - Current Source",
-                eSigIoMask.InputSigOnly);
-            // Don't think we need to get current status of this as nothing should be alive yet. 
-
-            var essentialsHuddleVtc1Room = Room as EssentialsHuddleVtc1Room;
-            if (essentialsHuddleVtc1Room != null)
-            {
-                essentialsHuddleVtc1Room.CurrentSourceChange += Room_CurrentSourceInfoChange;
-                FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction(
-    essentialsHuddleVtc1Room.PowerOnToDefaultOrLastSource);
-                FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(
-                    () => essentialsHuddleVtc1Room.RunRouteAction("roomOff", Room.SourceListKey));
-            }
-
-            CrestronEnvironment.EthernetEventHandler += CrestronEnvironment_EthernetEventHandler;
-        }
 
         protected override void SetUpSources()
         {
