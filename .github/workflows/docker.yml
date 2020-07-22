@@ -42,7 +42,7 @@ jobs:
       - name: Add Github Packages source
         run: nuget sources add -name github -source https://nuget.pkg.github.com/pepperdash/index.json -username Pepperdash -password ${{ secrets.GITHUB_TOKEN }}
       - name: restore Nuget Packages
-        run: nuget restore .\PepperDashEssentials.sln -MSBuildVersion 4
+        run: nuget install .\packages.config -OutputDirectory .\packages -ExcludeVersion
         # Fetch all tags
       - name: Fetch tags
         run: git fetch --tags
