@@ -24,6 +24,10 @@ The [PepperDash.Core](https://github.com/PepperDash/PepperDashCore) SIMPL# libra
 
 To install dependencies once nuget.exe is installed, run the following command: `nuget install .\packages.config -OutputDirectory .\packages -excludeVersion`. To verify that the packages installed correctly, open Essentials and make sure that all references are found, then try and build it.
 
+### Installing Different versions of PepperDash Core
+
+If you need a different version of PepperDash Core, use the command `nuget install .\packages.config -OutputDirectory .\packages -excludeVersion -Version {versionToGet}`. Omitting the `-Version` option will pull the latest release version of PepperDash Core.
+
 ## Utilization
 
 Essentials was originally conceptualized as a standalone application for running control system logic entirely in Simpl# Pro. It is primarily designed around accomplishing this goal, but during development, it became obvious that it could easily be leveraged to also serve as a partner application to one or more SIMPL Windows programs.
