@@ -13,7 +13,7 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
-using PepperDash.Essentials.Devices.Common.Occupancy;
+using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
@@ -603,7 +603,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             //settings.MissingMemberHandling = MissingMemberHandling.Ignore;
             //settings.ObjectCreationHandling = ObjectCreationHandling.Auto;
 
-                if (response.IndexOf("\"Status\":{") > -1)
+                if (response.IndexOf("\"Status\":{") > -1 || response.IndexOf("\"Status\": {") > -1)
                 {
                     // Status Message
 
@@ -776,7 +776,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                             SendText("xConfiguration");
                     }
                 }
-                else if (response.IndexOf("\"Configuration\":{") > -1)
+                else if (response.IndexOf("\"Configuration\":{") > -1 || response.IndexOf("\"Configuration\": {") > -1)
                 {
                     // Configuration Message
 
@@ -792,9 +792,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     }
 
                 }
-                else if (response.IndexOf("\"Event\":{") > -1)
+                else if (response.IndexOf("\"Event\":{") > -1 || response.IndexOf("\"Event\": {") > -1)
                 {
-                    if (response.IndexOf("\"CallDisconnect\":{") > -1)
+                    if (response.IndexOf("\"CallDisconnect\":{") > -1 || response.IndexOf("\"CallDisconnect\": {") > -1)
                     {
                         CiscoCodecEvents.RootObject eventReceived = new CiscoCodecEvents.RootObject();
 
@@ -802,16 +802,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                         EvalutateDisconnectEvent(eventReceived);
                     }
-					else if (response.IndexOf("\"Bookings\":{") > -1) // The list has changed, reload it
+                    else if (response.IndexOf("\"Bookings\":{") > -1 || response.IndexOf("\"Bookings\": {") > -1) // The list has changed, reload it
 					{
 						GetBookings(null);
 					}
                 }
-                else if (response.IndexOf("\"CommandResponse\":{") > -1)
+                else if (response.IndexOf("\"CommandResponse\":{") > -1 || response.IndexOf("\"CommandResponse\": {") > -1)
                 {
                     // CommandResponse Message
 
-                    if (response.IndexOf("\"CallHistoryRecentsResult\":{") > -1)
+                    if (response.IndexOf("\"CallHistoryRecentsResult\":{") > -1 || response.IndexOf("\"CallHistoryRecentsResult\": {") > -1)
                     {
                         var codecCallHistory = new CiscoCallHistory.RootObject();
 
@@ -819,11 +819,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                         CallHistory.ConvertCiscoCallHistoryToGeneric(codecCallHistory.CommandResponse.CallHistoryRecentsResult.Entry);
                     }
-                    else if (response.IndexOf("\"CallHistoryDeleteEntryResult\":{") > -1)
+                    else if (response.IndexOf("\"CallHistoryDeleteEntryResult\":{") > -1 || response.IndexOf("\"CallHistoryDeleteEntryResult\": {") > -1)
                     {
                         GetCallHistory();
                     }
-                    else if (response.IndexOf("\"PhonebookSearchResult\":{") > -1)
+                    else if (response.IndexOf("\"PhonebookSearchResult\":{") > -1 || response.IndexOf("\"PhonebookSearchResult\": {") > -1)
                     {
                         var codecPhonebookResponse = new CiscoCodecPhonebook.RootObject();
 
@@ -1658,7 +1658,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    if (CodecStatus.Status.SIP.Registration.Count > 0)
+                    if (CodecStatus.Status.SIP != null && CodecStatus.Status.SIP.Registration.Count > 0)
                     {
                         var match = Regex.Match(CodecStatus.Status.SIP.Registration[0].URI.Value, @"(\d+)"); // extract numbers only
                         if (match.Success)
@@ -1679,16 +1679,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     }
                 }
             }
+
             public override string SipUri
             {
                 get
                 {
-                    if (CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value != null)
+                    if (CodecStatus.Status.SIP != null && CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value != null)
+                    {
                         return CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value;
+                    }
+                    else if (CodecStatus.Status.UserInterface != null &&
+                             CodecStatus.Status.UserInterface.ContactInfo.ContactMethod[0].Number.Value != null)
+                    {
+                        return CodecStatus.Status.UserInterface.ContactInfo.ContactMethod[0].Number.Value;
+                    }
                     else
                         return string.Empty;
                 }
             }
+
             public override bool AutoAnswerEnabled
             {
                 get

@@ -16,9 +16,10 @@ using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
 using PepperDash.Essentials.Room.Config;
-using PepperDash.Essentials.Room.MobileControl;
+//using PepperDash.Essentials.Room.MobileControl;
 
 using Newtonsoft.Json;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials
 {
@@ -35,6 +36,7 @@ namespace PepperDash.Essentials
             Thread.MaxNumberOfUserThreads = 400;
             Global.ControlSystem = this;
             DeviceManager.Initialize(this);
+            SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
         }
 
         /// <summary>
@@ -90,7 +92,12 @@ namespace PepperDash.Essentials
 
 
             if (!Debug.DoNotLoadOnNextBoot)
+            {
                 GoWithLoad();
+                return;
+            }
+
+            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
         }
 
         /// <summary>
@@ -168,7 +175,7 @@ namespace PepperDash.Essentials
         public void GoWithLoad()
         {
             try
-            {             
+            {
                 Debug.SetDoNotLoadOnNextBoot(false);
 
                 PluginLoader.AddProgramAssemblies();
@@ -188,11 +195,14 @@ namespace PepperDash.Essentials
 
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Folder structure verified. Loading config...");
                     if (!ConfigReader.LoadConfig2())
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Essentials Load complete with errors");
                         return;
+                    }
 
                     Load();
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Essentials load complete\r" +
-                        "-------------------------------------------------------------");
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Essentials load complete\r\n" +
+                                                                 "-------------------------------------------------------------");
                 }
                 else
                 {
@@ -211,11 +221,13 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r{0}", e);
+                Debug.Console(0, "FATAL INITIALIZE ERROR. System is in an inconsistent state:\r\n{0}", e);
             }
-
-            // Notify the OS that the program intitialization has completed
-            SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            finally
+            {
+                // Notify the OS that the program intitialization has completed
+                SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
+            }
 
         }
 
@@ -275,27 +287,32 @@ namespace PepperDash.Essentials
 
 			DeviceManager.ActivateAll();
 
-            LinkSystemMonitorToAppServer();
-        }
+		    var mobileControl = DeviceManager.GetDeviceForKey("appServer") as IMobileControl;
 
-        void LinkSystemMonitorToAppServer()
-        {
-            var sysMon = DeviceManager.GetDeviceForKey("systemMonitor") as PepperDash.Essentials.Core.Monitoring.SystemMonitorController;
+		    if (mobileControl == null) return;
 
-            var appServer = DeviceManager.GetDeviceForKey("appServer") as MobileControlSystemController;
+            mobileControl.LinkSystemMonitorToAppServer();
+		    //LinkSystemMonitorToAppServer();
+		}
+
+        //void LinkSystemMonitorToAppServer()
+        //{
+        //    var sysMon = DeviceManager.GetDeviceForKey("systemMonitor") as PepperDash.Essentials.Core.Monitoring.SystemMonitorController;
+
+        //    var appServer = DeviceManager.GetDeviceForKey("appServer") as MobileControlSystemController;
 
 
-            if (sysMon != null && appServer != null)
-            {
-                var key = sysMon.Key + "-" + appServer.Key;
-                var messenger = new PepperDash.Essentials.AppServer.Messengers.SystemMonitorMessenger
-                    (key, sysMon, "/device/systemMonitor");
+        //    if (sysMon != null && appServer != null)
+        //    {
+        //        var key = sysMon.Key + "-" + appServer.Key;
+        //        var messenger = new PepperDash.Essentials.AppServer.Messengers.SystemMonitorMessenger
+        //            (key, sysMon, "/device/systemMonitor");
 
-                messenger.RegisterWithAppServer(appServer);
+        //        messenger.RegisterWithAppServer(appServer);
 
-                DeviceManager.AddDevice(messenger);
-            }
-        }
+        //        DeviceManager.AddDevice(messenger);
+        //    }
+        //}
 
         /// <summary>
         /// Reads all devices from config and adds them to DeviceManager
@@ -442,11 +459,11 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
                         // Mobile Control bridge
-                        var bridge = new MobileConrolEssentialsHuddleSpaceRoomBridge(room as EssentialsHuddleSpaceRoom);
-                        AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
-                        DeviceManager.AddDevice(bridge);
+                        //var bridge = new MobileConrolEssentialsHuddleSpaceRoomBridge(room as EssentialsHuddleSpaceRoom);
+                        //AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
+                        //DeviceManager.AddDevice(bridge);
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control Bridge Added...");
+                        CreateMobileControlBridge(room);
                     }
                     else if (room is EssentialsHuddleVtc1Room)
                     {
@@ -457,9 +474,11 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
                         // Mobile Control bridge
-                        var bridge = new MobileConrolEssentialsHuddleSpaceRoomBridge(room);
-                        AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
-                        DeviceManager.AddDevice(bridge);
+                        //var bridge = new MobileConrolEssentialsHuddleSpaceRoomBridge(room);
+                        //AddBridgePostActivationHelper(bridge); // Lets things happen later when all devices are present
+                        //DeviceManager.AddDevice(bridge);
+
+                        CreateMobileControlBridge(room);
                     }
                     else
                     {
@@ -476,25 +495,36 @@ namespace PepperDash.Essentials
 
         }
 
+        private static void CreateMobileControlBridge(EssentialsRoomBase room)
+        {
+            var mobileControl = DeviceManager.GetDeviceForKey("appServer") as IMobileControl;
+
+            if (mobileControl == null) return;
+
+            mobileControl.CreateMobileControlRoomBridge(room);
+
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control Bridge Added...");
+        }
+
         /// <summary>
         /// Helps add the post activation steps that link bridges to main controller
         /// </summary>
         /// <param name="bridge"></param>
-        void AddBridgePostActivationHelper(MobileControlBridgeBase bridge)
-        {
-            bridge.AddPostActivationAction(() =>
-            {
-                var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as MobileControlSystemController;
-                if (parent == null)
-                {
-                    Debug.Console(0, bridge, "ERROR: Cannot connect app server room bridge. System controller not present");
-                    return;
-                }
-                Debug.Console(0, bridge, "Linking to parent controller");
-                bridge.AddParent(parent);
-                parent.AddBridge(bridge);
-            });
-        }
+        //void AddBridgePostActivationHelper(MobileControlBridgeBase bridge)
+        //{
+        //    bridge.AddPostActivationAction(() =>
+        //    {
+        //        var parent = DeviceManager.AllDevices.FirstOrDefault(d => d.Key == "appServer") as MobileControlSystemController;
+        //        if (parent == null)
+        //        {
+        //            Debug.Console(0, bridge, "ERROR: Cannot connect app server room bridge. System controller not present");
+        //            return;
+        //        }
+        //        Debug.Console(0, bridge, "Linking to parent controller");
+        //        bridge.AddParent(parent);
+        //        parent.AddBridge(bridge);
+        //    });
+        //}
 
         /// <summary>
         /// Fires up a logo server if not already running

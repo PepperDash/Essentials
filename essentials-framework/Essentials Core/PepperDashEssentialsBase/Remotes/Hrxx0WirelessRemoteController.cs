@@ -21,11 +21,18 @@ namespace PepperDash.Essentials.Core
     [Description("Wrapper class for all HR-Series remotes")]
     public class Hrxx0WirelessRemoteController : EssentialsBridgeableDevice, IHasFeedback
     {
+        private CenRfgwController _gateway;
+
+        private GatewayBase _gatewayBase;
+
+
         private Hr1x0WirelessRemoteBase _remote;
 
         public FeedbackCollection<Feedback> Feedbacks { get; set; }
 
         public CrestronCollection<Button> Buttons { get { return _remote.Button; } }
+
+        private DeviceConfig _config;
 
         public Hrxx0WirelessRemoteController(string key, Func<DeviceConfig, Hr1x0WirelessRemoteBase> preActivationFunc, 
             DeviceConfig config)
@@ -33,18 +40,58 @@ namespace PepperDash.Essentials.Core
         {
             Feedbacks = new FeedbackCollection<Feedback>();
 
-            AddPreActivationAction(() =>
+            var props = JsonConvert.DeserializeObject<CrestronRemotePropertiesConfig>(config.Properties.ToString());
+
+            var type = config.Type;
+            var rfId = (uint)props.Control.InfinetIdInt;
+            _config = config;
+            
+            if (props.GatewayDeviceKey == "processor")
             {
-                _remote = preActivationFunc(config);
+                {
+                    AddPreActivationAction(() =>
+                    {
+                        _remote = preActivationFunc(config);
+                        RegisterEvents();
+                    });
 
-                _remote.ButtonStateChange += new ButtonEventHandler(_remote_ButtonStateChange);
+                    return;
+                }
+            }
 
-                Feedbacks.Add(new BoolFeedback("BatteryCritical", () => _remote.BatteryCriticalFeedback.BoolValue));
-                Feedbacks.Add(new BoolFeedback("BatteryLow", () => _remote.BatteryLowFeedback.BoolValue));
-                Feedbacks.Add(new IntFeedback("BatteryVoltage", () => _remote.BatteryVoltageFeedback.UShortValue));
 
-                _remote.BaseEvent += new BaseEventHandler(_remote_BaseEvent);
-            });
+            var gatewayDev = DeviceManager.GetDeviceForKey(props.GatewayDeviceKey) as CenRfgwController;
+            if (gatewayDev == null)
+            {
+                Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is not a valid device", props.GatewayDeviceKey);
+            }
+            if (gatewayDev != null)
+            {
+                Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is a valid device", props.GatewayDeviceKey);
+                _gateway = gatewayDev;
+            }
+
+
+            if (_gateway == null) return;
+
+            _gateway.IsReadyEvent += _gateway_IsReadyEvent;
+            if (_gateway.IsReady)
+            {
+                AddPreActivationAction(() =>
+                {
+                    _remote = preActivationFunc(config);
+
+                    RegisterEvents();
+                });
+            }
+        }
+
+        void _gateway_IsReadyEvent(object sender, PepperDash_Essentials_Core.IsReadyEventArgs e)
+        {
+            if (e.IsReady != true) return;
+            _remote = GetHr1x0WirelessRemote(_config);
+
+            RegisterEvents();
         }
 
         void _remote_BaseEvent(GenericBase device, BaseEventArgs args)
@@ -55,6 +102,17 @@ namespace PepperDash.Essentials.Core
                 Feedbacks["BatteryLow"].FireUpdate();
             if(args.EventId == Hr1x0EventIds.BatteryVoltageFeedbackEventId)
                 Feedbacks["BatteryVoltage"].FireUpdate();
+        }
+
+        private void RegisterEvents()
+        {
+            _remote.ButtonStateChange += _remote_ButtonStateChange;
+
+            Feedbacks.Add(new BoolFeedback("BatteryCritical", () => _remote.BatteryCriticalFeedback.BoolValue));
+            Feedbacks.Add(new BoolFeedback("BatteryLow", () => _remote.BatteryLowFeedback.BoolValue));
+            Feedbacks.Add(new IntFeedback("BatteryVoltage", () => _remote.BatteryVoltageFeedback.UShortValue));
+
+            _remote.BaseEvent += _remote_BaseEvent;
         }
 
         void _remote_ButtonStateChange(GenericBase device, ButtonEventArgs args)
@@ -112,22 +170,29 @@ namespace PepperDash.Essentials.Core
                 return null;
             }
 
+            Hr1x0WirelessRemoteBase remoteBase;
             switch (type)
             {
                 case ("hr100"):
-                    return new Hr100(rfId, gateway);
+                    remoteBase = new Hr100(rfId, gateway);
+                    break;
                 case ("hr150"):
-                    return new Hr150(rfId, gateway);
+                    remoteBase = new Hr150(rfId, gateway);
+                    break;
                 case ("hr310"):
-                    return new Hr310(rfId, gateway);
+                    remoteBase = new Hr310(rfId, gateway);
+                    break;
                 default:
                     return null;
             }
-        }
 
-        static void gateway_BaseEvent(GenericBase device, BaseEventArgs args)
-        {
-            throw new NotImplementedException();
+            // register the device when using an internal RF gateway
+            if (props.GatewayDeviceKey == "processor")
+            {
+                remoteBase.RegisterWithLogging(config.Key);
+            }
+
+            return remoteBase;            
         }
 
         #endregion
@@ -158,7 +223,14 @@ namespace PepperDash.Essentials.Core
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<Hrxxx0WirelessRemoteControllerJoinMap>(joinMapSerialized);
 
-            bridge.AddJoinMap(Key, joinMap);
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
 
             //List<string> ExcludedKeys = new List<string>();
             foreach (var feedback in Feedbacks)

@@ -1,5 +1,7 @@
 # PepperDash Essentials Framework (c) 2020
 
+## [Latest Release](https://github.com/PepperDash/Essentials/releases/latest)
+
 ## License
 
 Provided under MIT license

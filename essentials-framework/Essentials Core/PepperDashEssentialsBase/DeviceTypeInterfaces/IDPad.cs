@@ -1,6 +1,6 @@
 ﻿using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
-
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 
@@ -9,7 +9,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// 
 	/// </summary>
-	public interface IDPad
+	public interface IDPad : IKeyed
 	{
 		void Up(bool pressRelease);
 		void Down(bool pressRelease);

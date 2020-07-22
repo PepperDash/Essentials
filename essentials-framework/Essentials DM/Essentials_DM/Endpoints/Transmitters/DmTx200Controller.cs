@@ -28,7 +28,7 @@ namespace PepperDash.Essentials.DM
         public override StringFeedback ActiveVideoInputFeedback { get; protected set; }
         public IntFeedback VideoSourceNumericFeedback { get; protected set; }
         public IntFeedback AudioSourceNumericFeedback { get; protected set; }
-        public IntFeedback HdmiInHdcpCapabilityFeedback { get; protected set; }
+        public IntFeedback HdmiInHdcpCapabilityFeedback { get; protected set; } //actually state
         public BoolFeedback HdmiVideoSyncFeedback { get; protected set; }
         public BoolFeedback VgaVideoSyncFeedback { get; protected set; }
 
@@ -106,6 +106,9 @@ namespace PepperDash.Essentials.DM
             AudioSourceNumericFeedback = new IntFeedback(() => (int)Tx.AudioSourceFeedback);
 
             HdmiInHdcpCapabilityFeedback = new IntFeedback("HdmiInHdcpCapability", () => tx.HdmiInput.HdcpSupportOnFeedback.BoolValue ? 1 : 0);
+
+            //setting this on the base class so that we can get it easily on the chassis.
+            HdcpStateFeedback = HdmiInHdcpCapabilityFeedback;
 
             HdcpSupportCapability = eHdcpCapabilityType.HdcpAutoSupport;
 

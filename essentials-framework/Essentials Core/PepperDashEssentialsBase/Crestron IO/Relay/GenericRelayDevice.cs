@@ -31,13 +31,14 @@ namespace PepperDash.Essentials.Core.CrestronIO
             RelayOutput = relay;
             RelayOutput.Register();
 
-            RelayOutput.StateChange += new RelayEventHandler(RelayOutput_StateChange);
+            RelayOutput.StateChange += RelayOutput_StateChange;
         }
 
         public GenericRelayDevice(string key, string name, Func<IOPortConfig, Relay> postActivationFunc,
             IOPortConfig config)
             : base(key, name)
         {
+            OutputIsOnFeedback = new BoolFeedback(() => RelayOutput.State);
 
             AddPostActivationAction(() =>
             {
@@ -46,7 +47,6 @@ namespace PepperDash.Essentials.Core.CrestronIO
                 RelayOutput.Register();
 
                 RelayOutput.StateChange += RelayOutput_StateChange;
-
             });
         }
 
@@ -148,7 +148,14 @@ namespace PepperDash.Essentials.Core.CrestronIO
             if (!string.IsNullOrEmpty(joinMapSerialized))
                 joinMap = JsonConvert.DeserializeObject<GenericRelayControllerJoinMap>(joinMapSerialized);
 
-            bridge.AddJoinMap(Key, joinMap);
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
 
             if (RelayOutput == null)
             {

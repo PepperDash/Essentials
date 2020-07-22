@@ -11,7 +11,6 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Room.MobileControl;
 
 namespace PepperDash.Essentials
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.EthernetCommunication;
 using PepperDash.Core;
@@ -26,8 +27,6 @@ namespace PepperDash.Essentials.Bridges
 
             Eisc.SigChange += Eisc_SigChange;
 
-            Eisc.Register();
-
             AddPostActivationAction(() =>
             {
                 Debug.Console(1, this, "Linking Devices...");
@@ -39,18 +38,30 @@ namespace PepperDash.Essentials.Bridges
                     if (device == null) continue;
 
                     Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
-                    if (device is IBridge)      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
+                    if (typeof(IBridge).IsAssignableFrom(device.GetType().GetCType()))      // Check for this first to allow bridges in plugins to override existing bridges that apply to the same type.
                     {
                         Debug.Console(2, this, "'{0}' is IBridge", device.Key);
 
                         var dev = device as IBridge;
 
+                        if (dev == null)
+                        {
+                            Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Cast to IBridge failed for {0}");
+                            continue;
+                        }
+
                         dev.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey);
                     }
-                    if (!(device is IBridgeAdvanced)) continue;
+                    if (!typeof(IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType())) continue;
                     Debug.Console(2, this, "'{0}' is IBridgeAdvanced", device.Key);
 
                     var advDev = device as IBridgeAdvanced;
+
+                    if (advDev == null)
+                    {
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Cast to IBridgeAdvanced failed for {0}");
+                        continue;
+                    }
 
                     try
                     {
@@ -61,10 +72,18 @@ namespace PepperDash.Essentials.Bridges
                         Debug.ConsoleWithLog(0, this,
                             "Please update the bridge config to use EiscBridgeAdvanced with this device: {0}", device.Key);
                     }
-
                 }
                 Debug.Console(1, this, "Devices Linked.");
 
+                var registerResult = Eisc.Register();
+
+                if (registerResult != eDeviceRegistrationUnRegistrationResponse.Success)
+                {
+                    Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Registration result: {0}", registerResult);
+                    return;
+                }
+
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "EISC registration successful");
             });
         }
 
@@ -139,12 +158,12 @@ namespace PepperDash.Essentials.Bridges
             try
             {
                 if (Debug.Level >= 1)
-                    Debug.Console(1, this, "EiscApi change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
+                    Debug.Console(2, this, "EiscApi change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
                 var uo = args.Sig.UserObject;
 
                 if (uo == null) return;
 
-                Debug.Console(1, this, "Executing Action: {0}", uo.ToString());
+                Debug.Console(2, this, "Executing Action: {0}", uo.ToString());
                 if (uo is Action<bool>)
                     (uo as Action<bool>)(args.Sig.BoolValue);
                 else if (uo is Action<ushort>)

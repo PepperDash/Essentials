@@ -64,7 +64,7 @@
     </Reference>
     <Reference Include="Crestron.SimplSharpPro.Gateways, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Gateways.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Gateways.dll</HintPath>
     </Reference>
     <Reference Include="Crestron.SimplSharpPro.GeneralIO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -137,6 +137,7 @@
     <Compile Include="Bridges\JoinMaps\GenericLightingJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\GenericRelayControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\GlsOccupancySensorBaseJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\GlsPartitionSensorJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\HdMdNxM4kEControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\HdMdxxxCEControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\Hrxxx0WirelessRemoteControllerJoinMap.cs" />
@@ -171,6 +172,8 @@
     </Compile>
     <Compile Include="Crestron IO\Cards\CenCi33Controller.cs" />
     <Compile Include="Crestron IO\Cards\InternalCardCageController.cs" />
+    <Compile Include="Crestron IO\DinCenCn\DinCenCnController.cs" />
+    <Compile Include="Crestron IO\DinCenCn\IHasCresnetBranches.cs" />
     <Compile Include="Crestron IO\Inputs\CenIoDigIn104Controller.cs" />
     <Compile Include="Crestron IO\Inputs\GenericDigitalInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />
@@ -190,8 +193,10 @@
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
+    <Compile Include="DeviceTypeInterfaces\IMobileControl.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Factory\IDeviceFactory.cs" />
+    <Compile Include="Factory\ReadyEventArgs.cs" />
     <Compile Include="Feedbacks\BoolFeedback.cs" />
     <Compile Include="Feedbacks\FeedbackCollection.cs" />
     <Compile Include="Feedbacks\FeedbackEventArgs.cs" />
@@ -213,6 +218,11 @@
     <Compile Include="Monitoring\SystemMonitorController.cs" />
     <Compile Include="Microphone Privacy\MicrophonePrivacyController.cs" />
     <Compile Include="Microphone Privacy\MicrophonePrivacyControllerConfig.cs" />
+    <Compile Include="Occupancy\CenOdtOccupancySensorBaseController.cs" />
+    <Compile Include="Occupancy\GlsOccupancySensorBaseController.cs" />
+    <Compile Include="Occupancy\GlsOdtOccupancySensorController.cs" />
+    <Compile Include="Occupancy\IOccupancyStatusProviderAggregator.cs" />
+    <Compile Include="PartitionSensor\GlsPartitionSensorController.cs" />
     <Compile Include="Plugins\PluginLoader.cs" />
     <Compile Include="Presets\PresetBase.cs" />
     <Compile Include="Plugins\IPluginDeviceFactory.cs" />

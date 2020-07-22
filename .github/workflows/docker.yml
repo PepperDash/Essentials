@@ -8,6 +8,9 @@ on:
       - bugfix/*
       - release/*
       - development
+  pull_request:
+    branches:
+      - development
 
 env:
   # solution path doesn't need slashes unless there it is multiple folders deep

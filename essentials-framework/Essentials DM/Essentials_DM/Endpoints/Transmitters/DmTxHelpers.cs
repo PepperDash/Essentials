@@ -176,6 +176,7 @@ namespace PepperDash.Essentials.DM
         public virtual eHdcpCapabilityType HdcpSupportCapability { get; protected set; }
         public abstract StringFeedback ActiveVideoInputFeedback { get; protected set; }
         public RoutingInputPortWithVideoStatuses AnyVideoInput { get; protected set; }
+        public IntFeedback HdcpStateFeedback { get; protected set; }
 
 	    protected DmTxControllerBase(string key, string name, EndpointTransmitterBase hardware)
 			: base(key, name, hardware) 
@@ -206,6 +207,15 @@ namespace PepperDash.Essentials.DM
 
 	    protected void LinkDmTxToApi(DmTxControllerBase tx, BasicTriList trilist, DmTxControllerJoinMap joinMap, EiscApiAdvanced bridge)
 	    {
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
+
 	        Debug.Console(1, tx, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             tx.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
