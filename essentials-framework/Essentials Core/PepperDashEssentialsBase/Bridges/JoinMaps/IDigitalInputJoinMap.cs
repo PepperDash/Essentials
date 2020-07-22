@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core.Bridges
 {
@@ -11,16 +6,24 @@ namespace PepperDash.Essentials.Core.Bridges
     {
 
         [JoinName("InputState")]
-        public JoinDataComplete InputState = new JoinDataComplete(new JoinData() { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata() { Description = "Room Email Url", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+        public JoinDataComplete InputState = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata { Description = "Room Email Url", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-
-        internal IDigitalInputJoinMap(uint joinStart)
-            : base(joinStart, typeof(IDigitalInputJoinMap))
+        /// <summary>
+        /// Constructor to use when instantiating this Join Map without inheriting from it
+        /// </summary>
+        /// <param name="joinStart">Join this join map will start at</param>
+        public IDigitalInputJoinMap(uint joinStart)
+            : this(joinStart, typeof(IDigitalInputJoinMap))
         {
         }
 
-        public IDigitalInputJoinMap(uint joinStart, Type type)
+        /// <summary>
+        /// Constructor to use when extending this Join map
+        /// </summary>
+        /// <param name="joinStart">Join this join map will start at</param>
+        /// <param name="type">Type of the child join map</param>
+        protected IDigitalInputJoinMap(uint joinStart, Type type)
             : base(joinStart, type)
         {
         }
