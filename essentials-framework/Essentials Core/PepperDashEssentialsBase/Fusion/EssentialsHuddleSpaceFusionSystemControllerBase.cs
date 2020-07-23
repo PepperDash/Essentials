@@ -307,7 +307,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         }
 
-		protected virtual void CreateSymbolAndBasicSigs(uint ipId)
+		protected void CreateSymbolAndBasicSigs(uint ipId)
 		{
             Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Creating Fusion Room symbol with GUID: {0}", RoomGuid);
 
