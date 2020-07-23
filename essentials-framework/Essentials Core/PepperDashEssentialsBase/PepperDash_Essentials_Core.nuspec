@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>PepperDashEssentials</id>
+    <version>1.5.6</version>
+    <title>PepperDash Essentials</title>
+    <authors>PepperDash Technologies</authors>
+    <owners>pepperdash</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/PepperDash/PepperDashCore</projectUrl>
+    <copyright>Copyright 2020</copyright>
+    <description>PepperDash Essentials is an open source Crestron framework that can be configured as a standalone program capable of running a wide variety of system designs and can also be utilized as a plug-in architecture to augment other Simpl# Pro and Simpl Windows programs. Essentials Framework is a collection of C# / Simpl# Pro libraries that can be utilized in several different manners. It is currently operating as a 100% configuration-driven system, and can be extended to add different workflows and behaviors, either through the addition of further device "types" or via the plug-in mechanism. The framework is a collection of "things" that are all related and interconnected, but in general do not have dependencies on each other.</description>
+    <tags>crestron 3series 4series</tags>
+    <repository type="git" url="https://github.com/PepperDash/Essentials"/>
+    <dependencies>
+      <dependency id="PepperDashCore" version="[1.0, 1.1)"/>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="**" target="lib\net35"/>
+    <file src="**" target="lib\net47"/>
+  </files>
+</package>
