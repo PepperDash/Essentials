@@ -184,10 +184,30 @@ namespace PepperDash.Essentials.Core.Fusion
                     }
                 }
 
-                // Make it so!   
-                FusionRVI.GenerateFileForAllFusionDevices();
+                AddPostActivationAction(() =>
+                {
+                    SetUpSources();
+                    SetUpCommunitcationMonitors();
+                    SetUpDisplay();
+                    SetUpError();
+                    ExecuteCustomSteps();
 
-                GenerateGuidFile(guidFilePath);
+                    if (Room.RoomOccupancy == null)
+                    {
+                        return;
+                    }
+                    if (Room.OccupancyStatusProviderIsRemote)
+                        SetUpRemoteOccupancy();
+                    else
+                    {
+                        SetUpLocalOccupancy();
+                    }
+
+                    FusionRVI.GenerateFileForAllFusionDevices();
+
+                    GenerateGuidFile(guidFilePath);
+                });
+
             }
             catch (Exception e)
             {
