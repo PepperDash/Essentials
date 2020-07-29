@@ -155,10 +155,14 @@ jobs:
         uses: nuget/setup-nuget@v1
       - name: Add Github Packages source
         run: nuget sources add -name github -source https://nuget.pkg.github.com/pepperdash/index.json -username Pepperdash -password ${{ secrets.GITHUB_TOKEN }}
+      - name: Add nuget.org API Key
+        run: nuget setApiKey ${{ secrets.NUGET_API_KEY }}
       - name: Create nuget package
         run: nuget pack "./PepperDash_Essentials_Core.nuspec" -version ${{ env.VERSION }}
       - name: Publish nuget package to Github registry
         run: nuget push **/*.nupkg -source github
+      - name: Publish nuget package to nuget.org
+        run: nuget push **/*.nupkg -Source https://api.nuget.org/v3/index.json
   # This step always runs and pushes the build to the internal build rep
   Internal_Push_Output:
     needs: Build_Project
