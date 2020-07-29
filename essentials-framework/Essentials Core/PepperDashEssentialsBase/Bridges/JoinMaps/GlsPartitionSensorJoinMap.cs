@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 
 namespace PepperDash_Essentials_Core.Bridges.JoinMaps
@@ -11,12 +7,12 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 	{
 		[JoinName("IsOnline")]
 		public JoinDataComplete IsOnline = new JoinDataComplete(
-			new JoinData()
+			new JoinData
 			{
 				JoinNumber = 1,
 				JoinSpan = 1
 			},
-			new JoinMetadata()
+			new JoinMetadata
 			{
 				Description = "Sensor Is Online",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
@@ -25,12 +21,12 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 
 		[JoinName("Name")]
 		public JoinDataComplete Name = new JoinDataComplete(
-			new JoinData()
+			new JoinData
 			{
 				JoinNumber = 1,
 				JoinSpan = 1
 			},
-			new JoinMetadata()
+			new JoinMetadata
 			{
 				Description = "Sensor Name",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
@@ -39,12 +35,12 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 
 		[JoinName("Enable")]
 		public JoinDataComplete Enable = new JoinDataComplete(
-			new JoinData()
+			new JoinData
 			{
 				JoinNumber = 2,
 				JoinSpan = 1
 			},
-			new JoinMetadata()
+			new JoinMetadata
 			{
 				Description = "Sensor Enable",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
@@ -53,12 +49,12 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 
 		[JoinName("PartitionSensed")]
 		public JoinDataComplete PartitionSensed = new JoinDataComplete(
-			new JoinData()
+			new JoinData
 			{
 				JoinNumber = 3,
 				JoinSpan = 1
 			},
-			new JoinMetadata()
+			new JoinMetadata
 			{
 				Description = "Sensor Partition Sensed",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
@@ -67,12 +63,12 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 
 		[JoinName("PartitionNotSensed")]
 		public JoinDataComplete PartitionNotSensed = new JoinDataComplete(
-			new JoinData()
+			new JoinData
 			{
 				JoinNumber = 4,
 				JoinSpan = 1
 			},
-			new JoinMetadata()
+			new JoinMetadata
 			{
 				Description = "Sensor Partition Not Sensed",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
@@ -81,12 +77,12 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 
 		[JoinName("IncreaseSensitivity")]
 		public JoinDataComplete IncreaseSensitivity = new JoinDataComplete(
-			new JoinData()
+			new JoinData
 			{
 				JoinNumber = 6,
 				JoinSpan = 1
 			},
-			new JoinMetadata()
+			new JoinMetadata
 			{
 				Description = "Sensor Increase Sensitivity",
 				JoinCapabilities = eJoinCapabilities.FromSIMPL,
@@ -95,12 +91,12 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 
 		[JoinName("DecreaseSensitivity")]
 		public JoinDataComplete DecreaseSensitivity = new JoinDataComplete(
-			new JoinData()
+			new JoinData
 			{
 				JoinNumber = 7,
 				JoinSpan = 1
 			},
-			new JoinMetadata()
+			new JoinMetadata
 			{
 				Description = "Sensor Decrease Sensitivity",
 				JoinCapabilities = eJoinCapabilities.FromSIMPL,
@@ -109,25 +105,34 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 
 		[JoinName("Sensitivity")]
 		public JoinDataComplete Sensitivity = new JoinDataComplete(
-			new JoinData()
+			new JoinData
 			{
 				JoinNumber = 2,
 				JoinSpan = 1
 			},
-			new JoinMetadata()
+			new JoinMetadata
 			{
 				Description = "Sensor Sensitivity",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Analog
 			});
 
-		internal GlsPartitionSensorJoinMap(uint joinStart)
-			: base(joinStart, typeof (GlsPartitionSensorJoinMap))
+        /// <summary>
+        /// Constructor to use when instantiating this Join Map without inheriting from it
+        /// </summary>
+        /// <param name="joinStart">Join this join map will start at</param>
+		public GlsPartitionSensorJoinMap(uint joinStart)
+			: this(joinStart, typeof (GlsPartitionSensorJoinMap))
 		{
 
 		}
 
-        public GlsPartitionSensorJoinMap(uint joinStart, Type type)
+        /// <summary>
+        /// Constructor to use when extending this Join map
+        /// </summary>
+        /// <param name="joinStart">Join this join map will start at</param>
+        /// <param name="type">Type of the child join map</param>
+        protected GlsPartitionSensorJoinMap(uint joinStart, Type type)
             : base(joinStart, type)
         {
 
