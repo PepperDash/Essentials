@@ -405,12 +405,7 @@ namespace PepperDash.Essentials
         /// <param name="successCallback"></param>
         public void RunRouteAction(string routeKey, string sourceListKey)
         {
-            if (string.IsNullOrEmpty(sourceListKey))
-            {
-                RunRouteAction(routeKey, new Action(() => { }));
-            }
-            else
-                throw new NotImplementedException();
+            RunRouteAction(routeKey, new Action(() => { }));
         }
 
         /// <summary>
@@ -421,12 +416,8 @@ namespace PepperDash.Essentials
         /// <param name="successCallback"></param>
         public void RunRouteAction(string routeKey, string sourceListKey, Action successCallback)
         {
-            if (string.IsNullOrEmpty(sourceListKey))
-            {
                 RunRouteAction(routeKey, successCallback);
-            }
-            else
-                throw new NotImplementedException();
+
         }
 
 		/// <summary>
