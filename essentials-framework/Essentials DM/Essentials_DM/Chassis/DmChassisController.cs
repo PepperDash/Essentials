@@ -329,56 +329,64 @@ namespace PepperDash.Essentials.DM
                     InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => { return Chassis.Inputs[tempX].EndpointOnlineFeedback; });
 
                     InputCardHdcpStateFeedbacks[tempX] = new IntFeedback(() => {
-                        var inputCard = Chassis.Inputs[tempX];
-
-                        if (inputCard.Card is DmcHd)
+                        try
                         {
-                            InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+                            var inputCard = Chassis.Inputs[tempX];
 
-                            if ((inputCard.Card as DmcHd).HdmiInput.HdcpSupportOnFeedback.BoolValue)
-                                return 1;
-                            return 0;
-                        }
-
-                        if (inputCard.Card is DmcHdDsp)
-                        {
-                            InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
-
-                            if ((inputCard.Card as DmcHdDsp).HdmiInput.HdcpSupportOnFeedback.BoolValue)
-                                return 1;
-                            return 0;
-                        }
-                        if (inputCard.Card is Dmc4kHdBase)
-                        {
-                            InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
-                            return (int)(inputCard.Card as Dmc4kHdBase).HdmiInput.HdcpReceiveCapability;
-                        }
-                        if (inputCard.Card is Dmc4kCBase)
-                        {
-                            if (PropertiesConfig.InputSlotSupportsHdcp2[tempX])
+                            if (inputCard.Card is DmcHd)
                             {
                                 InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
-                                return (int)(inputCard.Card as Dmc4kCBase).DmInput.HdcpReceiveCapability;
+
+                                if ((inputCard.Card as DmcHd).HdmiInput.HdcpSupportOnFeedback.BoolValue)
+                                    return 1;
+                                return 0;
                             }
 
-                            if ((inputCard.Card as Dmc4kCBase).DmInput.HdcpSupportOnFeedback.BoolValue)
-                                return 1;
-                            return 0;
-                        }
-                        if (inputCard.Card is Dmc4kCDspBase)
-                        {
-                            if (PropertiesConfig.InputSlotSupportsHdcp2[tempX])
+                            if (inputCard.Card is DmcHdDsp)
                             {
                                 InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
-                                return (int)(inputCard.Card as Dmc4kCDspBase).DmInput.HdcpReceiveCapability;
-                            }
 
-                            if ((inputCard.Card as Dmc4kCDspBase).DmInput.HdcpSupportOnFeedback.BoolValue)
-                                return 1;
-                            
+                                if ((inputCard.Card as DmcHdDsp).HdmiInput.HdcpSupportOnFeedback.BoolValue)
+                                    return 1;
+                                return 0;
+                            }
+                            if (inputCard.Card is Dmc4kHdBase)
+                            {
+                                InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
+                                return (int)(inputCard.Card as Dmc4kHdBase).HdmiInput.HdcpReceiveCapability;
+                            }
+                            if (inputCard.Card is Dmc4kCBase)
+                            {
+                                if (PropertiesConfig.InputSlotSupportsHdcp2[tempX])
+                                {
+                                    InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+                                    return (int)(inputCard.Card as Dmc4kCBase).DmInput.HdcpReceiveCapability;
+                                }
+
+                                if ((inputCard.Card as Dmc4kCBase).DmInput.HdcpSupportOnFeedback.BoolValue)
+                                    return 1;
+                                return 0;
+                            }
+                            if (inputCard.Card is Dmc4kCDspBase)
+                            {
+                                if (PropertiesConfig.InputSlotSupportsHdcp2[tempX])
+                                {
+                                    InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+                                    return (int)(inputCard.Card as Dmc4kCDspBase).DmInput.HdcpReceiveCapability;
+                                }
+
+                                if ((inputCard.Card as Dmc4kCDspBase).DmInput.HdcpSupportOnFeedback.BoolValue)
+                                    return 1;
+
+                                return 0;
+                            }
                             return 0;
                         }
-                        return 0;
+                        catch (InvalidOperationException iopex)
+                        {
+                            Debug.Console(0, this, Debug.ErrorLogLevel.Warning, "The Input Card in slot: {0} supports HDCP 2.  Please update the configuration value in the inputCardSupportsHdcp2 object to true. Error: {1}", tempX, iopex);
+                            return 0;
+                        }   
                     });
                 }
             }
@@ -614,6 +622,13 @@ namespace PepperDash.Essentials.DM
                 var cecPort2 = outputCard.Card2.HdmiOutput;
                 AddDmcHdoPorts(number, cecPort1, cecPort2);
             }
+            else if (type == "dmc4kzhdo")
+            {
+                var outputCard = new Dmc4kzHdoSingle(number, Chassis);
+                var cecPort1 = outputCard.Card1.HdmiOutput;
+                var cecPort2 = outputCard.Card2.HdmiOutput;
+                AddDmcHdoPorts(number, cecPort1, cecPort2);
+            }
             else if (type == "dmchdo")
             {
                 var outputCard = new DmcHdoSingle(number, Chassis);
@@ -800,55 +815,62 @@ namespace PepperDash.Essentials.DM
 
         void Chassis_DMInputChange(Switch device, DMInputEventArgs args)
         {
-            switch (args.EventId)
+            try
             {
-                case DMInputEventIds.EndpointOnlineEventId:
+                switch (args.EventId)
                 {
-                    Debug.Console(2, this, "DM Input EndpointOnlineEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
-                    InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
-                    break;
+                    case DMInputEventIds.EndpointOnlineEventId:
+                        {
+                            Debug.Console(2, this, "DM Input EndpointOnlineEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
+                            InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
+                            break;
+                        }
+                    case DMInputEventIds.OnlineFeedbackEventId:
+                        {
+                            Debug.Console(2, this, "DM Input OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
+                            InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
+                            break;
+                        }
+                    case DMInputEventIds.VideoDetectedEventId:
+                        {
+                            Debug.Console(2, this, "DM Input {0} VideoDetectedEventId", args.Number);
+                            VideoInputSyncFeedbacks[args.Number].FireUpdate();
+                            break;
+                        }
+                    case DMInputEventIds.InputNameEventId:
+                        {
+                            Debug.Console(2, this, "DM Input {0} NameFeedbackEventId", args.Number);
+                            InputNameFeedbacks[args.Number].FireUpdate();
+                            break;
+                        }
+                    case DMInputEventIds.UsbRoutedToEventId:
+                        {
+                            Debug.Console(2, this, "DM Input {0} UsbRoutedToEventId", args.Number);
+                            if (UsbInputRoutedToFeebacks[args.Number] != null)
+                                UsbInputRoutedToFeebacks[args.Number].FireUpdate();
+                            else
+                                Debug.Console(1, this, "No index of {0} found in UsbInputRoutedToFeedbacks");
+                            break;
+                        }
+                    case DMInputEventIds.HdcpCapabilityFeedbackEventId:
+                        {
+                            Debug.Console(2, this, "DM Input {0} HdcpCapabilityFeedbackEventId", args.Number);
+                            if (InputCardHdcpStateFeedbacks[args.Number] != null)
+                                InputCardHdcpStateFeedbacks[args.Number].FireUpdate();
+                            else
+                                Debug.Console(1, this, "No index of {0} found in InputCardHdcpCapabilityFeedbacks");
+                            break;
+                        }
+                    default:
+                        {
+                            Debug.Console(2, this, "DMInputChange fired for Input {0} with Unhandled EventId: {1}", args.Number, args.EventId);
+                            break;
+                        }
                 }
-                case DMInputEventIds.OnlineFeedbackEventId:
-                {
-                    Debug.Console(2, this, "DM Input OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
-                    InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
-                    break;
-                }
-                case DMInputEventIds.VideoDetectedEventId:
-                {
-                    Debug.Console(2, this, "DM Input {0} VideoDetectedEventId", args.Number);
-                    VideoInputSyncFeedbacks[args.Number].FireUpdate();
-                    break;
-                }
-                case DMInputEventIds.InputNameEventId:
-                {
-                    Debug.Console(2, this, "DM Input {0} NameFeedbackEventId", args.Number);
-                    InputNameFeedbacks[args.Number].FireUpdate();
-                    break;
-                }
-                case DMInputEventIds.UsbRoutedToEventId:
-                {
-                    Debug.Console(2, this, "DM Input {0} UsbRoutedToEventId", args.Number);
-                    if (UsbInputRoutedToFeebacks[args.Number] != null)
-                        UsbInputRoutedToFeebacks[args.Number].FireUpdate();
-                    else
-                        Debug.Console(1, this, "No index of {0} found in UsbInputRoutedToFeedbacks");
-                    break;
-                }
-                case DMInputEventIds.HdcpCapabilityFeedbackEventId:
-                {
-                    Debug.Console(2, this, "DM Input {0} HdcpCapabilityFeedbackEventId", args.Number);
-                    if (InputCardHdcpStateFeedbacks[args.Number] != null)
-                        InputCardHdcpStateFeedbacks[args.Number].FireUpdate();
-                    else
-                        Debug.Console(1, this, "No index of {0} found in InputCardHdcpStateFeedbacks");
-                    break;
-                }
-                default:
-                {
-                    Debug.Console(2, this, "DMInputChange fired for Input {0} with Unhandled EventId: {1}", args.Number, args.EventId);
-                    break;
-                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Error in Chassis_DMInputChange: {0}", ex);
             }
         }
 
