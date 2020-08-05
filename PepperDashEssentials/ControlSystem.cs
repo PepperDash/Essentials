@@ -53,7 +53,7 @@ namespace PepperDash.Essentials
 
             if (Debug.DoNotLoadOnNextBoot)
             {
-                CrestronConsole.AddNewConsoleCommand(s => GoWithLoadDeferred(), "go", "Loads configuration file",
+                CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
                     ConsoleAccessLevelEnum.AccessOperator);
             }
 
@@ -93,16 +93,11 @@ namespace PepperDash.Essentials
 
             if (!Debug.DoNotLoadOnNextBoot)
             {
-                GoWithLoad(null);
+                GoWithLoad();
                 return;
             }
 
             SystemMonitor.ProgramInitialization.ProgramInitializationComplete = true;
-        }
-
-        private void GoWithLoadDeferred()
-        {
-            CrestronInvoke.BeginInvoke(GoWithLoad);
         }
 
         /// <summary>
@@ -177,7 +172,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Begins the process of loading resources including plugins and configuration data
         /// </summary>
-        public void GoWithLoad(object notUsed)
+        public void GoWithLoad()
         {
             try
             {
