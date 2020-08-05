@@ -1725,6 +1725,861 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         return string.Empty;
                     }
                 }
+                    else if (response.IndexOf("\"PhonebookSearchResult\":{") > -1 || response.IndexOf("\"PhonebookSearchResult\": {") > -1)
+                    {
+                        var codecPhonebookResponse = new CiscoCodecPhonebook.RootObject();
+
+                        JsonConvert.PopulateObject(response, codecPhonebookResponse);
+
+                        if (!PhonebookSyncState.InitialPhonebookFoldersWasReceived)
+                        {
+                            // Check if the phonebook has any folders
+                            PhonebookSyncState.InitialPhonebookFoldersReceived();
+
+                            PhonebookSyncState.SetPhonebookHasFolders(codecPhonebookResponse.CommandResponse.PhonebookSearchResult.Folder.Count > 0);
+
+                            if (PhonebookSyncState.PhonebookHasFolders)
+                            {
+                                DirectoryRoot.AddFoldersToDirectory(CiscoCodecPhonebook.GetRootFoldersFromSearchResult(codecPhonebookResponse.CommandResponse.PhonebookSearchResult));
+                            }
+
+                            // Get the number of contacts in the phonebook
+                            GetPhonebookContacts();
+                        }
+                        else if (!PhonebookSyncState.NumberOfContactsWasReceived)
+                        {
+                            // Store the total number of contacts in the phonebook
+                            PhonebookSyncState.SetNumberOfContacts(Int32.Parse(codecPhonebookResponse.CommandResponse.PhonebookSearchResult.ResultInfo.TotalRows.Value));
+
+                            DirectoryRoot.AddContactsToDirectory(CiscoCodecPhonebook.GetRootContactsFromSearchResult(codecPhonebookResponse.CommandResponse.PhonebookSearchResult));
+
+                            PhonebookSyncState.PhonebookRootEntriesReceived();
+
+                            PrintDirectory(DirectoryRoot);
+                        }
+                        else if (PhonebookSyncState.InitialSyncComplete)
+                        {
+                            var directoryResults = new CodecDirectory();
+
+                            if(codecPhonebookResponse.CommandResponse.PhonebookSearchResult.ResultInfo.TotalRows.Value != "0")
+                                directoryResults = CiscoCodecPhonebook.ConvertCiscoPhonebookToGeneric(codecPhonebookResponse.CommandResponse.PhonebookSearchResult);
+
+                            PrintDirectory(directoryResults);
+
+                            DirectoryBrowseHistory.Add(directoryResults);
+
+                            OnDirectoryResultReturned(directoryResults);
+   
+                        }
+                    }
+                    else if (response.IndexOf("\"BookingsListResult\":{") > -1)
+                    {
+                        var codecBookings = new CiscoCodecBookings.RootObject();
+
+                        JsonConvert.PopulateObject(response, codecBookings);
+
+                        if(codecBookings.CommandResponse.BookingsListResult.ResultInfo.TotalRows.Value != "0")
+                            CodecSchedule.Meetings = CiscoCodecBookings.GetGenericMeetingsFromBookingResult(codecBookings.CommandResponse.BookingsListResult.Booking);
+
+                        BookingsRefreshTimer.Reset(900000, 900000);
+                    }
+
+                }  
+                
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(1, this, "Error Deserializing feedback from codec: {0}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Call when directory results are updated
+        /// </summary>
+        /// <param name="result"></param>
+        void OnDirectoryResultReturned(CodecDirectory result)
+        {
+            CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+
+            // This will return the latest results to all UIs.  Multiple indendent UI Directory browsing will require a different methodology
+            var handler = DirectoryResultReturned;
+            if (handler != null)
+            {
+                handler(this, new DirectoryEventArgs()
+                {
+                    Directory = result,
+                    DirectoryIsOnRoot = !CurrentDirectoryResultIsNotDirectoryRoot.BoolValue
+                });
+            }
+
+            PrintDirectory(result);
+        }
+
+        /// <summary>
+        /// Evaluates an event received from the codec
+        /// </summary>
+        /// <param name="eventReceived"></param>
+        void EvalutateDisconnectEvent(CiscoCodecEvents.RootObject eventReceived)
+        {
+            if (eventReceived.Event.CallDisconnect != null)
+            {
+                var tempActiveCall = ActiveCalls.FirstOrDefault(c => c.Id.Equals(eventReceived.Event.CallDisconnect.CallId.Value));
+
+                // Remove the call from the Active calls list
+                if (tempActiveCall != null)
+                {
+                    ActiveCalls.Remove(tempActiveCall);
+
+                    ListCalls();
+
+                    SetSelfViewMode();
+                    // Notify of the call disconnection
+                    SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Disconnected, tempActiveCall);
+
+                    GetCallHistory();
+                }
+            }
+        }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="selector"></param>
+		public override void ExecuteSwitch(object selector)
+		{
+			(selector as Action)();
+			PresentationSourceKey = selector.ToString();
+		}
+
+		/// <summary>
+		/// This is necessary for devices that are "routers" in the middle of the path, even though it only has one output and 
+		/// may only have one input.
+		/// </summary>
+        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
+        {
+			ExecuteSwitch(inputSelector);
+            PresentationSourceKey = inputSelector.ToString();
+        }
+
+
+        /// <summary>
+        /// Gets the ID of the last connected call
+        /// </summary>
+        /// <returns></returns>
+        public string GetCallId()
+        {
+            string callId = null;
+
+            if (ActiveCalls.Count > 1)
+            {
+                var lastCallIndex = ActiveCalls.Count - 1;
+                callId = ActiveCalls[lastCallIndex].Id;
+            }
+            else if (ActiveCalls.Count == 1)
+                callId =  ActiveCalls[0].Id;
+
+            return callId;
+
+        }
+
+        public void GetCallHistory()
+        {
+            SendText("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
+        }
+
+        /// <summary>
+        /// Required for IHasScheduleAwareness
+        /// </summary>
+        public void GetSchedule()
+        {
+            GetBookings(null);
+        }
+
+        /// <summary>
+        /// Gets the bookings for today
+        /// </summary>
+        /// <param name="command"></param>
+        public void GetBookings(object command)
+        {
+            Debug.Console(1, this, "Retrieving Booking Info from Codec. Current Time: {0}", DateTime.Now.ToLocalTime());
+
+            SendText("xCommand Bookings List Days: 1 DayOffset: 0");
+        }
+
+        /// <summary>
+        /// Checks to see if it is 2am (or within that hour) and triggers a download of the phonebook
+        /// </summary>
+        /// <param name="o"></param>
+        public void CheckCurrentHour(object o)
+        {
+            if (DateTime.Now.Hour == 2)
+            {
+                Debug.Console(1, this, "Checking hour to see if phonebook should be downloaded.  Current hour is {0}", DateTime.Now.Hour);
+
+                GetPhonebook(null);
+                PhonebookRefreshTimer.Reset(3600000, 3600000);
+            }
+        }
+
+        /// <summary>
+        /// Triggers a refresh of the codec phonebook
+        /// </summary>
+        /// <param name="command">Just to allow this method to be called from a console command</param>
+        public void GetPhonebook(string command)
+        {
+            PhonebookSyncState.CodecDisconnected();
+
+            DirectoryRoot = new CodecDirectory();
+
+            GetPhonebookFolders();
+        }
+
+        private void GetPhonebookFolders()
+        {
+            // Get Phonebook Folders (determine local/corporate from config, and set results limit)
+            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Folder", PhonebookMode));
+        }
+
+        private void GetPhonebookContacts()
+        {
+            // Get Phonebook Folders (determine local/corporate from config, and set results limit)
+            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Contact Limit: {1}", PhonebookMode, PhonebookResultsLimit));
+        }
+
+        /// <summary>
+        /// Searches the codec phonebook for all contacts matching the search string
+        /// </summary>
+        /// <param name="searchString"></param>
+        public void SearchDirectory(string searchString)
+        {
+            SendText(string.Format("xCommand Phonebook Search SearchString: \"{0}\" PhonebookType: {1} ContactType: Contact Limit: {2}", searchString, PhonebookMode, PhonebookResultsLimit));
+        }
+
+        /// <summary>
+        /// // Get contents of a specific folder in the phonebook
+        /// </summary>
+        /// <param name="folderId"></param>
+        public void GetDirectoryFolderContents(string folderId)
+        {
+            SendText(string.Format("xCommand Phonebook Search FolderId: {0} PhonebookType: {1} ContactType: Any Limit: {2}", folderId, PhonebookMode, PhonebookResultsLimit));
+        }
+
+        /// <summary>
+        /// Sets the parent folder contents or the directory root as teh current directory and fires the event. Used to browse up a level
+        /// </summary>
+        /// <returns></returns>
+        public void GetDirectoryParentFolderContents()
+        {
+            var currentDirectory = new CodecDirectory();
+
+            if (DirectoryBrowseHistory.Count > 0)
+            {
+                var lastItemIndex = DirectoryBrowseHistory.Count - 1;
+                var parentDirectoryContents = DirectoryBrowseHistory[lastItemIndex];
+
+                DirectoryBrowseHistory.Remove(DirectoryBrowseHistory[lastItemIndex]);
+
+                currentDirectory = parentDirectoryContents;
+
+            }
+            else
+            {
+                currentDirectory = DirectoryRoot;
+            }
+
+            OnDirectoryResultReturned(currentDirectory);
+        }
+
+        /// <summary>
+        /// Clears the session browse history and fires the event with the directory root
+        /// </summary>
+        public void SetCurrentDirectoryToRoot()
+        {
+            DirectoryBrowseHistory.Clear();
+
+            OnDirectoryResultReturned(DirectoryRoot);
+        }
+
+        /// <summary>
+        /// Prints the directory to console
+        /// </summary>
+        /// <param name="directory"></param>
+        void PrintDirectory(CodecDirectory directory)
+        {
+            if (Debug.Level > 0)
+            {
+                Debug.Console(1, this, "Directory Results:\n");
+
+                foreach (DirectoryItem item in directory.CurrentDirectoryResults)
+                {
+                    if (item is DirectoryFolder)
+                    {
+                        Debug.Console(1, this, "[+] {0}", item.Name);
+                    }
+                    else if (item is DirectoryContact)
+                    {
+                        Debug.Console(1, this, "{0}", item.Name);
+                    }
+                }
+                Debug.Console(1, this, "Directory is on Root Level: {0}", !CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+            }
+
+        }
+
+        /// <summary>
+        /// Simple dial method
+        /// </summary>
+        /// <param name="number"></param>
+        public override void Dial(string number)
+        {
+         	SendText(string.Format("xCommand Dial Number: \"{0}\"", number));
+        }
+
+        /// <summary>
+        /// Dials a specific meeting
+        /// </summary>
+        /// <param name="meeting"></param>
+        public override void Dial(Meeting meeting)
+        {
+            foreach (Call c in meeting.Calls)
+            {
+                Dial(c.Number, c.Protocol, c.CallRate, c.CallType, meeting.Id);
+            }
+        }
+
+        /// <summary>
+        /// Detailed dial method
+        /// </summary>
+        /// <param name="number"></param>
+        /// <param name="protocol"></param>
+        /// <param name="callRate"></param>
+        /// <param name="callType"></param>
+        /// <param name="meetingId"></param>
+        public void Dial(string number, string protocol, string callRate, string callType, string meetingId)
+        {
+            SendText(string.Format("xCommand Dial Number: \"{0}\" Protocol: {1} CallRate: {2} CallType: {3} BookingId: {4}", number, protocol, callRate, callType, meetingId));
+        }
+ 
+        public override void EndCall(CodecActiveCallItem activeCall)
+        {
+            SendText(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
+        }
+
+        public override void EndAllCalls()
+        {
+            foreach (CodecActiveCallItem activeCall in ActiveCalls)
+            {
+                SendText(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
+            }
+        }
+
+        public override void AcceptCall(CodecActiveCallItem item)
+        {
+            SendText("xCommand Call Accept");
+        }
+
+        public override void RejectCall(CodecActiveCallItem item)
+        {
+            SendText("xCommand Call Reject");
+        }
+
+        public override void SendDtmf(string s)
+        {
+            if (CallFavorites != null)
+            {
+                SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
+            }
+        }
+
+        public void SelectPresentationSource(int source)
+        {
+            PresentationSource = source;
+
+            StartSharing();
+        }
+
+        /// <summary>
+        /// Select source 1 as the presetnation source
+        /// </summary>
+        public void SelectPresentationSource1()
+        {
+            SelectPresentationSource(2);
+        }
+
+        /// <summary>
+        /// Select source 2 as the presetnation source
+        /// </summary>
+        public void SelectPresentationSource2()
+        {
+            SelectPresentationSource(3);
+        }
+
+        /// <summary>
+        /// Starts presentation sharing
+        /// </summary>
+        public override void StartSharing()
+        {
+            string sendingMode = string.Empty;
+
+            if (IsInCall)
+                sendingMode = "LocalRemote";
+            else
+                sendingMode = "LocalOnly";
+
+            if(PresentationSource > 0)
+                SendText(string.Format("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", PresentationSource, sendingMode));
+        }
+
+        /// <summary>
+        /// Stops sharing the current presentation
+        /// </summary>
+        public override void StopSharing()
+        {
+            PresentationSource = 0;
+
+            SendText("xCommand Presentation Stop");
+        }
+
+        public override void PrivacyModeOn()
+        {
+            SendText("xCommand Audio Microphones Mute");
+        }
+
+        public override void PrivacyModeOff()
+        {
+            SendText("xCommand Audio Microphones Unmute");
+        }
+
+        public override void PrivacyModeToggle()
+        {
+            SendText("xCommand Audio Microphones ToggleMute");
+        }
+
+        public override void MuteOff()
+        {
+            SendText("xCommand Audio Volume Unmute");
+        }
+
+        public override void MuteOn()
+        {
+            SendText("xCommand Audio Volume Mute");
+        }
+
+        public override void MuteToggle()
+        {
+            SendText("xCommand Audio Volume ToggleMute");
+        }
+
+        /// <summary>
+        /// Increments the voluem
+        /// </summary>
+        /// <param name="pressRelease"></param>
+        public override void VolumeUp(bool pressRelease)
+        {
+            SendText("xCommand Audio Volume Increase");
+        }
+
+        /// <summary>
+        /// Decrements the volume
+        /// </summary>
+        /// <param name="pressRelease"></param>
+        public override void VolumeDown(bool pressRelease)
+        {
+            SendText("xCommand Audio Volume Decrease");
+        }
+
+        /// <summary>
+        /// Scales the level and sets the codec to the specified level within its range
+        /// </summary>
+        /// <param name="level">level from slider (0-65535 range)</param>
+        public override void SetVolume(ushort level)
+        {
+            var scaledLevel = CrestronEnvironment.ScaleWithLimits(level, 65535, 0, 100, 0); 
+            SendText(string.Format("xCommand Audio Volume Set Level: {0}", scaledLevel));
+        }
+
+        /// <summary>
+        /// Recalls the default volume on the codec
+        /// </summary>
+        public void VolumeSetToDefault()
+        {
+            SendText("xCommand Audio Volume SetToDefault");
+        }
+
+        /// <summary>
+        /// Puts the codec in standby mode
+        /// </summary>
+        public override void StandbyActivate()
+        {
+            SendText("xCommand Standby Activate");
+        }
+
+        /// <summary>
+        /// Wakes the codec from standby
+        /// </summary>
+        public override void StandbyDeactivate()
+        {
+            SendText("xCommand Standby Deactivate");
+        }
+
+        /// <summary>
+        /// Reboots the codec
+        /// </summary>
+        public void Reboot()
+        {
+            SendText("xCommand SystemUnit Boot Action: Restart");
+        }
+
+        /// <summary>
+        /// Sets SelfView Mode based on config
+        /// </summary>
+        void SetSelfViewMode()
+        {
+            if (!IsInCall)
+            {
+                SelfViewModeOff();
+            }
+            else
+            {
+                if (ShowSelfViewByDefault)
+                    SelfViewModeOn();
+                else
+                    SelfViewModeOff();
+            }
+        }
+
+        /// <summary>
+        /// Turns on Selfview Mode
+        /// </summary>
+        public void SelfViewModeOn()
+        {
+            SendText("xCommand Video Selfview Set Mode: On");
+        }
+
+        /// <summary>
+        /// Turns off Selfview Mode
+        /// </summary>
+        public void SelfViewModeOff()
+        {
+            SendText("xCommand Video Selfview Set Mode: Off");
+        }
+
+        /// <summary>
+        /// Toggles Selfview mode on/off
+        /// </summary>
+        public void SelfViewModeToggle()
+        {
+            string mode = string.Empty;
+
+            if (CodecStatus.Status.Video.Selfview.Mode.BoolValue)
+                mode = "Off";
+            else
+                mode = "On";
+
+            SendText(string.Format("xCommand Video Selfview Set Mode: {0}", mode));                    
+        }
+
+        /// <summary>
+        /// Sets a specified position for the selfview PIP window
+        /// </summary>
+        /// <param name="position"></param>
+        public void SelfviewPipPositionSet(CodecCommandWithLabel position)
+        {
+            SendText(string.Format("xCommand Video Selfview Set Mode: On PIPPosition: {0}", position.Command));
+        }
+
+        /// <summary>
+        /// Toggles to the next selfview PIP position
+        /// </summary>
+        public void SelfviewPipPositionToggle()
+        {
+            if (CurrentSelfviewPipPosition != null)
+            {
+                var nextPipPositionIndex = SelfviewPipPositions.IndexOf(CurrentSelfviewPipPosition) + 1;
+
+                if (nextPipPositionIndex >= SelfviewPipPositions.Count) // Check if we need to loop back to the first item in the list
+                    nextPipPositionIndex = 0;                  
+
+                SelfviewPipPositionSet(SelfviewPipPositions[nextPipPositionIndex]);
+            }
+        }
+
+        /// <summary>
+        /// Sets a specific local layout
+        /// </summary>
+        /// <param name="layout"></param>
+        public void LocalLayoutSet(CodecCommandWithLabel layout)
+        {
+            SendText(string.Format("xCommand Video Layout LayoutFamily Set Target: local LayoutFamily: {0}", layout.Command));
+        }
+
+        /// <summary>
+        /// Toggles to the next local layout
+        /// </summary>
+        public void LocalLayoutToggle()
+        {
+            if(CurrentLocalLayout != null)
+            {
+                var nextLocalLayoutIndex = LocalLayouts.IndexOf(CurrentLocalLayout) + 1;
+
+                if (nextLocalLayoutIndex >= LocalLayouts.Count)  // Check if we need to loop back to the first item in the list
+                    nextLocalLayoutIndex = 0;
+                
+                LocalLayoutSet(LocalLayouts[nextLocalLayoutIndex]);
+            }
+        }
+
+        /// <summary>
+        /// Toggles between single/prominent layouts
+        /// </summary>
+        public void LocalLayoutToggleSingleProminent()
+        {
+            if (CurrentLocalLayout != null)
+            {
+                if (CurrentLocalLayout.Label != "Prominent")
+                    LocalLayoutSet(LocalLayouts.FirstOrDefault(l => l.Label.Equals("Prominent")));
+                else
+                    LocalLayoutSet(LocalLayouts.FirstOrDefault(l => l.Label.Equals("Single")));
+            }
+
+        }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public void MinMaxLayoutToggle()
+		{
+			if (PresentationViewMaximizedFeedback.BoolValue)
+				CurrentPresentationView = "Minimized";
+			else
+				CurrentPresentationView = "Maximized";
+
+			SendText(string.Format("xCommand Video PresentationView Set View:  {0}", CurrentPresentationView));
+			PresentationViewMaximizedFeedback.FireUpdate();
+		}
+
+        /// <summary>
+        /// Calculates the current selfview PIP position
+        /// </summary>
+        void ComputeSelfviewPipStatus()
+        {
+            CurrentSelfviewPipPosition = SelfviewPipPositions.FirstOrDefault(p => p.Command.ToLower().Equals(CodecStatus.Status.Video.Selfview.PIPPosition.Value.ToLower()));
+
+            if(CurrentSelfviewPipPosition != null)
+                SelfviewIsOnFeedback.FireUpdate();
+        }
+
+        /// <summary>
+        /// Calculates the current local Layout
+        /// </summary>
+        void ComputeLocalLayout()
+        {
+            CurrentLocalLayout = LocalLayouts.FirstOrDefault(l => l.Command.ToLower().Equals(CodecStatus.Status.Video.Layout.LayoutFamily.Local.Value.ToLower()));
+
+            if (CurrentLocalLayout != null)
+                LocalLayoutFeedback.FireUpdate();
+        }
+
+        public void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry)
+        {
+            SendText(string.Format("xCommand CallHistory DeleteEntry CallHistoryId: {0} AcknowledgeConsecutiveDuplicates: True", entry.OccurrenceHistoryId));
+        }
+
+        #region IHasCameraSpeakerTrack
+
+        public void CameraAutoModeToggle()
+        {
+            if (!CameraAutoModeIsOnFeedback.BoolValue)
+            {
+                SendText("xCommand Cameras SpeakerTrack Activate");
+            }
+            else
+            {
+                SendText("xCommand Cameras SpeakerTrack Deactivate");
+            }
+        }
+
+        public void CameraAutoModeOn()
+        {
+            SendText("xCommand Cameras SpeakerTrack Activate");
+        }
+
+        public void CameraAutoModeOff()
+        {
+            SendText("xCommand Cameras SpeakerTrack Deactivate");
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Builds the cameras List.  Could later be modified to build from config data
+        /// </summary>
+        void SetUpCameras()
+        {
+            // Add the internal camera
+            Cameras = new List<CameraBase>();
+
+            var internalCamera = new CiscoSparkCamera(Key + "-camera1", "Near End", this, 1);
+
+            if(CodecStatus.Status.Cameras.Camera.Count > 0)
+                internalCamera.SetCapabilites(CodecStatus.Status.Cameras.Camera[0].Capabilities.Options.Value);
+            else
+                // Somehow subscribe to the event on the Options.Value property and update when it changes.
+
+            Cameras.Add(internalCamera);
+
+            // Add the far end camera
+            var farEndCamera = new CiscoFarEndCamera(Key + "-cameraFar", "Far End", this);
+            Cameras.Add(farEndCamera);
+
+            SelectedCameraFeedback = new StringFeedback(() => SelectedCamera.Key);
+
+            ControllingFarEndCameraFeedback = new BoolFeedback(() => SelectedCamera is IAmFarEndCamera);
+
+            DeviceManager.AddDevice(internalCamera);
+            DeviceManager.AddDevice(farEndCamera);
+
+            NearEndPresets = new List<CodecRoomPreset>(15);
+
+            FarEndRoomPresets = new List<CodecRoomPreset>(15);
+
+            // Add the far end presets
+            for (int i = 1; i <= FarEndRoomPresets.Capacity; i++)
+            {
+                var label = string.Format("Far End Preset {0}", i);
+                FarEndRoomPresets.Add(new CodecRoomPreset(i, label, true, false));
+            }
+
+            SelectedCamera = internalCamera; ; // call the method to select the camera and ensure the feedbacks get updated.
+        }
+
+        #region IHasCodecCameras Members
+
+        public event EventHandler<CameraSelectedEventArgs> CameraSelected;
+
+        public List<CameraBase> Cameras { get; private set; }
+
+        public StringFeedback SelectedCameraFeedback { get; private set; }
+
+        private CameraBase _selectedCamera;
+
+        /// <summary>
+        /// Returns the selected camera
+        /// </summary>
+        public CameraBase SelectedCamera
+        {
+            get
+            {
+                return _selectedCamera;
+            }
+            private set
+            {
+                _selectedCamera = value;
+                SelectedCameraFeedback.FireUpdate();
+                ControllingFarEndCameraFeedback.FireUpdate();
+
+                var handler = CameraSelected;
+                if (handler != null)
+                {
+                    handler(this, new CameraSelectedEventArgs(SelectedCamera));
+                }
+            }
+        }
+
+        public void SelectCamera(string key)
+        {
+            var camera = Cameras.FirstOrDefault(c => c.Key.IndexOf(key, StringComparison.OrdinalIgnoreCase) > -1);
+            if (camera != null)
+            {
+                Debug.Console(2, this, "Selected Camera with key: '{0}'", camera.Key);
+                SelectedCamera = camera;
+            }
+            else
+                Debug.Console(2, this, "Unable to select camera with key: '{0}'", key);
+        }
+
+        public CameraBase FarEndCamera { get; private set; }
+
+        public BoolFeedback ControllingFarEndCameraFeedback { get; private set; }
+
+        #endregion
+
+        /// <summary>
+		/// 
+		/// </summary>
+        public class CiscoCodecInfo : VideoCodecInfo
+        {
+            public CiscoCodecStatus.RootObject CodecStatus { get; private set; }
+
+            public CiscoCodecConfiguration.RootObject CodecConfiguration { get; private set; }
+
+            public override bool MultiSiteOptionIsEnabled
+            {
+                get
+                {
+                    if (!string.IsNullOrEmpty(CodecStatus.Status.SystemUnit.Software.OptionKeys.MultiSite.Value) && CodecStatus.Status.SystemUnit.Software.OptionKeys.MultiSite.Value.ToLower() == "true")
+                        return true;
+                    else
+                        return false;
+                }
+
+            }
+            public override string IpAddress
+            {
+                get
+                {
+                    if (CodecConfiguration.Configuration.Network != null)   
+                    {
+                        if (CodecConfiguration.Configuration.Network.Count > 0)
+                            return CodecConfiguration.Configuration.Network[0].IPv4.Address.Value;
+                    }
+                    return string.Empty;
+                }
+            }
+            public override string E164Alias
+            {
+                get 
+                {
+                    if (CodecConfiguration.Configuration.H323 != null && CodecConfiguration.Configuration.H323.H323Alias.E164 != null)
+                        return CodecConfiguration.Configuration.H323.H323Alias.E164.Value;
+                    else
+                        return string.Empty;
+                }
+            }
+            public override string H323Id
+            {
+                get
+                {
+                    if (CodecConfiguration.Configuration.H323 != null && CodecConfiguration.Configuration.H323.H323Alias.ID != null)
+                        return CodecConfiguration.Configuration.H323.H323Alias.ID.Value;
+                    else
+                        return string.Empty;
+                }
+            }
+            public override string SipPhoneNumber
+            {
+                get
+                {
+                    if (CodecStatus.Status.SIP != null && CodecStatus.Status.SIP.Registration.Count > 0)
+                    {
+                        var match = Regex.Match(CodecStatus.Status.SIP.Registration[0].URI.Value, @"(\d+)"); // extract numbers only
+                        if (match.Success)
+                        {
+                            Debug.Console(1, "Extracted phone number as '{0}' from string '{1}'", match.Groups[1].Value, CodecStatus.Status.SIP.Registration[0].URI.Value);
+                            return match.Groups[1].Value;
+                        }
+                        else
+                        {
+                            Debug.Console(1, "Unable to extract phone number from string: '{0}'", CodecStatus.Status.SIP.Registration[0].URI.Value);
+                            return string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Console(1, "Unable to extract phone number. No SIP Registration items found");
+                        return string.Empty;
+                    }
+                }
             }
 
             public override string SipUri
