@@ -1685,20 +1685,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get 
                 {
-                    if (CodecConfiguration.Configuration.H323.H323Alias.E164 != null)
+                    if (CodecConfiguration.Configuration.H323 != null && CodecConfiguration.Configuration.H323.H323Alias.E164 != null)
+                    {
                         return CodecConfiguration.Configuration.H323.H323Alias.E164.Value;
+                    }
                     else
+                    {
                         return string.Empty;
+                    }
                 }
             }
             public override string H323Id
             {
                 get
                 {
-                    if (CodecConfiguration.Configuration.H323.H323Alias.ID != null)
+                    if (CodecConfiguration.Configuration.H323 != null && CodecConfiguration.Configuration.H323.H323Alias.E164 != null)
+                    {
                         return CodecConfiguration.Configuration.H323.H323Alias.ID.Value;
+                    }
                     else
+                    {
                         return string.Empty;
+                    }
                 }
             }
             public override string SipPhoneNumber
