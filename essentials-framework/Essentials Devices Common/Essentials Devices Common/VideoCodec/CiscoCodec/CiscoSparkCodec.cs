@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro.CrestronThread;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -29,6 +31,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public CommunicationGather PortGather { get; private set; }
 
         public StatusMonitorBase CommunicationMonitor { get; private set; }
+
+        private CrestronQueue<string> ReceiveQueue;
+
+        private Thread ReceiveThread;
 
 		public BoolFeedback PresentationViewMaximizedFeedback { get; private set; }
 
@@ -259,7 +265,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         string PhonebookMode = "Local"; // Default to Local
 
-        int PhonebookResultsLimit = 255; // Could be set later by config.
+        uint PhonebookResultsLimit = 255; // Could be set later by config.
 
         CTimer LoginMessageReceivedTimer;
 		CTimer RetryConnectionTimer;
@@ -281,9 +287,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public CiscoSparkCodec(DeviceConfig config, IBasicCommunication comm)
             : base(config)
         {
-
-
             var props = JsonConvert.DeserializeObject<Codec.CiscoSparkCodecPropertiesConfig>(config.Properties.ToString());
+
+            // Use the configured phonebook results limit if present
+            if (props.PhonebookResultsLimit > 0)
+            {
+                PhonebookResultsLimit = props.PhonebookResultsLimit;
+            }
+
+            // The queue that will collect the repsonses in the order they are received
+            ReceiveQueue = new CrestronQueue<string>(25);
+
+            // The thread responsible for dequeuing and processing the messages
+            ReceiveThread = new Thread((o) => ProcessQueue(), null);
+            ReceiveThread.Priority = Thread.eThreadPriority.MediumPriority;
+
 
             RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
             PeopleCountFeedback = new IntFeedback(PeopleCountFeedbackFunc);
@@ -380,6 +398,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SetUpCameras();
 
 			CreateOsdSource();
+        }
+
+        /// <summary>
+        /// Runs in it's own thread to dequeue messages in the order they were received to be processed
+        /// </summary>
+        /// <returns></returns>
+        object ProcessQueue()
+        {
+            try
+            {
+                while (true)
+                {
+                    var message = ReceiveQueue.Dequeue();
+
+                    DeserializeResponse(message);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "Error Processing Queue: {0}", e);
+            }
+
+            return null;
         }
 
 
@@ -542,8 +583,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 if (CommDebuggingIsOn)
                     Debug.Console(1, this, "Complete JSON Received:\n{0}", JsonMessage.ToString());
 
-                // Forward the complete message to be deserialized
-                DeserializeResponse(JsonMessage.ToString());
+                // Enqueue the complete message to be deserialized
+
+                ReceiveQueue.Enqueue(JsonMessage.ToString());
+                //DeserializeResponse(JsonMessage.ToString());
+
+                if (ReceiveThread.ThreadState != Thread.eThreadStates.ThreadRunning)
+                    ReceiveThread.Start();
+
                 return;
             }
 
@@ -1638,20 +1685,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get 
                 {
-                    if (CodecConfiguration.Configuration.H323.H323Alias.E164 != null)
+                    if (CodecConfiguration.Configuration.H323 != null && CodecConfiguration.Configuration.H323.H323Alias.E164 != null)
+                    {
                         return CodecConfiguration.Configuration.H323.H323Alias.E164.Value;
+                    }
                     else
+                    {
                         return string.Empty;
+                    }
                 }
             }
             public override string H323Id
             {
                 get
                 {
-                    if (CodecConfiguration.Configuration.H323.H323Alias.ID != null)
+                    if (CodecConfiguration.Configuration.H323 != null && CodecConfiguration.Configuration.H323.H323Alias.E164 != null)
+                    {
                         return CodecConfiguration.Configuration.H323.H323Alias.ID.Value;
+                    }
                     else
+                    {
                         return string.Empty;
+                    }
                 }
             }
             public override string SipPhoneNumber
