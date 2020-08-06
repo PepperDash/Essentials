@@ -11,6 +11,8 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         void CreateMobileControlRoomBridge(EssentialsRoomBase room);
 
         void LinkSystemMonitorToAppServer();
+
+
     }
 
     /// <summary>
@@ -19,8 +21,6 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     public interface IMobileControlRoomBridge : IKeyed
     {
         event EventHandler<EventArgs> UserCodeChanged;
-
-        IMobileControl Parent { get; }
 
         string UserCode { get; }
 
