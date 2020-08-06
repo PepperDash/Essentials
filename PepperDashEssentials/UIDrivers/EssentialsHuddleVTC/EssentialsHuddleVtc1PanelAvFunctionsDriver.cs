@@ -343,7 +343,7 @@ namespace PepperDash.Essentials
         /// </summary>
         void ShowLogo()
         {
-            if (CurrentRoom.LogoUrl == null)
+            if (CurrentRoom.LogoUrlLightBkgnd == null)
             {
                 TriList.SetBool(UIBoolJoin.LogoDefaultVisible, true);
                 TriList.SetBool(UIBoolJoin.LogoUrlVisible, false);
@@ -352,7 +352,8 @@ namespace PepperDash.Essentials
             {
                 TriList.SetBool(UIBoolJoin.LogoDefaultVisible, false);
                 TriList.SetBool(UIBoolJoin.LogoUrlVisible, true);
-                TriList.SetString(UIStringJoin.LogoUrlLightBkgnd, _CurrentRoom.LogoUrl);
+                TriList.SetString(UIStringJoin.LogoUrlLightBkgnd, _CurrentRoom.LogoUrlLightBkgnd);
+                TriList.SetString(UIStringJoin.LogoUrlLightBkgnd, _CurrentRoom.LogoUrlDarkBkgnd);
             }
         }
 

@@ -333,7 +333,7 @@ namespace PepperDash.Essentials
         /// </summary>
         void ShowLogo()
         {
-            if (CurrentRoom.LogoUrl == null)
+            if (CurrentRoom.LogoUrlLightBkgnd == null)
             {
                 TriList.SetBool(UIBoolJoin.LogoDefaultVisible, true);
                 TriList.SetBool(UIBoolJoin.LogoUrlVisible, false);
@@ -342,7 +342,8 @@ namespace PepperDash.Essentials
             {
                 TriList.SetBool(UIBoolJoin.LogoDefaultVisible, false);
                 TriList.SetBool(UIBoolJoin.LogoUrlVisible, true);
-                TriList.SetString(UIStringJoin.LogoUrlLightBkgnd, _CurrentRoom.LogoUrl);
+                TriList.SetString(UIStringJoin.LogoUrlLightBkgnd, _CurrentRoom.LogoUrlLightBkgnd);
+                TriList.SetString(UIStringJoin.LogoUrlDarkBkgnd, _CurrentRoom.LogoUrlDarkBkgnd);
             }
         }
 
@@ -790,7 +791,7 @@ namespace PepperDash.Essentials
                 }
                 // Name and logo
                 TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = _CurrentRoom.Name;
-                if (_CurrentRoom.LogoUrl == null)
+                if (_CurrentRoom.LogoUrlLightBkgnd == null)
                 {
                     TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = true;
                     TriList.BooleanInput[UIBoolJoin.LogoUrlVisible].BoolValue = false;
@@ -799,7 +800,9 @@ namespace PepperDash.Essentials
                 {
                     TriList.BooleanInput[UIBoolJoin.LogoDefaultVisible].BoolValue = false;
                     TriList.BooleanInput[UIBoolJoin.LogoUrlVisible].BoolValue = true;
-                    TriList.StringInput[UIStringJoin.LogoUrlLightBkgnd].StringValue = _CurrentRoom.LogoUrl;
+                    TriList.StringInput[UIStringJoin.LogoUrlLightBkgnd].StringValue = _CurrentRoom.LogoUrlLightBkgnd;
+                    TriList.StringInput[UIStringJoin.LogoUrlLightBkgnd].StringValue = _CurrentRoom.LogoUrlDarkBkgnd;
+
                 }
 
                 // Shutdown timer

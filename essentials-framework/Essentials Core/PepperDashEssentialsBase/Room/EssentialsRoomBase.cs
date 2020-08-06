@@ -69,7 +69,9 @@ namespace PepperDash.Essentials.Core
 
         public Core.Privacy.MicrophonePrivacyController MicrophonePrivacy { get; set; }
 
-        public string LogoUrl { get; set; }
+        public string LogoUrlLightBkgnd { get; set; }
+
+        public string LogoUrlDarkBkgnd { get; set; }
 
         protected SecondsCountdownTimer RoomVacancyShutdownTimer { get; private set; }
 

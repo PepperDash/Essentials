@@ -156,7 +156,10 @@ namespace PepperDash.Essentials.Room.Config
 		public EssentialsEnvironmentPropertiesConfig Environment { get; set; }
 
 		[JsonProperty("logo")]
-		public EssentialsLogoPropertiesConfig Logo { get; set; }
+		public EssentialsLogoPropertiesConfig LogoLight { get; set; }
+
+        [JsonProperty("logoDark")]
+        public EssentialsLogoPropertiesConfig LogoDark { get; set; }
 	
 		[JsonProperty("microphonePrivacy")]
 		public EssentialsRoomMicrophonePrivacyConfig MicrophonePrivacy { get; set; }
