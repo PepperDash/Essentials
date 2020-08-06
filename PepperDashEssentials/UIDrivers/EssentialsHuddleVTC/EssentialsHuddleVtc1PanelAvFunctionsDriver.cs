@@ -28,6 +28,8 @@ namespace PepperDash.Essentials
             Presentation, AudioSetup, Call, Start
         }
 
+        public uint StartPageVisibleJoin { get; private set; }
+
         /// <summary>
         /// Whether volume ramping from this panel will show the volume
         /// gauge popup.
@@ -240,7 +242,16 @@ namespace PepperDash.Essentials
             if (Config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Habanero)
             {
                 TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, () =>
-                    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderPageVisible));
+                {
+                    if (CurrentRoom.IsMobileControlEnabled)
+                    {
+                        PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderMCPageVisible);
+                    }
+                    else
+                    {
+                        PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderPageVisible);
+                    }
+                });
             }
 			else if (Config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Verbose)
             {
@@ -276,7 +287,7 @@ namespace PepperDash.Essentials
             }
             else
             {
-                TriList.SetBool(UIBoolJoin.StartPageVisible, true);
+                TriList.SetBool(StartPageVisibleJoin, true);
                 TriList.SetBool(UIBoolJoin.TapToBeginVisible, true);
 				SetupActivityFooterWhenRoomOff();
             }
@@ -341,7 +352,7 @@ namespace PepperDash.Essentials
             {
                 TriList.SetBool(UIBoolJoin.LogoDefaultVisible, false);
                 TriList.SetBool(UIBoolJoin.LogoUrlVisible, true);
-                TriList.SetString(UIStringJoin.LogoUrl, _CurrentRoom.LogoUrl);
+                TriList.SetString(UIStringJoin.LogoUrlLightBkgnd, _CurrentRoom.LogoUrl);
             }
         }
 
@@ -362,7 +373,7 @@ namespace PepperDash.Essentials
             HideAndClearCurrentDisplayModeSigsInUse();
 			TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, false);
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = false;
-            TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
+            TriList.BooleanInput[StartPageVisibleJoin].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = false;
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
 			if (NextMeetingTimer != null)
@@ -606,7 +617,7 @@ namespace PepperDash.Essentials
                 return;
             HideLogo();
 			HideNextMeetingPopup();
-            TriList.SetBool(UIBoolJoin.StartPageVisible, false);
+            TriList.SetBool(StartPageVisibleJoin, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
             if (CurrentSourcePageManager != null)
@@ -626,7 +637,7 @@ namespace PepperDash.Essentials
             if (VCDriver.IsVisible)
                 VCDriver.Hide();
 			HideNextMeetingPopup();
-            TriList.SetBool(UIBoolJoin.StartPageVisible, false);
+            TriList.SetBool(StartPageVisibleJoin, false);
             TriList.SetBool(UIBoolJoin.CallStagingBarVisible, false);
             TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
             // Run default source when room is off and share is pressed
@@ -960,6 +971,15 @@ namespace PepperDash.Essentials
             room.ConfigChanged -= room_ConfigChanged;
             room.ConfigChanged += room_ConfigChanged;
 
+            if (room.IsMobileControlEnabled)
+            {
+                StartPageVisibleJoin = UIBoolJoin.StartMCPageVisible;
+            }
+            else
+            {
+                StartPageVisibleJoin = UIBoolJoin.StartPageVisible;
+            }
+
             RefreshCurrentRoom(room);
         }
 
@@ -1149,7 +1169,7 @@ namespace PepperDash.Essentials
             var value = _CurrentRoom.OnFeedback.BoolValue;
             TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
 
-            TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = !value;
+            TriList.BooleanInput[StartPageVisibleJoin].BoolValue = !value;
 
             if (value) //ON
             {
@@ -1381,6 +1401,7 @@ namespace PepperDash.Essentials
         void ShowNotificationRibbon(string message, int timeout);
         void HideNotificationRibbon();
         void ShowTech();
+        uint StartPageVisibleJoin { get; }
     }
 
     /// <summary>

@@ -803,6 +803,47 @@ namespace PepperDash.Essentials
         /// </summary>
 		public const uint SetupFullDistrib = 15091;
 
+        /// <summary>
+        /// 15092
+        /// </summary>
+        public const uint StartMCPageVisible = 15092;
+
+
+        /// <summary>
+        /// 15093
+        /// </summary>
+        public const uint RoomHeaderMCPageVisible = 15093;
+
+        /// <summary>
+        /// 15094
+        /// </summary>
+        public const uint MCScreenSaverVisible = 15094;
+
+        /// <summary>
+        /// 15095
+        /// </summary>
+        public const uint MCScreenSaverPosition1Visible = 15095;
+
+        /// <summary>
+        /// 15096
+        /// </summary>
+        public const uint MCScreenSaverPosition2Visible = 15096;
+
+        /// <summary>
+        /// 15097
+        /// </summary>
+        public const uint MCScreenSaverPosition3Visible = 15097;
+
+        /// <summary>
+        /// 15098
+        /// </summary>
+        public const uint MCScreenSaverPosition4Visible = 15098;
+
+        /// <summary>
+        /// 15099
+        /// </summary>
+        public const uint MCScreenSaverClosePress = 15099;
+
         // PIN dialogs ************************************
 
         /// <summary>

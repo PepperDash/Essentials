@@ -1,4 +1,5 @@
 ﻿using System;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.UI;
 using PepperDash.Essentials.Core;
@@ -11,6 +12,8 @@ namespace PepperDash.Essentials
 	/// </summary>
 	public class EssentialsPanelMainInterfaceDriver : PanelDriverBase
 	{
+        CTimer InactivityTimer;
+
 		/// <summary>
 		/// Assign the appropriate A/V driver.
 		/// Want to keep the AvDriver alive, because it may hold states
@@ -22,6 +25,8 @@ namespace PepperDash.Essentials
         public EssentialsEnvironmentDriver EnvironmentDriver { get; set; }
 
 		public PanelDriverBase CurrentChildDriver { get; private set; }
+
+        public ScreenSaverController ScreenSaverController { get; private set; } 
 
 		CrestronTouchpanelPropertiesConfig Config;
 
@@ -35,7 +40,46 @@ namespace PepperDash.Essentials
 			: base(trilist)
 		{
 			Config = config;
+
+            var tsx52or60 = trilist as Tswx52ButtonVoiceControl;
+
+            if (tsx52or60 != null)
+            {
+                tsx52or60.ExtenderTouchDetectionReservedSigs.DeviceExtenderSigChange += ExtenderTouchDetectionReservedSigs_DeviceExtenderSigChange;
+            }
+            else
+            {
+                var tswx70 = trilist as TswX70Base;
+                if (tswx70 != null)
+                {
+                    tswx70.ExtenderTouchDetectionReservedSigs.DeviceExtenderSigChange += ExtenderTouchDetectionReservedSigs_DeviceExtenderSigChange;
+                }
+            }
 		}
+
+        void ExtenderTouchDetectionReservedSigs_DeviceExtenderSigChange(Crestron.SimplSharpPro.DeviceExtender currentDeviceExtender, Crestron.SimplSharpPro.SigEventArgs args)
+        {
+            if (args.Sig.BoolValue)
+            {
+                if (InactivityTimer != null)
+                {
+                    InactivityTimer.Reset();
+                }
+                else
+                {
+                    InactivityTimer = new CTimer((o) => InactivityTimerExpired(), Config.ScreenSaverTimeoutMin * 60 * 1000);
+                }
+            }
+        }
+
+        void InactivityTimerExpired()
+        {
+            InactivityTimer.Stop();
+            InactivityTimer.Dispose();
+            InactivityTimer = null;
+
+            ScreenSaverController.Show();
+        }
 
 		public override void Show()
 		{
@@ -46,7 +90,7 @@ namespace PepperDash.Essentials
 
 		public override void Hide()
 		{
-			TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
+			TriList.BooleanInput[AvDriver.StartPageVisibleJoin].BoolValue = false;
 			base.Hide();
 		}
 

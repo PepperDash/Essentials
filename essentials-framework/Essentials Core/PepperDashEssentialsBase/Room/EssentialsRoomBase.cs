@@ -9,6 +9,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Core
 {
@@ -36,6 +37,16 @@ namespace PepperDash.Essentials.Core
 
         protected abstract Func<bool> IsWarmingFeedbackFunc { get; }
         protected abstract Func<bool> IsCoolingFeedbackFunc { get; }
+
+        /// <summary>
+        /// Indicates if this room is Mobile Control Enabled
+        /// </summary>
+        public bool IsMobileControlEnabled { get; private set; }
+
+        /// <summary>
+        /// The bridge for this room if Mobile Control is enabled
+        /// </summary>
+        public IMobileControlRoomBridge MobileControlRoomBridge { get; private set; }
 
         /// <summary>
         /// The config name of the source list
@@ -125,7 +136,28 @@ namespace PepperDash.Essentials.Core
             {
                 if (RoomOccupancy != null)
                     OnRoomOccupancyIsSet();
+
+                SetUpMobileControl();
             });
+        }
+
+        /// <summary>
+        /// If mobile control is enabled, sets the appropriate properties
+        /// </summary>
+        void SetUpMobileControl()
+        {
+            var mcBridgeKey = string.Format("mobileControlBridge-{0}", Key);
+            var mcBridge = DeviceManager.GetDeviceForKey(mcBridgeKey);
+            if (mcBridge == null)
+            {
+                Debug.Console(1, this, "Mobile Control Bridge Not found for this room.");
+                return;
+            }
+            else
+            {
+                MobileControlRoomBridge = mcBridge as IMobileControlRoomBridge;
+                IsMobileControlEnabled = true;
+            }
         }
 
         void RoomVacancyShutdownPromptTimer_HasFinished(object sender, EventArgs e)
