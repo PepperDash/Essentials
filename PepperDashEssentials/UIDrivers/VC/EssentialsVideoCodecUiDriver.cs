@@ -194,28 +194,39 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             string roomContactNumbers = "";
             string roomPhoneNumber = "";
+            string roomVideoAddress = "";
+
+
+            Debug.Console(1,
+                @"
+                    Codec.CodecInfo.SipUri: {0}
+                    Codec.CodecInfo.SipPhoneNumber: {1}
+                    Codec.CodecInfo.Ei64Alias: {2}
+                    Codec.CodecInfo.H323Id: {3}
+                 ", Codec.CodecInfo.SipUri, Codec.CodecInfo.SipPhoneNumber, Codec.CodecInfo.E164Alias, Codec.CodecInfo.H323Id);
 
             if (!string.IsNullOrEmpty(Codec.CodecInfo.SipUri)) // If both values are present, format the string with a pipe divider
             {
-                roomContactNumbers = string.Format("{0} | {1}", GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber), Codec.CodecInfo.SipUri);
-                roomPhoneNumber = GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber);
+                roomPhoneNumber = Codec.CodecInfo.SipUri;
             }
-            else                                               // If only one value present, just show the phone number
+            else if(!string.IsNullOrEmpty(Codec.CodecInfo.SipPhoneNumber))   // If only one value present, just show the phone number
             {
                 roomPhoneNumber = GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber);
-                roomContactNumbers = Codec.CodecInfo.SipPhoneNumber;
             }
 
             if (string.IsNullOrEmpty(roomContactNumbers))
             {
                 if(!string.IsNullOrEmpty(Codec.CodecInfo.E164Alias))
-                    roomContactNumbers = string.Format("{0} | {1}", Codec.CodecInfo.E164Alias, Codec.CodecInfo.H323Id);
-                else
-                    roomContactNumbers = Codec.CodecInfo.H323Id;
+                    roomVideoAddress = Codec.CodecInfo.E164Alias;
+                else if (!string.IsNullOrEmpty(Codec.CodecInfo.H323Id))
+                    roomVideoAddress = Codec.CodecInfo.H323Id;
             }
+
+            roomContactNumbers = string.Format("{0} | {1}", roomPhoneNumber, roomVideoAddress);
+
             TriList.SetString(UIStringJoin.RoomAddressPipeText, roomContactNumbers);
             TriList.SetString(UIStringJoin.RoomPhoneText, roomPhoneNumber);
-            TriList.SetString(UIStringJoin.RoomVideoAddressText, Codec.CodecInfo.H323Id);
+            TriList.SetString(UIStringJoin.RoomVideoAddressText, roomVideoAddress);
 
             if(HeaderDriver.HeaderButtonsAreSetUp)
                 HeaderDriver.ComputeHeaderCallStatus(Codec);

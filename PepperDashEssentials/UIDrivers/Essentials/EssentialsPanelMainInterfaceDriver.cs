@@ -59,15 +59,17 @@ namespace PepperDash.Essentials
 
         void ExtenderTouchDetectionReservedSigs_DeviceExtenderSigChange(Crestron.SimplSharpPro.DeviceExtender currentDeviceExtender, Crestron.SimplSharpPro.SigEventArgs args)
         {
+            var timeoutMs = Config.ScreenSaverTimeoutMin * 60 * 1000;
+
             if (args.Sig.BoolValue)
             {
                 if (InactivityTimer != null)
                 {
-                    InactivityTimer.Reset();
+                    InactivityTimer.Reset(timeoutMs);
                 }
                 else
                 {
-                    InactivityTimer = new CTimer((o) => InactivityTimerExpired(), Config.ScreenSaverTimeoutMin * 60 * 1000);
+                    InactivityTimer = new CTimer((o) => InactivityTimerExpired(), timeoutMs);
                 }
             }
         }

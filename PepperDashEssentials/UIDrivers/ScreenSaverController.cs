@@ -20,7 +20,7 @@ namespace PepperDash.Essentials
 
         List<uint> PositionJoins;
 
-        int CurrentPositionIndex;
+        int CurrentPositionIndex = 0;
 
         public ScreenSaverController(EssentialsPanelMainInterfaceDriver parent, CrestronTouchpanelPropertiesConfig config)
             : base(parent.TriList)
@@ -39,6 +39,8 @@ namespace PepperDash.Essentials
         {
             TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, true);
 
+            CurrentPositionIndex = 0;
+            SetCurrentPosition();
             StartPositionTimer();
 
             base.Show();
@@ -64,13 +66,26 @@ namespace PepperDash.Essentials
             if (PositionTimer == null)
             {
                 PositionTimer = new CTimer((o) => PositionTimerExpired(), PositionTimeoutMs);
-                SetCurrentPosition();
             }
+            else
+            {
+                PositionTimer.Reset(PositionTimeoutMs);
+            }
+
         }
 
         void PositionTimerExpired()
         {
-            if (CurrentPositionIndex <= PositionJoins.Count)
+            IncrementPositionIndex();
+
+            SetCurrentPosition();
+
+            StartPositionTimer();
+        }
+
+        void IncrementPositionIndex()
+        {
+            if (CurrentPositionIndex < PositionJoins.Count - 1)
             {
                 CurrentPositionIndex++;
             }
@@ -78,6 +93,8 @@ namespace PepperDash.Essentials
             {
                 CurrentPositionIndex = 0;
             }
+
+            Debug.Console(1, "ScreenSaver Position Timer Expired: Setting new position: {0}", CurrentPositionIndex);
         }
 
         //
