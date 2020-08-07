@@ -224,6 +224,8 @@ namespace PepperDash.Essentials
                 var room = DeviceManager.GetDeviceForKey(props.DefaultRoomKey);
                 if (room is EssentialsHuddleSpaceRoom)
                 {
+                    // Screen Saver Driver
+                    mainDriver.ScreenSaverController = new ScreenSaverController(mainDriver, props);
 
                     // Header Driver
                     Debug.Console(0, panelController, "Adding header driver");
@@ -271,6 +273,9 @@ namespace PepperDash.Essentials
                 else if (room is EssentialsHuddleVtc1Room)
                 {
                     Debug.Console(0, panelController, "Adding huddle space VTC AV driver");
+
+                    // Screen Saver Driver
+                    mainDriver.ScreenSaverController = new ScreenSaverController(mainDriver, props);
 
                     // Header Driver
                     mainDriver.HeaderDriver = new EssentialsHeaderDriver(mainDriver, props);

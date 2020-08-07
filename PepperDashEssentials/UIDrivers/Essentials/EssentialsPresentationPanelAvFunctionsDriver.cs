@@ -267,7 +267,7 @@
 //            HideAndClearCurrentDisplayModeSigsInUse();
 //            tl[UIBoolJoin.TopBarHabaneroVisible].BoolValue = false;
 //            tl[UIBoolJoin.ActivityFooterVisible].BoolValue = false;
-//            tl[UIBoolJoin.StartPageVisible].BoolValue = false;
+//            tl[StartPageVisibleJoin].BoolValue = false;
 //            tl[UIBoolJoin.TapToBeginVisible].BoolValue = false;
 //            tl[UIBoolJoin.ToggleSharingModeVisible].BoolValue = false;
 //            tl[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
@@ -335,7 +335,7 @@
 //                    }
 //                    else
 //                    {
-//                        TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
+//                        TriList.BooleanInput[StartPageVisibleJoin].BoolValue = true;
 //                        TriList.BooleanInput[UIBoolJoin.TapToBeginVisible].BoolValue = true;
 //                        TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
 //                    }
@@ -525,7 +525,7 @@
 //            if (!_CurrentRoom.OnFeedback.BoolValue)
 //            {
 //                ShareButtonSig.BoolValue = true;
-//                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
+//                TriList.BooleanInput[StartPageVisibleJoin].BoolValue = false;
 //                ShowCurrentSharingMode();
 //            }
 //        }
@@ -953,13 +953,13 @@
 //            if (value)
 //            {
 //                SetupActivityFooterWhenRoomOn();
-//                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = false;
+//                TriList.BooleanInput[StartPageVisibleJoin].BoolValue = false;
 //            }
 //            else
 //            {
 //                HideCurrentSharingMode();
 //                SetupActivityFooterWhenRoomOff();
-//                TriList.BooleanInput[UIBoolJoin.StartPageVisible].BoolValue = true;
+//                TriList.BooleanInput[StartPageVisibleJoin].BoolValue = true;
 //                if (LastSelectedSourceSig != null)
 //                {
 //                    LastSelectedSourceSig.BoolValue = false;

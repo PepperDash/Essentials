@@ -156,7 +156,10 @@ namespace PepperDash.Essentials.Room.Config
 		public EssentialsEnvironmentPropertiesConfig Environment { get; set; }
 
 		[JsonProperty("logo")]
-		public EssentialsLogoPropertiesConfig Logo { get; set; }
+		public EssentialsLogoPropertiesConfig LogoLight { get; set; }
+
+        [JsonProperty("logoDark")]
+        public EssentialsLogoPropertiesConfig LogoDark { get; set; }
 	
 		[JsonProperty("microphonePrivacy")]
 		public EssentialsRoomMicrophonePrivacyConfig MicrophonePrivacy { get; set; }
@@ -181,6 +184,12 @@ namespace PepperDash.Essentials.Room.Config
 
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
+
+        public EssentialsRoomPropertiesConfig()
+        {
+            LogoLight = new EssentialsLogoPropertiesConfig();
+            LogoDark = new EssentialsLogoPropertiesConfig();
+        }
 	}
 
     public class EssentialsAvRoomPropertiesConfig : EssentialsRoomPropertiesConfig
@@ -280,12 +289,22 @@ namespace PepperDash.Essentials.Room.Config
         /// <summary>
         /// Gets either the custom URL, a local-to-processor URL, or null if it's a default logo
         /// </summary>
-        public string GetUrl()
+        public string GetLogoUrlLight()
         {
             if (Type == "url")
                 return Url;
             if (Type == "system")
                 return string.Format("http://{0}:8080/logo.png", 
+                    CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0));
+            return null;
+        }
+
+        public string GetLogoUrlDark()
+        {
+            if (Type == "url")
+                return Url;
+            if (Type == "system")
+                return string.Format("http://{0}:8080/logo-dark.png",
                     CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0));
             return null;
         }

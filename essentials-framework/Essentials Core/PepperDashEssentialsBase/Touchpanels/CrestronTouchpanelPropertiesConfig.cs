@@ -14,6 +14,8 @@
         public UiSetupPropertiesConfig Setup { get; set; }
         public string HeaderStyle { get; set; }
         public bool IncludeInFusionRoomHealth { get; set; }
+        public uint ScreenSaverTimeoutMin { get; set; }
+        public uint ScreenSaverMovePositionIntervalMs { get; set; }
 
 
         /// <summary>
@@ -26,6 +28,10 @@
         {
             SourcesOverflowCount = 5;
             HeaderStyle = CrestronTouchpanelPropertiesConfig.Habanero;
+
+            // Default values
+            ScreenSaverTimeoutMin = 5;
+            ScreenSaverMovePositionIntervalMs = 15000;
         }
 
         /// <summary>
