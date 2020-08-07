@@ -283,12 +283,22 @@ namespace PepperDash.Essentials.Room.Config
         /// <summary>
         /// Gets either the custom URL, a local-to-processor URL, or null if it's a default logo
         /// </summary>
-        public string GetUrl()
+        public string GetLogoUrlLight()
         {
             if (Type == "url")
                 return Url;
             if (Type == "system")
                 return string.Format("http://{0}:8080/logo.png", 
+                    CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0));
+            return null;
+        }
+
+        public string GetLogoUrlDark()
+        {
+            if (Type == "url")
+                return Url;
+            if (Type == "system")
+                return string.Format("http://{0}:8080/logo-dark.png",
                     CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0));
             return null;
         }

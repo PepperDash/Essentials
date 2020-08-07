@@ -340,8 +340,8 @@ namespace PepperDash.Essentials
                     IOccupancyStatusProvider, PropertiesConfig.Occupancy.TimeoutMinutes);
             }
 
-            this.LogoUrlLightBkgnd = PropertiesConfig.LogoLight.GetUrl();
-            this.LogoUrlDarkBkgnd = PropertiesConfig.LogoDark.GetUrl();
+            this.LogoUrlLightBkgnd = PropertiesConfig.LogoLight.GetLogoUrlLight();
+            this.LogoUrlDarkBkgnd = PropertiesConfig.LogoDark.GetLogoUrlDark();
             this.SourceListKey = PropertiesConfig.SourceListKey;
             this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
             this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
