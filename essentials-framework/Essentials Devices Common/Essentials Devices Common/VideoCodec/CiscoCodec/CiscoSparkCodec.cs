@@ -1699,7 +1699,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    if (CodecConfiguration.Configuration.H323 != null && CodecConfiguration.Configuration.H323.H323Alias.ID != null)
+                    if (CodecConfiguration.Configuration.H323 != null && CodecConfiguration.Configuration.H323.H323Alias != null
+                        && CodecConfiguration.Configuration.H323.H323Alias.ID != null)
                     {
                         return CodecConfiguration.Configuration.H323.H323Alias.ID.Value;
                     }

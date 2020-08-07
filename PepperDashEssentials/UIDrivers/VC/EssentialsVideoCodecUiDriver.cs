@@ -207,22 +207,24 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             Debug.Console(1,
                 @"
-                    Codec.CodecInfo.SipUri: {0}
-                    Codec.CodecInfo.SipPhoneNumber: {1}
-                    Codec.CodecInfo.E164Alias: {2}
-                    Codec.CodecInfo.H323Id: {3}
-                 ", Codec.CodecInfo.SipUri, Codec.CodecInfo.SipPhoneNumber, Codec.CodecInfo.E164Alias, Codec.CodecInfo.H323Id);
+                    Codec.CodecInfo.IpAddress: {0}
+                    Codec.CodecInfo.SipUri: {1}
+                    Codec.CodecInfo.SipPhoneNumber: {2}
+                    Codec.CodecInfo.E164Alias: {3}
+                    Codec.CodecInfo.H323Id: {4}
+                 ", Codec.CodecInfo.IpAddress, Codec.CodecInfo.SipUri, Codec.CodecInfo.SipPhoneNumber, Codec.CodecInfo.E164Alias, Codec.CodecInfo.H323Id);
 
+            // Populate phone number
             if (!string.IsNullOrEmpty(Codec.CodecInfo.SipUri)) // If both values are present, format the string with a pipe divider
             {
                 roomPhoneNumber = Codec.CodecInfo.SipUri;
             }
-
-            if (string.IsNullOrEmpty(roomPhoneNumber))   // If only one value present, just show the phone number
+            else if (!string.IsNullOrEmpty(Codec.CodecInfo.SipPhoneNumber))   // If only one value present, just show the phone number
             {
                 roomPhoneNumber = GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber);
             }
 
+            // Populate video number
             if (!string.IsNullOrEmpty(Codec.CodecInfo.IpAddress))
             {
                 roomVideoAddress = Codec.CodecInfo.IpAddress;
