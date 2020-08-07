@@ -138,9 +138,14 @@ namespace PepperDash.Essentials.Core
             {
                 if (RoomOccupancy != null)
                     OnRoomOccupancyIsSet();
-
-                SetUpMobileControl();
             });
+        }
+
+        public override bool CustomActivate()
+        {
+            SetUpMobileControl();
+
+            return base.CustomActivate();
         }
 
         /// <summary>
@@ -152,12 +157,14 @@ namespace PepperDash.Essentials.Core
             var mcBridge = DeviceManager.GetDeviceForKey(mcBridgeKey);
             if (mcBridge == null)
             {
-                Debug.Console(1, this, "Mobile Control Bridge Not found for this room.");
+                Debug.Console(1, this, "*********************Mobile Control Bridge Not found for this room.");
+                IsMobileControlEnabled = false;
                 return;
             }
             else
             {
                 MobileControlRoomBridge = mcBridge as IMobileControlRoomBridge;
+                Debug.Console(1, this, "*********************Mobile Control Bridge found and enabled for this room");
                 IsMobileControlEnabled = true;
             }
         }

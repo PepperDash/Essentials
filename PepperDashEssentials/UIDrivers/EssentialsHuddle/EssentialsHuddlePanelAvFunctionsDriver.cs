@@ -212,6 +212,7 @@ namespace PepperDash.Essentials
                 "Tap Share to begin";
 		}
 
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -835,12 +836,22 @@ namespace PepperDash.Essentials
 			if (_CurrentRoom == room) return;
             // Disconnect current (probably never called)
 
+            if (_CurrentRoom != null)
+                _CurrentRoom.ConfigChanged -= room_ConfigChanged;
+
             room.ConfigChanged -= room_ConfigChanged;
             room.ConfigChanged += room_ConfigChanged;
 
             if (room.IsMobileControlEnabled)
             {
                 StartPageVisibleJoin = UIBoolJoin.StartMCPageVisible;
+                UpdateMCJoins(room);
+
+                if (_CurrentRoom != null)
+                    _CurrentRoom.MobileControlRoomBridge.UserCodeChanged -= MobileControlRoomBridge_UserCodeChanged;
+
+                room.MobileControlRoomBridge.UserCodeChanged -= MobileControlRoomBridge_UserCodeChanged;
+                room.MobileControlRoomBridge.UserCodeChanged += MobileControlRoomBridge_UserCodeChanged;
             }
             else
             {
@@ -849,6 +860,18 @@ namespace PepperDash.Essentials
 
             RefreshCurrentRoom(room);
 		}
+
+        void MobileControlRoomBridge_UserCodeChanged(object sender, EventArgs e)
+        {
+            UpdateMCJoins(_CurrentRoom);
+        }
+
+        void UpdateMCJoins(EssentialsHuddleSpaceRoom room)
+        {
+            TriList.SetString(UIStringJoin.RoomMcUrl, room.MobileControlRoomBridge.McServerUrl);
+            TriList.SetString(UIStringJoin.RoomMcQrCodeUrl, room.MobileControlRoomBridge.QrCodeUrl);
+            TriList.SetString(UIStringJoin.RoomUserCode, room.MobileControlRoomBridge.UserCode);
+        }
 
         /// <summary>
         /// Fires when room config of current room has changed.  Meant to refresh room values to propegate any updates to UI

@@ -162,9 +162,9 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint RoomMcUrl = 3908;
         /// <summary>
-        /// 3908 - The url for the mobile control QR Code image
+        /// 3909 - The url for the mobile control QR Code image
         /// </summary>
-        public const uint RoomMcWQrCodeUrl = 3909;
+        public const uint RoomMcQrCodeUrl = 3909;
         /// <summary>
         /// 3911
         /// </summary>
