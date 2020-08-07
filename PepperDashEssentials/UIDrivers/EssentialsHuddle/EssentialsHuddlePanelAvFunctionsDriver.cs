@@ -232,26 +232,31 @@ namespace PepperDash.Essentials
                     {
                         if (CurrentRoom.IsMobileControlEnabled)
                         {
-                            PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderMCPageVisible);
+                            Debug.Console(1, "Showing Mobile Control Header Info");
+                            PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderInfoMCPageVisible);
                         }
                         else
                         {
-                            PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderPageVisible);
+                            Debug.Console(1, "Showing Non Mobile Control Header Info");
+                            PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderInfoPageVisible);
                         }
                     });
             }
             else if (Config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Verbose)
             {
-                // room name on join 1, concat phone and sip on join 2, no button method
-                //var addr = roomConf.Addresses;
-                //if (addr == null) // protect from missing values by using default empties
-                //    addr = new EssentialsRoomAddressPropertiesConfig();
-                //// empty string when either missing, pipe when both showing
-                //TriList.SetString(UIStringJoin.RoomAddressPipeText, 
-                //    (string.IsNullOrEmpty(addr.PhoneNumber.Trim())
-                //    || string.IsNullOrEmpty(addr.SipAddress.Trim())) ? "" : " | ");
-                //TriList.SetString(UIStringJoin.RoomPhoneText, addr.PhoneNumber);
-                //TriList.SetString(UIStringJoin.RoomSipText, addr.SipAddress);
+                TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, () =>
+                {
+                    if (CurrentRoom.IsMobileControlEnabled)
+                    {
+                        Debug.Console(1, "Showing Mobile Control Header Info");
+                        PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderInfoMCPageVisible);
+                    }
+                    else
+                    {
+                        Debug.Console(1, "Showing Non Mobile Control Header Info");
+                        PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderInfoPageVisible);
+                    }
+                });
             }
 
             TriList.SetBool(UIBoolJoin.DateAndTimeVisible, Config.ShowDate && Config.ShowTime);

@@ -31,6 +31,8 @@ namespace PepperDash.Essentials
 
             PositionJoins = new List<uint>() 
                 { UIBoolJoin.MCScreenSaverPosition1Visible, UIBoolJoin.MCScreenSaverPosition2Visible, UIBoolJoin.MCScreenSaverPosition3Visible, UIBoolJoin.MCScreenSaverPosition4Visible };
+
+            CrestronConsole.AddNewConsoleCommand((o) => Show(), "showscreensaver", "Shows Panel Screensaver", ConsoleAccessLevelEnum.AccessOperator);
         }
 
         public override void Show()

@@ -192,17 +192,30 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <param name="e"></param>
         void Codec_IsReady()
         {
-            string roomNumberSipUri = "";
+            string roomContactNumbers = "";
+            string roomPhoneNumber = "";
 
             if (!string.IsNullOrEmpty(Codec.CodecInfo.SipUri)) // If both values are present, format the string with a pipe divider
-                roomNumberSipUri = string.Format("{0} | {1}", GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber), Codec.CodecInfo.SipUri);
+            {
+                roomContactNumbers = string.Format("{0} | {1}", GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber), Codec.CodecInfo.SipUri);
+                roomPhoneNumber = GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber);
+            }
             else                                               // If only one value present, just show the phone number
-                roomNumberSipUri = Codec.CodecInfo.SipPhoneNumber;
+            {
+                roomPhoneNumber = GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber);
+                roomContactNumbers = Codec.CodecInfo.SipPhoneNumber;
+            }
 
-            if(string.IsNullOrEmpty(roomNumberSipUri))
-                roomNumberSipUri = string.Format("{0} | {1}", Codec.CodecInfo.E164Alias, Codec.CodecInfo.H323Id);
-
-            TriList.SetString(UIStringJoin.RoomPhoneText, roomNumberSipUri);
+            if (string.IsNullOrEmpty(roomContactNumbers))
+            {
+                if(!string.IsNullOrEmpty(Codec.CodecInfo.E164Alias))
+                    roomContactNumbers = string.Format("{0} | {1}", Codec.CodecInfo.E164Alias, Codec.CodecInfo.H323Id);
+                else
+                    roomContactNumbers = Codec.CodecInfo.H323Id;
+            }
+            TriList.SetString(UIStringJoin.RoomAddressPipeText, roomContactNumbers);
+            TriList.SetString(UIStringJoin.RoomPhoneText, roomPhoneNumber);
+            TriList.SetString(UIStringJoin.RoomVideoAddressText, Codec.CodecInfo.H323Id);
 
             if(HeaderDriver.HeaderButtonsAreSetUp)
                 HeaderDriver.ComputeHeaderCallStatus(Codec);

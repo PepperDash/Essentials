@@ -26,7 +26,7 @@ namespace PepperDash.Essentials
 
 		public PanelDriverBase CurrentChildDriver { get; private set; }
 
-        public ScreenSaverController ScreenSaverController { get; private set; } 
+        public ScreenSaverController ScreenSaverController { get; set; } 
 
 		CrestronTouchpanelPropertiesConfig Config;
 
@@ -85,7 +85,7 @@ namespace PepperDash.Essentials
 		{
 			CurrentChildDriver = null;
 			ShowSubDriver(AvDriver as PanelDriverBase);
-			base.Show();
+            base.Show();
 		}
 
 		public override void Hide()

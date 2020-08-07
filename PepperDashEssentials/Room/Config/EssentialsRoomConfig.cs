@@ -184,6 +184,12 @@ namespace PepperDash.Essentials.Room.Config
 
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
+
+        public EssentialsRoomPropertiesConfig()
+        {
+            LogoLight = new EssentialsLogoPropertiesConfig();
+            LogoDark = new EssentialsLogoPropertiesConfig();
+        }
 	}
 
     public class EssentialsAvRoomPropertiesConfig : EssentialsRoomPropertiesConfig

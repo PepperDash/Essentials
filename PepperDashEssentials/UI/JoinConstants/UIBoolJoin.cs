@@ -621,7 +621,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 15030 Visibility for room data popup
         /// </summary>
-        public const uint RoomHeaderPageVisible = 15030;
+        public const uint RoomHeaderInfoPageVisible = 15030;
         /// <summary>
         /// 15031
         /// </summary>
@@ -812,7 +812,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 15093
         /// </summary>
-        public const uint RoomHeaderMCPageVisible = 15093;
+        public const uint RoomHeaderInfoMCPageVisible = 15093;
 
         /// <summary>
         /// 15094
