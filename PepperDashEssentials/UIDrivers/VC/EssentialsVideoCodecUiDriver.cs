@@ -201,7 +201,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 @"
                     Codec.CodecInfo.SipUri: {0}
                     Codec.CodecInfo.SipPhoneNumber: {1}
-                    Codec.CodecInfo.Ei64Alias: {2}
+                    Codec.CodecInfo.E164Alias: {2}
                     Codec.CodecInfo.H323Id: {3}
                  ", Codec.CodecInfo.SipUri, Codec.CodecInfo.SipPhoneNumber, Codec.CodecInfo.E164Alias, Codec.CodecInfo.H323Id);
 

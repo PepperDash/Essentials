@@ -212,7 +212,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 3925
         /// </summary>
-        public const uint LogoUrlDarkBkgnd = 3923;
+        public const uint LogoUrlDarkBkgnd = 3925;
 
 		/// <summary>
 		/// 3951
