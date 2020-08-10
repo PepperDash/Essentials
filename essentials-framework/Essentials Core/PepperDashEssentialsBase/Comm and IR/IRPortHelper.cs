@@ -149,7 +149,7 @@ namespace PepperDash.Essentials.Core
 	            return null;
 	        }
 
-	        var irDevice = new IrOutputPortController(config.Key, GetIrOutputPort, config);
+	        var irDevice = new IrOutputPortController(config.Key + "-irController", GetIrOutputPort, config);
 
 	        return irDevice;
 	    }
