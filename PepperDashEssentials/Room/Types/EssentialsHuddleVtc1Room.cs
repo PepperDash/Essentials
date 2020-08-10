@@ -409,10 +409,14 @@ namespace PepperDash.Essentials
         {
             if (string.IsNullOrEmpty(sourceListKey))
             {
+                Debug.Console(1, this, "No sourceListKey present.  RunRouteAction assumes default source list.");
                 RunRouteAction(routeKey, new Action(() => { }));
             }
             else
+            {
+                Debug.Console(1, this, "sourceListKey present but not yet implemented");
                 throw new NotImplementedException();
+            }
         }
 
         /// <summary>
