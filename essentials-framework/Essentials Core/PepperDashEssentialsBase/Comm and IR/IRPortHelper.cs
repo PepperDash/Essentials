@@ -124,7 +124,7 @@ namespace PepperDash.Essentials.Core
 	            Debug.Console(0, "WARNING: device with IR ports '{0}' not found", portDevKey);
 	            return null;
 	        }
-	        if (portNum >= irDev.NumberOfIROutputPorts)
+	        if (portNum > irDev.NumberOfIROutputPorts)
 	        {
 	            Debug.Console(0, "WARNING: device '{0}' IR port {1} out of range",
 	                portDevKey, portNum);
