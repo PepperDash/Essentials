@@ -134,7 +134,9 @@ namespace PepperDash.Essentials.Core
 
 	        var port = irDev.IROutputPorts[portNum];
 
-	        port.LoadIRDriver(Global.FilePathPrefix + "IR" + Global.DirectorySeparator + control["irFile"].Value<string>());
+            var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + control["irFile"].Value<string>();
+            Debug.Console(1, "*************Attemting to load IR file: {0}***************", filePath);
+	        port.LoadIRDriver(filePath);
 
 	        return port;
 
@@ -149,7 +151,8 @@ namespace PepperDash.Essentials.Core
 	            return null;
 	        }
 
-	        var irDevice = new IrOutputPortController(config.Key + "-irController", GetIrOutputPort, config);
+            var postActivationFunc = new Func<DeviceConfig,IROutputPort> (GetIrOutputPort);
+	        var irDevice = new IrOutputPortController(config.Key + "-ir", postActivationFunc, config);
 
 	        return irDevice;
 	    }

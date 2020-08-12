@@ -49,6 +49,10 @@ namespace PepperDash.Essentials.Core
             AddPostActivationAction(() =>
             {
                 IrPort = postActivationFunc(config);
+                if (IrPort != null)
+                {
+                    DriverIsLoaded = true;
+                }
             });
 	    }
 
