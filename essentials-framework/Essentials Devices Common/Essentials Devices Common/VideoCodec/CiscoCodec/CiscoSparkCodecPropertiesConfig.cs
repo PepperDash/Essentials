@@ -31,6 +31,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         [JsonProperty("sharing")]
         public SharingProperties Sharing { get; set; }
 
+		[JsonProperty("externalSourceListEnabled")]
+		public bool ExternalSourceListEnabled { get; set; }
+
         /// <summary>
         /// Optionsal property to set the limit of any phonebook queries for directory or searching
         /// </summary>

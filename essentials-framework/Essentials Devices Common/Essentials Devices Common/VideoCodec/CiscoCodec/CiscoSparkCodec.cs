@@ -15,16 +15,16 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
+	public enum eExternalSourceType {camera, desktop, document_camera, mediaplayer, PC, whiteboard, other}
 
     public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
-        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets
+        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching
     {
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 
@@ -348,6 +348,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             CallHistory = new CodecCallHistory();
 
+			
             if (props.Favorites != null)
             {
                 CallFavorites = new CodecCallFavorites();
@@ -398,6 +399,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SetUpCameras();
 
 			CreateOsdSource();
+
+			if (props.ExternalSourceListEnabled != null)
+			{
+				ExternalSourceListEnabled = props.ExternalSourceListEnabled;
+			}
         }
 
         /// <summary>
@@ -472,7 +478,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Bookings" + Delimiter +
                 prefix + "/Event/CallDisconnect" + Delimiter + 
                 prefix + "/Event/Bookings" + Delimiter +
-                prefix + "/Event/CameraPresetListUpdated" + Delimiter;
+                prefix + "/Event/CameraPresetListUpdated" + Delimiter +
+				prefix + "/Event/UserInterface/Presentation/ExternalSource/Selected/SourceIdentifier" + Delimiter;
 
             return base.CustomActivate();
         }
@@ -629,6 +636,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         }
                 }
             }
+			//TODO JTA FInish Parsing for External Sources 
+			if (args.Text == "ExternalSource")
+			{
+				RunRouteAction("", "");
+			}
                 
         }
 
@@ -1802,9 +1814,57 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SendText(string.Format("xCommand Call FarEndControl RoomPreset Activate CallId: {0} PresetId: {1}", GetCallId(), preset));
         }
 
-    }
 
-    /// <summary>
+		#region IHasExternalSourceSwitching Members
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public bool ExternalSourceListEnabled
+		{
+			get;
+			private set; 
+		}
+
+		public void AddExternalSource(string connectorId, string name)
+		{
+			int id = 2;
+			if (connectorId.ToLower() == "hdmiin3")
+			{
+				id = 3;
+			}
+			SendText(string.Format("xCommand UserInterface Presentation ExternalSource Add ConnectorId: {0} SourceIdentifier: \"{1}\" Name: \"{2}\" Type: desktop", id, name, name));
+			Debug.Console(2, this, "Adding ExternalSource {0} {1}", connectorId, name);
+
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public void ClearExternalSources()
+		{
+			SendText("xCommand UserInterface Presentation ExternalSource RemoveAll");
+			
+		}
+
+
+		public Action<string, string> RunRouteAction { private get;  set; }
+				
+
+
+
+
+
+		#endregion
+		#region ExternalDevices 
+
+
+		
+		#endregion
+	}
+
+
+	/// <summary>
     /// Represents a codec command that might need to have a friendly label applied for UI feedback purposes
     /// </summary>
     public class CodecCommandWithLabel
