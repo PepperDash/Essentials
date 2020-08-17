@@ -228,9 +228,6 @@ namespace PepperDash.Essentials
 
                 if (VideoCodec == null)
                     throw new ArgumentNullException("codec cannot be null");
-
-
-				//todo Do the thing here JTA 
 				
                 AudioCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.AudioCodecKey) as
                     PepperDash.Essentials.Devices.Common.AudioCodec.AudioCodecBase;
