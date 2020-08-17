@@ -21,6 +21,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 	public enum eExternalSourceType {camera, desktop, document_camera, mediaplayer, PC, whiteboard, other}
+	public enum eExternalSourceMode {Ready, NotReady, Hiddon, Error} 
 
     public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
@@ -636,11 +637,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         }
                 }
             }
-			//TODO JTA FInish Parsing for External Sources 
-			if (args.Text == "ExternalSource")
-			{
-				RunRouteAction("", "");
-			}
+			
                 
         }
 
@@ -864,6 +861,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     else if (response.IndexOf("\"Bookings\":{") > -1 || response.IndexOf("\"Bookings\": {") > -1) // The list has changed, reload it
 					{
 						GetBookings(null);
+					}
+					
+					else if (response.IndexOf("\"UserInterface\":{") > -1 || response.IndexOf("\"UserInterface\": {") > -1) // External Source Trigger
+					{
+						CiscoCodecEvents.RootObject eventReceived = new CiscoCodecEvents.RootObject();
+                        JsonConvert.PopulateObject(response, eventReceived);
+						Debug.Console(2, this, "*** Got an External Source Selection {0} {1}", eventReceived, eventReceived.Event.UserInterface, eventReceived.Event.UserInterface.Presentation.ExternalSource.Selected.SourceIdentifier.Value);
+						RunRouteAction(eventReceived.Event.UserInterface.Presentation.ExternalSource.Selected.SourceIdentifier.Value, null);
 					}
                 }
                 else if (response.IndexOf("\"CommandResponse\":{") > -1 || response.IndexOf("\"CommandResponse\": {") > -1)
@@ -1818,7 +1823,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 		#region IHasExternalSourceSwitching Members
 
 		/// <summary>
-		/// 
+		/// Weather the Cisco supports External Source Lists or not 
 		/// </summary>
 		public bool ExternalSourceListEnabled
 		{
@@ -1826,20 +1831,37 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			private set; 
 		}
 
-		public void AddExternalSource(string connectorId, string name)
+		/// <summary>
+		/// Adds an external source to the Cisco 
+		/// </summary>
+		/// <param name="connectorId"></param>
+		/// <param name="key"></param>
+		/// <param name="name"></param>
+		public void AddExternalSource(string connectorId, string key, string name, eExternalSourceType type)
 		{
 			int id = 2;
 			if (connectorId.ToLower() == "hdmiin3")
 			{
 				id = 3;
 			}
-			SendText(string.Format("xCommand UserInterface Presentation ExternalSource Add ConnectorId: {0} SourceIdentifier: \"{1}\" Name: \"{2}\" Type: desktop", id, name, name));
+			SendText(string.Format("xCommand UserInterface Presentation ExternalSource Add ConnectorId: {0} SourceIdentifier: \"{1}\" Name: \"{2}\" Type: {3}", id, key, name, type.ToString()));
+			// SendText(string.Format("xCommand UserInterface Presentation ExternalSource State Set SourceIdentifier: \"{0}\" State: Ready", key));
 			Debug.Console(2, this, "Adding ExternalSource {0} {1}", connectorId, name);
 
 		}
 
+
 		/// <summary>
-		/// 
+		/// Sets the state of the External Source 
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="mode"></param>
+		public void SetExternalSourceState(string key, eExternalSourceMode mode)
+		{
+			SendText(string.Format("xCommand UserInterface Presentation ExternalSource State Set SourceIdentifier: \"{0}\" State: {1}", key, mode.ToString()));
+		}
+		/// <summary>
+		/// Clears all external sources on the codec
 		/// </summary>
 		public void ClearExternalSources()
 		{
@@ -1847,7 +1869,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			
 		}
 
-
+		/// <summary>
+		/// Action that will run when the External Source is selected. 
+		/// </summary>
 		public Action<string, string> RunRouteAction { private get;  set; }
 				
 

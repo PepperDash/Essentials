@@ -695,6 +695,10 @@ namespace PepperDash.Essentials
 				(room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
 		}
 
+
+		/// <summary>
+		/// Setup the external sources for the Cisco Touch 10 devices that support IHasExternalSourceSwitch
+		/// </summary>
 		private void SetCodecExternalSources()
 		{
 			
@@ -707,12 +711,13 @@ namespace PepperDash.Essentials
 				foreach (var kvp in srcList)
 				{
 					var srcConfig = kvp.Value;
-					Debug.Console(1, "**** KEY {0}", kvp.Key);
 					
 					if (kvp.Key != "codecOsd" && kvp.Key != "roomOff")
 					{
 
-						(VideoCodec as IHasExternalSourceSwitching).AddExternalSource(codecTieLine, srcConfig.PreferredName);
+						(VideoCodec as IHasExternalSourceSwitching).AddExternalSource(codecTieLine, kvp.Key, srcConfig.PreferredName, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceType.desktop);
+						(VideoCodec as IHasExternalSourceSwitching).SetExternalSourceState(kvp.Key, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceMode.Ready);
+
 
 					}
 				}
