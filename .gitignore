@@ -23,6 +23,7 @@ SIMPLSharpLogs/
 *.projectinfo
 essentials-framework/EssentialDMTestConfig/
 output/
+packages/
 
 PepperDashEssentials-0.0.0-buildType-test.zip
 ## Ignore Visual Studio temporary files, build results, and
