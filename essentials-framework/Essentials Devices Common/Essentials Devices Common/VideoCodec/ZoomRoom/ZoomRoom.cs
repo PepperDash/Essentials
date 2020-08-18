@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.CrestronThread;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -13,7 +14,6 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
@@ -171,6 +171,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             // The thread responsible for dequeuing and processing the messages
             ReceiveThread = new Thread((o) => ProcessQueue(), null);
+            ReceiveThread.Priority = Thread.eThreadPriority.MediumPriority;
 
             Communication = comm;
 
@@ -401,7 +402,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             // If the receive thread has for some reason stopped, this will restart it
             if (ReceiveThread.ThreadState != Thread.eThreadStates.ThreadRunning)
+            {
                 ReceiveThread.Start();
+            }
         }
 
 

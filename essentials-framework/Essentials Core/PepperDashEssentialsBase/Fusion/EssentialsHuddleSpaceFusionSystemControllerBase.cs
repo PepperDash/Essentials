@@ -167,13 +167,6 @@ namespace PepperDash.Essentials.Core.Fusion
                     ReadGuidFile(guidFilePath);
                 }
 
-                CreateSymbolAndBasicSigs(IpId);
-                SetUpSources();
-                SetUpCommunitcationMonitors();
-                SetUpDisplay();
-                SetUpError();
-                ExecuteCustomSteps();
-
                 if (Room.RoomOccupancy != null)
                 {
                     if (Room.OccupancyStatusProviderIsRemote)
@@ -184,10 +177,22 @@ namespace PepperDash.Essentials.Core.Fusion
                     }
                 }
 
-                // Make it so!   
-                FusionRVI.GenerateFileForAllFusionDevices();
+                
 
-                GenerateGuidFile(guidFilePath);
+                AddPostActivationAction(() =>
+                {
+                    CreateSymbolAndBasicSigs(IpId);
+                    SetUpSources();
+                    SetUpCommunitcationMonitors();
+                    SetUpDisplay();
+                    SetUpError();
+                    ExecuteCustomSteps();
+
+                    FusionRVI.GenerateFileForAllFusionDevices();
+
+                    GenerateGuidFile(guidFilePath);
+                });
+
             }
             catch (Exception e)
             {
