@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.Diagnostics;
@@ -104,26 +105,22 @@ namespace PepperDash.Essentials.Core.Monitoring
 
         private void ParseUptime(string response)
         {
-            try
-            {
-                var splitString = response.Trim().Split('\r', '\n');
+            var splitString = response.Trim().Split('\r', '\n');
 
-                var lastStartRaw = splitString[2];
+            var lastStartRaw = splitString.FirstOrDefault(o => o.Contains("started"));
+            var uptimeRaw = splitString.FirstOrDefault(o => o.Contains("running"));
+
+            if (!String.IsNullOrEmpty(lastStartRaw))
+            {
                 var lastStartIndex = lastStartRaw.IndexOf(':');
-
                 _lastStart = lastStartRaw.Substring(lastStartIndex + 1).Trim();
-
-                var uptimeRaw = splitString[0];
-
-                var forIndex = uptimeRaw.IndexOf("for", StringComparison.Ordinal);
-
-                //4 => "for " to get what's on the right
-                _uptime = uptimeRaw.Substring(forIndex + 4);
             }
-            catch (Exception e)
-            {
-                ErrorLog.Exception(String.Format("Exception unable to parse string '{1}'", response), e);
-            }
+
+            if (String.IsNullOrEmpty(uptimeRaw)) return;
+            var forIndex = uptimeRaw.IndexOf("for", StringComparison.Ordinal);
+
+            //4 => "for " to get what's on the right
+            _uptime = uptimeRaw.Substring(forIndex + 4);
         }
 
         private void CrestronEnvironmentOnEthernetEventHandler(EthernetEventArgs ethernetEventArgs)
