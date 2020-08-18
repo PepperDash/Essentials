@@ -39,32 +39,32 @@ namespace PepperDash.Essentials.Devices.Common
 
 		public void Up(bool pressRelease)
 		{
-			IrPort.PressRelease("+", pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Up, pressRelease);
 		}
 
 		public void Down(bool pressRelease)
 		{
-			IrPort.PressRelease("-", pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Down, pressRelease);
 		}
 
 		public void Left(bool pressRelease)
 		{
-			IrPort.PressRelease(IROutputStandardCommands.IROut_TRACK_MINUS, pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Left, pressRelease);
 		}
 
 		public void Right(bool pressRelease)
 		{
-			IrPort.PressRelease(IROutputStandardCommands.IROut_TRACK_PLUS, pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Right, pressRelease);
 		}
 
 		public void Select(bool pressRelease)
 		{
-			IrPort.PressRelease(IROutputStandardCommands.IROut_ENTER, pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Enter, pressRelease);
 		}
 
 		public void Menu(bool pressRelease)
 		{
-			IrPort.PressRelease("Menu", pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Menu, pressRelease);
 		}
 
 		public void Exit(bool pressRelease)
@@ -78,12 +78,12 @@ namespace PepperDash.Essentials.Devices.Common
 
 		public void Play(bool pressRelease)
 		{
-			IrPort.PressRelease("PLAY/PAUSE", pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.PlayPause, pressRelease);
 		}
 
 		public void Pause(bool pressRelease)
 		{
-			IrPort.PressRelease("PLAY/PAUSE", pressRelease);
+            IrPort.PressRelease(AppleTvIrCommands.PlayPause, pressRelease);
 		}
 
 		/// <summary>
@@ -190,4 +190,16 @@ namespace PepperDash.Essentials.Devices.Common
         }
     }
 
+    public static class AppleTvIrCommands
+    {
+        public const string Up = "UP_ARROW";
+        public const string Down = "DOWN_ARROW";
+        public const string Left = "LEFT_ARROW";
+        public const string Right = "RIGHT_ARROW";
+        public const string Enter = "SELECT";
+        public const string PlayPause = "PLAY_PAUSE";
+        public const string Rewind = "REWIND";
+        public const string Menu = "MENU";
+        public const string FastForward = "FASTFORWARD";
+    }
 }
