@@ -51,7 +51,19 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// The config name of the source list
         /// </summary>
-        public string SourceListKey { get; set; }
+		/// 
+		protected string _SourceListKey;
+        public virtual string SourceListKey {
+			get
+			{
+				return _SourceListKey;
+			}
+			set
+			{
+				_SourceListKey = value; 
+
+			}
+		}
 
         /// <summary>
         /// Timer used for informing the UIs of a shutdown

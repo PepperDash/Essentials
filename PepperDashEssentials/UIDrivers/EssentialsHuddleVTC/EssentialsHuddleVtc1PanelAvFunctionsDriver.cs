@@ -1047,12 +1047,15 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void SetupSourceList()
 		{
-				
+					
 			var inCall = CurrentRoom.InCallFeedback.BoolValue;
 			var config = ConfigReader.ConfigObject.SourceLists;
+			
+			
 			if (config.ContainsKey(_CurrentRoom.SourceListKey))
 			{
 				var srcList = config[_CurrentRoom.SourceListKey].OrderBy(kv => kv.Value.Order);
+				
 
 				// Setup sources list			
 				SourceStagingSrl.Clear();
@@ -1076,6 +1079,8 @@ namespace PepperDash.Essentials
 						b => { if (!b) UiSelectSource(routeKey); });
 					SourceStagingSrl.AddItem(item); // add to the SRL
 					item.RegisterForSourceChange(_CurrentRoom);
+					Debug.Console(1, "**** KEY {0}", kvp.Key);
+					
 				}
 				SourceStagingSrl.Count = (ushort)(i - 1);
 			}
