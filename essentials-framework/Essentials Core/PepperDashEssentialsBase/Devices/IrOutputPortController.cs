@@ -49,9 +49,22 @@ namespace PepperDash.Essentials.Core
             AddPostActivationAction(() =>
             {
                 IrPort = postActivationFunc(config);
-                if (IrPort != null)
+
+                if (IrPort == null)
                 {
-                    DriverIsLoaded = true;
+                    Debug.Console(0, this, "WARNING No valid IR Port assigned to controller. IR will not function");
+                    return;
+                }
+                
+                var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + config.Properties["control"]["irFile"].Value<string>();
+                Debug.Console(1, "*************Attemting to load IR file: {0}***************", filePath);
+
+                LoadDriver(filePath);
+                    
+                Debug.Console(2, this, "Available IR Commands in IR File {0}",IrPortUid);
+                foreach (var cmd in IrPort.AvailableIRCmds())
+                {
+                    Debug.Console(2, this, "{0}", cmd);
                 }
             });
 	    }
@@ -64,14 +77,15 @@ namespace PepperDash.Essentials.Core
 		/// <param name="path"></param>
 		public void LoadDriver(string path)
 		{
+            Debug.Console(2, this, "***Loading IR File***");
 			if (string.IsNullOrEmpty(path)) path = DriverFilepath;
-			try
-			{
-				IrPortUid = IrPort.LoadIRDriver(path);
-				DriverFilepath = path;
-				StandardIrPulseTime = 200;
-				DriverIsLoaded = true;
-			}
+	        try
+	        {
+	            IrPortUid = IrPort.LoadIRDriver(path);
+	            DriverFilepath = path;
+	            StandardIrPulseTime = 200;
+	            DriverIsLoaded = true;
+	        }
 			catch
 			{
 				DriverIsLoaded = false;

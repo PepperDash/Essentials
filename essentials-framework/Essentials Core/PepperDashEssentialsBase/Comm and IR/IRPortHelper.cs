@@ -134,12 +134,9 @@ namespace PepperDash.Essentials.Core
 
 	        var port = irDev.IROutputPorts[portNum];
 
-            var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + control["irFile"].Value<string>();
-            Debug.Console(1, "*************Attemting to load IR file: {0}***************", filePath);
-	        port.LoadIRDriver(filePath);
+            
 
 	        return port;
-
 	    }
 
 	    public static IrOutputPortController GetIrOutputPortController(DeviceConfig config)
