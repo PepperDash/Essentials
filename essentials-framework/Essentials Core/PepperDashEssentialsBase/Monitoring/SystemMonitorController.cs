@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.Diagnostics;
@@ -106,13 +107,16 @@ namespace PepperDash.Essentials.Core.Monitoring
         {
             var splitString = response.Trim().Split('\r', '\n');
 
-            var lastStartRaw = splitString[2];
-            var lastStartIndex = lastStartRaw.IndexOf(':');
+            var lastStartRaw = splitString.FirstOrDefault(o => o.Contains("started"));
+            var uptimeRaw = splitString.FirstOrDefault(o => o.Contains("running"));
 
-            _lastStart = lastStartRaw.Substring(lastStartIndex + 1).Trim();
+            if (!String.IsNullOrEmpty(lastStartRaw))
+            {
+                var lastStartIndex = lastStartRaw.IndexOf(':');
+                _lastStart = lastStartRaw.Substring(lastStartIndex + 1).Trim();
+            }
 
-            var uptimeRaw = splitString[0];
-
+            if (String.IsNullOrEmpty(uptimeRaw)) return;
             var forIndex = uptimeRaw.IndexOf("for", StringComparison.Ordinal);
 
             //4 => "for " to get what's on the right
