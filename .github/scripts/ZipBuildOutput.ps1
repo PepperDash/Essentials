@@ -10,7 +10,7 @@ Get-ChildItem ($destination)
 $exclusions = @(git submodule foreach --quiet 'echo $name')
 # Trying to get any .json schema files (not currently working)
 # Gets any files with the listed extensions.
-Get-ChildItem -recurse -Path "$($Env:GITHUB_WORKSPACE)" -include "*.clz", "*.cpz", "*.cplz", "*.dll", "*.nuspec" | ForEach-Object {
+Get-ChildItem -recurse -Path "$($Env:GITHUB_WORKSPACE)" -include "*.clz", "*.cpz", "*.cplz", "*.dll" | ForEach-Object {
   $allowed = $true;
   # Exclude any files in submodules
   foreach ($exclude in $exclusions) {
