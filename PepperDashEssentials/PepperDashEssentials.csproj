@@ -73,7 +73,7 @@
     <Reference Include="mscorlib" />
     <Reference Include="PepperDash_Core, Version=1.0.26.30384, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\essentials-framework\pepperdashcore-builds\PepperDash_Core.dll</HintPath>
+      <HintPath>..\packages\PepperDashCore\lib\net35\PepperDash_Core.dll</HintPath>
     </Reference>
     <Reference Include="PepperDash_Essentials_DM, Version=1.0.0.19343, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
