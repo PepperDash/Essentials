@@ -91,6 +91,9 @@ namespace PepperDash.Essentials
             }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
 
+            CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
+                "getroutingports", "Reports all routing ports, if any.  Requires a device key", ConsoleAccessLevelEnum.AccessOperator);
+
             if (!Debug.DoNotLoadOnNextBoot)
             {
                 GoWithLoad();
