@@ -44,6 +44,8 @@ jobs:
         run: |
           Write-Output ${{ env.VERSION }}
           ./.github/scripts/UpdateAssemblyVersion.ps1 ${{ env.VERSION }}
+      - name: restore Nuget Packages
+        run: nuget install .\packages.config -OutputDirectory .\packages -ExcludeVersion
       # Login to Docker
       - name: Login to Docker
         uses: azure/docker-login@v1
