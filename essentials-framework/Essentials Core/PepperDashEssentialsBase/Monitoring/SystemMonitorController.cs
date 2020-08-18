@@ -104,19 +104,26 @@ namespace PepperDash.Essentials.Core.Monitoring
 
         private void ParseUptime(string response)
         {
-            var splitString = response.Trim().Split('\r', '\n');
+            try
+            {
+                var splitString = response.Trim().Split('\r', '\n');
 
-            var lastStartRaw = splitString[2];
-            var lastStartIndex = lastStartRaw.IndexOf(':');
+                var lastStartRaw = splitString[2];
+                var lastStartIndex = lastStartRaw.IndexOf(':');
 
-            _lastStart = lastStartRaw.Substring(lastStartIndex + 1).Trim();
+                _lastStart = lastStartRaw.Substring(lastStartIndex + 1).Trim();
 
-            var uptimeRaw = splitString[0];
+                var uptimeRaw = splitString[0];
 
-            var forIndex = uptimeRaw.IndexOf("for", StringComparison.Ordinal);
+                var forIndex = uptimeRaw.IndexOf("for", StringComparison.Ordinal);
 
-            //4 => "for " to get what's on the right
-            _uptime = uptimeRaw.Substring(forIndex + 4);
+                //4 => "for " to get what's on the right
+                _uptime = uptimeRaw.Substring(forIndex + 4);
+            }
+            catch (Exception e)
+            {
+                ErrorLog.Exception(String.Format("Exception unable to parse string '{1}'", response), e);
+            }
         }
 
         private void CrestronEnvironmentOnEthernetEventHandler(EthernetEventArgs ethernetEventArgs)
