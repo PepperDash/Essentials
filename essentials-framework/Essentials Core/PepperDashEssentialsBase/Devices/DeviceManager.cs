@@ -340,6 +340,35 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
+        /// Prints a list of routing inputs and outputs by device key.
+        /// </summary>
+        /// <param name="s">Device key from which to report data</param>
+	    public static void GetRoutingPorts(string s)
+	    {
+	        var device = GetDeviceForKey(s);
+
+	        if (device == null) return;
+	        var inputPorts = (device as IRoutingInputsOutputs).InputPorts;
+	        var outputPorts = (device as IRoutingInputsOutputs).OutputPorts;
+	        if (inputPorts != null)
+	        {
+	            Debug.Console(0, "Device {0} has {1} Input Ports:", s, inputPorts.Count);
+	            foreach (var routingInputPort in inputPorts)
+	            {
+	                Debug.Console(0, "{0}", routingInputPort.Key);
+	            }
+	        }
+	        if (outputPorts != null)
+	        {
+	            Debug.Console(0, "Device {0} has {1} Output Ports:", s, outputPorts.Count);
+	            foreach (var routingOutputPort in outputPorts)
+	            {
+	                Debug.Console(0, "{0}", routingOutputPort.Key);
+	            }
+	        }
+	    }
+
+        /// <summary>
         /// Attempts to set the debug level of a device
         /// </summary>
         /// <param name="s"></param>
