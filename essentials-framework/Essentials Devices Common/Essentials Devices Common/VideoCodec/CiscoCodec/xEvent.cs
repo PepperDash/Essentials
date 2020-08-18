@@ -127,10 +127,35 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public RequestedURI RequestedURI { get; set; }
             public PeopleCountAverage PeopleCountAverage { get; set; }
         }
-
+		public class UserInterface
+		{
+			public string id { get; set; }
+			public Presentation Presentation { get; set; }
+		}
+		public class Presentation
+		{
+			public string id { get; set; }
+			public ExternalSource ExternalSource { get; set; }
+		}
+		public class ExternalSource
+		{
+			public string id { get; set; }
+			public Selected Selected { get; set; }
+		}
+		public class Selected
+		{
+			public string id { get; set; }
+			public SourceIdentifier SourceIdentifier { get; set; }
+		}
+		public class SourceIdentifier
+		{
+			public string id { get; set; }
+			public string Value { get; set; }
+		}
         public class Event
         {
             public CallDisconnect CallDisconnect { get; set; }
+			public UserInterface UserInterface { get; set; }
         }
 
         public class RootObject

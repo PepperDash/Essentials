@@ -146,6 +146,10 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint RoomPhoneText = 3904;
         /// <summary>
+        /// 3905 - Video address/number for room header
+        /// </summary>
+        public const uint RoomVideoAddressText = 3905;
+        /// <summary>
         /// 3906 - The separator for verbose-header text on addresses
         /// </summary>
         public const uint RoomAddressPipeText = 3906;
@@ -153,6 +157,14 @@ namespace PepperDash.Essentials
 		/// 3907 - The user code for mobile control
 		/// </summary>
 		public const uint RoomUserCode = 3907;
+        /// <summary>
+        /// 3908 - The url for the mobile control server
+        /// </summary>
+        public const uint RoomMcUrl = 3908;
+        /// <summary>
+        /// 3909 - The url for the mobile control QR Code image
+        /// </summary>
+        public const uint RoomMcQrCodeUrl = 3909;
         /// <summary>
         /// 3911
         /// </summary>
@@ -189,11 +201,18 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 3923
         /// </summary>
-        public const uint LogoUrl = 3923;
+        public const uint LogoUrlLightBkgnd = 3923;
+
+
         /// <summary>
         /// 3924 - the text on the "call help desk" button
         /// </summary>
         public const uint HelpPageCallButtonText = 3924;
+
+        /// <summary>
+        /// 3925
+        /// </summary>
+        public const uint LogoUrlDarkBkgnd = 3925;
 
 		/// <summary>
 		/// 3951
