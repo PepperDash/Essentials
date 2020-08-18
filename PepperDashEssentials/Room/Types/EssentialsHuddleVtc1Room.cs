@@ -59,13 +59,8 @@ namespace PepperDash.Essentials
 			set
 			{
 				_SourceListKey = value;
-				if(VideoCodec is IHasExternalSourceSwitching) 
-				{
-					if((VideoCodec as IHasExternalSourceSwitching).ExternalSourceListEnabled)
-					{
-						SetCodecExternalSources();
-					}
-				}
+				SetCodecExternalSources();
+				
 			}
 		}
 
@@ -698,28 +693,35 @@ namespace PepperDash.Essentials
 		/// </summary>
 		private void SetCodecExternalSources()
 		{
-			
-			string codecTieLine = "";
-			codecTieLine = ConfigReader.ConfigObject.TieLines.SingleOrDefault(x => x.DestinationKey == VideoCodec.Key).DestinationPort;
-			(VideoCodec as IHasExternalSourceSwitching).ClearExternalSources();
-			(VideoCodec as IHasExternalSourceSwitching).RunRouteAction = RunRouteAction;
-			var srcList =  ConfigReader.ConfigObject.SourceLists.SingleOrDefault(x => x.Key == SourceListKey).Value.OrderBy(kv => kv.Value.Order);;
+			var videoCodecWithExternalSwitching = VideoCodec as IHasExternalSourceSwitching;
+
+			if (videoCodecWithExternalSwitching == null)
+			{
+				return;
+			}
+			else
+			{
+				string codecTieLine = "";
+				codecTieLine = ConfigReader.ConfigObject.TieLines.SingleOrDefault(x => x.DestinationKey == VideoCodec.Key).DestinationPort;
+				videoCodecWithExternalSwitching.ClearExternalSources();
+				videoCodecWithExternalSwitching.RunRouteAction = RunRouteAction;
+				var srcList = ConfigReader.ConfigObject.SourceLists.SingleOrDefault(x => x.Key == SourceListKey).Value.OrderBy(kv => kv.Value.Order); ;
 
 				foreach (var kvp in srcList)
 				{
 					var srcConfig = kvp.Value;
-					
-					if (kvp.Key != "codecOsd" && kvp.Key != "roomOff")
+
+					if (kvp.Key != DefaultCodecRouteString && kvp.Key != "roomOff")
 					{
 
-						(VideoCodec as IHasExternalSourceSwitching).AddExternalSource(codecTieLine, kvp.Key, srcConfig.PreferredName, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceType.desktop);
-						(VideoCodec as IHasExternalSourceSwitching).SetExternalSourceState(kvp.Key, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceMode.Ready);
+						videoCodecWithExternalSwitching.AddExternalSource(codecTieLine, kvp.Key, srcConfig.PreferredName, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceType.desktop);
+						videoCodecWithExternalSwitching.SetExternalSourceState(kvp.Key, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceMode.Ready);
 
 
 					}
 				}
 			}
-			
+		}
 		
         #region IPrivacy Members
 

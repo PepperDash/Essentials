@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 	public enum eExternalSourceType {camera, desktop, document_camera, mediaplayer, PC, whiteboard, other}
-	public enum eExternalSourceMode {Ready, NotReady, Hiddon, Error} 
+	public enum eExternalSourceMode {Ready, NotReady, Hidden, Error} 
 
     public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
@@ -868,7 +868,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 						CiscoCodecEvents.RootObject eventReceived = new CiscoCodecEvents.RootObject();
                         JsonConvert.PopulateObject(response, eventReceived);
 						Debug.Console(2, this, "*** Got an External Source Selection {0} {1}", eventReceived, eventReceived.Event.UserInterface, eventReceived.Event.UserInterface.Presentation.ExternalSource.Selected.SourceIdentifier.Value);
-						RunRouteAction(eventReceived.Event.UserInterface.Presentation.ExternalSource.Selected.SourceIdentifier.Value, null);
+
+						if (RunRouteAction != null)
+						{
+							RunRouteAction(eventReceived.Event.UserInterface.Presentation.ExternalSource.Selected.SourceIdentifier.Value, null);
+						}
 					}
                 }
                 else if (response.IndexOf("\"CommandResponse\":{") > -1 || response.IndexOf("\"CommandResponse\": {") > -1)
