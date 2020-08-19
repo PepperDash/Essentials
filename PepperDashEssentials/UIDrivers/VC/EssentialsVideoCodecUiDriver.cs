@@ -192,20 +192,74 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// <param name="e"></param>
         void Codec_IsReady()
         {
-            string roomNumberSipUri = "";
-
-            if (!string.IsNullOrEmpty(Codec.CodecInfo.SipUri)) // If both values are present, format the string with a pipe divider
-                roomNumberSipUri = string.Format("{0} | {1}", GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber), Codec.CodecInfo.SipUri);
-            else                                               // If only one value present, just show the phone number
-                roomNumberSipUri = Codec.CodecInfo.SipPhoneNumber;
-
-            if(string.IsNullOrEmpty(roomNumberSipUri))
-                roomNumberSipUri = string.Format("{0} | {1}", Codec.CodecInfo.E164Alias, Codec.CodecInfo.H323Id);
-
-            TriList.SetString(UIStringJoin.RoomPhoneText, roomNumberSipUri);
+            SetupAddresses();
 
             if(HeaderDriver.HeaderButtonsAreSetUp)
                 HeaderDriver.ComputeHeaderCallStatus(Codec);
+        }
+
+        void SetupAddresses()
+        {
+            string roomContactNumbers = "";
+            string roomPhoneNumber = "";
+            string roomVideoAddress = "";
+
+
+            Debug.Console(1,
+                @"
+                    Codec.CodecInfo.IpAddress: {0}
+                    Codec.CodecInfo.SipUri: {1}
+                    Codec.CodecInfo.SipPhoneNumber: {2}
+                    Codec.CodecInfo.E164Alias: {3}
+                    Codec.CodecInfo.H323Id: {4}
+                 ", Codec.CodecInfo.IpAddress, Codec.CodecInfo.SipUri, Codec.CodecInfo.SipPhoneNumber, Codec.CodecInfo.E164Alias, Codec.CodecInfo.H323Id);
+
+            // Populate phone number
+            if (!string.IsNullOrEmpty(Codec.CodecInfo.SipUri)) // If both values are present, format the string with a pipe divider
+            {
+                roomPhoneNumber = Codec.CodecInfo.SipUri;
+            }
+            else if (!string.IsNullOrEmpty(Codec.CodecInfo.SipPhoneNumber))   // If only one value present, just show the phone number
+            {
+                roomPhoneNumber = GetFormattedPhoneNumber(Codec.CodecInfo.SipPhoneNumber);
+            }
+
+            // Populate video number
+            if (!string.IsNullOrEmpty(Codec.CodecInfo.IpAddress))
+            {
+                roomVideoAddress = Codec.CodecInfo.IpAddress;
+            }
+            else if (!string.IsNullOrEmpty(Codec.CodecInfo.E164Alias))
+            {
+                roomVideoAddress = Codec.CodecInfo.E164Alias;
+            }
+            else if (!string.IsNullOrEmpty(Codec.CodecInfo.H323Id))
+            {
+                roomVideoAddress = Codec.CodecInfo.H323Id;
+            }
+
+            Debug.Console(1,
+            @" Room Contact Numbers:
+               Phone Number: {0}
+               Video Number: {1}
+            ", roomPhoneNumber, roomVideoAddress);
+
+            if (!string.IsNullOrEmpty(roomPhoneNumber) && !string.IsNullOrEmpty(roomVideoAddress))
+            {
+                roomContactNumbers = string.Format("{0} | {1}", roomPhoneNumber, roomVideoAddress);
+            }
+            else if (!string.IsNullOrEmpty(roomPhoneNumber))
+            {
+                roomContactNumbers = roomPhoneNumber;
+            }
+            else if (!string.IsNullOrEmpty(roomVideoAddress))
+            {
+                roomContactNumbers = roomVideoAddress;
+            }
+
+            TriList.SetString(UIStringJoin.RoomAddressPipeText, roomContactNumbers);
+            TriList.SetString(UIStringJoin.RoomPhoneText, roomPhoneNumber);
+            TriList.SetString(UIStringJoin.RoomVideoAddressText, roomVideoAddress);
         }
 
         /// <summary>
@@ -337,6 +391,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 icon = "Camera";
                 msg = string.Format("Incoming video call from: {0}", call.Name);
             }
+
+            if (Parent.PopupInterlock.IsShown)
+            {
+                if (Parent.PopupInterlock.CurrentJoin == UIBoolJoin.MCScreenSaverVisible)
+                {
+                    Parent.PopupInterlock.HideAndClear();
+                }
+            }
+
             IncomingCallModal.PresentModalDialog(2, "Incoming Call", icon, msg,
                 "Ignore", "Accept", false, false, b =>
                     {

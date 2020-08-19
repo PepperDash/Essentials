@@ -621,7 +621,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 15030 Visibility for room data popup
         /// </summary>
-        public const uint RoomHeaderPageVisible = 15030;
+        public const uint RoomHeaderInfoPageVisible = 15030;
         /// <summary>
         /// 15031
         /// </summary>
@@ -802,6 +802,47 @@ namespace PepperDash.Essentials
         /// 15091
         /// </summary>
 		public const uint SetupFullDistrib = 15091;
+
+        /// <summary>
+        /// 15092
+        /// </summary>
+        public const uint StartMCPageVisible = 15092;
+
+
+        /// <summary>
+        /// 15093
+        /// </summary>
+        public const uint RoomHeaderInfoMCPageVisible = 15093;
+
+        /// <summary>
+        /// 15094
+        /// </summary>
+        public const uint MCScreenSaverVisible = 15094;
+
+        /// <summary>
+        /// 15095
+        /// </summary>
+        public const uint MCScreenSaverPosition1Visible = 15095;
+
+        /// <summary>
+        /// 15096
+        /// </summary>
+        public const uint MCScreenSaverPosition2Visible = 15096;
+
+        /// <summary>
+        /// 15097
+        /// </summary>
+        public const uint MCScreenSaverPosition3Visible = 15097;
+
+        /// <summary>
+        /// 15098
+        /// </summary>
+        public const uint MCScreenSaverPosition4Visible = 15098;
+
+        /// <summary>
+        /// 15099
+        /// </summary>
+        public const uint MCScreenSaverClosePress = 15099;
 
         // PIN dialogs ************************************
 
