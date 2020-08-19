@@ -67,7 +67,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="PepperDash_Core, Version=1.0.26.30384, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PepperDash_Core, Version=1.0.41.31808, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\packages\PepperDashCore\lib\net35\PepperDash_Core.dll</HintPath>
     </Reference>
