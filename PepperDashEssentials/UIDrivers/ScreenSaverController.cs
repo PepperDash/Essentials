@@ -14,6 +14,13 @@ namespace PepperDash.Essentials
     /// </summary>
     public class ScreenSaverController : PanelDriverBase
     {
+
+        /// <summary>
+        /// The parent driver for this
+        /// </summary>
+        EssentialsPanelMainInterfaceDriver Parent;
+
+
         CTimer PositionTimer;
 
         uint PositionTimeoutMs;
@@ -25,36 +32,28 @@ namespace PepperDash.Essentials
         public ScreenSaverController(EssentialsPanelMainInterfaceDriver parent, CrestronTouchpanelPropertiesConfig config)
             : base(parent.TriList)
         {
+            Parent = parent;
+
             PositionTimeoutMs = config.ScreenSaverMovePositionIntervalMs;
 
             TriList.SetSigFalseAction(UIBoolJoin.MCScreenSaverClosePress, () => this.Hide());
 
-            PositionJoins = new List<uint>() 
-                { UIBoolJoin.MCScreenSaverPosition1Visible, UIBoolJoin.MCScreenSaverPosition2Visible, UIBoolJoin.MCScreenSaverPosition3Visible, UIBoolJoin.MCScreenSaverPosition4Visible };
-
-            CrestronConsole.AddNewConsoleCommand((o) => Show(), "showscreensaver", "Shows Panel Screensaver", ConsoleAccessLevelEnum.AccessOperator);
         }
 
         public override void Show()
         {
             TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, true);
+            Parent.AvDriver.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MCScreenSaverVisible);
+            //TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, true);
 
             CurrentPositionIndex = 0;
             SetCurrentPosition();
-            StartPositionTimer();
-
-            base.Show();
-        }
-
-        public override void Hide()
-        {
-            PositionTimer.Stop();
-            PositionTimer.Dispose();
-            PositionTimer = null;
 
             ClearAllPositions();
 
             TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, false);
+            Parent.AvDriver.PopupInterlock.HideAndClear();
+            //TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, false);
 
             base.Hide();
         }
