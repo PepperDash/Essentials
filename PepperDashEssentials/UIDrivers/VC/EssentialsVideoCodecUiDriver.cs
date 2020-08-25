@@ -391,6 +391,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 icon = "Camera";
                 msg = string.Format("Incoming video call from: {0}", call.Name);
             }
+
+            if (Parent.PopupInterlock.IsShown)
+            {
+                if (Parent.PopupInterlock.CurrentJoin == UIBoolJoin.MCScreenSaverVisible)
+                {
+                    Parent.PopupInterlock.HideAndClear();
+                }
+            }
+
             IncomingCallModal.PresentModalDialog(2, "Incoming Call", icon, msg,
                 "Ignore", "Accept", false, false, b =>
                     {

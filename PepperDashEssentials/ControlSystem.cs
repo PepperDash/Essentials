@@ -91,6 +91,9 @@ namespace PepperDash.Essentials
             }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
 
+            CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
+                "getroutingports", "Reports all routing ports, if any.  Requires a device key", ConsoleAccessLevelEnum.AccessOperator);
+
             if (!Debug.DoNotLoadOnNextBoot)
             {
                 GoWithLoad();
@@ -440,7 +443,7 @@ namespace PepperDash.Essentials
         {
             if (ConfigReader.ConfigObject.Rooms == null)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Warning, "WARNING: Configuration contains no rooms");
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Configuration contains no rooms - Is this intentional?  This may be a valid configuration.");
                 return;
             }
 
@@ -488,7 +491,7 @@ namespace PepperDash.Essentials
 
                 }
                 else
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create room from config, key '{0}'", roomConfig.Key);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Cannot create room from config, key '{0}' - Is this intentional?  This may be a valid configuration.", roomConfig.Key);
             }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");

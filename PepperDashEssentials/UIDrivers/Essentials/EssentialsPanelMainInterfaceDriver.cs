@@ -26,7 +26,9 @@ namespace PepperDash.Essentials
 
 		public PanelDriverBase CurrentChildDriver { get; private set; }
 
-        public ScreenSaverController ScreenSaverController { get; set; } 
+        public ScreenSaverController ScreenSaverController { get; set; }
+
+	    private readonly long _timeoutMs;
 
 		CrestronTouchpanelPropertiesConfig Config;
 
@@ -41,38 +43,51 @@ namespace PepperDash.Essentials
 		{
 			Config = config;
 
+            _timeoutMs = Config.ScreenSaverTimeoutMin * 60 * 1000;
+
             var tsx52or60 = trilist as Tswx52ButtonVoiceControl;
 
             if (tsx52or60 != null)
             {
+                tsx52or60.ExtenderTouchDetectionReservedSigs.Use();
                 tsx52or60.ExtenderTouchDetectionReservedSigs.DeviceExtenderSigChange += ExtenderTouchDetectionReservedSigs_DeviceExtenderSigChange;
+                tsx52or60.ExtenderTouchDetectionReservedSigs.Time.UShortValue = 1;
+                ManageInactivityTimer();
+
             }
             else
             {
                 var tswx70 = trilist as TswX70Base;
                 if (tswx70 != null)
                 {
+                    tswx70.ExtenderTouchDetectionReservedSigs.Use();
                     tswx70.ExtenderTouchDetectionReservedSigs.DeviceExtenderSigChange += ExtenderTouchDetectionReservedSigs_DeviceExtenderSigChange;
+                    tswx70.ExtenderTouchDetectionReservedSigs.Time.UShortValue = 1;
+                    ManageInactivityTimer();
                 }
             }
 		}
 
         void ExtenderTouchDetectionReservedSigs_DeviceExtenderSigChange(Crestron.SimplSharpPro.DeviceExtender currentDeviceExtender, Crestron.SimplSharpPro.SigEventArgs args)
         {
-            var timeoutMs = Config.ScreenSaverTimeoutMin * 60 * 1000;
 
             if (args.Sig.BoolValue)
             {
-                if (InactivityTimer != null)
-                {
-                    InactivityTimer.Reset(timeoutMs);
-                }
-                else
-                {
-                    InactivityTimer = new CTimer((o) => InactivityTimerExpired(), timeoutMs);
-                }
+                ManageInactivityTimer();
             }
         }
+
+	    private void ManageInactivityTimer()
+	    {
+            if (InactivityTimer != null)
+            {
+                InactivityTimer.Reset(_timeoutMs);
+            }
+            else
+            {
+                InactivityTimer = new CTimer((o) => InactivityTimerExpired(), _timeoutMs);
+            }
+	    }
 
         void InactivityTimerExpired()
         {
