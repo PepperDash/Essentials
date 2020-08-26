@@ -36,8 +36,13 @@ namespace PepperDash.Essentials
 
             PositionTimeoutMs = config.ScreenSaverMovePositionIntervalMs;
 
-            TriList.SetSigFalseAction(UIBoolJoin.MCScreenSaverClosePress, Hide);
+            PositionJoins = new List<uint>() { UIBoolJoin.MCScreenSaverPosition1Visible, UIBoolJoin.MCScreenSaverPosition2Visible, UIBoolJoin.MCScreenSaverPosition3Visible, UIBoolJoin.MCScreenSaverPosition4Visible };
 
+            var cmdName = String.Format("shwscrsvr-{0}", config.IpId);
+
+            CrestronConsole.AddNewConsoleCommand((o) => Show(), cmdName, "Shows Panel Screensaver", ConsoleAccessLevelEnum.AccessOperator);
+
+            TriList.SetSigFalseAction(UIBoolJoin.MCScreenSaverClosePress, Hide);
         }
 
         public override void Show()
@@ -53,9 +58,12 @@ namespace PepperDash.Essentials
 
         public override void Hide()
         {
-            PositionTimer.Stop();
-            PositionTimer.Dispose();
-            PositionTimer = null;
+            if (PositionTimer != null)
+            {
+                PositionTimer.Stop();
+                PositionTimer.Dispose();
+                PositionTimer = null;
+            }
 
             ClearAllPositions();
 
