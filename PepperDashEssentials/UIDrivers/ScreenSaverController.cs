@@ -18,7 +18,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// The parent driver for this
         /// </summary>
-        EssentialsPanelMainInterfaceDriver Parent;
+        private readonly EssentialsPanelMainInterfaceDriver _parent;
 
 
         CTimer PositionTimer;
@@ -32,33 +32,37 @@ namespace PepperDash.Essentials
         public ScreenSaverController(EssentialsPanelMainInterfaceDriver parent, CrestronTouchpanelPropertiesConfig config)
             : base(parent.TriList)
         {
-            Parent = parent;
+            _parent = parent;
 
             PositionTimeoutMs = config.ScreenSaverMovePositionIntervalMs;
 
-            TriList.SetSigFalseAction(UIBoolJoin.MCScreenSaverClosePress, () => this.Hide());
+            TriList.SetSigFalseAction(UIBoolJoin.MCScreenSaverClosePress, Hide);
 
         }
 
         public override void Show()
         {
-            TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, true);
-            Parent.AvDriver.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MCScreenSaverVisible);
-            //TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, true);
+            _parent.AvDriver.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MCScreenSaverVisible);
 
             CurrentPositionIndex = 0;
             SetCurrentPosition();
+            StartPositionTimer();
+
+            base.Show();
+        }
+
+        public override void Hide()
+        {
+            PositionTimer.Stop();
+            PositionTimer.Dispose();
+            PositionTimer = null;
 
             ClearAllPositions();
 
-            TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, false);
-            Parent.AvDriver.PopupInterlock.HideAndClear();
-            //TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, false);
+            _parent.AvDriver.PopupInterlock.HideAndClear();
 
             base.Hide();
         }
-
-
 
         void StartPositionTimer()
         {
