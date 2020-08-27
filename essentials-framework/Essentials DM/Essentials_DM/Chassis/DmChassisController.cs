@@ -361,11 +361,11 @@ namespace PepperDash.Essentials.DM
                                 if (PropertiesConfig.InputSlotSupportsHdcp2[tempX])
                                 {
                                     InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
-                                    return (int)(inputCard.Card as Dmc4kCBase).DmInput.HdcpReceiveCapability;
+                                    return (int)(inputCard.Card as Dmc4kHdDspBase).HdmiInput.HdcpReceiveCapability;
                                 }
 
                                 InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
-                                if ((inputCard.Card as Dmc4kCBase).DmInput.HdcpSupportOnFeedback.BoolValue)
+                                if ((inputCard.Card as Dmc4kHdDspBase).HdmiInput.HdcpSupportOnFeedback.BoolValue)
                                     return 1;
                                 return 0;
                             }
