@@ -1210,8 +1210,8 @@ namespace PepperDash.Essentials.DM
 
             var hdmiInPortWCec = port as HdmiInputWithCEC;
             
- 
-            SetHdcpStateAction(true, hdmiInPortWCec, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
+            
+            SetHdcpStateAction(PropertiesConfig.InputSlotSupportsHdcp2[ioSlot], hdmiInPortWCec, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
             
 
             InputCardHdcpStateFeedbacks[ioSlot].LinkInputSig(
@@ -1500,10 +1500,12 @@ namespace PepperDash.Essentials.DM
                     {
                         if (s == 0)
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpSupport to off", join, s); 
                             port.HdcpSupportOff();
                         }
                         else if (s > 0)
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpSupport to on", join, s); 
                             port.HdcpSupportOn();
                         }
                     });
@@ -1513,6 +1515,7 @@ namespace PepperDash.Essentials.DM
                 trilist.SetUShortSigAction(join,
                         u =>
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpReceiveCapability to: {2}", join, u, (eHdcpCapabilityType)u); 
                             port.HdcpReceiveCapability = (eHdcpCapabilityType)u;
                         });
             }
@@ -1527,10 +1530,12 @@ namespace PepperDash.Essentials.DM
                     {
                         if (s == 0)
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpSupport to off", join, s);
                             port.HdcpSupportOff();
                         }
                         else if (s > 0)
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpSupport to on", join, s);
                             port.HdcpSupportOn();
                         }
                     });
@@ -1540,6 +1545,7 @@ namespace PepperDash.Essentials.DM
                 trilist.SetUShortSigAction(join,
                         u =>
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpReceiveCapability to: {2}", join, u, (eHdcpCapabilityType)u);
                             port.HdcpCapability = (eHdcpCapabilityType)u;
                         });
             }
