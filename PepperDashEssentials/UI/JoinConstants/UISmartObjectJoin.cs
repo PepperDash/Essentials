@@ -33,6 +33,21 @@
 		/// </summary>
 		public const uint VCLayoutsList = 1205;
 
+        /// <summary>
+        /// 1206 VC Camera Mode horizontal list
+        /// </summary>
+        public const uint VCCameraMode = 1206;
+
+        /// <summary>
+        /// 1207 VC Camera Mode Dpad
+        /// </summary>
+        public const uint VCCameraDpad = 1207;
+
+        /// <summary>
+        /// 1207 VC Camera Mode Dpad
+        /// </summary>
+        public const uint VCCameraSelect = 1208;
+
 
         //******************************************************
         // General
