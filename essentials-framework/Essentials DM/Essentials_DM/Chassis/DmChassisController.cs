@@ -358,8 +358,16 @@ namespace PepperDash.Essentials.DM
                             }
                             if (inputCard.Card is Dmc4kHdDspBase)
                             {
-                                InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
-                                return (int)(inputCard.Card as Dmc4kHdDspBase).HdmiInput.HdcpReceiveCapability;
+                                if (PropertiesConfig.InputSlotSupportsHdcp2[tempX])
+                                {
+                                    InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
+                                    return (int)(inputCard.Card as Dmc4kCBase).DmInput.HdcpReceiveCapability;
+                                }
+
+                                InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+                                if ((inputCard.Card as Dmc4kCBase).DmInput.HdcpSupportOnFeedback.BoolValue)
+                                    return 1;
+                                return 0;
                             }
 
                             if (inputCard.Card is Dmc4kCBase)
