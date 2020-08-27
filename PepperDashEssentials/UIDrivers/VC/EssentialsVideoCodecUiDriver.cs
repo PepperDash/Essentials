@@ -64,6 +64,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
         SmartObjectDynamicList RecentCallsList;
 
 		SmartObjectDynamicList DirectoryList;
+
+        SmartObjectDPad CameraPtzPad;
+
+        SmartObjectDynamicList CameraModeList;
+
+        SmartObjectDynamicList CameraSelectList;
         
         BoolFeedback DirectoryBackButtonVisibleFeedback;
 
@@ -483,11 +489,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         void SetupCameraControls()
         {
+            CameraPtzPad = new SmartObjectDPad(TriList.SmartObjects[UISmartObjectJoin.VCCameraDpad], true);
+
             // If the codec supports camera auto or off, we need to show the mode selector subpage
             ShowCameraModeControls = Codec is IHasCameraAutoMode || Codec is IHasCameraOff;
 
             if (ShowCameraModeControls)
             {
+                CameraModeList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCCameraMode], true, 0);
+
                 VCControlsInterlock.StatusChanged += new EventHandler<StatusChangedEventArgs>(VCControlsInterlock_StatusChanged);
 
 
@@ -497,16 +507,18 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 if (codecAutoCameras != null)
                 {
+                    CameraModeList.SetItemButtonAction(1,(b) => codecAutoCameras.CameraAutoModeOn());
                     TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 1 Visible"].BoolValue = true;
-                    codecAutoCameras.CameraAutoModeIsOnFeedback.LinkInputSig(TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 1 Selected"]);
-                    TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanOutput["Item 3 Pressed"].SetSigFalseAction(
-                    () => codecAutoCameras.CameraAutoModeOn());
+                    codecAutoCameras.CameraAutoModeIsOnFeedback.LinkInputSig(CameraModeList.SmartObject.BooleanInput["Item 1 Selected"]);
+                    //TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanOutput["Item 1 Pressed"].SetSigFalseAction(
+                    //() => codecAutoCameras.CameraAutoModeOn());
 
 
                     codecAutoCameras.CameraAutoModeIsOnFeedback.OutputChange += (o, a) =>
                         {
                             if (a.BoolValue)
                             {
+                                SetCameraManualModeButtonFeedback(false);
                                 VCCameraControlModeInterlock.SetButDontShow(UIBoolJoin.VCCameraAutoVisible);
                             }
                             else
@@ -516,18 +528,26 @@ namespace PepperDash.Essentials.UIDrivers.VC
                         };
                 }
 
+                // Manual button always visible
+                CameraModeList.SetItemButtonAction(2, (b) => ShowCameraManualMode());
+
+                TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 2 Visible"].BoolValue = true;
+                //TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanOutput["Item 2 Pressed"].SetSigFalseAction(
+                //    () => ShowCameraManualMode());
+
                 if (codecOffCameras != null)
                 {
                     TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 3 Visible"].BoolValue = true;
-                    codecOffCameras.CameraIsOffFeedback.LinkInputSig(TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 3 Selected"]);
-                    TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanOutput["Item 3 Pressed"].SetSigFalseAction(
-                        () => codecOffCameras.CameraOff());
-
+                    codecOffCameras.CameraIsOffFeedback.LinkInputSig(CameraModeList.SmartObject.BooleanInput["Item 3 Selected"]);
+                    CameraModeList.SetItemButtonAction(3, (b) => codecOffCameras.CameraOff());
+                    //TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanOutput["Item 3 Pressed"].SetSigFalseAction(
+                    //    () => codecOffCameras.CameraOff());
 
                     codecOffCameras.CameraIsOffFeedback.OutputChange += (o, a) =>
                         {
                             if (a.BoolValue)
                             {
+                                SetCameraManualModeButtonFeedback(false);
                                 VCCameraControlModeInterlock.SetButDontShow(UIBoolJoin.VCCameraAutoVisible);
                             }
                             else
@@ -537,12 +557,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                         };
                 }
-
-
-                // Manual button always visible
-                TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 2 Visible"].BoolValue = true;
-                TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanOutput["Item 2 Pressed"].SetSigFalseAction(
-                    () => ShowCameraManualMode());
             }
 
             var camerasCodec = Codec as IHasCameras;
@@ -564,20 +578,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 MapCameraActions();
             }
 
-            var presetsCodec = Codec as IHasCodecRoomPresets;
-            if (presetsCodec != null)
-            {
-                uint holdTime = 5000;
-                presetsCodec.CodecRoomPresetsListHasChanged += new EventHandler<EventArgs>(presetsCodec_CodecRoomPresetsListHasChanged);
-
-                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset1].SetSigHeldAction(
-                    holdTime, () => presetsCodec.CodecRoomPresetStore(1, presetsCodec.NearEndPresets[0].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(1));
-                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset2].SetSigHeldAction(
-                    holdTime, () => presetsCodec.CodecRoomPresetStore(2, presetsCodec.NearEndPresets[1].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(2));
-                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset3].SetSigHeldAction(
-                    holdTime, () => presetsCodec.CodecRoomPresetStore(3, presetsCodec.NearEndPresets[2].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(3));
-
-            }
+            SetupPresets();
  
         }
 
@@ -613,11 +614,30 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         void presetsCodec_CodecRoomPresetsListHasChanged(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            SetupPresets();
         }
+
+
         void  camerasCodec_CameraSelected(object sender, CameraSelectedEventArgs e)
         {
             MapCameraActions();
+        }
+
+        void SetupPresets()
+        {
+            var presetsCodec = Codec as IHasCodecRoomPresets;
+            if (presetsCodec != null)
+            {
+                uint holdTime = 5000;
+                presetsCodec.CodecRoomPresetsListHasChanged += new EventHandler<EventArgs>(presetsCodec_CodecRoomPresetsListHasChanged);
+
+                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset1].SetSigHeldAction(
+                    holdTime, () => presetsCodec.CodecRoomPresetStore(1, presetsCodec.NearEndPresets[0].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(1));
+                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset2].SetSigHeldAction(
+                    holdTime, () => presetsCodec.CodecRoomPresetStore(2, presetsCodec.NearEndPresets[1].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(2));
+                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset3].SetSigHeldAction(
+                    holdTime, () => presetsCodec.CodecRoomPresetStore(3, presetsCodec.NearEndPresets[2].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(3));
+            }
         }
 
         /// <summary>
@@ -631,21 +651,21 @@ namespace PepperDash.Essentials.UIDrivers.VC
             if (camerasCodec != null && camerasCodec.SelectedCamera != null)
             {
 
-                var dpad = TriList.SmartObjects[UISmartObjectJoin.VCCameraDpad];
+                var dpad = CameraPtzPad;
 
                 var camera = camerasCodec.SelectedCamera as IHasCameraPtzControl;
                 if (camera != null)
                 {
                     if (camerasCodec.SelectedCamera.CanTilt)
                     {
-                        dpad.BooleanOutput["Up"].SetBoolSigAction((b) =>
+                        dpad.SigUp.SetBoolSigAction((b) =>
                             {
                                 if (b)
                                     camera.TiltUp();
                                 else
                                     camera.TiltStop();
                             });
-                        dpad.BooleanOutput["Down"].SetBoolSigAction((b) =>
+                        dpad.SigDown.SetBoolSigAction((b) =>
                             {
                                 if (b)
                                     camera.TiltDown();
@@ -656,14 +676,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                     if (camerasCodec.SelectedCamera.CanPan)
                     {
-                        dpad.BooleanOutput["Left"].SetBoolSigAction((b) =>
+                        dpad.SigLeft.SetBoolSigAction((b) =>
                             {
                                 if (b)
                                     camera.PanLeft();
                                 else
                                     camera.PanStop();
                             });
-                        dpad.BooleanOutput["Right"].SetBoolSigAction((b) =>
+                        dpad.SigRight.SetBoolSigAction((b) =>
                             {
                                 if (b)
                                     camera.PanRight();
@@ -672,11 +692,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
                             });
                     }
 
-                    var homeButton = dpad.BooleanOutput["Home"];
-                    if (homeButton != null)
-                    {
-                        homeButton.SetSigFalseAction(() => camera.PositionHome());
-                    }
+
+                    //dpad.SigCenter.SetSigFalseAction(() => camera.PositionHome());
+
+                    //var homeButton = dpad.BooleanOutput["Home"];
+                    //if (homeButton != null)
+                    //{
+                    //    homeButton.SetSigFalseAction(() => camera.PositionHome());
+                    //}
 
                     if (camerasCodec.SelectedCamera.CanZoom)
                     {
@@ -714,18 +737,32 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 inManualMode = false;
             }
 
-            if (codecAutoCameras != null && codecAutoCameras.CameraAutoModeIsOnFeedback.BoolValue)
+            // Clear auto mode
+            if (codecAutoCameras != null )
             {
-                inManualMode = false;
+                if (codecAutoCameras.CameraAutoModeIsOnFeedback.BoolValue)
+                {
+                    codecAutoCameras.CameraAutoModeOff();
+                    inManualMode = true;
+                }
             }
 
             if (inManualMode)
             {
                 VCCameraControlModeInterlock.SetButDontShow(UIBoolJoin.VCCameraManualVisible);
+
+                if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCCameraModeBarVisible)
+                    VCCameraControlModeInterlock.Show();
             }
 
+            SetCameraManualModeButtonFeedback(inManualMode);
+
+        }
+
+        void SetCameraManualModeButtonFeedback(bool state)
+        {
             // Set button feedback for manual mode
-            TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 2 Selected"].BoolValue = inManualMode;
+            TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 2 Selected"].BoolValue = state;
         }
 
         /// <summary>
@@ -1195,6 +1232,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 if (VCCameraControlModeInterlock.CurrentJoin != 0)
                 {
                     VCCameraControlModeInterlock.Show();
+                }
+                else
+                {
+                    var codecAutoCamera = Codec as IHasCameraAutoMode;
+                    if (codecAutoCamera != null)
+                    {
+                        ShowCameraManualMode();
+                        VCCameraControlModeInterlock.Show();
+                    }
                 }
             }
             else
