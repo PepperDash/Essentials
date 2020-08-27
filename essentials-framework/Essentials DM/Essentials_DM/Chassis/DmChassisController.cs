@@ -198,6 +198,7 @@ namespace PepperDash.Essentials.DM
             Chassis.DMInputChange += new DMInputEventHandler(Chassis_DMInputChange);
             Chassis.DMSystemChange += new DMSystemEventHandler(Chassis_DMSystemChange);
             Chassis.DMOutputChange += new DMOutputEventHandler(Chassis_DMOutputChange);
+            Chassis.BaseEvent += ChassisOnBaseEvent;
             VideoOutputFeedbacks = new Dictionary<uint, IntFeedback>();
             AudioOutputFeedbacks = new Dictionary<uint, IntFeedback>();
             UsbOutputRoutedToFeebacks = new Dictionary<uint, IntFeedback>();
@@ -355,6 +356,20 @@ namespace PepperDash.Essentials.DM
                                 InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
                                 return (int)(inputCard.Card as Dmc4kHdBase).HdmiInput.HdcpReceiveCapability;
                             }
+                            if (inputCard.Card is Dmc4kHdDspBase)
+                            {
+                                if (PropertiesConfig.InputSlotSupportsHdcp2[tempX])
+                                {
+                                    InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
+                                    return (int)(inputCard.Card as Dmc4kHdDspBase).HdmiInput.HdcpReceiveCapability;
+                                }
+
+                                InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.HdcpAutoSupport;
+                                if ((inputCard.Card as Dmc4kHdDspBase).HdmiInput.HdcpSupportOnFeedback.BoolValue)
+                                    return 1;
+                                return 0;
+                            }
+
                             if (inputCard.Card is Dmc4kCBase)
                             {
                                 if (PropertiesConfig.InputSlotSupportsHdcp2[tempX])
@@ -861,6 +876,24 @@ namespace PepperDash.Essentials.DM
                                 Debug.Console(1, this, "No index of {0} found in InputCardHdcpCapabilityFeedbacks");
                             break;
                         }
+                    case DMInputEventIds.HdcpSupportOffEventId:
+                        {
+                            Debug.Console(2, this, "DM Input {0} HdcpSupportOffEventId", args.Number);
+                            if (InputCardHdcpStateFeedbacks[args.Number] != null)
+                                InputCardHdcpStateFeedbacks[args.Number].FireUpdate();
+                            else
+                                Debug.Console(1, this, "No index of {0} found in InputCardHdcpCapabilityFeedbacks");
+                            break;
+                        }
+                    case DMInputEventIds.HdcpSupportOnEventId:
+                        {
+                            Debug.Console(2, this, "DM Input {0} HdcpSupportOnEventId", args.Number);
+                            if (InputCardHdcpStateFeedbacks[args.Number] != null)
+                                InputCardHdcpStateFeedbacks[args.Number].FireUpdate();
+                            else
+                                Debug.Console(1, this, "No index of {0} found in InputCardHdcpCapabilityFeedbacks");
+                            break;
+                        }
                     default:
                         {
                             Debug.Console(2, this, "DMInputChange fired for Input {0} with Unhandled EventId: {1}", args.Number, args.EventId);
@@ -1184,8 +1217,8 @@ namespace PepperDash.Essentials.DM
 
             var hdmiInPortWCec = port as HdmiInputWithCEC;
             
- 
-            SetHdcpStateAction(true, hdmiInPortWCec, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
+            
+            SetHdcpStateAction(PropertiesConfig.InputSlotSupportsHdcp2[ioSlot], hdmiInPortWCec, joinMap.HdcpSupportState.JoinNumber + ioSlotJoin, trilist);
             
 
             InputCardHdcpStateFeedbacks[ioSlot].LinkInputSig(
@@ -1474,10 +1507,12 @@ namespace PepperDash.Essentials.DM
                     {
                         if (s == 0)
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpSupport to off", join, s); 
                             port.HdcpSupportOff();
                         }
                         else if (s > 0)
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpSupport to on", join, s); 
                             port.HdcpSupportOn();
                         }
                     });
@@ -1487,6 +1522,7 @@ namespace PepperDash.Essentials.DM
                 trilist.SetUShortSigAction(join,
                         u =>
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpReceiveCapability to: {2}", join, u, (eHdcpCapabilityType)u); 
                             port.HdcpReceiveCapability = (eHdcpCapabilityType)u;
                         });
             }
@@ -1501,10 +1537,12 @@ namespace PepperDash.Essentials.DM
                     {
                         if (s == 0)
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpSupport to off", join, s);
                             port.HdcpSupportOff();
                         }
                         else if (s > 0)
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpSupport to on", join, s);
                             port.HdcpSupportOn();
                         }
                     });
@@ -1514,6 +1552,7 @@ namespace PepperDash.Essentials.DM
                 trilist.SetUShortSigAction(join,
                         u =>
                         {
+                            Debug.Console(2, this, "Join {0} value {1} Setting HdcpReceiveCapability to: {2}", join, u, (eHdcpCapabilityType)u);
                             port.HdcpCapability = (eHdcpCapabilityType)u;
                         });
             }
