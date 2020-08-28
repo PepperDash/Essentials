@@ -519,12 +519,21 @@ namespace PepperDash.Essentials.UIDrivers.VC
                             if (a.BoolValue)
                             {
                                 SetCameraManualModeButtonFeedback(false);
-                                VCCameraControlModeInterlock.SetButDontShow(UIBoolJoin.VCCameraAutoVisible);
+
+                                if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCCameraModeBarVisible)
+                                {
+                                    VCCameraControlModeInterlock.ShowInterlocked(UIBoolJoin.VCCameraAutoVisible);
+                                }
+                                else
+                                {
+                                    VCCameraControlModeInterlock.SetButDontShow(UIBoolJoin.VCCameraAutoVisible);
+                                }
                             }
                             else
                             {
                                 ShowCameraManualMode();
                             }
+
                         };
                 }
 
@@ -548,7 +557,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
                             if (a.BoolValue)
                             {
                                 SetCameraManualModeButtonFeedback(false);
-                                VCCameraControlModeInterlock.SetButDontShow(UIBoolJoin.VCCameraAutoVisible);
+
+                                if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCCameraModeBarVisible)
+                                {
+                                    VCCameraControlModeInterlock.ShowInterlocked(UIBoolJoin.VCCameraOffVisible);
+                                }
+                                else
+                                {
+                                    VCCameraControlModeInterlock.SetButDontShow(UIBoolJoin.VCCameraOffVisible);
+                                }
                             }
                             else
                             {
@@ -566,6 +583,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].UShortInput["Set Number of Items"].UShortValue = (ushort)camerasCodec.Cameras.Count;
                 TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].UShortOutput["Item Clicked"].SetUShortSigAction(
                     (u) => camerasCodec.SelectCamera(camerasCodec.Cameras[u - 1].Key));
+
+                //TODO: Fix camera selection and labels
 
                 // Set the names for the cameras
                 for (int i = 1; i <= camerasCodec.Cameras.Count; i++)
@@ -637,6 +656,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     holdTime, () => presetsCodec.CodecRoomPresetStore(2, presetsCodec.NearEndPresets[1].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(2));
                 TriList.BooleanOutput[UIBoolJoin.VCCameraPreset3].SetSigHeldAction(
                     holdTime, () => presetsCodec.CodecRoomPresetStore(3, presetsCodec.NearEndPresets[2].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(3));
+
+                TriList.StringInput[UIStringJoin.VCCameraPresetLabel1].StringValue = presetsCodec.NearEndPresets[0].Description;
+                TriList.StringInput[UIStringJoin.VCCameraPresetLabel2].StringValue = presetsCodec.NearEndPresets[1].Description;
+                TriList.StringInput[UIStringJoin.VCCameraPresetLabel3].StringValue = presetsCodec.NearEndPresets[2].Description;
+
             }
         }
 

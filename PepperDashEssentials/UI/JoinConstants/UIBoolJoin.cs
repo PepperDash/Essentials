@@ -132,6 +132,11 @@ namespace PepperDash.Essentials
         public const uint VCCameraManualVisible = 1209;
 
         /// <summary>
+        /// 1210
+        /// </summary>
+        public const uint VCCameraOffVisible = 1210;
+
+        /// <summary>
         /// 1211 - 1215
         /// </summary>
         public const uint VCFavoritePressStart = 1211;
