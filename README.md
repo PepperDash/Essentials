@@ -30,7 +30,7 @@ To verify that the packages installed correctly, open Essentials and make sure t
 
 ### Installing Different versions of PepperDash Core
 
-If you need a different version of PepperDash Core, use the command `nuget install .\packages.config -OutputDirectory .\packages -excludeVersion -Version {versionToGet}`. Omitting the `-Version` option will pull the version indicated in the packages.config file.
+If you need a different version of PepperDash Core, use the command `nuget install packages.config -OutputDirectory .\packages -excludeVersion -Version {versionToGet}`. Omitting the `-Version` option will pull the version indicated in the packages.config file.
 
 ## Utilization
 
