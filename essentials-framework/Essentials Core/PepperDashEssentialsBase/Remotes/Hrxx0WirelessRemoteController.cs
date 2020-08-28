@@ -19,12 +19,11 @@ using PepperDash.Essentials.Core.Bridges;
 namespace PepperDash.Essentials.Core
 {
     [Description("Wrapper class for all HR-Series remotes")]
-    public class Hrxx0WirelessRemoteController : EssentialsBridgeableDevice, IHasFeedback
+    public class Hrxx0WirelessRemoteController : EssentialsBridgeableDevice, IHasFeedback, IHR52Button
     {
         private CenRfgwController _gateway;
 
         private GatewayBase _gatewayBase;
-
 
         private Hr1x0WirelessRemoteBase _remote;
 
@@ -42,8 +41,6 @@ namespace PepperDash.Essentials.Core
 
             var props = JsonConvert.DeserializeObject<CrestronRemotePropertiesConfig>(config.Properties.ToString());
 
-            var type = config.Type;
-            var rfId = (uint)props.Control.InfinetIdInt;
             _config = config;
             
             if (props.GatewayDeviceKey == "processor")
@@ -129,6 +126,19 @@ namespace PepperDash.Essentials.Core
                 {
                     (handler as Action<bool>)(args.Button.State == eButtonState.Pressed ? true : false);
                 }
+
+                var newHandler = ButtonStateChange;
+                if (ButtonStateChange != null)
+                {
+                    newHandler(device, args);
+                }
+
+                var newerHandler = EssentialsButtonStateChange;
+                if (EssentialsButtonStateChange != null)
+                {
+                    newerHandler(this, args);
+                }
+
             }
             catch (Exception e)
             {
@@ -313,5 +323,503 @@ namespace PepperDash.Essentials.Core
         {
             trilist.BooleanInput[join].BoolValue = b;
         }
+
+
+
+        #region IHR52Button Members
+
+        public Button Custom9
+        {
+            get
+            {
+                var localRemote = (IHR52Button) _remote;
+                return localRemote == null ? null : localRemote.Custom9;
+            }
+        }
+
+        public Button Favorite
+        {
+            get
+            {
+                var localRemote = (IHR52Button)_remote;
+                return localRemote == null ? null : localRemote.Favorite;
+            }
+        }
+        
+
+        public Button Home
+        {
+            get
+            {
+                var localRemote = (IHR52Button)_remote;
+                return localRemote == null ? null : localRemote.Home;
+            }
+        }
+
+        #endregion
+
+        #region IHR49Button Members
+
+        public Button Clear
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Clear;
+            }
+        }
+
+        public Button Custom5
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Custom5;
+            }
+        }
+
+        public Button Custom6
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Custom6;
+            }
+        }
+
+        public Button Custom7
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Custom7;
+            }
+        }
+
+        public Button Custom8
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Custom8;
+            }
+        }
+
+        public Button Enter
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Enter;
+            }
+        }
+
+        public Button Keypad0
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Keypad0;
+            }
+        }
+
+        public Button Keypad1
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Keypad1;
+            }
+        }
+
+        public Button Keypad2Abc
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Keypad2Abc;
+            }
+        }
+
+        public Button Keypad3Def
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Keypad3Def;
+            }
+        }
+
+        public Button Keypad4Ghi
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Keypad4Ghi;
+            }
+        }
+
+        public Button Keypad5Jkl
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Keypad5Jkl;
+            }
+        }
+
+        public Button Keypad6Mno
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Keypad6Mno;
+            }
+        }
+
+        public Button Keypad7Pqrs
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Keypad7Pqrs;
+            }
+        }
+
+        public Button Keypad8Tuv
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Keypad8Tuv;
+            }
+        }
+
+        public Button Keypad9Wxyz
+        {
+            get
+            {
+                var localRemote = (IHR49Button)_remote;
+                return localRemote == null ? null : localRemote.Keypad9Wxyz;
+            }
+        }
+
+        #endregion
+
+        #region IHR33Button Members
+
+        public Button Blue
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Blue;
+            }
+        }
+
+        public Button ChannelDown
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.ChannelDown;
+            }
+        }
+
+        public Button ChannelUp
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.ChannelUp;
+            }
+        }
+
+        public Button Custom1
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Custom1;
+            }
+        }
+
+        public Button Custom2
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Custom2;
+            }
+        }
+
+        public Button Custom3
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Custom3;
+            }
+        }
+
+        public Button Custom4
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Custom4;
+            }
+        }
+
+        public Button DialPadDown
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.DialPadDown;
+            }
+        }
+
+        public Button DialPadEnter
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.DialPadEnter;
+            }
+        }
+
+        public Button DialPadLeft
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.DialPadLeft;
+            }
+        }
+
+        public Button DialPadRight
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.DialPadRight;
+            }
+        }
+
+        public Button DialPadUp
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.DialPadUp;
+            }
+        }
+
+        public Button Dvr
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Dvr;
+            }
+        }
+
+        public Button Exit
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Exit;
+            }
+        }
+
+        public Button FastForward
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.FastForward;
+            }
+        }
+
+        public Button Green
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Green;
+            }
+        }
+
+        public Button Guide
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Blue;
+            }
+        }
+
+        public Button Information
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Information;
+            }
+        }
+
+        public Button Last
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Last;
+            }
+        }
+
+        public Button Menu
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Menu;
+            }
+        }
+
+        public Button Mute
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Mute;
+            }
+        }
+
+        public Button NextTrack
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.NextTrack;
+            }
+        }
+
+        public Button Pause
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Pause;
+            }
+        }
+
+        public Button Play
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Play;
+            }
+        }
+
+        public Button Power
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Power;
+            }
+        }
+
+        public Button PreviousTrack
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.PreviousTrack;
+            }
+        }
+
+        public Button Record
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Record;
+            }
+        }
+
+        public Button Red
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Red;
+            }
+        }
+
+        public Button Rewind
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Rewind;
+            }
+        }
+
+        public Button Stop
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Stop;
+            }
+        }
+
+        public Button VolumeDown
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.VolumeDown;
+            }
+        }
+
+        public Button VolumeUp
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.VolumeUp;
+            }
+        }
+
+        public Button Yellow
+        {
+            get
+            {
+                var localRemote = (IHR33Button)_remote;
+                return localRemote == null ? null : localRemote.Yellow;
+            }
+        }
+
+        #endregion
+
+        #region IButton Members
+
+        public CrestronCollection<Button> Button
+        {
+            get { return Buttons; }
+        }
+
+        public event ButtonEventHandler ButtonStateChange;
+
+        public delegate void EssentialsButtonEventHandler(EssentialsDevice device, ButtonEventArgs args);
+
+        public event EssentialsButtonEventHandler EssentialsButtonStateChange;
+
+        #endregion
     }
 }
