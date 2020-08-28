@@ -178,7 +178,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 SetupDirectoryList();
 
-                SetupCameraControls();
 
                 SearchStringBackspaceVisibleFeedback = new BoolFeedback(() => SearchStringBuilder.Length > 0);
                 SearchStringBackspaceVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackspaceVisible]);
@@ -215,6 +214,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             if(HeaderDriver.HeaderButtonsAreSetUp)
                 HeaderDriver.ComputeHeaderCallStatus(Codec);
+
+            SetupCameraControls();
         }
 
         void SetupAddresses()
@@ -580,11 +581,31 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             if(camerasCodec != null)
             {
-                TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].UShortInput["Set Number of Items"].UShortValue = (ushort)camerasCodec.Cameras.Count;
-                TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].UShortOutput["Item Clicked"].SetUShortSigAction(
-                    (u) => camerasCodec.SelectCamera(camerasCodec.Cameras[u - 1].Key));
+                //CameraSelectList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect], true, 0);
 
-                //TODO: Fix camera selection and labels
+
+                for (uint i = 1; i <= camerasCodec.Cameras.Count; i++)
+                {
+                    var cameraKey = camerasCodec.Cameras[(int)i - 1].Key;
+                    Debug.Console(1, "Setting up action for Camera {0} with Key: {1}", i, cameraKey);
+
+                    //TODO: Fix camera selection action.  For some reson this action doesn't execute when the buttons are pressed
+                    TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].BooleanOutput[string.Format("Item {0} Pressed", i)].SetSigFalseAction(
+                        () =>
+                        {
+                            camerasCodec.SelectCamera(cameraKey);
+                        });
+                }
+
+                TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].UShortInput["Set Number of Items"].UShortValue = (ushort)camerasCodec.Cameras.Count;
+                //TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].UShortOutput["Item Clicked"].SetUShortSigAction(
+                //    (u) =>
+                //    {
+                //        var cameraKey = camerasCodec.Cameras[u - 1].Key;
+                //        Debug.Console(1, "Selecting Camera {0} with Key: {1}", u, cameraKey);
+                //        camerasCodec.SelectCamera(cameraKey);
+                //    });
+
 
                 // Set the names for the cameras
                 for (int i = 1; i <= camerasCodec.Cameras.Count; i++)
@@ -592,7 +613,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].StringInput[string.Format("Set Item {0} Text", i)].StringValue = camerasCodec.Cameras[i - 1].Name;
                 }
 
-
+                SetCameraSelectedFeedback();
                 camerasCodec.CameraSelected += new EventHandler<CameraSelectedEventArgs>(camerasCodec_CameraSelected);
                 MapCameraActions();
             }
@@ -637,9 +658,32 @@ namespace PepperDash.Essentials.UIDrivers.VC
         }
 
 
-        void  camerasCodec_CameraSelected(object sender, CameraSelectedEventArgs e)
+        void camerasCodec_CameraSelected(object sender, CameraSelectedEventArgs e)
         {
             MapCameraActions();
+
+            SetCameraSelectedFeedback();
+        }
+
+        /// <summary>
+        /// Set the feedback for the button of the selected camera
+        /// </summary>
+        void SetCameraSelectedFeedback()
+        {
+            var camerasCodec = Codec as IHasCameras;
+
+            for (int i = 1; i <= camerasCodec.Cameras.Count; i++)
+            {
+                var cameraSelected = camerasCodec.SelectedCameraFeedback.StringValue;
+                var state = false;
+                if (cameraSelected == camerasCodec.Cameras[i - 1].Key)
+                {
+                    state = true;
+                }
+
+                TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].BooleanInput[string.Format("Item {0} Selected", i)].BoolValue = state;
+            }
+  
         }
 
         void SetupPresets()

@@ -44,7 +44,7 @@
         public const uint VCCameraDpad = 1207;
 
         /// <summary>
-        /// 1207 VC Camera Mode Dpad
+        /// 1208 VC Camera Select
         /// </summary>
         public const uint VCCameraSelect = 1208;
 
