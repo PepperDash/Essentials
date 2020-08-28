@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
 using PepperDash.Core;
@@ -583,21 +584,24 @@ namespace PepperDash.Essentials.UIDrivers.VC
             {
                 //CameraSelectList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect], true, 0);
 
+                var so = TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect];
+
+                so.SigChange += SmartObject_SigChange;
 
                 for (uint i = 1; i <= camerasCodec.Cameras.Count; i++)
                 {
                     var cameraKey = camerasCodec.Cameras[(int)i - 1].Key;
-                    Debug.Console(1, "Setting up action for Camera {0} with Key: {1}", i, cameraKey);
+                    Debug.Console(1, "Setting up action for Camera {0} with Key: {1} for button Item {0} Pressed", i, cameraKey);
 
                     //TODO: Fix camera selection action.  For some reson this action doesn't execute when the buttons are pressed
-                    TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].BooleanOutput[string.Format("Item {0} Pressed", i)].SetSigFalseAction(
-                        () =>
-                        {
-                            camerasCodec.SelectCamera(cameraKey);
-                        });
+
+                    var sig = so.BooleanOutput[String.Format("Item {0} Pressed", i)];
+
+                    so.BooleanOutput[string.Format("Item {0} Pressed", i)].SetSigFalseAction(
+                        () => camerasCodec.SelectCamera(cameraKey));
                 }
 
-                TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].UShortInput["Set Number of Items"].UShortValue = (ushort)camerasCodec.Cameras.Count;
+                so.UShortInput["Set Number of Items"].UShortValue = (ushort)camerasCodec.Cameras.Count;
                 //TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].UShortOutput["Item Clicked"].SetUShortSigAction(
                 //    (u) =>
                 //    {
@@ -610,16 +614,27 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 // Set the names for the cameras
                 for (int i = 1; i <= camerasCodec.Cameras.Count; i++)
                 {
-                    TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].StringInput[string.Format("Set Item {0} Text", i)].StringValue = camerasCodec.Cameras[i - 1].Name;
+                    so.StringInput[string.Format("Set Item {0} Text", i)].StringValue = camerasCodec.Cameras[i - 1].Name;
                 }
 
                 SetCameraSelectedFeedback();
-                camerasCodec.CameraSelected += new EventHandler<CameraSelectedEventArgs>(camerasCodec_CameraSelected);
+                camerasCodec.CameraSelected += camerasCodec_CameraSelected;
                 MapCameraActions();
             }
 
             SetupPresets();
  
+        }
+
+        void SmartObject_SigChange(GenericBase currentDevice, SmartObjectEventArgs args)
+        {
+            var uo = args.Sig.UserObject;
+            if (uo is Action<bool>)
+                (uo as Action<bool>)(args.Sig.BoolValue);
+            else if (uo is Action<ushort>)
+                (uo as Action<ushort>)(args.Sig.UShortValue);
+            else if (uo is Action<string>)
+                (uo as Action<string>)(args.Sig.StringValue);
         }
 
         void VCControlsInterlock_StatusChanged(object sender, StatusChangedEventArgs e)
