@@ -41,6 +41,21 @@ namespace PepperDash.Essentials
 		public const uint VCRecentListTimeTextStart = 1231;
         //									RANGE IN USE
         public const uint VCRecentListTimeTextEnd = 1260;
+
+
+        /// <summary>
+        /// 1281
+        /// </summary>
+        public const uint VCCameraPresetLabel1 = 1281;
+        /// <summary>
+        /// 1282
+        /// </summary>
+        public const uint VCCameraPresetLabel2 = 1282;
+        /// <summary>
+        /// 1283
+        /// </summary>
+        public const uint VCCameraPresetLabel3 = 1283;
+
 		/// <summary>
 		/// 1291 - the current layout mode
 		/// </summary>

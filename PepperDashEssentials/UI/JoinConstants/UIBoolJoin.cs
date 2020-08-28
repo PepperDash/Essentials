@@ -120,14 +120,22 @@ namespace PepperDash.Essentials
         /// 1206
         /// </summary>
         public const uint VCRecentsVisible = 1206;
-        /// <summary>
-        /// 1207
-        /// </summary>
-        public const uint VCCameraVisible = 1207;
+
 		/// <summary>
 		/// 1208
 		/// </summary>
-		public const uint VCSelfViewLayoutVisible = 1208;
+		public const uint VCCameraAutoVisible = 1208;
+
+        /// <summary>
+        /// 1209
+        /// </summary>
+        public const uint VCCameraManualVisible = 1209;
+
+        /// <summary>
+        /// 1210
+        /// </summary>
+        public const uint VCCameraOffVisible = 1210;
+
         /// <summary>
         /// 1211 - 1215
         /// </summary>
@@ -224,6 +232,45 @@ namespace PepperDash.Essentials
 		/// 1256
 		/// </summary>
 		public const uint VCMinMaxEnable = 1256;
+
+        /// <summary>
+        /// 1260
+        /// </summary>
+        public const uint VCCameraModeBarVisible = 1260;
+
+        /// <summary>
+        /// 1261
+        /// </summary>
+        public const uint VCCameraSelectBarWithoutModeVisible = 1261;
+
+
+        /// <summary>
+        /// 1271
+        /// </summary>
+        public const uint VCCameraZoomIn = 1271;
+        /// <summary>
+        /// 1272
+        /// </summary>
+        public const uint VCCameraZoomOut = 1272;
+
+
+        /// <summary>
+        /// 1280
+        /// </summary>
+        public const uint VCCameraPresetSavedLabelVisible = 1280;
+        /// <summary>
+        /// 1281
+        /// </summary>
+        public const uint VCCameraPreset1 = 1281;
+        /// <summary>
+        /// 1282
+        /// </summary>
+        public const uint VCCameraPreset2 = 1282;
+        /// <summary>
+        /// 1283
+        /// </summary>
+        public const uint VCCameraPreset3 = 1283;
+
 
         // Letter joins start at 2921;
 
