@@ -18,7 +18,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// The parent driver for this
         /// </summary>
-        EssentialsPanelMainInterfaceDriver Parent;
+        private readonly EssentialsPanelMainInterfaceDriver _parent;
 
 
         CTimer PositionTimer;
@@ -32,33 +32,45 @@ namespace PepperDash.Essentials
         public ScreenSaverController(EssentialsPanelMainInterfaceDriver parent, CrestronTouchpanelPropertiesConfig config)
             : base(parent.TriList)
         {
-            Parent = parent;
+            _parent = parent;
 
             PositionTimeoutMs = config.ScreenSaverMovePositionIntervalMs;
 
-            TriList.SetSigFalseAction(UIBoolJoin.MCScreenSaverClosePress, () => this.Hide());
+            PositionJoins = new List<uint>() { UIBoolJoin.MCScreenSaverPosition1Visible, UIBoolJoin.MCScreenSaverPosition2Visible, UIBoolJoin.MCScreenSaverPosition3Visible, UIBoolJoin.MCScreenSaverPosition4Visible };
 
+            var cmdName = String.Format("shwscrsvr-{0}", config.IpId);
+
+            CrestronConsole.AddNewConsoleCommand((o) => Show(), cmdName, "Shows Panel Screensaver", ConsoleAccessLevelEnum.AccessOperator);
+
+            TriList.SetSigFalseAction(UIBoolJoin.MCScreenSaverClosePress, Hide);
         }
 
         public override void Show()
         {
-            TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, true);
-            Parent.AvDriver.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MCScreenSaverVisible);
-            //TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, true);
+            _parent.AvDriver.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MCScreenSaverVisible);
 
             CurrentPositionIndex = 0;
             SetCurrentPosition();
+            StartPositionTimer();
+
+            base.Show();
+        }
+
+        public override void Hide()
+        {
+            if (PositionTimer != null)
+            {
+                PositionTimer.Stop();
+                PositionTimer.Dispose();
+                PositionTimer = null;
+            }
 
             ClearAllPositions();
 
-            TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, false);
-            Parent.AvDriver.PopupInterlock.HideAndClear();
-            //TriList.SetBool(UIBoolJoin.MCScreenSaverVisible, false);
+            _parent.AvDriver.PopupInterlock.HideAndClear();
 
             base.Hide();
         }
-
-
 
         void StartPositionTimer()
         {
