@@ -21,6 +21,8 @@ namespace PepperDash.Essentials
         private readonly EssentialsPanelMainInterfaceDriver _parent;
 
 
+        private JoinedSigInterlock PositionInterlock;
+
         CTimer PositionTimer;
 
         uint PositionTimeoutMs;
@@ -38,7 +40,9 @@ namespace PepperDash.Essentials
 
             PositionJoins = new List<uint>() { UIBoolJoin.MCScreenSaverPosition1Visible, UIBoolJoin.MCScreenSaverPosition2Visible, UIBoolJoin.MCScreenSaverPosition3Visible, UIBoolJoin.MCScreenSaverPosition4Visible };
 
-            var cmdName = String.Format("shwscrsvr-{0}", config.IpId);
+            PositionInterlock = new JoinedSigInterlock(parent.TriList);
+
+            var cmdName = String.Format("shwscrsvr-{0}", parent.TriList.ID);
 
             CrestronConsole.AddNewConsoleCommand((o) => Show(), cmdName, "Shows Panel Screensaver", ConsoleAccessLevelEnum.AccessOperator);
 
@@ -47,10 +51,13 @@ namespace PepperDash.Essentials
 
         public override void Show()
         {
-            _parent.AvDriver.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MCScreenSaverVisible);
+            if (_parent.AvDriver != null)
+            {
+                _parent.AvDriver.PopupInterlock.ShowInterlocked(UIBoolJoin.MCScreenSaverVisible);
+            }
 
             CurrentPositionIndex = 0;
-            SetCurrentPosition();
+            ShowCurrentPosition();
             StartPositionTimer();
 
             base.Show();
@@ -58,6 +65,8 @@ namespace PepperDash.Essentials
 
         public override void Hide()
         {
+            Debug.Console(1, "Hiding ScreenSaverController");
+
             if (PositionTimer != null)
             {
                 PositionTimer.Stop();
@@ -67,7 +76,10 @@ namespace PepperDash.Essentials
 
             ClearAllPositions();
 
-            _parent.AvDriver.PopupInterlock.HideAndClear();
+            if (_parent.AvDriver != null)
+            {
+                _parent.AvDriver.PopupInterlock.HideAndClear();
+            }
 
             base.Hide();
         }
@@ -89,7 +101,7 @@ namespace PepperDash.Essentials
         {
             IncrementPositionIndex();
 
-            SetCurrentPosition();
+            ShowCurrentPosition();
 
             StartPositionTimer();
         }
@@ -109,20 +121,16 @@ namespace PepperDash.Essentials
         }
 
         //
-        void SetCurrentPosition()
+        void ShowCurrentPosition()
         {
-            ClearAllPositions();
-
             // Set based on current index
-            TriList.SetBool(PositionJoins[CurrentPositionIndex], true);
+            PositionInterlock.ShowInterlocked(PositionJoins[CurrentPositionIndex]);
         }
 
         void ClearAllPositions()
         {
-            foreach (var join in PositionJoins)
-            {
-                TriList.SetBool(join, false);
-            }
+            Debug.Console(1, "Hiding all screensaver positions");
+            PositionInterlock.HideAndClear();
         }
     }
  
