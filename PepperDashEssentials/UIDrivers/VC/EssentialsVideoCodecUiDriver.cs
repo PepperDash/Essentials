@@ -421,7 +421,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             if (screenSaverParent != null)
             {
-                screenSaverParent.ScreenSaverController.Hide();
+                screenSaverParent.ScreenSaverController.Hide(); 
             }
             else
             {
