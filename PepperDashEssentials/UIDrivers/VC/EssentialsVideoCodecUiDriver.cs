@@ -717,13 +717,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 uint holdTime = 5000;
                 presetsCodec.CodecRoomPresetsListHasChanged += new EventHandler<EventArgs>(presetsCodec_CodecRoomPresetsListHasChanged);
 
-
-                if (presetsCodec.NearEndPresets[0] != null && presetsCodec.NearEndPresets[0].Defined)
+                var preset = 1;
+                if (presetsCodec.NearEndPresets[preset - 1] != null && presetsCodec.NearEndPresets[preset - 1].Defined)
                 {
                     TriList.SetBool(UIBoolJoin.VCCameraPreset1Visible, true);
                     TriList.BooleanOutput[UIBoolJoin.VCCameraPreset1].SetSigHeldAction(
-                        holdTime, () => presetsCodec.CodecRoomPresetStore(1, presetsCodec.NearEndPresets[0].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(1));
-                    TriList.StringInput[UIStringJoin.VCCameraPresetLabel1].StringValue = presetsCodec.NearEndPresets[0].Description;
+                        holdTime, ShowPresetStoreFeedback,() => presetsCodec.CodecRoomPresetStore(preset, presetsCodec.NearEndPresets[preset - 1].Description), 
+                        () => presetsCodec.CodecRoomPresetSelect(preset));
+                    TriList.StringInput[UIStringJoin.VCCameraPresetLabel1].StringValue = presetsCodec.NearEndPresets[preset - 1].Description;
                 }
                 else
                 {
@@ -734,7 +735,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 {
                     TriList.SetBool(UIBoolJoin.VCCameraPreset2Visible, true);
                     TriList.BooleanOutput[UIBoolJoin.VCCameraPreset2].SetSigHeldAction(
-                        holdTime, () => presetsCodec.CodecRoomPresetStore(2, presetsCodec.NearEndPresets[1].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(2));
+                        holdTime, ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetStore(preset, presetsCodec.NearEndPresets[preset - 1].Description),
+                        () => presetsCodec.CodecRoomPresetSelect(preset));
                     TriList.StringInput[UIStringJoin.VCCameraPresetLabel2].StringValue = presetsCodec.NearEndPresets[1].Description;
                 }
                 else
@@ -746,7 +748,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 {
                     TriList.SetBool(UIBoolJoin.VCCameraPreset3Visible, true);
                     TriList.BooleanOutput[UIBoolJoin.VCCameraPreset3].SetSigHeldAction(
-                        holdTime, () => presetsCodec.CodecRoomPresetStore(3, presetsCodec.NearEndPresets[2].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(3));
+                        holdTime, ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetStore(preset, presetsCodec.NearEndPresets[preset - 1].Description),
+                        () => presetsCodec.CodecRoomPresetSelect(preset));
                     TriList.StringInput[UIStringJoin.VCCameraPresetLabel3].StringValue = presetsCodec.NearEndPresets[2].Description;
                 }
                 else
