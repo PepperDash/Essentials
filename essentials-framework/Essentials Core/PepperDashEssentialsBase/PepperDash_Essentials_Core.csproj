@@ -98,12 +98,12 @@
     </Reference>
     <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimplSharpNewtonsoft, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
@@ -113,7 +113,7 @@
     </Reference>
     <Reference Include="SimplSharpPro, Version=1.5.3.17, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
+      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
@@ -158,6 +158,7 @@
     <Compile Include="Bridges\JoinMaps\SetTopBoxControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\StatusSignControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\SystemMonitorJoinMap.cs" />
+    <Compile Include="Queues\BytesQueue.cs" />
     <Compile Include="Comm and IR\CecPortController.cs" />
     <Compile Include="Comm and IR\CommFactory.cs" />
     <Compile Include="Comm and IR\CommunicationExtras.cs" />
@@ -222,8 +223,10 @@
     <Compile Include="Fusion\FusionRviDataClasses.cs" />
     <Compile Include="Gateways\CenRfgwController.cs" />
     <Compile Include="Gateways\EssentialsRfGatewayConfig.cs" />
+    <Compile Include="Queues\GenericQueue.cs" />
     <Compile Include="Global\JobTimer.cs" />
     <Compile Include="Global\Scheduler.cs" />
+    <Compile Include="Queues\IQueue.cs" />
     <Compile Include="JoinMaps\JoinMapBase.cs" />
     <Compile Include="Lighting\Lighting Interfaces.cs" />
     <Compile Include="Lighting\LightingBase.cs" />
@@ -313,6 +316,8 @@
     <Compile Include="SmartObjects\SmartObjectDPad.cs" />
     <Compile Include="SmartObjects\SmartObjectHelperBase.cs" />
     <Compile Include="Routing\TieLine.cs" />
+    <Compile Include="Queues\StringQueue.cs" />
+    <Compile Include="Queues\StringResponseProcessor.cs" />
     <Compile Include="Timers\CountdownTimer.cs" />
     <Compile Include="Touchpanels\CrestronTouchpanelPropertiesConfig.cs" />
     <Compile Include="Touchpanels\Interfaces.cs" />
