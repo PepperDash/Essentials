@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
+using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 
 using PepperDash.Core;
@@ -13,6 +14,7 @@ using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.Touchpanels.Keyboards;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.UIDrivers.VC
 {
@@ -42,6 +44,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
         JoinedSigInterlock VCControlsInterlock;
 
         /// <summary>
+        /// For the camera control mode (auto/manual/off)
+        /// </summary>
+        JoinedSigInterlock VCCameraControlModeInterlock;
+
+        /// <summary>
         /// For the different staging bars: Active, inactive
         /// </summary>
         JoinedSigInterlock StagingBarsInterlock;
@@ -58,6 +65,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
         SmartObjectDynamicList RecentCallsList;
 
 		SmartObjectDynamicList DirectoryList;
+
+        SmartObjectDPad CameraPtzPad;
+
+        SmartObjectDynamicList CameraModeList;
+
+        SmartObjectDynamicList CameraSelectList;
         
         BoolFeedback DirectoryBackButtonVisibleFeedback;
 
@@ -75,6 +88,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
         eKeypadMode KeypadMode;
 
 		bool CodecHasFavorites;
+
+        bool ShowCameraModeControls;
 
 		CTimer BackspaceTimer;
 
@@ -118,6 +133,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 LocalPrivacyIsMuted = new BoolFeedback(() => false);
 
                 VCControlsInterlock = new JoinedSigInterlock(triList);
+                VCCameraControlModeInterlock = new JoinedSigInterlock(triList);
+
+
                 if (CodecHasFavorites)
                     VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadWithFavoritesVisible);
                 else
@@ -161,6 +179,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 SetupDirectoryList();
 
+
                 SearchStringBackspaceVisibleFeedback = new BoolFeedback(() => SearchStringBuilder.Length > 0);
                 SearchStringBackspaceVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackspaceVisible]);
 
@@ -196,6 +215,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             if(HeaderDriver.HeaderButtonsAreSetUp)
                 HeaderDriver.ComputeHeaderCallStatus(Codec);
+
+            SetupCameraControls();
         }
 
         void SetupAddresses()
@@ -391,6 +412,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 icon = "Camera";
                 msg = string.Format("Incoming video call from: {0}", call.Name);
             }
+
+            if (Parent.PopupInterlock.IsShown)
+            {
+                if (Parent.PopupInterlock.CurrentJoin == UIBoolJoin.MCScreenSaverVisible)
+                {
+                    Parent.PopupInterlock.HideAndClear();
+                }
+            }
+
             IncomingCallModal.PresentModalDialog(2, "Incoming Call", icon, msg,
                 "Ignore", "Accept", false, false, b =>
                     {
@@ -441,6 +471,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingDirectoryPress, ShowDirectory);
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingKeypadPress, ShowKeypad);
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingRecentsPress, ShowRecents);
+            TriList.SetSigFalseAction(UIBoolJoin.VCStagingCameraPress, ShowCameraControls);
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingConnectPress, ConnectPress);
             TriList.SetSigFalseAction(UIBoolJoin.CallEndPress, () =>
                 {
@@ -456,6 +487,365 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					Parent.PopupInterlock.HideAndClear();
 					Codec.EndAllCalls();
 				});
+        }
+
+        void SetupCameraControls()
+        {
+            CameraPtzPad = new SmartObjectDPad(TriList.SmartObjects[UISmartObjectJoin.VCCameraDpad], true);
+
+            // If the codec supports camera auto or off, we need to show the mode selector subpage
+            ShowCameraModeControls = Codec is IHasCameraAutoMode || Codec is IHasCameraOff;
+
+            if (ShowCameraModeControls)
+            {
+                CameraModeList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCCameraMode], true, 0);
+
+                VCControlsInterlock.StatusChanged += new EventHandler<StatusChangedEventArgs>(VCControlsInterlock_StatusChanged);
+
+
+                var codecOffCameras = Codec as IHasCameraOff;
+
+                var codecAutoCameras = Codec as IHasCameraAutoMode;
+
+                if (codecAutoCameras != null)
+                {
+                    CameraModeList.SetItemButtonAction(1,(b) => codecAutoCameras.CameraAutoModeOn());
+                    TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 1 Visible"].BoolValue = true;
+                    codecAutoCameras.CameraAutoModeIsOnFeedback.LinkInputSig(CameraModeList.SmartObject.BooleanInput["Item 1 Selected"]);
+                    //TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanOutput["Item 1 Pressed"].SetSigFalseAction(
+                    //() => codecAutoCameras.CameraAutoModeOn());
+
+
+                    codecAutoCameras.CameraAutoModeIsOnFeedback.OutputChange += (o, a) =>
+                        {
+                            if (a.BoolValue)
+                            {
+                                SetCameraManualModeButtonFeedback(false);
+
+                                if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCCameraModeBarVisible)
+                                {
+                                    VCCameraControlModeInterlock.ShowInterlocked(UIBoolJoin.VCCameraAutoVisible);
+                                }
+                                else
+                                {
+                                    VCCameraControlModeInterlock.SetButDontShow(UIBoolJoin.VCCameraAutoVisible);
+                                }
+                            }
+                            else
+                            {
+                                ShowCameraManualMode();
+                            }
+
+                        };
+                }
+
+                // Manual button always visible
+                CameraModeList.SetItemButtonAction(2, (b) => ShowCameraManualMode());
+
+                TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 2 Visible"].BoolValue = true;
+                //TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanOutput["Item 2 Pressed"].SetSigFalseAction(
+                //    () => ShowCameraManualMode());
+
+                if (codecOffCameras != null)
+                {
+                    TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 3 Visible"].BoolValue = true;
+                    codecOffCameras.CameraIsOffFeedback.LinkInputSig(CameraModeList.SmartObject.BooleanInput["Item 3 Selected"]);
+                    CameraModeList.SetItemButtonAction(3, (b) => codecOffCameras.CameraOff());
+                    //TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanOutput["Item 3 Pressed"].SetSigFalseAction(
+                    //    () => codecOffCameras.CameraOff());
+
+                    codecOffCameras.CameraIsOffFeedback.OutputChange += (o, a) =>
+                        {
+                            if (a.BoolValue)
+                            {
+                                SetCameraManualModeButtonFeedback(false);
+
+                                if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCCameraModeBarVisible)
+                                {
+                                    VCCameraControlModeInterlock.ShowInterlocked(UIBoolJoin.VCCameraOffVisible);
+                                }
+                                else
+                                {
+                                    VCCameraControlModeInterlock.SetButDontShow(UIBoolJoin.VCCameraOffVisible);
+                                }
+                            }
+                            else
+                            {
+                                ShowCameraManualMode();
+                            }
+
+                        };
+                }
+            }
+
+            var camerasCodec = Codec as IHasCameras;
+
+            if(camerasCodec != null)
+            {
+                //CameraSelectList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect], true, 0);
+
+                var so = TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect];
+
+                so.SigChange += SmartObject_SigChange;
+
+                for (uint i = 1; i <= camerasCodec.Cameras.Count; i++)
+                {
+                    var cameraKey = camerasCodec.Cameras[(int)i - 1].Key;
+                    Debug.Console(1, "Setting up action for Camera {0} with Key: {1} for button Item {0} Pressed", i, cameraKey);
+
+                    //TODO: Fix camera selection action.  For some reson this action doesn't execute when the buttons are pressed
+
+                    var sig = so.BooleanOutput[String.Format("Item {0} Pressed", i)];
+
+                    so.BooleanOutput[string.Format("Item {0} Pressed", i)].SetSigFalseAction(
+                        () => camerasCodec.SelectCamera(cameraKey));
+                }
+
+                so.UShortInput["Set Number of Items"].UShortValue = (ushort)camerasCodec.Cameras.Count;
+                //TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].UShortOutput["Item Clicked"].SetUShortSigAction(
+                //    (u) =>
+                //    {
+                //        var cameraKey = camerasCodec.Cameras[u - 1].Key;
+                //        Debug.Console(1, "Selecting Camera {0} with Key: {1}", u, cameraKey);
+                //        camerasCodec.SelectCamera(cameraKey);
+                //    });
+
+
+                // Set the names for the cameras
+                for (int i = 1; i <= camerasCodec.Cameras.Count; i++)
+                {
+                    so.StringInput[string.Format("Set Item {0} Text", i)].StringValue = camerasCodec.Cameras[i - 1].Name;
+                }
+
+                SetCameraSelectedFeedback();
+                camerasCodec.CameraSelected += camerasCodec_CameraSelected;
+                MapCameraActions();
+            }
+
+            SetupPresets();
+ 
+        }
+
+        void SmartObject_SigChange(GenericBase currentDevice, SmartObjectEventArgs args)
+        {
+            var uo = args.Sig.UserObject;
+            if (uo is Action<bool>)
+                (uo as Action<bool>)(args.Sig.BoolValue);
+            else if (uo is Action<ushort>)
+                (uo as Action<ushort>)(args.Sig.UShortValue);
+            else if (uo is Action<string>)
+                (uo as Action<string>)(args.Sig.StringValue);
+        }
+
+        void VCControlsInterlock_StatusChanged(object sender, StatusChangedEventArgs e)
+        {
+            // Need to hide the camera mode interlock if the mode bar gets hidden
+            if (e.PreviousJoin == UIBoolJoin.VCCameraModeBarVisible)
+                VCCameraControlModeInterlock.Hide();
+
+            // These deal with hiding/showing the camera select bar if no mode controls are visible (tied to manual controls being visible)
+            if(!ShowCameraModeControls)
+            {
+                if(e.PreviousJoin == UIBoolJoin.VCCameraManualVisible)
+                    TriList.SetBool(UIBoolJoin.VCCameraSelectBarWithoutModeVisible, false);
+
+                if (e.NewJoin == UIBoolJoin.VCCameraManualVisible)
+                    TriList.SetBool(UIBoolJoin.VCCameraSelectBarWithoutModeVisible, true);
+            }
+
+
+        }
+
+
+        /// <summary>
+        /// Shows the preset saved label for 2 seconds
+        /// </summary>
+        void ShowPresetStoreFeedback()
+        {
+            TriList.BooleanInput[UIBoolJoin.VCCameraPresetSavedLabelVisible].BoolValue = true;
+
+            var timer = new CTimer((o) => TriList.BooleanInput[UIBoolJoin.VCCameraPresetSavedLabelVisible].BoolValue = false, 2000);
+        }
+
+        void presetsCodec_CodecRoomPresetsListHasChanged(object sender, EventArgs e)
+        {
+            SetupPresets();
+        }
+
+
+        void camerasCodec_CameraSelected(object sender, CameraSelectedEventArgs e)
+        {
+            MapCameraActions();
+
+            SetCameraSelectedFeedback();
+        }
+
+        /// <summary>
+        /// Set the feedback for the button of the selected camera
+        /// </summary>
+        void SetCameraSelectedFeedback()
+        {
+            var camerasCodec = Codec as IHasCameras;
+
+            for (int i = 1; i <= camerasCodec.Cameras.Count; i++)
+            {
+                var cameraSelected = camerasCodec.SelectedCameraFeedback.StringValue;
+                var state = false;
+                if (cameraSelected == camerasCodec.Cameras[i - 1].Key)
+                {
+                    state = true;
+                }
+
+                TriList.SmartObjects[UISmartObjectJoin.VCCameraSelect].BooleanInput[string.Format("Item {0} Selected", i)].BoolValue = state;
+            }
+  
+        }
+
+        void SetupPresets()
+        {
+            var presetsCodec = Codec as IHasCodecRoomPresets;
+            if (presetsCodec != null)
+            {
+                uint holdTime = 5000;
+                presetsCodec.CodecRoomPresetsListHasChanged += new EventHandler<EventArgs>(presetsCodec_CodecRoomPresetsListHasChanged);
+
+                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset1].SetSigHeldAction(
+                    holdTime, () => presetsCodec.CodecRoomPresetStore(1, presetsCodec.NearEndPresets[0].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(1));
+                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset2].SetSigHeldAction(
+                    holdTime, () => presetsCodec.CodecRoomPresetStore(2, presetsCodec.NearEndPresets[1].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(2));
+                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset3].SetSigHeldAction(
+                    holdTime, () => presetsCodec.CodecRoomPresetStore(3, presetsCodec.NearEndPresets[2].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(3));
+
+                TriList.StringInput[UIStringJoin.VCCameraPresetLabel1].StringValue = presetsCodec.NearEndPresets[0].Description;
+                TriList.StringInput[UIStringJoin.VCCameraPresetLabel2].StringValue = presetsCodec.NearEndPresets[1].Description;
+                TriList.StringInput[UIStringJoin.VCCameraPresetLabel3].StringValue = presetsCodec.NearEndPresets[2].Description;
+
+            }
+        }
+
+        /// <summary>
+        /// Maps button actions to the selected camera
+        /// </summary>
+        void MapCameraActions()
+        {
+            // Now we setup the button actions for the manual controls
+            var camerasCodec = Codec as IHasCameras;
+
+            if (camerasCodec != null && camerasCodec.SelectedCamera != null)
+            {
+
+                var dpad = CameraPtzPad;
+
+                var camera = camerasCodec.SelectedCamera as IHasCameraPtzControl;
+                if (camera != null)
+                {
+                    if (camerasCodec.SelectedCamera.CanTilt)
+                    {
+                        dpad.SigUp.SetBoolSigAction((b) =>
+                            {
+                                if (b)
+                                    camera.TiltUp();
+                                else
+                                    camera.TiltStop();
+                            });
+                        dpad.SigDown.SetBoolSigAction((b) =>
+                            {
+                                if (b)
+                                    camera.TiltDown();
+                                else
+                                    camera.TiltStop();
+                            });
+                    }
+
+                    if (camerasCodec.SelectedCamera.CanPan)
+                    {
+                        dpad.SigLeft.SetBoolSigAction((b) =>
+                            {
+                                if (b)
+                                    camera.PanLeft();
+                                else
+                                    camera.PanStop();
+                            });
+                        dpad.SigRight.SetBoolSigAction((b) =>
+                            {
+                                if (b)
+                                    camera.PanRight();
+                                else
+                                    camera.PanStop();
+                            });
+                    }
+
+
+                    //dpad.SigCenter.SetSigFalseAction(() => camera.PositionHome());
+
+                    //var homeButton = dpad.BooleanOutput["Home"];
+                    //if (homeButton != null)
+                    //{
+                    //    homeButton.SetSigFalseAction(() => camera.PositionHome());
+                    //}
+
+                    if (camerasCodec.SelectedCamera.CanZoom)
+                    {
+                        TriList.BooleanOutput[UIBoolJoin.VCCameraZoomIn].SetBoolSigAction((b) =>
+                            {
+                                if (b)
+                                    camera.ZoomIn();
+                                else
+                                    camera.ZoomStop();
+                            });
+                        TriList.BooleanOutput[UIBoolJoin.VCCameraZoomOut].SetBoolSigAction((b) =>
+                           {
+                               if (b)
+                                   camera.ZoomOut();
+                               else
+                                   camera.ZoomStop();
+                           });
+                    }
+
+                }
+            }
+        }
+
+        // Determines if codec is in manual camera control mode and shows feedback
+        void ShowCameraManualMode()
+        {
+            var inManualMode = true;
+
+            var codecOffCameras = Codec as IHasCameraOff;
+
+            var codecAutoCameras = Codec as IHasCameraAutoMode;
+
+            if (codecOffCameras != null && codecOffCameras.CameraIsOffFeedback.BoolValue)
+            {
+                inManualMode = false;
+            }
+
+            // Clear auto mode
+            if (codecAutoCameras != null )
+            {
+                if (codecAutoCameras.CameraAutoModeIsOnFeedback.BoolValue)
+                {
+                    codecAutoCameras.CameraAutoModeOff();
+                    inManualMode = true;
+                }
+            }
+
+            if (inManualMode)
+            {
+                VCCameraControlModeInterlock.SetButDontShow(UIBoolJoin.VCCameraManualVisible);
+
+                if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCCameraModeBarVisible)
+                    VCCameraControlModeInterlock.Show();
+            }
+
+            SetCameraManualModeButtonFeedback(inManualMode);
+
+        }
+
+        void SetCameraManualModeButtonFeedback(bool state)
+        {
+            // Set button feedback for manual mode
+            TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 2 Selected"].BoolValue = state;
         }
 
         /// <summary>
@@ -918,7 +1308,32 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void ShowCameraControls()
         {
-            VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCCameraVisible);
+            if (ShowCameraModeControls)
+            {
+                VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCCameraModeBarVisible);
+
+                if (VCCameraControlModeInterlock.CurrentJoin != 0)
+                {
+                    VCCameraControlModeInterlock.Show();
+                }
+                else
+                {
+                    var codecAutoCamera = Codec as IHasCameraAutoMode;
+                    if (codecAutoCamera != null)
+                    {
+                        ShowCameraManualMode();
+                        VCCameraControlModeInterlock.Show();
+                    }
+                }
+            }
+            else
+            {
+                // Just show the manual camera control page
+                VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCCameraManualVisible);
+            }
+
+
+
             StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingCameraPress);
         }
 
@@ -951,7 +1366,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// </summary>
 		void ShowSelfViewLayout()
 		{
-			VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCSelfViewLayoutVisible);
+			VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCCameraAutoVisible);
 			StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingSelfViewLayoutPress);
 		}
 

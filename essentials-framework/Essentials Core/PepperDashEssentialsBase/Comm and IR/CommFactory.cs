@@ -118,20 +118,37 @@ namespace PepperDash.Essentials.Core
             var dev = DeviceManager.GetDeviceForKey(config.ControlPortDevKey);
 
             if (dev != null)
-            {          
-                var inputPort = (dev as IRoutingInputsOutputs).InputPorts[config.ControlPortName];
+            {
+                if (!String.IsNullOrEmpty(config.ControlPortName))
+                {
 
-                if (inputPort != null)
-                    if (inputPort.Port is ICec)
-                        return inputPort.Port as ICec;
+                    var inputPort = (dev as IRoutingInputsOutputs).InputPorts[config.ControlPortName];
 
-                var outputPort = (dev as IRoutingInputsOutputs).OutputPorts[config.ControlPortName];
+                    if (inputPort != null)
+                    {
+                        if (inputPort.Port is ICec)
+                            return inputPort.Port as ICec;
+                    }
 
-                if (outputPort != null)
-                    if (outputPort.Port is ICec)
-                        return outputPort.Port as ICec;
+                    var outputPort = (dev as IRoutingInputsOutputs).OutputPorts[config.ControlPortName];
+
+                    if (outputPort != null)
+                    {
+                        if (outputPort.Port is ICec)
+                            return outputPort.Port as ICec;
+                    }
+
+                    else
+                        Debug.Console(0, "GetCecPort: Device '{0}' does not have a CEC port called: '{1}'",
+                            config.ControlPortDevKey, config.ControlPortName);
+                }
+                else
+                {
+                    Debug.Console(0, "GetCecPort: '{0}' - Configuration missing 'ControlPortName'", config.ControlPortDevKey);
+                }
             }
-            Debug.Console(0, "GetCecPort: Device '{0}' does not have a CEC port called: '{1}'", config.ControlPortDevKey, config.ControlPortName);
+            Debug.Console(0, "GetCecPort: Device '{0}' is not a valid device.", config.ControlPortDevKey);
+
             return null;
         }
 

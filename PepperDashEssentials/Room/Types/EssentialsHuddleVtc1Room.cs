@@ -50,6 +50,19 @@ namespace PepperDash.Essentials
 
         //************************
 
+		public override string SourceListKey
+		{
+			get
+			{
+				return _SourceListKey;
+			}
+			set
+			{
+				_SourceListKey = value;
+				SetCodecExternalSources();
+				
+			}
+		}
 
         protected override Func<bool> OnFeedbackFunc
         {
@@ -206,9 +219,11 @@ namespace PepperDash.Essentials
 
                 VideoCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.VideoCodecKey) as
                     PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
+				
+
                 if (VideoCodec == null)
                     throw new ArgumentNullException("codec cannot be null");
-
+				
                 AudioCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.AudioCodecKey) as
                     PepperDash.Essentials.Devices.Common.AudioCodec.AudioCodecBase;
                 if (AudioCodec == null)
@@ -298,6 +313,7 @@ namespace PepperDash.Essentials
 
 
                 VideoCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
+				VideoCodec.IsReadyChange += (o, a) => this.SetCodecExternalSources(); 
 
                 if (AudioCodec != null)
                     AudioCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
@@ -346,10 +362,9 @@ namespace PepperDash.Essentials
             this.SourceListKey = PropertiesConfig.SourceListKey;
             this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
             this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
-
+			
             return base.CustomActivate();
         }
-
 
         /// <summary>
         /// 
@@ -676,6 +691,42 @@ namespace PepperDash.Essentials
 				(room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
 		}
 
+
+		/// <summary>
+		/// Setup the external sources for the Cisco Touch 10 devices that support IHasExternalSourceSwitch
+		/// </summary>
+		private void SetCodecExternalSources()
+		{
+			var videoCodecWithExternalSwitching = VideoCodec as IHasExternalSourceSwitching;
+
+			if (videoCodecWithExternalSwitching == null)
+			{
+				return;
+			}
+			else
+			{
+				string codecTieLine = "";
+				codecTieLine = ConfigReader.ConfigObject.TieLines.SingleOrDefault(x => x.DestinationKey == VideoCodec.Key).DestinationPort;
+				videoCodecWithExternalSwitching.ClearExternalSources();
+				videoCodecWithExternalSwitching.RunRouteAction = RunRouteAction;
+				var srcList = ConfigReader.ConfigObject.SourceLists.SingleOrDefault(x => x.Key == SourceListKey).Value.OrderBy(kv => kv.Value.Order); ;
+
+				foreach (var kvp in srcList)
+				{
+					var srcConfig = kvp.Value;
+
+					if (kvp.Key != DefaultCodecRouteString && kvp.Key != "roomOff")
+					{
+
+						videoCodecWithExternalSwitching.AddExternalSource(codecTieLine, kvp.Key, srcConfig.PreferredName, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceType.desktop);
+						videoCodecWithExternalSwitching.SetExternalSourceState(kvp.Key, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceMode.Ready);
+
+
+					}
+				}
+			}
+		}
+		
         #region IPrivacy Members
 
 

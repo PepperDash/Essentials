@@ -349,7 +349,7 @@ namespace PepperDash.Essentials
             // Check if the popup interlock is shown, and if one of the header popups is current, then show the carets subpage
             if (e.IsShown)
             {
-                if (e.NewJoin == Parent.EnvironmentDriver.BackgroundSubpageJoin)
+                if (Parent.EnvironmentDriver != null && e.NewJoin == Parent.EnvironmentDriver.BackgroundSubpageJoin)
                     headerPopupShown = true;
                 else if (e.NewJoin == UIBoolJoin.HeaderActiveCallsListVisible)
                     headerPopupShown = true;
