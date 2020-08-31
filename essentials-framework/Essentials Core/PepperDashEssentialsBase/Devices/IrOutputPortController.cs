@@ -25,6 +25,8 @@ namespace PepperDash.Essentials.Core
 		public string DriverFilepath { get; private set; }
 		public bool DriverIsLoaded { get; private set; }
 
+        public string[] IrFileCommands { get { return IrPort.AvailableStandardIRCmds(IrPortUid); } }
+
 		/// <summary>
 		/// Constructor for IrDevice base class.  If a null port is provided, this class will 
 		/// still function without trying to talk to a port.
