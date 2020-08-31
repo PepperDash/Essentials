@@ -63,14 +63,18 @@ namespace PepperDash.Essentials.Core
 
                 LoadDriver(filePath);
                     
-                Debug.Console(2, this, "Available IR Commands in IR File {0}",IrPortUid);
-                foreach (var cmd in IrPort.AvailableIRCmds())
-                {
-                    Debug.Console(2, this, "{0}", cmd);
-                }
+                PrintAvailableCommands();
             });
 	    }
 
+	    public void PrintAvailableCommands()
+	    {
+            Debug.Console(2, this, "Available IR Commands in IR File {0}", IrPortUid);
+            foreach (var cmd in IrPort.AvailableIRCmds())
+            {
+                Debug.Console(2, this, "{0}", cmd);
+            }
+	    }
 	    
 
 	    /// <summary>

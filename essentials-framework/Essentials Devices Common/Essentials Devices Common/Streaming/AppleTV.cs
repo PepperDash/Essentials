@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
@@ -34,8 +35,17 @@ namespace PepperDash.Essentials.Devices.Common
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort> { HdmiOut, AnyAudioOut };
 		}
 
+        public void PrintExpectedIrCommands()
+        {
+            var cmds = typeof (AppleTvIrCommands).GetCType().GetFields(BindingFlags.Public | BindingFlags.Static);
 
-		#region IDPad Members
+            foreach (var value in cmds.Select(cmd => cmd.GetValue(null)).OfType<string>())
+            {
+                Debug.Console(2, this, "Expected IR Function Name: {0}", value);
+            }
+        }
+
+        #region IDPad Members
 
 		public void Up(bool pressRelease)
 		{
@@ -192,14 +202,15 @@ namespace PepperDash.Essentials.Devices.Common
 
     public static class AppleTvIrCommands
     {
-        public const string Up = "UP_ARROW";
-        public const string Down = "DOWN_ARROW";
-        public const string Left = "LEFT_ARROW";
-        public const string Right = "RIGHT_ARROW";
-        public const string Enter = "SELECT";
-        public const string PlayPause = "PLAY_PAUSE";
-        public const string Rewind = "REWIND";
-        public const string Menu = "MENU";
-        public const string FastForward = "FASTFORWARD";
+        
+        public static string Up = "+";
+        public static string Down = "-";
+        public static string Left = IROutputStandardCommands.IROut_TRACK_MINUS;
+        public static string Right = IROutputStandardCommands.IROut_TRACK_PLUS;
+        public static string Enter = IROutputStandardCommands.IROut_ENTER;
+        public static string PlayPause = "PLAY/PAUSE";
+        public static string Rewind = "REWIND";
+        public static string Menu = "Menu";
+        public static string FastForward = "FASTFORWARD";
     }
 }
