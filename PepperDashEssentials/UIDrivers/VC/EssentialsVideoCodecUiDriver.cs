@@ -398,6 +398,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void ShowIncomingModal(CodecActiveCallItem call)
         {
+            Debug.Console(1, "Showing Incoming Call Modal");
+
 			(Parent as IAVWithVCDriver).PrepareForCodecIncomingCall();
             IncomingCallModal = new ModalDialog(TriList);
             string msg;
@@ -413,13 +415,19 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 msg = string.Format("Incoming video call from: {0}", call.Name);
             }
 
-            if (Parent.PopupInterlock.IsShown)
+
+            // Hide screensaver
+            var screenSaverParent = Parent.Parent as IHasScreenSaverController;
+
+            if (screenSaverParent != null)
             {
-                if (Parent.PopupInterlock.CurrentJoin == UIBoolJoin.MCScreenSaverVisible)
-                {
-                    Parent.PopupInterlock.HideAndClear();
-                }
+                screenSaverParent.ScreenSaverController.Hide(); 
             }
+            else
+            {
+                Debug.Console(1, "Parent.Parent is null or does not implement IHasScreenSaverController");
+            }
+
 
             IncomingCallModal.PresentModalDialog(2, "Incoming Call", icon, msg,
                 "Ignore", "Accept", false, false, b =>
@@ -709,17 +717,45 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 uint holdTime = 5000;
                 presetsCodec.CodecRoomPresetsListHasChanged += new EventHandler<EventArgs>(presetsCodec_CodecRoomPresetsListHasChanged);
 
-                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset1].SetSigHeldAction(
-                    holdTime, () => presetsCodec.CodecRoomPresetStore(1, presetsCodec.NearEndPresets[0].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(1));
-                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset2].SetSigHeldAction(
-                    holdTime, () => presetsCodec.CodecRoomPresetStore(2, presetsCodec.NearEndPresets[1].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(2));
-                TriList.BooleanOutput[UIBoolJoin.VCCameraPreset3].SetSigHeldAction(
-                    holdTime, () => presetsCodec.CodecRoomPresetStore(3, presetsCodec.NearEndPresets[2].Description), ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetSelect(3));
+                var preset = 1;
+                if (presetsCodec.NearEndPresets[preset - 1] != null && presetsCodec.NearEndPresets[preset - 1].Defined)
+                {
+                    TriList.SetBool(UIBoolJoin.VCCameraPreset1Visible, true);
+                    TriList.BooleanOutput[UIBoolJoin.VCCameraPreset1].SetSigHeldAction(
+                        holdTime, ShowPresetStoreFeedback,() => presetsCodec.CodecRoomPresetStore(preset, presetsCodec.NearEndPresets[preset - 1].Description), 
+                        () => presetsCodec.CodecRoomPresetSelect(preset));
+                    TriList.StringInput[UIStringJoin.VCCameraPresetLabel1].StringValue = presetsCodec.NearEndPresets[preset - 1].Description;
+                }
+                else
+                {
+                    TriList.SetBool(UIBoolJoin.VCCameraPreset1Visible, false);
+                }
 
-                TriList.StringInput[UIStringJoin.VCCameraPresetLabel1].StringValue = presetsCodec.NearEndPresets[0].Description;
-                TriList.StringInput[UIStringJoin.VCCameraPresetLabel2].StringValue = presetsCodec.NearEndPresets[1].Description;
-                TriList.StringInput[UIStringJoin.VCCameraPresetLabel3].StringValue = presetsCodec.NearEndPresets[2].Description;
+                if (presetsCodec.NearEndPresets[1] != null && presetsCodec.NearEndPresets[1].Defined)
+                {
+                    TriList.SetBool(UIBoolJoin.VCCameraPreset2Visible, true);
+                    TriList.BooleanOutput[UIBoolJoin.VCCameraPreset2].SetSigHeldAction(
+                        holdTime, ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetStore(preset, presetsCodec.NearEndPresets[preset - 1].Description),
+                        () => presetsCodec.CodecRoomPresetSelect(preset));
+                    TriList.StringInput[UIStringJoin.VCCameraPresetLabel2].StringValue = presetsCodec.NearEndPresets[1].Description;
+                }
+                else
+                {
+                    TriList.SetBool(UIBoolJoin.VCCameraPreset2Visible, false);
+                }
 
+                if (presetsCodec.NearEndPresets[2] != null && presetsCodec.NearEndPresets[2].Defined)
+                {
+                    TriList.SetBool(UIBoolJoin.VCCameraPreset3Visible, true);
+                    TriList.BooleanOutput[UIBoolJoin.VCCameraPreset3].SetSigHeldAction(
+                        holdTime, ShowPresetStoreFeedback, () => presetsCodec.CodecRoomPresetStore(preset, presetsCodec.NearEndPresets[preset - 1].Description),
+                        () => presetsCodec.CodecRoomPresetSelect(preset));
+                    TriList.StringInput[UIStringJoin.VCCameraPresetLabel3].StringValue = presetsCodec.NearEndPresets[2].Description;
+                }
+                else
+                {
+                    TriList.SetBool(UIBoolJoin.VCCameraPreset3Visible, false);
+                }
             }
         }
 

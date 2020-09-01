@@ -272,6 +272,20 @@ namespace PepperDash.Essentials
         public const uint VCCameraPreset3 = 1283;
 
 
+        /// <summary>
+        /// 1291
+        /// </summary>
+        public const uint VCCameraPreset1Visible = 1291;
+        /// <summary>
+        /// 1292
+        /// </summary>
+        public const uint VCCameraPreset2Visible = 1292;
+        /// <summary>
+        /// 1293
+        /// </summary>
+        public const uint VCCameraPreset3Visible = 1293;
+
+
         // Letter joins start at 2921;
 
         //******************************************************

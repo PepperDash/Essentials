@@ -2,6 +2,7 @@
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.UI;
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 
@@ -10,7 +11,7 @@ namespace PepperDash.Essentials
 	/// <summary>
 	/// 
 	/// </summary>
-	public class EssentialsPanelMainInterfaceDriver : PanelDriverBase
+	public class EssentialsPanelMainInterfaceDriver : PanelDriverBase, IHasScreenSaverController
 	{
         CTimer InactivityTimer;
 
@@ -18,7 +19,7 @@ namespace PepperDash.Essentials
 		/// Assign the appropriate A/V driver.
 		/// Want to keep the AvDriver alive, because it may hold states
 		/// </summary>
-		public IAVDriver AvDriver { get; set; }
+		public IAVDriver AvDriver { get; set;}
 
         public EssentialsHeaderDriver HeaderDriver { get; set; }
 
@@ -102,6 +103,7 @@ namespace PepperDash.Essentials
 		{
 			CurrentChildDriver = null;
 			ShowSubDriver(AvDriver as PanelDriverBase);
+
             base.Show();
 		}
 
@@ -129,4 +131,9 @@ namespace PepperDash.Essentials
 				CurrentChildDriver.BackButtonPressed();
 		}
 	}
+
+    public interface IHasScreenSaverController
+    {
+        ScreenSaverController ScreenSaverController { get; }
+    }
 }
