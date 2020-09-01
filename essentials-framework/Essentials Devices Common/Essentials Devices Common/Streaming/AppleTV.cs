@@ -33,6 +33,8 @@ namespace PepperDash.Essentials.Devices.Common
 			AnyAudioOut = new RoutingOutputPort(RoutingPortNames.AnyAudioOut, eRoutingSignalType.Audio, 
 				eRoutingPortConnectionType.DigitalAudio, null, this);
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort> { HdmiOut, AnyAudioOut };
+
+            PrintExpectedIrCommands();
 		}
 
         public void PrintExpectedIrCommands()
