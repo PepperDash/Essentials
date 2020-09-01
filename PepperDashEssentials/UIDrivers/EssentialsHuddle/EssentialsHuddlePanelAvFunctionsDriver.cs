@@ -114,7 +114,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// The parent driver for this
         /// </summary>
-        PanelDriverBase Parent;
+        public PanelDriverBase Parent { get; private set; }
 
         /// <summary>
         /// All children attached to this driver.  For hiding and showing as a group.
