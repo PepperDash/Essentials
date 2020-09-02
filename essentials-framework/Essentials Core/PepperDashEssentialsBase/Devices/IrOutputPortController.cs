@@ -35,6 +35,8 @@ namespace PepperDash.Essentials.Core
 			: base(key)
 		{
 			//if (port == null) throw new ArgumentNullException("port");
+
+		    DriverLoaded = new BoolFeedback(() => DriverIsLoaded);
 			IrPort = port;
 			if (port == null)
 			{
