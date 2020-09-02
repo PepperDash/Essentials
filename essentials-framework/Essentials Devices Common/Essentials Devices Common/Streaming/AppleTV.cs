@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
@@ -32,39 +33,50 @@ namespace PepperDash.Essentials.Devices.Common
 			AnyAudioOut = new RoutingOutputPort(RoutingPortNames.AnyAudioOut, eRoutingSignalType.Audio, 
 				eRoutingPortConnectionType.DigitalAudio, null, this);
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort> { HdmiOut, AnyAudioOut };
+
+            PrintExpectedIrCommands();
 		}
 
+        public void PrintExpectedIrCommands()
+        {
+            var cmds = typeof (AppleTvIrCommands).GetCType().GetFields(BindingFlags.Public | BindingFlags.Static);
 
-		#region IDPad Members
+            foreach (var value in cmds.Select(cmd => cmd.GetValue(null)).OfType<string>())
+            {
+                Debug.Console(2, this, "Expected IR Function Name: {0}", value);
+            }
+        }
+
+        #region IDPad Members
 
 		public void Up(bool pressRelease)
 		{
-			IrPort.PressRelease("+", pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Up, pressRelease);
 		}
 
 		public void Down(bool pressRelease)
 		{
-			IrPort.PressRelease("-", pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Down, pressRelease);
 		}
 
 		public void Left(bool pressRelease)
 		{
-			IrPort.PressRelease(IROutputStandardCommands.IROut_TRACK_MINUS, pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Left, pressRelease);
 		}
 
 		public void Right(bool pressRelease)
 		{
-			IrPort.PressRelease(IROutputStandardCommands.IROut_TRACK_PLUS, pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Right, pressRelease);
 		}
 
 		public void Select(bool pressRelease)
 		{
-			IrPort.PressRelease(IROutputStandardCommands.IROut_ENTER, pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Enter, pressRelease);
 		}
 
 		public void Menu(bool pressRelease)
 		{
-			IrPort.PressRelease("Menu", pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.Menu, pressRelease);
 		}
 
 		public void Exit(bool pressRelease)
@@ -78,12 +90,12 @@ namespace PepperDash.Essentials.Devices.Common
 
 		public void Play(bool pressRelease)
 		{
-			IrPort.PressRelease("PLAY/PAUSE", pressRelease);
+			IrPort.PressRelease(AppleTvIrCommands.PlayPause, pressRelease);
 		}
 
 		public void Pause(bool pressRelease)
 		{
-			IrPort.PressRelease("PLAY/PAUSE", pressRelease);
+            IrPort.PressRelease(AppleTvIrCommands.PlayPause, pressRelease);
 		}
 
 		/// <summary>
@@ -190,4 +202,17 @@ namespace PepperDash.Essentials.Devices.Common
         }
     }
 
+    public static class AppleTvIrCommands
+    {
+        
+        public static string Up = "+";
+        public static string Down = "-";
+        public static string Left = IROutputStandardCommands.IROut_TRACK_MINUS;
+        public static string Right = IROutputStandardCommands.IROut_TRACK_PLUS;
+        public static string Enter = IROutputStandardCommands.IROut_ENTER;
+        public static string PlayPause = "PLAY/PAUSE";
+        public static string Rewind = "REWIND";
+        public static string Menu = "Menu";
+        public static string FastForward = "FASTFORWARD";
+    }
 }

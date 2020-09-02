@@ -25,6 +25,8 @@ namespace PepperDash.Essentials.Core
 		public string DriverFilepath { get; private set; }
 		public bool DriverIsLoaded { get; private set; }
 
+        public string[] IrFileCommands { get { return IrPort.AvailableStandardIRCmds(IrPortUid); } }
+
 		/// <summary>
 		/// Constructor for IrDevice base class.  If a null port is provided, this class will 
 		/// still function without trying to talk to a port.
@@ -49,9 +51,30 @@ namespace PepperDash.Essentials.Core
             AddPostActivationAction(() =>
             {
                 IrPort = postActivationFunc(config);
+
+                if (IrPort == null)
+                {
+                    Debug.Console(0, this, "WARNING No valid IR Port assigned to controller. IR will not function");
+                    return;
+                }
+                
+                var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + config.Properties["control"]["irFile"].Value<string>();
+                Debug.Console(1, "*************Attemting to load IR file: {0}***************", filePath);
+
+                LoadDriver(filePath);
+                    
+                PrintAvailableCommands();
             });
 	    }
 
+	    public void PrintAvailableCommands()
+	    {
+            Debug.Console(2, this, "Available IR Commands in IR File {0}", IrPortUid);
+            foreach (var cmd in IrPort.AvailableIRCmds())
+            {
+                Debug.Console(2, this, "{0}", cmd);
+            }
+	    }
 	    
 
 	    /// <summary>
@@ -60,14 +83,15 @@ namespace PepperDash.Essentials.Core
 		/// <param name="path"></param>
 		public void LoadDriver(string path)
 		{
+            Debug.Console(2, this, "***Loading IR File***");
 			if (string.IsNullOrEmpty(path)) path = DriverFilepath;
-			try
-			{
-				IrPortUid = IrPort.LoadIRDriver(path);
-				DriverFilepath = path;
-				StandardIrPulseTime = 200;
-				DriverIsLoaded = true;
-			}
+	        try
+	        {
+	            IrPortUid = IrPort.LoadIRDriver(path);
+	            DriverFilepath = path;
+	            StandardIrPulseTime = 200;
+	            DriverIsLoaded = true;
+	        }
 			catch
 			{
 				DriverIsLoaded = false;
