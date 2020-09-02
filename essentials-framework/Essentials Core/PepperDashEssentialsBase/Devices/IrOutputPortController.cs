@@ -21,6 +21,8 @@ namespace PepperDash.Essentials.Core
 		uint IrPortUid;
 		IROutputPort IrPort;
 
+        public BoolFeedback DriverLoaded { get; private set; }
+
 		public ushort StandardIrPulseTime { get; set; }
 		public string DriverFilepath { get; private set; }
 		public bool DriverIsLoaded { get; private set; }
@@ -93,13 +95,15 @@ namespace PepperDash.Essentials.Core
 	            DriverFilepath = path;
 	            StandardIrPulseTime = 200;
 	            DriverIsLoaded = true;
+
+                DriverLoaded.FireUpdate();
 	        }
 			catch
 			{
 				DriverIsLoaded = false;
 				var message = string.Format("WARNING IR Driver '{0}' failed to load", path);
-				Debug.Console(0, this, message);
-				ErrorLog.Error(message);
+				Debug.Console(0, this, Debug.ErrorLogLevel.Error, message);
+                DriverLoaded.FireUpdate();
 			}
 		}
 

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
@@ -7,28 +9,97 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash_Essentials_Core.Devices
 {
-    public class GenericIRController: EssentialsBridgeableDevice
+    public class GenericIrController: EssentialsBridgeableDevice
     {
-        private readonly IrOutputPortController _port;
+        //data storage for bridging
+        private BasicTriList _trilist;
+        private uint _joinStart;
+        private string _joinMapKey;
+        private EiscApiAdvanced _bridge;
 
-        public GenericIRController(string key, string name, IrOutputPortController irPort) : base(key, name)
+        private readonly IrOutputPortController _port; 
+
+        public GenericIrController(string key, string name, IrOutputPortController irPort) : base(key, name)
         {
             _port = irPort;
 
             DeviceManager.AddDevice(_port);
+
+            _port.DriverLoaded.OutputChange += DriverLoadedOnOutputChange;
+        }
+
+        private void DriverLoadedOnOutputChange(object sender, FeedbackEventArgs args)
+        {
+            if (!args.BoolValue)
+            {
+                return;
+            }
+
+            LinkToApi(_trilist, _joinStart, _joinMapKey, _bridge);
         }
 
         #region Overrides of EssentialsBridgeableDevice
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            throw new System.NotImplementedException();
+            //if driver isn't loaded yet, store the variables until it is loaded, then call the LinkToApi method again
+            if (!_port.DriverIsLoaded)
+            {
+                _trilist = trilist;
+                _joinStart = joinStart;
+                _joinMapKey = joinMapKey;
+                _bridge = bridge;
+                return;
+            }
+
+            var joinMap = new GenericIrControllerJoinMap(joinStart);
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<GenericIrControllerJoinMap>(joinMapSerialized);
+
+            for (uint i = 0; i < _port.IrFileCommands.Length; i++)
+            {
+                joinMap.Joins.Add(_port.IrFileCommands[i],
+                    new JoinDataComplete(new JoinData {JoinNumber = i + joinStart, JoinSpan = 1},
+                        new JoinMetadata
+                        {
+                            Description = _port.IrFileCommands[i],
+                            JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                            JoinType = eJoinType.Digital
+                        }));
+
+                var index = i;
+                trilist.SetBoolSigAction(i + joinStart, (b) => Press(_port.IrFileCommands[index], b));
+            }
+
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
         }
 
         #endregion
+
+        public void Press(string command, bool pressRelease)
+        {
+            _port.PressRelease(command, pressRelease);
+        }
     }
 
-    public class GenericIrControllerFactory : EssentialsDeviceFactory<GenericIRController>
+    public sealed class GenericIrControllerJoinMap : JoinMapBaseAdvanced
+    {
+        public GenericIrControllerJoinMap(uint joinStart) : base(joinStart)
+        {
+        }
+    }
+
+    public class GenericIrControllerFactory : EssentialsDeviceFactory<GenericIrController>
     {
         public GenericIrControllerFactory()
         {
@@ -42,7 +113,7 @@ namespace PepperDash_Essentials_Core.Devices
 
             var irPort = IRPortHelper.GetIrOutputPortController(dc);
 
-            return new GenericIRController(dc.Key, dc.Name, irPort);
+            return new GenericIrController(dc.Key, dc.Name, irPort);
         }
 
         #endregion
