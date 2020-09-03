@@ -19,6 +19,8 @@ namespace PepperDash_Essentials_Core.Devices
 
         private readonly IrOutputPortController _port; 
 
+        public string[] IrCommands {get { return _port.IrFileCommands; }}
+
         public GenericIrController(string key, string name, IrOutputPortController irPort) : base(key, name)
         {
             _port = irPort;
