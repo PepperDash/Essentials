@@ -8,17 +8,16 @@ namespace PepperDash_Essentials_Core.Queues
     /// <summary>
     /// Threadsafe processing of queued items with pacing if required
     /// </summary>
-    /// <typeparam name="T">Type of item to be processed</typeparam>
-    public class GenericQueue<T> : IQueue<T> where T : class
+    public class GenericQueue : IQueue<IQueueMessage>
     {
         private readonly string _key;
-        protected readonly CrestronQueue<T> _queue;
+        protected readonly CrestronQueue<IQueueMessage> _queue;
         protected readonly Thread _worker;
         protected readonly CEvent _waitHandle = new CEvent();
         
         private readonly bool _delayEnabled;
         private readonly int _delayTime;
-        
+
         /// <summary>
         /// If the instance has been disposed.
         /// </summary>
@@ -28,12 +27,11 @@ namespace PepperDash_Essentials_Core.Queues
         /// Constructor for generic queue with no pacing
         /// </summary>
         /// <param name="key">Key</param>
-        /// <param name="processQueueAction">Action to process items in the queue</param>
-        public GenericQueue(string key, Action<T> processQueueAction)
+        public GenericQueue(string key)
         {
             _key = key;
-            _queue = new CrestronQueue<T>();
-            _worker = new Thread(ProcessQueue, processQueueAction, Thread.eThreadStartOptions.Running);
+            _queue = new CrestronQueue<IQueueMessage>();
+            _worker = new Thread(ProcessQueue, null, Thread.eThreadStartOptions.Running);
 
             CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
             {
@@ -48,10 +46,9 @@ namespace PepperDash_Essentials_Core.Queues
         /// Constructor for generic queue with no pacing
         /// </summary>
         /// <param name="key">Key</param>
-        /// <param name="processQueueAction">Action to process items in the queue</param>
         /// <param name="pacing">Pacing in ms between actions</param>
-        public GenericQueue(string key, Action<T> processQueueAction, int pacing)
-            : this(key, processQueueAction)
+        public GenericQueue(string key, int pacing)
+            : this(key)
         {
             _delayEnabled = pacing > 0;
             _delayTime = pacing;
@@ -64,13 +61,9 @@ namespace PepperDash_Essentials_Core.Queues
         /// <returns>Null when the thread is exited</returns>
         private object ProcessQueue(object obj)
         {
-            var action = obj as Action<T>;
-            if (action == null)
-                throw new ArgumentNullException("obj");
-
             while (true)
             {
-                T item = null;
+                IQueueMessage item = null;
 
                 if (_queue.Count > 0)
                 {
@@ -83,14 +76,14 @@ namespace PepperDash_Essentials_Core.Queues
                     try
                     {
                         Debug.Console(2, this, "Processing queue item: '{0}'", item.ToString());
-                        action(item);
+                        item.Dispatch();
 
                         if (_delayEnabled)
                             Thread.Sleep(_delayTime);
                     }
                     catch (Exception ex)
                     {
-                        Debug.ConsoleWithLog(0, this, "Caught an exception in the ComsQueue {0}\r{1}\r{2}", ex.Message, ex.InnerException, ex.StackTrace);
+                        Debug.ConsoleWithLog(0, this, "Caught an exception in the Queue {0}\r{1}\r{2}", ex.Message, ex.InnerException, ex.StackTrace);
                     }
                 }
                 else _waitHandle.Wait();
@@ -99,12 +92,7 @@ namespace PepperDash_Essentials_Core.Queues
             return null;
         }
 
-        /// <summary>
-        /// Enqueues an item and processes the queue.  If 'null' is enqueued the thread will close and
-        /// the class must be reinstantiated.
-        /// </summary>
-        /// <param name="item">Item to be processed</param>
-        public virtual void Enqueue(T item)
+        public void Enqueue(IQueueMessage item)
         {
             _queue.Enqueue(item);
             _waitHandle.Set();

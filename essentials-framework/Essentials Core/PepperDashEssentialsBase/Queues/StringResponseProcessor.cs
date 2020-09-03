@@ -6,13 +6,15 @@ namespace PepperDash_Essentials_Core.Queues
 {
     public sealed class StringResponseProcessor : IKeyed, IDisposable
     {
-        private readonly IQueue<string> _queue;
+        private readonly Action<string> _processStringAction; 
+        private readonly IQueue<IQueueMessage> _queue;
         private readonly IBasicCommunication _coms;
         private readonly CommunicationGather _gather;
 
         private StringResponseProcessor(string key, Action<string> processStringAction)
         {
-            _queue = new StringQueue(key, processStringAction);
+            _processStringAction = processStringAction;
+            _queue = new GenericQueue(key);
 
             CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
             {
@@ -49,7 +51,7 @@ namespace PepperDash_Essentials_Core.Queues
 
         private void OnResponseReceived(object sender, GenericCommMethodReceiveTextArgs args)
         {
-            _queue.Enqueue(args.Text);
+            _queue.Enqueue(new ProcessStringMessage(args.Text, _processStringAction));
         }
 
         /// <summary>
