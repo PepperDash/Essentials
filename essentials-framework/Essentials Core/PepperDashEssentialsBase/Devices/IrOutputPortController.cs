@@ -21,6 +21,8 @@ namespace PepperDash.Essentials.Core
 		uint IrPortUid;
 		IROutputPort IrPort;
 
+        public BoolFeedback DriverLoaded { get; private set; }
+
 		public ushort StandardIrPulseTime { get; set; }
 		public string DriverFilepath { get; private set; }
 		public bool DriverIsLoaded { get; private set; }
@@ -35,6 +37,8 @@ namespace PepperDash.Essentials.Core
 			: base(key)
 		{
 			//if (port == null) throw new ArgumentNullException("port");
+
+		    DriverLoaded = new BoolFeedback(() => DriverIsLoaded);
 			IrPort = port;
 			if (port == null)
 			{
@@ -48,6 +52,7 @@ namespace PepperDash.Essentials.Core
 	        DeviceConfig config)
 	        : base(key)
 	    {
+            DriverLoaded = new BoolFeedback(() => DriverIsLoaded);
             AddPostActivationAction(() =>
             {
                 IrPort = postActivationFunc(config);
@@ -59,7 +64,7 @@ namespace PepperDash.Essentials.Core
                 }
                 
                 var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + config.Properties["control"]["irFile"].Value<string>();
-                Debug.Console(1, "*************Attemting to load IR file: {0}***************", filePath);
+                Debug.Console(1, "*************Attempting to load IR file: {0}***************", filePath);
 
                 LoadDriver(filePath);
                     
@@ -91,13 +96,15 @@ namespace PepperDash.Essentials.Core
 	            DriverFilepath = path;
 	            StandardIrPulseTime = 200;
 	            DriverIsLoaded = true;
+
+                DriverLoaded.FireUpdate();
 	        }
 			catch
 			{
 				DriverIsLoaded = false;
 				var message = string.Format("WARNING IR Driver '{0}' failed to load", path);
-				Debug.Console(0, this, message);
-				ErrorLog.Error(message);
+				Debug.Console(0, this, Debug.ErrorLogLevel.Error, message);
+                DriverLoaded.FireUpdate();
 			}
 		}
 
