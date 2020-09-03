@@ -23,6 +23,11 @@ namespace PepperDash_Essentials_Core.Devices
         {
             _port = irPort;
 
+            if (_port == null)
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Error, "IR Port is null, device will not function");
+                return;
+            }
             DeviceManager.AddDevice(_port);
 
             _port.DriverLoaded.OutputChange += DriverLoadedOnOutputChange;
@@ -31,6 +36,11 @@ namespace PepperDash_Essentials_Core.Devices
         private void DriverLoadedOnOutputChange(object sender, FeedbackEventArgs args)
         {
             if (!args.BoolValue)
+            {
+                return;
+            }
+
+            if (_trilist == null || _bridge == null)
             {
                 return;
             }
@@ -61,21 +71,23 @@ namespace PepperDash_Essentials_Core.Devices
 
             for (uint i = 0; i < _port.IrFileCommands.Length; i++)
             {
-                var joinData = new JoinDataComplete(new JoinData {JoinNumber = i + joinStart, JoinSpan = 1},
+                var cmd = _port.IrFileCommands[i];
+                var joinData = new JoinDataComplete(new JoinData {JoinNumber = i, JoinSpan = 1},
                     new JoinMetadata
                     {
-                        Description = _port.IrFileCommands[i],
+                        Description = cmd,
                         JoinCapabilities = eJoinCapabilities.FromSIMPL,
                         JoinType = eJoinType.Digital
                     });
 
                 joinData.SetJoinOffset(joinStart);
 
-                joinMap.Joins.Add(_port.IrFileCommands[i],joinData);
+                joinMap.Joins.Add(cmd,joinData);
 
-                var index = i;
-                trilist.SetBoolSigAction(joinData.JoinNumber, (b) => Press(_port.IrFileCommands[index], b));
+                trilist.SetBoolSigAction(joinData.JoinNumber, (b) => Press(cmd, b));
             }
+
+            joinMap.PrintJoinMapInfo();
 
             if (bridge != null)
             {

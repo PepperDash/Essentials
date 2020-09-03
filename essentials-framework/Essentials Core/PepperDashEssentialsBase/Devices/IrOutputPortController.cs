@@ -52,6 +52,7 @@ namespace PepperDash.Essentials.Core
 	        DeviceConfig config)
 	        : base(key)
 	    {
+            DriverLoaded = new BoolFeedback(() => DriverIsLoaded);
             AddPostActivationAction(() =>
             {
                 IrPort = postActivationFunc(config);
@@ -63,7 +64,7 @@ namespace PepperDash.Essentials.Core
                 }
                 
                 var filePath = Global.FilePathPrefix + "ir" + Global.DirectorySeparator + config.Properties["control"]["irFile"].Value<string>();
-                Debug.Console(1, "*************Attemting to load IR file: {0}***************", filePath);
+                Debug.Console(1, "*************Attempting to load IR file: {0}***************", filePath);
 
                 LoadDriver(filePath);
                     
