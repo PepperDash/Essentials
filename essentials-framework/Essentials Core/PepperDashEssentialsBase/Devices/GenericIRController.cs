@@ -61,17 +61,20 @@ namespace PepperDash_Essentials_Core.Devices
 
             for (uint i = 0; i < _port.IrFileCommands.Length; i++)
             {
-                joinMap.Joins.Add(_port.IrFileCommands[i],
-                    new JoinDataComplete(new JoinData {JoinNumber = i + joinStart, JoinSpan = 1},
-                        new JoinMetadata
-                        {
-                            Description = _port.IrFileCommands[i],
-                            JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                            JoinType = eJoinType.Digital
-                        }));
+                var joinData = new JoinDataComplete(new JoinData {JoinNumber = i + joinStart, JoinSpan = 1},
+                    new JoinMetadata
+                    {
+                        Description = _port.IrFileCommands[i],
+                        JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                        JoinType = eJoinType.Digital
+                    });
+
+                joinData.SetJoinOffset(joinStart);
+
+                joinMap.Joins.Add(_port.IrFileCommands[i],joinData);
 
                 var index = i;
-                trilist.SetBoolSigAction(i + joinStart, (b) => Press(_port.IrFileCommands[index], b));
+                trilist.SetBoolSigAction(joinData.JoinNumber, (b) => Press(_port.IrFileCommands[index], b));
             }
 
             if (bridge != null)
