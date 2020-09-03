@@ -179,7 +179,7 @@ namespace PepperDash.Essentials.Core
 	{
 		public static eDeviceRegistrationUnRegistrationResponse RegisterWithLogging(this GenericBase device, string key)
 		{
-			var result = device.Register();
+		    var result = device.Register();
 			var level = result == eDeviceRegistrationUnRegistrationResponse.Success ?
 				Debug.ErrorLogLevel.Notice : Debug.ErrorLogLevel.Error;
 			Debug.Console(0, level, "Register device result: '{0}', type '{1}', result {2}", key, device, result);
