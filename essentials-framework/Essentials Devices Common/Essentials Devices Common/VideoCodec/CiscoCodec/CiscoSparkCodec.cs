@@ -12,10 +12,12 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash_Essentials_Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
@@ -25,9 +27,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
     public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
-        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching
+        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching, IHasBranding
     {
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
+
+        private CTimer _brandingTimer;
 
         public CommunicationGather PortGather { get; private set; }
 
@@ -401,10 +405,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
 			CreateOsdSource();
 
-			if (props.ExternalSourceListEnabled != null)
-			{
-				ExternalSourceListEnabled = props.ExternalSourceListEnabled;
-			}
+            ExternalSourceListEnabled = props.ExternalSourceListEnabled;
+
+            if (props.UiBranding == null)
+            {
+                return;
+            }
+
+            BrandingEnabled = props.UiBranding.Enable;
+            _brandingUrl = props.UiBranding.BrandingUrl;
         }
 
         /// <summary>
@@ -443,6 +452,70 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			TieLineCollection.Default.Add(tl);
 		}
 
+        public void InitializeBranding(string roomKey)
+        {
+            if (!BrandingEnabled)
+            {
+                return;
+            }
+
+            var mcBridgeKey = String.Format("mobileControlBridge-{0}", roomKey);
+
+            var mcBridge = DeviceManager.GetDeviceForKey(mcBridgeKey) as IMobileControlRoomBridge;
+
+            if (!String.IsNullOrEmpty(_brandingUrl))
+            {
+                if (_brandingTimer != null)
+                {
+                    _brandingTimer.Stop();
+                    _brandingTimer.Dispose();
+                }
+
+                _brandingTimer = new CTimer((o) =>
+                {
+                    if (_sendMcUrl)
+                    {
+                        SendMcBrandingUrl(mcBridge);
+                        _sendMcUrl = false;
+                    }
+                    else
+                    {
+                        SendBrandingUrl();
+                        _sendMcUrl = true;
+                    }
+                }, 0, 15000);
+            } else if (String.IsNullOrEmpty(_brandingUrl))
+            {
+                if (mcBridge == null) return;
+
+                mcBridge.UserCodeChanged += (o, a) => SendMcBrandingUrl(mcBridge);
+
+                SendMcBrandingUrl(mcBridge);
+            }
+        }
+
+        private void SendMcBrandingUrl(IMobileControlRoomBridge mcBridge)
+        {
+            if (mcBridge == null)
+            {
+                return;
+            }
+
+            SendText(String.Format(
+                            "xcommand userinterface branding fetch type: branding url: {0}",
+                            mcBridge.QrCodeUrl));
+            SendText(String.Format(
+                "xcommand userinterface branding fetch type: halfwakebranding url: {0}",
+                mcBridge.QrCodeUrl));
+        }
+
+        private void SendBrandingUrl()
+        {
+            SendText(String.Format("xcommand userinterface branding fetch type: branding url: {0}",
+                            _brandingUrl));
+            SendText(String.Format("xcommand userinterface branding fetch type: halfwakebranding url: {0}",
+                _brandingUrl));
+        }
         /// <summary>
         /// Starts the HTTP feedback server and syncronizes state of codec
         /// </summary>
@@ -1834,6 +1907,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			get;
 			private set; 
 		}
+
+        public bool BrandingEnabled { get; private set; }
+        private string _brandingUrl;
+        private bool _sendMcUrl;
 
 		/// <summary>
 		/// Adds an external source to the Cisco 
