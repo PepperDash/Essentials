@@ -57,6 +57,6 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         public bool Enable { get; set; }
 
         [JsonProperty("brandingUrl")]
-        public bool LogoUrl { get; set; }
+        public string BrandingUrl { get; set; }
     }
 }
