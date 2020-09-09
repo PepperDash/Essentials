@@ -135,6 +135,13 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         void TriggerAutoFocus();
     }
 
+    public interface IHasAutoFocusMode
+    {
+        void SetFocusModeAuto();
+        void SetFocusModeManual();
+        void ToggleFocusMode();
+    }
+
     public interface IHasCameraAutoMode : IHasCameraControls
     {
         void CameraAutoModeOn();
