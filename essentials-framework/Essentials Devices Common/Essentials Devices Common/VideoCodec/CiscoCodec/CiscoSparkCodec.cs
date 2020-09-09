@@ -455,7 +455,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void InitializeBranding(string roomKey)
         {
-            Debug.Console(2, this, "Initializing Branding for room {0}", roomKey);
+            Debug.Console(1, this, "Initializing Branding for room {0}", roomKey);
 
             if (!BrandingEnabled)
             {
@@ -468,6 +468,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             if (!String.IsNullOrEmpty(_brandingUrl))
             {
+                Debug.Console(1, this, "Branding URL found: {0}", _brandingUrl);
                 if (_brandingTimer != null)
                 {
                     _brandingTimer.Stop();
@@ -489,6 +490,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 }, 0, 15000);
             } else if (String.IsNullOrEmpty(_brandingUrl))
             {
+                Debug.Console(1, this, "No Branding URL found");
                 if (mcBridge == null) return;
 
                 Debug.Console(2, this, "Setting QR code URL: {0}", mcBridge.QrCodeUrl);
@@ -506,6 +508,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 return;
             }
 
+            Debug.Console(1, this, "Sending url: {0}", mcBridge.QrCodeUrl);
+
             SendText(String.Format(
                             "xcommand userinterface branding fetch type: branding url: {0}",
                             mcBridge.QrCodeUrl));
@@ -516,6 +520,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         private void SendBrandingUrl()
         {
+            Debug.Console(1, this, "Sending url: {0}", _brandingUrl);
+
             SendText(String.Format("xcommand userinterface branding fetch type: branding url: {0}",
                             _brandingUrl));
             SendText(String.Format("xcommand userinterface branding fetch type: halfwakebranding url: {0}",

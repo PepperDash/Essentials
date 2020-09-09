@@ -731,6 +731,7 @@ namespace PepperDash.Essentials
 
             if (vcWithBranding == null) return;
 
+            Debug.Console(1, this, "Setting Codec Branding");
             vcWithBranding.InitializeBranding(Key);
         }
 		
