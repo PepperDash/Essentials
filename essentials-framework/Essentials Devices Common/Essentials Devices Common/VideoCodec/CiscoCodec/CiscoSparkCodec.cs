@@ -510,6 +510,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             Debug.Console(1, this, "Sending url: {0}", mcBridge.QrCodeUrl);
 
+            SendText("xconfiguration userinterface custommessage: \"Scan the QR code with a mobile phone to get started\"");
+            SendText("xconfiguration userinterface osd halfwakemessage: \"Tap the touch panel or scan the QR code with a mobile phone to get started\"");
+
             SendText(String.Format(
                             "xcommand userinterface branding fetch type: branding url: {0}",
                             mcBridge.QrCodeUrl));
