@@ -314,7 +314,7 @@ namespace PepperDash.Essentials
 
 
                 VideoCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();
-				VideoCodec.IsReadyChange += (o, a) => this.SetCodecExternalSources(); 
+				VideoCodec.IsReadyChange += (o, a) => { this.SetCodecExternalSources(); SetCodecBranding(); }; 
 
                 if (AudioCodec != null)
                     AudioCodec.CallStatusChange += (o, a) => this.InCallFeedback.FireUpdate();

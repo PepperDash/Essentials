@@ -411,12 +411,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 return;
             }
+            Debug.Console(2, this, "Setting branding properties enable: {0} _brandingUrl {1}", props.UiBranding.Enable,
+                props.UiBranding.BrandingUrl);
 
             BrandingEnabled = props.UiBranding.Enable;
             _brandingUrl = props.UiBranding.BrandingUrl;
         }
 
-        /// <summary>
         /// Runs in it's own thread to dequeue messages in the order they were received to be processed
         /// </summary>
         /// <returns></returns>
@@ -454,6 +455,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void InitializeBranding(string roomKey)
         {
+            Debug.Console(2, this, "Initializing Branding for room {0}", roomKey);
+
             if (!BrandingEnabled)
             {
                 return;
@@ -487,6 +490,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             } else if (String.IsNullOrEmpty(_brandingUrl))
             {
                 if (mcBridge == null) return;
+
+                Debug.Console(2, this, "Setting QR code URL: {0}", mcBridge.QrCodeUrl);
 
                 mcBridge.UserCodeChanged += (o, a) => SendMcBrandingUrl(mcBridge);
 
