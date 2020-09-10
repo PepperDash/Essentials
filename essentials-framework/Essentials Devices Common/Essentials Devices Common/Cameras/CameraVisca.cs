@@ -72,6 +72,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         /// Used to determine when to move the camera at a faster speed if a direction is held
         /// </summary>
         CTimer SpeedTimer;
+        // TODO: Implment speed timer for PTZ controls
 
         long FastSpeedHoldTimeMs = 2000;
 
@@ -342,17 +343,71 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             }
         }
 
-		private void SendPanTiltCommand (byte[] cmd)
+        /// <summary>
+        /// Sends a pan/tilt command. If the command is not for fastSpeed then it starts a timer to initiate fast speed.
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="fastSpeed"></param>
+		private void SendPanTiltCommand (byte[] cmd, bool fastSpeedEnabled)
 		{
-			var temp = new byte[] { ID, 0x01, 0x06, 0x01, PanSpeedSlow, TiltSpeedSlow };
-			int length = temp.Length + cmd.Length + 1;
-			
-			byte[] sum = new byte[length];
-			temp.CopyTo(sum, 0);
-			cmd.CopyTo(sum, temp.Length);
-			sum[length - 1] = 0xFF;
-			SendBytes(sum);			
+            SendBytes(GetPanTiltCommand(cmd, fastSpeedEnabled));
+
+            if (!fastSpeedEnabled)
+            {
+                if (SpeedTimer != null)
+                {
+                    StopSpeedTimer();
+                }
+
+                // Start the timer to send fast speed if still moving after FastSpeedHoldTime elapses
+                SpeedTimer = new CTimer((o) => SendPanTiltCommand(GetPanTiltCommand(cmd, true), true), FastSpeedHoldTimeMs);
+            }
+
 		}
+
+        private void StopSpeedTimer()
+        {
+            if (SpeedTimer != null)
+            {
+                SpeedTimer.Stop();
+                SpeedTimer.Dispose();
+                SpeedTimer = null;
+            }     
+        }
+
+        /// <summary>
+        /// Generates the pan/tilt command with either slow or fast speed
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="fastSpeed"></param>
+        /// <returns></returns>
+        private byte[] GetPanTiltCommand(byte[] cmd, bool fastSpeed)
+        {
+            byte panSpeed;
+            byte tiltSpeed;
+
+            if (!fastSpeed)
+            {
+                panSpeed = PanSpeedSlow;
+                tiltSpeed = TiltSpeedSlow;
+            }
+            else
+            {
+                panSpeed = PanSpeedFast;
+                tiltSpeed = TiltSpeedFast;
+            }
+
+            var temp = new byte[] { ID, 0x01, 0x06, 0x01, panSpeed, tiltSpeed };
+            int length = temp.Length + cmd.Length + 1;
+
+            byte[] sum = new byte[length];
+            temp.CopyTo(sum, 0);
+            cmd.CopyTo(sum, temp.Length);
+            sum[length - 1] = 0xFF;
+
+            return sum;
+        }
+
 
         void SendPowerQuery()
         {
@@ -397,16 +452,14 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 PowerOn();
         }
 
-
-
 		public void PanLeft() 
 		{
-			SendPanTiltCommand(new byte[] {0x01, 0x03});
+			SendPanTiltCommand(new byte[] {0x01, 0x03}, false);
 			IsMoving = true;
 		}
 		public void PanRight() 
 		{
-			SendPanTiltCommand(new byte[] { 0x02, 0x03 });
+            SendPanTiltCommand(new byte[] { 0x02, 0x03 }, false);
 			IsMoving = true;
 		}
         public void PanStop()
@@ -415,12 +468,12 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         }
 		public void TiltDown() 
 		{
-			SendPanTiltCommand(new byte[] { 0x03, 0x02 });
+            SendPanTiltCommand(new byte[] { 0x03, 0x02 }, false);
 			IsMoving = true;
 		}
 		public void TiltUp() 
 		{
-			SendPanTiltCommand(new byte[] { 0x03, 0x01 });
+            SendPanTiltCommand(new byte[] { 0x03, 0x01 }, false);
 			IsMoving = true;
 		}
         public void TiltStop()
@@ -432,6 +485,8 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 		{
 			SendBytes(new byte[] {ID, 0x01, 0x04, 0x07, cmd, 0xFF} );
 		}
+
+
 		public void ZoomIn() 
 		{
             SendZoomCommand(ZoomInCmd);
@@ -456,7 +511,8 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 			}
 			else
 			{
-				SendPanTiltCommand(new byte[] {0x03, 0x03});
+                StopSpeedTimer();
+                SendPanTiltCommand(new byte[] { 0x03, 0x03 }, false);
 				IsMoving = false;
 			}
 		}
