@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Newtonsoft.Json;
@@ -14,6 +15,12 @@ namespace PepperDash.Essentials.Core.Config
 	/// </summary>
 	public class ConfigReader
 	{
+	    public const string LocalConfigPresent =
+            @"
+***************************************************
+************* Using Local config file *************
+***************************************************";
+
 		public static EssentialsConfig ConfigObject { get; private set; }
 
 		public static bool LoadConfig2()
@@ -40,10 +47,10 @@ namespace PepperDash.Essentials.Core.Config
                             "****Error: Multiple Local Configuration files present. Please ensure only a single file exists and reset program.****");
                         return false;
                     }
-                    else if(configFiles.Length == 1)
+                    if(configFiles.Length == 1)
                     {
                         localConfigFound = true;
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Found Local config file: '{0}'", filePath);
+                        
                     }
                 }
                 else
@@ -92,6 +99,12 @@ namespace PepperDash.Essentials.Core.Config
 
                 // Get the actual file path
                 filePath = configFiles[0].FullName;
+
+                // Generate debug statement if using a local file.
+			    if (localConfigFound)
+			    {
+                    GetLocalFileMessage(filePath);
+			    }
 
                 // Read the file
                 using (StreamReader fs = new StreamReader(filePath))
@@ -178,6 +191,64 @@ namespace PepperDash.Essentials.Core.Config
             var dev = ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
             return dev == null ? null : dev.Group;
         }
+
+	    private static void GetLocalFileMessage(string filePath)
+	    {
+            var filePathLength = filePath.Length + 2;
+            var debugStringWidth = filePathLength + 12;
+
+            if (debugStringWidth < 51)
+            {
+                debugStringWidth = 51;
+            }
+            var qualifier = (filePathLength % 2 != 0)
+                ? " Using Local Config File "
+                : " Using Local  Config File ";
+            var bookend1 = (debugStringWidth - qualifier.Length) / 2;
+            var bookend2 = (debugStringWidth - filePathLength) / 2;
+
+
+	        var newDebugString = new StringBuilder()
+	            .Append(CrestronEnvironment.NewLine)
+                // Line 1
+	            .Append(new string('*', debugStringWidth))
+	            .Append(CrestronEnvironment.NewLine)
+                // Line 2
+	            .Append(new string('*', debugStringWidth))
+	            .Append(CrestronEnvironment.NewLine)
+                // Line 3
+	            .Append(new string('*', 2))
+	            .Append(new string(' ', debugStringWidth - 4))
+	            .Append(new string('*', 2))
+	            .Append(CrestronEnvironment.NewLine)
+                // Line 4
+	            .Append(new string('*', 2))
+	            .Append(new string(' ', bookend1 - 2))
+	            .Append(qualifier)
+	            .Append(new string(' ', bookend1 - 2))
+	            .Append(new string('*', 2))
+	            .Append(CrestronEnvironment.NewLine)
+                // Line 5
+	            .Append(new string('*', 2))
+	            .Append(new string(' ', bookend2 - 2))
+	            .Append(" " + filePath + " ")
+	            .Append(new string(' ', bookend2 - 2))
+	            .Append(new string('*', 2))
+	            .Append(CrestronEnvironment.NewLine)
+                // Line 6
+	            .Append(new string('*', 2))
+	            .Append(new string(' ', debugStringWidth - 4))
+	            .Append(new string('*', 2))
+	            .Append(CrestronEnvironment.NewLine)
+                // Line 7
+	            .Append(new string('*', debugStringWidth))
+	            .Append(CrestronEnvironment.NewLine)
+                // Line 8
+	            .Append(new string('*', debugStringWidth));
+
+            Debug.Console(2, Debug.ErrorLogLevel.Notice, "Found Local config file: '{0}'", filePath);
+            Debug.Console(0, newDebugString.ToString());
+	    }
 
 	}
 }
