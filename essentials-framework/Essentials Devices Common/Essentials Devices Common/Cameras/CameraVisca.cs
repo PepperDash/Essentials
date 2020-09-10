@@ -38,11 +38,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
 		public byte PanSpeedSlow = 0x10;
 		public byte TiltSpeedSlow = 0x10;
-        public byte ZoomSpeedSlow = 0x03;
 
         public byte PanSpeedFast = 0x13;
         public byte TiltSpeedFast = 0x13;
-        public byte ZoomSpeedFast = 0x05;
 
 		private bool IsMoving;
 		private bool IsZooming;
@@ -151,15 +149,6 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
             if (PropertiesConfig.TiltSpeedFast > 0)
             {
                 TiltSpeedFast = (byte)PropertiesConfig.TiltSpeedFast;
-            }
-
-            if (PropertiesConfig.ZoomSpeedSlow > 0)
-            {
-                ZoomSpeedSlow = (byte)PropertiesConfig.ZoomSpeedSlow;
-            }
-            if (PropertiesConfig.ZoomSpeedFast > 0)
-            {
-                ZoomSpeedFast = (byte)PropertiesConfig.ZoomSpeedFast;
             }
         }
 
@@ -670,18 +659,6 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         /// </summary>
         [JsonProperty("tiltSpeedFast")]
         public uint TiltSpeedFast { get; set; }
-
-        /// <summary>
-        /// Slow zoom speed (0-7)
-        /// </summary>
-        [JsonProperty("zoomSpeedSlow")]
-        public uint ZoomSpeedSlow { get; set; }
-
-        /// <summary>
-        /// Fast zoom speed (0-7)
-        /// </summary>
-        [JsonProperty("zoomSpeedFast")]
-        public uint ZoomSpeedFast { get; set; }
 
         /// <summary>
         /// Time a button must be held before fast speed is engaged (Milliseconds)
