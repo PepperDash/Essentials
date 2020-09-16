@@ -96,40 +96,48 @@ namespace PepperDash.Essentials.Core.Bridges
 
             Eisc.SigChange += Eisc_SigChange;
 
-            AddPostActivationAction( () =>
+            AddPostActivationAction(LinkDevices);
+        }
+
+        private void LinkDevices()
+        {
+            Debug.Console(1, this, "Linking Devices...");
+
+            foreach (var d in PropertiesConfig.Devices)
             {
-                Debug.Console(1, this, "Linking Devices...");
+                var device = DeviceManager.GetDeviceForKey(d.DeviceKey);
 
-                foreach (var d in PropertiesConfig.Devices)
+                if (device == null)
                 {
-                    var device = DeviceManager.GetDeviceForKey(d.DeviceKey);
-
-                    if (device == null) continue;
-
-                    Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
-
-                    if (!typeof (IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
-                    {
-                        Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
-                            "{0} is not compatible with this bridge type. Please use 'eiscapi' instead, or updae the device.",
-                            device.Key);
-                        continue;
-                    }
-
-                    var bridge = device as IBridgeAdvanced;
-                    if (bridge != null) bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
+                    continue;
                 }
 
-                var registerResult = Eisc.Register();
+                Debug.Console(1, this, "Linking Device: '{0}'", device.Key);
 
-                if (registerResult != eDeviceRegistrationUnRegistrationResponse.Success)
+                if (!typeof (IBridgeAdvanced).IsAssignableFrom(device.GetType().GetCType()))
                 {
-                    Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Registration result: {0}", registerResult);
-                    return;
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
+                        "{0} is not compatible with this bridge type. Please use 'eiscapi' instead, or updae the device.",
+                        device.Key);
+                    continue;
                 }
 
-                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "EISC registration successful");
-            });
+                var bridge = device as IBridgeAdvanced;
+                if (bridge != null)
+                {
+                    bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
+                }
+            }
+
+            var registerResult = Eisc.Register();
+
+            if (registerResult != eDeviceRegistrationUnRegistrationResponse.Success)
+            {
+                Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Registration result: {0}", registerResult);
+                return;
+            }
+
+            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "EISC registration successful");
         }
 
         /// <summary>

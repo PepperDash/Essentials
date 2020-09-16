@@ -19,6 +19,8 @@ namespace PepperDash.Essentials.Core
 	{
 		public static CrestronControlSystem ControlSystem { get; set; }
 
+        public static eDevicePlatform Platform { get { return CrestronEnvironment.DevicePlatform; } }
+
 		public static LicenseManager LicenseManager { get; set; }
 
         /// <summary>
