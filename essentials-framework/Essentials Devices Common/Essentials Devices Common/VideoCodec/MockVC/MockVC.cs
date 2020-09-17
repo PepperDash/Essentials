@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Codec;
@@ -224,6 +225,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public override void StandbyDeactivate()
         {
             _StandbyIsOn = false;
+        }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

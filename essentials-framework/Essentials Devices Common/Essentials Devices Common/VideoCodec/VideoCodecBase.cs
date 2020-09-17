@@ -2,83 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Crestron.SimplSharp;
-
+using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Routing;
-using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Devices.Common.Codec;
+using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
     public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutputs,
-		IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo
+        IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo, IBridgeAdvanced
     {
-        /// <summary>
-        /// Fires when the status of any active, dialing, or incoming call changes or is new
-        /// </summary>
-        public event EventHandler<CodecCallStatusItemChangeEventArgs> CallStatusChange;
-
-        public event EventHandler<EventArgs> IsReadyChange;
-
-        public IBasicCommunication Communication { get; protected set; }
-
-        #region IUsageTracking Members
-
-        /// <summary>
-        /// This object can be added by outside users of this class to provide usage tracking
-        /// for various services
-        /// </summary>
-        public UsageTracking UsageTracker { get; set; }
-
-        #endregion
-
-        /// <summary>
-        /// An internal pseudo-source that is routable and connected to the osd input
-        /// </summary>
-        public DummyRoutingInputsDevice OsdSource { get; protected set; }
-
-        public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
-
-        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
-
-        /// <summary>
-        /// Returns true when any call is not in state Unknown, Disconnecting, Disconnected
-        /// </summary>
-        public bool IsInCall 
-        { 
-            get
-            {
-                bool value;
-
-                if (ActiveCalls != null)
-                    value = ActiveCalls.Any(c => c.IsActiveCall);
-                else
-                    value = false;
-                return value; 
-            } 
-        }
-
-        public BoolFeedback StandbyIsOnFeedback { get; private set; }
-
-        abstract protected Func<bool> PrivacyModeIsOnFeedbackFunc { get; }
-        abstract protected Func<int> VolumeLevelFeedbackFunc { get; }
-        abstract protected Func<bool> MuteFeedbackFunc { get; }
-        abstract protected Func<bool> StandbyIsOnFeedbackFunc { get; }
-
-        public List<CodecActiveCallItem> ActiveCalls { get; set; }
-
-        public VideoCodecInfo CodecInfo { get; protected set; }
-
-        public bool ShowSelfViewByDefault { get; protected set; }
-
-
-        public bool IsReady { get; protected set; }
-
-        public VideoCodecBase(DeviceConfig config)
+        protected VideoCodecBase(DeviceConfig config)
             : base(config)
         {
             StandbyIsOnFeedback = new BoolFeedback(StandbyIsOnFeedbackFunc);
@@ -90,85 +29,45 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-            
+
             ActiveCalls = new List<CodecActiveCallItem>();
         }
 
-        #region IHasDialer Members
+        public IBasicCommunication Communication { get; protected set; }
 
-        public abstract void Dial(string number);
-        public abstract void Dial(Meeting meeting);
-        public virtual void Dial(IInvitableContact contact)
-        {
+        /// <summary>
+        /// An internal pseudo-source that is routable and connected to the osd input
+        /// </summary>
+        public DummyRoutingInputsDevice OsdSource { get; protected set; }
 
-        }
-        public abstract void EndCall(CodecActiveCallItem call);
-        public abstract void EndAllCalls();
-        public abstract void AcceptCall(CodecActiveCallItem call);
-        public abstract void RejectCall(CodecActiveCallItem call);
-        public abstract void SendDtmf(string s);
+        public BoolFeedback StandbyIsOnFeedback { get; private set; }
 
-        #endregion
+        protected abstract Func<bool> PrivacyModeIsOnFeedbackFunc { get; }
+        protected abstract Func<int> VolumeLevelFeedbackFunc { get; }
+        protected abstract Func<bool> MuteFeedbackFunc { get; }
+        protected abstract Func<bool> StandbyIsOnFeedbackFunc { get; }
+
+        public List<CodecActiveCallItem> ActiveCalls { get; set; }
+
+        public bool ShowSelfViewByDefault { get; protected set; }
+
+
+        public bool IsReady { get; protected set; }
 
         public virtual List<Feedback> Feedbacks
         {
             get
             {
                 return new List<Feedback>
-				{
+                {
                     PrivacyModeIsOnFeedback,
                     SharingSourceFeedback
-				};
+                };
             }
         }
 
-        public abstract void ExecuteSwitch(object selector);
-
-        /// <summary>
-        /// Helper method to fire CallStatusChange event with old and new status
-        /// </summary>
-        protected void SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus newStatus, CodecActiveCallItem call)
-        {
-            call.Status = newStatus;
-
-            OnCallStatusChange(call);
-
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="previousStatus"></param>
-        /// <param name="newStatus"></param>
-        /// <param name="item"></param>
-        protected void OnCallStatusChange(CodecActiveCallItem item)
-        {
-            var handler = CallStatusChange;
-            if (handler != null)
-                handler(this, new CodecCallStatusItemChangeEventArgs(item));
-
-            if (AutoShareContentWhileInCall)
-                StartSharing();
-
-            if (UsageTracker != null)
-            {
-                if (IsInCall && !UsageTracker.UsageTrackingStarted)
-                    UsageTracker.StartDeviceUsage();
-                else if (UsageTracker.UsageTrackingStarted && !IsInCall)
-                    UsageTracker.EndDeviceUsage();
-            }
-        }
-
-        /// <summary>
-        /// Sets IsReady property and fires the event. Used for dependent classes to sync up their data.
-        /// </summary>
-        protected void SetIsReady()
-        {
-            IsReady = true;
-            var h = IsReadyChange;
-            if(h != null)
-                h(this, new EventArgs());
-        }
+        protected abstract Func<string> SharingSourceFeedbackFunc { get; }
+        protected abstract Func<bool> SharingContentIsOnFeedbackFunc { get; }
 
         #region ICodecAudio Members
 
@@ -197,7 +96,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         #endregion
 
-        #region IHasSharing Members
+        #region IHasContentSharing Members
 
         public abstract void StartSharing();
         public abstract void StopSharing();
@@ -207,11 +106,132 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         public StringFeedback SharingSourceFeedback { get; private set; }
         public BoolFeedback SharingContentIsOnFeedback { get; private set; }
 
-        abstract protected Func<string> SharingSourceFeedbackFunc { get; }
-        abstract protected Func<bool> SharingContentIsOnFeedbackFunc { get; }
+        #endregion
 
+        #region IHasDialer Members
+
+        /// <summary>
+        /// Fires when the status of any active, dialing, or incoming call changes or is new
+        /// </summary>
+        public event EventHandler<CodecCallStatusItemChangeEventArgs> CallStatusChange;
+
+        /// <summary>
+        /// Returns true when any call is not in state Unknown, Disconnecting, Disconnected
+        /// </summary>
+        public bool IsInCall
+        {
+            get
+            {
+                bool value;
+
+                if (ActiveCalls != null)
+                {
+                    value = ActiveCalls.Any(c => c.IsActiveCall);
+                }
+                else
+                {
+                    value = false;
+                }
+                return value;
+            }
+        }
+
+        public abstract void Dial(string number);
+        public abstract void EndCall(CodecActiveCallItem call);
+        public abstract void EndAllCalls();
+        public abstract void AcceptCall(CodecActiveCallItem call);
+        public abstract void RejectCall(CodecActiveCallItem call);
+        public abstract void SendDtmf(string s);
 
         #endregion
+
+        #region IRoutingInputsOutputs Members
+
+        public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
+
+        public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
+
+        #endregion
+
+        #region IUsageTracking Members
+
+        /// <summary>
+        /// This object can be added by outside users of this class to provide usage tracking
+        /// for various services
+        /// </summary>
+        public UsageTracking UsageTracker { get; set; }
+
+        #endregion
+
+        #region iVideoCodecInfo Members
+
+        public VideoCodecInfo CodecInfo { get; protected set; }
+
+        #endregion
+
+        public event EventHandler<EventArgs> IsReadyChange;
+        public abstract void Dial(Meeting meeting);
+
+        public virtual void Dial(IInvitableContact contact)
+        {
+        }
+
+        public abstract void ExecuteSwitch(object selector);
+
+        /// <summary>
+        /// Helper method to fire CallStatusChange event with old and new status
+        /// </summary>
+        protected void SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus newStatus, CodecActiveCallItem call)
+        {
+            call.Status = newStatus;
+
+            OnCallStatusChange(call);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="previousStatus"></param>
+        /// <param name="newStatus"></param>
+        /// <param name="item"></param>
+        protected void OnCallStatusChange(CodecActiveCallItem item)
+        {
+            var handler = CallStatusChange;
+            if (handler != null)
+            {
+                handler(this, new CodecCallStatusItemChangeEventArgs(item));
+            }
+
+            if (AutoShareContentWhileInCall)
+            {
+                StartSharing();
+            }
+
+            if (UsageTracker != null)
+            {
+                if (IsInCall && !UsageTracker.UsageTrackingStarted)
+                {
+                    UsageTracker.StartDeviceUsage();
+                }
+                else if (UsageTracker.UsageTrackingStarted && !IsInCall)
+                {
+                    UsageTracker.EndDeviceUsage();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets IsReady property and fires the event. Used for dependent classes to sync up their data.
+        /// </summary>
+        protected void SetIsReady()
+        {
+            IsReady = true;
+            var h = IsReadyChange;
+            if (h != null)
+            {
+                h(this, new EventArgs());
+            }
+        }
 
         // **** DEBUGGING THINGS ****
         /// <summary>
@@ -221,7 +241,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             var sb = new StringBuilder();
             foreach (var c in ActiveCalls)
+            {
                 sb.AppendFormat("{0} {1} -- {2} {3}\n", c.Id, c.Number, c.Name, c.Status);
+            }
             Debug.Console(1, this, "\n{0}\n", sb.ToString());
         }
 
@@ -229,6 +251,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public abstract void StandbyDeactivate();
 
+        #region Implementation of IBridgeAdvanced
+
+        public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
+
+        #endregion
     }
 
 
@@ -237,11 +264,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     /// </summary>
     public class CodecPhonebookSyncState : IKeyed
     {
-        bool _InitialSyncComplete;
+        private bool _InitialSyncComplete;
 
-        public event EventHandler<EventArgs> InitialSyncCompleted;
+        public CodecPhonebookSyncState(string key)
+        {
+            Key = key;
 
-        public string Key { get; private set; }
+            CodecDisconnected();
+        }
 
         public bool InitialSyncComplete
         {
@@ -252,7 +282,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 {
                     var handler = InitialSyncCompleted;
                     if (handler != null)
+                    {
                         handler(this, new EventArgs());
+                    }
                 }
                 _InitialSyncComplete = value;
             }
@@ -268,12 +300,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public int NumberOfContacts { get; private set; }
 
-        public CodecPhonebookSyncState(string key)
-        {
-            Key = key;
+        #region IKeyed Members
 
-            CodecDisconnected();
-        }
+        public string Key { get; private set; }
+
+        #endregion
+
+        public event EventHandler<EventArgs> InitialSyncCompleted;
 
         public void InitialPhonebookFoldersReceived()
         {
@@ -314,7 +347,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             NumberOfContactsWasReceived = false;
         }
 
-        void CheckSyncStatus()
+        private void CheckSyncStatus()
         {
             if (InitialPhonebookFoldersWasReceived && NumberOfContactsWasReceived && PhonebookRootEntriesWasRecieved)
             {
@@ -322,7 +355,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 Debug.Console(1, this, "Initial Phonebook Sync Complete!");
             }
             else
+            {
                 InitialSyncComplete = false;
+            }
         }
     }
 }

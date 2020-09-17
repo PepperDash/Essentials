@@ -4,14 +4,17 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.CrestronThread;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash_Essentials_Core.Bridges.JoinMaps;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
@@ -218,18 +221,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void SelectCamera(string key)
         {
-            if (Cameras != null)
+            if (Cameras == null)
             {
-                var camera = Cameras.FirstOrDefault(c => c.Key.IndexOf(key, StringComparison.OrdinalIgnoreCase) > -1);
-                if (camera != null)
-                {
-                    Debug.Console(1, this, "Selected Camera with key: '{0}'", camera.Key);
-                    SelectedCamera = camera;
-                }
-                else
-                {
-                    Debug.Console(1, this, "Unable to select camera with key: '{0}'", key);
-                }
+                return;
+            }
+
+            var camera = Cameras.FirstOrDefault(c => c.Key.IndexOf(key, StringComparison.OrdinalIgnoreCase) > -1);
+            if (camera != null)
+            {
+                Debug.Console(1, this, "Selected Camera with key: '{0}'", camera.Key);
+                SelectedCamera = camera;
+            }
+            else
+            {
+                Debug.Console(1, this, "Unable to select camera with key: '{0}'", key);
             }
         }
 
@@ -1392,6 +1397,32 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public override void StandbyDeactivate()
         {
             // No corresponding function on device
+        }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            var joinMap = new VideoCodecControllerJoinMap(joinStart);
+
+            var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
+
+            if (customJoins != null)
+            {
+                joinMap.SetCustomJoinData(customJoins);
+            }
+
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+
+            Debug.Console(1, this, "Linking to Trilist {0}", trilist.ID.ToString("X"));
+
+            LinkCameraActions(trilist, joinMap);
+        }
+
+        private void LinkCameraActions(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            
         }
 
         public override void ExecuteSwitch(object selector)
