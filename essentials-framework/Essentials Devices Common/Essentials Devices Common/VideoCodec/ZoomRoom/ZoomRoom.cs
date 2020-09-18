@@ -1401,49 +1401,46 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new VideoCodecControllerJoinMap(joinStart);
-
-            var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
-
-            if (customJoins != null)
-            {
-                joinMap.SetCustomJoinData(customJoins);
-            }
-
-            if (bridge != null)
-            {
-                bridge.AddJoinMap(Key, joinMap);
-            }
-
-            Debug.Console(1, this, "Linking to Trilist {0}", trilist.ID.ToString("X"));
-
-            LinkCameraActions(trilist, joinMap);
-        }
-
-        private void LinkCameraActions(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
-        {
-            
+            LinkVideoCodecToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
 
         public override void ExecuteSwitch(object selector)
         {
-            (selector as Action)();
+            var action = selector as Action;
+            if (action == null)
+            {
+                return;
+            }
+
+            action();
+        }
+
+        public void AcceptCall()
+        {
+            var incomingCall =
+                ActiveCalls.FirstOrDefault(
+                    c => c.Status.Equals(eCodecCallStatus.Ringing) && c.Direction.Equals(eCodecCallDirection.Incoming));
+
+            AcceptCall(incomingCall);
         }
 
         public override void AcceptCall(CodecActiveCallItem call)
         {
-            var incomingCall =
-                ActiveCalls.FirstOrDefault(
-                    c => c.Status.Equals(eCodecCallStatus.Ringing) && c.Direction.Equals(eCodecCallDirection.Incoming));
-            SendText(string.Format("zCommand Call Accept callerJID: {0}", incomingCall.Id));
+            SendText(string.Format("zCommand Call Accept callerJID: {0}", call.Id));
         }
 
-        public override void RejectCall(CodecActiveCallItem call)
+        public void RejectCall()
         {
             var incomingCall =
                 ActiveCalls.FirstOrDefault(
                     c => c.Status.Equals(eCodecCallStatus.Ringing) && c.Direction.Equals(eCodecCallDirection.Incoming));
-            SendText(string.Format("zCommand Call Reject callerJID: {0}", incomingCall.Id));
+
+            RejectCall(incomingCall);
+        }
+
+        public override void RejectCall(CodecActiveCallItem call)
+        {
+            SendText(string.Format("zCommand Call Reject callerJID: {0}", call.Id));
         }
 
         public override void Dial(Meeting meeting)

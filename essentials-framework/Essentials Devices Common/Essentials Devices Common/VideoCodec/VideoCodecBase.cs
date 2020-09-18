@@ -2,14 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharp.Ssh;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
+using PepperDash.Core.Intersystem;
+using PepperDash.Core.Intersystem.Tokens;
+using PepperDash.Core.WebApi.Presets;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash_Essentials_Core.Bridges.JoinMaps;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
@@ -17,9 +24,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutputs,
         IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo, IBridgeAdvanced
     {
+        private const int XSigEncoding = 28591;
         protected VideoCodecBase(DeviceConfig config)
             : base(config)
         {
+            
             StandbyIsOnFeedback = new BoolFeedback(StandbyIsOnFeedbackFunc);
             PrivacyModeIsOnFeedback = new BoolFeedback(PrivacyModeIsOnFeedbackFunc);
             VolumeLevelFeedback = new IntFeedback(VolumeLevelFeedbackFunc);
@@ -254,6 +263,295 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         #region Implementation of IBridgeAdvanced
 
         public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
+
+        protected void LinkVideoCodecToApi(VideoCodecBase codec, BasicTriList trilist, uint joinStart, string joinMapKey,
+            EiscApiAdvanced bridge)
+        {
+            var joinMap = new VideoCodecControllerJoinMap(joinStart);
+
+            var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
+
+            if (customJoins != null)
+            {
+                joinMap.SetCustomJoinData(customJoins);
+            }
+
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+
+            Debug.Console(1, this, "Linking to Trilist {0}", trilist.ID.ToString("X"));
+
+            LinkVideoCodecDtmfToApi(trilist, joinMap);
+
+            LinkVideoCodecCallControlsToApi(trilist, joinMap);
+
+            if (codec is IHasCodecCameras)
+            {
+                LinkVideoCodecCameraToApi(codec as IHasCodecCameras, trilist, joinMap);
+            }
+
+            if (codec is IHasCodecSelfView)
+            {
+                LinkVideoCodecSelfviewToApi(codec as IHasCodecSelfView, trilist, joinMap);
+            }
+
+            if (codec is IHasCameraAutoMode)
+            {
+                trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, true);
+                LinkVideoCodecCameraModeToApi(codec as IHasCameraAutoMode, trilist, joinMap);
+            }
+
+            if (codec is IHasCodecLayouts)
+            {
+                LinkVideoCodecCameraLayoutsToApi(codec as IHasCodecLayouts, trilist, joinMap);
+            }
+
+
+        }
+
+        private void LinkVideoCodecCallControlsToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            trilist.SetSigFalseAction(joinMap.ManualDial.JoinNumber,
+                () => Dial(trilist.StringOutput[joinMap.CurrentDialString.JoinNumber].StringValue));
+
+            //End All calls for now
+            trilist.SetSigFalseAction(joinMap.EndCall.JoinNumber, EndAllCalls);
+
+            
+
+            CallStatusChange += (sender, args) =>
+            {
+                trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
+
+                trilist.SetBool(joinMap.IncomingCall.JoinNumber, args.CallItem.Direction == eCodecCallDirection.Incoming);
+
+                if (args.CallItem.Direction == eCodecCallDirection.Incoming)
+                {
+                    trilist.SetSigFalseAction(joinMap.IncomingAnswer.JoinNumber, () => AcceptCall(args.CallItem));
+                    trilist.SetSigFalseAction(joinMap.IncomingReject.JoinNumber, () => RejectCall(args.CallItem));
+                }
+
+                var callStatusXsig = UpdateCallStatusXSig();
+
+                trilist.SetString(joinMap.CurrentCallData.JoinNumber, callStatusXsig);
+            };
+        }
+
+        private string UpdateCallStatusXSig()
+        {
+            const int offset = 6;
+            var callIndex = 1;
+            
+
+            var tokenArray = new XSigToken[ActiveCalls.Count*offset]; //set array size for number of calls * pieces of info
+
+            foreach (var call in ActiveCalls)
+            {
+                //digitals
+                tokenArray[callIndex] = new XSigDigitalToken((callIndex/offset) + 1, call.IsActiveCall);
+
+                //serials
+                tokenArray[callIndex + 1] = new XSigSerialToken(callIndex, call.Name);
+                tokenArray[callIndex + 2] = new XSigSerialToken(callIndex + 1, call.Number);
+                tokenArray[callIndex + 3] = new XSigSerialToken(callIndex + 2, call.Direction.ToString());
+                tokenArray[callIndex + 4] = new XSigSerialToken(callIndex + 3, call.Type.ToString());
+                tokenArray[callIndex + 5] = new XSigSerialToken(callIndex + 4, call.Status.ToString());
+
+                callIndex += offset;
+            }
+
+            return GetXSigString(tokenArray);
+        }
+
+        private void LinkVideoCodecDtmfToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            trilist.SetSigFalseAction(joinMap.Dtmf0.JoinNumber, () => SendDtmf("0"));
+            trilist.SetSigFalseAction(joinMap.Dtmf1.JoinNumber, () => SendDtmf("1"));
+            trilist.SetSigFalseAction(joinMap.Dtmf2.JoinNumber, () => SendDtmf("2"));
+            trilist.SetSigFalseAction(joinMap.Dtmf3.JoinNumber, () => SendDtmf("3"));
+            trilist.SetSigFalseAction(joinMap.Dtmf4.JoinNumber, () => SendDtmf("4"));
+            trilist.SetSigFalseAction(joinMap.Dtmf5.JoinNumber, () => SendDtmf("5"));
+            trilist.SetSigFalseAction(joinMap.Dtmf6.JoinNumber, () => SendDtmf("6"));
+            trilist.SetSigFalseAction(joinMap.Dtmf7.JoinNumber, () => SendDtmf("7"));
+            trilist.SetSigFalseAction(joinMap.Dtmf8.JoinNumber, () => SendDtmf("8"));
+            trilist.SetSigFalseAction(joinMap.Dtmf9.JoinNumber, () => SendDtmf("9"));
+            trilist.SetSigFalseAction(joinMap.DtmfStar.JoinNumber, () => SendDtmf("*"));
+            trilist.SetSigFalseAction(joinMap.DtmfPound.JoinNumber, () => SendDtmf("#"));
+        }
+
+        private void LinkVideoCodecCameraLayoutsToApi(IHasCodecLayouts codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            trilist.SetSigFalseAction(joinMap.CameraLayout.JoinNumber, codec.LocalLayoutToggle);
+
+            codec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.CameraLayoutStringFb.JoinNumber]);
+        }
+
+        private void LinkVideoCodecCameraModeToApi(IHasCameraAutoMode codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            trilist.SetSigFalseAction(joinMap.CameraModeAuto.JoinNumber, codec.CameraAutoModeOn);
+            trilist.SetSigFalseAction(joinMap.CameraModeManual.JoinNumber, codec.CameraAutoModeOff);
+            
+            codec.CameraAutoModeIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.CameraModeAuto.JoinNumber]);
+            codec.CameraAutoModeIsOnFeedback.LinkComplementInputSig(
+                trilist.BooleanInput[joinMap.CameraModeManual.JoinNumber]);
+        }
+
+        private void LinkVideoCodecSelfviewToApi(IHasCodecSelfView codec, BasicTriList trilist,
+            VideoCodecControllerJoinMap joinMap)
+        {
+            trilist.SetSigFalseAction(joinMap.CameraSelfView.JoinNumber, codec.SelfViewModeToggle);
+
+            codec.SelfviewIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.CameraSelfView.JoinNumber]);
+        }
+
+        private void LinkVideoCodecCameraToApi(IHasCodecCameras codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            //Camera PTZ
+            trilist.SetBoolSigAction(joinMap.CameraTiltUp.JoinNumber, (b) =>
+            {
+                if (codec.SelectedCamera == null) return;
+                var camera = codec.SelectedCamera as IHasCameraPtzControl;
+
+                if (camera == null) return;
+
+                if (b) camera.TiltUp();
+                else camera.TiltStop();
+            });
+
+            trilist.SetBoolSigAction(joinMap.CameraTiltDown.JoinNumber, (b) =>
+            {
+                if (codec.SelectedCamera == null) return;
+                var camera = codec.SelectedCamera as IHasCameraPtzControl;
+
+                if (camera == null) return;
+
+                if (b) camera.TiltDown();
+                else camera.TiltStop();
+            });
+            trilist.SetBoolSigAction(joinMap.CameraPanLeft.JoinNumber, (b) =>
+            {
+                if (codec.SelectedCamera == null) return;
+                var camera = codec.SelectedCamera as IHasCameraPtzControl;
+
+                if (camera == null) return;
+
+                if (b) camera.PanLeft();
+                else camera.PanStop();
+            });
+            trilist.SetBoolSigAction(joinMap.CameraPanRight.JoinNumber, (b) =>
+            {
+                if (codec.SelectedCamera == null) return;
+                var camera = codec.SelectedCamera as IHasCameraPtzControl;
+
+                if (camera == null) return;
+
+                if (b) camera.PanRight();
+                else camera.PanStop();
+            });
+
+            trilist.SetBoolSigAction(joinMap.CameraZoomIn.JoinNumber, (b) =>
+            {
+                if (codec.SelectedCamera == null) return;
+                var camera = codec.SelectedCamera as IHasCameraPtzControl;
+
+                if (camera == null) return;
+
+                if (b) camera.ZoomIn();
+                else camera.ZoomStop();
+            });
+
+            trilist.SetBoolSigAction(joinMap.CameraZoomOut.JoinNumber, (b) =>
+            {
+                if (codec.SelectedCamera == null) return;
+                var camera = codec.SelectedCamera as IHasCameraPtzControl;
+
+                if (camera == null) return;
+
+                if (b) camera.ZoomOut();
+                else camera.ZoomStop();
+            });
+
+            //Camera Select
+            trilist.SetUShortSigAction(joinMap.CameraNumberSelect.JoinNumber, (i) =>
+            {
+                if (codec.SelectedCamera == null) return;
+
+                codec.SelectCamera(codec.Cameras[i].Key);
+            });
+
+            codec.CameraSelected += (sender, args) =>
+            {
+                var i = (ushort) codec.Cameras.FindIndex((c) => c.Key == args.SelectedCamera.Key);
+
+                trilist.SetUshort(joinMap.CameraPresetSelect.JoinNumber, i);
+
+                if (codec is IHasCodecRoomPresets)
+                {
+                    return;
+                }
+
+                if (!(args.SelectedCamera is IHasCameraPresets))
+                {
+                    return;
+                }
+
+                var cam = args.SelectedCamera as IHasCameraPresets;
+                SetCameraPresetNames(cam.Presets);
+
+                (args.SelectedCamera as IHasCameraPresets).PresetsListHasChanged += (o, eventArgs) => SetCameraPresetNames(cam.Presets);
+            };
+
+            //Camera Presets
+            trilist.SetUShortSigAction(joinMap.CameraPresetSelect.JoinNumber, (i) =>
+            {
+                if (codec.SelectedCamera == null) return;
+
+                var cam = codec.SelectedCamera as IHasCameraPresets;
+
+                if (cam == null) return;
+
+                cam.PresetSelect(i);
+
+                trilist.SetUshort(joinMap.CameraPresetSelect.JoinNumber, i);
+            });
+        }
+
+        private string SetCameraPresetNames(List<CameraPreset> presets)
+        {
+            var i = 1; //start index for xsig;
+
+            var tokenArray = new XSigToken[presets.Count];
+
+            string returnString;
+
+            foreach (var token in presets.Select(cameraPreset => new XSigSerialToken(i, cameraPreset.Description)))
+            {
+                tokenArray[i - 1] = token;
+                i++;
+            }
+            
+            return GetXSigString(tokenArray);
+        }
+
+        private string GetXSigString(XSigToken[] tokenArray)
+        {
+            string returnString;
+            using (var s = new MemoryStream())
+            {
+                using (var tw = new XSigTokenStreamWriter(s, true))
+                {
+                    tw.WriteXSigData(tokenArray);
+                }
+
+                var xSig = s.ToArray();
+
+                returnString = Encoding.GetEncoding(XSigEncoding).GetString(xSig, 0, xSig.Length);
+            }
+
+            return returnString;
+        }
 
         #endregion
     }
