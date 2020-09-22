@@ -308,7 +308,93 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 LinkVideoCodecCameraLayoutsToApi(codec as IHasCodecLayouts, trilist, joinMap);
             }
 
+            if (codec is IHasDirectory)
+            {
+                LinkVideoCodecDirectoryToApi(codec as IHasDirectory, trilist, joinMap);
+            }
 
+        }
+
+        private void LinkVideoCodecDirectoryToApi(IHasDirectory codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            codec.CurrentDirectoryResultIsNotDirectoryRoot.LinkComplementInputSig(
+                trilist.BooleanInput[joinMap.DirectoryIsRoot.JoinNumber]);
+
+            trilist.SetSigFalseAction(joinMap.DirectoryRoot.JoinNumber, codec.SetCurrentDirectoryToRoot);
+
+            trilist.SetStringSigAction(joinMap.DirectorySearchString.JoinNumber, codec.SearchDirectory);
+
+            trilist.SetUShortSigAction(joinMap.DirectorySelectRow.JoinNumber, (i) => SelectDirectoryEntry(codec, i));
+
+            trilist.SetSigFalseAction(joinMap.DirectoryRoot.JoinNumber, codec.SetCurrentDirectoryToRoot);
+
+            trilist.SetSigFalseAction(joinMap.DirectoryFolderBack.JoinNumber, codec.GetDirectoryParentFolderContents);
+
+            codec.DirectoryResultReturned += (sender, args) =>
+            {
+                trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort) args.Directory.CurrentDirectoryResults.Count);
+
+                var clearBytes = XSigHelpers.ClearOutputs();
+
+                trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
+                    Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
+                var directoryXSig = UpdateDirectoryXSig(args.Directory, !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+                
+                trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
+            };
+        }
+
+        private void SelectDirectoryEntry(IHasDirectory codec, ushort i)
+        {
+            var entry = codec.CurrentDirectoryResult.CurrentDirectoryResults[i - 1];
+
+            if (entry is DirectoryFolder)
+            {
+                codec.GetDirectoryFolderContents(entry.FolderId);
+                return;
+            }
+
+            var dialableEntry = entry as IInvitableContact;
+
+            if (dialableEntry != null)
+            {
+                Dial(dialableEntry);
+                return;
+            }
+
+            var entryToDial = entry as DirectoryContact;
+
+            if (entryToDial == null) return;
+
+            Dial(entryToDial.ContactMethods[0].Number);
+        }
+
+        private string UpdateDirectoryXSig(CodecDirectory directory, bool isRoot)
+        {
+            var contactIndex = 1;
+            var tokenArray = new XSigToken[directory.CurrentDirectoryResults.Count];
+
+            foreach(var entry in directory.CurrentDirectoryResults)
+            {
+                var arrayIndex = contactIndex - 1;
+
+                if (entry is DirectoryFolder && entry.ParentFolderId == "root")
+                {
+                    tokenArray[arrayIndex] = new XSigSerialToken(contactIndex, String.Format("[+] {0}", entry.Name));
+
+                    contactIndex++;
+
+                    continue;
+                }
+
+                if(isRoot && String.IsNullOrEmpty(entry.FolderId)) continue;
+               
+                tokenArray[arrayIndex] = new XSigSerialToken(contactIndex, entry.Name);
+
+                contactIndex++;
+            }
+
+            return GetXSigString(tokenArray);
         }
 
         private void LinkVideoCodecCallControlsToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
@@ -318,8 +404,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             //End All calls for now
             trilist.SetSigFalseAction(joinMap.EndCall.JoinNumber, EndAllCalls);
-
-            
 
             CallStatusChange += (sender, args) =>
             {
@@ -341,25 +425,30 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         private string UpdateCallStatusXSig()
         {
+            const int maxCalls = 8;
+            const int maxStrings = 5;
             const int offset = 6;
-            var callIndex = 1;
+            var callIndex = 0;
+            var digitalIndex = maxStrings*maxCalls;
             
 
             var tokenArray = new XSigToken[ActiveCalls.Count*offset]; //set array size for number of calls * pieces of info
 
             foreach (var call in ActiveCalls)
             {
+                var arrayIndex = callIndex;
                 //digitals
-                tokenArray[callIndex] = new XSigDigitalToken((callIndex/offset) + 1, call.IsActiveCall);
+                tokenArray[arrayIndex] = new XSigDigitalToken(digitalIndex + 1, call.IsActiveCall);
 
                 //serials
-                tokenArray[callIndex + 1] = new XSigSerialToken(callIndex, call.Name);
-                tokenArray[callIndex + 2] = new XSigSerialToken(callIndex + 1, call.Number);
-                tokenArray[callIndex + 3] = new XSigSerialToken(callIndex + 2, call.Direction.ToString());
-                tokenArray[callIndex + 4] = new XSigSerialToken(callIndex + 3, call.Type.ToString());
-                tokenArray[callIndex + 5] = new XSigSerialToken(callIndex + 4, call.Status.ToString());
+                tokenArray[arrayIndex + 1] = new XSigSerialToken(callIndex + 1, call.Name ?? String.Empty);
+                tokenArray[arrayIndex + 2] = new XSigSerialToken(callIndex + 2, call.Number ?? String.Empty);
+                tokenArray[arrayIndex + 3] = new XSigSerialToken(callIndex + 3, call.Direction.ToString());
+                tokenArray[arrayIndex + 4] = new XSigSerialToken(callIndex + 4, call.Type.ToString());
+                tokenArray[arrayIndex + 5] = new XSigSerialToken(callIndex + 5, call.Status.ToString());
 
                 callIndex += offset;
+                digitalIndex++;
             }
 
             return GetXSigString(tokenArray);

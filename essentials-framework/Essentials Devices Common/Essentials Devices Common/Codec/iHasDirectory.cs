@@ -40,7 +40,13 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// <summary>
         /// Tracks the directory browse history when browsing beyond the root directory
         /// </summary>
+        [Obsolete("Please use the Stack-based history instead")]
         List<CodecDirectory> DirectoryBrowseHistory { get; }
+    }
+
+    public interface IHasDirectoryHistoryStack : IHasDirectory
+    {
+        Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; } 
     }
 
 	/// <summary>
@@ -147,6 +153,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
 		[JsonProperty("name")]	
         public string Name { get; set; }
+
+        [JsonProperty("parentFolderId")]
+        public string ParentFolderId { get; set; }
     }
 
 	/// <summary>
@@ -157,8 +166,6 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 		[JsonProperty("contacts")]
         public List<DirectoryContact> Contacts { get; set; }
 
-		[JsonProperty("parentFolderId")]
-        public string ParentFolderId { get; set; }
 
         public DirectoryFolder()
         {
@@ -176,6 +183,8 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
 		[JsonProperty("title")]
         public string Title { get; set; }
+
+        
 
 		[JsonProperty("contactMethods")]
         public List<ContactMethod> ContactMethods { get; set; }

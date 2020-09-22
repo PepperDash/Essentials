@@ -18,7 +18,7 @@ using PepperDash_Essentials_Core.Bridges.JoinMaps;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
-    public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectory, ICommunicationMonitor, IRouting,
+    public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor, IRouting,
         IHasScheduleAwareness, IHasCodecCameras
     {
         private readonly CrestronQueue<string> ReceiveQueue;
@@ -277,19 +277,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
         public CodecDirectory DirectoryRoot { get; private set; }
 
+        private CodecDirectory _currentDirectoryResult;
         public CodecDirectory CurrentDirectoryResult
         {
-            get
-            {
-                if (DirectoryBrowseHistory.Count > 0)
-                {
-                    return DirectoryBrowseHistory[DirectoryBrowseHistory.Count - 1];
-                }
-                else
-                {
-                    return DirectoryRoot;
-                }
-            }
+            get { return _currentDirectoryResult; }
         }
 
         public CodecPhonebookSyncState PhonebookSyncState { get; private set; }
@@ -302,48 +293,42 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 DirectoryRoot.CurrentDirectoryResults.FindAll(
                     c => c.Name.IndexOf(searchString, 0, StringComparison.OrdinalIgnoreCase) > -1));
 
-            DirectoryBrowseHistory.Add(directoryResults);
+            DirectoryBrowseHistoryStack.Push(_currentDirectoryResult);
+            _currentDirectoryResult = directoryResults;
 
             OnDirectoryResultReturned(directoryResults);
         }
 
         public void GetDirectoryFolderContents(string folderId)
         {
-            var directoryResults = new CodecDirectory();
+            var directoryResults = new CodecDirectory {ResultsFolderId = folderId};
 
-            directoryResults.ResultsFolderId = folderId;
             directoryResults.AddContactsToDirectory(
-                DirectoryRoot.CurrentDirectoryResults.FindAll(c => c.FolderId.Equals(folderId)));
+                DirectoryRoot.CurrentDirectoryResults.FindAll(c => c.ParentFolderId.Equals(folderId)));
 
-            DirectoryBrowseHistory.Add(directoryResults);
+            DirectoryBrowseHistoryStack.Push(_currentDirectoryResult);
+
+            _currentDirectoryResult = directoryResults;
 
             OnDirectoryResultReturned(directoryResults);
         }
 
         public void SetCurrentDirectoryToRoot()
         {
-            DirectoryBrowseHistory.Clear();
+            DirectoryBrowseHistoryStack.Clear();
+
+            _currentDirectoryResult = DirectoryRoot;
 
             OnDirectoryResultReturned(DirectoryRoot);
         }
 
         public void GetDirectoryParentFolderContents()
         {
-            var currentDirectory = new CodecDirectory();
+            if (DirectoryBrowseHistoryStack.Count == 0) return;
 
-            if (DirectoryBrowseHistory.Count > 0)
-            {
-                var lastItemIndex = DirectoryBrowseHistory.Count - 1;
-                var parentDirectoryContents = DirectoryBrowseHistory[lastItemIndex];
+            var currentDirectory = DirectoryBrowseHistoryStack.Pop();
 
-                DirectoryBrowseHistory.Remove(DirectoryBrowseHistory[lastItemIndex]);
-
-                currentDirectory = parentDirectoryContents;
-            }
-            else
-            {
-                currentDirectory = DirectoryRoot;
-            }
+            _currentDirectoryResult = currentDirectory;
 
             OnDirectoryResultReturned(currentDirectory);
         }
@@ -351,6 +336,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public BoolFeedback CurrentDirectoryResultIsNotDirectoryRoot { get; private set; }
 
         public List<CodecDirectory> DirectoryBrowseHistory { get; private set; }
+
+        public Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; private set; } 
 
         #endregion
 
@@ -452,8 +439,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             DirectoryRoot = new CodecDirectory();
 
             DirectoryBrowseHistory = new List<CodecDirectory>();
+            DirectoryBrowseHistoryStack = new Stack<CodecDirectory>();
 
-            CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => DirectoryBrowseHistory.Count > 0);
+            CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => DirectoryBrowseHistoryStack.Count > 0);
 
             CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
         }
@@ -828,6 +816,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                     PhonebookSyncState.PhonebookRootEntriesReceived();
                                     PhonebookSyncState.SetPhonebookHasFolders(false);
                                     PhonebookSyncState.SetNumberOfContacts(Status.Phonebook.Contacts.Count);
+
                                 }
 
                                 var directoryResults = new CodecDirectory();
@@ -836,6 +825,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                     zStatus.Phonebook.ConvertZoomContactsToGeneric(Status.Phonebook.Contacts);
 
                                 DirectoryRoot = directoryResults;
+
+                                _currentDirectoryResult = DirectoryRoot;
 
                                 OnDirectoryResultReturned(directoryResults);
 

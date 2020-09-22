@@ -255,9 +255,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             /// <returns></returns>
             public static CodecDirectory ConvertZoomContactsToGeneric(List<Contact> zoomContacts)
             {
-                var directory = new Codec.CodecDirectory();
+                var directory = new CodecDirectory();
 
-                var folders = new List<Codec.DirectoryItem>();
+                var folders = new List<DirectoryItem>();
 
                 var roomFolder = new DirectoryFolder();
 
@@ -272,9 +272,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     // If so, setup a rooms and contacts folder and add them.
                     roomFolder.Name = "Rooms";
+                    roomFolder.ParentFolderId = "root";
                     roomFolder.FolderId = "rooms";
 
                     contactFolder.Name = "Contacts";
+                    contactFolder.ParentFolderId = "root";
                     contactFolder.FolderId = "contacts";
 
                     folders.Add(roomFolder);
@@ -285,21 +287,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                 try
                 {
-                    if (zoomContacts.Count > 0)
+                    if (zoomContacts.Count == 0) return directory;
                     {
                         foreach (Contact c in zoomContacts)
                         {
-                            var contact = new ZoomDirectoryContact();
-
-                            contact.Name = c.ScreenName;
-                            contact.ContactId = c.Jid;
+                            var contact = new ZoomDirectoryContact {Name = c.ScreenName, ContactId = c.Jid};
 
                             if (folders.Count > 0)
                             {
-                                if (c.IsZoomRoom)
-                                    contact.FolderId = roomFolder.FolderId;
-                                else
-                                    contact.FolderId = contactFolder.FolderId;
+                                contact.ParentFolderId = c.IsZoomRoom ? "rooms" : "contacts";
                             }
 
                             contacts.Add(contact);
@@ -577,7 +573,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             public string meetingID { get; set; }
             public string password { get; set; }
             public string meetingOption { get; set; }
-            public int MeetingNumber { get; set; }
+            public long MeetingNumber { get; set; }
             public string callerName { get; set; }
             public string avatarURL { get; set; }
             public int lifeTime { get; set; }
@@ -831,13 +827,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             {
                 get
                 {
-                    return this._volume;
+                    return _volume;
                 }
                 set
                 {
                     if (value != _volume)
                     {
-                        this._volume = value;
+                        _volume = value;
                         NotifyPropertyChanged("Volume");
                     }
                 }
