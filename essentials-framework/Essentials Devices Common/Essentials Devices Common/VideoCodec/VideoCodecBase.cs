@@ -326,7 +326,43 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 LinkVideoCodecParticipantsToApi(codec as IHasParticipants, trilist, joinMap);
             }
-    }
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                if (codec is IHasDirectory)
+                {
+                    (codec as IHasDirectory).SetCurrentDirectoryToRoot();
+                }
+
+                if (codec is IHasScheduleAwareness)
+                {
+                    (codec as IHasScheduleAwareness).GetSchedule();
+                }
+
+                if (codec is IHasParticipants)
+                {
+                    UpdateParticipantsXSig((codec as IHasParticipants).Participants.CurrentParticipants);
+                }
+
+                if (codec is IHasCameraAutoMode)
+                {
+                    trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, true);
+
+                    (codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.InvokeFireUpdate();
+                }
+
+                if (codec is IHasCodecSelfView)
+                {
+                    (codec as IHasCodecSelfView).SelfviewIsOnFeedback.InvokeFireUpdate();
+                }
+
+                SharingContentIsOnFeedback.InvokeFireUpdate();
+
+                UpdateCallStatusXSig();
+            };
+        }
 
         private void LinkVideoCodecParticipantsToApi(IHasParticipants codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
         {
