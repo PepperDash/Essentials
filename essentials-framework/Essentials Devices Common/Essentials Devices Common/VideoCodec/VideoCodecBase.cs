@@ -313,6 +313,90 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 LinkVideoCodecDirectoryToApi(codec as IHasDirectory, trilist, joinMap);
             }
 
+            if (codec is IHasScheduleAwareness)
+            {
+                LinkVideoCodecScheduleToApi(codec as IHasScheduleAwareness, trilist, joinMap);
+            }
+    }
+
+        private void LinkVideoCodecScheduleToApi(IHasScheduleAwareness codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            trilist.SetSigFalseAction(joinMap.UpdateMeetings.JoinNumber, codec.GetSchedule);
+
+            codec.CodecSchedule.MeetingsListHasChanged += (sender, args) =>
+            {
+                var clearBytes = XSigHelpers.ClearOutputs();
+
+                trilist.SetString(joinMap.Schedule.JoinNumber,
+                    Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
+
+                var meetingsData = UpdateMeetingsListXSig(codec.CodecSchedule.Meetings);
+
+                trilist.SetString(joinMap.Schedule.JoinNumber, meetingsData);
+
+                trilist.SetSigFalseAction(joinMap.DialMeeting.JoinNumber, () =>
+                {
+                    if (codec.CodecSchedule.Meetings[0].Joinable)
+                    {
+                        Dial(codec.CodecSchedule.Meetings[0]);
+                    }
+                });
+            };
+        }
+
+        private string UpdateMeetingsListXSig(List<Meeting> meetings)
+        {
+            /*const int maxCalls = 8;
+            const int maxStrings = 5;
+            const int offset = 6;
+            var callIndex = 0;
+            var digitalIndex = maxStrings*maxCalls;
+             */
+
+            const int maxMeetings = 3;
+            const int maxDigitals = 1;
+            const int maxStrings = 4;
+            const int offset = maxDigitals + maxStrings;
+            var digitalIndex = maxStrings*maxMeetings; //15
+            var stringIndex = 0;
+            var meetingIndex = 0;
+
+            var tokenArray = new XSigToken[maxMeetings*offset];
+            /* 
+             * Digitals
+             * IsJoinable - 1
+             * 
+             * Serials
+             * Organizer - 1
+             * Title - 2
+             * Agenda - 3
+             * Start Time - 4
+             * End Time - 5
+            */
+            
+            foreach(var meeting in meetings)
+            {
+                var currentTime = DateTime.Now;
+                
+                if(meeting.StartTime < currentTime && meeting.EndTime < currentTime) continue;
+                
+                if (meetingIndex > maxMeetings*offset) break;
+                
+                //digitals
+                tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, meeting.Joinable);
+
+                //serials
+                tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, meeting.Organizer);
+                tokenArray[stringIndex + 1] = new XSigSerialToken(stringIndex + 2, meeting.Title);
+                tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, meeting.StartTime.ToString("MM/dd/yyyy h:mm"));
+                tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, meeting.EndTime.ToString("MM/dd/yyyy h:mm"));
+
+                digitalIndex += maxDigitals;
+                meetingIndex += offset;
+                stringIndex += maxStrings;
+            }
+
+            return GetXSigString(tokenArray);
         }
 
         private void LinkVideoCodecDirectoryToApi(IHasDirectory codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
@@ -613,11 +697,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             var tokenArray = new XSigToken[presets.Count];
 
-            string returnString;
-
-            foreach (var token in presets.Select(cameraPreset => new XSigSerialToken(i, cameraPreset.Description)))
+            foreach (var preset in presets)
             {
-                tokenArray[i - 1] = token;
+                var cameraPreset = new XSigSerialToken(i, preset.Description);
+                tokenArray[i - 1] = cameraPreset;
                 i++;
             }
             

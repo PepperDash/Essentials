@@ -14,25 +14,26 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
-using PepperDash_Essentials_Core.Bridges.JoinMaps;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
-    public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor, IRouting,
+    public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
+        IRouting,
         IHasScheduleAwareness, IHasCodecCameras
     {
-        private readonly CrestronQueue<string> ReceiveQueue;
+        private const uint DefaultMeetingDurationMin = 30;
+        private const string Delimiter = "\x0D\x0A";
+        private readonly CrestronQueue<string> _receiveQueue;
 
-        private readonly Thread ReceiveThread;
+        private readonly Thread _receiveThread;
 
-        private readonly ZoomRoomSyncState SyncState;
+        private readonly ZoomRoomSyncState _syncState;
         public bool CommDebuggingIsOn;
-        private uint DefaultMeetingDurationMin = 30;
-        private string Delimiter = "\x0D\x0A";
-        private uint JsonCurlyBraceCounter = 0;
-        private bool JsonFeedbackMessageIsIncoming;
-        private StringBuilder JsonMessage;
-        private int PreviousVolumeLevel = 0;
+        private CodecDirectory _currentDirectoryResult;
+        private uint _jsonCurlyBraceCounter;
+        private bool _jsonFeedbackMessageIsIncoming;
+        private StringBuilder _jsonMessage;
+        private int _previousVolumeLevel;
         private CameraBase _selectedCamera;
 
         public ZoomRoom(DeviceConfig config, IBasicCommunication comm)
@@ -41,11 +42,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             var props = JsonConvert.DeserializeObject<ZoomRoomPropertiesConfig>(config.Properties.ToString());
 
             // The queue that will collect the repsonses in the order they are received
-            ReceiveQueue = new CrestronQueue<string>(25);
+            _receiveQueue = new CrestronQueue<string>(25);
 
             // The thread responsible for dequeuing and processing the messages
-            ReceiveThread = new Thread((o) => ProcessQueue(), null);
-            ReceiveThread.Priority = Thread.eThreadPriority.MediumPriority;
+            _receiveThread = new Thread(o => ProcessQueue(), null) {Priority = Thread.eThreadPriority.MediumPriority};
 
             Communication = comm;
 
@@ -68,15 +68,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             CodecInfo = new ZoomRoomInfo(Status, Configuration);
 
-            SyncState = new ZoomRoomSyncState(Key + "--Sync", this);
+            _syncState = new ZoomRoomSyncState(Key + "--Sync", this);
 
-            SyncState.InitialSyncCompleted += new EventHandler<EventArgs>(SyncState_InitialSyncCompleted);
+            _syncState.InitialSyncCompleted += SyncState_InitialSyncCompleted;
 
             PhonebookSyncState = new CodecPhonebookSyncState(Key + "--PhonebookSync");
 
-            PortGather = new CommunicationGather(Communication, "\x0A");
-            PortGather.IncludeDelimiter = true;
-            PortGather.LineReceived += this.Port_LineReceived;
+            PortGather = new CommunicationGather(Communication, "\x0A") {IncludeDelimiter = true};
+            PortGather.LineReceived += Port_LineReceived;
 
             CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd,
                 eRoutingSignalType.Audio | eRoutingSignalType.Video,
@@ -272,12 +271,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         #endregion
 
-        #region IHasDirectory Members
+        #region IHasDirectoryHistoryStack Members
 
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
         public CodecDirectory DirectoryRoot { get; private set; }
 
-        private CodecDirectory _currentDirectoryResult;
         public CodecDirectory CurrentDirectoryResult
         {
             get { return _currentDirectoryResult; }
@@ -293,7 +291,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 DirectoryRoot.CurrentDirectoryResults.FindAll(
                     c => c.Name.IndexOf(searchString, 0, StringComparison.OrdinalIgnoreCase) > -1));
 
-            DirectoryBrowseHistoryStack.Push(_currentDirectoryResult);
+            DirectoryBrowseHistoryStack.Clear();
             _currentDirectoryResult = directoryResults;
 
             OnDirectoryResultReturned(directoryResults);
@@ -324,7 +322,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void GetDirectoryParentFolderContents()
         {
-            if (DirectoryBrowseHistoryStack.Count == 0) return;
+            if (DirectoryBrowseHistoryStack.Count == 0)
+            {
+                return;
+            }
 
             var currentDirectory = DirectoryBrowseHistoryStack.Pop();
 
@@ -337,7 +338,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public List<CodecDirectory> DirectoryBrowseHistory { get; private set; }
 
-        public Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; private set; } 
+        public Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; private set; }
 
         #endregion
 
@@ -374,64 +375,58 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// </summary>
         private void SetUpFeedbackActions()
         {
-            Configuration.Audio.Output.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(
-                (o, a) =>
+            Configuration.Audio.Output.PropertyChanged += (o, a) =>
+            {
+                if (a.PropertyName == "Volume")
                 {
-                    if (a.PropertyName == "Volume")
-                    {
-                        VolumeLevelFeedback.FireUpdate();
-                        MuteFeedback.FireUpdate();
-                    }
-                });
+                    VolumeLevelFeedback.FireUpdate();
+                    MuteFeedback.FireUpdate();
+                }
+            };
 
-            Configuration.Call.Microphone.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(
-                (o, a) =>
+            Configuration.Call.Microphone.PropertyChanged += (o, a) =>
+            {
+                if (a.PropertyName == "Mute")
                 {
-                    if (a.PropertyName == "Mute")
-                    {
-                        PrivacyModeIsOnFeedback.FireUpdate();
-                    }
-                });
+                    PrivacyModeIsOnFeedback.FireUpdate();
+                }
+            };
 
-            Configuration.Video.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(
-                (o, a) =>
+            Configuration.Video.PropertyChanged += (o, a) =>
+            {
+                if (a.PropertyName == "HideConfSelfVideo")
                 {
-                    if (a.PropertyName == "HideConfSelfVideo")
-                    {
-                        SelfviewIsOnFeedback.FireUpdate();
-                    }
-                });
-            Configuration.Video.Camera.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(
-                (o, a) =>
+                    SelfviewIsOnFeedback.FireUpdate();
+                }
+            };
+            Configuration.Video.Camera.PropertyChanged += (o, a) =>
+            {
+                if (a.PropertyName == "SelectedId")
                 {
-                    if (a.PropertyName == "SelectedId")
-                    {
-                        SelectCamera(Configuration.Video.Camera.SelectedId);
-                            // this will in turn fire the affected feedbacks
-                    }
-                });
+                    SelectCamera(Configuration.Video.Camera.SelectedId);
+                    // this will in turn fire the affected feedbacks
+                }
+            };
 
-            Status.Call.Sharing.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(
-                (o, a) =>
+            Status.Call.Sharing.PropertyChanged += (o, a) =>
+            {
+                if (a.PropertyName == "State")
                 {
-                    if (a.PropertyName == "State")
-                    {
-                        SharingContentIsOnFeedback.FireUpdate();
-                    }
-                });
+                    SharingContentIsOnFeedback.FireUpdate();
+                }
+            };
 
-            Status.Sharing.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(
-                (o, a) =>
+            Status.Sharing.PropertyChanged += (o, a) =>
+            {
+                switch (a.PropertyName)
                 {
-                    if (a.PropertyName == "dispState")
-                    {
+                    case "dispState":
                         SharingSourceFeedback.FireUpdate();
-                    }
-                    else if (a.PropertyName == "password")
-                    {
-                        //TODO: Fire Sharing Password Update
-                    }
-                });
+                        break;
+                    case "password":
+                        break;
+                }
+            };
         }
 
         private void SetUpDirectory()
@@ -441,7 +436,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             DirectoryBrowseHistory = new List<CodecDirectory>();
             DirectoryBrowseHistoryStack = new Stack<CodecDirectory>();
 
-            CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => DirectoryBrowseHistoryStack.Count > 0);
+            CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => _currentDirectoryResult != DirectoryRoot);
 
             CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
         }
@@ -478,20 +473,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         {
             CrestronConsole.AddNewConsoleCommand(SetCommDebug, "SetCodecCommDebug", "0 for Off, 1 for on",
                 ConsoleAccessLevelEnum.AccessOperator);
-            CrestronConsole.AddNewConsoleCommand((s) => SendText("zCommand Phonebook List Offset: 0 Limit: 512"),
+            CrestronConsole.AddNewConsoleCommand(s => SendText("zCommand Phonebook List Offset: 0 Limit: 512"),
                 "GetZoomRoomContacts", "Triggers a refresh of the codec phonebook",
                 ConsoleAccessLevelEnum.AccessOperator);
-            CrestronConsole.AddNewConsoleCommand((s) => GetBookings(), "GetZoomRoomBookings",
+            CrestronConsole.AddNewConsoleCommand(s => GetBookings(), "GetZoomRoomBookings",
                 "Triggers a refresh of the booking data for today", ConsoleAccessLevelEnum.AccessOperator);
 
             var socket = Communication as ISocketStatus;
             if (socket != null)
             {
-                socket.ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
+                socket.ConnectionChange += socket_ConnectionChange;
             }
 
-            // TODO: Turn this off when done initial development
-            CommDebuggingIsOn = true;
+            CommDebuggingIsOn = false;
 
             Communication.Connect();
 
@@ -522,7 +516,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             }
             else
             {
-                SyncState.CodecDisconnected();
+                _syncState.CodecDisconnected();
                 PhonebookSyncState.CodecDisconnected();
             }
         }
@@ -547,12 +541,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             //if (CommDebuggingIsOn)
             //    Debug.Console(1, this, "Gathered: '{0}'", args.Text);
 
-            ReceiveQueue.Enqueue(args.Text);
+            _receiveQueue.Enqueue(args.Text);
 
             // If the receive thread has for some reason stopped, this will restart it
-            if (ReceiveThread.ThreadState != Thread.eThreadStates.ThreadRunning)
+            if (_receiveThread.ThreadState != Thread.eThreadStates.ThreadRunning)
             {
-                ReceiveThread.Start();
+                _receiveThread.Start();
             }
         }
 
@@ -567,7 +561,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             {
                 while (true)
                 {
-                    var message = ReceiveQueue.Dequeue();
+                    var message = _receiveQueue.Dequeue();
 
                     ProcessMessage(message);
                 }
@@ -587,50 +581,50 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         private void SetUpSyncQueries()
         {
             // zStatus
-            SyncState.AddQueryToQueue("zStatus Call Status");
-            SyncState.AddQueryToQueue("zStatus Audio Input Line");
-            SyncState.AddQueryToQueue("zStatus Audio Output Line");
-            SyncState.AddQueryToQueue("zStatus Video Camera Line");
-            SyncState.AddQueryToQueue("zStatus Video Optimizable");
-            SyncState.AddQueryToQueue("zStatus Capabilities");
-            SyncState.AddQueryToQueue("zStatus Sharing");
-            SyncState.AddQueryToQueue("zStatus CameraShare");
-            SyncState.AddQueryToQueue("zStatus Call Layout");
-            SyncState.AddQueryToQueue("zStatus Call ClosedCaption Available");
-            SyncState.AddQueryToQueue("zStatus NumberOfScreens");
+            _syncState.AddQueryToQueue("zStatus Call Status");
+            _syncState.AddQueryToQueue("zStatus Audio Input Line");
+            _syncState.AddQueryToQueue("zStatus Audio Output Line");
+            _syncState.AddQueryToQueue("zStatus Video Camera Line");
+            _syncState.AddQueryToQueue("zStatus Video Optimizable");
+            _syncState.AddQueryToQueue("zStatus Capabilities");
+            _syncState.AddQueryToQueue("zStatus Sharing");
+            _syncState.AddQueryToQueue("zStatus CameraShare");
+            _syncState.AddQueryToQueue("zStatus Call Layout");
+            _syncState.AddQueryToQueue("zStatus Call ClosedCaption Available");
+            _syncState.AddQueryToQueue("zStatus NumberOfScreens");
 
             // zConfiguration
 
-            SyncState.AddQueryToQueue("zConfiguration Call Sharing optimize_video_sharing");
-            SyncState.AddQueryToQueue("zConfiguration Call Microphone Mute");
-            SyncState.AddQueryToQueue("zConfiguration Call Camera Mute");
-            SyncState.AddQueryToQueue("zConfiguration Audio Input SelectedId");
-            SyncState.AddQueryToQueue("zConfiguration Audio Input is_sap_disabled");
-            SyncState.AddQueryToQueue("zConfiguration Audio Input reduce_reverb");
-            SyncState.AddQueryToQueue("zConfiguration Audio Input volume");
-            SyncState.AddQueryToQueue("zConfiguration Audio Output selectedId");
-            SyncState.AddQueryToQueue("zConfiguration Audio Output volume");
-            SyncState.AddQueryToQueue("zConfiguration Video hide_conf_self_video");
-            SyncState.AddQueryToQueue("zConfiguration Video Camera selectedId");
-            SyncState.AddQueryToQueue("zConfiguration Video Camera Mirror");
-            SyncState.AddQueryToQueue("zConfiguration Client appVersion");
-            SyncState.AddQueryToQueue("zConfiguration Client deviceSystem");
-            SyncState.AddQueryToQueue("zConfiguration Call Layout ShareThumb");
-            SyncState.AddQueryToQueue("zConfiguration Call Layout Style");
-            SyncState.AddQueryToQueue("zConfiguration Call Layout Size");
-            SyncState.AddQueryToQueue("zConfiguration Call Layout Position");
-            SyncState.AddQueryToQueue("zConfiguration Call Lock Enable");
-            SyncState.AddQueryToQueue("zConfiguration Call MuteUserOnEntry Enable");
-            SyncState.AddQueryToQueue("zConfiguration Call ClosedCaption FontSize ");
-            SyncState.AddQueryToQueue("zConfiguration Call ClosedCaption Visible");
+            _syncState.AddQueryToQueue("zConfiguration Call Sharing optimize_video_sharing");
+            _syncState.AddQueryToQueue("zConfiguration Call Microphone Mute");
+            _syncState.AddQueryToQueue("zConfiguration Call Camera Mute");
+            _syncState.AddQueryToQueue("zConfiguration Audio Input SelectedId");
+            _syncState.AddQueryToQueue("zConfiguration Audio Input is_sap_disabled");
+            _syncState.AddQueryToQueue("zConfiguration Audio Input reduce_reverb");
+            _syncState.AddQueryToQueue("zConfiguration Audio Input volume");
+            _syncState.AddQueryToQueue("zConfiguration Audio Output selectedId");
+            _syncState.AddQueryToQueue("zConfiguration Audio Output volume");
+            _syncState.AddQueryToQueue("zConfiguration Video hide_conf_self_video");
+            _syncState.AddQueryToQueue("zConfiguration Video Camera selectedId");
+            _syncState.AddQueryToQueue("zConfiguration Video Camera Mirror");
+            _syncState.AddQueryToQueue("zConfiguration Client appVersion");
+            _syncState.AddQueryToQueue("zConfiguration Client deviceSystem");
+            _syncState.AddQueryToQueue("zConfiguration Call Layout ShareThumb");
+            _syncState.AddQueryToQueue("zConfiguration Call Layout Style");
+            _syncState.AddQueryToQueue("zConfiguration Call Layout Size");
+            _syncState.AddQueryToQueue("zConfiguration Call Layout Position");
+            _syncState.AddQueryToQueue("zConfiguration Call Lock Enable");
+            _syncState.AddQueryToQueue("zConfiguration Call MuteUserOnEntry Enable");
+            _syncState.AddQueryToQueue("zConfiguration Call ClosedCaption FontSize ");
+            _syncState.AddQueryToQueue("zConfiguration Call ClosedCaption Visible");
 
             // zCommand
 
-            SyncState.AddQueryToQueue("zCommand Phonebook List Offset: 0 Limit: 512");
-            SyncState.AddQueryToQueue("zCommand Bookings List");
+            _syncState.AddQueryToQueue("zCommand Phonebook List Offset: 0 Limit: 512");
+            _syncState.AddQueryToQueue("zCommand Bookings List");
 
 
-            SyncState.StartSync();
+            _syncState.StartSync();
         }
 
         /// <summary>
@@ -642,25 +636,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             // Counts the curly braces
             if (message.Contains('{'))
             {
-                JsonCurlyBraceCounter++;
+                _jsonCurlyBraceCounter++;
             }
 
             if (message.Contains('}'))
             {
-                JsonCurlyBraceCounter--;
+                _jsonCurlyBraceCounter--;
             }
 
-            Debug.Console(2, this, "JSON Curly Brace Count: {0}", JsonCurlyBraceCounter);
+            Debug.Console(2, this, "JSON Curly Brace Count: {0}", _jsonCurlyBraceCounter);
 
-            if (!JsonFeedbackMessageIsIncoming && message.Trim('\x20') == "{" + Delimiter)
+            if (!_jsonFeedbackMessageIsIncoming && message.Trim('\x20') == "{" + Delimiter)
                 // Check for the beginning of a new JSON message
             {
-                JsonFeedbackMessageIsIncoming = true;
-                JsonCurlyBraceCounter = 1; // reset the counter for each new message
+                _jsonFeedbackMessageIsIncoming = true;
+                _jsonCurlyBraceCounter = 1; // reset the counter for each new message
 
-                JsonMessage = new StringBuilder();
+                _jsonMessage = new StringBuilder();
 
-                JsonMessage.Append(message);
+                _jsonMessage.Append(message);
 
                 if (CommDebuggingIsOn)
                 {
@@ -669,22 +663,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                 return;
             }
-            else if (JsonFeedbackMessageIsIncoming && message.Trim('\x20') == "}" + Delimiter)
+            if (_jsonFeedbackMessageIsIncoming && message.Trim('\x20') == "}" + Delimiter)
                 // Check for the end of a JSON message
             {
-                JsonMessage.Append(message);
+                _jsonMessage.Append(message);
 
-                if (JsonCurlyBraceCounter == 0)
+                if (_jsonCurlyBraceCounter == 0)
                 {
-                    JsonFeedbackMessageIsIncoming = false;
+                    _jsonFeedbackMessageIsIncoming = false;
 
                     if (CommDebuggingIsOn)
                     {
-                        Debug.Console(2, this, "Complete JSON Received:\n{0}", JsonMessage.ToString());
+                        Debug.Console(2, this, "Complete JSON Received:\n{0}", _jsonMessage.ToString());
                     }
 
                     // Forward the complete message to be deserialized
-                    DeserializeResponse(JsonMessage.ToString());
+                    DeserializeResponse(_jsonMessage.ToString());
                 }
 
                 //JsonMessage = new StringBuilder();
@@ -693,9 +687,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             // NOTE: This must happen after the above conditions have been checked
             // Append subsequent partial JSON fragments to the string builder
-            if (JsonFeedbackMessageIsIncoming)
+            if (_jsonFeedbackMessageIsIncoming)
             {
-                JsonMessage.Append(message);
+                _jsonMessage.Append(message);
 
                 //Debug.Console(1, this, "Building JSON:\n{0}", JsonMessage.ToString());
                 return;
@@ -706,18 +700,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 Debug.Console(1, this, "Non-JSON response: '{0}'", message);
             }
 
-            JsonCurlyBraceCounter = 0; // reset on non-JSON response
+            _jsonCurlyBraceCounter = 0; // reset on non-JSON response
 
-            if (!SyncState.InitialSyncComplete)
+            if (!_syncState.InitialSyncComplete)
             {
                 switch (message.Trim().ToLower()) // remove the whitespace
                 {
                     case "*r login successful":
                     {
-                        SyncState.LoginMessageReceived();
+                        _syncState.LoginMessageReceived();
 
                         // Fire up a thread to send the intial commands.
-                        CrestronInvoke.BeginInvoke((o) =>
+                        CrestronInvoke.BeginInvoke(o =>
                         {
                             Thread.Sleep(100);
                             // disable echo of commands
@@ -755,7 +749,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                 var message = JObject.Parse(trimmedResponse);
 
-                eZoomRoomResponseType eType =
+                var eType =
                     (eZoomRoomResponseType)
                         Enum.Parse(typeof (eZoomRoomResponseType), message["type"].Value<string>(), true);
 
@@ -816,12 +810,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                     PhonebookSyncState.PhonebookRootEntriesReceived();
                                     PhonebookSyncState.SetPhonebookHasFolders(false);
                                     PhonebookSyncState.SetNumberOfContacts(Status.Phonebook.Contacts.Count);
-
                                 }
 
-                                var directoryResults = new CodecDirectory();
-
-                                directoryResults =
+                                var directoryResults =
                                     zStatus.Phonebook.ConvertZoomContactsToGeneric(Status.Phonebook.Contacts);
 
                                 DirectoryRoot = directoryResults;
@@ -916,28 +907,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                 }
                                 else if (responseObj["Added Contact"] != null)
                                 {
-                                    var newContact =
-                                        JsonConvert.DeserializeObject<zStatus.Contact>(
-                                            responseObj["Updated Contact"].ToString());
+                                    var jToken = responseObj["Updated Contact"];
+                                    if (jToken != null)
+                                    {
+                                        var newContact =
+                                            JsonConvert.DeserializeObject<zStatus.Contact>(
+                                                jToken.ToString());
 
-                                    // Add a new contact
-                                    Status.Phonebook.Contacts.Add(newContact);
+                                        // Add a new contact
+                                        Status.Phonebook.Contacts.Add(newContact);
+                                    }
                                 }
 
                                 break;
                             }
                             case "bookingslistresult":
                             {
-                                if (!SyncState.InitialSyncComplete)
+                                if (!_syncState.InitialSyncComplete)
                                 {
-                                    SyncState.LastQueryResponseReceived();
+                                    _syncState.LastQueryResponseReceived();
                                 }
 
-                                var codecBookings = new List<zCommand.BookingsListResult>();
-
-                                codecBookings =
-                                    JsonConvert.DeserializeObject<List<zCommand.BookingsListResult>>(
-                                        responseObj.ToString());
+                                var codecBookings = JsonConvert.DeserializeObject<List<zCommand.BookingsListResult>>(
+                                    responseObj.ToString());
 
                                 if (codecBookings != null && codecBookings.Count > 0)
                                 {
@@ -969,13 +961,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                                 if (incomingCall != null)
                                 {
-                                    var newCall = new CodecActiveCallItem();
-
-                                    newCall.Direction = eCodecCallDirection.Incoming;
-                                    newCall.Status = eCodecCallStatus.Ringing;
-                                    newCall.Type = eCodecCallType.Unknown;
-                                    newCall.Name = incomingCall.callerName;
-                                    newCall.Id = incomingCall.callerJID;
+                                    var newCall = new CodecActiveCallItem
+                                    {
+                                        Direction = eCodecCallDirection.Incoming,
+                                        Status = eCodecCallStatus.Ringing,
+                                        Type = eCodecCallType.Unknown,
+                                        Name = incomingCall.callerName,
+                                        Id = incomingCall.callerJID
+                                    };
 
                                     ActiveCalls.Add(newCall);
 
@@ -996,14 +989,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                                     if (existingCall != null)
                                     {
-                                        if (!incomingCall.accepted)
-                                        {
-                                            existingCall.Status = eCodecCallStatus.Disconnected;
-                                        }
-                                        else
-                                        {
-                                            existingCall.Status = eCodecCallStatus.Connecting;
-                                        }
+                                        existingCall.Status = !incomingCall.accepted
+                                            ? eCodecCallStatus.Disconnected
+                                            : eCodecCallStatus.Connecting;
 
                                         OnCallStatusChange(existingCall);
                                     }
@@ -1087,9 +1075,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         {
                             case "login":
                             {
-                                SyncState.LoginMessageReceived();
+                                _syncState.LoginMessageReceived();
 
-                                if (!SyncState.InitialQueryMessagesWereSent)
+                                if (!_syncState.InitialQueryMessagesWereSent)
                                 {
                                     SetUpSyncQueries();
                                 }
@@ -1157,7 +1145,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             {
                                 JsonConvert.PopulateObject(responseObj.ToString(), Status.Cameras);
 
-                                if (!SyncState.CamerasHaveBeenSetUp)
+                                if (!_syncState.CamerasHaveBeenSetUp)
                                 {
                                     SetUpCameras();
                                 }
@@ -1213,26 +1201,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// </summary>
         private void UpdateCallStatus()
         {
-            zStatus.eCallStatus callStatus;
-
             if (Status.Call != null)
             {
-                callStatus = Status.Call.Status;
+                var callStatus = Status.Call.Status;
 
                 // If not currently in a meeting, intialize the call object
                 if (callStatus != zStatus.eCallStatus.IN_MEETING || callStatus != zStatus.eCallStatus.CONNECTING_MEETING)
                 {
-                    Status.Call = new zStatus.Call();
-                    Status.Call.Status = callStatus; // set the status after initializing the object
+                    Status.Call = new zStatus.Call {Status = callStatus};
                 }
 
                 if (ActiveCalls.Count == 0)
                 {
                     if (callStatus == zStatus.eCallStatus.CONNECTING_MEETING)
                     {
-                        var newCall = new CodecActiveCallItem();
-
-                        newCall.Status = eCodecCallStatus.Connecting;
+                        var newCall = new CodecActiveCallItem {Status = eCodecCallStatus.Connecting};
 
                         ActiveCalls.Add(newCall);
 
@@ -1317,12 +1300,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public override void MuteOff()
         {
-            SetVolume((ushort) PreviousVolumeLevel);
+            SetVolume((ushort) _previousVolumeLevel);
         }
 
         public override void MuteOn()
         {
-            PreviousVolumeLevel = Configuration.Audio.Output.Volume; // Store the previous level for recall
+            _previousVolumeLevel = Configuration.Audio.Output.Volume; // Store the previous level for recall
 
             SetVolume(0);
         }
@@ -1484,6 +1467,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             throw new NotImplementedException();
         }
 
+        /// <summary>
         /// Call when directory results are updated
         /// </summary>
         /// <param name="result"></param>
@@ -1495,7 +1479,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             var handler = DirectoryResultReturned;
             if (handler != null)
             {
-                handler(this, new DirectoryEventArgs()
+                handler(this, new DirectoryEventArgs
                 {
                     Directory = result,
                     DirectoryIsOnRoot = !CurrentDirectoryResultIsNotDirectoryRoot.BoolValue
@@ -1531,7 +1515,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 UpdateFarEndCameras();
             }
 
-            SyncState.CamerasSetUp();
+            _syncState.CamerasSetUp();
         }
 
         /// <summary>
@@ -1570,10 +1554,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     return Status.SystemUnit.MeetingNumber;
                 }
-                else
-                {
-                    return string.Empty;
-                }
+                return string.Empty;
             }
         }
 
@@ -1585,10 +1566,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     return Status.Call.Info.meeting_list_item.third_party.h323_address;
                 }
-                else
-                {
-                    return string.Empty;
-                }
+                return string.Empty;
             }
         }
 
@@ -1600,10 +1578,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     return Status.SystemUnit.RoomInfo.AccountEmail;
                 }
-                else
-                {
-                    return string.Empty;
-                }
+                return string.Empty;
             }
         }
 
@@ -1620,10 +1595,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     return Status.Call.Info.dialIn;
                 }
-                else
-                {
-                    return string.Empty;
-                }
+                return string.Empty;
             }
         }
 
@@ -1635,10 +1607,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     return Status.Call.Info.meeting_list_item.third_party.sip_address;
                 }
-                else
-                {
-                    return string.Empty;
-                }
+                return string.Empty;
             }
         }
     }
@@ -1648,24 +1617,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
     /// </summary>
     public class ZoomRoomSyncState : IKeyed
     {
-        private readonly ZoomRoom Parent;
-        private readonly CrestronQueue<string> SyncQueries;
-        private bool _InitialSyncComplete;
+        private readonly ZoomRoom _parent;
+        private readonly CrestronQueue<string> _syncQueries;
+        private bool _initialSyncComplete;
 
         public ZoomRoomSyncState(string key, ZoomRoom parent)
         {
-            Parent = parent;
+            _parent = parent;
             Key = key;
-            SyncQueries = new CrestronQueue<string>(50);
+            _syncQueries = new CrestronQueue<string>(50);
             CodecDisconnected();
         }
 
         public bool InitialSyncComplete
         {
-            get { return _InitialSyncComplete; }
+            get { return _initialSyncComplete; }
             private set
             {
-                if (value == true)
+                if (value)
                 {
                     var handler = InitialSyncCompleted;
                     if (handler != null)
@@ -1673,7 +1642,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         handler(this, new EventArgs());
                     }
                 }
-                _InitialSyncComplete = value;
+                _initialSyncComplete = value;
             }
         }
 
@@ -1700,11 +1669,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         private void DequeueQueries()
         {
-            while (!SyncQueries.IsEmpty)
+            while (!_syncQueries.IsEmpty)
             {
-                var query = SyncQueries.Dequeue();
+                var query = _syncQueries.Dequeue();
 
-                Parent.SendText(query);
+                _parent.SendText(query);
             }
 
             InitialQueryMessagesSent();
@@ -1712,7 +1681,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void AddQueryToQueue(string query)
         {
-            SyncQueries.Enqueue(query);
+            _syncQueries.Enqueue(query);
         }
 
         public void LoginMessageReceived()
@@ -1745,7 +1714,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void CodecDisconnected()
         {
-            SyncQueries.Clear();
+            _syncQueries.Clear();
             LoginMessageWasReceived = false;
             InitialQueryMessagesWereSent = false;
             LastQueryResponseWasReceived = false;
@@ -1772,7 +1741,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
     {
         public ZoomRoomFactory()
         {
-            TypeNames = new List<string>() {"zoomroom"};
+            TypeNames = new List<string> {"zoomroom"};
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)

@@ -979,6 +979,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 meeting.Privacy = b.IsPrivate ? eMeetingPrivacy.Private : eMeetingPrivacy.Public;
 
                 // No meeting.Calls data exists for Zoom Rooms.  Leaving out for now.
+                var now = DateTime.Now;
+                if (meeting.StartTime < now && meeting.EndTime < now)
+                {
+                    Debug.Console(1, "Skipping meeting {0}. Meeting is in the past.", meeting.Title);
+                    continue;
+                }
 
                 meetings.Add(meeting);
 

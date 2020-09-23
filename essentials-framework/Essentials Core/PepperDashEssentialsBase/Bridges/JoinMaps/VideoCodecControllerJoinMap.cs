@@ -18,399 +18,6 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 
         #endregion
 
-        /*#region NearEndCameraControls
-
-        [JoinName("NearCamDown")] public JoinDataComplete NearEndCameraDown =
-            new JoinDataComplete(new JoinData {JoinNumber = 12, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Near Camera Down",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("NearCamFocusFar")] public JoinDataComplete NearEndCameraFocusFar =
-            new JoinDataComplete(new JoinData {JoinNumber = 18, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Near Camera Focus Far",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("NearCamFocusNear")] public JoinDataComplete NearEndCameraFocusNear =
-            new JoinDataComplete(new JoinData {JoinNumber = 17, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Near Camera Focus Near",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("NearCamLeft")] public JoinDataComplete NearEndCameraLeft =
-            new JoinDataComplete(new JoinData {JoinNumber = 13, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Near Camera Left",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("NearCamPresetNames")] public JoinDataComplete NearEndCameraNames =
-            new JoinDataComplete(new JoinData {JoinNumber = 11, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "XSig - Camera Names",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Serial
-                });
-
-        [JoinName("NearCamPresetSave")] public JoinDataComplete NearEndCameraPresetSave =
-            new JoinDataComplete(new JoinData {JoinNumber = 21, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Save Current Preset",
-                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("NearCamPresetSelect")] public JoinDataComplete NearEndCameraPresetSelect =
-            new JoinDataComplete(new JoinData {JoinNumber = 31, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Recall Preset",
-                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.Analog
-                });
-
-        [JoinName("NearCamRight")] public JoinDataComplete NearEndCameraRight =
-            new JoinDataComplete(new JoinData {JoinNumber = 14, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Near Camera Right",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("NearCamSelectAnalog")] public JoinDataComplete NearEndCameraSelectAnalog = new JoinDataComplete(
-            new JoinData {JoinNumber = 12, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Camera Select & Feedback by index",
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.Analog
-            });
-
-        [JoinName("NearCamSelectSerial")] public JoinDataComplete NearEndCameraSelectSerial = new JoinDataComplete(
-            new JoinData {JoinNumber = 12, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Camera Select & Feedback by name",
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.Serial
-            });
-
-        [JoinName("NearCamUp")] public JoinDataComplete NearEndCameraUp =
-            new JoinDataComplete(new JoinData {JoinNumber = 11, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Near Camera Up",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("NearCamZoomIn")] public JoinDataComplete NearEndCameraZoomIn =
-            new JoinDataComplete(new JoinData {JoinNumber = 15, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Near Camera Zoom In",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("NearCamZoomOut")] public JoinDataComplete NearEndCameraZoomOut =
-            new JoinDataComplete(new JoinData {JoinNumber = 16, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Near Camera Zoom Out",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        #endregion
-
-        #region Far End Camera Controls
-
-        [JoinName("FarCamDown")] public JoinDataComplete FarEndCameraDown =
-            new JoinDataComplete(new JoinData {JoinNumber = 32, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Far Camera Down",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("FarCamFocusFar")] public JoinDataComplete FarEndCameraFocusFar =
-            new JoinDataComplete(new JoinData {JoinNumber = 38, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Far Camera Focus Far",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("FarCamFocusNear")] public JoinDataComplete FarEndCameraFocusNear =
-            new JoinDataComplete(new JoinData {JoinNumber = 37, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Far Camera Focus Near",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("FarCamLeft")] public JoinDataComplete FarEndCameraLeft =
-            new JoinDataComplete(new JoinData {JoinNumber = 33, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Far Camera Left",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("FarCamPresetSelect")] public JoinDataComplete FarEndCameraPresetSelect =
-            new JoinDataComplete(new JoinData {JoinNumber = 41, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Recall Preset",
-                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.Analog
-                });
-
-        [JoinName("FarCamRight")] public JoinDataComplete FarEndCameraRight =
-            new JoinDataComplete(new JoinData {JoinNumber = 34, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Far Camera Right",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("FarCamUp")] public JoinDataComplete FarEndCameraUp =
-            new JoinDataComplete(new JoinData {JoinNumber = 31, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Far Camera Up",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("FarCamZoomIn")] public JoinDataComplete FarEndCameraZoomIn =
-            new JoinDataComplete(new JoinData {JoinNumber = 35, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Far Camera Zoom In",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("FarCamZoomOut")] public JoinDataComplete FarEndCameraZoomOut =
-            new JoinDataComplete(new JoinData {JoinNumber = 36, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Far Camera Zoom Out",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        #endregion
-
-        #region Camera Tracking Controls
-
-        [JoinName("CameraTrackingOff")] public JoinDataComplete CameraTrackingOff =
-            new JoinDataComplete(new JoinData {JoinNumber = 52, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Camera Tracking Off",
-                    JoinType = eJoinType.Digital,
-                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL
-                });
-
-        [JoinName("CameraTrackingOn")] public JoinDataComplete CameraTrackingOn =
-            new JoinDataComplete(new JoinData {JoinNumber = 51, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Camera Tracking On",
-                    JoinType = eJoinType.Digital,
-                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL
-                });
-
-        [JoinName("CameraTrackingToggle")] public JoinDataComplete CameraTrackingToggle = new JoinDataComplete(
-            new JoinData {JoinNumber = 53, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Camera Tracking Toggle",
-                JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                JoinType = eJoinType.Digital
-            });
-
-        #endregion
-
-        #region Incoming Call
-
-        [JoinName("IncomingCallAnswer")] public JoinDataComplete IncomingCallAnswer =
-            new JoinDataComplete(new JoinData {JoinNumber = 61, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Answer Incoming Call & Incoming Call FB",
-                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("IncomingCallId")] public JoinDataComplete IncomingCallId =
-            new JoinDataComplete(new JoinData {JoinNumber = 64, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Incoming Call ID",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Serial
-                });
-
-        [JoinName("IncomingCallName")] public JoinDataComplete IncomingCallName =
-            new JoinDataComplete(new JoinData {JoinNumber = 61, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Incoming Call Name",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Serial
-                });
-
-        [JoinName("IncomingCallNumber")] public JoinDataComplete IncomingCallNumber =
-            new JoinDataComplete(new JoinData {JoinNumber = 62, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Incoming Call Number",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Serial
-                });
-
-        [JoinName("IncomingCallReject")] public JoinDataComplete IncomingCallReject =
-            new JoinDataComplete(new JoinData {JoinNumber = 62, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Reject Incoming Call",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("IncomingCallType")] public JoinDataComplete IncomingCallType =
-            new JoinDataComplete(new JoinData {JoinNumber = 63, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Incoming Call Type",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Serial
-                });
-
-        #endregion
-
-        #region Manual Dial
-        [JoinName("ManualDial")]
-        public JoinDataComplete ManualDial = new JoinDataComplete(new JoinData {JoinNumber = 71, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Dial Entered String",
-                JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                JoinType = eJoinType.Digital
-            });
-
-        [JoinName("HangUpAllCalls")]
-        public JoinDataComplete HangUpAllCalls = new JoinDataComplete(new JoinData {JoinNumber = 72, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Hang up All calls",
-                JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                JoinType = eJoinType.Digital
-            });
-        [JoinName("ManualDialString")]
-        public JoinDataComplete ManualDialString = new JoinDataComplete(new JoinData {JoinNumber = 71, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Manual String to dial",
-                JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                JoinType = eJoinType.Serial
-            });
-
-        #endregion
-
-        #region Connected Calls
-
-        [JoinName("ConnectedCallCount")]
-        public JoinDataComplete ConnectedCallCount = new JoinDataComplete(new JoinData {JoinNumber = 81, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Connected Call Count",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Analog
-            });
-
-        [JoinName("ConnectedCallHangup")]
-        public JoinDataComplete ConnectedCallHangupStart =
-            new JoinDataComplete(new JoinData {JoinNumber = 81, JoinSpan = 8},
-                new JoinMetadata
-                {
-                    Description = "Hang up selected call",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("ConnectedCallData")] public JoinDataComplete ConnectedCallData =
-            new JoinDataComplete(new JoinData {JoinNumber = 81, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description =
-                        "XSig - Connected Call info\r\nDigital 1: Connecting\r\nDigital 2: Connected\r\nSerial 1: Name\r\nSerial 2: Number\r\nSerial 3: Status\r\nSerial 4: Type\r\nSerial 5: ID",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Serial
-                });
-
-        #endregion
-        #region NearEnd Source Select
-
-        [JoinName("NearEndSourceSelect")] public JoinDataComplete NearEndSourceSelect =
-            new JoinDataComplete(new JoinData {JoinNumber = 5, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Near End Source Select",
-                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.Analog,
-                    ValidValues = new[] {"1", "2", "3", "4"}
-                });
-        #endregion
-
-        #region Sharing 
-        //Putting share start/stop only in this base join map. The map can be extended for features of other codecs
-
-        public JoinDataComplete SharingStart = new JoinDataComplete(new JoinData {JoinNumber = 101, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Start sharing & feedback",
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.Digital
-            });
-
-        public JoinDataComplete SharingStop = new JoinDataComplete(new JoinData {JoinNumber = 102, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Stop Sharing & Feedback",
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.Digital
-            });
-        #endregion
-
-        #region Phonebook
-
-        #endregion*/
-
         [JoinName("CallDirection")] public JoinDataComplete CallDirection =
             new JoinDataComplete(new JoinData {JoinNumber = 22, JoinSpan = 1},
                 new JoinMetadata
@@ -572,15 +179,6 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinCapabilities = eJoinCapabilities.ToSIMPL,
                     JoinType = eJoinType.Serial
                 });
-        /*
-        [JoinName("CurrentCallNumber")] public JoinDataComplete CurrentCallNumber =
-            new JoinDataComplete(new JoinData {JoinNumber = 3, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Current Call Number",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Serial
-                });*/
 
         [JoinName("CurrentDialString")] public JoinDataComplete CurrentDialString =
             new JoinDataComplete(new JoinData {JoinNumber = 1, JoinSpan = 1},
@@ -915,6 +513,33 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinType = eJoinType.Serial
                 });
 
+        [JoinName("DialMeeting")] public JoinDataComplete DialMeeting = new JoinDataComplete(new JoinData{JoinNumber=161, JoinSpan = 1},
+            new JoinMetadata
+            {
+                Description = "Join first joinable meeting",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("UpdateMeetings")] public JoinDataComplete UpdateMeetings =
+            new JoinDataComplete(new JoinData {JoinNumber = 162, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Update Meetings",
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("Meeting Count Fb")] public JoinDataComplete MeetingCount =
+            new JoinDataComplete(new JoinData {JoinNumber = 161, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Meeting Count",
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinType = eJoinType.Analog
+                });
+
+
         [JoinName("CameraLayoutStringFb")]
         public JoinDataComplete CameraLayoutStringFb =
             new JoinDataComplete(new JoinData { JoinNumber = 141, JoinSpan = 1 },
@@ -924,6 +549,9 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.Analog
             });
+
+        
+        
 
         [JoinName("ManualDial")] public JoinDataComplete ManualDial =
             new JoinDataComplete(new JoinData {JoinNumber = 71, JoinSpan = 1},
