@@ -11,6 +11,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
@@ -909,7 +910,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
     /// </summary>
     public class zCommand
     {
-        public partial class BookingsListResult
+        public class BookingsListResult
         {
             [JsonProperty("accessRole")]
             public string AccessRole { get; set; }
@@ -1071,6 +1072,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             public ListParticipant()
             {
                 HandStatus = new HandStatus();
+            }
+
+            public static List<Participant> GetGenericParticipantListFromParticipantsResult(
+                List<ListParticipant> participants)
+            {
+                return
+                    participants.Select(
+                        p =>
+                            new Participant
+                            {
+                                Name = p.UserName,
+                                IsHost = p.IsHost,
+                                CanMuteVideo = p.IsVideoCanMuteByHost,
+                                CanUnmuteVideo = p.IsVideoCanUnmuteByHost,
+                                AudioMuteFb = p.AudioStatusState == "AUDIO_MUTED",
+                                VideoMuteFb = p.VideoStatusIsSending
+                            }).ToList();
             }
         }
 

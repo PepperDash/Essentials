@@ -14,12 +14,13 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
     public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
         IRouting,
-        IHasScheduleAwareness, IHasCodecCameras
+        IHasScheduleAwareness, IHasCodecCameras, IHasParticipants
     {
         private const uint DefaultMeetingDurationMin = 30;
         private const string Delimiter = "\x0D\x0A";
@@ -94,6 +95,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             Cameras = new List<CameraBase>();
 
             SetUpDirectory();
+
+            Participants = new CodecParticipants();
         }
 
         public CommunicationGather PortGather { get; private set; }
@@ -827,50 +830,60 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             {
                                 Debug.Console(1, this, "JTokenType: {0}", responseObj.Type);
 
-                                if (responseObj.Type == JTokenType.Array)
+                                switch (responseObj.Type)
                                 {
-                                    // if the type is array this must be the complete list
-                                    Status.Call.Participants =
-                                        JsonConvert.DeserializeObject<List<zCommand.ListParticipant>>(
-                                            responseObj.ToString());
-                                }
-                                else if (responseObj.Type == JTokenType.Object)
-                                {
-                                    // this is a single participant event notification
-
-                                    var participant =
-                                        JsonConvert.DeserializeObject<zCommand.ListParticipant>(responseObj.ToString());
-
-                                    if (participant != null)
+                                    case JTokenType.Array:
+                                        Status.Call.Participants =
+                                            JsonConvert.DeserializeObject<List<zCommand.ListParticipant>>(
+                                                responseObj.ToString());
+                                        break;
+                                    case JTokenType.Object:
                                     {
-                                        if (participant.Event == "ZRCUserChangedEventLeftMeeting" ||
-                                            participant.Event == "ZRCUserChangedEventUserInfoUpdated")
-                                        {
-                                            var existingParticipant =
-                                                Status.Call.Participants.FirstOrDefault(
-                                                    p => p.UserId.Equals(participant.UserId));
+                                        // this is a single participant event notification
 
-                                            if (existingParticipant != null)
+                                        var participant =
+                                            JsonConvert.DeserializeObject<zCommand.ListParticipant>(responseObj.ToString());
+
+                                        if (participant != null)
+                                        {
+                                            switch (participant.Event)
                                             {
-                                                if (participant.Event == "ZRCUserChangedEventLeftMeeting")
+                                                case "ZRCUserChangedEventUserInfoUpdated":
+                                                case "ZRCUserChangedEventLeftMeeting":
                                                 {
-                                                    // Remove participant
-                                                    Status.Call.Participants.Remove(existingParticipant);
+                                                    var existingParticipant =
+                                                        Status.Call.Participants.FirstOrDefault(
+                                                            p => p.UserId.Equals(participant.UserId));
+
+                                                    if (existingParticipant != null)
+                                                    {
+                                                        switch (participant.Event)
+                                                        {
+                                                            case "ZRCUserChangedEventLeftMeeting":
+                                                                Status.Call.Participants.Remove(existingParticipant);
+                                                                break;
+                                                            case "ZRCUserChangedEventUserInfoUpdated":
+                                                                JsonConvert.PopulateObject(responseObj.ToString(),
+                                                                    existingParticipant);
+                                                                break;
+                                                        }
+                                                    }
                                                 }
-                                                else if (participant.Event == "ZRCUserChangedEventUserInfoUpdated")
-                                                {
-                                                    // Update participant
-                                                    JsonConvert.PopulateObject(responseObj.ToString(),
-                                                        existingParticipant);
-                                                }
+                                                    break;
+                                                case "ZRCUserChangedEventJoinedMeeting":
+                                                    Status.Call.Participants.Add(participant);
+                                                    break;
                                             }
                                         }
-                                        else if (participant.Event == "ZRCUserChangedEventJoinedMeeting")
-                                        {
-                                            Status.Call.Participants.Add(participant);
-                                        }
                                     }
+                                        break;
                                 }
+
+                                var participants =
+                                    zCommand.ListParticipant.GetGenericParticipantListFromParticipantsResult(
+                                        Status.Call.Participants);
+
+                                Participants.CurrentParticipants = participants;
 
                                 PrintCurrentCallParticipants();
 
@@ -1019,6 +1032,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                             OnCallStatusChange(activeCall);
                                         }
                                     }
+                                    var emptyList = new List<Participant>();
+                                    Participants.CurrentParticipants = emptyList;
                                 }
 
                                 UpdateCallStatus();
@@ -1175,16 +1190,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void PrintCurrentCallParticipants()
         {
-            if (Debug.Level > 0)
+            if (Debug.Level <= 0)
             {
-                Debug.Console(1, this, "****************************Call Participants***************************");
-                foreach (var participant in Status.Call.Participants)
-                {
-                    Debug.Console(1, this, "Name: {0} Audio: {1} IsHost: {2}", participant.UserName,
-                        participant.AudioStatusState, participant.IsHost);
-                }
-                Debug.Console(1, this, "************************************************************************");
+                return;
             }
+
+            Debug.Console(1, this, "****************************Call Participants***************************");
+            foreach (var participant in Participants.CurrentParticipants)
+            {
+                Debug.Console(1, this, "Name: {0} Audio: {1} IsHost: {2}", participant.Name,
+                    participant.AudioMuteFb, participant.IsHost);
+            }
+            Debug.Console(1, this, "************************************************************************");
         }
 
         /// <summary>
@@ -1226,13 +1243,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     var existingCall = ActiveCalls.FirstOrDefault(c => !c.Status.Equals(eCodecCallStatus.Ringing));
 
-                    if (callStatus == zStatus.eCallStatus.IN_MEETING)
+                    switch (callStatus)
                     {
-                        existingCall.Status = eCodecCallStatus.Connected;
-                    }
-                    else if (callStatus == zStatus.eCallStatus.NOT_IN_MEETING)
-                    {
-                        existingCall.Status = eCodecCallStatus.Disconnected;
+                        case zStatus.eCallStatus.IN_MEETING:
+                            existingCall.Status = eCodecCallStatus.Connected;
+                            break;
+                        case zStatus.eCallStatus.NOT_IN_MEETING:
+                            existingCall.Status = eCodecCallStatus.Disconnected;
+                            break;
                     }
 
                     OnCallStatusChange(existingCall);
@@ -1525,6 +1543,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         {
             // TODO: set up far end cameras for the current call
         }
+
+        #region Implementation of IHasParticipants
+
+        public CodecParticipants Participants { get; private set; }
+
+        #endregion
     }
 
     /// <summary>

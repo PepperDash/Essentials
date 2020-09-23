@@ -16,6 +16,7 @@ using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash_Essentials_Core.Bridges.JoinMaps;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
@@ -25,6 +26,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo, IBridgeAdvanced
     {
         private const int XSigEncoding = 28591;
+        private readonly byte[] _clearBytes = XSigHelpers.ClearOutputs();
         protected VideoCodecBase(DeviceConfig config)
             : base(config)
         {
@@ -287,6 +289,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             LinkVideoCodecCallControlsToApi(trilist, joinMap);
 
+            LinkVideoCodecContentSharingToApi(trilist, joinMap);
+
             if (codec is IHasCodecCameras)
             {
                 LinkVideoCodecCameraToApi(codec as IHasCodecCameras, trilist, joinMap);
@@ -317,7 +321,84 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 LinkVideoCodecScheduleToApi(codec as IHasScheduleAwareness, trilist, joinMap);
             }
+
+            if (codec is IHasParticipants)
+            {
+                LinkVideoCodecParticipantsToApi(codec as IHasParticipants, trilist, joinMap);
+            }
     }
+
+        private void LinkVideoCodecParticipantsToApi(IHasParticipants codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            codec.Participants.ParticipantsListHasChanged += (sender, args) =>
+            {
+                string participantsXSig;
+                if (codec.Participants.CurrentParticipants.Count == 0)
+                {
+                    participantsXSig = Encoding.GetEncoding(XSigEncoding).GetString(_clearBytes, 0, _clearBytes.Length);
+                    trilist.SetString(joinMap.CurrentParticipants.JoinNumber, participantsXSig);
+                    trilist.SetUshort(joinMap.ParticipantCount.JoinNumber, (ushort)codec.Participants.CurrentParticipants.Count);
+                    return;
+                }
+
+                participantsXSig = Encoding.GetEncoding(XSigEncoding).GetString(_clearBytes, 0, _clearBytes.Length);
+
+                trilist.SetString(joinMap.CurrentParticipants.JoinNumber, participantsXSig);
+
+                participantsXSig = UpdateParticipantsXSig(codec.Participants.CurrentParticipants);
+
+                trilist.SetString(joinMap.CurrentParticipants.JoinNumber, participantsXSig);
+
+                trilist.SetUshort(joinMap.ParticipantCount.JoinNumber, (ushort) codec.Participants.CurrentParticipants.Count);
+            };
+        }
+
+        private string UpdateParticipantsXSig(List<Participant> currentParticipants)
+        {
+            const int maxParticipants = 255;
+            const int maxDigitals = 5;
+            const int maxStrings = 1;
+            const int offset = maxDigitals + maxStrings;
+            var digitalIndex = maxStrings * maxParticipants; //15
+            var stringIndex = 0;
+            var meetingIndex = 0;
+
+            var tokenArray = new XSigToken[maxParticipants * offset];
+
+            foreach (var participant in currentParticipants)
+            {
+                if (meetingIndex > maxParticipants * offset) break;
+
+                //digitals
+                tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, participant.AudioMuteFb);
+                tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, participant.VideoMuteFb);
+                tokenArray[digitalIndex + 2] = new XSigDigitalToken(digitalIndex + 3, participant.CanMuteVideo);
+                tokenArray[digitalIndex + 3] = new XSigDigitalToken(digitalIndex + 4, participant.CanUnmuteVideo);
+                tokenArray[digitalIndex + 4] = new XSigDigitalToken(digitalIndex + 5, participant.IsHost);
+
+                //serials
+                tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, participant.Name);
+
+                digitalIndex += maxDigitals;
+                meetingIndex += offset;
+                stringIndex += maxStrings;
+            }
+            
+            return GetXSigString(tokenArray);
+        }
+
+        private void LinkVideoCodecContentSharingToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            SharingContentIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SourceShareStart.JoinNumber]);
+            SharingContentIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.SourceShareEnd.JoinNumber]);
+
+            SharingSourceFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentSource.JoinNumber]);
+
+            trilist.SetSigFalseAction(joinMap.SourceShareStart.JoinNumber, StartSharing);
+            trilist.SetSigFalseAction(joinMap.SourceShareEnd.JoinNumber, StopSharing);
+
+            trilist.SetBoolSigAction(joinMap.SourceShareAutoStart.JoinNumber, (b) => AutoShareContentWhileInCall = b);
+        }
 
         private void LinkVideoCodecScheduleToApi(IHasScheduleAwareness codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
         {
@@ -341,6 +422,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         Dial(codec.CodecSchedule.Meetings[0]);
                     }
                 });
+
+                trilist.SetUshort(joinMap.MeetingCount.JoinNumber, (ushort) codec.CodecSchedule.Meetings.Count);
             };
         }
 

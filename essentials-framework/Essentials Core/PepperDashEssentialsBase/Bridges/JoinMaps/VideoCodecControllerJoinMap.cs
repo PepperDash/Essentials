@@ -562,6 +562,59 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinType = eJoinType.Digital
                 });
 
+        [JoinName("SourceShareStart")] public JoinDataComplete SourceShareStart =
+            new JoinDataComplete(new JoinData {JoinNumber = 201, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Start Sharing & Feedback",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("SourceShareEnd")]
+        public JoinDataComplete SourceShareEnd =
+            new JoinDataComplete(new JoinData { JoinNumber = 202, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Stop Sharing & Feedback",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("AutoShareWhileInCall")] public JoinDataComplete SourceShareAutoStart =
+            new JoinDataComplete(new JoinData {JoinNumber = 203, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "When high, will autostart sharing when a call is joined",
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("CurrentSource")] public JoinDataComplete CurrentSource = new JoinDataComplete(new JoinData{JoinNumber = 201, JoinSpan = 1},
+            new JoinMetadata
+            {
+                Description = "Current Source",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("CurrentParticipants")] public JoinDataComplete CurrentParticipants =
+            new JoinDataComplete(new JoinData{JoinNumber = 151, JoinSpan = 1},
+                new JoinMetadata()
+                {
+                    Description = "Current Participants XSig",
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinType = eJoinType.Serial
+                });
+
+        [JoinName("ParticipantCount")] public JoinDataComplete ParticipantCount = new JoinDataComplete(new JoinData{JoinNumber = 151, JoinSpan = 1},
+            new JoinMetadata
+            {
+                Description = "Current Participant Count",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
         public VideoCodecControllerJoinMap(uint joinStart) : base(joinStart, typeof (VideoCodecControllerJoinMap))
         {
         }
