@@ -285,11 +285,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             Debug.Console(1, this, "Linking to Trilist {0}", trilist.ID.ToString("X"));
 
+            
+
             LinkVideoCodecDtmfToApi(trilist, joinMap);
 
             LinkVideoCodecCallControlsToApi(trilist, joinMap);
 
             LinkVideoCodecContentSharingToApi(trilist, joinMap);
+
+            if (codec is ICommunicationMonitor)
+            {
+                LinkVideoCodecCommMonitorToApi(codec as ICommunicationMonitor, trilist, joinMap);
+            }
 
             if (codec is IHasCodecCameras)
             {
@@ -362,6 +369,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                 UpdateCallStatusXSig();
             };
+        }
+
+        private void LinkVideoCodecCommMonitorToApi(ICommunicationMonitor codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            codec.CommunicationMonitor.IsOnlineFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
         }
 
         private void LinkVideoCodecParticipantsToApi(IHasParticipants codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
