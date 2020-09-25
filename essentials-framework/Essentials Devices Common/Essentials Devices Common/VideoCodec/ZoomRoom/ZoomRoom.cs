@@ -26,6 +26,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         private const string Delimiter = "\x0D\x0A";
         private readonly CrestronQueue<string> _receiveQueue;
 
+
         private readonly Thread _receiveThread;
 
         private readonly ZoomRoomSyncState _syncState;
@@ -1340,13 +1341,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             }
         }
 
+
+
         /// <summary>
         /// Increments the voluem
         /// </summary>
         /// <param name="pressRelease"></param>
         public override void VolumeUp(bool pressRelease)
         {
-            // TODO: Implment volume increment that calls SetVolume()
+            // TODO: Implment volume decrement that calls SetVolume()
         }
 
         /// <summary>

@@ -615,6 +615,93 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
+        [JoinName("MicMuteOn")] public JoinDataComplete MicMuteOn =
+            new JoinDataComplete(new JoinData {JoinNumber = 171, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Mic Mute On",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("MicMuteOff")] public JoinDataComplete MicMuteOff =
+            new JoinDataComplete(new JoinData {JoinNumber = 172, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Mic Mute Off",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("MicMuteToggle")] public JoinDataComplete MicMuteToggle =
+            new JoinDataComplete(new JoinData {JoinNumber = 173, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Mic Mute Toggle",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("VolumeMuteOn")]
+        public JoinDataComplete VolumeMuteOn =
+            new JoinDataComplete(new JoinData { JoinNumber = 176, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Volume Mute On",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("VolumeMuteOff")]
+        public JoinDataComplete VolumeMuteOff =
+            new JoinDataComplete(new JoinData { JoinNumber = 177, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Volume Mute Off",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("VolumeMuteToggle")]
+        public JoinDataComplete VolumeMuteToggle =
+            new JoinDataComplete(new JoinData { JoinNumber = 178, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Volume Mute Toggle",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("VolumeUp")] public JoinDataComplete VolumeUp =
+            new JoinDataComplete(new JoinData {JoinNumber = 174, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Volume Up",
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("VolumeDown")]
+        public JoinDataComplete VolumeDown =
+            new JoinDataComplete(new JoinData { JoinNumber = 175, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Volume Down",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("VolumeLevel")]
+        public JoinDataComplete VolumeLevel =
+            new JoinDataComplete(new JoinData { JoinNumber = 174, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Volume Level",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
+
         public VideoCodecControllerJoinMap(uint joinStart) : base(joinStart, typeof (VideoCodecControllerJoinMap))
         {
         }

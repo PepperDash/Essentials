@@ -293,6 +293,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             LinkVideoCodecContentSharingToApi(trilist, joinMap);
 
+            LinkVideoCodecPrivacyToApi(trilist, joinMap);
+
+            LinkVideoCodecVolumeToApi(trilist, joinMap);
+
             if (codec is ICommunicationMonitor)
             {
                 LinkVideoCodecCommMonitorToApi(codec as ICommunicationMonitor, trilist, joinMap);
@@ -369,6 +373,34 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                 UpdateCallStatusXSig();
             };
+        }
+
+        private void LinkVideoCodecVolumeToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            MuteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VolumeMuteOn.JoinNumber]);
+            MuteFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.VolumeMuteOff.JoinNumber]);
+
+            trilist.SetSigFalseAction(joinMap.VolumeMuteOn.JoinNumber, MuteOn);
+            trilist.SetSigFalseAction(joinMap.VolumeMuteOff.JoinNumber, MuteOff);
+            trilist.SetSigFalseAction(joinMap.VolumeMuteToggle.JoinNumber, MuteToggle);
+
+            VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[joinMap.VolumeLevel.JoinNumber]);
+
+            trilist.SetBoolSigAction(joinMap.VolumeUp.JoinNumber, VolumeUp);
+            trilist.SetBoolSigAction(joinMap.VolumeDown.JoinNumber, VolumeDown);
+
+            trilist.SetUShortSigAction(joinMap.VolumeLevel.JoinNumber, SetVolume);
+
+        }
+
+        private void LinkVideoCodecPrivacyToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            PrivacyModeIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.MicMuteOn.JoinNumber]);
+            PrivacyModeIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.MicMuteOff.JoinNumber]);
+
+            trilist.SetSigFalseAction(joinMap.MicMuteOn.JoinNumber, PrivacyModeOn);
+            trilist.SetSigFalseAction(joinMap.MicMuteOff.JoinNumber, PrivacyModeOff);
+            trilist.SetSigFalseAction(joinMap.MicMuteToggle.JoinNumber, PrivacyModeToggle);
         }
 
         private void LinkVideoCodecCommMonitorToApi(ICommunicationMonitor codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
