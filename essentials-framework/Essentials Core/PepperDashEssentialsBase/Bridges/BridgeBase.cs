@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Crestron.SimplSharp;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -329,7 +330,7 @@ namespace PepperDash.Essentials.Core.Bridges
                 case "vceiscapiadv":
                 case "vceiscapiadvanced":
                 {
-                    var eisc = new VirtualControlEISCClient(controlProperties.IpIdInt, controlProperties.RoomId,
+                    var eisc = new VirtualControlEISCClient(controlProperties.IpIdInt, InitialParametersClass.RoomId,
                         Global.ControlSystem);
                     return new EiscApiAdvanced(dc, eisc);
                 }
