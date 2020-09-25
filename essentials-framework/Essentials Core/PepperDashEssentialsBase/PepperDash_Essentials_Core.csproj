@@ -158,7 +158,6 @@
     <Compile Include="Bridges\JoinMaps\SetTopBoxControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\StatusSignControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\SystemMonitorJoinMap.cs" />
-    <Compile Include="Bridges\VirtualControlEiscApiAdvanced.cs" />
     <Compile Include="Comm and IR\CecPortController.cs" />
     <Compile Include="Comm and IR\CommFactory.cs" />
     <Compile Include="Comm and IR\CommunicationExtras.cs" />

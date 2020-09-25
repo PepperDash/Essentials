@@ -327,7 +327,11 @@ namespace PepperDash.Essentials
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
 
             // Add global System Monitor device
-            DeviceManager.AddDevice(new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));
+            if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)
+            {
+                DeviceManager.AddDevice(
+                    new PepperDash.Essentials.Core.Monitoring.SystemMonitorController("systemMonitor"));
+            }
 
             foreach (var devConf in ConfigReader.ConfigObject.Devices)
             {

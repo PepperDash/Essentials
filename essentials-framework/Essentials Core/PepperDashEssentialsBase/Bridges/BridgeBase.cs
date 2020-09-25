@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.EthernetCommunication;
 
 using Newtonsoft.Json;
@@ -82,9 +83,9 @@ namespace PepperDash.Essentials.Core.Bridges
 
         protected Dictionary<string, JoinMapBaseAdvanced> JoinMaps { get; private set; }
 
-        public ThreeSeriesTcpIpEthernetIntersystemCommunications Eisc { get; private set; }
+        public BasicTriList Eisc { get; private set; }
 
-        public EiscApiAdvanced(DeviceConfig dc) :
+        public EiscApiAdvanced(DeviceConfig dc, BasicTriList eisc) :
             base(dc.Key)
         {
             JoinMaps = new Dictionary<string, JoinMapBaseAdvanced>();
@@ -92,7 +93,7 @@ namespace PepperDash.Essentials.Core.Bridges
             PropertiesConfig = dc.Properties.ToObject<EiscApiPropertiesConfig>();
             //PropertiesConfig = JsonConvert.DeserializeObject<EiscApiPropertiesConfig>(dc.Properties.ToString());
 
-            Eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(PropertiesConfig.Control.IpIdInt, PropertiesConfig.Control.TcpSshProperties.Address, Global.ControlSystem);
+            Eisc = eisc;
 
             Eisc.SigChange += Eisc_SigChange;
 
@@ -160,7 +161,7 @@ namespace PepperDash.Essentials.Core.Bridges
         /// <summary>
         /// Prints all the join maps on this bridge
         /// </summary>
-        public void PrintJoinMaps()
+        public virtual void PrintJoinMaps()
         {
             Debug.Console(0, this, "Join Maps for EISC IPID: {0}", Eisc.ID.ToString("X"));
 
@@ -255,7 +256,7 @@ namespace PepperDash.Essentials.Core.Bridges
         /// </summary>
         /// <param name="currentDevice"></param>
         /// <param name="args"></param>
-        void Eisc_SigChange(object currentDevice, SigEventArgs args)
+        protected void Eisc_SigChange(object currentDevice, SigEventArgs args)
         {
             try
             {
@@ -307,15 +308,34 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         public EiscApiAdvancedFactory()
         {
-            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced" };
+            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced", "vceiscapiadv", "vceiscapiadvanced" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.Console(1, "Factory Attempting to create new EiscApiAdvanced Device");
 
-            return new EiscApiAdvanced(dc);
-            
+            var controlProperties = dc.Properties["control"].ToObject<ControlPropertiesConfig>();
+
+            switch (dc.Type)
+            {
+                case "eiscapiadv":
+                case "eiscapiadvanced":
+                {
+                    var eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(controlProperties.IpIdInt,
+                        controlProperties.TcpSshProperties.Address, Global.ControlSystem);
+                    return new EiscApiAdvanced(dc, eisc);
+                }
+                case "vceiscapiadv":
+                case "vceiscapiadvanced":
+                {
+                    var eisc = new VirtualControlEISCClient(controlProperties.IpIdInt, controlProperties.RoomId,
+                        Global.ControlSystem);
+                    return new EiscApiAdvanced(dc, eisc);
+                }
+                default:
+                    return null;
+            }
         }
     }
 
