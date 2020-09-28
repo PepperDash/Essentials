@@ -447,7 +447,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                 {
                     Description = "Current Hook State",
                     JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Serial
+                    JoinType = eJoinType.Digital
                 });
 
         [JoinName("IncomingAnswer")] public JoinDataComplete IncomingAnswer =
