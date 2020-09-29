@@ -946,8 +946,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             public ThirdParty ThirdParty { get; set; }
         }
 
+        public static List<Meeting> GetGenericMeetingsFromBookingResult(List<BookingsListResult> bookings,
+            int minutesBeforeMeetingStart)
+        {
+            var rv = GetGenericMeetingsFromBookingResult(bookings);
+
+            foreach (var meeting in rv)
+            {
+                meeting.MinutesBeforeMeeting = minutesBeforeMeetingStart;
+            }
+
+            return rv;
+        } 
         /// <summary>
-        /// Extracts the necessary meeting values from the Cisco bookings response ans converts them to the generic class
+        /// Extracts the necessary meeting values from the Zoom bookings response and converts them to the generic class
         /// </summary>
         /// <param name="bookings"></param>
         /// <returns></returns>

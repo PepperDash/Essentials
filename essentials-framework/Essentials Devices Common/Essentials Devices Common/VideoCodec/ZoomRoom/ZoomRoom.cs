@@ -947,7 +947,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                                 if (codecBookings != null && codecBookings.Count > 0)
                                 {
-                                    CodecSchedule.Meetings = zCommand.GetGenericMeetingsFromBookingResult(codecBookings);
+                                    CodecSchedule.Meetings = zCommand.GetGenericMeetingsFromBookingResult(
+                                        codecBookings, CodecSchedule.MeetingWarningMinutes);
                                 }
 
                                 break;

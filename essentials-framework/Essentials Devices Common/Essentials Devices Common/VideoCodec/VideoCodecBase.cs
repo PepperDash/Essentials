@@ -484,6 +484,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             trilist.SetSigFalseAction(joinMap.UpdateMeetings.JoinNumber, codec.GetSchedule);
 
+            trilist.SetUShortSigAction(joinMap.MinutesBeforeMeetingStart.JoinNumber, (i) =>
+            {
+                codec.CodecSchedule.MeetingWarningMinutes = i;
+            });
+
             codec.CodecSchedule.MeetingsListHasChanged += (sender, args) =>
             {
                 var clearBytes = XSigHelpers.ClearOutputs();
@@ -532,9 +537,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
              * Serials
              * Organizer - 1
              * Title - 2
-             * Agenda - 3
-             * Start Time - 4
-             * End Time - 5
+             * Start Time - 3
+             * End Time - 4
             */
             
             foreach(var meeting in meetings)

@@ -701,6 +701,14 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
+        [JoinName("MinutesBeforeMeetingStart")] public JoinDataComplete MinutesBeforeMeetingStart =
+            new JoinDataComplete(new JoinData {JoinNumber = 41, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Minutes before meeting start that a meeting is joinable",
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                    JoinType = eJoinType.Analog
+                });
 
         public VideoCodecControllerJoinMap(uint joinStart) : base(joinStart, typeof (VideoCodecControllerJoinMap))
         {

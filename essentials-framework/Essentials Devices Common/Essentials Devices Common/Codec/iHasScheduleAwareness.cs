@@ -30,7 +30,15 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
         public event EventHandler<EventArgs> MeetingsListHasChanged;
 
-		/// <summary>
+        private int _meetingWarningMinutes = 5;
+
+        public int MeetingWarningMinutes
+        {
+            get { return _meetingWarningMinutes; }
+            set { _meetingWarningMinutes = value; }
+        }
+
+        /// <summary>
 		/// Setter triggers MeetingsListHasChanged event
 		/// </summary>
         public List<Meeting> Meetings
@@ -102,6 +110,8 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     {
         public TimeSpan MeetingWarningMinutes = TimeSpan.FromMinutes(5);
 
+        public int MinutesBeforeMeeting;
+
         public string Id { get; set; }
         public string Organizer { get; set; }
         public string Title { get; set; }
@@ -134,7 +144,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         {
             get
             {
-                return StartTime.AddMinutes(-5) <= DateTime.Now
+                return StartTime.AddMinutes(-MinutesBeforeMeeting) <= DateTime.Now
                     && DateTime.Now <= EndTime; //.AddMinutes(-5);
             }
         }
