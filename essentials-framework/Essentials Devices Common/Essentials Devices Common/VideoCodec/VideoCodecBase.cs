@@ -133,16 +133,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             get
             {
-                bool value;
-
-                if (ActiveCalls != null)
-                {
-                    value = ActiveCalls.Any(c => c.IsActiveCall);
-                }
-                else
-                {
-                    value = false;
-                }
+                var value = ActiveCalls != null && ActiveCalls.Any(c => c.IsActiveCall);
                 return value;
             }
         }
@@ -503,12 +494,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         private void UpdateMeetingsList(IHasScheduleAwareness codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
         {
-            var clearBytes = XSigHelpers.ClearOutputs();
+            var currentTime = DateTime.Now;
+            var currentMeetings =
+                codec.CodecSchedule.Meetings.Where(m => m.StartTime >= currentTime || m.EndTime >= currentTime).ToList();
 
-            trilist.SetString(joinMap.Schedule.JoinNumber,
-                Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
-
-            var meetingsData = UpdateMeetingsListXSig(codec.CodecSchedule.Meetings);
+            var meetingsData = UpdateMeetingsListXSig(currentMeetings);
 
             trilist.SetString(joinMap.Schedule.JoinNumber, meetingsData);
 
@@ -520,21 +510,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 }
             });
 
-            trilist.SetUshort(joinMap.MeetingCount.JoinNumber, (ushort)codec.CodecSchedule.Meetings.Count);
+            trilist.SetUshort(joinMap.MeetingCount.JoinNumber, (ushort)currentMeetings.Count);
         }
 
         private string UpdateMeetingsListXSig(List<Meeting> meetings)
         {
-            /*const int maxCalls = 8;
-            const int maxStrings = 5;
-            const int offset = 6;
-            var callIndex = 0;
-            var digitalIndex = maxStrings*maxCalls;
-             */
-
             const int maxMeetings = 3;
-            const int maxDigitals = 1;
-            const int maxStrings = 6;
+            const int maxDigitals = 2;
+            const int maxStrings = 7;
             const int offset = maxDigitals + maxStrings;
             var digitalIndex = maxStrings*maxMeetings; //15
             var stringIndex = 0;
@@ -544,15 +527,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             /* 
              * Digitals
              * IsJoinable - 1
+             * IsDialable - 2
              * 
              * Serials
              * Organizer - 1
              * Title - 2
              * Start Date - 3
-             * Start Time - 3
-             * End Date - 4
-             * End Time - 4
+             * Start Time - 4
+             * End Date - 5
+             * End Time - 6
             */
+            
             
             foreach(var meeting in meetings)
             {
@@ -564,18 +549,41 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 
                 //digitals
                 tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, meeting.Joinable);
+                tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, meeting.Id != "0");
 
                 //serials
                 tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, meeting.Organizer);
                 tokenArray[stringIndex + 1] = new XSigSerialToken(stringIndex + 2, meeting.Title);
                 tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, meeting.StartTime.ToShortDateString());
-                tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 3, meeting.StartTime.ToShortTimeString());
-                tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 4, meeting.EndTime.ToShortDateString());
-                tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 5, meeting.EndTime.ToShortTimeString());
+                tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, meeting.StartTime.ToShortTimeString());
+                tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, meeting.EndTime.ToShortDateString());
+                tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 6, meeting.EndTime.ToShortTimeString());
+                tokenArray[stringIndex + 6] = new XSigSerialToken(stringIndex + 7, meeting.Id);
+
 
                 digitalIndex += maxDigitals;
                 meetingIndex += offset;
                 stringIndex += maxStrings;
+            }
+
+            while (meetingIndex < maxMeetings*offset)
+            {
+                digitalIndex += maxDigitals;
+                meetingIndex += offset;
+                stringIndex += maxStrings;
+
+                //digitals
+                tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
+                tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, false);
+
+                //serials
+                tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, String.Empty);
+                tokenArray[stringIndex + 1] = new XSigSerialToken(stringIndex + 2, String.Empty);
+                tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, String.Empty);
+                tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, String.Empty);
+                tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, String.Empty);
+                tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 6, String.Empty);
+                tokenArray[stringIndex + 6] = new XSigSerialToken(stringIndex + 7, String.Empty);
             }
 
             return GetXSigString(tokenArray);
