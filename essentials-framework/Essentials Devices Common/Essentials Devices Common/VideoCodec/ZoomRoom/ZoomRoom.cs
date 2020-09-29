@@ -843,7 +843,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                         // this is a single participant event notification
 
                                         var participant =
-                                            JsonConvert.DeserializeObject<zCommand.ListParticipant>(responseObj.ToString());
+                                            JsonConvert.DeserializeObject<zCommand.ListParticipant>(
+                                                responseObj.ToString());
 
                                         if (participant != null)
                                         {
@@ -1341,7 +1342,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 MuteOn();
             }
         }
-
 
 
         /// <summary>

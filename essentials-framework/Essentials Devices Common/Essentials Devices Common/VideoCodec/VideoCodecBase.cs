@@ -489,27 +489,38 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 codec.CodecSchedule.MeetingWarningMinutes = i;
             });
 
-            codec.CodecSchedule.MeetingsListHasChanged += (sender, args) =>
-            {
-                var clearBytes = XSigHelpers.ClearOutputs();
+            codec.CodecSchedule.MeetingsListHasChanged += (sender, args) => UpdateMeetingsList(codec, trilist, joinMap);
 
-                trilist.SetString(joinMap.Schedule.JoinNumber,
-                    Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
-
-                var meetingsData = UpdateMeetingsListXSig(codec.CodecSchedule.Meetings);
-
-                trilist.SetString(joinMap.Schedule.JoinNumber, meetingsData);
-
-                trilist.SetSigFalseAction(joinMap.DialMeeting.JoinNumber, () =>
+            codec.CodecSchedule.MeetingEventChange +=
+                (sender, args) =>
                 {
-                    if (codec.CodecSchedule.Meetings[0].Joinable)
+                    if (args.ChangeType == eMeetingEventChangeType.MeetingStartWarning)
                     {
-                        Dial(codec.CodecSchedule.Meetings[0]);
+                        UpdateMeetingsList(codec, trilist, joinMap);
                     }
-                });
+                };
+        }
 
-                trilist.SetUshort(joinMap.MeetingCount.JoinNumber, (ushort) codec.CodecSchedule.Meetings.Count);
-            };
+        private void UpdateMeetingsList(IHasScheduleAwareness codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            var clearBytes = XSigHelpers.ClearOutputs();
+
+            trilist.SetString(joinMap.Schedule.JoinNumber,
+                Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
+
+            var meetingsData = UpdateMeetingsListXSig(codec.CodecSchedule.Meetings);
+
+            trilist.SetString(joinMap.Schedule.JoinNumber, meetingsData);
+
+            trilist.SetSigFalseAction(joinMap.DialMeeting.JoinNumber, () =>
+            {
+                if (codec.CodecSchedule.Meetings[0].Joinable)
+                {
+                    Dial(codec.CodecSchedule.Meetings[0]);
+                }
+            });
+
+            trilist.SetUshort(joinMap.MeetingCount.JoinNumber, (ushort)codec.CodecSchedule.Meetings.Count);
         }
 
         private string UpdateMeetingsListXSig(List<Meeting> meetings)
@@ -545,15 +556,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             
             foreach(var meeting in meetings)
             {
-                if (meetingIndex >= maxMeetings*offset)
-                {
-                    break;
-                }
                 var currentTime = DateTime.Now;
                 
                 if(meeting.StartTime < currentTime && meeting.EndTime < currentTime) continue;
                 
-                if (meetingIndex > maxMeetings*offset) break;
+                if (meetingIndex >= maxMeetings*offset) break;
                 
                 //digitals
                 tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, meeting.Joinable);
