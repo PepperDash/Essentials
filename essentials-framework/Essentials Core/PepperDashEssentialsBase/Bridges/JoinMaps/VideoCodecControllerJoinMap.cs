@@ -266,7 +266,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                 new JoinMetadata
                 {
                     Description = "Directory Line Selected FB",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
                     JoinType = eJoinType.Digital
                 });
 
