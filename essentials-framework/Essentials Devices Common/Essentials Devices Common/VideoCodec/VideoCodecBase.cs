@@ -573,9 +573,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 Debug.Console(2, this, "Clearing unused data. Meeting Index: {0} MaxMeetings * Offset: {1}",
                     meetingIndex, maxMeetings*offset);
-                digitalIndex += maxDigitals;
-                meetingIndex += offset;
-                stringIndex += maxStrings;
 
                 //digitals
                 tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
@@ -589,7 +586,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, String.Empty);
                 tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 6, String.Empty);
                 tokenArray[stringIndex + 6] = new XSigSerialToken(stringIndex + 7, String.Empty);
-            }
+
+				digitalIndex += maxDigitals;
+				meetingIndex += offset;
+				stringIndex += maxStrings;
+			}
 
             return GetXSigString(tokenArray);
         }
