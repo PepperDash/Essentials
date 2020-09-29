@@ -68,6 +68,13 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             _scheduleChecker = new CTimer(CheckSchedule, null, 1000, 1000);
         }
 
+        public CodecScheduleAwareness(long pollTime)
+        {
+            Meetings = new List<Meeting>();
+
+            _scheduleChecker = new CTimer(CheckSchedule, null, pollTime, pollTime);
+        }
+
         private void OnMeetingChange(eMeetingEventChangeType changeType, Meeting meeting)
         {
             var handler = MeetingEventChange;

@@ -22,6 +22,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         IRouting,
         IHasScheduleAwareness, IHasCodecCameras, IHasParticipants
     {
+        private const long MeetingRefreshTimer = 60000;
         private const uint DefaultMeetingDurationMin = 30;
         private const string Delimiter = "\x0D\x0A";
         private readonly CrestronQueue<string> _receiveQueue;
@@ -89,7 +90,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             SelfviewIsOnFeedback = new BoolFeedback(SelfViewIsOnFeedbackFunc);
 
-            CodecSchedule = new CodecScheduleAwareness();
+            CodecSchedule = new CodecScheduleAwareness(MeetingRefreshTimer);
 
             SetUpFeedbackActions();
 
