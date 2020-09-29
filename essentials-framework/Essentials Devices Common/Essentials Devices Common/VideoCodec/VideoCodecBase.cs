@@ -523,7 +523,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             const int maxMeetings = 3;
             const int maxDigitals = 1;
-            const int maxStrings = 4;
+            const int maxStrings = 6;
             const int offset = maxDigitals + maxStrings;
             var digitalIndex = maxStrings*maxMeetings; //15
             var stringIndex = 0;
@@ -537,12 +537,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
              * Serials
              * Organizer - 1
              * Title - 2
+             * Start Date - 3
              * Start Time - 3
+             * End Date - 4
              * End Time - 4
             */
             
             foreach(var meeting in meetings)
             {
+                if (meetingIndex >= maxMeetings*offset)
+                {
+                    break;
+                }
                 var currentTime = DateTime.Now;
                 
                 if(meeting.StartTime < currentTime && meeting.EndTime < currentTime) continue;
@@ -555,8 +561,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 //serials
                 tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, meeting.Organizer);
                 tokenArray[stringIndex + 1] = new XSigSerialToken(stringIndex + 2, meeting.Title);
-                tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, meeting.StartTime.ToString("MM/dd/yyyy h:mm"));
-                tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, meeting.EndTime.ToString("MM/dd/yyyy h:mm"));
+                tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, meeting.StartTime.ToShortDateString());
+                tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 3, meeting.StartTime.ToShortTimeString());
+                tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 4, meeting.EndTime.ToShortDateString());
+                tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 5, meeting.EndTime.ToShortTimeString());
 
                 digitalIndex += maxDigitals;
                 meetingIndex += offset;
