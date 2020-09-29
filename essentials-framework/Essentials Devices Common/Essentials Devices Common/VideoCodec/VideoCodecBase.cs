@@ -545,7 +545,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 
                 if(meeting.StartTime < currentTime && meeting.EndTime < currentTime) continue;
                 
-                if (meetingIndex >= maxMeetings*offset) break;
+                if (meetingIndex >= maxMeetings*offset)
+                {
+                    Debug.Console(2, this, "Max Meetings reached");
+                    break;}
                 
                 //digitals
                 tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, meeting.Joinable);
@@ -568,6 +571,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             while (meetingIndex < maxMeetings*offset)
             {
+                Debug.Console(2, this, "Clearing unused data. Meeting Index: {0} MaxMeetings * Offset: {1}",
+                    meetingIndex, maxMeetings*offset);
                 digitalIndex += maxDigitals;
                 meetingIndex += offset;
                 stringIndex += maxStrings;
