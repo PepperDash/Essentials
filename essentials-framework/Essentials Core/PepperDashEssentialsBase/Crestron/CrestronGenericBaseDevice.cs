@@ -11,7 +11,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// A bridge class to cover the basic features of GenericBase hardware
 	/// </summary>
-	public abstract class CrestronGenericBaseDevice : EssentialsDevice, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking
+    public abstract class CrestronGenericBaseDevice : EssentialsDevice, IOnline, IHasFeedback, ICommunicationMonitor, IUsageTracking, IBridgeAdvanced
 	{
 	    protected GenericBase Hardware;
 
@@ -61,6 +61,8 @@ namespace PepperDash.Essentials.Core
 
             CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, hardware, 120000, 300000);
 	    }
+
+        public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
 
 		/// <summary>
 		/// Make sure that overriding classes call this!
@@ -179,7 +181,7 @@ namespace PepperDash.Essentials.Core
 	{
 		public static eDeviceRegistrationUnRegistrationResponse RegisterWithLogging(this GenericBase device, string key)
 		{
-			var result = device.Register();
+		    var result = device.Register();
 			var level = result == eDeviceRegistrationUnRegistrationResponse.Success ?
 				Debug.ErrorLogLevel.Notice : Debug.ErrorLogLevel.Error;
 			Debug.Console(0, level, "Register device result: '{0}', type '{1}', result {2}", key, device, result);
