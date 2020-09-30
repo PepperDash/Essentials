@@ -86,6 +86,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public zConfiguration.Audio Audio { get; set; }
         public zConfiguration.Video Video { get; set; }
         public zConfiguration.Client Client { get; set; }
+        public zConfiguration.Camera Camera { get; set; }
 
         public ZoomRoomConfiguration()
         {
@@ -93,6 +94,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             Audio = new zConfiguration.Audio();
             Video = new zConfiguration.Video();
             Client = new zConfiguration.Client();
+            Camera = new zConfiguration.Camera();
         }
     }
 
@@ -698,9 +700,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             public bool OptimizeVideoSharing { get; set; }
         }
 
-        public class Camera
+        public class Camera : NotifiableObject
         {
-            public bool Mute { get; set; }
+            private bool _mute;
+
+            public bool Mute
+            {
+                get
+                {
+                    return _mute;
+                }
+                set
+                {
+                    if (value != _mute)
+                    {
+                        _mute = value;
+                        NotifyPropertyChanged("Mute");
+                    }
+                }
+            }
         }
 
         public class Microphone : NotifiableObject

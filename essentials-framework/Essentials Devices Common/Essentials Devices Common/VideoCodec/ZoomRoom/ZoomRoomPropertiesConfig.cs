@@ -14,5 +14,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public CommunicationMonitorConfig CommunicationMonitorProperties { get; set; }
 
         public bool DisablePhonebookAutoDownload { get; set; }
+        public bool SupportsCameraAutoMode { get; set; }
+        public bool SupportsCameraOff { get; set; }
     }
 }

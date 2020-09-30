@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
     public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
         IRouting,
-        IHasScheduleAwareness, IHasCodecCameras, IHasParticipants
+        IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraAutoMode
     {
         private const long MeetingRefreshTimer = 60000;
         private const uint DefaultMeetingDurationMin = 30;
@@ -92,6 +92,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             SelfviewIsOnFeedback = new BoolFeedback(SelfViewIsOnFeedbackFunc);
 
+            CameraIsOffFeedback = new BoolFeedback(CameraIsOffFeedbackFunc);
+
             CodecSchedule = new CodecScheduleAwareness(MeetingRefreshTimer);
 
             SetUpFeedbackActions();
@@ -101,6 +103,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             SetUpDirectory();
 
             Participants = new CodecParticipants();
+
+            SupportsCameraOff = _props.SupportsCameraOff;
+            SupportsCameraAutoMode = _props.SupportsCameraAutoMode;
         }
 
         public CommunicationGather PortGather { get; private set; }
@@ -173,6 +178,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         {
             get { return () => !Configuration.Video.HideConfSelfVideo; }
         }
+
+        protected Func<bool> CameraIsOffFeedbackFunc
+        {
+            get { return () => !Configuration.Camera.Mute; }
+        }
+
 
         protected Func<string> SelfviewPipPositionFeedbackFunc
         {
@@ -413,6 +424,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     SelectCamera(Configuration.Video.Camera.SelectedId);
                     // this will in turn fire the affected feedbacks
                 }
+            };
+
+            Configuration.Camera.PropertyChanged += (o, a) =>
+            {
+                if (a.PropertyName != "Mute") return;
+
+                CameraIsOffFeedback.FireUpdate();
             };
 
             Status.Call.Sharing.PropertyChanged += (o, a) =>
@@ -961,13 +979,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                                 break;
                             }
-                            case "bookings":
+                            case "bookings updated":
                             {
-                                // Bookings have been updated, trigger a query to retreive the new bookings
-                                if (responseObj["Updated"] != null)
-                                {
-                                    GetBookings();
-                                }
+                                GetBookings();
 
                                 break;
                             }
@@ -1558,6 +1572,39 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         #region Implementation of IHasParticipants
 
         public CodecParticipants Participants { get; private set; }
+
+        #endregion
+
+        #region Implementation of IHasCameraOff
+
+        public BoolFeedback CameraIsOffFeedback { get; private set; }
+
+        public void CameraOff()
+        {
+            SendText("zCommand Call Camera Mute: On");
+        }
+
+        #endregion
+
+        #region Implementation of IHasCameraAutoMode
+        //Zoom doesn't support camera auto modes. Setting this to just unmute video
+        public void CameraAutoModeOn()
+        {
+            throw new NotImplementedException("Zoom Room Doesn't support camera auto mode");
+        }
+
+        //Zoom doesn't support camera auto modes. Setting this to just unmute video
+        public void CameraAutoModeOff()
+        {
+            SendText("zCommand Call Camera Mute: Off");
+        }
+
+        public void CameraAutoModeToggle()
+        {
+            throw new NotImplementedException("Zoom Room doesn't support camera auto mode");
+        }
+
+        public BoolFeedback CameraAutoModeIsOnFeedback { get; private set; }
 
         #endregion
     }

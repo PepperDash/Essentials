@@ -62,6 +62,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public bool ShowSelfViewByDefault { get; protected set; }
 
+        protected bool SupportsCameraOff;
+        protected bool SupportsCameraAutoMode;
 
         public bool IsReady { get; protected set; }
 
@@ -305,8 +307,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             if (codec is IHasCameraAutoMode)
             {
-                trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, true);
+                trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, SupportsCameraAutoMode);
                 LinkVideoCodecCameraModeToApi(codec as IHasCameraAutoMode, trilist, joinMap);
+            }
+
+            if (codec is IHasCameraOff)
+            {
+                trilist.SetBool(joinMap.CameraSupportsOffMode.JoinNumber, SupportsCameraOff);
+                LinkVideoCodecCameraOffToApi(codec as IHasCameraOff, trilist, joinMap);
             }
 
             if (codec is IHasCodecLayouts)
@@ -364,6 +372,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                 UpdateCallStatusXSig();
             };
+        }
+
+        private void LinkVideoCodecCameraOffToApi(IHasCameraOff codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            codec.CameraIsOffFeedback.LinkInputSig(trilist.BooleanInput[joinMap.CameraModeOff.JoinNumber]);
+
+            trilist.SetSigFalseAction(joinMap.CameraModeOff.JoinNumber, codec.CameraOff);
         }
 
         private void LinkVideoCodecVolumeToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
@@ -766,6 +781,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             codec.CameraAutoModeIsOnFeedback.LinkComplementInputSig(
                 trilist.BooleanInput[joinMap.CameraModeManual.JoinNumber]);
         }
+
+
 
         private void LinkVideoCodecSelfviewToApi(IHasCodecSelfView codec, BasicTriList trilist,
             VideoCodecControllerJoinMap joinMap)
