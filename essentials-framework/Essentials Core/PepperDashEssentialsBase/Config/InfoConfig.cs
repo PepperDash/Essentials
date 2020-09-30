@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Reflection;
 
@@ -81,7 +81,7 @@ namespace PepperDash.Essentials.Core.Config
         //    }
         //} 
 
-        /// <summary>
+        /// <summary>, 
         /// The OS Version of the processor (Firmware Version)
         /// </summary>
         [JsonProperty("osVersion")]
@@ -92,5 +92,18 @@ namespace PepperDash.Essentials.Core.Config
 		//        return Crestron.SimplSharp.CrestronEnvironment.OSVersion.Firmware;
 		//    }
 		//} 
+
+        /// <summary>
+        /// The information gathered by the processor at runtime about it's NICs and their IP addresses.   
+        /// </summary>
+        [JsonProperty("ipInfo")]
+        public Dictionary<short, EthernetAdapterInfo> IpInfo
+        {
+            get
+            {
+                return Global.EthernetAdapterInfoCollection;
+            }
+        }
     }
+
 }

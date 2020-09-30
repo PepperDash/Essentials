@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
+using System.Collections.Generic;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharpPro;
@@ -20,6 +21,8 @@ namespace PepperDash.Essentials.Core
 		public static CrestronControlSystem ControlSystem { get; set; }
 
 		public static LicenseManager LicenseManager { get; set; }
+
+        public static Dictionary<short, EthernetAdapterInfo> EthernetAdapterInfoCollection {get; private set;}
 
         /// <summary>
         /// The file path prefix to the folder containing configuration files
@@ -160,6 +163,8 @@ namespace PepperDash.Essentials.Core
              */
         }
 
+
+
 		static Global()
 		{
 			// Fire up CrestronDataStoreStatic
@@ -169,7 +174,87 @@ namespace PepperDash.Essentials.Core
 				CrestronConsole.PrintLine("Error starting CrestronDataStoreStatic: {0}", err);
 				return;
 			}
+
+            GetEthernetInformation();
+
 		}
 
+        /// <summary>
+        /// Populates EthernetInformationCollection
+        /// </summary>
+        static void GetEthernetInformation()
+        {
+
+            EthernetAdapterInfoCollection = new Dictionary<short, EthernetAdapterInfo>();
+
+            EthernetAdapterType adapterType = EthernetAdapterType.EthernetUnknownAdapter;
+
+            List<EthernetAdapterType> adapters = new List<EthernetAdapterType>() 
+                { EthernetAdapterType.EthernetLANAdapter, EthernetAdapterType.EthernetLAN2Adapter, EthernetAdapterType.EthernetCSAdapter, EthernetAdapterType.EthernetWIFIAdapter };
+
+            foreach (var adapter in adapters)
+            {
+                try
+                {
+                    adapterType = EthernetAdapterType.EthernetLANAdapter;
+
+                    var adapterId = CrestronEthernetHelper.GetAdapterdIdForSpecifiedAdapterType(adapterType);
+
+                    var adapterInfo = GetEthernetAdapterProperties(adapterId, adapterType);
+
+                    EthernetAdapterInfoCollection.Add(adapterId, adapterInfo);
+                }
+                catch (Exception e)
+                {
+                    if (e is System.ArgumentException)
+                    {
+                        Debug.Console(1, "Error: {0} not present", adapterType);
+                    }
+                    else
+                    {
+                        Debug.Console(1, "Error: {0}", e);
+                    }
+                }
+            }
+
+        }
+
+
+        static EthernetAdapterInfo GetEthernetAdapterProperties(short adapterId, EthernetAdapterType adapterType)
+        {
+            EthernetAdapterInfo adapterInfo = new EthernetAdapterInfo();
+
+            adapterInfo.Type = adapterType;
+            adapterInfo.DhcpIsOn = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_DHCP_STATE, adapterId) == "on" ? true : false;
+            adapterInfo.Hostname = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, adapterId);
+            adapterInfo.MacAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, adapterId);
+            adapterInfo.IpAddress = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, adapterId);
+            adapterInfo.Subnet = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_MASK, adapterId);
+            adapterInfo.Gateway = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_ROUTER, adapterId);
+            adapterInfo.Domain = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DOMAIN_NAME, adapterId);
+
+            string dns = CrestronEthernetHelper.GetEthernetParameter(CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_DNS_SERVER, adapterId);
+            if (dns.Contains(","))
+            {
+                string[] dnsList = dns.Split(',');
+                for (var i = 0; i < dnsList.Length; i++)
+                {
+                    if (i == 0)
+                        adapterInfo.Dns1 = !string.IsNullOrEmpty(dnsList[0]) ? dnsList[0] : "0.0.0.0";
+                    if (i == 1)
+                        adapterInfo.Dns2 = !string.IsNullOrEmpty(dnsList[1]) ? dnsList[1] : "0.0.0.0";
+                    if (i == 2)
+                        adapterInfo.Dns3 = !string.IsNullOrEmpty(dnsList[2]) ? dnsList[2] : "0.0.0.0";
+                }
+            }
+            else
+            {
+                adapterInfo.Dns1 = !string.IsNullOrEmpty(dns) ? dns : "0.0.0.0";
+                adapterInfo.Dns2 = "0.0.0.0";
+                adapterInfo.Dns3 = "0.0.0.0";
+            }
+
+            return adapterInfo;
+        }
 	}
 }
