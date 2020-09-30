@@ -2103,6 +2103,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.Console(1, "Factory Attempting to create new Cisco Codec Device");
+
             var comm = CommFactory.CreateCommForDevice(dc);
             return new VideoCodec.Cisco.CiscoSparkCodec(dc, comm);
         }
