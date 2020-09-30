@@ -45,7 +45,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             var props = JsonConvert.DeserializeObject<ZoomRoomPropertiesConfig>(config.Properties.ToString());
 
             // The queue that will collect the repsonses in the order they are received
-            _receiveQueue = new CrestronQueue<string>(25);
+            _receiveQueue = new CrestronQueue<string>(1024);
 
             // The thread responsible for dequeuing and processing the messages
             _receiveThread = new Thread(o => ProcessQueue(), null) {Priority = Thread.eThreadPriority.MediumPriority};
