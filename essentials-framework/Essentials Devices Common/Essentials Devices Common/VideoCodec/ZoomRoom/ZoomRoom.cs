@@ -39,10 +39,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         private int _previousVolumeLevel;
         private CameraBase _selectedCamera;
 
+        private readonly ZoomRoomPropertiesConfig _props;
+
         public ZoomRoom(DeviceConfig config, IBasicCommunication comm)
             : base(config)
         {
-            var props = JsonConvert.DeserializeObject<ZoomRoomPropertiesConfig>(config.Properties.ToString());
+            _props = JsonConvert.DeserializeObject<ZoomRoomPropertiesConfig>(config.Properties.ToString());
 
             // The queue that will collect the repsonses in the order they are received
             _receiveQueue = new CrestronQueue<string>(1024);
@@ -52,10 +54,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             Communication = comm;
 
-            if (props.CommunicationMonitorProperties != null)
+            if (_props.CommunicationMonitorProperties != null)
             {
                 CommunicationMonitor = new GenericCommunicationMonitor(this, Communication,
-                    props.CommunicationMonitorProperties);
+                    _props.CommunicationMonitorProperties);
             }
             else
             {
@@ -625,7 +627,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             // zCommand
 
-            _syncState.AddQueryToQueue("zCommand Phonebook List Offset: 0 Limit: 512");
+            if (!_props.DisablePhonebookAutoDownload)
+            {
+                _syncState.AddQueryToQueue("zCommand Phonebook List Offset: 0 Limit: 512");
+            }
+
             _syncState.AddQueryToQueue("zCommand Bookings List");
 
 
