@@ -94,6 +94,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             CameraIsOffFeedback = new BoolFeedback(CameraIsOffFeedbackFunc);
 
+            CameraAutoModeIsOnFeedback = new BoolFeedback(CameraAutoModeIsOnFeedbackFunc);
+
             CodecSchedule = new CodecScheduleAwareness(MeetingRefreshTimer);
 
             SetUpFeedbackActions();
@@ -181,9 +183,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         protected Func<bool> CameraIsOffFeedbackFunc
         {
-            get { return () => !Configuration.Camera.Mute; }
+            get { return () => Configuration.Camera.Mute; }
         }
 
+        protected Func<bool> CameraAutoModeIsOnFeedbackFunc
+        {
+            get { return () => !Configuration.Camera.Mute; }
+        } 
 
         protected Func<string> SelfviewPipPositionFeedbackFunc
         {
