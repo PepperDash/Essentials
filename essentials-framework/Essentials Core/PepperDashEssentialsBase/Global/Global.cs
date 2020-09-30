@@ -22,6 +22,8 @@ namespace PepperDash.Essentials.Core
 
         public static eDevicePlatform Platform { get { return CrestronEnvironment.DevicePlatform; } }
 
+        public static Dictionary<short, EthernetAdapterInfo> EthernetAdapterInfoCollection { get; private set; }
+
 		public static LicenseManager LicenseManager { get; set; }
 
         /// <summary>
