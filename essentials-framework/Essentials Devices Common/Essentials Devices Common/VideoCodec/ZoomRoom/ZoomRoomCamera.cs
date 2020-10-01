@@ -79,8 +79,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         void StartContinueTimer()
         {
-            if(ContinueTimer == null)
-                ContinueTimer = new CTimer((o) => SendContinueAction(LastAction), ContinueTime);
+            if (ContinueTimer == null)
+                ContinueTimer = new CTimer((o) => SendContinueAction(LastAction), null, ContinueTime, ContinueTime);
         }
 
         void SendContinueAction(eZoomRoomCameraAction action)
