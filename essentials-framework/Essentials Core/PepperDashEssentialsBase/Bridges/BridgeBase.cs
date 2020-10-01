@@ -316,7 +316,7 @@ namespace PepperDash.Essentials.Core.Bridges
         {
             Debug.Console(1, "Factory Attempting to create new EiscApiAdvanced Device");
 
-            var controlProperties = dc.Properties["control"].ToObject<ControlPropertiesConfig>();
+            var controlProperties = CommFactory.GetControlPropertiesConfig(dc);
 
             switch (dc.Type)
             {

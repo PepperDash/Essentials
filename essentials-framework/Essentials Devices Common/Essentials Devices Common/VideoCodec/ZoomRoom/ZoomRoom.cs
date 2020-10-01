@@ -1587,7 +1587,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void CameraOff()
         {
-            SendText("zCommand Call Camera Mute: On");
+            SendText("zConfiguration Call Camera Mute: On");
         }
 
         #endregion
@@ -1602,7 +1602,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         //Zoom doesn't support camera auto modes. Setting this to just unmute video
         public void CameraAutoModeOff()
         {
-            SendText("zCommand Call Camera Mute: Off");
+            SendText("zConfiguration Call Camera Mute: Off");
         }
 
         public void CameraAutoModeToggle()
