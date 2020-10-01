@@ -1260,9 +1260,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                 if (ActiveCalls.Count == 0)
                 {
-                    if (callStatus == zStatus.eCallStatus.CONNECTING_MEETING)
+                    if (callStatus == zStatus.eCallStatus.CONNECTING_MEETING || callStatus == zStatus.eCallStatus.IN_MEETING )
                     {
-                        var newCall = new CodecActiveCallItem {Status = eCodecCallStatus.Connecting};
+                        var newStatus = eCodecCallStatus.Unknown;
+
+                        switch (callStatus)
+                        {
+                            case zStatus.eCallStatus.CONNECTING_MEETING:
+                                newStatus = eCodecCallStatus.Connecting;
+                                break;
+                            case zStatus.eCallStatus.IN_MEETING:
+                                newStatus = eCodecCallStatus.Connected;
+                                break;
+                        }
+
+                        var newCall = new CodecActiveCallItem {Status = newStatus};
 
                         ActiveCalls.Add(newCall);
 
