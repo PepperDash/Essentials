@@ -702,20 +702,35 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public class Camera : NotifiableObject
         {
+            private string _muteState;
             private bool _mute;
 
             public bool Mute
             {
+                get { return _mute; }
+                set
+                {
+                    if (value == _mute) return;
+
+                    _mute = value;
+                    NotifyPropertyChanged("Mute");
+                }
+            }
+
+            [JsonProperty("mute")]
+            public string MuteState
+            {
                 get
                 {
-                    return _mute;
+                    return _muteState;
                 }
                 set
                 {
-                    if (value != _mute)
+                    if (value != _muteState)
                     {
-                        _mute = value;
-                        NotifyPropertyChanged("Mute");
+                        _muteState = value;
+
+                        Mute = _muteState == "on";
                     }
                 }
             }

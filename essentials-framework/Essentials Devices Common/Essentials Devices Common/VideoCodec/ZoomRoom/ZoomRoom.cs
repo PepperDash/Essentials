@@ -657,6 +657,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             }
 
             _syncState.AddQueryToQueue("zCommand Bookings List");
+            _syncState.AddQueryToQueue("zCommand Call ListParticipants");
 
 
             _syncState.StartSync();
@@ -757,6 +758,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             Thread.Sleep(100);
                             SendText("zFeedback Register Op: ex Path: /Event/InfoResult/info/callout_country_list");
                             Thread.Sleep(100);
+
+                            if (!_props.DisablePhonebookAutoDownload)
+                            {
+                                SendText("zFeedback Register ");
+                            }
                             // switch to json format
                             SendText("format json");
                         });

@@ -370,6 +370,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                 SharingContentIsOnFeedback.InvokeFireUpdate();
 
+                trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
+
                 UpdateCallStatusXSig();
             };
         }
@@ -699,6 +701,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             //End All calls for now
             trilist.SetSigFalseAction(joinMap.EndCall.JoinNumber, EndAllCalls);
+
+            trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 
             CallStatusChange += (sender, args) =>
             {
