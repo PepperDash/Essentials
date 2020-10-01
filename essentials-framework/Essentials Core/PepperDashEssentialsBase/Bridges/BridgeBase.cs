@@ -318,7 +318,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
             var controlProperties = CommFactory.GetControlPropertiesConfig(dc);
 
-            switch (dc.Type)
+            switch (dc.Type.ToLower())
             {
                 case "eiscapiadv":
                 case "eiscapiadvanced":
