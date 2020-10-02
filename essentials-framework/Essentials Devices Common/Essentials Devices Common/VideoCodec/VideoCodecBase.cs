@@ -13,6 +13,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
@@ -198,7 +199,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <param name="previousStatus"></param>
         /// <param name="newStatus"></param>
         /// <param name="item"></param>
-        protected void OnCallStatusChange(CodecActiveCallItem item)
+        protected virtual void OnCallStatusChange(CodecActiveCallItem item)
         {
             var handler = CallStatusChange;
             if (handler != null)
@@ -322,6 +323,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 LinkVideoCodecCameraLayoutsToApi(codec as IHasCodecLayouts, trilist, joinMap);
             }
 
+            if (codec is IHasSelfviewPosition)
+            {
+                LinkVideoCodecSelfviewPositionToApi(codec as IHasSelfviewPosition, trilist, joinMap);
+            }
+
             if (codec is IHasDirectory)
             {
                 LinkVideoCodecDirectoryToApi(codec as IHasDirectory, trilist, joinMap);
@@ -335,6 +341,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             if (codec is IHasParticipants)
             {
                 LinkVideoCodecParticipantsToApi(codec as IHasParticipants, trilist, joinMap);
+            }
+
+            if (codec is IHasFarEndContentStatus)
+            {
+                (codec as IHasFarEndContentStatus).ReceivingContent.LinkInputSig(trilist.BooleanInput[joinMap.RecievingContent.JoinNumber]);
             }
 
             trilist.OnlineStatusChange += (device, args) =>
@@ -360,15 +371,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 {
                     trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, true);
 
-                    (codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.InvokeFireUpdate();
+                    (codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
                 }
 
                 if (codec is IHasCodecSelfView)
                 {
-                    (codec as IHasCodecSelfView).SelfviewIsOnFeedback.InvokeFireUpdate();
+                    (codec as IHasCodecSelfView).SelfviewIsOnFeedback.FireUpdate();
                 }
 
-                SharingContentIsOnFeedback.InvokeFireUpdate();
+                if (codec is IHasCameraAutoMode)
+                {
+                    (codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
+                }
+
+                if (codec is IHasCameraOff)
+                {
+                    (codec as IHasCameraOff).CameraIsOffFeedback.FireUpdate();
+                }
+
+                SharingContentIsOnFeedback.FireUpdate();
 
                 trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 
@@ -376,11 +397,53 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             };
         }
 
+        private void LinkVideoCodecSelfviewPositionToApi(IHasSelfviewPosition codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            trilist.SetSigFalseAction(joinMap.SelfviewPosition.JoinNumber, codec.SelfviewPipPositionToggle);
+
+            codec.SelfviewPipPositionFeedback.LinkInputSig(trilist.StringInput[joinMap.SelfviewPositionFb.JoinNumber]);
+        }
+
         private void LinkVideoCodecCameraOffToApi(IHasCameraOff codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
         {
-            codec.CameraIsOffFeedback.LinkInputSig(trilist.BooleanInput[joinMap.CameraModeOff.JoinNumber]);
-
             trilist.SetSigFalseAction(joinMap.CameraModeOff.JoinNumber, codec.CameraOff);
+
+            codec.CameraIsOffFeedback.OutputChange += (o, a) =>
+            {
+                if (a.BoolValue)
+                {
+                    trilist.SetBool(joinMap.CameraModeOff.JoinNumber, true);
+                    trilist.SetBool(joinMap.CameraModeManual.JoinNumber, false);
+                    trilist.SetBool(joinMap.CameraModeAuto.JoinNumber, false);
+                    return;
+                }
+
+                trilist.SetBool(joinMap.CameraModeOff.JoinNumber, false);
+
+                var autoCodec = codec as IHasCameraAutoMode;
+
+                if (autoCodec == null) return;
+
+                trilist.SetBool(joinMap.CameraModeAuto.JoinNumber, autoCodec.CameraAutoModeIsOnFeedback.BoolValue);
+                trilist.SetBool(joinMap.CameraModeManual.JoinNumber, !autoCodec.CameraAutoModeIsOnFeedback.BoolValue);
+            };
+
+            if (codec.CameraIsOffFeedback.BoolValue)
+            {
+                trilist.SetBool(joinMap.CameraModeOff.JoinNumber, true);
+                trilist.SetBool(joinMap.CameraModeManual.JoinNumber, false);
+                trilist.SetBool(joinMap.CameraModeAuto.JoinNumber, false);
+                return;
+            }
+
+            trilist.SetBool(joinMap.CameraModeOff.JoinNumber, false);
+
+            var autoModeCodec = codec as IHasCameraAutoMode;
+
+            if (autoModeCodec == null) return;
+
+            trilist.SetBool(joinMap.CameraModeAuto.JoinNumber, autoModeCodec.CameraAutoModeIsOnFeedback.BoolValue);
+            trilist.SetBool(joinMap.CameraModeManual.JoinNumber, !autoModeCodec.CameraAutoModeIsOnFeedback.BoolValue);
         }
 
         private void LinkVideoCodecVolumeToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
@@ -780,13 +843,54 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         {
             trilist.SetSigFalseAction(joinMap.CameraModeAuto.JoinNumber, codec.CameraAutoModeOn);
             trilist.SetSigFalseAction(joinMap.CameraModeManual.JoinNumber, codec.CameraAutoModeOff);
-            
-            codec.CameraAutoModeIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.CameraModeAuto.JoinNumber]);
-            codec.CameraAutoModeIsOnFeedback.LinkComplementInputSig(
-                trilist.BooleanInput[joinMap.CameraModeManual.JoinNumber]);
+
+            codec.CameraAutoModeIsOnFeedback.OutputChange += (o, a) =>
+            {
+                var offCodec = codec as IHasCameraOff;
+
+                if (offCodec != null)
+                {
+                    if (offCodec.CameraIsOffFeedback.BoolValue)
+                    {
+                        trilist.SetBool(joinMap.CameraModeAuto.JoinNumber, false);
+                        trilist.SetBool(joinMap.CameraModeManual.JoinNumber, false);
+                        trilist.SetBool(joinMap.CameraModeOff.JoinNumber, true);
+                        return;
+                    }
+
+                    trilist.SetBool(joinMap.CameraModeAuto.JoinNumber, a.BoolValue);
+                    trilist.SetBool(joinMap.CameraModeManual.JoinNumber, !a.BoolValue);
+                    trilist.SetBool(joinMap.CameraModeOff.JoinNumber, false);
+                    return;
+                }
+
+                trilist.SetBool(joinMap.CameraModeAuto.JoinNumber, a.BoolValue);
+                trilist.SetBool(joinMap.CameraModeManual.JoinNumber, !a.BoolValue);
+                trilist.SetBool(joinMap.CameraModeOff.JoinNumber, false);
+            };
+
+            var offModeCodec = codec as IHasCameraOff;
+
+            if (offModeCodec != null)
+            {
+                if (offModeCodec.CameraIsOffFeedback.BoolValue)
+                {
+                    trilist.SetBool(joinMap.CameraModeAuto.JoinNumber, false);
+                    trilist.SetBool(joinMap.CameraModeManual.JoinNumber, false);
+                    trilist.SetBool(joinMap.CameraModeOff.JoinNumber, true);
+                    return;
+                }
+
+                trilist.SetBool(joinMap.CameraModeAuto.JoinNumber, codec.CameraAutoModeIsOnFeedback.BoolValue);
+                trilist.SetBool(joinMap.CameraModeManual.JoinNumber, !codec.CameraAutoModeIsOnFeedback.BoolValue);
+                trilist.SetBool(joinMap.CameraModeOff.JoinNumber, false);
+                return;
+            }
+
+            trilist.SetBool(joinMap.CameraModeAuto.JoinNumber, codec.CameraAutoModeIsOnFeedback.BoolValue);
+            trilist.SetBool(joinMap.CameraModeManual.JoinNumber, !codec.CameraAutoModeIsOnFeedback.BoolValue);
+            trilist.SetBool(joinMap.CameraModeOff.JoinNumber, false);
         }
-
-
 
         private void LinkVideoCodecSelfviewToApi(IHasCodecSelfView codec, BasicTriList trilist,
             VideoCodecControllerJoinMap joinMap)
@@ -875,8 +979,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 var i = (ushort) codec.Cameras.FindIndex((c) => c.Key == args.SelectedCamera.Key);
 
-                trilist.SetUshort(joinMap.CameraPresetSelect.JoinNumber, i);
-
                 if (codec is IHasCodecRoomPresets)
                 {
                     return;
@@ -891,24 +993,58 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 SetCameraPresetNames(cam.Presets);
 
                 (args.SelectedCamera as IHasCameraPresets).PresetsListHasChanged += (o, eventArgs) => SetCameraPresetNames(cam.Presets);
+
+                trilist.SetUShortSigAction(joinMap.CameraPresetSelect.JoinNumber,
+                        (a) =>
+                        {
+                            cam.PresetSelect(a);
+                            trilist.SetUshort(joinMap.CameraPresetSelect.JoinNumber, a);
+                        });
+
+                trilist.SetSigFalseAction(joinMap.CameraPresetSave.JoinNumber,
+                    () =>
+                    {
+                        cam.PresetStore(trilist.UShortOutput[joinMap.CameraPresetSelect.JoinNumber].UShortValue,
+                            String.Empty);
+                        trilist.PulseBool(joinMap.CameraPresetSave.JoinNumber, 3000);
+                    });
             };
+
+            if (!(codec is IHasCodecRoomPresets)) return;
+
+            var presetCodec = codec as IHasCodecRoomPresets;
+
+            presetCodec.CodecRoomPresetsListHasChanged +=
+                (sender, args) => SetCameraPresetNames(presetCodec.NearEndPresets);
 
             //Camera Presets
             trilist.SetUShortSigAction(joinMap.CameraPresetSelect.JoinNumber, (i) =>
             {
-                if (codec.SelectedCamera == null) return;
-
-                var cam = codec.SelectedCamera as IHasCameraPresets;
-
-                if (cam == null) return;
-
-                cam.PresetSelect(i);
+                presetCodec.CodecRoomPresetSelect(i);
 
                 trilist.SetUshort(joinMap.CameraPresetSelect.JoinNumber, i);
             });
+
+            trilist.SetSigFalseAction(joinMap.CameraPresetSave.JoinNumber,
+                    () =>
+                    {
+                        presetCodec.CodecRoomPresetStore(
+                            trilist.UShortOutput[joinMap.CameraPresetSelect.JoinNumber].UShortValue, String.Empty);
+                        trilist.PulseBool(joinMap.CameraPresetSave.JoinNumber, 3000);
+                    });
         }
 
-        private string SetCameraPresetNames(List<CameraPreset> presets)
+        private string SetCameraPresetNames(IEnumerable<CodecRoomPreset> presets)
+        {
+            return SetCameraPresetNames(presets.Select(p => p.Description).ToList());
+        }
+
+        private string SetCameraPresetNames(IEnumerable<CameraPreset> presets)
+        {
+            return SetCameraPresetNames(presets.Select(p => p.Description).ToList());
+        }
+
+        private string SetCameraPresetNames(ICollection<string> presets)
         {
             var i = 1; //start index for xsig;
 
@@ -916,7 +1052,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             foreach (var preset in presets)
             {
-                var cameraPreset = new XSigSerialToken(i, preset.Description);
+                var cameraPreset = new XSigSerialToken(i, preset);
                 tokenArray[i - 1] = cameraPreset;
                 i++;
             }

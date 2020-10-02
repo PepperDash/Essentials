@@ -36,6 +36,15 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinType = eJoinType.Digital
                 });
 
+        [JoinName("CameraLayoutStringFb")] public JoinDataComplete CameraLayoutStringFb =
+            new JoinDataComplete(new JoinData {JoinNumber = 141, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Current Layout Fb",
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinType = eJoinType.Analog
+                });
+
         [JoinName("CameraModeAuto")] public JoinDataComplete CameraModeAuto =
             new JoinDataComplete(new JoinData {JoinNumber = 131, JoinSpan = 1},
                 new JoinMetadata
@@ -90,6 +99,15 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinType = eJoinType.Digital
                 });
 
+        [JoinName("CameraPresetNames")] public JoinDataComplete CameraPresetNames =
+            new JoinDataComplete(new JoinData {JoinNumber = 121, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Camera Preset Names - XSIG, max of 15",
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinType = eJoinType.Serial
+                });
+
         [JoinName("CameraPresetSelect")] public JoinDataComplete CameraPresetSelect =
             new JoinDataComplete(new JoinData {JoinNumber = 121, JoinSpan = 1},
                 new JoinMetadata
@@ -99,13 +117,13 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinType = eJoinType.Analog
                 });
 
-        [JoinName("CameraPresetNames")] public JoinDataComplete CameraPresetNames =
+        [JoinName("CameraPresetSave")] public JoinDataComplete CameraPresetSave =
             new JoinDataComplete(new JoinData {JoinNumber = 121, JoinSpan = 1},
                 new JoinMetadata
                 {
-                    Description = "Camera Preset Names - XSIG, max of 15",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Serial
+                    Description = "Save Selected Preset",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Digital
                 });
 
         [JoinName("CameraSelfView")] public JoinDataComplete CameraSelfView =
@@ -189,12 +207,30 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinType = eJoinType.Serial
                 });
 
-        [JoinName("DirectoryHasChanged")] public JoinDataComplete DirectoryHasChanged =
-            new JoinDataComplete(new JoinData {JoinNumber = 103, JoinSpan = 1},
+        [JoinName("CurrentParticipants")] public JoinDataComplete CurrentParticipants =
+            new JoinDataComplete(new JoinData {JoinNumber = 151, JoinSpan = 1},
+                new JoinMetadata()
+                {
+                    Description = "Current Participants XSig",
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinType = eJoinType.Serial
+                });
+
+        [JoinName("CurrentSource")] public JoinDataComplete CurrentSource =
+            new JoinDataComplete(new JoinData {JoinNumber = 201, JoinSpan = 1},
                 new JoinMetadata
                 {
-                    Description = "Directory has changed FB",
+                    Description = "Current Source",
                     JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinType = eJoinType.Serial
+                });
+
+        [JoinName("DialMeeting")] public JoinDataComplete DialMeeting =
+            new JoinDataComplete(new JoinData {JoinNumber = 161, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Join first joinable meeting",
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
                     JoinType = eJoinType.Digital
                 });
 
@@ -249,6 +285,15 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                 {
                     Description = "Go back one directory level",
                     JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("DirectoryHasChanged")] public JoinDataComplete DirectoryHasChanged =
+            new JoinDataComplete(new JoinData {JoinNumber = 103, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Directory has changed FB",
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
                     JoinType = eJoinType.Digital
                 });
 
@@ -495,37 +540,12 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinType = eJoinType.Digital
                 });
 
-        [JoinName("SpeedDialStart")] public JoinDataComplete SpeedDialStart =
-            new JoinDataComplete(new JoinData {JoinNumber = 41, JoinSpan = 4},
+
+        [JoinName("ManualDial")] public JoinDataComplete ManualDial =
+            new JoinDataComplete(new JoinData {JoinNumber = 71, JoinSpan = 1},
                 new JoinMetadata
                 {
-                    Description = "Speed Dial",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("Schedule")] public JoinDataComplete Schedule =
-            new JoinDataComplete(new JoinData {JoinNumber = 102, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Schedule Data - XSIG",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Serial
-                });
-
-        [JoinName("DialMeeting")] public JoinDataComplete DialMeeting = new JoinDataComplete(new JoinData{JoinNumber=161, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Join first joinable meeting",
-                JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                JoinType = eJoinType.Digital
-            });
-
-        [JoinName("UpdateMeetings")] public JoinDataComplete UpdateMeetings =
-            new JoinDataComplete(new JoinData {JoinNumber = 162, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Update Meetings",
+                    Description = "Dial manual string",
                     JoinCapabilities = eJoinCapabilities.FromSIMPL,
                     JoinType = eJoinType.Digital
                 });
@@ -539,96 +559,20 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinType = eJoinType.Analog
                 });
 
-
-        [JoinName("CameraLayoutStringFb")]
-        public JoinDataComplete CameraLayoutStringFb =
-            new JoinDataComplete(new JoinData { JoinNumber = 141, JoinSpan = 1 },
-            new JoinMetadata
-            {
-                Description = "Current Layout Fb",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Analog
-            });
-
-        
-        
-
-        [JoinName("ManualDial")] public JoinDataComplete ManualDial =
-            new JoinDataComplete(new JoinData {JoinNumber = 71, JoinSpan = 1},
+        [JoinName("MicMuteOff")] public JoinDataComplete MicMuteOff =
+            new JoinDataComplete(new JoinData {JoinNumber = 172, JoinSpan = 1},
                 new JoinMetadata
                 {
-                    Description = "Dial manual string",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("SourceShareStart")] public JoinDataComplete SourceShareStart =
-            new JoinDataComplete(new JoinData {JoinNumber = 201, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Start Sharing & Feedback",
+                    Description = "Mic Mute Off",
                     JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                     JoinType = eJoinType.Digital
                 });
-
-        [JoinName("SourceShareEnd")]
-        public JoinDataComplete SourceShareEnd =
-            new JoinDataComplete(new JoinData { JoinNumber = 202, JoinSpan = 1 },
-            new JoinMetadata
-            {
-                Description = "Stop Sharing & Feedback",
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.Digital
-            });
-
-        [JoinName("AutoShareWhileInCall")] public JoinDataComplete SourceShareAutoStart =
-            new JoinDataComplete(new JoinData {JoinNumber = 203, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "When high, will autostart sharing when a call is joined",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("CurrentSource")] public JoinDataComplete CurrentSource = new JoinDataComplete(new JoinData{JoinNumber = 201, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Current Source",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Serial
-            });
-
-        [JoinName("CurrentParticipants")] public JoinDataComplete CurrentParticipants =
-            new JoinDataComplete(new JoinData{JoinNumber = 151, JoinSpan = 1},
-                new JoinMetadata()
-                {
-                    Description = "Current Participants XSig",
-                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                    JoinType = eJoinType.Serial
-                });
-
-        [JoinName("ParticipantCount")] public JoinDataComplete ParticipantCount = new JoinDataComplete(new JoinData{JoinNumber = 151, JoinSpan = 1},
-            new JoinMetadata
-            {
-                Description = "Current Participant Count",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Analog
-            });
 
         [JoinName("MicMuteOn")] public JoinDataComplete MicMuteOn =
             new JoinDataComplete(new JoinData {JoinNumber = 171, JoinSpan = 1},
                 new JoinMetadata
                 {
                     Description = "Mic Mute On",
-                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                    JoinType = eJoinType.Digital
-                });
-
-        [JoinName("MicMuteOff")] public JoinDataComplete MicMuteOff =
-            new JoinDataComplete(new JoinData {JoinNumber = 172, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Mic Mute Off",
                     JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                     JoinType = eJoinType.Digital
                 });
@@ -642,35 +586,150 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinType = eJoinType.Digital
                 });
 
-        [JoinName("VolumeMuteOn")]
-        public JoinDataComplete VolumeMuteOn =
-            new JoinDataComplete(new JoinData { JoinNumber = 176, JoinSpan = 1 },
+        [JoinName("MinutesBeforeMeetingStart")] public JoinDataComplete MinutesBeforeMeetingStart =
+            new JoinDataComplete(new JoinData {JoinNumber = 41, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Minutes before meeting start that a meeting is joinable",
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                    JoinType = eJoinType.Analog
+                });
+
+        [JoinName("ParticipantCount")] public JoinDataComplete ParticipantCount =
+            new JoinDataComplete(new JoinData {JoinNumber = 151, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Current Participant Count",
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinType = eJoinType.Analog
+                });
+
+        [JoinName("Schedule")] public JoinDataComplete Schedule =
+            new JoinDataComplete(new JoinData {JoinNumber = 102, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Schedule Data - XSIG",
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinType = eJoinType.Serial
+                });
+
+        [JoinName("AutoShareWhileInCall")] public JoinDataComplete SourceShareAutoStart =
+            new JoinDataComplete(new JoinData {JoinNumber = 203, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "When high, will autostart sharing when a call is joined",
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("SourceShareEnd")] public JoinDataComplete SourceShareEnd =
+            new JoinDataComplete(new JoinData {JoinNumber = 202, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Stop Sharing & Feedback",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("SourceShareStart")] public JoinDataComplete SourceShareStart =
+            new JoinDataComplete(new JoinData {JoinNumber = 201, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Start Sharing & Feedback",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("RecievingContent")] public JoinDataComplete RecievingContent =
+            new JoinDataComplete(new JoinData {JoinNumber = 204, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Recieving content from the far end",
+                    JoinType = eJoinType.Digital,
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL
+                });
+
+        [JoinName("SelfviewPosition")] public JoinDataComplete SelfviewPosition =
+            new JoinDataComplete(new JoinData {JoinNumber = 211, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "advance selfview position",
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("SelfviewPositionFb")]
+        public JoinDataComplete SelfviewPositionFb =
+            new JoinDataComplete(new JoinData { JoinNumber = 211, JoinSpan = 1 },
             new JoinMetadata
             {
-                Description = "Volume Mute On",
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.Digital
+                Description = "advance selfview position",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
             });
 
-        [JoinName("VolumeMuteOff")]
-        public JoinDataComplete VolumeMuteOff =
-            new JoinDataComplete(new JoinData { JoinNumber = 177, JoinSpan = 1 },
-            new JoinMetadata
-            {
-                Description = "Volume Mute Off",
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.Digital
-            });
+        [JoinName("SpeedDialStart")] public JoinDataComplete SpeedDialStart =
+            new JoinDataComplete(new JoinData {JoinNumber = 41, JoinSpan = 4},
+                new JoinMetadata
+                {
+                    Description = "Speed Dial",
+                    JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                    JoinType = eJoinType.Digital
+                });
 
-        [JoinName("VolumeMuteToggle")]
-        public JoinDataComplete VolumeMuteToggle =
-            new JoinDataComplete(new JoinData { JoinNumber = 178, JoinSpan = 1 },
-            new JoinMetadata
-            {
-                Description = "Volume Mute Toggle",
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.Digital
-            });
+        [JoinName("UpdateMeetings")] public JoinDataComplete UpdateMeetings =
+            new JoinDataComplete(new JoinData {JoinNumber = 162, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Update Meetings",
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("VolumeDown")] public JoinDataComplete VolumeDown =
+            new JoinDataComplete(new JoinData {JoinNumber = 175, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Volume Down",
+                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("VolumeLevel")] public JoinDataComplete VolumeLevel =
+            new JoinDataComplete(new JoinData {JoinNumber = 174, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Volume Level",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Analog
+                });
+
+        [JoinName("VolumeMuteOff")] public JoinDataComplete VolumeMuteOff =
+            new JoinDataComplete(new JoinData {JoinNumber = 177, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Volume Mute Off",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("VolumeMuteOn")] public JoinDataComplete VolumeMuteOn =
+            new JoinDataComplete(new JoinData {JoinNumber = 176, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Volume Mute On",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
+
+        [JoinName("VolumeMuteToggle")] public JoinDataComplete VolumeMuteToggle =
+            new JoinDataComplete(new JoinData {JoinNumber = 178, JoinSpan = 1},
+                new JoinMetadata
+                {
+                    Description = "Volume Mute Toggle",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Digital
+                });
 
         [JoinName("VolumeUp")] public JoinDataComplete VolumeUp =
             new JoinDataComplete(new JoinData {JoinNumber = 174, JoinSpan = 1},
@@ -679,35 +738,6 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     Description = "Volume Up",
                     JoinCapabilities = eJoinCapabilities.FromSIMPL,
                     JoinType = eJoinType.Digital
-                });
-
-        [JoinName("VolumeDown")]
-        public JoinDataComplete VolumeDown =
-            new JoinDataComplete(new JoinData { JoinNumber = 175, JoinSpan = 1 },
-            new JoinMetadata
-            {
-                Description = "Volume Down",
-                JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                JoinType = eJoinType.Digital
-            });
-
-        [JoinName("VolumeLevel")]
-        public JoinDataComplete VolumeLevel =
-            new JoinDataComplete(new JoinData { JoinNumber = 174, JoinSpan = 1 },
-            new JoinMetadata
-            {
-                Description = "Volume Level",
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-                JoinType = eJoinType.Analog
-            });
-
-        [JoinName("MinutesBeforeMeetingStart")] public JoinDataComplete MinutesBeforeMeetingStart =
-            new JoinDataComplete(new JoinData {JoinNumber = 41, JoinSpan = 1},
-                new JoinMetadata
-                {
-                    Description = "Minutes before meeting start that a meeting is joinable",
-                    JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                    JoinType = eJoinType.Analog
                 });
 
         public VideoCodecControllerJoinMap(uint joinStart) : base(joinStart, typeof (VideoCodecControllerJoinMap))

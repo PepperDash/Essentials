@@ -11,16 +11,18 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Cisco;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
     public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
         IRouting,
-        IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraAutoMode
+        IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraAutoMode, IHasFarEndContentStatus, IHasSelfviewPosition
     {
         private const long MeetingRefreshTimer = 60000;
         private const uint DefaultMeetingDurationMin = 30;
@@ -98,6 +100,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             CodecSchedule = new CodecScheduleAwareness(MeetingRefreshTimer);
 
+            ReceivingContent = new BoolFeedback(FarEndIsSharingContentFeedbackFunc);
+
+            SelfviewPipPositionFeedback = new StringFeedback(SelfviewPipPositionFeedbackFunc);
+
             SetUpFeedbackActions();
 
             Cameras = new List<CameraBase>();
@@ -152,7 +158,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         protected Func<bool> FarEndIsSharingContentFeedbackFunc
         {
-            get { return () => false; }
+            get { return () => Status.Call.Sharing.State == zEvent.eSharingState.Receiving; }
         }
 
         protected override Func<bool> MuteFeedbackFunc
@@ -183,17 +189,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         protected Func<bool> CameraIsOffFeedbackFunc
         {
-            get { return () => Configuration.Camera.Mute; }
+            get { return () => Configuration.Call.Camera.Mute; }
         }
 
         protected Func<bool> CameraAutoModeIsOnFeedbackFunc
         {
-            get { return () => !Configuration.Camera.Mute; }
+            get { return () => false; }
         } 
 
         protected Func<string> SelfviewPipPositionFeedbackFunc
         {
-            get { return () => ""; }
+            get { return () => _currentSelfviewPipPosition.Command; }
         }
 
         protected Func<string> LocalLayoutFeedbackFunc
@@ -432,11 +438,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 }
             };
 
-            Configuration.Camera.PropertyChanged += (o, a) =>
+            Configuration.Call.Camera.PropertyChanged += (o, a) =>
             {
+                Debug.Console(1, this, "Configuration.Call.Camera.PropertyChanged: {0}", a.PropertyName);
+
                 if (a.PropertyName != "Mute") return;
 
                 CameraIsOffFeedback.FireUpdate();
+                CameraAutoModeIsOnFeedback.FireUpdate();
+            };
+
+            Configuration.Call.Layout.PropertyChanged += (o, a) =>
+            {
+                if (a.PropertyName != "Position") return;
+
+                ComputeSelfviewPipStatus();
+
+                SelfviewPipPositionFeedback.FireUpdate();
             };
 
             Status.Call.Sharing.PropertyChanged += (o, a) =>
@@ -444,6 +462,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 if (a.PropertyName == "State")
                 {
                     SharingContentIsOnFeedback.FireUpdate();
+                    ReceivingContent.FireUpdate();
+                }
+            };
+
+            Status.Call.PropertyChanged += (o, a) =>
+            {
+                if (a.PropertyName == "Info")
+                {
+                    Debug.Console(1, this, "Updating Call Status");
+                    UpdateCallStatus();
                 }
             };
 
@@ -658,6 +686,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             _syncState.AddQueryToQueue("zCommand Bookings List");
             _syncState.AddQueryToQueue("zCommand Call ListParticipants");
+            _syncState.AddQueryToQueue("zCommand Call Info");
 
 
             _syncState.StartSync();
@@ -670,6 +699,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         private void ProcessMessage(string message)
         {
             // Counts the curly braces
+            if (message.Contains("client_loop: send disconnect: Broken pipe"))
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Error,
+                    "Zoom Room Controller or App connected. Essentials will NOT control the Zoom Room until it is disconnected.");
+
+                return;
+            }
+
             if (message.Contains('{'))
             {
                 _jsonCurlyBraceCounter++;
@@ -759,9 +796,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             SendText("zFeedback Register Op: ex Path: /Event/InfoResult/info/callout_country_list");
                             Thread.Sleep(100);
 
-                            if (!_props.DisablePhonebookAutoDownload)
+                            if (_props.DisablePhonebookAutoDownload)
                             {
-                                SendText("zFeedback Register ");
+                                SendText("zFeedback Register Op: ex Path: /Event/Phonebook/AddedContact");
                             }
                             // switch to json format
                             SendText("format json");
@@ -841,6 +878,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     {
                         switch (topKey.ToLower())
                         {
+                            case "inforesult":
+                            {
+                                JsonConvert.PopulateObject(responseObj.ToString(), Status.Call.Info);
+                                break;
+                            }
                             case "phonebooklistresult":
                             {
                                 JsonConvert.PopulateObject(responseObj.ToString(), Status.Phonebook);
@@ -1160,6 +1202,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             {
                                 JsonConvert.PopulateObject(responseObj.ToString(), Status.Sharing);
 
+                                SetLayout();
+
                                 break;
                             }
                             case "numberofscreens":
@@ -1221,6 +1265,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             catch (Exception ex)
             {
                 Debug.Console(1, this, "Error Deserializing feedback: {0}", ex);
+            }
+        }
+
+        private void SetLayout()
+        {
+            if(!_props.AutoDefaultLayouts) return;
+            
+            if (
+                (Status.Call.Sharing.State == zEvent.eSharingState.Receiving ||
+                 Status.Call.Sharing.State == zEvent.eSharingState.Sending))
+            {
+                SendText(String.Format("zconfiguration call layout style: {0}",
+                    _props.DefaultSharingLayout));
+            }
+            else
+            {
+                SendText(String.Format("zconfiguration call layout style: {0}",
+                    _props.DefaultCallLayout));
             }
         }
 
@@ -1329,6 +1391,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             Debug.Console(1, this, "**************************************************************************");
         }
 
+        protected override void OnCallStatusChange(CodecActiveCallItem item)
+        {
+            base.OnCallStatusChange(item);
+
+            if (_props.AutoDefaultLayouts)
+            {
+                SetLayout();
+            }
+        }
         public override void StartSharing()
         {
             throw new NotImplementedException();
@@ -1630,6 +1701,52 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public BoolFeedback CameraAutoModeIsOnFeedback { get; private set; }
 
+        #endregion
+
+        #region Implementation of IHasFarEndContentStatus
+
+        public BoolFeedback ReceivingContent { get; private set; }
+
+        #endregion
+
+        #region Implementation of IHasSelfviewPosition
+
+        private CodecCommandWithLabel _currentSelfviewPipPosition;
+
+        public StringFeedback SelfviewPipPositionFeedback { get; private set; }
+
+        public void SelfviewPipPositionSet(CodecCommandWithLabel position)
+        {
+            SendText(String.Format("zConfiguration Call Layout Position: {0}", position.Command));
+        }
+
+        public void SelfviewPipPositionToggle()
+        {
+            if (_currentSelfviewPipPosition != null)
+            {
+                var nextPipPositionIndex = SelfviewPipPositions.IndexOf(_currentSelfviewPipPosition) + 1;
+
+                if (nextPipPositionIndex >= SelfviewPipPositions.Count) // Check if we need to loop back to the first item in the list
+                    nextPipPositionIndex = 0;
+
+                SelfviewPipPositionSet(SelfviewPipPositions[nextPipPositionIndex]);
+            }
+        }
+
+        public List<CodecCommandWithLabel> SelfviewPipPositions = new List<CodecCommandWithLabel>()
+        {
+            new CodecCommandWithLabel("UpLeft", "Center Left"),
+            new CodecCommandWithLabel("UpRight", "Center Right"),
+            new CodecCommandWithLabel("DownLeft", "Lower Left"),
+            new CodecCommandWithLabel("DownRight", "Lower Right")
+        };
+
+        void ComputeSelfviewPipStatus()
+        {
+            _currentSelfviewPipPosition =
+                SelfviewPipPositions.FirstOrDefault(
+                    p => p.Command.ToLower().Equals(Configuration.Call.Layout.Position.ToString()));
+        }
         #endregion
     }
 

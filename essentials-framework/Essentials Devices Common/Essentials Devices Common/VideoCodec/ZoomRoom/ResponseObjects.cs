@@ -370,7 +370,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             public CallRecordInfo CallRecordInfo { get; set; }
 
-            public zCommand.InfoResult Info { get; set; }
+            private zCommand.InfoResult _info;
+
+            public zCommand.InfoResult Info
+            {
+                get
+                {
+                    return _info;
+                }
+                set
+                {
+                    _info = value;
+                    NotifyPropertyChanged("Info");
+                }
+            }
 
             public Call()
             {
@@ -702,7 +715,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public class Camera : NotifiableObject
         {
-            private string _muteState;
             private bool _mute;
 
             public bool Mute
@@ -710,28 +722,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 get { return _mute; }
                 set
                 {
+                    Debug.Console(1, "Camera Mute response received: {0}", value);
+                    
                     if (value == _mute) return;
-
+                    
                     _mute = value;
                     NotifyPropertyChanged("Mute");
-                }
-            }
-
-            [JsonProperty("mute")]
-            public string MuteState
-            {
-                get
-                {
-                    return _muteState;
-                }
-                set
-                {
-                    if (value != _muteState)
-                    {
-                        _muteState = value;
-
-                        Mute = _muteState == "on";
-                    }
                 }
             }
         }
@@ -787,12 +783,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             DownLeft
         }
 
-        public class Layout
+        public class Layout:NotifiableObject
         {
             public bool ShareThumb { get; set; }
             public eLayoutStyle Style { get; set; }
             public eLayoutSize Size { get; set; }
-            public eLayoutPosition Position { get; set; }
+
+            private eLayoutPosition _position;
+            public eLayoutPosition Position {
+                get { return _position; }
+                set
+                {
+                    _position = value;
+                    NotifyPropertyChanged("Position");
+                } }
         }
 
         public class Lock
