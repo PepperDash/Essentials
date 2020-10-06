@@ -393,7 +393,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                 trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 
-                UpdateCallStatusXSig();
+                trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
             };
         }
 
@@ -779,9 +779,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     trilist.SetSigFalseAction(joinMap.IncomingReject.JoinNumber, () => RejectCall(args.CallItem));
                 }
 
-                var callStatusXsig = UpdateCallStatusXSig();
-
-                trilist.SetString(joinMap.CurrentCallData.JoinNumber, callStatusXsig);
+                trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
             };
         }
 
@@ -790,26 +788,44 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             const int maxCalls = 8;
             const int maxStrings = 5;
             const int offset = 6;
-            var callIndex = 0;
-            var digitalIndex = maxStrings*maxCalls;
-            
-
-            var tokenArray = new XSigToken[ActiveCalls.Count*offset]; //set array size for number of calls * pieces of info
+            var stringIndex = 0;
+            var digitalIndex = maxStrings * maxCalls;
+            var arrayIndex = 0;            
+        
+            var tokenArray = new XSigToken[maxCalls*offset]; //set array size for number of calls * pieces of info
 
             foreach (var call in ActiveCalls)
             {
-                var arrayIndex = callIndex;
+                if (arrayIndex >= maxCalls * offset)
+                    break;
                 //digitals
                 tokenArray[arrayIndex] = new XSigDigitalToken(digitalIndex + 1, call.IsActiveCall);
 
                 //serials
-                tokenArray[arrayIndex + 1] = new XSigSerialToken(callIndex + 1, call.Name ?? String.Empty);
-                tokenArray[arrayIndex + 2] = new XSigSerialToken(callIndex + 2, call.Number ?? String.Empty);
-                tokenArray[arrayIndex + 3] = new XSigSerialToken(callIndex + 3, call.Direction.ToString());
-                tokenArray[arrayIndex + 4] = new XSigSerialToken(callIndex + 4, call.Type.ToString());
-                tokenArray[arrayIndex + 5] = new XSigSerialToken(callIndex + 5, call.Status.ToString());
+                tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 1, call.Name ?? String.Empty);
+                tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 2, call.Number ?? String.Empty);
+                tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 3, call.Direction.ToString());
+                tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 4, call.Type.ToString());
+                tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 5, call.Status.ToString());
 
-                callIndex += offset;
+                arrayIndex += offset;
+                stringIndex += maxStrings;
+                digitalIndex++;
+            }
+            while (digitalIndex < maxCalls)
+            {
+                //digitals
+                tokenArray[arrayIndex] = new XSigDigitalToken(digitalIndex + 1, false);
+
+                //serials
+                tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 1, String.Empty);
+                tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 2, String.Empty);
+                tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 3, String.Empty);
+                tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 4, String.Empty);
+                tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 5, String.Empty);
+
+                arrayIndex += offset;
+                stringIndex += maxStrings;
                 digitalIndex++;
             }
 

@@ -1402,7 +1402,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         }
         public override void StartSharing()
         {
-            throw new NotImplementedException();
+            SendText("zCommand Call Sharing HDMI Start");
         }
 
         /// <summary>
