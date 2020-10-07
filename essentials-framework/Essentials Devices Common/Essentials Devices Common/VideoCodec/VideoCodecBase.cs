@@ -503,7 +503,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         private string UpdateParticipantsXSig(List<Participant> currentParticipants)
         {
-            const int maxParticipants = 255;
+            const int maxParticipants = 50;
             const int maxDigitals = 5;
             const int maxStrings = 1;
             const int offset = maxDigitals + maxStrings;
