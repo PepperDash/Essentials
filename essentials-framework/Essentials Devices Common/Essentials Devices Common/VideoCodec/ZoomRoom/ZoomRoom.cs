@@ -399,6 +399,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             SetIsReady();
         }
 
+        private void SetUpCallFeedbackActions()
+        {
+            Status.Call.Sharing.PropertyChanged += (o, a) =>
+            {
+                if (a.PropertyName == "State")
+                {
+                    SharingContentIsOnFeedback.FireUpdate();
+                    ReceivingContent.FireUpdate();
+                }
+            };
+
+            Status.Call.PropertyChanged += (o, a) =>
+            {
+                if (a.PropertyName == "Info")
+                {
+                    Debug.Console(1, this, "Updating Call Status");
+                    UpdateCallStatus();
+                }
+            };
+        }
 
         /// <summary>
         /// Subscribes to the PropertyChanged events on the state objects and fires the corresponding feedbacks.
@@ -1324,6 +1344,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 if (callStatus != zStatus.eCallStatus.IN_MEETING || callStatus != zStatus.eCallStatus.CONNECTING_MEETING)
                 {
                     Status.Call = new zStatus.Call {Status = callStatus};
+
+                    SetUpCallFeedbackActions();
                 }
 
                 if (ActiveCalls.Count == 0)
@@ -1387,8 +1409,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     ActiveCalls.Remove(call);
                 }
             }
-
             Debug.Console(1, this, "**************************************************************************");
+
+            //clear participants list after call cleanup
+            if (ActiveCalls.Count == 0)
+            {
+                Participants.CurrentParticipants = new List<Participant>();
+            }
         }
 
         protected override void OnCallStatusChange(CodecActiveCallItem item)
