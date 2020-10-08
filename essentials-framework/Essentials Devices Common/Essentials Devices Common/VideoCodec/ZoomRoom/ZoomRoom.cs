@@ -1762,25 +1762,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                 SelfviewPipPositionSet(SelfviewPipPositions[nextPipPositionIndex]);
             }
-            else
-            {
-                SelfviewPipPositionSet(SelfviewPipPositions[0]);
-            }
         }
 
         public List<CodecCommandWithLabel> SelfviewPipPositions = new List<CodecCommandWithLabel>()
         {
             new CodecCommandWithLabel("UpLeft", "Center Left"),
             new CodecCommandWithLabel("UpRight", "Center Right"),
-            new CodecCommandWithLabel("DownLeft", "Lower Left"),
-            new CodecCommandWithLabel("DownRight", "Lower Right")
+            new CodecCommandWithLabel("DownRight", "Lower Right"),
+            new CodecCommandWithLabel("DownLeft", "Lower Left")
         };
 
         void ComputeSelfviewPipStatus()
         {
             _currentSelfviewPipPosition =
                 SelfviewPipPositions.FirstOrDefault(
-                    p => p.Command.ToLower().Equals(Configuration.Call.Layout.Position.ToString()));
+                    p => p.Command.ToLower().Equals(Configuration.Call.Layout.Position.ToString().ToLower()));
         }
         #endregion
     }
