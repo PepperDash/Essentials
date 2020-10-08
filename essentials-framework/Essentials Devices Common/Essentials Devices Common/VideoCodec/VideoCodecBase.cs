@@ -19,6 +19,7 @@ using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash_Essentials_Core.Bridges.JoinMaps;
+using PepperDash_Essentials_Core.DeviceTypeInterfaces;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
@@ -348,6 +349,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 (codec as IHasFarEndContentStatus).ReceivingContent.LinkInputSig(trilist.BooleanInput[joinMap.RecievingContent.JoinNumber]);
             }
 
+            if (codec is IHasPhoneDialing)
+            {
+                LinkVideoCodecPhoneToApi(codec as IHasPhoneDialing, trilist, joinMap);
+            }
+
             trilist.OnlineStatusChange += (device, args) =>
             {
                 if (!args.DeviceOnLine) return;
@@ -389,12 +395,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     (codec as IHasCameraOff).CameraIsOffFeedback.FireUpdate();
                 }
 
+                if (codec is IHasPhoneDialing)
+                {
+                    (codec as IHasPhoneDialing).PhoneOffHookFeedback.FireUpdate();
+                }
+
                 SharingContentIsOnFeedback.FireUpdate();
 
                 trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 
                 trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
             };
+        }
+
+        private void LinkVideoCodecPhoneToApi(IHasPhoneDialing codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            codec.PhoneOffHookFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PhoneHookState.JoinNumber]);
+
+            trilist.SetSigFalseAction(joinMap.DialPhone.JoinNumber,
+                () => codec.DialPhoneCall(trilist.StringOutput[joinMap.PhoneDialString.JoinNumber].StringValue));
+
+            trilist.SetSigFalseAction(joinMap.HangUpPhone.JoinNumber, codec.EndPhoneCall);
         }
 
         private void LinkVideoCodecSelfviewPositionToApi(IHasSelfviewPosition codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)

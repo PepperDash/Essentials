@@ -17,12 +17,14 @@ using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Cisco;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
+using PepperDash_Essentials_Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
     public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
         IRouting,
-        IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraAutoMode, IHasFarEndContentStatus, IHasSelfviewPosition
+        IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraAutoMode,
+        IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing
     {
         private const long MeetingRefreshTimer = 60000;
         private const uint DefaultMeetingDurationMin = 30;
@@ -114,6 +116,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             SupportsCameraOff = _props.SupportsCameraOff;
             SupportsCameraAutoMode = _props.SupportsCameraAutoMode;
+
+            PhoneOffHookFeedback = new BoolFeedback(PhoneOffHookFeedbackFunc);
+            CallerIdNameFeedback = new StringFeedback(CallerIdNameFeedbackFunc);
+            CallerIdNumberFeedback = new StringFeedback(CallerIdNumberFeedbackFunc);
         }
 
         public CommunicationGather PortGather { get; private set; }
@@ -195,7 +201,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         protected Func<bool> CameraAutoModeIsOnFeedbackFunc
         {
             get { return () => false; }
-        } 
+        }
 
         protected Func<string> SelfviewPipPositionFeedbackFunc
         {
@@ -506,6 +512,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         break;
                 }
             };
+
+            Status.PhoneCall.PropertyChanged += (o, a) =>
+            {
+                switch (a.PropertyName)
+                {
+                    case "IsIncomingCall":
+                        Debug.Console(1, this, "Incoming Phone Call: {0}", Status.PhoneCall.IsIncomingCall);
+                        break;
+                    case "PeerDisplayName":
+                        Debug.Console(1, this, "Peer Display Name: {0}", Status.PhoneCall.PeerDisplayName);
+                        CallerIdNameFeedback.FireUpdate();
+                        break;
+                    case "PeerNumber":
+                        Debug.Console(1, this, "Peer Number: {0}", Status.PhoneCall.PeerNumber);
+                        CallerIdNumberFeedback.FireUpdate();
+                        break;
+                    case "OffHook":
+                        Debug.Console(1, this, "Phone is OffHook: {0}", Status.PhoneCall.OffHook);
+                        PhoneOffHookFeedback.FireUpdate();
+                        break;
+                }
+            };
         }
 
         private void SetUpDirectory()
@@ -555,8 +583,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             if (!_props.DisablePhonebookAutoDownload)
             {
                 CrestronConsole.AddNewConsoleCommand(s => SendText("zCommand Phonebook List Offset: 0 Limit: 512"),
-                     "GetZoomRoomContacts", "Triggers a refresh of the codec phonebook",
-                     ConsoleAccessLevelEnum.AccessOperator);
+                    "GetZoomRoomContacts", "Triggers a refresh of the codec phonebook",
+                    ConsoleAccessLevelEnum.AccessOperator);
             }
 
             CrestronConsole.AddNewConsoleCommand(s => GetBookings(), "GetZoomRoomBookings",
@@ -1066,7 +1094,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             case "sharingstate":
                             {
                                 JsonConvert.PopulateObject(responseObj.ToString(), Status.Call.Sharing);
-                                
+
                                 SetLayout();
 
                                 break;
@@ -1179,6 +1207,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             {
                                 JsonConvert.PopulateObject(responseObj.ToString(), Status.Call.CallRecordInfo);
 
+                                break;
+                            }
+                            case "phonecallstatus":
+                            {
+                                JsonConvert.PopulateObject(responseObj.ToString(), Status.PhoneCall);
                                 break;
                             }
                             default:
@@ -1294,8 +1327,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         private void SetLayout()
         {
-            if(!_props.AutoDefaultLayouts) return;
-            
+            if (!_props.AutoDefaultLayouts) return;
+
             if (
                 (Status.Call.Sharing.State == zEvent.eSharingState.Receiving ||
                  Status.Call.Sharing.State == zEvent.eSharingState.Sending))
@@ -1354,7 +1387,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                 if (ActiveCalls.Count == 0)
                 {
-                    if (callStatus == zStatus.eCallStatus.CONNECTING_MEETING || callStatus == zStatus.eCallStatus.IN_MEETING )
+                    if (callStatus == zStatus.eCallStatus.CONNECTING_MEETING ||
+                        callStatus == zStatus.eCallStatus.IN_MEETING)
                     {
                         var newStatus = eCodecCallStatus.Unknown;
 
@@ -1431,6 +1465,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 SetLayout();
             }
         }
+
         public override void StartSharing()
         {
             SendText("zCommand Call Sharing HDMI Start");
@@ -1633,7 +1668,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public override void SendDtmf(string s)
         {
-            throw new NotImplementedException();
+            SendDtmfToPhone(s);
         }
 
         /// <summary>
@@ -1713,6 +1748,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         #endregion
 
         #region Implementation of IHasCameraAutoMode
+
         //Zoom doesn't support camera auto modes. Setting this to just unmute video
         public void CameraAutoModeOn()
         {
@@ -1757,7 +1793,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             {
                 var nextPipPositionIndex = SelfviewPipPositions.IndexOf(_currentSelfviewPipPosition) + 1;
 
-                if (nextPipPositionIndex >= SelfviewPipPositions.Count) // Check if we need to loop back to the first item in the list
+                if (nextPipPositionIndex >= SelfviewPipPositions.Count)
+                    // Check if we need to loop back to the first item in the list
                     nextPipPositionIndex = 0;
 
                 SelfviewPipPositionSet(SelfviewPipPositions[nextPipPositionIndex]);
@@ -1772,12 +1809,40 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             new CodecCommandWithLabel("DownLeft", "Lower Left")
         };
 
-        void ComputeSelfviewPipStatus()
+        private void ComputeSelfviewPipStatus()
         {
             _currentSelfviewPipPosition =
                 SelfviewPipPositions.FirstOrDefault(
                     p => p.Command.ToLower().Equals(Configuration.Call.Layout.Position.ToString().ToLower()));
         }
+
+        #endregion
+
+        #region Implementation of IHasPhoneDialing
+
+        private Func<bool> PhoneOffHookFeedbackFunc {get {return () => Status.PhoneCall.OffHook; }}
+        private Func<string> CallerIdNameFeedbackFunc { get { return () => Status.PhoneCall.PeerDisplayName; } }
+        private Func<string> CallerIdNumberFeedbackFunc { get { return () => Status.PhoneCall.PeerNumber; } }
+
+        public BoolFeedback PhoneOffHookFeedback { get; private set; }
+        public StringFeedback CallerIdNameFeedback { get; private set; }
+        public StringFeedback CallerIdNumberFeedback { get; private set; }
+
+        public void DialPhoneCall(string number)
+        {
+            SendText(String.Format("zCommand Dial PhoneCallOut Number: {0}", number));
+        }
+
+        public void EndPhoneCall()
+        {
+            SendText(String.Format("zCommand Dial PhoneHangUp CallId: {0}", Status.PhoneCall.CallId));
+        }
+
+        public void SendDtmfToPhone(string digit)
+        {
+            SendText(String.Format("zCommand SendSipDTMF CallId: {0} Key: {1}", Status.PhoneCall.CallId, digit));
+        }
+
         #endregion
     }
 

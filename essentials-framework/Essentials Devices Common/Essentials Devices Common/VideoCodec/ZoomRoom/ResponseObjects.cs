@@ -58,6 +58,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public List<zStatus.AudioVideoInputOutputLineItem> AudioInputs { get; set; }
         public List<zStatus.AudioVideoInputOutputLineItem> AudioOuputs { get; set; }
         public List<zStatus.AudioVideoInputOutputLineItem> Cameras { get; set; }
+        public zEvent.PhoneCallStatus PhoneCall { get; set; }
 
         public ZoomRoomStatus()
         {
@@ -74,6 +75,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             AudioInputs = new List<zStatus.AudioVideoInputOutputLineItem>();
             AudioOuputs = new List<zStatus.AudioVideoInputOutputLineItem>();
             Cameras = new List<zStatus.AudioVideoInputOutputLineItem>();
+            PhoneCall = new zEvent.PhoneCallStatus();
         }
     }
 
@@ -699,6 +701,84 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             public int ShareSourceType { get; set; }
             [JsonProperty("why_cannot_pin_share")]
             public string WhyCannotPinShare { get; set; }
+        }
+
+        public class PhoneCallStatus:NotifiableObject
+        {
+            private bool _isIncomingCall;
+            private string _peerDisplayName;
+            private string _peerNumber;
+
+            private bool _offHook;
+
+            public string CallId { get; set; }
+            public bool IsIncomingCall {
+                get { return _isIncomingCall; }
+                set
+                {
+                    if(value == _isIncomingCall) return;
+
+                    _isIncomingCall = value;
+                    NotifyPropertyChanged("IsIncomingCall");
+                } }
+
+            public string PeerDisplayName
+            {
+                get { return _peerDisplayName; }
+                set
+                {
+                    if (value == _peerDisplayName) return;
+                    _peerDisplayName = value;
+                    NotifyPropertyChanged("PeerDisplayName");
+                }
+            }
+
+            public string PeerNumber
+            {
+                get { return _peerNumber; }
+                set
+                {
+                    if (value == _peerNumber) return;
+
+                    _peerNumber = value;
+                    NotifyPropertyChanged("PeerNumber");
+                } 
+            }
+
+            public string PeerUri { get; set; }
+
+            private ePhoneCallStatus _status;
+            public ePhoneCallStatus Status
+            {
+                get { return _status; }
+                set
+                {
+                    _status = value;
+                    OffHook = _status == ePhoneCallStatus.PhoneCallStatus_Accepted ||
+                              _status == ePhoneCallStatus.PhoneCallStatus_InCall ||
+                              _status == ePhoneCallStatus.PhoneCallStatus_Init;
+                } 
+            }
+
+            public bool OffHook
+            {
+                get { return _offHook; }
+                set
+                {
+                    if (value == _offHook) return;
+
+                    _offHook = value;
+                    NotifyPropertyChanged("OffHook");
+                }
+            }
+        }
+
+        public enum ePhoneCallStatus
+        {
+            PhoneCallStatus_Terminated,
+            PhoneCallStatus_Accepted,
+            PhoneCallStatus_InCall,
+            PhoneCallStatus_Init,
         }
     }
     

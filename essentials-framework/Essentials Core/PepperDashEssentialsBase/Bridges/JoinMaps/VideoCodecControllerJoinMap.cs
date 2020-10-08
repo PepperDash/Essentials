@@ -760,6 +760,46 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinType = eJoinType.Digital
                 });
 
+        [JoinName("DialPhoneCall")]
+        public JoinDataComplete DialPhone =
+            new JoinDataComplete(new JoinData { JoinNumber = 72, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Dial Phone",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("PhoneHookState")]
+        public JoinDataComplete PhoneHookState =
+            new JoinDataComplete(new JoinData { JoinNumber = 72, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Dial Phone",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("EndPhoneCall")]
+        public JoinDataComplete HangUpPhone =
+            new JoinDataComplete(new JoinData { JoinNumber = 73, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Hang Up PHone",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("PhoneString")]
+        public JoinDataComplete PhoneDialString =
+            new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Phone Dial String",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
         public VideoCodecControllerJoinMap(uint joinStart) : base(joinStart, typeof (VideoCodecControllerJoinMap))
         {
         }

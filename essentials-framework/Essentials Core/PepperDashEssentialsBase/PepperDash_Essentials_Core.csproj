@@ -197,6 +197,7 @@
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
     <Compile Include="DeviceTypeInterfaces\IHasBranding.cs" />
     <Compile Include="DeviceTypeInterfaces\IHasFarEndContentStatus.cs" />
+    <Compile Include="DeviceTypeInterfaces\IHasPhoneDialing.cs" />
     <Compile Include="DeviceTypeInterfaces\IMobileControl.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Factory\IDeviceFactory.cs" />
