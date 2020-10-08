@@ -595,12 +595,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             trilist.SetString(joinMap.Schedule.JoinNumber, meetingsData);
 
-            trilist.SetSigFalseAction(joinMap.DialMeeting.JoinNumber, () =>
+            trilist.SetSigFalseAction(joinMap.DialMeeting1.JoinNumber, () =>
             {
-                if (codec.CodecSchedule.Meetings[0].Joinable)
-                {
+                if(codec.CodecSchedule.Meetings[0] != null)
                     Dial(codec.CodecSchedule.Meetings[0]);
-                }
+            });
+            trilist.SetSigFalseAction(joinMap.DialMeeting2.JoinNumber, () =>
+            {
+                if (codec.CodecSchedule.Meetings[1] != null)
+                    Dial(codec.CodecSchedule.Meetings[1]);
+            });
+            trilist.SetSigFalseAction(joinMap.DialMeeting3.JoinNumber, () =>
+            {
+                if (codec.CodecSchedule.Meetings[2] != null)
+                    Dial(codec.CodecSchedule.Meetings[2]);
             });
 
             trilist.SetUshort(joinMap.MeetingCount.JoinNumber, (ushort)currentMeetings.Count);

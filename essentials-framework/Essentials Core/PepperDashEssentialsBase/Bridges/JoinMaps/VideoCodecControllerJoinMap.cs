@@ -225,14 +225,34 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                     JoinType = eJoinType.Serial
                 });
 
-        [JoinName("DialMeeting")] public JoinDataComplete DialMeeting =
+        [JoinName("DialMeeting1")] public JoinDataComplete DialMeeting1 =
             new JoinDataComplete(new JoinData {JoinNumber = 161, JoinSpan = 1},
                 new JoinMetadata
                 {
-                    Description = "Join first joinable meeting",
+                    Description = "Join first meeting",
                     JoinCapabilities = eJoinCapabilities.FromSIMPL,
                     JoinType = eJoinType.Digital
                 });
+
+        [JoinName("DialMeeting2")]
+        public JoinDataComplete DialMeeting2 =
+            new JoinDataComplete(new JoinData { JoinNumber = 162, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Join second meeting",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("DialMeeting3")]
+        public JoinDataComplete DialMeeting3 =
+            new JoinDataComplete(new JoinData { JoinNumber = 163, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Join third meeting",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
 
         [JoinName("DirectoryDialSelectedLine")] public JoinDataComplete DirectoryDialSelectedLine =
             new JoinDataComplete(new JoinData {JoinNumber = 106, JoinSpan = 1},
@@ -678,7 +698,7 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                 });
 
         [JoinName("UpdateMeetings")] public JoinDataComplete UpdateMeetings =
-            new JoinDataComplete(new JoinData {JoinNumber = 162, JoinSpan = 1},
+            new JoinDataComplete(new JoinData {JoinNumber = 160, JoinSpan = 1},
                 new JoinMetadata
                 {
                     Description = "Update Meetings",
