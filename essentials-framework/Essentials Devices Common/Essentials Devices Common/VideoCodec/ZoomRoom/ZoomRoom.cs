@@ -552,9 +552,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         {
             CrestronConsole.AddNewConsoleCommand(SetCommDebug, "SetCodecCommDebug", "0 for Off, 1 for on",
                 ConsoleAccessLevelEnum.AccessOperator);
-            CrestronConsole.AddNewConsoleCommand(s => SendText("zCommand Phonebook List Offset: 0 Limit: 512"),
-                "GetZoomRoomContacts", "Triggers a refresh of the codec phonebook",
-                ConsoleAccessLevelEnum.AccessOperator);
+            if (!_props.DisablePhonebookAutoDownload)
+            {
+                CrestronConsole.AddNewConsoleCommand(s => SendText("zCommand Phonebook List Offset: 0 Limit: 512"),
+                     "GetZoomRoomContacts", "Triggers a refresh of the codec phonebook",
+                     ConsoleAccessLevelEnum.AccessOperator);
+            }
+
             CrestronConsole.AddNewConsoleCommand(s => GetBookings(), "GetZoomRoomBookings",
                 "Triggers a refresh of the booking data for today", ConsoleAccessLevelEnum.AccessOperator);
 
@@ -816,7 +820,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             SendText("zFeedback Register Op: ex Path: /Event/InfoResult/info/callout_country_list");
                             Thread.Sleep(100);
 
-                            if (_props.DisablePhonebookAutoDownload)
+                            if (!_props.DisablePhonebookAutoDownload)
                             {
                                 SendText("zFeedback Register Op: ex Path: /Event/Phonebook/AddedContact");
                             }
@@ -1062,6 +1066,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             case "sharingstate":
                             {
                                 JsonConvert.PopulateObject(responseObj.ToString(), Status.Call.Sharing);
+                                
+                                SetLayout();
 
                                 break;
                             }
@@ -1221,8 +1227,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             case "sharing":
                             {
                                 JsonConvert.PopulateObject(responseObj.ToString(), Status.Sharing);
-
-                                SetLayout();
 
                                 break;
                             }
@@ -1757,6 +1761,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     nextPipPositionIndex = 0;
 
                 SelfviewPipPositionSet(SelfviewPipPositions[nextPipPositionIndex]);
+            }
+            else
+            {
+                SelfviewPipPositionSet(SelfviewPipPositions[0]);
             }
         }
 
