@@ -756,7 +756,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     _status = value;
                     OffHook = _status == ePhoneCallStatus.PhoneCallStatus_Accepted ||
                               _status == ePhoneCallStatus.PhoneCallStatus_InCall ||
-                              _status == ePhoneCallStatus.PhoneCallStatus_Init;
+                              _status == ePhoneCallStatus.PhoneCallStatus_Init ||
+                              _status == ePhoneCallStatus.PhoneCallStatus_Ringing;
                 } 
             }
 
@@ -775,6 +776,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public enum ePhoneCallStatus
         {
+            PhoneCallStatus_Ringing,
             PhoneCallStatus_Terminated,
             PhoneCallStatus_Accepted,
             PhoneCallStatus_InCall,
