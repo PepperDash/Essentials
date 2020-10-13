@@ -251,6 +251,12 @@ namespace PepperDash.Essentials.Core
             tl.StringInput[sigNum].StringValue = value;
         }
 
+	    public static void SetString(this BasicTriList tl, uint sigNum, string value, eStringEncoding encoding)
+	    {
+	        tl.StringInput[sigNum].StringEncoding = encoding;
+	        tl.StringInput[sigNum].StringValue = value;
+	    }
+
 		/// <summary>
 		/// Returns bool value of trilist sig
 		/// </summary>
