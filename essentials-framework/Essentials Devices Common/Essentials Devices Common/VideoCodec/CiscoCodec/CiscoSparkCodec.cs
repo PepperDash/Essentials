@@ -5,12 +5,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.CrestronThread;
-
+using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Routing;
@@ -1473,6 +1474,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public override void StandbyDeactivate()
         {
             SendText("xCommand Standby Deactivate");
+        }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
