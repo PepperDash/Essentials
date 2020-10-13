@@ -11,6 +11,7 @@ using PepperDash.Essentials.Devices.Common.Codec;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
@@ -57,6 +58,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public List<zStatus.AudioVideoInputOutputLineItem> AudioInputs { get; set; }
         public List<zStatus.AudioVideoInputOutputLineItem> AudioOuputs { get; set; }
         public List<zStatus.AudioVideoInputOutputLineItem> Cameras { get; set; }
+        public zEvent.PhoneCallStatus PhoneCall { get; set; }
 
         public ZoomRoomStatus()
         {
@@ -73,6 +75,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             AudioInputs = new List<zStatus.AudioVideoInputOutputLineItem>();
             AudioOuputs = new List<zStatus.AudioVideoInputOutputLineItem>();
             Cameras = new List<zStatus.AudioVideoInputOutputLineItem>();
+            PhoneCall = new zEvent.PhoneCallStatus();
         }
     }
 
@@ -85,6 +88,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public zConfiguration.Audio Audio { get; set; }
         public zConfiguration.Video Video { get; set; }
         public zConfiguration.Client Client { get; set; }
+        public zConfiguration.Camera Camera { get; set; }
 
         public ZoomRoomConfiguration()
         {
@@ -92,6 +96,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             Audio = new zConfiguration.Audio();
             Video = new zConfiguration.Video();
             Client = new zConfiguration.Client();
+            Camera = new zConfiguration.Camera();
         }
     }
 
@@ -255,9 +260,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             /// <returns></returns>
             public static CodecDirectory ConvertZoomContactsToGeneric(List<Contact> zoomContacts)
             {
-                var directory = new Codec.CodecDirectory();
+                var directory = new CodecDirectory();
 
-                var folders = new List<Codec.DirectoryItem>();
+                var folders = new List<DirectoryItem>();
 
                 var roomFolder = new DirectoryFolder();
 
@@ -272,9 +277,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     // If so, setup a rooms and contacts folder and add them.
                     roomFolder.Name = "Rooms";
+                    roomFolder.ParentFolderId = "root";
                     roomFolder.FolderId = "rooms";
 
                     contactFolder.Name = "Contacts";
+                    contactFolder.ParentFolderId = "root";
                     contactFolder.FolderId = "contacts";
 
                     folders.Add(roomFolder);
@@ -285,21 +292,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                 try
                 {
-                    if (zoomContacts.Count > 0)
+                    if (zoomContacts.Count == 0) return directory;
                     {
                         foreach (Contact c in zoomContacts)
                         {
-                            var contact = new ZoomDirectoryContact();
-
-                            contact.Name = c.ScreenName;
-                            contact.ContactId = c.Jid;
+                            var contact = new ZoomDirectoryContact {Name = c.ScreenName, ContactId = c.Jid};
 
                             if (folders.Count > 0)
                             {
-                                if (c.IsZoomRoom)
-                                    contact.FolderId = roomFolder.FolderId;
-                                else
-                                    contact.FolderId = contactFolder.FolderId;
+                                contact.ParentFolderId = c.IsZoomRoom ? "rooms" : "contacts";
                             }
 
                             contacts.Add(contact);
@@ -371,7 +372,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             public CallRecordInfo CallRecordInfo { get; set; }
 
-            public zCommand.InfoResult Info { get; set; }
+            private zCommand.InfoResult _info;
+
+            public zCommand.InfoResult Info
+            {
+                get
+                {
+                    return _info;
+                }
+                set
+                {
+                    _info = value;
+                    NotifyPropertyChanged("Info");
+                }
+            }
 
             public Call()
             {
@@ -577,7 +591,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             public string meetingID { get; set; }
             public string password { get; set; }
             public string meetingOption { get; set; }
-            public int MeetingNumber { get; set; }
+            public long MeetingNumber { get; set; }
             public string callerName { get; set; }
             public string avatarURL { get; set; }
             public int lifeTime { get; set; }
@@ -688,6 +702,86 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             [JsonProperty("why_cannot_pin_share")]
             public string WhyCannotPinShare { get; set; }
         }
+
+        public class PhoneCallStatus:NotifiableObject
+        {
+            private bool _isIncomingCall;
+            private string _peerDisplayName;
+            private string _peerNumber;
+
+            private bool _offHook;
+
+            public string CallId { get; set; }
+            public bool IsIncomingCall {
+                get { return _isIncomingCall; }
+                set
+                {
+                    if(value == _isIncomingCall) return;
+
+                    _isIncomingCall = value;
+                    NotifyPropertyChanged("IsIncomingCall");
+                } }
+
+            public string PeerDisplayName
+            {
+                get { return _peerDisplayName; }
+                set
+                {
+                    if (value == _peerDisplayName) return;
+                    _peerDisplayName = value;
+                    NotifyPropertyChanged("PeerDisplayName");
+                }
+            }
+
+            public string PeerNumber
+            {
+                get { return _peerNumber; }
+                set
+                {
+                    if (value == _peerNumber) return;
+
+                    _peerNumber = value;
+                    NotifyPropertyChanged("PeerNumber");
+                } 
+            }
+
+            public string PeerUri { get; set; }
+
+            private ePhoneCallStatus _status;
+            public ePhoneCallStatus Status
+            {
+                get { return _status; }
+                set
+                {
+                    _status = value;
+                    OffHook = _status == ePhoneCallStatus.PhoneCallStatus_Accepted ||
+                              _status == ePhoneCallStatus.PhoneCallStatus_InCall ||
+                              _status == ePhoneCallStatus.PhoneCallStatus_Init ||
+                              _status == ePhoneCallStatus.PhoneCallStatus_Ringing;
+                } 
+            }
+
+            public bool OffHook
+            {
+                get { return _offHook; }
+                set
+                {
+                    if (value == _offHook) return;
+
+                    _offHook = value;
+                    NotifyPropertyChanged("OffHook");
+                }
+            }
+        }
+
+        public enum ePhoneCallStatus
+        {
+            PhoneCallStatus_Ringing,
+            PhoneCallStatus_Terminated,
+            PhoneCallStatus_Accepted,
+            PhoneCallStatus_InCall,
+            PhoneCallStatus_Init,
+        }
     }
     
     /// <summary>
@@ -701,9 +795,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             public bool OptimizeVideoSharing { get; set; }
         }
 
-        public class Camera
+        public class Camera : NotifiableObject
         {
-            public bool Mute { get; set; }
+            private bool _mute;
+
+            public bool Mute
+            {
+                get { return _mute; }
+                set
+                {
+                    Debug.Console(1, "Camera Mute response received: {0}", value);
+                    
+                    if (value == _mute) return;
+                    
+                    _mute = value;
+                    NotifyPropertyChanged("Mute");
+                }
+            }
         }
 
         public class Microphone : NotifiableObject
@@ -757,12 +865,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             DownLeft
         }
 
-        public class Layout
+        public class Layout:NotifiableObject
         {
             public bool ShareThumb { get; set; }
             public eLayoutStyle Style { get; set; }
             public eLayoutSize Size { get; set; }
-            public eLayoutPosition Position { get; set; }
+
+            private eLayoutPosition _position;
+            public eLayoutPosition Position {
+                get { return _position; }
+                set
+                {
+                    _position = value;
+                    NotifyPropertyChanged("Position");
+                } }
         }
 
         public class Lock
@@ -831,13 +947,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             {
                 get
                 {
-                    return this._volume;
+                    return _volume;
                 }
                 set
                 {
                     if (value != _volume)
                     {
-                        this._volume = value;
+                        _volume = value;
                         NotifyPropertyChanged("Volume");
                     }
                 }
@@ -913,7 +1029,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
     /// </summary>
     public class zCommand
     {
-        public partial class BookingsListResult
+        public class BookingsListResult
         {
             [JsonProperty("accessRole")]
             public string AccessRole { get; set; }
@@ -949,8 +1065,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             public ThirdParty ThirdParty { get; set; }
         }
 
+        public static List<Meeting> GetGenericMeetingsFromBookingResult(List<BookingsListResult> bookings,
+            int minutesBeforeMeetingStart)
+        {
+            var rv = GetGenericMeetingsFromBookingResult(bookings);
+
+            foreach (var meeting in rv)
+            {
+                meeting.MinutesBeforeMeeting = minutesBeforeMeetingStart;
+            }
+
+            return rv;
+        } 
         /// <summary>
-        /// Extracts the necessary meeting values from the Cisco bookings response ans converts them to the generic class
+        /// Extracts the necessary meeting values from the Zoom bookings response and converts them to the generic class
         /// </summary>
         /// <param name="bookings"></param>
         /// <returns></returns>
@@ -983,6 +1111,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 meeting.Privacy = b.IsPrivate ? eMeetingPrivacy.Private : eMeetingPrivacy.Public;
 
                 // No meeting.Calls data exists for Zoom Rooms.  Leaving out for now.
+                var now = DateTime.Now;
+                if (meeting.StartTime < now && meeting.EndTime < now)
+                {
+                    Debug.Console(1, "Skipping meeting {0}. Meeting is in the past.", meeting.Title);
+                    continue;
+                }
 
                 meetings.Add(meeting);
 
@@ -1069,6 +1203,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             public ListParticipant()
             {
                 HandStatus = new HandStatus();
+            }
+
+            public static List<Participant> GetGenericParticipantListFromParticipantsResult(
+                List<ListParticipant> participants)
+            {
+                return
+                    participants.Select(
+                        p =>
+                            new Participant
+                            {
+                                Name = p.UserName,
+                                IsHost = p.IsHost,
+                                CanMuteVideo = p.IsVideoCanMuteByHost,
+                                CanUnmuteVideo = p.IsVideoCanUnmuteByHost,
+                                AudioMuteFb = p.AudioStatusState == "AUDIO_MUTED",
+                                VideoMuteFb = p.VideoStatusIsSending
+                            }).ToList();
             }
         }
 
