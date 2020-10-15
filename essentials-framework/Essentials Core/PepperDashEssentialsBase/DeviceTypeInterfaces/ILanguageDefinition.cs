@@ -8,8 +8,8 @@ namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
         string LocaleName { get; set; }
         string FriendlyName { get; set; }
         bool Enable { get; set; }
-        List<ILanguageLabel> UiLabels { get; set; }
-        List<ILanguageLabel> Sources { get; set; }
-        List<ILanguageLabel> Destinations { get; set; }
+        List<LanguageLabel> UiLabels { get; set; }
+        List<LanguageLabel> Sources { get; set; }
+        List<LanguageLabel> Destinations { get; set; }
     }
 }
