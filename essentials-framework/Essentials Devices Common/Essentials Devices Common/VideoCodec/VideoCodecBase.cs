@@ -812,8 +812,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             CallStatusChange += (sender, args) =>
             {
                 trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
-
-                trilist.SetBool(joinMap.IncomingCall.JoinNumber, args.CallItem.Direction == eCodecCallDirection.Incoming);
+                
+                Debug.Console(1, this, "Call Direction: {0}", args.CallItem.Direction);
+                Debug.Console(1, this, "Call is incoming: {0}", args.CallItem.Direction == eCodecCallDirection.Incoming);
+                trilist.SetBool(joinMap.IncomingCall.JoinNumber, args.CallItem.Direction == eCodecCallDirection.Incoming && args.CallItem.Status != eCodecCallStatus.Disconnected);
 
                 if (args.CallItem.Direction == eCodecCallDirection.Incoming)
                 {

@@ -1605,6 +1605,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public override void AcceptCall(CodecActiveCallItem call)
         {
             SendText(string.Format("zCommand Call Accept callerJID: {0}", call.Id));
+
+            call.Status = eCodecCallStatus.Connected;
+
+            OnCallStatusChange(call);
+
+            UpdateCallStatus();
         }
 
         public void RejectCall()
@@ -1619,6 +1625,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public override void RejectCall(CodecActiveCallItem call)
         {
             SendText(string.Format("zCommand Call Reject callerJID: {0}", call.Id));
+
+            call.Status = eCodecCallStatus.Disconnected;
+
+            OnCallStatusChange(call);
+
+            UpdateCallStatus();
         }
 
         public override void Dial(Meeting meeting)
