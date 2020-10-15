@@ -195,7 +195,7 @@
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
-    <Compile Include="DeviceTypeInterfaces\ILanguageLabel.cs" />
+    <Compile Include="DeviceTypeInterfaces\LanguageLabel.cs" />
     <Compile Include="DeviceTypeInterfaces\ILanguageProvider.cs" />
     <Compile Include="DeviceTypeInterfaces\IHasBranding.cs" />
     <Compile Include="DeviceTypeInterfaces\ILanguageDefinition.cs" />
