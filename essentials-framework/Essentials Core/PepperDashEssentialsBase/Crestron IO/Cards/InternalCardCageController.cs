@@ -73,21 +73,21 @@ namespace PepperDash.Essentials.Core.CrestronIO.Cards
                 string cardType;
                 if (!_config.Cards.TryGetValue(i, out cardType))
                 {
-                    Debug.Console(1, this, "No card found for slot {0}", i);
+                    Debug.Console(0, this, "No card found for slot {0}", i);
                     continue;
                 }
 
                 if (String.IsNullOrEmpty(cardType))
                 {
                     Debug.Console(0, this, "No card specified for slot {0}", i);
-                    return;
+                    continue;
                 }
 
                 Func<uint, C3CardControllerBase> cardBuilder;
                 if (!_cardDict.TryGetValue(cardType.ToLower(), out cardBuilder))
                 {
                     Debug.Console(0, "Unable to find factory for 3-Series card type {0}.", cardType);
-                    return;
+                    continue;
                 }
 
                 try
