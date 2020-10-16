@@ -413,7 +413,7 @@ namespace PepperDash.Essentials.Core
                     var min = Convert.ToUInt32(timeout);
 
                     device.StreamDebugging.SetDebuggingWithSpecificTimeout(debugSetting, min);
-                    Debug.Console(0, "Device: '{0}' debug level set to {1) for {2} minutes", deviceKey, debugSetting, min);
+                    Debug.Console(0, "Device: '{0}' debug level set to {1) for {2} minutes", deviceKey, setting, min);
 
                 }
                 catch (Exception e)
@@ -424,7 +424,7 @@ namespace PepperDash.Essentials.Core
             else
             {
                 device.StreamDebugging.SetDebuggingWithDefaultTimeout(debugSetting);
-                Debug.Console(0, "Device: '{0}' debug level set to {1) for default time (30 minutes)", deviceKey, debugSetting);
+                Debug.Console(0, "Device: '{0}' debug level set to {1) for default time (30 minutes)", deviceKey, setting);
             }
         }
 
