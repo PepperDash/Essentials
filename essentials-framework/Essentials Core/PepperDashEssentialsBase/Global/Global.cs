@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
+using System.Collections.Generic;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharpPro;
@@ -18,6 +19,10 @@ namespace PepperDash.Essentials.Core
 	public static class Global
 	{
 		public static CrestronControlSystem ControlSystem { get; set; }
+
+        public static eDevicePlatform Platform { get { return CrestronEnvironment.DevicePlatform; } }
+
+        public static Dictionary<short, EthernetAdapterInfo> EthernetAdapterInfoCollection { get; private set; }
 
 		public static LicenseManager LicenseManager { get; set; }
 

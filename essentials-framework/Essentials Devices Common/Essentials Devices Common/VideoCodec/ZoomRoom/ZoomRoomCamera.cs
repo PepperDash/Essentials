@@ -68,7 +68,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// <summary>
         /// Builds the command and triggers the parent ZoomRoom to send it
         /// </summary>
-        /// <param name="id"></param>
         /// <param name="state"></param>
         /// <param name="action"></param>
         void SendCommand(eZoomRoomCameraState state, eZoomRoomCameraAction action)
@@ -79,23 +78,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         void StartContinueTimer()
         {
-            if(ContinueTimer == null)
-                ContinueTimer = new CTimer((o) => SendContinueAction(LastAction), ContinueTime);
+            if (ContinueTimer == null)
+                ContinueTimer = new CTimer((o) => SendContinueAction(LastAction), null, ContinueTime, ContinueTime);
         }
 
         void SendContinueAction(eZoomRoomCameraAction action)
         {
             SendCommand(eZoomRoomCameraState.Continue, action);
-            ContinueTimer.Reset();
         }
 
         void StopContinueTimer()
         {
-            if (ContinueTimer != null)
+            if (ContinueTimer == null)
             {
-                ContinueTimer.Stop();
-                ContinueTimer.Dispose();
+                return;
             }
+
+            ContinueTimer.Stop();
+            ContinueTimer.Dispose();
+            ContinueTimer = null;
         }
 
         #region IHasCameraPtzControl Members
@@ -111,22 +112,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void PanLeft()
         {
-            if (!isMoving)
+            if (isMoving)
             {
-                SendCommand(eZoomRoomCameraState.Start, eZoomRoomCameraAction.Left);
-                StartContinueTimer();
-                isPanning = true;
+                return;
             }
+
+            SendCommand(eZoomRoomCameraState.Start, eZoomRoomCameraAction.Left);
+            StartContinueTimer();
+            isPanning = true;
         }
 
         public void PanRight()
         {
-            if (!isMoving)
+            if (isMoving)
             {
-                SendCommand(eZoomRoomCameraState.Start, eZoomRoomCameraAction.Right);
-                StartContinueTimer();
-                isPanning = true;
+                return;
             }
+
+            SendCommand(eZoomRoomCameraState.Start, eZoomRoomCameraAction.Right);
+            StartContinueTimer();
+            isPanning = true;
         }
 
         public void PanStop()

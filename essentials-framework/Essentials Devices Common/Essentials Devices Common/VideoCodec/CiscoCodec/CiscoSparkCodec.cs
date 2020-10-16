@@ -5,17 +5,20 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.CrestronThread;
-
+using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash_Essentials_Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
@@ -25,9 +28,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
     public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
-        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching
+        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching, IHasBranding
     {
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
+
+        private CTimer _brandingTimer;
 
         public CommunicationGather PortGather { get; private set; }
 
@@ -401,13 +406,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
 			CreateOsdSource();
 
-			if (props.ExternalSourceListEnabled != null)
-			{
-				ExternalSourceListEnabled = props.ExternalSourceListEnabled;
-			}
+            ExternalSourceListEnabled = props.ExternalSourceListEnabled;
+
+            if (props.UiBranding == null)
+            {
+                return;
+            }
+            Debug.Console(2, this, "Setting branding properties enable: {0} _brandingUrl {1}", props.UiBranding.Enable,
+                props.UiBranding.BrandingUrl);
+
+            BrandingEnabled = props.UiBranding.Enable;
+            _brandingUrl = props.UiBranding.BrandingUrl;
         }
 
-        /// <summary>
         /// Runs in it's own thread to dequeue messages in the order they were received to be processed
         /// </summary>
         /// <returns></returns>
@@ -443,6 +454,83 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			TieLineCollection.Default.Add(tl);
 		}
 
+        public void InitializeBranding(string roomKey)
+        {
+            Debug.Console(1, this, "Initializing Branding for room {0}", roomKey);
+
+            if (!BrandingEnabled)
+            {
+                return;
+            }
+
+            var mcBridgeKey = String.Format("mobileControlBridge-{0}", roomKey);
+
+            var mcBridge = DeviceManager.GetDeviceForKey(mcBridgeKey) as IMobileControlRoomBridge;
+
+            if (!String.IsNullOrEmpty(_brandingUrl))
+            {
+                Debug.Console(1, this, "Branding URL found: {0}", _brandingUrl);
+                if (_brandingTimer != null)
+                {
+                    _brandingTimer.Stop();
+                    _brandingTimer.Dispose();
+                }
+
+                _brandingTimer = new CTimer((o) =>
+                {
+                    if (_sendMcUrl)
+                    {
+                        SendMcBrandingUrl(mcBridge);
+                        _sendMcUrl = false;
+                    }
+                    else
+                    {
+                        SendBrandingUrl();
+                        _sendMcUrl = true;
+                    }
+                }, 0, 15000);
+            } else if (String.IsNullOrEmpty(_brandingUrl))
+            {
+                Debug.Console(1, this, "No Branding URL found");
+                if (mcBridge == null) return;
+
+                Debug.Console(2, this, "Setting QR code URL: {0}", mcBridge.QrCodeUrl);
+
+                mcBridge.UserCodeChanged += (o, a) => SendMcBrandingUrl(mcBridge);
+
+                SendMcBrandingUrl(mcBridge);
+            }
+        }
+
+        private void SendMcBrandingUrl(IMobileControlRoomBridge mcBridge)
+        {
+            if (mcBridge == null)
+            {
+                return;
+            }
+
+            Debug.Console(1, this, "Sending url: {0}", mcBridge.QrCodeUrl);
+
+            SendText("xconfiguration userinterface custommessage: \"Scan the QR code with a mobile phone to get started\"");
+            SendText("xconfiguration userinterface osd halfwakemessage: \"Tap the touch panel or scan the QR code with a mobile phone to get started\"");
+
+            SendText(String.Format(
+                            "xcommand userinterface branding fetch type: branding url: {0}",
+                            mcBridge.QrCodeUrl));
+            SendText(String.Format(
+                "xcommand userinterface branding fetch type: halfwakebranding url: {0}",
+                mcBridge.QrCodeUrl));
+        }
+
+        private void SendBrandingUrl()
+        {
+            Debug.Console(1, this, "Sending url: {0}", _brandingUrl);
+
+            SendText(String.Format("xcommand userinterface branding fetch type: branding url: {0}",
+                            _brandingUrl));
+            SendText(String.Format("xcommand userinterface branding fetch type: halfwakebranding url: {0}",
+                _brandingUrl));
+        }
         /// <summary>
         /// Starts the HTTP feedback server and syncronizes state of codec
         /// </summary>
@@ -1388,6 +1476,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SendText("xCommand Standby Deactivate");
         }
 
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Reboots the codec
         /// </summary>
@@ -1835,6 +1928,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			private set; 
 		}
 
+        public bool BrandingEnabled { get; private set; }
+        private string _brandingUrl;
+        private bool _sendMcUrl;
+
 		/// <summary>
 		/// Adds an external source to the Cisco 
 		/// </summary>
@@ -2006,6 +2103,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
             Debug.Console(1, "Factory Attempting to create new Cisco Codec Device");
+
             var comm = CommFactory.CreateCommForDevice(dc);
             return new VideoCodec.Cisco.CiscoSparkCodec(dc, comm);
         }
