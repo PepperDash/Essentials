@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.DSP
 {
-	public abstract class DspBase : EssentialsDevice, IHasDspPresets
+	public abstract class DspBase : EssentialsDevice
 	{
 		public Dictionary<string, DspControlPoint> LevelControlPoints { get; private set; }
 
@@ -20,7 +20,6 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 	    public DspBase(string key, string name) :
 	        base(key, name)
 	    {
-	        Presets = new List<IDspPreset>();
 	    }
 
 
@@ -28,14 +27,6 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
 		// VOIP
 		// Phone dialer
-
-
-	    public List<IDspPreset> Presets { get; set; }
-
-
-	    public void RecallPreset(IDspPreset preset)
-	    {
-	    }
 
 	}
 

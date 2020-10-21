@@ -305,26 +305,6 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                 SendNextQueuedCommand();
         }
 
-        public void RecallPreset(IDspPreset preset)
-        {
-            if (preset == null) return;
-
-            var tesiraPreset = preset as TesiraDspPreset;
-
-            if (tesiraPreset == null) return;
-            if (!String.IsNullOrEmpty(tesiraPreset.PresetName))
-            {
-                SendLine(String.Format("Device RecallPreset {0}", tesiraPreset.PresetName));
-            }
-            if (tesiraPreset.PresetId >= 1000)
-            {
-                SendLine(String.Format("Device RecallPreset {0}", tesiraPreset.PresetId));
-            }
-            else
-            {
-                Debug.Console(0, this, "Preset {0} unable to be recalled, missing identifier", tesiraPreset.Name);
-            }
-        }
 
         /// <summary>
         /// Adds a raw string command to the queue
@@ -418,14 +398,6 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                 dc.Properties.ToString());
             return new BiampTesiraForteDsp(dc.Key, dc.Name, comm, props);
         }
-    }
-
-    public class TesiraDspPreset : IDspPreset
-    {
-        public string Name { get; set; }
-        public readonly string PresetName;
-        public readonly int PresetId;
-
     }
 
 }
