@@ -296,7 +296,7 @@ namespace PepperDash.Essentials.DM
 	        Func<string, string, DMOutput, CrestronGenericBaseDevice> dmpsHandler;
 	        if (ChassisCpu3Dict.TryGetValue(typeName.ToLower(), out dmpsHandler))
 	        {
-	            var output = controller.Dmps.SwitcherOutputs[num] as Card.Dmps3DmOutput;
+	            var output = controller.Dmps.SwitcherOutputs[num] as DMOutput;
 
 	            if (output != null)
 	            {
