@@ -128,30 +128,49 @@ namespace PepperDash.Essentials.DM
         public override bool CustomActivate()
         {
             // Set input and output names from config
-            if (InputNames != null)
-            {
-                foreach (var kvp in InputNames)
-                {
-                    var input = (Dmps.SwitcherInputs[kvp.Key] as DMInput);
-                    if (input != null)
-                        input.Name.StringValue = kvp.Value;
-                }
-            }
-            if (OutputNames != null)
-            {
-                foreach (var kvp in OutputNames)
-                {
-                    var output = (Dmps.SwitcherOutputs[kvp.Key] as DMOutput);
-                    if (output != null)
-                        output.Name.StringValue = kvp.Value;
-                }
-            }
+            SetInputNames();
+
+            SetOutputNames();
 
             // Subscribe to events
-            Dmps.DMInputChange += new DMInputEventHandler(Dmps_DMInputChange);
-            Dmps.DMOutputChange += new DMOutputEventHandler(Dmps_DMOutputChange);
+            Dmps.DMInputChange += Dmps_DMInputChange;
+            Dmps.DMOutputChange += Dmps_DMOutputChange;
 
             return base.CustomActivate();
+        }
+
+        private void SetOutputNames()
+        {
+            if (OutputNames == null)
+            {
+                return;
+            }
+
+            foreach (var kvp in OutputNames)
+            {
+                var output = (Dmps.SwitcherOutputs[kvp.Key] as DMOutput);
+                if (output != null && output.Name != null)
+                {
+                    
+                    output.Name.StringValue = kvp.Value;
+                }
+            }
+        }
+
+        private void SetInputNames()
+        {
+            if (InputNames == null)
+            {
+                return;
+            }
+            foreach (var kvp in InputNames)
+            {
+                var input = (Dmps.SwitcherInputs[kvp.Key] as DMInput);
+                if (input != null && input.Name != null)
+                {
+                    input.Name.StringValue = kvp.Value;
+                }
+            }
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
@@ -175,52 +194,13 @@ namespace PepperDash.Essentials.DM
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             // Link up outputs
-            for (uint i = 1; i <= Dmps.NumberOfSwitcherInputs; i++)
-            {
-                Debug.Console(2, this, "Linking Input Card {0}", i);
+            LinkInputsToApi(trilist, joinMap);
 
-                var ioSlot = i;
-                var ioSlotJoin = ioSlot - 1;
+            LinkOutputsToApi(trilist, joinMap);
+        }
 
-                //if (TxDictionary.ContainsKey(ioSlot))
-                //{
-                //    Debug.Console(2, "Creating Tx Feedbacks {0}", ioSlot);
-                //    var TxKey = TxDictionary[ioSlot];
-                //    var TxDevice = DeviceManager.GetDeviceForKey(TxKey) as DmTxControllerBase;
-                //    //TxDevice.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
-                //    // TxDevice.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline + ioSlot]);
-                //    // trilist.SetUShortSigAction((ApiMap.HdcpSupport[ioSlot]), u => TxDevice.SetHdcpSupportAll((ePdtHdcpSupport)(u)));
-                //    // TxDevice.HdcpSupportAllFeedback.LinkInputSig(trilist.UShortInput[joinMap. + ioSlot]);
-                //    // trilist.UShortInput[ApiMap.HdcpSupportCapability[ioSlot]].UShortValue = TxDevice.HdcpSupportCapability;
-                //}
-                //else
-                //{
-                //    // dmChassis.VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[ApiMap.TxVideoSyncStatus[ioSlot]]);
-                //}
-
-                if (VideoInputSyncFeedbacks[ioSlot] != null)
-                    VideoInputSyncFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
-
-                if (InputNameFeedbacks[ioSlot] != null)
-                    InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + ioSlotJoin]);
-
-                trilist.SetStringSigAction(joinMap.InputNames.JoinNumber + ioSlotJoin, new Action<string>(s =>
-                {
-                    var inputCard = Dmps.SwitcherInputs[ioSlot] as DMInput;
-
-                    if (inputCard != null)
-                    {
-                        if (inputCard.NameFeedback != null && !string.IsNullOrEmpty(inputCard.NameFeedback.StringValue) && inputCard.NameFeedback.StringValue != s)
-                            if (inputCard.Name != null)
-                                inputCard.Name.StringValue = s;
-                    }
-                }));
-
-
-                if (InputEndpointOnlineFeedbacks[ioSlot] != null)
-                    InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.InputEndpointOnline.JoinNumber + ioSlotJoin]);
-            }
-
+        private void LinkOutputsToApi(BasicTriList trilist, DmpsRoutingControllerJoinMap joinMap)
+        {
             for (uint i = 1; i <= Dmps.NumberOfSwitcherOutputs; i++)
             {
                 Debug.Console(2, this, "Linking Output Card {0}", i);
@@ -229,8 +209,10 @@ namespace PepperDash.Essentials.DM
                 var ioSlotJoin = ioSlot - 1;
 
                 // Control
-                trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video));
-                trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + ioSlotJoin, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Audio));
+                trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin,
+                    o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video));
+                trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + ioSlotJoin,
+                    o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Audio));
 
                 trilist.SetStringSigAction(joinMap.OutputNames.JoinNumber + ioSlotJoin, s =>
                 {
@@ -238,38 +220,106 @@ namespace PepperDash.Essentials.DM
 
                     //Debug.Console(2, dmpsRouter, "Output Name String Sig Action for Output Card  {0}", ioSlot);
 
-                    if (outputCard != null)
+                    if (outputCard == null)
                     {
-                        //Debug.Console(2, dmpsRouter, "Card Type: {0}", outputCard.CardInputOutputType);
+                        return;
+                    }
+                    //Debug.Console(2, dmpsRouter, "Card Type: {0}", outputCard.CardInputOutputType);
 
-                        if (!(outputCard is Card.Dmps3CodecOutput) && outputCard.NameFeedback != null)
-                        {
-                            if (!string.IsNullOrEmpty(outputCard.NameFeedback.StringValue))
-                            {
-                                //Debug.Console(2, dmpsRouter, "NameFeedabck: {0}", outputCard.NameFeedback.StringValue);
+                    if (outputCard is Card.Dmps3CodecOutput || outputCard.NameFeedback == null)
+                    {
+                        return;
+                    }
+                    if (string.IsNullOrEmpty(outputCard.NameFeedback.StringValue))
+                    {
+                        return;
+                    }
+                    //Debug.Console(2, dmpsRouter, "NameFeedabck: {0}", outputCard.NameFeedback.StringValue);
 
-                                if (outputCard.NameFeedback.StringValue != s && outputCard.Name != null)
-                                {
-                                    outputCard.Name.StringValue = s;
-                                }
-                            }
-                        }
+                    if (outputCard.NameFeedback.StringValue != s && outputCard.Name != null)
+                    {
+                        outputCard.Name.StringValue = s;
                     }
                 });
 
                 // Feedback
                 if (VideoOutputFeedbacks[ioSlot] != null)
+                {
                     VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo.JoinNumber + ioSlotJoin]);
+                }
                 if (AudioOutputFeedbacks[ioSlot] != null)
+                {
                     AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio.JoinNumber + ioSlotJoin]);
+                }
                 if (OutputNameFeedbacks[ioSlot] != null)
+                {
                     OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + ioSlotJoin]);
+                }
                 if (OutputVideoRouteNameFeedbacks[ioSlot] != null)
-                    OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentVideoInputNames.JoinNumber + ioSlotJoin]);
+                {
+                    OutputVideoRouteNameFeedbacks[ioSlot].LinkInputSig(
+                        trilist.StringInput[joinMap.OutputCurrentVideoInputNames.JoinNumber + ioSlotJoin]);
+                }
                 if (OutputAudioRouteNameFeedbacks[ioSlot] != null)
-                    OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputCurrentAudioInputNames.JoinNumber + ioSlotJoin]);
+                {
+                    OutputAudioRouteNameFeedbacks[ioSlot].LinkInputSig(
+                        trilist.StringInput[joinMap.OutputCurrentAudioInputNames.JoinNumber + ioSlotJoin]);
+                }
                 if (OutputEndpointOnlineFeedbacks[ioSlot] != null)
-                    OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(trilist.BooleanInput[joinMap.OutputEndpointOnline.JoinNumber + ioSlotJoin]);
+                {
+                    OutputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(
+                        trilist.BooleanInput[joinMap.OutputEndpointOnline.JoinNumber + ioSlotJoin]);
+                }
+            }
+        }
+
+        private void LinkInputsToApi(BasicTriList trilist, DmpsRoutingControllerJoinMap joinMap)
+        {
+            for (uint i = 1; i <= Dmps.NumberOfSwitcherInputs; i++)
+            {
+                Debug.Console(2, this, "Linking Input Card {0}", i);
+
+                var ioSlot = i;
+                var ioSlotJoin = ioSlot - 1;
+
+                if (VideoInputSyncFeedbacks[ioSlot] != null)
+                {
+                    VideoInputSyncFeedbacks[ioSlot].LinkInputSig(
+                        trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
+                }
+
+                if (InputNameFeedbacks[ioSlot] != null)
+                {
+                    InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + ioSlotJoin]);
+                }
+
+                trilist.SetStringSigAction(joinMap.InputNames.JoinNumber + ioSlotJoin, s =>
+                {
+                    var inputCard = Dmps.SwitcherInputs[ioSlot] as DMInput;
+
+                    if (inputCard == null)
+                    {
+                        return;
+                    }
+
+                    if (inputCard.NameFeedback == null || string.IsNullOrEmpty(inputCard.NameFeedback.StringValue) ||
+                        inputCard.NameFeedback.StringValue == s)
+                    {
+                        return;
+                    }
+
+                    if (inputCard.Name != null)
+                    {
+                        inputCard.Name.StringValue = s;
+                    }
+                });
+
+
+                if (InputEndpointOnlineFeedbacks[ioSlot] != null)
+                {
+                    InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(
+                        trilist.BooleanInput[joinMap.InputEndpointOnline.JoinNumber + ioSlotJoin]);
+                }
             }
         }
 
