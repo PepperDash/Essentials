@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
+using Crestron.SimplSharpPro.DM.Cards;
 using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
 using Newtonsoft.Json;
 using PepperDash.Core;
@@ -295,13 +296,15 @@ namespace PepperDash.Essentials.DM
 	        Func<string, string, DMOutput, CrestronGenericBaseDevice> dmpsHandler;
 	        if (ChassisCpu3Dict.TryGetValue(typeName.ToLower(), out dmpsHandler))
 	        {
-	            var output = controller.Dmps.SwitcherOutputs[num] as DMOutput;
+	            var output = controller.Dmps.SwitcherOutputs[num] as Card.Dmps3DmOutput;
 
 	            if (output != null)
 	            {
 	                return dmpsHandler(key, name, output);
 	            }
-	            Debug.Console(0, Debug.ErrorLogLevel.Error, "Cannot attach DM-RMC of type '{0}' to output {1} on DMPS chassis. Output is not a DM Output", typeName, num);
+	            Debug.Console(0, Debug.ErrorLogLevel.Error,
+	                "Cannot attach DM-RMC of type '{0}' to output {1} on DMPS chassis. Output is not a DM Output.",
+	                typeName, num);
 	            return null;
 	        }
 
