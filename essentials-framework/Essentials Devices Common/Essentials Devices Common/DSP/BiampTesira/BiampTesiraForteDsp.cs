@@ -298,6 +298,11 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                 SendNextQueuedCommand();
         }
 
+        public override void RunPreset(int data)
+        {
+            SendLine(String.Format("Device recallPreset {0}", data ));
+        }
+
         /// <summary>
         /// Adds a raw string command to the queue
         /// </summary>

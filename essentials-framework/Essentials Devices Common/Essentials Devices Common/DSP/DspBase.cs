@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.DSP
 {
-	public abstract class DspBase : EssentialsDevice
+	public abstract class DspBase : EssentialsDevice, IDspPreset
 	{
 		public Dictionary<string, DspControlPoint> LevelControlPoints { get; private set; }
 
@@ -18,6 +18,8 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         public Dictionary<string, DspControlPoint> SwitcherControlPoints { get; private set; }
 
 		public abstract void RunPreset(string name);
+
+	    public abstract void RunPreset(int data);
 
 		public DspBase(string key, string name) :
 			base(key, name) { }
