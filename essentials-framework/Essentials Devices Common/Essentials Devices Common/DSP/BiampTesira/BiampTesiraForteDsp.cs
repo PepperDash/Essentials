@@ -12,15 +12,15 @@ using System.Text.RegularExpressions;
 namespace PepperDash.Essentials.Devices.Common.DSP
 {
 
-	// QUESTIONS:
-	// 
-	// When subscribing, just use the Instance ID for Custom Name?
-	
-	// Verbose on subscriptions?
+    // QUESTIONS:
+    // 
+    // When subscribing, just use the Instance ID for Custom Name?
+
+    // Verbose on subscriptions?
 
     // Example subscription feedback responses
-	// ! "publishToken":"name" "value":-77.0
-	// ! "myLevelName" -77
+    // ! "publishToken":"name" "value":-77.0
+    // ! "myLevelName" -77
 
     public class BiampTesiraForteDsp : DspBase
     {
@@ -28,15 +28,15 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         public CommunicationGather PortGather { get; private set; }
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
-        new public Dictionary<string, TesiraForteLevelControl> LevelControlPoints { get; private set; }
+        public new Dictionary<string, TesiraForteLevelControl> LevelControlPoints { get; private set; }
 
         public bool isSubscribed;
 
         private CTimer SubscriptionTimer;
 
-        CrestronQueue CommandQueue;
+        private CrestronQueue CommandQueue;
 
-        bool CommandQueueInProgress = false;
+        private bool CommandQueueInProgress = false;
 
         //new public Dictionary<string, DspControlPoint> DialerControlPoints { get; private set; }
 
@@ -47,8 +47,9 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// </summary>
         public bool ShowHexResponse { get; set; }
 
-        public BiampTesiraForteDsp(string key, string name, IBasicCommunication comm, BiampTesiraFortePropertiesConfig props) :
-            base(key, name)
+        public BiampTesiraForteDsp(string key, string name, IBasicCommunication comm,
+            BiampTesiraFortePropertiesConfig props) :
+                base(key, name)
         {
             CommandQueue = new CrestronQueue(100);
 
@@ -57,7 +58,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
             if (socket != null)
             {
                 // This instance uses IP control
-				
+
                 socket.ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
             }
             else
@@ -68,12 +69,14 @@ namespace PepperDash.Essentials.Devices.Common.DSP
             PortGather.LineReceived += this.Port_LineReceived;
             if (props.CommunicationMonitorProperties != null)
             {
-                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, props.CommunicationMonitorProperties);
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication,
+                    props.CommunicationMonitorProperties);
             }
             else
             {
 //#warning Need to deal with this poll string
-                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 120000, 120000, 300000, "SESSION get aliases\x0d\x0a");
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 120000, 120000, 300000,
+                    "SESSION get aliases\x0d\x0a");
             }
 
             LevelControlPoints = new Dictionary<string, TesiraForteLevelControl>();
@@ -88,15 +91,17 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         public override bool CustomActivate()
         {
             Communication.Connect();
-            CommunicationMonitor.StatusChange += (o, a) => { Debug.Console(2, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
+            CommunicationMonitor.StatusChange +=
+                (o, a) => { Debug.Console(2, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
             CommunicationMonitor.Start();
 
             CrestronConsole.AddNewConsoleCommand(SendLine, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
-            CrestronConsole.AddNewConsoleCommand(s => Communication.Connect(), "con" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s => Communication.Connect(), "con" + Key, "",
+                ConsoleAccessLevelEnum.AccessOperator);
             return true;
         }
 
-        void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+        private void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
         {
             Debug.Console(2, this, "Socket Status Change: {0}", e.Client.ClientStatus.ToString());
 
@@ -123,7 +128,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// <summary>
         /// Initiates the subscription process to the DSP
         /// </summary>
-        void SubscribeToAttributes()
+        private void SubscribeToAttributes()
         {
             SendLine("SESSION set verbose true");
 
@@ -141,7 +146,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// <summary>
         /// Resets or Sets the subscription timer
         /// </summary>
-        void ResetSubscriptionTimer()
+        private void ResetSubscriptionTimer()
         {
             isSubscribed = true;
 
@@ -158,7 +163,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// </summary>
         /// <param name="dev"></param>
         /// <param name="args"></param>
-        void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
+        private void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
         {
             if (Debug.Level == 2)
                 Debug.Console(2, this, "RX: '{0}'",
@@ -200,7 +205,8 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
                         foreach (KeyValuePair<string, TesiraForteLevelControl> controlPoint in LevelControlPoints)
                         {
-                            if (customName == controlPoint.Value.LevelCustomName || customName == controlPoint.Value.MuteCustomName)
+                            if (customName == controlPoint.Value.LevelCustomName ||
+                                customName == controlPoint.Value.MuteCustomName)
                             {
                                 controlPoint.Value.ParseSubscriptionMessage(customName, value);
                                 return;
@@ -215,17 +221,18 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                 }
                 else if (args.Text.IndexOf("+OK") > -1)
                 {
-                    if (args.Text == "+OK" || args.Text.IndexOf("list\":") > -1 )       // Check for a simple "+OK" only 'ack' repsonse or a list response and ignore
+                    if (args.Text == "+OK" || args.Text.IndexOf("list\":") > -1)
+                        // Check for a simple "+OK" only 'ack' repsonse or a list response and ignore
                         return;
 
                     // response is not from a subscribed attribute.  From a get/set/toggle/increment/decrement command
-                    
+
                     if (!CommandQueue.IsEmpty)
                     {
                         if (CommandQueue.Peek() is QueuedCommand)
                         {
                             // Expected response belongs to a child class
-                            QueuedCommand tempCommand = (QueuedCommand)CommandQueue.TryToDequeue();
+                            QueuedCommand tempCommand = (QueuedCommand) CommandQueue.TryToDequeue();
                             //Debug.Console(1, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
 
                             tempCommand.ControlPoint.ParseGetMessage(tempCommand.AttributeCode, args.Text);
@@ -233,7 +240,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                         else
                         {
                             // Expected response belongs to this class
-                            string temp = (string)CommandQueue.TryToDequeue();
+                            string temp = (string) CommandQueue.TryToDequeue();
                             //Debug.Console(1, this, "Command Dequeued. CommandQueue Size: {0}", CommandQueue.Count);
 
                         }
@@ -254,15 +261,15 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                     switch (args.Text)
                     {
                         case "-ERR ALREADY_SUBSCRIBED":
-                            {
-                                ResetSubscriptionTimer();
-                                break;
-                            }
+                        {
+                            ResetSubscriptionTimer();
+                            break;
+                        }
                         default:
-                            {
-                                Debug.Console(0, this, "Error From DSP: '{0}'", args.Text);
-                                break;
-                            }
+                        {
+                            Debug.Console(0, this, "Error From DSP: '{0}'", args.Text);
+                            break;
+                        }
                     }
 
                 }
@@ -294,13 +301,29 @@ namespace PepperDash.Essentials.Devices.Common.DSP
             CommandQueue.Enqueue(commandToEnqueue);
             //Debug.Console(1, this, "Command (QueuedCommand) Enqueued '{0}'.  CommandQueue has '{1}' Elements.", commandToEnqueue.Command, CommandQueue.Count);
 
-            if(!CommandQueueInProgress)
+            if (!CommandQueueInProgress)
                 SendNextQueuedCommand();
         }
 
-        public override void RunPreset(int data)
+        public void RecallPreset(IDspPreset preset)
         {
-            SendLine(String.Format("Device recallPreset {0}", data ));
+            if (preset == null) return;
+
+            var tesiraPreset = preset as TesiraDspPreset;
+
+            if (tesiraPreset == null) return;
+            if (!String.IsNullOrEmpty(tesiraPreset.PresetName))
+            {
+                SendLine(String.Format("Device RecallPreset {0}", tesiraPreset.PresetName));
+            }
+            if (tesiraPreset.PresetId >= 1000)
+            {
+                SendLine(String.Format("Device RecallPreset {0}", tesiraPreset.PresetId));
+            }
+            else
+            {
+                Debug.Console(0, this, "Preset {0} unable to be recalled, missing identifier", tesiraPreset.Name);
+            }
         }
 
         /// <summary>
@@ -319,55 +342,55 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// <summary>
         /// Sends the next queued command to the DSP
         /// </summary>
-        void SendNextQueuedCommand()
+        private void SendNextQueuedCommand()
         {
             //Debug.Console(2, this, "Attempting to send next queued command. CommandQueueInProgress: {0}  Communication isConnected: {1}", CommandQueueInProgress, Communication.IsConnected);
 
-                //if (CommandQueue.IsEmpty)
-                //    CommandQueueInProgress = false;
+            //if (CommandQueue.IsEmpty)
+            //    CommandQueueInProgress = false;
 
-                //Debug.Console(1, this, "CommandQueue has {0} Elements:\n", CommandQueue.Count);
+            //Debug.Console(1, this, "CommandQueue has {0} Elements:\n", CommandQueue.Count);
 
-                //foreach (object o in CommandQueue)
-                //{
-                //    if (o is string)
-                //        Debug.Console(1, this, "{0}", o);
-                //    else if(o is QueuedCommand)
-                //    {
-                //        var item = (QueuedCommand)o;
-                //        Debug.Console(1, this, "{0}", item.Command);
-                //    }
-                //}
+            //foreach (object o in CommandQueue)
+            //{
+            //    if (o is string)
+            //        Debug.Console(1, this, "{0}", o);
+            //    else if(o is QueuedCommand)
+            //    {
+            //        var item = (QueuedCommand)o;
+            //        Debug.Console(1, this, "{0}", item.Command);
+            //    }
+            //}
 
-                //Debug.Console(1, this, "End of CommandQueue");
+            //Debug.Console(1, this, "End of CommandQueue");
 
-                if (Communication.IsConnected && !CommandQueue.IsEmpty)
+            if (Communication.IsConnected && !CommandQueue.IsEmpty)
+            {
+                CommandQueueInProgress = true;
+
+                if (CommandQueue.Peek() is QueuedCommand)
                 {
-                    CommandQueueInProgress = true;
+                    QueuedCommand nextCommand = new QueuedCommand();
 
-                    if (CommandQueue.Peek() is QueuedCommand)
-                    {
-                        QueuedCommand nextCommand = new QueuedCommand();
+                    nextCommand = (QueuedCommand) CommandQueue.Peek();
 
-                        nextCommand = (QueuedCommand)CommandQueue.Peek();
-
-                        SendLine(nextCommand.Command);
-                    }
-                    else
-                    {
-                        string nextCommand = (string)CommandQueue.Peek();
-
-                        SendLine(nextCommand);
-                    }
+                    SendLine(nextCommand.Command);
                 }
-            
+                else
+                {
+                    string nextCommand = (string) CommandQueue.Peek();
+
+                    SendLine(nextCommand);
+                }
+            }
+
         }
 
         /// <summary>
         /// Sends a command to execute a preset
         /// </summary>
         /// <param name="name">Preset Name</param>
-        public override void RunPreset(string name)
+        public void RunPreset(string name)
         {
             SendLine(string.Format("DEVICE recallPreset {0}", name));
         }
@@ -384,7 +407,7 @@ namespace PepperDash.Essentials.Devices.Common.DSP
     {
         public BiampTesiraForteDspFactory()
         {
-            TypeNames = new List<string>() { "biamptesira" };
+            TypeNames = new List<string>() {"biamptesira"};
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
@@ -395,6 +418,14 @@ namespace PepperDash.Essentials.Devices.Common.DSP
                 dc.Properties.ToString());
             return new BiampTesiraForteDsp(dc.Key, dc.Name, comm, props);
         }
+    }
+
+    public class TesiraDspPreset : IDspPreset
+    {
+        public string Name { get; set; }
+        public readonly string PresetName;
+        public readonly int PresetId;
+
     }
 
 }
