@@ -221,6 +221,10 @@ namespace PepperDash.Essentials.DM
 	        DmRmcPropertiesConfig props, string pKey, uint ipid)
 	    {
 	        var parentDev = DeviceManager.GetDeviceForKey(pKey);
+	        if (parentDev is DmpsRoutingController)
+	        {
+	            return GetDmRmcControllerForDmps(key, name, typeName, parentDev as DmpsRoutingController, props.ParentOutputNumber);
+	        }
 	        if (!(parentDev is IDmSwitch))
 	        {
 	            Debug.Console(0, "Cannot create DM device '{0}'. '{1}' is not a DM Chassis.",
@@ -285,6 +289,26 @@ namespace PepperDash.Essentials.DM
 	        return null;
 	    }
 
+	    private static CrestronGenericBaseDevice GetDmRmcControllerForDmps(string key, string name, string typeName,
+	        DmpsRoutingController controller, uint num)
+	    {
+	        Func<string, string, DMOutput, CrestronGenericBaseDevice> dmpsHandler;
+	        if (ChassisCpu3Dict.TryGetValue(typeName.ToLower(), out dmpsHandler))
+	        {
+	            var output = controller.Dmps.SwitcherOutputs[num] as DMOutput;
+
+	            if (output != null)
+	            {
+	                return dmpsHandler(key, name, output);
+	            }
+	            Debug.Console(0, Debug.ErrorLogLevel.Error, "Cannot attach DM-RMC of type '{0}' to output {1} on DMPS chassis. Output is not a DM Output", typeName, num);
+	            return null;
+	        }
+
+            Debug.Console(0, Debug.ErrorLogLevel.Error, "Cannot create DM-RMC of type '{0}' to output {1} on DMPS chassis", typeName, num);
+	        return null;
+	    }
+
 	    private static CrestronGenericBaseDevice GetDmRmcControllerForProcessor(string key, string name, string typeName, uint ipid)
 	    {
 	        try
@@ -305,6 +329,8 @@ namespace PepperDash.Essentials.DM
                 return null;
 	        }
 	    }
+
+        
 	}
 
     public class DmRmcControllerFactory : EssentialsDeviceFactory<DmRmcControllerBase>
