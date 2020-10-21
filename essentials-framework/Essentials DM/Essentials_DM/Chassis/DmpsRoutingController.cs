@@ -149,9 +149,8 @@ namespace PepperDash.Essentials.DM
             foreach (var kvp in OutputNames)
             {
                 var output = (Dmps.SwitcherOutputs[kvp.Key] as DMOutput);
-                if (output != null && output.Name != null)
+                if (output != null && output.Name.Type != eSigType.NA)
                 {
-                    
                     output.Name.StringValue = kvp.Value;
                 }
             }
@@ -166,7 +165,7 @@ namespace PepperDash.Essentials.DM
             foreach (var kvp in InputNames)
             {
                 var input = (Dmps.SwitcherInputs[kvp.Key] as DMInput);
-                if (input != null && input.Name != null)
+                if (input != null && input.Name.Type != eSigType.NA)
                 {
                     input.Name.StringValue = kvp.Value;
                 }
@@ -331,65 +330,57 @@ namespace PepperDash.Essentials.DM
         {
             foreach (var card in Dmps.SwitcherOutputs)
             {
-
                 var outputCard = card as DMOutput;
 
-                Debug.Console(1, this, "Adding Output Card Number {0} Type: {1}", outputCard.Number, outputCard.CardInputOutputType.ToString());
-
-                if (outputCard != null)
+                if (outputCard == null)
                 {
-                    VideoOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
-                    {
-                        if (outputCard.VideoOutFeedback != null) { return (ushort)outputCard.VideoOutFeedback.Number; }
-                        else { return 0; };
-                    });
-                    AudioOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
-                    {
-                        if (outputCard.AudioOutFeedback != null) { return (ushort)outputCard.AudioOutFeedback.Number; }
-                        else { return 0; };
-                    });
-
-                    OutputNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
-                    {
-                        if (outputCard.NameFeedback != null && !string.IsNullOrEmpty(outputCard.NameFeedback.StringValue))
-                        {
-                            Debug.Console(2, this, "Output Card {0} Name: {1}", outputCard.Number, outputCard.NameFeedback.StringValue);
-                            return outputCard.NameFeedback.StringValue;
-                        }
-                        else
-                        {
-                            return "";
-                        }
-                    });
-
-                    OutputVideoRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
-                    {
-                        if (outputCard.VideoOutFeedback != null && outputCard.VideoOutFeedback.NameFeedback != null)
-                        {
-                            return outputCard.VideoOutFeedback.NameFeedback.StringValue;
-                        }
-                        else
-                        {
-                            return NoRouteText;
-                        }
-                    });
-                    OutputAudioRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
-                    {
-                        if (outputCard.AudioOutFeedback != null && outputCard.AudioOutFeedback.NameFeedback != null)
-                        {
-                            return outputCard.AudioOutFeedback.NameFeedback.StringValue;
-                        }
-                        else
-                        {
-                            return NoRouteText;
-
-                        }
-                    });
-
-                    OutputEndpointOnlineFeedbacks[outputCard.Number] = new BoolFeedback(() => { return outputCard.EndpointOnlineFeedback; });
-
-                    AddOutputCard(outputCard.Number, outputCard);
+                    continue;
                 }
+
+                Debug.Console(1, this, "Adding Output Card Number {0} Type: {1}", outputCard.Number, outputCard.CardInputOutputType.ToString());
+                VideoOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
+                {
+                    if (outputCard.VideoOutFeedback != null) { return (ushort)outputCard.VideoOutFeedback.Number; }
+                    return 0;
+                    ;
+                });
+                AudioOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
+                {
+                    if (outputCard.AudioOutFeedback != null) { return (ushort)outputCard.AudioOutFeedback.Number; }
+                    return 0;
+                    ;
+                });
+
+                OutputNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
+                {
+                    if (outputCard.NameFeedback != null && !string.IsNullOrEmpty(outputCard.NameFeedback.StringValue))
+                    {
+                        Debug.Console(2, this, "Output Card {0} Name: {1}", outputCard.Number, outputCard.NameFeedback.StringValue);
+                        return outputCard.NameFeedback.StringValue;
+                    }
+                    return "";
+                });
+
+                OutputVideoRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
+                {
+                    if (outputCard.VideoOutFeedback != null && outputCard.VideoOutFeedback.NameFeedback != null)
+                    {
+                        return outputCard.VideoOutFeedback.NameFeedback.StringValue;
+                    }
+                    return NoRouteText;
+                });
+                OutputAudioRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
+                {
+                    if (outputCard.AudioOutFeedback != null && outputCard.AudioOutFeedback.NameFeedback != null)
+                    {
+                        return outputCard.AudioOutFeedback.NameFeedback.StringValue;
+                    }
+                    return NoRouteText;
+                });
+
+                OutputEndpointOnlineFeedbacks[outputCard.Number] = new BoolFeedback(() => outputCard.EndpointOnlineFeedback);
+
+                AddOutputCard(outputCard.Number, outputCard);
             }
         }
 
