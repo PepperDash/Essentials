@@ -17,16 +17,17 @@ namespace PepperDash.Essentials.Devices.Common.DSP
 
         public Dictionary<string, DspControlPoint> SwitcherControlPoints { get; private set; }
 
-		public abstract void RunPreset(string name);
-
-		public DspBase(string key, string name) :
-			base(key, name) { }
+	    public DspBase(string key, string name) :
+	        base(key, name)
+	    {
+	    }
 
 
 		// in audio call feedback
 
 		// VOIP
 		// Phone dialer
+
 	}
 
 	// Fusion
