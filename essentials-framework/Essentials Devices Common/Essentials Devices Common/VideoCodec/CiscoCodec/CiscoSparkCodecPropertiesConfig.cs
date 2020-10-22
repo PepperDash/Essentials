@@ -40,11 +40,23 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         [JsonProperty("phonebookResultsLimit")]
         public uint PhonebookResultsLimit { get; set; }
 
+        [JsonProperty("UiBranding")]
+        public BrandingLogoProperties UiBranding { get; set; }       
+
     }
 
     public class SharingProperties
     {
         [JsonProperty("autoShareContentWhileInCall")]
         public bool AutoShareContentWhileInCall { get; set; }
+    }
+
+    public class BrandingLogoProperties
+    {
+        [JsonProperty("enable")]
+        public bool Enable { get; set; }
+
+        [JsonProperty("brandingUrl")]
+        public string BrandingUrl { get; set; }
     }
 }
