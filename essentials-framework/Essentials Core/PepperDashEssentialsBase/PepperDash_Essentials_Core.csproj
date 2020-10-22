@@ -190,6 +190,7 @@
     <Compile Include="Devices\EssentialsBridgeableDevice.cs" />
     <Compile Include="Devices\EssentialsDevice.cs" />
     <Compile Include="Devices\GenericIRController.cs" />
+    <Compile Include="Devices\IDspPreset.cs" />
     <Compile Include="Devices\IProjectorInterfaces.cs" />
     <Compile Include="Devices\PC\InRoomPc.cs" />
     <Compile Include="Devices\PC\Laptop.cs" />

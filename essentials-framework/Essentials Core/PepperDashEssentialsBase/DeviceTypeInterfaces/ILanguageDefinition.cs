@@ -11,5 +11,8 @@ namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
         List<LanguageLabel> UiLabels { get; set; }
         List<LanguageLabel> Sources { get; set; }
         List<LanguageLabel> Destinations { get; set; }
+        List<LanguageLabel> SourceGroupNames { get; set; } 
+        List<LanguageLabel> DestinationGroupNames { get; set; }
+        List<LanguageLabel> RoomNames { get; set; } 
     }
 }
