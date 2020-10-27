@@ -538,6 +538,20 @@ namespace PepperDash.Essentials
         /// </summary>
         void LoadLogoServer()
         {
+            if (ConfigReader.ConfigObject.Rooms == null)
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "No rooms configured. Bypassing Logo server startup.");
+                return;
+            }
+
+            if (
+                !ConfigReader.ConfigObject.Rooms.Any(
+                    CheckRoomConfig))
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "No rooms configured to use system Logo server. Bypassing Logo server startup");
+                return;
+            }
+
             try
             {
                 LogoServer = new HttpLogoServer(8080, Global.DirectorySeparator + "html" + Global.DirectorySeparator + "logo");
@@ -546,6 +560,31 @@ namespace PepperDash.Essentials
             {
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "NOTICE: Logo server cannot be started. Likely already running in another program");
             }
+        }
+
+        private bool CheckRoomConfig(DeviceConfig c)
+        {
+            string logoDark = null;
+            string logoLight = null;
+            string logo = null;
+
+            if (c.Properties["logoDark"] != null)
+            {
+                logoDark = c.Properties["logoDark"].Value<string>("type");
+            }
+
+            if (c.Properties["logoLight"] != null)
+            {
+                logoLight = c.Properties["logoLight"].Value<string>("type");
+            }
+
+            if (c.Properties["logo"] != null)
+            {
+                logo = c.Properties["logo"].Value<string>("type");
+            }
+
+            return ((logoDark != null && logoDark == "system") ||
+                    (logoLight != null && logoLight == "system") || (logo != null && logo == "system"));
         }
     }
 }

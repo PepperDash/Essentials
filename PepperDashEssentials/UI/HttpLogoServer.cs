@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Http;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials
 {
@@ -16,12 +13,12 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        HttpServer Server;
+        readonly HttpServer _server;
 
         /// <summary>
         /// 
         /// </summary>
-        string FileDirectory;
+        readonly string _fileDirectory;
 
         /// <summary>
         /// 
@@ -45,18 +42,17 @@ namespace PepperDash.Essentials
                 //{ ".js", "application/javascript" },
                 //{ ".json", "application/json" },
                 //{ ".map", "application/x-navimap" },
-				{ ".pdf", "application.pdf" },
+				{ ".pdf", "application/pdf" },
 				{ ".png", "image/png" },
                 //{ ".txt", "text/plain" },
 			};
 
-            Server = new HttpServer();
-            Server.Port = port;
-            FileDirectory = directory;
-            Server.OnHttpRequest += new OnHttpRequestHandler(Server_OnHttpRequest);
-            Server.Open();
+            _server = new HttpServer {Port = port};
+            _fileDirectory = directory;
+            _server.OnHttpRequest += Server_OnHttpRequest;
+            _server.Open();
 
-            CrestronEnvironment.ProgramStatusEventHandler += new ProgramStatusEventHandler(CrestronEnvironment_ProgramStatusEventHandler);
+            CrestronEnvironment.ProgramStatusEventHandler += CrestronEnvironment_ProgramStatusEventHandler;
         }
 
         /// <summary>
@@ -67,27 +63,40 @@ namespace PepperDash.Essentials
             var path = args.Request.Path;
             Debug.Console(2, "HTTP Request with path: '{0}'", args.Request.Path);
 
-            if (File.Exists(FileDirectory + path))
+            try
             {
-                string filePath = path.Replace('/', '\\');
-                string localPath = string.Format(@"{0}{1}", FileDirectory, filePath);
-
-                Debug.Console(2, "HTTP Logo Server attempting to find file: '{0}'", localPath);
-                if (File.Exists(localPath))
+                if (File.Exists(_fileDirectory + path))
                 {
-                    args.Response.Header.ContentType = GetContentType(new FileInfo(localPath).Extension);
-                    args.Response.ContentStream = new FileStream(localPath, FileMode.Open, FileAccess.Read);
+                    var filePath = path.Replace('/', '\\');
+                    var localPath = string.Format(@"{0}{1}", _fileDirectory, filePath);
+
+                    Debug.Console(2, "HTTP Logo Server attempting to find file: '{0}'", localPath);
+                    if (File.Exists(localPath))
+                    {
+                        args.Response.Header.ContentType = GetContentType(new FileInfo(localPath).Extension);
+                        args.Response.ContentStream = new FileStream(localPath, FileMode.Open, FileAccess.Read);
+                    }
+                    else
+                    {
+                        Debug.Console(2, "HTTP Logo Server Cannot find file '{0}'", localPath);
+                        args.Response.ContentString = string.Format("Not found: '{0}'", filePath);
+                        args.Response.Code = 404;
+                    }
                 }
                 else
                 {
-                    Debug.Console(2, "HTTP Logo Server Cannot find file '{0}'", localPath);
-                    args.Response.ContentString = string.Format("Not found: '{0}'", filePath);
+                    Debug.Console(2, "HTTP Logo Server: '{0}' does not exist", _fileDirectory + path);
+                    args.Response.ContentString = string.Format("Not found: '{0}'", _fileDirectory + path);
                     args.Response.Code = 404;
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Debug.Console(2, "HTTP Logo Server: '{0}' does not exist", FileDirectory + path);
+                Debug.Console(0, Debug.ErrorLogLevel.Error, "Exception getting file: {0}", ex.Message);
+                Debug.Console(0, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.StackTrace);
+
+                args.Response.Code = 400;
+                args.Response.ContentString = string.Format("invalid request");
             }
         }
 
@@ -97,7 +106,7 @@ namespace PepperDash.Essentials
         void CrestronEnvironment_ProgramStatusEventHandler(eProgramStatusEventType programEventType)
         {
             if (programEventType == eProgramStatusEventType.Stopping)
-                Server.Close();
+                _server.Close();
         }
 
         /// <summary>
@@ -107,11 +116,7 @@ namespace PepperDash.Essentials
         /// <returns></returns>
         public static string GetContentType(string extension)
         {
-            string type;
-            if (ExtensionContentTypes.ContainsKey(extension))
-                type = ExtensionContentTypes[extension];
-            else
-                type = "text/plain";
+            var type = ExtensionContentTypes.ContainsKey(extension) ? ExtensionContentTypes[extension] : "text/plain";
             return type;
         }
     }
