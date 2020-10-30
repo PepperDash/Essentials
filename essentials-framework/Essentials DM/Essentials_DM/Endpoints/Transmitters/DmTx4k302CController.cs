@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.DM
     using eAst = Crestron.SimplSharpPro.DeviceSupport.eX02AudioSourceType;
 
     [Description("Wrapper class for DM-TX-4K-302-C")]
-    public class DmTx4k302CController : DmTxControllerBase, ITxRouting, IHasFeedback, 
+    public class DmTx4k302CController : DmTxControllerBase, ITxRoutingWithFeedback, IHasFeedback, 
 		IIROutputPorts, IComPorts, IHasFreeRun, IVgaBrightnessContrastControls
 	{
 		public DmTx4k302C Tx { get; private set; }
@@ -45,6 +45,19 @@ namespace PepperDash.Essentials.DM
 
         public IntFeedback VgaBrightnessFeedback { get; protected set; }
         public IntFeedback VgaContrastFeedback { get; protected set; }
+
+        //IroutingNumericEvent
+        public event EventHandler NumericSwitchChange;
+
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        public void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            if (NumericSwitchChange != null) NumericSwitchChange(this, e);
+        }
+
 
 		/// <summary>
 		/// Helps get the "real" inputs, including when in Auto
@@ -109,6 +122,8 @@ namespace PepperDash.Essentials.DM
             Tx.HdmiInputs[2].InputStreamChange += InputStreamChangeEvent;
             Tx.VgaInput.InputStreamChange += VgaInputOnInputStreamChange;
             Tx.BaseEvent += Tx_BaseEvent;
+
+            Tx.OnlineStatusChange += Tx_OnlineStatusChange;
 
             VideoSourceNumericFeedback = new IntFeedback(() => (int)Tx.VideoSourceFeedback);
             AudioSourceNumericFeedback = new IntFeedback(() => (int)Tx.AudioSourceFeedback);
@@ -387,6 +402,16 @@ namespace PepperDash.Essentials.DM
                     break;
             }
         }
+        void Tx_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        {
+            ActiveVideoInputFeedback.FireUpdate();
+            VideoSourceNumericFeedback.FireUpdate();
+            AudioSourceNumericFeedback.FireUpdate();
+            OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue,
+                eRoutingSignalType.Video));
+            OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue,
+                eRoutingSignalType.Audio));
+        }
 
         void Tx_BaseEvent(GenericBase device, BaseEventArgs args)
         {
@@ -397,10 +422,12 @@ namespace PepperDash.Essentials.DM
                     Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
                     VideoSourceNumericFeedback.FireUpdate();
                     ActiveVideoInputFeedback.FireUpdate();
+                    OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, eRoutingSignalType.Video));
                     break;
                 case EndpointTransmitterBase.AudioSourceFeedbackEventId:
                     Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
                     AudioSourceNumericFeedback.FireUpdate();
+                    OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, eRoutingSignalType.Audio));
                     break;
             }
         }

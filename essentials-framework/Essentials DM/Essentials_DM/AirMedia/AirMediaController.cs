@@ -17,7 +17,7 @@ using PepperDash.Essentials.Core.Config;
 namespace PepperDash.Essentials.DM.AirMedia
 {
     [Description("Wrapper class for an AM-200 or AM-300")]
-    public class AirMediaController : CrestronGenericBridgeableBaseDevice, IRoutingNumeric, IIROutputPorts, IComPorts
+    public class AirMediaController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, IIROutputPorts, IComPorts
     {
         public AmX00 AirMedia { get; private set; }
 
@@ -28,6 +28,9 @@ namespace PepperDash.Essentials.DM.AirMedia
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
+
+        //IroutingNumericEvent
+        public event EventHandler NumericSwitchChange;
 
         public BoolFeedback IsInSessionFeedback { get; private set; }
         public IntFeedback ErrorFeedback { get; private set; }
@@ -153,6 +156,16 @@ namespace PepperDash.Essentials.DM.AirMedia
             SerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.SerialNumberFeedback.JoinNumber]);
         }
 
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        public void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            if (NumericSwitchChange != null) NumericSwitchChange(this, e);
+        }
+
+
         void AirMedia_AirMediaChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
         {
             if (args.EventId == AirMediaInputSlot.AirMediaStatusFeedbackEventId)
@@ -172,7 +185,10 @@ namespace PepperDash.Essentials.DM.AirMedia
         void DisplayControl_DisplayControlChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
         {
             if (args.EventId == AmX00.VideoOutFeedbackEventId)
+            {
                 VideoOutFeedback.FireUpdate();
+                OnSwitchChange(new RoutingNumericEventArgs(1, VideoOutFeedback.UShortValue, eRoutingSignalType.AudioVideo));
+            }
             else if (args.EventId == AmX00.EnableAutomaticRoutingFeedbackEventId)
                 AutomaticInputRoutingEnabledFeedback.FireUpdate();
         }

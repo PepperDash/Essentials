@@ -111,10 +111,70 @@ namespace PepperDash.Essentials.Core
         IntFeedback AudioVideoSourceNumericFeedback { get; }
     }
 
-	/// <summary>
+
+    /// <summary>
+    /// Defines an IRmcRouting with a feedback event 
+    /// </summary>
+    public interface ITxRoutingWithFeedback : ITxRouting, IRoutingNumericFeedback
+    {
+    }
+
+    /// <summary>
+    /// Defines an IRmcRouting with a feedback event 
+    /// </summary>
+    public interface IRmcRoutingWithFeedback : IRmcRouting, IRoutingNumericFeedback
+    {
+    }
+
+    /// <summary>
 	/// Defines an IRoutingOutputs devices as being a source - the start of the chain
 	/// </summary>
 	public interface IRoutingSource : IRoutingOutputs
 	{
 	}
+
+    /// <summary>
+    /// Defines an event structure for reporting output route data
+    /// </summary>
+    public interface IRoutingNumericFeedback : IKeyName
+    {
+        event EventHandler NumericSwitchChange;
+        void OnSwitchChange(RoutingNumericEventArgs e);
+    }
+
+    /// <summary>
+    /// Defines an IRoutingNumeric with a feedback event 
+    /// </summary>
+    public interface IRoutingNumericWithFeedback : IRoutingNumeric, IRoutingNumericFeedback
+    {
+    }
+
+    public class RoutingNumericEventArgs : EventArgs
+    {
+        private readonly uint _output;
+        private readonly uint _input;
+        private readonly eRoutingSignalType _sigType;
+
+        public uint Output
+        {
+            get { return _output; }
+        }
+
+        public uint Input
+        {
+            get { return _input; }
+        }
+
+        public eRoutingSignalType SigType
+        {
+            get { return _sigType; }
+        }
+
+        public RoutingNumericEventArgs(uint output, uint input, eRoutingSignalType sigType)
+        {
+            _output = output;
+            _input = input;
+            _sigType = sigType;
+        }
+    }
 }

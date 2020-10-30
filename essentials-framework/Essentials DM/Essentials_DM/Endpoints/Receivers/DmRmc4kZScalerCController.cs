@@ -13,7 +13,7 @@ using PepperDash.Core;
 namespace PepperDash.Essentials.DM
 {
     [Description("Wrapper Class for DM-RMC-4K-Z-SCALER-C")]
-    public class DmRmc4kZScalerCController : DmRmcControllerBase, IRmcRouting,
+    public class DmRmc4kZScalerCController : DmRmcControllerBase, IRmcRoutingWithFeedback,
         IIROutputPorts, IComPorts, ICec
     {
         private readonly DmRmc4kzScalerC _rmc;
@@ -30,6 +30,19 @@ namespace PepperDash.Essentials.DM
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
+
+        //IroutingNumericEvent
+        public event EventHandler NumericSwitchChange;
+
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        public void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            if (NumericSwitchChange != null) NumericSwitchChange(this, e);
+        }
+
 
         public DmRmc4kZScalerCController(string key, string name, DmRmc4kzScalerC rmc)
             : base(key, name, rmc)
@@ -55,10 +68,18 @@ namespace PepperDash.Essentials.DM
             _rmc.HdmiOutput.OutputStreamChange += HdmiOutput_OutputStreamChange;
             _rmc.HdmiOutput.ConnectedDevice.DeviceInformationChange += ConnectedDevice_DeviceInformationChange;
 
+            _rmc.OnlineStatusChange += _rmc_OnlineStatusChange;
+
             // Set Ports for CEC
             HdmiOut.Port = _rmc.HdmiOutput;
 
             AudioVideoSourceNumericFeedback = new IntFeedback(() => (ushort)(_rmc.SelectedSourceFeedback));
+        }
+
+        private void _rmc_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        {
+            AudioVideoSourceNumericFeedback.FireUpdate();
+            OnSwitchChange(new RoutingNumericEventArgs(1, AudioVideoSourceNumericFeedback.UShortValue, eRoutingSignalType.AudioVideo));
         }
 
         void HdmiOutput_OutputStreamChange(EndpointOutputStream outputStream, EndpointOutputStreamEventArgs args)
@@ -72,6 +93,7 @@ namespace PepperDash.Essentials.DM
             if (args.EventId == EndpointOutputStreamEventIds.SelectedSourceFeedbackEventId)
             {
                 AudioVideoSourceNumericFeedback.FireUpdate();
+                OnSwitchChange(new RoutingNumericEventArgs(1, AudioVideoSourceNumericFeedback.UShortValue, eRoutingSignalType.AudioVideo));
             }
         }
 

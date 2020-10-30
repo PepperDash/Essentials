@@ -21,11 +21,14 @@ namespace PepperDash.Essentials.DM
     /// 
     /// </summary>
     [Description("Wrapper class for all DM-MD chassis variants from 8x8 to 32x32")]
-    public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumeric
+    public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumericWithFeedback
     {
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
         public Switch Chassis { get; private set; }
+
+        //IroutingNumericEvent
+        public event EventHandler NumericSwitchChange;
 
         // Feedbacks for EssentialDM
         public Dictionary<uint, IntFeedback> VideoOutputFeedbacks { get; private set; }
@@ -907,6 +910,15 @@ namespace PepperDash.Essentials.DM
             }
         }
 
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        public void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            if (NumericSwitchChange != null) NumericSwitchChange(this, e);
+        }
+
         /// 
         /// </summary>
         void Chassis_DMOutputChange(Switch device, DMOutputEventArgs args)
@@ -940,11 +952,15 @@ namespace PepperDash.Essentials.DM
                 }
                 case DMOutputEventIds.VideoOutEventId:
                 {
-                    if (Chassis.Outputs[output].VideoOutFeedback != null)
-                        Debug.Console(2, this, "DMSwitchVideo:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].VideoOutFeedback.Number, output);
+                    if (Chassis.Outputs[output].VideoOutFeedback == null) return;
+
+                    Debug.Console(2, this, "DMSwitchVideo:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].VideoOutFeedback.Number, output);
 
                     if (VideoOutputFeedbacks.ContainsKey(output))
+                    {
                         VideoOutputFeedbacks[output].FireUpdate();
+                        OnSwitchChange(new RoutingNumericEventArgs(output, Chassis.Outputs[output].VideoOutFeedback.Number, eRoutingSignalType.Video));
+                    }
 
                     if (OutputVideoRouteNameFeedbacks.ContainsKey(output))
                         OutputVideoRouteNameFeedbacks[output].FireUpdate();
@@ -953,11 +969,15 @@ namespace PepperDash.Essentials.DM
                 }
                 case DMOutputEventIds.AudioOutEventId:
                 {
-                    if (Chassis.Outputs[output].AudioOutFeedback != null)
-                        Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].AudioOutFeedback.Number, output);
+                    if (Chassis.Outputs[output].AudioOutFeedback == null) return;
+
+                    Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].AudioOutFeedback.Number, output);
 
                     if (AudioOutputFeedbacks.ContainsKey(output))
+                    {
                         AudioOutputFeedbacks[output].FireUpdate();
+                        OnSwitchChange(new RoutingNumericEventArgs(output, Chassis.Outputs[output].VideoOutFeedback.Number, eRoutingSignalType.Audio));
+                    }
 
                     if (OutputAudioRouteNameFeedbacks.ContainsKey(output))
                         OutputAudioRouteNameFeedbacks[output].FireUpdate();

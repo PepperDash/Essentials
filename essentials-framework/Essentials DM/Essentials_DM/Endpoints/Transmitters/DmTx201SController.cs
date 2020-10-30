@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.DM
     /// Controller class for all DM-TX-201S/F transmitters
     /// </summary>
     [Description("Wrapper class for DM-TX-201-S/F")]
-    public class DmTx201SController : DmTxControllerBase, ITxRouting, IHasFreeRun, IVgaBrightnessContrastControls
+    public class DmTx201SController : DmTxControllerBase, ITxRoutingWithFeedback, IHasFreeRun, IVgaBrightnessContrastControls
     {
         public DmTx201S Tx { get; private set; } 
 
@@ -35,6 +35,19 @@ namespace PepperDash.Essentials.DM
 
         public IntFeedback VgaBrightnessFeedback { get; protected set; }
         public IntFeedback VgaContrastFeedback { get; protected set; }
+
+        //IroutingNumericEvent
+        public event EventHandler NumericSwitchChange;
+
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        public void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            if (NumericSwitchChange != null) NumericSwitchChange(this, e);
+        }
+
 
         /// <summary>
         /// Helps get the "real" inputs, including when in Auto
@@ -197,7 +210,8 @@ namespace PepperDash.Essentials.DM
             ActiveVideoInputFeedback.FireUpdate();
             VideoSourceNumericFeedback.FireUpdate();
             AudioSourceNumericFeedback.FireUpdate();
-
+            OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, eRoutingSignalType.Video));
+            OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue, eRoutingSignalType.Audio));
         }
 
         private void VgaInputOnInputStreamChange(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
@@ -323,10 +337,12 @@ namespace PepperDash.Essentials.DM
                     ActiveVideoInputFeedback.FireUpdate();
                     VideoSourceNumericFeedback.FireUpdate();
                     ActiveVideoInputFeedback.FireUpdate();
+                    OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, eRoutingSignalType.Video));
                     break;
                 case EndpointTransmitterBase.AudioSourceFeedbackEventId:
                     Debug.Console(2, this, " Audio Source : {0}", Tx.AudioSourceFeedback);
                     AudioSourceNumericFeedback.FireUpdate();
+                    OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue, eRoutingSignalType.Audio));
                     break;
             }
         }
