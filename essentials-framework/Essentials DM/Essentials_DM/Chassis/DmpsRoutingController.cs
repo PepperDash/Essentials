@@ -813,36 +813,42 @@ namespace PepperDash.Essentials.DM
                         }
                     }
 
-                    DMInput inCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                    DMOutput outCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
+                    DMInput dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
+                    DMOutput dmOutputCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
 
                     //if (inCard != null)
                     //{
                         // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
-                        if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
+                        if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
                         {
-
                             //SystemControl.VideoEnter.BoolValue = true;
-                            if (outCard != null)
-                                outCard.VideoOut = inCard;
+                            if (dmOutputCard != null)
+                                dmOutputCard.VideoOut = dmInputCard;
                         }
 
-                        if ((sigType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
+                        if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
                         {
-                            if (outCard != null)
-                                outCard.AudioOut = inCard;
+                            if (dmOutputCard != null)
+                                try
+                                {
+                                    dmOutputCard.AudioOut = dmInputCard;
+                                }
+                                catch (NotSupportedException)
+                                {
+                                    dmOutputCard.AudioOutSource = (eDmps34KAudioOutSource) input;
+                                }
                         }
 
-                        if ((sigType | eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+                        if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
                         {
-                            if (outCard != null)
-                                outCard.USBRoutedTo = inCard;
+                            if (dmOutputCard != null)
+                                dmOutputCard.USBRoutedTo = dmInputCard;
                         }
 
-                        if ((sigType | eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+                        if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
                         {
-                            if (inCard != null)
-                                inCard.USBRoutedTo = outCard;
+                            if (dmInputCard != null)
+                                dmInputCard.USBRoutedTo = dmOutputCard;
                         }
                     //}
                     //else
