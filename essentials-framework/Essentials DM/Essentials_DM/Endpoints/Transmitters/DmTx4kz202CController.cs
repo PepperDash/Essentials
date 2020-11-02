@@ -42,7 +42,7 @@ namespace PepperDash.Essentials.DM
         /// Raise an event when the status of a switch object changes.
         /// </summary>
         /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
-        public void OnSwitchChange(RoutingNumericEventArgs e)
+        private void OnSwitchChange(RoutingNumericEventArgs e)
         {
             if (NumericSwitchChange != null) NumericSwitchChange(this, e);
         }

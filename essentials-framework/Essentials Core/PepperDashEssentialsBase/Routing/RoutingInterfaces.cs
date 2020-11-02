@@ -139,7 +139,7 @@ namespace PepperDash.Essentials.Core
     public interface IRoutingNumericFeedback : IKeyName
     {
         event EventHandler NumericSwitchChange;
-        void OnSwitchChange(RoutingNumericEventArgs e);
+        //void OnSwitchChange(RoutingNumericEventArgs e);
     }
 
     /// <summary>
