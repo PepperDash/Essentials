@@ -352,9 +352,18 @@ namespace PepperDash.Essentials.DM
                 });
                 AudioOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
                 {
-                    if (outputCard.AudioOutFeedback != null) { return (ushort)outputCard.AudioOutFeedback.Number; }
-                    return 0;
-                    ;
+                    try
+                    {
+                        if (outputCard.AudioOutFeedback != null)
+                        {
+                            return (ushort) outputCard.AudioOutFeedback.Number;
+                        }
+                        return 0;
+                    }
+                    catch (NotSupportedException)
+                    {
+                        return (ushort) outputCard.AudioOutSourceFeedback;
+                    }
                 });
 
                 OutputNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
@@ -754,13 +763,29 @@ namespace PepperDash.Essentials.DM
             }
             else if (args.EventId == DMOutputEventIds.AudioOutEventId)
             {
-                if (outputCard != null && outputCard.AudioOutFeedback != null)
+                try
                 {
-                    Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name, outputCard.AudioOutFeedback.Number, output);
+                    if (outputCard != null && outputCard.AudioOutFeedback != null)
+                    {
+                        Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name,
+                            outputCard.AudioOutFeedback.Number, output);
+                    }
+                    if (AudioOutputFeedbacks.ContainsKey(output))
+                    {
+                        AudioOutputFeedbacks[output].FireUpdate();
+                    }
                 }
-                if (AudioOutputFeedbacks.ContainsKey(output))
+                catch (NotSupportedException)
                 {
-                    AudioOutputFeedbacks[output].FireUpdate();
+                    if (outputCard != null)
+                    {
+                        Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", Name,
+                            outputCard.AudioOutSourceFeedback, output);
+                    }
+                    if (AudioOutputFeedbacks.ContainsKey(output))
+                    {
+                        AudioOutputFeedbacks[output].FireUpdate();
+                    }
                 }
             }
             else if (args.EventId == DMOutputEventIds.OutputNameEventId
