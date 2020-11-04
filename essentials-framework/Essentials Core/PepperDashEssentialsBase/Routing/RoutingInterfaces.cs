@@ -111,10 +111,87 @@ namespace PepperDash.Essentials.Core
         IntFeedback AudioVideoSourceNumericFeedback { get; }
     }
 
-	/// <summary>
+
+    /// <summary>
+    /// Defines an IRmcRouting with a feedback event 
+    /// </summary>
+    public interface ITxRoutingWithFeedback : ITxRouting
+    {
+    }
+
+    /// <summary>
+    /// Defines an IRmcRouting with a feedback event 
+    /// </summary>
+    public interface IRmcRoutingWithFeedback : IRmcRouting
+    {
+    }
+
+    /// <summary>
 	/// Defines an IRoutingOutputs devices as being a source - the start of the chain
 	/// </summary>
 	public interface IRoutingSource : IRoutingOutputs
 	{
 	}
+
+    /// <summary>
+    /// Defines an event structure for reporting output route data
+    /// </summary>
+    public interface IRoutingFeedback : IKeyName
+    {
+        event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
+        //void OnSwitchChange(RoutingNumericEventArgs e);
+    }
+
+    /// <summary>
+    /// Defines an IRoutingNumeric with a feedback event 
+    /// </summary>
+    public interface IRoutingNumericWithFeedback : IRoutingNumeric, IRoutingFeedback
+    {
+    }
+
+    /// <summary>
+    /// Defines an IRouting with a feedback event
+    /// </summary>
+    public interface IRoutingWithFeedback : IRouting, IRoutingFeedback
+    {
+        
+    }
+
+    public class RoutingNumericEventArgs : EventArgs
+    {
+
+        public uint? Output { get; set; }
+        public uint? Input { get; set; }
+
+        public eRoutingSignalType SigType { get; set; }
+        public RoutingInputPort InputPort { get; set; }
+        public RoutingOutputPort OutputPort { get; set; }
+
+        public RoutingNumericEventArgs(uint output, uint input, eRoutingSignalType sigType) : this(output, input, null, null, sigType)
+        {
+        }
+
+        public RoutingNumericEventArgs(RoutingOutputPort outputPort, RoutingInputPort inputPort,
+            eRoutingSignalType sigType)
+            : this(null, null, outputPort, inputPort, sigType)
+        {
+        }
+
+        public RoutingNumericEventArgs()
+            : this(null, null, null, null, 0)
+        {
+ 
+        }
+
+        public RoutingNumericEventArgs(uint? output, uint? input, RoutingOutputPort outputPort,
+            RoutingInputPort inputPort, eRoutingSignalType sigType)
+        {
+            OutputPort = outputPort;
+            InputPort = inputPort;
+
+            Output = output;
+            Input = input;
+            SigType = sigType;
+        }
+    }
 }
