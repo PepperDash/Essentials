@@ -44,7 +44,7 @@ namespace PepperDash.Essentials.DM
         public IntFeedback VgaContrastFeedback { get; protected set; }
 
         //IroutingNumericEvent
-        public event EventHandler NumericSwitchChange;
+        public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
 
         /// <summary>
         /// Raise an event when the status of a switch object changes.
@@ -52,7 +52,8 @@ namespace PepperDash.Essentials.DM
         /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
         private void OnSwitchChange(RoutingNumericEventArgs e)
         {
-            if (NumericSwitchChange != null) NumericSwitchChange(this, e);
+            var newEvent = NumericSwitchChange;
+            if (newEvent != null) newEvent(this, e);
         }
 
 
@@ -117,16 +118,28 @@ namespace PepperDash.Essentials.DM
 
 			HdmiIn = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn,
                 eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.HDMI, this,
-				VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInput));
+				VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInput))
+			{
+			    FeedbackMatchObject = eVst.HDMI
+			};
 			DisplayPortIn = new RoutingInputPortWithVideoStatuses(DmPortName.DisplayPortIn,
                 eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.DisplayPort, this,
-				VideoStatusHelper.GetDisplayPortInputStatusFuncs(tx.DisplayPortInput));
+				VideoStatusHelper.GetDisplayPortInputStatusFuncs(tx.DisplayPortInput))
+			{
+			    FeedbackMatchObject = eVst.DisplayPort
+			};
 			VgaIn = new RoutingInputPortWithVideoStatuses(DmPortName.VgaIn,
                 eRoutingSignalType.Video, eRoutingPortConnectionType.Vga, eVst.VGA, this, 
-				VideoStatusHelper.GetVgaInputStatusFuncs(tx.VgaInput));
+				VideoStatusHelper.GetVgaInputStatusFuncs(tx.VgaInput))
+			{
+			    FeedbackMatchObject = eVst.VGA
+			};
 			CompositeIn = new RoutingInputPortWithVideoStatuses(DmPortName.CompositeIn,
                 eRoutingSignalType.Video, eRoutingPortConnectionType.Composite, eVst.Composite, this,
-				VideoStatusHelper.GetVgaInputStatusFuncs(tx.VgaInput));
+				VideoStatusHelper.GetVgaInputStatusFuncs(tx.VgaInput))
+			{
+			    FeedbackMatchObject = eVst.Composite
+			};
 
             Tx.HdmiInput.InputStreamChange += HdmiInputStreamChangeEvent;
             Tx.DisplayPortInput.InputStreamChange += DisplayPortInputStreamChangeEvent;
@@ -302,13 +315,16 @@ namespace PepperDash.Essentials.DM
 
         void Tx_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
         {
+            var localVideoInputPort =
+                InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.VideoSourceFeedback);
+            var localAudioInputPort =
+                InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.AudioSourceFeedback);
+
             ActiveVideoInputFeedback.FireUpdate();
             VideoSourceNumericFeedback.FireUpdate();
             AudioSourceNumericFeedback.FireUpdate();
-            OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue,
-                eRoutingSignalType.Video));
-            OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue,
-                eRoutingSignalType.Audio));
+            OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, OutputPorts.First(), localVideoInputPort, eRoutingSignalType.Video));
+            OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue, OutputPorts.First(), localAudioInputPort, eRoutingSignalType.Audio));
         }
 
         void Tx_BaseEvent(GenericBase device, BaseEventArgs args)
@@ -319,15 +335,17 @@ namespace PepperDash.Essentials.DM
             switch (id)
             {
                 case EndpointTransmitterBase.VideoSourceFeedbackEventId:
+                    var localVideoInputPort = InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.VideoSourceFeedback);
                     Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
                     VideoSourceNumericFeedback.FireUpdate();
                     ActiveVideoInputFeedback.FireUpdate();
-                    OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, eRoutingSignalType.Video));
+                    OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, OutputPorts.First(), localVideoInputPort, eRoutingSignalType.Video));
                     break;
                 case EndpointTransmitterBase.AudioSourceFeedbackEventId:
+                    var localInputAudioPort = InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.AudioSourceFeedback);
                     Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
                     AudioSourceNumericFeedback.FireUpdate();
-                    OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, eRoutingSignalType.Audio));
+                    OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue, OutputPorts.First(), localInputAudioPort, eRoutingSignalType.Audio));
                     break;
             }
         }

@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// 
 	/// </summary>
-	public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IPower, IWarmingCooling, IUsageTracking
+    public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IPower, IWarmingCooling, IUsageTracking
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
 
@@ -259,12 +259,13 @@ namespace PepperDash.Essentials.Core
             volumeDisplayWithFeedback.MuteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VolumeMuteOn.JoinNumber]);
             volumeDisplayWithFeedback.MuteFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.VolumeMuteOff.JoinNumber]);
 	    }
-	}
+
+    }
 
 	/// <summary>
 	/// 
 	/// </summary>
-    public abstract class TwoWayDisplayBase : DisplayBase
+    public abstract class TwoWayDisplayBase : DisplayBase, IRoutingFeedback
 	{
         public StringFeedback CurrentInputFeedback { get; private set; }
 
@@ -294,6 +295,19 @@ namespace PepperDash.Essentials.Core
 
             
 		}
+
+        public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
+
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        protected void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            var newEvent = NumericSwitchChange;
+            if (newEvent != null) newEvent(this, e);
+        }
+
 
 	}
 }

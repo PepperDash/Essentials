@@ -32,7 +32,7 @@ namespace PepperDash.Essentials.DM
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
 
         //IroutingNumericEvent
-        public event EventHandler NumericSwitchChange;
+        public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
 
         /// <summary>
         /// Raise an event when the status of a switch object changes.
@@ -40,7 +40,8 @@ namespace PepperDash.Essentials.DM
         /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
         private void OnSwitchChange(RoutingNumericEventArgs e)
         {
-            if (NumericSwitchChange != null) NumericSwitchChange(this, e);
+            var newEvent = NumericSwitchChange;
+            if (newEvent != null) newEvent(this, e);
         }
 
 
@@ -49,9 +50,15 @@ namespace PepperDash.Essentials.DM
         {
             _rmc = rmc;
             DmIn = new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.DmCat, 0, this);
+                eRoutingPortConnectionType.DmCat, 0, this)
+            {
+                FeedbackMatchObject = 1
+            };
             HdmiIn = new RoutingInputPort(DmPortName.HdmiIn, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, 0, this);
+                eRoutingPortConnectionType.Hdmi, 0, this)
+            {
+                FeedbackMatchObject = 2
+            };
             HdmiOut = new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.AudioVideo,
                 eRoutingPortConnectionType.Hdmi, null, this);
 
@@ -92,8 +99,12 @@ namespace PepperDash.Essentials.DM
 
             if (args.EventId == EndpointOutputStreamEventIds.SelectedSourceFeedbackEventId)
             {
+                var localInputPort =
+                    InputPorts.FirstOrDefault(p => (int)p.FeedbackMatchObject == AudioVideoSourceNumericFeedback.UShortValue);
+
+
                 AudioVideoSourceNumericFeedback.FireUpdate();
-                OnSwitchChange(new RoutingNumericEventArgs(1, AudioVideoSourceNumericFeedback.UShortValue, eRoutingSignalType.AudioVideo));
+                OnSwitchChange(new RoutingNumericEventArgs(1, AudioVideoSourceNumericFeedback.UShortValue, OutputPorts.First(), localInputPort, eRoutingSignalType.AudioVideo));
             }
         }
 

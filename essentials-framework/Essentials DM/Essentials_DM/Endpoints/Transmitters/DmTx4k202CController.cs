@@ -40,7 +40,7 @@ namespace PepperDash.Essentials.DM
         public BoolFeedback Hdmi2VideoSyncFeedback { get; protected set; }
 
         //IroutingNumericEvent
-        public event EventHandler NumericSwitchChange;
+        public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
 
         /// <summary>
         /// Raise an event when the status of a switch object changes.
@@ -48,7 +48,8 @@ namespace PepperDash.Essentials.DM
         /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
         private void OnSwitchChange(RoutingNumericEventArgs e)
         {
-            if (NumericSwitchChange != null) NumericSwitchChange(this, e);
+            var newEvent = NumericSwitchChange;
+            if (newEvent != null) newEvent(this, e);
         }
 
 
@@ -94,6 +95,7 @@ namespace PepperDash.Essentials.DM
                 return new RoutingPortCollection<RoutingOutputPort> { DmOut, HdmiLoopOut };
             }
         }
+
         public DmTx4k202CController(string key, string name, DmTx4k202C tx)
             : base(key, name, tx)
         {
@@ -101,10 +103,17 @@ namespace PepperDash.Essentials.DM
 
             HdmiIn1 = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn1,
                 eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.Hdmi1, this,
-                VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInputs[1]));
+                VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInputs[1]))
+            {
+                FeedbackMatchObject = eVst.Hdmi1
+            };
             HdmiIn2 = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn2,
                 eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.Hdmi2, this,
-                VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInputs[2]));
+                VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInputs[2]))
+            {
+                FeedbackMatchObject = eVst.Hdmi2
+            };
+
             ActiveVideoInputFeedback = new StringFeedback("ActiveVideoInput",
                 () => ActualActiveVideoInput.ToString());
 
@@ -115,15 +124,17 @@ namespace PepperDash.Essentials.DM
 
             Tx.BaseEvent += Tx_BaseEvent;
 
-            Tx.OnlineStatusChange +=Tx_OnlineStatusChange;
+            Tx.OnlineStatusChange += Tx_OnlineStatusChange;
 
-            VideoSourceNumericFeedback = new IntFeedback(() => (int)Tx.VideoSourceFeedback);
+            VideoSourceNumericFeedback = new IntFeedback(() => (int) Tx.VideoSourceFeedback);
 
-            AudioSourceNumericFeedback = new IntFeedback(() => (int)Tx.AudioSourceFeedback);
+            AudioSourceNumericFeedback = new IntFeedback(() => (int) Tx.AudioSourceFeedback);
 
-            HdmiIn1HdcpCapabilityFeedback = new IntFeedback("HdmiIn1HdcpCapability", () => (int)tx.HdmiInputs[1].HdcpCapabilityFeedback);
+            HdmiIn1HdcpCapabilityFeedback = new IntFeedback("HdmiIn1HdcpCapability",
+                () => (int) tx.HdmiInputs[1].HdcpCapabilityFeedback);
 
-            HdmiIn2HdcpCapabilityFeedback = new IntFeedback("HdmiIn2HdcpCapability", () => (int)tx.HdmiInputs[2].HdcpCapabilityFeedback);
+            HdmiIn2HdcpCapabilityFeedback = new IntFeedback("HdmiIn2HdcpCapability",
+                () => (int) tx.HdmiInputs[2].HdcpCapabilityFeedback);
 
             HdcpStateFeedback =
                 new IntFeedback(
@@ -134,17 +145,17 @@ namespace PepperDash.Essentials.DM
 
             HdcpSupportCapability = eHdcpCapabilityType.Hdcp2_2Support;
 
-            Hdmi1VideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue);
+            Hdmi1VideoSyncFeedback = new BoolFeedback(() => (bool) tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue);
 
-            Hdmi2VideoSyncFeedback = new BoolFeedback(() => (bool)tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue);
+            Hdmi2VideoSyncFeedback = new BoolFeedback(() => (bool) tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue);
 
             var combinedFuncs = new VideoStatusFuncsWrapper
             {
                 HdcpActiveFeedbackFunc = () =>
                     (ActualActiveVideoInput == eVst.Hdmi1
-                    && tx.HdmiInputs[1].VideoAttributes.HdcpActiveFeedback.BoolValue)
+                     && tx.HdmiInputs[1].VideoAttributes.HdcpActiveFeedback.BoolValue)
                     || (ActualActiveVideoInput == eVst.Hdmi2
-                    && tx.HdmiInputs[2].VideoAttributes.HdcpActiveFeedback.BoolValue),
+                        && tx.HdmiInputs[2].VideoAttributes.HdcpActiveFeedback.BoolValue),
 
                 HdcpStateFeedbackFunc = () =>
                 {
@@ -165,25 +176,28 @@ namespace PepperDash.Essentials.DM
                 },
                 VideoSyncFeedbackFunc = () =>
                     (ActualActiveVideoInput == eVst.Hdmi1
-                    && tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue)
+                     && tx.HdmiInputs[1].SyncDetectedFeedback.BoolValue)
                     || (ActualActiveVideoInput == eVst.Hdmi2
-                    && tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue)
+                        && tx.HdmiInputs[2].SyncDetectedFeedback.BoolValue)
 
             };
 
             AnyVideoInput = new RoutingInputPortWithVideoStatuses(DmPortName.AnyVideoIn,
-                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.None, 0, this, combinedFuncs);
+                eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.None, 0, this,
+                combinedFuncs);
 
             DmOut = new RoutingOutputPort(DmPortName.DmOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.DmCat, null, this);
-            HdmiLoopOut = new RoutingOutputPort(DmPortName.HdmiLoopOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
+            HdmiLoopOut = new RoutingOutputPort(DmPortName.HdmiLoopOut,
+                eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, null, this);
 
 
             AddToFeedbackList(ActiveVideoInputFeedback, VideoSourceNumericFeedback, AudioSourceNumericFeedback,
                 AnyVideoInput.VideoStatus.HasVideoStatusFeedback, AnyVideoInput.VideoStatus.HdcpActiveFeedback,
                 AnyVideoInput.VideoStatus.HdcpStateFeedback, AnyVideoInput.VideoStatus.VideoResolutionFeedback,
-                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiIn1HdcpCapabilityFeedback, HdmiIn2HdcpCapabilityFeedback,
+                AnyVideoInput.VideoStatus.VideoSyncFeedback, HdmiIn1HdcpCapabilityFeedback,
+                HdmiIn2HdcpCapabilityFeedback,
                 Hdmi1VideoSyncFeedback, Hdmi2VideoSyncFeedback);
 
             // Set Ports for CEC
@@ -313,13 +327,16 @@ namespace PepperDash.Essentials.DM
 
         void Tx_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
         {
+            var localVideoInputPort =
+                InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.VideoSourceFeedback);
+            var localAudioInputPort =
+                InputPorts.FirstOrDefault(p => (eAst)p.Selector == Tx.AudioSourceFeedback);
+
             ActiveVideoInputFeedback.FireUpdate();
             VideoSourceNumericFeedback.FireUpdate();
             AudioSourceNumericFeedback.FireUpdate();
-            OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue,
-                eRoutingSignalType.Video));
-            OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue,
-                eRoutingSignalType.Audio));
+            OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, OutputPorts.First(), localVideoInputPort, eRoutingSignalType.Video));
+            OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue, OutputPorts.First(), localAudioInputPort, eRoutingSignalType.Audio));
         }
 
         void Tx_BaseEvent(GenericBase device, BaseEventArgs args)
@@ -330,18 +347,19 @@ namespace PepperDash.Essentials.DM
             switch (id)
             {
                 case EndpointTransmitterBase.VideoSourceFeedbackEventId:
+                    var localVideoInputPort = InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.VideoSourceFeedback);
                     Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
-                    ActiveVideoInputFeedback.FireUpdate();
                     VideoSourceNumericFeedback.FireUpdate();
                     ActiveVideoInputFeedback.FireUpdate();
-                    OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, eRoutingSignalType.Video));
+                    OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, OutputPorts.First(), localVideoInputPort, eRoutingSignalType.Video));
                     break;
                 case EndpointTransmitterBase.AudioSourceFeedbackEventId:
-                    Debug.Console(2, this, " Audio Source : {0}", Tx.AudioSourceFeedback);
+                    var localInputAudioPort = InputPorts.FirstOrDefault(p => (eAst)p.Selector == Tx.AudioSourceFeedback);
+                    Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
                     AudioSourceNumericFeedback.FireUpdate();
-                    OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, eRoutingSignalType.Audio));
+                    OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue, OutputPorts.First(), localInputAudioPort, eRoutingSignalType.Audio));
                     break;
-            } 
+            }
         }
 
         /// <summary>
