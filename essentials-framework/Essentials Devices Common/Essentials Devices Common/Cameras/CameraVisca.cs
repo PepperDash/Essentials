@@ -58,6 +58,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 {
                     _powerIsOn = value;
                     PowerIsOnFeedback.FireUpdate();
+                    CameraIsOffFeedback.FireUpdate();
                 }
             }
         }
@@ -110,6 +111,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
 			Communication.BytesReceived += new EventHandler<GenericCommMethodReceiveBytesArgs>(Communication_BytesReceived);
 			PowerIsOnFeedback = new BoolFeedback(() => { return PowerIsOn; });
+            CameraIsOffFeedback = new BoolFeedback(() => { return !PowerIsOn; });
 
 			if (props.CommunicationMonitorProperties != null)
 			{
@@ -608,6 +610,18 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                     }
             }
         }
+
+        #region IHasCameraOff Members
+
+        public BoolFeedback CameraIsOffFeedback { get; private set; }
+
+
+        public void CameraOff()
+        {
+            PowerOff();
+        }
+
+        #endregion
     }
 
     public class CameraViscaFactory : EssentialsDeviceFactory<CameraVisca>
