@@ -16,12 +16,12 @@ using PepperDash.Essentials.Core.Routing;
 namespace PepperDash.Essentials.Devices.Common
 {
     [Description("Wrapper class for an IR Set Top Box")]
-    public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IPower
+    public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IHasPowerControl
 	{
 		public IrOutputPortController IrPort { get; private set; }
 
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeDirecTv; } }
-
+        public ushort IrPulseTime { get; set; }
 
         public bool HasPresets { get; set; }
         public bool HasDvr { get; set; }
@@ -35,6 +35,13 @@ namespace PepperDash.Essentials.Devices.Common
 			: base(key, name)
 		{
 			IrPort = portCont;
+            IrPulseTime = 200;
+
+            if (props.IrPulseTime > 0)
+            {
+                IrPulseTime = (ushort)props.IrPulseTime;
+            }
+
 			DeviceManager.AddDevice(portCont);
 
             HasPresets = props.HasPresets;
@@ -55,8 +62,6 @@ namespace PepperDash.Essentials.Devices.Common
 			AnyAudioOut = new RoutingOutputPort(RoutingPortNames.AnyAudioOut, eRoutingSignalType.Audio,
 				eRoutingPortConnectionType.DigitalAudio, null, this);
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort> { AnyVideoOut, AnyAudioOut };
-
-            PowerIsOnFeedback = new BoolFeedback(() => false);
 		}
 
 		public void LoadPresets(string filePath)
@@ -349,21 +354,18 @@ namespace PepperDash.Essentials.Devices.Common
 
         public void PowerOn()
         {
-            IrPort.Pulse(IROutputStandardCommands.IROut_POWER_ON, 200);
+            IrPort.Pulse(IROutputStandardCommands.IROut_POWER_ON, IrPulseTime);
         }
 
         public void PowerOff()
         {
-            IrPort.Pulse(IROutputStandardCommands.IROut_POWER_OFF, 200);
+            IrPort.Pulse(IROutputStandardCommands.IROut_POWER_OFF, IrPulseTime);
         }
 
         public void PowerToggle()
         {
-            // TODO: Implement power toggle command pulse
-            IrPort.Pulse(IROutputStandardCommands.IROut_POWER, 200);
+            IrPort.Pulse(IROutputStandardCommands.IROut_POWER, IrPulseTime);
         }
-
-        public BoolFeedback PowerIsOnFeedback { get; private set; }
 
         #endregion
 
@@ -403,7 +405,7 @@ namespace PepperDash.Essentials.Devices.Common
                 trilist.SetStringSigAction(joinMap.LoadPresets.JoinNumber, stbBase.LoadPresets);
             }
 
-	        var stbPower = this as IPower;
+	        var stbPower = this as IHasPowerControl;
             if (stbPower != null)
             {
                 trilist.SetSigTrueAction(joinMap.PowerOn.JoinNumber, stbPower.PowerOn);
@@ -412,7 +414,6 @@ namespace PepperDash.Essentials.Devices.Common
             }
 
 	        var stbDPad = this as IDPad;
-
             if (stbDPad != null)
             {
                 trilist.SetBoolSigAction(joinMap.Up.JoinNumber, stbDPad.Up);
@@ -445,7 +446,6 @@ namespace PepperDash.Essentials.Devices.Common
             }
 
 	        var stbKeypad = this as ISetTopBoxNumericKeypad;
-
             if (stbKeypad != null)
             {
                 trilist.StringInput[joinMap.KeypadAccessoryButton1Label.JoinNumber].StringValue = stbKeypad.KeypadAccessoryButton1Label;

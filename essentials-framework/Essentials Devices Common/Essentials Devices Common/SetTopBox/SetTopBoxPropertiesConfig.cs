@@ -14,6 +14,7 @@ namespace PepperDash.Essentials.Devices.Common
         public bool HasDvr { get; set; }
         public bool HasDpad { get; set; }
         public bool HasNumeric { get; set; }
+        public int IrPulseTime { get; set; }
 
         public ControlPropertiesConfig Control { get; set; }
     }
