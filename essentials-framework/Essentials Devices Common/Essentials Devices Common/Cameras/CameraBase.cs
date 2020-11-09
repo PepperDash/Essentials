@@ -181,14 +181,18 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 });
             }
 
-            if (cameraDevice is IPower)
+            var powerCamera = cameraDevice as IPower;
+            if (powerCamera != null)
             {
-                var powerCamera = cameraDevice as IPower;
                 trilist.SetSigTrueAction(joinMap.PowerOn.JoinNumber, () => powerCamera.PowerOn());
                 trilist.SetSigTrueAction(joinMap.PowerOff.JoinNumber, () => powerCamera.PowerOff());
 
-                powerCamera.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn.JoinNumber]);
-                powerCamera.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff.JoinNumber]);
+                var powerFbCamera = powerCamera as IPowerWithFeedback;
+                if (powerFbCamera != null)
+                {
+                    powerFbCamera.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn.JoinNumber]);
+                    powerFbCamera.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff.JoinNumber]);
+                }
             }
 
             if (cameraDevice is ICommunicationMonitor)

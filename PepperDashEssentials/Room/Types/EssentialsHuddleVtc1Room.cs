@@ -190,6 +190,12 @@ namespace PepperDash.Essentials
 					(_CurrentSourceInfo.SourceDevice as IInUseTracking).InUseTracker.AddUser(this, "control");
 				if (handler != null)
 					handler(_CurrentSourceInfo, ChangeType.DidChange);
+
+                var vc = VideoCodec as IHasExternalSourceSwitching;
+                if (vc != null)
+                {
+                    vc.SetSelectedSource(_CurrentSourceInfo.SourceKey);
+                }
 			}
 		}
 		SourceListItem _CurrentSourceInfo;
