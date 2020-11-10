@@ -183,6 +183,9 @@
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
     <Compile Include="Crestron IO\StatusSign\StatusSignController.cs" />
+    <Compile Include="Device Info\DeviceInfo.cs" />
+    <Compile Include="Device Info\DeviceInfoEventArgs.cs" />
+    <Compile Include="Device Info\IDeviceInfoProvider.cs" />
     <Compile Include="Devices\CodecInterfaces.cs" />
     <Compile Include="Devices\CrestronProcessor.cs" />
     <Compile Include="Devices\DeviceApiBase.cs" />
