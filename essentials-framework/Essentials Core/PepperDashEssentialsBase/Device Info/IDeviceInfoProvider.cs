@@ -3,7 +3,7 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.DeviceInfo
 {
-    public interface IDeviceInfoProvider
+    public interface IDeviceInfoProvider:IKeyed
     {
         DeviceInfo DeviceInfo { get; }
 
