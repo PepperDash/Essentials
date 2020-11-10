@@ -1339,10 +1339,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public override void SendDtmf(string s)
         {
-            if (CallFavorites != null)
-            {
-                SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
-            }
+            SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
+           
         }
 
         public void SelectPresentationSource(int source)
