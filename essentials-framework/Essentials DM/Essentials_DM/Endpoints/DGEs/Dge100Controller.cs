@@ -44,6 +44,8 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
             DeviceInfo = new DeviceInfo();
 
+            _dge.OnlineStatusChange += (currentDevice, args) => { if (args.DeviceOnLine) UpdateDeviceInfo(); };
+
             _dc = dc;
 
             PropertiesConfig = props;
