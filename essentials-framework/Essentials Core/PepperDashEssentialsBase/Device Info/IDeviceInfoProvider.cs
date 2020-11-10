@@ -1,4 +1,5 @@
 ﻿using System;
+using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.DeviceInfo
 {
@@ -6,8 +7,10 @@ namespace PepperDash.Essentials.Core.DeviceInfo
     {
         DeviceInfo DeviceInfo { get; }
 
-        event EventHandler<DeviceInfoEventArgs> DeviceInfoChanged;
+        event DeviceInfoChangeHandler DeviceInfoChanged;
 
         void UpdateDeviceInfo();
     }
+
+    public delegate void DeviceInfoChangeHandler(IKeyed device, DeviceInfoEventArgs args);
 }

@@ -87,7 +87,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
         public DeviceInfo DeviceInfo { get; private set; }
 
-        public event EventHandler<DeviceInfoEventArgs> DeviceInfoChanged;
+        public event DeviceInfoChangeHandler DeviceInfoChanged;
 
         public void UpdateDeviceInfo()
         {

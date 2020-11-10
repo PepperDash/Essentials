@@ -89,7 +89,7 @@ namespace PepperDash.Essentials.DM
         #region Implementation of IDeviceInfoProvider
 
         public DeviceInfo DeviceInfo { get; private set; }
-        public event EventHandler<DeviceInfoEventArgs> DeviceInfoChanged;
+        public event DeviceInfoChangeHandler DeviceInfoChanged;
 
         public void UpdateDeviceInfo()
         {
