@@ -93,7 +93,9 @@ namespace PepperDash.Essentials.DM
 
         public void UpdateDeviceInfo()
         {
-            if (!_rmc.IsOnline || _rmc.ConnectedIpList.Count == 0)
+            Debug.Console(1, this, "Updating Device Info");
+
+            if (_rmc.ConnectedIpList.Count == 0)
             {
                 Debug.Console(1, this, "IP Address information not yet received. No device is online");
                 return;
