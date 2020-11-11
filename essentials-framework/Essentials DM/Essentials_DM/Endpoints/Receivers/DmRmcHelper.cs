@@ -115,7 +115,10 @@ namespace PepperDash.Essentials.DM
 
         private void GetFirmwareAndSerialInfo()
         {
-            var tcpClient = new GenericTcpIpClient("", _rmc.ConnectedIpList[0].DeviceIpAddress, CtpPort, 1024);
+            var tcpClient = new GenericTcpIpClient(String.Format("{0}-devInfoSocket", Key), _rmc.ConnectedIpList[0].DeviceIpAddress, CtpPort, 1024)
+            {
+                AutoReconnect = false,
+            };
 
             var gather = new CommunicationGather(tcpClient, "\r\n\r\n");
 
@@ -123,6 +126,7 @@ namespace PepperDash.Essentials.DM
             {
                 if (!args.Client.IsConnected)
                 {
+                    OnDeviceInfoChange();
                     return;
                 }
 
