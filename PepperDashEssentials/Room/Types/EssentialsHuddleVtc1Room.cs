@@ -194,7 +194,7 @@ namespace PepperDash.Essentials
                 var vc = VideoCodec as IHasExternalSourceSwitching;
                 if (vc != null)
                 {
-                    vc.SetSelectedSource(_CurrentSourceInfo.SourceKey);
+                    vc.SetSelectedSource(CurrentSourceInfoKey);
                 }
 			}
 		}
