@@ -17,7 +17,7 @@ using PepperDash.Essentials.Core.Config;
 namespace PepperDash.Essentials.DM.AirMedia
 {
     [Description("Wrapper class for an AM-200 or AM-300")]
-    public class AirMediaController : CrestronGenericBridgeableBaseDevice, IRoutingNumeric, IIROutputPorts, IComPorts
+    public class AirMediaController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, IIROutputPorts, IComPorts
     {
         public AmX00 AirMedia { get; private set; }
 
@@ -28,6 +28,10 @@ namespace PepperDash.Essentials.DM.AirMedia
         public RoutingPortCollection<RoutingInputPort> InputPorts { get; private set; }
 
         public RoutingPortCollection<RoutingOutputPort> OutputPorts { get; private set; }
+
+
+        //IroutingNumericEvent
+        public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
 
         public BoolFeedback IsInSessionFeedback { get; private set; }
         public IntFeedback ErrorFeedback { get; private set; }
@@ -43,6 +47,7 @@ namespace PepperDash.Essentials.DM.AirMedia
         public AirMediaController(string key, string name, AmX00 device, DeviceConfig dc, AirMediaPropertiesConfig props)
             : base(key, name, device)
         {
+
             AirMedia = device;
 
             DeviceConfig = dc;
@@ -53,21 +58,36 @@ namespace PepperDash.Essentials.DM.AirMedia
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
             InputPorts.Add(new RoutingInputPort(DmPortName.Osd, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.None, new Action(SelectPinPointUxLandingPage), this));
+                eRoutingPortConnectionType.None, new Action(SelectPinPointUxLandingPage), this)
+            {
+                FeedbackMatchObject = 0
+            });
 
             InputPorts.Add(new RoutingInputPort(DmPortName.AirMediaIn, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Streaming, new Action(SelectAirMedia), this));
+                eRoutingPortConnectionType.Streaming, new Action(SelectAirMedia), this)
+            {
+                FeedbackMatchObject = 1
+            });
 
             InputPorts.Add(new RoutingInputPort(DmPortName.HdmiIn, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.Hdmi, new Action(SelectHdmiIn), this));
+                eRoutingPortConnectionType.Hdmi, new Action(SelectHdmiIn), this)
+                {
+                    FeedbackMatchObject = 2
+                });
 
             InputPorts.Add(new RoutingInputPort(DmPortName.AirBoardIn, eRoutingSignalType.AudioVideo,
-                eRoutingPortConnectionType.None, new Action(SelectAirboardIn), this));
+                eRoutingPortConnectionType.None, new Action(SelectAirboardIn), this)
+                {
+                    FeedbackMatchObject = 4
+                });
 
             if (AirMedia is Am300)
             {
                 InputPorts.Add(new RoutingInputPort(DmPortName.DmIn, eRoutingSignalType.AudioVideo,
-                    eRoutingPortConnectionType.DmCat, new Action(SelectDmIn), this));
+                    eRoutingPortConnectionType.DmCat, new Action(SelectDmIn), this)
+                    {
+                        FeedbackMatchObject = 3
+                    });
             }
 
             OutputPorts.Add(new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.AudioVideo,
@@ -153,6 +173,17 @@ namespace PepperDash.Essentials.DM.AirMedia
             SerialNumberFeedback.LinkInputSig(trilist.StringInput[joinMap.SerialNumberFeedback.JoinNumber]);
         }
 
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        private void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            var newEvent = NumericSwitchChange;
+            if (newEvent != null) newEvent(this, e);
+        }
+
+
         void AirMedia_AirMediaChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
         {
             if (args.EventId == AirMediaInputSlot.AirMediaStatusFeedbackEventId)
@@ -172,12 +203,20 @@ namespace PepperDash.Essentials.DM.AirMedia
         void DisplayControl_DisplayControlChange(object sender, Crestron.SimplSharpPro.DeviceSupport.GenericEventArgs args)
         {
             if (args.EventId == AmX00.VideoOutFeedbackEventId)
+            {
                 VideoOutFeedback.FireUpdate();
+
+                var localInputPort =
+                    InputPorts.FirstOrDefault(p => (int) p.FeedbackMatchObject == VideoOutFeedback.UShortValue);
+
+                OnSwitchChange(new RoutingNumericEventArgs(1, VideoOutFeedback.UShortValue, OutputPorts.First(),
+                    localInputPort, eRoutingSignalType.AudioVideo));
+            }
             else if (args.EventId == AmX00.EnableAutomaticRoutingFeedbackEventId)
                 AutomaticInputRoutingEnabledFeedback.FireUpdate();
         }
 
-        void HdmiIn_StreamChange(Crestron.SimplSharpPro.DeviceSupport.Stream stream, Crestron.SimplSharpPro.DeviceSupport.StreamEventArgs args)
+        void HdmiIn_StreamChange(Stream stream, Crestron.SimplSharpPro.DeviceSupport.StreamEventArgs args)
         {
             if (args.EventId == DMInputEventIds.SourceSyncEventId)
                 HdmiVideoSyncDetectedFeedback.FireUpdate();

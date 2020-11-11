@@ -24,6 +24,8 @@ namespace PepperDash.Essentials.Devices.Displays
         IInputHdmi1, IInputHdmi2, IInputHdmi3, IInputHdmi4, IBridgeAdvanced
 	{
 		public IBasicCommunication Communication { get; private set; }
+
+
 				
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
@@ -326,6 +328,9 @@ namespace PepperDash.Essentials.Devices.Displays
             }
         }
 
+        
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -336,6 +341,7 @@ namespace PepperDash.Essentials.Devices.Displays
             {
                 _CurrentInputPort = newInput;
                 CurrentInputFeedback.FireUpdate();
+                OnSwitchChange(new RoutingNumericEventArgs(null, _CurrentInputPort, eRoutingSignalType.AudioVideo));
             }
         }
 

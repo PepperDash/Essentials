@@ -14,6 +14,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 		void AddExternalSource(string connectorId, string key, string name, eExternalSourceType type);
 		void SetExternalSourceState(string key, eExternalSourceMode mode);
 		void ClearExternalSources();
+        void SetSelectedSource(string key);
 		Action<string, string> RunRouteAction { set;}
 	}
 

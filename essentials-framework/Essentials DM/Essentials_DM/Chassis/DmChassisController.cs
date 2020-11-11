@@ -21,11 +21,14 @@ namespace PepperDash.Essentials.DM
     /// 
     /// </summary>
     [Description("Wrapper class for all DM-MD chassis variants from 8x8 to 32x32")]
-    public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumeric
+    public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumericWithFeedback
     {
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
         public Switch Chassis { get; private set; }
+
+        //IroutingNumericEvent
+        public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
 
         // Feedbacks for EssentialDM
         public Dictionary<uint, IntFeedback> VideoOutputFeedbacks { get; private set; }
@@ -188,6 +191,7 @@ namespace PepperDash.Essentials.DM
         public DmChassisController(string key, string name, DmMDMnxn chassis)
             : base(key, name, chassis)
         {
+
             Chassis = chassis;
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
@@ -737,7 +741,10 @@ namespace PepperDash.Essentials.DM
         {
             var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this);
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
+            {
+                FeedbackMatchObject = Chassis.Inputs[cardNum]
+            };
 
             InputPorts.Add(inputPort);
         }
@@ -749,7 +756,10 @@ namespace PepperDash.Essentials.DM
         {
             var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this);
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
+            {
+                FeedbackMatchObject = Chassis.Inputs[cardNum]
+            }; ;
 
             if (cecPort != null)
                 inputPort.Port = cecPort;
@@ -764,7 +774,10 @@ namespace PepperDash.Essentials.DM
         {
             var portKey = string.Format("{0}--{1}", cardName, portName);
             Debug.Console(2, this, "Adding output port '{0}'", portKey);
-            OutputPorts.Add(new RoutingOutputPort(portKey, sigType, portType, selector, this));
+            OutputPorts.Add(new RoutingOutputPort(portKey, sigType, portType, selector, this)
+            {
+                FeedbackMatchObject = Chassis.Outputs[(uint)selector]
+            });
         }
 
         /// <summary>
@@ -774,7 +787,10 @@ namespace PepperDash.Essentials.DM
         {
             var portKey = string.Format("{0}--{1}", cardName, portName);
             Debug.Console(2, this, "Adding output port '{0}'", portKey);
-            var outputPort = new RoutingOutputPort(portKey, sigType, portType, selector, this);
+            var outputPort = new RoutingOutputPort(portKey, sigType, portType, selector, this)
+            {
+                FeedbackMatchObject = Chassis.Outputs[(uint)selector]
+            }; ;
 
             if (cecPort != null)
                 outputPort.Port = cecPort;
@@ -907,6 +923,17 @@ namespace PepperDash.Essentials.DM
             }
         }
 
+        /// <summary>
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        private void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            var newEvent = NumericSwitchChange;
+            if (newEvent != null) newEvent(this, e);
+        }
+
         /// 
         /// </summary>
         void Chassis_DMOutputChange(Switch device, DMOutputEventArgs args)
@@ -940,11 +967,26 @@ namespace PepperDash.Essentials.DM
                 }
                 case DMOutputEventIds.VideoOutEventId:
                 {
-                    if (Chassis.Outputs[output].VideoOutFeedback != null)
-                        Debug.Console(2, this, "DMSwitchVideo:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].VideoOutFeedback.Number, output);
+                    
+                    var inputNumber = Chassis.Outputs[output].VideoOutFeedback == null ? 0 : Chassis.
+                    Outputs[output].VideoOutFeedback.Number;
+
+                    Debug.Console(2, this, "DMSwitchVideo:{0} Routed Input:{1} Output:{2}'", this.Name, inputNumber, output);
 
                     if (VideoOutputFeedbacks.ContainsKey(output))
+                    {
+                        var localInputPort = InputPorts.FirstOrDefault(p => (DMInput)p.FeedbackMatchObject == Chassis.Outputs[output].VideoOutFeedback);
+                        var localOutputPort =
+                            OutputPorts.FirstOrDefault(p => (DMOutput) p.FeedbackMatchObject == Chassis.Outputs[output]);
+
+
                         VideoOutputFeedbacks[output].FireUpdate();
+                        OnSwitchChange(new RoutingNumericEventArgs(output,
+                            inputNumber,
+                            localOutputPort,
+                            localInputPort,
+                            eRoutingSignalType.Video));
+                    }
 
                     if (OutputVideoRouteNameFeedbacks.ContainsKey(output))
                         OutputVideoRouteNameFeedbacks[output].FireUpdate();
@@ -953,11 +995,25 @@ namespace PepperDash.Essentials.DM
                 }
                 case DMOutputEventIds.AudioOutEventId:
                 {
-                    if (Chassis.Outputs[output].AudioOutFeedback != null)
-                        Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].AudioOutFeedback.Number, output);
+                    var inputNumber = Chassis.Outputs[output].AudioOutFeedback == null ? 0 : Chassis.
+                    Outputs[output].AudioOutFeedback.Number;
+
+                    Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name, inputNumber, output);
 
                     if (AudioOutputFeedbacks.ContainsKey(output))
+                    {
+                        var localInputPort = InputPorts.FirstOrDefault(p => (DMInput)p.FeedbackMatchObject == Chassis.Outputs[output].AudioOutFeedback);
+                        var localOutputPort =
+                            OutputPorts.FirstOrDefault(p => (DMOutput)p.FeedbackMatchObject == Chassis.Outputs[output]);
+
+
                         AudioOutputFeedbacks[output].FireUpdate();
+                        OnSwitchChange(new RoutingNumericEventArgs(output,
+                            inputNumber,
+                            localOutputPort,
+                            localInputPort,
+                            eRoutingSignalType.Audio));
+                    }
 
                     if (OutputAudioRouteNameFeedbacks.ContainsKey(output))
                         OutputAudioRouteNameFeedbacks[output].FireUpdate();

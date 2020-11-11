@@ -305,9 +305,9 @@ namespace PepperDash.Essentials
             TriList.SetSigFalseAction(UIBoolJoin.ShowPowerOffPress, EndMeetingPress);
 
 			TriList.SetSigFalseAction(UIBoolJoin.DisplayPowerTogglePress, () =>
-				{ 
-					if (CurrentRoom != null && CurrentRoom.DefaultDisplay is IPower)
-						(CurrentRoom.DefaultDisplay as IPower).PowerToggle();
+				{
+                    if (CurrentRoom != null && CurrentRoom.DefaultDisplay is IHasPowerControl)
+                        (CurrentRoom.DefaultDisplay as IHasPowerControl).PowerToggle();
 				});
 
 			base.Show();
@@ -984,8 +984,8 @@ namespace PepperDash.Essentials
 				(previousDev as IDvr).UnlinkButtons(TriList);
 			if (previousDev is INumericKeypad)
 				(previousDev as INumericKeypad).UnlinkButtons(TriList);
-			if (previousDev is IPower)
-				(previousDev as IPower).UnlinkButtons(TriList);
+            if (previousDev is IHasPowerControl)
+                (previousDev as IHasPowerControl).UnlinkButtons(TriList);
 			if (previousDev is ITransport)
 				(previousDev as ITransport).UnlinkButtons(TriList);
 			//if (previousDev is IRadio)
@@ -1044,8 +1044,8 @@ namespace PepperDash.Essentials
 				(dev as IDvr).LinkButtons(TriList);
 			if (dev is INumericKeypad)
 				(dev as INumericKeypad).LinkButtons(TriList);
-			if (dev is IPower)
-				(dev as IPower).LinkButtons(TriList);
+            if (dev is IHasPowerControl)
+                (dev as IHasPowerControl).LinkButtons(TriList);
 			if (dev is ITransport)
 				(dev as ITransport).LinkButtons(TriList);
 			//if (dev is IRadio)

@@ -18,7 +18,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// 
 	/// </summary>
-	public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IPower, IWarmingCooling, IUsageTracking
+    public abstract class DisplayBase : EssentialsDevice, IHasFeedback, IRoutingSinkWithSwitching, IHasPowerControl, IWarmingCooling, IUsageTracking
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
 
@@ -46,7 +46,6 @@ namespace PepperDash.Essentials.Core
         }
         SourceListItem _CurrentSourceInfo;
 
-		public BoolFeedback PowerIsOnFeedback { get; protected set; }
 		public BoolFeedback IsCoolingDownFeedback { get; protected set; }
 		public BoolFeedback IsWarmingUpFeedback { get; private set; }
 
@@ -59,7 +58,6 @@ namespace PepperDash.Essentials.Core
 		/// Bool Func that will provide a value for the PowerIsOn Output. Must be implemented
 		/// by concrete sub-classes
 		/// </summary>
-		abstract protected Func<bool> PowerIsOnFeedbackFunc { get; }
 		abstract protected Func<bool> IsCoolingDownFeedbackFunc { get; }
 		abstract protected Func<bool> IsWarmingUpFeedbackFunc { get; }
         
@@ -76,25 +74,14 @@ namespace PepperDash.Essentials.Core
 	    protected DisplayBase(string key, string name)
 			: base(key, name)
 		{
-			PowerIsOnFeedback = new BoolFeedback("PowerOnFeedback", PowerIsOnFeedbackFunc);
 			IsCoolingDownFeedback = new BoolFeedback("IsCoolingDown", IsCoolingDownFeedbackFunc);
 			IsWarmingUpFeedback = new BoolFeedback("IsWarmingUp", IsWarmingUpFeedbackFunc);
 
 			InputPorts = new RoutingPortCollection<RoutingInputPort>();
 
-            PowerIsOnFeedback.OutputChange += PowerIsOnFeedback_OutputChange;
 		}
 
-        void PowerIsOnFeedback_OutputChange(object sender, EventArgs e)
-        {
-            if (UsageTracker != null)
-            {
-                if (PowerIsOnFeedback.BoolValue)
-                    UsageTracker.StartDeviceUsage();
-                else
-                    UsageTracker.EndDeviceUsage();
-            }
-        }
+
 
 		public abstract void PowerOn();
 		public abstract void PowerOff();
@@ -106,7 +93,6 @@ namespace PepperDash.Essentials.Core
 			{
                 return new FeedbackCollection<Feedback>
 				{
-					PowerIsOnFeedback,
 					IsCoolingDownFeedback,
 					IsWarmingUpFeedback
 				};
@@ -171,22 +157,27 @@ namespace PepperDash.Essentials.Core
                 displayDevice.PowerOff();
             });
 
-            displayDevice.PowerIsOnFeedback.OutputChange += (o, a) =>
+            var twoWayDisplayDevice = displayDevice as TwoWayDisplayBase;
+            if (twoWayDisplayDevice != null)
             {
-                if (!a.BoolValue)
+                twoWayDisplayDevice.PowerIsOnFeedback.OutputChange += (o, a) =>
                 {
-                    inputNumber = 102;
-                    inputNumberFeedback.FireUpdate();
+                    if (!a.BoolValue)
+                    {
+                        inputNumber = 102;
+                        inputNumberFeedback.FireUpdate();
 
-                }
-                else
-                {
-                    inputNumber = 0;
-                    inputNumberFeedback.FireUpdate();
-                }
-            };
+                    }
+                    else
+                    {
+                        inputNumber = 0;
+                        inputNumberFeedback.FireUpdate();
+                    }
+                };
 
-            displayDevice.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff.JoinNumber]);
+                twoWayDisplayDevice.PowerIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.PowerOff.JoinNumber]);
+                twoWayDisplayDevice.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn.JoinNumber]);
+            }
 
             // PowerOn
             trilist.SetSigTrueAction(joinMap.PowerOn.JoinNumber, () =>
@@ -197,7 +188,6 @@ namespace PepperDash.Essentials.Core
             });
 
 
-            displayDevice.PowerIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PowerOn.JoinNumber]);
 
             for (int i = 0; i < displayDevice.InputPorts.Count; i++)
             {
@@ -259,16 +249,20 @@ namespace PepperDash.Essentials.Core
             volumeDisplayWithFeedback.MuteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VolumeMuteOn.JoinNumber]);
             volumeDisplayWithFeedback.MuteFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.VolumeMuteOff.JoinNumber]);
 	    }
-	}
+
+    }
 
 	/// <summary>
 	/// 
 	/// </summary>
-    public abstract class TwoWayDisplayBase : DisplayBase
+    public abstract class TwoWayDisplayBase : DisplayBase, IRoutingFeedback, IHasPowerControlWithFeedback
 	{
         public StringFeedback CurrentInputFeedback { get; private set; }
 
         abstract protected Func<string> CurrentInputFeedbackFunc { get; }
+
+        public BoolFeedback PowerIsOnFeedback { get; protected set; }
+        abstract protected Func<bool> PowerIsOnFeedbackFunc { get; }
 
 
         public static MockDisplay DefaultDisplay
@@ -290,10 +284,38 @@ namespace PepperDash.Essentials.Core
 			WarmupTime = 7000;
 			CooldownTime = 15000;
 
-            Feedbacks.Add(CurrentInputFeedback);
+            PowerIsOnFeedback = new BoolFeedback("PowerOnFeedback", PowerIsOnFeedbackFunc);
 
-            
+            Feedbacks.Add(CurrentInputFeedback);
+            Feedbacks.Add(PowerIsOnFeedback);
+
+            PowerIsOnFeedback.OutputChange += PowerIsOnFeedback_OutputChange;
+
 		}
+
+        void PowerIsOnFeedback_OutputChange(object sender, EventArgs e)
+        {
+            if (UsageTracker != null)
+            {
+                if (PowerIsOnFeedback.BoolValue)
+                    UsageTracker.StartDeviceUsage();
+                else
+                    UsageTracker.EndDeviceUsage();
+            }
+        }
+
+        public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
+
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        protected void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            var newEvent = NumericSwitchChange;
+            if (newEvent != null) newEvent(this, e);
+        }
+
 
 	}
 }

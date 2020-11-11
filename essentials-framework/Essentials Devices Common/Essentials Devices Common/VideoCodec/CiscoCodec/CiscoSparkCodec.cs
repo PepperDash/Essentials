@@ -1970,6 +1970,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			
 		}
 
+        /// <summary>
+        /// Sets the selected source of the available external sources on teh Touch10 UI
+        /// </summary>
+        public void SetSelectedSource(string key)
+        {
+            SendText(string.Format("xCommand UserInterface Presentation ExternalSource Select SourceIdentifier: {0}", key));
+        }
+
 		/// <summary>
 		/// Action that will run when the External Source is selected. 
 		/// </summary>

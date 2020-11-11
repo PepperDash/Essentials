@@ -21,11 +21,14 @@ namespace PepperDash.Essentials.DM {
     /// Builds a controller for basic DM-RMCs with Com and IR ports and no control functions
     /// 
     /// </summary>
-    public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumeric
+    public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumericWithFeedback
     {
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
         public Switch Chassis { get; private set; }
+
+        //IroutingNumericEvent
+        public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
 
         // Feedbacks for EssentialDM
         public Dictionary<uint, IntFeedback> VideoOutputFeedbacks { get; private set; }
@@ -287,6 +290,15 @@ namespace PepperDash.Essentials.DM {
             }
         }
 
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        private void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            var newEvent = NumericSwitchChange;
+            if (newEvent != null) newEvent(this, e);
+        }
 
 
         void AddHdmiInBladePorts(uint number, ICec cecPort) {
@@ -377,7 +389,10 @@ namespace PepperDash.Essentials.DM {
         void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType) {
             var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this);
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
+            {
+                FeedbackMatchObject = Chassis.Inputs[cardNum]
+            };
 
             InputPorts.Add(inputPort);
         }
@@ -385,19 +400,20 @@ namespace PepperDash.Essentials.DM {
         /// <summary>
         /// Adds InputPort and sets Port as ICec object
         /// </summary>
-        void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, ICec cecPort) {
+        private void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType,
+            eRoutingPortConnectionType portType, ICec cecPort)
+        {
             var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this);
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
+            {
+                FeedbackMatchObject = Chassis.Inputs[cardNum]
+            };
 
-            if (inputPort != null) {
-                if (cecPort != null)
-                    inputPort.Port = cecPort;
+            if (cecPort != null)
+                inputPort.Port = cecPort;
 
-                InputPorts.Add(inputPort);
-            }
-            else
-                Debug.Console(2, this, "inputPort is null");
+            InputPorts.Add(inputPort);
         }
 
 
@@ -407,7 +423,10 @@ namespace PepperDash.Essentials.DM {
         void AddOutputPortWithDebug(string cardName, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, object selector) {
             var portKey = string.Format("{0}--{1}", cardName, portName);
             Debug.Console(2, this, "Adding output port '{0}'", portKey);
-            OutputPorts.Add(new RoutingOutputPort(portKey, sigType, portType, selector, this));
+            OutputPorts.Add(new RoutingOutputPort(portKey, sigType, portType, selector, this)
+            {
+                FeedbackMatchObject = Chassis.Outputs[(uint)selector]
+            });
         }
 
 
@@ -458,54 +477,84 @@ namespace PepperDash.Essentials.DM {
                     }
             }
         }
+
         /// 
         /// </summary>
-        void Chassis_DMOutputChange(Switch device, DMOutputEventArgs args) 
+        private void Chassis_DMOutputChange(Switch device, DMOutputEventArgs args)
         {
             var output = args.Number;
 
-            switch (args.EventId) {
-                case DMOutputEventIds.VolumeEventId: {
-                        if (VolumeControls.ContainsKey(output)) {
-                            VolumeControls[args.Number].VolumeEventFromChassis();
-                        }
-                        break;
+            switch (args.EventId)
+            {
+                case DMOutputEventIds.VolumeEventId:
+                {
+                    if (VolumeControls.ContainsKey(output))
+                    {
+                        VolumeControls[args.Number].VolumeEventFromChassis();
                     }
-                case DMOutputEventIds.EndpointOnlineEventId: {
-                        Debug.Console(2, this, "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. EndpointOnlineFeedback State: {1}", args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
-                        if(Chassis.Outputs[output].Endpoint != null)
-                            Debug.Console(2, this, "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. Endpoint.IsOnline State: {1}", args.Number, Chassis.Outputs[output].Endpoint.IsOnline);
+                    break;
+                }
+                case DMOutputEventIds.EndpointOnlineEventId:
+                {
+                    Debug.Console(2, this,
+                        "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. EndpointOnlineFeedback State: {1}",
+                        args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
+                    if (Chassis.Outputs[output].Endpoint != null)
+                        Debug.Console(2, this,
+                            "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. Endpoint.IsOnline State: {1}",
+                            args.Number, Chassis.Outputs[output].Endpoint.IsOnline);
 
-                        OutputEndpointOnlineFeedbacks[output].FireUpdate();
-                        break;
-                    }
-                case DMOutputEventIds.OnlineFeedbackEventId: {
-                        Debug.Console(2, this, "Output {0} DMInputEventIds.OnlineFeedbackEventId fired. State: {1}", args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
-                        OutputEndpointOnlineFeedbacks[output].FireUpdate();
-                        break;
-                    }
-                case DMOutputEventIds.VideoOutEventId: {
-                        if (Chassis.Outputs[output].VideoOutFeedback != null) {
-                            Debug.Console(2, this, "DMSwitchVideo:{0} Routed Input:{1} Output:{2}'", this.Name, Chassis.Outputs[output].VideoOutFeedback.Number, output);
-                        }
-                        if (VideoOutputFeedbacks.ContainsKey(output)) {
-                            VideoOutputFeedbacks[output].FireUpdate();
+                    OutputEndpointOnlineFeedbacks[output].FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.OnlineFeedbackEventId:
+                {
+                    Debug.Console(2, this, "Output {0} DMInputEventIds.OnlineFeedbackEventId fired. State: {1}",
+                        args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
+                    OutputEndpointOnlineFeedbacks[output].FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.VideoOutEventId:
+                {
 
-                        }
-                        if (OutputVideoRouteNameFeedbacks.ContainsKey(output)) {
-                            OutputVideoRouteNameFeedbacks[output].FireUpdate();
-                        }
-                        break;
+                    var inputNumber = Chassis.Outputs[output].VideoOutFeedback == null ? 0 : Chassis.Outputs[output].VideoOutFeedback.Number;
+
+                    Debug.Console(2, this, "DMSwitchAudioVideo:{0} Routed Input:{1} Output:{2}'", this.Name,
+                        inputNumber, output);
+
+                    if (VideoOutputFeedbacks.ContainsKey(output))
+                    {
+                        var localInputPort = InputPorts.FirstOrDefault(p => (DMInput)p.FeedbackMatchObject == Chassis.Outputs[output].VideoOutFeedback);
+                        var localOutputPort =
+                            OutputPorts.FirstOrDefault(p => (DMOutput) p.FeedbackMatchObject == Chassis.Outputs[output]);
+
+
+                        VideoOutputFeedbacks[output].FireUpdate();
+                        OnSwitchChange(new RoutingNumericEventArgs(output,
+                            inputNumber,
+                            localOutputPort,
+                            localInputPort,
+                            eRoutingSignalType.AudioVideo));
+
                     }
-                case DMOutputEventIds.OutputNameEventId: {
-                        Debug.Console(2, this, "DM Output {0} NameFeedbackEventId", output);
-                        OutputNameFeedbacks[output].FireUpdate();
-                        break;
+                    if (OutputVideoRouteNameFeedbacks.ContainsKey(output))
+                    {
+                        OutputVideoRouteNameFeedbacks[output].FireUpdate();
                     }
-                default: {
-                        Debug.Console(2, this, "DMOutputChange fired for Output {0} with Unhandled EventId: {1}", args.Number, args.EventId);
-                        break;
-                    }
+                    break;
+                }
+                case DMOutputEventIds.OutputNameEventId:
+                {
+                    Debug.Console(2, this, "DM Output {0} NameFeedbackEventId", output);
+                    OutputNameFeedbacks[output].FireUpdate();
+                    break;
+                }
+                default:
+                {
+                    Debug.Console(2, this, "DMOutputChange fired for Output {0} with Unhandled EventId: {1}",
+                        args.Number, args.EventId);
+                    break;
+                }
             }
 
         }
