@@ -135,17 +135,28 @@ namespace PepperDash.Essentials.DM
 
             gather.LineReceived += (sender, args) =>
             {
-                if (args.Text.ToLower().Contains("host"))
-                {
-                    DeviceInfo.HostName = args.Text.Split(';')[1].Trim();
-
-                    tcpClient.Disconnect();
-                    return;
-                }
-
                 //ignore console prompt
                 if (args.Text.ToLower().Contains(">"))
                 {
+                    return;
+                }
+
+                
+                if (args.Text.ToLower().Contains("host"))
+                {
+                    DeviceInfo.HostName = args.Text.Split(':')[1].Trim();
+
+                    tcpClient.SendText("maca\r\n");
+                    
+                    return;
+                }
+
+                if (args.Text.ToLower().Contains("mac"))
+                {
+                    DeviceInfo.MacAddress = args.Text.Split(':')[1].Trim().Replace(" ", ":");
+
+                    tcpClient.Disconnect();
+
                     return;
                 }
 

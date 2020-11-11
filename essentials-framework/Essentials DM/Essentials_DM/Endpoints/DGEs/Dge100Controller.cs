@@ -107,7 +107,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
                 return;
             }
 
-            var tcpClient = new GenericTcpIpClient("", _dgeEthernetInfo.IpAddressFeedback.StringValue, CtpPort, 1024);
+            var tcpClient = new GenericTcpIpClient("", _dgeEthernetInfo.IpAddressFeedback.StringValue, CtpPort, 1024){AutoReconnect = false};
 
             var gather = new CommunicationGather(tcpClient, "\r\n\r\n");
 
