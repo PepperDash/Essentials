@@ -352,9 +352,18 @@ namespace PepperDash.Essentials.DM
                 });
                 AudioOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
                 {
-                    if (outputCard.AudioOutFeedback != null) { return (ushort)outputCard.AudioOutFeedback.Number; }
-                    return 0;
-                    ;
+                    try
+                    {
+                        if (outputCard.AudioOutFeedback != null)
+                        {
+                            return (ushort) outputCard.AudioOutFeedback.Number;
+                        }
+                        return 0;
+                    }
+                    catch (NotSupportedException)
+                    {
+                        return (ushort) outputCard.AudioOutSourceFeedback;
+                    }
                 });
 
                 OutputNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
@@ -754,13 +763,29 @@ namespace PepperDash.Essentials.DM
             }
             else if (args.EventId == DMOutputEventIds.AudioOutEventId)
             {
-                if (outputCard != null && outputCard.AudioOutFeedback != null)
+                try
                 {
-                    Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name, outputCard.AudioOutFeedback.Number, output);
+                    if (outputCard != null && outputCard.AudioOutFeedback != null)
+                    {
+                        Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", this.Name,
+                            outputCard.AudioOutFeedback.Number, output);
+                    }
+                    if (AudioOutputFeedbacks.ContainsKey(output))
+                    {
+                        AudioOutputFeedbacks[output].FireUpdate();
+                    }
                 }
-                if (AudioOutputFeedbacks.ContainsKey(output))
+                catch (NotSupportedException)
                 {
-                    AudioOutputFeedbacks[output].FireUpdate();
+                    if (outputCard != null)
+                    {
+                        Debug.Console(2, this, "DMSwitchAudio:{0} Routed Input:{1} Output:{2}'", Name,
+                            outputCard.AudioOutSourceFeedback, output);
+                    }
+                    if (AudioOutputFeedbacks.ContainsKey(output))
+                    {
+                        AudioOutputFeedbacks[output].FireUpdate();
+                    }
                 }
             }
             else if (args.EventId == DMOutputEventIds.OutputNameEventId
@@ -795,7 +820,14 @@ namespace PepperDash.Essentials.DM
                 var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
                 var output = Convert.ToUInt32(outputSelector);
 
-                if (input <= Dmps.NumberOfSwitcherInputs && output <= Dmps.NumberOfSwitcherOutputs)
+                var sigTypeIsUsbOrVideo = ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video) ||
+                                          ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput) ||
+                                          ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput);
+
+                if ((input <= Dmps.NumberOfSwitcherInputs && output <= Dmps.NumberOfSwitcherOutputs &&
+                     sigTypeIsUsbOrVideo) ||
+                    (input <= Dmps.NumberOfSwitcherInputs + 5 && output <= Dmps.NumberOfSwitcherOutputs &&
+                     (sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio))
                 {
                     // Check to see if there's an off timer waiting on this and if so, cancel
                     var key = new PortNumberType(output, sigType);
@@ -813,37 +845,55 @@ namespace PepperDash.Essentials.DM
                         }
                     }
 
-                    DMInput inCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                    DMOutput outCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
+                    
+                    DMOutput dmOutputCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
 
                     //if (inCard != null)
                     //{
-                        // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
-                        if ((sigType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
-                        {
+                    // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
+                    if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
+                    {
+                        DMInput dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
+                        //SystemControl.VideoEnter.BoolValue = true;
+                        if (dmOutputCard != null)
+                            dmOutputCard.VideoOut = dmInputCard;
+                    }
 
-                            //SystemControl.VideoEnter.BoolValue = true;
-                            if (outCard != null)
-                                outCard.VideoOut = inCard;
+                    if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
+                    {
+                        DMInput dmInputCard = null;
+                        if (input <= Dmps.NumberOfSwitcherInputs)
+                        {
+                            dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
                         }
 
-                        if ((sigType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
-                        {
-                            if (outCard != null)
-                                outCard.AudioOut = inCard;
-                        }
+                        if (dmOutputCard != null)
+                            try
+                            {
+                                dmOutputCard.AudioOut = dmInputCard;
+                            }
+                            catch (NotSupportedException)
+                            {
+                                Debug.Console(1, this, "Routing input {0} audio to output {1}",
+                                    (eDmps34KAudioOutSource) input, (CrestronControlSystem.eDmps34K350COutputs) output);
 
-                        if ((sigType | eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
-                        {
-                            if (outCard != null)
-                                outCard.USBRoutedTo = inCard;
-                        }
+                                dmOutputCard.AudioOutSource = (eDmps34KAudioOutSource) input;
+                            }
+                    }
 
-                        if ((sigType | eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
-                        {
-                            if (inCard != null)
-                                inCard.USBRoutedTo = outCard;
-                        }
+                    if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+                    {
+                        DMInput dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
+                        if (dmOutputCard != null)
+                            dmOutputCard.USBRoutedTo = dmInputCard;
+                    }
+
+                    if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+                    {
+                        DMInput dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
+                        if (dmInputCard != null)
+                            dmInputCard.USBRoutedTo = dmOutputCard;
+                    }
                     //}
                     //else
                     //{
@@ -853,7 +903,8 @@ namespace PepperDash.Essentials.DM
                 }
                 else
                 {
-                    Debug.Console(1, this, "Unable to execute route from input {0} to output {1}", inputSelector, outputSelector);
+                    Debug.Console(1, this, "Unable to execute route from input {0} to output {1}", inputSelector,
+                        outputSelector);
                 }
             }
             catch (Exception e)
