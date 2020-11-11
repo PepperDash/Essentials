@@ -140,7 +140,7 @@ jobs:
           Get-ChildItem -Path .\output\* | Copy-Item -Destination .\
           Remove-Item -Path .\output -Recurse
       - name: Add nuget.exe
-        uses: nuget/setup-nuget@v1
+        uses: nuget/setup-nuget@master
       - name: Add Github Packages source
         run: nuget sources add -name github -source https://nuget.pkg.github.com/pepperdash/index.json -username Pepperdash -password ${{ secrets.GITHUB_TOKEN }}
       - name: Add nuget.org API Key
