@@ -10,26 +10,28 @@ using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Displays
 {
-	public abstract class ComTcpDisplayBase : DisplayBase, IPower
+    [Obsolete("Please use TwoWayDisplayBase instead")]
+	public abstract class ComTcpDisplayBase : TwoWayDisplayBase
 	{
-		/// <summary>
-		/// Sets the communication method for this - swaps out event handlers and output handlers
-		/// </summary>
-		public IBasicCommunication CommunicationMethod
-		{
-			get { return _CommunicationMethod; }
-			set
-			{
-				if (_CommunicationMethod != null)
-					_CommunicationMethod.BytesReceived -= this.CommunicationMethod_BytesReceived;
-				// Outputs???
-				_CommunicationMethod = value;
-				if (_CommunicationMethod != null)
-					_CommunicationMethod.BytesReceived += this.CommunicationMethod_BytesReceived;
-				// Outputs?
-			}
-		}
-		IBasicCommunication _CommunicationMethod;
+
+        ///// <summary>
+        ///// Sets the communication method for this - swaps out event handlers and output handlers
+        ///// </summary>
+        //public IBasicCommunication CommunicationMethod
+        //{
+        //    get { return _CommunicationMethod; }
+        //    set
+        //    {
+        //        if (_CommunicationMethod != null)
+        //            _CommunicationMethod.BytesReceived -= this.CommunicationMethod_BytesReceived;
+        //        // Outputs???
+        //        _CommunicationMethod = value;
+        //        if (_CommunicationMethod != null)
+        //            _CommunicationMethod.BytesReceived += this.CommunicationMethod_BytesReceived;
+        //        // Outputs?
+        //    }
+        //}
+        //IBasicCommunication _CommunicationMethod;
 
 		public ComTcpDisplayBase(string key, string name)
 			: base(key, name)
@@ -38,6 +40,6 @@ namespace PepperDash.Essentials.Devices.Displays
 		}
 
 
-		protected abstract void CommunicationMethod_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs args);
+        //protected abstract void CommunicationMethod_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs args);
 	}
 }

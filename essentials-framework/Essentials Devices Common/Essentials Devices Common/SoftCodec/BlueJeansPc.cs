@@ -106,8 +106,8 @@ namespace PepperDash.Essentials.Devices.Common.SoftCodec
             if (route.SourceKey.Equals("$off", StringComparison.OrdinalIgnoreCase))
             {
                 dest.ReleaseRoute();
-                if (dest is IPower)
-                    (dest as IPower).PowerOff();
+                if (dest is IHasPowerControl)
+                    (dest as IHasPowerControl).PowerOff();
             }
             else
             {
