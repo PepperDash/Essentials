@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Ssh;
 using Crestron.SimplSharpPro.DeviceSupport;
+using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Core.Intersystem;
 using PepperDash.Core.Intersystem.Tokens;
@@ -231,12 +232,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         protected void SetIsReady()
         {
-            IsReady = true;
-            var h = IsReadyChange;
-            if (h != null)
-            {
-                h(this, new EventArgs());
-            }
+            CrestronInvoke.BeginInvoke( (o) =>
+                {
+                    try
+                    {
+                        IsReady = true;
+                        var h = IsReadyChange;
+                        if (h != null)
+                        {
+                            h(this, new EventArgs());
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Console(2, this, "Error in SetIsReady() : {0}", e);
+                    }
+                });
         }
 
         // **** DEBUGGING THINGS ****

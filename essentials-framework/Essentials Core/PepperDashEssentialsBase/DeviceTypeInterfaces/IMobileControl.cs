@@ -12,7 +12,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
         void LinkSystemMonitorToAppServer();
 
-
+        IMobileControl GetAppServer();
     }
 
     /// <summary>
@@ -25,6 +25,8 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
         string UserCode { get; }
 
         string QrCodeUrl { get; }
+
+        string QrCodeChecksum { get; }
 
         string McServerUrl { get; }
 

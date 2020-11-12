@@ -383,6 +383,7 @@ namespace PepperDash.Essentials
         protected override void EndShutdown()
         {
             VideoCodec.EndAllCalls();
+            VideoCodec.StopSharing();
 
             SetDefaultLevels();
 
@@ -652,6 +653,7 @@ namespace PepperDash.Essentials
 				dest.ReleaseRoute();
                 if (dest is IHasPowerControl)
                     (dest as IHasPowerControl).PowerOff();
+
 			}
 			else
 			{
