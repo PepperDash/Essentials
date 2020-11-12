@@ -705,37 +705,44 @@ namespace PepperDash.Essentials
 		}
 
 
-		/// <summary>
-		/// Setup the external sources for the Cisco Touch 10 devices that support IHasExternalSourceSwitch
-		/// </summary>
-		private void SetCodecExternalSources()
-		{
-			var videoCodecWithExternalSwitching = VideoCodec as IHasExternalSourceSwitching;
+        /// <summary>
+        /// Setup the external sources for the Cisco Touch 10 devices that support IHasExternalSourceSwitch
+        /// </summary>
+        private void SetCodecExternalSources()
+        {
+            var videoCodecWithExternalSwitching = VideoCodec as IHasExternalSourceSwitching;
 
-			if (videoCodecWithExternalSwitching == null)
-			{
-				return;
-			}
+            if (videoCodecWithExternalSwitching == null || !videoCodecWithExternalSwitching.ExternalSourceListEnabled)
+            {
+                return;
+            }
 
-		    string codecTieLine = ConfigReader.ConfigObject.TieLines.SingleOrDefault(x => x.DestinationKey == VideoCodec.Key).DestinationPort;
-		    videoCodecWithExternalSwitching.ClearExternalSources();
-		    videoCodecWithExternalSwitching.RunRouteAction = RunRouteAction;
-		    var srcList = ConfigReader.ConfigObject.SourceLists.SingleOrDefault(x => x.Key == SourceListKey).Value.OrderBy(kv => kv.Value.Order); ;
+            try
+            {
+                // Get the tie line that the external switcher is connected to
+                string codecInputConnectorName = ConfigReader.ConfigObject.TieLines.SingleOrDefault(
+                    x => x.DestinationKey == VideoCodec.Key && x.DestinationPort == videoCodecWithExternalSwitching.ExternalSourceInputPort).DestinationPort;
 
-		    foreach (var kvp in srcList)
-		    {
-		        var srcConfig = kvp.Value;
+                videoCodecWithExternalSwitching.ClearExternalSources();
+                videoCodecWithExternalSwitching.RunRouteAction = RunRouteAction;
+                var srcList = ConfigReader.ConfigObject.SourceLists.SingleOrDefault(x => x.Key == SourceListKey).Value.OrderBy(kv => kv.Value.Order); ;
 
-		        if (kvp.Key != DefaultCodecRouteString && kvp.Key != "roomOff")
-		        {
+                foreach (var kvp in srcList)
+                {
+                    var srcConfig = kvp.Value;
 
-		            videoCodecWithExternalSwitching.AddExternalSource(codecTieLine, kvp.Key, srcConfig.PreferredName, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceType.desktop);
-		            videoCodecWithExternalSwitching.SetExternalSourceState(kvp.Key, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceMode.Ready);
-
-
-		        }
-		    }
-		}
+                    if (kvp.Key != DefaultCodecRouteString && kvp.Key != "roomOff")
+                    {
+                        videoCodecWithExternalSwitching.AddExternalSource(codecInputConnectorName, kvp.Key, srcConfig.PreferredName, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceType.desktop);
+                        videoCodecWithExternalSwitching.SetExternalSourceState(kvp.Key, PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.eExternalSourceMode.Ready);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(2, this, "Error setting codec external sources: {0}", e);
+            }
+        }
 
         private void SetCodecBranding()
         {
