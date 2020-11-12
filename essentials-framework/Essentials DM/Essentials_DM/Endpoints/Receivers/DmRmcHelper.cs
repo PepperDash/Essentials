@@ -8,14 +8,16 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.DeviceInfo;
 using PepperDash.Essentials.DM.Config;
 using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.DM
 {
     [Description("Wrapper class for all DM-RMC variants")]
-	public abstract class DmRmcControllerBase : CrestronGenericBridgeableBaseDevice
+	public abstract class DmRmcControllerBase : CrestronGenericBridgeableBaseDevice, IDeviceInfoProvider
     {
+        private const int CtpPort = 41795;
         private readonly EndpointReceiverBase _rmc; //kept here just in case. Only property or method on this class that's not device-specific is the DMOutput that it's attached to.
 
         public StringFeedback VideoOutputResolutionFeedback { get; protected set; }
@@ -32,6 +34,10 @@ namespace PepperDash.Essentials.DM
             PreventRegistration = _rmc.DMOutput != null;
 			
             AddToFeedbackList(VideoOutputResolutionFeedback, EdidManufacturerFeedback, EdidSerialNumberFeedback, EdidNameFeedback, EdidPreferredTimingFeedback);
+
+            DeviceInfo = new DeviceInfo();
+
+            _rmc.OnlineStatusChange += (currentDevice, args) => { if (args.DeviceOnLine) UpdateDeviceInfo(); };
         }
 
         protected void LinkDmRmcToApi(DmRmcControllerBase rmc, BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
@@ -79,7 +85,106 @@ namespace PepperDash.Essentials.DM
 
             trilist.SetUShortSigAction(joinMap.AudioVideoSource.JoinNumber, a => routing.ExecuteNumericSwitch(a, 1, eRoutingSignalType.AudioVideo));
         }
-	}
+
+        #region Implementation of IDeviceInfoProvider
+
+        public DeviceInfo DeviceInfo { get; private set; }
+        public event DeviceInfoChangeHandler DeviceInfoChanged;
+
+        public void UpdateDeviceInfo()
+        {
+            Debug.Console(1, this, "Updating Device Info");
+
+            if (_rmc.ConnectedIpList.Count == 0)
+            {
+                Debug.Console(1, this, "IP Address information not yet received. No device is online");
+                return;
+            }
+
+            DeviceInfo.IpAddress = _rmc.ConnectedIpList[0].DeviceIpAddress;
+
+            foreach (var ip in _rmc.ConnectedIpList)
+            {
+                Debug.Console(0, this, "Connected IP Address: {0}", ip.DeviceIpAddress);
+            }
+
+            GetFirmwareAndSerialInfo();
+
+            OnDeviceInfoChange();
+        }
+
+        private void GetFirmwareAndSerialInfo()
+        {
+            var tcpClient = new GenericTcpIpClient(String.Format("{0}-devInfoSocket", Key), _rmc.ConnectedIpList[0].DeviceIpAddress, CtpPort, 1024)
+            {
+                AutoReconnect = false,
+            };
+
+            var gather = new CommunicationGather(tcpClient, "\r\n\r\n");
+
+            tcpClient.ConnectionChange += (sender, args) =>
+            {
+                if (!args.Client.IsConnected)
+                {
+                    OnDeviceInfoChange();
+                    return;
+                }
+
+                args.Client.SendText("ver\r\n");
+            };
+
+            gather.LineReceived += (sender, args) =>
+            {
+                //ignore console prompt
+                if (args.Text.ToLower().Contains(">"))
+                {
+                    return;
+                }
+
+                
+                if (args.Text.ToLower().Contains("host"))
+                {
+                    DeviceInfo.HostName = args.Text.Split(':')[1].Trim();
+
+                    tcpClient.SendText("maca\r\n");
+                    
+                    return;
+                }
+
+                if (args.Text.ToLower().Contains("mac"))
+                {
+                    DeviceInfo.MacAddress = args.Text.Split(':')[1].Trim().Replace(" ", ":");
+
+                    tcpClient.Disconnect();
+
+                    return;
+                }
+
+                if (!args.Text.ToLower().Contains("rmc"))
+                {
+                    return;
+                }
+
+                DeviceInfo.SerialNumber = args.Text.Split('[')[1].Split(' ')[4].Replace("#", "");
+                DeviceInfo.FirmwareVersion = args.Text.Split('[')[1].Split(' ')[1];
+
+                tcpClient.SendText("host\r\n");
+            };
+
+            tcpClient.Connect();
+        }
+
+        private void OnDeviceInfoChange()
+        {
+            var handler = DeviceInfoChanged;
+
+            if (handler == null) return;
+
+            handler(this, new DeviceInfoEventArgs(DeviceInfo));
+        }
+
+        #endregion
+    }
 
     public abstract class DmHdBaseTControllerBase : CrestronGenericBaseDevice
     {

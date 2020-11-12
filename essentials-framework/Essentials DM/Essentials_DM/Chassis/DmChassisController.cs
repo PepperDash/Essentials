@@ -774,10 +774,15 @@ namespace PepperDash.Essentials.DM
         {
             var portKey = string.Format("{0}--{1}", cardName, portName);
             Debug.Console(2, this, "Adding output port '{0}'", portKey);
-            OutputPorts.Add(new RoutingOutputPort(portKey, sigType, portType, selector, this)
+
+            var outputPort = new RoutingOutputPort(portKey, sigType, portType, selector, this);
+
+            if (portName.IndexOf("Loop", StringComparison.InvariantCultureIgnoreCase) < 0)
             {
-                FeedbackMatchObject = Chassis.Outputs[(uint)selector]
-            });
+                outputPort.FeedbackMatchObject = Chassis.Outputs[(uint) selector];
+            }
+
+            OutputPorts.Add(outputPort);
         }
 
         /// <summary>
@@ -787,11 +792,12 @@ namespace PepperDash.Essentials.DM
         {
             var portKey = string.Format("{0}--{1}", cardName, portName);
             Debug.Console(2, this, "Adding output port '{0}'", portKey);
-            var outputPort = new RoutingOutputPort(portKey, sigType, portType, selector, this)
-            {
-                FeedbackMatchObject = Chassis.Outputs[(uint)selector]
-            }; ;
+            var outputPort = new RoutingOutputPort(portKey, sigType, portType, selector, this);
 
+            if (portName.IndexOf("Loop", StringComparison.InvariantCultureIgnoreCase) < 0)
+            {
+                outputPort.FeedbackMatchObject = Chassis.Outputs[(uint)selector];
+            }
             if (cecPort != null)
                 outputPort.Port = cecPort;
 
