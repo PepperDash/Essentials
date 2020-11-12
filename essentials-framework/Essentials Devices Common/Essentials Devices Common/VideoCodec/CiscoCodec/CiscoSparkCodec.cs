@@ -2102,7 +2102,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
     {
         public CiscoSparkCodecFactory()
         {
-            TypeNames = new List<string>() { "ciscospark", "ciscowebex", "ciscowebexpro", "ciscoroomkit" };
+            TypeNames = new List<string>() { "ciscospark", "ciscowebex", "ciscowebexpro", "ciscoroomkit", "ciscosparkpluscodec" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
