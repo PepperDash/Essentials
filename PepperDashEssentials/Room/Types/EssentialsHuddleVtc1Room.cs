@@ -384,6 +384,7 @@ namespace PepperDash.Essentials
         {
             VideoCodec.EndAllCalls();
             VideoCodec.StopSharing();
+            VideoCodec.StandbyActivate();
 
             SetDefaultLevels();
 
