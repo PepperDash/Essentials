@@ -45,7 +45,6 @@ jobs:
       - name: Update AssemblyInfo.cs
         shell: powershell
         run: |
-          Write-Output ${{ env.VERSION }}
           ./.github/scripts/UpdateAssemblyVersion.ps1 ${{ env.VERSION }}
       - name: restore Nuget Packages
         run: nuget install .\packages.config -OutputDirectory .\packages -ExcludeVersion
