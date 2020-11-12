@@ -33,6 +33,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
             IOPortConfig config)
             : base(key, name)
         {
+            InputStateFeedback = new BoolFeedback(InputStateFeedbackFunc);
 
             AddPostActivationAction(() =>
             {

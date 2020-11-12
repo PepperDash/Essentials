@@ -32,17 +32,29 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
         }
 
-        public GenericVersiportDigitalInputDevice(string key, string name, Versiport inputPort, IOPortConfig props):
+        public GenericVersiportDigitalInputDevice(string key, string name, Func<IOPortConfig, Versiport> postActivationFunc, IOPortConfig config) :
             base(key, name)
         {
             InputStateFeedback = new BoolFeedback(InputStateFeedbackFunc);
-            InputPort = inputPort;
-            InputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalInput);
-            if (props.DisablePullUpResistor)
-                InputPort.DisablePullUpResistor = true;
-            InputPort.VersiportChange += new VersiportEventHandler(InputPort_VersiportChange);
 
-            Debug.Console(1, this, "Created GenericVersiportDigitalInputDevice on port '{0}'.  DisablePullUpResistor: '{1}'", props.PortNumber, InputPort.DisablePullUpResistor);
+            AddPostActivationAction(() =>
+            {
+                InputPort = postActivationFunc(config);
+
+                InputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalInput);
+                if (config.DisablePullUpResistor)
+                    InputPort.DisablePullUpResistor = true;
+
+                InputPort.Register();
+
+                InputPort.VersiportChange += InputPort_VersiportChange;
+
+
+
+                Debug.Console(1, this, "Created GenericVersiportDigitalInputDevice on port '{0}'.  DisablePullUpResistor: '{1}'", config.PortNumber, InputPort.DisablePullUpResistor);
+
+            });
+
         }
 
         void InputPort_VersiportChange(Versiport port, VersiportEventArgs args)
@@ -98,7 +110,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
             if (dc.PortDeviceKey.Equals("processor"))
             {
-                if (!Global.ControlSystem.SupportsDigitalInput)
+                if (!Global.ControlSystem.SupportsVersiport)
                 {
                     Debug.Console(0, "GetVersiportDigitalInput: Processor does not support Versiports");
                     return null;
@@ -148,7 +160,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
             if (props == null) return null;
 
-            var portDevice = new GenericVersiportDigitalInputDevice(dc.Key, dc.Name, GenericVersiportDigitalInputDevice.GetVersiportDigitalInput(props), props);
+            var portDevice = new GenericVersiportDigitalInputDevice(dc.Key, dc.Name, GenericVersiportDigitalInputDevice.GetVersiportDigitalInput, props);
 
             return portDevice;
         }
