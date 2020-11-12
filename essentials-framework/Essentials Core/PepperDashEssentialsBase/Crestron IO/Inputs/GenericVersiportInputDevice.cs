@@ -41,11 +41,11 @@ namespace PepperDash.Essentials.Core.CrestronIO
             {
                 InputPort = postActivationFunc(config);
 
+                InputPort.Register();
+
                 InputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalInput);
                 if (config.DisablePullUpResistor)
                     InputPort.DisablePullUpResistor = true;
-
-                InputPort.Register();
 
                 InputPort.VersiportChange += InputPort_VersiportChange;
 
