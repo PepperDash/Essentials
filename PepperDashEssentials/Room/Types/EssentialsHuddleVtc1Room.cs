@@ -599,7 +599,10 @@ namespace PepperDash.Essentials
                             Debug.Console(1, this, "Video Codec in use, deactivating standby on codec");
                         }
 
-                        VideoCodec.StandbyDeactivate();
+                        if (VideoCodec.StandbyIsOnFeedback.BoolValue)
+                        {
+                            VideoCodec.StandbyDeactivate();
+                        }
                     }
 
                     // report back when done
