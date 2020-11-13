@@ -484,14 +484,15 @@ namespace PepperDash.Essentials
         {
             var mobileControlList = DeviceManager.AllDevices.OfType<IMobileControl>().ToList();
 
-            if (mobileControlList.Count > 0)
+            if (mobileControlList.Count > 1)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice,
-                    "Multiple instances of Mobile Control Server found. Using instance with key {0}",
-                    mobileControlList[0].Key);
+                Debug.Console(0, Debug.ErrorLogLevel.Warning,
+                    "Multiple instances of Mobile Control Server found.");
+
+                return null;
             }
 
-            if (mobileControlList.Count != 0)
+            if (mobileControlList.Count > 0)
             {
                 return mobileControlList[0];
             }
