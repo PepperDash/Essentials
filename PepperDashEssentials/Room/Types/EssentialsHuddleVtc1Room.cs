@@ -383,8 +383,6 @@ namespace PepperDash.Essentials
         protected override void EndShutdown()
         {
             VideoCodec.EndAllCalls();
-            VideoCodec.StopSharing();
-            VideoCodec.StandbyActivate();
 
             SetDefaultLevels();
 
@@ -395,6 +393,8 @@ namespace PepperDash.Essentials
             Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Shutting down room");
 
             RunRouteAction("roomOff");
+            VideoCodec.StopSharing();
+            VideoCodec.StandbyActivate();
         }
 
         /// <summary>
