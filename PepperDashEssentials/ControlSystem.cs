@@ -290,32 +290,13 @@ namespace PepperDash.Essentials
 
 			DeviceManager.ActivateAll();
 
-		    var mobileControl = DeviceManager.GetDeviceForKey("appServer") as IMobileControl;
+		    var mobileControl = GetMobileControlDevice();
 
 		    if (mobileControl == null) return;
 
             mobileControl.LinkSystemMonitorToAppServer();
-		    //LinkSystemMonitorToAppServer();
+		    
 		}
-
-        //void LinkSystemMonitorToAppServer()
-        //{
-        //    var sysMon = DeviceManager.GetDeviceForKey("systemMonitor") as PepperDash.Essentials.Core.Monitoring.SystemMonitorController;
-
-        //    var appServer = DeviceManager.GetDeviceForKey("appServer") as MobileControlSystemController;
-
-
-        //    if (sysMon != null && appServer != null)
-        //    {
-        //        var key = sysMon.Key + "-" + appServer.Key;
-        //        var messenger = new PepperDash.Essentials.AppServer.Messengers.SystemMonitorMessenger
-        //            (key, sysMon, "/device/systemMonitor");
-
-        //        messenger.RegisterWithAppServer(appServer);
-
-        //        DeviceManager.AddDevice(messenger);
-        //    }
-        //}
 
         /// <summary>
         /// Reads all devices from config and adds them to DeviceManager
@@ -504,13 +485,33 @@ namespace PepperDash.Essentials
 
         private static void CreateMobileControlBridge(EssentialsRoomBase room)
         {
-            var mobileControl = DeviceManager.GetDeviceForKey("appServer") as IMobileControl;
+            var mobileControl = GetMobileControlDevice();
 
             if (mobileControl == null) return;
 
             mobileControl.CreateMobileControlRoomBridge(room);
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control Bridge Added...");
+        }
+
+        private static IMobileControl GetMobileControlDevice()
+        {
+            var mobileControlList = DeviceManager.AllDevices.OfType<IMobileControl>().ToList();
+
+            if (mobileControlList.Count > 0)
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                    "Multiple instances of Mobile Control Server found. Using instance with key {0}",
+                    mobileControlList[0].Key);
+            }
+
+            if (mobileControlList.Count != 0)
+            {
+                return mobileControlList[0];
+            }
+
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control not enabled for this system");
+            return null;
         }
 
         /// <summary>
