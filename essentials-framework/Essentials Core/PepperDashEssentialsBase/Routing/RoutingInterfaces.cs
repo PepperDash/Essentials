@@ -59,7 +59,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// For fixed-source endpoint devices
 	/// </summary>
-    [Obsolete]
+    [Obsolete("Please switch to IRoutingSink")]
     public interface IRoutingSinkNoSwitching : IRoutingSink
 	{
 

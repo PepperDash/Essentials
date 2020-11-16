@@ -31,8 +31,17 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         [JsonProperty("sharing")]
         public SharingProperties Sharing { get; set; }
 
+        /// <summary>
+        /// Enables external source switching capability
+        /// </summary>
 		[JsonProperty("externalSourceListEnabled")]
 		public bool ExternalSourceListEnabled { get; set; }
+
+        /// <summary>
+        /// The name of the routing input port on the codec to which the external switch is connected
+        /// </summary>
+        [JsonProperty("externalSourceInputPort")]
+        public string ExternalSourceInputPort { get; set; }
 
         /// <summary>
         /// Optionsal property to set the limit of any phonebook queries for directory or searching

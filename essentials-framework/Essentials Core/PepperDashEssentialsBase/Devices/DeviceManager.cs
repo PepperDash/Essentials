@@ -13,6 +13,8 @@ namespace PepperDash.Essentials.Core
 {
 	public static class DeviceManager
 	{
+        public static event EventHandler<EventArgs> AllDevicesActivated;
+
 	    private static readonly CCriticalSection DeviceCriticalSection = new CCriticalSection();
 	    private static readonly CEvent AllowAddDevicesCEvent = new CEvent(false, true);
 		//public static List<Device> Devices { get { return _Devices; } }
@@ -98,12 +100,23 @@ namespace PepperDash.Essentials.Core
 		                Debug.Console(0, d, "ERROR: Device PostActivation failure:\r{0}", e);
 		            }
 		        }
+
+                OnAllDevicesActivated();
 		    }
 		    finally
 		    {
                 DeviceCriticalSection.Leave();
 		    }
 		}
+
+        private static void OnAllDevicesActivated()
+        {
+            var handler = AllDevicesActivated;
+            if (handler != null)
+            {
+                handler(null, new EventArgs());
+            }
+        }
 
 		/// <summary>
 		/// Calls activate on all Device class items
