@@ -16,10 +16,13 @@ using PepperDash.Essentials.Core.Config;
 namespace PepperDash.Essentials.DM.Chassis
 {
     [Description("Wrapper class for all HdMdNxM4E switchers")]
-    public class HdMdNxM4kEBridgeableController : CrestronGenericBridgeableBaseDevice, IRoutingInputsOutputs, IRoutingNumeric, IHasFeedback
+    public class HdMdNxM4kEBridgeableController : CrestronGenericBridgeableBaseDevice, IRoutingNumericWithFeedback, IHasFeedback
     {
         private HdMdNxM _Chassis;
         private HdMd4x14kE _Chassis4x1;
+
+        //IroutingNumericEvent
+        public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
 
         public Dictionary<uint, string> InputNames { get; set; }
         public Dictionary<uint, string> OutputNames { get; set; }
@@ -70,26 +73,34 @@ namespace PepperDash.Essentials.DM.Chassis
 
             for (uint i = 1; i <= _Chassis.NumberOfInputs; i++)
             {
-                var inputName = InputNames[i];
-                _Chassis.Inputs[i].Name.StringValue = inputName;
+                var index = i;
+                var inputName = InputNames[index];
+                _Chassis.Inputs[index].Name.StringValue = inputName;
 
                 InputPorts.Add(new RoutingInputPort(inputName, eRoutingSignalType.AudioVideo,
-                    eRoutingPortConnectionType.Hdmi, i, this));
-                VideoInputSyncFeedbacks.Add(new BoolFeedback(inputName, () => _Chassis.Inputs[i].VideoDetectedFeedback.BoolValue));
-                InputNameFeedbacks.Add(new StringFeedback(inputName, () => _Chassis.Inputs[i].Name.StringValue));
-                InputHdcpEnableFeedback.Add(new BoolFeedback(inputName, () => _Chassis.HdmiInputs[i].HdmiInputPort.HdcpSupportOnFeedback.BoolValue));
+                    eRoutingPortConnectionType.Hdmi, index, this)
+                {
+                    FeedbackMatchObject = _Chassis.HdmiInputs[index]
+                });
+                VideoInputSyncFeedbacks.Add(new BoolFeedback(inputName, () => _Chassis.Inputs[index].VideoDetectedFeedback.BoolValue));
+                InputNameFeedbacks.Add(new StringFeedback(inputName, () => _Chassis.Inputs[index].Name.StringValue));
+                InputHdcpEnableFeedback.Add(new BoolFeedback(inputName, () => _Chassis.HdmiInputs[index].HdmiInputPort.HdcpSupportOnFeedback.BoolValue));
             }
 
             for (uint i = 1; i <= _Chassis.NumberOfOutputs; i++)
             {
-                var outputName = OutputNames[i];
+                var index = i;
+                var outputName = OutputNames[index];
                 _Chassis.Outputs[i].Name.StringValue = outputName;
 
                 OutputPorts.Add(new RoutingOutputPort(outputName, eRoutingSignalType.AudioVideo,
-                    eRoutingPortConnectionType.Hdmi, i, this));
-                VideoOutputRouteFeedbacks.Add(new IntFeedback(outputName, () => (int)_Chassis.Outputs[i].VideoOutFeedback.Number));
-                OutputNameFeedbacks.Add(new StringFeedback(outputName, () => _Chassis.Outputs[i].Name.StringValue));
-                OutputRouteNameFeedbacks.Add(new StringFeedback(outputName, () => _Chassis.Outputs[i].VideoOutFeedback.NameFeedback.StringValue));
+                    eRoutingPortConnectionType.Hdmi, index, this)
+                {
+                    FeedbackMatchObject = _Chassis.HdmiOutputs[index]
+                });
+                VideoOutputRouteFeedbacks.Add(new IntFeedback(outputName, () => (int)_Chassis.Outputs[index].VideoOutFeedback.Number));
+                OutputNameFeedbacks.Add(new StringFeedback(outputName, () => _Chassis.Outputs[index].Name.StringValue));
+                OutputRouteNameFeedbacks.Add(new StringFeedback(outputName, () => _Chassis.Outputs[index].VideoOutFeedback.NameFeedback.StringValue));
             }
 
             _Chassis.DMInputChange += new DMInputEventHandler(Chassis_DMInputChange);
@@ -101,6 +112,16 @@ namespace PepperDash.Essentials.DM.Chassis
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        private void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            var newEvent = NumericSwitchChange;
+            if (newEvent != null) newEvent(this, e);
+        }
 
         public void EnableHdcp(uint port)
         {
@@ -328,44 +349,45 @@ namespace PepperDash.Essentials.DM.Chassis
 
         void Chassis_OnlineStatusChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.OnlineOfflineEventArgs args)
         {
-            if (args.DeviceOnLine)
+            if (!args.DeviceOnLine) return;
+            for (uint i = 1; i <= _Chassis.NumberOfInputs; i++)
             {
-                for (uint i = 1; i <= _Chassis.NumberOfInputs; i++)
-                {
-                    _Chassis.Inputs[i].Name.StringValue = InputNames[i];
-                }
-                for (uint i = 1; i <= _Chassis.NumberOfOutputs; i++)
-                {
-                    _Chassis.Outputs[i].Name.StringValue = OutputNames[i];
-                }
-
-                foreach (var feedback in Feedbacks)
-                {
-                    feedback.FireUpdate();
-                }
+                _Chassis.Inputs[i].Name.StringValue = InputNames[i];
             }
-            
+            for (uint i = 1; i <= _Chassis.NumberOfOutputs; i++)
+            {
+                _Chassis.Outputs[i].Name.StringValue = OutputNames[i];
+            }
+
+            foreach (var feedback in Feedbacks)
+            {
+                feedback.FireUpdate();
+            }
         }
 
         void Chassis_DMOutputChange(Switch device, DMOutputEventArgs args)
         {
-            if (args.EventId == DMOutputEventIds.VideoOutEventId)
+            if (args.EventId != DMOutputEventIds.VideoOutEventId) return;
+
+            for (var i = 0; i < VideoOutputRouteFeedbacks.Count; i++)
             {
-                foreach (var item in VideoOutputRouteFeedbacks)
-                {
-                    item.FireUpdate();
-                }
+                var index = i;
+                var localInputPort = InputPorts.FirstOrDefault(p => (DMInput)p.FeedbackMatchObject == _Chassis.HdmiOutputs[(uint)index + 1].VideoOutFeedback);
+                var localOutputPort =
+                    OutputPorts.FirstOrDefault(p => (DMOutput)p.FeedbackMatchObject == _Chassis.HdmiOutputs[(uint)index + 1]);
+
+
+                VideoOutputRouteFeedbacks[i].FireUpdate();
+                OnSwitchChange(new RoutingNumericEventArgs((ushort)i, VideoOutputRouteFeedbacks[i].UShortValue, localOutputPort, localInputPort, eRoutingSignalType.AudioVideo));
             }
         }
 
         void Chassis_DMInputChange(Switch device, DMInputEventArgs args)
         {
-            if (args.EventId == DMInputEventIds.VideoDetectedEventId)
+            if (args.EventId != DMInputEventIds.VideoDetectedEventId) return;
+            foreach (var item in VideoInputSyncFeedbacks)
             {
-                foreach (var item in VideoInputSyncFeedbacks)
-                {
-                    item.FireUpdate();
-                }
+                item.FireUpdate();
             }
         }
 

@@ -24,25 +24,18 @@ jobs:
       # First we checkout the source repo
       - name: Checkout repo
         uses: actions/checkout@v2
-      # And any submodules
-      - name: Checkout submodules
-        shell: bash
-        run: |
-          git config --global url."https://github.com/".insteadOf "git@github.com:"
-          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-          git submodule sync --recursive
-          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+        with:
+          fetch-depth: 0
       # Generate the appropriate version number
       - name: Set Version Number
         shell: powershell
         env:
           TAG_NAME: ${{ github.event.release.tag_name }}
-        run: Write-Output "::set-env name=VERSION::$($Env:TAG_NAME)"
+        run: echo "VERSION=$($Env:TAG_NAME)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       # Use the version number to set the version of the assemblies
       - name: Update AssemblyInfo.cs
         shell: powershell
         run: |
-          Write-Output ${{ env.VERSION }}
           ./.github/scripts/UpdateAssemblyVersion.ps1 ${{ env.VERSION }}
       - name: restore Nuget Packages
         run: nuget install .\packages.config -OutputDirectory .\packages -ExcludeVersion
@@ -101,7 +94,7 @@ jobs:
           Get-ChildItem "./Version"
           $version = Get-Content -Path ./Version/version.txt
           Write-Host "Version: $version"
-          Write-Output "::set-env name=VERSION::$version"
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Remove-Item -Path ./Version/version.txt
           Remove-Item -Path ./Version
       - name: Download Build output
@@ -155,7 +148,7 @@ jobs:
           Get-ChildItem "./Version"
           $version = Get-Content -Path ./Version/version.txt
           Write-Host "Version: $version"
-          Write-Output "::set-env name=VERSION::$version"
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Remove-Item -Path ./Version/version.txt
           Remove-Item -Path ./Version
       # Checkout/Create the branch
@@ -228,7 +221,7 @@ jobs:
           Get-ChildItem "./Version"
           $version = Get-Content -Path ./Version/version.txt
           Write-Host "Version: $version"
-          Write-Output "::set-env name=VERSION::$version"
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Remove-Item -Path ./Version/version.txt
           Remove-Item -Path ./Version
       # Checkout main branch

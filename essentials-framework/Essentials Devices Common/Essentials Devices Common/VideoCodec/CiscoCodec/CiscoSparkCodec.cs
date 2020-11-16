@@ -407,6 +407,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			CreateOsdSource();
 
             ExternalSourceListEnabled = props.ExternalSourceListEnabled;
+            ExternalSourceInputPort = props.ExternalSourceInputPort;
 
             if (props.UiBranding == null)
             {
@@ -416,6 +417,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 props.UiBranding.BrandingUrl);
 
             BrandingEnabled = props.UiBranding.Enable;
+
             _brandingUrl = props.UiBranding.BrandingUrl;
         }
 
@@ -1339,10 +1341,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public override void SendDtmf(string s)
         {
-            if (CallFavorites != null)
-            {
-                SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
-            }
+            SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
         }
 
         public void SelectPresentationSource(int source)
@@ -1920,13 +1919,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 		#region IHasExternalSourceSwitching Members
 
 		/// <summary>
-		/// Weather the Cisco supports External Source Lists or not 
+		/// Wheather the Cisco supports External Source Lists or not 
 		/// </summary>
 		public bool ExternalSourceListEnabled
 		{
 			get;
 			private set; 
 		}
+
+        /// <summary>
+        /// The name of the RoutingInputPort to which the upstream external switcher is connected
+        /// </summary>
+        public string ExternalSourceInputPort { get;  private set; }
 
         public bool BrandingEnabled { get; private set; }
         private string _brandingUrl;
@@ -1969,6 +1973,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			SendText("xCommand UserInterface Presentation ExternalSource RemoveAll");
 			
 		}
+
+        /// <summary>
+        /// Sets the selected source of the available external sources on teh Touch10 UI
+        /// </summary>
+        public void SetSelectedSource(string key)
+        {
+            SendText(string.Format("xCommand UserInterface Presentation ExternalSource Select SourceIdentifier: {0}", key));
+        }
 
 		/// <summary>
 		/// Action that will run when the External Source is selected. 
@@ -2097,7 +2109,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
     {
         public CiscoSparkCodecFactory()
         {
-            TypeNames = new List<string>() { "ciscospark", "ciscowebex", "ciscowebexpro", "ciscoroomkit" };
+            TypeNames = new List<string>() { "ciscospark", "ciscowebex", "ciscowebexpro", "ciscoroomkit", "ciscosparkpluscodec" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)

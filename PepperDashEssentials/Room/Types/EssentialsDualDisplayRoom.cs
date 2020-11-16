@@ -283,19 +283,23 @@ namespace PepperDash.Essentials
             if (disp != null)
             {
                 // Link power, warming, cooling to display
-                disp.PowerIsOnFeedback.OutputChange += (o, a) =>
-                    {
-                        if (disp.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
+                var dispTwoWay = disp as IHasPowerControlWithFeedback;
+                if (dispTwoWay != null)
+                {
+                    dispTwoWay.PowerIsOnFeedback.OutputChange += (o, a) =>
                         {
-                            if (!disp.PowerIsOnFeedback.BoolValue)
-                                disp.CurrentSourceInfo = null;
-                            OnFeedback.FireUpdate();
-                        }
-                        if (disp.PowerIsOnFeedback.BoolValue)
-                        {
-                            SetDefaultLevels();
-                        }
-                    };
+                            if (dispTwoWay.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
+                            {
+                                if (!dispTwoWay.PowerIsOnFeedback.BoolValue)
+                                    disp.CurrentSourceInfo = null;
+                                OnFeedback.FireUpdate();
+                            }
+                            if (dispTwoWay.PowerIsOnFeedback.BoolValue)
+                            {
+                                SetDefaultLevels();
+                            }
+                        };
+                }
 
                 disp.IsWarmingUpFeedback.OutputChange += (o, a) =>
                 {
@@ -579,8 +583,8 @@ namespace PepperDash.Essentials
 
 
 
-                if (dest is IPower)
-                    (dest as IPower).PowerOff();
+                if (dest is IHasPowerControl)
+                    (dest as IHasPowerControl).PowerOff();
             }
             else
             {

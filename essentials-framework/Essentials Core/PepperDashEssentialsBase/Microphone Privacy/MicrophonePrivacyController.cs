@@ -88,8 +88,12 @@ namespace PepperDash.Essentials.Core.Privacy
             else
                 Debug.Console(0, this, "Unable to add Red LED device");
 
+            DeviceManager.AllDevicesActivated += (o, a) =>
+                {
+                    CheckPrivacyMode();
+                };
+
             AddPostActivationAction(() => {
-                CheckPrivacyMode();
                 PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange -= PrivacyModeIsOnFeedback_OutputChange;
                 PrivacyDevice.PrivacyModeIsOnFeedback.OutputChange += PrivacyModeIsOnFeedback_OutputChange;
             });

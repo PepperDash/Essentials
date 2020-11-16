@@ -1,4 +1,6 @@
 ﻿using Crestron.SimplSharpPro;
+using System;
+using System.Linq;
 //using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -14,7 +16,7 @@ namespace PepperDash.Essentials.DM
     using eVst = eX02VideoSourceType;
     using eAst = eX02AudioSourceType;
 
-    public class DmTx4kz202CController : DmTxControllerBase, ITxRouting,
+    public class DmTx4kz202CController : DmTxControllerBase, ITxRoutingWithFeedback,
         IIROutputPorts, IComPorts
     {
         public DmTx4kz202C Tx { get; private set; }
@@ -34,6 +36,20 @@ namespace PepperDash.Essentials.DM
 
         //public override IntFeedback HdcpSupportAllFeedback { get; protected set; }
         //public override ushort HdcpSupportCapability { get; protected set; }
+        //IroutingNumericEvent
+        public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
+
+        /// <summary>
+        /// Raise an event when the status of a switch object changes.
+        /// </summary>
+        /// <param name="e">Arguments defined as IKeyName sender, output, input, and eRoutingSignalType</param>
+        private void OnSwitchChange(RoutingNumericEventArgs e)
+        {
+            var newEvent = NumericSwitchChange;
+            if (newEvent != null) newEvent(this, e);
+        }
+
+
 
         /// <summary>
         /// Helps get the "real" inputs, including when in Auto
@@ -77,10 +93,17 @@ namespace PepperDash.Essentials.DM
 
             HdmiIn1 = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn1,
                 eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.Hdmi1, this,
-                VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInputs[1]));
+                VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInputs[1]))
+            {
+                FeedbackMatchObject = eVst.Hdmi1
+            };
             HdmiIn2 = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn2,
                 eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.Hdmi2, this,
-                VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInputs[2]));
+                VideoStatusHelper.GetHdmiInputStatusFuncs(tx.HdmiInputs[2]))
+            {
+                FeedbackMatchObject = eVst.Hdmi2
+            };
+
             ActiveVideoInputFeedback = new StringFeedback("ActiveVideoInput",
                 () => ActualActiveVideoInput.ToString());
 
@@ -89,6 +112,7 @@ namespace PepperDash.Essentials.DM
             Tx.HdmiInputs[1].InputStreamChange += InputStreamChangeEvent;
             Tx.HdmiInputs[2].InputStreamChange += InputStreamChangeEvent;
             Tx.BaseEvent += Tx_BaseEvent;
+            Tx.OnlineStatusChange += Tx_OnlineStatusChange;
 
             VideoSourceNumericFeedback = new IntFeedback(() => (int)Tx.VideoSourceFeedback);
 
@@ -284,6 +308,21 @@ namespace PepperDash.Essentials.DM
             }
         }
 
+        void Tx_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
+        {
+            var localVideoInputPort =
+                InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.VideoSourceFeedback);
+            var localAudioInputPort =
+                InputPorts.FirstOrDefault(p => (eAst)p.Selector == Tx.AudioSourceFeedback);
+
+            ActiveVideoInputFeedback.FireUpdate();
+            VideoSourceNumericFeedback.FireUpdate();
+            AudioSourceNumericFeedback.FireUpdate();
+            OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, OutputPorts.First(), localVideoInputPort, eRoutingSignalType.Video));
+            OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue, OutputPorts.First(), localAudioInputPort, eRoutingSignalType.Audio));
+        }
+
+
         void Tx_BaseEvent(GenericBase device, BaseEventArgs args)
         {
             var id = args.EventId;
@@ -292,17 +331,19 @@ namespace PepperDash.Essentials.DM
             switch (id)
             {
                 case EndpointTransmitterBase.VideoSourceFeedbackEventId:
+                    var localVideoInputPort = InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.VideoSourceFeedback);
                     Debug.Console(2, this, "  Video Source: {0}", Tx.VideoSourceFeedback);
-                    ActiveVideoInputFeedback.FireUpdate();
                     VideoSourceNumericFeedback.FireUpdate();
-                    AudioSourceNumericFeedback.FireUpdate();
                     ActiveVideoInputFeedback.FireUpdate();
+                    OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, OutputPorts.First(), localVideoInputPort, eRoutingSignalType.Video));
                     break;
                 case EndpointTransmitterBase.AudioSourceFeedbackEventId:
-                    Debug.Console(2, this, " Audio Source : {0}", Tx.AudioSourceFeedback);
+                    var localInputAudioPort = InputPorts.FirstOrDefault(p => (eAst)p.Selector == Tx.AudioSourceFeedback);
+                    Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
                     AudioSourceNumericFeedback.FireUpdate();
+                    OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue, OutputPorts.First(), localInputAudioPort, eRoutingSignalType.Audio));
                     break;
-            } 
+            }
         }
 
         /// <summary>

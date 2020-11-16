@@ -33,6 +33,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
             IOPortConfig config)
             : base(key, name)
         {
+            InputStateFeedback = new BoolFeedback(InputStateFeedbackFunc);
 
             AddPostActivationAction(() =>
             {
@@ -81,7 +82,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
             }
             if (ioPortDevice == null)
             {
-                Debug.Console(0, "GetDigitalInput: Device '0' is not a valid IRelayPorts Device", dc.PortDeviceKey);
+                Debug.Console(0, "GetDigitalInput: Device '0' is not a valid IDigitalInputPorts Device", dc.PortDeviceKey);
                 return null;
             }
 
@@ -144,7 +145,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
-                Debug.Console(1, "Factory Attempting to create new Generic Relay Device");
+                Debug.Console(1, "Factory Attempting to create new Generic Digital Input Device");
 
                 var props = JsonConvert.DeserializeObject<IOPortConfig>(dc.Properties.ToString());
 
