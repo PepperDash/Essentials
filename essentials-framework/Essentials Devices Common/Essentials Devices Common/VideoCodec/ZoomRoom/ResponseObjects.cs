@@ -11,6 +11,8 @@ using PepperDash.Essentials.Core.Devices.Codec;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Devices.Common.Codec;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
@@ -259,9 +261,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             /// <returns></returns>
             public static CodecDirectory ConvertZoomContactsToGeneric(List<Contact> zoomContacts)
             {
-                var directory = new Essentials.Core.Devices.Codec.CodecDirectory();
+                var directory = new CodecDirectory();
 
-                var folders = new List<Essentials.Core.Devices.Codec.DirectoryItem>();
+                var folders = new List<DirectoryItem>();
 
                 var roomFolder = new DirectoryFolder();
 

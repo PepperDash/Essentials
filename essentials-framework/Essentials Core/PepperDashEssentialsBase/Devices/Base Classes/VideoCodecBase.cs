@@ -6,6 +6,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.Devices.Codec;
+using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Core.Devices.VideoCodec
 {

@@ -13,6 +13,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Devices.Codec;
 using PepperDash.Essentials.Core.Devices.VideoCodec;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
@@ -1999,22 +2000,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 		
 		#endregion
 	}
-
-
-	/// <summary>
-    /// Represents a codec command that might need to have a friendly label applied for UI feedback purposes
-    /// </summary>
-    public class CodecCommandWithLabel
-    {
-        public string Command { get; set; }
-        public string Label { get; set; }
-
-        public CodecCommandWithLabel(string command, string label)
-        {
-            Command = command;
-            Label = label;
-        }
-    }
 
     /// <summary>
     /// Tracks the initial sycnronization state of the codec when making a connection

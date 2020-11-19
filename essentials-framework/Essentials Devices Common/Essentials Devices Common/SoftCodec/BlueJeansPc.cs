@@ -14,7 +14,7 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Devices.Common.SoftCodec
 {
-    public class BlueJeansPc : InRoomPc, IRoutingInputs, IRunRouteAction, IRoutingSinkNoSwitching
+    public class BlueJeansPc : InRoomPc, IRunRouteAction, IRoutingSink
     {
 
         public RoutingInputPort AnyVideoIn { get; private set; }

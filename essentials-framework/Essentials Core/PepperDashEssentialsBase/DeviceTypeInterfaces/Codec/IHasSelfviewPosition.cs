@@ -1,5 +1,5 @@
 ﻿using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Devices.Common.VideoCodec.Cisco;
+using PepperDash.Essentials.Core.Devices;
 
 namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {

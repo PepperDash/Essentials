@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Devices.Codec;
+using PepperDash.Essentials.Devices.Common.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
