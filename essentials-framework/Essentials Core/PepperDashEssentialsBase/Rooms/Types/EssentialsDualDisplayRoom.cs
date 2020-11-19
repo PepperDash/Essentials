@@ -8,7 +8,7 @@ using PepperDash.Essentials.Core.Devices.AudioCodec;
 using PepperDash.Essentials.Core.Devices.VideoCodec;
 using PepperDash.Essentials.Core.Rooms;
 using PepperDash.Essentials.Core.Rooms.Config;
-using PepperDash_Essentials_Core.Devices;
+using PepperDash.Essentials.Core.Devices;
 
 namespace PepperDash.Essentials
 {

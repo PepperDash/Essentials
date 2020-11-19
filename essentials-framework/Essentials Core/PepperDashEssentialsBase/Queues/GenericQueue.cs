@@ -3,7 +3,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.CrestronThread;
 using PepperDash.Core;
 
-namespace PepperDash_Essentials_Core.Queues
+namespace PepperDash.Essentials.Core.Queues
 {
     /// <summary>
     /// Threadsafe processing of queued items with pacing if required

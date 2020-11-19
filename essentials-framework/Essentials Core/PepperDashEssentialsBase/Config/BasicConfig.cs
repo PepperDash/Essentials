@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
-using PepperDash_Essentials_Core.Devices;
+using PepperDash.Essentials.Core.Devices;
 
 namespace PepperDash.Essentials.Core.Config
 {

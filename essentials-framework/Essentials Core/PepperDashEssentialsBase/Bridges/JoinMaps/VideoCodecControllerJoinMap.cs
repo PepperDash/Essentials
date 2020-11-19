@@ -1,7 +1,7 @@
 ﻿using System;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash_Essentials_Core.Bridges.JoinMaps
+namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 {
     public class VideoCodecControllerJoinMap : JoinMapBaseAdvanced
     {

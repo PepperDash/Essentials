@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
-namespace PepperDash_Essentials_Core
+namespace PepperDash.Essentials.Core
 {
     public class IsReadyEventArgs : EventArgs
     {

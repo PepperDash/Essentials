@@ -5,7 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using PepperDash.Core;
 
-namespace PepperDash_Essentials_Core.Queues
+namespace PepperDash.Essentials.Core.Queues
 {
     public interface IQueue<T> : IKeyed, IDisposable where T : class 
     {

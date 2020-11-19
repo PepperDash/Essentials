@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Essentials.Core;
 
-namespace PepperDash_Essentials_Core.Devices
+namespace PepperDash.Essentials.Core.Devices
 {
     public class DestinationListItem
     {

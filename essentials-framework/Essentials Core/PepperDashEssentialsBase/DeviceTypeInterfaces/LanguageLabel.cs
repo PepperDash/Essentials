@@ -1,6 +1,6 @@
 ﻿using PepperDash.Core;
 
-namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     public class LanguageLabel
     {

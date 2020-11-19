@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using Crestron.SimplSharp;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using PepperDash.Essentials.Core.Devices.VideoCodec;
 
-namespace PepperDash.Essentials.Core.Devices.Codec
+
+using PepperDash.Core;
+using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
+
+namespace PepperDash.Essentials.Devices.Common.Codec
 {
 	/// <summary>
 	/// Defines the API for codecs with a directory
@@ -33,7 +40,13 @@ namespace PepperDash.Essentials.Core.Devices.Codec
         /// <summary>
         /// Tracks the directory browse history when browsing beyond the root directory
         /// </summary>
+        [Obsolete("Please use the Stack-based history instead")]
         List<CodecDirectory> DirectoryBrowseHistory { get; }
+    }
+
+    public interface IHasDirectoryHistoryStack : IHasDirectory
+    {
+        Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; } 
     }
 
 	/// <summary>
@@ -140,6 +153,9 @@ namespace PepperDash.Essentials.Core.Devices.Codec
 
 		[JsonProperty("name")]	
         public string Name { get; set; }
+
+        [JsonProperty("parentFolderId")]
+        public string ParentFolderId { get; set; }
     }
 
 	/// <summary>
@@ -150,8 +166,6 @@ namespace PepperDash.Essentials.Core.Devices.Codec
 		[JsonProperty("contacts")]
         public List<DirectoryContact> Contacts { get; set; }
 
-		[JsonProperty("parentFolderId")]
-        public string ParentFolderId { get; set; }
 
         public DirectoryFolder()
         {
@@ -169,6 +183,8 @@ namespace PepperDash.Essentials.Core.Devices.Codec
 
 		[JsonProperty("title")]
         public string Title { get; set; }
+
+        
 
 		[JsonProperty("contactMethods")]
         public List<ContactMethod> ContactMethods { get; set; }

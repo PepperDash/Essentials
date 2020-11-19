@@ -83,7 +83,7 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-        void _gateway_IsReadyEvent(object sender, PepperDash_Essentials_Core.IsReadyEventArgs e)
+        void _gateway_IsReadyEvent(object sender, Core.IsReadyEventArgs e)
         {
             if (e.IsReady != true) return;
             _remote = GetHr1x0WirelessRemote(_config);
