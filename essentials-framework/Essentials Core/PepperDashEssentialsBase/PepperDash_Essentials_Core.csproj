@@ -190,6 +190,7 @@
     <Compile Include="Devices\Base Classes\EssentialsBridgeableDevice.cs" />
     <Compile Include="Devices\Base Classes\EssentialsDevice.cs" />
     <Compile Include="Devices\CodecCommandWithLabel.cs" />
+    <Compile Include="Devices\Interfaces\CameraControl.cs" />
     <Compile Include="Devices\Interfaces\CodecInterfaces.cs" />
     <Compile Include="Devices\CrestronProcessor.cs" />
     <Compile Include="Devices\DestinationListItem.cs" />
