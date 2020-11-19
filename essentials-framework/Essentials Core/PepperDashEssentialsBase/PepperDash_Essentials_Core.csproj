@@ -202,6 +202,8 @@
     <Compile Include="Devices\Base Classes\ReconfigurableDevice.cs" />
     <Compile Include="Devices\Base Classes\VideoCodecBase.cs" />
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
+    <Compile Include="DeviceTypeInterfaces\Codec\IHasParticipants.cs" />
+    <Compile Include="DeviceTypeInterfaces\Codec\IHasSelfviewPosition.cs" />
     <Compile Include="DeviceTypeInterfaces\LanguageLabel.cs" />
     <Compile Include="DeviceTypeInterfaces\ILanguageProvider.cs" />
     <Compile Include="DeviceTypeInterfaces\IHasBranding.cs" />
