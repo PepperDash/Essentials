@@ -14,6 +14,8 @@ using PepperDash.Essentials.Core.Devices.VideoCodec;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.Touchpanels.Keyboards;
 using PepperDash.Essentials.Core.Devices.Codec;
+using PepperDash.Essentials.Devices.Common.Cameras;
+using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Devices.Core.VideoCodec;
 

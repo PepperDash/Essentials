@@ -303,7 +303,7 @@ namespace PepperDash.Essentials.Fusion
                     return;
                 }
 
-                var defaultDisplay = essentialsHuddleVtc1Room.DefaultDisplay as DisplayBase;
+                var defaultDisplay = essentialsHuddleVtc1Room.DefaultDisplay as TwoWayDisplayBase;
                 if (defaultDisplay == null)
                 {
                     Debug.Console(1, this, "Cannot link null display to Fusion because default display is null");
@@ -373,7 +373,7 @@ namespace PepperDash.Essentials.Fusion
             }
         }
 
-        protected override void MapDisplayToRoomJoins(int displayIndex, int joinOffset, DisplayBase display)
+        protected override void MapDisplayToRoomJoins(int displayIndex, int joinOffset, TwoWayDisplayBase display)
         {
             var displayName = string.Format("Display {0} - ", displayIndex);
 

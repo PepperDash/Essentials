@@ -22,24 +22,32 @@ namespace PepperDash.Essentials.Core.Devices.Codec
 
     public class CodecScheduleAwareness
     {
-        List<Meeting> _Meetings;
+        List<Meeting> _meetings;
 
         public event EventHandler<MeetingEventArgs> MeetingEventChange;
 
         public event EventHandler<EventArgs> MeetingsListHasChanged;
 
-		/// <summary>
-		/// Setter triggers MeetingsListHasChanged event
-		/// </summary>
+        private int _meetingWarningMinutes = 5;
+
+        public int MeetingWarningMinutes
+        {
+            get { return _meetingWarningMinutes; }
+            set { _meetingWarningMinutes = value; }
+        }
+
+        /// <summary>
+        /// Setter triggers MeetingsListHasChanged event
+        /// </summary>
         public List<Meeting> Meetings
         {
             get
             {
-                return _Meetings;
+                return _meetings;
             }
             set
             {
-                _Meetings = value;
+                _meetings = value;
 
                 var handler = MeetingsListHasChanged;
                 if (handler != null)
@@ -49,13 +57,20 @@ namespace PepperDash.Essentials.Core.Devices.Codec
             }
         }
 
-        private CTimer ScheduleChecker;
+        private CTimer _scheduleChecker;
 
         public CodecScheduleAwareness()
         {
             Meetings = new List<Meeting>();
 
-            ScheduleChecker = new CTimer(CheckSchedule, null, 1000, 1000);
+            _scheduleChecker = new CTimer(CheckSchedule, null, 1000, 1000);
+        }
+
+        public CodecScheduleAwareness(long pollTime)
+        {
+            Meetings = new List<Meeting>();
+
+            _scheduleChecker = new CTimer(CheckSchedule, null, pollTime, pollTime);
         }
 
         private void OnMeetingChange(eMeetingEventChangeType changeType, Meeting meeting)
@@ -72,9 +87,9 @@ namespace PepperDash.Essentials.Core.Devices.Codec
             //  Iterate the meeting list and check if any meeting need to do anythingk
 
             const double meetingTimeEpsilon = 0.0001;
-            foreach (Meeting m in Meetings)
+            foreach (var m in Meetings)
             {
-                eMeetingEventChangeType changeType = eMeetingEventChangeType.Unkown;
+                var changeType = eMeetingEventChangeType.Unkown;
 
                 if (m.TimeToMeetingStart.TotalMinutes <= m.MeetingWarningMinutes.TotalMinutes)       // Meeting is about to start
                     changeType = eMeetingEventChangeType.MeetingStartWarning;
@@ -98,12 +113,17 @@ namespace PepperDash.Essentials.Core.Devices.Codec
     /// </summary>
     public class Meeting
     {
-        public TimeSpan MeetingWarningMinutes = TimeSpan.FromMinutes(5);
+        public int MinutesBeforeMeeting;
 
         public string Id { get; set; }
         public string Organizer { get; set; }
         public string Title { get; set; }
         public string Agenda { get; set; }
+
+        public TimeSpan MeetingWarningMinutes
+        {
+            get { return TimeSpan.FromMinutes(MinutesBeforeMeeting); }
+        }
         public TimeSpan TimeToMeetingStart
         {
             get
@@ -132,7 +152,7 @@ namespace PepperDash.Essentials.Core.Devices.Codec
         {
             get
             {
-                return StartTime.AddMinutes(-5) <= DateTime.Now
+                return StartTime.AddMinutes(-MinutesBeforeMeeting) <= DateTime.Now
                     && DateTime.Now <= EndTime; //.AddMinutes(-5);
             }
         }

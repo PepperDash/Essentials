@@ -1,4 +1,4 @@
-﻿namespace PepperDash.Essentials
+﻿namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// 

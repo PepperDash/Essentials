@@ -289,6 +289,36 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public RoutingOutputPort HdmiOut1 { get; private set; }
         public RoutingOutputPort HdmiOut2 { get; private set; }
 
+        public static List<CodecRoomPreset> GetGenericPresets(List<CiscoCodecStatus.RoomPreset> presets)
+        {
+            var cameraPresets = new List<CodecRoomPreset>();
+
+            if (Debug.Level > 0)
+            {
+                Debug.Console(1, "Presets List:");
+            }
+
+            foreach (CiscoCodecStatus.RoomPreset preset in presets)
+            {
+                try
+                {
+                    var cameraPreset = new CodecRoomPreset(UInt16.Parse(preset.id), preset.Description.Value, preset.Defined.BoolValue, true);
+
+                    cameraPresets.Add(cameraPreset);
+
+                    if (Debug.Level > 0)
+                    {
+                        Debug.Console(1, "Added Preset ID: {0}, Description: {1}, IsDefined: {2}, isDefinable: {3}", cameraPreset.ID, cameraPreset.Description, cameraPreset.Defined, cameraPreset.IsDefinable);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(2, "Unable to convert preset: {0}. Error: {1}", preset.id, e);
+                }
+            }
+
+            return cameraPresets;
+        }
 
         // Constructor for IBasicCommunication
         public CiscoSparkCodec(DeviceConfig config, IBasicCommunication comm)
@@ -456,6 +486,57 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			var tl = new TieLine(OsdSource.AudioVideoOutputPort, CodecOsdIn);
 			TieLineCollection.Default.Add(tl);
 		}
+
+        public void ConvertCiscoCallHistoryToGeneric(List<CiscoCallHistory.Entry> entries)
+        {
+            var genericEntries = new List<CodecCallHistory.CallHistoryEntry>();
+
+            foreach (CiscoCallHistory.Entry entry in entries)
+            {
+
+                genericEntries.Add(new CodecCallHistory.CallHistoryEntry()
+                {
+                    Name = entry.DisplayName.Value,
+                    Number = entry.CallbackNumber.Value,
+                    StartTime = entry.LastOccurrenceStartTime.Value,
+                    OccurrenceHistoryId = entry.LastOccurrenceHistoryId.Value,
+                    OccurrenceType = ConvertToOccurenceTypeEnum(entry.OccurrenceType.Value)
+                });
+            }
+
+            // Check if list is empty and if so, add an item to display No Recent Calls
+            if (genericEntries.Count == 0)
+                genericEntries.Add(CallHistory.ListEmptyEntry);
+
+            CallHistory.UpdateCallHistory(genericEntries);
+        }
+
+        /// <summary>
+        /// Takes the Cisco occurence type and converts it to the matching enum
+        /// </summary>
+        /// <param name="s"></para
+        public eCodecOccurrenceType ConvertToOccurenceTypeEnum(string s)
+        {
+            switch (s)
+            {
+                case "Placed":
+                    {
+                        return eCodecOccurrenceType.Placed;
+                    }
+                case "Received":
+                    {
+                        return eCodecOccurrenceType.Received;
+                    }
+                case "NoAnswer":
+                    {
+                        return eCodecOccurrenceType.NoAnswer;
+                    }
+                default:
+                    return eCodecOccurrenceType.Unknown;
+            }
+
+        }
+
 
         public void InitializeBranding(string roomKey)
         {
@@ -902,7 +983,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         CodecStatus.Status.RoomPreset = existingRoomPresets;
 
                         // Generecise the list
-                        NearEndPresets = RoomPresets.GetGenericPresets(CodecStatus.Status.RoomPreset);
+                        NearEndPresets = GetGenericPresets(CodecStatus.Status.RoomPreset);
 
                         var handler = CodecRoomPresetsListHasChanged;
                         if (handler != null)
@@ -976,7 +1057,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                         JsonConvert.PopulateObject(response, codecCallHistory);
 
-                        CallHistory.ConvertCiscoCallHistoryToGeneric(codecCallHistory.CommandResponse.CallHistoryRecentsResult.Entry);
+                        ConvertCiscoCallHistoryToGeneric(codecCallHistory.CommandResponse.CallHistoryRecentsResult.Entry);
                     }
                     else if (response.IndexOf("\"CallHistoryDeleteEntryResult\":{") > -1 || response.IndexOf("\"CallHistoryDeleteEntryResult\": {") > -1)
                     {

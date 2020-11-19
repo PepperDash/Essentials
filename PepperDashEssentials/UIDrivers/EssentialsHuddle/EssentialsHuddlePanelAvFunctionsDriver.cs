@@ -22,6 +22,11 @@ namespace PepperDash.Essentials
 			PresentationMode, AudioSetup
 		}
 
+        /// <summary>
+        /// The parent driver for this
+        /// </summary>
+        public PanelDriverBase Parent { get; private set; }
+
         public uint StartPageVisibleJoin { get; private set; }
 
 
@@ -214,14 +219,25 @@ namespace PepperDash.Essentials
 		    switch (_config.HeaderStyle.ToLower())
 		    {
 		        case CrestronTouchpanelPropertiesConfig.Habanero:
-		            TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, () =>
-		                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderPageVisible));
+		            TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, (() =>
+                    {
+                        if (CurrentRoom.IsMobileControlEnabled)
+                        {
+                            Debug.Console(1, "Showing Mobile Control Header Info");
+                            PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderInfoMCPageVisible);
+                        }
+                        else
+                        {
+                            Debug.Console(1, "Showing Non Mobile Control Header Info");
+                            PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.RoomHeaderInfoPageVisible);
+                        }
+                    }));
 		            break;
 		        case CrestronTouchpanelPropertiesConfig.Verbose:
 		            break;
 		    }
 
-            if (Config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Habanero)
+            if (_config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Habanero)
             {
                 TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, () =>
                     {
@@ -237,7 +253,7 @@ namespace PepperDash.Essentials
                         }
                     });
             }
-            else if (Config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Verbose)
+            else if (_config.HeaderStyle.ToLower() == CrestronTouchpanelPropertiesConfig.Verbose)
             {
                 TriList.SetSigFalseAction(UIBoolJoin.HeaderRoomButtonPress, () =>
                 {
@@ -254,9 +270,9 @@ namespace PepperDash.Essentials
                 });
             }
 
-            TriList.SetBool(UIBoolJoin.DateAndTimeVisible, Config.ShowDate && Config.ShowTime);
-            TriList.SetBool(UIBoolJoin.DateOnlyVisible, Config.ShowDate && !Config.ShowTime);
-            TriList.SetBool(UIBoolJoin.TimeOnlyVisible, !Config.ShowDate && Config.ShowTime);
+            TriList.SetBool(UIBoolJoin.DateAndTimeVisible, _config.ShowDate && _config.ShowTime);
+            TriList.SetBool(UIBoolJoin.DateOnlyVisible, _config.ShowDate && !_config.ShowTime);
+            TriList.SetBool(UIBoolJoin.TimeOnlyVisible, !_config.ShowDate && _config.ShowTime);
 
             TriList.SetBool(UIBoolJoin.TopBarHabaneroDynamicVisible, true);
             TriList.BooleanInput[UIBoolJoin.ActivityFooterVisible].BoolValue = true;
@@ -343,8 +359,8 @@ namespace PepperDash.Essentials
             {
                 TriList.SetBool(UIBoolJoin.LogoDefaultVisible, false);
                 TriList.SetBool(UIBoolJoin.LogoUrlVisible, true);
-                TriList.SetString(UIStringJoin.LogoUrlLightBkgnd, _CurrentRoom.LogoUrlLightBkgnd);
-                TriList.SetString(UIStringJoin.LogoUrlDarkBkgnd, _CurrentRoom.LogoUrlDarkBkgnd);
+                TriList.SetString(UIStringJoin.LogoUrlLightBkgnd, _currentRoom.LogoUrlLightBkgnd);
+                TriList.SetString(UIStringJoin.LogoUrlDarkBkgnd, _currentRoom.LogoUrlDarkBkgnd);
             }
         }
 
@@ -854,8 +870,8 @@ namespace PepperDash.Essentials
 			if (_currentRoom == room) return;
             // Disconnect current (probably never called)
 
-            if (_CurrentRoom != null)
-                _CurrentRoom.ConfigChanged -= room_ConfigChanged;
+            if (_currentRoom != null)
+                _currentRoom.ConfigChanged -= room_ConfigChanged;
 
             room.ConfigChanged -= room_ConfigChanged;
             room.ConfigChanged += room_ConfigChanged;
@@ -865,8 +881,8 @@ namespace PepperDash.Essentials
                 StartPageVisibleJoin = UIBoolJoin.StartMCPageVisible;
                 UpdateMCJoins(room);
 
-                if (_CurrentRoom != null)
-                    _CurrentRoom.MobileControlRoomBridge.UserCodeChanged -= MobileControlRoomBridge_UserCodeChanged;
+                if (_currentRoom != null)
+                    _currentRoom.MobileControlRoomBridge.UserCodeChanged -= MobileControlRoomBridge_UserCodeChanged;
 
                 room.MobileControlRoomBridge.UserCodeChanged -= MobileControlRoomBridge_UserCodeChanged;
                 room.MobileControlRoomBridge.UserCodeChanged += MobileControlRoomBridge_UserCodeChanged;
@@ -881,7 +897,7 @@ namespace PepperDash.Essentials
 
         void MobileControlRoomBridge_UserCodeChanged(object sender, EventArgs e)
         {
-            UpdateMCJoins(_CurrentRoom);
+            UpdateMCJoins(_currentRoom);
         }
 
         void UpdateMCJoins(EssentialsHuddleSpaceRoom room)

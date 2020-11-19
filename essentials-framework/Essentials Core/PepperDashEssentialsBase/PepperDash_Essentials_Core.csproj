@@ -199,11 +199,13 @@
     <Compile Include="Devices\DeviceFeedbackExtensions.cs" />
     <Compile Include="Devices\GenericIRController.cs" />
     <Compile Include="Devices\IDspPreset.cs" />
+    <Compile Include="Devices\Interfaces\IHasCameraPresets.cs" />
     <Compile Include="Devices\Interfaces\IProjectorInterfaces.cs" />
     <Compile Include="Devices\PC\InRoomPc.cs" />
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\Base Classes\ReconfigurableDevice.cs" />
     <Compile Include="Devices\Base Classes\VideoCodecBase.cs" />
+    <Compile Include="Devices\RoomPresets.cs" />
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
     <Compile Include="DeviceTypeInterfaces\Codec\IHasExternalSourceSwitching.cs" />
     <Compile Include="DeviceTypeInterfaces\Codec\IHasParticipants.cs" />

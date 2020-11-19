@@ -98,7 +98,6 @@
     <Compile Include="AudioCodec\MockAC\MockAC.cs" />
     <Compile Include="AudioCodec\MockAC\MockAcPropertiesConfig.cs" />
     <Compile Include="Cameras\CameraVisca.cs" />
-    <Compile Include="Cameras\IHasCameraPresets.cs" />
     <Compile Include="ImageProcessors\TVOneCorio.cs" />
     <Compile Include="ImageProcessors\TVOneCorioPropertiesConfig.cs" />
     <Compile Include="Power Controllers\Digitallogger.cs" />
@@ -107,7 +106,6 @@
     <Compile Include="ImageProcessors\AnalogWay\AnalogWayLiveCorePropertiesConfig.cs" />
     <Compile Include="SoftCodec\BlueJeansPc.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CiscoCamera.cs" />
-    <Compile Include="VideoCodec\CiscoCodec\RoomPresets.cs" />
     <Compile Include="Display\PanasonicThDisplay.cs" />
     <Compile Include="Display\ComTcpDisplayBase.cs" />
     <Compile Include="Display\AvocorVTFDisplay.cs" />

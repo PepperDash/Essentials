@@ -241,7 +241,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         foreach (ContactMethod m in c.ContactMethod)
                         {
 
-                            var tempContactMethod = new Essentials.Core.Devices.Codec.ContactMethod();
+                            var tempContactMethod = new Codec.ContactMethod();
 
                             eContactMethodCallType callType = eContactMethodCallType.Unknown;
                             if (!string.IsNullOrEmpty(m.CallType.Value))
@@ -300,11 +300,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// <returns></returns>
         public static CodecDirectory ConvertCiscoPhonebookToGeneric(PhonebookSearchResult result)
         {
-            var directory = new Essentials.Core.Devices.Codec.CodecDirectory();
+            var directory = new CodecDirectory();
 
-            var folders = new List<Essentials.Core.Devices.Codec.DirectoryItem>();
+            var folders = new List<DirectoryItem>();
 
-            var contacts = new List<Essentials.Core.Devices.Codec.DirectoryItem>();
+            var contacts = new List<DirectoryItem>();
 
             try
             {
@@ -371,7 +371,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                                     device = eContactMethodDevice.Other;
                             }
 
-                            contact.ContactMethods.Add(new Essentials.Core.Devices.Codec.ContactMethod()
+                            contact.ContactMethods.Add(new Codec.ContactMethod()
                             {
                                 Number = m.Number.Value,
                                 ContactMethodId = m.ContactMethodId.Value,

@@ -11,7 +11,7 @@ using PepperDash.Essentials.Core.Routing;
 
 namespace PepperDash.Essentials
 {
-    public class Amplifier : EssentialsDevice, IRoutingSinkNoSwitching
+    public class Amplifier : EssentialsDevice, IRoutingSink
     {
         public event SourceInfoChangeHandler CurrentSourceChange;
 
