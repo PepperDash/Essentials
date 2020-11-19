@@ -241,7 +241,7 @@ namespace PepperDash.Essentials.Core
             ShutdownType = eShutdownType.None;
         }
 
-        protected void InitializeDisplay(DisplayBase display)
+        protected void InitializeDisplay(TwoWayDisplayBase display)
         {
             // Link power, warming, cooling to display
             display.PowerIsOnFeedback.OutputChange += PowerIsOnFeedbackOnOutputChange;
@@ -615,9 +615,9 @@ namespace PepperDash.Essentials.Core
             if (route.SourceKey.Equals("$off", StringComparison.OrdinalIgnoreCase))
             {
                 dest.ReleaseRoute();
-                if (dest is IPower)
+                if (dest is IHasPowerControl)
                 {
-                    (dest as IPower).PowerOff();
+                    (dest as IHasPowerControl).PowerOff();
                 }
             }
             else

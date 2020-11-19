@@ -1259,11 +1259,11 @@ namespace PepperDash.Essentials.Core.Fusion
             {
                 //Setup Display Usage Monitoring
 
-                var displays = DeviceManager.AllDevices.Where(d => d is DisplayBase);
+                var displays = DeviceManager.AllDevices.Where(d => d is TwoWayDisplayBase);
 
                 //  Consider updating this in multiple display systems
 
-                foreach (var display in displays.Cast<DisplayBase>())
+                foreach (var display in displays.Cast<TwoWayDisplayBase>())
                 {
                     display.UsageTracker = new UsageTracking(display) {UsageIsTracked = true};
                     display.UsageTracker.DeviceUsageEnded +=
@@ -1276,7 +1276,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     return;
                 }
 
-                var defaultDisplay = hasDefaultDisplay.DefaultDisplay as DisplayBase;
+                var defaultDisplay = hasDefaultDisplay.DefaultDisplay as TwoWayDisplayBase;
                 if (defaultDisplay == null)
                 {
                     Debug.Console(1, this, "Cannot link null display to Fusion because default display is null");
@@ -1326,7 +1326,7 @@ namespace PepperDash.Essentials.Core.Fusion
         /// <param name="display"></param>
         /// <param name="displayIndex"></param>
         /// a
-        protected virtual void MapDisplayToRoomJoins(int displayIndex, int joinOffset, DisplayBase display)
+        protected virtual void MapDisplayToRoomJoins(int displayIndex, int joinOffset, TwoWayDisplayBase display)
         {
             var displayName = string.Format("Display {0} - ", displayIndex);
 

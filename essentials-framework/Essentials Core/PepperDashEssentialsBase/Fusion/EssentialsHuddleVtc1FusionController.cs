@@ -154,7 +154,7 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             base.SetUpDisplay();
 
-            var defaultDisplay = _room.DefaultDisplay as DisplayBase;
+            var defaultDisplay = _room.DefaultDisplay as TwoWayDisplayBase;
 
             if (defaultDisplay == null)
             {

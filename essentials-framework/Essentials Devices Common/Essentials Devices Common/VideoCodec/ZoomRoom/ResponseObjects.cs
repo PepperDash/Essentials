@@ -11,7 +11,6 @@ using PepperDash.Essentials.Core.Devices.Codec;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {

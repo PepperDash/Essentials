@@ -8,6 +8,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
 using Newtonsoft.Json;
+using PepperDash.Essentials.Core.Devices.Codec;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {

@@ -210,8 +210,8 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            var leftDisplay = leftDest.SinkDevice as DisplayBase;
-            var rightDisplay = rightDest.SinkDevice as DisplayBase;
+            var leftDisplay = leftDest.SinkDevice as TwoWayDisplayBase;
+            var rightDisplay = rightDest.SinkDevice as TwoWayDisplayBase;
 
             if (leftDisplay == null || rightDisplay == null)
             {
@@ -279,8 +279,8 @@ namespace PepperDash.Essentials
 
         protected override void PowerIsOnFeedbackOnOutputChange(object sender, FeedbackEventArgs args)
         {
-            var ld = LeftDisplay as DisplayBase;
-            var rd = RightDisplay as DisplayBase;
+            var ld = LeftDisplay as TwoWayDisplayBase;
+            var rd = RightDisplay as TwoWayDisplayBase;
 
             if (ld == null || rd == null)
             {

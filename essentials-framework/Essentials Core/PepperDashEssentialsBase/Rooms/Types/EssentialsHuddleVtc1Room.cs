@@ -195,7 +195,7 @@ namespace PepperDash.Essentials
                 SourceListKey = "default";
                 EnablePowerOnToLastSource = true;
 
-                var disp = DefaultDisplay as DisplayBase;
+                var disp = DefaultDisplay as TwoWayDisplayBase;
                 if (disp == null)
                 {
                     return;
@@ -272,7 +272,7 @@ namespace PepperDash.Essentials
 
         protected override void PowerIsOnFeedbackOnOutputChange(object sender, FeedbackEventArgs args)
         {
-            var disp = sender as DisplayBase;
+            var disp = sender as TwoWayDisplayBase;
 
             if (disp == null)
             {
