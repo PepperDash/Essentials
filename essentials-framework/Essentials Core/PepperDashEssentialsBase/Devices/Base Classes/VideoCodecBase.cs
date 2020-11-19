@@ -18,6 +18,7 @@ using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Devices.Codec;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash.Essentials.Devices.Core.VideoCodec;

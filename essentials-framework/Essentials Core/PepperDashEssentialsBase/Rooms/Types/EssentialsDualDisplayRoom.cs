@@ -9,6 +9,7 @@ using PepperDash.Essentials.Core.Devices.VideoCodec;
 using PepperDash.Essentials.Core.Rooms;
 using PepperDash.Essentials.Core.Rooms.Config;
 using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials
 {

@@ -187,6 +187,7 @@
     <Compile Include="Device Info\DeviceInfoEventArgs.cs" />
     <Compile Include="Device Info\IDeviceInfoProvider.cs" />
     <Compile Include="Devices\Base Classes\AudioCodecBase.cs" />
+    <Compile Include="Devices\Base Classes\CameraBase.cs" />
     <Compile Include="Devices\Base Classes\EssentialsBridgeableDevice.cs" />
     <Compile Include="Devices\Base Classes\EssentialsDevice.cs" />
     <Compile Include="Devices\CodecCommandWithLabel.cs" />

@@ -97,7 +97,6 @@
   <ItemGroup>
     <Compile Include="AudioCodec\MockAC\MockAC.cs" />
     <Compile Include="AudioCodec\MockAC\MockAcPropertiesConfig.cs" />
-    <Compile Include="Cameras\CameraBase.cs" />
     <Compile Include="Cameras\CameraVisca.cs" />
     <Compile Include="Cameras\IHasCameraPresets.cs" />
     <Compile Include="ImageProcessors\TVOneCorio.cs" />

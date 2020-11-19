@@ -1,4 +1,6 @@
-﻿namespace PepperDash.Essentials.Core.Devices.VideoCodec
+﻿using PepperDash.Essentials.Devices.Common.VideoCodec;
+
+namespace PepperDash.Essentials.Core.Devices.VideoCodec
 {
 	/// <summary>
 	/// For rooms that have video codec
