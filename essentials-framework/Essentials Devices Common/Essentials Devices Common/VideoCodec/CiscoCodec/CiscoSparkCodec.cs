@@ -598,12 +598,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SendText("xconfiguration userinterface custommessage: \"Scan the QR code with a mobile phone to get started\"");
             SendText("xconfiguration userinterface osd halfwakemessage: \"Tap the touch panel or scan the QR code with a mobile phone to get started\"");
 
+            var checksum = !String.IsNullOrEmpty(mcBridge.QrCodeChecksum)
+                ? String.Format("checksum: {0} ", mcBridge.QrCodeChecksum)
+                : String.Empty;
+
             SendText(String.Format(
-                            "xcommand userinterface branding fetch type: branding url: {0}",
-                            mcBridge.QrCodeUrl));
+                "xcommand userinterface branding fetch {1}type: branding url: {0}",
+                mcBridge.QrCodeUrl, checksum));
             SendText(String.Format(
-                "xcommand userinterface branding fetch type: halfwakebranding url: {0}",
-                mcBridge.QrCodeUrl));
+                "xcommand userinterface branding fetch {1}type: halfwakebranding url: {0}",
+                mcBridge.QrCodeUrl, checksum));
         }
 
         private void SendBrandingUrl()
