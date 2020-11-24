@@ -13,7 +13,7 @@ switch -regex ($Env:GITHUB_REF) {
     $phase = 'alpha'
     $newVersionString = "{0}-{1}-{2}" -f $newVersion, $phase, $Env:GITHUB_RUN_NUMBER
   }
-  '^refs\/heads\/development-2.0.0' {
+  'development-2.0.0' {
     $phase = 'beta'
     $newVersionString = "{0}-{1}-{2}" -f $newVersion, $phase, $Env:GITHUB_RUN_NUMBER
   }  
