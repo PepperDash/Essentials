@@ -8,7 +8,7 @@ on:
     types:
       - closed
     branches:
-      - development
+      - development-2.0.0
 
 env:
   # solution path doesn't need slashes unless there it is multiple folders deep
