@@ -205,7 +205,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         protected Func<string> SelfviewPipPositionFeedbackFunc
         {
-            get { return () => _currentSelfviewPipPosition.Command; }
+            get { return () => _currentSelfviewPipPosition.Command ?? "Unknown"; }
         }
 
         protected Func<string> LocalLayoutFeedbackFunc
