@@ -1,4 +1,4 @@
-name: Branch Build Using Docker
+name: Build Essentials 2.0.0
 
 on:
   push:
