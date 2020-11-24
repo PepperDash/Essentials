@@ -536,23 +536,31 @@ namespace PepperDash.Essentials
             string logoLight = null;
             string logo = null;
 
-            if (c.Properties["logoDark"] != null)
+            try
             {
-                logoDark = c.Properties["logoDark"].Value<string>("type");
-            }
+                if (c.Properties["logoDark"] != null)
+                {
+                    logoDark = c.Properties["logoDark"].Value<string>("type");
+                }
 
-            if (c.Properties["logoLight"] != null)
+                if (c.Properties["logoLight"] != null)
+                {
+                    logoLight = c.Properties["logoLight"].Value<string>("type");
+                }
+
+                if (c.Properties["logo"] != null)
+                {
+                    logo = c.Properties["logo"].Value<string>("type");
+                }
+
+                return ((logoDark != null && logoDark == "system") ||
+                        (logoLight != null && logoLight == "system") || (logo != null && logo == "system"));
+            }
+            catch (Exception e)
             {
-                logoLight = c.Properties["logoLight"].Value<string>("type");
+                Debug.Console(1, Debug.ErrorLogLevel.Notice, "Unable to find logo information in any room config");
+                return false;
             }
-
-            if (c.Properties["logo"] != null)
-            {
-                logo = c.Properties["logo"].Value<string>("type");
-            }
-
-            return ((logoDark != null && logoDark == "system") ||
-                    (logoLight != null && logoLight == "system") || (logo != null && logo == "system"));
         }
     }
 }
