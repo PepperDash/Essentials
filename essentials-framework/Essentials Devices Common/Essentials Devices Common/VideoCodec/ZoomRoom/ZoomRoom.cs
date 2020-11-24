@@ -205,7 +205,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         protected Func<string> SelfviewPipPositionFeedbackFunc
         {
-            get { return () => _currentSelfviewPipPosition.Command ?? "Unknown"; }
+            get
+            {
+                return
+                    () =>
+                        _currentSelfviewPipPosition != null
+                            ? _currentSelfviewPipPosition.Command ?? "Unknown"
+                            : "Unknown";
+            }
         }
 
         protected Func<string> LocalLayoutFeedbackFunc
@@ -1373,6 +1380,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// </summary>
         private void UpdateCallStatus()
         {
+            Debug.Console(1, this, "[UpdateCallStatus] Current Call Status: {0}",
+                Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
+
             if (Status.Call != null)
             {
                 var callStatus = Status.Call.Status;
@@ -1406,6 +1416,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                         ActiveCalls.Add(newCall);
 
+                        Debug.Console(1, this, "[UpdateCallStatus] Current Call Status: {0}",
+                            Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
+
                         OnCallStatusChange(newCall);
                     }
                 }
@@ -1422,6 +1435,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             existingCall.Status = eCodecCallStatus.Disconnected;
                             break;
                     }
+
+                    Debug.Console(1, this, "[UpdateCallStatus] Current Call Status: {0}",
+                        Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
 
                     OnCallStatusChange(existingCall);
                 }
@@ -1459,6 +1475,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         protected override void OnCallStatusChange(CodecActiveCallItem item)
         {
             base.OnCallStatusChange(item);
+
+            Debug.Console(1, this, "[OnCallStatusChange] Current Call Status: {0}",
+                Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
 
             if (_props.AutoDefaultLayouts)
             {
