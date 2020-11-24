@@ -4,6 +4,8 @@ $newVersion = [version]$latestVersion
 $phase = ""
 $newVersionString = ""
 
+Write-Host "GITHUB_REF: $($Env:GITHUB_REF)"
+
 switch -regex ($Env:GITHUB_REF) {
   '^refs\/pull\/*.' {
     $phase = 'beta';

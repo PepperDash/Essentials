@@ -38,7 +38,6 @@ jobs:
       - name: Set Version Number
         shell: powershell
         run: |
-          Write-Host "$($Env:GITHUB_REF)"
           $version = ./.github/scripts/GenerateVersionNumber-2.0.0.ps1
           echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       # Use the version number to set the version of the assemblies
