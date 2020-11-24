@@ -9,6 +9,7 @@ on:
       - closed
     branches:
       - development-2.0.0
+      - feature-2.0.0/update-workflows-for-2.0.0
 
 env:
   # solution path doesn't need slashes unless there it is multiple folders deep
@@ -37,6 +38,7 @@ jobs:
       - name: Set Version Number
         shell: powershell
         run: |
+          Write-Host "$($Env:GITHUB_REF)"
           $version = ./.github/scripts/GenerateVersionNumber-2.0.0.ps1
           echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       # Use the version number to set the version of the assemblies
