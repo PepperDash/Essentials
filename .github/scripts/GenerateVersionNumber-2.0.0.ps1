@@ -6,8 +6,7 @@ $newVersionString = ""
 
 switch -regex ($Env:GITHUB_REF) {
   '^refs\/pull\/*.' {
-    $splitRef = $Env:GITHUB_REF -split "/"
-    $phase = "pr$($splitRef[2])"
+    $phase = 'beta';
     $newVersionString = "{0}-{1}-{2}" -f $newVersion, $phase, $Env:GITHUB_RUN_NUMBER
   }
   '^refs\/heads\/feature-2.0.0\/*.' {
