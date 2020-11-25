@@ -7,7 +7,7 @@
     <ProjectGuid>{1BED5BA9-88C4-4365-9362-6F4B128071D3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PepperDashEssentials</RootNamespace>
+    <RootNamespace>PepperDash.Essentials</RootNamespace>
     <AssemblyName>PepperDashEssentials</AssemblyName>
     <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92230};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PlatformFamilyName>WindowsCE</PlatformFamilyName>
@@ -214,6 +214,10 @@
     <ProjectReference Include="..\essentials-framework\Essentials DM\Essentials_DM\PepperDash_Essentials_DM.csproj">
       <Project>{9199CE8A-0C9F-4952-8672-3EED798B284F}</Project>
       <Name>PepperDash_Essentials_DM</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\essentials-framework\Essentials Interfaces\PepperDash_Essentials_Interfaces\PepperDash_Essentials_Interfaces.csproj">
+      <Project>{E51D7C84-4906-486C-B2BA-EEB3B4E9731B}</Project>
+      <Name>PepperDash_Essentials_Interfaces</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
