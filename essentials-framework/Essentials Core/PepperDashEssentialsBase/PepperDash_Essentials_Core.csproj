@@ -7,7 +7,7 @@
     <ProjectGuid>{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PepperDash_Essentials_Core</RootNamespace>
+    <RootNamespace>PepperDash.Essentials.Core</RootNamespace>
     <AssemblyName>PepperDash_Essentials_Core</AssemblyName>
     <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92300};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PlatformFamilyName>WindowsCE</PlatformFamilyName>
