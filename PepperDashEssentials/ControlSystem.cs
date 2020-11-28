@@ -16,6 +16,7 @@ using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
 using PepperDash.Essentials.Room.Config;
+using PepperDash.Essentials.Core.Room;
 
 using Newtonsoft.Json;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
@@ -428,8 +429,18 @@ namespace PepperDash.Essentials
 
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
-                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
-                if (room != null)
+                Device room = null;
+
+                if (roomConfig.Type != "componentRoom")
+                {
+                    room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
+                }
+                else
+                {
+
+                }
+
+                if (room != null && room is EssentialsRoomBase)
                 {
                     if (room is EssentialsHuddleSpaceRoom)
                     {
@@ -441,7 +452,7 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
-                        CreateMobileControlBridge(room);
+                        CreateMobileControlBridge(room as EssentialsRoomBase);
                     }
                     else if (room is EssentialsHuddleVtc1Room)
                     {
@@ -452,13 +463,17 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
-                        CreateMobileControlBridge(room);
+                        CreateMobileControlBridge(room as EssentialsRoomBase);
                     }
                     else
                     {
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is NOT EssentialsRoom, attempting to add to DeviceManager w/o Fusion");
                         DeviceManager.AddDevice(room);
                     }
+
+                }
+                else if (room is ComponentRoom)
+                {
 
                 }
                 else
@@ -558,7 +573,7 @@ namespace PepperDash.Essentials
             }
             catch (Exception e)
             {
-                Debug.Console(1, Debug.ErrorLogLevel.Notice, "Unable to find logo information in any room config");
+                Debug.Console(1, Debug.ErrorLogLevel.Notice, "Unable to find logo information in any room config: {0}", e);
                 return false;
             }
         }

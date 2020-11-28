@@ -277,9 +277,13 @@
     <Compile Include="Remotes\CrestronRemotePropertiesConfig.cs" />
     <Compile Include="Remotes\Hrxx0WirelessRemoteController.cs" />
     <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />
+    <Compile Include="Room\Components\ComponentFactory.cs" />
+    <Compile Include="Room\Components\ComponentRoom.cs" />
+    <Compile Include="Room\Components\RoomComponentBase.cs" />
     <Compile Include="Room\EssentialsRoomBase.cs" />
     <Compile Include="Room\Interfaces.cs" />
     <Compile Include="Room\iOccupancyStatusProvider.cs" />
+    <Compile Include="Room\RoomFactory.cs" />
     <Compile Include="Routing\DummyRoutingInputsDevice.cs" />
     <Compile Include="Routing\ICardPortsDevice.cs" />
     <Compile Include="InUseTracking\IInUseTracking.cs" />
