@@ -494,6 +494,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             {
                 if (a.PropertyName == "State")
                 {
+					Debug.Console(1, this, "[SetUpFeedbackActions] Status.Call.Sharing.PropertyChanged: {0}", Status.Call.Sharing.State);
                     SharingContentIsOnFeedback.FireUpdate();
                     ReceivingContent.FireUpdate();
                 }
@@ -904,7 +905,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         {
                             case "call":
                             {
+								Debug.Console(1, this, "[DeserializeResponse] sharing status 1: {0}", Status.Call.Sharing.State.ToString());
                                 JsonConvert.PopulateObject(responseObj.ToString(), Configuration.Call);
+								Debug.Console(1, this, "[DeserializeResponse] sharing status 2: {0}", Status.Call.Sharing.State.ToString());
 
                                 break;
                             }
@@ -1386,10 +1389,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             if (Status.Call != null)
             {
                 var callStatus = Status.Call.Status;
+				Debug.Console(1, this, "[UpdateCallStatus] callStatus: {0}", callStatus.ToString());
 
                 // If not currently in a meeting, intialize the call object
                 if (callStatus != zStatus.eCallStatus.IN_MEETING || callStatus != zStatus.eCallStatus.CONNECTING_MEETING)
-                {
+                {					
                     Status.Call = new zStatus.Call {Status = callStatus};
 
                     SetUpCallFeedbackActions();
@@ -1418,7 +1422,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                         Debug.Console(1, this, "[UpdateCallStatus] Current Call Status: {0}",
                             Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
-
+						
                         OnCallStatusChange(newCall);
                     }
                 }
@@ -1438,7 +1442,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                     Debug.Console(1, this, "[UpdateCallStatus] Current Call Status: {0}",
                         Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
-
+					
                     OnCallStatusChange(existingCall);
                 }
             }
