@@ -26,6 +26,8 @@ namespace PepperDash.Essentials
 
             _tunerPresets = new DevicePresetsModel(String.Format("{0}-presets", config.Key), _config.PresetsFileName);
 
+            _tunerPresets.LoadChannels();
+
             _tuners = GetDevices<IRSetTopBoxBase>(_config.Tuners);
             _displays = GetDevices<TwoWayDisplayBase>(_config.Displays);
         }

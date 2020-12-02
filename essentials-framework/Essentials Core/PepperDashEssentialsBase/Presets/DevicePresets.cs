@@ -165,6 +165,14 @@ namespace PepperDash.Essentials.Core.Presets
             });
         }
 
+        public void Dial(int presetNum, ISetTopBoxNumericKeypad setTopBox)
+        {
+            if (presetNum <= PresetsList.Count)
+            {
+                Dial(PresetsList[presetNum - 1].Channel, setTopBox);
+            }
+        }
+
         public void Dial(string chanNum, ISetTopBoxNumericKeypad setTopBox)
         {
             _dialFunctions = new Dictionary<char, Action<bool>>(10)
