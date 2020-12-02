@@ -320,7 +320,7 @@ namespace PepperDash.Essentials.DM
 
                             if (outputCard.Card is DmcStroAV)
                             {
-                                Debug.Console(0, "Found output stream card in slot: {0}.", tempX);
+                                Debug.Console(2, "Found output stream card in slot: {0}.", tempX);
                                 var streamCard = outputCard.Card as DmcStroAV;
                                 if (streamCard.Control.StartFeedback.BoolValue == true)
                                     return 1;
@@ -446,7 +446,7 @@ namespace PepperDash.Essentials.DM
 
                             if (inputCard.Card is DmcStr)
                             {
-                                Debug.Console(0, "Found input stream card in slot: {0}.", tempX);
+                                Debug.Console(2, "Found input stream card in slot: {0}.", tempX);
                                 var streamCard = inputCard.Card as DmcStr;
                                 if (streamCard.Control.StartFeedback.BoolValue == true)
                                     return 1;
@@ -981,33 +981,10 @@ namespace PepperDash.Essentials.DM
                             Debug.Console(2, this, "DM Input {0} Stream Status EventId", args.Number);
                             if (InputStreamCardStateFeedbacks[args.Number] != null)
                             {
-                                var streamCard = Chassis.Inputs[args.Number].Card as DmcStr;
-                                InputStreamCardStateFeedbacks[args.Number] = new IntFeedback(() => {
-                                    if (streamCard.Control.StartFeedback.BoolValue == true)
-                                    {
-                                        Debug.Console(1, this, "Found start feedback");
-                                        return 1;
-                                    }
-                                    else if (streamCard.Control.StopFeedback.BoolValue == true)
-                                    {
-                                        Debug.Console(1, this, "Found stop feedback");
-                                        return 2;
-                                    }
-                                    else if (streamCard.Control.PauseFeedback.BoolValue == true)
-                                    {
-                                        Debug.Console(1, this, "Found pause feedback");
-                                        return 3;
-                                    }
-                                    else
-                                    {
-                                        Debug.Console(1, this, "Found no feedback");
-                                        return 0;
-                                    }
-                                });
                                 InputStreamCardStateFeedbacks[args.Number].FireUpdate();
                             }
                             else
-                                Debug.Console(1, this, "No index of {0} found in InputStreamCardStateFeedbacks");
+                                Debug.Console(2, this, "No index of {0} found in InputStreamCardStateFeedbacks");
                             break;
                         }
                     default:
@@ -1145,22 +1122,10 @@ namespace PepperDash.Essentials.DM
                     Debug.Console(2, this, "DM Output {0} Stream Status EventId", args.Number);
                     if (OutputStreamCardStateFeedbacks[args.Number] != null)
                     {
-                        var streamCard = Chassis.Outputs[args.Number].Card as DmcStroAV;
-                        OutputStreamCardStateFeedbacks[args.Number] = new IntFeedback(() =>
-                        {
-                            if (streamCard.Control.StartFeedback.BoolValue == true)
-                                return 1;
-                            else if (streamCard.Control.StopFeedback.BoolValue == true)
-                                return 2;
-                            else if (streamCard.Control.PauseFeedback.BoolValue == true)
-                                return 3;
-                            else
-                                return 0;
-                        });
                         OutputStreamCardStateFeedbacks[args.Number].FireUpdate();
                     }
                     else
-                        Debug.Console(1, this, "No index of {0} found in OutputStreamCardStateFeedbacks");
+                        Debug.Console(2, this, "No index of {0} found in OutputStreamCardStateFeedbacks");
                     break;
                 }
                 default:
