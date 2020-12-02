@@ -50,6 +50,8 @@ namespace PepperDash.Essentials.DM
         public BoolFeedback EnableUsbBreakawayFeedback { get; private set; }
 
         public Dictionary<uint, IntFeedback> InputCardHdcpStateFeedbacks { get; private set; }
+        public Dictionary<uint, IntFeedback> InputStreamCardStateFeedbacks { get; private set; }
+        public Dictionary<uint, IntFeedback> OutputStreamCardStateFeedbacks { get; private set; }
 
         public Dictionary<uint, eHdcpCapabilityType> InputCardHdcpCapabilityTypes { get; private set; }
 
@@ -224,6 +226,8 @@ namespace PepperDash.Essentials.DM
                 new BoolFeedback(() => (Chassis as DmMDMnxn).EnableUSBBreakawayFeedback.BoolValue);
 
             InputCardHdcpStateFeedbacks = new Dictionary<uint, IntFeedback>();
+            InputStreamCardStateFeedbacks = new Dictionary<uint, IntFeedback>();
+            OutputStreamCardStateFeedbacks = new Dictionary<uint, IntFeedback>();
             InputCardHdcpCapabilityTypes = new Dictionary<uint, eHdcpCapabilityType>();
 
             for (uint x = 1; x <= Chassis.NumberOfOutputs; x++)
@@ -307,6 +311,33 @@ namespace PepperDash.Essentials.DM
                         //     return hdMdNxMHdmiOutput.HdmiOutputPort.DisabledByHdcpFeedback.BoolValue;
 
                         return false;
+                    });
+                    OutputStreamCardStateFeedbacks[tempX] = new IntFeedback(() =>
+                    {
+                        try
+                        {
+                            var outputCard = Chassis.Outputs[tempX];
+
+                            if (outputCard.Card is DmcStroAV)
+                            {
+                                Debug.Console(0, "Found output stream card in slot: {0}.", tempX);
+                                var streamCard = outputCard.Card as DmcStroAV;
+                                if (streamCard.Control.StartFeedback.BoolValue == true)
+                                    return 1;
+                                else if (streamCard.Control.StopFeedback.BoolValue == true)
+                                    return 2;
+                                else if (streamCard.Control.PauseFeedback.BoolValue == true)
+                                    return 3;
+                                else
+                                    return 0;
+                            }
+                            return 0;
+                        }
+                        catch (InvalidOperationException iopex)
+                        {
+                            Debug.Console(0, this, Debug.ErrorLogLevel.Warning, "Error adding output stream card in slot: {0}. Error: {1}", tempX, iopex);
+                            return 0;
+                        }
                     });
                 }
 
@@ -406,6 +437,33 @@ namespace PepperDash.Essentials.DM
                             Debug.Console(0, this, Debug.ErrorLogLevel.Warning, "The Input Card in slot: {0} supports HDCP 2.  Please update the configuration value in the inputCardSupportsHdcp2 object to true. Error: {1}", tempX, iopex);
                             return 0;
                         }   
+                    });
+                    InputStreamCardStateFeedbacks[tempX] = new IntFeedback(() =>
+                    {
+                        try
+                        {
+                            var inputCard = Chassis.Inputs[tempX];
+
+                            if (inputCard.Card is DmcStr)
+                            {
+                                Debug.Console(0, "Found input stream card in slot: {0}.", tempX);
+                                var streamCard = inputCard.Card as DmcStr;
+                                if (streamCard.Control.StartFeedback.BoolValue == true)
+                                    return 1;
+                                else if (streamCard.Control.StopFeedback.BoolValue == true)
+                                    return 2;
+                                else if (streamCard.Control.PauseFeedback.BoolValue == true)
+                                    return 3;
+                                else
+                                    return 0;
+                            }
+                            return 0;
+                        }
+                        catch (InvalidOperationException iopex)
+                        {
+                            Debug.Console(0, this, Debug.ErrorLogLevel.Warning, "Error adding input stream card in slot: {0}. Error: {1}", tempX, iopex);
+                            return 0;
+                        }
                     });
                 }
             }
@@ -916,6 +974,42 @@ namespace PepperDash.Essentials.DM
                                 Debug.Console(1, this, "No index of {0} found in InputCardHdcpCapabilityFeedbacks");
                             break;
                         }
+                    case DMInputEventIds.StartEventId:
+                    case DMInputEventIds.StopEventId:
+                    case DMInputEventIds.PauseEventId:
+                        {
+                            Debug.Console(2, this, "DM Input {0} Stream Status EventId", args.Number);
+                            if (InputStreamCardStateFeedbacks[args.Number] != null)
+                            {
+                                var streamCard = Chassis.Inputs[args.Number].Card as DmcStr;
+                                InputStreamCardStateFeedbacks[args.Number] = new IntFeedback(() => {
+                                    if (streamCard.Control.StartFeedback.BoolValue == true)
+                                    {
+                                        Debug.Console(1, this, "Found start feedback");
+                                        return 1;
+                                    }
+                                    else if (streamCard.Control.StopFeedback.BoolValue == true)
+                                    {
+                                        Debug.Console(1, this, "Found stop feedback");
+                                        return 2;
+                                    }
+                                    else if (streamCard.Control.PauseFeedback.BoolValue == true)
+                                    {
+                                        Debug.Console(1, this, "Found pause feedback");
+                                        return 3;
+                                    }
+                                    else
+                                    {
+                                        Debug.Console(1, this, "Found no feedback");
+                                        return 0;
+                                    }
+                                });
+                                InputStreamCardStateFeedbacks[args.Number].FireUpdate();
+                            }
+                            else
+                                Debug.Console(1, this, "No index of {0} found in InputStreamCardStateFeedbacks");
+                            break;
+                        }
                     default:
                         {
                             Debug.Console(2, this, "DMInputChange fired for Input {0} with Unhandled EventId: {1}", args.Number, args.EventId);
@@ -1042,6 +1136,31 @@ namespace PepperDash.Essentials.DM
                 {
                     Debug.Console(2, this, "DM Output {0} DisabledByHdcpEventId", args.Number);
                     OutputDisabledByHdcpFeedbacks[args.Number].FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.StartEventId:
+                case DMOutputEventIds.StopEventId:
+                case DMOutputEventIds.PauseEventId:
+                {
+                    Debug.Console(2, this, "DM Output {0} Stream Status EventId", args.Number);
+                    if (OutputStreamCardStateFeedbacks[args.Number] != null)
+                    {
+                        var streamCard = Chassis.Outputs[args.Number].Card as DmcStroAV;
+                        OutputStreamCardStateFeedbacks[args.Number] = new IntFeedback(() =>
+                        {
+                            if (streamCard.Control.StartFeedback.BoolValue == true)
+                                return 1;
+                            else if (streamCard.Control.StopFeedback.BoolValue == true)
+                                return 2;
+                            else if (streamCard.Control.PauseFeedback.BoolValue == true)
+                                return 3;
+                            else
+                                return 0;
+                        });
+                        OutputStreamCardStateFeedbacks[args.Number].FireUpdate();
+                    }
+                    else
+                        Debug.Console(1, this, "No index of {0} found in OutputStreamCardStateFeedbacks");
                     break;
                 }
                 default:
@@ -1243,12 +1362,15 @@ namespace PepperDash.Essentials.DM
                 else
                 {
                     LinkHdmiInputToApi(trilist, ioSlot, joinMap, ioSlotJoin);
+                    LinkStreamInputToApi(trilist, ioSlot, joinMap, ioSlotJoin);
                 }
 
                 if (RxDictionary.ContainsKey(ioSlot))
                 {
                     LinkRxToApi(trilist, ioSlot, joinMap, ioSlotJoin);
                 }
+                else
+                    LinkStreamOutputToApi(trilist, ioSlot, joinMap, ioSlotJoin);
             }
         }
 
@@ -1295,6 +1417,86 @@ namespace PepperDash.Essentials.DM
             {
                 trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue = 1;
             }
+        }
+
+        private void LinkStreamInputToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap, uint ioSlotJoin)
+        {
+            var inputPort = InputPorts[string.Format("inputCard{0}--streamIn", ioSlot)];
+            if (inputPort == null)
+            {
+                return;
+            }
+            var streamCard = Chassis.Inputs[ioSlot].Card as DmcStr;
+            var join = joinMap.InputStreamCardState.JoinNumber + ioSlotJoin;
+
+            Debug.Console(1, "Port value for input card {0} is set as a stream card", ioSlot);
+
+            trilist.SetUShortSigAction(join, s =>
+            {
+                if (s == 1)
+                {
+                    Debug.Console(2, this, "Join {0} value {1}: Setting stream state to start", join, s);
+                    streamCard.Control.Start();
+                }
+                else if (s == 2)
+                {
+                    Debug.Console(2, this, "Join {0} value {1}: Setting stream state to stop", join, s);
+                    streamCard.Control.Stop();
+                }
+                else if (s == 3)
+                {
+                    Debug.Console(2, this, "Join {0} value {1}: Setting stream state to pause", join, s);
+                    streamCard.Control.Pause();
+                }
+                else
+                {
+                    Debug.Console(2, this, "Join {0} value {1}: Ignore stream state", join, s);
+                }
+            });
+
+            InputStreamCardStateFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[join]);
+
+            trilist.UShortInput[join].UShortValue = InputStreamCardStateFeedbacks[ioSlot].UShortValue;
+        }
+
+        private void LinkStreamOutputToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap, uint ioSlotJoin)
+        {
+            var outputPort = OutputPorts[string.Format("outputCard{0}--streamOut", ioSlot)];
+            if (outputPort == null)
+            {
+                return;
+            }
+            var streamCard = Chassis.Outputs[ioSlot].Card as DmcStroAV;
+            var join = joinMap.OutputStreamCardState.JoinNumber + ioSlotJoin;
+
+            Debug.Console(1, "Port value for output card {0} is set as a stream card", ioSlot);
+
+            trilist.SetUShortSigAction(join, s =>
+            {
+                if (s == 1)
+                {
+                    Debug.Console(2, this, "Join {0} value {1}: Setting stream state to start", join, s);
+                    streamCard.Control.Start();
+                }
+                else if (s == 2)
+                {
+                    Debug.Console(2, this, "Join {0} value {1}: Setting stream state to stop", join, s);
+                    streamCard.Control.Stop();
+                }
+                else if (s == 3)
+                {
+                    Debug.Console(2, this, "Join {0} value {1}: Setting stream state to pause", join, s);
+                    streamCard.Control.Pause();
+                }
+                else
+                {
+                    Debug.Console(2, this, "Join {0} value {1}: Ignore stream state", join, s);
+                }
+            });
+
+            OutputStreamCardStateFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[join]);
+
+            trilist.UShortInput[join].UShortValue = OutputStreamCardStateFeedbacks[ioSlot].UShortValue;
         }
 
         private void LinkRxToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap, uint ioSlotJoin)

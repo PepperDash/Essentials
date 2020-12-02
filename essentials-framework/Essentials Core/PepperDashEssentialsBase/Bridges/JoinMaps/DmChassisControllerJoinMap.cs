@@ -76,6 +76,14 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete HdcpSupportCapability = new JoinDataComplete(new JoinData { JoinNumber = 1201, JoinSpan = 32 },
             new JoinMetadata { Description = "DM Chassis Input HDCP Support Capability", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Analog });
 
+        [JoinName("InputStreamCardState")]
+        public JoinDataComplete InputStreamCardState = new JoinDataComplete(new JoinData { JoinNumber = 1501, JoinSpan = 32 },
+            new JoinMetadata { Description = "DM Chassis Stream Input Start (1), Stop (2), Pause (3) with Feedback", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("OutputStreamCardState")]
+        public JoinDataComplete OutputStreamCardState = new JoinDataComplete(new JoinData { JoinNumber = 1601, JoinSpan = 32 },
+            new JoinMetadata { Description = "DM Chassis Stream Output Start (1), Stop (2), Pause (3) with Feedback", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Analog });
+
         [JoinName("InputNames")]
         public JoinDataComplete InputNames = new JoinDataComplete(new JoinData { JoinNumber = 101, JoinSpan = 32 },
             new JoinMetadata { Description = "DM Chassis Input Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
