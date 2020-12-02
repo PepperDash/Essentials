@@ -22,6 +22,9 @@ namespace PepperDash.Essentials.Core
 	{
         public event SourceInfoChangeHandler CurrentSourceChange;
 
+        [Obsolete("This will be removed soon. Please update references")]
+        public abstract BoolFeedback PowerIsOnFeedback { get; protected set; }
+
         public string CurrentSourceInfoKey { get; set; }
         public SourceListItem CurrentSourceInfo
         {
@@ -255,13 +258,13 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// 
 	/// </summary>
-    public abstract class TwoWayDisplayBase : DisplayBase, IRoutingFeedback, IHasPowerControlWithFeedback, IPower
+    public abstract class TwoWayDisplayBase : DisplayBase, IRoutingFeedback, IHasPowerControlWithFeedback
 	{
         public StringFeedback CurrentInputFeedback { get; private set; }
 
         abstract protected Func<string> CurrentInputFeedbackFunc { get; }
 
-        public BoolFeedback PowerIsOnFeedback { get; protected set; }
+        public override BoolFeedback PowerIsOnFeedback { get; protected set; }
         abstract protected Func<bool> PowerIsOnFeedbackFunc { get; }
 
 
