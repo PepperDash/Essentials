@@ -20,7 +20,8 @@ namespace PepperDash.Essentials.Core
 		public IrOutputPortController IrPort { get; private set; }
 		public ushort IrPulseTime { get; set; }
 
-        public BoolFeedback PowerIsOnFeedback { get; private set; }
+        [Obsolete("This property will be removed in version 2.0.0")]
+        public override BoolFeedback PowerIsOnFeedback { get; protected set; }
 
         protected Func<bool> PowerIsOnFeedbackFunc
         {
