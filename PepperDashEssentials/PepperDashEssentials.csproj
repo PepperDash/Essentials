@@ -141,11 +141,13 @@
     <Compile Include="Room\Config\EssentialsHuddleRoomPropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsHuddleVtc1PropertiesConfig.cs" />
     <Compile Include="Room\Config\EssentialsRoomEmergencyConfig.cs" />
+    <Compile Include="Room\Config\EssentialsTechRoomConfig.cs" />
     <Compile Include="Room\Emergency\EsentialsRoomEmergencyContactClosure.cs" />
     <Compile Include="Room\Types\EssentialsDualDisplayRoom.cs" />
     <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
     <Compile Include="Room\Types\EssentialsNDisplayRoomBase.cs" />
     <Compile Include="Room\Config\EssentialsRoomConfig.cs" />
+    <Compile Include="Room\Types\EssentialsTechRoom.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsEnvironmentDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsLightingDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsShadeDriver.cs" />
