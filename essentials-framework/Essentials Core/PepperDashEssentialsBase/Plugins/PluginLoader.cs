@@ -402,13 +402,16 @@ namespace PepperDash.Essentials
         /// Loads a
         /// </summary>
         /// <param name="plugin"></param>
+        /// <param name="loadedAssembly"></param>
         static void LoadCustomPlugin(IPluginDeviceFactory plugin, LoadedAssembly loadedAssembly)
         {
             var passed = Global.IsRunningMinimumVersionOrHigher(plugin.MinimumEssentialsFrameworkVersion);
 
             if (!passed)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Error, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", plugin.MinimumEssentialsFrameworkVersion);
+                Debug.Console(0, Debug.ErrorLogLevel.Error,
+                    "**********/r/nPlugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin {1}/r/n**********",
+                    plugin.MinimumEssentialsFrameworkVersion, loadedAssembly.Name);
                 return;
             }
             else
