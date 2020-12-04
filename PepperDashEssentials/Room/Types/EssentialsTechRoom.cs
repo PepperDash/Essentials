@@ -12,13 +12,37 @@ namespace PepperDash.Essentials
 {
     public class EssentialsTechRoom:EssentialsRoomBase
     {
-        private Dictionary<string, IRSetTopBoxBase> _tuners;
-        private Dictionary<string, TwoWayDisplayBase> _displays;
+        private readonly Dictionary<string, IRSetTopBoxBase> _tuners;
+        private readonly Dictionary<string, TwoWayDisplayBase> _displays;
 
-        private DevicePresetsModel _tunerPresets;
+        private readonly DevicePresetsModel _tunerPresets;
 
         private readonly EssentialsTechRoomConfig _config;
 
+        public DevicePresetsModel TunerPresets
+        {
+            get
+            {
+                return _tunerPresets;
+            }
+        }
+
+        public Dictionary<string, IRSetTopBoxBase> Tuners
+        {
+            get { return _tuners; }
+        }
+
+        public Dictionary<string, TwoWayDisplayBase> Displays
+        {
+            get { return _displays; }
+        }
+
+        public BoolFeedback RoomPowerIsOnFeedback { get; private set; }
+
+        public bool RoomPowerIsOn
+        {
+            get { return _displays.All(kv => kv.Value.PowerIsOnFeedback.BoolValue); }
+        }
 
         public EssentialsTechRoom(DeviceConfig config) : base(config)
         {
@@ -30,6 +54,32 @@ namespace PepperDash.Essentials
 
             _tuners = GetDevices<IRSetTopBoxBase>(_config.Tuners);
             _displays = GetDevices<TwoWayDisplayBase>(_config.Displays);
+
+            RoomPowerIsOnFeedback = new BoolFeedback(() => RoomPowerIsOn);
+        }
+
+        private void SubscribeToDisplayFeedbacks()
+        {
+            foreach (var display in _displays)
+            {
+                display.Value.PowerIsOnFeedback.OutputChange += (sender, args) => RoomPowerIsOnFeedback.InvokeFireUpdate();
+            }
+        }
+
+        public void RoomPowerOn()
+        {
+            foreach (var display in _displays)
+            {
+                display.Value.PowerOn();
+            }
+        }
+
+        public void RoomPowerOff()
+        {
+            foreach (var display in _displays)
+            {
+                display.Value.PowerOff();
+            }
         }
 
         private Dictionary<string, T> GetDevices<T>(ICollection<string> config) where T:IKeyed
@@ -47,7 +97,9 @@ namespace PepperDash.Essentials
                 Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Error getting devices. Check Essentials Configuration");
                 return null;
             }
-        } 
+        }
+
+        
 
         #region Overrides of EssentialsRoomBase
 

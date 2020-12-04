@@ -195,6 +195,28 @@ namespace PepperDash.Essentials.Core.Presets
             Dial(chanNum);
         }
 
+        public void UpdatePreset(int index, PresetChannel preset)
+        {
+            if (index >= PresetsList.Count)
+            {
+                return;
+            }
+
+            PresetsList[index] = preset;
+
+            SavePresets();
+        }
+
+        private void SavePresets()
+        {
+            var json = JsonConvert.SerializeObject(PresetsList);
+
+            using (var file = File.Open(_filePath, FileMode.Truncate))
+            {
+                file.Write(json, Encoding.UTF8);
+            }
+        }
+
         private void Pulse(Action<bool> act)
         {
             act(true);
