@@ -6,6 +6,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.Scheduler;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Fusion;
+using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials.Core
 {
@@ -134,6 +136,40 @@ namespace PepperDash.Essentials.Core
             Debug.Console(1, "[Scheduler]: eventTime day of week matches recurrence days: {0}", isMatch);
 
             return isMatch;
+        }
+
+        public static bool CheckEventTimeForMatch(ScheduledEvent evnt, DateTime time)
+        {
+            return evnt.DateAndTime.Hour == time.Hour && evnt.DateAndTime.Minute == time.Minute;
+        }
+
+        public static bool CheckEventRecurrenceForMatch(ScheduledEvent evnt, ScheduledEventCommon.eWeekDays days)
+        {
+            return evnt.Recurrence.RecurrenceDays == days;
+        }
+
+        public static void CreateEventFromConfig(ScheduledEventConfig config, ScheduledEventGroup group)
+        {
+            if (group == null)
+            {
+                Debug.Console(0, "Unable to create event. Group is null");
+                return;
+            }
+            var scheduledEvent = new ScheduledEvent(config.Key, group)
+            {
+                Acknowledgeable = config.Acknowledgeable,
+                Persistent = config.Persistent
+            };
+
+            scheduledEvent.DateAndTime.SetFirstDayOfWeek(ScheduledEventCommon.eFirstDayOfWeek.Sunday);
+
+            scheduledEvent.Recurrence.Weekly(config.Days);
+
+            var eventTime = DateTime.Parse(config.Time);
+
+            if (DateTime.Now < eventTime) eventTime.AddDays(1);
+
+            scheduledEvent.DateAndTime.SetAbsoluteEventTime(eventTime);
         }
     }
 }

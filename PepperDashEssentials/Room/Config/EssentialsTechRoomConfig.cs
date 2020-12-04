@@ -10,11 +10,13 @@ namespace PepperDash.Essentials.Room.Config
         public string UserPin;
         public string TechPin;
         public string PresetsFileName;
+        public EssentialsRoomScheduledEventsConfig RoomScheduledEvents;
 
         public EssentialsTechRoomConfig()
         {
             Displays = new List<string>();
             Tuners = new List<string>();
+            RoomScheduledEvents = new EssentialsRoomScheduledEventsConfig();
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Crestron.SimplSharp;
+using Crestron.SimplSharp.Scheduler;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -18,6 +20,8 @@ namespace PepperDash.Essentials
         private readonly DevicePresetsModel _tunerPresets;
 
         private readonly EssentialsTechRoomConfig _config;
+
+        private ScheduledEventGroup _roomScheduledEventGroup;
 
         public DevicePresetsModel TunerPresets
         {
@@ -56,6 +60,10 @@ namespace PepperDash.Essentials
             _displays = GetDevices<TwoWayDisplayBase>(_config.Displays);
 
             RoomPowerIsOnFeedback = new BoolFeedback(() => RoomPowerIsOn);
+            
+            SubscribeToDisplayFeedbacks();
+
+            CreateScheduledEvents();
         }
 
         private void SubscribeToDisplayFeedbacks()
@@ -65,6 +73,66 @@ namespace PepperDash.Essentials
                 display.Value.PowerIsOnFeedback.OutputChange += (sender, args) => RoomPowerIsOnFeedback.InvokeFireUpdate();
             }
         }
+
+        private void CreateScheduledEvents()
+        {
+            var eventsConfig = _config.RoomScheduledEvents;
+
+            _roomScheduledEventGroup = new ScheduledEventGroup(Key);
+
+            _roomScheduledEventGroup.RetrieveAllEvents();
+
+            Scheduler.AddEventGroup(_roomScheduledEventGroup);
+
+            foreach (var eventConfig in eventsConfig.ScheduledEvents)
+            {
+                if (!_roomScheduledEventGroup.ScheduledEvents.ContainsKey(eventConfig.Name))
+                {
+                    SchedulerUtilities.CreateEventFromConfig(eventConfig, _roomScheduledEventGroup);
+                    continue;
+                }
+
+                var roomEvent = _roomScheduledEventGroup.ScheduledEvents[eventConfig.Key];
+
+                if (!SchedulerUtilities.CheckEventTimeForMatch(roomEvent, DateTime.Parse(eventConfig.Time)) &&
+                    !SchedulerUtilities.CheckEventRecurrenceForMatch(roomEvent, eventConfig.Days))
+                {
+                    continue;
+                }
+                Debug.Console(1, this, "Existing event does not match new config properties. Deleting exisiting event: '{0}'", roomEvent.Name);
+
+                _roomScheduledEventGroup.DeleteEvent(roomEvent);
+
+                SchedulerUtilities.CreateEventFromConfig(eventConfig, _roomScheduledEventGroup);
+            }
+
+            _roomScheduledEventGroup.UserGroupCallBack += HandleScheduledEvent;
+        }
+
+        private void HandleScheduledEvent(ScheduledEvent schevent, ScheduledEventCommon.eCallbackReason type)
+        {
+            var eventConfig = _config.RoomScheduledEvents.ScheduledEvents.FirstOrDefault(e => e.Key == schevent.Name);
+
+            if (eventConfig == null)
+            {
+                Debug.Console(1, this, "Event with name {0} not found", schevent.Name);
+                return;
+            }
+
+            if (eventConfig.Acknowledgeable)
+            {
+                schevent.Acknowledge();
+            }
+
+            CrestronInvoke.BeginInvoke((o) =>
+            {
+                foreach (var a in eventConfig.Actions)
+                {
+                    DeviceJsonApi.DoDeviceAction(a.Value);
+                }
+            });
+        }
+
 
         public void RoomPowerOn()
         {
