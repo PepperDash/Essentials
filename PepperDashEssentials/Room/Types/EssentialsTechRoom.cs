@@ -128,7 +128,7 @@ namespace PepperDash.Essentials
             {
                 foreach (var a in eventConfig.Actions)
                 {
-                    DeviceJsonApi.DoDeviceAction(a.Value);
+                    DeviceJsonApi.DoDeviceAction(a);
                 }
             });
         }

@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.Room.Config
         public string Time;
 
         [JsonProperty("actions")]
-        public Dictionary<string, DeviceActionWrapper> Actions;
+        public List<DeviceActionWrapper> Actions;
 
         [JsonProperty("persistent")]
         public bool Persistent;
