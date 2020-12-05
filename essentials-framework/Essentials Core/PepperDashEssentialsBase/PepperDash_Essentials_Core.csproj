@@ -278,6 +278,7 @@
     <Compile Include="Remotes\Hrxx0WirelessRemoteController.cs" />
     <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />
     <Compile Include="Room\EssentialsRoomBase.cs" />
+    <Compile Include="Room\Config\EssentialsRoomScheduledEventsConfig.cs" />
     <Compile Include="Room\Interfaces.cs" />
     <Compile Include="Room\iOccupancyStatusProvider.cs" />
     <Compile Include="Routing\DummyRoutingInputsDevice.cs" />
