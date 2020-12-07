@@ -1,22 +1,33 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Room.Config
 {
     public class EssentialsTechRoomConfig
     {
+        [JsonProperty("displays")]
         public List<string> Displays;
+        
+        [JsonProperty("tuners")]
         public List<string> Tuners;
-        public string ScheduleProviderKey;
+
+        [JsonProperty("userPin")]
         public string UserPin;
+
+        [JsonProperty("techPin")]
         public string TechPin;
+
+        [JsonProperty("presetFileName")]
         public string PresetsFileName;
-        public List<ScheduledEventConfig> RoomScheduledEvents;
+
+        [JsonProperty("scheduledEvents")]
+        public List<ScheduledEventConfig> ScheduledEvents;
 
         public EssentialsTechRoomConfig()
         {
             Displays = new List<string>();
             Tuners = new List<string>();
-            RoomScheduledEvents = new List<ScheduledEventConfig>();
+            ScheduledEvents = new List<ScheduledEventConfig>();
         }
     }
 }

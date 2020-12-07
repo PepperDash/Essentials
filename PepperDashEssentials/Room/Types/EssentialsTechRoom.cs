@@ -74,7 +74,7 @@ namespace PepperDash.Essentials
 
         private void CreateOrUpdateScheduledEvents()
         {
-            var eventsConfig = _config.RoomScheduledEvents;
+            var eventsConfig = _config.ScheduledEvents;
 
             GetOrCreateScheduleGroup();
 
@@ -127,11 +127,11 @@ namespace PepperDash.Essentials
         {
             //update config based on key of scheduleEvent
             GetOrCreateScheduleGroup();
-            var existingEvent = _config.RoomScheduledEvents.FirstOrDefault(e => e.Key == scheduledEvent.Key);
+            var existingEvent = _config.ScheduledEvents.FirstOrDefault(e => e.Key == scheduledEvent.Key);
 
             if (existingEvent == null)
             {
-                _config.RoomScheduledEvents.Add(scheduledEvent);
+                _config.ScheduledEvents.Add(scheduledEvent);
             }
 
             //create or update event based on config
@@ -144,7 +144,7 @@ namespace PepperDash.Essentials
             OnScheduledEventUpdate();
         }
 
-        public void OnScheduledEventUpdate()
+        private void OnScheduledEventUpdate()
         {
             var handler = ScheduledEventsChanged;
 
@@ -153,14 +153,14 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            handler(this, new ScheduledEventEventArgs {ScheduledEvents = _config.RoomScheduledEvents});
+            handler(this, new ScheduledEventEventArgs {ScheduledEvents = _config.ScheduledEvents});
         }
 
         public event EventHandler<ScheduledEventEventArgs> ScheduledEventsChanged;
 
         private void HandleScheduledEvent(ScheduledEvent schevent, ScheduledEventCommon.eCallbackReason type)
         {
-            var eventConfig = _config.RoomScheduledEvents.FirstOrDefault(e => e.Key == schevent.Name);
+            var eventConfig = _config.ScheduledEvents.FirstOrDefault(e => e.Key == schevent.Name);
 
             if (eventConfig == null)
             {
@@ -221,42 +221,42 @@ namespace PepperDash.Essentials
 
         protected override Func<bool> IsWarmingFeedbackFunc
         {
-            get { throw new NotImplementedException(); }
+            get { return () => false; }
         }
 
         protected override Func<bool> IsCoolingFeedbackFunc
         {
-            get { throw new NotImplementedException(); }
+            get { return () => false; }
         }
 
         protected override Func<bool> OnFeedbackFunc
         {
-            get { throw new NotImplementedException(); }
+            get { return () => RoomPowerIsOn; }
         }
 
         protected override void EndShutdown()
         {
-            throw new NotImplementedException();
+            
         }
 
         public override void SetDefaultLevels()
         {
-            throw new NotImplementedException();
+            
         }
 
         public override void PowerOnToDefaultOrLastSource()
         {
-            throw new NotImplementedException();
+            
         }
 
         public override bool RunDefaultPresentRoute()
         {
-            throw new NotImplementedException();
+            return false;
         }
 
         public override void RoomVacatedForTimeoutPeriod(object o)
         {
-            throw new NotImplementedException();
+            
         }
 
         #endregion

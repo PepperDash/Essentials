@@ -175,13 +175,15 @@ namespace PepperDash.Essentials.Core
 
             scheduledEvent.DateAndTime.SetFirstDayOfWeek(ScheduledEventCommon.eFirstDayOfWeek.Sunday);
 
-            scheduledEvent.Recurrence.Weekly(config.Days);
-
             var eventTime = DateTime.Parse(config.Time);
 
-            if (DateTime.Now < eventTime) eventTime.AddDays(1);
+            if (DateTime.Now > eventTime) eventTime = eventTime.AddDays(1);
 
             scheduledEvent.DateAndTime.SetAbsoluteEventTime(eventTime);
+
+            scheduledEvent.Recurrence.Weekly(config.Days);
+
+            
         }
     }
 }

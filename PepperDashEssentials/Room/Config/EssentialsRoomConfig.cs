@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.Room.Config
 		    {
 		        return new EssentialsHuddleVtc1Room(roomConfig);
 		    }
-		    if (typeName == "ddvc01Bridge")
+		    if (typeName == "ddvc01bridge")
 		    {
 		        return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
 		    }
@@ -40,7 +40,7 @@ namespace PepperDash.Essentials.Room.Config
 		        return new EssentialsDualDisplayRoom(roomConfig);
 		    }
 
-		    return typeName != "techRoom" ? null : new EssentialsTechRoom(roomConfig);
+		    return typeName != "techroom" ? null : new EssentialsTechRoom(roomConfig);
 		}
 
         /// <summary>
