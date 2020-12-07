@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Scheduler;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Core.Fusion;
 using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials.Core
@@ -16,7 +13,7 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public static class Scheduler
     {
-        private static Dictionary<string, ScheduledEventGroup> EventGroups = new Dictionary<string,ScheduledEventGroup>();
+        private static readonly Dictionary<string, ScheduledEventGroup> EventGroups = new Dictionary<string,ScheduledEventGroup>();
 
         static Scheduler()
         {
@@ -51,7 +48,6 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Adds the event group to the global list
         /// </summary>
-        /// <param name="name"></param>
         /// <returns></returns>
         public static void AddEventGroup(ScheduledEventGroup eventGroup)
         {
@@ -68,6 +64,13 @@ namespace PepperDash.Essentials.Core
         {
             if(!EventGroups.ContainsKey(eventGroup.Name))
                 EventGroups.Remove(eventGroup.Name);
+        }
+
+        public static ScheduledEventGroup GetEventGroup(string key)
+        {
+            ScheduledEventGroup returnValue;
+
+            return EventGroups.TryGetValue(key, out returnValue) ? returnValue : null;
         }
     }
 
@@ -160,6 +163,15 @@ namespace PepperDash.Essentials.Core
                 Acknowledgeable = config.Acknowledgeable,
                 Persistent = config.Persistent
             };
+
+            if (config.Enable)
+            {
+                scheduledEvent.Resume();
+            }
+            else
+            {
+                scheduledEvent.Pause();
+            }
 
             scheduledEvent.DateAndTime.SetFirstDayOfWeek(ScheduledEventCommon.eFirstDayOfWeek.Sunday);
 
