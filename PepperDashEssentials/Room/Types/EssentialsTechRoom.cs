@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Scheduler;
+using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -12,23 +13,37 @@ using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsTechRoom:EssentialsRoomBase
+    public class EssentialsTechRoom : EssentialsRoomBase
     {
-        private readonly Dictionary<string, IRSetTopBoxBase> _tuners;
+        private readonly EssentialsTechRoomConfig _config;
         private readonly Dictionary<string, TwoWayDisplayBase> _displays;
 
         private readonly DevicePresetsModel _tunerPresets;
-
-        private readonly EssentialsTechRoomConfig _config;
+        private readonly Dictionary<string, IRSetTopBoxBase> _tuners;
 
         private ScheduledEventGroup _roomScheduledEventGroup;
 
+        public EssentialsTechRoom(DeviceConfig config) : base(config)
+        {
+            _config = config.Properties.ToObject<EssentialsTechRoomConfig>();
+
+            _tunerPresets = new DevicePresetsModel(String.Format("{0}-presets", config.Key), _config.PresetsFileName);
+
+            _tunerPresets.LoadChannels();
+
+            _tuners = GetDevices<IRSetTopBoxBase>(_config.Tuners);
+            _displays = GetDevices<TwoWayDisplayBase>(_config.Displays);
+
+            RoomPowerIsOnFeedback = new BoolFeedback(() => RoomPowerIsOn);
+
+            SubscribeToDisplayFeedbacks();
+
+            CreateOrUpdateScheduledEvents();
+        }
+
         public DevicePresetsModel TunerPresets
         {
-            get
-            {
-                return _tunerPresets;
-            }
+            get { return _tunerPresets; }
         }
 
         public Dictionary<string, IRSetTopBoxBase> Tuners
@@ -48,70 +63,104 @@ namespace PepperDash.Essentials
             get { return _displays.All(kv => kv.Value.PowerIsOnFeedback.BoolValue); }
         }
 
-        public EssentialsTechRoom(DeviceConfig config) : base(config)
-        {
-            _config = config.Properties.ToObject<EssentialsTechRoomConfig>();
-
-            _tunerPresets = new DevicePresetsModel(String.Format("{0}-presets", config.Key), _config.PresetsFileName);
-
-            _tunerPresets.LoadChannels();
-
-            _tuners = GetDevices<IRSetTopBoxBase>(_config.Tuners);
-            _displays = GetDevices<TwoWayDisplayBase>(_config.Displays);
-
-            RoomPowerIsOnFeedback = new BoolFeedback(() => RoomPowerIsOn);
-            
-            SubscribeToDisplayFeedbacks();
-
-            CreateScheduledEvents();
-        }
-
         private void SubscribeToDisplayFeedbacks()
         {
             foreach (var display in _displays)
             {
-                display.Value.PowerIsOnFeedback.OutputChange += (sender, args) => RoomPowerIsOnFeedback.InvokeFireUpdate();
+                display.Value.PowerIsOnFeedback.OutputChange +=
+                    (sender, args) => RoomPowerIsOnFeedback.InvokeFireUpdate();
             }
         }
 
-        private void CreateScheduledEvents()
+        private void CreateOrUpdateScheduledEvents()
         {
             var eventsConfig = _config.RoomScheduledEvents;
 
-            _roomScheduledEventGroup = new ScheduledEventGroup(Key);
+            GetOrCreateScheduleGroup();
 
-            _roomScheduledEventGroup.RetrieveAllEvents();
-
-            Scheduler.AddEventGroup(_roomScheduledEventGroup);
-
-            foreach (var eventConfig in eventsConfig.ScheduledEvents)
+            foreach (var eventConfig in eventsConfig)
             {
-                if (!_roomScheduledEventGroup.ScheduledEvents.ContainsKey(eventConfig.Name))
-                {
-                    SchedulerUtilities.CreateEventFromConfig(eventConfig, _roomScheduledEventGroup);
-                    continue;
-                }
-
-                var roomEvent = _roomScheduledEventGroup.ScheduledEvents[eventConfig.Key];
-
-                if (!SchedulerUtilities.CheckEventTimeForMatch(roomEvent, DateTime.Parse(eventConfig.Time)) &&
-                    !SchedulerUtilities.CheckEventRecurrenceForMatch(roomEvent, eventConfig.Days))
-                {
-                    continue;
-                }
-                Debug.Console(1, this, "Existing event does not match new config properties. Deleting exisiting event: '{0}'", roomEvent.Name);
-
-                _roomScheduledEventGroup.DeleteEvent(roomEvent);
-
-                SchedulerUtilities.CreateEventFromConfig(eventConfig, _roomScheduledEventGroup);
+                CreateOrUpdateSingleEvent(eventConfig);
             }
 
             _roomScheduledEventGroup.UserGroupCallBack += HandleScheduledEvent;
         }
 
+        private void GetOrCreateScheduleGroup()
+        {
+            if (_roomScheduledEventGroup == null)
+            {
+                _roomScheduledEventGroup = Scheduler.GetEventGroup(Key) ?? new ScheduledEventGroup(Key);
+
+                Scheduler.AddEventGroup(_roomScheduledEventGroup);
+            }
+
+            _roomScheduledEventGroup.RetrieveAllEvents();
+        }
+
+        private void CreateOrUpdateSingleEvent(ScheduledEventConfig scheduledEvent)
+        {
+            if (!_roomScheduledEventGroup.ScheduledEvents.ContainsKey(scheduledEvent.Name))
+            {
+                SchedulerUtilities.CreateEventFromConfig(scheduledEvent, _roomScheduledEventGroup);
+                return;
+            }
+
+            var roomEvent = _roomScheduledEventGroup.ScheduledEvents[scheduledEvent.Key];
+
+            if (!SchedulerUtilities.CheckEventTimeForMatch(roomEvent, DateTime.Parse(scheduledEvent.Time)) &&
+                !SchedulerUtilities.CheckEventRecurrenceForMatch(roomEvent, scheduledEvent.Days))
+            {
+                return;
+            }
+
+            Debug.Console(1, this,
+                "Existing event does not match new config properties. Deleting existing event '{0}' and creating new event from configuration",
+                roomEvent.Name);
+
+            _roomScheduledEventGroup.DeleteEvent(roomEvent);
+
+            SchedulerUtilities.CreateEventFromConfig(scheduledEvent, _roomScheduledEventGroup);
+        }
+
+        public void AddOrUpdateScheduledEvent(ScheduledEventConfig scheduledEvent)
+        {
+            //update config based on key of scheduleEvent
+            GetOrCreateScheduleGroup();
+            var existingEvent = _config.RoomScheduledEvents.FirstOrDefault(e => e.Key == scheduledEvent.Key);
+
+            if (existingEvent == null)
+            {
+                _config.RoomScheduledEvents.Add(scheduledEvent);
+            }
+
+            //create or update event based on config
+            CreateOrUpdateSingleEvent(scheduledEvent);
+            //save config
+            Config.Properties = JToken.FromObject(_config);
+
+            CustomSetConfig(Config);
+            //Fire Event
+            OnScheduledEventUpdate();
+        }
+
+        public void OnScheduledEventUpdate()
+        {
+            var handler = ScheduledEventsChanged;
+
+            if (handler == null)
+            {
+                return;
+            }
+
+            handler(this, new ScheduledEventEventArgs {ScheduledEvents = _config.RoomScheduledEvents});
+        }
+
+        public event EventHandler<ScheduledEventEventArgs> ScheduledEventsChanged;
+
         private void HandleScheduledEvent(ScheduledEvent schevent, ScheduledEventCommon.eCallbackReason type)
         {
-            var eventConfig = _config.RoomScheduledEvents.ScheduledEvents.FirstOrDefault(e => e.Key == schevent.Name);
+            var eventConfig = _config.RoomScheduledEvents.FirstOrDefault(e => e.Key == schevent.Name);
 
             if (eventConfig == null)
             {
@@ -150,7 +199,7 @@ namespace PepperDash.Essentials
             }
         }
 
-        private Dictionary<string, T> GetDevices<T>(ICollection<string> config) where T:IKeyed
+        private Dictionary<string, T> GetDevices<T>(ICollection<string> config) where T : IKeyed
         {
             try
             {
@@ -162,12 +211,11 @@ namespace PepperDash.Essentials
             }
             catch
             {
-                Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Error getting devices. Check Essentials Configuration");
+                Debug.Console(0, this, Debug.ErrorLogLevel.Error,
+                    "Error getting devices. Check Essentials Configuration");
                 return null;
             }
         }
-
-        
 
         #region Overrides of EssentialsRoomBase
 
@@ -212,5 +260,10 @@ namespace PepperDash.Essentials
         }
 
         #endregion
+    }
+
+    public class ScheduledEventEventArgs : EventArgs
+    {
+        public List<ScheduledEventConfig> ScheduledEvents;
     }
 }
