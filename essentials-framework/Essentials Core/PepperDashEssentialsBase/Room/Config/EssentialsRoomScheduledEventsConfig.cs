@@ -33,5 +33,8 @@ namespace PepperDash.Essentials.Room.Config
 
         [JsonProperty("acknowledgeable")]
         public bool Acknowledgeable;
+
+        [JsonProperty("enable")]
+        public bool Enable;
     }
 }
