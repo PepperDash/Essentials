@@ -120,7 +120,9 @@ namespace PepperDash.Essentials
 
             _roomScheduledEventGroup.DeleteEvent(roomEvent);
 
-            SchedulerUtilities.CreateEventFromConfig(scheduledEvent, _roomScheduledEventGroup);
+            var tempEvent = SchedulerUtilities.CreateEventFromConfig(scheduledEvent, _roomScheduledEventGroup);
+
+            tempEvent.UserCallBack += HandleScheduledEvent;
         }
 
         public void AddOrUpdateScheduledEvent(ScheduledEventConfig scheduledEvent)
@@ -167,6 +169,8 @@ namespace PepperDash.Essentials
                 Debug.Console(1, this, "Event with name {0} not found", schevent.Name);
                 return;
             }
+
+            Debug.Console(1, this, "Running actions for event {0}", schevent.Name);
 
             if (eventConfig.Acknowledgeable)
             {

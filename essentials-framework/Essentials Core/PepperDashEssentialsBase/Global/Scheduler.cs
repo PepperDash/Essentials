@@ -151,12 +151,12 @@ namespace PepperDash.Essentials.Core
             return evnt.Recurrence.RecurrenceDays == days;
         }
 
-        public static void CreateEventFromConfig(ScheduledEventConfig config, ScheduledEventGroup group)
+        public static ScheduledEvent CreateEventFromConfig(ScheduledEventConfig config, ScheduledEventGroup group)
         {
             if (group == null)
             {
                 Debug.Console(0, "Unable to create event. Group is null");
-                return;
+                return null;
             }
             var scheduledEvent = new ScheduledEvent(config.Key, group)
             {
@@ -183,7 +183,7 @@ namespace PepperDash.Essentials.Core
 
             scheduledEvent.Recurrence.Weekly(config.Days);
 
-            
+            return scheduledEvent;
         }
     }
 }
