@@ -131,6 +131,16 @@ namespace PepperDash.Essentials.Core.Bridges
                 }
             }
 
+            RegisterEisc();
+        }
+
+        private void RegisterEisc()
+        {
+            if (Eisc.Registered)
+            {
+                return;
+            }
+
             var registerResult = Eisc.Register();
 
             if (registerResult != eDeviceRegistrationUnRegistrationResponse.Success)
@@ -140,6 +150,27 @@ namespace PepperDash.Essentials.Core.Bridges
             }
 
             Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "EISC registration successful");
+        }
+
+        public void LinkToRooms()
+        {
+            Debug.Console(1, this, "Linking Rooms...");
+
+            foreach (var room in PropertiesConfig.Rooms)
+            {
+                var rm = DeviceManager.GetDeviceForKey(room.RoomKey) as IBridgeAdvanced;
+
+                if (rm == null)
+                {
+                    Debug.Console(1, this, Debug.ErrorLogLevel.Notice,
+                        "Room {0} does not implement IBridgeAdvanced. Skipping...", room.RoomKey);
+                    continue;
+                }
+
+                rm.LinkToApi(Eisc, room.JoinStart, room.JoinMapKey, this);
+            }
+
+            RegisterEisc();
         }
 
         /// <summary>
@@ -290,11 +321,26 @@ namespace PepperDash.Essentials.Core.Bridges
         [JsonProperty("devices")]
         public List<ApiDevicePropertiesConfig> Devices { get; set; }
 
+        [JsonProperty("rooms")]
+        public List<ApiRoomPropertiesConfig> Rooms { get; set; } 
+
 
         public class ApiDevicePropertiesConfig
         {
             [JsonProperty("deviceKey")]
             public string DeviceKey { get; set; }
+
+            [JsonProperty("joinStart")]
+            public uint JoinStart { get; set; }
+
+            [JsonProperty("joinMapKey")]
+            public string JoinMapKey { get; set; }
+        }
+
+        public class ApiRoomPropertiesConfig
+        {
+            [JsonProperty("roomKey")]
+            public string RoomKey { get; set; }
 
             [JsonProperty("joinStart")]
             public uint JoinStart { get; set; }
