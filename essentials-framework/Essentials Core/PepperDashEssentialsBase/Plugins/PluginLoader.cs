@@ -410,7 +410,7 @@ namespace PepperDash.Essentials
             if (!passed)
             {
                 Debug.Console(0, Debug.ErrorLogLevel.Error,
-                    "**********\r\nPlugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin {1}\r\n**********",
+                    "\r\n********************\r\n\tPlugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin {1}\r\n********************",
                     plugin.MinimumEssentialsFrameworkVersion, loadedAssembly.Name);
                 return;
             }
