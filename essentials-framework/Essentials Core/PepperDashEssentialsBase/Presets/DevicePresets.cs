@@ -15,6 +15,7 @@ namespace PepperDash.Essentials.Core.Presets
     /// </summary>
     public class DevicePresetsModel : Device
     {
+        private CCriticalSection _fileOps = new CCriticalSection();
         private readonly bool _initSuccess;
 
         /// <summary>
@@ -101,27 +102,35 @@ namespace PepperDash.Essentials.Core.Presets
 
         public void LoadChannels()
         {
-            PresetsAreLoaded = false;
             try
             {
-                var pl = JsonConvert.DeserializeObject<PresetsList>(File.ReadToEnd(_filePath, Encoding.ASCII));
-                Name = pl.Name;
-                PresetsList = pl.Channels;
-            }
-            catch (Exception e)
-            {
-                Debug.Console(2, this,
-                    "LoadChannels: Error reading presets file. These presets will be empty:\r  '{0}'\r  Error:{1}",
-                    _filePath, e.Message);
-                // Just save a default empty list
-                PresetsList = new List<PresetChannel>();
-            }
-            PresetsAreLoaded = true;
+                _fileOps.Enter();
+                PresetsAreLoaded = false;
+                try
+                {
+                    var pl = JsonConvert.DeserializeObject<PresetsList>(File.ReadToEnd(_filePath, Encoding.ASCII));
+                    Name = pl.Name;
+                    PresetsList = pl.Channels;
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(2, this,
+                        "LoadChannels: Error reading presets file. These presets will be empty:\r  '{0}'\r  Error:{1}",
+                        _filePath, e.Message);
+                    // Just save a default empty list
+                    PresetsList = new List<PresetChannel>();
+                }
+                PresetsAreLoaded = true;
 
-            var handler = PresetsLoaded;
-            if (handler != null)
+                var handler = PresetsLoaded;
+                if (handler != null)
+                {
+                    handler(this, EventArgs.Empty);
+                }
+            }
+            finally
             {
-                handler(this, EventArgs.Empty);
+                _fileOps.Leave();
             }
         }
 
@@ -209,12 +218,21 @@ namespace PepperDash.Essentials.Core.Presets
 
         private void SavePresets()
         {
-            var json = JsonConvert.SerializeObject(PresetsList);
-
-            using (var file = File.Open(_filePath, FileMode.Truncate))
+            try
             {
-                file.Write(json, Encoding.UTF8);
+                _fileOps.Enter();
+                var json = JsonConvert.SerializeObject(PresetsList);
+
+                using (var file = File.Open(_filePath, FileMode.Truncate))
+                {
+                    file.Write(json, Encoding.UTF8);
+                }
             }
+            finally
+            {
+                _fileOps.Leave();
+            }
+            
         }
 
         private void Pulse(Action<bool> act)
