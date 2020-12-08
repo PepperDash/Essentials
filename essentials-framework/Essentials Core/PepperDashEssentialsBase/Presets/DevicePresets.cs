@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 
 //using SSMono.IO;
+using PepperDash.Core.WebApi.Presets;
 
 namespace PepperDash.Essentials.Core.Presets
 {
@@ -15,8 +16,12 @@ namespace PepperDash.Essentials.Core.Presets
     /// </summary>
     public class DevicePresetsModel : Device
     {
-        private CCriticalSection _fileOps = new CCriticalSection();
+        public delegate void PresetChangedCallback(ISetTopBoxNumericKeypad device, string channel);
+
+        private readonly CCriticalSection _fileOps = new CCriticalSection();
         private readonly bool _initSuccess;
+
+        private ISetTopBoxNumericKeypad _setTopBox;
 
         /// <summary>
         /// The methods on the STB device to call when dialing
@@ -32,6 +37,8 @@ namespace PepperDash.Essentials.Core.Presets
         {
             try
             {
+                _setTopBox = setTopBox;
+
                 // Grab the digit functions from the device
                 // If any fail, the whole thing fails peacefully
                 _dialFunctions = new Dictionary<char, Action<bool>>(10)
@@ -75,6 +82,8 @@ namespace PepperDash.Essentials.Core.Presets
 
             _initSuccess = true;
         }
+
+        public event PresetChangedCallback PresetChanged;
 
         public int PulseTime { get; set; }
         public int DigitSpacingMs { get; set; }
@@ -172,6 +181,10 @@ namespace PepperDash.Essentials.Core.Presets
                 }
                 _dialIsRunning = false;
             });
+
+            if (_setTopBox == null) return;
+
+            OnPresetChanged(_setTopBox, chanNum);
         }
 
         public void Dial(int presetNum, ISetTopBoxNumericKeypad setTopBox)
@@ -201,7 +214,21 @@ namespace PepperDash.Essentials.Core.Presets
 
             _enterFunction = setTopBox.KeypadEnter;
 
+            OnPresetChanged(setTopBox, chanNum);
+
             Dial(chanNum);
+        }
+
+        private void OnPresetChanged(ISetTopBoxNumericKeypad setTopBox, string channel)
+        {
+            var handler = PresetChanged;
+
+            if (handler == null)
+            {
+                return;
+            }
+
+            handler(setTopBox, channel);
         }
 
         public void UpdatePreset(int index, PresetChannel preset)
