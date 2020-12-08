@@ -53,7 +53,7 @@ namespace PepperDash.Essentials
 
             if (Debug.DoNotLoadOnNextBoot)
             {
-                CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
+                CrestronConsole.AddNewConsoleCommand(s => CrestronInvoke.BeginInvoke((o) => GoWithLoad()), "go", "Loads configuration file",
                     ConsoleAccessLevelEnum.AccessOperator);
             }
 
