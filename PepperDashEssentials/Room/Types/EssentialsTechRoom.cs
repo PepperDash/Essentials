@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Scheduler;
+using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Presets;
@@ -14,7 +17,7 @@ using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsTechRoom : EssentialsRoomBase, ITvPresetsProvider
+    public class EssentialsTechRoom : EssentialsRoomBase, ITvPresetsProvider, IBridgeAdvanced
     {
         private readonly EssentialsTechRoomConfig _config;
         private readonly Dictionary<string, TwoWayDisplayBase> _displays;
@@ -22,6 +25,7 @@ namespace PepperDash.Essentials
         private readonly DevicePresetsModel _tunerPresets;
         private readonly Dictionary<string, IRSetTopBoxBase> _tuners;
 
+        private Dictionary<string, string> _currentPresets;
         private ScheduledEventGroup _roomScheduledEventGroup;
 
         public EssentialsTechRoom(DeviceConfig config) : base(config)
@@ -32,20 +36,21 @@ namespace PepperDash.Essentials
 
             _tunerPresets.LoadChannels();
 
+            _tunerPresets.PresetChanged += TunerPresetsOnPresetChanged;
+
             _tuners = GetDevices<IRSetTopBoxBase>(_config.Tuners);
             _displays = GetDevices<TwoWayDisplayBase>(_config.Displays);
 
             RoomPowerIsOnFeedback = new BoolFeedback(() => RoomPowerIsOn);
+
+            SetUpTunerPresetsFeedback();
 
             SubscribeToDisplayFeedbacks();
 
             CreateOrUpdateScheduledEvents();
         }
 
-        public DevicePresetsModel TvPresets
-        {
-            get { return _tunerPresets; }
-        }
+        public Dictionary<string, StringFeedback> CurrentPresetsFeedbacks { get; private set; }
 
         public Dictionary<string, IRSetTopBoxBase> Tuners
         {
@@ -62,6 +67,43 @@ namespace PepperDash.Essentials
         public bool RoomPowerIsOn
         {
             get { return _displays.All(kv => kv.Value.PowerIsOnFeedback.BoolValue); }
+        }
+
+        #region ITvPresetsProvider Members
+
+        public DevicePresetsModel TvPresets
+        {
+            get { return _tunerPresets; }
+        }
+
+        #endregion
+
+        private void TunerPresetsOnPresetChanged(ISetTopBoxNumericKeypad device, string channel)
+        {
+            if (!_currentPresets.ContainsKey(device.Key))
+            {
+                return;
+            }
+
+            _currentPresets[device.Key] = channel;
+
+            if (!CurrentPresetsFeedbacks.ContainsKey(device.Key))
+            {
+                CurrentPresetsFeedbacks[device.Key].FireUpdate();
+            }
+        }
+
+        private void SetUpTunerPresetsFeedback()
+        {
+            _currentPresets = new Dictionary<string, string>();
+            CurrentPresetsFeedbacks = new Dictionary<string, StringFeedback>();
+
+            foreach (var setTopBox in _tuners)
+            {
+                var tuner = setTopBox.Value;
+                _currentPresets.Add(tuner.Key, String.Empty);
+                CurrentPresetsFeedbacks.Add(tuner.Key, new StringFeedback(() => _currentPresets[tuner.Key]));
+            }
         }
 
         private void SubscribeToDisplayFeedbacks()
@@ -239,17 +281,14 @@ namespace PepperDash.Essentials
 
         protected override void EndShutdown()
         {
-            
         }
 
         public override void SetDefaultLevels()
         {
-            
         }
 
         public override void PowerOnToDefaultOrLastSource()
         {
-            
         }
 
         public override bool RunDefaultPresentRoute()
@@ -259,10 +298,72 @@ namespace PepperDash.Essentials
 
         public override void RoomVacatedForTimeoutPeriod(object o)
         {
-            
         }
 
         #endregion
+
+        #region Implementation of IBridgeAdvanced
+
+        public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+
+            var joinMap = new EssentialsTechRoomJoinMap(joinStart);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!String.IsNullOrEmpty(joinMapSerialized))
+            {
+                joinMap = JsonConvert.DeserializeObject<EssentialsTechRoomJoinMap>(joinMapSerialized);
+            }
+
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            uint i;
+            if (_config.IsPrimary)
+            {
+                i = 0;
+                foreach (var feedback in CurrentPresetsFeedbacks)
+                {
+                    feedback.Value.LinkInputSig(trilist.StringInput[(uint) (joinMap.CurrentPreset.JoinNumber + i)]);
+                    i++;
+                }
+
+                trilist.OnlineStatusChange += (device, args) =>
+                {
+                    if (!args.DeviceOnLine)
+                    {
+                        return;
+                    }
+
+                    foreach (var feedback in CurrentPresetsFeedbacks)
+                    {
+                        feedback.Value.FireUpdate();
+                    }
+                };
+            }
+
+            i = 0;
+            foreach (var setTopBox in _tuners)
+            {
+                var tuner = setTopBox;
+
+                trilist.SetStringSigAction(joinMap.CurrentPreset.JoinNumber + i, s => _tunerPresets.Dial(s, tuner.Value));
+            }
+        }
+
+        #endregion
+
+        private class EssentialsTechRoomJoinMap : JoinMapBaseAdvanced
+        {
+            [JoinName("currentPreset")]
+            public JoinDataComplete CurrentPreset = new JoinDataComplete(new JoinData {JoinNumber = 1, JoinSpan = 16},
+                new JoinMetadata {Description = "Current Tuner Preset", JoinType = eJoinType.Serial});
+
+            public EssentialsTechRoomJoinMap(uint joinStart) : base(joinStart, typeof(EssentialsTechRoomJoinMap))
+            {
+            }
+        }
     }
 
     public class ScheduledEventEventArgs : EventArgs
