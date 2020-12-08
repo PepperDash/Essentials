@@ -56,6 +56,10 @@ namespace PepperDash.Essentials.Core
 
 	    private void RegisterAndConfigureComPort()
 	    {
+	        if (Port == null)
+	        {
+	            Debug.Console(0,this,Debug.ErrorLogLevel.Error, "Configured com Port for this device does not exist.");
+	        }
             if (Port.Parent is CrestronControlSystem)
             {
                 var result = Port.Register();
