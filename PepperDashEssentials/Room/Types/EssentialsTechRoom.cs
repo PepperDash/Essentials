@@ -100,7 +100,7 @@ namespace PepperDash.Essentials
 
         private void CreateOrUpdateSingleEvent(ScheduledEventConfig scheduledEvent)
         {
-            if (!_roomScheduledEventGroup.ScheduledEvents.ContainsKey(scheduledEvent.Name))
+            if (!_roomScheduledEventGroup.ScheduledEvents.ContainsKey(scheduledEvent.Key))
             {
                 SchedulerUtilities.CreateEventFromConfig(scheduledEvent, _roomScheduledEventGroup, HandleScheduledEvent);
                 return;
