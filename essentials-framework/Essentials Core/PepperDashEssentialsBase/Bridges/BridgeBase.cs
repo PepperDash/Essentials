@@ -99,11 +99,18 @@ namespace PepperDash.Essentials.Core.Bridges
             Eisc.SigChange += Eisc_SigChange;
 
             AddPostActivationAction(LinkDevices);
+            AddPostActivationAction(LinkRooms);
         }
 
         private void LinkDevices()
         {
             Debug.Console(1, this, "Linking Devices...");
+
+            if (PropertiesConfig.Devices == null)
+            {
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "No devices linked to this bridge");
+                return;
+            }
 
             foreach (var d in PropertiesConfig.Devices)
             {
@@ -152,9 +159,15 @@ namespace PepperDash.Essentials.Core.Bridges
             Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "EISC registration successful");
         }
 
-        public void LinkToRooms()
+        public void LinkRooms()
         {
             Debug.Console(1, this, "Linking Rooms...");
+
+            if (PropertiesConfig.Rooms == null)
+            {
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "No rooms linked to this bridge.");
+                return;
+            }
 
             foreach (var room in PropertiesConfig.Rooms)
             {
