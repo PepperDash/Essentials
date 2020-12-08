@@ -59,6 +59,7 @@ namespace PepperDash.Essentials.Core
 	        if (Port == null)
 	        {
 	            Debug.Console(0,this,Debug.ErrorLogLevel.Error, "Configured com Port for this device does not exist.");
+	            return;
 	        }
             if (Port.Parent is CrestronControlSystem)
             {
