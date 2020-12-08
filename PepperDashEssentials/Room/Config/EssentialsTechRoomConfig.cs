@@ -23,6 +23,10 @@ namespace PepperDash.Essentials.Room.Config
         [JsonProperty("scheduledEvents")]
         public List<ScheduledEventConfig> ScheduledEvents;
 
+        [JsonProperty("isPrimary")] public bool IsPrimary;
+
+        [JsonProperty("isTvPresetsProvider")] public bool IsTvPresetsProvider;
+
         public EssentialsTechRoomConfig()
         {
             Displays = new List<string>();

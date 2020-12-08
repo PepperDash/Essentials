@@ -7,13 +7,14 @@ using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsTechRoom : EssentialsRoomBase
+    public class EssentialsTechRoom : EssentialsRoomBase, ITvPresetsProvider
     {
         private readonly EssentialsTechRoomConfig _config;
         private readonly Dictionary<string, TwoWayDisplayBase> _displays;
@@ -41,7 +42,7 @@ namespace PepperDash.Essentials
             CreateOrUpdateScheduledEvents();
         }
 
-        public DevicePresetsModel TunerPresets
+        public DevicePresetsModel TvPresets
         {
             get { return _tunerPresets; }
         }
