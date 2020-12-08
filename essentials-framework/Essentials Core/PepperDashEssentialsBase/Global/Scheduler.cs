@@ -151,12 +151,12 @@ namespace PepperDash.Essentials.Core
             return evnt.Recurrence.RecurrenceDays == days;
         }
 
-        public static ScheduledEvent CreateEventFromConfig(ScheduledEventConfig config, ScheduledEventGroup group)
+        public static void CreateEventFromConfig(ScheduledEventConfig config, ScheduledEventGroup group, ScheduledEvent.UserEventCallBack handler)
         {
             if (group == null)
             {
                 Debug.Console(0, "Unable to create event. Group is null");
-                return null;
+                return;
             }
             var scheduledEvent = new ScheduledEvent(config.Key, group)
             {
@@ -164,14 +164,7 @@ namespace PepperDash.Essentials.Core
                 Persistent = config.Persistent
             };
 
-            if (config.Enable)
-            {
-                scheduledEvent.Resume();
-            }
-            else
-            {
-                scheduledEvent.Pause();
-            }
+            scheduledEvent.UserCallBack += handler;
 
             scheduledEvent.DateAndTime.SetFirstDayOfWeek(ScheduledEventCommon.eFirstDayOfWeek.Sunday);
 
@@ -183,7 +176,14 @@ namespace PepperDash.Essentials.Core
 
             scheduledEvent.Recurrence.Weekly(config.Days);
 
-            return scheduledEvent;
+            if (config.Enable)
+            {
+                scheduledEvent.Enable();
+            }
+            else
+            {
+                scheduledEvent.Disable();
+            }
         }
     }
 }

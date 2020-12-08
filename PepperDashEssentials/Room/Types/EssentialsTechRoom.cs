@@ -102,7 +102,7 @@ namespace PepperDash.Essentials
         {
             if (!_roomScheduledEventGroup.ScheduledEvents.ContainsKey(scheduledEvent.Name))
             {
-                SchedulerUtilities.CreateEventFromConfig(scheduledEvent, _roomScheduledEventGroup);
+                SchedulerUtilities.CreateEventFromConfig(scheduledEvent, _roomScheduledEventGroup, HandleScheduledEvent);
                 return;
             }
 
@@ -120,9 +120,7 @@ namespace PepperDash.Essentials
 
             _roomScheduledEventGroup.DeleteEvent(roomEvent);
 
-            var tempEvent = SchedulerUtilities.CreateEventFromConfig(scheduledEvent, _roomScheduledEventGroup);
-
-            tempEvent.UserCallBack += HandleScheduledEvent;
+            SchedulerUtilities.CreateEventFromConfig(scheduledEvent, _roomScheduledEventGroup, HandleScheduledEvent);
         }
 
         public void AddOrUpdateScheduledEvent(ScheduledEventConfig scheduledEvent)
