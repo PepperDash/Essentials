@@ -276,7 +276,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Fusion Guids successfully read from file: {0}",
                     filePath);
 
-                Debug.Console(1, this, "\nRoom Name: {0}\nIPID: {1:x}\n RoomGuid: {2}", Room.Name, _ipId, RoomGuid);
+                Debug.Console(1, this, "\r\n********************\r\n\tRoom Name: {0}\r\n\tIPID: {1:X}\r\n\tRoomGuid: {2}\r\n*******************", Room.Name, _ipId, RoomGuid);
 
                 foreach (var item in FusionStaticAssets)
                 {
