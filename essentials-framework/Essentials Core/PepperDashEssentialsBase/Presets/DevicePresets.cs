@@ -243,6 +243,13 @@ namespace PepperDash.Essentials.Core.Presets
             SavePresets();
         }
 
+        public void UpdatePresets(List<PresetChannel> presets)
+        {
+            PresetsList = presets;
+
+            SavePresets();
+        }
+
         private void SavePresets()
         {
             try
