@@ -34,7 +34,7 @@ namespace PepperDash.Essentials
 
             _tunerPresets = new DevicePresetsModel(String.Format("{0}-presets", config.Key), _config.PresetsFileName);
 
-            _tunerPresets.LoadChannels();
+            _tunerPresets.SetFileName(_config.PresetsFileName);
 
             _tunerPresets.PresetChanged += TunerPresetsOnPresetChanged;
 

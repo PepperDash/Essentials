@@ -17,7 +17,7 @@ namespace PepperDash.Essentials.Room.Config
         [JsonProperty("techPin")]
         public string TechPin;
 
-        [JsonProperty("presetFileName")]
+        [JsonProperty("presetsFileName")]
         public string PresetsFileName;
 
         [JsonProperty("scheduledEvents")]

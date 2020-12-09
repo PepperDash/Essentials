@@ -106,6 +106,8 @@ namespace PepperDash.Essentials.Core.Presets
         public void SetFileName(string path)
         {
             _filePath = ListPathPrefix + path;
+
+            Debug.Console(2, this, "Setting presets file path to {0}", _filePath);
             LoadChannels();
         }
 
@@ -114,6 +116,8 @@ namespace PepperDash.Essentials.Core.Presets
             try
             {
                 _fileOps.Enter();
+
+                Debug.Console(2, this, "Loading presets from {0}", _filePath);
                 PresetsAreLoaded = false;
                 try
                 {
