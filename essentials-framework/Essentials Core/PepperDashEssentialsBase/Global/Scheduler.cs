@@ -170,7 +170,15 @@ namespace PepperDash.Essentials.Core
 
             var eventTime = DateTime.Parse(config.Time);
 
-            if (DateTime.Now > eventTime) eventTime = eventTime.AddDays(1);
+            if (DateTime.Now > eventTime)
+            {
+                eventTime = eventTime.AddDays(1);
+            }
+
+            while (!config.Days.ToString().ToLower().Contains(eventTime.DayOfWeek.ToString().ToLower()))
+            {
+                eventTime = eventTime.AddDays(1);
+            }
 
             scheduledEvent.DateAndTime.SetAbsoluteEventTime(eventTime);
 

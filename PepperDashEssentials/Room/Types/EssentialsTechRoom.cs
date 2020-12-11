@@ -187,6 +187,11 @@ namespace PepperDash.Essentials
             OnScheduledEventUpdate();
         }
 
+        public List<ScheduledEventConfig> GetScheduledEvents()
+        {
+            return _config.ScheduledEvents ?? new List<ScheduledEventConfig>();
+        }
+
         private void OnScheduledEventUpdate()
         {
             var handler = ScheduledEventsChanged;
