@@ -21,7 +21,6 @@ namespace PepperDash.Essentials.Room.Config
         public string Name;
 
         [JsonProperty("days")]
-        [JsonConverter(typeof(StringEnumConverter))]
         public ScheduledEventCommon.eWeekDays Days;
 
         [JsonProperty("time")]
