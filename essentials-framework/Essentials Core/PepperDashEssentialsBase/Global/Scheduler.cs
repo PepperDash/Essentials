@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharp.Scheduler;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Core.Fusion;
 using PepperDash.Essentials.Room.Config;
+using Activator = System.Activator;
 
 namespace PepperDash.Essentials.Core
 {
@@ -175,9 +179,18 @@ namespace PepperDash.Essentials.Core
                 eventTime = eventTime.AddDays(1);
             }
 
-            while (!config.Days.ToString().ToLower().Contains(eventTime.DayOfWeek.ToString().ToLower()))
+            Debug.Console(2, "[Scheduler] Current Date day of week: {0} recurrence days: {1}", eventTime.DayOfWeek,
+                config.Days);
+
+            var dayOfWeekConverted = ConvertDayOfWeek(eventTime);
+
+            Debug.Console(1, "[Scheduler] eventTime Day: {0}", dayOfWeekConverted);
+
+            while (!dayOfWeekConverted.IsFlagSet(config.Days))
             {
                 eventTime = eventTime.AddDays(1);
+
+                dayOfWeekConverted = ConvertDayOfWeek(eventTime);
             }
 
             scheduledEvent.DateAndTime.SetAbsoluteEventTime(eventTime);
@@ -192,6 +205,29 @@ namespace PepperDash.Essentials.Core
             {
                 scheduledEvent.Disable();
             }
+        }
+
+        private static ScheduledEventCommon.eWeekDays ConvertDayOfWeek(DateTime eventTime)
+        {
+            return (ScheduledEventCommon.eWeekDays) Enum.Parse(typeof(ScheduledEventCommon.eWeekDays), eventTime.DayOfWeek.ToString(), true);
+        }
+
+        private static bool IsFlagSet<T>(this T value, T flag) where T : struct
+        {
+            CheckIsEnum<T>(true);
+
+            var lValue = Convert.ToInt64(value);
+            var lFlag = Convert.ToInt64(flag);
+
+            return (lValue & lFlag) != 0;
+        }
+
+        private static void CheckIsEnum<T>(bool withFlags)
+        {
+            if (!typeof(T).IsEnum)
+                throw new ArgumentException(string.Format("Type '{0}' is not an enum", typeof(T).FullName));
+            if (withFlags && !Attribute.IsDefined(typeof(T), typeof(FlagsAttribute)))
+                throw new ArgumentException(string.Format("Type '{0}' doesn't have the 'Flags' attribute", typeof(T).FullName));
         }
     }
 }
