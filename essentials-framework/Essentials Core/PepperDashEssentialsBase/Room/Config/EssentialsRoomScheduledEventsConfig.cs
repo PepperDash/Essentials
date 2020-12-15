@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Crestron.SimplSharp.Scheduler;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Room.Config
@@ -20,6 +21,7 @@ namespace PepperDash.Essentials.Room.Config
         public string Name;
 
         [JsonProperty("days")]
+        [JsonConverter(typeof(StringEnumConverter))]
         public ScheduledEventCommon.eWeekDays Days;
 
         [JsonProperty("time")]
