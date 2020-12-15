@@ -170,11 +170,15 @@ namespace PepperDash.Essentials
         {
             //update config based on key of scheduleEvent
             GetOrCreateScheduleGroup();
-            var existingEvent = _config.ScheduledEvents.FirstOrDefault(e => e.Key == scheduledEvent.Key);
+            var existingEventIndex = _config.ScheduledEvents.FindIndex((e) => e.Key == scheduledEvent.Key);
 
-            if (existingEvent == null)
+            if (existingEventIndex < 0)
             {
                 _config.ScheduledEvents.Add(scheduledEvent);
+            }
+            else
+            {
+                _config.ScheduledEvents[existingEventIndex] = scheduledEvent;
             }
 
             //create or update event based on config
