@@ -16,12 +16,14 @@ namespace PepperDash.Essentials.Core.Presets
     /// </summary>
     public class DevicePresetsModel : Device
     {
-        public delegate void PresetChangedCallback(ISetTopBoxNumericKeypad device, string channel);
+        public delegate void PresetRecalledCallback(ISetTopBoxNumericKeypad device, string channel);
+
+        public delegate void PresetsSavedCallback(List<PresetChannel> presets);
 
         private readonly CCriticalSection _fileOps = new CCriticalSection();
         private readonly bool _initSuccess;
 
-        private ISetTopBoxNumericKeypad _setTopBox;
+        private readonly ISetTopBoxNumericKeypad _setTopBox;
 
         /// <summary>
         /// The methods on the STB device to call when dialing
@@ -83,7 +85,8 @@ namespace PepperDash.Essentials.Core.Presets
             _initSuccess = true;
         }
 
-        public event PresetChangedCallback PresetChanged;
+        public event PresetRecalledCallback PresetRecalled;
+        public event PresetsSavedCallback PresetsSaved;
 
         public int PulseTime { get; set; }
         public int DigitSpacingMs { get; set; }
@@ -188,7 +191,7 @@ namespace PepperDash.Essentials.Core.Presets
 
             if (_setTopBox == null) return;
 
-            OnPresetChanged(_setTopBox, chanNum);
+            OnPresetRecalled(_setTopBox, chanNum);
         }
 
         public void Dial(int presetNum, ISetTopBoxNumericKeypad setTopBox)
@@ -218,14 +221,14 @@ namespace PepperDash.Essentials.Core.Presets
 
             _enterFunction = setTopBox.KeypadEnter;
 
-            OnPresetChanged(setTopBox, chanNum);
+            OnPresetRecalled(setTopBox, chanNum);
 
             Dial(chanNum);
         }
 
-        private void OnPresetChanged(ISetTopBoxNumericKeypad setTopBox, string channel)
+        private void OnPresetRecalled(ISetTopBoxNumericKeypad setTopBox, string channel)
         {
-            var handler = PresetChanged;
+            var handler = PresetRecalled;
 
             if (handler == null)
             {
@@ -265,12 +268,23 @@ namespace PepperDash.Essentials.Core.Presets
                 {
                     file.Write(json, Encoding.UTF8);
                 }
+
+                
             }
             finally
             {
                 _fileOps.Leave();
             }
             
+        }
+
+        private void OnPresetsSaved()
+        {
+            var handler = PresetsSaved;
+
+            if (handler == null) return;
+
+            handler(PresetsList);
         }
 
         private void Pulse(Action<bool> act)

@@ -36,7 +36,7 @@ namespace PepperDash.Essentials
 
             _tunerPresets.SetFileName(_config.PresetsFileName);
 
-            _tunerPresets.PresetChanged += TunerPresetsOnPresetChanged;
+            _tunerPresets.PresetRecalled += TunerPresetsOnPresetRecalled;
 
             _tuners = GetDevices<IRSetTopBoxBase>(_config.Tuners);
             _displays = GetDevices<TwoWayDisplayBase>(_config.Displays);
@@ -78,7 +78,7 @@ namespace PepperDash.Essentials
 
         #endregion
 
-        private void TunerPresetsOnPresetChanged(ISetTopBoxNumericKeypad device, string channel)
+        private void TunerPresetsOnPresetRecalled(ISetTopBoxNumericKeypad device, string channel)
         {
             if (!_currentPresets.ContainsKey(device.Key))
             {
