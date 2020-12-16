@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-using PepperDash.Core.IKeyed;
+using PepperDash.Core;
 
-namespace PepperDash_Essentials_Core.Interfaces
+namespace PepperDash.Essentials.Core.Interfaces
 {
 	public interface ILogStrings : IKeyed
 	{
