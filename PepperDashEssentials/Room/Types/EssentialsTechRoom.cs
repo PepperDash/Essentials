@@ -48,8 +48,6 @@ namespace PepperDash.Essentials
             SubscribeToDisplayFeedbacks();
 
             CreateOrUpdateScheduledEvents();
-
-            DeviceManager.AddDevice(DummySource);
         }
 
         public Dictionary<string, StringFeedback> CurrentPresetsFeedbacks { get; private set; }

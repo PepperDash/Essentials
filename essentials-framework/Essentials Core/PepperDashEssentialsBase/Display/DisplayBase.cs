@@ -81,8 +81,6 @@ namespace PepperDash.Essentials.Core
 
 		}
 
-
-
 		public abstract void PowerOn();
 		public abstract void PowerOff();
 		public abstract void PowerToggle();
@@ -99,7 +97,7 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		public abstract void ExecuteSwitch(object selector);
+	    public abstract void ExecuteSwitch(object selector);
 
 	    protected void LinkDisplayToApi(DisplayBase displayDevice, BasicTriList trilist, uint joinStart, string joinMapKey,
 	        EiscApiAdvanced bridge)
@@ -315,7 +313,5 @@ namespace PepperDash.Essentials.Core
             var newEvent = NumericSwitchChange;
             if (newEvent != null) newEvent(this, e);
         }
-
-
 	}
 }
