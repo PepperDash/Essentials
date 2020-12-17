@@ -12,6 +12,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Fusion;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
@@ -52,7 +53,7 @@ namespace PepperDash.Essentials
 
             if (Debug.DoNotLoadOnNextBoot)
             {
-                CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
+                CrestronConsole.AddNewConsoleCommand(s => CrestronInvoke.BeginInvoke((o) => GoWithLoad()), "go", "Loads configuration file",
                     ConsoleAccessLevelEnum.AccessOperator);
             }
 
@@ -436,7 +437,7 @@ namespace PepperDash.Essentials
                         DeviceManager.AddDevice(room);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase((EssentialsHuddleSpaceRoom)room, 0xf1));
+                        DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase(room, 0xf1));
 
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
@@ -451,6 +452,18 @@ namespace PepperDash.Essentials
                         DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
+
+                        CreateMobileControlBridge(room);
+                    }
+                    else if (room is EssentialsTechRoom)
+                    {
+                        DeviceManager.AddDevice(room);
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                            "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion");
+                        DeviceManager.AddDevice(new EssentialsHuddleSpaceFusionSystemControllerBase(room, 0xF1));
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
 
                         CreateMobileControlBridge(room);
                     }
