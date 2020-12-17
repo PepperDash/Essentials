@@ -17,7 +17,7 @@ using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsTechRoom : EssentialsRoomBase, ITvPresetsProvider, IBridgeAdvanced
+    public class EssentialsTechRoom : EssentialsRoomBase, ITvPresetsProvider, IBridgeAdvanced, IRunDirectRouteAction
     {
         private readonly EssentialsTechRoomConfig _config;
         private readonly Dictionary<string, TwoWayDisplayBase> _displays;
@@ -27,6 +27,8 @@ namespace PepperDash.Essentials
 
         private Dictionary<string, string> _currentPresets;
         private ScheduledEventGroup _roomScheduledEventGroup;
+
+        private GenericSource DummySource = new GenericSource("$off", "Dummy Source");
 
         public EssentialsTechRoom(DeviceConfig config) : base(config)
         {
@@ -48,6 +50,8 @@ namespace PepperDash.Essentials
             SubscribeToDisplayFeedbacks();
 
             CreateOrUpdateScheduledEvents();
+
+            DeviceManager.AddDevice(DummySource);
         }
 
         public Dictionary<string, StringFeedback> CurrentPresetsFeedbacks { get; private set; }
@@ -241,7 +245,7 @@ namespace PepperDash.Essentials
         {
             foreach (var display in _displays)
             {
-                display.Value.PowerOn();
+
             }
         }
 
@@ -373,6 +377,53 @@ namespace PepperDash.Essentials
             {
             }
         }
+
+        #region IRunDirectRouteAction Members
+
+        private void RunDirectRoute(IRoutingOutputs source, IRoutingSink dest)
+        {
+             if (dest == null)
+            {
+                Debug.Console(1, this, "Cannot route, unknown destination '{0}'", dest.Key);
+                return;
+            }
+
+            if (source.Key.Equals("$off", StringComparison.OrdinalIgnoreCase))
+            {
+                dest.ReleaseRoute();
+                if (dest is IHasPowerControl)
+                    (dest as IHasPowerControl).PowerOff();
+            }
+            else
+            {
+                if (source == null)
+                {
+                    Debug.Console(1, this, "Cannot route unknown source '{0}' to {1}", source.Key, dest.Key);
+                    return;
+                }
+                dest.ReleaseAndMakeRoute(source, eRoutingSignalType.Video);
+            }
+        }
+
+        /// <summary>
+        /// Attempts to route directly between a source and destination
+        /// </summary>
+        /// <param name="sourceKey"></param>
+        /// <param name="destinationKey"></param>
+        public void RunDirectRoute(string sourceKey, string destinationKey)
+        {
+            IRoutingSink dest = null;
+
+            dest = DeviceManager.GetDeviceForKey(destinationKey) as IRoutingSink;
+
+            var source = DeviceManager.GetDeviceForKey(sourceKey) as IRoutingOutputs;
+
+            RunDirectRoute(source, dest);
+        }
+
+
+
+        #endregion
     }
 
     public class ScheduledEventEventArgs : EventArgs
