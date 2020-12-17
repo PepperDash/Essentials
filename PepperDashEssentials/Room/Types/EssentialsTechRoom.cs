@@ -28,8 +28,6 @@ namespace PepperDash.Essentials
         private Dictionary<string, string> _currentPresets;
         private ScheduledEventGroup _roomScheduledEventGroup;
 
-        private GenericSource DummySource = new GenericSource("$off", "Dummy Source");
-
         public EssentialsTechRoom(DeviceConfig config) : base(config)
         {
             _config = config.Properties.ToObject<EssentialsTechRoomConfig>();
@@ -243,9 +241,17 @@ namespace PepperDash.Essentials
 
         public void RoomPowerOn()
         {
+            var dummySource = DeviceManager.GetDeviceForKey(_config.DummySourceKey) as IRoutingOutputs;
+
+            if (dummySource == null)
+            {
+                Debug.Console(1, this, "Unable to get source with key: {0}", _config.DummySourceKey);
+                return;
+            }
+
             foreach (var display in _displays)
             {
-
+                RunDirectRoute(dummySource, display.Value);
             }
         }
 
@@ -388,7 +394,7 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            if (source.Key.Equals("$off", StringComparison.OrdinalIgnoreCase))
+            if (source == null)
             {
                 dest.ReleaseRoute();
                 if (dest is IHasPowerControl)
@@ -396,11 +402,6 @@ namespace PepperDash.Essentials
             }
             else
             {
-                if (source == null)
-                {
-                    Debug.Console(1, this, "Cannot route unknown source '{0}' to {1}", source.Key, dest.Key);
-                    return;
-                }
                 dest.ReleaseAndMakeRoute(source, eRoutingSignalType.Video);
             }
         }
@@ -418,10 +419,13 @@ namespace PepperDash.Essentials
 
             var source = DeviceManager.GetDeviceForKey(sourceKey) as IRoutingOutputs;
 
+            if (source == null || dest == null)
+            {
+                Debug.Console(1, this, "Cannot route unknown source or destination '{0}' to {1}", sourceKey, destinationKey);
+                return;
+            }
             RunDirectRoute(source, dest);
         }
-
-
 
         #endregion
     }

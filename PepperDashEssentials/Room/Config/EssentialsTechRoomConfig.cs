@@ -5,6 +5,9 @@ namespace PepperDash.Essentials.Room.Config
 {
     public class EssentialsTechRoomConfig
     {
+        [JsonProperty("dummySourceKey")]
+        public string DummySourceKey { get; set; }
+
         [JsonProperty("displays")]
         public List<string> Displays;
         
