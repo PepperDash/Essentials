@@ -248,6 +248,8 @@ namespace PepperDash.Essentials.Core.Presets
             PresetsList[index] = preset;
 
             SavePresets();
+
+            OnPresetsSaved();
         }
 
         public void UpdatePresets(List<PresetChannel> presets)
@@ -255,6 +257,8 @@ namespace PepperDash.Essentials.Core.Presets
             PresetsList = presets;
 
             SavePresets();
+
+            OnPresetsSaved();
         }
 
         private void SavePresets()
