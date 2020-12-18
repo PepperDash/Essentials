@@ -28,6 +28,33 @@ namespace PepperDash.Essentials
         private Dictionary<string, string> _currentPresets;
         private ScheduledEventGroup _roomScheduledEventGroup;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override Func<bool> IsWarmingFeedbackFunc
+        {
+            get
+            {
+                return () =>
+                {
+                    return _displays.All(kv => kv.Value.IsWarmingUpFeedback.BoolValue);
+                };
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        protected override Func<bool> IsCoolingFeedbackFunc
+        {
+            get
+            {
+                return () =>
+                {
+                    return _displays.All(kv => kv.Value.IsCoolingDownFeedback.BoolValue);
+                };
+            }
+        }
+
         public EssentialsTechRoom(DeviceConfig config) : base(config)
         {
             _config = config.Properties.ToObject<EssentialsTechRoomConfig>();
@@ -111,7 +138,12 @@ namespace PepperDash.Essentials
             foreach (var display in _displays)
             {
                 display.Value.PowerIsOnFeedback.OutputChange +=
-                    (sender, args) => RoomPowerIsOnFeedback.InvokeFireUpdate();
+                    (sender, args) =>
+                    {
+                        RoomPowerIsOnFeedback.InvokeFireUpdate();
+                        IsWarmingUpFeedback.InvokeFireUpdate();
+                        IsCoolingDownFeedback.InvokeFireUpdate();
+                    };
             }
         }
 
@@ -280,16 +312,6 @@ namespace PepperDash.Essentials
         }
 
         #region Overrides of EssentialsRoomBase
-
-        protected override Func<bool> IsWarmingFeedbackFunc
-        {
-            get { return () => false; }
-        }
-
-        protected override Func<bool> IsCoolingFeedbackFunc
-        {
-            get { return () => false; }
-        }
 
         protected override Func<bool> OnFeedbackFunc
         {
