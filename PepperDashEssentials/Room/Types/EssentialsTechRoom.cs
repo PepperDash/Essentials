@@ -380,6 +380,8 @@ namespace PepperDash.Essentials
                         feedback.Value.FireUpdate();
                     }
                 };
+
+                return;
             }
 
             i = 0;
@@ -388,6 +390,8 @@ namespace PepperDash.Essentials
                 var tuner = setTopBox;
 
                 trilist.SetStringSigAction(joinMap.CurrentPreset.JoinNumber + i, s => _tunerPresets.Dial(s, tuner.Value));
+
+                i++;
             }
         }
 
