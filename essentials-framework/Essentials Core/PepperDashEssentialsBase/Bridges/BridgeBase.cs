@@ -89,7 +89,6 @@ namespace PepperDash.Essentials.Core.Bridges
         public EiscApiAdvanced(DeviceConfig dc, BasicTriList eisc) :
             base(dc.Key)
         {
-            CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, Eisc, 120000, 300000);
             JoinMaps = new Dictionary<string, JoinMapBaseAdvanced>();
 
             PropertiesConfig = dc.Properties.ToObject<EiscApiPropertiesConfig>();
@@ -98,6 +97,8 @@ namespace PepperDash.Essentials.Core.Bridges
             Eisc = eisc;
 
             Eisc.SigChange += Eisc_SigChange;
+
+            CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, Eisc, 120000, 300000);
 
             AddPostActivationAction(LinkDevices);
             AddPostActivationAction(LinkRooms);
