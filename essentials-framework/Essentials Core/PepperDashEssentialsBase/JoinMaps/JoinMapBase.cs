@@ -327,7 +327,10 @@ namespace PepperDash.Essentials.Core
         None = 0,
         ToSIMPL = 1,
         FromSIMPL = 2,
-        ToFromSIMPL = ToSIMPL | FromSIMPL
+        ToFromSIMPL = ToSIMPL | FromSIMPL,
+        ToFusion = 4,
+        FromFusion = 8,
+        ToFromFusion = ToFusion | FromFusion,
     }
 
     [Flags]
@@ -340,7 +343,7 @@ namespace PepperDash.Essentials.Core
         DigitalAnalog = Digital | Analog,
         DigitalSerial = Digital | Serial,
         AnalogSerial = Analog | Serial,
-        DigitalAnalogSerial = Digital | Analog | Serial
+        DigitalAnalogSerial = Digital | Analog | Serial,
     }
 
     /// <summary>

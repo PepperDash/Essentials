@@ -16,8 +16,8 @@ namespace PepperDash.Essentials.Fusion
     {
         BooleanSigData CodecIsInCall;
 
-        public EssentialsHuddleVtc1FusionController(EssentialsHuddleVtc1Room room, uint ipId)
-            : base(room, ipId)
+        public EssentialsHuddleVtc1FusionController(EssentialsHuddleVtc1Room room, uint ipId, string joinMapKey)
+            : base(room, ipId, joinMapKey)
         {
 
         }
@@ -166,7 +166,7 @@ namespace PepperDash.Essentials.Fusion
 
             CrestronConsole.AddNewConsoleCommand(RequestFullRoomSchedule, "FusReqRoomSchedule", "Requests schedule of the room for the next 24 hours", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(ModifyMeetingEndTimeConsoleHelper, "FusReqRoomSchMod", "Ends or extends a meeting by the specified time", ConsoleAccessLevelEnum.AccessOperator);
-            CrestronConsole.AddNewConsoleCommand(CreateAsHocMeeting, "FusCreateMeeting", "Creates and Ad Hoc meeting for on hour or until the next meeting", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(CreateAdHocMeeting, "FusCreateMeeting", "Creates and Ad Hoc meeting for on hour or until the next meeting", ConsoleAccessLevelEnum.AccessOperator);
 
             // Room to fusion room
             Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
