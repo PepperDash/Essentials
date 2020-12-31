@@ -55,7 +55,7 @@ namespace PepperDash.Essentials.Fusion
                 // Map FusionRoom Attributes:
 
                 // Codec volume
-                var codecVolume = FusionRoom.CreateOffsetUshortSig(50, "Volume - Fader01", eSigIoMask.InputOutputSig);
+                var codecVolume = FusionRoom.CreateOffsetUshortSig(JoinMap.VolumeFader1.JoinNumber, "Volume - Fader01", eSigIoMask.InputOutputSig);
                 codecVolume.OutputSig.UserObject = new Action<ushort>(b => (codec as IBasicVolumeWithFeedback).SetVolume(b));
                 (codec as IBasicVolumeWithFeedback).VolumeLevelFeedback.LinkInputSig(codecVolume.InputSig);
 

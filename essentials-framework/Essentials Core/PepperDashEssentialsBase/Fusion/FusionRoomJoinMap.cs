@@ -69,12 +69,20 @@ namespace PepperDash.Essentials.Core.Fusion
         public JoinDataComplete ProcessorReboot = new JoinDataComplete(new JoinData { JoinNumber = 74, JoinSpan = 1 },
             new JoinMetadata { Description = "Processor Reboot", JoinCapabilities = eJoinCapabilities.FromFusion, JoinType = eJoinType.Digital });
 
+        // Volume Controls
+        [JoinName("VolumeFader1")]
+        public JoinDataComplete VolumeFader1 = new JoinDataComplete(new JoinData { JoinNumber = 50, JoinSpan = 1 },
+            new JoinMetadata { Description = "Volume - Fader 1", JoinCapabilities = eJoinCapabilities.ToFromFusion, JoinType = eJoinType.Analog });
+
+
 
         // Source Attributes 
         [JoinName("CurrentRoomSourceName")]
         public JoinDataComplete CurrentRoomSourceName = new JoinDataComplete(new JoinData { JoinNumber = 84, JoinSpan = 1 },
             new JoinMetadata { Description = "Current Room Source Name", JoinCapabilities = eJoinCapabilities.ToFusion, JoinType = eJoinType.Serial });
 
+
+        // Device Online Status
         [JoinName("TouchpanelOnlineStart")]
         public JoinDataComplete TouchpanelOnlineStart = new JoinDataComplete(new JoinData { JoinNumber = 150, JoinSpan = 10 },
             new JoinMetadata { Description = "Touchpanel Online Start", JoinCapabilities = eJoinCapabilities.ToFusion, JoinType = eJoinType.Digital });
@@ -98,6 +106,11 @@ namespace PepperDash.Essentials.Core.Fusion
         [JoinName("Display1SetTopBoxSourceStart")]
         public JoinDataComplete Display1SetTopBoxSourceStart = new JoinDataComplete(new JoinData { JoinNumber = 188, JoinSpan = 5 },
             new JoinMetadata { Description = "Display 1 - Source TV Start", JoinCapabilities = eJoinCapabilities.ToFromFusion, JoinType = eJoinType.Digital });
+
+        // Display 1 
+        [JoinName("Display1Start")]
+        public JoinDataComplete Display1Start = new JoinDataComplete(new JoinData { JoinNumber = 158, JoinSpan = 1 },
+            new JoinMetadata { Description = "Display 1 Start", JoinCapabilities = eJoinCapabilities.ToFromFusion, JoinType = eJoinType.Digital });
 
 
         /// <summary>

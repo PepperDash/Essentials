@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.Core.Fusion
 {
     public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupancyStatusProvider
     {
-        FusionRoomJoinMap JoinMap;
+        protected FusionRoomJoinMap JoinMap;
 
         private const string RemoteOccupancyXml = "<Occupancy><Type>Local</Type><State>{0}</State></Occupancy>";
         private readonly bool _guidFileExists;
@@ -494,7 +494,7 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             if (args.DeviceOnLine)
             {
-                CrestronInvoke.BeginInvoke((o) =>
+                CrestronInvoke.BeginInvoke( (o) => 
                 {
                     CrestronEnvironment.Sleep(200);
 
@@ -1303,7 +1303,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 FusionRoom.DisplayPowerOn.OutputSig.UserObject = dispPowerOnAction;
                 FusionRoom.DisplayPowerOff.OutputSig.UserObject = dispPowerOffAction;
 
-                MapDisplayToRoomJoins(1, 158, defaultDisplay);
+                MapDisplayToRoomJoins(1, JoinMap.Display1Start.JoinNumber, defaultDisplay);
 
 
                 var deviceConfig =
@@ -1359,7 +1359,7 @@ namespace PepperDash.Essentials.Core.Fusion
         /// <param name="display"></param>
         /// <param name="displayIndex"></param>
         /// a
-        protected virtual void MapDisplayToRoomJoins(int displayIndex, int joinOffset, DisplayBase display)
+        protected virtual void MapDisplayToRoomJoins(int displayIndex, uint joinOffset, DisplayBase display)
         {
             var displayName = string.Format("Display {0} - ", displayIndex);
 
@@ -1370,7 +1370,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 return;
             }
             // Display volume
-            var defaultDisplayVolume = FusionRoom.CreateOffsetUshortSig(50, "Volume - Fader01",
+            var defaultDisplayVolume = FusionRoom.CreateOffsetUshortSig(JoinMap.VolumeFader1.JoinNumber, "Volume - Fader01",
                 eSigIoMask.InputOutputSig);
             defaultDisplayVolume.OutputSig.UserObject = new Action<ushort>(b =>
             {
