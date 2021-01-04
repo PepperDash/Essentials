@@ -411,6 +411,8 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         [JsonProperty("joinSpan")]
         public uint JoinSpan { get; set; }
+
+
     }
 
     /// <summary>
@@ -422,6 +424,10 @@ namespace PepperDash.Essentials.Core
 
         private JoinData _data;
         public JoinMetadata Metadata { get; set; }
+        /// <summary>
+        /// To store some future information as you please
+        /// </summary>
+        public object UserObject { get; private set; }
 
         public JoinDataComplete(JoinData data, JoinMetadata metadata)
         {
