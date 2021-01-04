@@ -9,7 +9,7 @@ using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core.Fusion
 {
-    public class FusionRoomJoinMap : JoinMapBaseAdvanced
+    public class EssentialsHuddleSpaceRoomFusionRoomJoinMap : JoinMapBaseAdvanced
     {
 
         // Processor Attributes
@@ -74,7 +74,22 @@ namespace PepperDash.Essentials.Core.Fusion
         public JoinDataComplete VolumeFader1 = new JoinDataComplete(new JoinData { JoinNumber = 50, JoinSpan = 1 },
             new JoinMetadata { Description = "Volume - Fader 1", JoinCapabilities = eJoinCapabilities.ToFromFusion, JoinType = eJoinType.Analog });
 
+        // Codec Info
+        [JoinName("VcCodecInCall")]
+        public JoinDataComplete VcCodecInCall = new JoinDataComplete(new JoinData { JoinNumber = 69, JoinSpan = 1 },
+            new JoinMetadata { Description = "VC Codec In Call", JoinCapabilities = eJoinCapabilities.ToFusion, JoinType = eJoinType.Digital });
 
+        [JoinName("VcCodecOnline")]
+        public JoinDataComplete VcCodecOnline = new JoinDataComplete(new JoinData { JoinNumber = 122, JoinSpan = 1 },
+            new JoinMetadata { Description = "VC Codec Online", JoinCapabilities = eJoinCapabilities.ToFusion, JoinType = eJoinType.Digital });
+
+        [JoinName("VcCodecIpAddress")]
+        public JoinDataComplete VcCodecIpAddress = new JoinDataComplete(new JoinData { JoinNumber = 121, JoinSpan = 1 },
+            new JoinMetadata { Description = "VC Codec IP Address", JoinCapabilities = eJoinCapabilities.ToFusion, JoinType = eJoinType.Serial });
+
+        [JoinName("VcCodecIpPort")]
+        public JoinDataComplete VcCodecIpPort = new JoinDataComplete(new JoinData { JoinNumber = 150, JoinSpan = 1 },
+            new JoinMetadata { Description = "VC Codec IP Port", JoinCapabilities = eJoinCapabilities.ToFusion, JoinType = eJoinType.Serial });
 
         // Source Attributes 
         [JoinName("CurrentRoomSourceName")]
@@ -88,7 +103,7 @@ namespace PepperDash.Essentials.Core.Fusion
             new JoinMetadata { Description = "Touchpanel Online Start", JoinCapabilities = eJoinCapabilities.ToFusion, JoinType = eJoinType.Digital });
 
         [JoinName("XpanelOnlineStart")]
-        public JoinDataComplete XpanelOnlineStart = new JoinDataComplete(new JoinData { JoinNumber = 160, JoinSpan = 10 },
+        public JoinDataComplete XpanelOnlineStart = new JoinDataComplete(new JoinData { JoinNumber = 160, JoinSpan = 5 },
             new JoinMetadata { Description = "Xpanel Online Start", JoinCapabilities = eJoinCapabilities.ToFusion, JoinType = eJoinType.Digital });
 
         [JoinName("DisplayOnlineStart")]
@@ -96,7 +111,7 @@ namespace PepperDash.Essentials.Core.Fusion
             new JoinMetadata { Description = "Display Online Start", JoinCapabilities = eJoinCapabilities.ToFusion, JoinType = eJoinType.Digital });
 
         [JoinName("Display1LaptopSourceStart")]
-        public JoinDataComplete Display1LaptopSourceStart = new JoinDataComplete(new JoinData { JoinNumber = 166, JoinSpan = 10 },
+        public JoinDataComplete Display1LaptopSourceStart = new JoinDataComplete(new JoinData { JoinNumber = 166, JoinSpan = 5 },
             new JoinMetadata { Description = "Display 1 - Source Laptop Start", JoinCapabilities = eJoinCapabilities.ToFromFusion, JoinType = eJoinType.Digital });
         
         [JoinName("Display1DiscPlayerSourceStart")]
@@ -117,8 +132,8 @@ namespace PepperDash.Essentials.Core.Fusion
         /// Constructor to use when instantiating this Join Map without inheriting from it
         /// </summary>
         /// <param name="joinStart">Join this join map will start at</param>
-        public FusionRoomJoinMap(uint joinStart)
-            : base(joinStart, typeof(FusionRoomJoinMap))
+        public EssentialsHuddleSpaceRoomFusionRoomJoinMap(uint joinStart)
+            : base(joinStart, typeof(EssentialsHuddleSpaceRoomFusionRoomJoinMap))
         {
 
         }
@@ -128,7 +143,7 @@ namespace PepperDash.Essentials.Core.Fusion
         /// </summary>
         /// <param name="joinStart">Join this join map will start at</param>
         /// <param name="type">Type of the child join map</param>
-        public FusionRoomJoinMap(uint joinStart, Type type) : base(joinStart, type)
+        public EssentialsHuddleSpaceRoomFusionRoomJoinMap(uint joinStart, Type type) : base(joinStart, type)
         {
         }
     }   

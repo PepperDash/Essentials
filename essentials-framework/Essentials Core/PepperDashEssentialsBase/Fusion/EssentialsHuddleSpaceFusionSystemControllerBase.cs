@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.Core.Fusion
 {
     public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupancyStatusProvider
     {
-        protected FusionRoomJoinMap JoinMap;
+        protected EssentialsHuddleSpaceRoomFusionRoomJoinMap JoinMap;
 
         private const string RemoteOccupancyXml = "<Occupancy><Type>Local</Type><State>{0}</State></Occupancy>";
         private readonly bool _guidFileExists;
@@ -91,7 +91,7 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             try
             {
-                JoinMap = new FusionRoomJoinMap(1);
+                JoinMap = new EssentialsHuddleSpaceRoomFusionRoomJoinMap(1);
 
                 if (!string.IsNullOrEmpty(joinMapKey))
                 {
