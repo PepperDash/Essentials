@@ -261,8 +261,16 @@ namespace PepperDash.Essentials
 
             CrestronInvoke.BeginInvoke((o) =>
             {
+                Debug.Console(2, this, "There are {0} actions to execute for this event.", eventConfig.Actions.Count);
+
                 foreach (var a in eventConfig.Actions)
                 {
+                    Debug.Console(2, this, 
+@"Attempting to run action:
+DeviceKey: {0}
+MethodName: {1}
+Params: {2}"
+                    , a.DeviceKey, a.MethodName, a.Params);
                     DeviceJsonApi.DoDeviceAction(a);
                 }
             });
@@ -271,6 +279,8 @@ namespace PepperDash.Essentials
 
         public void RoomPowerOn()
         {
+            Debug.Console(2, this, "Room Powering On");
+
             var dummySource = DeviceManager.GetDeviceForKey(_config.DummySourceKey) as IRoutingOutputs;
 
             if (dummySource == null)
@@ -287,6 +297,8 @@ namespace PepperDash.Essentials
 
         public void RoomPowerOff()
         {
+            Debug.Console(2, this, "Room Powering Off");
+
             foreach (var display in _displays)
             {
                 display.Value.PowerOff();
