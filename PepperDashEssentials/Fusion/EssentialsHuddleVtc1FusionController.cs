@@ -179,7 +179,6 @@ namespace PepperDash.Essentials.Fusion
 
             FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction((Room as EssentialsHuddleVtc1Room).PowerOnToDefaultOrLastSource);
             FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() => (Room as EssentialsHuddleVtc1Room).RunRouteAction("roomOff", Room.SourceListKey));
-            // NO!! room.RoomIsOn.LinkComplementInputSig(FusionRoom.SystemPowerOff.InputSig);
  
 
             CrestronEnvironment.EthernetEventHandler += CrestronEnvironment_EthernetEventHandler;
