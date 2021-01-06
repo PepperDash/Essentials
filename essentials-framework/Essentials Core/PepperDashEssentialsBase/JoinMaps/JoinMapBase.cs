@@ -266,7 +266,7 @@ namespace PepperDash.Essentials.Core
                     @"Join Number: {0} | JoinSpan: '{1}' | Description: '{2}' | Type: '{3}' | Capabilities: '{4}'",
                         join.Value.JoinNumber,
                         join.Value.JoinSpan,
-                        String.IsNullOrEmpty(join.Value.Metadata.Description) ? join.Value.Metadata.Label: join.Value.Metadata.Description,
+                        String.IsNullOrEmpty(join.Value.Metadata.Description) ? join.Value.Metadata.Label : join.Value.Metadata.Description,
                         join.Value.Metadata.JoinType.ToString(),
                         join.Value.Metadata.JoinCapabilities.ToString());
             }
@@ -288,7 +288,7 @@ namespace PepperDash.Essentials.Core
                 }
                 else
                 {
-                    Debug.Console(2, "No mathcing key found in join map for: '{0}'", customJoinData.Key);
+                    Debug.Console(2, "No matching key found in join map for: '{0}'", customJoinData.Key);
                 }
             }
 
@@ -397,7 +397,7 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Data describing the join.  Can be 
+    /// Data describing the join.  Can be overridden from configuratino
     /// </summary>
     public class JoinData
     {
@@ -411,8 +411,11 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         [JsonProperty("joinSpan")]
         public uint JoinSpan { get; set; }
-
-
+        /// <summary>
+        /// Fusion Attribute Name (optional)
+        /// </summary>
+        [JsonProperty("attributeName")]
+        public string AttributeName { get; set; }
     }
 
     /// <summary>
@@ -456,6 +459,11 @@ namespace PepperDash.Essentials.Core
         public uint JoinSpan
         {
             get { return _data.JoinSpan; }
+        }
+
+        public string AttributeName
+        {
+            get { return _data.AttributeName; }
         }
 
         public void SetCustomJoinData(JoinData customJoinData)

@@ -93,6 +93,8 @@ namespace PepperDash.Essentials.Core.Fusion
             {
                 JoinMap = new EssentialsHuddleSpaceRoomFusionRoomJoinMap(1);
 
+                CrestronConsole.AddNewConsoleCommand((o) => JoinMap.PrintJoinMapInfo(), string.Format("ptjnmp-{0}", Key), "Prints Attribute Join Map", ConsoleAccessLevelEnum.AccessOperator);
+
                 if (!string.IsNullOrEmpty(joinMapKey))
                 {
                     var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
@@ -337,7 +339,7 @@ namespace PepperDash.Essentials.Core.Fusion
             Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
 
             // Moved to 
-            CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(JoinMap.CurrentRoomSourceName.JoinNumber, "Display 1 - Current Source",
+            CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(JoinMap.Display1CurrentSourceName.JoinNumber, JoinMap.Display1CurrentSourceName.Metadata.Description,
                 eSigIoMask.InputSigOnly);
             // Don't think we need to get current status of this as nothing should be alive yet. 
             var hasCurrentSourceInfoChange = Room as IHasCurrentSourceInfoChange;
@@ -387,24 +389,24 @@ namespace PepperDash.Essentials.Core.Fusion
 
             var response = string.Empty;
 
-            var systemReboot = FusionRoom.CreateOffsetBoolSig(JoinMap.ProcessorReboot.JoinNumber, "Processor - Reboot", eSigIoMask.OutputSigOnly);
+            var systemReboot = FusionRoom.CreateOffsetBoolSig(JoinMap.ProcessorReboot.JoinNumber, JoinMap.ProcessorReboot.Metadata.Description, eSigIoMask.OutputSigOnly);
             systemReboot.OutputSig.SetSigFalseAction(
                 () => CrestronConsole.SendControlSystemCommand("reboot", ref response));
         }
 
         protected void SetUpEthernetValues()
         {
-            _ip1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorIp1.JoinNumber, "Info - Processor - IP 1", eSigIoMask.InputSigOnly);
-            _ip2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorIp2.JoinNumber, "Info - Processor - IP 2", eSigIoMask.InputSigOnly);
-            _gateway = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorGateway.JoinNumber, "Info - Processor - Gateway", eSigIoMask.InputSigOnly);
-            _hostname = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorHostname.JoinNumber, "Info - Processor - Hostname", eSigIoMask.InputSigOnly);
-            _domain = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorDomain.JoinNumber, "Info - Processor - Domain", eSigIoMask.InputSigOnly);
-            _dns1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorDns1.JoinNumber, "Info - Processor - DNS 1", eSigIoMask.InputSigOnly);
-            _dns2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorDns2.JoinNumber, "Info - Processor - DNS 2", eSigIoMask.InputSigOnly);
-            _mac1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorMac1.JoinNumber, "Info - Processor - MAC 1", eSigIoMask.InputSigOnly);
-            _mac2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorMac2.JoinNumber, "Info - Processor - MAC 2", eSigIoMask.InputSigOnly);
-            _netMask1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorNetMask1.JoinNumber, "Info - Processor - Net Mask 1", eSigIoMask.InputSigOnly);
-            _netMask2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorNetMask2.JoinNumber, "Info - Processor - Net Mask 2", eSigIoMask.InputSigOnly);
+            _ip1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorIp1.JoinNumber, JoinMap.ProcessorIp1.Metadata.Description, eSigIoMask.InputSigOnly);
+            _ip2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorIp2.JoinNumber, JoinMap.ProcessorIp2.Metadata.Description, eSigIoMask.InputSigOnly);
+            _gateway = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorGateway.JoinNumber, JoinMap.ProcessorGateway.Metadata.Description, eSigIoMask.InputSigOnly);
+            _hostname = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorHostname.JoinNumber, JoinMap.ProcessorHostname.Metadata.Description, eSigIoMask.InputSigOnly);
+            _domain = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorDomain.JoinNumber, JoinMap.ProcessorDomain.Metadata.Description, eSigIoMask.InputSigOnly);
+            _dns1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorDns1.JoinNumber, JoinMap.ProcessorDns1.Metadata.Description, eSigIoMask.InputSigOnly);
+            _dns2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorDns2.JoinNumber, JoinMap.ProcessorDns2.Metadata.Description, eSigIoMask.InputSigOnly);
+            _mac1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorMac1.JoinNumber, JoinMap.ProcessorMac1.Metadata.Description, eSigIoMask.InputSigOnly);
+            _mac2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorMac2.JoinNumber, JoinMap.ProcessorMac2.Metadata.Description, eSigIoMask.InputSigOnly);
+            _netMask1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorNetMask1.JoinNumber, JoinMap.ProcessorNetMask1.Metadata.Description, eSigIoMask.InputSigOnly);
+            _netMask2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorNetMask2.JoinNumber, JoinMap.ProcessorNetMask2.Metadata.Description, eSigIoMask.InputSigOnly);
         }
 
         protected void GetProcessorEthernetValues()
@@ -457,7 +459,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         protected void GetProcessorInfo()
         {
-            _firmware = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorFirmware.JoinNumber, "Info - Processor - Firmware", eSigIoMask.InputSigOnly);
+            _firmware = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorFirmware.JoinNumber, JoinMap.ProcessorFirmware.Metadata.Description, eSigIoMask.InputSigOnly);
 
             if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)
             {
@@ -466,7 +468,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     var join = JoinMap.ProgramNameStart.JoinNumber + i;
                     var progNum = i + 1;
                     _program[i] = FusionRoom.CreateOffsetStringSig((uint) join,
-                        string.Format("Info - Processor - Program {0}", progNum), eSigIoMask.InputSigOnly);
+                        string.Format("{0} {1}", JoinMap.ProgramNameStart.Metadata.Description, progNum), eSigIoMask.InputSigOnly);
                 }
             }
 
@@ -1044,7 +1046,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 uint i = 1;
                 foreach (var kvp in setTopBoxes)
                 {
-                    TryAddRouteActionSigs("Display 1 - Source TV " + i, JoinMap.Display1SetTopBoxSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1SetTopBoxSourceStart.Metadata.Description + " " + i, JoinMap.Display1SetTopBoxSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
                     if (i > JoinMap.Display1SetTopBoxSourceStart.JoinSpan) // We only have five spots
                     {
@@ -1056,7 +1058,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 i = 1;
                 foreach (var kvp in discPlayers)
                 {
-                    TryAddRouteActionSigs("Display 1 - Source DVD " + i, JoinMap.Display1DiscPlayerSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1DiscPlayerSourceStart.Metadata.Description + " " + i, JoinMap.Display1DiscPlayerSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
                     if (i > JoinMap.Display1DiscPlayerSourceStart.JoinSpan) // We only have five spots
                     {
@@ -1068,7 +1070,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 i = 1;
                 foreach (var kvp in laptops)
                 {
-                    TryAddRouteActionSigs("Display 1 - Source Laptop " + i, JoinMap.Display1LaptopSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1LaptopSourceStart.Metadata.Description + " " + i, JoinMap.Display1LaptopSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
                     if (i > JoinMap.Display1LaptopSourceStart.JoinSpan) // We only have ten spots???
                     {
@@ -1197,7 +1199,7 @@ namespace PepperDash.Essentials.Core.Fusion
                         {
                             continue;
                         }
-                        attrName = "Online - XPanel " + attrNum;
+                        attrName = JoinMap.XpanelOnlineStart.Metadata.Description + " " + attrNum;
                         attrNum += JoinMap.XpanelOnlineStart.JoinNumber;
 
                         touchpanelNum++;
@@ -1210,7 +1212,7 @@ namespace PepperDash.Essentials.Core.Fusion
                         {
                             continue;
                         }
-                        attrName = "Online - Touch Panel " + attrNum;
+                        attrName = JoinMap.TouchpanelOnlineStart.Metadata.Description + " " + attrNum;
                         attrNum += JoinMap.TouchpanelOnlineStart.JoinNumber;
 
                         xpanelNum++;
@@ -1225,7 +1227,7 @@ namespace PepperDash.Essentials.Core.Fusion
                     {
                         continue;
                     }
-                    attrName = "Online - Display " + attrNum;
+                    attrName = JoinMap.DisplayOnlineStart.Metadata.Description + " " + attrNum;
                     attrNum += JoinMap.DisplayOnlineStart.JoinNumber;
 
                     displayNum++;
@@ -1370,7 +1372,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 return;
             }
             // Display volume
-            var defaultDisplayVolume = FusionRoom.CreateOffsetUshortSig(JoinMap.VolumeFader1.JoinNumber, "Volume - Fader01",
+            var defaultDisplayVolume = FusionRoom.CreateOffsetUshortSig(JoinMap.VolumeFader1.JoinNumber, JoinMap.VolumeFader1.Metadata.Description,
                 eSigIoMask.InputOutputSig);
             defaultDisplayVolume.OutputSig.UserObject = new Action<ushort>(b =>
             {
