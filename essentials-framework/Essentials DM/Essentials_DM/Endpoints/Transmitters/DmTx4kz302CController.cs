@@ -259,27 +259,27 @@ namespace PepperDash.Essentials.DM
                 {
                     case 0:
                         {
-                            ExecuteSwitch(eVst.Auto, null, eRoutingSignalType.Audio | eRoutingSignalType.Video);
+                            ExecuteSwitch(eVst.Auto, null, type);
                             break;
                         }
                     case 1:
                         {
-                            ExecuteSwitch(HdmiIn1.Selector, null, eRoutingSignalType.Audio | eRoutingSignalType.Video);
+                            ExecuteSwitch(HdmiIn1.Selector, null, type);
                             break;
                         }
                     case 2:
                         {
-                            ExecuteSwitch(HdmiIn2.Selector, null, eRoutingSignalType.Audio | eRoutingSignalType.Video);
+                            ExecuteSwitch(HdmiIn2.Selector, null, type);
                             break;
                         }
                     case 3:
                         {
-                            ExecuteSwitch(DisplayPortIn.Selector, null, eRoutingSignalType.Audio | eRoutingSignalType.Video);
+                            ExecuteSwitch(DisplayPortIn.Selector, null, type);
                             break;
                         }
                     case 4:
                         {
-                            ExecuteSwitch(eVst.AllDisabled, null, eRoutingSignalType.Audio | eRoutingSignalType.Video);
+                            ExecuteSwitch(eVst.AllDisabled, null, type);
                             break;
                         }
                     default:
@@ -295,16 +295,23 @@ namespace PepperDash.Essentials.DM
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
-            Debug.Console(2, this, "Attempting to switch InputSelector {0}", ((eVst)inputSelector).ToString());
-            if ((signalType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
-                Tx.VideoSource = (eVst)inputSelector;
+            try
+            {
+                Debug.Console(2, this, "Attempting to switch InputSelector {0}", ((eVst)inputSelector).ToString());
+                if ((signalType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
+                    Tx.VideoSource = (eVst)inputSelector;
 
-            // NOTE:  It's possible that this particular TX model may not like the AudioSource property being set.  
-            // The SIMPL definition only shows a single analog for AudioVideo Source
-            if ((signalType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
-                //it doesn't
-                Debug.Console(2, this, "Unable to execute audio-only switch for tx {0}", Key);
+                // NOTE:  It's possible that this particular TX model may not like the AudioSource property being set.  
+                // The SIMPL definition only shows a single analog for AudioVideo Source
+                if ((signalType | eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
+                    //it doesn't
+                    Debug.Console(2, this, "Unable to execute audio-only switch for tx {0}", Key);
                 //Tx.AudioSource = (eAst)inputSelector;
+            }
+            catch (Exception e)
+            {
+                Debug.Console(2, this, "Exception in ExecuteSwitch: {0}", e);
+            }
         }
 
         void InputStreamChangeEvent(EndpointInputStream inputStream, EndpointInputStreamEventArgs args)
