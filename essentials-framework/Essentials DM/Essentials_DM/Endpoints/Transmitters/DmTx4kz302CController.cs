@@ -282,6 +282,12 @@ namespace PepperDash.Essentials.DM
                             ExecuteSwitch(eVst.AllDisabled, null, eRoutingSignalType.Audio | eRoutingSignalType.Video);
                             break;
                         }
+                    default:
+                    {
+                        Debug.Console(2, this, "Unable to execute numeric switch to input {0}", input);
+                        break;
+                    }
+
                 }
             
 
@@ -289,6 +295,7 @@ namespace PepperDash.Essentials.DM
 
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
+            Debug.Console(2, this, "Attempting to switch InputSelector {0}", ((eVst)inputSelector).ToString());
             if ((signalType | eRoutingSignalType.Video) == eRoutingSignalType.Video)
                 Tx.VideoSource = (eVst)inputSelector;
 
