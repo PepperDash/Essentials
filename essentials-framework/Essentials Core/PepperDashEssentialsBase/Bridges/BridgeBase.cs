@@ -78,7 +78,7 @@ namespace PepperDash.Essentials.Core.Bridges
     /// <summary>
     /// Bridge API using EISC
     /// </summary>
-    public class EiscApiAdvanced : BridgeApi
+    public class EiscApiAdvanced : BridgeApi, ICommunicationMonitor
     {
         public EiscApiPropertiesConfig PropertiesConfig { get; private set; }
 
@@ -98,8 +98,23 @@ namespace PepperDash.Essentials.Core.Bridges
 
             Eisc.SigChange += Eisc_SigChange;
 
+            CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, Eisc, 120000, 300000);
+
             AddPostActivationAction(LinkDevices);
             AddPostActivationAction(LinkRooms);
+            AddPostActivationAction(RegisterEisc);
+        }
+
+        public override bool CustomActivate()
+        {
+            CommunicationMonitor.Start();
+            return base.CustomActivate();
+        }
+
+        public override bool Deactivate()
+        {
+            CommunicationMonitor.Stop();
+            return base.Deactivate();
         }
 
         private void LinkDevices()
@@ -137,8 +152,6 @@ namespace PepperDash.Essentials.Core.Bridges
                     bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                 }
             }
-
-            RegisterEisc();
         }
 
         private void RegisterEisc()
@@ -182,8 +195,6 @@ namespace PepperDash.Essentials.Core.Bridges
 
                 rm.LinkToApi(Eisc, room.JoinStart, room.JoinMapKey, this);
             }
-
-            RegisterEisc();
         }
 
         /// <summary>
@@ -324,6 +335,12 @@ namespace PepperDash.Essentials.Core.Bridges
                 Debug.Console(2, this, "Error in Eisc_SigChange handler: {0}", e);
             }
         }
+
+        #region Implementation of ICommunicationMonitor
+
+        public StatusMonitorBase CommunicationMonitor { get; private set; }
+
+        #endregion
     }
 
     public class EiscApiPropertiesConfig
