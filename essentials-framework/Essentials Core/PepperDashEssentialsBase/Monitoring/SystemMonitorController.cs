@@ -505,17 +505,23 @@ namespace PepperDash.Essentials.Core.Monitoring
                 ProgramInfo.RegistrationState = Program.RegistrationState;
 
                 ProgramStartedFeedback = new BoolFeedback(() => Program.OperatingState == eProgramOperatingState.Start);
+                ProgramStartedFeedback.FireUpdate();
+
                 ProgramStoppedFeedback = new BoolFeedback(() => Program.OperatingState == eProgramOperatingState.Stop);
+                ProgramStoppedFeedback.FireUpdate();
+
                 ProgramRegisteredFeedback =
                     new BoolFeedback(() => Program.RegistrationState == eProgramRegistrationState.Register);
+                ProgramRegisteredFeedback.FireUpdate();
+
                 ProgramUnregisteredFeedback =
                     new BoolFeedback(() => Program.RegistrationState == eProgramRegistrationState.Unregister);
+                ProgramUnregisteredFeedback.FireUpdate();
 
                 ProgramNameFeedback = new StringFeedback(() => ProgramInfo.ProgramFile);
                 ProgramCompileTimeFeedback = new StringFeedback(() => ProgramInfo.CompileTime);
                 CrestronDataBaseVersionFeedback = new StringFeedback(() => ProgramInfo.CrestronDb);
                 EnvironmentVersionFeedback = new StringFeedback(() => ProgramInfo.Environment);
-
                 AggregatedProgramInfoFeedback = new StringFeedback(() => JsonConvert.SerializeObject(ProgramInfo));
 
                 GetProgramInfo();
