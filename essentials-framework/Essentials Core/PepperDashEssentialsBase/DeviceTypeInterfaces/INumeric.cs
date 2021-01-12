@@ -1,5 +1,5 @@
 ﻿using Crestron.SimplSharpPro.DeviceSupport;
-
+using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 
@@ -8,7 +8,7 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// 
 	/// </summary>
-	public interface INumericKeypad
+	public interface INumericKeypad:IKeyed
 	{
 		void Digit0(bool pressRelease);
 		void Digit1(bool pressRelease);

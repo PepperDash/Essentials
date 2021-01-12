@@ -199,6 +199,7 @@
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
+    <Compile Include="DeviceTypeInterfaces\ITvPresetsProvider.cs" />
     <Compile Include="DeviceTypeInterfaces\LanguageLabel.cs" />
     <Compile Include="DeviceTypeInterfaces\ILanguageProvider.cs" />
     <Compile Include="DeviceTypeInterfaces\IHasBranding.cs" />
@@ -280,6 +281,7 @@
     <Compile Include="Remotes\Hrxx0WirelessRemoteController.cs" />
     <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />
     <Compile Include="Room\EssentialsRoomBase.cs" />
+    <Compile Include="Room\Config\EssentialsRoomScheduledEventsConfig.cs" />
     <Compile Include="Room\Interfaces.cs" />
     <Compile Include="Room\iOccupancyStatusProvider.cs" />
     <Compile Include="Routing\DummyRoutingInputsDevice.cs" />

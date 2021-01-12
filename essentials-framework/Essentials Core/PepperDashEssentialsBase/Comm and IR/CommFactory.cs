@@ -104,7 +104,7 @@ namespace PepperDash.Essentials.Core
 			var dev = GetIComPortsDeviceFromManagedDevice(config.ControlPortDevKey);
 			if (dev != null && config.ControlPortNumber <= dev.NumberOfComPorts)
 				return dev.ComPorts[config.ControlPortNumber];
-			Debug.Console(0, "GetComPort: Device '{0}' does not have com port {1}", config.ControlPortDevKey, config.ControlPortNumber);
+			Debug.Console(0,Debug.ErrorLogLevel.Notice, "GetComPort: Device '{0}' does not have com port {1}", config.ControlPortDevKey, config.ControlPortNumber);
 			return null;
 		}
 
