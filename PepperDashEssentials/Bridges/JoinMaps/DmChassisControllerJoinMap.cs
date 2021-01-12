@@ -70,6 +70,14 @@ namespace PepperDash.Essentials.Bridges
         /// Range reports the highest supported HDCP state level for the corresponding input card
         /// </summary>
         public uint HdcpSupportCapability { get; set; }
+        /// <summary>
+        /// DM Chassis Stream Input Start (1), Stop (2), Pause (3) with Feedback
+        /// </summary>
+        public uint InputStreamCardStatus { get; set; }
+        /// <summary>
+        /// DM Chassis Stream Output Start (1), Stop (2), Pause (3) with Feedback
+        /// </summary>
+        public uint OutputStreamCardStatus { get; set; }
 #endregion
 
 #region Serials
@@ -115,6 +123,8 @@ namespace PepperDash.Essentials.Bridges
             InputUsb = 700; //701-899
             HdcpSupportState = 1000; //1001-1199
             HdcpSupportCapability = 1200; //1201-1399
+            InputStreamCardStatus = 1500; //1501-1532
+            OutputStreamCardStatus = 1600; //1601-1632
 
 
             //Serial
@@ -145,6 +155,8 @@ namespace PepperDash.Essentials.Bridges
             OutputEndpointOnline = OutputEndpointOnline + joinOffset;
             HdcpSupportState = HdcpSupportState + joinOffset;
             HdcpSupportCapability = HdcpSupportCapability + joinOffset;
+            InputStreamCardStatus = InputStreamCardStatus + joinOffset;
+            OutputStreamCardStatus = OutputStreamCardStatus + joinOffset;
             OutputDisabledByHdcp = OutputDisabledByHdcp + joinOffset;
             TxAdvancedIsPresent = TxAdvancedIsPresent + joinOffset;
         }

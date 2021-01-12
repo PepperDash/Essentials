@@ -78,7 +78,7 @@ namespace PepperDash.Essentials.Core.Bridges
     /// <summary>
     /// Bridge API using EISC
     /// </summary>
-    public class EiscApiAdvanced : BridgeApi
+    public class EiscApiAdvanced : BridgeApi, ICommunicationMonitor
     {
         public EiscApiPropertiesConfig PropertiesConfig { get; private set; }
 
@@ -98,12 +98,34 @@ namespace PepperDash.Essentials.Core.Bridges
 
             Eisc.SigChange += Eisc_SigChange;
 
+            CommunicationMonitor = new CrestronGenericBaseCommunicationMonitor(this, Eisc, 120000, 300000);
+
             AddPostActivationAction(LinkDevices);
+            AddPostActivationAction(LinkRooms);
+            AddPostActivationAction(RegisterEisc);
+        }
+
+        public override bool CustomActivate()
+        {
+            CommunicationMonitor.Start();
+            return base.CustomActivate();
+        }
+
+        public override bool Deactivate()
+        {
+            CommunicationMonitor.Stop();
+            return base.Deactivate();
         }
 
         private void LinkDevices()
         {
             Debug.Console(1, this, "Linking Devices...");
+
+            if (PropertiesConfig.Devices == null)
+            {
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "No devices linked to this bridge");
+                return;
+            }
 
             foreach (var d in PropertiesConfig.Devices)
             {
@@ -130,6 +152,14 @@ namespace PepperDash.Essentials.Core.Bridges
                     bridge.LinkToApi(Eisc, d.JoinStart, d.JoinMapKey, this);
                 }
             }
+        }
+
+        private void RegisterEisc()
+        {
+            if (Eisc.Registered)
+            {
+                return;
+            }
 
             var registerResult = Eisc.Register();
 
@@ -140,6 +170,31 @@ namespace PepperDash.Essentials.Core.Bridges
             }
 
             Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "EISC registration successful");
+        }
+
+        public void LinkRooms()
+        {
+            Debug.Console(1, this, "Linking Rooms...");
+
+            if (PropertiesConfig.Rooms == null)
+            {
+                Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "No rooms linked to this bridge.");
+                return;
+            }
+
+            foreach (var room in PropertiesConfig.Rooms)
+            {
+                var rm = DeviceManager.GetDeviceForKey(room.RoomKey) as IBridgeAdvanced;
+
+                if (rm == null)
+                {
+                    Debug.Console(1, this, Debug.ErrorLogLevel.Notice,
+                        "Room {0} does not implement IBridgeAdvanced. Skipping...", room.RoomKey);
+                    continue;
+                }
+
+                rm.LinkToApi(Eisc, room.JoinStart, room.JoinMapKey, this);
+            }
         }
 
         /// <summary>
@@ -280,6 +335,12 @@ namespace PepperDash.Essentials.Core.Bridges
                 Debug.Console(2, this, "Error in Eisc_SigChange handler: {0}", e);
             }
         }
+
+        #region Implementation of ICommunicationMonitor
+
+        public StatusMonitorBase CommunicationMonitor { get; private set; }
+
+        #endregion
     }
 
     public class EiscApiPropertiesConfig
@@ -290,11 +351,26 @@ namespace PepperDash.Essentials.Core.Bridges
         [JsonProperty("devices")]
         public List<ApiDevicePropertiesConfig> Devices { get; set; }
 
+        [JsonProperty("rooms")]
+        public List<ApiRoomPropertiesConfig> Rooms { get; set; } 
+
 
         public class ApiDevicePropertiesConfig
         {
             [JsonProperty("deviceKey")]
             public string DeviceKey { get; set; }
+
+            [JsonProperty("joinStart")]
+            public uint JoinStart { get; set; }
+
+            [JsonProperty("joinMapKey")]
+            public string JoinMapKey { get; set; }
+        }
+
+        public class ApiRoomPropertiesConfig
+        {
+            [JsonProperty("roomKey")]
+            public string RoomKey { get; set; }
 
             [JsonProperty("joinStart")]
             public uint JoinStart { get; set; }

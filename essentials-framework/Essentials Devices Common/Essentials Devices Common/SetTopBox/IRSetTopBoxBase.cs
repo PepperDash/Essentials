@@ -54,7 +54,7 @@ namespace PepperDash.Essentials.Devices.Common
 			KeypadAccessoryButton1Label = "-";
 
 			HasKeypadAccessoryButton2 = true;
-			KeypadAccessoryButton2Command = "NumericEnter";
+			KeypadAccessoryButton2Command = "KEYPAD_ENTER";
 			KeypadAccessoryButton2Label = "Enter";
 
 			AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyVideoOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,

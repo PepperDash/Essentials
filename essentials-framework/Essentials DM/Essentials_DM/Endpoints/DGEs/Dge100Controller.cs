@@ -39,12 +39,12 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
         {
             _dge = device;
             _dgeEthernetInfo = _dge.ExtenderEthernetReservedSigs;
-            _dgeEthernetInfo.DeviceExtenderSigChange += (extender, args) => UpdateDeviceInfo();
+            //_dgeEthernetInfo.DeviceExtenderSigChange += (extender, args) => UpdateDeviceInfo();
             _dgeEthernetInfo.Use();
 
             DeviceInfo = new DeviceInfo();
 
-            _dge.OnlineStatusChange += (currentDevice, args) => { if (args.DeviceOnLine) UpdateDeviceInfo(); };
+            //_dge.OnlineStatusChange += (currentDevice, args) => { if (args.DeviceOnLine) UpdateDeviceInfo(); };
 
             _dc = dc;
 
