@@ -22,30 +22,25 @@ namespace PepperDash.Essentials.Room.Config
 		public static Device GetRoomObject(DeviceConfig roomConfig)
 		{
 			var typeName = roomConfig.Type.ToLower();
+
 			if (typeName == "huddle")
 			{
-                var huddle = new EssentialsHuddleSpaceRoom(roomConfig);
-
-                return huddle;
+                return new EssentialsHuddleSpaceRoom(roomConfig);
 			}
-            else if (typeName == "huddlevtc1")
-            {
-                var rm = new EssentialsHuddleVtc1Room(roomConfig);
-                
-                return rm;
-            }
-			else if (typeName == "ddvc01Bridge")
-			{
-				return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
-			}
-            else if (typeName == "dualdisplay")
-            {
-                var rm = new EssentialsDualDisplayRoom(roomConfig);
+		    if (typeName == "huddlevtc1")
+		    {
+		        return new EssentialsHuddleVtc1Room(roomConfig);
+		    }
+		    if (typeName == "ddvc01bridge")
+		    {
+		        return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
+		    }
+		    if (typeName == "dualdisplay")
+		    {
+		        return new EssentialsDualDisplayRoom(roomConfig);
+		    }
 
-                return rm;
-            }
-
-            return null;
+		    return typeName != "techroom" ? null : new EssentialsTechRoom(roomConfig);
 		}
 
         /// <summary>
