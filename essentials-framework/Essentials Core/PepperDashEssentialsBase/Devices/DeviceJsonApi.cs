@@ -83,13 +83,13 @@ namespace PepperDash.Essentials.Core
         /// <returns></returns>
         public static object GetPropertyByName(string deviceObjectPath, string propertyName)
         {
-            var obj = FindObjectOnPath(deviceObjectPath);
-            if(obj == null)
+            var dev = FindObjectOnPath(deviceObjectPath);
+            if(dev == null)
                 return "{ \"error\":\"No Device\"}";
+	
+            object prop = dev.GetType().GetCType().GetProperty(propertyName).GetValue(dev, null);
 
-            CType t = obj.GetType();
-
-            var prop = t.GetProperty(propertyName);
+            // var prop = t.GetProperty(propertyName);
             if (prop != null)
             {
                 return prop;
