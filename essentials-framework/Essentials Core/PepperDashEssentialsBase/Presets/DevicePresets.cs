@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.Core.Presets
 
         public DevicePresetsModel(string key, string fileName) : base(key)
         {
-            PulseTime = 200;
+            PulseTimeMs = 200;
             DigitSpacingMs = 200;
 
             UseLocalImageStorage = true;
@@ -88,7 +88,7 @@ namespace PepperDash.Essentials.Core.Presets
         public event PresetRecalledCallback PresetRecalled;
         public event PresetsSavedCallback PresetsSaved;
 
-        public int PulseTime { get; set; }
+        public int PulseTimeMs { get; set; }
         public int DigitSpacingMs { get; set; }
         public bool PresetsAreLoaded { get; private set; }
 
@@ -154,11 +154,11 @@ namespace PepperDash.Essentials.Core.Presets
         {
             if (presetNum <= PresetsList.Count)
             {
-                Dial(PresetsList[presetNum - 1].Channel);
+                Dial(PresetsList[presetNum - 1].Channel, 0, 0);
             }
         }
 
-        public void Dial(string chanNum)
+        public void Dial(string chanNum, int digitSpacingMs, int pulseTime)
         {
             if (_dialIsRunning || !_initSuccess)
             {
@@ -173,18 +173,35 @@ namespace PepperDash.Essentials.Core.Presets
             _dialIsRunning = true;
             CrestronInvoke.BeginInvoke(o =>
             {
+                var pulse = PulseTimeMs;
+
+                if (pulseTime > 0)
+                {
+                    pulse = pulseTime;
+                }
+
                 foreach (var c in chanNum.ToCharArray())
                 {
                     if (_dialFunctions.ContainsKey(c))
                     {
-                        Pulse(_dialFunctions[c]);
+                        Pulse(_dialFunctions[c], pulse);
                     }
+
+                    // Use the default spacing interval
+                    var spacing = DigitSpacingMs;
+
+                    // check for override of default interval
+                    if (digitSpacingMs > 0)
+                    {
+                        spacing = digitSpacingMs;
+                    }
+
                     CrestronEnvironment.Sleep(DigitSpacingMs);
                 }
 
                 if (_enterFunction != null)
                 {
-                    Pulse(_enterFunction);
+                    Pulse(_enterFunction, pulse);
                 }
                 _dialIsRunning = false;
             });
@@ -223,7 +240,7 @@ namespace PepperDash.Essentials.Core.Presets
 
             OnPresetRecalled(setTopBox, chanNum);
 
-            Dial(chanNum);
+            Dial(chanNum, setTopBox.TvPresetsDigitSpacingMs, setTopBox.IrPulseTime);
         }
 
         private void OnPresetRecalled(ISetTopBoxNumericKeypad setTopBox, string channel)
@@ -290,10 +307,17 @@ namespace PepperDash.Essentials.Core.Presets
             handler(PresetsList);
         }
 
-        private void Pulse(Action<bool> act)
+        private void Pulse(Action<bool> act, int pulseTime)
         {
+            var pulse = PulseTimeMs;
+
+            if (pulseTime > 0)
+            {
+                pulse = pulseTime;
+            }
+
             act(true);
-            CrestronEnvironment.Sleep(PulseTime);
+            CrestronEnvironment.Sleep(PulseTimeMs);
             act(false);
         }
     }

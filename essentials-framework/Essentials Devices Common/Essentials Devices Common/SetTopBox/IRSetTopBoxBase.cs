@@ -28,6 +28,8 @@ namespace PepperDash.Essentials.Devices.Common
         public bool HasDpad { get; set; }
         public bool HasNumeric { get; set; }
 
+        public int TvPresetsDigitSpacingMs { get; private set; }
+
         public DevicePresetsModel PresetsModel { get; private set; }
 
 		public IRSetTopBoxBase(string key, string name, IrOutputPortController portCont,
@@ -35,11 +37,17 @@ namespace PepperDash.Essentials.Devices.Common
 			: base(key, name)
 		{
 			IrPort = portCont;
-            IrPulseTime = 200;
+            IrPulseTime = 200; // default
+            TvPresetsDigitSpacingMs = 200; // default
 
             if (props.IrPulseTime > 0)
             {
                 IrPulseTime = (ushort)props.IrPulseTime;
+            }
+
+            if (props.TvPresetsDigitSpacingMs > 0)
+            {
+                TvPresetsDigitSpacingMs = props.TvPresetsDigitSpacingMs;
             }
 
 			DeviceManager.AddDevice(portCont);

@@ -37,6 +37,16 @@ namespace PepperDash.Essentials.Core
 	{
 		void Dash(bool pressRelease);
 		void KeypadEnter(bool pressRelease);
+
+        /// <summary>
+        /// To be set to a custom value to override the default DigitSpacingMs in DevicePresetsModel
+        /// </summary>
+        int TvPresetsDigitSpacingMs { get; }
+
+        /// <summary>
+        /// To be set to a custom value to override the default IrPulseTime 
+        /// </summary>
+        ushort IrPulseTime { get; }
 	}
 
 	/// <summary>
