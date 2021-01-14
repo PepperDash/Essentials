@@ -70,8 +70,8 @@ namespace PepperDash.Essentials.Core.Presets
 
         public DevicePresetsModel(string key, string fileName) : base(key)
         {
-            PulseTime = 150;
-            DigitSpacingMs = 150;
+            PulseTime = 200;
+            DigitSpacingMs = 200;
 
             UseLocalImageStorage = true;
 
