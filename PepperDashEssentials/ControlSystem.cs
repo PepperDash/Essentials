@@ -439,14 +439,13 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
-                    room = new ComponentRoom(roomConfig)
+                    room = new ComponentRoom(roomConfig);
                 }
 
                 if (room != null && room is EssentialsRoomBase)
                 {
                     if (room is EssentialsHuddleSpaceRoom)
                     {
-                        DeviceManager.AddDevice(room);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase((EssentialsHuddleSpaceRoom)room, 0xf1));
@@ -458,7 +457,6 @@ namespace PepperDash.Essentials
                     }
                     else if (room is EssentialsHuddleVtc1Room)
                     {
-                        DeviceManager.AddDevice(room);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
                         DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
@@ -470,13 +468,11 @@ namespace PepperDash.Essentials
                     else
                     {
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is NOT EssentialsRoom, attempting to add to DeviceManager w/o Fusion");
-                        DeviceManager.AddDevice(room);
                     }
-
                 }
-                else if (room != null && room is ComponentRoom)
+                else if (room != null)
                 {
-                    
+                    DeviceManager.AddDevice(room);
                 }
                 else
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Cannot create room from config, key '{0}' - Is this intentional?  This may be a valid configuration.", roomConfig.Key);

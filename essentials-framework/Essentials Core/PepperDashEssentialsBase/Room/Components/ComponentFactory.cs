@@ -35,7 +35,7 @@ namespace PepperDash.Essentials.Core.Room.Components
 
     public static class ComponentFactory
     {
-        public static ComponentFactory()
+        static ComponentFactory()
         {
             var assy = Assembly.GetExecutingAssembly();
             PluginLoader.SetEssentialsAssembly(assy.GetName().Name, assy);
