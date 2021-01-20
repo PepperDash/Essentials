@@ -266,14 +266,13 @@ namespace PepperDash.Essentials.Core.Presets
             try
             {
                 _fileOps.Enter();
-                var json = JsonConvert.SerializeObject(PresetsList);
+                var pl = new PresetsList {Channels = PresetsList, Name = Name};
+                var json = JsonConvert.SerializeObject(pl, Formatting.Indented);
 
                 using (var file = File.Open(_filePath, FileMode.Truncate))
                 {
                     file.Write(json, Encoding.UTF8);
                 }
-
-                
             }
             finally
             {
