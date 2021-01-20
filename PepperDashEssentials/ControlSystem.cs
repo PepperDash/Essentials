@@ -61,6 +61,8 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(PepperDash.Essentials.Core.DeviceFactory.GetDeviceFactoryTypes, "gettypes", "Gets the device types that can be built. Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
 
+            CrestronConsole.AddNewConsoleCommand(PepperDash.Essentials.Core.Room.Components.ComponentFactory.GetComponentFactoryTypes, "getcomponenttypes", "Gets the components types that can be built.  Accepts a filter string.", ConsoleAccessLevelEnum.AccessOperator);
+
             CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
@@ -437,7 +439,7 @@ namespace PepperDash.Essentials
                 }
                 else
                 {
-
+                    room = new ComponentRoom(roomConfig)
                 }
 
                 if (room != null && room is EssentialsRoomBase)
@@ -472,9 +474,9 @@ namespace PepperDash.Essentials
                     }
 
                 }
-                else if (room is ComponentRoom)
+                else if (room != null && room is ComponentRoom)
                 {
-
+                    
                 }
                 else
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Cannot create room from config, key '{0}' - Is this intentional?  This may be a valid configuration.", roomConfig.Key);

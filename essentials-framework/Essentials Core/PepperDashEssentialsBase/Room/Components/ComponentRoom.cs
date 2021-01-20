@@ -7,6 +7,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Interfaces.Components;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
 
 using Newtonsoft.Json;
 
@@ -51,6 +52,9 @@ namespace PepperDash.Essentials.Core.Room
 
     }
 
+    /// <summary>
+    /// The config class for a ComponentRoom
+    /// </summary>
     public class ComponentRoomPropertiesConfig
     {
         [JsonProperty("activities")]
@@ -60,14 +64,29 @@ namespace PepperDash.Essentials.Core.Room
 
     }
 
-    public class ComponentRoom : Device, IComponentRoom
+
+    /// <summary>
+    /// A room comprised of component parts built at runtime.  
+    /// </summary>
+    public class ComponentRoom : ReconfigurableDevice, IComponentRoom
     {
+        public ComponentRoomPropertiesConfig PropertiesConfig { get; private set; }
+
         public List<IRoomComponent> Components { get; private set; }
         public List<IRoomActivityComponent> Activities { get; private set; }
 
-        public ComponentRoom(string key, string name)
-            : base(key, name)
+        public ComponentRoom(DeviceConfig config)
+            : base(config)
         {
+            try
+            {
+                PropertiesConfig = JsonConvert.DeserializeObject<ComponentRoomPropertiesConfig>
+                    (config.Properties.ToString());
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "Error building ComponentRoom: \n{0}", e);
+            }
 
         }
 
