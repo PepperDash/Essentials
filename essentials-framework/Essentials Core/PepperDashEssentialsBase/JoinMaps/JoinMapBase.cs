@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Core
 
             var joinMap = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
 
-            return joinMap;
+            return joinMap.ToString();
         }
 
         /// <summary>
@@ -48,11 +48,11 @@ namespace PepperDash.Essentials.Core
             if (string.IsNullOrEmpty(joinMapKey))
                 return null;
 
-            var joinMapSerialzed = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
+            var joinMapJToken = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
 
-            if (joinMapSerialzed == null) return null;
+            if (joinMapJToken == null) return null;
 
-            var joinMapData = JsonConvert.DeserializeObject<Dictionary<string, JoinData>>(joinMapSerialzed);
+            var joinMapData = joinMapJToken.ToObject<Dictionary<string, JoinData>>();
 
             return joinMapData;
         }

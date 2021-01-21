@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core.Fusion
             new JoinMetadata { Description = "Info - Processor - Hostname", JoinCapabilities = eJoinCapabilities.ToFusion, JoinType = eJoinType.Serial });
 
         [JoinName("ProcessorDomain")]
-        public JoinDataComplete ProcessorDomain = new JoinDataComplete(new JoinData { JoinNumber = 55, JoinSpan = 1, AttributeName = "Info - Processor - Domain" },
+        public JoinDataComplete ProcessorDomain = new JoinDataComplete(new JoinData { JoinNumber = 54, JoinSpan = 1, AttributeName = "Info - Processor - Domain" },
             new JoinMetadata { Description = "Info - Processor - Domain", JoinCapabilities = eJoinCapabilities.ToFusion, JoinType = eJoinType.Serial });
 
         [JoinName("ProcessorDns1")]
