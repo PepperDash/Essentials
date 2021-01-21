@@ -45,16 +45,33 @@ namespace PepperDash.Essentials.Core
         /// <returns></returns>
         public static Dictionary<string, JoinData> TryGetJoinMapAdvancedForDevice(string joinMapKey)
         {
-            if (string.IsNullOrEmpty(joinMapKey))
+            try
+            {
+                if (string.IsNullOrEmpty(joinMapKey))
+                    return null;
+
+                if (!ConfigReader.ConfigObject.JoinMaps.ContainsKey(joinMapKey))
+                {
+                    Debug.Console(2, "No Join Map found in config with key: '{0}'", joinMapKey);
+                    return null;
+                }
+
+                Debug.Console(2, "Attempting to load custom join map with key: {0}", joinMapKey);
+
+                var joinMapJToken = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
+
+                if (joinMapJToken == null)
+                    return null;
+
+                var joinMapData = joinMapJToken.ToObject<Dictionary<string, JoinData>>();
+
+                return joinMapData;
+            }
+            catch (Exception e)
+            {
+                Debug.Console(2, "Error getting join map for key: '{0}'.  Error: {1}", joinMapKey, e);
                 return null;
-
-            var joinMapJToken = ConfigReader.ConfigObject.JoinMaps[joinMapKey];
-
-            if (joinMapJToken == null) return null;
-
-            var joinMapData = joinMapJToken.ToObject<Dictionary<string, JoinData>>();
-
-            return joinMapData;
+            }
         }
 
     }
@@ -266,7 +283,7 @@ namespace PepperDash.Essentials.Core
                     @"Join Number: {0} | JoinSpan: '{1}' | Description: '{2}' | Type: '{3}' | Capabilities: '{4}'",
                         join.Value.JoinNumber,
                         join.Value.JoinSpan,
-                        String.IsNullOrEmpty(join.Value.Metadata.Description) ? join.Value.Metadata.Label : join.Value.Metadata.Description,
+                        String.IsNullOrEmpty(join.Value.AttributeName) ? join.Value.Metadata.Label : join.Value.AttributeName,
                         join.Value.Metadata.JoinType.ToString(),
                         join.Value.Metadata.JoinCapabilities.ToString());
             }

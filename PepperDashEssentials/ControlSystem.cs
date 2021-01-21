@@ -438,12 +438,17 @@ namespace PepperDash.Essentials
                     // default to no join map key
                     string fusionJoinMapKey = string.Empty;
 
-                    var fusionConfig = room.Config.Properties["fusion"].ToObject<EssentialsRoomFusionConfig>();
-
-                    if (fusionConfig != null)
+                    if (room.Config.Properties["fusion"] != null)
                     {
-                        fusionIpId = fusionConfig.IpIdInt;
-                        fusionJoinMapKey = fusionConfig.JoinMapKey;
+                        Debug.Console(2, "Custom Fusion config found. Using custom values");
+
+                        var fusionConfig = room.Config.Properties["fusion"].ToObject<EssentialsRoomFusionConfig>();
+
+                        if (fusionConfig != null)
+                        {
+                            fusionIpId = fusionConfig.IpIdInt;
+                            fusionJoinMapKey = fusionConfig.JoinMapKey;
+                        }
                     }
 
                     if (room is EssentialsHuddleSpaceRoom)
