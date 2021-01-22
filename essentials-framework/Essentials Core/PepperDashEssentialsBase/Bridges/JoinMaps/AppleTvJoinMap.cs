@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.Core.Bridges
         /// <param name="joinStart">Join this join map will start at</param>
         /// <param name="type">Type of the child join map</param>
         public AppleTvJoinMap(uint joinStart, Type type) : base(joinStart, type)
-    {
-    }
+        {
+        }
     }
 }

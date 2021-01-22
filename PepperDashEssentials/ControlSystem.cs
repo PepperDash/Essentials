@@ -432,12 +432,31 @@ namespace PepperDash.Essentials
                 var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
                 if (room != null)
                 {
+                    // default IPID
+                    uint fusionIpId = 0xf1;
+
+                    // default to no join map key
+                    string fusionJoinMapKey = string.Empty;
+
+                    if (room.Config.Properties["fusion"] != null)
+                    {
+                        Debug.Console(2, "Custom Fusion config found. Using custom values");
+
+                        var fusionConfig = room.Config.Properties["fusion"].ToObject<EssentialsRoomFusionConfig>();
+
+                        if (fusionConfig != null)
+                        {
+                            fusionIpId = fusionConfig.IpIdInt;
+                            fusionJoinMapKey = fusionConfig.JoinMapKey;
+                        }
+                    }
+
                     if (room is EssentialsHuddleSpaceRoom)
                     {
                         DeviceManager.AddDevice(room);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase(room, 0xf1));
+                        DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase(room, fusionIpId, fusionJoinMapKey));
 
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
@@ -449,7 +468,7 @@ namespace PepperDash.Essentials
                         DeviceManager.AddDevice(room);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
+                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
@@ -461,7 +480,7 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice,
                             "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new EssentialsHuddleSpaceFusionSystemControllerBase(room, 0xF1));
+                        DeviceManager.AddDevice(new EssentialsTechRoomFusionSystemController((EssentialsTechRoom)room, fusionIpId, fusionJoinMapKey));
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
 
@@ -569,7 +588,7 @@ namespace PepperDash.Essentials
                 return ((logoDark != null && logoDark == "system") ||
                         (logoLight != null && logoLight == "system") || (logo != null && logo == "system"));
             }
-            catch (Exception e)
+            catch
             {
                 Debug.Console(1, Debug.ErrorLogLevel.Notice, "Unable to find logo information in any room config");
                 return false;

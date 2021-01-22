@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
+using Newtonsoft.Json.Linq;
+
 namespace PepperDash.Essentials.Core.Config
 {
 	/// <summary>
@@ -27,7 +29,7 @@ namespace PepperDash.Essentials.Core.Config
 		public List<TieLineConfig> TieLines { get; set; }
 
         [JsonProperty("joinMaps")]
-        public Dictionary<string, string> JoinMaps { get; set; }
+        public Dictionary<string, JObject> JoinMaps { get; set; }
 
 		/// <summary>
 		/// Checks SourceLists for a given list and returns it if found. Otherwise, returns null
