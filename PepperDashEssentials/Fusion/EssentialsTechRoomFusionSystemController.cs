@@ -23,10 +23,15 @@ namespace PepperDash.Essentials.Fusion
         {
             try
             {
+
                 var displays = (Room as EssentialsTechRoom).Displays;
 
-                foreach (var display in displays.Cast<DisplayBase>())
+                Debug.Console(1, this, "Setting up Static Assets for {0} Displays", displays.Count);
+
+                foreach (var display in displays.Values.Cast<DisplayBase>())
                 {
+                    Debug.Console(2, this, "Setting up Static Asset for {0}", display.Key);
+
                     display.UsageTracker = new UsageTracking(display) { UsageIsTracked = true };
                     display.UsageTracker.DeviceUsageEnded += UsageTracker_DeviceUsageEnded;
 
@@ -51,6 +56,7 @@ namespace PepperDash.Essentials.Fusion
 
                     if (FusionStaticAssets.ContainsKey(deviceConfig.Uid))
                     {
+                        // Used existing asset
                         tempAsset = FusionStaticAssets[deviceConfig.Uid];
                     }
                     else
