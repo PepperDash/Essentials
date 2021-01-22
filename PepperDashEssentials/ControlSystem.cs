@@ -480,7 +480,7 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice,
                             "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new EssentialsHuddleSpaceFusionSystemControllerBase(room, fusionIpId, fusionJoinMapKey));
+                        DeviceManager.AddDevice(new EssentialsTechRoomFusionSystemController((EssentialsTechRoom)room, fusionIpId, fusionJoinMapKey));
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
 
@@ -588,7 +588,7 @@ namespace PepperDash.Essentials
                 return ((logoDark != null && logoDark == "system") ||
                         (logoLight != null && logoLight == "system") || (logo != null && logo == "system"));
             }
-            catch (Exception e)
+            catch
             {
                 Debug.Console(1, Debug.ErrorLogLevel.Notice, "Unable to find logo information in any room config");
                 return false;
