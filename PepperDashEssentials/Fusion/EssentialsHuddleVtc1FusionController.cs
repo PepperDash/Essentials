@@ -16,8 +16,8 @@ namespace PepperDash.Essentials.Fusion
     {
         BooleanSigData CodecIsInCall;
 
-        public EssentialsHuddleVtc1FusionController(EssentialsHuddleVtc1Room room, uint ipId)
-            : base(room, ipId)
+        public EssentialsHuddleVtc1FusionController(EssentialsHuddleVtc1Room room, uint ipId, string joinMapKey)
+            : base(room, ipId, joinMapKey)
         {
 
         }
@@ -55,25 +55,25 @@ namespace PepperDash.Essentials.Fusion
                 // Map FusionRoom Attributes:
 
                 // Codec volume
-                var codecVolume = FusionRoom.CreateOffsetUshortSig(50, "Volume - Fader01", eSigIoMask.InputOutputSig);
+                var codecVolume = FusionRoom.CreateOffsetUshortSig(JoinMap.VolumeFader1.JoinNumber, JoinMap.VolumeFader1.AttributeName, eSigIoMask.InputOutputSig);
                 codecVolume.OutputSig.UserObject = new Action<ushort>(b => (codec as IBasicVolumeWithFeedback).SetVolume(b));
                 (codec as IBasicVolumeWithFeedback).VolumeLevelFeedback.LinkInputSig(codecVolume.InputSig);
 
                 // In Call Status
-                CodecIsInCall = FusionRoom.CreateOffsetBoolSig(69, "Conf - VC 1 In Call", eSigIoMask.InputSigOnly);
+                CodecIsInCall = FusionRoom.CreateOffsetBoolSig(JoinMap.VcCodecInCall.JoinNumber, JoinMap.VcCodecInCall.AttributeName, eSigIoMask.InputSigOnly);
                 codec.CallStatusChange += new EventHandler<PepperDash.Essentials.Devices.Common.Codec.CodecCallStatusItemChangeEventArgs>(codec_CallStatusChange);
                 
                 // Online status
                 if (codec is ICommunicationMonitor)
                 {
                     var c = codec as ICommunicationMonitor;
-                    var codecOnline = FusionRoom.CreateOffsetBoolSig(122, "Online - VC 1", eSigIoMask.InputSigOnly);
+                    var codecOnline = FusionRoom.CreateOffsetBoolSig(JoinMap.VcCodecOnline.JoinNumber, JoinMap.VcCodecOnline.AttributeName, eSigIoMask.InputSigOnly);
                     codecOnline.InputSig.BoolValue = c.CommunicationMonitor.Status == MonitorStatus.IsOk;
                     c.CommunicationMonitor.StatusChange += (o, a) =>
                         {
                             codecOnline.InputSig.BoolValue = a.Status == MonitorStatus.IsOk;
                         };
-                    Debug.Console(0, this, "Linking '{0}' communication monitor to Fusion '{1}'", codec.Key, "Online - VC 1");
+                    Debug.Console(0, this, "Linking '{0}' communication monitor to Fusion '{1}'", codec.Key, JoinMap.VcCodecOnline.AttributeName);
                 }
 
                 // Codec IP Address
@@ -101,10 +101,10 @@ namespace PepperDash.Essentials.Fusion
 
                 if (codecHasIpInfo)
                 {
-                    codecIpAddressSig = FusionRoom.CreateOffsetStringSig(121, "IP Address - VC", eSigIoMask.InputSigOnly);
+                    codecIpAddressSig = FusionRoom.CreateOffsetStringSig(JoinMap.VcCodecIpAddress.JoinNumber, JoinMap.VcCodecIpAddress.AttributeName, eSigIoMask.InputSigOnly);
                     codecIpAddressSig.InputSig.StringValue = codecIpAddress;
 
-                    codecIpPortSig = FusionRoom.CreateOffsetStringSig(150, "IP Port - VC", eSigIoMask.InputSigOnly);
+                    codecIpPortSig = FusionRoom.CreateOffsetStringSig(JoinMap.VcCodecIpPort.JoinNumber, JoinMap.VcCodecIpPort.AttributeName, eSigIoMask.InputSigOnly);
                     codecIpPortSig.InputSig.StringValue = codecIpPort.ToString();
                 }
 
@@ -123,7 +123,7 @@ namespace PepperDash.Essentials.Fusion
                     FusionStaticAssets.Add(deviceConfig.Uid, tempAsset);
                 }
 
-                var codecAsset = FusionRoom.CreateStaticAsset(tempAsset.SlotNumber, tempAsset.Name, "Display", tempAsset.InstanceId);
+                var codecAsset = FusionRoom.CreateStaticAsset(tempAsset.SlotNumber, tempAsset.Name, "Codec", tempAsset.InstanceId);
                 codecAsset.PowerOn.OutputSig.UserObject = codecPowerOnAction;
                 codecAsset.PowerOff.OutputSig.UserObject = codecPowerOffAction;
                 codec.StandbyIsOnFeedback.LinkComplementInputSig(codecAsset.PowerOn.InputSig);
@@ -166,20 +166,19 @@ namespace PepperDash.Essentials.Fusion
 
             CrestronConsole.AddNewConsoleCommand(RequestFullRoomSchedule, "FusReqRoomSchedule", "Requests schedule of the room for the next 24 hours", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(ModifyMeetingEndTimeConsoleHelper, "FusReqRoomSchMod", "Ends or extends a meeting by the specified time", ConsoleAccessLevelEnum.AccessOperator);
-            CrestronConsole.AddNewConsoleCommand(CreateAsHocMeeting, "FusCreateMeeting", "Creates and Ad Hoc meeting for on hour or until the next meeting", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(CreateAdHocMeeting, "FusCreateMeeting", "Creates and Ad Hoc meeting for on hour or until the next meeting", ConsoleAccessLevelEnum.AccessOperator);
 
             // Room to fusion room
             Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
 
             // Moved to 
-            CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(84, "Display 1 - Current Source", eSigIoMask.InputSigOnly);
+            CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(JoinMap.Display1CurrentSourceName.JoinNumber, JoinMap.Display1CurrentSourceName.AttributeName, eSigIoMask.InputSigOnly);
             // Don't think we need to get current status of this as nothing should be alive yet. 
             (Room as EssentialsHuddleVtc1Room).CurrentSourceChange += Room_CurrentSourceInfoChange;
 
 
             FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction((Room as EssentialsHuddleVtc1Room).PowerOnToDefaultOrLastSource);
             FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() => (Room as EssentialsHuddleVtc1Room).RunRouteAction("roomOff", Room.SourceListKey));
-            // NO!! room.RoomIsOn.LinkComplementInputSig(FusionRoom.SystemPowerOff.InputSig);
  
 
             CrestronEnvironment.EthernetEventHandler += CrestronEnvironment_EthernetEventHandler;
@@ -197,9 +196,9 @@ namespace PepperDash.Essentials.Fusion
                 uint i = 1;
                 foreach (var kvp in setTopBoxes)
                 {
-                    TryAddRouteActionSigs("Display 1 - Source TV " + i, 188 + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1DiscPlayerSourceStart.AttributeName + " " + i, JoinMap.Display1DiscPlayerSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
-                    if (i > 5) // We only have five spots
+                    if (i > JoinMap.Display1SetTopBoxSourceStart.JoinSpan) // We only have five spots
                         break;
                 }
 
@@ -207,7 +206,7 @@ namespace PepperDash.Essentials.Fusion
                 i = 1;
                 foreach (var kvp in discPlayers)
                 {
-                    TryAddRouteActionSigs("Display 1 - Source DVD " + i, 181 + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1DiscPlayerSourceStart.AttributeName + " " + i, JoinMap.Display1DiscPlayerSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
                     if (i > 5) // We only have five spots
                         break;
@@ -217,9 +216,9 @@ namespace PepperDash.Essentials.Fusion
                 i = 1;
                 foreach (var kvp in laptops)
                 {
-                    TryAddRouteActionSigs("Display 1 - Source Laptop " + i, 166 + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1LaptopSourceStart.AttributeName + " " + i, JoinMap.Display1LaptopSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
-                    if (i > 10) // We only have ten spots???
+                    if (i > JoinMap.Display1LaptopSourceStart.JoinSpan) // We only have ten spots???
                         break;
                 }
 
@@ -283,7 +282,7 @@ namespace PepperDash.Essentials.Fusion
                 if (defaultDisplay is IDisplayUsage)
                     (defaultDisplay as IDisplayUsage).LampHours.LinkInputSig(FusionRoom.DisplayUsage.InputSig);
 
-                MapDisplayToRoomJoins(1, 158, defaultDisplay);
+                MapDisplayToRoomJoins(1, JoinMap.Display1Start.JoinNumber, defaultDisplay);
 
                 var deviceConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(defaultDisplay.Key));
 
@@ -328,7 +327,7 @@ namespace PepperDash.Essentials.Fusion
 
         }
 
-        protected override void MapDisplayToRoomJoins(int displayIndex, int joinOffset, DisplayBase display)
+        protected override void MapDisplayToRoomJoins(int displayIndex, uint joinOffset, DisplayBase display)
         {
             string displayName = string.Format("Display {0} - ", displayIndex);
 
