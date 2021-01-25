@@ -122,7 +122,9 @@ namespace PepperDash.Essentials.DM
 							return new DmTx4kz302CController(key, name, new DmTx4kz302C(chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx401"))
 							return new DmTx401CController(key, name, new DmTx401C(chassis.Inputs[num]));
-					}
+                        if (typeName.StartsWith("hdbasettx"))
+                            return new HDBaseTTxController(key, name, new HDTx3CB(chassis.Inputs[num]));
+                    }
 					else
 					{
 						if (typeName.StartsWith("dmtx200"))
@@ -145,7 +147,9 @@ namespace PepperDash.Essentials.DM
 							return new DmTx4kz302CController(key, name, new DmTx4kz302C(ipid, chassis.Inputs[num]));
 						if (typeName.StartsWith("dmtx401"))
 							return new DmTx401CController(key, name, new DmTx401C(ipid, chassis.Inputs[num]));
-					}
+                        if (typeName.StartsWith("hdbasettx"))
+                            return new HDBaseTTxController(key, name, new HDTx3CB(ipid, chassis.Inputs[num]));
+                    }
 				}
 				catch (Exception e)
 				{
@@ -355,7 +359,7 @@ namespace PepperDash.Essentials.DM
         public DmTxControllerFactory()
         {
             TypeNames = new List<string>() { "dmtx200c", "dmtx201c", "dmtx201s", "dmtx4k100c", "dmtx4k202c", "dmtx4kz202c", "dmtx4k302c", "dmtx4kz302c",
-                "dmtx401c", "dmtx401s", "dmtx4k100c1g", "dmtx4kz100c1g"  };
+                "dmtx401c", "dmtx401s", "dmtx4k100c1g", "dmtx4kz100c1g", "hdbasettx" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
