@@ -16,6 +16,8 @@ namespace PepperDash.Essentials.Core.Fusion
 {
     public class EssentialsHuddleSpaceFusionSystemControllerBase : Device, IOccupancyStatusProvider
     {
+        protected EssentialsHuddleSpaceRoomFusionRoomJoinMap JoinMap;
+
         private const string RemoteOccupancyXml = "<Occupancy><Type>Local</Type><State>{0}</State></Occupancy>";
         private readonly bool _guidFileExists;
 
@@ -84,11 +86,24 @@ namespace PepperDash.Essentials.Core.Fusion
 
         #endregion
 
-        public EssentialsHuddleSpaceFusionSystemControllerBase(EssentialsRoomBase room, uint ipId)
+        public EssentialsHuddleSpaceFusionSystemControllerBase(EssentialsRoomBase room, uint ipId, string joinMapKey)
             : base(room.Key + "-fusion")
         {
             try
             {
+                JoinMap = new EssentialsHuddleSpaceRoomFusionRoomJoinMap(1);
+
+                CrestronConsole.AddNewConsoleCommand((o) => JoinMap.PrintJoinMapInfo(), string.Format("ptjnmp-{0}", Key), "Prints Attribute Join Map", ConsoleAccessLevelEnum.AccessOperator);
+
+                if (!string.IsNullOrEmpty(joinMapKey))
+                {
+                    var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
+                    if (customJoins != null)
+                    {
+                        JoinMap.SetCustomJoinData(customJoins);
+                    }
+                }
+                 
                 Room = room;
 
                 _ipId = ipId;
@@ -319,7 +334,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 "Requests schedule of the room for the next 24 hours", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(ModifyMeetingEndTimeConsoleHelper, "FusReqRoomSchMod",
                 "Ends or extends a meeting by the specified time", ConsoleAccessLevelEnum.AccessOperator);
-            CrestronConsole.AddNewConsoleCommand(CreateAsHocMeeting, "FusCreateMeeting",
+            CrestronConsole.AddNewConsoleCommand(CreateAdHocMeeting, "FusCreateMeeting",
                 "Creates and Ad Hoc meeting for on hour or until the next meeting",
                 ConsoleAccessLevelEnum.AccessOperator);
 
@@ -327,7 +342,7 @@ namespace PepperDash.Essentials.Core.Fusion
             Room.OnFeedback.LinkInputSig(FusionRoom.SystemPowerOn.InputSig);
 
             // Moved to 
-            CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(84, "Display 1 - Current Source",
+            CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(JoinMap.Display1CurrentSourceName.JoinNumber, JoinMap.Display1CurrentSourceName.AttributeName,
                 eSigIoMask.InputSigOnly);
             // Don't think we need to get current status of this as nothing should be alive yet. 
             var hasCurrentSourceInfoChange = Room as IHasCurrentSourceInfoChange;
@@ -377,24 +392,24 @@ namespace PepperDash.Essentials.Core.Fusion
 
             var response = string.Empty;
 
-            var systemReboot = FusionRoom.CreateOffsetBoolSig(74, "Processor - Reboot", eSigIoMask.OutputSigOnly);
+            var systemReboot = FusionRoom.CreateOffsetBoolSig(JoinMap.ProcessorReboot.JoinNumber, JoinMap.ProcessorReboot.AttributeName, eSigIoMask.OutputSigOnly);
             systemReboot.OutputSig.SetSigFalseAction(
                 () => CrestronConsole.SendControlSystemCommand("reboot", ref response));
         }
 
         protected void SetUpEthernetValues()
         {
-            _ip1 = FusionRoom.CreateOffsetStringSig(50, "Info - Processor - IP 1", eSigIoMask.InputSigOnly);
-            _ip2 = FusionRoom.CreateOffsetStringSig(51, "Info - Processor - IP 2", eSigIoMask.InputSigOnly);
-            _gateway = FusionRoom.CreateOffsetStringSig(52, "Info - Processor - Gateway", eSigIoMask.InputSigOnly);
-            _hostname = FusionRoom.CreateOffsetStringSig(53, "Info - Processor - Hostname", eSigIoMask.InputSigOnly);
-            _domain = FusionRoom.CreateOffsetStringSig(54, "Info - Processor - Domain", eSigIoMask.InputSigOnly);
-            _dns1 = FusionRoom.CreateOffsetStringSig(55, "Info - Processor - DNS 1", eSigIoMask.InputSigOnly);
-            _dns2 = FusionRoom.CreateOffsetStringSig(56, "Info - Processor - DNS 2", eSigIoMask.InputSigOnly);
-            _mac1 = FusionRoom.CreateOffsetStringSig(57, "Info - Processor - MAC 1", eSigIoMask.InputSigOnly);
-            _mac2 = FusionRoom.CreateOffsetStringSig(58, "Info - Processor - MAC 2", eSigIoMask.InputSigOnly);
-            _netMask1 = FusionRoom.CreateOffsetStringSig(59, "Info - Processor - Net Mask 1", eSigIoMask.InputSigOnly);
-            _netMask2 = FusionRoom.CreateOffsetStringSig(60, "Info - Processor - Net Mask 2", eSigIoMask.InputSigOnly);
+            _ip1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorIp1.JoinNumber, JoinMap.ProcessorIp1.AttributeName, eSigIoMask.InputSigOnly);
+            _ip2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorIp2.JoinNumber, JoinMap.ProcessorIp2.AttributeName, eSigIoMask.InputSigOnly);
+            _gateway = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorGateway.JoinNumber, JoinMap.ProcessorGateway.AttributeName, eSigIoMask.InputSigOnly);
+            _hostname = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorHostname.JoinNumber, JoinMap.ProcessorHostname.AttributeName, eSigIoMask.InputSigOnly);
+            _domain = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorDomain.JoinNumber, JoinMap.ProcessorDomain.AttributeName, eSigIoMask.InputSigOnly);
+            _dns1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorDns1.JoinNumber, JoinMap.ProcessorDns1.AttributeName, eSigIoMask.InputSigOnly);
+            _dns2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorDns2.JoinNumber, JoinMap.ProcessorDns2.AttributeName, eSigIoMask.InputSigOnly);
+            _mac1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorMac1.JoinNumber, JoinMap.ProcessorMac1.AttributeName, eSigIoMask.InputSigOnly);
+            _mac2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorMac2.JoinNumber, JoinMap.ProcessorMac2.AttributeName, eSigIoMask.InputSigOnly);
+            _netMask1 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorNetMask1.JoinNumber, JoinMap.ProcessorNetMask1.AttributeName, eSigIoMask.InputSigOnly);
+            _netMask2 = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorNetMask2.JoinNumber, JoinMap.ProcessorNetMask2.AttributeName, eSigIoMask.InputSigOnly);
         }
 
         protected void GetProcessorEthernetValues()
@@ -447,16 +462,16 @@ namespace PepperDash.Essentials.Core.Fusion
 
         protected void GetProcessorInfo()
         {
-            _firmware = FusionRoom.CreateOffsetStringSig(61, "Info - Processor - Firmware", eSigIoMask.InputSigOnly);
+            _firmware = FusionRoom.CreateOffsetStringSig(JoinMap.ProcessorFirmware.JoinNumber, JoinMap.ProcessorFirmware.AttributeName, eSigIoMask.InputSigOnly);
 
             if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)
             {
                 for (var i = 0; i < Global.ControlSystem.NumProgramsSupported; i++)
                 {
-                    var join = 62 + i;
+                    var join = JoinMap.ProgramNameStart.JoinNumber + i;
                     var progNum = i + 1;
                     _program[i] = FusionRoom.CreateOffsetStringSig((uint) join,
-                        string.Format("Info - Processor - Program {0}", progNum), eSigIoMask.InputSigOnly);
+                        string.Format("{0} {1}", JoinMap.ProgramNameStart.AttributeName, progNum), eSigIoMask.InputSigOnly);
                 }
             }
 
@@ -484,57 +499,60 @@ namespace PepperDash.Essentials.Core.Fusion
         {
             if (args.DeviceOnLine)
             {
-                CrestronEnvironment.Sleep(200);
-
-                // Send Push Notification Action request:
-
-                const string requestId = "InitialPushRequest";
-
-
-                var actionRequest =
-                    string.Format("<RequestAction>\n<RequestID>{0}</RequestID>\n", requestId) +
-                    "<ActionID>RegisterPushModel</ActionID>\n" +
-                    "<Parameters>\n" +
-                    "<Parameter ID='Enabled' Value='1' />\n" +
-                    "<Parameter ID='RequestID' Value='PushNotification' />\n" +
-                    "<Parameter ID='Start' Value='00:00:00' />\n" +
-                    "<Parameter ID='HourSpan' Value='24' />\n" +
-                    "<Parameter ID='Field' Value='MeetingID' />\n" +
-                    "<Parameter ID='Field' Value='RVMeetingID' />\n" +
-                    "<Parameter ID='Field' Value='InstanceID' />\n" +
-                    "<Parameter ID='Field' Value='dtStart' />\n" +
-                    "<Parameter ID='Field' Value='dtEnd' />\n" +
-                    "<Parameter ID='Field' Value='Subject' />\n" +
-                    "<Parameter ID='Field' Value='Organizer' />\n" +
-                    "<Parameter ID='Field' Value='IsEvent' />\n" +
-                    "<Parameter ID='Field' Value='IsPrivate' />\n" +
-                    "<Parameter ID='Field' Value='IsExchangePrivate' />\n" +
-                    "<Parameter ID='Field' Value='LiveMeeting' />\n" +
-                    "<Parameter ID='Field' Value='ShareDocPath' />\n" +
-                    "<Parameter ID='Field' Value='PhoneNo' />\n" +
-                    "<Parameter ID='Field' Value='ParticipantCode' />\n" +
-                    "</Parameters>\n" +
-                    "</RequestAction>\n";
-
-                Debug.Console(2, this, "Sending Fusion ActionRequest: \n{0}", actionRequest);
-
-                FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = actionRequest;
-
-                GetCustomProperties();
-
-                // Request current Fusion Server Time
-                RequestLocalDateTime(null);
-
-                // Setup timer to request time daily
-                if (_dailyTimeRequestTimer != null && !_dailyTimeRequestTimer.Disposed)
+                CrestronInvoke.BeginInvoke( (o) => 
                 {
-                    _dailyTimeRequestTimer.Stop();
-                    _dailyTimeRequestTimer.Dispose();
-                }
+                    CrestronEnvironment.Sleep(200);
 
-                _dailyTimeRequestTimer = new CTimer(RequestLocalDateTime, null, 86400000, 86400000);
+                    // Send Push Notification Action request:
 
-                _dailyTimeRequestTimer.Reset(86400000, 86400000);
+                    const string requestId = "InitialPushRequest";
+
+
+                    var actionRequest =
+                        string.Format("<RequestAction>\n<RequestID>{0}</RequestID>\n", requestId) +
+                        "<ActionID>RegisterPushModel</ActionID>\n" +
+                        "<Parameters>\n" +
+                        "<Parameter ID='Enabled' Value='1' />\n" +
+                        "<Parameter ID='RequestID' Value='PushNotification' />\n" +
+                        "<Parameter ID='Start' Value='00:00:00' />\n" +
+                        "<Parameter ID='HourSpan' Value='24' />\n" +
+                        "<Parameter ID='Field' Value='MeetingID' />\n" +
+                        "<Parameter ID='Field' Value='RVMeetingID' />\n" +
+                        "<Parameter ID='Field' Value='InstanceID' />\n" +
+                        "<Parameter ID='Field' Value='dtStart' />\n" +
+                        "<Parameter ID='Field' Value='dtEnd' />\n" +
+                        "<Parameter ID='Field' Value='Subject' />\n" +
+                        "<Parameter ID='Field' Value='Organizer' />\n" +
+                        "<Parameter ID='Field' Value='IsEvent' />\n" +
+                        "<Parameter ID='Field' Value='IsPrivate' />\n" +
+                        "<Parameter ID='Field' Value='IsExchangePrivate' />\n" +
+                        "<Parameter ID='Field' Value='LiveMeeting' />\n" +
+                        "<Parameter ID='Field' Value='ShareDocPath' />\n" +
+                        "<Parameter ID='Field' Value='PhoneNo' />\n" +
+                        "<Parameter ID='Field' Value='ParticipantCode' />\n" +
+                        "</Parameters>\n" +
+                        "</RequestAction>\n";
+
+                    Debug.Console(2, this, "Sending Fusion ActionRequest: \n{0}", actionRequest);
+
+                    FusionRoom.ExtenderFusionRoomDataReservedSigs.ActionQuery.StringValue = actionRequest;
+
+                    GetCustomProperties();
+
+                    // Request current Fusion Server Time
+                    RequestLocalDateTime(null);
+
+                    // Setup timer to request time daily
+                    if (_dailyTimeRequestTimer != null && !_dailyTimeRequestTimer.Disposed)
+                    {
+                        _dailyTimeRequestTimer.Stop();
+                        _dailyTimeRequestTimer.Dispose();
+                    }
+
+                    _dailyTimeRequestTimer = new CTimer(RequestLocalDateTime, null, 86400000, 86400000);
+
+                    _dailyTimeRequestTimer.Reset(86400000, 86400000);
+                });
             }
         }
 
@@ -641,7 +659,7 @@ namespace PepperDash.Essentials.Core.Fusion
         /// <summary>
         /// Creates and Ad Hoc meeting with a duration of 1 hour, or until the next meeting if in less than 1 hour.
         /// </summary>
-        public void CreateAsHocMeeting(string command)
+        public void CreateAdHocMeeting(string command)
         {
             const string requestId = "CreateAdHocMeeting";
 
@@ -1031,9 +1049,9 @@ namespace PepperDash.Essentials.Core.Fusion
                 uint i = 1;
                 foreach (var kvp in setTopBoxes)
                 {
-                    TryAddRouteActionSigs("Display 1 - Source TV " + i, 188 + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1SetTopBoxSourceStart.AttributeName + " " + i, JoinMap.Display1SetTopBoxSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
-                    if (i > 5) // We only have five spots
+                    if (i > JoinMap.Display1SetTopBoxSourceStart.JoinSpan) // We only have five spots
                     {
                         break;
                     }
@@ -1043,9 +1061,9 @@ namespace PepperDash.Essentials.Core.Fusion
                 i = 1;
                 foreach (var kvp in discPlayers)
                 {
-                    TryAddRouteActionSigs("Display 1 - Source DVD " + i, 181 + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1DiscPlayerSourceStart.AttributeName + " " + i, JoinMap.Display1DiscPlayerSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
-                    if (i > 5) // We only have five spots
+                    if (i > JoinMap.Display1DiscPlayerSourceStart.JoinSpan) // We only have five spots
                     {
                         break;
                     }
@@ -1055,9 +1073,9 @@ namespace PepperDash.Essentials.Core.Fusion
                 i = 1;
                 foreach (var kvp in laptops)
                 {
-                    TryAddRouteActionSigs("Display 1 - Source Laptop " + i, 166 + i, kvp.Key, kvp.Value.SourceDevice);
+                    TryAddRouteActionSigs(JoinMap.Display1LaptopSourceStart.AttributeName + " " + i, JoinMap.Display1LaptopSourceStart.JoinNumber + i, kvp.Key, kvp.Value.SourceDevice);
                     i++;
-                    if (i > 10) // We only have ten spots???
+                    if (i > JoinMap.Display1LaptopSourceStart.JoinSpan) // We only have ten spots???
                     {
                         break;
                     }
@@ -1180,12 +1198,12 @@ namespace PepperDash.Essentials.Core.Fusion
                     {
                         attrNum = attrNum + touchpanelNum;
 
-                        if (attrNum > 10)
+                        if (attrNum > JoinMap.XpanelOnlineStart.JoinSpan)
                         {
                             continue;
                         }
-                        attrName = "Online - XPanel " + attrNum;
-                        attrNum += 160;
+                        attrName = JoinMap.XpanelOnlineStart.AttributeName + " " + attrNum;
+                        attrNum += JoinMap.XpanelOnlineStart.JoinNumber;
 
                         touchpanelNum++;
                     }
@@ -1193,12 +1211,12 @@ namespace PepperDash.Essentials.Core.Fusion
                     {
                         attrNum = attrNum + xpanelNum;
 
-                        if (attrNum > 10)
+                        if (attrNum > JoinMap.TouchpanelOnlineStart.JoinSpan)
                         {
                             continue;
                         }
-                        attrName = "Online - Touch Panel " + attrNum;
-                        attrNum += 150;
+                        attrName = JoinMap.TouchpanelOnlineStart.AttributeName + " " + attrNum;
+                        attrNum += JoinMap.TouchpanelOnlineStart.JoinNumber;
 
                         xpanelNum++;
                     }
@@ -1208,12 +1226,12 @@ namespace PepperDash.Essentials.Core.Fusion
                 if (dev is DisplayBase)
                 {
                     attrNum = attrNum + displayNum;
-                    if (attrNum > 10)
+                    if (attrNum > JoinMap.DisplayOnlineStart.JoinSpan)
                     {
                         continue;
                     }
-                    attrName = "Online - Display " + attrNum;
-                    attrNum += 170;
+                    attrName = JoinMap.DisplayOnlineStart.AttributeName + " " + attrNum;
+                    attrNum += JoinMap.DisplayOnlineStart.JoinNumber;
 
                     displayNum++;
                 }
@@ -1290,7 +1308,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 FusionRoom.DisplayPowerOn.OutputSig.UserObject = dispPowerOnAction;
                 FusionRoom.DisplayPowerOff.OutputSig.UserObject = dispPowerOffAction;
 
-                MapDisplayToRoomJoins(1, 158, defaultDisplay);
+                MapDisplayToRoomJoins(1, JoinMap.Display1Start.JoinNumber, defaultDisplay);
 
 
                 var deviceConfig =
@@ -1346,7 +1364,7 @@ namespace PepperDash.Essentials.Core.Fusion
         /// <param name="display"></param>
         /// <param name="displayIndex"></param>
         /// a
-        protected virtual void MapDisplayToRoomJoins(int displayIndex, int joinOffset, DisplayBase display)
+        protected virtual void MapDisplayToRoomJoins(int displayIndex, uint joinOffset, DisplayBase display)
         {
             var displayName = string.Format("Display {0} - ", displayIndex);
 
@@ -1357,7 +1375,7 @@ namespace PepperDash.Essentials.Core.Fusion
                 return;
             }
             // Display volume
-            var defaultDisplayVolume = FusionRoom.CreateOffsetUshortSig(50, "Volume - Fader01",
+            var defaultDisplayVolume = FusionRoom.CreateOffsetUshortSig(JoinMap.VolumeFader1.JoinNumber, JoinMap.VolumeFader1.AttributeName,
                 eSigIoMask.InputOutputSig);
             defaultDisplayVolume.OutputSig.UserObject = new Action<ushort>(b =>
             {
