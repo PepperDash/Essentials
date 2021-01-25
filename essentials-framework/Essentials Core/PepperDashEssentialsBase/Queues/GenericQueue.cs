@@ -15,8 +15,8 @@ namespace PepperDash_Essentials_Core.Queues
         protected readonly Thread _worker;
         protected readonly CEvent _waitHandle = new CEvent();
         
-        private readonly bool _delayEnabled;
-        private readonly int _delayTime;
+        private bool _delayEnabled;
+        private int _delayTime;
 
         /// <summary>
         /// If the instance has been disposed.
@@ -24,14 +24,27 @@ namespace PepperDash_Essentials_Core.Queues
         public bool Disposed { get; private set; }
 
         /// <summary>
+        /// Constructor with no thread priority
+        /// </summary>
+        /// <param name="key"></param>
+        public GenericQueue(string key)
+            : this(key, Thread.eThreadPriority.NotSet)
+        {
+
+        }
+
+        /// <summary>
         /// Constructor for generic queue with no pacing
         /// </summary>
         /// <param name="key">Key</param>
-        public GenericQueue(string key)
+        public GenericQueue(string key, Thread.eThreadPriority priority)
         {
             _key = key;
             _queue = new CrestronQueue<IQueueMessage>();
-            _worker = new Thread(ProcessQueue, null, Thread.eThreadStartOptions.Running);
+            _worker = new Thread(ProcessQueue, null, Thread.eThreadStartOptions.Running)
+                {
+                    Priority = priority
+                };
 
             CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
             {
@@ -50,10 +63,27 @@ namespace PepperDash_Essentials_Core.Queues
         public GenericQueue(string key, int pacing)
             : this(key)
         {
+            SetDelayValues(pacing);
+        }
+
+        /// <summary>
+        /// Constructor with pacing and priority
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="pacing"></param>
+        /// <param name="priority"></param>
+        public GenericQueue(string key, int pacing, Thread.eThreadPriority priority)
+            : this(key, priority)
+        {
+            SetDelayValues(pacing);
+        }
+
+        private void SetDelayValues(int pacing)
+        {
             _delayEnabled = pacing > 0;
             _delayTime = pacing;
         }
-
+        
         /// <summary>
         /// Thread callback
         /// </summary>
@@ -83,7 +113,7 @@ namespace PepperDash_Essentials_Core.Queues
                     }
                     catch (Exception ex)
                     {
-                        Debug.ConsoleWithLog(0, this, "Caught an exception in the Queue {0}\r{1}\r{2}", ex.Message, ex.InnerException, ex.StackTrace);
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Caught an exception in the Queue {0}\r{1}\r{2}", ex.Message, ex.InnerException, ex.StackTrace);
                     }
                 }
                 else _waitHandle.Wait();
