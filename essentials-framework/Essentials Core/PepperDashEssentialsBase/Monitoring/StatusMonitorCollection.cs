@@ -64,30 +64,34 @@ namespace PepperDash.Essentials.Core
 				initialStatus = MonitorStatus.InWarning;
 				prefix = "2:";
 			}
-			else if (InWarning.Count() > 0)
+			else if (IsOk.Count() > 0)
 				initialStatus = MonitorStatus.IsOk;
 			else
 				initialStatus = MonitorStatus.StatusUnknown;
 
 			// Build the error message string
-			if (InError.Count() > 0 || InWarning.Count() > 0)
-			{
-				StringBuilder sb = new StringBuilder(prefix);
-				if (InError.Count() > 0)
-				{
-					// Do string splits and joins 
-					sb.Append(string.Format("{0} Errors:", InError.Count()));
-					foreach (var mon in InError)
-						sb.Append(string.Format("{0}, ", mon.Parent.Key));
-				}
-				if (InWarning.Count() > 0)
-				{
-					sb.Append(string.Format("{0} Warnings:", InWarning.Count()));
-					foreach (var mon in InWarning)
-						sb.Append(string.Format("{0}, ", mon.Parent.Key));
-				}
-				Message = sb.ToString();
-			}
+            if (InError.Count() > 0 || InWarning.Count() > 0)
+            {
+                StringBuilder sb = new StringBuilder(prefix);
+                if (InError.Count() > 0)
+                {
+                    // Do string splits and joins 
+                    sb.Append(string.Format("{0} Errors:", InError.Count()));
+                    foreach (var mon in InError)
+                        sb.Append(string.Format("{0}, ", mon.Parent.Key));
+                }
+                if (InWarning.Count() > 0)
+                {
+                    sb.Append(string.Format("{0} Warnings:", InWarning.Count()));
+                    foreach (var mon in InWarning)
+                        sb.Append(string.Format("{0}, ", mon.Parent.Key));
+                }
+                Message = sb.ToString();
+            }
+            else
+            {
+                Message = "Room Ok.";
+            }
 
 			// Want to fire even if status doesn't change because the message may.
 			Status = initialStatus;
