@@ -225,6 +225,8 @@
     <Compile Include="Gateways\CenRfgwController.cs" />
     <Compile Include="Gateways\EssentialsRfGatewayConfig.cs" />
     <Compile Include="Global\EthernetAdapterInfo.cs" />
+    <Compile Include="Interfaces\ILogStrings.cs" />
+    <Compile Include="Interfaces\ILogStringsWithLevel.cs" />
     <Compile Include="Queues\ComsMessage.cs" />
     <Compile Include="Queues\ProcessStringMessage.cs" />
     <Compile Include="Queues\GenericQueue.cs" />
