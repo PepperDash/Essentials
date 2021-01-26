@@ -40,7 +40,7 @@ namespace PepperDash_Essentials_Core.Queues
         public GenericQueue(string key, Thread.eThreadPriority priority)
         {
             _key = key;
-            _queue = new CrestronQueue<IQueueMessage>();
+            _queue = new CrestronQueue<IQueueMessage>(25);
             _worker = new Thread(ProcessQueue, null, Thread.eThreadStartOptions.Running)
                 {
                     Priority = priority
