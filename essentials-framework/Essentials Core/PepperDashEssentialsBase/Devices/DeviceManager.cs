@@ -360,9 +360,9 @@ namespace PepperDash.Essentials.Core
 	    {
 	        var device = GetDeviceForKey(s);
 
-	        if (device == null) return;
-	        var inputPorts = (device as IRoutingInputsOutputs).InputPorts;
-	        var outputPorts = (device as IRoutingInputsOutputs).OutputPorts;
+            if (device == null) return;
+            var inputPorts = ((device as IRoutingInputs) != null) ? (device as IRoutingInputs).InputPorts : null;
+            var outputPorts = ((device as IRoutingOutputs) != null) ? (device as IRoutingOutputs).OutputPorts : null;
 	        if (inputPorts != null)
 	        {
 	            Debug.Console(0, "Device {0} has {1} Input Ports:", s, inputPorts.Count);
