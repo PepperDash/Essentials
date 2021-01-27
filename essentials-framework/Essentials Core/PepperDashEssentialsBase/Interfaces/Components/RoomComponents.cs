@@ -6,7 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Interfaces.Components
+namespace PepperDash.Essentials.Core.Interfaces.Components
 {
     /// <summary>
     /// Describes a room comprised of components

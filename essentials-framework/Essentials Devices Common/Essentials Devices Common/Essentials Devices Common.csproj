@@ -184,10 +184,6 @@
       <Project>{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}</Project>
       <Name>PepperDash_Essentials_Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Essentials Interfaces\PepperDash_Essentials_Interfaces\PepperDash_Essentials_Interfaces.csproj">
-      <Project>{E51D7C84-4906-486C-B2BA-EEB3B4E9731B}</Project>
-      <Name>PepperDash_Essentials_Interfaces</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

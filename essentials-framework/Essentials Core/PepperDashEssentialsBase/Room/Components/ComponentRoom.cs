@@ -5,7 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Core;
-using PepperDash.Essentials.Interfaces.Components;
+using PepperDash.Essentials.Core.Interfaces.Components;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 

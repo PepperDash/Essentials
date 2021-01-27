@@ -8,7 +8,7 @@ using Crestron.SimplSharp.Reflection;
 using PepperDash.Core;
 
 
-using PepperDash.Essentials.Interfaces.Components;
+using PepperDash.Essentials.Core.Interfaces.Components;
 
 namespace PepperDash.Essentials.Core.Room.Components
 {
