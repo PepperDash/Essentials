@@ -28,7 +28,7 @@ namespace PepperDash_Essentials_Core.Queues
         /// </summary>
         /// <param name="key"></param>
         public GenericQueue(string key)
-            : this(key, Thread.eThreadPriority.NotSet)
+            : this(key, Thread.eThreadPriority.MediumPriority)
         {
 
         }
@@ -37,6 +37,7 @@ namespace PepperDash_Essentials_Core.Queues
         /// Constructor for generic queue with no pacing
         /// </summary>
         /// <param name="key">Key</param>
+        /// <param name="priority"></param>
         public GenericQueue(string key, Thread.eThreadPriority priority)
         {
             _key = key;
