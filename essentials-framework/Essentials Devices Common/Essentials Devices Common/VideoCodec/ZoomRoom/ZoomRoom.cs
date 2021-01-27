@@ -205,7 +205,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         protected Func<string> SelfviewPipPositionFeedbackFunc
         {
-            get { return () => _currentSelfviewPipPosition.Command; }
+            get
+            {
+                return
+                    () =>
+                        _currentSelfviewPipPosition != null
+                            ? _currentSelfviewPipPosition.Command ?? "Unknown"
+                            : "Unknown";
+            }
         }
 
         protected Func<string> LocalLayoutFeedbackFunc
@@ -1373,13 +1380,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// </summary>
         private void UpdateCallStatus()
         {
+            Debug.Console(1, this, "[UpdateCallStatus] Current Call Status: {0}",
+                Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
+
             if (Status.Call != null)
             {
                 var callStatus = Status.Call.Status;
 
                 // If not currently in a meeting, intialize the call object
-                if (callStatus != zStatus.eCallStatus.IN_MEETING || callStatus != zStatus.eCallStatus.CONNECTING_MEETING)
+                if (callStatus != zStatus.eCallStatus.IN_MEETING && callStatus != zStatus.eCallStatus.CONNECTING_MEETING)
                 {
+                    Debug.Console(1, this, "Creating new Status.Call object");
                     Status.Call = new zStatus.Call {Status = callStatus};
 
                     SetUpCallFeedbackActions();
@@ -1406,6 +1417,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                         ActiveCalls.Add(newCall);
 
+                        Debug.Console(1, this, "[UpdateCallStatus] Current Call Status: {0}",
+                            Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
+
                         OnCallStatusChange(newCall);
                     }
                 }
@@ -1422,6 +1436,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             existingCall.Status = eCodecCallStatus.Disconnected;
                             break;
                     }
+
+                    Debug.Console(1, this, "[UpdateCallStatus] Current Call Status: {0}",
+                        Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
 
                     OnCallStatusChange(existingCall);
                 }
@@ -1459,6 +1476,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         protected override void OnCallStatusChange(CodecActiveCallItem item)
         {
             base.OnCallStatusChange(item);
+
+            Debug.Console(1, this, "[OnCallStatusChange] Current Call Status: {0}",
+                Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
 
             if (_props.AutoDefaultLayouts)
             {
@@ -1635,6 +1655,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public override void Dial(Meeting meeting)
         {
+			Debug.Console(1, this,"Dialing meeting.Id: {0} Title: {1}", meeting.Id, meeting.Title);
             SendText(string.Format("zCommand Dial Start meetingNumber: {0}", meeting.Id));
         }
 

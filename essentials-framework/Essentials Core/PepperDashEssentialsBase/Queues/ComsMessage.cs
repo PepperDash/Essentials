@@ -40,7 +40,7 @@ namespace PepperDash_Essentials_Core.Queues
 
         private void Validate(IBasicCommunication coms, object message)
         {
-            if (_coms == null)
+            if (coms == null)
                 throw new ArgumentNullException("coms");
 
             if (message == null)

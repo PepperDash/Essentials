@@ -12,6 +12,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Fusion;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
@@ -53,7 +54,7 @@ namespace PepperDash.Essentials
 
             if (Debug.DoNotLoadOnNextBoot)
             {
-                CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
+                CrestronConsole.AddNewConsoleCommand(s => CrestronInvoke.BeginInvoke((o) => GoWithLoad()), "go", "Loads configuration file",
                     ConsoleAccessLevelEnum.AccessOperator);
             }
 
@@ -444,11 +445,30 @@ namespace PepperDash.Essentials
 
                 if (room != null && room is EssentialsRoomBase)
                 {
+                    // default IPID
+                    uint fusionIpId = 0xf1;
+
+                    // default to no join map key
+                    string fusionJoinMapKey = string.Empty;
+
+                    if (room.Config.Properties["fusion"] != null)
+                    {
+                        Debug.Console(2, "Custom Fusion config found. Using custom values");
+
+                        var fusionConfig = room.Config.Properties["fusion"].ToObject<EssentialsRoomFusionConfig>();
+
+                        if (fusionConfig != null)
+                        {
+                            fusionIpId = fusionConfig.IpIdInt;
+                            fusionJoinMapKey = fusionConfig.JoinMapKey;
+                        }
+                    }
+
                     if (room is EssentialsHuddleSpaceRoom)
                     {
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase((EssentialsHuddleSpaceRoom)room, 0xf1));
+                        DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase(room, fusionIpId, fusionJoinMapKey));
 
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
@@ -459,11 +479,23 @@ namespace PepperDash.Essentials
                     {
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
+                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
                         CreateMobileControlBridge(room as EssentialsRoomBase);
+                    }
+                    else if (room is EssentialsTechRoom)
+                    {
+                        DeviceManager.AddDevice(room);
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                            "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion");
+                        DeviceManager.AddDevice(new EssentialsTechRoomFusionSystemController((EssentialsTechRoom)room, fusionIpId, fusionJoinMapKey));
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
+
+                        CreateMobileControlBridge(room);
                     }
                     else
                     {
@@ -569,7 +601,7 @@ namespace PepperDash.Essentials
                 return ((logoDark != null && logoDark == "system") ||
                         (logoLight != null && logoLight == "system") || (logo != null && logo == "system"));
             }
-            catch (Exception e)
+            catch
             {
                 Debug.Console(1, Debug.ErrorLogLevel.Notice, "Unable to find logo information in any room config: {0}", e);
                 return false;

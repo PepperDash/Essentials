@@ -199,6 +199,7 @@
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
+    <Compile Include="DeviceTypeInterfaces\ITvPresetsProvider.cs" />
     <Compile Include="DeviceTypeInterfaces\LanguageLabel.cs" />
     <Compile Include="DeviceTypeInterfaces\ILanguageProvider.cs" />
     <Compile Include="DeviceTypeInterfaces\IHasBranding.cs" />
@@ -219,11 +220,14 @@
     <Compile Include="Fusion\FusionCustomPropertiesBridge.cs" />
     <Compile Include="Fusion\FusionEventHandlers.cs" />
     <Compile Include="Fusion\FusionProcessorQueries.cs" />
+    <Compile Include="Fusion\EssentialsHuddleSpaceRoomFusionRoomJoinMap.cs" />
     <Compile Include="Fusion\FusionRviDataClasses.cs" />
     <Compile Include="Gateways\CenRfgwController.cs" />
     <Compile Include="Gateways\EssentialsRfGatewayConfig.cs" />
     <Compile Include="Global\EthernetAdapterInfo.cs" />
     <Compile Include="Interfaces\Components\RoomComponents.cs" />
+    <Compile Include="Interfaces\ILogStrings.cs" />
+    <Compile Include="Interfaces\ILogStringsWithLevel.cs" />
     <Compile Include="Queues\ComsMessage.cs" />
     <Compile Include="Queues\ProcessStringMessage.cs" />
     <Compile Include="Queues\GenericQueue.cs" />
@@ -282,6 +286,7 @@
     <Compile Include="Room\Components\ComponentRoom.cs" />
     <Compile Include="Room\Components\RoomComponentBase.cs" />
     <Compile Include="Room\EssentialsRoomBase.cs" />
+    <Compile Include="Room\Config\EssentialsRoomScheduledEventsConfig.cs" />
     <Compile Include="Room\Interfaces.cs" />
     <Compile Include="Room\iOccupancyStatusProvider.cs" />
     <Compile Include="Room\RoomFactory.cs" />

@@ -22,30 +22,25 @@ namespace PepperDash.Essentials.Room.Config
 		public static Device GetRoomObject(DeviceConfig roomConfig)
 		{
 			var typeName = roomConfig.Type.ToLower();
+
 			if (typeName == "huddle")
 			{
-                var huddle = new EssentialsHuddleSpaceRoom(roomConfig);
-
-                return huddle;
+                return new EssentialsHuddleSpaceRoom(roomConfig);
 			}
-            else if (typeName == "huddlevtc1")
-            {
-                var rm = new EssentialsHuddleVtc1Room(roomConfig);
-                
-                return rm;
-            }
-			else if (typeName == "ddvc01Bridge")
-			{
-				return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
-			}
-            else if (typeName == "dualdisplay")
-            {
-                var rm = new EssentialsDualDisplayRoom(roomConfig);
+		    if (typeName == "huddlevtc1")
+		    {
+		        return new EssentialsHuddleVtc1Room(roomConfig);
+		    }
+		    if (typeName == "ddvc01bridge")
+		    {
+		        return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
+		    }
+		    if (typeName == "dualdisplay")
+		    {
+		        return new EssentialsDualDisplayRoom(roomConfig);
+		    }
 
-                return rm;
-            }
-
-            return null;
+		    return typeName != "techroom" ? null : new EssentialsTechRoom(roomConfig);
 		}
 
         /// <summary>
@@ -182,6 +177,9 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("volumes")]
 		public EssentialsRoomVolumesConfig Volumes { get; set; }
 
+        [JsonProperty("fusion")]
+        public EssentialsRoomFusionConfig Fusion { get; set; }
+
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 
@@ -224,6 +222,32 @@ namespace PepperDash.Essentials.Room.Config
         }
 
 	}
+
+    public class EssentialsRoomFusionConfig
+    {
+        public uint IpIdInt
+        {
+            get
+            {
+                try 
+                {
+                    return Convert.ToUInt32(IpId, 16);
+                }
+                catch (Exception)
+                {
+                    throw new FormatException(string.Format("ERROR:Unable to convert IP ID: {0} to hex.  Error:\n{1}", IpId));
+                }
+          
+            }
+        }
+
+        [JsonProperty("ipId")]
+        public string IpId { get; set; }
+
+        [JsonProperty("joinMapKey")]
+        public string JoinMapKey { get; set; }
+
+    }
 
     public class EssentialsRoomMicrophonePrivacyConfig
     {
