@@ -13,10 +13,10 @@ namespace PepperDash.Essentials.Core.Interfaces.Components
     /// </summary>
     public interface IComponentRoom : IKeyed
     {
-        List<IRoomComponent> Components { get; }
+        List<IActivatableComponent> Components { get; }
         List<IRoomActivityComponent> Activities { get; }
 
-        List<IRoomComponent> GetRoomComponentsOfType(Type type);
+        List<T> GetRoomComponentsOfType<T>();
         List<IRoomActivityComponent> GetOrderedActvities();
     }
 
@@ -41,10 +41,14 @@ namespace PepperDash.Essentials.Core.Interfaces.Components
     /// </summary>
     public interface IRoomActivityComponent : IRoomComponent
     {
+        BoolFeedback IsEnabledFeedback { get; }
+
+        bool Enable { set; }
         string Label { get; }
         string Icon { get;  }
-        IRoomComponent Component { get; }
+        IRoomBehaviourGroupComponent Component { get; }
         int Order { get; }
+
 
         void StartActivity();
         void EndActivity();
@@ -53,27 +57,37 @@ namespace PepperDash.Essentials.Core.Interfaces.Components
     /// <summary>
     /// Describes a room component that can be "used" by a user
     /// </summary>
-    public interface IUsableRoomComponent
+    public interface IActivatableComponent : IRoomComponent
     {
-        bool InUse { get; }
+        BoolFeedback ActivatedFeedback { get; }
 
-        void StartUse();
-        void EndUse();
+        void Activate();
+        void Deactivate();
     }
 
     /// <summary>
-    /// Describes a room behaviour component
+    /// Describes a room behaviour component.  Is able to contain a collection of components that aggregate
+    /// together to behave as one
     /// </summary>
-    public interface IRoomBehaviourComponent : IUsableRoomComponent
+    public interface IRoomBehaviourGroupComponent
+    {
+        List<IActivatableComponent> Components { get; }
+
+        void ActivateComponents();
+        void DeactivateComponents();
+    }
+
+    public interface IRoomBehaviourComponent : IActivatableComponent
     {
 
     }
+
 
     /// <summary>
     /// Describes a room device component
     /// </summary>
-    public interface IRoomDeviceComponent : IUsableRoomComponent
+    public interface IRoomDeviceComponent<T> : IActivatableComponent where T : EssentialsDevice
     {
-
+        public T Device { get; }
     }
 }

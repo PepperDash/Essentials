@@ -246,8 +246,11 @@ namespace PepperDash.Essentials.Core
 
 	public class DeviceActionWrapper
 	{
+        [JsonProperty("deviceKey")]
 		public string DeviceKey { get; set; }
+        [JsonProperty("methodName")]
 		public string MethodName { get; set; }
+        [JsonProperty("params")]
 		public object[] Params { get; set; }
 	}
 

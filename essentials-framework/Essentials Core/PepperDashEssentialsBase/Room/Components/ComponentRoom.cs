@@ -34,6 +34,8 @@ namespace PepperDash.Essentials.Core.Room
         public string ComponentKey { get; set; }
         [JsonProperty("order")]
         public int Order { get; set; }
+        [JsonProperty("selectAction")]
+        public DeviceActionWrapper SelectAction { get; set; }
     }
 
     /// <summary>
@@ -49,7 +51,8 @@ namespace PepperDash.Essentials.Core.Room
     /// </summary>
     public class RoomDeviceBehaviourConfig : RoomComponentConfig
     {
-
+        [JsonProperty("deviceKey")]
+        public string DeviceKey { get; set; }
     }
 
     /// <summary>
@@ -72,7 +75,7 @@ namespace PepperDash.Essentials.Core.Room
     {
         public ComponentRoomPropertiesConfig PropertiesConfig { get; private set; }
 
-        public List<IRoomComponent> Components { get; private set; }
+        public List<IActivatableComponent> Components { get; private set; }
         public List<IRoomActivityComponent> Activities { get; private set; }
 
         public ComponentRoom(DeviceConfig config)
@@ -80,23 +83,32 @@ namespace PepperDash.Essentials.Core.Room
         {
             try
             {
-                PropertiesConfig = JsonConvert.DeserializeObject<ComponentRoomPropertiesConfig>
-                    (config.Properties.ToString());
+                PropertiesConfig = config.Properties.ToObject<ComponentRoomPropertiesConfig>();
             }
             catch (Exception e)
             {
                 Debug.Console(1, this, "Error building ComponentRoom: \n{0}", e);
             }
 
+            BuildComponents();
         }
 
-        public List<IRoomComponent> GetRoomComponentsOfType(Type componentType)
+        private void BuildComponents()
         {
-            // TODO: Figure this out later
-            return Components;
-            //var results = Components.OfType<componentType>();
-            //return results;
-            //return Components.Where(c => c != null && type.IsAssignableFrom(c.GetType()));
+
+
+        }
+
+        
+
+        /// <summary>
+        /// Returns a set of IRoomComponent that matches the specified Type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public List<T> GetRoomComponentsOfType<T>() where T : IActivatableComponent
+        {
+            return Components.OfType<T>().ToList();
         }
 
         /// <summary>
