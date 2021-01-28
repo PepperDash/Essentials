@@ -12,11 +12,12 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Devices.Common
 {
     [Description("Wrapper class for an IR Set Top Box")]
-    public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IHasPowerControl
+    public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IHasPowerControl, ITvPresetsProvider
 	{
 		public IrOutputPortController IrPort { get; private set; }
 
@@ -28,7 +29,7 @@ namespace PepperDash.Essentials.Devices.Common
         public bool HasDpad { get; set; }
         public bool HasNumeric { get; set; }
 
-        public DevicePresetsModel PresetsModel { get; private set; }
+        public DevicePresetsModel TvPresets { get; private set; }
 
 		public IRSetTopBoxBase(string key, string name, IrOutputPortController portCont,
             SetTopBoxPropertiesConfig props)
@@ -66,8 +67,8 @@ namespace PepperDash.Essentials.Devices.Common
 
 		public void LoadPresets(string filePath)
 		{
-			PresetsModel = new DevicePresetsModel(Key + "-presets", this, filePath);
-			DeviceManager.AddDevice(PresetsModel);
+			TvPresets = new DevicePresetsModel(Key + "-presets", this, filePath);
+			DeviceManager.AddDevice(TvPresets);
 		}
 
 

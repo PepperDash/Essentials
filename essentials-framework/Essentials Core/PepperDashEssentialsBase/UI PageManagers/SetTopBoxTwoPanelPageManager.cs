@@ -18,8 +18,8 @@ namespace PepperDash.Essentials.Core.PageManagers
 		{
 			SetTopBox = stb;
 			TriList = trilist;
-			if(stb.PresetsModel != null)
-				PresetsView = new DevicePresetsView(trilist, stb.PresetsModel);
+			if(stb.TvPresets != null)
+				PresetsView = new DevicePresetsView(trilist, stb.TvPresets);
 		}
 
 		public override void Show()
