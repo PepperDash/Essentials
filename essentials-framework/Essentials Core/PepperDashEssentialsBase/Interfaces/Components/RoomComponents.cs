@@ -41,42 +41,81 @@ namespace PepperDash.Essentials.Core.Interfaces.Components
     /// </summary>
     public interface IRoomActivityComponent : IRoomComponent
     {
+        /// <summary>
+        /// Indicates if the component is enabled
+        /// </summary>
         BoolFeedback IsEnabledFeedback { get; }
 
+        /// <summary>
+        /// Set this value to enable or disable the component
+        /// </summary>
         bool Enable { set; }
+        /// <summary>
+        /// Label to be displayed for the activity on the UI
+        /// </summary>
         string Label { get; }
+        /// <summary>
+        /// Icon to be displayed for the activity on the UI
+        /// </summary>
         string Icon { get;  }
+        /// <summary>
+        /// The component group that will be activated when this activty starts
+        /// </summary>
         IRoomBehaviourGroupComponent Component { get; }
+        /// <summary>
+        /// Determines the order the activities will be displayed on the UI
+        /// </summary>
         int Order { get; }
 
 
+        /// <summary>
+        /// Starts the activity
+        /// </summary>
         void StartActivity();
+        /// <summary>
+        /// Ends the activity
+        /// </summary>
         void EndActivity();
     }
 
     /// <summary>
-    /// Describes a room component that can be "used" by a user
+    /// Describes a room component that can be "activated" 
     /// </summary>
     public interface IActivatableComponent : IRoomComponent
     {
+        /// <summary>
+        /// Indicates if the component is activated
+        /// </summary>
         BoolFeedback ActivatedFeedback { get; }
 
+        /// <summary>
+        /// Activates the component
+        /// </summary>
         void Activate();
+        /// <summary>
+        /// Dactivates the component
+        /// </summary>
         void Deactivate();
     }
 
     /// <summary>
-    /// Describes a room behaviour component.  Is able to contain a collection of components that aggregate
+    /// Describes a group of room behaviour component.  Is able to contain a collection of components that aggregate
     /// together to behave as one
     /// </summary>
     public interface IRoomBehaviourGroupComponent
     {
+        /// <summary>
+        /// A collection of components that work together to achieve a common behaviour
+        /// </summary>
         List<IActivatableComponent> Components { get; }
 
         void ActivateComponents();
         void DeactivateComponents();
     }
 
+    /// <summary>
+    /// Describes an individual room behaviour component
+    /// </summary>
     public interface IRoomBehaviourComponent : IActivatableComponent
     {
 
@@ -84,10 +123,13 @@ namespace PepperDash.Essentials.Core.Interfaces.Components
 
 
     /// <summary>
-    /// Describes a room device component
+    /// Describes a room device component behaviour
     /// </summary>
-    public interface IRoomDeviceComponent<T> : IActivatableComponent where T : EssentialsDevice
+    public interface IDeviceBehaviourComponent<T> : IActivatableComponent where T : EssentialsDevice
     {
+        /// <summary>
+        /// The device this component applies behaviour to
+        /// </summary>
         T Device { get; }
     }
 }
