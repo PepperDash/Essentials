@@ -106,7 +106,7 @@ namespace PepperDash.Essentials.Core.Room
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public List<T> GetRoomComponentsOfType<T>() where T : IActivatableComponent
+        public List<T> GetComponentsOfType<T>() where T : IActivatableComponent
         {
             return Components.OfType<T>().ToList();
         }

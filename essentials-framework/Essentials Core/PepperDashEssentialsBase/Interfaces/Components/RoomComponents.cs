@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.Core.Interfaces.Components
         List<IActivatableComponent> Components { get; }
         List<IRoomActivityComponent> Activities { get; }
 
-        List<T> GetRoomComponentsOfType<T>();
+        List<T> GetComponentsOfType<T>() where T : IActivatableComponent;
         List<IRoomActivityComponent> GetOrderedActvities();
     }
 
@@ -88,6 +88,6 @@ namespace PepperDash.Essentials.Core.Interfaces.Components
     /// </summary>
     public interface IRoomDeviceComponent<T> : IActivatableComponent where T : EssentialsDevice
     {
-        public T Device { get; }
+        T Device { get; }
     }
 }
