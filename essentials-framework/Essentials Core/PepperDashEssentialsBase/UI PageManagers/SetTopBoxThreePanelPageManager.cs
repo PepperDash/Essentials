@@ -169,9 +169,9 @@ namespace PepperDash.Essentials.Core.PageManagers
             }
 
 			// Build presets
-            if (stb.HasPresets && stb.PresetsModel != null)
+            if (stb.HasPresets && stb.TvPresets != null)
 			{
-				PresetsView = new DevicePresetsView(trilist, stb.PresetsModel);
+				PresetsView = new DevicePresetsView(trilist, stb.TvPresets);
 			}
 		}
 
