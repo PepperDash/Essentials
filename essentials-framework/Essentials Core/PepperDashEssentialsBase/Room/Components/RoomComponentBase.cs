@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using PepperDash.Core;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Interfaces.Components;
 
 namespace PepperDash.Essentials.Core.Room.Components
@@ -11,6 +13,7 @@ namespace PepperDash.Essentials.Core.Room.Components
     /// <summary>
     /// The base class from which Room Components should be derived
     /// </summary>
+    [Description("The base Essentials Device Class")]
     public abstract class RoomComponentBase : IRoomComponent
     {
         private string _componentKey;
@@ -107,6 +110,5 @@ namespace PepperDash.Essentials.Core.Room.Components
             throw new NotImplementedException();
         }
     }
-
 
 }

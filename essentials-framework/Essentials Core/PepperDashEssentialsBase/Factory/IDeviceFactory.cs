@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.Core
     public interface IDeviceFactory
     {
         /// <summary>
-        /// Loads all the types to the DeviceFactory
+        /// Loads all the types to the Factory
         /// </summary>
         void LoadTypeFactories();
     }

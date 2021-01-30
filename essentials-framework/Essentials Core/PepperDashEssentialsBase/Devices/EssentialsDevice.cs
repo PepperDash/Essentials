@@ -64,16 +64,18 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
-    /// Devices the basic needs for a Device Factory
+    /// Defines the basic needs for a Device Factory
     /// </summary>
     public abstract class EssentialsDeviceFactory<T> : IDeviceFactory where T:EssentialsDevice
     {
-        #region IDeviceFactory Members
 
         /// <summary>
         /// A list of strings that can be used in the type property of a DeviceConfig object to build an instance of this device
         /// </summary>
         public List<string> TypeNames { get; protected set; }
+
+
+        #region IDeviceFactory Members
 
         /// <summary>
         /// Loads an item to the DeviceFactory.FactoryMethods dictionary for each entry in the TypeNames list
@@ -90,6 +92,8 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        #endregion
+
         /// <summary>
         /// The method that will build the device
         /// </summary>
@@ -97,11 +101,10 @@ namespace PepperDash.Essentials.Core
         /// <returns>An instance of the device</returns>
         public abstract EssentialsDevice BuildDevice(DeviceConfig dc);
 
-        #endregion
     }
 
     /// <summary>
-    /// Devices the basic needs for a Device Factory
+    /// Defines the basic needs for a Device Factory
     /// </summary>
     public abstract class EssentialsPluginDeviceFactory<T> : EssentialsDeviceFactory<T>, IPluginDeviceFactory where T : EssentialsDevice
     {

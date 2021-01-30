@@ -30,7 +30,6 @@ namespace PepperDash.Essentials.Core.Room.Components
     /// </summary>
     public interface IComponentFactory : IDeviceFactory
     {
-
     }
 
     public static class ComponentFactory
