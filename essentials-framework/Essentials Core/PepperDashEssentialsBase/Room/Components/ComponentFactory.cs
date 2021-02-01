@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.Core.Room.Components
     {
         public CType CType { get; set; }
         public string Description { get; set; }
-        public Func<RoomComponentConfig, IKeyed> FactoryMethod { get; set; }
+        public Func<RoomComponentConfig, IComponentRoom, IKeyed> FactoryMethod { get; set; }
 
         public ComponentFactoryWrapper()
         {
@@ -70,13 +70,13 @@ namespace PepperDash.Essentials.Core.Room.Components
         /// </summary>
         /// <param name="dc"></param>
         /// <returns></returns>
-        public static void AddFactoryForType(string typeName, Func<RoomComponentConfig, IKeyed> method)
+        public static void AddFactoryForType(string typeName, Func<RoomComponentConfig, IComponentRoom, IKeyed> method)
         {
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", typeName);
             ComponentFactory.FactoryMethods.Add(typeName, new ComponentFactoryWrapper() { FactoryMethod = method });
         }
 
-        public static void AddFactoryForType(string typeName, string description, CType cType, Func<RoomComponentConfig, IKeyed> method)
+        public static void AddFactoryForType(string typeName, string description, CType cType, Func<RoomComponentConfig, IComponentRoom, IKeyed> method)
         {
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", typeName);
 
@@ -96,7 +96,7 @@ namespace PepperDash.Essentials.Core.Room.Components
         /// </summary>
         /// <param name="dc"></param>
         /// <returns></returns>
-        public static IKeyed GetComponent(RoomComponentConfig dc)
+        public static IKeyed GetComponent(RoomComponentConfig dc, IComponentRoom parent)
         {
             var key = dc.Key;
             var name = dc.Name;
@@ -109,7 +109,7 @@ namespace PepperDash.Essentials.Core.Room.Components
             if (FactoryMethods.ContainsKey(typeName))
             {
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading '{0}' from Essentials Core", dc.Type);
-                return FactoryMethods[typeName].FactoryMethod(dc);
+                return FactoryMethods[typeName].FactoryMethod(dc, parent);
             }
 
             return null;
@@ -186,7 +186,7 @@ namespace PepperDash.Essentials.Core.Room.Components
         /// </summary>
         /// <param name="dc">The device config</param>
         /// <returns>An instance of the device</returns>
-        public abstract IComponent BuildComponent(RoomComponentConfig dc);
+        public abstract IComponent BuildComponent(RoomComponentConfig dc, IComponentRoom parent);
 
         #endregion
     }

@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Interfaces.Components;
+using PepperDash.Essentials.Core.Room.Components;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 
@@ -84,21 +85,59 @@ namespace PepperDash.Essentials.Core.Room
             try
             {
                 PropertiesConfig = config.Properties.ToObject<ComponentRoomPropertiesConfig>();
+
+                BuildComponents();
+
+                BuildActivities();
             }
             catch (Exception e)
             {
                 Debug.Console(1, this, "Error building ComponentRoom: \n{0}", e);
             }
 
-            BuildComponents();
         }
+
 
         private void BuildComponents()
         {
+            foreach (var compConf in PropertiesConfig.Components)
+            {
+                IKeyed newComponent = null;
 
+                newComponent = ComponentFactory.GetComponent(compConf, this);
 
+                if (newComponent != null)
+                {
+                    Components.Add(newComponent as IActivatableComponent);
+                    DeviceManager.AddDevice(newComponent);
+                }
+                else
+                {
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Unable to build room component with key: {0}", compConf.Key);
+                }
+            }
         }
 
+
+        private void BuildActivities()
+        {
+            foreach (var compConf in PropertiesConfig.Activities)
+            {
+                IKeyed newComponent = null;
+
+                newComponent = ComponentFactory.GetComponent(compConf, this);
+
+                if (newComponent != null)
+                {
+                    Activities.Add(newComponent as IRoomActivityComponent);
+                    DeviceManager.AddDevice(newComponent);
+                }
+                else
+                {
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Unable to build room activity with key: {0}", compConf.Key);
+                }
+            }
+        }
         
 
         /// <summary>
