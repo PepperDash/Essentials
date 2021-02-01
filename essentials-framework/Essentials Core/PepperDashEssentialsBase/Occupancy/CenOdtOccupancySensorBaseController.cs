@@ -119,12 +119,6 @@ namespace PepperDash.Essentials.Core
 			OccSensor.BaseEvent += new Crestron.SimplSharpPro.BaseEventHandler(OccSensor_BaseEvent);
 
 			OccSensor.CenOccupancySensorChange += new GenericEventHandler(OccSensor_CenOccupancySensorChange);
-
-			CrestronConsole.AddNewConsoleCommand(GetSettings,
-				"occsensorstatus",
-				"Reports current occupancy sensor settings.  Requires a device key.",
-				ConsoleAccessLevelEnum.AccessOperator);
-
 		}
 
 		/// <summary>
@@ -432,42 +426,33 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		private static void GetSettings(string key)
+		/// <summary>
+		/// Method to print current settings to console
+		/// </summary>
+		public void GetSettings()
 		{
-			var dev = DeviceManager.GetDeviceForKey(key);
-			if (dev == null) return;
-
-			var sensor = dev as CenOdtOccupancySensorBaseController;
-			if (sensor == null) return;
-
-			if (!sensor.Hardware.IsOnline)
-			{
-				Debug.Console(0, sensor.Key, "Sensor IsOnline: {0}", sensor.Hardware.IsOnline);
-				return;
-			}
-
 			var dash = new string('*', 50);
 			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
 
-			Debug.Console(0, sensor.Key, "Timeout Current: {0} | Remote: {1}",
-				sensor.CurrentTimeoutFeedback.UShortValue,
-				sensor.RemoteTimeoutFeedback.UShortValue);
+			Debug.Console(0, Key, "Timeout Current: {0} | Remote: {1}",
+				OccSensor.CurrentTimeoutFeedback.UShortValue,
+				OccSensor.RemoteTimeout.UShortValue);
 
-			Debug.Console(0, sensor.Key, "Short Timeout Enabled: {0}",
-				sensor.ShortTimeoutEnabledFeedback.BoolValue);
+			Debug.Console(0, Key, "Short Timeout Enabled: {0}",
+				OccSensor.ShortTimeoutEnabledFeedback.BoolValue);
 
-			Debug.Console(0, sensor.Key, "PIR Sensor Enabled: {0} | Sensitivity Occupied: {1} | Sensitivity Vacant: {2}",
-				sensor.PirSensorEnabledFeedback.BoolValue,
-				sensor.PirSensitivityInOccupiedStateFeedback.UShortValue,
-				sensor.PirSensitivityInVacantStateFeedback.UShortValue);
+			Debug.Console(0, Key, "PIR Sensor Enabled: {0} | Sensitivity Occupied: {1} | Sensitivity Vacant: {2}", 
+				OccSensor.PassiveInfraredSensorEnabledFeedback.BoolValue,
+				OccSensor.PassiveInfraredSensorSensitivityInOccupiedStateFeedback,
+				OccSensor.PassiveInfraredSensorSensitivityInVacantStateFeedback);
 
-			Debug.Console(0, sensor.Key, "Ultrasonic Enabled A: {0} | B: {1}",
-				sensor.UltrasonicAEnabledFeedback.BoolValue,
-				sensor.UltrasonicBEnabledFeedback.BoolValue);
+			Debug.Console(0, Key, "Ultrasonic Enabled A: {0} | B: {1}", 
+				OccSensor.UltrasonicSensorSideAEnabledFeedback.BoolValue,
+				OccSensor.UltrasonicSensorSideBEnabledFeedback.BoolValue);
 
-			Debug.Console(0, sensor.Key, "Ultrasonic Sensitivity Occupied: {0} | Vacant: {1}",
-				sensor.UltrasonicSensitivityInOccupiedStateFeedback.UShortValue,
-				sensor.UltrasonicSensitivityInVacantStateFeedback.UShortValue);
+			Debug.Console(0, Key, "Ultrasonic Sensitivity Occupied: {0} | Vacant: {1}",
+				OccSensor.UltrasonicSensorSensitivityInOccupiedStateFeedback,
+				OccSensor.UltrasonicSensorSensitivityInVacantStateFeedback);
 
 			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
 		}

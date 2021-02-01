@@ -70,11 +70,6 @@ namespace PepperDash.Essentials.Core
 				RegisterGlsOdtSensorBaseController(OccSensor);
 
 			});
-
-			CrestronConsole.AddNewConsoleCommand(GetSettings,
-				"occsensorstatus",
-				"Reports current occupancy sensor settings.  Requires a device key.",
-				ConsoleAccessLevelEnum.AccessOperator);
 		}
 
 		public GlsOccupancySensorBaseController(string key, string name) : base(key, name) { }
@@ -298,34 +293,26 @@ namespace PepperDash.Essentials.Core
 			OccSensor.ExternalPhotoSensorMinimumChange.UShortValue = value;
 		}
 
-		private static void GetSettings(string key)
+		/// <summary>
+		/// Method to print current occ settings to console.
+		/// </summary>
+		/// <param name="key"></param>
+		public void GetSettings()
 		{
-			var dev = DeviceManager.GetDeviceForKey(key);
-			if (dev == null) return;
-
-			var sensor = dev as GlsOccupancySensorBaseController;
-			if (sensor == null) return;
-
-			if (!sensor.Hardware.IsOnline)
-			{
-				Debug.Console(0, sensor.Key, "Sensor IsOnline: {0}", sensor.Hardware.IsOnline);
-				return;
-			}
-
 			var dash = new string('*', 50);
 			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
 
-			Debug.Console(0, sensor.Key, "Timeout Current: {0} | Local: {1}",
-				sensor.CurrentTimeoutFeedback.UShortValue,
-				sensor.LocalTimoutFeedback.UShortValue);
+			Debug.Console(0, Key, "Timeout Current: {0} | Local: {1}",
+				OccSensor.CurrentTimeoutFeedback.UShortValue,
+				OccSensor.LocalTimeoutFeedback.UShortValue);
 
-			Debug.Console(0, sensor.Key, "Short Timeout Enabled: {0}",
-				sensor.ShortTimeoutEnabledFeedback.BoolValue);
+			Debug.Console(0, Key, "Short Timeout Enabled: {0}",
+				OccSensor.ShortTimeoutEnabledFeedback.BoolValue);
 
-			Debug.Console(0, sensor.Key, "PIR Sensor Enabled: {0} | Sensitivity Occupied: {1} | Sensitivity Vacant: {2}",
-				sensor.PirSensorEnabledFeedback.BoolValue,
-				sensor.PirSensitivityInOccupiedStateFeedback.UShortValue,
-				sensor.PirSensitivityInVacantStateFeedback.UShortValue);
+			Debug.Console(0, Key, "PIR Sensor Enabled: {0} | Sensitivity Occupied: {1} | Sensitivity Vacant: {2}",
+				OccSensor.PirEnabledFeedback.BoolValue,
+				OccSensor.PirSensitivityInOccupiedStateFeedback.UShortValue,
+				OccSensor.PirSensitivityInVacantStateFeedback.UShortValue);
 
 			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
 		}
