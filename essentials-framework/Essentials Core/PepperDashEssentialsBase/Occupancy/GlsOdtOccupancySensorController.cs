@@ -66,6 +66,31 @@ namespace PepperDash.Essentials.Core
 			});		
 		}
 
+        protected override void ApplySettingsToSensorFromConfig()
+        {
+            base.ApplySettingsToSensorFromConfig();
+
+            if (PropertiesConfig.EnableUsA != null)
+            {
+                SetUsAEnable((bool)PropertiesConfig.EnableUsA);   
+            }
+
+            if (PropertiesConfig.EnableUsB != null)
+            {
+                SetUsBEnable((bool)PropertiesConfig.EnableUsB);
+            }
+
+            if (PropertiesConfig.OrWhenVacatedState != null)
+            {
+                SetOrWhenVacatedState((bool)PropertiesConfig.OrWhenVacatedState);
+            }
+
+            if (PropertiesConfig.AndWhenVacatedState != null)
+            {
+                SetAndWhenVacatedState((bool)PropertiesConfig.AndWhenVacatedState);
+            }
+        }
+
 		/// <summary>
 		/// Overrides the base class event delegate to fire feedbacks for event IDs that pertain to this extended class.
 		/// Then calls the base delegate method to ensure any common event IDs are captured.

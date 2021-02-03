@@ -18,6 +18,8 @@ namespace PepperDash.Essentials.Core
 	{
 		public CenOdtCPoe OccSensor { get; private set; }
 
+        public GlsOccupancySensorPropertiesConfig PropertiesConfig { get; private set; }
+
 		public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
 		public BoolFeedback GraceOccupancyDetectedFeedback { get; private set; }
@@ -71,9 +73,11 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		public CenOdtOccupancySensorBaseController(string key, string name, CenOdtCPoe sensor)
+		public CenOdtOccupancySensorBaseController(string key, string name, CenOdtCPoe sensor, GlsOccupancySensorPropertiesConfig config)
 			: base(key, name, sensor)
 		{
+            PropertiesConfig = config;
+
 			OccSensor = sensor;
 
 			RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
@@ -119,7 +123,63 @@ namespace PepperDash.Essentials.Core
 			OccSensor.BaseEvent += new Crestron.SimplSharpPro.BaseEventHandler(OccSensor_BaseEvent);
 
 			OccSensor.CenOccupancySensorChange += new GenericEventHandler(OccSensor_CenOccupancySensorChange);
+
+            AddPostActivationAction(() =>
+            {
+                ApplySettingsToSensorFromConfig();
+            });
 		}
+
+        /// <summary>
+        /// Applies any sensor settings defined in config 
+        /// </summary>
+        protected virtual void ApplySettingsToSensorFromConfig()
+        {
+            if (PropertiesConfig.EnablePir != null)
+            {
+                SetPirEnable((bool)PropertiesConfig.EnablePir);
+            }
+
+            if (PropertiesConfig.EnableLedFlash != null)
+            {
+                SetLedFlashEnable((bool)PropertiesConfig.EnableLedFlash);
+            }
+
+            if (PropertiesConfig.ShortTimeoutState != null)
+            {
+                SetShortTimeoutState((bool)PropertiesConfig.ShortTimeoutState);
+            }
+
+            if (PropertiesConfig.EnableRawStates != null)
+            {
+                EnableRawStates((bool)PropertiesConfig.EnableRawStates);
+            }
+
+            if (PropertiesConfig.InternalPhotoSensorMinChange != null)
+            {
+                SetInternalPhotoSensorMinChange((ushort)PropertiesConfig.InternalPhotoSensorMinChange);
+            }
+
+            if (PropertiesConfig.EnableUsA != null)
+            {
+                SetUsAEnable((bool)PropertiesConfig.EnableUsA);
+            }
+
+            if (PropertiesConfig.EnableUsB != null)
+            {
+                SetUsBEnable((bool)PropertiesConfig.EnableUsB);
+            }
+
+            if (PropertiesConfig.OrWhenVacatedState != null)
+            {
+                SetOrWhenVacatedState((bool)PropertiesConfig.OrWhenVacatedState);
+            }
+
+            if (PropertiesConfig.AndWhenVacatedState != null)
+            {
+                SetAndWhenVacatedState((bool)PropertiesConfig.AndWhenVacatedState);
+            }
+        }
 
 		/// <summary>
 		/// Catches events for feedbacks on the base class.  Any extending wrapper class should call this delegate after it checks for it's own event IDs.
@@ -584,6 +644,8 @@ namespace PepperDash.Essentials.Core
 				var name = dc.Name;
 				var comm = CommFactory.GetControlPropertiesConfig(dc);
 
+                var props = dc.Properties.ToObject<GlsOccupancySensorPropertiesConfig>();
+
 				var occSensor = new CenOdtCPoe(comm.IpIdInt, Global.ControlSystem);
 
 				if (occSensor == null)
@@ -592,7 +654,7 @@ namespace PepperDash.Essentials.Core
 					return null;
 				}
 
-				return new CenOdtOccupancySensorBaseController(key, name, occSensor);
+				return new CenOdtOccupancySensorBaseController(key, name, occSensor, props);
 			}
 		}
 	}

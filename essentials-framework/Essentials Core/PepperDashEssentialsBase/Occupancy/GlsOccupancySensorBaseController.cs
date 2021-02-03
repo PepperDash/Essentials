@@ -16,6 +16,8 @@ namespace PepperDash.Essentials.Core
 	[Description("Wrapper class for Single Technology GLS Occupancy Sensors")]
 	public class GlsOccupancySensorBaseController : CrestronGenericBridgeableBaseDevice, IOccupancyStatusProvider
 	{
+        public GlsOccupancySensorPropertiesConfig PropertiesConfig { get; private set; }
+
 		public GlsOccupancySensorBase OccSensor { get; private set; }
 
 		public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
@@ -60,6 +62,7 @@ namespace PepperDash.Essentials.Core
 			: base(key, config.Name)
 		{
 
+            PropertiesConfig = config.Properties.ToObject<GlsOccupancySensorPropertiesConfig>();
 
 			AddPreActivationAction(() =>
 			{
@@ -70,9 +73,52 @@ namespace PepperDash.Essentials.Core
 				RegisterGlsOdtSensorBaseController(OccSensor);
 
 			});
+
+            AddPostActivationAction(() =>
+            {
+                ApplySettingsToSensorFromConfig();
+            });
+        
 		}
 
 		public GlsOccupancySensorBaseController(string key, string name) : base(key, name) { }
+
+
+        /// <summary>
+        /// Applies any sensor settings defined in config 
+        /// </summary>
+        protected virtual void ApplySettingsToSensorFromConfig()
+        {
+            if (PropertiesConfig.EnablePir != null)
+            {
+                SetPirEnable((bool)PropertiesConfig.EnablePir);
+            }
+
+            if (PropertiesConfig.EnableLedFlash != null)
+            {
+                SetLedFlashEnable((bool)PropertiesConfig.EnableLedFlash);
+            }
+
+            if (PropertiesConfig.ShortTimeoutState != null)
+            {
+                SetShortTimeoutState((bool)PropertiesConfig.ShortTimeoutState);
+            }
+
+            if (PropertiesConfig.EnableRawStates != null)
+            {
+                EnableRawStates((bool)PropertiesConfig.EnableRawStates);
+            }
+
+            if (PropertiesConfig.InternalPhotoSensorMinChange != null)
+            {
+                SetInternalPhotoSensorMinChange((ushort)PropertiesConfig.InternalPhotoSensorMinChange);
+            }
+
+            if (PropertiesConfig.ExternalPhotoSensorMinChange != null)
+            {
+                SetExternalPhotoSensorMinChange((ushort)PropertiesConfig.ExternalPhotoSensorMinChange);
+            }
+        }
 
 		protected void RegisterGlsOdtSensorBaseController(GlsOccupancySensorBase occSensor)
 		{
