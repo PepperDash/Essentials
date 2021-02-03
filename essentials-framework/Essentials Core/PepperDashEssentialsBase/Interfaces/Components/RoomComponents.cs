@@ -102,7 +102,7 @@ namespace PepperDash.Essentials.Core.Interfaces.Components
     /// Describes a group of room behaviour component.  Is able to contain a collection of components that aggregate
     /// together to behave as one
     /// </summary>
-    public interface IRoomBehaviourGroupComponent
+    public interface IRoomBehaviourGroupComponent : IRoomComponent
     {
         /// <summary>
         /// A collection of components that work together to achieve a common behaviour

@@ -228,6 +228,9 @@
     <Compile Include="Interfaces\Components\RoomComponents.cs" />
     <Compile Include="Interfaces\ILogStrings.cs" />
     <Compile Include="Interfaces\ILogStringsWithLevel.cs" />
+    <Compile Include="Interfaces\Room\IHasMobileControl.cs" />
+    <Compile Include="Interfaces\Room\IHasRoomOccupancyStatusProvider.cs" />
+    <Compile Include="Interfaces\Room\IHasRoomOn.cs" />
     <Compile Include="Queues\ComsMessage.cs" />
     <Compile Include="Queues\ProcessStringMessage.cs" />
     <Compile Include="Queues\GenericQueue.cs" />

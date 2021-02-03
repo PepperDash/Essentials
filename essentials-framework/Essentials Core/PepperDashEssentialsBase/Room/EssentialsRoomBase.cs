@@ -203,7 +203,7 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
-        /// 
+        /// Starts the Shutdown process based on the type
         /// </summary>
         /// <param name="type"></param>
         public void StartShutdown(eShutdownType type)
