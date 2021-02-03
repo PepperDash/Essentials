@@ -23,14 +23,14 @@ namespace PepperDash.Essentials.Core.Interfaces.Room
         /// <summary>
         /// Timer used for informing the UIs of a shutdown
         /// </summary>        
-        SecondsCountdownTimer ShutdownPromptTimer { get; private set; }
+        SecondsCountdownTimer ShutdownPromptTimer { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        int ShutdownPromptSeconds { get; set; }
-        int ShutdownVacancySeconds { get; set; }
-        eShutdownType ShutdownType { get; private set; }
+        int ShutdownPromptSeconds { get; }
+        int ShutdownVacancySeconds { get; }
+        eShutdownType ShutdownType { get; }
 
 
         /// <summary>
