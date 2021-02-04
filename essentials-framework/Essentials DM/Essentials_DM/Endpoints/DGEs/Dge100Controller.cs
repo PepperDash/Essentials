@@ -44,7 +44,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
             DeviceInfo = new DeviceInfo();
 
-            //_dge.OnlineStatusChange += (currentDevice, args) => { if (args.DeviceOnLine) UpdateDeviceInfo(); };
+            _dge.OnlineStatusChange += (currentDevice, args) => { if (args.DeviceOnLine) UpdateDeviceInfo(); };
 
             _dc = dc;
 
@@ -123,29 +123,56 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
             gather.LineReceived += (sender, args) =>
             {
-                if (args.Text.ToLower().Contains("host"))
+                try
                 {
-                    DeviceInfo.HostName = args.Text.Split(';')[1].Trim();
+                    Debug.Console(1, this, "{0}", args.Text);
 
-                    tcpClient.Disconnect();
-                    return;
+                    if (args.Text.ToLower().Contains("host"))
+                    {
+                        DeviceInfo.HostName = args.Text.Split(':')[1].Trim();
+
+                        Debug.Console(1, this, "hostname: {0}", DeviceInfo.HostName);
+                        tcpClient.Disconnect();
+                        return;
+                    }
+
+                    //ignore console prompt
+                    /*if (args.Text.ToLower().Contains(">"))
+                    {
+                        Debug.Console(1, this, "Ignoring console");
+                        return;
+                    }
+
+                    if (args.Text.ToLower().Contains("dge"))
+                    {
+                        Debug.Console(1, this, "Ignoring DGE");
+                        return;
+                    }*/
+
+                    if (!args.Text.Contains('['))
+                    {
+                        return;
+                    }
+                    var splitResponse = args.Text.Split('[');
+
+                    foreach (string t in splitResponse)
+                    {
+                        Debug.Console(1, this, "{0}", t);
+                    }
+
+                    DeviceInfo.SerialNumber = splitResponse[1].Split(' ')[4].Replace("#", "");
+                    DeviceInfo.FirmwareVersion = splitResponse[1].Split(' ')[0];
+
+                    Debug.Console(1, this, "Firmware: {0} SerialNumber: {1}", DeviceInfo.FirmwareVersion,
+                        DeviceInfo.SerialNumber);
+
+                    tcpClient.SendText("host\r\n");
                 }
-
-                //ignore console prompt
-                if (args.Text.ToLower().Contains(">"))
+                catch (Exception ex)
                 {
-                    return;
+                    Debug.Console(0, this, "Exception getting data: {0}", ex.Message);
+                    Debug.Console(0, this, "response: {0}", args.Text);
                 }
-
-                if (!args.Text.ToLower().Contains("dge"))
-                {
-                    return;
-                }
-
-                DeviceInfo.SerialNumber = args.Text.Split('[')[1].Split(' ')[4].Replace("#", "");
-                DeviceInfo.FirmwareVersion = args.Text.Split('[')[1].Split(' ')[1];
-
-                tcpClient.SendText("host\r\n");
             };
 
             tcpClient.Connect();
