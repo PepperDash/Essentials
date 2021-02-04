@@ -100,6 +100,11 @@ namespace PepperDash.Essentials.Core
                 SetLedFlashEnable((bool)PropertiesConfig.EnableLedFlash);
             }
 
+            if (PropertiesConfig.RemoteTimeout != null)
+            {
+                SetRemoteTimeout((ushort)PropertiesConfig.RemoteTimeout);
+            }
+
             if (PropertiesConfig.ShortTimeoutState != null)
             {
                 SetShortTimeoutState((bool)PropertiesConfig.ShortTimeoutState);
