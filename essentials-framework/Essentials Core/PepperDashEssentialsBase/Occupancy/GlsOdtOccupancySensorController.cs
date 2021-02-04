@@ -65,6 +65,8 @@ namespace PepperDash.Essentials.Core
 				UltrasonicSensitivityInOccupiedStateFeedback = new IntFeedback(() => OccSensor.UsSensitivityInOccupiedStateFeedback.UShortValue);
 
 			});		
+
+
 		}
 
         protected override void ApplySettingsToSensorFromConfig()
@@ -73,13 +75,25 @@ namespace PepperDash.Essentials.Core
 
             if (PropertiesConfig.EnableUsA != null)
             {
+                Debug.Console(1, this, "EnableUsA found, attempting to set value from config");
                 SetUsAEnable((bool)PropertiesConfig.EnableUsA);   
             }
+            else
+            {
+                Debug.Console(1, this, "EnableUsA null, no value specified in config");
+            }
+
 
             if (PropertiesConfig.EnableUsB != null)
             {
+                Debug.Console(1, this, "EnableUsB found, attempting to set value from config");
                 SetUsBEnable((bool)PropertiesConfig.EnableUsB);
             }
+            else
+            {
+                Debug.Console(1, this, "EnablePir null, no value specified in config");
+            }
+
 
             if (PropertiesConfig.OrWhenVacatedState != null)
             {

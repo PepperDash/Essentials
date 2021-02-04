@@ -127,8 +127,20 @@ namespace PepperDash.Essentials.Core
 
             AddPostActivationAction(() =>
             {
-                ApplySettingsToSensorFromConfig();
-            });
+                OccSensor.OnlineStatusChange += (o, a) =>
+                {
+                    if (a.DeviceOnLine)
+                    {
+                        ApplySettingsToSensorFromConfig();
+                    }
+                };
+
+                if (OccSensor.IsOnline)
+                {
+                    ApplySettingsToSensorFromConfig();
+
+                }
+            }); 
 		}
 
         /// <summary>

@@ -62,8 +62,16 @@ namespace PepperDash.Essentials.Core
 			DeviceConfig config)
 			: base(key, config.Name)
 		{
+            var props = config.Properties.ToObject<GlsOccupancySensorPropertiesConfig>();
 
-            PropertiesConfig = config.Properties.ToObject<GlsOccupancySensorPropertiesConfig>();
+            if (props != null)
+            {
+                PropertiesConfig = props;
+            }
+            else
+            {
+                Debug.Console(1, this, "props are null.  Unable to deserialize into GlsOccupancySensorPropertiesConfig");
+            }
 
 			AddPreActivationAction(() =>
 			{
@@ -77,12 +85,36 @@ namespace PepperDash.Essentials.Core
 
             AddPostActivationAction(() =>
             {
-                ApplySettingsToSensorFromConfig();
-            });
-        
+                OccSensor.OnlineStatusChange += (o, a) =>
+                {
+                    if (a.DeviceOnLine)
+                    {
+                        ApplySettingsToSensorFromConfig();
+                    }
+                };
+            });            
 		}
 
-		public GlsOccupancySensorBaseController(string key, string name) : base(key, name) { }
+		public GlsOccupancySensorBaseController(string key, string name)
+            : base(key, name) 
+        {
+            AddPostActivationAction(() =>
+                {
+                    OccSensor.OnlineStatusChange += (o, a) =>
+                    {
+                        if (a.DeviceOnLine)
+                        {
+                            ApplySettingsToSensorFromConfig();
+                        }
+                    };
+
+                    if (OccSensor.IsOnline)
+                    {
+                        ApplySettingsToSensorFromConfig();
+
+                    }
+                });
+        }
 
 
         /// <summary>
@@ -90,19 +122,32 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         protected virtual void ApplySettingsToSensorFromConfig()
         {
+            Debug.Console(1, this, "Attempting to apply settings to sensor from config");
+
             if (PropertiesConfig.EnablePir != null)
             {
+                Debug.Console(1, this, "EnablePir found, attempting to set value from config");
                 SetPirEnable((bool)PropertiesConfig.EnablePir);
+            }
+            else
+            {
+                Debug.Console(1, this, "EnablePir null, no value specified in config");
             }
 
             if (PropertiesConfig.EnableLedFlash != null)
             {
+                Debug.Console(1, this, "EnableLedFlash found, attempting to set value from config");
                 SetLedFlashEnable((bool)PropertiesConfig.EnableLedFlash);
             }
 
             if (PropertiesConfig.RemoteTimeout != null)
             {
+                Debug.Console(1, this, "RemoteTimeout found, attempting to set value from config");
                 SetRemoteTimeout((ushort)PropertiesConfig.RemoteTimeout);
+            }
+            else
+            {
+                Debug.Console(1, this, "RemoteTimeout null, no value specified in config");
             }
 
             if (PropertiesConfig.ShortTimeoutState != null)
@@ -247,6 +292,8 @@ namespace PepperDash.Essentials.Core
 		/// <param name="state"></param>
 		public void SetPirEnable(bool state)
 		{
+            Debug.Console(1, this, "Setting EnablePir to: {0}", state);
+
 			if (state)
 			{
 				OccSensor.EnablePir.BoolValue = state;
@@ -332,6 +379,8 @@ namespace PepperDash.Essentials.Core
 
 		public void SetRemoteTimeout(ushort time)
 		{
+            Debug.Console(1, this, "Setting RemoteTimout to: {0}", time);
+
 			OccSensor.RemoteTimeout.UShortValue = time;
 		}
 
