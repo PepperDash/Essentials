@@ -14,7 +14,8 @@ using PepperDash.Essentials.Core.Bridges;
 namespace PepperDash.Essentials.Core
 {
 	[Description("Wrapper class for Dual Technology GLS Occupancy Sensors")]
-	public class GlsOdtOccupancySensorController : GlsOccupancySensorBaseController
+    [ConfigSnippet("\"properties\": {\"control\": {\"method\": \"cresnet\",\"cresnetId\": \"97\"},\"enablePir\": true,\"enableLedFlash\": true,\"enableRawStates\":true,\"remoteTimeout\": 30,\"internalPhotoSensorMinChange\": 0,\"externalPhotoSensorMinChange\": 0,\"enableUsA\": true,\"enableUsB\": true,\"orWhenVacatedState\": true}")]
+    public class GlsOdtOccupancySensorController : GlsOccupancySensorBaseController
 	{
 		public new GlsOdtCCn OccSensor { get; private set; }
 
@@ -198,31 +199,19 @@ namespace PepperDash.Essentials.Core
 		/// <summary>
 		/// Method to print occ sensor settings to console.
 		/// </summary>
-		public void GetSettings()
+		public override void GetSettings()
 		{
-			var dash = new string('*', 50);
-			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
+            base.GetSettings();
 
-			Debug.Console(0, Key, "Timeout Current: {0} | Local: {1}",
-				OccSensor.CurrentTimeoutFeedback.UShortValue,
-				OccSensor.LocalTimeoutFeedback.UShortValue);
-
-			Debug.Console(0, Key, "Short Timeout Enabled: {0}",
-				OccSensor.ShortTimeoutEnabledFeedback.BoolValue);
-
-			Debug.Console(0, Key, "PIR Sensor Enabled: {0} | Sensitivity Occupied: {1} | Sensitivity Vacant: {2}",
-				OccSensor.PirEnabledFeedback.BoolValue,
-				OccSensor.PirSensitivityInOccupiedStateFeedback.UShortValue,
-				OccSensor.PirSensitivityInVacantStateFeedback.UShortValue);
-
-			Debug.Console(0, Key, "Ultrasonic Enabled A: {0} | B: {1}",
+			Debug.Console(0, this, "Ultrasonic Enabled A: {0} | B: {1}",
 				OccSensor.UsAEnabledFeedback.BoolValue,
 				OccSensor.UsBEnabledFeedback.BoolValue);
 
-			Debug.Console(0, Key, "Ultrasonic Sensitivity Occupied: {0} | Vacant: {1}",
+			Debug.Console(0, this, "Ultrasonic Sensitivity Occupied: {0} | Vacant: {1}",
 				OccSensor.UsSensitivityInOccupiedStateFeedback.UShortValue,
 				OccSensor.UsSensitivityInVacantStateFeedback.UShortValue);
 
+            var dash = new string('*', 50);
 			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
 		}
 

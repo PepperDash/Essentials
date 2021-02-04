@@ -14,6 +14,7 @@ using PepperDash.Essentials.Core.Bridges;
 namespace PepperDash.Essentials.Core
 {
 	[Description("Wrapper class for CEN-ODT-C-POE")]
+    [ConfigSnippet("\"properties\": {\"control\": {\"method\": \"cresnet\",\"cresnetId\": \"97\"},\"enablePir\": true,\"enableLedFlash\": true,\"enableRawStates\":true,\"remoteTimeout\": 30,\"internalPhotoSensorMinChange\": 0,\"externalPhotoSensorMinChange\": 0,\"enableUsA\": true,\"enableUsB\": true,\"orWhenVacatedState\": true}")]
 	public class CenOdtOccupancySensorBaseController : CrestronGenericBridgeableBaseDevice, IOccupancyStatusProvider
 	{
 		public CenOdtCPoe OccSensor { get; private set; }
@@ -135,6 +136,8 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         protected virtual void ApplySettingsToSensorFromConfig()
         {
+            Debug.Console(1, this, "Checking config for settings to apply");
+
             if (PropertiesConfig.EnablePir != null)
             {
                 SetPirEnable((bool)PropertiesConfig.EnablePir);
@@ -493,6 +496,9 @@ namespace PepperDash.Essentials.Core
 		{
 			var dash = new string('*', 50);
 			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
+
+            Debug.Console(0, this, "Vacancy Detected: {0}",
+                OccSensor.VacancyDetectedFeedback.BoolValue);
 
 			Debug.Console(0, Key, "Timeout Current: {0} | Remote: {1}",
 				OccSensor.CurrentTimeoutFeedback.UShortValue,

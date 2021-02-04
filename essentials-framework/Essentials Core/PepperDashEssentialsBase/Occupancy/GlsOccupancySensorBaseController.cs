@@ -14,6 +14,7 @@ using PepperDash.Essentials.Core.Bridges;
 namespace PepperDash.Essentials.Core
 {
 	[Description("Wrapper class for Single Technology GLS Occupancy Sensors")]
+    [ConfigSnippet("\"properties\": {\"control\": {\"method\": \"cresnet\",\"cresnetId\": \"97\"},\"enablePir\": true,\"enableLedFlash\": true,\"enableRawStates\":true,\"remoteTimeout\": 30,\"internalPhotoSensorMinChange\": 0,\"externalPhotoSensorMinChange\": 0}")]
 	public class GlsOccupancySensorBaseController : CrestronGenericBridgeableBaseDevice, IOccupancyStatusProvider
 	{
         public GlsOccupancySensorPropertiesConfig PropertiesConfig { get; private set; }
@@ -343,19 +344,22 @@ namespace PepperDash.Essentials.Core
 		/// Method to print current occ settings to console.
 		/// </summary>
 		/// <param name="key"></param>
-		public void GetSettings()
+		public virtual void GetSettings()
 		{
 			var dash = new string('*', 50);
 			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
 
-			Debug.Console(0, Key, "Timeout Current: {0} | Local: {1}",
+            Debug.Console(0, this, "Vacancy Detected: {0}",
+                OccSensor.VacancyDetectedFeedback.BoolValue);
+
+			Debug.Console(0, this, "Timeout Current: {0} | Local: {1}",
 				OccSensor.CurrentTimeoutFeedback.UShortValue,
 				OccSensor.LocalTimeoutFeedback.UShortValue);
 
-			Debug.Console(0, Key, "Short Timeout Enabled: {0}",
+			Debug.Console(0, this, "Short Timeout Enabled: {0}",
 				OccSensor.ShortTimeoutEnabledFeedback.BoolValue);
 
-			Debug.Console(0, Key, "PIR Sensor Enabled: {0} | Sensitivity Occupied: {1} | Sensitivity Vacant: {2}",
+			Debug.Console(0, this, "PIR Sensor Enabled: {0} | Sensitivity Occupied: {1} | Sensitivity Vacant: {2}",
 				OccSensor.PirEnabledFeedback.BoolValue,
 				OccSensor.PirSensitivityInOccupiedStateFeedback.UShortValue,
 				OccSensor.PirSensitivityInVacantStateFeedback.UShortValue);
