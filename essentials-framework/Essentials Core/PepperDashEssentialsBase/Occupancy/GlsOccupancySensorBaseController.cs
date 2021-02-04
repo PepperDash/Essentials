@@ -95,9 +95,21 @@ namespace PepperDash.Essentials.Core
             });            
 		}
 
-		public GlsOccupancySensorBaseController(string key, string name)
+		public GlsOccupancySensorBaseController(string key, string name, DeviceConfig config)
             : base(key, name) 
         {
+
+            var props = config.Properties.ToObject<GlsOccupancySensorPropertiesConfig>();
+
+            if (props != null)
+            {
+                PropertiesConfig = props;
+            }
+            else
+            {
+                Debug.Console(1, this, "props are null.  Unable to deserialize into GlsOccupancySensorPropertiesConfig");
+            }
+
             AddPostActivationAction(() =>
                 {
                     OccSensor.OnlineStatusChange += (o, a) =>

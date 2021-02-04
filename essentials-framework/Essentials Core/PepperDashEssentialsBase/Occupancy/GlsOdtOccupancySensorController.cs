@@ -38,7 +38,7 @@ namespace PepperDash.Essentials.Core
 
 		public GlsOdtOccupancySensorController(string key, Func<DeviceConfig, GlsOdtCCn> preActivationFunc,
 			DeviceConfig config)
-			: base(key, config.Name)
+			: base(key, config.Name, config)
 		{
 			AddPreActivationAction(() =>
 			{
