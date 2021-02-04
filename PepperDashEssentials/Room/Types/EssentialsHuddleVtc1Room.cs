@@ -597,12 +597,21 @@ namespace PepperDash.Essentials
                         if (VideoCodec.UsageTracker.InUseTracker.InUseFeedback.BoolValue)
                         {
                             Debug.Console(1, this, "Video Codec in use, deactivating standby on codec");
+                            VideoCodec.StandbyDeactivate();
                         }
 
                         if (VideoCodec.StandbyIsOnFeedback.BoolValue)
                         {
                             VideoCodec.StandbyDeactivate();
                         }
+                        else
+                        {
+                            Debug.Console(1, this, "Video codec not in standby. No need to wake.");
+                        }
+                    }
+                    else
+                    {
+                        Debug.Console(1, this, "Room OnFeedback state: {0}", OnFeedback.BoolValue);
                     }
 
                     // report back when done
