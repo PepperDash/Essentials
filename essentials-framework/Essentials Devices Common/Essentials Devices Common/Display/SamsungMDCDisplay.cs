@@ -149,7 +149,7 @@ namespace PepperDash.Essentials.Devices.Displays
 		public override bool CustomActivate()
 		{
 			Communication.Connect();
-			CommunicationMonitor.StatusChange += (o, a) => { Debug.Console(2, this, "Communication monitor state: {0}", CommunicationMonitor.Status); };
+			CommunicationMonitor.StatusChange += (o, a) => Debug.Console(2, this, "Communication monitor state: {0}", CommunicationMonitor.Status);
 			CommunicationMonitor.Start();
 			return true;
 		}
@@ -187,9 +187,6 @@ namespace PepperDash.Essentials.Devices.Displays
                 var newBytes = new byte[IncomingBuffer.Length + e.Bytes.Length];
                 IncomingBuffer.CopyTo(newBytes, 0);
                 e.Bytes.CopyTo(newBytes, IncomingBuffer.Length);
-
-                if (Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
-                    Debug.Console(2, this, "Received:{0}", ComTextHelper.GetEscapedText(newBytes));
 
                 // Need to find AA FF and have 
                 for (int i = 0; i < newBytes.Length; i++)
@@ -364,8 +361,6 @@ namespace PepperDash.Essentials.Devices.Displays
             }
             checksum = checksum & 0x000000FF; // mask off MSBs
             b[b.Length - 1] = (byte)checksum;
-            if(Debug.Level == 2) // This check is here to prevent following string format from building unnecessarily on level 0 or 1
-                Debug.Console(2, this, "Sending:{0}", ComTextHelper.GetEscapedText(b));
 
             if (b[1] == 0x12)
                 LastCommandSentWasVolume = true;
