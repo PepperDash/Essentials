@@ -44,7 +44,7 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
 
             DeviceInfo = new DeviceInfo();
 
-            //_dge.OnlineStatusChange += (currentDevice, args) => { if (args.DeviceOnLine) UpdateDeviceInfo(); };
+            _dge.OnlineStatusChange += (currentDevice, args) => { if (args.DeviceOnLine) UpdateDeviceInfo(); };
 
             _dc = dc;
 
@@ -108,6 +108,8 @@ namespace PepperDash.Essentials.DM.Endpoints.DGEs
             }
 
             var tcpClient = new GenericTcpIpClient("", _dgeEthernetInfo.IpAddressFeedback.StringValue, CtpPort, 1024){AutoReconnect = false};
+
+            tcpClient.StreamDebugging.SetDebuggingWithDefaultTimeout(eStreamDebuggingSetting.Rx);
 
             var gather = new CommunicationGather(tcpClient, "\r\n\r\n");
 
