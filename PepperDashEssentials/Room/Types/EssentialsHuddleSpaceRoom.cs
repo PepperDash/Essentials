@@ -201,10 +201,24 @@ namespace PepperDash.Essentials
                     IsCoolingDownFeedback.FireUpdate(); 
                 };
             }
+
+            SetSourceListKey();
           
-			SourceListKey = "default";
 			EnablePowerOnToLastSource = true;
    		}
+
+        private void SetSourceListKey()
+        {
+            if (!string.IsNullOrEmpty(PropertiesConfig.SourceListKey))
+            {
+                SetSourceListKey(PropertiesConfig.SourceListKey);
+            }
+            else
+            {
+                SetSourceListKey(Key);
+            }
+
+        }
 
         protected override void CustomSetConfig(DeviceConfig config)
         {
@@ -256,7 +270,6 @@ namespace PepperDash.Essentials
 
             this.LogoUrlLightBkgnd = PropertiesConfig.LogoLight.GetLogoUrlLight();
             this.LogoUrlDarkBkgnd = PropertiesConfig.LogoDark.GetLogoUrlDark();
-            this.SourceListKey = PropertiesConfig.SourceListKey;
             this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
             this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
 

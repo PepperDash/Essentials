@@ -274,8 +274,21 @@ namespace PepperDash.Essentials
 
             CallTypeFeedback = new IntFeedback(() => 0);
 
-            SourceListKey = "default";
+            SetSourceListKey();
             EnablePowerOnToLastSource = true;
+        }
+
+        private void SetSourceListKey()
+        {
+            if (!string.IsNullOrEmpty(PropertiesConfig.SourceListKey))
+            {
+                SetSourceListKey(PropertiesConfig.SourceListKey);
+            }
+            else
+            {
+                SetSourceListKey(Key);
+            }
+
         }
 
         void InitializeDisplay(DisplayBase disp)
@@ -333,7 +346,6 @@ namespace PepperDash.Essentials
 
             this.LogoUrlLightBkgnd = PropertiesConfig.LogoLight.GetLogoUrlLight();
             this.LogoUrlDarkBkgnd = PropertiesConfig.LogoDark.GetLogoUrlDark();
-            this.SourceListKey = PropertiesConfig.SourceListKey;
             this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
             this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
 
