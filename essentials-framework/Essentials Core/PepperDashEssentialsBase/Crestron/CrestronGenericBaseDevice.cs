@@ -130,6 +130,12 @@ namespace PepperDash.Essentials.Core
 		void Hardware_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
 		{
             Debug.Console(2, this, "OnlineStatusChange Event.  Online = {0}", args.DeviceOnLine);
+
+            if (!Hardware.Registered)
+            {
+                return;  // protects in cases where device has been unregistered and feedbacks would attempt to access null sigs.
+            }
+
             foreach (var feedback in Feedbacks)
             {
                 if (feedback != null)
