@@ -76,7 +76,16 @@ namespace PepperDash_Essentials_Core.Queues
         {
         }
 
-
+        /// <summary>
+        /// Constructor with pacing and capacity
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="pacing"></param>
+        /// <param name="capacity"></param>
+        public GenericQueue(string key, int pacing, int capacity)
+            : this(key, _defaultPriority, capacity, pacing)
+        {
+        }
 
         /// <summary>
         /// Constructor with pacing and priority
