@@ -18,42 +18,52 @@ namespace PepperDash_Essentials_Core.Queues
         private bool _delayEnabled;
         private int _delayTime;
 
+        private const Thread.eThreadPriority _defaultPriority = Thread.eThreadPriority.MediumPriority;
+
         /// <summary>
         /// If the instance has been disposed.
         /// </summary>
         public bool Disposed { get; private set; }
 
         /// <summary>
+        /// Returns the capacity of the CrestronQueue (fixed Size property)
+        /// </summary>
+        public int QueueCapacity
+        {
+            get
+            {
+                return _queue.Size;
+            }
+        }
+
+        /// <summary>
+        /// Returns the number of elements currently in the CrestronQueue
+        /// </summary>    
+        public int QueueCount
+        {
+            get
+            {
+                return _queue.Count;
+            }
+        }
+
+        /// <summary>
         /// Constructor with no thread priority
         /// </summary>
         /// <param name="key"></param>
         public GenericQueue(string key)
-            : this(key, Thread.eThreadPriority.MediumPriority)
+            : this(key, _defaultPriority, 0, 0)
         {
-
         }
 
         /// <summary>
-        /// Constructor for generic queue with no pacing
+        /// Constructor with queue size
         /// </summary>
-        /// <param name="key">Key</param>
-        /// <param name="priority"></param>
-        public GenericQueue(string key, Thread.eThreadPriority priority)
+        /// <param name="key"></param>
+        /// <param name="capacity">Fixed size for the queue to hold</param>
+        public GenericQueue(string key, int capacity)
+            : this(key, _defaultPriority, capacity, 0)
         {
-            _key = key;
-            _queue = new CrestronQueue<IQueueMessage>(25);
-            _worker = new Thread(ProcessQueue, null, Thread.eThreadStartOptions.Running)
-                {
-                    Priority = priority
-                };
-
-            CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
-            {
-                if (programEvent != eProgramStatusEventType.Stopping)
-                    return;
-
-                Dispose();
-            };
         }
 
         /// <summary>
@@ -61,11 +71,12 @@ namespace PepperDash_Essentials_Core.Queues
         /// </summary>
         /// <param name="key">Key</param>
         /// <param name="pacing">Pacing in ms between actions</param>
-        public GenericQueue(string key, int pacing)
-            : this(key)
+        public GenericQueue(int pacing, string key)
+            : this(key, _defaultPriority, 0, pacing)
         {
-            SetDelayValues(pacing);
         }
+
+
 
         /// <summary>
         /// Constructor with pacing and priority
@@ -74,8 +85,52 @@ namespace PepperDash_Essentials_Core.Queues
         /// <param name="pacing"></param>
         /// <param name="priority"></param>
         public GenericQueue(string key, int pacing, Thread.eThreadPriority priority)
-            : this(key, priority)
+            : this(key, priority, 0, pacing)
         {
+        }
+
+        /// <summary>
+        /// Constructor with pacing, priority and capacity
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="priority"></param>
+        /// <param name="capacity"></param>
+        public GenericQueue(string key, Thread.eThreadPriority priority, int capacity)
+            : this(key, priority, capacity, 0)
+        {
+        }
+
+        /// <summary>
+        /// Constructor with pacing, priority and capacity
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="pacing"></param>
+        /// <param name="priority"></param>
+        /// <param name="capacity"></param>
+        public GenericQueue(string key, int pacing, Thread.eThreadPriority priority, int capacity)
+            : this(key, priority, capacity, pacing)
+        {
+        }
+
+        /// <summary>
+        /// Constructor for generic queue with no pacing
+        /// </summary>
+        /// <param name="key">Key</param>
+        /// <param name="priority"></param>
+        private GenericQueue(string key, Thread.eThreadPriority priority, int capacity, int pacing)
+        {
+            _key = key;
+            int cap = 25; // sets default
+            if (capacity > 0)
+            {
+                cap = capacity; // overrides default
+            }
+            _queue = new CrestronQueue<IQueueMessage>(cap);
+            _worker = new Thread(ProcessQueue, null, Thread.eThreadStartOptions.Running)
+            {
+                Priority = priority
+            };
+
             SetDelayValues(pacing);
         }
 
@@ -83,6 +138,14 @@ namespace PepperDash_Essentials_Core.Queues
         {
             _delayEnabled = pacing > 0;
             _delayTime = pacing;
+
+            CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
+            {
+                if (programEvent != eProgramStatusEventType.Stopping)
+                    return;
+
+                Dispose();
+            };
         }
         
         /// <summary>
