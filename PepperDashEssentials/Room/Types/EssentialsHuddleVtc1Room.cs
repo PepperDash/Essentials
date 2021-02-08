@@ -51,20 +51,6 @@ namespace PepperDash.Essentials
 
         //************************
 
-		public override string SourceListKey
-		{
-			get
-			{
-				return _SourceListKey;
-			}
-			set
-			{
-				_SourceListKey = value;
-				SetCodecExternalSources();
-				
-			}
-		}
-
         protected override Func<bool> OnFeedbackFunc
         {
             get
@@ -338,7 +324,8 @@ namespace PepperDash.Essentials
 
                 CallTypeFeedback = new IntFeedback(() => 0);
 
-                SourceListKey = "default";
+                SetSourceListKey();
+
                 EnablePowerOnToLastSource = true;
             }
             catch (Exception e)
@@ -346,6 +333,21 @@ namespace PepperDash.Essentials
                 Debug.Console(0, this, "Error Initializing Room: {0}", e);
             }
    		}
+
+
+        private void SetSourceListKey()
+        {
+            if (!string.IsNullOrEmpty(PropertiesConfig.SourceListKey))
+            {
+                SetSourceListKey(PropertiesConfig.SourceListKey);
+            }
+            else
+            {
+                SetSourceListKey(Key);
+            }
+
+			SetCodecExternalSources();
+        }
 
         protected override void CustomSetConfig(DeviceConfig config)
         {
@@ -376,6 +378,8 @@ namespace PepperDash.Essentials
 			
             return base.CustomActivate();
         }
+
+        
 
         /// <summary>
         /// 
