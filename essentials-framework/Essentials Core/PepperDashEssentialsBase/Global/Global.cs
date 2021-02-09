@@ -26,6 +26,8 @@ namespace PepperDash.Essentials.Core
 
 		public static LicenseManager LicenseManager { get; set; }
 
+        public static eCrestronSeries ProcessorSeries { get { return CrestronEnvironment.ProgramCompatibility; } }
+
         /// <summary>
         /// The file path prefix to the folder containing configuration files
         /// </summary>

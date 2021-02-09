@@ -130,7 +130,7 @@ namespace PepperDash.Essentials
 
                 if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", Global.AssemblyVersion);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on {1} Appliance", Global.AssemblyVersion, Global.ProcessorSeries.ToString());
 
                     // Check if User/ProgramX exists
                     if (Directory.Exists(Global.ApplicationDirectoryPathPrefix + dirSeparator + "User"
