@@ -323,7 +323,12 @@ namespace PepperDash.Essentials
                     // Skip this to prevent unnecessary warnings
                     if (devConf.Key == "processor")
                     {
-                        if (devConf.Type.ToLower() != Global.ControlSystem.ControllerPrompt.ToLower())
+                        var prompt = Global.ControlSystem.ControllerPrompt;
+
+                        var typeMatch = String.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) &&
+                                        String.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
+
+                        if (!typeMatch)
                             Debug.Console(0,
                                 "WARNING: Config file defines processor type as '{0}' but actual processor is '{1}'!  Some ports may not be available",
                                 devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
