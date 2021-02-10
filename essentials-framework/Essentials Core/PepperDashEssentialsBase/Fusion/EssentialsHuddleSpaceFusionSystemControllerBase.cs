@@ -1676,20 +1676,46 @@ namespace PepperDash.Essentials.Core.Fusion
         public static FusionStaticAsset CreateStaticAsset(this FusionRoom fr, uint number, string name, string type,
             string instanceId)
         {
-            Debug.Console(0, "Adding Fusion Static Asset '{0}' to slot {1} with GUID: '{2}'", name, number, instanceId);
+            try
+            {
+                Debug.Console(0, "Adding Fusion Static Asset '{0}' to slot {1} with GUID: '{2}'", name, number, instanceId);
 
-            fr.AddAsset(eAssetType.StaticAsset, number, name, type, instanceId);
-            return fr.UserConfigurableAssetDetails[number].Asset as FusionStaticAsset;
+                fr.AddAsset(eAssetType.StaticAsset, number, name, type, instanceId);
+                return fr.UserConfigurableAssetDetails[number].Asset as FusionStaticAsset;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Error creating Static Asset for device: '{0}'.  Check that multiple devices don't have missing or duplicate uid properties in configuration. /r/nError: {1}", name, ex);
+                return null;
+            }
+            catch (Exception e)
+            {
+                Debug.Console(2, Debug.ErrorLogLevel.Error, "Error creating Static Asset: {0}", e);
+                return null;
+            }
         }
 
         public static FusionOccupancySensor CreateOccupancySensorAsset(this FusionRoom fr, uint number, string name,
             string type, string instanceId)
         {
-            Debug.Console(0, "Adding Fusion Occupancy Sensor Asset '{0}' to slot {1} with GUID: '{2}'", name, number,
-                instanceId);
+            try
+            {
+                Debug.Console(0, "Adding Fusion Occupancy Sensor Asset '{0}' to slot {1} with GUID: '{2}'", name, number,
+                    instanceId);
 
-            fr.AddAsset(eAssetType.OccupancySensor, number, name, type, instanceId);
-            return fr.UserConfigurableAssetDetails[number].Asset as FusionOccupancySensor;
+                fr.AddAsset(eAssetType.OccupancySensor, number, name, type, instanceId);
+                return fr.UserConfigurableAssetDetails[number].Asset as FusionOccupancySensor;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Error creating Static Asset for device: '{0}'.  Check that multiple devices don't have missing or duplicate uid properties in configuration.  Error: {1}", name, ex);
+                return null;
+            }
+            catch (Exception e)
+            {
+                Debug.Console(2, Debug.ErrorLogLevel.Error, "Error creating Static Asset: {0}", e);
+                return null;
+            }
         }
     }
 

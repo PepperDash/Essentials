@@ -130,7 +130,7 @@ namespace PepperDash.Essentials
 
                 if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", Global.AssemblyVersion);
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on {1} Appliance", Global.AssemblyVersion, Global.ProcessorSeries.ToString());
 
                     // Check if User/ProgramX exists
                     if (Directory.Exists(Global.ApplicationDirectoryPathPrefix + dirSeparator + "User"
@@ -323,7 +323,12 @@ namespace PepperDash.Essentials
                     // Skip this to prevent unnecessary warnings
                     if (devConf.Key == "processor")
                     {
-                        if (devConf.Type.ToLower() != Global.ControlSystem.ControllerPrompt.ToLower())
+                        var prompt = Global.ControlSystem.ControllerPrompt;
+
+                        var typeMatch = String.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) &&
+                                        String.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
+
+                        if (!typeMatch)
                             Debug.Console(0,
                                 "WARNING: Config file defines processor type as '{0}' but actual processor is '{1}'!  Some ports may not be available",
                                 devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
