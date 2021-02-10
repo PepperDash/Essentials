@@ -71,8 +71,16 @@ namespace PepperDash.Essentials.Fusion
 
                     var dispAsset = FusionRoom.CreateStaticAsset(tempAsset.SlotNumber, tempAsset.Name, "Display",
                         tempAsset.InstanceId);
-                    dispAsset.PowerOn.OutputSig.UserObject = dispPowerOnAction;
-                    dispAsset.PowerOff.OutputSig.UserObject = dispPowerOffAction;
+
+                    if (dispAsset != null)
+                    {
+                        dispAsset.PowerOn.OutputSig.UserObject = dispPowerOnAction;
+                        dispAsset.PowerOff.OutputSig.UserObject = dispPowerOffAction;
+
+                        // Use extension methods
+                        dispAsset.TrySetMakeModel(disp);
+                        dispAsset.TryLinkAssetErrorToCommunication(disp);
+                    }
 
                     var defaultTwoWayDisplay = disp as IHasPowerControlWithFeedback;
                     if (defaultTwoWayDisplay != null)
@@ -83,12 +91,10 @@ namespace PepperDash.Essentials.Fusion
                             (disp as IDisplayUsage).LampHours.LinkInputSig(FusionRoom.DisplayUsage.InputSig);
                         }
 
-                        defaultTwoWayDisplay.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
+                        if(dispAsset != null)
+                            defaultTwoWayDisplay.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
                     }
 
-                    // Use extension methods
-                    dispAsset.TrySetMakeModel(disp);
-                    dispAsset.TryLinkAssetErrorToCommunication(disp);
                 }
             }
             catch (Exception e)

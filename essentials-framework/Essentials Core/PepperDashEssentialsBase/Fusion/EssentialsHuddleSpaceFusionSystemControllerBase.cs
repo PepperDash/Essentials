@@ -1685,7 +1685,7 @@ namespace PepperDash.Essentials.Core.Fusion
             }
             catch (InvalidOperationException ex)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Error creating Static Asset for device: '{0}'.  Check that multiple devices don't have missing or duplicate uid properties in configuration.  Error: {1}", name, ex);
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "Error creating Static Asset for device: '{0}'.  Check that multiple devices don't have missing or duplicate uid properties in configuration. /r/nError: {1}", name, ex);
                 return null;
             }
             catch (Exception e)
