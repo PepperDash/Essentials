@@ -30,27 +30,29 @@ namespace PepperDash.Essentials.Fusion
 
                 foreach (var display in displays.Values.Cast<DisplayBase>())
                 {
-                    Debug.Console(2, this, "Setting up Static Asset for {0}", display.Key);
+                    var disp = display; // Local scope variable
 
-                    display.UsageTracker = new UsageTracking(display) { UsageIsTracked = true };
-                    display.UsageTracker.DeviceUsageEnded += UsageTracker_DeviceUsageEnded;
+                    Debug.Console(2, this, "Setting up Static Asset for {0}", disp.Key);
+
+                    disp.UsageTracker = new UsageTracking(disp) { UsageIsTracked = true };
+                    disp.UsageTracker.DeviceUsageEnded += UsageTracker_DeviceUsageEnded;
 
                     var dispPowerOnAction = new Action<bool>(b =>
                     {
                         if (!b)
                         {
-                            display.PowerOn();
+                            disp.PowerOn();
                         }
                     });
                     var dispPowerOffAction = new Action<bool>(b =>
                     {
                         if (!b)
                         {
-                            display.PowerOff();
+                            disp.PowerOff();
                         }
                     });
 
-                    var deviceConfig = ConfigReader.ConfigObject.GetDeviceForKey(display.Key);
+                    var deviceConfig = ConfigReader.ConfigObject.GetDeviceForKey(disp.Key);
 
                     FusionAsset tempAsset;
 
@@ -63,7 +65,7 @@ namespace PepperDash.Essentials.Fusion
                     {
                         // Create a new asset
                         tempAsset = new FusionAsset(FusionRoomGuids.GetNextAvailableAssetNumber(FusionRoom),
-                            display.Name, "Display", "");
+                            disp.Name, "Display", "");
                         FusionStaticAssets.Add(deviceConfig.Uid, tempAsset);
                     }
 
@@ -72,21 +74,21 @@ namespace PepperDash.Essentials.Fusion
                     dispAsset.PowerOn.OutputSig.UserObject = dispPowerOnAction;
                     dispAsset.PowerOff.OutputSig.UserObject = dispPowerOffAction;
 
-                    var defaultTwoWayDisplay = display as IHasPowerControlWithFeedback;
+                    var defaultTwoWayDisplay = disp as IHasPowerControlWithFeedback;
                     if (defaultTwoWayDisplay != null)
                     {
                         defaultTwoWayDisplay.PowerIsOnFeedback.LinkInputSig(FusionRoom.DisplayPowerOn.InputSig);
-                        if (display is IDisplayUsage)
+                        if (disp is IDisplayUsage)
                         {
-                            (display as IDisplayUsage).LampHours.LinkInputSig(FusionRoom.DisplayUsage.InputSig);
+                            (disp as IDisplayUsage).LampHours.LinkInputSig(FusionRoom.DisplayUsage.InputSig);
                         }
 
                         defaultTwoWayDisplay.PowerIsOnFeedback.LinkInputSig(dispAsset.PowerOn.InputSig);
                     }
 
                     // Use extension methods
-                    dispAsset.TrySetMakeModel(display);
-                    dispAsset.TryLinkAssetErrorToCommunication(display);
+                    dispAsset.TrySetMakeModel(disp);
+                    dispAsset.TryLinkAssetErrorToCommunication(disp);
                 }
             }
             catch (Exception e)
