@@ -1690,7 +1690,7 @@ namespace PepperDash.Essentials.Core.Fusion
             }
             catch (Exception e)
             {
-                Debug.Console(2, "Error creating Static Asset: {0}", e);
+                Debug.Console(2, Debug.ErrorLogLevel.Error, "Error creating Static Asset: {0}", e);
                 return null;
             }
         }
@@ -1713,7 +1713,7 @@ namespace PepperDash.Essentials.Core.Fusion
             }
             catch (Exception e)
             {
-                Debug.Console(2, "Error creating Static Asset: {0}", e);
+                Debug.Console(2, Debug.ErrorLogLevel.Error, "Error creating Static Asset: {0}", e);
                 return null;
             }
         }
