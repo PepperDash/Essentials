@@ -60,12 +60,14 @@ namespace PepperDash.Essentials.Core.Timers
         public void StartTimer()
         {
              CleanUpTimer();
+             Debug.Console(0, this, "Starting Timer");
 
-            _timer = new CTimer(TimerElapsedCallback, GetActionFromConfig(eRetriggerableTimerEvents.Elapsed), 0, _timerIntervalMs);
+             _timer = new CTimer(TimerElapsedCallback, GetActionFromConfig(eRetriggerableTimerEvents.Elapsed), _timerIntervalMs, _timerIntervalMs);
         }
 
         public void StopTimer()
         {
+            Debug.Console(0, this, "Stopping Timer");
             _timer.Stop();
 
             ExecuteAction(GetActionFromConfig(eRetriggerableTimerEvents.Stopped));
