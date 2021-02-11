@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.Core.Utilities
     /// <summary>
     /// A device that executes a sequence of actions with optional delays between actions
     /// </summary>
-    [Description("A device that exectues a sequence of actions with optional delays between actions")]
+    [Description("A device that executes a sequence of actions with optional delays between actions")]
     public class ActionSequence : EssentialsDevice
     {
         private ActionSequencePropertiesConfig _propertiesConfig;
@@ -47,6 +47,12 @@ namespace PepperDash.Essentials.Core.Utilities
         /// </summary>
         public void StartSequence()
         {
+            if (_worker.ThreadState == Thread.eThreadStates.ThreadRunning)
+            {
+                Debug.Console(1, this, "Thread already running.  Cannot Start Sequence");
+                return;
+            }
+
             Debug.Console(1, this, "Starting Action Sequence");
             _allowActionsToExecute = true;
             AddActionsToQueue();
