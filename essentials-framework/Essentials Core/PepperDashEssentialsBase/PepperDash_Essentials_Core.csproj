@@ -327,6 +327,7 @@
     <Compile Include="Routing\TieLine.cs" />
     <Compile Include="Queues\StringResponseProcessor.cs" />
     <Compile Include="Timers\CountdownTimer.cs" />
+    <Compile Include="Timers\RetriggerableTimer.cs" />
     <Compile Include="Touchpanels\CrestronTouchpanelPropertiesConfig.cs" />
     <Compile Include="Touchpanels\Interfaces.cs" />
     <Compile Include="Touchpanels\Keyboards\HabaneroKeyboardController.cs" />
@@ -337,6 +338,7 @@
     <Compile Include="UI PageManagers\SinglePageManager.cs" />
     <Compile Include="UI PageManagers\PageManager.cs" />
     <Compile Include="UI PageManagers\SetTopBoxTwoPanelPageManager.cs" />
+    <Compile Include="Utilities\ActionSequence.cs" />
     <Compile Include="VideoStatus\VideoStatusOutputs.cs" />
     <Compile Include="Crestron\CrestronGenericBaseDevice.cs" />
     <Compile Include="DeviceControlsParentInterfaces\IPresentationSource.cs" />
