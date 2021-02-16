@@ -388,9 +388,16 @@ namespace PepperDash.Essentials.Devices.Common
             }
 
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.Console(0, "Linking to Display: {0}", Name);
+            Debug.Console(0, "Linking to SetTopBox: {0}", Name);
 
-            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = Name;
+            trilist.OnlineStatusChange += new OnlineStatusChangeEventHandler((o, a) =>
+            {
+                if (a.DeviceOnLine)
+                {
+                    trilist.StringInput[joinMap.Name.JoinNumber].StringValue = Name;
+                }
+            });
+
 
             var stbBase = this as ISetTopBoxControls;
             if (stbBase != null)
