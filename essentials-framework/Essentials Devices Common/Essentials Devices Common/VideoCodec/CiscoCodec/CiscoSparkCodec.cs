@@ -1448,7 +1448,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            throw new NotImplementedException();
+            LinkVideoCodecToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
 
         /// <summary>
