@@ -4,19 +4,20 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DeviceSupport;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Devices.Common
 {
-	public class IRBlurayBase : EssentialsDevice, IDiscPlayerControls, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
+    public class IRBlurayBase : EssentialsBridgeableDevice, IDiscPlayerControls, IUiDisplayInfo, IRoutingOutputs, IUsageTracking
 	{
 		public IrOutputPortController IrPort { get; private set; }
 
@@ -44,6 +45,113 @@ namespace PepperDash.Essentials.Devices.Common
 				eRoutingPortConnectionType.DigitalAudio, null, this);
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort> { HdmiOut, AnyAudioOut };
 		}
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            var joinMap = new IRBlurayBaseJoinMap(joinStart);
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<IRBlurayBaseJoinMap>(joinMapSerialized);
+
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
+
+            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.Console(0, "Linking to SetTopBox: {0}", Name);
+
+
+            trilist.OnlineStatusChange += new OnlineStatusChangeEventHandler((o, a) =>
+                {
+                    if (a.DeviceOnLine)
+                    {
+                        trilist.StringInput[joinMap.Name.JoinNumber].StringValue = Name;
+                    }
+                });
+
+            var powerDev = this as IHasPowerControl;
+            if (powerDev != null)
+            {
+                trilist.SetSigTrueAction(joinMap.PowerOn.JoinNumber, powerDev.PowerOn);
+                trilist.SetSigTrueAction(joinMap.PowerOff.JoinNumber, powerDev.PowerOff);
+                trilist.SetSigTrueAction(joinMap.PowerToggle.JoinNumber, powerDev.PowerToggle);
+            }
+
+            var dpadDev = this as IDPad;
+            if (dpadDev != null)
+            {
+                trilist.SetBoolSigAction(joinMap.Up.JoinNumber, dpadDev.Up);
+                trilist.SetBoolSigAction(joinMap.Down.JoinNumber, dpadDev.Down);
+                trilist.SetBoolSigAction(joinMap.Left.JoinNumber, dpadDev.Left);
+                trilist.SetBoolSigAction(joinMap.Right.JoinNumber, dpadDev.Right);
+                trilist.SetBoolSigAction(joinMap.Select.JoinNumber, dpadDev.Select);
+                trilist.SetBoolSigAction(joinMap.Menu.JoinNumber, dpadDev.Menu);
+                trilist.SetBoolSigAction(joinMap.Exit.JoinNumber, dpadDev.Exit);
+            }
+
+            var channelDev = this as IChannel;
+            if (channelDev != null)
+            {
+                trilist.SetBoolSigAction(joinMap.ChannelUp.JoinNumber, channelDev.ChannelUp);
+                trilist.SetBoolSigAction(joinMap.ChannelDown.JoinNumber, channelDev.ChannelDown);
+                trilist.SetBoolSigAction(joinMap.LastChannel.JoinNumber, channelDev.LastChannel);
+                trilist.SetBoolSigAction(joinMap.Guide.JoinNumber, channelDev.Guide);
+                trilist.SetBoolSigAction(joinMap.Info.JoinNumber, channelDev.Info);
+                trilist.SetBoolSigAction(joinMap.Exit.JoinNumber, channelDev.Exit);
+            }
+
+            var colorDev = this as IColor;
+            if (colorDev != null)
+            {
+                trilist.SetBoolSigAction(joinMap.Red.JoinNumber, colorDev.Red);
+                trilist.SetBoolSigAction(joinMap.Green.JoinNumber, colorDev.Green);
+                trilist.SetBoolSigAction(joinMap.Yellow.JoinNumber, colorDev.Yellow);
+                trilist.SetBoolSigAction(joinMap.Blue.JoinNumber, colorDev.Blue);
+            }
+
+            var keypadDev = this as ISetTopBoxNumericKeypad;
+            if (keypadDev != null)
+            {
+                trilist.StringInput[joinMap.KeypadAccessoryButton1Label.JoinNumber].StringValue = keypadDev.KeypadAccessoryButton1Label;
+                trilist.StringInput[joinMap.KeypadAccessoryButton2Label.JoinNumber].StringValue = keypadDev.KeypadAccessoryButton2Label;
+
+                trilist.BooleanInput[joinMap.HasKeypadAccessoryButton1.JoinNumber].BoolValue = keypadDev.HasKeypadAccessoryButton1;
+                trilist.BooleanInput[joinMap.HasKeypadAccessoryButton2.JoinNumber].BoolValue = keypadDev.HasKeypadAccessoryButton2;
+
+                trilist.SetBoolSigAction(joinMap.Digit0.JoinNumber, keypadDev.Digit0);
+                trilist.SetBoolSigAction(joinMap.Digit1.JoinNumber, keypadDev.Digit1);
+                trilist.SetBoolSigAction(joinMap.Digit2.JoinNumber, keypadDev.Digit2);
+                trilist.SetBoolSigAction(joinMap.Digit3.JoinNumber, keypadDev.Digit3);
+                trilist.SetBoolSigAction(joinMap.Digit4.JoinNumber, keypadDev.Digit4);
+                trilist.SetBoolSigAction(joinMap.Digit5.JoinNumber, keypadDev.Digit5);
+                trilist.SetBoolSigAction(joinMap.Digit6.JoinNumber, keypadDev.Digit6);
+                trilist.SetBoolSigAction(joinMap.Digit7.JoinNumber, keypadDev.Digit7);
+                trilist.SetBoolSigAction(joinMap.Digit8.JoinNumber, keypadDev.Digit8);
+                trilist.SetBoolSigAction(joinMap.Digit9.JoinNumber, keypadDev.Digit9);
+                trilist.SetBoolSigAction(joinMap.KeypadAccessoryButton1Press.JoinNumber, keypadDev.KeypadAccessoryButton1);
+                trilist.SetBoolSigAction(joinMap.KeypadAccessoryButton2Press.JoinNumber, keypadDev.KeypadAccessoryButton1);
+                trilist.SetBoolSigAction(joinMap.KeypadEnter.JoinNumber, keypadDev.KeypadEnter);
+            }
+
+            var transportDev = this as ITransport;
+            if (transportDev != null)
+            {
+                trilist.SetBoolSigAction(joinMap.Play.JoinNumber, transportDev.Play);
+                trilist.SetBoolSigAction(joinMap.Pause.JoinNumber, transportDev.Pause);
+                trilist.SetBoolSigAction(joinMap.Rewind.JoinNumber, transportDev.Rewind);
+                trilist.SetBoolSigAction(joinMap.FFwd.JoinNumber, transportDev.FFwd);
+                trilist.SetBoolSigAction(joinMap.ChapMinus.JoinNumber, transportDev.ChapMinus);
+                trilist.SetBoolSigAction(joinMap.ChapPlus.JoinNumber, transportDev.ChapPlus);
+                trilist.SetBoolSigAction(joinMap.Stop.JoinNumber, transportDev.Stop);
+                trilist.SetBoolSigAction(joinMap.Record.JoinNumber, transportDev.Record);
+            }
+        }
 
 
 		#region IDPad Members
