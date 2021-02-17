@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
     public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
         IRouting,
-        IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraAutoMode,
+        IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
         IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing
     {
         private const long MeetingRefreshTimer = 60000;
@@ -97,6 +97,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             SelfviewIsOnFeedback = new BoolFeedback(SelfViewIsOnFeedbackFunc);
 
             CameraIsOffFeedback = new BoolFeedback(CameraIsOffFeedbackFunc);
+
+            CameraIsMutedFeedback = CameraIsOffFeedback;
 
             CameraAutoModeIsOnFeedback = new BoolFeedback(CameraAutoModeIsOnFeedbackFunc);
 
@@ -1775,16 +1777,37 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void CameraOff()
         {
-            SendText("zConfiguration Call Camera Mute: On");
+            CameraMuteOn();
         }
 
         #endregion
+
+        public BoolFeedback CameraIsMutedFeedback { get; private set; }
+
+        public void CameraMuteOn()
+        {
+            SendText("zConfiguration Call Camera Mute: On");
+        }
+
+        public void CameraMuteOff()
+        {
+            SendText("zConfiguration Call Camera Mute: Off");
+        }
+
+        public void CameraMuteToggle()
+        {
+            if (CameraIsMutedFeedback.BoolValue)
+                CameraMuteOff();
+            else
+                CameraMuteOn();
+        }
 
         #region Implementation of IHasCameraAutoMode
 
         //Zoom doesn't support camera auto modes. Setting this to just unmute video
         public void CameraAutoModeOn()
         {
+            CameraMuteOff();
             throw new NotImplementedException("Zoom Room Doesn't support camera auto mode");
         }
 

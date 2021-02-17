@@ -29,7 +29,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
     public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
-        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching, IHasBranding
+        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute
     {
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 
@@ -311,6 +311,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             LocalLayoutFeedback = new StringFeedback(LocalLayoutFeedbackFunc);
             LocalLayoutIsProminentFeedback = new BoolFeedback(LocalLayoutIsProminentFeedbackFunc);
 			FarEndIsSharingContentFeedback = new BoolFeedback(FarEndIsSharingContentFeedbackFunc);
+            CameraIsOffFeedback = new BoolFeedback(() => CodecStatus.Status.Video.Input.MainVideoMute.BoolValue);
+            CameraIsMutedFeedback = CameraIsOffFeedback;
+
 
 			PresentationViewMaximizedFeedback = new BoolFeedback(() => CurrentPresentationView == "Maximized");
 
@@ -376,8 +379,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.Video.Selfview.Mode.ValueChangedAction = SelfviewIsOnFeedback.FireUpdate;
             CodecStatus.Status.Video.Selfview.PIPPosition.ValueChangedAction = ComputeSelfviewPipStatus;
             CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
-            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction += SharingContentIsOnFeedback.FireUpdate;
-            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction += FarEndIsSharingContentFeedback.FireUpdate;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = SharingContentIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = FarEndIsSharingContentFeedback.FireUpdate;
+            CodecStatus.Status.Video.Input.MainVideoMute.ValueChangedAction = CameraIsOffFeedback.FireUpdate;
 
 			CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
@@ -1631,6 +1635,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public void CameraAutoModeOn()
         {
             SendText("xCommand Cameras SpeakerTrack Activate");
+            CameraMuteOff();
         }
 
         public void CameraAutoModeOff()
@@ -1706,6 +1711,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 _selectedCamera = value;
                 SelectedCameraFeedback.FireUpdate();
                 ControllingFarEndCameraFeedback.FireUpdate();
+                if (CameraIsOffFeedback.BoolValue)
+                    CameraMuteOff();
 
                 var handler = CameraSelected;
                 if (handler != null)
@@ -1969,7 +1976,47 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
 		
 		#endregion
-	}
+
+        #region IHasCameraOff Members
+
+        public BoolFeedback CameraIsOffFeedback { get; private set; }
+
+        public void CameraOff()
+        {
+            CameraMuteOn();
+        }
+
+        #endregion
+
+        public BoolFeedback CameraIsMutedFeedback { get; private set; }
+
+        /// <summary>
+        /// Mutes the outgoing camera video
+        /// </summary>
+        public void CameraMuteOn()
+        {
+            SendText("xCommand Video InputMainVideo Mute");
+        }
+
+        /// <summary>
+        /// Unmutes the outgoing camera video
+        /// </summary>
+        public void CameraMuteOff()
+        {
+            SendText("xCommand Video InputMainVideo Unmute");
+        }
+
+        /// <summary>
+        /// Toggles the camera mute state
+        /// </summary>
+        public void CameraMuteToggle()
+        {
+            if (CameraIsMutedFeedback.BoolValue)
+                CameraMuteOff();
+            else
+                CameraMuteOn();
+        }
+    }
 
 
 	/// <summary>
