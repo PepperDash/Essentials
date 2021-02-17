@@ -383,11 +383,11 @@ namespace PepperDash.Essentials
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
 					else
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "ERROR: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "ERROR: Creating device {0}. Skipping device. \r{1}", devConf.Key, e);
+                    Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Creating device {0}. Skipping device. \r{1}", devConf.Key, e);
                 }
             }
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Devices Loaded.");
