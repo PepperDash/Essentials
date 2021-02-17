@@ -233,7 +233,10 @@ namespace PepperDash.Essentials.Core
             }
 
 
-            PrintJoinMapInfo();
+            if (Debug.Level > 0)
+            {
+                PrintJoinMapInfo();
+            }
         }
 
         /// <summary>
