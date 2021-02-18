@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Core
 {
@@ -26,19 +27,15 @@ namespace PepperDash.Essentials.Core
 namespace PepperDash_Essentials_Core
 {
     [Obsolete("Use PepperDash.Essentials.Core")]
-    public class IsReadyEventArgs : EventArgs
+    public class IsReadyEventArgs : PepperDash.Essentials.Core.IsReadyEventArgs
     {
-        public bool IsReady { get; set; }
-
-        public IsReadyEventArgs(bool data)
+        public IsReadyEventArgs(bool data) : base(data)
         {
-            IsReady = data;
         }
     }
 
-    public interface IHasReady
+    [Obsolete("Use PepperDash.Essentials.Core")]
+    public interface IHasReady: PepperDash.Essentials.Core.IHasReady
     {
-        event EventHandler<IsReadyEventArgs> IsReadyEvent;
-        bool IsReady { get; }
     }
 }

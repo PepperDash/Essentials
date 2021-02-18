@@ -126,7 +126,9 @@ namespace PepperDash.Essentials.Core.Queues
         /// </summary>
         /// <param name="key">Key</param>
         /// <param name="priority"></param>
-        private GenericQueue(string key, Thread.eThreadPriority priority, int capacity, int pacing)
+        /// <param name="capacity"></param>
+        /// <param name="pacing"></param>
+        protected GenericQueue(string key, Thread.eThreadPriority priority, int capacity, int pacing)
         {
             _key = key;
             int cap = 25; // sets default
@@ -252,44 +254,14 @@ namespace PepperDash_Essentials_Core.Queues
     /// Threadsafe processing of queued items with pacing if required
     /// </summary>
     [Obsolete("Use PepperDash.Essentials.Core.Queues")]
-    public class GenericQueue : IQueue<IQueueMessage>
+    public class GenericQueue : PepperDash.Essentials.Core.Queues.GenericQueue
     {
-        private readonly string _key;
-        protected readonly CrestronQueue<IQueueMessage> _queue;
-        protected readonly Thread _worker;
-        protected readonly CEvent _waitHandle = new CEvent();
-
         private bool _delayEnabled;
         private int _delayTime;
 
         private const Thread.eThreadPriority _defaultPriority = Thread.eThreadPriority.MediumPriority;
 
-        /// <summary>
-        /// If the instance has been disposed.
-        /// </summary>
-        public bool Disposed { get; private set; }
-
-        /// <summary>
-        /// Returns the capacity of the CrestronQueue (fixed Size property)
-        /// </summary>
-        public int QueueCapacity
-        {
-            get
-            {
-                return _queue.Size;
-            }
-        }
-
-        /// <summary>
-        /// Returns the number of elements currently in the CrestronQueue
-        /// </summary>    
-        public int QueueCount
-        {
-            get
-            {
-                return _queue.Count;
-            }
-        }
+        
 
         /// <summary>
         /// Constructor with no thread priority
@@ -370,122 +342,10 @@ namespace PepperDash_Essentials_Core.Queues
         /// </summary>
         /// <param name="key">Key</param>
         /// <param name="priority"></param>
-        private GenericQueue(string key, Thread.eThreadPriority priority, int capacity, int pacing)
+        /// <param name="capacity"></param>
+        /// <param name="pacing"></param>
+        private GenericQueue(string key, Thread.eThreadPriority priority, int capacity, int pacing):base(key, priority, capacity, pacing)
         {
-            _key = key;
-            int cap = 25; // sets default
-            if (capacity > 0)
-            {
-                cap = capacity; // overrides default
-            }
-            _queue = new CrestronQueue<IQueueMessage>(cap);
-            _worker = new Thread(ProcessQueue, null, Thread.eThreadStartOptions.Running)
-            {
-                Priority = priority
-            };
-
-            SetDelayValues(pacing);
-        }
-
-        private void SetDelayValues(int pacing)
-        {
-            _delayEnabled = pacing > 0;
-            _delayTime = pacing;
-
-            CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
-            {
-                if (programEvent != eProgramStatusEventType.Stopping)
-                    return;
-
-                Dispose();
-            };
-        }
-
-        /// <summary>
-        /// Thread callback
-        /// </summary>
-        /// <param name="obj">The action used to process dequeued items</param>
-        /// <returns>Null when the thread is exited</returns>
-        private object ProcessQueue(object obj)
-        {
-            while (true)
-            {
-                IQueueMessage item = null;
-
-                if (_queue.Count > 0)
-                {
-                    item = _queue.Dequeue();
-                    if (item == null)
-                        break;
-                }
-                if (item != null)
-                {
-                    try
-                    {
-                        Debug.Console(2, this, "Processing queue item: '{0}'", item.ToString());
-                        item.Dispatch();
-
-                        if (_delayEnabled)
-                            Thread.Sleep(_delayTime);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Caught an exception in the Queue {0}\r{1}\r{2}", ex.Message, ex.InnerException, ex.StackTrace);
-                    }
-                }
-                else _waitHandle.Wait();
-            }
-
-            return null;
-        }
-
-        public void Enqueue(IQueueMessage item)
-        {
-            _queue.Enqueue(item);
-            _waitHandle.Set();
-        }
-
-        /// <summary>
-        /// Disposes the thread and cleans up resources.  Thread cannot be restarted once
-        /// disposed.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            CrestronEnvironment.GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Actually does the disposing.  If you override this method, be sure to either call the base implementation 
-        /// or clean up all the resources yourself.
-        /// </summary>
-        /// <param name="disposing">set to true unless called from finalizer</param>
-        protected void Dispose(bool disposing)
-        {
-            if (Disposed)
-                return;
-
-            if (disposing)
-            {
-                Enqueue(null);
-                _worker.Join();
-                _waitHandle.Close();
-            }
-
-            Disposed = true;
-        }
-
-        ~GenericQueue()
-        {
-            Dispose(false);
-        }
-
-        /// <summary>
-        /// Key
-        /// </summary>
-        public string Key
-        {
-            get { return _key; }
         }
     }
 }

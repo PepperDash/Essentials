@@ -111,14 +111,14 @@ namespace PepperDash_Essentials_Core.Queues
     public sealed class StringResponseProcessor : IKeyed, IDisposable
     {
         private readonly Action<string> _processStringAction;
-        private readonly IQueue<IQueueMessage> _queue;
+        private readonly PepperDash.Essentials.Core.Queues.IQueue<PepperDash.Essentials.Core.Queues.IQueueMessage> _queue;
         private readonly IBasicCommunication _coms;
         private readonly CommunicationGather _gather;
 
         private StringResponseProcessor(string key, Action<string> processStringAction)
         {
             _processStringAction = processStringAction;
-            _queue = new GenericQueue(key);
+            _queue = new PepperDash.Essentials.Core.Queues.GenericQueue(key);
 
             CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
             {

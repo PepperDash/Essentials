@@ -15,11 +15,8 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
 {
     [Obsolete("Use PepperDash.Essentials.Core.DeviceTypeInterfaces")]
-    public interface ILanguageProvider
+    public interface ILanguageProvider:PepperDash.Essentials.Core.DeviceTypeInterfaces.ILanguageProvider
     {
-        ILanguageDefinition CurrentLanguage { get; set; }
-
-        event EventHandler CurrentLanguageChanged;
     }
 
 }

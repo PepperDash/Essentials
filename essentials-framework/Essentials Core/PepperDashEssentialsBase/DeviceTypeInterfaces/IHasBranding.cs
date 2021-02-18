@@ -12,9 +12,8 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
 {
     [Obsolete("Use PepperDash.Essentials.Core.DeviceTypeInterfaces")]
-    public interface IHasBranding
+    public interface IHasBranding:PepperDash.Essentials.Core.DeviceTypeInterfaces.IHasBranding
     {
-        bool BrandingEnabled { get; }
-        void InitializeBranding(string roomKey);
+
     }
 }
