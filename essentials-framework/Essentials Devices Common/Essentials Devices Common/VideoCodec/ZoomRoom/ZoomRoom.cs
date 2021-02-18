@@ -17,7 +17,6 @@ using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Cisco;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
-using PepperDash_Essentials_Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
