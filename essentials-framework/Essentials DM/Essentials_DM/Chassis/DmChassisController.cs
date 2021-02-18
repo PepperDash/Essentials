@@ -1173,16 +1173,22 @@ namespace PepperDash.Essentials.DM
         {
             Debug.Console(2, this, "Making an awesome DM route from {0} to {1} {2}", inputSelector, outputSelector, sigType);
 
-            var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
-            var output = Convert.ToUInt32(outputSelector);
+            var input = inputSelector as DMInput;//Input Selector could be null...
 
-            var chassisSize = (uint) Chassis.NumberOfInputs; //need this to determine USB routing values 8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
-                                                      //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
-                                                      //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+            var output = outputSelector as DMOutput;
+
+            if (output == null)
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+                    "Unable to execute switch for inputSelector {0} to outputSelector {1}", inputSelector,
+                    outputSelector);
+                return;
+
+            }
 
             // Check to see if there's an off timer waiting on this and if so, cancel
-            var key = new PortNumberType(output, sigType);
-            if (input == 0)
+            var key = new PortNumberType(output.Number, sigType);
+            if (input == null)
             {
                 StartOffTimer(key);
             }
@@ -1196,20 +1202,25 @@ namespace PepperDash.Essentials.DM
                 }
             }
 
-            var inCard = input == 0 ? null : Chassis.Inputs[input];
-            var outCard = input == 0 ? null : Chassis.Outputs[output];
+            //var inCard = input == 0 ? null : Chassis.Inputs[input];
+            //var outCard = input == 0 ? null : Chassis.Outputs[output];
 
             // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
             if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
             {
                 Chassis.VideoEnter.BoolValue = true;
-                Chassis.Outputs[output].VideoOut = inCard;
+                output.VideoOut = input; //Chassis.Outputs[output].VideoOut = inCard;
             }
 
             if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
             {
-                (Chassis as DmMDMnxn).AudioEnter.BoolValue = true;
-                Chassis.Outputs[output].AudioOut = inCard;
+                var dmMdMnxn = Chassis as DmMDMnxn;
+                if (dmMdMnxn != null)
+                {
+                    dmMdMnxn.AudioEnter.BoolValue = true;
+                }
+                output.VideoOut = input;
+                //Chassis.Outputs[output].AudioOut = inCard;
             }
 
             if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
@@ -1219,7 +1230,7 @@ namespace PepperDash.Essentials.DM
 
                 Debug.Console(2, this, "Executing USB Output switch.\r\n in:{0} output: {1}", input, output);
 
-                if (input > chassisSize)
+                if (input != null && input.Number > chassisSize)
                 {
                     //wanting to route an output to an output. Subtract chassis size and get output, unless it's 8x8
                     //need this to determine USB routing values
@@ -1230,24 +1241,23 @@ namespace PepperDash.Essentials.DM
 
                     if (chassisSize == 8)
                     {
-                        outputIndex = input - 16;
+                        outputIndex = input.Number - 16;
                     }
                     else
                     {
-                        outputIndex = input - chassisSize;
+                        outputIndex = input.Number - chassisSize;
                     }
+
                     dmCard = Chassis.Outputs[outputIndex];
                 }
                 else
                 {
-                    dmCard = inCard;
+                    dmCard = input;
                 }
                 Chassis.USBEnter.BoolValue = true;
-                if (Chassis.Outputs[output] != null)
-                {
-                    Debug.Console(2, this, "Routing USB for input {0} to {1}", Chassis.Outputs[input], dmCard);
-                    Chassis.Outputs[output].USBRoutedTo = dmCard;
-                }
+
+                Debug.Console(2, this, "Routing USB for input {0} to {1}", input, dmCard);
+                output.USBRoutedTo = dmCard;
             }
 
             if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
@@ -1268,17 +1278,17 @@ namespace PepperDash.Essentials.DM
 
                     if (chassisSize == 8)
                     {
-                        outputIndex = input - 16;
+                        outputIndex = input.Number - 16;
                     }
                     else
                     {
-                        outputIndex = input - chassisSize;
+                        outputIndex = input.Number - chassisSize;
                     }
                     dmCard = Chassis.Outputs[outputIndex];
                 }
                 else
                 {
-                    dmCard = Chassis.Inputs[input];
+                    dmCard = input;
                 }
 
                 
@@ -1299,7 +1309,75 @@ namespace PepperDash.Essentials.DM
 
         public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
         {
-            ExecuteSwitch(inputSelector, outputSelector, sigType);
+            var chassisSize = (uint)Chassis.NumberOfInputs; //need this to determine USB routing values 8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+            //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+            //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+
+            DMInputOutputBase dmCard;
+
+            if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+            {
+                if (outputSelector > chassisSize)
+                {
+                    uint outputIndex;
+
+                    if (chassisSize == 8)
+                    {
+                        outputIndex = (uint) inputSelector - 16;
+                    }
+                    else
+                    {
+                        outputIndex = inputSelector - chassisSize;
+                    }
+                    dmCard = Chassis.Outputs[outputIndex];
+                }
+                else
+                {
+                    dmCard = Chassis.Inputs[inputSelector];
+                }
+
+                ExecuteSwitch(dmCard, Chassis.Outputs[outputSelector], sigType);
+                return;
+            }
+            if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+            {
+                Debug.Console(2, this, "Executing USB Output switch.\r\n in:{0} output: {1}", inputSelector, outputSelector);
+
+                if (inputSelector > chassisSize)
+                {
+                    //wanting to route an output to an output. Subtract chassis size and get output, unless it's 8x8
+                    //need this to determine USB routing values
+                    //8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
+                    //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
+                    //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
+                    uint outputIndex;
+
+                    if (chassisSize == 8)
+                    {
+                        outputIndex = (uint) inputSelector - 16;
+                    }
+                    else
+                    {
+                        outputIndex = inputSelector - chassisSize;
+                    }
+
+                    dmCard = Chassis.Outputs[outputIndex];
+                }
+                else
+                {
+                    dmCard = Chassis.Inputs[inputSelector];
+                }
+                Chassis.USBEnter.BoolValue = true;
+
+                Debug.Console(2, this, "Routing USB for input {0} to {1}", inputSelector, dmCard);
+                ExecuteSwitch(dmCard, Chassis.Outputs[outputSelector], sigType);
+                return;
+            }
+
+            var inputCard = Chassis.Inputs[inputSelector];
+            var outputCard = Chassis.Outputs[outputSelector];
+
+            ExecuteSwitch(inputCard, outputCard, sigType);
         }
 
         #endregion
