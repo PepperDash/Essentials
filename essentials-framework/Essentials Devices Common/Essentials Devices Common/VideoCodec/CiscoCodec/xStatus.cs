@@ -1606,6 +1606,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
+        public class MainVideoMute : ValueProperty
+        {
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                set
+                {
+                    // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "On";
+                    OnValueChanged();
+                }
+            }
+           
+        }
+
         public class ConnectorId
         {
             public string Value { get; set; }
@@ -1662,6 +1678,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             public List<Connector> Connector { get; set; }
             public MainVideoSource MainVideoSource { get; set; }
+            public MainVideoMute MainVideoMute { get; set; }
             public List<Source> Source { get; set; }
         }
 
