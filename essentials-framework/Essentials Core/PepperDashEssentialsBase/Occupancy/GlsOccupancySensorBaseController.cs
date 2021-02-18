@@ -460,7 +460,7 @@ namespace PepperDash.Essentials.Core
 	        // Ultrasonic B Sensor
 	        trilist.SetSigTrueAction(joinMap.EnableUsB.JoinNumber, () => odtOccController.SetUsBEnable(true));
 	        trilist.SetSigTrueAction(joinMap.DisableUsB.JoinNumber, () => odtOccController.SetUsBEnable(false));
-	        odtOccController.UltrasonicAEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableUsB.JoinNumber]);
+	        odtOccController.UltrasonicBEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableUsB.JoinNumber]);
 
 	        // US Sensitivity in Occupied State
 	        trilist.SetBoolSigAction(joinMap.IncrementUsInOccupiedState.JoinNumber,
