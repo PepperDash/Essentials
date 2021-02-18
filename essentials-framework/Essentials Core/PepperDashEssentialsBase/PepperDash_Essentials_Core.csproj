@@ -229,6 +229,7 @@
     <Compile Include="Interfaces\ILogStrings.cs" />
     <Compile Include="Interfaces\ILogStringsWithLevel.cs" />
     <Compile Include="Occupancy\GlsOccupancySensorPropertiesConfig.cs" />
+    <Compile Include="Occupancy\GlsOirOccupancySensorController.cs" />
     <Compile Include="Queues\ComsMessage.cs" />
     <Compile Include="Queues\ProcessStringMessage.cs" />
     <Compile Include="Queues\GenericQueue.cs" />
