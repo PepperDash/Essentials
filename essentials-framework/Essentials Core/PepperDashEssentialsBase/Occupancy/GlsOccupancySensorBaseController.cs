@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 
@@ -15,11 +11,11 @@ namespace PepperDash.Essentials.Core
 {
 	[Description("Wrapper class for Single Technology GLS Occupancy Sensors")]
     [ConfigSnippet("\"properties\": {\"control\": {\"method\": \"cresnet\",\"cresnetId\": \"97\"},\"enablePir\": true,\"enableLedFlash\": true,\"enableRawStates\":true,\"remoteTimeout\": 30,\"internalPhotoSensorMinChange\": 0,\"externalPhotoSensorMinChange\": 0}")]
-	public class GlsOccupancySensorBaseController : CrestronGenericBridgeableBaseDevice, IOccupancyStatusProvider
+	public abstract class GlsOccupancySensorBaseController : CrestronGenericBridgeableBaseDevice, IOccupancyStatusProvider
 	{
         public GlsOccupancySensorPropertiesConfig PropertiesConfig { get; private set; }
 
-		public GlsOccupancySensorBase OccSensor { get; private set; }
+	    protected GlsOccupancySensorBase OccSensor;
 
 		public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
@@ -58,44 +54,12 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		public GlsOccupancySensorBaseController(string key, Func<DeviceConfig, GlsOccupancySensorBase> preActivationFunc,
-			DeviceConfig config)
-			: base(key, config.Name)
+	    protected GlsOccupancySensorBaseController(string key, DeviceConfig config)
+			: this(key, config.Name, config)
 		{
-            var props = config.Properties.ToObject<GlsOccupancySensorPropertiesConfig>();
-
-            if (props != null)
-            {
-                PropertiesConfig = props;
-            }
-            else
-            {
-                Debug.Console(1, this, "props are null.  Unable to deserialize into GlsOccupancySensorPropertiesConfig");
-            }
-
-			AddPreActivationAction(() =>
-			{
-				OccSensor = preActivationFunc(config);
-
-				RegisterCrestronGenericBase(OccSensor);
-
-				RegisterGlsOdtSensorBaseController(OccSensor);
-
-			});
-
-            AddPostActivationAction(() =>
-            {
-                OccSensor.OnlineStatusChange += (o, a) =>
-                {
-                    if (a.DeviceOnLine)
-                    {
-                        ApplySettingsToSensorFromConfig();
-                    }
-                };
-            });            
 		}
 
-		public GlsOccupancySensorBaseController(string key, string name, DeviceConfig config)
+	    protected GlsOccupancySensorBaseController(string key, string name, DeviceConfig config)
             : base(key, name) 
         {
 
@@ -183,7 +147,7 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-		protected void RegisterGlsOdtSensorBaseController(GlsOccupancySensorBase occSensor)
+		protected void RegisterGlsOccupancySensorBaseController(GlsOccupancySensorBase occSensor)
 		{
 			OccSensor = occSensor;
 
@@ -253,8 +217,8 @@ namespace PepperDash.Essentials.Core
 
 			switch (args.EventId)
 			{
-				case Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomVacantFeedbackEventId:
-				case Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomOccupiedFeedbackEventId:
+				case GlsOccupancySensorBase.RoomVacantFeedbackEventId:
+				case GlsOccupancySensorBase.RoomOccupiedFeedbackEventId:
 					Debug.Console(1, this, "Occupancy State: {0}", OccSensor.OccupancyDetectedFeedback.BoolValue);
 					RoomIsOccupiedFeedback.FireUpdate();
 					break;
@@ -298,60 +262,36 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		/// <summary>
-		/// Enables or disables the PIR sensor
-		/// </summary>
-		/// <param name="state"></param>
-		public void SetPirEnable(bool state)
-		{
-            Debug.Console(1, this, "Setting EnablePir to: {0}", state);
+	    /// <summary>
+	    /// Enables or disables the PIR sensor
+	    /// </summary>
+	    /// <param name="state"></param>
+	    public void SetPirEnable(bool state)
+	    {
+	        Debug.Console(1, this, "Setting EnablePir to: {0}", state);
 
-			if (state)
-			{
-				OccSensor.EnablePir.BoolValue = state;
-				OccSensor.DisablePir.BoolValue = !state;
-			}
-			else
-			{
-				OccSensor.EnablePir.BoolValue = state;
-				OccSensor.DisablePir.BoolValue = !state;
-			}
-		}
+	        OccSensor.EnablePir.BoolValue = state;
+	        OccSensor.DisablePir.BoolValue = !state;
+	    }
 
-		/// <summary>
-		/// Enables or disables the LED Flash
-		/// </summary>
-		/// <param name="state"></param>
-		public void SetLedFlashEnable(bool state)
-		{
-			if (state)
-			{
-				OccSensor.EnableLedFlash.BoolValue = state;
-				OccSensor.DisableLedFlash.BoolValue = !state;
-			}
-			else
-			{
-				OccSensor.EnableLedFlash.BoolValue = state;
-				OccSensor.DisableLedFlash.BoolValue = !state;
-			}
-		}
+	    /// <summary>
+	    /// Enables or disables the LED Flash
+	    /// </summary>
+	    /// <param name="state"></param>
+	    public void SetLedFlashEnable(bool state)
+	    {
+	        OccSensor.EnableLedFlash.BoolValue = state;
+	        OccSensor.DisableLedFlash.BoolValue = !state;
+	    }
 
-		/// <summary>
+	    /// <summary>
 		/// Enables or disables short timeout based on state
 		/// </summary>
 		/// <param name="state"></param>
 		public void SetShortTimeoutState(bool state)
 		{
-			if (state)
-			{
 				OccSensor.EnableShortTimeout.BoolValue = state;
 				OccSensor.DisableShortTimeout.BoolValue = !state;
-			}
-			else
-			{
-				OccSensor.EnableShortTimeout.BoolValue = state;
-				OccSensor.DisableShortTimeout.BoolValue = !state;
-			}
 		}
 
 		public void IncrementPirSensitivityInOccupiedState(bool pressRelease)
@@ -406,11 +346,10 @@ namespace PepperDash.Essentials.Core
 			OccSensor.ExternalPhotoSensorMinimumChange.UShortValue = value;
 		}
 
-		/// <summary>
-		/// Method to print current occ settings to console.
-		/// </summary>
-		/// <param name="key"></param>
-		public virtual void GetSettings()
+	    /// <summary>
+	    /// Method to print current occ settings to console.
+	    /// </summary>
+	    public virtual void GetSettings()
 		{
 			var dash = new string('*', 50);
 			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
@@ -544,53 +483,6 @@ namespace PepperDash.Essentials.Core
 			#endregion
 		}
 
-		public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
-		{
-			LinkOccSensorToApi(this, trilist, joinStart, joinMapKey, bridge);
-		}
-
-		#region PreActivation
-
-		private static GlsOirCCn GetGlsOirCCn(DeviceConfig dc)
-		{
-			var control = CommFactory.GetControlPropertiesConfig(dc);
-			var cresnetId = control.CresnetIdInt;
-			var branchId = control.ControlPortNumber;
-			var parentKey = string.IsNullOrEmpty(control.ControlPortDevKey) ? "processor" : control.ControlPortDevKey;
-
-			if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
-			{
-				Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
-				return new GlsOirCCn(cresnetId, Global.ControlSystem);
-			}
-			var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
-
-			if (cresnetBridge != null)
-			{
-				Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
-				return new GlsOirCCn(cresnetId, cresnetBridge.CresnetBranches[branchId]);
-			}
-			Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
-			return null;
-		}
-		#endregion
-
-		public class GlsOccupancySensorBaseControllerFactory : EssentialsDeviceFactory<GlsOccupancySensorBaseController>
-		{
-			public GlsOccupancySensorBaseControllerFactory()
-			{
-				TypeNames = new List<string>() { "glsoirccn" };
-			}
-
-
-			public override EssentialsDevice BuildDevice(DeviceConfig dc)
-			{
-				Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
-
-				return new GlsOccupancySensorBaseController(dc.Key, GetGlsOirCCn, dc);
-			}
-
-		}
 	}
 
 
