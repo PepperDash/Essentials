@@ -43,7 +43,7 @@ namespace PepperDash.Essentials.Core
 
 				RegisterCrestronGenericBase(_occSensor);
 
-				RegisterGlsOccupancySensorBaseController(OccSensor);
+				RegisterGlsOccupancySensorBaseController(_occSensor);
 
 				AndWhenVacatedFeedback = new BoolFeedback(() => _occSensor.AndWhenVacatedFeedback.BoolValue);
 
