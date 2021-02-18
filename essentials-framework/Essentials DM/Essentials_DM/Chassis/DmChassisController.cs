@@ -1223,85 +1223,12 @@ namespace PepperDash.Essentials.DM
                 //Chassis.Outputs[output].AudioOut = inCard;
             }
 
-            if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+            if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput || (sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
             {
-                //using base here because USB can be routed between 2 output cards or 2 input cards
-                DMInputOutputBase dmCard;
-
-                Debug.Console(2, this, "Executing USB Output switch.\r\n in:{0} output: {1}", input, output);
-
-                if (input != null && input.Number > chassisSize)
-                {
-                    //wanting to route an output to an output. Subtract chassis size and get output, unless it's 8x8
-                    //need this to determine USB routing values
-                    //8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
-                    //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
-                    //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
-                    uint outputIndex;
-
-                    if (chassisSize == 8)
-                    {
-                        outputIndex = input.Number - 16;
-                    }
-                    else
-                    {
-                        outputIndex = input.Number - chassisSize;
-                    }
-
-                    dmCard = Chassis.Outputs[outputIndex];
-                }
-                else
-                {
-                    dmCard = input;
-                }
                 Chassis.USBEnter.BoolValue = true;
-
-                Debug.Console(2, this, "Routing USB for input {0} to {1}", input, dmCard);
-                output.USBRoutedTo = dmCard;
+                output.USBRoutedTo = input;
             }
 
-            if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
-            {
-                //using base here because USB can be routed between 2 output cards or 2 input cards
-                DMInputOutputBase dmCard;
-
-                Debug.Console(2, this, "Executing USB Input switch.\r\n in:{0} output: {1}", input, output);
-
-                if (output > chassisSize)
-                {
-                    //wanting to route an input to an output. Subtract chassis size and get output, unless it's 8x8
-                    //need this to determine USB routing values
-                    //8x8 -> 1-8 is inputs 1-8, 17-24 is outputs 1-8
-                    //16x16 1-16 is inputs 1-16, 17-32 is outputs 1-16
-                    //32x32 1-32 is inputs 1-32, 33-64 is outputs 1-32
-                    uint outputIndex;
-
-                    if (chassisSize == 8)
-                    {
-                        outputIndex = input.Number - 16;
-                    }
-                    else
-                    {
-                        outputIndex = input.Number - chassisSize;
-                    }
-                    dmCard = Chassis.Outputs[outputIndex];
-                }
-                else
-                {
-                    dmCard = input;
-                }
-
-                
-
-                Chassis.USBEnter.BoolValue = true;
-
-                if (Chassis.Inputs[output] == null)
-                {
-                    return;
-                }
-                Debug.Console(2, this, "Routing USB for input {0} to {1}", Chassis.Inputs[output], dmCard);
-                Chassis.Inputs[output].USBRoutedTo = dmCard;
-            }
         }
         #endregion
 
