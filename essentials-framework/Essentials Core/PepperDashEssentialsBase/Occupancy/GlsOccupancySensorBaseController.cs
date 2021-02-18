@@ -314,14 +314,40 @@ namespace PepperDash.Essentials.Core
 			OccSensor.DecrementPirSensitivityInVacantState.BoolValue = pressRelease;
 		}
 
-		public void ForceOccupied()
+        /// <summary>
+        /// Pulse ForceOccupied on the sensor for .5 seconds
+        /// </summary>
+	    public void ForceOccupied()
+	    {
+	        CrestronInvoke.BeginInvoke((o) =>
+	        {
+	            ForceOccupied(true);
+	            CrestronEnvironment.Sleep(500);
+	            ForceOccupied(false);
+	        });
+	    }
+
+		public void ForceOccupied(bool value)
 		{
-			OccSensor.ForceOccupied.BoolValue = true;
+			OccSensor.ForceOccupied.BoolValue = value;
 		}
 
-		public void ForceVacant()
+        /// <summary>
+        /// Pulse ForceVacant on the sensor for .5 seconds
+        /// </summary>
+	    public void ForceVacant()
+	    {
+            CrestronInvoke.BeginInvoke((o) =>
+            {
+                ForceVacant(true);
+                CrestronEnvironment.Sleep(500);
+                ForceVacant(false);
+            });
+	    }
+
+		public void ForceVacant(bool value)
 		{
-			OccSensor.ForceVacant.BoolValue = true;
+			OccSensor.ForceVacant.BoolValue = value;
 		}
 
 		public void EnableRawStates(bool state)
@@ -462,8 +488,8 @@ namespace PepperDash.Essentials.Core
 	        GlsOccupancySensorBaseJoinMap joinMap)
 	    {
 // Occupied status
-	        trilist.SetSigTrueAction(joinMap.ForceOccupied.JoinNumber, occController.ForceOccupied);
-	        trilist.SetSigTrueAction(joinMap.ForceVacant.JoinNumber, occController.ForceVacant);
+	        trilist.SetBoolSigAction(joinMap.ForceOccupied.JoinNumber, occController.ForceOccupied);
+	        trilist.SetBoolSigAction(joinMap.ForceVacant.JoinNumber, occController.ForceVacant);
 	        occController.RoomIsOccupiedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RoomOccupiedFeedback.JoinNumber]);
 	        occController.RoomIsOccupiedFeedback.LinkComplementInputSig(
 	            trilist.BooleanInput[joinMap.RoomVacantFeedback.JoinNumber]);
