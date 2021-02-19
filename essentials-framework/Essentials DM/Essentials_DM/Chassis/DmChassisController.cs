@@ -133,6 +133,8 @@ namespace PepperDash.Essentials.DM
 
                 var controller = new DmChassisController(key, name, chassis);
 
+                //
+
                 // add the cards and port names
                 foreach (var kvp in properties.InputSlots)
                     controller.AddInputCard(kvp.Value, kvp.Key);
@@ -485,169 +487,170 @@ namespace PepperDash.Essentials.DM
 
             type = type.ToLower();
 
-            if (type == "dmchd")
+            switch (type)
             {
-                var inputCard = new DmcHd(number, this.Chassis);
-                var cecPort = inputCard.HdmiInput as ICec;
-                AddHdmiInCardPorts(number, cecPort);
-            }
-            else if (type == "dmchddsp")
-            {
-                var inputCard = new DmcHdDsp(number, this.Chassis);
-                var cecPort = inputCard.HdmiInput as ICec;
-                AddHdmiInCardPorts(number, cecPort);
-            }
-            else if (type == "dmc4khd")
-            {
-                var inputCard = new Dmc4kHd(number, this.Chassis);
-                var cecPort = inputCard.HdmiInput as ICec;
-                AddHdmiInCardPorts(number, cecPort);
-            }
-            else if (type == "dmc4khddsp")
-            {
-                var inputCard = new Dmc4kHdDsp(number, this.Chassis);
-                var cecPort = inputCard.HdmiInput as ICec;
-                AddHdmiInCardPorts(number, cecPort);
-            }
-            else if (type == "dmc4kzhd")
-            {
-                var inputCard = new Dmc4kzHd(number, this.Chassis);
-                var cecPort = inputCard.HdmiInput as ICec;
-                AddHdmiInCardPorts(number, cecPort);
-            }
-            else if (type == "dmc4kzhddsp")
-            {
-                var inputCard = new Dmc4kzHdDsp(number, this.Chassis);
-                var cecPort = inputCard.HdmiInput as ICec;
-                AddHdmiInCardPorts(number, cecPort);
-            }
-            else if (type == "dmcc")
-            {
-                var inputCard = new DmcC(number, this.Chassis);
-                var cecPort = inputCard.DmInput as ICec;
-                AddDmInCardPorts(number, cecPort);
-            }
-            else if (type == "dmccdsp")
-            {
-                var inputCard = new DmcCDsp(number, this.Chassis);
-                var cecPort = inputCard.DmInput as ICec;
-                AddDmInCardPorts(number, cecPort);
-            }
-            else if (type == "dmc4kc")
-            {
-                var inputCard = new Dmc4kC(number, this.Chassis);
-                var cecPort = inputCard.DmInput as ICec;
-                AddDmInCardPorts(number, cecPort);
-            }
-            else if (type == "dmc4kcdsp")
-            {
-                var inputCard = new Dmc4kCDsp(number, this.Chassis);
-                var cecPort = inputCard.DmInput as ICec;
-                AddDmInCardPorts(number, cecPort);
-            }
-            else if (type == "dmc4kzc")
-            {
-                var inputCard = new Dmc4kzC(number, this.Chassis);
-                var cecPort = inputCard.DmInput as ICec;
-                AddDmInCardPorts(number, cecPort);
-            }
-            else if (type == "dmc4kzcdsp")
-            {
-                var inputCard = new Dmc4kzCDsp(number, this.Chassis);
-                var cecPort = inputCard.DmInput as ICec;
-                AddDmInCardPorts(number, cecPort);
-            }
-            else if (type == "dmccat")
-            {
-                new DmcCat(number, this.Chassis);
-                AddDmInCardPorts(number);
-            }
-            else if (type == "dmccatdsp")
-            {
-                new DmcCatDsp(number, this.Chassis);
-                AddDmInCardPorts(number);
-            }
-            else if (type == "dmcs")
-            {
-                new DmcS(number, Chassis);
-                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber);
-                AddInCardHdmiAndAudioLoopPorts(number);
-            }
-            else if (type == "dmcsdsp")
-            {
-                new DmcSDsp(number, Chassis);
-                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber);
-                AddInCardHdmiAndAudioLoopPorts(number);
-            }
-            else if (type == "dmcs2")
-            {
-                new DmcS2(number, Chassis);
-                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber);
-                AddInCardHdmiAndAudioLoopPorts(number);
-            }
-            else if (type == "dmcs2dsp")
-            {
-                new DmcS2Dsp(number, Chassis);
-                AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber);
-                AddInCardHdmiAndAudioLoopPorts(number);
-            }
-            else if (type == "dmcsdi")
-            {
-                new DmcSdi(number, Chassis);
-                AddInputPortWithDebug(number, "sdiIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Sdi);
-                AddOutputPortWithDebug(string.Format("inputCard{0}", number), "sdiOut", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                    eRoutingPortConnectionType.Sdi, null);
-                AddInCardHdmiAndAudioLoopPorts(number);
-            }
-            else if (type == "dmcdvi")
-            {
-                new DmcDvi(number, Chassis);
-                AddInputPortWithDebug(number, "dviIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Dvi);
-                AddInputPortWithDebug(number, "audioIn", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
-                AddInCardHdmiLoopPort(number);
-            }
-            else if (type == "dmcvga")
-            {
-                new DmcVga(number, Chassis);
-                AddInputPortWithDebug(number, "vgaIn", eRoutingSignalType.Video, eRoutingPortConnectionType.Vga);
-                AddInputPortWithDebug(number, "audioIn", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
-                AddInCardHdmiLoopPort(number);
-            }
-            else if (type == "dmcvidbnc")
-            {
-                new DmcVidBnc(number, Chassis);
-                AddInputPortWithDebug(number, "componentIn", eRoutingSignalType.Video, eRoutingPortConnectionType.Component);
-                AddInputPortWithDebug(number, "audioIn", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
-                AddInCardHdmiLoopPort(number);
-            }
-            else if (type == "dmcvidrcaa")
-            {
-                new DmcVidRcaA(number, Chassis);
-                AddInputPortWithDebug(number, "componentIn", eRoutingSignalType.Video, eRoutingPortConnectionType.Component);
-                AddInputPortWithDebug(number, "audioIn", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
-                AddInCardHdmiLoopPort(number);
-            }
-            else if (type == "dmcvidrcad")
-            {
-                new DmcVidRcaD(number, Chassis);
-                AddInputPortWithDebug(number, "componentIn", eRoutingSignalType.Video, eRoutingPortConnectionType.Component);
-                AddInputPortWithDebug(number, "audioIn", eRoutingSignalType.Audio, eRoutingPortConnectionType.DigitalAudio);
-                AddInCardHdmiLoopPort(number);
-            }
-            else if (type == "dmcvid4")
-            {
-                new DmcVid4(number, Chassis);
-                AddInputPortWithDebug(number, "compositeIn1", eRoutingSignalType.Video, eRoutingPortConnectionType.Composite);
-                AddInputPortWithDebug(number, "compositeIn2", eRoutingSignalType.Video, eRoutingPortConnectionType.Composite);
-                AddInputPortWithDebug(number, "compositeIn3", eRoutingSignalType.Video, eRoutingPortConnectionType.Composite);
-                AddInputPortWithDebug(number, "compositeIn4", eRoutingSignalType.Video, eRoutingPortConnectionType.Composite);
-                AddInCardHdmiLoopPort(number);
-            }
-            else if (type == "dmcstr")
-            {
-                new DmcStr(number, Chassis);
-                AddInputPortWithDebug(number, "streamIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming);
-                AddInCardHdmiAndAudioLoopPorts(number);
+                case "dmchd":
+                {
+                    var inputCard = new DmcHd(number, this.Chassis);
+                    var cecPort = inputCard.HdmiInput as ICec;
+                    AddHdmiInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmchddsp":
+                {
+                    var inputCard = new DmcHdDsp(number, this.Chassis);
+                    var cecPort = inputCard.HdmiInput as ICec;
+                    AddHdmiInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmc4khd":
+                {
+                    var inputCard = new Dmc4kHd(number, this.Chassis);
+                    var cecPort = inputCard.HdmiInput as ICec;
+                    AddHdmiInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmc4khddsp":
+                {
+                    var inputCard = new Dmc4kHdDsp(number, this.Chassis);
+                    var cecPort = inputCard.HdmiInput as ICec;
+                    AddHdmiInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmc4kzhd":
+                {
+                    var inputCard = new Dmc4kzHd(number, this.Chassis);
+                    var cecPort = inputCard.HdmiInput as ICec;
+                    AddHdmiInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmc4kzhddsp":
+                {
+                    var inputCard = new Dmc4kzHdDsp(number, this.Chassis);
+                    var cecPort = inputCard.HdmiInput as ICec;
+                    AddHdmiInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmcc":
+                {
+                    var inputCard = new DmcC(number, this.Chassis);
+                    var cecPort = inputCard.DmInput as ICec;
+                    AddDmInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmccdsp":
+                {
+                    var inputCard = new DmcCDsp(number, this.Chassis);
+                    var cecPort = inputCard.DmInput as ICec;
+                    AddDmInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmc4kc":
+                {
+                    var inputCard = new Dmc4kC(number, this.Chassis);
+                    var cecPort = inputCard.DmInput as ICec;
+                    AddDmInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmc4kcdsp":
+                {
+                    var inputCard = new Dmc4kCDsp(number, this.Chassis);
+                    var cecPort = inputCard.DmInput as ICec;
+                    AddDmInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmc4kzc":
+                {
+                    var inputCard = new Dmc4kzC(number, this.Chassis);
+                    var cecPort = inputCard.DmInput as ICec;
+                    AddDmInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmc4kzcdsp":
+                {
+                    var inputCard = new Dmc4kzCDsp(number, this.Chassis);
+                    var cecPort = inputCard.DmInput as ICec;
+                    AddDmInCardPorts(number, cecPort);
+                }
+                    break;
+                case "dmccat":
+                    new DmcCat(number, this.Chassis);
+                    AddDmInCardPorts(number);
+                    break;
+                case "dmccatdsp":
+                    new DmcCatDsp(number, this.Chassis);
+                    AddDmInCardPorts(number);
+                    break;
+                case "dmcs":
+                    new DmcS(number, Chassis);
+                    AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber);
+                    AddInCardHdmiAndAudioLoopPorts(number);
+                    break;
+                case "dmcsdsp":
+                    new DmcSDsp(number, Chassis);
+                    AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber);
+                    AddInCardHdmiAndAudioLoopPorts(number);
+                    break;
+                case "dmcs2":
+                    new DmcS2(number, Chassis);
+                    AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber);
+                    AddInCardHdmiAndAudioLoopPorts(number);
+                    break;
+                case "dmcs2dsp":
+                    new DmcS2Dsp(number, Chassis);
+                    AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber);
+                    AddInCardHdmiAndAudioLoopPorts(number);
+                    break;
+                case "dmcsdi":
+                    new DmcSdi(number, Chassis);
+                    AddInputPortWithDebug(number, "sdiIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Sdi);
+                    AddOutputPortWithDebug(string.Format("inputCard{0}", number), "sdiOut", eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                        eRoutingPortConnectionType.Sdi, null);
+                    AddInCardHdmiAndAudioLoopPorts(number);
+                    break;
+                case "dmcdvi":
+                    new DmcDvi(number, Chassis);
+                    AddInputPortWithDebug(number, "dviIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Dvi);
+                    AddInputPortWithDebug(number, "audioIn", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
+                    AddInCardHdmiLoopPort(number);
+                    break;
+                case "dmcvga":
+                    new DmcVga(number, Chassis);
+                    AddInputPortWithDebug(number, "vgaIn", eRoutingSignalType.Video, eRoutingPortConnectionType.Vga);
+                    AddInputPortWithDebug(number, "audioIn", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
+                    AddInCardHdmiLoopPort(number);
+                    break;
+                case "dmcvidbnc":
+                    new DmcVidBnc(number, Chassis);
+                    AddInputPortWithDebug(number, "componentIn", eRoutingSignalType.Video, eRoutingPortConnectionType.Component);
+                    AddInputPortWithDebug(number, "audioIn", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
+                    AddInCardHdmiLoopPort(number);
+                    break;
+                case "dmcvidrcaa":
+                    new DmcVidRcaA(number, Chassis);
+                    AddInputPortWithDebug(number, "componentIn", eRoutingSignalType.Video, eRoutingPortConnectionType.Component);
+                    AddInputPortWithDebug(number, "audioIn", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio);
+                    AddInCardHdmiLoopPort(number);
+                    break;
+                case "dmcvidrcad":
+                    new DmcVidRcaD(number, Chassis);
+                    AddInputPortWithDebug(number, "componentIn", eRoutingSignalType.Video, eRoutingPortConnectionType.Component);
+                    AddInputPortWithDebug(number, "audioIn", eRoutingSignalType.Audio, eRoutingPortConnectionType.DigitalAudio);
+                    AddInCardHdmiLoopPort(number);
+                    break;
+                case "dmcvid4":
+                    new DmcVid4(number, Chassis);
+                    AddInputPortWithDebug(number, "compositeIn1", eRoutingSignalType.Video, eRoutingPortConnectionType.Composite);
+                    AddInputPortWithDebug(number, "compositeIn2", eRoutingSignalType.Video, eRoutingPortConnectionType.Composite);
+                    AddInputPortWithDebug(number, "compositeIn3", eRoutingSignalType.Video, eRoutingPortConnectionType.Composite);
+                    AddInputPortWithDebug(number, "compositeIn4", eRoutingSignalType.Video, eRoutingPortConnectionType.Composite);
+                    AddInCardHdmiLoopPort(number);
+                    break;
+                case "dmcstr":
+                    new DmcStr(number, Chassis);
+                    AddInputPortWithDebug(number, "streamIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Streaming);
+                    AddInCardHdmiAndAudioLoopPorts(number);
+                    break;
             }
         }
 
@@ -692,104 +695,114 @@ namespace PepperDash.Essentials.DM
             type = type.ToLower();
 
             Debug.Console(2, this, "Adding output card '{0}', slot {1}", type, number);
-            if (type == "dmc4khdo")
+            switch (type)
             {
-                var outputCard = new Dmc4kHdoSingle(number, Chassis);
-                var cecPort1 = outputCard.Card1.HdmiOutput;
-                var cecPort2 = outputCard.Card2.HdmiOutput;
-                AddDmcHdoPorts(number, cecPort1, cecPort2);
+                case "dmc4khdo":
+                {
+                    var outputCard = new Dmc4kHdoSingle(number, Chassis);
+                    var cecPort1 = outputCard.Card1.HdmiOutput;
+                    var cecPort2 = outputCard.Card2.HdmiOutput;
+                    AddDmcHdoPorts(number, cecPort1, cecPort2);
+                }
+                    break;
+                case "dmc4kzhdo":
+                {
+                    var outputCard = new Dmc4kzHdoSingle(number, Chassis);
+                    var cecPort1 = outputCard.Card1.HdmiOutput;
+                    var cecPort2 = outputCard.Card2.HdmiOutput;
+                    AddDmcHdoPorts(number, cecPort1, cecPort2);
+                }
+                    break;
+                case "dmchdo":
+                {
+                    var outputCard = new DmcHdoSingle(number, Chassis);
+                    var cecPort1 = outputCard.Card1.HdmiOutput;
+                    var cecPort2 = outputCard.Card2.HdmiOutput;
+                    AddDmcHdoPorts(number, cecPort1, cecPort2);
+                }
+                    break;
+                case "dmc4kcohd":
+                {
+                    var outputCard = new Dmc4kCoHdSingle(number, Chassis);
+                    var cecPort1 = outputCard.Card1.HdmiOutput;
+                    AddDmcCoPorts(number, cecPort1);
+                }
+                    break;
+                case "dmc4kzcohd":
+                {
+                    var outputCard = new Dmc4kzCoHdSingle(number, Chassis);
+                    var cecPort1 = outputCard.Card1.HdmiOutput;
+                    AddDmcCoPorts(number, cecPort1);
+                }
+                    break;
+                case "dmccohd":
+                {
+                    var outputCard = new DmcCoHdSingle(number, Chassis);
+                    var cecPort1 = outputCard.Card1.HdmiOutput;
+                    AddDmcCoPorts(number, cecPort1);
+                }
+                    break;
+                case "dmccatohd":
+                {
+                    var outputCard = new DmcCatoHdSingle(number, Chassis);
+                    var cecPort1 = outputCard.Card1.HdmiOutput;
+                    AddDmcCoPorts(number, cecPort1);
+                }
+                    break;
+                case "dmcsohd":
+                {
+                    var outputCard = new DmcSoHdSingle(number, Chassis);
+                    var cecPort1 = outputCard.Card1.HdmiOutput;
+                    AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                        eRoutingPortConnectionType.DmMmFiber, Chassis.Outputs[2 * (number - 1) + 1]);
+                    AddOutputPortWithDebug(string.Format("outputCard{0}", number), "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                        eRoutingPortConnectionType.Hdmi, Chassis.Outputs[2 * (number - 1) + 1], cecPort1);
+                    AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                        eRoutingPortConnectionType.DmMmFiber, Chassis.Outputs[2 * (number - 1) + 2]);
+                }
+                    break;
+                case "dmcs2ohd":
+                {
+                    var outputCard = new DmcS2oHdSingle(number, Chassis);
+                    var cecPort1 = outputCard.Card1.HdmiOutput;
+                    AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                        eRoutingPortConnectionType.DmSmFiber, Chassis.Outputs[2 * (number - 1) + 1]);
+                    AddOutputPortWithDebug(string.Format("outputCard{0}", number), "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                        eRoutingPortConnectionType.Hdmi, Chassis.Outputs[2 * (number - 1) + 1], cecPort1);
+                    AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                        eRoutingPortConnectionType.DmSmFiber, Chassis.Outputs[2 * (number - 1) + 2]);
+                }
+                    break;
+                case "dmcstro":
+                    AddOutputPortWithDebug(string.Format("outputCard{0}", number), "streamOut", eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                        eRoutingPortConnectionType.Streaming, Chassis.Outputs[2 * (number - 1) + 1]);
+                    break;
+                default:
+                    Debug.Console(1, this, "  WARNING: Output card type '{0}' is not available", type);
+                    break;
             }
-            else if (type == "dmc4kzhdo")
-            {
-                var outputCard = new Dmc4kzHdoSingle(number, Chassis);
-                var cecPort1 = outputCard.Card1.HdmiOutput;
-                var cecPort2 = outputCard.Card2.HdmiOutput;
-                AddDmcHdoPorts(number, cecPort1, cecPort2);
-            }
-            else if (type == "dmchdo")
-            {
-                var outputCard = new DmcHdoSingle(number, Chassis);
-                var cecPort1 = outputCard.Card1.HdmiOutput;
-                var cecPort2 = outputCard.Card2.HdmiOutput;
-                AddDmcHdoPorts(number, cecPort1, cecPort2);
-            }
-            else if (type == "dmc4kcohd")
-            {
-                var outputCard = new Dmc4kCoHdSingle(number, Chassis);
-                var cecPort1 = outputCard.Card1.HdmiOutput;
-                AddDmcCoPorts(number, cecPort1);
-            }
-            else if (type == "dmc4kzcohd")
-            {
-                var outputCard = new Dmc4kzCoHdSingle(number, Chassis);
-                var cecPort1 = outputCard.Card1.HdmiOutput;
-                AddDmcCoPorts(number, cecPort1);
-            }
-            else if (type == "dmccohd")
-            {
-                var outputCard = new DmcCoHdSingle(number, Chassis);
-                var cecPort1 = outputCard.Card1.HdmiOutput;
-                AddDmcCoPorts(number, cecPort1);
-            }
-            else if (type == "dmccatohd")
-            {
-                var outputCard = new DmcCatoHdSingle(number, Chassis);
-                var cecPort1 = outputCard.Card1.HdmiOutput;
-                AddDmcCoPorts(number, cecPort1);
-            }
-            else if (type == "dmcsohd")
-            {
-                var outputCard = new DmcSoHdSingle(number, Chassis);
-                var cecPort1 = outputCard.Card1.HdmiOutput;
-                AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                    eRoutingPortConnectionType.DmMmFiber, 2 * (number - 1) + 1);
-                AddOutputPortWithDebug(string.Format("outputCard{0}", number), "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                    eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
-                AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                    eRoutingPortConnectionType.DmMmFiber, 2 * (number - 1) + 2);
-            }
-            else if (type == "dmcs2ohd")
-            {
-                var outputCard = new DmcS2oHdSingle(number, Chassis);
-                var cecPort1 = outputCard.Card1.HdmiOutput;
-                AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                    eRoutingPortConnectionType.DmSmFiber, 2 * (number - 1) + 1);
-                AddOutputPortWithDebug(string.Format("outputCard{0}", number), "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                    eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
-                AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                    eRoutingPortConnectionType.DmSmFiber, 2 * (number - 1) + 2);
-            }
-            else if (type == "dmcstro")
-            {
-                var outputCard = new DmcStroSingle(number, Chassis);
-                AddOutputPortWithDebug(string.Format("outputCard{0}", number), "streamOut", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                    eRoutingPortConnectionType.Streaming, 2 * (number - 1) + 1);
-            }
-
-            else
-                Debug.Console(1, this, "  WARNING: Output card type '{0}' is not available", type);
         }
 
         void AddDmcHdoPorts(uint number, ICec cecPort1, ICec cecPort2)
         {
             AddOutputPortWithDebug(string.Format("outputCard{0}", number), "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
+                eRoutingPortConnectionType.Hdmi, Chassis.Outputs[2 * (number - 1) + 1], cecPort1);
             AddOutputPortWithDebug(string.Format("outputCard{0}", number), "audioOut1", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio,
-                2 * (number - 1) + 1);
+                Chassis.Outputs[2 * (number - 1) + 1]);
             AddOutputPortWithDebug(string.Format("outputCard{0}", number), "hdmiOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 2, cecPort2);
+                eRoutingPortConnectionType.Hdmi, Chassis.Outputs[2 * (number - 1) + 2], cecPort2);
             AddOutputPortWithDebug(string.Format("outputCard{0}", number), "audioOut2", eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio,
-                2 * (number - 1) + 2);
+                Chassis.Outputs[2 * (number - 1) + 2]);
         }
 
         void AddDmcCoPorts(uint number, ICec cecPort1)
         {
             AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                eRoutingPortConnectionType.DmCat, 2 * (number - 1) + 1);
+                eRoutingPortConnectionType.DmCat, Chassis.Outputs[2 * (number - 1) + 1]);
             AddOutputPortWithDebug(string.Format("outputCard{0}", number), "hdmiOut1", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                eRoutingPortConnectionType.Hdmi, 2 * (number - 1) + 1, cecPort1);
+                eRoutingPortConnectionType.Hdmi, Chassis.Outputs[2 * (number - 1) + 1], cecPort1);
             AddOutputPortWithDebug(string.Format("outputCard{0}", number), "dmOut2", eRoutingSignalType.Audio | eRoutingSignalType.Video,
-                eRoutingPortConnectionType.DmCat, 2 * (number - 1) + 2);
+                eRoutingPortConnectionType.DmCat, Chassis.Outputs[2 * (number - 1) + 2]);
         }
 
         /// <summary>
@@ -799,7 +812,7 @@ namespace PepperDash.Essentials.DM
         {
             var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, Chassis.Inputs[cardNum], this)
             {
                 FeedbackMatchObject = Chassis.Inputs[cardNum]
             };
@@ -814,7 +827,7 @@ namespace PepperDash.Essentials.DM
         {
             var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, Chassis.Inputs[cardNum], this)
             {
                 FeedbackMatchObject = Chassis.Inputs[cardNum]
             }; ;
