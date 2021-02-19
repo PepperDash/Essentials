@@ -23,6 +23,7 @@ namespace PepperDash.Essentials.DM
     [Description("Wrapper class for all DM-MD chassis variants from 8x8 to 32x32")]
     public class DmChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumericWithFeedback
     {
+        private const string NonePortKey = "inputCard0--None";
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
         public Switch Chassis { get; private set; }
@@ -134,6 +135,10 @@ namespace PepperDash.Essentials.DM
                 var controller = new DmChassisController(key, name, chassis);
 
                 //
+                var clearInputPort = new RoutingInputPort(NonePortKey, eRoutingSignalType.AudioVideo,
+                    eRoutingPortConnectionType.None, null, controller);
+
+                controller.InputPorts.Add(clearInputPort);
 
                 // add the cards and port names
                 foreach (var kvp in properties.InputSlots)
