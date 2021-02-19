@@ -815,14 +815,7 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType)
         {
-            var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
-            Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, Chassis.Inputs[cardNum], this)
-            {
-                FeedbackMatchObject = Chassis.Inputs[cardNum]
-            };
-
-            InputPorts.Add(inputPort);
+            AddInputPortWithDebug(cardNum, portName, sigType, portType, null);
         }
 
         /// <summary>
@@ -848,17 +841,7 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void AddOutputPortWithDebug(string cardName, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, object selector)
         {
-            var portKey = string.Format("{0}--{1}", cardName, portName);
-            Debug.Console(2, this, "Adding output port '{0}'", portKey);
-
-            var outputPort = new RoutingOutputPort(portKey, sigType, portType, selector, this);
-
-            if (portName.IndexOf("Loop", StringComparison.InvariantCultureIgnoreCase) < 0)
-            {
-                outputPort.FeedbackMatchObject = Chassis.Outputs[(uint) selector];
-            }
-
-            OutputPorts.Add(outputPort);
+            AddOutputPortWithDebug(cardName, portName, sigType, portType, selector, null);
         }
 
         /// <summary>
@@ -872,7 +855,7 @@ namespace PepperDash.Essentials.DM
 
             if (portName.IndexOf("Loop", StringComparison.InvariantCultureIgnoreCase) < 0)
             {
-                outputPort.FeedbackMatchObject = Chassis.Outputs[(uint)selector];
+                outputPort.FeedbackMatchObject = selector;
             }
             if (cecPort != null)
                 outputPort.Port = cecPort;
@@ -1162,7 +1145,7 @@ namespace PepperDash.Essentials.DM
         {
             if (RouteOffTimers.ContainsKey(pnt))
                 return;
-            RouteOffTimers[pnt] = new CTimer(o => { ExecuteSwitch(0, pnt.Number, pnt.Type); }, RouteOffTime);
+            RouteOffTimers[pnt] = new CTimer(o => ExecuteSwitch(null, pnt.Selector, pnt.Type), RouteOffTime);
         }
 
         // Send out sigs when coming online
@@ -1205,7 +1188,7 @@ namespace PepperDash.Essentials.DM
             }
 
             // Check to see if there's an off timer waiting on this and if so, cancel
-            var key = new PortNumberType(output.Number, sigType);
+            var key = new PortNumberType(output, sigType);
             if (input == null)
             {
                 StartOffTimer(key);
@@ -1873,13 +1856,23 @@ namespace PepperDash.Essentials.DM
     public struct PortNumberType
     {
         public uint Number { get; private set; }
+        public object Selector { get; private set; }
         public eRoutingSignalType Type { get; private set; }
 
-        public PortNumberType(uint number, eRoutingSignalType type)
+        public PortNumberType(object selector, eRoutingSignalType type)
             : this()
         {
-            Number = number;
+            Selector = selector;
             Type = type;
+
+            if (Selector is DMOutput)
+            {
+                Number = (selector as DMOutput).Number;
+            }
+            else if (Selector is uint)
+            {
+                Number = (uint) selector;
+            }
         }
     }
 
