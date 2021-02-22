@@ -367,34 +367,28 @@ namespace PepperDash.Essentials.DM {
         }
 
         void AddHdmiOutBladePorts(uint number) {
-            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("hdmiOut{0}", number) , eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, number);
+            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("hdmiOut{0}", number) , eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, Chassis.Outputs[number]);
         }
 
         void AddDmOutBladePorts(uint number) {
-            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("dmOut{0}", number), eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, number);
+            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("dmOut{0}", number), eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, Chassis.Outputs[number]);
         }
 
         void AddDmOutMmFiberBladePorts(uint number) {
-            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("dmOut{0}", number), eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber, number);
+            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("dmOut{0}", number), eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber, Chassis.Outputs[number]);
         }
 
         void AddDmOutSmFiberBladePorts(uint number) {
-            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("dmOut{0}", number), eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber, number);
+            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("dmOut{0}", number), eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber, Chassis.Outputs[number]);
         }
 
 
         /// <summary>
         /// Adds InputPort
         /// </summary>
-        void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType) {
-            var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
-            Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
-            {
-                FeedbackMatchObject = Chassis.Inputs[cardNum]
-            };
-
-            InputPorts.Add(inputPort);
+        void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType)
+        {
+            AddInputPortWithDebug(cardNum, portName, sigType, portType, null);
         }
 
         /// <summary>
@@ -405,7 +399,7 @@ namespace PepperDash.Essentials.DM {
         {
             var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, Chassis.Inputs[cardNum], this)
             {
                 FeedbackMatchObject = Chassis.Inputs[cardNum]
             };
