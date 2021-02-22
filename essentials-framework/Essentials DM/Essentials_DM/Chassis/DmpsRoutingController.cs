@@ -531,15 +531,7 @@ namespace PepperDash.Essentials.DM
         private void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType,
             eRoutingPortConnectionType portType)
         {
-            var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
-            Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
-            {
-                FeedbackMatchObject = Dmps.SwitcherInputs[cardNum]
-            };
-            ;
-
-            InputPorts.Add(inputPort);
+            AddInputPortWithDebug(cardNum, portName, sigType, portType, null);
         }
 
         /// <summary>
@@ -549,11 +541,10 @@ namespace PepperDash.Essentials.DM
         {
             var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, Dmps.SwitcherInputs[cardNum], this)
             {
                 FeedbackMatchObject = Dmps.SwitcherInputs[cardNum]
             }; 
-            ;
 
             if (cecPort != null)
                 inputPort.Port = cecPort;
@@ -672,7 +663,7 @@ namespace PepperDash.Essentials.DM
         /// <param name="number"></param>
         void AddAudioOnlyOutputPort(uint number, string portName)
         {
-            AddOutputPortWithDebug(number, portName, eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio, number);
+            AddOutputPortWithDebug(number, portName, eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio, Dmps.SwitcherOutputs[number]);
         }
 
         /// <summary>
@@ -682,7 +673,7 @@ namespace PepperDash.Essentials.DM
         /// <param name="cecPort"></param>
         void AddHdmiOutputPort(uint number, ICec cecPort)
         {
-            AddOutputPortWithDebug(number, string.Format("hdmiOut{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, number, cecPort);
+            AddOutputPortWithDebug(number, string.Format("hdmiOut{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, Dmps.SwitcherOutputs[number], cecPort);
         }
 
         /// <summary>
@@ -691,7 +682,7 @@ namespace PepperDash.Essentials.DM
         /// <param name="number"></param>
         void AddDmOutputPort(uint number)
         {
-            AddOutputPortWithDebug(number, string.Format("dmOut{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, number);
+            AddOutputPortWithDebug(number, string.Format("dmOut{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, Dmps.SwitcherOutputs[number]);
         }
 
         /// <summary>
@@ -699,12 +690,7 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void AddOutputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, object selector)
         {
-            var portKey = string.Format("outputCard{0}--{1}", cardNum, portName);
-            Debug.Console(2, this, "Adding output port '{0}'", portKey);
-            OutputPorts.Add(new RoutingOutputPort(portKey, sigType, portType, selector, this)
-            {
-                FeedbackMatchObject = Dmps.SwitcherOutputs[cardNum]
-            });
+            AddOutputPortWithDebug(cardNum, portName, sigType, portType, selector, null);
         }
 
         /// <summary>
@@ -908,10 +894,12 @@ namespace PepperDash.Essentials.DM
                         catch (NotSupportedException)
                         {
                             Debug.Console(1, this, "Routing input {0} audio to output {1}",
-                                (eDmps34KAudioOutSource) input.Number,
+                                (eDmps34KAudioOutSource) (input == null ? 0 : input.Number),
                                 (CrestronControlSystem.eDmps34K350COutputs) output.Number);
 
-                            output.AudioOutSource = (eDmps34KAudioOutSource) input.Number;
+                            output.AudioOutSource = input == null
+                                ? eDmps34KAudioOutSource.NoRoute
+                                : (eDmps34KAudioOutSource)input.Number;
                         }
                     }
 
