@@ -1302,7 +1302,7 @@ namespace PepperDash.Essentials.DM
                 return;
             }
 
-            var inputCard = Chassis.Inputs[inputSelector];
+            var inputCard = inputSelector == 0 ? null : Chassis.Inputs[inputSelector];
             var outputCard = Chassis.Outputs[outputSelector];
 
             ExecuteSwitch(inputCard, outputCard, sigType);

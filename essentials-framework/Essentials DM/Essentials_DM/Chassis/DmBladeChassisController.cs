@@ -633,7 +633,7 @@ namespace PepperDash.Essentials.DM {
 
         public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
         {
-            var input = Chassis.Inputs[inputSelector];
+            var input = inputSelector == 0 ? null : Chassis.Inputs[inputSelector];
             var output = Chassis.Outputs[outputSelector];
 
             ExecuteSwitch(input, output, sigType);

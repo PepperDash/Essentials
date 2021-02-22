@@ -932,7 +932,7 @@ namespace PepperDash.Essentials.DM
 
         public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
         {
-            var input = Dmps.SwitcherInputs[inputSelector];
+            var input = inputSelector == 0 ? null : Dmps.SwitcherInputs[inputSelector];
             var output = Dmps.SwitcherOutputs[outputSelector];
 
             ExecuteSwitch(input, output, sigType);
