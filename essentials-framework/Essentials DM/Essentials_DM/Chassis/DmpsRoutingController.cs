@@ -848,21 +848,32 @@ namespace PepperDash.Essentials.DM
 
                 Debug.Console(2, this, "Attempting a DM route from input {0} to output {1} {2}", inputSelector, outputSelector, sigType);
 
-                var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
-                var output = Convert.ToUInt32(outputSelector);
+                //var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
+                //var output = Convert.ToUInt32(outputSelector);
+
+                var input = inputSelector as DMInput;
+                var output = outputSelector as DMOutput;
+
+                if (output == null)
+                {
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+                        "Unable to execute switch for inputSelector {0} to outputSelector {1}", inputSelector,
+                        outputSelector);
+                    return;
+                }
 
                 var sigTypeIsUsbOrVideo = ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video) ||
                                           ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput) ||
                                           ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput);
 
-                if ((input <= Dmps.NumberOfSwitcherInputs && output <= Dmps.NumberOfSwitcherOutputs &&
+                if (input == null || (input.Number <= Dmps.NumberOfSwitcherInputs && output.Number <= Dmps.NumberOfSwitcherOutputs &&
                      sigTypeIsUsbOrVideo) ||
-                    (input <= Dmps.NumberOfSwitcherInputs + 5 && output <= Dmps.NumberOfSwitcherOutputs &&
+                    (input.Number <= Dmps.NumberOfSwitcherInputs + 5 && output.Number <= Dmps.NumberOfSwitcherOutputs &&
                      (sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio))
                 {
                     // Check to see if there's an off timer waiting on this and if so, cancel
                     var key = new PortNumberType(output, sigType);
-                    if (input == 0)
+                    if (input == null)
                     {
                         StartOffTimer(key);
                     }
@@ -877,60 +888,45 @@ namespace PepperDash.Essentials.DM
                     }
 
                     
-                    DMOutput dmOutputCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
+                    //DMOutput dmOutputCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
 
                     //if (inCard != null)
                     //{
                     // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
                     if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
                     {
-                        DMInput dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                        //SystemControl.VideoEnter.BoolValue = true;
-                        if (dmOutputCard != null)
-                            dmOutputCard.VideoOut = dmInputCard;
+                        
+                            output.VideoOut = input;
                     }
 
                     if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
                     {
-                        DMInput dmInputCard = null;
-                        if (input <= Dmps.NumberOfSwitcherInputs)
+                        try
                         {
-                            dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
+                            output.AudioOut = input;
                         }
+                        catch (NotSupportedException)
+                        {
+                            Debug.Console(1, this, "Routing input {0} audio to output {1}",
+                                (eDmps34KAudioOutSource) input.Number,
+                                (CrestronControlSystem.eDmps34K350COutputs) output.Number);
 
-                        if (dmOutputCard != null)
-                            try
-                            {
-                                dmOutputCard.AudioOut = dmInputCard;
-                            }
-                            catch (NotSupportedException)
-                            {
-                                Debug.Console(1, this, "Routing input {0} audio to output {1}",
-                                    (eDmps34KAudioOutSource) input, (CrestronControlSystem.eDmps34K350COutputs) output);
-
-                                dmOutputCard.AudioOutSource = (eDmps34KAudioOutSource) input;
-                            }
+                            output.AudioOutSource = (eDmps34KAudioOutSource) input.Number;
+                        }
                     }
 
                     if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
                     {
-                        DMInput dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                        if (dmOutputCard != null)
-                            dmOutputCard.USBRoutedTo = dmInputCard;
+                        
+                            output.USBRoutedTo = input;
                     }
 
-                    if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+                    if ((sigType & eRoutingSignalType.UsbInput) != eRoutingSignalType.UsbInput)
                     {
-                        DMInput dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                        if (dmInputCard != null)
-                            dmInputCard.USBRoutedTo = dmOutputCard;
+                        return;
                     }
-                    //}
-                    //else
-                    //{
-                    //    Debug.Console(1, this, "Unable to execute route from input {0} to output {1}.  Input card not available", inputSelector, outputSelector);
-                    //}
-
+                    if (input != null)
+                        input.USBRoutedTo = output;
                 }
                 else
                 {
@@ -950,7 +946,10 @@ namespace PepperDash.Essentials.DM
 
         public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
         {
-            ExecuteSwitch(inputSelector, outputSelector, sigType);
+            var input = Dmps.SwitcherInputs[inputSelector];
+            var output = Dmps.SwitcherOutputs[outputSelector];
+
+            ExecuteSwitch(input, output, sigType);
         }
 
         #endregion

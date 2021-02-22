@@ -567,9 +567,7 @@ namespace PepperDash.Essentials.DM {
         void StartOffTimer(PortNumberType pnt) {
             if (RouteOffTimers.ContainsKey(pnt))
                 return;
-            RouteOffTimers[pnt] = new CTimer(o => {
-                ExecuteSwitch(0, pnt.Number, pnt.Type);
-            }, RouteOffTime);
+            RouteOffTimers[pnt] = new CTimer(o => ExecuteSwitch(null, pnt.Selector, pnt.Type), RouteOffTime);
         }
 
 
@@ -592,11 +590,22 @@ namespace PepperDash.Essentials.DM {
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType sigType) {
             Debug.Console(2, this, "Making an awesome DM route from {0} to {1} {2}", inputSelector, outputSelector, sigType);
 
-            var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
-            var output = Convert.ToUInt32(outputSelector);
+            var input = inputSelector as DMInput; // Cast can sometimes fail
+            var output = outputSelector as DMOutput;
+            
+
+            if (output == null)
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+                    "Unable to execute switch for inputSelector {0} to outputSelector {1}", inputSelector,
+                    outputSelector);
+                return;
+            }
+
             // Check to see if there's an off timer waiting on this and if so, cancel
             var key = new PortNumberType(output, sigType);
-            if (input == 0) {
+
+            if (input == null) {
                 StartOffTimer(key);
             }
             else {
@@ -609,13 +618,13 @@ namespace PepperDash.Essentials.DM {
 
 
 
-            var inCard = input == 0 ? null : Chassis.Inputs[input];
-            var outCard = input == 0 ? null : Chassis.Outputs[output];
+            /*var inCard = input == 0 ? null : Chassis.Inputs[input];
+            var outCard = input == 0 ? null : Chassis.Outputs[output];*/
 
             // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
-            if ((sigType | eRoutingSignalType.Video) != eRoutingSignalType.Video) return;
+            if ((sigType & eRoutingSignalType.Video) != eRoutingSignalType.Video) return;
             Chassis.VideoEnter.BoolValue = true;
-            Chassis.Outputs[output].VideoOut = inCard;
+            output.VideoOut = input;
         }
 
         #endregion
@@ -624,7 +633,10 @@ namespace PepperDash.Essentials.DM {
 
         public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
         {
-            ExecuteSwitch(inputSelector, outputSelector, sigType);
+            var input = Chassis.Inputs[inputSelector];
+            var output = Chassis.Outputs[outputSelector];
+
+            ExecuteSwitch(input, output, sigType);
         }
 
         #endregion
