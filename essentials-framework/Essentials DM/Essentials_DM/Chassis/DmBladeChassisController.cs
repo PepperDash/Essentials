@@ -23,6 +23,8 @@ namespace PepperDash.Essentials.DM {
     /// </summary>
     public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumericWithFeedback
     {
+        private const string NonePortKey = "inputCard0--None";
+
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
         public Switch Chassis { get; private set; }
@@ -111,6 +113,10 @@ namespace PepperDash.Essentials.DM {
                     // wire up the audio to something here...
                     controller.AddVolumeControl(outNum, audio);
                 }
+
+                controller.InputPorts.Add(new RoutingInputPort(NonePortKey, eRoutingSignalType.Video,
+                    eRoutingPortConnectionType.None, null, controller));
+
 
                 controller.InputNames = properties.InputNames;
                 controller.OutputNames = properties.OutputNames;

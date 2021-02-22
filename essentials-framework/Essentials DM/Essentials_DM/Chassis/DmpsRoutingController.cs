@@ -21,6 +21,8 @@ namespace PepperDash.Essentials.DM
 {
     public class DmpsRoutingController : EssentialsBridgeableDevice, IRoutingNumericWithFeedback, IHasFeedback
     {
+        private const string NonePortKey = "none";
+
         public CrestronControlSystem Dmps { get; set; }
         public ISystemControl SystemControl { get; private set; }
 
@@ -75,20 +77,18 @@ namespace PepperDash.Essentials.DM
         {
             try
             {
-                
-                ISystemControl systemControl = null;
- 
-                systemControl = Global.ControlSystem.SystemControl as ISystemControl;
+                var systemControl = Global.ControlSystem.SystemControl;
 
                 if (systemControl == null)
                 {
                     return null;
                 }
 
-                var controller = new DmpsRoutingController(key, name, systemControl);
-
-                controller.InputNames = properties.InputNames;
-                controller.OutputNames = properties.OutputNames;
+                var controller = new DmpsRoutingController(key, name, systemControl)
+                {
+                    InputNames = properties.InputNames,
+                    OutputNames = properties.OutputNames
+                };
 
                 if (!string.IsNullOrEmpty(properties.NoRouteText))
                     controller.NoRouteText = properties.NoRouteText;
@@ -96,9 +96,9 @@ namespace PepperDash.Essentials.DM
                 return controller;
 
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                Debug.Console(0, "Error getting DMPS Controller:\r{0}", e);
+                Debug.Console(0, "Error getting DMPS Controller:\r\n{0}", e);
             }
             return null;
         }
@@ -113,6 +113,7 @@ namespace PepperDash.Essentials.DM
         public DmpsRoutingController(string key, string name, ISystemControl systemControl)
             : base(key, name)
         {
+            
             Dmps = Global.ControlSystem;
             SystemControl = systemControl;
 
@@ -427,14 +428,11 @@ namespace PepperDash.Essentials.DM
                 {
                     Debug.Console(1, this, "Adding Input Card Number {0} Type: {1}", inputCard.Number, inputCard.CardInputOutputType.ToString());
 
-                    InputEndpointOnlineFeedbacks[inputCard.Number] = new BoolFeedback(() => { return inputCard.EndpointOnlineFeedback; });
+                    InputEndpointOnlineFeedbacks[inputCard.Number] = new BoolFeedback(() => inputCard.EndpointOnlineFeedback);
 
                     if (inputCard.VideoDetectedFeedback != null)
                     {
-                        VideoInputSyncFeedbacks[inputCard.Number] = new BoolFeedback(() =>
-                        {
-                            return inputCard.VideoDetectedFeedback.BoolValue;
-                        });
+                        VideoInputSyncFeedbacks[inputCard.Number] = new BoolFeedback(() => inputCard.VideoDetectedFeedback.BoolValue);
                     }
 
                     InputNameFeedbacks[inputCard.Number] = new StringFeedback(() =>
@@ -443,13 +441,10 @@ namespace PepperDash.Essentials.DM
                         {
                             Debug.Console(2, this, "Input Card {0} Name: {1}", inputCard.Number, inputCard.NameFeedback.StringValue);
                             return inputCard.NameFeedback.StringValue;
+                        }
 
-                        }
-                        else
-                        {
-                            Debug.Console(2, this, "Input Card {0} Name is null", inputCard.Number);
-                            return "";
-                        }
+                        Debug.Console(2, this, "Input Card {0} Name is null", inputCard.Number);
+                        return "";
                     });
 
                     AddInputCard(inputCard.Number, inputCard);
@@ -459,6 +454,9 @@ namespace PepperDash.Essentials.DM
                     Debug.Console(2, this, "***********Input Card of type {0} is cannot be cast as DMInput*************", card.CardInputOutputType);
                 }
             }
+
+            InputPorts.Add(new RoutingInputPort(NonePortKey, eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.None, null, this));
         }
 
         /// <summary>
