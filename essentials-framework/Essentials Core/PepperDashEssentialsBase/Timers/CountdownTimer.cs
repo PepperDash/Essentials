@@ -17,7 +17,7 @@ namespace PepperDash.Essentials.Core
         public string Key { get; private set; }
 
         public BoolFeedback IsRunningFeedback { get; private set; }
-        bool _IsRunning;
+        bool _isRunning;
 
         public IntFeedback PercentFeedback { get; private set; }
         public StringFeedback TimeRemainingFeedback { get; private set; }
@@ -41,34 +41,32 @@ namespace PepperDash.Essentials.Core
         public SecondsCountdownTimer(string key)
         {
             Key = key;
-            IsRunningFeedback = new BoolFeedback(() => _IsRunning);
+            IsRunningFeedback = new BoolFeedback(() => _isRunning);
 
             TimeRemainingFeedback = new StringFeedback(() =>
                 {
                     // Need to handle up and down here.
 
-                    if (StartTime == null || FinishTime == null)
-                        return "";
                     var timeSpan = FinishTime - DateTime.Now;
 
                     if (timeSpan.TotalSeconds < 60)
                     {
                         return Math.Round(timeSpan.TotalSeconds).ToString();
                     }
+                    else if (timeSpan.TotalSeconds < 0)
+                    {
+                        return "0";
+                    }
                     else
                     {
                         Debug.Console(2, this, "timeSpan.Minutes == {0}, timeSpan.Seconds == {1}", timeSpan.Minutes, timeSpan.Seconds);
-                        return String.Format("{0:D2}:{1:D2}",
-                            timeSpan.Minutes,
-                            timeSpan.Seconds);
+                        return String.Format("{0:c}", timeSpan);
                     }
                 });
 
             PercentFeedback = new IntFeedback(() =>
             {
-                if (StartTime == null || FinishTime == null)
-                    return 0;
-                double percent = (FinishTime - DateTime.Now).TotalSeconds
+                var percent = (FinishTime - DateTime.Now).TotalSeconds
                     / (FinishTime - StartTime).TotalSeconds 
                     * 100;
                 return (int)percent;
@@ -80,7 +78,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void Start()
         {
-            if (_IsRunning)
+            if (_isRunning)
                 return;
             StartTime = DateTime.Now;
             FinishTime = StartTime + TimeSpan.FromSeconds(SecondsToCount);
@@ -88,7 +86,7 @@ namespace PepperDash.Essentials.Core
             if (SecondTimer != null)
                 SecondTimer.Stop();
             SecondTimer = new CTimer(SecondElapsedTimerCallback, null, 0, 1000);
-            _IsRunning = true;
+            _isRunning = true;
             IsRunningFeedback.FireUpdate();
 
             var handler = HasStarted;
@@ -101,7 +99,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public void Reset()
         {
-            _IsRunning = false;
+            _isRunning = false;
             Start();
         }
 
@@ -133,7 +131,7 @@ namespace PepperDash.Essentials.Core
         {
             if (SecondTimer != null)
                 SecondTimer.Stop();
-            _IsRunning = false;
+            _isRunning = false;
             IsRunningFeedback.FireUpdate(); 
         }
 
