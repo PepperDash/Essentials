@@ -3,7 +3,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.CrestronThread;
 using PepperDash.Core;
 
-namespace PepperDash_Essentials_Core.Queues
+namespace PepperDash.Essentials.Core.Queues
 {
     /// <summary>
     /// Threadsafe processing of queued items with pacing if required
@@ -126,7 +126,9 @@ namespace PepperDash_Essentials_Core.Queues
         /// </summary>
         /// <param name="key">Key</param>
         /// <param name="priority"></param>
-        private GenericQueue(string key, Thread.eThreadPriority priority, int capacity, int pacing)
+        /// <param name="capacity"></param>
+        /// <param name="pacing"></param>
+        protected GenericQueue(string key, Thread.eThreadPriority priority, int capacity, int pacing)
         {
             _key = key;
             int cap = 25; // sets default
@@ -242,6 +244,108 @@ namespace PepperDash_Essentials_Core.Queues
         public string Key
         {
             get { return _key; }
+        }
+    }
+}
+
+namespace PepperDash_Essentials_Core.Queues
+{
+    /// <summary>
+    /// Threadsafe processing of queued items with pacing if required
+    /// </summary>
+    [Obsolete("Use PepperDash.Essentials.Core.Queues")]
+    public class GenericQueue : PepperDash.Essentials.Core.Queues.GenericQueue
+    {
+        private bool _delayEnabled;
+        private int _delayTime;
+
+        private const Thread.eThreadPriority _defaultPriority = Thread.eThreadPriority.MediumPriority;
+
+        
+
+        /// <summary>
+        /// Constructor with no thread priority
+        /// </summary>
+        /// <param name="key"></param>
+        public GenericQueue(string key)
+            : this(key, _defaultPriority, 0, 0)
+        {
+        }
+
+        /// <summary>
+        /// Constructor with queue size
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="capacity">Fixed size for the queue to hold</param>
+        public GenericQueue(string key, int capacity)
+            : this(key, _defaultPriority, capacity, 0)
+        {
+        }
+
+        /// <summary>
+        /// Constructor for generic queue with no pacing
+        /// </summary>
+        /// <param name="key">Key</param>
+        /// <param name="pacing">Pacing in ms between actions</param>
+        public GenericQueue(int pacing, string key)
+            : this(key, _defaultPriority, 0, pacing)
+        {
+        }
+
+        /// <summary>
+        /// Constructor with pacing and capacity
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="pacing"></param>
+        /// <param name="capacity"></param>
+        public GenericQueue(string key, int pacing, int capacity)
+            : this(key, _defaultPriority, capacity, pacing)
+        {
+        }
+
+        /// <summary>
+        /// Constructor with pacing and priority
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="pacing"></param>
+        /// <param name="priority"></param>
+        public GenericQueue(string key, int pacing, Thread.eThreadPriority priority)
+            : this(key, priority, 0, pacing)
+        {
+        }
+
+        /// <summary>
+        /// Constructor with pacing, priority and capacity
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="priority"></param>
+        /// <param name="capacity"></param>
+        public GenericQueue(string key, Thread.eThreadPriority priority, int capacity)
+            : this(key, priority, capacity, 0)
+        {
+        }
+
+        /// <summary>
+        /// Constructor with pacing, priority and capacity
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="pacing"></param>
+        /// <param name="priority"></param>
+        /// <param name="capacity"></param>
+        public GenericQueue(string key, int pacing, Thread.eThreadPriority priority, int capacity)
+            : this(key, priority, capacity, pacing)
+        {
+        }
+
+        /// <summary>
+        /// Constructor for generic queue with no pacing
+        /// </summary>
+        /// <param name="key">Key</param>
+        /// <param name="priority"></param>
+        /// <param name="capacity"></param>
+        /// <param name="pacing"></param>
+        private GenericQueue(string key, Thread.eThreadPriority priority, int capacity, int pacing):base(key, priority, capacity, pacing)
+        {
         }
     }
 }

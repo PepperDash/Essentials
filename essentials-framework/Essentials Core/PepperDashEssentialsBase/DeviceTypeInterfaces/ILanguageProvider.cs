@@ -1,13 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
-        public interface ILanguageProvider
+   
+    public interface ILanguageProvider
     {
         ILanguageDefinition CurrentLanguage { get; set; }
 
         event EventHandler CurrentLanguageChanged;
+    }
+
+}
+
+namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
+{
+    [Obsolete("Use PepperDash.Essentials.Core.DeviceTypeInterfaces")]
+    public interface ILanguageProvider:PepperDash.Essentials.Core.DeviceTypeInterfaces.ILanguageProvider
+    {
     }
 
 }

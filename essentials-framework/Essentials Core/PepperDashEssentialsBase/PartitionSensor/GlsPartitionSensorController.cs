@@ -4,7 +4,7 @@ using Crestron.SimplSharpPro.GeneralIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
-using PepperDash_Essentials_Core.Bridges.JoinMaps;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
 
 using System;
 using System.Collections.Generic;

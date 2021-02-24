@@ -13,7 +13,7 @@ using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
-using PepperDash_Essentials_Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials
 {
