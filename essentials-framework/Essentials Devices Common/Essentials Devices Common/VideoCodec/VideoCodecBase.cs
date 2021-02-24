@@ -19,8 +19,7 @@ using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
-using PepperDash_Essentials_Core.Bridges.JoinMaps;
-using PepperDash_Essentials_Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Bridges.JoinMaps;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec

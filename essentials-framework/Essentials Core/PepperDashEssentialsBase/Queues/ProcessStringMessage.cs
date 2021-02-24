@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PepperDash_Essentials_Core.Queues
+namespace PepperDash.Essentials.Core.Queues
 {
     /// <summary>
     /// Message class for processing strings via an IQueue
@@ -40,5 +40,22 @@ namespace PepperDash_Essentials_Core.Queues
         {
             return _message ?? String.Empty;
         }
+    }
+}
+
+namespace PepperDash_Essentials_Core.Queues
+{
+    /// <summary>
+    /// Message class for processing strings via an IQueue
+    /// </summary>
+    [Obsolete("Use PepperDash.Essentials.Core.Queues")]
+    public class ProcessStringMessage : PepperDash.Essentials.Core.Queues.ProcessStringMessage
+    {
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="message">Message to be processed</param>
+        /// <param name="action">Action to invoke on the message</param>
+        public ProcessStringMessage(string message, Action<string> action) : base(message, action){}
     }
 }

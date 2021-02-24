@@ -1,7 +1,7 @@
 ﻿using System;
 using PepperDash.Core;
 
-namespace PepperDash_Essentials_Core.Queues
+namespace PepperDash.Essentials.Core.Queues
 {
     /// <summary>
     /// IBasicCommunication Message for IQueue
@@ -68,6 +68,34 @@ namespace PepperDash_Essentials_Core.Queues
         public override string ToString()
         {
             return _bytes != null ? _bytes.ToString() : _string;
+        }
+    }
+}
+
+namespace PepperDash_Essentials_Core.Queues
+{
+    /// <summary>
+    /// IBasicCommunication Message for IQueue
+    /// </summary>
+    [Obsolete("Use PepperDash.Essentials.Core.Queues")]
+    public class ComsMessage : PepperDash.Essentials.Core.Queues.ComsMessage
+    {
+        /// <summary>
+        /// Constructor for a string message
+        /// </summary>
+        /// <param name="coms">IBasicCommunication to send the message</param>
+        /// <param name="message">Message to send</param>
+        public ComsMessage(IBasicCommunication coms, string message):base(coms, message)
+        {
+        }
+
+        /// <summary>
+        /// Constructor for a byte message
+        /// </summary>
+        /// <param name="coms">IBasicCommunication to send the message</param>
+        /// <param name="message">Message to send</param>
+        public ComsMessage(IBasicCommunication coms, byte[] message):base(coms, message)
+        {
         }
     }
 }

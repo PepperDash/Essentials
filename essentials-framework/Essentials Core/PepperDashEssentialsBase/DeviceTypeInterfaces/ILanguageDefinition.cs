@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     public interface ILanguageDefinition
     {
@@ -14,5 +14,13 @@ namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
         List<LanguageLabel> SourceGroupNames { get; set; } 
         List<LanguageLabel> DestinationGroupNames { get; set; }
         List<LanguageLabel> RoomNames { get; set; } 
+    }
+}
+
+namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
+{
+    [Obsolete("Use PepperDash.Essentials.Core.DeviceTypeInterfaces")]
+    public interface ILanguageDefinition:PepperDash.Essentials.Core.DeviceTypeInterfaces.ILanguageDefinition
+    {
     }
 }
