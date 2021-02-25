@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using Newtonsoft.Json;
-using PepperDash.Core;
-using PepperDash.Essentials.Core;
 
 using Newtonsoft.Json.Linq;
 
@@ -25,7 +20,10 @@ namespace PepperDash.Essentials.Core.Config
 		[JsonProperty("sourceLists")]
 		public Dictionary<string, Dictionary<string, SourceListItem>> SourceLists { get; set; }
 
-		[JsonProperty("tieLines")]
+        [JsonProperty("destinationLists")]
+        public Dictionary<string, Dictionary<string,DestinationListItem>> DestinationLists { get; set; }
+
+        [JsonProperty("tieLines")]
 		public List<TieLineConfig> TieLines { get; set; }
 
         [JsonProperty("joinMaps")]
@@ -41,6 +39,16 @@ namespace PepperDash.Essentials.Core.Config
 			
 			return SourceLists[key];
 		}
+
+	    public Dictionary<string, DestinationListItem> GetDestinationListForKey(string key)
+	    {
+	        if (string.IsNullOrEmpty(key) || !DestinationLists.ContainsKey(key))
+	        {
+	            return null;
+	        }
+
+	        return DestinationLists[key];
+	    } 
 
         /// <summary>
         /// Checks Devices for an item with a Key that matches and returns it if found. Otherwise, retunes null
