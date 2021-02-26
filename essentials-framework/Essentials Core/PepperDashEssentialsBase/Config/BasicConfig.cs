@@ -40,6 +40,11 @@ namespace PepperDash.Essentials.Core.Config
 			return SourceLists[key];
 		}
 
+        /// <summary>
+        /// Retrieves a DestinationListItem based on the key
+        /// </summary>
+        /// <param name="key">key of the item to retrieve</param>
+        /// <returns>DestinationListItem if the key exists, null otherwise</returns>
 	    public Dictionary<string, DestinationListItem> GetDestinationListForKey(string key)
 	    {
 	        if (string.IsNullOrEmpty(key) || !DestinationLists.ContainsKey(key))
