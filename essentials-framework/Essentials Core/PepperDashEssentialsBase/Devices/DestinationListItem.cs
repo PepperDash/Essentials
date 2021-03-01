@@ -46,5 +46,8 @@ namespace PepperDash.Essentials.Core
         
         [JsonProperty("horizontalLocation")]
         public int HorizontalLocation { get; set; }
+
+        [JsonProperty("sinkType")]
+        public eRoutingSignalType SinkType { get; set; }
     }
 }
