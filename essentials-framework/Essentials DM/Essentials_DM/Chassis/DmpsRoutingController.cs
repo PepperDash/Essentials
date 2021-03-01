@@ -820,7 +820,7 @@ namespace PepperDash.Essentials.DM
         {
             if (RouteOffTimers.ContainsKey(pnt))
                 return;
-            RouteOffTimers[pnt] = new CTimer(o => ExecuteSwitch(0, pnt.Number, pnt.Type), RouteOffTime);
+            RouteOffTimers[pnt] = new CTimer(o => ExecuteSwitch(null, pnt.Selector, pnt.Type), RouteOffTime);
         }
 
         #region IRouting Members
