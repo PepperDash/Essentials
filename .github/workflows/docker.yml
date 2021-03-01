@@ -78,16 +78,9 @@ jobs:
         with:
           name: Version
           path: ${{env.GITHUB_HOME}}\output\version.txt
-      # Create the release on the source repo
-      - name: Create tag for non-rc builds
-        if: contains(env.VERSION, 'alpha') || contains(env.VERSION, 'beta')
-        run: |
-          git tag $($Env:VERSION)
-          git push --tags origin
       - name: Create Release
         id: create_release
         # using contributor's version to allow for pointing at the right commit
-        if: contains(env.VERSION,'-rc-') || contains(env.VERSION,'-hotfix-')
         uses: fleskesvor/create-release@feature/support-target-commitish
         with:
           tag_name: ${{ env.VERSION  }}
