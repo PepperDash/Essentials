@@ -373,7 +373,7 @@ Params: {2}"
             uint i;
             if (_config.IsPrimary)
             {
-
+                Debug.Console(1, this, "Linking Primary system Tuner Preset Mirroring");
                 if (_config.MirroredTuners != null && _config.MirroredTuners.Count > 0)
                 {
                     foreach (var tuner in _config.MirroredTuners)
@@ -386,7 +386,9 @@ Params: {2}"
                             continue;
                         }
 
-                        f.LinkInputSig(trilist.StringInput[(uint)(joinMap.CurrentPreset.JoinNumber + tuner.Key)]);
+                        var join = joinMap.CurrentPreset.JoinNumber + tuner.Key;
+                        f.LinkInputSig(trilist.StringInput[(uint)(join)]);
+                        Debug.Console(1, this, "Linked Current Preset feedback for tuner: {0} to serial join: {1}", tuner.Value, join);
                     }
                 }
 
@@ -412,30 +414,35 @@ Params: {2}"
 
                 return;
             }
-
-
-            if (_config.MirroredTuners != null && _config.MirroredTuners.Count > 0)
+            else
             {
-                foreach (var tuner in _config.MirroredTuners)
-                {
-                    var t = _tuners[tuner.Value];
+                Debug.Console(1, this, "Linking Secondary system Tuner Preset Mirroring");
 
-                    if (t == null)
+                if (_config.MirroredTuners != null && _config.MirroredTuners.Count > 0)
+                {
+                    foreach (var tuner in _config.MirroredTuners)
                     {
-                        Debug.Console(1, this, "Unable to find tuner with key: {0}", tuner.Value);
-                        continue;
+                        var t = _tuners[tuner.Value];
+
+                        if (t == null)
+                        {
+                            Debug.Console(1, this, "Unable to find tuner with key: {0}", tuner.Value);
+                            continue;
+                        }
+
+                        var join = joinMap.CurrentPreset.JoinNumber + tuner.Key;
+                        trilist.SetStringSigAction(join, s => _tunerPresets.Dial(s, t));
+                        Debug.Console(1, this, "Linked preset recall action for tuner: {0} to serial join: {1}", tuner.Value, join);
                     }
 
-                    trilist.SetStringSigAction(joinMap.CurrentPreset.JoinNumber + tuner.Key, s => _tunerPresets.Dial(s, t));
+                    //foreach (var setTopBox in _tuners)
+                    //{
+                    //    var tuner = setTopBox;
+
+                    //    trilist.SetStringSigAction(joinMap.CurrentPreset.JoinNumber + i, s => _tunerPresets.Dial(s, tuner.Value));
+
+                    //}
                 }
-
-                //foreach (var setTopBox in _tuners)
-                //{
-                //    var tuner = setTopBox;
-
-                //    trilist.SetStringSigAction(joinMap.CurrentPreset.JoinNumber + i, s => _tunerPresets.Dial(s, tuner.Value));
-
-                //}
             }
         }
 
