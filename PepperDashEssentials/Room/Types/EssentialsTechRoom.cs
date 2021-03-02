@@ -373,12 +373,29 @@ Params: {2}"
             uint i;
             if (_config.IsPrimary)
             {
-                i = 0;
-                foreach (var feedback in CurrentPresetsFeedbacks)
+
+                if (_config.MirroredTuners != null && _config.MirroredTuners.Count > 0)
                 {
-                    feedback.Value.LinkInputSig(trilist.StringInput[(uint) (joinMap.CurrentPreset.JoinNumber + i)]);
-                    i++;
+                    foreach (var tuner in _config.MirroredTuners)
+                    {
+                        var f = CurrentPresetsFeedbacks[tuner.Value];
+
+                        if (f == null)
+                        {
+                            Debug.Console(1, this, "Unable to find feedback with key: {0}", tuner.Value);
+                            continue;
+                        }
+
+                        f.LinkInputSig(trilist.StringInput[(uint)(joinMap.CurrentPreset.JoinNumber + tuner.Key)]);
+                    }
                 }
+
+                //i = 0;
+                //foreach (var feedback in CurrentPresetsFeedbacks)
+                //{
+                //    feedback.Value.LinkInputSig(trilist.StringInput[(uint) (joinMap.CurrentPreset.JoinNumber + i)]);
+                //    i++;
+                //}
 
                 trilist.OnlineStatusChange += (device, args) =>
                 {
@@ -396,14 +413,29 @@ Params: {2}"
                 return;
             }
 
-            i = 0;
-            foreach (var setTopBox in _tuners)
+
+            if (_config.MirroredTuners != null && _config.MirroredTuners.Count > 0)
             {
-                var tuner = setTopBox;
+                foreach (var tuner in _config.MirroredTuners)
+                {
+                    var t = _tuners[tuner.Value];
 
-                trilist.SetStringSigAction(joinMap.CurrentPreset.JoinNumber + i, s => _tunerPresets.Dial(s, tuner.Value));
+                    if (t == null)
+                    {
+                        Debug.Console(1, this, "Unable to find tuner with key: {0}", tuner.Value);
+                        continue;
+                    }
 
-                i++;
+                    trilist.SetStringSigAction(joinMap.CurrentPreset.JoinNumber + tuner.Key, s => _tunerPresets.Dial(s, t));
+                }
+
+                //foreach (var setTopBox in _tuners)
+                //{
+                //    var tuner = setTopBox;
+
+                //    trilist.SetStringSigAction(joinMap.CurrentPreset.JoinNumber + i, s => _tunerPresets.Dial(s, tuner.Value));
+
+                //}
             }
         }
 

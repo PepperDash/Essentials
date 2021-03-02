@@ -54,7 +54,7 @@ namespace PepperDash.Essentials.Room.Config
         /// Indicates which tuners should mirror preset recall when two rooms are configured in a primary->secondary scenario
         /// </summary>
         [JsonProperty("mirroredTuners")]
-        public List<string> MirroredTuners { get; set; }
+        public Dictionary<uint, string> MirroredTuners { get; set; }
 
         /// <summary>
         /// Indicates the room 
