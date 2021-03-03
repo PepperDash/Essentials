@@ -14,7 +14,7 @@ using PepperDash.Essentials.Core.Bridges;
 namespace PepperDash.Essentials.Core
 {
 	[Description("Wrapper class for CEN-ODT-C-POE")]
-    [ConfigSnippet("\"properties\": {\"control\": {\"method\": \"cresnet\",\"cresnetId\": \"97\"},\"enablePir\": true,\"enableLedFlash\": true,\"enableRawStates\":true,\"remoteTimeout\": 30,\"internalPhotoSensorMinChange\": 0,\"externalPhotoSensorMinChange\": 0,\"enableUsA\": true,\"enableUsB\": true,\"orWhenVacatedState\": true}")]
+    [ConfigSnippet("\"properties\": {\"control\": {\"method\": \"ipid\",\"ipId\": \"97\"},\"enablePir\": true,\"enableLedFlash\": true,\"enableRawStates\":true,\"remoteTimeout\": 30,\"internalPhotoSensorMinChange\": 0,\"externalPhotoSensorMinChange\": 0,\"enableUsA\": true,\"enableUsB\": true,\"orWhenVacatedState\": true}")]
 	public class CenOdtOccupancySensorBaseController : CrestronGenericBridgeableBaseDevice, IOccupancyStatusProvider
 	{
 		public CenOdtCPoe OccSensor { get; private set; }
