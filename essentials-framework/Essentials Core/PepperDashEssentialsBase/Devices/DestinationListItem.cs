@@ -16,6 +16,7 @@ namespace PepperDash.Essentials.Core
             get { return _sinkDevice ?? (_sinkDevice = DeviceManager.GetDeviceForKey(SinkKey) as EssentialsDevice); }
         }
 
+        [JsonProperty("preferredName")]
         public string PreferredName
         {
             get
