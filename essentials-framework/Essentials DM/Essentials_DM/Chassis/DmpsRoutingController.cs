@@ -21,6 +21,8 @@ namespace PepperDash.Essentials.DM
 {
     public class DmpsRoutingController : EssentialsBridgeableDevice, IRoutingNumericWithFeedback, IHasFeedback
     {
+        private const string NonePortKey = "none";
+
         public CrestronControlSystem Dmps { get; set; }
         public ISystemControl SystemControl { get; private set; }
 
@@ -75,20 +77,18 @@ namespace PepperDash.Essentials.DM
         {
             try
             {
-                
-                ISystemControl systemControl = null;
- 
-                systemControl = Global.ControlSystem.SystemControl as ISystemControl;
+                var systemControl = Global.ControlSystem.SystemControl;
 
                 if (systemControl == null)
                 {
                     return null;
                 }
 
-                var controller = new DmpsRoutingController(key, name, systemControl);
-
-                controller.InputNames = properties.InputNames;
-                controller.OutputNames = properties.OutputNames;
+                var controller = new DmpsRoutingController(key, name, systemControl)
+                {
+                    InputNames = properties.InputNames,
+                    OutputNames = properties.OutputNames
+                };
 
                 if (!string.IsNullOrEmpty(properties.NoRouteText))
                     controller.NoRouteText = properties.NoRouteText;
@@ -96,9 +96,9 @@ namespace PepperDash.Essentials.DM
                 return controller;
 
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                Debug.Console(0, "Error getting DMPS Controller:\r{0}", e);
+                Debug.Console(0, "Error getting DMPS Controller:\r\n{0}", e);
             }
             return null;
         }
@@ -113,6 +113,7 @@ namespace PepperDash.Essentials.DM
         public DmpsRoutingController(string key, string name, ISystemControl systemControl)
             : base(key, name)
         {
+            
             Dmps = Global.ControlSystem;
             SystemControl = systemControl;
 
@@ -427,14 +428,11 @@ namespace PepperDash.Essentials.DM
                 {
                     Debug.Console(1, this, "Adding Input Card Number {0} Type: {1}", inputCard.Number, inputCard.CardInputOutputType.ToString());
 
-                    InputEndpointOnlineFeedbacks[inputCard.Number] = new BoolFeedback(() => { return inputCard.EndpointOnlineFeedback; });
+                    InputEndpointOnlineFeedbacks[inputCard.Number] = new BoolFeedback(() => inputCard.EndpointOnlineFeedback);
 
                     if (inputCard.VideoDetectedFeedback != null)
                     {
-                        VideoInputSyncFeedbacks[inputCard.Number] = new BoolFeedback(() =>
-                        {
-                            return inputCard.VideoDetectedFeedback.BoolValue;
-                        });
+                        VideoInputSyncFeedbacks[inputCard.Number] = new BoolFeedback(() => inputCard.VideoDetectedFeedback.BoolValue);
                     }
 
                     InputNameFeedbacks[inputCard.Number] = new StringFeedback(() =>
@@ -443,13 +441,10 @@ namespace PepperDash.Essentials.DM
                         {
                             Debug.Console(2, this, "Input Card {0} Name: {1}", inputCard.Number, inputCard.NameFeedback.StringValue);
                             return inputCard.NameFeedback.StringValue;
+                        }
 
-                        }
-                        else
-                        {
-                            Debug.Console(2, this, "Input Card {0} Name is null", inputCard.Number);
-                            return "";
-                        }
+                        Debug.Console(2, this, "Input Card {0} Name is null", inputCard.Number);
+                        return "";
                     });
 
                     AddInputCard(inputCard.Number, inputCard);
@@ -459,6 +454,9 @@ namespace PepperDash.Essentials.DM
                     Debug.Console(2, this, "***********Input Card of type {0} is cannot be cast as DMInput*************", card.CardInputOutputType);
                 }
             }
+
+            InputPorts.Add(new RoutingInputPort(NonePortKey, eRoutingSignalType.AudioVideo,
+                eRoutingPortConnectionType.None, null, this));
         }
 
         /// <summary>
@@ -531,15 +529,7 @@ namespace PepperDash.Essentials.DM
         private void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType,
             eRoutingPortConnectionType portType)
         {
-            var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
-            Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
-            {
-                FeedbackMatchObject = Dmps.SwitcherInputs[cardNum]
-            };
-            ;
-
-            InputPorts.Add(inputPort);
+            AddInputPortWithDebug(cardNum, portName, sigType, portType, null);
         }
 
         /// <summary>
@@ -549,11 +539,10 @@ namespace PepperDash.Essentials.DM
         {
             var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, Dmps.SwitcherInputs[cardNum], this)
             {
                 FeedbackMatchObject = Dmps.SwitcherInputs[cardNum]
             }; 
-            ;
 
             if (cecPort != null)
                 inputPort.Port = cecPort;
@@ -672,7 +661,7 @@ namespace PepperDash.Essentials.DM
         /// <param name="number"></param>
         void AddAudioOnlyOutputPort(uint number, string portName)
         {
-            AddOutputPortWithDebug(number, portName, eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio, number);
+            AddOutputPortWithDebug(number, portName, eRoutingSignalType.Audio, eRoutingPortConnectionType.LineAudio, Dmps.SwitcherOutputs[number]);
         }
 
         /// <summary>
@@ -682,7 +671,7 @@ namespace PepperDash.Essentials.DM
         /// <param name="cecPort"></param>
         void AddHdmiOutputPort(uint number, ICec cecPort)
         {
-            AddOutputPortWithDebug(number, string.Format("hdmiOut{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, number, cecPort);
+            AddOutputPortWithDebug(number, string.Format("hdmiOut{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, Dmps.SwitcherOutputs[number], cecPort);
         }
 
         /// <summary>
@@ -691,7 +680,7 @@ namespace PepperDash.Essentials.DM
         /// <param name="number"></param>
         void AddDmOutputPort(uint number)
         {
-            AddOutputPortWithDebug(number, string.Format("dmOut{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, number);
+            AddOutputPortWithDebug(number, string.Format("dmOut{0}", number), eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, Dmps.SwitcherOutputs[number]);
         }
 
         /// <summary>
@@ -699,12 +688,7 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void AddOutputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, object selector)
         {
-            var portKey = string.Format("outputCard{0}--{1}", cardNum, portName);
-            Debug.Console(2, this, "Adding output port '{0}'", portKey);
-            OutputPorts.Add(new RoutingOutputPort(portKey, sigType, portType, selector, this)
-            {
-                FeedbackMatchObject = Dmps.SwitcherOutputs[cardNum]
-            });
+            AddOutputPortWithDebug(cardNum, portName, sigType, portType, selector, null);
         }
 
         /// <summary>
@@ -836,7 +820,7 @@ namespace PepperDash.Essentials.DM
         {
             if (RouteOffTimers.ContainsKey(pnt))
                 return;
-            RouteOffTimers[pnt] = new CTimer(o => ExecuteSwitch(0, pnt.Number, pnt.Type), RouteOffTime);
+            RouteOffTimers[pnt] = new CTimer(o => ExecuteSwitch(null, pnt.Selector, pnt.Type), RouteOffTime);
         }
 
         #region IRouting Members
@@ -848,21 +832,32 @@ namespace PepperDash.Essentials.DM
 
                 Debug.Console(2, this, "Attempting a DM route from input {0} to output {1} {2}", inputSelector, outputSelector, sigType);
 
-                var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
-                var output = Convert.ToUInt32(outputSelector);
+                //var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
+                //var output = Convert.ToUInt32(outputSelector);
+
+                var input = inputSelector as DMInput;
+                var output = outputSelector as DMOutput;
+
+                if (output == null)
+                {
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+                        "Unable to execute switch for inputSelector {0} to outputSelector {1}", inputSelector,
+                        outputSelector);
+                    return;
+                }
 
                 var sigTypeIsUsbOrVideo = ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video) ||
                                           ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput) ||
                                           ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput);
 
-                if ((input <= Dmps.NumberOfSwitcherInputs && output <= Dmps.NumberOfSwitcherOutputs &&
+                if (input == null || (input.Number <= Dmps.NumberOfSwitcherInputs && output.Number <= Dmps.NumberOfSwitcherOutputs &&
                      sigTypeIsUsbOrVideo) ||
-                    (input <= Dmps.NumberOfSwitcherInputs + 5 && output <= Dmps.NumberOfSwitcherOutputs &&
+                    (input.Number <= Dmps.NumberOfSwitcherInputs + 5 && output.Number <= Dmps.NumberOfSwitcherOutputs &&
                      (sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio))
                 {
                     // Check to see if there's an off timer waiting on this and if so, cancel
                     var key = new PortNumberType(output, sigType);
-                    if (input == 0)
+                    if (input == null)
                     {
                         StartOffTimer(key);
                     }
@@ -877,60 +872,47 @@ namespace PepperDash.Essentials.DM
                     }
 
                     
-                    DMOutput dmOutputCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
+                    //DMOutput dmOutputCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
 
                     //if (inCard != null)
                     //{
                     // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
                     if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
                     {
-                        DMInput dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                        //SystemControl.VideoEnter.BoolValue = true;
-                        if (dmOutputCard != null)
-                            dmOutputCard.VideoOut = dmInputCard;
+                        
+                            output.VideoOut = input;
                     }
 
                     if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
                     {
-                        DMInput dmInputCard = null;
-                        if (input <= Dmps.NumberOfSwitcherInputs)
+                        try
                         {
-                            dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
+                            output.AudioOut = input;
                         }
+                        catch (NotSupportedException)
+                        {
+                            Debug.Console(1, this, "Routing input {0} audio to output {1}",
+                                (eDmps34KAudioOutSource) (input == null ? 0 : input.Number),
+                                (CrestronControlSystem.eDmps34K350COutputs) output.Number);
 
-                        if (dmOutputCard != null)
-                            try
-                            {
-                                dmOutputCard.AudioOut = dmInputCard;
-                            }
-                            catch (NotSupportedException)
-                            {
-                                Debug.Console(1, this, "Routing input {0} audio to output {1}",
-                                    (eDmps34KAudioOutSource) input, (CrestronControlSystem.eDmps34K350COutputs) output);
-
-                                dmOutputCard.AudioOutSource = (eDmps34KAudioOutSource) input;
-                            }
+                            output.AudioOutSource = input == null
+                                ? eDmps34KAudioOutSource.NoRoute
+                                : (eDmps34KAudioOutSource)input.Number;
+                        }
                     }
 
                     if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
                     {
-                        DMInput dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                        if (dmOutputCard != null)
-                            dmOutputCard.USBRoutedTo = dmInputCard;
+                        
+                            output.USBRoutedTo = input;
                     }
 
-                    if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+                    if ((sigType & eRoutingSignalType.UsbInput) != eRoutingSignalType.UsbInput)
                     {
-                        DMInput dmInputCard = input == 0 ? null : Dmps.SwitcherInputs[input] as DMInput;
-                        if (dmInputCard != null)
-                            dmInputCard.USBRoutedTo = dmOutputCard;
+                        return;
                     }
-                    //}
-                    //else
-                    //{
-                    //    Debug.Console(1, this, "Unable to execute route from input {0} to output {1}.  Input card not available", inputSelector, outputSelector);
-                    //}
-
+                    if (input != null)
+                        input.USBRoutedTo = output;
                 }
                 else
                 {
@@ -950,7 +932,10 @@ namespace PepperDash.Essentials.DM
 
         public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
         {
-            ExecuteSwitch(inputSelector, outputSelector, sigType);
+            var input = inputSelector == 0 ? null : Dmps.SwitcherInputs[inputSelector];
+            var output = Dmps.SwitcherOutputs[outputSelector];
+
+            ExecuteSwitch(input, output, sigType);
         }
 
         #endregion

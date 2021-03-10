@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
-using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 
@@ -15,11 +11,11 @@ namespace PepperDash.Essentials.Core
 {
 	[Description("Wrapper class for Single Technology GLS Occupancy Sensors")]
     [ConfigSnippet("\"properties\": {\"control\": {\"method\": \"cresnet\",\"cresnetId\": \"97\"},\"enablePir\": true,\"enableLedFlash\": true,\"enableRawStates\":true,\"remoteTimeout\": 30,\"internalPhotoSensorMinChange\": 0,\"externalPhotoSensorMinChange\": 0}")]
-	public class GlsOccupancySensorBaseController : CrestronGenericBridgeableBaseDevice, IOccupancyStatusProvider
+	public abstract class GlsOccupancySensorBaseController : CrestronGenericBridgeableBaseDevice, IOccupancyStatusProvider
 	{
         public GlsOccupancySensorPropertiesConfig PropertiesConfig { get; private set; }
 
-		public GlsOccupancySensorBase OccSensor { get; private set; }
+	    protected GlsOccupancySensorBase OccSensor;
 
 		public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
@@ -58,44 +54,12 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		public GlsOccupancySensorBaseController(string key, Func<DeviceConfig, GlsOccupancySensorBase> preActivationFunc,
-			DeviceConfig config)
-			: base(key, config.Name)
+	    protected GlsOccupancySensorBaseController(string key, DeviceConfig config)
+			: this(key, config.Name, config)
 		{
-            var props = config.Properties.ToObject<GlsOccupancySensorPropertiesConfig>();
-
-            if (props != null)
-            {
-                PropertiesConfig = props;
-            }
-            else
-            {
-                Debug.Console(1, this, "props are null.  Unable to deserialize into GlsOccupancySensorPropertiesConfig");
-            }
-
-			AddPreActivationAction(() =>
-			{
-				OccSensor = preActivationFunc(config);
-
-				RegisterCrestronGenericBase(OccSensor);
-
-				RegisterGlsOdtSensorBaseController(OccSensor);
-
-			});
-
-            AddPostActivationAction(() =>
-            {
-                OccSensor.OnlineStatusChange += (o, a) =>
-                {
-                    if (a.DeviceOnLine)
-                    {
-                        ApplySettingsToSensorFromConfig();
-                    }
-                };
-            });            
 		}
 
-		public GlsOccupancySensorBaseController(string key, string name, DeviceConfig config)
+	    protected GlsOccupancySensorBaseController(string key, string name, DeviceConfig config)
             : base(key, name) 
         {
 
@@ -183,7 +147,7 @@ namespace PepperDash.Essentials.Core
             }
         }
 
-		protected void RegisterGlsOdtSensorBaseController(GlsOccupancySensorBase occSensor)
+		protected void RegisterGlsOccupancySensorBaseController(GlsOccupancySensorBase occSensor)
 		{
 			OccSensor = occSensor;
 
@@ -253,8 +217,8 @@ namespace PepperDash.Essentials.Core
 
 			switch (args.EventId)
 			{
-				case Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomVacantFeedbackEventId:
-				case Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomOccupiedFeedbackEventId:
+				case GlsOccupancySensorBase.RoomVacantFeedbackEventId:
+				case GlsOccupancySensorBase.RoomOccupiedFeedbackEventId:
 					Debug.Console(1, this, "Occupancy State: {0}", OccSensor.OccupancyDetectedFeedback.BoolValue);
 					RoomIsOccupiedFeedback.FireUpdate();
 					break;
@@ -298,63 +262,39 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		/// <summary>
-		/// Enables or disables the PIR sensor
-		/// </summary>
-		/// <param name="state"></param>
-		public void SetPirEnable(bool state)
-		{
-            Debug.Console(1, this, "Setting EnablePir to: {0}", state);
+	    /// <summary>
+	    /// Enables or disables the PIR sensor
+	    /// </summary>
+	    /// <param name="state"></param>
+	    public void SetPirEnable(bool state)
+	    {
+	        Debug.Console(1, this, "Setting EnablePir to: {0}", state);
 
-			if (state)
-			{
-				OccSensor.EnablePir.BoolValue = state;
-				OccSensor.DisablePir.BoolValue = !state;
-			}
-			else
-			{
-				OccSensor.EnablePir.BoolValue = state;
-				OccSensor.DisablePir.BoolValue = !state;
-			}
-		}
+	        OccSensor.EnablePir.BoolValue = state;
+	        OccSensor.DisablePir.BoolValue = !state;
+	    }
 
-		/// <summary>
-		/// Enables or disables the LED Flash
-		/// </summary>
-		/// <param name="state"></param>
-		public void SetLedFlashEnable(bool state)
-		{
-			if (state)
-			{
-				OccSensor.EnableLedFlash.BoolValue = state;
-				OccSensor.DisableLedFlash.BoolValue = !state;
-			}
-			else
-			{
-				OccSensor.EnableLedFlash.BoolValue = state;
-				OccSensor.DisableLedFlash.BoolValue = !state;
-			}
-		}
+	    /// <summary>
+	    /// Enables or disables the LED Flash
+	    /// </summary>
+	    /// <param name="state"></param>
+	    public void SetLedFlashEnable(bool state)
+	    {
+	        OccSensor.EnableLedFlash.BoolValue = state;
+	        OccSensor.DisableLedFlash.BoolValue = !state;
+	    }
 
-		/// <summary>
-		/// Enables or disables short timeout based on state
-		/// </summary>
-		/// <param name="state"></param>
-		public void SetShortTimeoutState(bool state)
-		{
-			if (state)
-			{
-				OccSensor.EnableShortTimeout.BoolValue = state;
-				OccSensor.DisableShortTimeout.BoolValue = !state;
-			}
-			else
-			{
-				OccSensor.EnableShortTimeout.BoolValue = state;
-				OccSensor.DisableShortTimeout.BoolValue = !state;
-			}
-		}
+	    /// <summary>
+	    /// Enables or disables short timeout based on state
+	    /// </summary>
+	    /// <param name="state"></param>
+	    public void SetShortTimeoutState(bool state)
+	    {
+	        OccSensor.EnableShortTimeout.BoolValue = state;
+	        OccSensor.DisableShortTimeout.BoolValue = !state;
+	    }
 
-		public void IncrementPirSensitivityInOccupiedState(bool pressRelease)
+	    public void IncrementPirSensitivityInOccupiedState(bool pressRelease)
 		{
 			OccSensor.IncrementPirSensitivityInOccupiedState.BoolValue = pressRelease;
 		}
@@ -374,14 +314,40 @@ namespace PepperDash.Essentials.Core
 			OccSensor.DecrementPirSensitivityInVacantState.BoolValue = pressRelease;
 		}
 
-		public void ForceOccupied()
+        /// <summary>
+        /// Pulse ForceOccupied on the sensor for .5 seconds
+        /// </summary>
+	    public void ForceOccupied()
+	    {
+	        CrestronInvoke.BeginInvoke((o) =>
+	        {
+	            ForceOccupied(true);
+	            CrestronEnvironment.Sleep(500);
+	            ForceOccupied(false);
+	        });
+	    }
+
+		public void ForceOccupied(bool value)
 		{
-			OccSensor.ForceOccupied.BoolValue = true;
+			OccSensor.ForceOccupied.BoolValue = value;
 		}
 
-		public void ForceVacant()
+        /// <summary>
+        /// Pulse ForceVacant on the sensor for .5 seconds
+        /// </summary>
+	    public void ForceVacant()
+	    {
+            CrestronInvoke.BeginInvoke((o) =>
+            {
+                ForceVacant(true);
+                CrestronEnvironment.Sleep(500);
+                ForceVacant(false);
+            });
+	    }
+
+		public void ForceVacant(bool value)
 		{
-			OccSensor.ForceVacant.BoolValue = true;
+			OccSensor.ForceVacant.BoolValue = value;
 		}
 
 		public void EnableRawStates(bool state)
@@ -406,11 +372,10 @@ namespace PepperDash.Essentials.Core
 			OccSensor.ExternalPhotoSensorMinimumChange.UShortValue = value;
 		}
 
-		/// <summary>
-		/// Method to print current occ settings to console.
-		/// </summary>
-		/// <param name="key"></param>
-		public virtual void GetSettings()
+	    /// <summary>
+	    /// Method to print current occ settings to console.
+	    /// </summary>
+	    public virtual void GetSettings()
 		{
 			var dash = new string('*', 50);
 			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
@@ -454,7 +419,6 @@ namespace PepperDash.Essentials.Core
 
 			Debug.Console(1, occController, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
-			#region Single and Dual Sensor Stuff
 			occController.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
 			trilist.StringInput[joinMap.Name.JoinNumber].StringValue = occController.Name;
 
@@ -466,131 +430,108 @@ namespace PepperDash.Essentials.Core
 				}
 			};
 
-			// Occupied status
-			trilist.SetSigTrueAction(joinMap.ForceOccupied.JoinNumber, occController.ForceOccupied);
-			trilist.SetSigTrueAction(joinMap.ForceVacant.JoinNumber, occController.ForceVacant);
-			occController.RoomIsOccupiedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RoomOccupiedFeedback.JoinNumber]);
-			occController.RoomIsOccupiedFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.RoomVacantFeedback.JoinNumber]);
-			occController.RawOccupancyFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyFeedback.JoinNumber]);
-			trilist.SetBoolSigAction(joinMap.EnableRawStates.JoinNumber, occController.EnableRawStates);
+			LinkSingleTechSensorToApi(occController, trilist, joinMap);
 
-			// Timouts
-			trilist.SetUShortSigAction(joinMap.Timeout.JoinNumber, occController.SetRemoteTimeout);
-			occController.CurrentTimeoutFeedback.LinkInputSig(trilist.UShortInput[joinMap.Timeout.JoinNumber]);
-			occController.LocalTimoutFeedback.LinkInputSig(trilist.UShortInput[joinMap.TimeoutLocalFeedback.JoinNumber]);
-
-			// LED Flash
-			trilist.SetSigTrueAction(joinMap.EnableLedFlash.JoinNumber, () => occController.SetLedFlashEnable(true));
-			trilist.SetSigTrueAction(joinMap.DisableLedFlash.JoinNumber, () => occController.SetLedFlashEnable(false));
-			occController.LedFlashEnabledFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.EnableLedFlash.JoinNumber]);
-
-			// Short Timeout
-			trilist.SetSigTrueAction(joinMap.EnableShortTimeout.JoinNumber, () => occController.SetShortTimeoutState(true));
-			trilist.SetSigTrueAction(joinMap.DisableShortTimeout.JoinNumber, () => occController.SetShortTimeoutState(false));
-			occController.ShortTimeoutEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableShortTimeout.JoinNumber]);
-
-			// PIR Sensor
-			trilist.SetSigTrueAction(joinMap.EnablePir.JoinNumber, () => occController.SetPirEnable(true));
-			trilist.SetSigTrueAction(joinMap.DisablePir.JoinNumber, () => occController.SetPirEnable(false));
-			occController.PirSensorEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnablePir.JoinNumber]);
-
-			// PIR Sensitivity in Occupied State
-			trilist.SetBoolSigAction(joinMap.IncrementPirInOccupiedState.JoinNumber, occController.IncrementPirSensitivityInOccupiedState);
-			trilist.SetBoolSigAction(joinMap.DecrementPirInOccupiedState.JoinNumber, occController.DecrementPirSensitivityInOccupiedState);
-			occController.PirSensitivityInOccupiedStateFeedback.LinkInputSig(trilist.UShortInput[joinMap.PirSensitivityInOccupiedState.JoinNumber]);
-
-			// PIR Sensitivity in Vacant State
-			trilist.SetBoolSigAction(joinMap.IncrementPirInVacantState.JoinNumber, occController.IncrementPirSensitivityInVacantState);
-			trilist.SetBoolSigAction(joinMap.DecrementPirInVacantState.JoinNumber, occController.DecrementPirSensitivityInVacantState);
-			occController.PirSensitivityInVacantStateFeedback.LinkInputSig(trilist.UShortInput[joinMap.PirSensitivityInVacantState.JoinNumber]);
-			#endregion
-
-			#region Dual Technology Sensor Stuff
-			var odtOccController = occController as GlsOdtOccupancySensorController;
-
-			if (odtOccController == null) return;
-			// OR When Vacated
-			trilist.SetBoolSigAction(joinMap.OrWhenVacated.JoinNumber, odtOccController.SetOrWhenVacatedState);
-			odtOccController.OrWhenVacatedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.OrWhenVacated.JoinNumber]);
-
-			// AND When Vacated
-			trilist.SetBoolSigAction(joinMap.AndWhenVacated.JoinNumber, odtOccController.SetAndWhenVacatedState);
-			odtOccController.AndWhenVacatedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.AndWhenVacated.JoinNumber]);
-
-			// Ultrasonic A Sensor
-			trilist.SetSigTrueAction(joinMap.EnableUsA.JoinNumber, () => odtOccController.SetUsAEnable(true));
-			trilist.SetSigTrueAction(joinMap.DisableUsA.JoinNumber, () => odtOccController.SetUsAEnable(false));
-			odtOccController.UltrasonicAEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableUsA.JoinNumber]);
-
-			// Ultrasonic B Sensor
-			trilist.SetSigTrueAction(joinMap.EnableUsB.JoinNumber, () => odtOccController.SetUsBEnable(true));
-			trilist.SetSigTrueAction(joinMap.DisableUsB.JoinNumber, () => odtOccController.SetUsBEnable(false));
-			odtOccController.UltrasonicAEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableUsB.JoinNumber]);
-
-			// US Sensitivity in Occupied State
-			trilist.SetBoolSigAction(joinMap.IncrementUsInOccupiedState.JoinNumber, odtOccController.IncrementUsSensitivityInOccupiedState);
-			trilist.SetBoolSigAction(joinMap.DecrementUsInOccupiedState.JoinNumber, odtOccController.DecrementUsSensitivityInOccupiedState);
-			odtOccController.UltrasonicSensitivityInOccupiedStateFeedback.LinkInputSig(trilist.UShortInput[joinMap.UsSensitivityInOccupiedState.JoinNumber]);
-
-			// US Sensitivity in Vacant State
-			trilist.SetBoolSigAction(joinMap.IncrementUsInVacantState.JoinNumber, odtOccController.IncrementUsSensitivityInVacantState);
-			trilist.SetBoolSigAction(joinMap.DecrementUsInVacantState.JoinNumber, odtOccController.DecrementUsSensitivityInVacantState);
-			odtOccController.UltrasonicSensitivityInVacantStateFeedback.LinkInputSig(trilist.UShortInput[joinMap.UsSensitivityInVacantState.JoinNumber]);
-
-			//Sensor Raw States
-			odtOccController.RawOccupancyPirFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyPirFeedback.JoinNumber]);
-			odtOccController.RawOccupancyUsFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyUsFeedback.JoinNumber]);
-
-			#endregion
+			LinkDualTechSensorToApi(occController, trilist, joinMap);
 		}
 
-		public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
-		{
-			LinkOccSensorToApi(this, trilist, joinStart, joinMapKey, bridge);
-		}
+	    private static void LinkDualTechSensorToApi(GlsOccupancySensorBaseController occController, BasicTriList trilist,
+	        GlsOccupancySensorBaseJoinMap joinMap)
+	    {
+	        var odtOccController = occController as GlsOdtOccupancySensorController;
 
-		#region PreActivation
+	        if (odtOccController == null)
+	        {
+	            return;
+	        }
+	        // OR When Vacated
+	        trilist.SetBoolSigAction(joinMap.OrWhenVacated.JoinNumber, odtOccController.SetOrWhenVacatedState);
+	        odtOccController.OrWhenVacatedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.OrWhenVacated.JoinNumber]);
 
-		private static GlsOirCCn GetGlsOirCCn(DeviceConfig dc)
-		{
-			var control = CommFactory.GetControlPropertiesConfig(dc);
-			var cresnetId = control.CresnetIdInt;
-			var branchId = control.ControlPortNumber;
-			var parentKey = string.IsNullOrEmpty(control.ControlPortDevKey) ? "processor" : control.ControlPortDevKey;
+	        // AND When Vacated
+	        trilist.SetBoolSigAction(joinMap.AndWhenVacated.JoinNumber, odtOccController.SetAndWhenVacatedState);
+	        odtOccController.AndWhenVacatedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.AndWhenVacated.JoinNumber]);
 
-			if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
-			{
-				Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
-				return new GlsOirCCn(cresnetId, Global.ControlSystem);
-			}
-			var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
+	        // Ultrasonic A Sensor
+	        trilist.SetSigTrueAction(joinMap.EnableUsA.JoinNumber, () => odtOccController.SetUsAEnable(true));
+	        trilist.SetSigTrueAction(joinMap.DisableUsA.JoinNumber, () => odtOccController.SetUsAEnable(false));
+	        odtOccController.UltrasonicAEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableUsA.JoinNumber]);
 
-			if (cresnetBridge != null)
-			{
-				Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
-				return new GlsOirCCn(cresnetId, cresnetBridge.CresnetBranches[branchId]);
-			}
-			Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
-			return null;
-		}
-		#endregion
+	        // Ultrasonic B Sensor
+	        trilist.SetSigTrueAction(joinMap.EnableUsB.JoinNumber, () => odtOccController.SetUsBEnable(true));
+	        trilist.SetSigTrueAction(joinMap.DisableUsB.JoinNumber, () => odtOccController.SetUsBEnable(false));
+	        odtOccController.UltrasonicBEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableUsB.JoinNumber]);
 
-		public class GlsOccupancySensorBaseControllerFactory : EssentialsDeviceFactory<GlsOccupancySensorBaseController>
-		{
-			public GlsOccupancySensorBaseControllerFactory()
-			{
-				TypeNames = new List<string>() { "glsoirccn" };
-			}
+	        // US Sensitivity in Occupied State
+	        trilist.SetBoolSigAction(joinMap.IncrementUsInOccupiedState.JoinNumber,
+	            odtOccController.IncrementUsSensitivityInOccupiedState);
+	        trilist.SetBoolSigAction(joinMap.DecrementUsInOccupiedState.JoinNumber,
+	            odtOccController.DecrementUsSensitivityInOccupiedState);
+	        odtOccController.UltrasonicSensitivityInOccupiedStateFeedback.LinkInputSig(
+	            trilist.UShortInput[joinMap.UsSensitivityInOccupiedState.JoinNumber]);
 
+	        // US Sensitivity in Vacant State
+	        trilist.SetBoolSigAction(joinMap.IncrementUsInVacantState.JoinNumber,
+	            odtOccController.IncrementUsSensitivityInVacantState);
+	        trilist.SetBoolSigAction(joinMap.DecrementUsInVacantState.JoinNumber,
+	            odtOccController.DecrementUsSensitivityInVacantState);
+	        odtOccController.UltrasonicSensitivityInVacantStateFeedback.LinkInputSig(
+	            trilist.UShortInput[joinMap.UsSensitivityInVacantState.JoinNumber]);
 
-			public override EssentialsDevice BuildDevice(DeviceConfig dc)
-			{
-				Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
+	        //Sensor Raw States
+	        odtOccController.RawOccupancyPirFeedback.LinkInputSig(
+	            trilist.BooleanInput[joinMap.RawOccupancyPirFeedback.JoinNumber]);
+	        odtOccController.RawOccupancyUsFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyUsFeedback.JoinNumber]);
+	    }
 
-				return new GlsOccupancySensorBaseController(dc.Key, GetGlsOirCCn, dc);
-			}
+	    private static void LinkSingleTechSensorToApi(GlsOccupancySensorBaseController occController, BasicTriList trilist,
+	        GlsOccupancySensorBaseJoinMap joinMap)
+	    {
+// Occupied status
+	        trilist.SetBoolSigAction(joinMap.ForceOccupied.JoinNumber, occController.ForceOccupied);
+	        trilist.SetBoolSigAction(joinMap.ForceVacant.JoinNumber, occController.ForceVacant);
+	        occController.RoomIsOccupiedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RoomOccupiedFeedback.JoinNumber]);
+	        occController.RoomIsOccupiedFeedback.LinkComplementInputSig(
+	            trilist.BooleanInput[joinMap.RoomVacantFeedback.JoinNumber]);
+	        occController.RawOccupancyFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyFeedback.JoinNumber]);
+	        trilist.SetBoolSigAction(joinMap.EnableRawStates.JoinNumber, occController.EnableRawStates);
 
-		}
+	        // Timouts
+	        trilist.SetUShortSigAction(joinMap.Timeout.JoinNumber, occController.SetRemoteTimeout);
+	        occController.CurrentTimeoutFeedback.LinkInputSig(trilist.UShortInput[joinMap.Timeout.JoinNumber]);
+	        occController.LocalTimoutFeedback.LinkInputSig(trilist.UShortInput[joinMap.TimeoutLocalFeedback.JoinNumber]);
+
+	        // LED Flash
+	        trilist.SetSigTrueAction(joinMap.EnableLedFlash.JoinNumber, () => occController.SetLedFlashEnable(true));
+	        trilist.SetSigTrueAction(joinMap.DisableLedFlash.JoinNumber, () => occController.SetLedFlashEnable(false));
+	        occController.LedFlashEnabledFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.EnableLedFlash.JoinNumber]);
+
+	        // Short Timeout
+	        trilist.SetSigTrueAction(joinMap.EnableShortTimeout.JoinNumber, () => occController.SetShortTimeoutState(true));
+	        trilist.SetSigTrueAction(joinMap.DisableShortTimeout.JoinNumber, () => occController.SetShortTimeoutState(false));
+	        occController.ShortTimeoutEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableShortTimeout.JoinNumber]);
+
+	        // PIR Sensor
+	        trilist.SetSigTrueAction(joinMap.EnablePir.JoinNumber, () => occController.SetPirEnable(true));
+	        trilist.SetSigTrueAction(joinMap.DisablePir.JoinNumber, () => occController.SetPirEnable(false));
+	        occController.PirSensorEnabledFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnablePir.JoinNumber]);
+
+	        // PIR Sensitivity in Occupied State
+	        trilist.SetBoolSigAction(joinMap.IncrementPirInOccupiedState.JoinNumber,
+	            occController.IncrementPirSensitivityInOccupiedState);
+	        trilist.SetBoolSigAction(joinMap.DecrementPirInOccupiedState.JoinNumber,
+	            occController.DecrementPirSensitivityInOccupiedState);
+	        occController.PirSensitivityInOccupiedStateFeedback.LinkInputSig(
+	            trilist.UShortInput[joinMap.PirSensitivityInOccupiedState.JoinNumber]);
+
+	        // PIR Sensitivity in Vacant State
+	        trilist.SetBoolSigAction(joinMap.IncrementPirInVacantState.JoinNumber,
+	            occController.IncrementPirSensitivityInVacantState);
+	        trilist.SetBoolSigAction(joinMap.DecrementPirInVacantState.JoinNumber,
+	            occController.DecrementPirSensitivityInVacantState);
+	        occController.PirSensitivityInVacantStateFeedback.LinkInputSig(
+	            trilist.UShortInput[joinMap.PirSensitivityInVacantState.JoinNumber]);
+	    }
 	}
 
 

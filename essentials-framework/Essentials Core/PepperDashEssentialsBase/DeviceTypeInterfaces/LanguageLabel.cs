@@ -1,6 +1,7 @@
-﻿using PepperDash.Core;
+﻿using System;
+using PepperDash.Core;
 
-namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
+namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 {
     public class LanguageLabel
     {
@@ -8,5 +9,13 @@ namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
         public string Description { get; set; }
         public string DisplayText { get; set; }
         public uint JoinNumber { get; set; }
+    }
+}
+
+namespace PepperDash_Essentials_Core.DeviceTypeInterfaces
+{
+    [Obsolete("Use PepperDash.Essentials.Core.DeviceTypeInterfaces")]
+    public class LanguageLabel: PepperDash.Essentials.Core.DeviceTypeInterfaces.LanguageLabel
+    {
     }
 }

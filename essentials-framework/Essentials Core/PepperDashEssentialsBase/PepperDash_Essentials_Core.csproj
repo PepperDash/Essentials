@@ -143,6 +143,7 @@
     <Compile Include="Bridges\JoinMaps\Hrxxx0WirelessRemoteControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\IBasicCommunicationJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\IDigitalInputJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\IRBlurayBaseJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\SetTopBoxControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\StatusSignControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\SystemMonitorJoinMap.cs" />
@@ -228,6 +229,7 @@
     <Compile Include="Interfaces\ILogStrings.cs" />
     <Compile Include="Interfaces\ILogStringsWithLevel.cs" />
     <Compile Include="Occupancy\GlsOccupancySensorPropertiesConfig.cs" />
+    <Compile Include="Occupancy\GlsOirOccupancySensorController.cs" />
     <Compile Include="Queues\ComsMessage.cs" />
     <Compile Include="Queues\ProcessStringMessage.cs" />
     <Compile Include="Queues\GenericQueue.cs" />
@@ -327,6 +329,7 @@
     <Compile Include="Routing\TieLine.cs" />
     <Compile Include="Queues\StringResponseProcessor.cs" />
     <Compile Include="Timers\CountdownTimer.cs" />
+    <Compile Include="Timers\RetriggerableTimer.cs" />
     <Compile Include="Touchpanels\CrestronTouchpanelPropertiesConfig.cs" />
     <Compile Include="Touchpanels\Interfaces.cs" />
     <Compile Include="Touchpanels\Keyboards\HabaneroKeyboardController.cs" />
@@ -337,6 +340,7 @@
     <Compile Include="UI PageManagers\SinglePageManager.cs" />
     <Compile Include="UI PageManagers\PageManager.cs" />
     <Compile Include="UI PageManagers\SetTopBoxTwoPanelPageManager.cs" />
+    <Compile Include="Utilities\ActionSequence.cs" />
     <Compile Include="VideoStatus\VideoStatusOutputs.cs" />
     <Compile Include="Crestron\CrestronGenericBaseDevice.cs" />
     <Compile Include="DeviceControlsParentInterfaces\IPresentationSource.cs" />

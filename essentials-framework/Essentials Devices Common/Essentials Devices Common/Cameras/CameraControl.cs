@@ -46,6 +46,17 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         void CameraOff();
     }
 
+    /// <summary>
+    /// Describes the ability to mute and unmute camera video
+    /// </summary>
+    public interface IHasCameraMute
+    {
+        BoolFeedback CameraIsMutedFeedback { get; }
+        void CameraMuteOn();
+        void CameraMuteOff();
+        void CameraMuteToggle();
+    }
+
     public class CameraSelectedEventArgs : EventArgs
     {
         public CameraBase SelectedCamera { get; private set; }

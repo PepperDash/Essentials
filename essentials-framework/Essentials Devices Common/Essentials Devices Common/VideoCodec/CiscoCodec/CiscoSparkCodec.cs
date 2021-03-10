@@ -18,7 +18,7 @@ using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
-using PepperDash_Essentials_Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Queues;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
@@ -28,7 +28,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
     public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
-        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching, IHasBranding
+        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute
     {
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 
@@ -38,9 +38,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
-        private CrestronQueue<string> ReceiveQueue;
-
-        private Thread ReceiveThread;
+        private GenericQueue ReceiveQueue;
 
 		public BoolFeedback PresentationViewMaximizedFeedback { get; private set; }
 
@@ -302,12 +300,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
 
             // The queue that will collect the repsonses in the order they are received
-            ReceiveQueue = new CrestronQueue<string>(25);
-
-            // The thread responsible for dequeuing and processing the messages
-            ReceiveThread = new Thread((o) => ProcessQueue(), null);
-            ReceiveThread.Priority = Thread.eThreadPriority.MediumPriority;
-
+            ReceiveQueue = new GenericQueue(this.Key + "-rxQueue", 25);
 
             RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
             PeopleCountFeedback = new IntFeedback(PeopleCountFeedbackFunc);
@@ -317,6 +310,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             LocalLayoutFeedback = new StringFeedback(LocalLayoutFeedbackFunc);
             LocalLayoutIsProminentFeedback = new BoolFeedback(LocalLayoutIsProminentFeedbackFunc);
 			FarEndIsSharingContentFeedback = new BoolFeedback(FarEndIsSharingContentFeedbackFunc);
+            CameraIsOffFeedback = new BoolFeedback(() => CodecStatus.Status.Video.Input.MainVideoMute.BoolValue);
+            CameraIsMutedFeedback = CameraIsOffFeedback;
+
 
 			PresentationViewMaximizedFeedback = new BoolFeedback(() => CurrentPresentationView == "Maximized");
 
@@ -382,8 +378,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.Video.Selfview.Mode.ValueChangedAction = SelfviewIsOnFeedback.FireUpdate;
             CodecStatus.Status.Video.Selfview.PIPPosition.ValueChangedAction = ComputeSelfviewPipStatus;
             CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
-            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction += SharingContentIsOnFeedback.FireUpdate;
-            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction += FarEndIsSharingContentFeedback.FireUpdate;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = SharingContentIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = FarEndIsSharingContentFeedback.FireUpdate;
+            CodecStatus.Status.Video.Input.MainVideoMute.ValueChangedAction = CameraIsOffFeedback.FireUpdate;
 
 			CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
@@ -420,29 +417,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             _brandingUrl = props.UiBranding.BrandingUrl;
         }
-
-        /// Runs in it's own thread to dequeue messages in the order they were received to be processed
-        /// </summary>
-        /// <returns></returns>
-        object ProcessQueue()
-        {
-            try
-            {
-                while (true)
-                {
-                    var message = ReceiveQueue.Dequeue();
-
-                    DeserializeResponse(message);
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.Console(1, this, "Error Processing Queue: {0}", e);
-            }
-
-            return null;
-        }
-
 
 		/// <summary>
 		/// Creates the fake OSD source, and connects it's AudioVideo output to the CodecOsdIn input
@@ -687,11 +661,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                 // Enqueue the complete message to be deserialized
 
-                ReceiveQueue.Enqueue(JsonMessage.ToString());
-                //DeserializeResponse(JsonMessage.ToString());
-
-                if (ReceiveThread.ThreadState != Thread.eThreadStates.ThreadRunning)
-                    ReceiveThread.Start();
+                ReceiveQueue.Enqueue(new ProcessStringMessage(JsonMessage.ToString(), DeserializeResponse));
 
                 return;
             }
@@ -1481,7 +1451,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            throw new NotImplementedException();
+            LinkVideoCodecToApi(this, trilist, joinStart, joinMapKey, bridge);
         }
 
         /// <summary>
@@ -1664,6 +1634,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public void CameraAutoModeOn()
         {
             SendText("xCommand Cameras SpeakerTrack Activate");
+            CameraMuteOff();
         }
 
         public void CameraAutoModeOff()
@@ -1739,6 +1710,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 _selectedCamera = value;
                 SelectedCameraFeedback.FireUpdate();
                 ControllingFarEndCameraFeedback.FireUpdate();
+                if (CameraIsOffFeedback.BoolValue)
+                    CameraMuteOff();
 
                 var handler = CameraSelected;
                 if (handler != null)
@@ -2002,7 +1975,47 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
 		
 		#endregion
-	}
+
+        #region IHasCameraOff Members
+
+        public BoolFeedback CameraIsOffFeedback { get; private set; }
+
+        public void CameraOff()
+        {
+            CameraMuteOn();
+        }
+
+        #endregion
+
+        public BoolFeedback CameraIsMutedFeedback { get; private set; }
+
+        /// <summary>
+        /// Mutes the outgoing camera video
+        /// </summary>
+        public void CameraMuteOn()
+        {
+            SendText("xCommand Video InputMainVideo Mute");
+        }
+
+        /// <summary>
+        /// Unmutes the outgoing camera video
+        /// </summary>
+        public void CameraMuteOff()
+        {
+            SendText("xCommand Video InputMainVideo Unmute");
+        }
+
+        /// <summary>
+        /// Toggles the camera mute state
+        /// </summary>
+        public void CameraMuteToggle()
+        {
+            if (CameraIsMutedFeedback.BoolValue)
+                CameraMuteOff();
+            else
+                CameraMuteOn();
+        }
+    }
 
 
 	/// <summary>
