@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.Core.Utilities
         /// </summary>
         public void StartSequence()
         {
-            if (_worker.ThreadState == Thread.eThreadStates.ThreadRunning)
+            if (_worker !=null && _worker.ThreadState == Thread.eThreadStates.ThreadRunning)
             {
                 Debug.Console(1, this, "Thread already running.  Cannot Start Sequence");
                 return;
