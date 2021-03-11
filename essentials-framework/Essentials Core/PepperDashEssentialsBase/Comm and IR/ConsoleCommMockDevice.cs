@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.Core
 		{
 			Communication = comm;
 			PortGather = new CommunicationGather(Communication, '\x0d');
-			PortGather.LineReceived += this.Port_LineReceived;
+			//PortGather.LineReceived += this.Port_LineReceived;
 			CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, props.CommunicationMonitorProperties);
 			LineEnding = props.LineEnding;
 		}
