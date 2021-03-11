@@ -47,6 +47,13 @@ namespace PepperDash.Essentials.Core
 			return true;
 		}
 
+		void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
+		{
+			if (Debug.Level == 2)
+				Debug.Console(2, this, "RX: '{0}'", 
+					ShowHexResponse ? ComTextHelper.GetEscapedText(args.Text) : args.Text);
+		}
+
 		void SendLine(string s)
 		{
 			//if (Debug.Level == 2)
