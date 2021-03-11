@@ -11,8 +11,10 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
-    public class CecPortController : Device, IBasicCommunication
+	public class CecPortController : Device, IBasicCommunicationWithStreamDebugging
     {
+		public CommunicationStreamDebugging StreamDebugging { get; private set; }
+
         public event EventHandler<GenericCommMethodReceiveBytesArgs> BytesReceived;
         public event EventHandler<GenericCommMethodReceiveTextArgs> TextReceived;
 
@@ -23,6 +25,8 @@ namespace PepperDash.Essentials.Core
         public CecPortController(string key, Func<EssentialsControlPropertiesConfig, ICec> postActivationFunc,
             EssentialsControlPropertiesConfig config):base(key)
         {
+			StreamDebugging = new CommunicationStreamDebugging(key);
+
             AddPostActivationAction(() =>
             {
                 Port = postActivationFunc(config);
@@ -57,8 +61,12 @@ namespace PepperDash.Essentials.Core
                 bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
             }
             var textHandler = TextReceived;
-            if (textHandler != null)
-                textHandler(this, new GenericCommMethodReceiveTextArgs(s));
+			if (textHandler != null)
+			{
+				if (StreamDebugging.RxStreamDebuggingIsEnabled)
+					Debug.Console(0, this, "Recevied: '{0}'", s);
+				textHandler(this, new GenericCommMethodReceiveTextArgs(s));
+			}
         }
 
         #region IBasicCommunication Members
@@ -67,6 +75,8 @@ namespace PepperDash.Essentials.Core
         {
             if (Port == null)
                 return;
+			if (StreamDebugging.TxStreamDebuggingIsEnabled)
+				Debug.Console(0, this, "Sending {0} characters of text: '{1}'", text.Length, text);
             Port.StreamCec.Send.StringValue = text;
         }
 
@@ -75,6 +85,8 @@ namespace PepperDash.Essentials.Core
             if (Port == null)
                 return;
             var text = Encoding.GetEncoding(28591).GetString(bytes, 0, bytes.Length);
+			if (StreamDebugging.TxStreamDebuggingIsEnabled)
+				Debug.Console(0, this, "Sending {0} bytes: '{1}'", bytes.Length, ComTextHelper.GetEscapedText(bytes));
             Port.StreamCec.Send.StringValue = text;
         }
 
