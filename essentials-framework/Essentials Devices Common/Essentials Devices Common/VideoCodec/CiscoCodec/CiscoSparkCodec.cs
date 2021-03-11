@@ -635,12 +635,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="args"></param>
         void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
         {
-            if (CommDebuggingIsOn)
-            {
-                if(!JsonFeedbackMessageIsIncoming)
-                    Debug.Console(1, this, "RX: '{0}'", args.Text);
-            }
-
             if (args.Text == "{" + Delimiter)        // Check for the beginning of a new JSON message
             {
                 JsonFeedbackMessageIsIncoming = true;

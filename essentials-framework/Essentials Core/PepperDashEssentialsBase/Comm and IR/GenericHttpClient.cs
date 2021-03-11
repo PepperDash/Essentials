@@ -33,7 +33,6 @@ namespace PepperDash.Essentials.Core
 			string url = string.Format("http://{0}/{1}", Client.HostName, path);
 			request.Url = new UrlParser(url);
 			HttpClient.DISPATCHASYNC_ERROR error = Client.DispatchAsyncEx(request, Response, request); 
-			Debug.Console(2, this, "GenericHttpClient SentRequest TX:'{0}'", url);
 		}
 		public void SendText(string format, params object[] items)
 		{
@@ -41,7 +40,6 @@ namespace PepperDash.Essentials.Core
 			string url = string.Format("http://{0}/{1}", Client.HostName, string.Format(format, items));
 			request.Url = new UrlParser(url);
 			HttpClient.DISPATCHASYNC_ERROR error = Client.DispatchAsyncEx(request, Response, request);
-			Debug.Console(2, this, "GenericHttpClient SentRequest TX:'{0}'", url);
 		}
 
 		public void SendTextNoResponse(string format, params object[] items)
@@ -50,7 +48,6 @@ namespace PepperDash.Essentials.Core
 			string url = string.Format("http://{0}/{1}", Client.HostName, string.Format(format, items));
 			request.Url = new UrlParser(url);
 			Client.Dispatch(request);
-			Debug.Console(2, this, "GenericHttpClient SentRequest TX:'{0}'", url);
 		}
 
 		private void Response(HttpClientResponse response, HTTP_CALLBACK_ERROR error, object request)
@@ -63,10 +60,6 @@ namespace PepperDash.Essentials.Core
 				{
 					if (ResponseRecived != null)
 						ResponseRecived(this, new GenericHttpClientEventArgs(responseReceived.ContentString, (request as HttpClientRequest).Url.ToString(), error));
-
-					Debug.Console(2, this, "GenericHttpClient ResponseReceived");
-					Debug.Console(2, this, "RX:{0}", responseReceived.ContentString);
-					Debug.Console(2, this, "TX:{0}", (request as HttpClientRequest).Url.ToString());
 				}
 			}
 
