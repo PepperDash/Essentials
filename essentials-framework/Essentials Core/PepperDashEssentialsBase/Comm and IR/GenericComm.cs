@@ -96,7 +96,6 @@ namespace PepperDash.Essentials.Core
             // this is a permanent event handler. This cannot be -= from event
             CommPort.TextReceived += (s, a) =>
             {
-                Debug.Console(2, this, "RX: {0}", a.Text);
                 trilist.SetString(joinMap.TextReceived.JoinNumber, a.Text);
             };
             trilist.SetStringSigAction(joinMap.SendText.JoinNumber, s => CommPort.SendText(s));
