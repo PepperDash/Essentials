@@ -183,11 +183,12 @@ namespace PepperDash.Essentials
 
             var roomEvent = _roomScheduledEventGroup.ScheduledEvents[scheduledEvent.Key];
 
-            if (!SchedulerUtilities.CheckEventTimeForMatch(roomEvent, DateTime.Parse(scheduledEvent.Time)) &&
-                !SchedulerUtilities.CheckEventRecurrenceForMatch(roomEvent, scheduledEvent.Days))
-            {
-                return;
-            }
+            //if (SchedulerUtilities.CheckEventTimeForMatch(roomEvent, DateTime.Parse(scheduledEvent.Time)) &&
+            //    SchedulerUtilities.CheckEventRecurrenceForMatch(roomEvent, scheduledEvent.Days))
+            //{
+            //    Debug.Console(1, this, "Existing event matches new event properties.  Nothing to update");
+            //    return;
+            //}
 
             Debug.Console(1, this,
                 "Existing event does not match new config properties. Deleting existing event '{0}' and creating new event from configuration",
