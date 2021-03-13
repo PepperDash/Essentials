@@ -219,8 +219,6 @@ namespace PepperDash.Essentials.Devices.Common
 			string url = string.Format("http://{0}{1}", this.address, s);
 			request.Url = new UrlParser(url);
 			HttpClientResponse response = WebClient.Dispatch(request);
-			
-			Debug.Console(2, this, "DigitalLogger TX:\n'{0}'\nRX:\n'{1}'", url, response.ContentString);
 			return response.ContentString;
 		}
         /// <summary>
@@ -236,9 +234,6 @@ namespace PepperDash.Essentials.Devices.Common
 			request.Url = new UrlParser(url);
 			
 			HttpClientResponse response = WebClient.Dispatch(request);
-			
-			Debug.Console(2, this, "DigitalLogger TX:\n'{0}'\nRX:\n'{1}'", url, response.ContentString);
-			
         }
 
 		public void CycleCircuit(uint circuit)
