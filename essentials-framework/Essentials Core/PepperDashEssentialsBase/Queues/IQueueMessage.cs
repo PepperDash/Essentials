@@ -11,7 +11,8 @@ namespace PepperDash.Essentials.Core.Queues
 namespace PepperDash_Essentials_Core.Queues
 {
     [Obsolete("Use PepperDash.Essentials.Core.Queues")]
-    public interface IQueueMessage:PepperDash.Essentials.Core.Queues.IQueueMessage
+    public interface IQueueMessage
     {
+        void Dispatch();
     }
 }
