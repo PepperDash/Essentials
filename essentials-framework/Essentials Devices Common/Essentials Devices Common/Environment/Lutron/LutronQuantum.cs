@@ -232,7 +232,6 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Lutron
         /// <param name="s"></param>
         public void SendLine(string s)
         {
-            Debug.Console(2, this, "TX: '{0}'", s);
             Communication.SendText(s + Delimiter);
         }
     }
