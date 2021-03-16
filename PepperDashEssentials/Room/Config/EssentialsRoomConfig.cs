@@ -200,7 +200,16 @@ namespace PepperDash.Essentials.Room.Config
         public string DestinationListKey { get; set; }
         [JsonProperty("defaultSourceItem")]
         public string DefaultSourceItem { get; set; }
-
+        /// <summary>
+        /// Indicates if the room supports advanced sharing
+        /// </summary>
+        [JsonProperty("supportsAdvancedSharing")]
+        public bool SupportsAdvancedSharing { get; set; }
+        /// <summary>
+        /// Indicates if non-tech users can change the share mode
+        /// </summary>
+        [JsonProperty("userCanChangeShareMode")]
+        public bool UserCanChangeShareMode { get; set; }
     }
 
     public class EssentialsConferenceRoomPropertiesConfig : EssentialsAvRoomPropertiesConfig
