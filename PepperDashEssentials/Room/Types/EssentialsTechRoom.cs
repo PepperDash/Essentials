@@ -183,11 +183,12 @@ namespace PepperDash.Essentials
 
             var roomEvent = _roomScheduledEventGroup.ScheduledEvents[scheduledEvent.Key];
 
-            if (!SchedulerUtilities.CheckEventTimeForMatch(roomEvent, DateTime.Parse(scheduledEvent.Time)) &&
-                !SchedulerUtilities.CheckEventRecurrenceForMatch(roomEvent, scheduledEvent.Days))
-            {
-                return;
-            }
+            //if (SchedulerUtilities.CheckEventTimeForMatch(roomEvent, DateTime.Parse(scheduledEvent.Time)) &&
+            //    SchedulerUtilities.CheckEventRecurrenceForMatch(roomEvent, scheduledEvent.Days))
+            //{
+            //    Debug.Console(1, this, "Existing event matches new event properties.  Nothing to update");
+            //    return;
+            //}
 
             Debug.Console(1, this,
                 "Existing event does not match new config properties. Deleting existing event '{0}' and creating new event from configuration",
@@ -373,12 +374,31 @@ Params: {2}"
             uint i;
             if (_config.IsPrimary)
             {
-                i = 0;
-                foreach (var feedback in CurrentPresetsFeedbacks)
+                Debug.Console(1, this, "Linking Primary system Tuner Preset Mirroring");
+                if (_config.MirroredTuners != null && _config.MirroredTuners.Count > 0)
                 {
-                    feedback.Value.LinkInputSig(trilist.StringInput[(uint) (joinMap.CurrentPreset.JoinNumber + i)]);
-                    i++;
+                    foreach (var tuner in _config.MirroredTuners)
+                    {
+                        var f = CurrentPresetsFeedbacks[tuner.Value];
+
+                        if (f == null)
+                        {
+                            Debug.Console(1, this, "Unable to find feedback with key: {0}", tuner.Value);
+                            continue;
+                        }
+
+                        var join = joinMap.CurrentPreset.JoinNumber + tuner.Key;
+                        f.LinkInputSig(trilist.StringInput[(uint)(join)]);
+                        Debug.Console(1, this, "Linked Current Preset feedback for tuner: {0} to serial join: {1}", tuner.Value, join);
+                    }
                 }
+
+                //i = 0;
+                //foreach (var feedback in CurrentPresetsFeedbacks)
+                //{
+                //    feedback.Value.LinkInputSig(trilist.StringInput[(uint) (joinMap.CurrentPreset.JoinNumber + i)]);
+                //    i++;
+                //}
 
                 trilist.OnlineStatusChange += (device, args) =>
                 {
@@ -395,15 +415,35 @@ Params: {2}"
 
                 return;
             }
-
-            i = 0;
-            foreach (var setTopBox in _tuners)
+            else
             {
-                var tuner = setTopBox;
+                Debug.Console(1, this, "Linking Secondary system Tuner Preset Mirroring");
 
-                trilist.SetStringSigAction(joinMap.CurrentPreset.JoinNumber + i, s => _tunerPresets.Dial(s, tuner.Value));
+                if (_config.MirroredTuners != null && _config.MirroredTuners.Count > 0)
+                {
+                    foreach (var tuner in _config.MirroredTuners)
+                    {
+                        var t = _tuners[tuner.Value];
 
-                i++;
+                        if (t == null)
+                        {
+                            Debug.Console(1, this, "Unable to find tuner with key: {0}", tuner.Value);
+                            continue;
+                        }
+
+                        var join = joinMap.CurrentPreset.JoinNumber + tuner.Key;
+                        trilist.SetStringSigAction(join, s => _tunerPresets.Dial(s, t));
+                        Debug.Console(1, this, "Linked preset recall action for tuner: {0} to serial join: {1}", tuner.Value, join);
+                    }
+
+                    //foreach (var setTopBox in _tuners)
+                    //{
+                    //    var tuner = setTopBox;
+
+                    //    trilist.SetStringSigAction(joinMap.CurrentPreset.JoinNumber + i, s => _tunerPresets.Dial(s, tuner.Value));
+
+                    //}
+                }
             }
         }
 

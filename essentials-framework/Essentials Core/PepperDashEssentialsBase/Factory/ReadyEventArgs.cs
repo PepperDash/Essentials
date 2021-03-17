@@ -27,15 +27,20 @@ namespace PepperDash.Essentials.Core
 namespace PepperDash_Essentials_Core
 {
     [Obsolete("Use PepperDash.Essentials.Core")]
-    public class IsReadyEventArgs : PepperDash.Essentials.Core.IsReadyEventArgs
+    public class IsReadyEventArgs : EventArgs
     {
-        public IsReadyEventArgs(bool data) : base(data)
+        public bool IsReady { get; set; }
+
+        public IsReadyEventArgs(bool data)
         {
+            IsReady = data;
         }
     }
 
     [Obsolete("Use PepperDash.Essentials.Core")]
-    public interface IHasReady: PepperDash.Essentials.Core.IHasReady
+    public interface IHasReady
     {
+        event EventHandler<IsReadyEventArgs> IsReadyEvent;
+        bool IsReady { get; }
     }
 }
