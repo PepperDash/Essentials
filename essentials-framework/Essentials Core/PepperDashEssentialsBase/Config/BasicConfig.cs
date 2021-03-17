@@ -29,6 +29,16 @@ namespace PepperDash.Essentials.Core.Config
         [JsonProperty("joinMaps")]
         public Dictionary<string, JObject> JoinMaps { get; set; }
 
+        public BasicConfig()
+        {
+            Info = new InfoConfig();
+            Devices = new List<DeviceConfig>();
+            SourceLists = new Dictionary<string, Dictionary<string, SourceListItem>>();
+            DestinationLists = new Dictionary<string, Dictionary<string, DestinationListItem>>();
+            TieLines = new List<TieLineConfig>();
+            JoinMaps = new Dictionary<string, JObject>();
+        }
+
 		/// <summary>
 		/// Checks SourceLists for a given list and returns it if found. Otherwise, returns null
 		/// </summary>
