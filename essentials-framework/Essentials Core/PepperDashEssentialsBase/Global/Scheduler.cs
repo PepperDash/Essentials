@@ -36,12 +36,26 @@ namespace PepperDash.Essentials.Core
         /// <param name="groupName"></param>
         static void ClearEventsFromGroup(string groupName)
         {
+            if (!EventGroups.ContainsKey(groupName))
+            {
+                Debug.Console(0,
+                    "[Scheduler]: Unable to delete events from group '{0}'.  Group not found in EventGroups dictionary.",
+                    groupName);
+                return
+            }
+
             var group = EventGroups[groupName];
 
             if (group != null)
+            {
                 group.ClearAllEvents();
+
+                Debug.Console(0, "[Scheduler]: All events deleted from group '{0}'", groupName);
+            }
             else
-                Debug.Console(0, "[Scheduler]: Unable to delete events from group '{0}'.  Group not found in EventGroups dictionary.", groupName);
+                Debug.Console(0,
+                    "[Scheduler]: Unable to delete events from group '{0}'.  Group not found in EventGroups dictionary.",
+                    groupName);
         }
 
         static void ListAllEventGroups(string command)
