@@ -41,7 +41,7 @@ namespace PepperDash.Essentials.Core
                 Debug.Console(0,
                     "[Scheduler]: Unable to delete events from group '{0}'.  Group not found in EventGroups dictionary.",
                     groupName);
-                return
+                return;
             }
 
             var group = EventGroups[groupName];
