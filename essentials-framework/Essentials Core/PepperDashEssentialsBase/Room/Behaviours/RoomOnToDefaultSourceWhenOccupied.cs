@@ -169,10 +169,15 @@ namespace PepperDash.Essentials.Core
 
         void FeatureEventGroup_UserGroupCallBack(ScheduledEvent SchEvent, ScheduledEventCommon.eCallbackReason type)
         {
+            Debug.Console(1, this, Debug.ErrorLogLevel.Notice, "{0}:{1} @ {2}", SchEvent.Name, type, DateTime.Now);
+
             if (type == ScheduledEventCommon.eCallbackReason.NormalExpiration)
             {
+                SchEvent.Acknowledge();
+
                 if (SchEvent.Name == FeatureEnableEventName)
                 {
+                    
                     if (PropertiesConfig.EnableRoomOnWhenOccupied)
                         FeatureEnabled = true;
 
@@ -248,9 +253,8 @@ namespace PepperDash.Essentials.Core
                 schEvent = new ScheduledEvent(name, FeatureEventGroup);
 
             // Set up its initial properties
-
-            if(!schEvent.Acknowledgeable)
-                schEvent.Acknowledgeable = true;
+            
+            schEvent.Acknowledgeable = false;
 
             if(!schEvent.Persistent)
                 schEvent.Persistent = true;
@@ -287,7 +291,7 @@ namespace PepperDash.Essentials.Core
 
                 Debug.Console(1, this, "Event '{0}' Absolute time set to {1}", schEvent.Name, schEvent.DateAndTime.ToString());
 
-                CalculateAndSetAcknowledgeExpirationTimeout(schEvent, FeatureEnabledTime, FeatureDisabledTime);
+                //CalculateAndSetAcknowledgeExpirationTimeout(schEvent, FeatureEnabledTime, FeatureDisabledTime);
 
                 schEvent.Recurrence.Weekly(eventRecurrennce);
 
