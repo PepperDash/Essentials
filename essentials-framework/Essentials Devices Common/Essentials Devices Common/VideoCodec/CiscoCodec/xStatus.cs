@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Devices.Common.VideoCodec.CiscoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
@@ -1680,6 +1681,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public MainVideoSource MainVideoSource { get; set; }
             public MainVideoMute MainVideoMute { get; set; }
             public List<Source> Source { get; set; }
+
+            public Input2()
+            {
+                MainVideoMute = new MainVideoMute();
+            }
         }
 
         public class Local : ValueProperty
@@ -1875,6 +1881,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 Selfview = new Selfview();
                 Layout = new Layout();
+                Input = new Input2();
             }
         }
 
