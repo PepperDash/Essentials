@@ -368,21 +368,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecSchedule = new CodecScheduleAwareness();
  
             //Set Feedback Actions
-            CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
-            CodecStatus.Status.Audio.VolumeMute.ValueChangedAction = MuteFeedback.FireUpdate;
-            CodecStatus.Status.Audio.Microphones.Mute.ValueChangedAction = PrivacyModeIsOnFeedback.FireUpdate;
-            CodecStatus.Status.Standby.State.ValueChangedAction = StandbyIsOnFeedback.FireUpdate;
-            CodecStatus.Status.RoomAnalytics.PeoplePresence.ValueChangedAction = RoomIsOccupiedFeedback.FireUpdate;
-            CodecStatus.Status.RoomAnalytics.PeopleCount.Current.ValueChangedAction = PeopleCountFeedback.FireUpdate;
-            CodecStatus.Status.Cameras.SpeakerTrack.Status.ValueChangedAction = CameraAutoModeIsOnFeedback.FireUpdate;
-            CodecStatus.Status.Video.Selfview.Mode.ValueChangedAction = SelfviewIsOnFeedback.FireUpdate;
-            CodecStatus.Status.Video.Selfview.PIPPosition.ValueChangedAction = ComputeSelfviewPipStatus;
-            CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
-            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = SharingContentIsOnFeedback.FireUpdate;
-            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = FarEndIsSharingContentFeedback.FireUpdate;
-            CodecStatus.Status.Video.Input.MainVideoMute.ValueChangedAction = CameraIsOffFeedback.FireUpdate;
+            SetFeedbackActions();
 
-			CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
+            CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
 			HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, new Action(SelectPresentationSource1), this);
@@ -418,7 +406,36 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             _brandingUrl = props.UiBranding.BrandingUrl;
         }
 
-		/// <summary>
+        private void SetFeedbackActions()
+        {
+            CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
+            CodecStatus.Status.Audio.VolumeMute.ValueChangedAction = MuteFeedback.FireUpdate;
+            CodecStatus.Status.Audio.Microphones.Mute.ValueChangedAction = PrivacyModeIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Standby.State.ValueChangedAction = StandbyIsOnFeedback.FireUpdate;
+            CodecStatus.Status.RoomAnalytics.PeoplePresence.ValueChangedAction = RoomIsOccupiedFeedback.FireUpdate;
+            CodecStatus.Status.RoomAnalytics.PeopleCount.Current.ValueChangedAction = PeopleCountFeedback.FireUpdate;
+            CodecStatus.Status.Cameras.SpeakerTrack.Status.ValueChangedAction = CameraAutoModeIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Video.Selfview.Mode.ValueChangedAction = SelfviewIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Video.Selfview.PIPPosition.ValueChangedAction = ComputeSelfviewPipStatus;
+            CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = SharingContentIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = FarEndIsSharingContentFeedback.FireUpdate;
+            try
+            {
+                CodecStatus.Status.Video.Input.MainVideoMute.ValueChangedAction = CameraIsOffFeedback.FireUpdate;
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(0, this, "Error setting MainVideuMute Action: {0}", ex);
+
+                if (ex.InnerException != null)
+                {
+                    Debug.Console(0, this, "Error setting MainVideuMute Action: {0}", ex);
+                }
+            }
+        }
+
+        /// <summary>
 		/// Creates the fake OSD source, and connects it's AudioVideo output to the CodecOsdIn input
 		/// to enable routing 
 		/// </summary>
