@@ -133,7 +133,6 @@ namespace PepperDash.Essentials.Devices.Common
         /// <param name="args"></param>
         void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
         {
-            Debug.Console(2, this, "TVOneCurio RX: '{0}'", args.Text);
             try
             {
                 if (args.Text.IndexOf("login") > -1)
@@ -148,11 +147,7 @@ namespace PepperDash.Essentials.Devices.Common
 					Debug.Console(1, this, "Preset Parse: {0}", presetNumberParse);
 					CurrentPreset = ushort.Parse(presetNumberParse);
 					PresetFeedback.FireUpdate();
-
-
-                }
-
-                
+                }     
             }
             catch (Exception e)
             {
@@ -168,7 +163,6 @@ namespace PepperDash.Essentials.Devices.Common
         /// <param name="s">Command to send</param>
         public void SendLine(string s)
         {
-            Debug.Console(1, this, "TVOne Cusio TX: '{0}'", s);
             Communication.SendText(s + "\x0d\x0a");
         }
 
