@@ -199,6 +199,12 @@ namespace PepperDash.Essentials.Core.Queues
 
         public void Enqueue(IQueueMessage item)
         {
+            if (Disposed)
+            {
+                Debug.Console(1, this, "I've been disposed so you can't enqueue any messages.  Are you trying to dispatch a message while the program is stopping?");
+                return;
+            }
+
             _queue.Enqueue(item);
             _waitHandle.Set();
         }
