@@ -671,7 +671,7 @@ namespace PepperDash.Essentials.DM {
                 var ioSlotJoin = ioSlot - 1;
 
                 // Control
-                trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video));
+                trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin, o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.Video));
 
                 if (TxDictionary.ContainsKey(ioSlot))
                 {

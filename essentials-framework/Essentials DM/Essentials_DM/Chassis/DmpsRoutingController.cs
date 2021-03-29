@@ -228,9 +228,9 @@ namespace PepperDash.Essentials.DM
 
                 // Control
                 trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin,
-                    o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video));
+                    o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.Video));
                 trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + ioSlotJoin,
-                    o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Audio));
+                    o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.Audio));
 
                 trilist.SetStringSigAction(joinMap.OutputNames.JoinNumber + ioSlotJoin, s =>
                 {
