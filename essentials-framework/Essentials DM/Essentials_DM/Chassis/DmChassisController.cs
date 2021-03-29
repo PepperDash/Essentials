@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
@@ -1184,7 +1185,6 @@ namespace PepperDash.Essentials.DM
                     "Unable to execute switch for inputSelector {0} to outputSelector {1}", inputSelector,
                     outputSelector);
                 return;
-
             }
 
             // Check to see if there's an off timer waiting on this and if so, cancel
@@ -1643,13 +1643,13 @@ namespace PepperDash.Essentials.DM
         {
             // Routing Control
             trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin,
-                o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video));
+                o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.Video));
             trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + ioSlotJoin,
-                o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Audio));
+                o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.Audio));
             trilist.SetUShortSigAction(joinMap.OutputUsb.JoinNumber + ioSlotJoin,
-                o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbOutput));
+                o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.UsbOutput));
             trilist.SetUShortSigAction(joinMap.InputUsb.JoinNumber + ioSlotJoin,
-                o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.UsbInput));
+                o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.UsbInput));
 
             //Routing Feedbacks
             VideoOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputVideo.JoinNumber + ioSlotJoin]);
