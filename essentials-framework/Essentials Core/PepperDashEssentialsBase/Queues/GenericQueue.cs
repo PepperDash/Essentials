@@ -155,7 +155,7 @@ namespace PepperDash.Essentials.Core.Queues
                 if (programEvent != eProgramStatusEventType.Stopping)
                     return;
 
-                Dispose();
+                Dispose(true);
             };
         }
         
@@ -407,7 +407,7 @@ namespace PepperDash_Essentials_Core.Queues
                 if (programEvent != eProgramStatusEventType.Stopping)
                     return;
 
-                Dispose();
+                Dispose(true);
             };
         }
 
