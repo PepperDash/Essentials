@@ -150,13 +150,13 @@ namespace PepperDash.Essentials.Core.Queues
             _delayEnabled = pacing > 0;
             _delayTime = pacing;
 
-            CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
-            {
-                if (programEvent != eProgramStatusEventType.Stopping)
-                    return;
+            //CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
+            //{
+            //    if (programEvent != eProgramStatusEventType.Stopping)
+            //        return;
 
-                Dispose(true);
-            };
+            //    Dispose(true);
+            //};
         }
         
         /// <summary>
@@ -231,6 +231,8 @@ namespace PepperDash.Essentials.Core.Queues
 
             if (disposing)
             {
+                Debug.Console(2, this, "Disposing...");
+                _queue.Clear();
                 Enqueue(null);
                 _worker.Join();
                 _waitHandle.Close();
@@ -402,13 +404,13 @@ namespace PepperDash_Essentials_Core.Queues
             _delayEnabled = pacing > 0;
             _delayTime = pacing;
 
-            CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
-            {
-                if (programEvent != eProgramStatusEventType.Stopping)
-                    return;
+            //CrestronEnvironment.ProgramStatusEventHandler += programEvent =>
+            //{
+            //    if (programEvent != eProgramStatusEventType.Stopping)
+            //        return;
 
-                Dispose(true);
-            };
+            //    Dispose(true);
+            //};
         }
 
         /// <summary>
@@ -477,6 +479,8 @@ namespace PepperDash_Essentials_Core.Queues
 
             if (disposing)
             {
+                Debug.Console(2, this, "Disposing...");
+                _queue.Clear();
                 Enqueue(null);
                 _worker.Join();
                 _waitHandle.Close();
