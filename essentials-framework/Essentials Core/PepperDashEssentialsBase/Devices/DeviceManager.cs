@@ -387,6 +387,15 @@ namespace PepperDash.Essentials.Core
         /// <param name="s"></param>
         public static void SetDeviceStreamDebugging(string s)
         {
+            if (String.IsNullOrEmpty(s) || s.Contains("?"))
+            {
+                Debug.Console(0,
+                    @"SETDEVICESTREAMDEBUG [{deviceKey}] [OFF |TX | RX | BOTH] [timeOutInMinutes]
+    {deviceKey} [OFF | TX | RX | BOTH] - Device to set stream debugging on, and which setting to use
+    timeOutInMinutes - Set timeout for stream debugging. Default is 30 minutes");
+                return;
+            }
+
             var args = s.Split(' ');
 
             var deviceKey = args[0];
@@ -437,7 +446,7 @@ namespace PepperDash.Essentials.Core
             else
             {
                 device.StreamDebugging.SetDebuggingWithDefaultTimeout(debugSetting);
-                Debug.Console(0, "Device: '{0}' debug level set to {1) for default time (30 minutes)", deviceKey, debugSetting);
+                Debug.Console(0, "Device: '{0}' debug level set to {1} for default time (30 minutes)", deviceKey, debugSetting);
             }
         }
 
