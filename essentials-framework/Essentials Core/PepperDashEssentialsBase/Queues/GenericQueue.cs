@@ -243,7 +243,7 @@ namespace PepperDash.Essentials.Core.Queues
 
         ~GenericQueue()
         {
-            Dispose(false);
+            Dispose(true);
         }
 
         /// <summary>
@@ -491,7 +491,7 @@ namespace PepperDash_Essentials_Core.Queues
 
         ~GenericQueue()
         {
-            Dispose(false);
+            Dispose(true);
         }
 
         /// <summary>
