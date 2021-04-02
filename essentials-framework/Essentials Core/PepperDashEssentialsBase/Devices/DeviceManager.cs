@@ -389,7 +389,7 @@ namespace PepperDash.Essentials.Core
         {
             if (String.IsNullOrEmpty(s) || s.Contains("?"))
             {
-                Debug.Console(0,
+                CrestronConsole.ConsoleCommandResponse(
                     @"SETDEVICESTREAMDEBUG [{deviceKey}] [OFF |TX | RX | BOTH] [timeOutInMinutes]
     {deviceKey} [OFF | TX | RX | BOTH] - Device to set stream debugging on, and which setting to use
     timeOutInMinutes - Set timeout for stream debugging. Default is 30 minutes");
