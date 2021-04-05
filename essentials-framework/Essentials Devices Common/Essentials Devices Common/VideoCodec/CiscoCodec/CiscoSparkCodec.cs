@@ -490,9 +490,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Debug.Console(2, this, "Setting QR code URL: {0}", mcBridge.QrCodeUrl);
 
                 mcBridge.UserCodeChanged += (o, a) => SendMcBrandingUrl(mcBridge);
+                mcBridge.UserPromptedForCode += (o, a) => DisplayUserCode(mcBridge.UserCode);
 
                 SendMcBrandingUrl(mcBridge);
             }
+        }
+
+        /// <summary>
+        /// Displays the code for the specified duration
+        /// </summary>
+        /// <param name="code">Mobile Control user code</param>
+        private void DisplayUserCode(string code)
+        {
+            SendText(string.Format("xcommand userinterface message alert display title:\"Mobile Control User Code:\" text:\"{0}\" duration: 30"));
         }
 
         private void SendMcBrandingUrl(IMobileControlRoomBridge mcBridge)
