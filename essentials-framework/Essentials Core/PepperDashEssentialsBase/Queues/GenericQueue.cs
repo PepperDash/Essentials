@@ -155,7 +155,7 @@ namespace PepperDash.Essentials.Core.Queues
                 if (programEvent != eProgramStatusEventType.Stopping)
                     return;
 
-                Dispose();
+                Dispose(true);
             };
         }
         
@@ -231,8 +231,13 @@ namespace PepperDash.Essentials.Core.Queues
 
             if (disposing)
             {
-                Enqueue(null);
-                _worker.Join();
+                Debug.Console(2, this, "Disposing...");
+                if (_queue != null && !_queue.Disposed)
+                {
+                    _queue.Clear();
+                    Enqueue(null);
+                }
+                _worker.Abort();
                 _waitHandle.Close();
             }
 
@@ -241,7 +246,7 @@ namespace PepperDash.Essentials.Core.Queues
 
         ~GenericQueue()
         {
-            Dispose(false);
+            Dispose(true);
         }
 
         /// <summary>
@@ -407,7 +412,7 @@ namespace PepperDash_Essentials_Core.Queues
                 if (programEvent != eProgramStatusEventType.Stopping)
                     return;
 
-                Dispose();
+                Dispose(true);
             };
         }
 
@@ -477,8 +482,13 @@ namespace PepperDash_Essentials_Core.Queues
 
             if (disposing)
             {
-                Enqueue(null);
-                _worker.Join();
+                Debug.Console(2, this, "Disposing...");
+                if (_queue != null && !_queue.Disposed)
+                {
+                    _queue.Clear();
+                    Enqueue(null);
+                }
+                _worker.Abort();
                 _waitHandle.Close();
             }
 
@@ -487,7 +497,7 @@ namespace PepperDash_Essentials_Core.Queues
 
         ~GenericQueue()
         {
-            Dispose(false);
+            Dispose(true);
         }
 
         /// <summary>
