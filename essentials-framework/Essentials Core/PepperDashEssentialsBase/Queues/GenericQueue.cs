@@ -237,14 +237,6 @@ namespace PepperDash.Essentials.Core.Queues
                     _queue.Clear();
                     Enqueue(null);
                 }
-                //else
-                //{
-                //    if (_queue == null)
-                //        Debug.Console(2, this, "_queue is null");
-                //    else
-                //        Debug.Console(2, this, "_queue disposed: {0}", _queue.Disposed);
-                //}
-                //_worker.Join();
                 _worker.Abort();
                 _waitHandle.Close();
             }
@@ -496,14 +488,6 @@ namespace PepperDash_Essentials_Core.Queues
                     _queue.Clear();
                     Enqueue(null);
                 }
-                //else
-                //{
-                //    if (_queue == null)
-                //        Debug.Console(2, this, "_queue is null");
-                //    else
-                //        Debug.Console(2, this, "_queue disposed: {0}", _queue.Disposed);
-                //}
-                //_worker.Join();
                 _worker.Abort();
                 _waitHandle.Close();
             }
