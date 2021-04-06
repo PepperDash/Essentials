@@ -22,6 +22,8 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
 
         event EventHandler<EventArgs> UserPromptedForCode;
 
+        event EventHandler<EventArgs> ClientJoined;
+
         string UserCode { get; }
 
         string QrCodeUrl { get; }
