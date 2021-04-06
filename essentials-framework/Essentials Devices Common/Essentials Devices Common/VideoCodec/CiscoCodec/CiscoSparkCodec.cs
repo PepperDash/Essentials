@@ -654,7 +654,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (CommDebuggingIsOn)
             {
-                if(!JsonFeedbackMessageIsIncoming)
+                if (!JsonFeedbackMessageIsIncoming)
                     Debug.Console(1, this, "RX: '{0}'", args.Text);
             }
 
