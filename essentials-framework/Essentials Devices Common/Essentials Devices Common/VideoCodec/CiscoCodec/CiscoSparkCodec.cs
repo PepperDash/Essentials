@@ -2021,7 +2021,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void CameraMuteOn()
         {
-            SendText("xCommand Video InputMainVideo Mute");
+            SendText("xCommand Video Input MainVideo Mute");
         }
 
         /// <summary>
@@ -2029,7 +2029,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void CameraMuteOff()
         {
-            SendText("xCommand Video InputMainVideo Unmute");
+            SendText("xCommand Video Input MainVideo Unmute");
         }
 
         /// <summary>
