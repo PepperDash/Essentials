@@ -141,6 +141,7 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete InputCurrentResolution = new JoinDataComplete(new JoinData { JoinNumber = 2401, JoinSpan = 32 },
             new JoinMetadata { Description = "DM Chassis Input Current Resolution", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
+        ///
         /// <summary>
         /// Constructor to use when instantiating this Join Map without inheriting from it
         /// </summary>
