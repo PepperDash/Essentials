@@ -502,7 +502,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="code">Mobile Control user code</param>
         private void DisplayUserCode(string code)
         {
-            SendText(string.Format("xcommand userinterface message alert display title:\"Mobile Control User Code:\" text:\"{0}\" duration: 30"));
+            SendText(string.Format("xcommand userinterface message alert display title:\"Mobile Control User Code:\" text:\"{0}\" duration: 30", code));
         }
 
         private void SendMcBrandingUrl(IMobileControlRoomBridge mcBridge)
