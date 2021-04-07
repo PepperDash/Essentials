@@ -106,7 +106,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinDataComplete(new JoinData { JoinNumber = 701, JoinSpan = 200 },
             new JoinMetadata
             {
-                Description = "Video Input Name",
+                Description = "Audio Input Name",
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.Serial
             });
@@ -115,7 +115,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinDataComplete(new JoinData { JoinNumber = 901, JoinSpan = 200 },
             new JoinMetadata
             {
-                Description = "Video Input Name",
+                Description = "Video Output Name",
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.Serial
             });
@@ -124,7 +124,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinDataComplete(new JoinData { JoinNumber = 1101, JoinSpan = 200 },
             new JoinMetadata
             {
-                Description = "Video Input Name",
+                Description = "Audio Output Name",
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.Serial
             });
@@ -135,7 +135,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("OutputCurrentAudioInputNames")]
         public JoinDataComplete OutputCurrentAudioInputNames = new JoinDataComplete(new JoinData { JoinNumber = 2201, JoinSpan = 32 },
-            new JoinMetadata { Description = "DM Chassis Audio Output Currently Routed Video Input Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+            new JoinMetadata { Description = "DM Chassis Audio Output Currently Routed Audio Input Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("InputCurrentResolution")]
         public JoinDataComplete InputCurrentResolution = new JoinDataComplete(new JoinData { JoinNumber = 2401, JoinSpan = 32 },
