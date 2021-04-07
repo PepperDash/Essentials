@@ -571,6 +571,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Standby" + Delimiter +
                 prefix + "/Status/Video/Selfview" + Delimiter +
                 prefix + "/Status/Video/Layout" + Delimiter +
+                prefix + "/Status/Video/Input/MainVideoMute" + Delimiter +
                 prefix + "/Bookings" + Delimiter +
                 prefix + "/Event/CallDisconnect" + Delimiter + 
                 prefix + "/Event/Bookings" + Delimiter +
@@ -1660,12 +1661,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void CameraAutoModeOn()
         {
+            if (CameraIsOffFeedback.BoolValue)
+            {
+                CameraMuteOff();
+            }
+
             SendText("xCommand Cameras SpeakerTrack Activate");
-            CameraMuteOff();
         }
 
         public void CameraAutoModeOff()
         {
+            if (CameraIsOffFeedback.BoolValue)
+            {
+                CameraMuteOff();
+            }
+
             SendText("xCommand Cameras SpeakerTrack Deactivate");
         }
 
