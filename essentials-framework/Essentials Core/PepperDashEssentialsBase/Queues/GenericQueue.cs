@@ -180,7 +180,7 @@ namespace PepperDash.Essentials.Core.Queues
                 {
                     try
                     {
-                        Debug.Console(2, this, "Processing queue item: '{0}'", item.ToString());
+                        //Debug.Console(2, this, "Processing queue item: '{0}'", item.ToString());
                         item.Dispatch();
 
                         if (_delayEnabled)
