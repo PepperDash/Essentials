@@ -358,7 +358,19 @@ namespace PepperDash.Essentials
                 try
                 {
                     var assy = loadedAssembly.Assembly;
-                    var types = assy.GetTypes();
+                    CType[] types = {};
+                    try
+                    {
+                        types = assy.GetTypes();
+                    }
+                    catch (TypeLoadException e)
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Warning, "Unable to get types for assembly {0}: {1}",
+                            loadedAssembly.Name, e.Message);
+                        Debug.Console(2, e.StackTrace);
+                        continue;
+                    }
+
                     foreach (var type in types)
                     {
                         try
@@ -382,7 +394,7 @@ namespace PepperDash.Essentials
                         catch (NotSupportedException e)
                         {
                             //this happens for dlls that aren't PD dlls, like ports of Mono classes into S#. Swallowing.
-                                
+                               
                         }
                         catch (Exception e)
                         {
@@ -391,12 +403,6 @@ namespace PepperDash.Essentials
                         }
 
                     }
-                }
-                catch (TypeLoadException e)
-                {
-                    Debug.Console(0, Debug.ErrorLogLevel.Warning, "Unable to load assembly {0}: {1}",
-                        loadedAssembly.Name, e.Message);
-                    Debug.Console(2, e.StackTrace);
                 }
                 catch (Exception e)
                 {
