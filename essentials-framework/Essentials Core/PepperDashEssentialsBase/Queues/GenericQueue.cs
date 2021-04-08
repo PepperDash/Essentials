@@ -14,7 +14,7 @@ namespace PepperDash.Essentials.Core.Queues
         protected readonly CrestronQueue<IQueueMessage> _queue;
         protected readonly Thread _worker;
         protected readonly CEvent _waitHandle = new CEvent();
-        
+
         private bool _delayEnabled;
         private int _delayTime;
 
@@ -158,7 +158,7 @@ namespace PepperDash.Essentials.Core.Queues
                 Dispose(true);
             };
         }
-        
+
         /// <summary>
         /// Thread callback
         /// </summary>
