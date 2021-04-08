@@ -130,10 +130,24 @@ namespace PepperDash.Essentials.Core
         [JsonProperty("sourceListKey")]
         public string SourceListKey { get; set; }
 
+        /// <summary>
+        /// Indicates if the device associated with this source is controllable
+        /// </summary>
+        [JsonProperty("isControllable")]
+        public bool IsControllable { get; set; }
+
+        /// <summary>
+        /// Indicates that the device associated with this source has audio available
+        /// </summary>
+        [JsonProperty("isAudioSource")]
+        public bool IsAudioSource { get; set; }
+
 		public SourceListItem()
 		{
 			Icon = "Blank";
 		}
+
+        
 	}
 
 	public class SourceRouteListItem

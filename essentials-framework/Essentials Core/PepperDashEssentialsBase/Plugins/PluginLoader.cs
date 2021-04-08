@@ -400,6 +400,7 @@ namespace PepperDash.Essentials
                         {
                             Debug.Console(2, "Load Plugin not found. {0}.{2} is not a plugin factory. Exception: {1}",
                                 loadedAssembly.Name, e.Message, type.Name);
+                            continue;
                         }
 
                     }
