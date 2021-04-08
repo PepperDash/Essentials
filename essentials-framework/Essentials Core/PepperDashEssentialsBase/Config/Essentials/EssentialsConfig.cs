@@ -51,6 +51,13 @@ namespace PepperDash.Essentials.Core.Config
 
 		[JsonProperty("rooms")]
         public List<DeviceConfig> Rooms { get; set; }
+
+
+        public EssentialsConfig()
+            : base()
+        {
+            Rooms = new List<DeviceConfig>();
+        }
 	}
 		
 	/// <summary>
