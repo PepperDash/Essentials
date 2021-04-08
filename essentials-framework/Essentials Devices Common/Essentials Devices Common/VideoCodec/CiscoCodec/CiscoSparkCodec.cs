@@ -490,9 +490,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Debug.Console(2, this, "Setting QR code URL: {0}", mcBridge.QrCodeUrl);
 
                 mcBridge.UserCodeChanged += (o, a) => SendMcBrandingUrl(mcBridge);
+                mcBridge.UserPromptedForCode += (o, a) => DisplayUserCode(mcBridge.UserCode);
 
                 SendMcBrandingUrl(mcBridge);
             }
+        }
+
+        /// <summary>
+        /// Displays the code for the specified duration
+        /// </summary>
+        /// <param name="code">Mobile Control user code</param>
+        private void DisplayUserCode(string code)
+        {
+            SendText(string.Format("xcommand userinterface message alert display title:\"Mobile Control User Code:\" text:\"{0}\" duration: 30", code));
         }
 
         private void SendMcBrandingUrl(IMobileControlRoomBridge mcBridge)
@@ -561,6 +571,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Standby" + Delimiter +
                 prefix + "/Status/Video/Selfview" + Delimiter +
                 prefix + "/Status/Video/Layout" + Delimiter +
+                prefix + "/Status/Video/Input/MainVideoMute" + Delimiter +
                 prefix + "/Bookings" + Delimiter +
                 prefix + "/Event/CallDisconnect" + Delimiter + 
                 prefix + "/Event/Bookings" + Delimiter +
@@ -1650,12 +1661,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void CameraAutoModeOn()
         {
+            if (CameraIsOffFeedback.BoolValue)
+            {
+                CameraMuteOff();
+            }
+
             SendText("xCommand Cameras SpeakerTrack Activate");
-            CameraMuteOff();
         }
 
         public void CameraAutoModeOff()
         {
+            if (CameraIsOffFeedback.BoolValue)
+            {
+                CameraMuteOff();
+            }
+
             SendText("xCommand Cameras SpeakerTrack Deactivate");
         }
 
@@ -2011,7 +2031,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void CameraMuteOn()
         {
-            SendText("xCommand Video InputMainVideo Mute");
+            SendText("xCommand Video Input MainVideo Mute");
         }
 
         /// <summary>
@@ -2019,7 +2039,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void CameraMuteOff()
         {
-            SendText("xCommand Video InputMainVideo Unmute");
+            SendText("xCommand Video Input MainVideo Unmute");
         }
 
         /// <summary>
