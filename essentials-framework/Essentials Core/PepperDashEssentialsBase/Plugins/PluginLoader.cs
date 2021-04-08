@@ -363,9 +363,10 @@ namespace PepperDash.Essentials
                     {
                         try
                         {
-                            if (typeof(IPluginDeviceFactory).IsAssignableFrom(type))
+                            if (typeof (IPluginDeviceFactory).IsAssignableFrom(type))
                             {
-                                var plugin = (IPluginDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+                                var plugin =
+                                    (IPluginDeviceFactory) Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
                                 LoadCustomPlugin(plugin, loadedAssembly);
                             }
                             else
@@ -378,18 +379,30 @@ namespace PepperDash.Essentials
                                 }
                             }
                         }
+                        catch (NotSupportedException e)
+                        {
+                            //this happens for dlls that aren't PD dlls, like ports of Mono classes into S#. Swallowing.
+                                
+                        }
                         catch (Exception e)
                         {
                             Debug.Console(2, "Load Plugin not found. {0}.{2} is not a plugin factory. Exception: {1}",
-                                loadedAssembly.Name, e, type.Name);
-                            continue;
+                                loadedAssembly.Name, e.Message, type.Name);
                         }
 
                     }
                 }
+                catch (TypeLoadException e)
+                {
+                    Debug.Console(0, Debug.ErrorLogLevel.Warning, "Unable to load assembly {0}: {1}",
+                        loadedAssembly.Name, e.Message);
+                    Debug.Console(2, e.StackTrace);
+                }
                 catch (Exception e)
                 {
-                    Debug.Console(2, "Error Loading Assembly: {0} Exception: {1} ", loadedAssembly.Name, e);
+                    Debug.Console(0, Debug.ErrorLogLevel.Warning, "Error Loading assembly {0}: {1}",
+                           loadedAssembly.Name, e.Message);
+                    Debug.Console(2, "{0}", e.StackTrace);
                     continue;
                 }
             }
