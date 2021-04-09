@@ -165,12 +165,6 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// <param name="args"></param>
         private void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
         {
-            if (Debug.Level == 2)
-                Debug.Console(2, this, "RX: '{0}'",
-                    ShowHexResponse ? ComTextHelper.GetEscapedText(args.Text) : args.Text);
-
-            Debug.Console(1, this, "RX: '{0}'", args.Text);
-
             try
             {
                 if (args.Text.IndexOf("Welcome to the Tesira Text Protocol Server...") > -1)
@@ -288,7 +282,6 @@ namespace PepperDash.Essentials.Devices.Common.DSP
         /// <param name="s">Command to send</param>
         public void SendLine(string s)
         {
-            Debug.Console(1, this, "TX: '{0}'", s);
             Communication.SendText(s + "\x0a");
         }
 
