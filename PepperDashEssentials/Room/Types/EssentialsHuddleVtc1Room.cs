@@ -19,7 +19,8 @@ namespace PepperDash.Essentials
 {
     public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange,
         IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback
-	{
+    {
+        private bool _codecExternalSourceChange;
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSourceChange;
 
@@ -178,10 +179,12 @@ namespace PepperDash.Essentials
 					handler(_CurrentSourceInfo, ChangeType.DidChange);
 
                 var vc = VideoCodec as IHasExternalSourceSwitching;
-                if (vc != null)
+                if (vc != null && !_codecExternalSourceChange)
                 {
                     vc.SetSelectedSource(CurrentSourceInfoKey);
                 }
+
+			    _codecExternalSourceChange = false;
 			}
 		}
 		SourceListItem _CurrentSourceInfo;
@@ -419,6 +422,12 @@ namespace PepperDash.Essentials
         {
             RunRouteAction(DefaultCodecRouteString);
             return true;
+        }
+
+        public void RunRouteActionCodec(string routeKey, string sourceListKey)
+        {
+            _codecExternalSourceChange = true;
+            RunRouteAction(routeKey, sourceListKey);
         }
 
         /// <summary>
@@ -750,7 +759,7 @@ namespace PepperDash.Essentials
                     x => x.DestinationKey == VideoCodec.Key && x.DestinationPort == videoCodecWithExternalSwitching.ExternalSourceInputPort).DestinationPort;
 
                 videoCodecWithExternalSwitching.ClearExternalSources();
-                videoCodecWithExternalSwitching.RunRouteAction = RunRouteAction;
+                videoCodecWithExternalSwitching.RunRouteAction = RunRouteActionCodec;
                 var srcList = ConfigReader.ConfigObject.SourceLists.SingleOrDefault(x => x.Key == SourceListKey).Value.OrderBy(kv => kv.Value.Order); ;
 
                 foreach (var kvp in srcList)
