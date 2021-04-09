@@ -30,6 +30,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
         ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute
     {
+        private bool _externalSourceChangeRequested;
+
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
 
         private CTimer _brandingTimer;
@@ -961,10 +963,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         JsonConvert.PopulateObject(response, eventReceived);
 						Debug.Console(2, this, "*** Got an External Source Selection {0} {1}", eventReceived, eventReceived.Event.UserInterface, eventReceived.Event.UserInterface.Presentation.ExternalSource.Selected.SourceIdentifier.Value);
 
-						if (RunRouteAction != null)
+						if (RunRouteAction != null && !_externalSourceChangeRequested)
 						{
 							RunRouteAction(eventReceived.Event.UserInterface.Presentation.ExternalSource.Selected.SourceIdentifier.Value, null);
 						}
+
+					    _externalSourceChangeRequested = false;
 					}
                 }
                 else if (response.IndexOf("\"CommandResponse\":{") > -1 || response.IndexOf("\"CommandResponse\": {") > -1)
@@ -1994,6 +1998,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public void SetSelectedSource(string key)
         {
             SendText(string.Format("xCommand UserInterface Presentation ExternalSource Select SourceIdentifier: {0}", key));
+            _externalSourceChangeRequested = true;
         }
 
 		/// <summary>
