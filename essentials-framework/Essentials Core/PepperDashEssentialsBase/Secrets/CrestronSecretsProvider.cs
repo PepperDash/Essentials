@@ -25,7 +25,11 @@ namespace PepperDash.Essentials.Core
 
         }
 
-
+        /// <summary>
+        /// Set secret for item in the CrestronSecretsProvider
+        /// </summary>
+        /// <param name="key">Secret Key</param>
+        /// <param name="value">Secret Value</param>
         public void SetSecret(string key, object value)
         {
             var secret = value as string;
@@ -34,7 +38,6 @@ namespace PepperDash.Essentials.Core
                 Debug.Console(2, this, "Unable to set secret for {0}:{1} - value is empty.", Key, key);
                 return;
             }
-            Debug.Console(2, this, "Attempting to set Secret to {0}", secret);
             var setErrorCode = CrestronDataStoreStatic.SetLocalStringValue(key, secret);
             switch (setErrorCode)
             {
@@ -47,6 +50,11 @@ namespace PepperDash.Essentials.Core
             }
         }
 
+        /// <summary>
+        /// Retrieve secret for item in the CrestronSecretsProvider
+        /// </summary>
+        /// <param name="key">Secret Key</param>
+        /// <returns>ISecret Object containing key, provider, and value</returns>
         public ISecret GetSecret(string key)
         {
             string mySecret;
@@ -56,7 +64,6 @@ namespace PepperDash.Essentials.Core
             {
                 case CrestronDataStore.CDS_ERROR.CDS_SUCCESS:
                     Debug.Console(2, this, "Secret Successfully retrieved for {0}:{1}", Key, key);
-                    Debug.Console(2, this, "Retreived Secret = {0}", mySecret);
                     return new CrestronSecret(key, mySecret, this);
                 default:
                     Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Unable to retrieve secret for {0}:{1} - {2}",
@@ -66,6 +73,9 @@ namespace PepperDash.Essentials.Core
         }
     }
 
+    /// <summary>
+    /// Special container class for CrestronSecret provider
+    /// </summary>
     public class CrestronSecret : ISecret
     {
         public ISecretProvider Provider { get; private set; }

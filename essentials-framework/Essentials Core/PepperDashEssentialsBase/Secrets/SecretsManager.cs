@@ -11,6 +11,9 @@ namespace PepperDash.Essentials.Core
     {
         public static List<ISecretProvider> Secrets { get; set; }
 
+        /// <summary>
+        /// Initialize the SecretsManager
+        /// </summary>
         public static void Initialize()
         {
             Secrets = new List<ISecretProvider> {new CrestronSecretsProvider("default")};
@@ -30,6 +33,11 @@ namespace PepperDash.Essentials.Core
 
         }
 
+        /// <summary>
+        /// Method to return a ISecretProvider to Set, Get, and Delete Secrets
+        /// </summary>
+        /// <param name="key">Secret Provider Key</param>
+        /// <returns></returns>
         public static ISecretProvider GetSecretProviderByKey(string key)
         {
             var secret = Secrets.FirstOrDefault(o => o.Key == key);
