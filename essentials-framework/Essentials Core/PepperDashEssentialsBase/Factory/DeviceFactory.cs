@@ -105,65 +105,68 @@ namespace PepperDash.Essentials.Core
 		        var name = localDc.Name;
 		        var type = localDc.Type;
                 var properties = localDc.Properties;
-
-
+		        //var propRecurse = properties;
 
 		        var typeName = localDc.Type.ToLower();
 
                 Debug.Console(2, "typeName = {0}", typeName);
 		        // Check for types that have been added by plugin dlls. 
-		        if (FactoryMethods.ContainsKey(typeName))
+		        if (!FactoryMethods.ContainsKey(typeName)) return null;
+
+                /*foreach (var obj in (propRecurse as JObject).FindTokens("secret").OfType<JObject>())
+                {
+                    Debug.Console(2, obj.ToString());
+                }*/
+
+
+                //look for secret in username
+		        var userSecretToken = properties["control"]["tcpSshProperties"]["username"]["secret"];
+
+		        if (userSecretToken != null)
 		        {
-		            //look for secret in username
-		            var userSecretToken = properties["control"]["tcpSshProperties"]["username"]["secret"];
-
-		            if (userSecretToken != null)
+		            Debug.Console(2, "Found a secret for {0} - attempting to retrieve it!", name);
+		            var userSecretResult =
+		                JsonConvert.DeserializeObject<SecretsPropertiesConfig>(userSecretToken.ToString());
+		            var userProvider = SecretsManager.GetSecretProviderByKey(userSecretResult.Provider);
+		            if (userProvider != null)
 		            {
-		                Debug.Console(2, "Found a secret for {0} - attempting to retrieve it!", name);
-		                var userSecretResult =
-		                    JsonConvert.DeserializeObject<SecretsPropertiesConfig>(userSecretToken.ToString());
-		                var userProvider = SecretsManager.GetSecretProviderByKey(userSecretResult.Provider);
-		                if (userProvider != null)
+		                var user = userProvider.GetSecret(userSecretResult.Key);
+		                if (user == null)
 		                {
-		                    var user = userProvider.GetSecret(userSecretResult.Key);
-		                    if (user == null)
-		                    {
-		                        Debug.Console(1,
-		                            "Unable to retrieve secret for {0} - Make sure you've added it to the secrets provider");
-		                        return null;
-		                    }
-		                    properties["control"]["tcpSshProperties"]["username"] = (string) user.Value;
+		                    Debug.Console(1,
+		                        "Unable to retrieve secret for {0} - Make sure you've added it to the secrets provider");
+		                    return null;
 		                }
+		                properties["control"]["tcpSshProperties"]["username"] = (string) user.Value;
 		            }
-
-		            //look for secret in password
-		            var passwordSecretToken = properties["control"]["tcpSshProperties"]["password"]["secret"];
-
-		            if (passwordSecretToken != null)
-		            {
-		                Debug.Console(2, "Found a secret for {0} - attempting to retrieve it!", name);
-
-		                var passwordSecretResult =
-		                    JsonConvert.DeserializeObject<SecretsPropertiesConfig>(passwordSecretToken.ToString());
-		                var passwordProvider = SecretsManager.GetSecretProviderByKey(passwordSecretResult.Provider);
-		                if (passwordProvider != null)
-		                {
-		                    var password = passwordProvider.GetSecret(passwordSecretResult.Key);
-		                    if (password == null)
-		                    {
-		                        Debug.Console(1,
-		                            "Unable to retrieve secret for {0} - Make sure you've added it to the secrets provider");
-		                        return null;
-		                    }
-		                    properties["control"]["tcpSshProperties"]["password"] = (string) password.Value;
-		                }
-		            }
-
-		            Debug.Console(0, "{0}", localDc.Properties.ToString());
-
-		            return FactoryMethods[typeName].FactoryMethod(localDc);
 		        }
-		        return null;
+
+                //look for secret in password
+		        var passwordSecretToken = properties["control"]["tcpSshProperties"]["password"]["secret"];
+
+		        if (passwordSecretToken != null)
+		        {
+		            Debug.Console(2, "Found a secret for {0} - attempting to retrieve it!", name);
+
+		            var passwordSecretResult =
+		                JsonConvert.DeserializeObject<SecretsPropertiesConfig>(passwordSecretToken.ToString());
+		            var passwordProvider = SecretsManager.GetSecretProviderByKey(passwordSecretResult.Provider);
+		            if (passwordProvider != null)
+		            {
+		                var password = passwordProvider.GetSecret(passwordSecretResult.Key);
+                        if (password == null)
+		                {
+		                    Debug.Console(1,
+		                        "Unable to retrieve secret for {0} - Make sure you've added it to the secrets provider");
+		                    return null;
+		                }
+                        properties["control"]["tcpSshProperties"]["password"] = (string)password.Value;
+		            }
+		        }
+
+                Debug.Console(0, "{0}", localDc.Properties.ToString());
+
+		        return FactoryMethods[typeName].FactoryMethod(localDc);
 		    }
 		    catch (Exception ex)
 		    {
