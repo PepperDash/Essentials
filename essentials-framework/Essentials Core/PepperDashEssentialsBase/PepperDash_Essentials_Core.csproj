@@ -320,6 +320,10 @@
     <Compile Include="Feedbacks\BoolFeedbackPulseExtender.cs" />
     <Compile Include="Routing\RoutingPortNames.cs" />
     <Compile Include="Routing\TieLineConfig.cs" />
+    <Compile Include="Secrets\CrestronSecretsProvider.cs" />
+    <Compile Include="Secrets\Interfaces.cs" />
+    <Compile Include="Secrets\SecretsManager.cs" />
+    <Compile Include="Secrets\SecretsPropertiesConfig.cs" />
     <Compile Include="Shades\Shade Interfaces.cs" />
     <Compile Include="Shades\ShadeBase.cs" />
     <Compile Include="Shades\ShadeController.cs" />

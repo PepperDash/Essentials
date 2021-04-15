@@ -7,6 +7,8 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.GeneralIO;
 using Crestron.SimplSharp.Reflection;
 using PepperDash.Core;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
@@ -92,23 +94,83 @@ namespace PepperDash.Essentials.Core
 		/// <param name="dc"></param>
 		/// <returns></returns>
         public static IKeyed GetDevice(DeviceConfig dc)
-        {
-            var key = dc.Key;
-            var name = dc.Name;
-            var type = dc.Type;
-            var properties = dc.Properties;	
-
-            var typeName = dc.Type.ToLower();
-
-            // Check for types that have been added by plugin dlls. 
-            if (FactoryMethods.ContainsKey(typeName))
-            {
+		{
+		    try
+		    {
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading '{0}' from Essentials Core", dc.Type);
-                return FactoryMethods[typeName].FactoryMethod(dc);
-            }
 
-            return null;
-        }
+		        var localDc = new DeviceConfig(dc);
+
+		        var key = localDc.Key;
+		        var name = localDc.Name;
+		        var type = localDc.Type;
+                var properties = localDc.Properties;
+
+
+
+		        var typeName = localDc.Type.ToLower();
+
+                Debug.Console(2, "typeName = {0}", typeName);
+		        // Check for types that have been added by plugin dlls. 
+		        if (FactoryMethods.ContainsKey(typeName))
+		        {
+		            //look for secret in username
+		            var userSecretToken = properties["control"]["tcpSshProperties"]["username"]["secret"];
+
+		            if (userSecretToken != null)
+		            {
+		                Debug.Console(2, "Found a secret for {0} - attempting to retrieve it!", name);
+		                var userSecretResult =
+		                    JsonConvert.DeserializeObject<SecretsPropertiesConfig>(userSecretToken.ToString());
+		                var userProvider = SecretsManager.GetSecretProviderByKey(userSecretResult.Provider);
+		                if (userProvider != null)
+		                {
+		                    var user = userProvider.GetSecret(userSecretResult.Key);
+		                    if (user == null)
+		                    {
+		                        Debug.Console(1,
+		                            "Unable to retrieve secret for {0} - Make sure you've added it to the secrets provider");
+		                        return null;
+		                    }
+		                    properties["control"]["tcpSshProperties"]["username"] = (string) user.Value;
+		                }
+		            }
+
+		            //look for secret in password
+		            var passwordSecretToken = properties["control"]["tcpSshProperties"]["password"]["secret"];
+
+		            if (passwordSecretToken != null)
+		            {
+		                Debug.Console(2, "Found a secret for {0} - attempting to retrieve it!", name);
+
+		                var passwordSecretResult =
+		                    JsonConvert.DeserializeObject<SecretsPropertiesConfig>(passwordSecretToken.ToString());
+		                var passwordProvider = SecretsManager.GetSecretProviderByKey(passwordSecretResult.Provider);
+		                if (passwordProvider != null)
+		                {
+		                    var password = passwordProvider.GetSecret(passwordSecretResult.Key);
+		                    if (password == null)
+		                    {
+		                        Debug.Console(1,
+		                            "Unable to retrieve secret for {0} - Make sure you've added it to the secrets provider");
+		                        return null;
+		                    }
+		                    properties["control"]["tcpSshProperties"]["password"] = (string) password.Value;
+		                }
+		            }
+
+		            Debug.Console(0, "{0}", localDc.Properties.ToString());
+
+		            return FactoryMethods[typeName].FactoryMethod(localDc);
+		        }
+		        return null;
+		    }
+		    catch (Exception ex)
+		    {
+		        Debug.Console(2, "Issue with getting device - {0}", ex.Message);
+		        return null;
+		    }
+		}
 
         /// <summary>
         /// Prints the type names and associated metadata from the FactoryMethods collection.
