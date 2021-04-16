@@ -7,6 +7,8 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.GeneralIO;
 using Crestron.SimplSharp.Reflection;
 using PepperDash.Core;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
@@ -85,29 +87,75 @@ namespace PepperDash.Essentials.Core
             DeviceFactory.FactoryMethods.Add(typeName, wrapper);
         }
 
-		/// <summary>
-		/// The factory method for Core "things". Also iterates the Factory methods that have
-		/// been loaded from plugins
-		/// </summary>
-		/// <param name="dc"></param>
-		/// <returns></returns>
-        public static IKeyed GetDevice(DeviceConfig dc)
+        private static void CheckForSecrets(IEnumerable<JProperty> obj)
         {
-            var key = dc.Key;
-            var name = dc.Name;
-            var type = dc.Type;
-            var properties = dc.Properties;	
+            foreach (var prop in obj.Where(prop => prop.Value as JObject != null))
+            {
+                if (prop.Name.ToLower() == "secret")
+                {
+                    var secret = GetSecret(JsonConvert.DeserializeObject<SecretsPropertiesConfig>(prop.Children().First().ToString()));
+                    prop.Parent.Replace(secret);
+                }
+                var recurseProp = prop.Value as JObject;
+                if (recurseProp == null) return;
+                CheckForSecrets(recurseProp.Properties());
+            }
+        }
 
-            var typeName = dc.Type.ToLower();
+        private static string GetSecret(SecretsPropertiesConfig data)
+        {
+            var secretProvider = SecretsManager.GetSecretProviderByKey(data.Provider);
+            if (secretProvider == null) return null;
+            var secret = secretProvider.GetSecret(data.Key);
+            if (secret != null) return (string) secret.Value;
+            Debug.Console(1,
+                "Unable to retrieve secret {0}{1} - Make sure you've added it to the secrets provider",
+                data.Provider, data.Key);
+            return null;
+        }
 
-            // Check for types that have been added by plugin dlls. 
-            if (FactoryMethods.ContainsKey(typeName))
+
+        /// <summary>
+        /// The factory method for Core "things". Also iterates the Factory methods that have
+        /// been loaded from plugins
+        /// </summary>
+        /// <param name="dc"></param>
+        /// <returns></returns>
+        public static
+            IKeyed GetDevice(DeviceConfig dc)
+        {
+            try
             {
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Loading '{0}' from Essentials Core", dc.Type);
-                return FactoryMethods[typeName].FactoryMethod(dc);
-            }
 
-            return null;
+                var localDc = new DeviceConfig(dc);
+
+                var key = localDc.Key;
+                var name = localDc.Name;
+                var type = localDc.Type;
+                var properties = localDc.Properties;
+                //var propRecurse = properties;
+
+                var typeName = localDc.Type.ToLower();
+
+
+                var jObject = properties as JObject;
+                if (jObject != null)
+                {
+                    var jProp = jObject.Properties();
+
+                    CheckForSecrets(jProp);
+                }
+
+                Debug.Console(2, "typeName = {0}", typeName);
+                // Check for types that have been added by plugin dlls. 
+                return !FactoryMethods.ContainsKey(typeName) ? null : FactoryMethods[typeName].FactoryMethod(localDc);
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(2, "Issue with getting device - {0}", ex.Message);
+                return null;
+            }
         }
 
         /// <summary>

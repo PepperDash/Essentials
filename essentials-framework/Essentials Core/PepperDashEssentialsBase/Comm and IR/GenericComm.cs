@@ -25,6 +25,7 @@ namespace PepperDash.Essentials.Core
         public GenericComm(DeviceConfig config)
             : base(config)
         {
+
             PropertiesConfig = CommFactory.GetControlPropertiesConfig(config);
 
             var commPort = CommFactory.CreateCommForDevice(config);
