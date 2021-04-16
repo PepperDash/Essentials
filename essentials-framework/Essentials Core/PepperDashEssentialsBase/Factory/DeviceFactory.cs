@@ -111,7 +111,7 @@ namespace PepperDash.Essentials.Core
             Debug.Console(1,
                 "Unable to retrieve secret {0}{1} - Make sure you've added it to the secrets provider",
                 data.Provider, data.Key);
-            return null;
+            return String.Empty;
         }
 
 
@@ -121,8 +121,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="dc"></param>
         /// <returns></returns>
-        public static
-            IKeyed GetDevice(DeviceConfig dc)
+        public static IKeyed GetDevice(DeviceConfig dc)
         {
             try
             {
