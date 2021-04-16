@@ -209,6 +209,7 @@
     <Compile Include="DeviceTypeInterfaces\IHasFarEndContentStatus.cs" />
     <Compile Include="DeviceTypeInterfaces\IHasPhoneDialing.cs" />
     <Compile Include="DeviceTypeInterfaces\IMobileControl.cs" />
+    <Compile Include="Extensions\JsonExtensions.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Factory\IDeviceFactory.cs" />
     <Compile Include="Factory\ReadyEventArgs.cs" />
@@ -320,6 +321,10 @@
     <Compile Include="Feedbacks\BoolFeedbackPulseExtender.cs" />
     <Compile Include="Routing\RoutingPortNames.cs" />
     <Compile Include="Routing\TieLineConfig.cs" />
+    <Compile Include="Secrets\CrestronSecretsProvider.cs" />
+    <Compile Include="Secrets\Interfaces.cs" />
+    <Compile Include="Secrets\SecretsManager.cs" />
+    <Compile Include="Secrets\SecretsPropertiesConfig.cs" />
     <Compile Include="Shades\Shade Interfaces.cs" />
     <Compile Include="Shades\ShadeBase.cs" />
     <Compile Include="Shades\ShadeController.cs" />
