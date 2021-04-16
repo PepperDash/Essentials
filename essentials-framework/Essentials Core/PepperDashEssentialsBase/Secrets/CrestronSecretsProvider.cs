@@ -66,9 +66,9 @@ namespace PepperDash.Essentials.Core
                     Debug.Console(2, this, "Secret Successfully retrieved for {0}:{1}", Key, key);
                     return new CrestronSecret(key, mySecret, this);
                 default:
-                    Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Unable to retrieve secret for {0}:{1} - {2}",
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Unable to retrieve secret for {0}:{1} - {2}",
                         Key, key, getErrorCode.ToString());
-                    return null;
+                    return new CrestronSecret(key, String.Empty, this);
             }
         }
     }
