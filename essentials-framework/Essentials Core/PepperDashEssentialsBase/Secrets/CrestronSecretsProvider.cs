@@ -10,19 +10,22 @@ namespace PepperDash.Essentials.Core
     {
         public string Key { get; set; }
         //Added for reference
-        //private readonly bool _secureSupported;
+        private static readonly bool SecureSupported;
         public CrestronSecretsProvider(string key)
         {
             Key = key;
+        }
+
+        static CrestronSecretsProvider()
+        {
             //Added for future encrypted reference
-            //_secureSupported = CrestronSecureStorage.Supported;
+            SecureSupported = CrestronSecureStorage.Supported;
 
-            //if (_secureSupported)
-            //{
-            //      return;
-            //}
             CrestronDataStoreStatic.InitCrestronDataStore();
-
+            if (SecureSupported)
+            {
+                //doThingsFuture
+            }
         }
 
         /// <summary>
@@ -30,23 +33,23 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="key">Secret Key</param>
         /// <param name="value">Secret Value</param>
-        public void SetSecret(string key, object value)
+        public bool SetSecret(string key, object value)
         {
             var secret = value as string;
             if (String.IsNullOrEmpty(secret))
             {
                 Debug.Console(2, this, "Unable to set secret for {0}:{1} - value is empty.", Key, key);
-                return;
+                return false;
             }
             var setErrorCode = CrestronDataStoreStatic.SetLocalStringValue(key, secret);
             switch (setErrorCode)
             {
                 case CrestronDataStore.CDS_ERROR.CDS_SUCCESS:
-                    Debug.Console(2, this,"Secret Successfully Set for {0}:{1}", Key, key);
-                    break;
+                    Debug.Console(1, this,"Secret Successfully Set for {0}:{1}", Key, key);
+                    return true;
                 default:
                     Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Unable to set secret for {0}:{1} - {2}", Key, key, setErrorCode.ToString());
-                    break;
+                    return false;
             }
         }
 
@@ -68,7 +71,7 @@ namespace PepperDash.Essentials.Core
                 default:
                     Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Unable to retrieve secret for {0}:{1} - {2}",
                         Key, key, getErrorCode.ToString());
-                    return new CrestronSecret(key, String.Empty, this);
+                    return null;
             }
         }
     }

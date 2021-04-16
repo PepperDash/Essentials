@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Crestron.SimplSharp;
 using PepperDash.Core;
 
@@ -9,15 +8,16 @@ namespace PepperDash.Essentials.Core
 {
     public static class SecretsManager
     {
-        public static List<ISecretProvider> Secrets { get; set; }
+        public static Dictionary<string, ISecretProvider> Secrets { get; private set; }
 
         /// <summary>
         /// Initialize the SecretsManager
         /// </summary>
         public static void Initialize()
         {
-            Secrets = new List<ISecretProvider> {new CrestronSecretsProvider("default")};
-            
+
+            AddSecretProvider("default", new CrestronSecretsProvider("default"));
+
             CrestronConsole.AddNewConsoleCommand(SetSecretProcess, "setsecret",
                 "Adds secrets to secret provider",
                 ConsoleAccessLevelEnum.AccessOperator);
@@ -29,23 +29,67 @@ namespace PepperDash.Essentials.Core
             CrestronConsole.AddNewConsoleCommand(DeleteSecretProcess, "deletesecret",
                 "Deletes secrets in secret provider",
                 ConsoleAccessLevelEnum.AccessAdministrator);
-             
+        }
 
+        static SecretsManager()
+        {
+            Secrets = new Dictionary<string, ISecretProvider>();
         }
 
         /// <summary>
-        /// Method to return a ISecretProvider to Set, Get, and Delete Secrets
+        /// Get Secret Provider from dictionary by key
         /// </summary>
-        /// <param name="key">Secret Provider Key</param>
-        /// <returns></returns>
+        /// <param name="key">Dictionary Key for provider</param>
+        /// <returns>ISecretProvider</returns>
         public static ISecretProvider GetSecretProviderByKey(string key)
         {
-            var secret = Secrets.FirstOrDefault(o => o.Key == key);
+            ISecretProvider secret;
+
+            Secrets.TryGetValue(key, out secret);
+
             if (secret == null)
             {
                 Debug.Console(1, "SecretsManager unable to retrieve SecretProvider with the key '{0}'", key);
             }
             return secret;
+        }
+
+        /// <summary>
+        /// Add secret provider to secrets dictionary
+        /// </summary>
+        /// <param name="key">Key of new entry</param>
+        /// <param name="provider">New Provider Entry</param>
+        public static void AddSecretProvider(string key, ISecretProvider provider)
+        {
+            if (!Secrets.ContainsKey(key))
+            {
+                Secrets.Add(key, provider);
+                Debug.Console(1, "Secrets provider '{0}' added to SecretsManager", key);
+            }
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to add Provider '{0}' to Secrets.  Provider with that key already exists", key );
+        }
+
+        /// <summary>
+        /// Add secret provider to secrets dictionary, with optional overwrite parameter
+        /// </summary>
+        /// <param name="key">Key of new entry</param>
+        /// <param name="provider">New provider entry</param>
+        /// <param name="overwrite">true to overwrite any existing providers in the dictionary</param>
+        public static void AddSecretProvider(string key, ISecretProvider provider, bool overwrite)
+        {
+            if (!Secrets.ContainsKey(key))
+            {
+                Secrets.Add(key, provider);
+                Debug.Console(1, "Secrets provider '{0}' added to SecretsManager", key);
+
+            }
+            if (overwrite)
+            {
+                Secrets.Add(key, provider);
+                Debug.Console(1, Debug.ErrorLogLevel.Notice, "Provider with the key '{0}' already exists in secrets.  Overwriting with new secrets provider.", key);
+
+            }
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to add Provider '{0}' to Secrets.  Provider with that key already exists", key);
         }
 
         private static void SetSecretProcess(string cmd)
@@ -76,7 +120,7 @@ namespace PepperDash.Essentials.Core
 
             }
 
-            var provider = Secrets.FirstOrDefault(o => o.Key == args[0]);
+            var provider = GetSecretProviderByKey(args[0]);
 
             if (provider == null)
             {
@@ -92,11 +136,14 @@ namespace PepperDash.Essentials.Core
 
             if (provider.GetSecret(key) == null)
             {
-                provider.SetSecret(key, secret);
-                response =
-                    String.Format(
+
+                response = provider.SetSecret(key, secret)
+                    ? String.Format(
                         "Secret successfully set for {0}:{1}",
-                        provider.Key, key);
+                        provider.Key, key)
+                    : String.Format(
+                        "Unable to set secret for {0}:{1}",
+                        provider.Key, key);                    
                 CrestronConsole.ConsoleCommandResponse(response);
                 return;
             }
@@ -137,7 +184,7 @@ namespace PepperDash.Essentials.Core
 
             }
 
-            var provider = Secrets.FirstOrDefault(o => o.Key == args[0]);
+            var provider = GetSecretProviderByKey(args[0]);
 
             if (provider == null)
             {
@@ -153,10 +200,12 @@ namespace PepperDash.Essentials.Core
 
             if (provider.GetSecret(key) != null)
             {
-                provider.SetSecret(key, secret);
-                response =
-                    String.Format(
-                        "Secret successfully updated for {0}:{1}",
+                response = provider.SetSecret(key, secret)
+                    ? String.Format(
+                        "Secret successfully set for {0}:{1}",
+                        provider.Key, key)
+                    : String.Format(
+                        "Unable to set secret for {0}:{1}",
                         provider.Key, key);
                 CrestronConsole.ConsoleCommandResponse(response);
                 return;
@@ -199,7 +248,7 @@ namespace PepperDash.Essentials.Core
 
             }
 
-            var provider = Secrets.FirstOrDefault(o => o.Key == args[0]);
+            var provider = GetSecretProviderByKey(args[0]);
 
             if (provider == null)
             {
@@ -214,11 +263,15 @@ namespace PepperDash.Essentials.Core
 
 
             provider.SetSecret(key, "");
-            response =
-                String.Format(
+            response = provider.SetSecret(key, "")
+                ? String.Format(
                     "Secret successfully deleted for {0}:{1}",
+                    provider.Key, key)
+                : String.Format(
+                    "Unable to delete secret for {0}:{1}",
                     provider.Key, key);
             CrestronConsole.ConsoleCommandResponse(response);
+            return;
 
 
         }

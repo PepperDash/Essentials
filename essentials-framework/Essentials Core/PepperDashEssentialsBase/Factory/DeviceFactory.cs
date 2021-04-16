@@ -93,7 +93,8 @@ namespace PepperDash.Essentials.Core
             {
                 if (prop.Name.ToLower() == "secret")
                 {
-                    var secret = GetSecret(JsonConvert.DeserializeObject<SecretsPropertiesConfig>(prop.Children().First().ToString()));
+                    var secret = GetSecret(prop.Children().First().ToObject<SecretsPropertiesConfig>());
+                    //var secret = GetSecret(JsonConvert.DeserializeObject<SecretsPropertiesConfig>(prop.Children().First().ToString()));
                     prop.Parent.Replace(secret);
                 }
                 var recurseProp = prop.Value as JObject;
@@ -152,7 +153,9 @@ namespace PepperDash.Essentials.Core
             }
             catch (Exception ex)
             {
-                Debug.Console(2, "Issue with getting device - {0}", ex.Message);
+                Debug.Console(0, Debug.ErrorLogLevel.Error, "Exception occurred while creating device {0}: {1}", dc.Key, ex.Message);
+
+                Debug.Console(2, "{0}", ex.StackTrace);
                 return null;
             }
         }

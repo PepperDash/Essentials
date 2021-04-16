@@ -7,7 +7,7 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface ISecretProvider : IKeyed
     {
-        void SetSecret(string key, object value);
+        bool SetSecret(string key, object value);
 
         ISecret GetSecret(string key);
     }
