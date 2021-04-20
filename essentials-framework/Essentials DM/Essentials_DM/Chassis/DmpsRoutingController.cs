@@ -274,9 +274,12 @@ namespace PepperDash.Essentials.DM
                     AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio.JoinNumber + ioSlotJoin]);
                 }
 
-                if (AudioOutputSourceDeviceFeedbacks[ioSlot] != null)
+                IntFeedback audioOutSourceDeviceFeedback;
+
+                
+                if (AudioOutputSourceDeviceFeedbacks.TryGetValue(ioSlot, out audioOutSourceDeviceFeedback))
                 {
-                    AudioOutputSourceDeviceFeedbacks[ioSlot].LinkInputSig(
+                    audioOutSourceDeviceFeedback.LinkInputSig(
                         trilist.UShortInput[joinMap.OutputAudioSourceDevice.JoinNumber + ioSlotJoin]);
                 }
                 if (OutputNameFeedbacks[ioSlot] != null)
