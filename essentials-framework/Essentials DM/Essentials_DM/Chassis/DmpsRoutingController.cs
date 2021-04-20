@@ -32,6 +32,7 @@ namespace PepperDash.Essentials.DM
         // Feedbacks for EssentialDM
         public Dictionary<uint, IntFeedback> VideoOutputFeedbacks { get; private set; }
         public Dictionary<uint, IntFeedback> AudioOutputFeedbacks { get; private set; }
+        public Dictionary<uint, IntFeedback> AudioOutputSourceDeviceFeedbacks { get; private set; } 
         public Dictionary<uint, BoolFeedback> VideoInputSyncFeedbacks { get; private set; }
         public Dictionary<uint, BoolFeedback> InputEndpointOnlineFeedbacks { get; private set; }
         public Dictionary<uint, BoolFeedback> OutputEndpointOnlineFeedbacks { get; private set; }
@@ -125,6 +126,7 @@ namespace PepperDash.Essentials.DM
 
             VideoOutputFeedbacks = new Dictionary<uint, IntFeedback>();
             AudioOutputFeedbacks = new Dictionary<uint, IntFeedback>();
+            AudioOutputSourceDeviceFeedbacks = new Dictionary<uint, IntFeedback>();
             VideoInputSyncFeedbacks = new Dictionary<uint, BoolFeedback>();
             InputNameFeedbacks = new Dictionary<uint, StringFeedback>();
             OutputNameFeedbacks = new Dictionary<uint, StringFeedback>();
@@ -231,6 +233,8 @@ namespace PepperDash.Essentials.DM
                     o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.Video));
                 trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + ioSlotJoin,
                     o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.Audio));
+                trilist.SetUShortSigAction(joinMap.OutputAudioSourceDevice.JoinNumber + ioSlotJoin, u =>
+                    SetAudioOutputSourceDevice(ioSlot, u));
 
                 trilist.SetStringSigAction(joinMap.OutputNames.JoinNumber + ioSlotJoin, s =>
                 {
@@ -269,6 +273,12 @@ namespace PepperDash.Essentials.DM
                 {
                     AudioOutputFeedbacks[ioSlot].LinkInputSig(trilist.UShortInput[joinMap.OutputAudio.JoinNumber + ioSlotJoin]);
                 }
+
+                if (AudioOutputSourceDeviceFeedbacks[ioSlot] != null)
+                {
+                    AudioOutputSourceDeviceFeedbacks[ioSlot].LinkInputSig(
+                        trilist.UShortInput[joinMap.OutputAudioSourceDevice.JoinNumber + ioSlotJoin]);
+                }
                 if (OutputNameFeedbacks[ioSlot] != null)
                 {
                     OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + ioSlotJoin]);
@@ -289,6 +299,33 @@ namespace PepperDash.Essentials.DM
                         trilist.BooleanInput[joinMap.OutputEndpointOnline.JoinNumber + ioSlotJoin]);
                 }
             }
+        }
+
+        private void SetAudioOutputSourceDevice(uint output, ushort sourceDevice)
+        {
+            var card = Dmps.SwitcherOutputs[output];
+
+            if (sourceDevice > 3)
+            {
+                Debug.Console(1, this, "Invalid audio out device {0}. Valid values are 0 (NoSource), 1 (DigitalMixer1), 2 (DigitalMixer2), 3(AudioFollowVideo)");
+                return;
+            }
+            //try to cast to dm output
+            var dmOut = card as Card.Dmps3DmOutputBackend;
+            var hdmiOut = card as Card.Dmps3HdmiOutputBackend;
+
+            if (dmOut != null)
+            {
+                dmOut.AudioOutSourceDevice = (eDmps34KAudioOutSourceDevice) sourceDevice;
+                return;
+            }
+
+            if (hdmiOut == null)
+            {
+                return;
+            }
+
+            hdmiOut.AudioOutSourceDevice = (eDmps34KAudioOutSourceDevice) sourceDevice;
         }
 
         private void LinkInputsToApi(BasicTriList trilist, DmpsRoutingControllerJoinMap joinMap)
@@ -572,6 +609,11 @@ namespace PepperDash.Essentials.DM
 
                 var cecPort = hdmiOutputCard.HdmiOutputPort;
 
+                hdmiOutputCard.AudioOutSourceDevice = eDmps34KAudioOutSourceDevice.DigitalMixer1;
+
+                AudioOutputSourceDeviceFeedbacks.Add(outputCard.Number,
+                    new IntFeedback(() => (int) hdmiOutputCard.AudioOutSourceDeviceFeedback)); 
+
                 AddHdmiOutputPort(number, cecPort);
             }
             else if (outputCard is Card.Dmps3DmOutput)
@@ -580,6 +622,11 @@ namespace PepperDash.Essentials.DM
             }
             else if (outputCard is Card.Dmps3DmOutputBackend)
             {
+                var dmCard = outputCard as Card.Dmps3DmOutputBackend;
+
+                AudioOutputSourceDeviceFeedbacks.Add(outputCard.Number,
+                    new IntFeedback(() => (int) dmCard.AudioOutSourceDeviceFeedback)); 
+
                 AddDmOutputPort(number);
             }
             else if (outputCard is Card.Dmps3ProgramOutput)
@@ -801,6 +848,12 @@ namespace PepperDash.Essentials.DM
                     {
                         AudioOutputFeedbacks[output].FireUpdate();
                     }
+
+                    if (AudioOutputSourceDeviceFeedbacks.ContainsKey(output))
+                    {
+                        AudioOutputSourceDeviceFeedbacks[output].FireUpdate();
+                        
+                    }
                 }
             }
             else if (args.EventId == DMOutputEventIds.OutputNameEventId
@@ -871,16 +924,10 @@ namespace PepperDash.Essentials.DM
                         }
                     }
 
-                    
-                    //DMOutput dmOutputCard = output == 0 ? null : Dmps.SwitcherOutputs[output] as DMOutput;
-
-                    //if (inCard != null)
-                    //{
                     // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
                     if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
                     {
-                        
-                            output.VideoOut = input;
+                        output.VideoOut = input;
                     }
 
                     if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)

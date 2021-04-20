@@ -24,6 +24,15 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete OutputAudio = new JoinDataComplete(new JoinData { JoinNumber = 301, JoinSpan = 32 },
             new JoinMetadata { Description = "DM Chassis Output Audio Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
+        [JoinName("OutputAudioSourceDevice")] public JoinDataComplete OutputAudioSourceDevice =
+            new JoinDataComplete(new JoinData {JoinNumber = 401, JoinSpan = 32},
+                new JoinMetadata
+                {
+                    Description = "DMPS HDMI/DM Output Source Device selection",
+                    JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                    JoinType = eJoinType.Analog
+                });
+
         [JoinName("InputNames")]
         public JoinDataComplete InputNames = new JoinDataComplete(new JoinData { JoinNumber = 101, JoinSpan = 32 },
             new JoinMetadata { Description = "DM Chassis Input Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
