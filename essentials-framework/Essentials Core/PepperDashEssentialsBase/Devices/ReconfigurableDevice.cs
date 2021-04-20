@@ -20,11 +20,16 @@ namespace PepperDash.Essentials.Core.Devices
         public DeviceConfig Config { get; private set; }
 
         protected ReconfigurableDevice(DeviceConfig config)
-            : base(config.Key)
+            : this(config.Key)
         {
-            SetNameHelper(config);
+        }
 
-            Config = config;
+        protected ReconfigurableDevice(string key) : base(key)
+        {
+            //getting config directly from ConfigReader to avoid the possiblitiy of writing secrets to file
+            Config = ConfigReader.ConfigObject.GetDeviceForKey(key);
+
+            SetNameHelper(Config);
         }
 
         /// <summary>
