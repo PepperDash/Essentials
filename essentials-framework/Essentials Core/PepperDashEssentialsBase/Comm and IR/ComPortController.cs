@@ -80,11 +80,6 @@ namespace PepperDash.Essentials.Core
 	        Port.SerialDataReceived += Port_SerialDataReceived;
 	    }
 
-	    ~ComPortController()
-		{
-			Port.SerialDataReceived -= Port_SerialDataReceived;
-		}
-
 		void Port_SerialDataReceived(ComPort ReceivingComPort, ComPortSerialDataEventArgs args)
 		{
             OnDataReceived(args.SerialData);
