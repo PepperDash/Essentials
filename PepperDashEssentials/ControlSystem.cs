@@ -72,7 +72,7 @@ namespace PepperDash.Essentials
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 foreach (var tl in TieLineCollection.Default)
-                    CrestronConsole.ConsoleCommandResponse("  {0}\r", tl);
+                    CrestronConsole.ConsoleCommandResponse("  {0}\r\n", tl);
             },
             "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
 
@@ -86,8 +86,8 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
-                CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r" +
-                    "System URL:   {0}\r" +
+                CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r\n" +
+                    "System URL:   {0}\r\n" +
                     "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
             }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
