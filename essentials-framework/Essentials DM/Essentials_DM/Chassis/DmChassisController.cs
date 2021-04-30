@@ -1220,7 +1220,7 @@ namespace PepperDash.Essentials.DM
                 {
                     dmMdMnxn.AudioEnter.BoolValue = true;
                 }
-                output.VideoOut = input;
+                output.AudioOut = input;
                 //Chassis.Outputs[output].AudioOut = inCard;
             }
 
@@ -1643,7 +1643,7 @@ namespace PepperDash.Essentials.DM
         {
             // Routing Control
             trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin,
-                o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.Video));
+				o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.Video));
             trilist.SetUShortSigAction(joinMap.OutputAudio.JoinNumber + ioSlotJoin,
                 o => ExecuteNumericSwitch(o, (ushort) ioSlot, eRoutingSignalType.Audio));
             trilist.SetUShortSigAction(joinMap.OutputUsb.JoinNumber + ioSlotJoin,
