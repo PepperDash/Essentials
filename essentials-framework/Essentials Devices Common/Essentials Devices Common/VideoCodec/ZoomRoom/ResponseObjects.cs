@@ -23,6 +23,46 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         zCommand
     }
 
+    /// <summary>
+    /// The available layout styles
+    /// </summary>
+    public enum eZoomRoomLayoutStyle
+    {
+        Gallery,
+        Speaker,
+        Strip,
+        ShareAll
+    }
+
+    /// <summary>
+    /// The avaliable layout positions for the thumbnails
+    /// </summary>
+    public enum eZoomRoomLayoutPosition
+    {
+        Center,
+        Up,
+        Right,
+        UpRight,
+        Down,
+        DownRight,
+        Left,
+        UpLeft,
+        DownLeft
+    }
+
+    /// <summary>
+    /// The available layout sizes
+    /// </summary>
+    public enum eZoomRoomLayoutSize
+    {
+        Off,
+        Size1,
+        Size2,
+        Size3,
+        Strip
+    }
+
+
     public abstract class NotifiableObject : INotifyPropertyChanged
     {
             #region INotifyPropertyChanged Members
@@ -551,18 +591,136 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         }
 
-        public class Layout
+        public class Layout : NotifiableObject
         {
+            // backer variables
+            private bool _can_Switch_Speaker_View;
+            private bool _can_Switch_Wall_View;
+            private bool _can_Switch_Share_On_All_Screens;
+            private bool _is_In_First_Page;
+            private bool _is_In_Last_Page;
+            private string _video_type;
+
+
             public bool can_Adjust_Floating_Video { get; set; }
             public bool can_Switch_Floating_Share_Content { get; set; }
-            public bool can_Switch_Share_On_All_Screens { get; set; }
-            public bool can_Switch_Speaker_View { get; set; }
-            public bool can_Switch_Wall_View { get; set; }
-            public bool is_In_First_Page { get; set; }
-            public bool is_In_Last_Page { get; set; }
+
+            /// <summary>
+            /// [on/off] // Set to On if it is possible to switch to Speaker view by invoking zConfiguration Call Layout Style: Speaker. The active speaker is shown full screen, and other video streams, like self-view, are shown in thumbnails.
+            /// </summary>
+            [JsonProperty("can_Switch_Share_On_All_Screens")]
+            public bool can_Switch_Share_On_All_Screens
+            {
+                get
+                {
+                    return _can_Switch_Share_On_All_Screens;
+                }
+                set
+                {
+                    if (value != _can_Switch_Share_On_All_Screens)
+                    {
+                        _can_Switch_Share_On_All_Screens = value;
+                        NotifyPropertyChanged("can_Switch_Share_On_All_Screens");
+                    }
+                }
+            }
+
+            /// <summary>
+            /// [on/off] // Set to On if it is possible to switch to Speaker view by invoking zConfiguration Call Layout Style: Speaker. The active speaker is shown full screen, and other video streams, like self-view, are shown in thumbnails.
+            /// </summary>
+            [JsonProperty("can_Switch_Speaker_View")]
+            public bool can_Switch_Speaker_View
+            { 
+                get 
+                {
+                    return _can_Switch_Speaker_View;
+                }
+                set
+                {
+                    if (value != _can_Switch_Speaker_View)
+                    {
+                        _can_Switch_Speaker_View = value;
+                        NotifyPropertyChanged("can_Switch_Speaker_View");
+                    }
+                }
+            }
+
+            /// <summary>
+            /// [on/off] On if it is possible to invoke zConfiguration Call Layout Style: Gallery, to switch to the Gallery mode, showing video participants in tiled windows: The Zoom Room shows up to a 5x5 array of tiled windows per page.
+            /// </summary>
+            [JsonProperty("can_Switch_Wall_View")]
+            public bool can_Switch_Wall_View
+            {
+                get
+                {
+                    return _can_Switch_Wall_View;
+                }
+                set
+                {
+                    if (value != _can_Switch_Wall_View)
+                    {
+                        _can_Switch_Wall_View = value;
+                        NotifyPropertyChanged("can_Switch_Wall_View");
+                    }
+                }
+            }
+
+            [JsonProperty("is_In_First_Page")]
+            public bool is_In_First_Page
+            {
+                get
+                {
+                    return _is_In_First_Page;
+                }
+                set
+                {
+                    if (value != _is_In_First_Page)
+                    {
+                        _is_In_First_Page = value;
+                        NotifyPropertyChanged("is_In_First_Page");
+                    }
+                }
+            }
+            
+            [JsonProperty("is_In_Last_Page")]
+            public bool is_In_Last_Page
+            {
+                get
+                {
+                    return _is_In_Last_Page;
+                }
+                set
+                {
+                    if (value != _is_In_Last_Page)
+                    {
+                        _is_In_Last_Page = value;
+                        NotifyPropertyChanged("is_In_Last_Page");
+                    }
+                }
+            }
+
             public bool is_supported { get; set; }
             public int video_Count_In_Current_Page { get; set; }
-            public string video_type { get; set; }
+
+            /// <summary>
+            ///  [Gallery | Strip] Indicates which mode applies: Strip or Gallery.
+            /// </summary>
+            [JsonProperty("video_type")]
+            public string video_type
+            {
+                get
+                {
+                    return _video_type;
+                }
+                set
+                {
+                    if (value != _video_type)
+                    {
+                        _video_type = value;
+                        NotifyPropertyChanged("video_type");
+                    }
+                }
+            }
         }
 
         public class CallRecordInfo

@@ -542,6 +542,45 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         break;
                 }
             };
+
+            Status.Layout.PropertyChanged += (o, a) =>
+            {
+                switch (a.PropertyName)
+                {
+                    case "can_Switch_Speaker_View":
+                        {
+                            // TODO: #697 Fire appropriate feedback(s)
+                            break;
+                        }
+                    case "can_Switch_Wall_View":
+                        {
+                            // #697 TODO: Fire appropriate feedback(s)
+                            break;
+                        }
+                    case "can_Switch_Share_On_All_Screens":
+                        {
+                            // #697 TODO: Fire appropriate feedback(s)
+                            break;
+                        }
+                    case "is_In_First_Page":
+                        {
+                            // TODO: #697 Fire appropriate feedback(s)
+                            // 
+                            break;
+                        }
+                    case "is_In_Last_Page":
+                        {
+                            // TODO: #697 Fire appropriate feedback(s)
+                            break;
+                        }
+                    case "video_type":
+                        {
+                            // TODO: #697 Fire appropriate feedback(s)
+                            // LocalLayoutFeedback.FireUpdate();
+                            break;
+                        }
+                }
+            };
         }
 
         private void SetUpDirectory()

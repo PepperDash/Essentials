@@ -19,4 +19,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		void LocalLayoutToggleSingleProminent();
 		void MinMaxLayoutToggle();
     }
+
+    /// <summary>
+    /// Defines the requirements for Zoom Room layout control
+    /// </summary>
+    public interface IHasZoomRoomLayouts : IHasCodecLayouts
+    {
+        BoolFeedback LayoutViewIsOnFirstPage { get; }
+        BoolFeedback LayoutViewIsOnLastPage { get; }
+        BoolFeedback CanSwitchWallView { get; }
+        BoolFeedback CanSwitchSpeakerView { get; }
+        BoolFeedback CanSwitchShareOnAllScreens { get; }
+        BoolFeedback CanSwapContentWithThumbnail { get; }
+
+        List<ZoomRoom.eZoomRoomLayoutStyle> AvailableLayouts { get; }
+
+        void GetLayouts(); // Mot sure this is necessary if we're already subscribed to zStatus Call Layout
+        void SetLayout(ZoomRoom.eZoomRoomLayoutStyle layoutStyle);
+        void SwapContentWithThumbnail();
+
+        void LayoutTurnNextPage();
+        void LayoutTurnPreviousPage();
+    }
 }
