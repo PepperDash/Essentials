@@ -23,46 +23,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         zCommand
     }
 
-    /// <summary>
-    /// The available layout styles
-    /// </summary>
-    public enum eZoomRoomLayoutStyle
-    {
-        Gallery,
-        Speaker,
-        Strip,
-        ShareAll
-    }
-
-    /// <summary>
-    /// The avaliable layout positions for the thumbnails
-    /// </summary>
-    public enum eZoomRoomLayoutPosition
-    {
-        Center,
-        Up,
-        Right,
-        UpRight,
-        Down,
-        DownRight,
-        Left,
-        UpLeft,
-        DownLeft
-    }
-
-    /// <summary>
-    /// The available layout sizes
-    /// </summary>
-    public enum eZoomRoomLayoutSize
-    {
-        Off,
-        Size1,
-        Size2,
-        Size3,
-        Strip
-    }
-
-
     public abstract class NotifiableObject : INotifyPropertyChanged
     {
             #region INotifyPropertyChanged Members
@@ -606,7 +566,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             public bool can_Switch_Floating_Share_Content { get; set; }
 
             /// <summary>
-            /// [on/off] // Set to On if it is possible to switch to Speaker view by invoking zConfiguration Call Layout Style: Speaker. The active speaker is shown full screen, and other video streams, like self-view, are shown in thumbnails.
+            /// [on/off] // Set to On if it is possible to invoke zConfiguration Call Layout Style: ShareAll, to switch to the ShareAll mode, where the content sharing is shown full screen on all monitors.
             /// </summary>
             [JsonProperty("can_Switch_Share_On_All_Screens")]
             public bool can_Switch_Share_On_All_Screens
@@ -993,12 +953,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             }
         }
 
+        [Flags]
         public enum eLayoutStyle
         {
-            Gallery,
-            Speaker,
-            Strip,
-            ShareAll
+            None = 0,
+            Gallery = 1,
+            Speaker = 2,
+            Strip = 4,
+            ShareAll = 8,
         }
 
         public enum eLayoutSize
@@ -1023,20 +985,64 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             DownLeft
         }
 
-        public class Layout:NotifiableObject
+        public class Layout : NotifiableObject
         {
-            public bool ShareThumb { get; set; }
-            public eLayoutStyle Style { get; set; }
-            public eLayoutSize Size { get; set; }
-
+            private bool _shareThumb;
+            private eLayoutStyle _style;
+            private eLayoutSize _size;
             private eLayoutPosition _position;
-            public eLayoutPosition Position {
+
+            public bool ShareThumb
+            {
+                get { return _shareThumb; }
+                set
+                {
+                    if (value != _shareThumb)
+                    {
+                        _shareThumb = value;
+                        NotifyPropertyChanged("ShareThumb");
+                    }
+                } 
+            }
+
+            public eLayoutStyle Style
+            {
+                get { return _style; }
+                set
+                {
+                    if (value != _style)
+                    {
+                        _style = value;
+                        NotifyPropertyChanged("Style");
+                    }
+                } 
+            }
+
+            public eLayoutSize Size
+            {
+                get { return _size; }
+                set
+                {
+                    if (value != _size)
+                    {
+                        _size = value;
+                        NotifyPropertyChanged("Size");
+                    }
+                }
+            }
+
+            public eLayoutPosition Position 
+            {
                 get { return _position; }
                 set
                 {
-                    _position = value;
-                    NotifyPropertyChanged("Position");
-                } }
+                    if (value != _position)
+                    {
+                        _position = value;
+                        NotifyPropertyChanged("Position");
+                    }
+                } 
+            }
         }
 
         public class Lock

@@ -271,6 +271,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
 
+        /// <summary>
+        /// Use this method when using a plain VideoCodecControllerJoinMap
+        /// </summary>
+        /// <param name="codec"></param>
+        /// <param name="trilist"></param>
+        /// <param name="joinStart"></param>
+        /// <param name="joinMapKey"></param>
+        /// <param name="bridge"></param>
 		protected void LinkVideoCodecToApi(VideoCodecBase codec, BasicTriList trilist, uint joinStart, string joinMapKey,
 			EiscApiAdvanced bridge)
 		{
@@ -288,135 +296,144 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				bridge.AddJoinMap(Key, joinMap);
 			}
 
-			Debug.Console(1, this, "Linking to Trilist {0}", trilist.ID.ToString("X"));
-
-
-
-			LinkVideoCodecDtmfToApi(trilist, joinMap);
-
-			LinkVideoCodecCallControlsToApi(trilist, joinMap);
-
-			LinkVideoCodecContentSharingToApi(trilist, joinMap);
-
-			LinkVideoCodecPrivacyToApi(trilist, joinMap);
-
-			LinkVideoCodecVolumeToApi(trilist, joinMap);
-
-			if (codec is ICommunicationMonitor)
-			{
-				LinkVideoCodecCommMonitorToApi(codec as ICommunicationMonitor, trilist, joinMap);
-			}
-
-			if (codec is IHasCodecCameras)
-			{
-				LinkVideoCodecCameraToApi(codec as IHasCodecCameras, trilist, joinMap);
-			}
-
-			if (codec is IHasCodecSelfView)
-			{
-				LinkVideoCodecSelfviewToApi(codec as IHasCodecSelfView, trilist, joinMap);
-			}
-
-			if (codec is IHasCameraAutoMode)
-			{
-				trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, SupportsCameraAutoMode);
-				LinkVideoCodecCameraModeToApi(codec as IHasCameraAutoMode, trilist, joinMap);
-			}
-
-			if (codec is IHasCameraOff)
-			{
-				trilist.SetBool(joinMap.CameraSupportsOffMode.JoinNumber, SupportsCameraOff);
-				LinkVideoCodecCameraOffToApi(codec as IHasCameraOff, trilist, joinMap);
-			}
-
-			if (codec is IHasCodecLayouts)
-			{
-				LinkVideoCodecCameraLayoutsToApi(codec as IHasCodecLayouts, trilist, joinMap);
-			}
-
-			if (codec is IHasSelfviewPosition)
-			{
-				LinkVideoCodecSelfviewPositionToApi(codec as IHasSelfviewPosition, trilist, joinMap);
-			}
-
-			if (codec is IHasDirectory)
-			{
-				LinkVideoCodecDirectoryToApi(codec as IHasDirectory, trilist, joinMap);
-			}
-
-			if (codec is IHasScheduleAwareness)
-			{
-				LinkVideoCodecScheduleToApi(codec as IHasScheduleAwareness, trilist, joinMap);
-			}
-
-			if (codec is IHasParticipants)
-			{
-				LinkVideoCodecParticipantsToApi(codec as IHasParticipants, trilist, joinMap);
-			}
-
-			if (codec is IHasFarEndContentStatus)
-			{
-				(codec as IHasFarEndContentStatus).ReceivingContent.LinkInputSig(trilist.BooleanInput[joinMap.RecievingContent.JoinNumber]);
-			}
-
-			if (codec is IHasPhoneDialing)
-			{
-				LinkVideoCodecPhoneToApi(codec as IHasPhoneDialing, trilist, joinMap);
-			}
-
-			trilist.OnlineStatusChange += (device, args) =>
-			{
-				if (!args.DeviceOnLine) return;
-
-				if (codec is IHasDirectory)
-				{
-					(codec as IHasDirectory).SetCurrentDirectoryToRoot();
-				}
-
-				if (codec is IHasScheduleAwareness)
-				{
-					(codec as IHasScheduleAwareness).GetSchedule();
-				}
-
-				if (codec is IHasParticipants)
-				{
-					UpdateParticipantsXSig((codec as IHasParticipants).Participants.CurrentParticipants);
-				}
-
-				if (codec is IHasCameraAutoMode)
-				{
-					trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, true);
-
-					(codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
-				}
-
-				if (codec is IHasCodecSelfView)
-				{
-					(codec as IHasCodecSelfView).SelfviewIsOnFeedback.FireUpdate();
-				}
-
-				if (codec is IHasCameraAutoMode)
-				{
-					(codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
-				}
-
-				if (codec is IHasCameraOff)
-				{
-					(codec as IHasCameraOff).CameraIsOffFeedback.FireUpdate();
-				}
-
-				if (codec is IHasPhoneDialing)
-				{
-					(codec as IHasPhoneDialing).PhoneOffHookFeedback.FireUpdate();
-				}
-
-				SharingContentIsOnFeedback.FireUpdate();
-
-				trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
-
-				trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
-			};
+            LinkVideoCodecToApi(codec, trilist, joinMap);
 		}
+
+        /// <summary>
+        /// Use this method when you need to pass in a join map that extends VideoCodecControllerJoinMap
+        /// </summary>
+        /// <param name="codec"></param>
+        /// <param name="trilist"></param>
+        /// <param name="joinMap"></param>
+        protected void LinkVideoCodecToApi(VideoCodecBase codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            Debug.Console(1, this, "Linking to Trilist {0}", trilist.ID.ToString("X"));
+
+            LinkVideoCodecDtmfToApi(trilist, joinMap);
+
+            LinkVideoCodecCallControlsToApi(trilist, joinMap);
+
+            LinkVideoCodecContentSharingToApi(trilist, joinMap);
+
+            LinkVideoCodecPrivacyToApi(trilist, joinMap);
+
+            LinkVideoCodecVolumeToApi(trilist, joinMap);
+
+            if (codec is ICommunicationMonitor)
+            {
+                LinkVideoCodecCommMonitorToApi(codec as ICommunicationMonitor, trilist, joinMap);
+            }
+
+            if (codec is IHasCodecCameras)
+            {
+                LinkVideoCodecCameraToApi(codec as IHasCodecCameras, trilist, joinMap);
+            }
+
+            if (codec is IHasCodecSelfView)
+            {
+                LinkVideoCodecSelfviewToApi(codec as IHasCodecSelfView, trilist, joinMap);
+            }
+
+            if (codec is IHasCameraAutoMode)
+            {
+                trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, SupportsCameraAutoMode);
+                LinkVideoCodecCameraModeToApi(codec as IHasCameraAutoMode, trilist, joinMap);
+            }
+
+            if (codec is IHasCameraOff)
+            {
+                trilist.SetBool(joinMap.CameraSupportsOffMode.JoinNumber, SupportsCameraOff);
+                LinkVideoCodecCameraOffToApi(codec as IHasCameraOff, trilist, joinMap);
+            }
+
+            if (codec is IHasCodecLayouts)
+            {
+                LinkVideoCodecCameraLayoutsToApi(codec as IHasCodecLayouts, trilist, joinMap);
+            }
+
+            if (codec is IHasSelfviewPosition)
+            {
+                LinkVideoCodecSelfviewPositionToApi(codec as IHasSelfviewPosition, trilist, joinMap);
+            }
+
+            if (codec is IHasDirectory)
+            {
+                LinkVideoCodecDirectoryToApi(codec as IHasDirectory, trilist, joinMap);
+            }
+
+            if (codec is IHasScheduleAwareness)
+            {
+                LinkVideoCodecScheduleToApi(codec as IHasScheduleAwareness, trilist, joinMap);
+            }
+
+            if (codec is IHasParticipants)
+            {
+                LinkVideoCodecParticipantsToApi(codec as IHasParticipants, trilist, joinMap);
+            }
+
+            if (codec is IHasFarEndContentStatus)
+            {
+                (codec as IHasFarEndContentStatus).ReceivingContent.LinkInputSig(trilist.BooleanInput[joinMap.RecievingContent.JoinNumber]);
+            }
+
+            if (codec is IHasPhoneDialing)
+            {
+                LinkVideoCodecPhoneToApi(codec as IHasPhoneDialing, trilist, joinMap);
+            }
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                if (codec is IHasDirectory)
+                {
+                    (codec as IHasDirectory).SetCurrentDirectoryToRoot();
+                }
+
+                if (codec is IHasScheduleAwareness)
+                {
+                    (codec as IHasScheduleAwareness).GetSchedule();
+                }
+
+                if (codec is IHasParticipants)
+                {
+                    UpdateParticipantsXSig((codec as IHasParticipants).Participants.CurrentParticipants);
+                }
+
+                if (codec is IHasCameraAutoMode)
+                {
+                    trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, true);
+
+                    (codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
+                }
+
+                if (codec is IHasCodecSelfView)
+                {
+                    (codec as IHasCodecSelfView).SelfviewIsOnFeedback.FireUpdate();
+                }
+
+                if (codec is IHasCameraAutoMode)
+                {
+                    (codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
+                }
+
+                if (codec is IHasCameraOff)
+                {
+                    (codec as IHasCameraOff).CameraIsOffFeedback.FireUpdate();
+                }
+
+                if (codec is IHasPhoneDialing)
+                {
+                    (codec as IHasPhoneDialing).PhoneOffHookFeedback.FireUpdate();
+                }
+
+                SharingContentIsOnFeedback.FireUpdate();
+
+                trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
+
+                trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
+            };
+        }
 
 		private void LinkVideoCodecPhoneToApi(IHasPhoneDialing codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{

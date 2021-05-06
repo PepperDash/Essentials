@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
     public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
         IRouting,
         IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
-        IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing
+        IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts
     {
         private const long MeetingRefreshTimer = 60000;
         private const uint DefaultMeetingDurationMin = 30;
@@ -121,6 +121,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             PhoneOffHookFeedback = new BoolFeedback(PhoneOffHookFeedbackFunc);
             CallerIdNameFeedback = new StringFeedback(CallerIdNameFeedbackFunc);
             CallerIdNumberFeedback = new StringFeedback(CallerIdNumberFeedbackFunc);
+
+            LocalLayoutFeedback = new StringFeedback(LocalLayoutFeedbackFunc);
+
+            LayoutViewIsOnFirstPageFeedback = new BoolFeedback(LayoutViewIsOnFirstPageFeedbackFunc);
+
+            LayoutViewIsOnLastPageFeedback = new BoolFeedback(LayoutViewIsOnLastPageFeedbackFunc);
+
+            CanSwapContentWithThumbnailFeedback = new BoolFeedback(CanSwapContentWithThumbnailFeedbackFunc);
+
+            ContentSwappedWithThumbnailFeedback = new BoolFeedback(ContentSwappedWithThumbnailFeedbackFunc);
+
         }
 
         public CommunicationGather PortGather { get; private set; }
@@ -214,11 +225,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                             ? _currentSelfviewPipPosition.Command ?? "Unknown"
                             : "Unknown";
             }
-        }
-
-        protected Func<string> LocalLayoutFeedbackFunc
-        {
-            get { return () => ""; }
         }
 
         protected Func<bool> LocalLayoutIsProminentFeedbackFunc
@@ -484,11 +490,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             Configuration.Call.Layout.PropertyChanged += (o, a) =>
             {
-                if (a.PropertyName != "Position") return;
+                switch (a.PropertyName)
+                {
+                    case "Position":
+                        {
+                            ComputeSelfviewPipStatus();
 
-                ComputeSelfviewPipStatus();
+                            SelfviewPipPositionFeedback.FireUpdate();
 
-                SelfviewPipPositionFeedback.FireUpdate();
+                            break;
+                        }
+                    case "ShareThumb":
+                        {
+                            ContentSwappedWithThumbnailFeedback.FireUpdate();
+                            break;
+                        }
+                    case "Style":
+                        {
+                            LocalLayoutFeedback.FireUpdate();
+                            break;
+                        }
+
+                }
             };
 
             Status.Call.Sharing.PropertyChanged += (o, a) =>
@@ -548,37 +571,31 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 switch (a.PropertyName)
                 {
                     case "can_Switch_Speaker_View":
-                        {
-                            // TODO: #697 Fire appropriate feedback(s)
-                            break;
-                        }
                     case "can_Switch_Wall_View":
-                        {
-                            // #697 TODO: Fire appropriate feedback(s)
-                            break;
-                        }
                     case "can_Switch_Share_On_All_Screens":
                         {
-                            // #697 TODO: Fire appropriate feedback(s)
+                            // #697 TODO: Calls the method to compute the available layouts and set the value of AvailableLayouts enum
+                            ComputeAvailableLayouts();
                             break;
                         }
                     case "is_In_First_Page":
                         {
-                            // TODO: #697 Fire appropriate feedback(s)
-                            // 
+                            // TODO: #697 Fires appropriate feedback
+                            LayoutViewIsOnFirstPageFeedback.FireUpdate(); 
                             break;
                         }
                     case "is_In_Last_Page":
                         {
-                            // TODO: #697 Fire appropriate feedback(s)
+                            // TODO: #697 Fires appropriate feedback
+                            LayoutViewIsOnLastPageFeedback.FireUpdate();
                             break;
                         }
-                    case "video_type":
-                        {
-                            // TODO: #697 Fire appropriate feedback(s)
-                            // LocalLayoutFeedback.FireUpdate();
-                            break;
-                        }
+                    //case "video_type":
+                    //    {
+                    //        // TODO: #697 It appears as though the actual value we want to watch is Configuration.Call.Layout.Style
+                    //        LocalLayoutFeedback.FireUpdate();
+                    //        break;
+                    //    }
                 }
             };
         }
@@ -1639,7 +1656,75 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            LinkVideoCodecToApi(this, trilist, joinStart, joinMapKey, bridge);
+            var joinMap = new ZoomRoomJoinMap(joinStart);
+
+            var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
+
+            if (customJoins != null)
+            {
+                joinMap.SetCustomJoinData(customJoins);
+            }
+
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+
+            LinkVideoCodecToApi(this, trilist, joinMap);
+
+            LinkZoomRoomToApi(trilist, joinMap);
+        }
+
+        /// <summary>
+        /// Links all the specific Zoom functionality to the API bridge
+        /// </summary>
+        /// <param name="trilist"></param>
+        /// <param name="joinMap"></param>
+        public void LinkZoomRoomToApi(BasicTriList trilist, ZoomRoomJoinMap joinMap)
+        {
+            var codec = this as IHasZoomRoomLayouts;
+
+            if (codec != null)
+            {
+                codec.AvailableLayoutsChanged += (o, a) =>
+                {
+                    trilist.SetBool(joinMap.LayoutGalleryIsAvailable.JoinNumber, a.AvailableLayouts 
+                        == (a.AvailableLayouts & zConfiguration.eLayoutStyle.Gallery));
+                    trilist.SetBool(joinMap.LayoutSpeakerIsAvailable.JoinNumber, a.AvailableLayouts
+                        == (a.AvailableLayouts & zConfiguration.eLayoutStyle.Speaker));
+                    trilist.SetBool(joinMap.LayoutStripIsAvailable.JoinNumber, a.AvailableLayouts
+                        == (a.AvailableLayouts & zConfiguration.eLayoutStyle.Strip));
+                    trilist.SetBool(joinMap.LayoutShareAllIsAvailable.JoinNumber, a.AvailableLayouts
+                        == (a.AvailableLayouts & zConfiguration.eLayoutStyle.ShareAll));
+                };
+
+                codec.CanSwapContentWithThumbnailFeedback.LinkInputSig(trilist.BooleanInput[joinMap.CanSwapContentWithThumbnail.JoinNumber]);
+                trilist.SetSigFalseAction(joinMap.SwapContentWithThumbnail.JoinNumber, () => codec.SwapContentWithThumbnail());
+                codec.ContentSwappedWithThumbnailFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SwapContentWithThumbnail.JoinNumber]);
+
+                codec.LayoutViewIsOnFirstPageFeedback.LinkInputSig(trilist.BooleanInput[joinMap.LayoutIsOnFirstPage.JoinNumber]);
+                codec.LayoutViewIsOnLastPageFeedback.LinkInputSig(trilist.BooleanInput[joinMap.LayoutIsOnLastPage.JoinNumber]);
+                trilist.SetSigFalseAction(joinMap.LayoutTurnToNextPage.JoinNumber, () => codec.LayoutTurnNextPage() );
+                trilist.SetSigFalseAction(joinMap.LayoutTurnToPreviousPage.JoinNumber, () => codec.LayoutTurnPreviousPage());
+
+
+                trilist.SetStringSigAction(joinMap.GetSetCurrentLayout.JoinNumber, (s) =>
+                    {
+                        try
+                        {
+                            var style = (zConfiguration.eLayoutStyle)Enum.Parse(typeof(zConfiguration.eLayoutStyle), s, true);
+                            SetLayout(style);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.Console(2, this, "Unable to parse '{0}' to zConfiguration.eLayoutStyle: {1}", s, e);
+                        }
+                    });
+
+                codec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);
+
+                
+            }
         }
 
         public override void ExecuteSwitch(object selector)
@@ -1935,6 +2020,123 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public void SendDtmfToPhone(string digit)
         {
             SendText(String.Format("zCommand SendSipDTMF CallId: {0} Key: {1}", Status.PhoneCall.CallId, digit));
+        }
+
+        #endregion
+
+        #region IHasZoomRoomLayouts Members
+
+        public event EventHandler<LayoutInfoChangedEventArgs> AvailableLayoutsChanged;
+
+        private Func<bool> LayoutViewIsOnFirstPageFeedbackFunc {get {return () => Status.Layout.is_In_First_Page; } }
+        private Func<bool> LayoutViewIsOnLastPageFeedbackFunc { get { return () => Status.Layout.is_In_Last_Page; } }
+        private Func<bool> CanSwapContentWithThumbnailFeedbackFunc { get { return () => Status.Layout.can_Switch_Floating_Share_Content; } }
+        private Func<bool> ContentSwappedWithThumbnailFeedbackFunc { get { return () => Configuration.Call.Layout.ShareThumb; } }
+
+        public BoolFeedback LayoutViewIsOnFirstPageFeedback { get; private set; }
+
+        public BoolFeedback LayoutViewIsOnLastPageFeedback { get; private set; }
+
+        public BoolFeedback CanSwapContentWithThumbnailFeedback { get; private set; }
+
+        public BoolFeedback ContentSwappedWithThumbnailFeedback { get; private set; }
+
+
+        public zConfiguration.eLayoutStyle LastSelectedLayout { get; private set; }
+
+        public zConfiguration.eLayoutStyle AvailableLayouts { get; private set; }
+
+        /// <summary>
+        /// Reads individual properties to determine if which layouts are avalailable
+        /// </summary>
+        private void ComputeAvailableLayouts()
+        {
+            zConfiguration.eLayoutStyle availableLayouts = zConfiguration.eLayoutStyle.None;
+            //TODO: #697 Compute the avaialble layouts and set the value of AvailableLayouts
+            if (Status.Layout.can_Switch_Wall_View)
+            {
+                availableLayouts |= zConfiguration.eLayoutStyle.Gallery;
+            }
+
+            if (Status.Layout.can_Switch_Speaker_View)
+            {
+                availableLayouts |= zConfiguration.eLayoutStyle.Speaker;
+            }
+
+            if (Status.Layout.can_Switch_Share_On_All_Screens)
+            {
+                availableLayouts |= zConfiguration.eLayoutStyle.ShareAll;
+            }
+
+            // There is no property that directly reports if strip mode is valid, but API stipulates
+            // that strip mode is available if the number of screens is 1
+            if (Status.NumberOfScreens.NumOfScreens == 1)
+            {
+                availableLayouts |= zConfiguration.eLayoutStyle.Strip;
+            }
+
+            var handler = AvailableLayoutsChanged;
+            if (handler != null)
+            {
+                handler(this, new LayoutInfoChangedEventArgs() { AvailableLayouts = availableLayouts });
+            }
+
+            AvailableLayouts = availableLayouts;
+        }
+
+        public void GetAvailableLayouts()
+        {
+            SendText("zStatus Call Layout");
+        }
+
+        public void SetLayout(zConfiguration.eLayoutStyle layoutStyle)
+        {
+            LastSelectedLayout = layoutStyle;
+            SendText(String.Format("zConfiguration Call Layout Style: {0}", layoutStyle.ToString()));
+        }
+
+        public void SwapContentWithThumbnail()
+        {
+            if (CanSwapContentWithThumbnailFeedback.BoolValue)
+            {
+                var oppositeValue = ContentSwappedWithThumbnailFeedback.BoolValue ? "on" : "off"; // Get the value based on the opposite of the current state
+                // TODO: #697 Need to verify the ternary above and make sure that the correct on/off value is being send based on the true/false value of the feedback
+                // to toggle the state
+                SendText(String.Format("zConfiguration Call Layout ShareThumb: {0}", oppositeValue));
+            }
+        }
+
+        public void LayoutTurnNextPage()
+        {
+            SendText("zCommand Call Layout TurnPage Forward: On");
+        }
+
+        public void LayoutTurnPreviousPage()
+        {
+            SendText("zCommand Call Layout TurnPage Forward: Off");
+        }
+
+        #endregion
+
+        #region IHasCodecLayouts Members
+
+        private Func<string> LocalLayoutFeedbackFunc { get { return () => Configuration.Call.Layout.Style.ToString(); } }
+
+        public StringFeedback LocalLayoutFeedback { get; private set; }
+
+        public void LocalLayoutToggle()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LocalLayoutToggleSingleProminent()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void MinMaxLayoutToggle()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
