@@ -128,6 +128,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 JoinType = eJoinType.Digital
             });
 
+        [JoinName("ScreenIndexToPinUserTo")]
+        public JoinDataComplete ScreenIndexToPinUserTo =
+            new JoinDataComplete(new JoinData { JoinNumber = 999, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Specifies the screen index a participant should be pinned to",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
+        [JoinName("NumberOfScreens")]
+        public JoinDataComplete NumberOfScreens =
+            new JoinDataComplete(new JoinData { JoinNumber = 999, JoinSpan = 1 },
+            new JoinMetadata
+            {
+                Description = "Reports the number of screens connected",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
         public ZoomRoomJoinMap(uint joinStart)
             : base(joinStart, typeof(ZoomRoomJoinMap))
         {

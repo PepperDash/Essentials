@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
     public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
         IRouting,
         IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
-        IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts
+        IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin, IHasParticipantAudioMute
     {
         private const long MeetingRefreshTimer = 60000;
         private const uint DefaultMeetingDurationMin = 30;
@@ -125,12 +125,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             LocalLayoutFeedback = new StringFeedback(LocalLayoutFeedbackFunc);
 
             LayoutViewIsOnFirstPageFeedback = new BoolFeedback(LayoutViewIsOnFirstPageFeedbackFunc);
-
             LayoutViewIsOnLastPageFeedback = new BoolFeedback(LayoutViewIsOnLastPageFeedbackFunc);
-
             CanSwapContentWithThumbnailFeedback = new BoolFeedback(CanSwapContentWithThumbnailFeedbackFunc);
-
             ContentSwappedWithThumbnailFeedback = new BoolFeedback(ContentSwappedWithThumbnailFeedbackFunc);
+
+            NumberOfScreensFeedback = new IntFeedback(NumberOfScreensFeedbackFunc);
 
         }
 
@@ -574,30 +573,39 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     case "can_Switch_Wall_View":
                     case "can_Switch_Share_On_All_Screens":
                         {
-                            // #697 TODO: Calls the method to compute the available layouts and set the value of AvailableLayouts enum
                             ComputeAvailableLayouts();
                             break;
                         }
                     case "is_In_First_Page":
                         {
-                            // TODO: #697 Fires appropriate feedback
                             LayoutViewIsOnFirstPageFeedback.FireUpdate(); 
                             break;
                         }
                     case "is_In_Last_Page":
                         {
-                            // TODO: #697 Fires appropriate feedback
                             LayoutViewIsOnLastPageFeedback.FireUpdate();
                             break;
                         }
                     //case "video_type":
                     //    {
-                    //        // TODO: #697 It appears as though the actual value we want to watch is Configuration.Call.Layout.Style
+                    //        It appears as though the actual value we want to watch is Configuration.Call.Layout.Style
                     //        LocalLayoutFeedback.FireUpdate();
                     //        break;
                     //    }
                 }
             };
+
+            Status.NumberOfScreens.PropertyChanged += (o, a) =>
+                {
+                    switch (a.PropertyName)
+                    {
+                        case "NumberOfScreens":
+                            {
+                                NumberOfScreensFeedback.FireUpdate();
+                                break;
+                            }
+                    }
+                };
         }
 
         private void SetUpDirectory()
@@ -1278,6 +1286,38 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                 JsonConvert.PopulateObject(responseObj.ToString(), Status.PhoneCall);
                                 break;
                             }
+                            case "pinstatusofscreennotification":
+                            {
+                                var status = responseObj.ToObject<zEvent.PinStatusOfScreenNotification>();
+
+                                var participant = Participants.CurrentParticipants.FirstOrDefault(p => p.UserId.Equals(status.PinnedUserId));
+
+                                if (participant != null)
+                                {
+                                    participant.IsPinnedFb = true;
+                                    participant.ScreenIndexIsPinnedToFb = status.ScreenIndex;
+                                }
+                                else
+                                {
+                                    participant = Participants.CurrentParticipants.FirstOrDefault(p => p.ScreenIndexIsPinnedToFb.Equals(status.ScreenIndex));
+
+                                    if (participant == null)
+                                    {
+                                        Debug.Console(2, this, "no matching participant found by pinned_user_id: {0} or screen_index: {1}", status.PinnedUserId, status.ScreenIndex);
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        participant.IsPinnedFb = false;
+                                        participant.ScreenIndexIsPinnedToFb = -1;
+                                    }
+                                }
+
+                                // fire the event as we've modified the participants list
+                                Participants.OnParticipantsChanged();
+
+                                break;
+                            }
                             default:
                             {
                                 break;
@@ -1682,11 +1722,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// <param name="joinMap"></param>
         public void LinkZoomRoomToApi(BasicTriList trilist, ZoomRoomJoinMap joinMap)
         {
-            var codec = this as IHasZoomRoomLayouts;
+            var layoutsCodec = this as IHasZoomRoomLayouts;
 
-            if (codec != null)
+            if (layoutsCodec != null)
             {
-                codec.AvailableLayoutsChanged += (o, a) =>
+                layoutsCodec.AvailableLayoutsChanged += (o, a) =>
                 {
                     trilist.SetBool(joinMap.LayoutGalleryIsAvailable.JoinNumber, a.AvailableLayouts 
                         == (a.AvailableLayouts & zConfiguration.eLayoutStyle.Gallery));
@@ -1698,14 +1738,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         == (a.AvailableLayouts & zConfiguration.eLayoutStyle.ShareAll));
                 };
 
-                codec.CanSwapContentWithThumbnailFeedback.LinkInputSig(trilist.BooleanInput[joinMap.CanSwapContentWithThumbnail.JoinNumber]);
-                trilist.SetSigFalseAction(joinMap.SwapContentWithThumbnail.JoinNumber, () => codec.SwapContentWithThumbnail());
-                codec.ContentSwappedWithThumbnailFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SwapContentWithThumbnail.JoinNumber]);
+                layoutsCodec.CanSwapContentWithThumbnailFeedback.LinkInputSig(trilist.BooleanInput[joinMap.CanSwapContentWithThumbnail.JoinNumber]);
+                trilist.SetSigFalseAction(joinMap.SwapContentWithThumbnail.JoinNumber, () => layoutsCodec.SwapContentWithThumbnail());
+                layoutsCodec.ContentSwappedWithThumbnailFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SwapContentWithThumbnail.JoinNumber]);
 
-                codec.LayoutViewIsOnFirstPageFeedback.LinkInputSig(trilist.BooleanInput[joinMap.LayoutIsOnFirstPage.JoinNumber]);
-                codec.LayoutViewIsOnLastPageFeedback.LinkInputSig(trilist.BooleanInput[joinMap.LayoutIsOnLastPage.JoinNumber]);
-                trilist.SetSigFalseAction(joinMap.LayoutTurnToNextPage.JoinNumber, () => codec.LayoutTurnNextPage() );
-                trilist.SetSigFalseAction(joinMap.LayoutTurnToPreviousPage.JoinNumber, () => codec.LayoutTurnPreviousPage());
+                layoutsCodec.LayoutViewIsOnFirstPageFeedback.LinkInputSig(trilist.BooleanInput[joinMap.LayoutIsOnFirstPage.JoinNumber]);
+                layoutsCodec.LayoutViewIsOnLastPageFeedback.LinkInputSig(trilist.BooleanInput[joinMap.LayoutIsOnLastPage.JoinNumber]);
+                trilist.SetSigFalseAction(joinMap.LayoutTurnToNextPage.JoinNumber, () => layoutsCodec.LayoutTurnNextPage());
+                trilist.SetSigFalseAction(joinMap.LayoutTurnToPreviousPage.JoinNumber, () => layoutsCodec.LayoutTurnPreviousPage());
 
 
                 trilist.SetStringSigAction(joinMap.GetSetCurrentLayout.JoinNumber, (s) =>
@@ -1721,9 +1761,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         }
                     });
 
-                codec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);
+                layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);      
+            }
 
-                
+            var pinCodec = this as IHasParticipantPinUnpin;
+
+            if (pinCodec != null)
+            {
+                pinCodec.NumberOfScreensFeedback.LinkInputSig(trilist.UShortInput[joinMap.NumberOfScreens.JoinNumber]);
+
+                // Set the value of the local property to be used when pinning a participant
+                trilist.SetUShortSigAction(joinMap.ScreenIndexToPinUserTo.JoinNumber, (u) => ScreenIndexToPinUserTo = u);
             }
         }
 
@@ -1894,6 +1942,114 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         #endregion
 
+        #region IHasParticipantAudioMute Members
+
+        public void MuteAudioForParticipant(int userId)
+        {
+            SendText(string.Format("zCommand Call MuteParticipant Mute: on Id: {0}", userId));
+        }
+
+        public void UnmuteAudioForParticipant(int userId)
+        {
+            SendText(string.Format("zCommand Call MuteParticipant Mute: off Id: {0}", userId));
+        }
+
+        public void ToggleAudioForParticipant(int userId)
+        {
+            var user = Participants.CurrentParticipants.FirstOrDefault(p => p.UserId.Equals(userId));
+
+            if (user == null)
+            {
+                Debug.Console(2, this, "Unable to find user with id: {0}", userId);
+                return;
+            }
+
+            if (user.AudioMuteFb)
+            {
+                UnmuteAudioForParticipant(userId);
+            }
+            else
+            {
+                MuteAudioForParticipant(userId);
+            }
+        }
+
+        #endregion
+
+        #region IHasParticipantVideoMute Members
+
+        public void MuteVideoForParticipant(int userId)
+        {
+            SendText(string.Format("zCommand Call MuteParticipantVideo Mute: on Id: {0}", userId));
+        }
+
+        public void UnmuteVideoForParticipant(int userId)
+        {
+            SendText(string.Format("zCommand Call MuteParticipantVideo Mute: off Id: {0}", userId));
+        }
+
+        public void ToggleVideoForParticipant(int userId)
+        {
+            var user = Participants.CurrentParticipants.FirstOrDefault(p => p.UserId.Equals(userId));
+
+            if (user == null)
+            {
+                Debug.Console(2, this, "Unable to find user with id: {0}", userId);
+                return;
+            }
+
+            if (user.VideoMuteFb)
+            {
+                UnmuteVideoForParticipant(userId);
+            }
+            else
+            {
+                MuteVideoForParticipant(userId);
+            }
+        }
+
+        #endregion
+
+        #region IHasParticipantPinUnpin Members
+
+        private Func<int> NumberOfScreensFeedbackFunc { get { return () => Status.NumberOfScreens.NumOfScreens; } }
+
+        public IntFeedback NumberOfScreensFeedback { get; private set; }
+
+        public int ScreenIndexToPinUserTo { get; private set; }
+
+        public void PinParticipant(int userId, int screenIndex)
+        {
+            SendText(string.Format("zCommand Call Pin Id: {0} Enable: on Screen: {1}", userId, screenIndex));
+        }
+
+        public void UnPinParticipant(int userId)
+        {
+            SendText(string.Format("zCommand Call Pin Id: {0} Enable: off", userId));
+        }
+
+        public void ToggleParticipantPinState(int userId, int screenIndex)
+        {
+            var user = Participants.CurrentParticipants.FirstOrDefault(p => p.UserId.Equals(userId));
+
+            if(user == null)
+            {
+                Debug.Console(2, this, "Unable to find user with id: {0}", userId);
+                return;
+            }
+
+            if (user.IsPinnedFb)
+            {
+                UnPinParticipant(userId);
+            }
+            else
+            {
+                PinParticipant(userId, screenIndex);
+            }
+        }
+
+        #endregion
+
         #region Implementation of IHasCameraOff
 
         public BoolFeedback CameraIsOffFeedback { get; private set; }
@@ -2052,7 +2208,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         private void ComputeAvailableLayouts()
         {
             zConfiguration.eLayoutStyle availableLayouts = zConfiguration.eLayoutStyle.None;
-            //TODO: #697 Compute the avaialble layouts and set the value of AvailableLayouts
+            // TODO: #697 Compute the avaialble layouts and set the value of AvailableLayouts
+            // Will need to test and confirm that this logic evaluates correctly
             if (Status.Layout.can_Switch_Wall_View)
             {
                 availableLayouts |= zConfiguration.eLayoutStyle.Gallery;
@@ -2140,6 +2297,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         }
 
         #endregion
+
     }
 
     /// <summary>

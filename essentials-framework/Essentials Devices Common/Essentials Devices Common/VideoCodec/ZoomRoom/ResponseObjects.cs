@@ -480,12 +480,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             public string wifiName { get; set; }
         }
 
-        public class NumberOfScreens
+        public class NumberOfScreens : NotifiableObject
         {
+            private int _numOfScreens;
+
             [JsonProperty("NumberOfCECScreens")]
             public int NumOfCECScreens { get; set; }
             [JsonProperty("NumberOfScreens")]
-            public int NumOfScreens { get; set; }
+            public int NumOfScreens
+            {
+                get
+                {
+                    return _numOfScreens;
+                }
+                set
+                {
+                    if (value != _numOfScreens)
+                    {
+                        _numOfScreens = value;
+                        NotifyPropertyChanged("NumberOfScreens");
+                    }
+                }        
+            }
         }
 
         /// <summary>
@@ -803,6 +819,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public class PinStatusOfScreenNotification
         {
+
+
             [JsonProperty("can_be_pinned")]
             public bool CanBePinned { get; set; }
             [JsonProperty("can_pin_share")]
@@ -1301,8 +1319,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         {
             [JsonProperty("is_raise_hand")]
             public bool IsRaiseHand { get; set; }
-            [JsonProperty("optimize_vis_validideo_sharing")]
-            public string IsValid { get; set; }
+            [JsonProperty("is_valid")]
+            public bool IsValid { get; set; }
             [JsonProperty("time_stamp")]
             public string TimeStamp { get; set; }
         }
@@ -1377,12 +1395,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         p =>
                             new Participant
                             {
+                                UserId = p.UserId,
                                 Name = p.UserName,
                                 IsHost = p.IsHost,
                                 CanMuteVideo = p.IsVideoCanMuteByHost,
                                 CanUnmuteVideo = p.IsVideoCanUnmuteByHost,
                                 AudioMuteFb = p.AudioStatusState == "AUDIO_MUTED",
-                                VideoMuteFb = p.VideoStatusIsSending
+                                VideoMuteFb = p.VideoStatusIsSending,
+                                HandIsRaisedFb = p.HandStatus.IsValid && p.HandStatus.IsRaiseHand,
                             }).ToList();
             }
         }
