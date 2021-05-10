@@ -1761,7 +1761,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         }
                     });
 
-                layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);      
+                layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);    
+  
             }
 
             var pinCodec = this as IHasParticipantPinUnpin;

@@ -879,6 +879,39 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Serial
             });
 
+        // TODO: #698 Set Join number
+        [JoinName("ParticipantAudioMuteToggleStart")]
+        public JoinDataComplete ParticipantAudioMuteToggleStart =
+            new JoinDataComplete(new JoinData { JoinNumber = 999, JoinSpan = 50 },
+            new JoinMetadata
+            {
+                Description = "Toggles the participant's audio mute status",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO: #698 Set Join number
+        [JoinName("ParticipantVideoMuteToggleStart")]
+        public JoinDataComplete ParticipantVideoMuteToggleStart =
+            new JoinDataComplete(new JoinData { JoinNumber = 999, JoinSpan = 50 },
+            new JoinMetadata
+            {
+                Description = "Toggles the participant's video mute status",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO: #698 Set Join number
+        [JoinName("ParticipantPinToggleStart")]
+        public JoinDataComplete ParticipantPinToggleStart =
+            new JoinDataComplete(new JoinData { JoinNumber = 999, JoinSpan = 50 },
+            new JoinMetadata
+            {
+                Description = "Toggles the participant's pin status",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
         public VideoCodecControllerJoinMap(uint joinStart)
             : base(joinStart, typeof(VideoCodecControllerJoinMap))
         {
@@ -1771,6 +1804,39 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                 Description = "Phone Dial String",
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Serial
+            });
+
+        // TODO: #698 Set Join number
+        [JoinName("ParticipantAudioMuteToggleStart")]
+        public JoinDataComplete ParticipantAudioMuteToggleStart =
+            new JoinDataComplete(new JoinData { JoinNumber = 999, JoinSpan = 50 },
+            new JoinMetadata
+            {
+                Description = "Toggles the participant's audio mute status",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO: #698 Set Join number
+        [JoinName("ParticipantVideoMuteToggleStart")]
+        public JoinDataComplete ParticipantVideoMuteToggleStart =
+            new JoinDataComplete(new JoinData { JoinNumber = 999, JoinSpan = 50 },
+            new JoinMetadata
+            {
+                Description = "Toggles the participant's video mute status",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO: #698 Set Join number
+        [JoinName("ParticipantPinToggleStart")]
+        public JoinDataComplete ParticipantPinToggleStart =
+            new JoinDataComplete(new JoinData { JoinNumber = 999, JoinSpan = 50 },
+            new JoinMetadata
+            {
+                Description = "Toggles the participant's pin status",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
             });
 
         public VideoCodecControllerJoinMap(uint joinStart)

@@ -28,6 +28,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo, IBridgeAdvanced
 	{
 		private const int XSigEncoding = 28591;
+        protected const int MaxParticipants = 50;
 		private readonly byte[] _clearBytes = XSigHelpers.ClearOutputs();
 		protected VideoCodecBase(DeviceConfig config)
 			: base(config)
@@ -541,6 +542,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 					return;
 				}
 
+                SetParticipantActions(trilist, joinMap, codec.Participants.CurrentParticipants);
+
 				participantsXSig = UpdateParticipantsXSig(codec.Participants.CurrentParticipants);
 
 				trilist.SetString(joinMap.CurrentParticipants.JoinNumber, participantsXSig);
@@ -550,11 +553,55 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             // TODO: #698 Figure out how to decode xsig data and trigger actions based on values from SIMPL
             // trilist.SetStringSigAction(joinMap.CurrentParticipants.JoinNumber, // add method here to decode the xsig info and trigger actions
+
 		}
+
+        /// <summary>
+        /// Sets the actions for each participant in the list
+        /// </summary>
+        private void SetParticipantActions(BasicTriList trilist, VideoCodecControllerJoinMap joinMap, List<Participant> currentParticipants)
+        {
+            uint index = 0; // track the index of the participant in the 
+
+            foreach (var participant in currentParticipants)
+            {
+                var p = participant;
+                if (index > MaxParticipants) break;
+
+                var audioMuteCodec = this as IHasParticipantAudioMute;
+                if (audioMuteCodec != null)
+                {
+                    trilist.SetSigFalseAction(joinMap.ParticipantAudioMuteToggleStart.JoinNumber + index,
+                        () => audioMuteCodec.ToggleAudioForParticipant(p.UserId));
+
+                    trilist.SetSigFalseAction(joinMap.ParticipantVideoMuteToggleStart.JoinNumber + index,
+                        () => audioMuteCodec.ToggleVideoForParticipant(p.UserId));
+                }
+
+                var pinCodec = this as IHasParticipantPinUnpin;
+                if (pinCodec != null)
+                {
+                    trilist.SetSigFalseAction(joinMap.ParticipantPinToggleStart.JoinNumber + index,
+                        () => pinCodec.ToggleParticipantPinState(p.UserId, pinCodec.ScreenIndexToPinUserTo));
+                }
+
+                index++;
+            }
+
+            // Clear out any previously set actions
+            while (index < MaxParticipants)
+            {
+                trilist.ClearBoolSigAction(joinMap.ParticipantAudioMuteToggleStart.JoinNumber + index);
+                trilist.ClearBoolSigAction(joinMap.ParticipantVideoMuteToggleStart.JoinNumber + index);
+                trilist.ClearBoolSigAction(joinMap.ParticipantPinToggleStart.JoinNumber + index);
+
+                index++;
+            }
+        }
 
 		private string UpdateParticipantsXSig(List<Participant> currentParticipants)
 		{
-			const int maxParticipants = 50;
+			const int maxParticipants = MaxParticipants;
 			const int maxDigitals = 7;
 			const int maxStrings = 1;
             const int maxAnalogs = 1;
@@ -577,7 +624,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				tokenArray[digitalIndex + 3] = new XSigDigitalToken(digitalIndex + 4, participant.CanUnmuteVideo);
 				tokenArray[digitalIndex + 4] = new XSigDigitalToken(digitalIndex + 5, participant.IsHost);
                 tokenArray[digitalIndex + 5] = new XSigDigitalToken(digitalIndex + 6, participant.HandIsRaisedFb);
-                tokenArray[digitalIndex + 6] = new XSigDigitalToken(digitalIndex + 6, participant.IsPinnedFb);
+                tokenArray[digitalIndex + 6] = new XSigDigitalToken(digitalIndex + 7, participant.IsPinnedFb);
 
 				//serials
 				tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, participant.Name);

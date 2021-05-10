@@ -148,35 +148,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 JoinType = eJoinType.Analog
             });
 
-        [JoinName("ParticipantAudioMuteToggleStart")]
-        public JoinDataComplete ParticipantAudioMuteToggleStart =
-            new JoinDataComplete(new JoinData { JoinNumber = 999, JoinSpan = 1 },
-            new JoinMetadata
-            {
-                Description = "Toggles the participant's audio mute status",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Digital
-            });
-
-        [JoinName("ParticipantVideoMuteToggleStart")]
-        public JoinDataComplete ParticipantVideoMuteToggleStart =
-            new JoinDataComplete(new JoinData { JoinNumber = 999, JoinSpan = 1 },
-            new JoinMetadata
-            {
-                Description = "Toggles the participant's video mute status",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Digital
-            });
-
-        [JoinName("ParticipantPinToggleStart")]
-        public JoinDataComplete ParticipantPinToggleStart =
-            new JoinDataComplete(new JoinData { JoinNumber = 999, JoinSpan = 1 },
-            new JoinMetadata
-            {
-                Description = "Toggles the participant's pin status",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Digital
-            });
 
         public ZoomRoomJoinMap(uint joinStart)
             : base(joinStart, typeof(ZoomRoomJoinMap))
