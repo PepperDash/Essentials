@@ -559,10 +559,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			const int maxDigitals = 7;
 			const int maxStrings = 1;
 			const int maxAnalogs = 1;
-			const int offset = maxDigitals + maxStrings + maxAnalogs;
-			var digitalIndex = maxStrings + maxAnalogs * maxParticipants; //15
+			const int offset = maxDigitals + maxStrings + maxAnalogs; // 9
+			var digitalIndex = (maxStrings + maxAnalogs) * maxParticipants; // 100
 			var stringIndex = 0;
-			var analogIndex = 0;
+			var analogIndex = stringIndex + maxParticipants;
 			var meetingIndex = 0;
 
 			var tokenArray = new XSigToken[maxParticipants * offset];
