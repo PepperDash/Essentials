@@ -515,6 +515,33 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				}
 			};
 
+            // This is to deal with incorrect object structure coming back from the Zoom Room on v 5.6.3
+            Configuration.Client.Call.Layout.PropertyChanged += (o,a) =>
+            {
+                switch (a.PropertyName)
+                {
+                    case "Position":
+                        {
+                            ComputeSelfviewPipStatus();
+
+                            SelfviewPipPositionFeedback.FireUpdate();
+
+                            break;
+                        }
+                    case "ShareThumb":
+                        {
+                            ContentSwappedWithThumbnailFeedback.FireUpdate();
+                            break;
+                        }
+                    case "Style":
+                        {
+                            LocalLayoutFeedback.FireUpdate();
+                            break;
+                        }
+
+                }
+            };
+
 			Status.Call.Sharing.PropertyChanged += (o, a) =>
 			{
 				if (a.PropertyName == "State")
@@ -2283,7 +2310,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		#region IHasCodecLayouts Members
 
-		private Func<string> LocalLayoutFeedbackFunc { get { return () => Configuration.Call.Layout.Style.ToString(); } }
+        private Func<string> LocalLayoutFeedbackFunc
+        {
+            get
+            {
+                return () =>
+                    {
+                        if (Configuration.Call.Layout.Style != zConfiguration.eLayoutStyle.None)
+                            return Configuration.Call.Layout.Style.ToString();
+                        else
+                            return Configuration.Client.Call.Layout.Style.ToString();
+                    };
+            }
+        }
 
 		public StringFeedback LocalLayoutFeedback { get; private set; }
 
