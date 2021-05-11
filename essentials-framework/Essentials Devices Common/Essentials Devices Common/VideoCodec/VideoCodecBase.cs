@@ -271,14 +271,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		public abstract void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge);
 
-        /// <summary>
-        /// Use this method when using a plain VideoCodecControllerJoinMap
-        /// </summary>
-        /// <param name="codec"></param>
-        /// <param name="trilist"></param>
-        /// <param name="joinStart"></param>
-        /// <param name="joinMapKey"></param>
-        /// <param name="bridge"></param>
+		/// <summary>
+		/// Use this method when using a plain VideoCodecControllerJoinMap
+		/// </summary>
+		/// <param name="codec"></param>
+		/// <param name="trilist"></param>
+		/// <param name="joinStart"></param>
+		/// <param name="joinMapKey"></param>
+		/// <param name="bridge"></param>
 		protected void LinkVideoCodecToApi(VideoCodecBase codec, BasicTriList trilist, uint joinStart, string joinMapKey,
 			EiscApiAdvanced bridge)
 		{
@@ -296,144 +296,144 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				bridge.AddJoinMap(Key, joinMap);
 			}
 
-            LinkVideoCodecToApi(codec, trilist, joinMap);
+			LinkVideoCodecToApi(codec, trilist, joinMap);
 		}
 
-        /// <summary>
-        /// Use this method when you need to pass in a join map that extends VideoCodecControllerJoinMap
-        /// </summary>
-        /// <param name="codec"></param>
-        /// <param name="trilist"></param>
-        /// <param name="joinMap"></param>
-        protected void LinkVideoCodecToApi(VideoCodecBase codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
-        {
-            Debug.Console(1, this, "Linking to Trilist {0}", trilist.ID.ToString("X"));
+		/// <summary>
+		/// Use this method when you need to pass in a join map that extends VideoCodecControllerJoinMap
+		/// </summary>
+		/// <param name="codec"></param>
+		/// <param name="trilist"></param>
+		/// <param name="joinMap"></param>
+		protected void LinkVideoCodecToApi(VideoCodecBase codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+		{
+			Debug.Console(1, this, "Linking to Trilist {0}", trilist.ID.ToString("X"));
 
-            LinkVideoCodecDtmfToApi(trilist, joinMap);
+			LinkVideoCodecDtmfToApi(trilist, joinMap);
 
-            LinkVideoCodecCallControlsToApi(trilist, joinMap);
+			LinkVideoCodecCallControlsToApi(trilist, joinMap);
 
-            LinkVideoCodecContentSharingToApi(trilist, joinMap);
+			LinkVideoCodecContentSharingToApi(trilist, joinMap);
 
-            LinkVideoCodecPrivacyToApi(trilist, joinMap);
+			LinkVideoCodecPrivacyToApi(trilist, joinMap);
 
-            LinkVideoCodecVolumeToApi(trilist, joinMap);
+			LinkVideoCodecVolumeToApi(trilist, joinMap);
 
-            if (codec is ICommunicationMonitor)
-            {
-                LinkVideoCodecCommMonitorToApi(codec as ICommunicationMonitor, trilist, joinMap);
-            }
+			if (codec is ICommunicationMonitor)
+			{
+				LinkVideoCodecCommMonitorToApi(codec as ICommunicationMonitor, trilist, joinMap);
+			}
 
-            if (codec is IHasCodecCameras)
-            {
-                LinkVideoCodecCameraToApi(codec as IHasCodecCameras, trilist, joinMap);
-            }
+			if (codec is IHasCodecCameras)
+			{
+				LinkVideoCodecCameraToApi(codec as IHasCodecCameras, trilist, joinMap);
+			}
 
-            if (codec is IHasCodecSelfView)
-            {
-                LinkVideoCodecSelfviewToApi(codec as IHasCodecSelfView, trilist, joinMap);
-            }
+			if (codec is IHasCodecSelfView)
+			{
+				LinkVideoCodecSelfviewToApi(codec as IHasCodecSelfView, trilist, joinMap);
+			}
 
-            if (codec is IHasCameraAutoMode)
-            {
-                trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, SupportsCameraAutoMode);
-                LinkVideoCodecCameraModeToApi(codec as IHasCameraAutoMode, trilist, joinMap);
-            }
+			if (codec is IHasCameraAutoMode)
+			{
+				trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, SupportsCameraAutoMode);
+				LinkVideoCodecCameraModeToApi(codec as IHasCameraAutoMode, trilist, joinMap);
+			}
 
-            if (codec is IHasCameraOff)
-            {
-                trilist.SetBool(joinMap.CameraSupportsOffMode.JoinNumber, SupportsCameraOff);
-                LinkVideoCodecCameraOffToApi(codec as IHasCameraOff, trilist, joinMap);
-            }
+			if (codec is IHasCameraOff)
+			{
+				trilist.SetBool(joinMap.CameraSupportsOffMode.JoinNumber, SupportsCameraOff);
+				LinkVideoCodecCameraOffToApi(codec as IHasCameraOff, trilist, joinMap);
+			}
 
-            if (codec is IHasCodecLayouts)
-            {
-                LinkVideoCodecCameraLayoutsToApi(codec as IHasCodecLayouts, trilist, joinMap);
-            }
+			if (codec is IHasCodecLayouts)
+			{
+				LinkVideoCodecCameraLayoutsToApi(codec as IHasCodecLayouts, trilist, joinMap);
+			}
 
-            if (codec is IHasSelfviewPosition)
-            {
-                LinkVideoCodecSelfviewPositionToApi(codec as IHasSelfviewPosition, trilist, joinMap);
-            }
+			if (codec is IHasSelfviewPosition)
+			{
+				LinkVideoCodecSelfviewPositionToApi(codec as IHasSelfviewPosition, trilist, joinMap);
+			}
 
-            if (codec is IHasDirectory)
-            {
-                LinkVideoCodecDirectoryToApi(codec as IHasDirectory, trilist, joinMap);
-            }
+			if (codec is IHasDirectory)
+			{
+				LinkVideoCodecDirectoryToApi(codec as IHasDirectory, trilist, joinMap);
+			}
 
-            if (codec is IHasScheduleAwareness)
-            {
-                LinkVideoCodecScheduleToApi(codec as IHasScheduleAwareness, trilist, joinMap);
-            }
+			if (codec is IHasScheduleAwareness)
+			{
+				LinkVideoCodecScheduleToApi(codec as IHasScheduleAwareness, trilist, joinMap);
+			}
 
-            if (codec is IHasParticipants)
-            {
-                LinkVideoCodecParticipantsToApi(codec as IHasParticipants, trilist, joinMap);
-            }
+			if (codec is IHasParticipants)
+			{
+				LinkVideoCodecParticipantsToApi(codec as IHasParticipants, trilist, joinMap);
+			}
 
-            if (codec is IHasFarEndContentStatus)
-            {
-                (codec as IHasFarEndContentStatus).ReceivingContent.LinkInputSig(trilist.BooleanInput[joinMap.RecievingContent.JoinNumber]);
-            }
+			if (codec is IHasFarEndContentStatus)
+			{
+				(codec as IHasFarEndContentStatus).ReceivingContent.LinkInputSig(trilist.BooleanInput[joinMap.RecievingContent.JoinNumber]);
+			}
 
-            if (codec is IHasPhoneDialing)
-            {
-                LinkVideoCodecPhoneToApi(codec as IHasPhoneDialing, trilist, joinMap);
-            }
+			if (codec is IHasPhoneDialing)
+			{
+				LinkVideoCodecPhoneToApi(codec as IHasPhoneDialing, trilist, joinMap);
+			}
 
-            trilist.OnlineStatusChange += (device, args) =>
-            {
-                if (!args.DeviceOnLine) return;
+			trilist.OnlineStatusChange += (device, args) =>
+			{
+				if (!args.DeviceOnLine) return;
 
-                if (codec is IHasDirectory)
-                {
-                    (codec as IHasDirectory).SetCurrentDirectoryToRoot();
-                }
+				if (codec is IHasDirectory)
+				{
+					(codec as IHasDirectory).SetCurrentDirectoryToRoot();
+				}
 
-                if (codec is IHasScheduleAwareness)
-                {
-                    (codec as IHasScheduleAwareness).GetSchedule();
-                }
+				if (codec is IHasScheduleAwareness)
+				{
+					(codec as IHasScheduleAwareness).GetSchedule();
+				}
 
-                if (codec is IHasParticipants)
-                {
-                    UpdateParticipantsXSig((codec as IHasParticipants).Participants.CurrentParticipants);
-                }
+				if (codec is IHasParticipants)
+				{
+					UpdateParticipantsXSig((codec as IHasParticipants).Participants.CurrentParticipants);
+				}
 
-                if (codec is IHasCameraAutoMode)
-                {
-                    trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, true);
+				if (codec is IHasCameraAutoMode)
+				{
+					trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, true);
 
-                    (codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
-                }
+					(codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
+				}
 
-                if (codec is IHasCodecSelfView)
-                {
-                    (codec as IHasCodecSelfView).SelfviewIsOnFeedback.FireUpdate();
-                }
+				if (codec is IHasCodecSelfView)
+				{
+					(codec as IHasCodecSelfView).SelfviewIsOnFeedback.FireUpdate();
+				}
 
-                if (codec is IHasCameraAutoMode)
-                {
-                    (codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
-                }
+				if (codec is IHasCameraAutoMode)
+				{
+					(codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
+				}
 
-                if (codec is IHasCameraOff)
-                {
-                    (codec as IHasCameraOff).CameraIsOffFeedback.FireUpdate();
-                }
+				if (codec is IHasCameraOff)
+				{
+					(codec as IHasCameraOff).CameraIsOffFeedback.FireUpdate();
+				}
 
-                if (codec is IHasPhoneDialing)
-                {
-                    (codec as IHasPhoneDialing).PhoneOffHookFeedback.FireUpdate();
-                }
+				if (codec is IHasPhoneDialing)
+				{
+					(codec as IHasPhoneDialing).PhoneOffHookFeedback.FireUpdate();
+				}
 
-                SharingContentIsOnFeedback.FireUpdate();
+				SharingContentIsOnFeedback.FireUpdate();
 
-                trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
+				trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 
-                trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
-            };
-        }
+				trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
+			};
+		}
 
 		private void LinkVideoCodecPhoneToApi(IHasPhoneDialing codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
@@ -548,8 +548,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				trilist.SetUshort(joinMap.ParticipantCount.JoinNumber, (ushort)codec.Participants.CurrentParticipants.Count);
 			};
 
-            // TODO: #698 Figure out how to decode xsig data and trigger actions based on values from SIMPL
-            // trilist.SetStringSigAction(joinMap.CurrentParticipants.JoinNumber, // add method here to decode the xsig info and trigger actions
+			// TODO: #698 [ ] Figure out how to decode xsig data and trigger actions based on values from SIMPL
+			// add method here to decode the xsig info and trigger actions			
+			//trilist.SetStringSigAction(joinMap.CurrentParticipants.JoinNumber, DecodeParticipantsXSig);				
 		}
 
 		private string UpdateParticipantsXSig(List<Participant> currentParticipants)
@@ -557,11 +558,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			const int maxParticipants = 50;
 			const int maxDigitals = 7;
 			const int maxStrings = 1;
-            const int maxAnalogs = 1;
-			const int offset = maxDigitals + maxStrings;
-			var digitalIndex = maxStrings * maxParticipants; //15
+			const int maxAnalogs = 1;
+			const int offset = maxDigitals + maxStrings + maxAnalogs;
+			var digitalIndex = maxStrings + maxAnalogs * maxParticipants; //15
 			var stringIndex = 0;
-            var analogIndex = 0;
+			var analogIndex = 0;
 			var meetingIndex = 0;
 
 			var tokenArray = new XSigToken[maxParticipants * offset];
@@ -576,45 +577,86 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				tokenArray[digitalIndex + 2] = new XSigDigitalToken(digitalIndex + 3, participant.CanMuteVideo);
 				tokenArray[digitalIndex + 3] = new XSigDigitalToken(digitalIndex + 4, participant.CanUnmuteVideo);
 				tokenArray[digitalIndex + 4] = new XSigDigitalToken(digitalIndex + 5, participant.IsHost);
-                tokenArray[digitalIndex + 5] = new XSigDigitalToken(digitalIndex + 6, participant.HandIsRaisedFb);
-                tokenArray[digitalIndex + 6] = new XSigDigitalToken(digitalIndex + 6, participant.IsPinnedFb);
+				tokenArray[digitalIndex + 5] = new XSigDigitalToken(digitalIndex + 6, participant.HandIsRaisedFb);
+				tokenArray[digitalIndex + 6] = new XSigDigitalToken(digitalIndex + 7, participant.IsPinnedFb);
 
 				//serials
 				tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, participant.Name);
 
-                //analogs
-                tokenArray[analogIndex] = new XSigAnalogToken(analogIndex + 1, (ushort)participant.ScreenIndexIsPinnedToFb);
+				//analogs
+				tokenArray[analogIndex] = new XSigAnalogToken(analogIndex + 1, (ushort)participant.ScreenIndexIsPinnedToFb);
 
 				digitalIndex += maxDigitals;
 				meetingIndex += offset;
 				stringIndex += maxStrings;
-                analogIndex += maxAnalogs;
+				analogIndex += maxAnalogs;
 			}
 
 			while (meetingIndex < maxParticipants * offset)
 			{
-                //digitals
+				//digitals
 				tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
 				tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, false);
 				tokenArray[digitalIndex + 2] = new XSigDigitalToken(digitalIndex + 3, false);
 				tokenArray[digitalIndex + 3] = new XSigDigitalToken(digitalIndex + 4, false);
 				tokenArray[digitalIndex + 4] = new XSigDigitalToken(digitalIndex + 5, false);
-                tokenArray[digitalIndex + 5] = new XSigDigitalToken(digitalIndex + 6, false);
-                tokenArray[digitalIndex + 6] = new XSigDigitalToken(digitalIndex + 7, false);
+				tokenArray[digitalIndex + 5] = new XSigDigitalToken(digitalIndex + 6, false);
+				tokenArray[digitalIndex + 6] = new XSigDigitalToken(digitalIndex + 7, false);
 
 				//serials
 				tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, String.Empty);
 
-                //analogs
-                tokenArray[analogIndex] = new XSigAnalogToken(analogIndex + 1, 0);
+				//analogs
+				tokenArray[analogIndex] = new XSigAnalogToken(analogIndex + 1, 0);
 
 				digitalIndex += maxDigitals;
 				meetingIndex += offset;
 				stringIndex += maxStrings;
-                analogIndex += maxAnalogs;
+				analogIndex += maxAnalogs;
 			}
 
 			return GetXSigString(tokenArray);
+		}
+
+		// TODO: #698 [ ] Figure out how to decode xsig data and trigger actions based on values from SIMPL
+		private void DecodeParticipantsXSig(string xsigData)
+		{
+			if (string.IsNullOrEmpty(xsigData)) return;
+			var bytes = Encoding.GetEncoding(XSigEncoding).GetBytes(xsigData);
+			using (var xsigStream = new XSigTokenStreamReader(new MemoryStream(bytes)))
+			{
+				XSigToken token = null;
+				while ((token = xsigStream.ReadXSigToken()) != null)
+				{
+					switch (token.TokenType)
+					{
+						case XSigTokenType.Digital:
+							{
+								var data = token as XSigDigitalToken;
+								if (data == null) return;
+								Debug.Console(1, this, "xSig Data TokenType: {0} | Index: {1} | Value: {2}",
+									data.TokenType, data.Index, data.Value.ToString());
+								break;
+							}
+						case XSigTokenType.Analog:
+							{
+								var data = token as XSigAnalogToken;
+								if (data == null) return;
+								Debug.Console(1, this, "xSig Data TokenType: {0} | Index: {1} | Value: {2}",
+									data.TokenType, data.Index, data.Value);
+								break;
+							}
+						case XSigTokenType.Serial:
+							{
+								var data = token as XSigSerialToken;
+								if (data == null) return;
+								Debug.Console(1, this, "xSig Data TokenType: {0} | Index: {1} | Value: {2}", data.TokenType, data.Index,
+									data.Value);
+								break;
+							}
+					}
+				}
+			}
 		}
 
 		private void LinkVideoCodecContentSharingToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
@@ -882,7 +924,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				Debug.Console(1, this, "Call Direction: {0}", args.CallItem.Direction);
 				Debug.Console(1, this, "Call is incoming: {0}", args.CallItem.Direction == eCodecCallDirection.Incoming);
-				trilist.SetBool(joinMap.IncomingCall.JoinNumber, args.CallItem.Direction == eCodecCallDirection.Incoming && args.CallItem.Status == eCodecCallStatus.Ringing);				
+				trilist.SetBool(joinMap.IncomingCall.JoinNumber, args.CallItem.Direction == eCodecCallDirection.Incoming && args.CallItem.Status == eCodecCallStatus.Ringing);
 
 				if (args.CallItem.Direction == eCodecCallDirection.Incoming)
 				{
