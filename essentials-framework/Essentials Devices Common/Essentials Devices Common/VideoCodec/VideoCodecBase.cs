@@ -618,47 +618,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			return GetXSigString(tokenArray);
 		}
 
-		// TODO: #698 [ ] Figure out how to decode xsig data and trigger actions based on values from SIMPL
-		private void DecodeParticipantsXSig(string xsigData)
-		{
-			if (string.IsNullOrEmpty(xsigData)) return;
-			var bytes = Encoding.GetEncoding(XSigEncoding).GetBytes(xsigData);
-			using (var xsigStream = new XSigTokenStreamReader(new MemoryStream(bytes)))
-			{
-				XSigToken token = null;
-				while ((token = xsigStream.ReadXSigToken()) != null)
-				{
-					switch (token.TokenType)
-					{
-						case XSigTokenType.Digital:
-							{
-								var data = token as XSigDigitalToken;
-								if (data == null) return;
-								Debug.Console(1, this, "xSig Data TokenType: {0} | Index: {1} | Value: {2}",
-									data.TokenType, data.Index, data.Value.ToString());
-								break;
-							}
-						case XSigTokenType.Analog:
-							{
-								var data = token as XSigAnalogToken;
-								if (data == null) return;
-								Debug.Console(1, this, "xSig Data TokenType: {0} | Index: {1} | Value: {2}",
-									data.TokenType, data.Index, data.Value);
-								break;
-							}
-						case XSigTokenType.Serial:
-							{
-								var data = token as XSigSerialToken;
-								if (data == null) return;
-								Debug.Console(1, this, "xSig Data TokenType: {0} | Index: {1} | Value: {2}", data.TokenType, data.Index,
-									data.Value);
-								break;
-							}
-					}
-				}
-			}
-		}
-
 		private void LinkVideoCodecContentSharingToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
 			SharingContentIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SourceShareStart.JoinNumber]);
