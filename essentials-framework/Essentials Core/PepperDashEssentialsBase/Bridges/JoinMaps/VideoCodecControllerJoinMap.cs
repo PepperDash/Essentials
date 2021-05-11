@@ -875,12 +875,11 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-			        // TODO: #698 Set Join number
         [JoinName("ParticipantAudioMuteToggleStart")]
         public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(
 			new JoinData 
 			{ 
-				JoinNumber = 2001,
+				JoinNumber = 500,
 				JoinSpan = 50 
 			},
             new JoinMetadata
@@ -890,12 +889,11 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
-        // TODO: #698 Set Join number
         [JoinName("ParticipantVideoMuteToggleStart")]
         public JoinDataComplete ParticipantVideoMuteToggleStart = new JoinDataComplete(
 			new JoinData 
 			{ 
-				JoinNumber = 2101, 
+				JoinNumber = 800, 
 				JoinSpan = 50 
 			},
             new JoinMetadata
@@ -905,12 +903,11 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
-        // TODO: #698 Set Join number
         [JoinName("ParticipantPinToggleStart")]
         public JoinDataComplete ParticipantPinToggleStart = new JoinDataComplete(
 			new JoinData 
 			{ 
-				JoinNumber = 2201, 
+				JoinNumber = 1100, 
 				JoinSpan = 50 
 			},
             new JoinMetadata
@@ -2177,14 +2174,13 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		// TODO: #698 Set Join number
         [JoinName("ParticipantAudioMuteToggleStart")]
         public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(
-			new JoinData 
-			{ 
-				JoinNumber = 2001,
-				JoinSpan = 50 
-			},
+            new JoinData
+            {
+                JoinNumber = 500,
+                JoinSpan = 50
+            },
             new JoinMetadata
             {
                 Description = "Toggles the participant's audio mute status",
@@ -2192,14 +2188,13 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
-        // TODO: #698 Set Join number
         [JoinName("ParticipantVideoMuteToggleStart")]
         public JoinDataComplete ParticipantVideoMuteToggleStart = new JoinDataComplete(
-			new JoinData 
-			{ 
-				JoinNumber = 2101, 
-				JoinSpan = 50 
-			},
+            new JoinData
+            {
+                JoinNumber = 800,
+                JoinSpan = 50
+            },
             new JoinMetadata
             {
                 Description = "Toggles the participant's video mute status",
@@ -2207,14 +2202,13 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
-        // TODO: #698 Set Join number
         [JoinName("ParticipantPinToggleStart")]
         public JoinDataComplete ParticipantPinToggleStart = new JoinDataComplete(
-			new JoinData 
-			{ 
-				JoinNumber = 2201, 
-				JoinSpan = 50 
-			},
+            new JoinData
+            {
+                JoinNumber = 1100,
+                JoinSpan = 50
+            },
             new JoinMetadata
             {
                 Description = "Toggles the participant's pin status",

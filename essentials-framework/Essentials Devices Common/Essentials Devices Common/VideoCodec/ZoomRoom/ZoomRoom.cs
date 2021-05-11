@@ -1727,13 +1727,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             {
                 layoutsCodec.AvailableLayoutsChanged += (o, a) =>
                 {
-                    trilist.SetBool(joinMap.LayoutGalleryIsAvailable.JoinNumber, a.AvailableLayouts 
+                    trilist.SetBool(joinMap.LayoutGalleryIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.Gallery 
                         == (a.AvailableLayouts & zConfiguration.eLayoutStyle.Gallery));
-                    trilist.SetBool(joinMap.LayoutSpeakerIsAvailable.JoinNumber, a.AvailableLayouts
+                    trilist.SetBool(joinMap.LayoutSpeakerIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.Speaker
                         == (a.AvailableLayouts & zConfiguration.eLayoutStyle.Speaker));
-                    trilist.SetBool(joinMap.LayoutStripIsAvailable.JoinNumber, a.AvailableLayouts
+                    trilist.SetBool(joinMap.LayoutStripIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.Strip
                         == (a.AvailableLayouts & zConfiguration.eLayoutStyle.Strip));
-                    trilist.SetBool(joinMap.LayoutShareAllIsAvailable.JoinNumber, a.AvailableLayouts
+                    trilist.SetBool(joinMap.LayoutShareAllIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.ShareAll
                         == (a.AvailableLayouts & zConfiguration.eLayoutStyle.ShareAll));
                 };
 

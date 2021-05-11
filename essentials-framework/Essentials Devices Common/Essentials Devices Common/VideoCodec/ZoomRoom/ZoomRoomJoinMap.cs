@@ -164,47 +164,47 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("ParticipantAudioMuteToggleStart")]
-		public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 500,
-				JoinSpan = 100
-			},
-			new JoinMetadata
-			{
-				Description = "Toggles the participant's audio mute status",
-				JoinCapabilities = eJoinCapabilities.ToSIMPL,
-				JoinType = eJoinType.Digital
-			});
+        //[JoinName("ParticipantAudioMuteToggleStart")]
+        //public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(
+        //    new JoinData
+        //    {
+        //        JoinNumber = 500,
+        //        JoinSpan = 100
+        //    },
+        //    new JoinMetadata
+        //    {
+        //        Description = "Toggles the participant's audio mute status",
+        //        JoinCapabilities = eJoinCapabilities.ToSIMPL,
+        //        JoinType = eJoinType.Digital
+        //    });
 
-		[JoinName("ParticipantVideoMuteToggleStart")]
-		public JoinDataComplete ParticipantVideoMuteToggleStart = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 800,
-				JoinSpan = 100
-			},
-			new JoinMetadata
-			{
-				Description = "Toggles the participant's video mute status",
-				JoinCapabilities = eJoinCapabilities.ToSIMPL,
-				JoinType = eJoinType.Digital
-			});
+        //[JoinName("ParticipantVideoMuteToggleStart")]
+        //public JoinDataComplete ParticipantVideoMuteToggleStart = new JoinDataComplete(
+        //    new JoinData
+        //    {
+        //        JoinNumber = 800,
+        //        JoinSpan = 100
+        //    },
+        //    new JoinMetadata
+        //    {
+        //        Description = "Toggles the participant's video mute status",
+        //        JoinCapabilities = eJoinCapabilities.ToSIMPL,
+        //        JoinType = eJoinType.Digital
+        //    });
 
-		[JoinName("ParticipantPinToggleStart")]
-		public JoinDataComplete ParticipantPinToggleStart = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 1100,
-				JoinSpan = 100
-			},
-			new JoinMetadata
-			{
-				Description = "Toggles the participant's pin status",
-				JoinCapabilities = eJoinCapabilities.ToSIMPL,
-				JoinType = eJoinType.Digital
-			});
+        //[JoinName("ParticipantPinToggleStart")]
+        //public JoinDataComplete ParticipantPinToggleStart = new JoinDataComplete(
+        //    new JoinData
+        //    {
+        //        JoinNumber = 1100,
+        //        JoinSpan = 100
+        //    },
+        //    new JoinMetadata
+        //    {
+        //        Description = "Toggles the participant's pin status",
+        //        JoinCapabilities = eJoinCapabilities.ToSIMPL,
+        //        JoinType = eJoinType.Digital
+        //    });
 
 		#endregion
 
