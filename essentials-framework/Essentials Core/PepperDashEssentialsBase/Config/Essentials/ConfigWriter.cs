@@ -54,11 +54,11 @@ namespace PepperDash.Essentials.Core.Config
         {
             bool success = false;
 
-            var deviceConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(config.Key));
+            var deviceConfig = ConfigReader.ConfigObject.Devices.FindIndex(d => d.Key.Equals(config.Key));
 
-            if (deviceConfig != null)
+            if (deviceConfig >= 0)
             {
-                deviceConfig = config;
+                ConfigReader.ConfigObject.Devices[deviceConfig] = config;
 
                 Debug.Console(1, "Updated config of device: '{0}'", config.Key);
 
