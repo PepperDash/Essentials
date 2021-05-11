@@ -1243,8 +1243,10 @@ namespace PepperDash.Essentials.DM
 
             DMInputOutputBase dmCard;
 
+            //Routing Input to Input or Output to Input
             if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
             {
+                Debug.Console(2, this, "Executing USB Input switch.\r\n in:{0} output: {1}", inputSelector, outputSelector);
                 if (outputSelector > chassisSize)
                 {
                     uint outputIndex;
@@ -1264,13 +1266,14 @@ namespace PepperDash.Essentials.DM
                     dmCard = Chassis.Inputs[inputSelector];
                 }
 
-                ExecuteSwitch(dmCard, Chassis.Outputs[outputSelector], sigType);
+                ExecuteSwitch(dmCard, Chassis.Inputs[outputSelector], sigType);
                 return;
             }
             if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
             {
                 Debug.Console(2, this, "Executing USB Output switch.\r\n in:{0} output: {1}", inputSelector, outputSelector);
 
+                //routing Output to Output or Input to Output
                 if (inputSelector > chassisSize)
                 {
                     //wanting to route an output to an output. Subtract chassis size and get output, unless it's 8x8
