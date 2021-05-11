@@ -119,7 +119,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				Description = "FB Indicates if layout 'Gallery' is available",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
-				JoinType = eJoinType.Digital
+				JoinType = eJoinType.DigitalSerial
 			});
 
 		[JoinName("LayoutSpeakerIsAvailable")]
@@ -133,7 +133,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				Description = "FB Indicates if layout 'Speaker' is available",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
-				JoinType = eJoinType.Digital
+				JoinType = eJoinType.DigitalSerial
 			});
 
 		[JoinName("LayoutStripIsAvailable")]
@@ -147,7 +147,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				Description = "FB Indicates if layout 'Strip' is available",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
-				JoinType = eJoinType.Digital
+				JoinType = eJoinType.DigitalSerial
 			});
 
 		[JoinName("LayoutShareAllIsAvailable")]
@@ -161,7 +161,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				Description = "FB Indicates if layout 'ShareAll' is available",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
-				JoinType = eJoinType.Digital
+				JoinType = eJoinType.DigitalSerial
 			});
 
         //[JoinName("ParticipantAudioMuteToggleStart")]

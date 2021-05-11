@@ -879,7 +879,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
         public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(
 			new JoinData 
 			{ 
-				JoinNumber = 500,
+				JoinNumber = 501,
 				JoinSpan = 50 
 			},
             new JoinMetadata
@@ -893,7 +893,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
         public JoinDataComplete ParticipantVideoMuteToggleStart = new JoinDataComplete(
 			new JoinData 
 			{ 
-				JoinNumber = 800, 
+				JoinNumber = 801, 
 				JoinSpan = 50 
 			},
             new JoinMetadata
@@ -907,7 +907,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
         public JoinDataComplete ParticipantPinToggleStart = new JoinDataComplete(
 			new JoinData 
 			{ 
-				JoinNumber = 1100, 
+				JoinNumber = 1101, 
 				JoinSpan = 50 
 			},
             new JoinMetadata
@@ -1237,7 +1237,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				Description = "advance selfview position",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
 				JoinType = eJoinType.Serial
-			});
+			});		
 
 		[JoinName("DirectoryEntrySelectedName")]
 		public JoinDataComplete DirectoryEntrySelectedName = new JoinDataComplete(
