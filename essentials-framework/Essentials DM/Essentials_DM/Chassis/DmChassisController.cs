@@ -1285,7 +1285,10 @@ namespace PepperDash.Essentials.DM
 
             var output = outputSelector as DMOutput;
 
-            if (output == null)
+            var isUsbInput = (sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput;
+            var isUsbOutput = (sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput;
+
+            if (output == null && !(isUsbOutput || isUsbInput))
             {
                 Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
                     "Unable to execute switch for inputSelector {0} to outputSelector {1}", inputSelector,
@@ -1330,13 +1333,31 @@ namespace PepperDash.Essentials.DM
                 //Chassis.Outputs[output].AudioOut = inCard;
             }
 
-            if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput || (sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+            if ((sigType & eRoutingSignalType.UsbOutput) != eRoutingSignalType.UsbOutput &&
+                (sigType & eRoutingSignalType.UsbInput) != eRoutingSignalType.UsbInput)
             {
-                Chassis.USBEnter.BoolValue = true;
-                output.USBRoutedTo = input;
+                return;
             }
 
+            Chassis.USBEnter.BoolValue = true;
+            if (output != null)
+            {
+                output.USBRoutedTo = input;
+                return;
+            }
+            var tempOutput = outputSelector as DMInput;
+
+            if (tempOutput == null)
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+                    "Unable to execute switch for inputSelector {0} to outputSelector {1}", inputSelector,
+                    outputSelector);
+                return;
+            }
+
+            tempOutput.USBRoutedTo = input;
         }
+
         #endregion
 
         #region IRoutingNumeric Members
