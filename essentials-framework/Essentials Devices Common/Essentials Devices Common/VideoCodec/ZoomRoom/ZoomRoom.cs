@@ -1723,7 +1723,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public void LinkZoomRoomToApi(BasicTriList trilist, ZoomRoomJoinMap joinMap)
         {
             var layoutsCodec = this as IHasZoomRoomLayouts;
-
             if (layoutsCodec != null)
             {
                 layoutsCodec.AvailableLayoutsChanged += (o, a) =>
@@ -1746,7 +1745,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 layoutsCodec.LayoutViewIsOnLastPageFeedback.LinkInputSig(trilist.BooleanInput[joinMap.LayoutIsOnLastPage.JoinNumber]);
                 trilist.SetSigFalseAction(joinMap.LayoutTurnToNextPage.JoinNumber, () => layoutsCodec.LayoutTurnNextPage());
                 trilist.SetSigFalseAction(joinMap.LayoutTurnToPreviousPage.JoinNumber, () => layoutsCodec.LayoutTurnPreviousPage());
-
+	            trilist.SetSigFalseAction(joinMap.GetAvailableLayouts.JoinNumber, () => layoutsCodec.GetAvailableLayouts());
 
                 trilist.SetStringSigAction(joinMap.GetSetCurrentLayout.JoinNumber, (s) =>
                     {
@@ -1757,23 +1756,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         }
                         catch (Exception e)
                         {
-                            Debug.Console(2, this, "Unable to parse '{0}' to zConfiguration.eLayoutStyle: {1}", s, e);
+                            Debug.Console(1, this, "Unable to parse '{0}' to zConfiguration.eLayoutStyle: {1}", s, e);
                         }
                     });
 
-                layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);    
-  
+                layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);
             }
 
             var pinCodec = this as IHasParticipantPinUnpin;
+			if (pinCodec != null)
+			{
+				pinCodec.NumberOfScreensFeedback.LinkInputSig(trilist.UShortInput[joinMap.NumberOfScreens.JoinNumber]);
 
-            if (pinCodec != null)
-            {
-                pinCodec.NumberOfScreensFeedback.LinkInputSig(trilist.UShortInput[joinMap.NumberOfScreens.JoinNumber]);
-
-                // Set the value of the local property to be used when pinning a participant
-                trilist.SetUShortSigAction(joinMap.ScreenIndexToPinUserTo.JoinNumber, (u) => ScreenIndexToPinUserTo = u);
-            }
+				// Set the value of the local property to be used when pinning a participant
+				trilist.SetUShortSigAction(joinMap.ScreenIndexToPinUserTo.JoinNumber, (u) => ScreenIndexToPinUserTo = u);
+			}
         }
 
         public override void ExecuteSwitch(object selector)
@@ -2209,7 +2206,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         private void ComputeAvailableLayouts()
         {
             zConfiguration.eLayoutStyle availableLayouts = zConfiguration.eLayoutStyle.None;
-            // TODO: #697 Compute the avaialble layouts and set the value of AvailableLayouts
+            // TODO: #697 [ ] Compute the avaialble layouts and set the value of AvailableLayouts
             // Will need to test and confirm that this logic evaluates correctly
             if (Status.Layout.can_Switch_Wall_View)
             {
@@ -2258,7 +2255,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             if (CanSwapContentWithThumbnailFeedback.BoolValue)
             {
                 var oppositeValue = ContentSwappedWithThumbnailFeedback.BoolValue ? "on" : "off"; // Get the value based on the opposite of the current state
-                // TODO: #697 Need to verify the ternary above and make sure that the correct on/off value is being send based on the true/false value of the feedback
+                // TODO: #697 [ ] Need to verify the ternary above and make sure that the correct on/off value is being send based on the true/false value of the feedback
                 // to toggle the state
                 SendText(String.Format("zConfiguration Call Layout ShareThumb: {0}", oppositeValue));
             }
