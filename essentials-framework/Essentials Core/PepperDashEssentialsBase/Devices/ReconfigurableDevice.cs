@@ -54,11 +54,7 @@ namespace PepperDash.Essentials.Core.Devices
                 Name = config.Name;
         }
 
-		protected virtual void WriteControlProperty(JToken controlObject)
-		{
-			Config.Properties["control"] = JToken.FromObject(controlObject);
-			CustomSetConfig(Config);
-		}
+
 
         /// <summary>
         /// Used by the extending class to allow for any custom actions to be taken (tell the ConfigWriter to write config, etc)

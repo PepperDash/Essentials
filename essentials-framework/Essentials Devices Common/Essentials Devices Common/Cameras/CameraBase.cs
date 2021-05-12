@@ -81,11 +81,9 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 		}
 
         protected CameraBase(string key, string name) : 
-			base (new DeviceConfig{Name = name, Key = key})
+			this (new DeviceConfig{Name = name, Key = key})
         {
-			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
-
-			ControlMode = eCameraControlMode.Manual;
+				
         }
 
         protected void LinkCameraToApi(CameraBase cameraDevice, BasicTriList trilist, uint joinStart, string joinMapKey,
