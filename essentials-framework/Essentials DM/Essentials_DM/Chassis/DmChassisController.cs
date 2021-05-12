@@ -1319,7 +1319,10 @@ namespace PepperDash.Essentials.DM
             if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
             {
                 Chassis.VideoEnter.BoolValue = true;
-                output.VideoOut = input; //Chassis.Outputs[output].VideoOut = inCard;
+                if (output != null)
+                {
+                    output.VideoOut = input; //Chassis.Outputs[output].VideoOut = inCard;
+                }
             }
 
             if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
@@ -1329,12 +1332,43 @@ namespace PepperDash.Essentials.DM
                 {
                     dmMdMnxn.AudioEnter.BoolValue = true;
                 }
-                output.AudioOut = input;
-                //Chassis.Outputs[output].AudioOut = inCard;
+                if (output != null)
+                {
+                    output.AudioOut = input;
+                }
             }
 
-            if ((sigType & eRoutingSignalType.UsbOutput) != eRoutingSignalType.UsbOutput &&
-                (sigType & eRoutingSignalType.UsbInput) != eRoutingSignalType.UsbInput)
+            if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+                
+            {
+               Chassis.USBEnter.BoolValue = true;
+                if (inputSelector == null && output != null)
+                {
+                    //clearing the route is intended
+                    output.USBRoutedTo = null;
+                    return;
+                }
+
+                if (inputSelector != null && input == null)
+                {
+                    //input selector is DMOutput...we're doing a out to out route
+                    var tempInput = inputSelector as DMOutput;
+
+                    if (tempInput == null || output == null)
+                    {
+                        return;
+                    }
+                    output.USBRoutedTo = tempInput;
+                    return;
+                }
+
+                if (input != null & output != null)
+                {
+                    output.USBRoutedTo = input;
+                }
+            }
+
+            if((sigType & eRoutingSignalType.UsbInput) != eRoutingSignalType.UsbInput)
             {
                 return;
             }
