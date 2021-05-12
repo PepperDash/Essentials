@@ -54,11 +54,11 @@ namespace PepperDash.Essentials.Core.Config
         {
             bool success = false;
 
-            var deviceConfig = ConfigReader.ConfigObject.Devices.FirstOrDefault(d => d.Key.Equals(config.Key));
+            var deviceConfigIndex = ConfigReader.ConfigObject.Devices.FindIndex(d => d.Key.Equals(config.Key));
 
-            if (deviceConfig != null)
+            if (deviceConfigIndex >= 0)
             {
-                deviceConfig = config;
+                ConfigReader.ConfigObject.Devices[deviceConfigIndex] = config;
 
                 Debug.Console(1, "Updated config of device: '{0}'", config.Key);
 
@@ -74,13 +74,13 @@ namespace PepperDash.Essentials.Core.Config
         {
             bool success = false;
 
-            var deviceConfig = ConfigReader.ConfigObject.Rooms.FirstOrDefault(d => d.Key.Equals(config.Key));
+			var roomConfigIndex = ConfigReader.ConfigObject.Rooms.FindIndex(d => d.Key.Equals(config.Key));
 
-            if (deviceConfig != null)
+			if (roomConfigIndex >= 0)
             {
-                deviceConfig = config;
+                ConfigReader.ConfigObject.Rooms[roomConfigIndex] = config;
 
-                Debug.Console(1, "Updated config of device: '{0}'", config.Key);
+                Debug.Console(1, "Updated room of device: '{0}'", config.Key);
 
                 success = true;
             }

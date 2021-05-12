@@ -8,6 +8,8 @@ using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Devices.Common.Codec;
@@ -25,7 +27,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         Focus = 8
     }
 
-    public abstract class CameraBase : EssentialsDevice, IRoutingOutputs
+    public abstract class CameraBase : ReconfigurableDevice, IRoutingOutputs
 	{
         public eCameraControlMode ControlMode { get; protected set; }
 
@@ -70,12 +72,18 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         // A bitmasked value to indicate the movement capabilites of this camera
         protected eCameraCapabilities Capabilities { get; set; }
 
-        protected CameraBase(string key, string name) :
-			base(key, name) 
-        {
-            OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
+		protected CameraBase(DeviceConfig config) : base(config)
+		{
+			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
-            ControlMode = eCameraControlMode.Manual;
+			ControlMode = eCameraControlMode.Manual;
+
+		}
+
+        protected CameraBase(string key, string name) : 
+			this (new DeviceConfig{Name = name, Key = key})
+        {
+				
         }
 
         protected void LinkCameraToApi(CameraBase cameraDevice, BasicTriList trilist, uint joinStart, string joinMapKey,
