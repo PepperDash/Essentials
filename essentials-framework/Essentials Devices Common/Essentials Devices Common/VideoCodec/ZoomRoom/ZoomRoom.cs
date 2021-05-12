@@ -870,7 +870,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				_jsonCurlyBraceCounter--;
 			}
 
-			Debug.Console(2, this, "JSON Curly Brace Count: {0}", _jsonCurlyBraceCounter);
+			// TODO [X] 2021-05-12, jkd: turned off to reduce console traffic
+			//Debug.Console(2, this, "JSON Curly Brace Count: {0}", _jsonCurlyBraceCounter);
 
 			if (!_jsonFeedbackMessageIsIncoming && message.Trim('\x20') == "{" + Delimiter)
 			// Check for the beginning of a new JSON message
