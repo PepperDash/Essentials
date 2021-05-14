@@ -17,9 +17,10 @@ Please provide as much detail as possible.
 
 **User Interface Requirements**
 - [ ] Not Applicable (logic only)
-- [ ] Smart Graphics Touchpanel
+- [ ] Crestron Smart Graphics Touchpanel
 - [ ] Cisco Touch10
 - [ ] Mobile Control
+- [ ] Crestron CH5 Touchpanel interface
 
 
 **Additional context**
