@@ -7,6 +7,8 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PepperDash.Essentials.Core.Devices
 {
@@ -51,6 +53,8 @@ namespace PepperDash.Essentials.Core.Devices
             if (!string.IsNullOrEmpty(config.Name))
                 Name = config.Name;
         }
+
+
 
         /// <summary>
         /// Used by the extending class to allow for any custom actions to be taken (tell the ConfigWriter to write config, etc)
