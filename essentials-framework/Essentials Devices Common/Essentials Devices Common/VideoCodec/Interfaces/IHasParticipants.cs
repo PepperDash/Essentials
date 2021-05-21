@@ -1,13 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using PepperDash.Essentials.Core;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 {
+    /// <summary>
+    /// Describes a device that has call participants
+    /// </summary>
     public interface IHasParticipants
     {
         CodecParticipants Participants { get; }
     }
 
+    /// <summary>
+    /// Describes the ability to mute and unmute a participant's video in a meeting
+    /// </summary>
     public interface IHasParticipantVideoMute:IHasParticipants
     {
         void MuteVideoForParticipant(int userId);
@@ -15,11 +22,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         void ToggleVideoForParticipant(int userId);
     }
 
-    public interface IHasParticipantAudioMute:IHasParticipantVideoMute
+    /// <summary>
+    /// Describes the ability to mute and unmute a participant's audio in a meeting
+    /// </summary>
+    public interface IHasParticipantAudioMute : IHasParticipantVideoMute
     {
         void MuteAudioForParticipant(int userId);
         void UnmuteAudioForParticipant(int userId);
         void ToggleAudioForParticipant(int userId);
+    }
+
+    /// <summary>
+    /// Describes the ability to pin and unpin a participant in a meeting
+    /// </summary>
+    public interface IHasParticipantPinUnpin : IHasParticipants
+    {
+        IntFeedback NumberOfScreensFeedback { get; }
+        int ScreenIndexToPinUserTo { get; }
+
+        void PinParticipant(int userId, int screenIndex);
+        void UnPinParticipant(int userId);
+        void ToggleParticipantPinState(int userId, int screenIndex);
     }
 
     public class CodecParticipants
@@ -31,11 +54,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
             set
             {
                 _currentParticipants = value;
-                var handler = ParticipantsListHasChanged;
-
-                if(handler == null) return;
-
-                handler(this, new EventArgs());
+                OnParticipantsChanged();
             }
         }
 
@@ -45,15 +64,31 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         {
             _currentParticipants = new List<Participant>();
         }
+
+        public void OnParticipantsChanged()
+        {
+            var handler = ParticipantsListHasChanged;
+
+            if (handler == null) return;
+
+            handler(this, new EventArgs());
+        }
     }
 
+    /// <summary>
+    /// Represents a call participant
+    /// </summary>
     public class Participant
     {
+        public int UserId { get; set; }
         public bool IsHost { get; set; }
         public string Name { get; set; }
         public bool CanMuteVideo { get; set; }       
         public bool CanUnmuteVideo { get; set; }
         public bool VideoMuteFb { get; set; }
         public bool AudioMuteFb { get; set; }
+        public bool HandIsRaisedFb { get; set; }
+        public bool IsPinnedFb { get; set; }
+        public int ScreenIndexIsPinnedToFb { get; set; }
     }
 }
