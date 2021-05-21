@@ -870,7 +870,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				_jsonCurlyBraceCounter--;
 			}
 
-			// TODO [X] 2021-05-12, jkd: turned off to reduce console traffic
 			//Debug.Console(2, this, "JSON Curly Brace Count: {0}", _jsonCurlyBraceCounter);
 
 			if (!_jsonFeedbackMessageIsIncoming && message.Trim('\x20') == "{" + Delimiter)
@@ -2242,7 +2241,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		private void ComputeAvailableLayouts()
 		{
 			zConfiguration.eLayoutStyle availableLayouts = zConfiguration.eLayoutStyle.None;
-			// TODO: #697 [ ] Compute the avaialble layouts and set the value of AvailableLayouts
+			// TODO: #697 [X] Compute the avaialble layouts and set the value of AvailableLayouts
 			// Will need to test and confirm that this logic evaluates correctly
 			if (Status.Layout.can_Switch_Wall_View)
 			{
@@ -2291,7 +2290,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			if (CanSwapContentWithThumbnailFeedback.BoolValue)
 			{
 				var oppositeValue = ContentSwappedWithThumbnailFeedback.BoolValue ? "on" : "off"; // Get the value based on the opposite of the current state
-				// TODO: #697 [ ] Need to verify the ternary above and make sure that the correct on/off value is being send based on the true/false value of the feedback
+				// TODO: #697 [*] Need to verify the ternary above and make sure that the correct on/off value is being send based on the true/false value of the feedback
 				// to toggle the state
 				SendText(String.Format("zConfiguration Call Layout ShareThumb: {0}", oppositeValue));
 			}

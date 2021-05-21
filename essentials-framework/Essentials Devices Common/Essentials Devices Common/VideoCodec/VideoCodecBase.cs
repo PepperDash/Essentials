@@ -673,7 +673,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			trilist.SetBoolSigAction(joinMap.SourceShareAutoStart.JoinNumber, (b) => AutoShareContentWhileInCall = b);
 		}
 
-		// TODO [ ] 2021-01-06, jkd: Added to debug OBTP dialing issues
 		private List<Meeting> _currentMeetings = new List<Meeting>();
 
 		private void LinkVideoCodecScheduleToApi(IHasScheduleAwareness codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
@@ -685,7 +684,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				codec.CodecSchedule.MeetingWarningMinutes = i;
 			});
 
-			// TODO [ ] 2021-01-06, jkd: Added to debug OBTP dialing issues
 			trilist.SetSigFalseAction(joinMap.DialMeeting1.JoinNumber, () =>
 			{
 				var mtg = 1;
@@ -695,7 +693,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				if (_currentMeetings[index] != null)
 					Dial(_currentMeetings[index]);
 			});
-			// TODO [ ] 2021-01-06, jkd: Added to debug OBTP dialing issues				
+			
 			trilist.SetSigFalseAction(joinMap.DialMeeting2.JoinNumber, () =>
 			{
 				var mtg = 2;
@@ -705,7 +703,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				if (_currentMeetings[index] != null)
 					Dial(_currentMeetings[index]);
 			});
-			// TODO [ ] 2021-01-06, jkd: Added to debug OBTP dialing issues
+			
 			trilist.SetSigFalseAction(joinMap.DialMeeting3.JoinNumber, () =>
 			{
 				var mtg = 3;
@@ -730,13 +728,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		{
 			var currentTime = DateTime.Now;
 
-			// TODO [ ] 2021-01-06, jkd: Added to debug OBTP dialing issues				
-			// - changed var currentMeetings >> field _currentMeetings
-			//_currentMeetings.Clear();
 			_currentMeetings = codec.CodecSchedule.Meetings.Where(m => m.StartTime >= currentTime || m.EndTime >= currentTime).ToList();
-
-			// TODO [ ] 2021-01-06, jkd: Added to debug OBTP dialing issues				
-			// - moved the trilist.SetSigFlaseAction(joinMap.DialMeeting1..3.JoinNumber) lambda's to LinkVideoCodecScheduleToApi
 
 			var meetingsData = UpdateMeetingsListXSig(_currentMeetings);
 			trilist.SetString(joinMap.Schedule.JoinNumber, meetingsData);

@@ -27,8 +27,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     {
         event EventHandler<LayoutInfoChangedEventArgs> AvailableLayoutsChanged;
 
-        BoolFeedback LayoutViewIsOnFirstPageFeedback { get; }  // TODO: #697 [ ] Consider modifying to report button visibility in func
-        BoolFeedback LayoutViewIsOnLastPageFeedback { get; } // TODO: #697 [ ] Consider modifying to report button visibility in func 
+        BoolFeedback LayoutViewIsOnFirstPageFeedback { get; }  // TODO: #697 [*] Consider modifying to report button visibility in func
+        BoolFeedback LayoutViewIsOnLastPageFeedback { get; } // TODO: #697 [*] Consider modifying to report button visibility in func 
         BoolFeedback CanSwapContentWithThumbnailFeedback { get; }
         BoolFeedback ContentSwappedWithThumbnailFeedback { get; }
 
