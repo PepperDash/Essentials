@@ -20,8 +20,23 @@ namespace PepperDash.Essentials.Core
 		/// <param name="json"></param>
 		public static void DoDeviceActionWithJson(string json)
 		{
-			var action = JsonConvert.DeserializeObject<DeviceActionWrapper>(json);
-			DoDeviceAction(action);
+		    if (String.IsNullOrEmpty(json))
+		    {
+		        CrestronConsole.ConsoleCommandResponse(
+		            "Please provide a JSON object matching the format {\"deviceKey\":\"myDevice\", \"methodName\":\"someMethod\", \"params\": [\"param1\", true]}.\r\nIf the method has no parameters, the \"params\" object may be omitted.");
+		        return;
+		    }
+		    try
+		    {
+		        var action = JsonConvert.DeserializeObject<DeviceActionWrapper>(json);
+
+		        DoDeviceAction(action);
+		    }
+		    catch (Exception ex)
+		    {
+		        CrestronConsole.ConsoleCommandResponse("Incorrect format for JSON. Please check that the format matches {\"deviceKey\":\"myDevice\", \"methodName\":\"someMethod\", \"params\": [\"param1\", true]}");
+		    }
+		    
 		}
 
 
@@ -33,29 +48,47 @@ namespace PepperDash.Essentials.Core
 		{
 			var key = action.DeviceKey;
 			var obj = FindObjectOnPath(key);
-			if (obj == null)
-				return;
+		    if (obj == null)
+		    {
+		        CrestronConsole.ConsoleCommandResponse("Unable to find object at path {0}", key);
+		        return;
+		    }
 
-			CType t = obj.GetType();
-			var method = t.GetMethod(action.MethodName);
-			if (method == null)
-			{
-				Debug.Console(0, "Method '{0}' not found", action.MethodName);
-				return;
-			}
-			var mParams = method.GetParameters();
-			// Add empty params if not provided
-			if (action.Params == null) action.Params = new object[0];
-			if (mParams.Length > action.Params.Length)
-			{
-				Debug.Console(0, "Method '{0}' requires {1} params", action.MethodName, mParams.Length);
-				return;
-			}
-			object[] convertedParams = mParams
-								.Select((p, i) => Convert.ChangeType(action.Params[i], p.ParameterType,
-									System.Globalization.CultureInfo.InvariantCulture))
-								.ToArray();
-			object ret = method.Invoke(obj, convertedParams);
+		    if (action.Params == null)
+		    {
+                //no params, so setting action.Params to empty array
+		        action.Params = new object[0];
+		    }
+
+		    CType t = obj.GetType();
+		    try
+		    {
+		        var methods = t.GetMethods().Where(m => m.Name == action.MethodName).ToList();
+
+		        var method = methods.Count == 1 ? methods[0] : methods.FirstOrDefault(m => m.GetParameters().Length == action.Params.Length);
+
+		        if (method == null)
+		        {
+		            CrestronConsole.ConsoleCommandResponse(
+		                "Unable to find method with name {0} and that matches parameters {1}", action.MethodName,
+		                action.Params);
+		            return;
+		        }
+                var mParams = method.GetParameters();
+
+                var convertedParams = mParams
+                                    .Select((p, i) => Convert.ChangeType(action.Params[i], p.ParameterType,
+                                        System.Globalization.CultureInfo.InvariantCulture))
+                                    .ToArray();
+                var ret = method.Invoke(obj, convertedParams);
+
+		        CrestronConsole.ConsoleCommandResponse("Method {0} successfully called on device {1}", method.Name,
+		            action.DeviceKey);
+		    }
+		    catch (Exception ex)
+		    {
+		        CrestronConsole.ConsoleCommandResponse("Unable to call method with name {0}. {1}", action.MethodName,
+		            ex.Message);}
 		}
 
 		/// <summary>
