@@ -31,6 +31,18 @@ namespace PepperDash.Essentials.Core.Config
         [JsonProperty("properties")]
         [JsonConverter(typeof(DevicePropertiesConverter))]
         public JToken Properties { get; set; }
+
+        public DeviceConfig(DeviceConfig dc)
+        {
+            Key = dc.Key;
+            Uid = dc.Uid;
+            Name = dc.Name;
+            Group = dc.Group;
+            Type = dc.Type;
+            Properties = JToken.FromObject(dc.Properties);
+        }
+
+        public DeviceConfig() {}
     }
 
     /// <summary>

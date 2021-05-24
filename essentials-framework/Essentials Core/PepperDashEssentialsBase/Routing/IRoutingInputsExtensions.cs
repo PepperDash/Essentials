@@ -123,25 +123,34 @@ namespace PepperDash.Essentials.Core
 				// No direct tie? Run back out on the inputs' attached devices... 
 				// Only the ones that are routing devices
 				var attachedMidpoints = destDevInputTies.Where(t => t.SourcePort.ParentDevice is IRoutingInputsOutputs);
+
+                //Create a list for tracking already checked devices to avoid loops, if it doesn't already exist from previous iteration
+                if (alreadyCheckedDevices == null)
+                    alreadyCheckedDevices = new List<IRoutingInputsOutputs>();
+                alreadyCheckedDevices.Add(destination as IRoutingInputsOutputs);
+
 				foreach (var inputTieToTry in attachedMidpoints)
 				{
-					Debug.Console(2, destination, "Trying to find route on {0}", inputTieToTry.SourcePort.ParentDevice.Key);
 					var upstreamDeviceOutputPort = inputTieToTry.SourcePort;
 					var upstreamRoutingDevice = upstreamDeviceOutputPort.ParentDevice as IRoutingInputsOutputs;
+                    Debug.Console(2, destination, "Trying to find route on {0}", upstreamRoutingDevice.Key);
+
 					// Check if this previous device has already been walked
-					if (!(alreadyCheckedDevices != null && alreadyCheckedDevices.Contains(upstreamRoutingDevice)))
-					{
-						// haven't seen this device yet.  Do it.  Pass the output port to the next
-						// level to enable switching on success
-						var upstreamRoutingSuccess = upstreamRoutingDevice.GetRouteToSource(source, upstreamDeviceOutputPort, 
-							alreadyCheckedDevices, signalType, cycle, routeTable);
-						if (upstreamRoutingSuccess)
-						{
-							Debug.Console(2, destination, "Upstream device route found");
-							goodInputPort = inputTieToTry.DestinationPort;
-							break; // Stop looping the inputs in this cycle
-						}
-					}
+                    if (alreadyCheckedDevices.Contains(upstreamRoutingDevice))
+                    {
+                        Debug.Console(2, destination, "Skipping input {0} on {1}, this was already checked", upstreamRoutingDevice.Key, destination.Key);
+                        continue;
+                    }
+                    // haven't seen this device yet.  Do it.  Pass the output port to the next
+                    // level to enable switching on success
+                    var upstreamRoutingSuccess = upstreamRoutingDevice.GetRouteToSource(source, upstreamDeviceOutputPort,
+                        alreadyCheckedDevices, signalType, cycle, routeTable);
+                    if (upstreamRoutingSuccess)
+                    {
+                        Debug.Console(2, destination, "Upstream device route found");
+                        goodInputPort = inputTieToTry.DestinationPort;
+                        break; // Stop looping the inputs in this cycle
+                    }
 				}
 			}
 
@@ -163,10 +172,6 @@ namespace PepperDash.Essentials.Core
                 //Debug.Console(2, destination, "Exiting cycle {0}", cycle);
 				return true;
 			}
-	
-			if(alreadyCheckedDevices == null)
-				alreadyCheckedDevices = new List<IRoutingInputsOutputs>();
-			alreadyCheckedDevices.Add(destination as IRoutingInputsOutputs);
 
 			Debug.Console(2, destination, "No route found to {0}", source.Key);
 			return false;

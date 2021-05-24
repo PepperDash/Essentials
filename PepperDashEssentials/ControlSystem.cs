@@ -36,6 +36,7 @@ namespace PepperDash.Essentials
             Thread.MaxNumberOfUserThreads = 400;
             Global.ControlSystem = this;
             DeviceManager.Initialize(this);
+            SecretsManager.Initialize();
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
         }
 
