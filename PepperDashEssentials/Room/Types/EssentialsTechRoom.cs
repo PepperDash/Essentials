@@ -107,14 +107,18 @@ namespace PepperDash.Essentials
 
         private void TunerPresetsOnPresetRecalled(ISetTopBoxNumericKeypad device, string channel)
         {
+            //Debug.Console(2, this, "TunerPresetsOnPresetRecalled");
+
             if (!_currentPresets.ContainsKey(device.Key))
             {
                 return;
             }
 
+            //Debug.Console(2, this, "Tuner Key: {0} Channel: {1}", device.Key, channel);
+
             _currentPresets[device.Key] = channel;
 
-            if (!CurrentPresetsFeedbacks.ContainsKey(device.Key))
+            if (CurrentPresetsFeedbacks.ContainsKey(device.Key))
             {
                 CurrentPresetsFeedbacks[device.Key].FireUpdate();
             }
