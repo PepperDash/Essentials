@@ -1795,7 +1795,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						}
 					});
 
-				layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);				
+				layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);
+
+				// TOOD: #714 [ ] Feature Layout Size				
+				trilist.SetSigFalseAction(joinMap.SetLayoutSizeOff.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Off));
+				trilist.SetSigFalseAction(joinMap.SetLayoutSize1.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Size1));
+				trilist.SetSigFalseAction(joinMap.SetLayoutSize2.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Size2));
+				trilist.SetSigFalseAction(joinMap.SetLayoutSize3.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Size3));
+				trilist.SetSigFalseAction(joinMap.SetLayoutSizeStrip.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Strip));
+				// TOOD: #714 [ ] Feature Layout Size
+				trilist.SetSigFalseAction(joinMap.GetSetCurrentLayoutSize.JoinNumber, layoutsCodec.GetCurrentLayoutSize);
+				trilist.SetStringSigAction(joinMap.GetSetCurrentLayoutSize.JoinNumber, (s) =>
+				{
+					try
+					{
+						var size = (zConfiguration.eLayoutSize)Enum.Parse(typeof(zConfiguration.eLayoutSize), s, true);
+						SetLayoutSize(size);
+					}
+					catch (Exception e)
+					{
+						Debug.Console(1, this, "Unable to parse '{0}' to zConfiguration.eLayoutSize: {1}", s, e);
+					}
+				});
 			}
 
 			var pinCodec = this as IHasParticipantPinUnpin;
@@ -2304,6 +2325,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		public void LayoutTurnPreviousPage()
 		{
 			SendText("zCommand Call Layout TurnPage Forward: Off");
+		}
+
+		// TOOD: #714 [ ] Feature Layout Size
+		public zConfiguration.eLayoutSize LastSelectedLayoutSize { get; private set; }
+
+		// TOOD: #714 [ ] Feature Layout Size
+		public void GetCurrentLayoutSize()
+		{
+			SendText("zConfiguration Call Layout Size");
+		}
+
+		// TOOD: #714 [ ] Feature Layout Size
+		public void SetLayoutSize(zConfiguration.eLayoutSize layoutSize)
+		{
+			LastSelectedLayoutSize = layoutSize;
+			SendText(String.Format("zConfiguration Call Layout Size: {0}", layoutSize.ToString()));
 		}
 
 		#endregion

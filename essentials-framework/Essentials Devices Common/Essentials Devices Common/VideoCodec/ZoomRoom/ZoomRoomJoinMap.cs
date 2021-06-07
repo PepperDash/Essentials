@@ -164,6 +164,96 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				JoinType = eJoinType.DigitalSerial
 			});
 
+		// TOOD: #714 [ ] Feature Layout Size
+		//[JoinName("GetCurrentLayoutSize")]
+		//public JoinDataComplete GetCurrentLayoutSize = new JoinDataComplete(
+		//    new JoinData
+		//    {
+		//        JoinNumber = 230,
+		//        JoinSpan = 1
+		//    },
+		//    new JoinMetadata
+		//    {
+		//        Description = "Poll for the current layout size",
+		//        JoinCapabilities = eJoinCapabilities.FromSIMPL,
+		//        JoinType = eJoinType.Digital
+		//    });
+
+		// TOOD: #714 [ ] Feature Layout Size
+		[JoinName("SetLayoutSizeOff")]
+		public JoinDataComplete SetLayoutSizeOff = new JoinDataComplete(
+			new JoinData
+			{
+				JoinNumber = 231,
+				JoinSpan = 1
+			},
+			new JoinMetadata
+			{
+				Description = "Sets layout size off",
+				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+				JoinType = eJoinType.Digital
+			});
+
+		// TOOD: #714 [ ] Feature Layout Size
+		[JoinName("SetLayoutSize1")]
+		public JoinDataComplete SetLayoutSize1 = new JoinDataComplete(
+			new JoinData
+			{
+				JoinNumber = 232,
+				JoinSpan = 1
+			},
+			new JoinMetadata
+			{
+				Description = "Sets layout size 1",
+				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+				JoinType = eJoinType.Digital
+			});
+
+		// TOOD: #714 [ ] Feature Layout Size
+		[JoinName("SetLayoutSize2")]
+		public JoinDataComplete SetLayoutSize2 = new JoinDataComplete(
+			new JoinData
+			{
+				JoinNumber = 233,
+				JoinSpan = 1
+			},
+			new JoinMetadata
+			{
+				Description = "Sets layout size 2",
+				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+				JoinType = eJoinType.Digital
+			});
+
+		// TOOD: #714 [ ] Feature Layout Size
+		[JoinName("SetLayoutSize3")]
+		public JoinDataComplete SetLayoutSize3 = new JoinDataComplete(
+			new JoinData
+			{
+				JoinNumber = 234,
+				JoinSpan = 1
+			},
+			new JoinMetadata
+			{
+				Description = "Sets layout size 3",
+				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+				JoinType = eJoinType.Digital
+			});
+
+		// TOOD: #714 [ ] Feature Layout Size
+		[JoinName("SetLayoutSizeStrip")]
+		public JoinDataComplete SetLayoutSizeStrip = new JoinDataComplete(
+			new JoinData
+			{
+				JoinNumber = 235,
+				JoinSpan = 1
+			},
+			new JoinMetadata
+			{
+				Description = "Sets layout size strip",
+				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+				JoinType = eJoinType.Digital
+			});
+
         //[JoinName("ParticipantAudioMuteToggleStart")]
         //public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(
         //    new JoinData
@@ -256,7 +346,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				Description = "Sets and reports the current layout.  Use the LayoutXXXXIsAvailable signals to determine valid layouts",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Serial
-			});		
+			});
+
+		// TOOD: #714 [ ] Feature Layout Size
+		[JoinName("GetSetCurrentLayoutSize")]
+		public JoinDataComplete GetSetCurrentLayoutSize = new JoinDataComplete(
+			new JoinData
+			{
+				JoinNumber = 230,
+				JoinSpan = 1
+			},
+			new JoinMetadata
+			{
+				Description = "Sets and reports the current layout size.",
+				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+				JoinType = eJoinType.DigitalSerial
+			});
 
 		#endregion
 
