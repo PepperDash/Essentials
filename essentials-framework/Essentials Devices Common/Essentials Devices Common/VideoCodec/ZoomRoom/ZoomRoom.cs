@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
 		IRouting,
 		IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
-		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin, IHasParticipantAudioMute
+		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin, IHasParticipantAudioMute, IHasSelfviewSize
 	{
 		private const long MeetingRefreshTimer = 60000;
 		private const uint DefaultMeetingDurationMin = 30;
@@ -108,6 +108,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			ReceivingContent = new BoolFeedback(FarEndIsSharingContentFeedbackFunc);
 
 			SelfviewPipPositionFeedback = new StringFeedback(SelfviewPipPositionFeedbackFunc);
+
+			// TODO: #714 [ ] SelfviewPipSizeFeedback
+			SelfviewPipSizeFeedback = new StringFeedback(SelfviewPipSizeFeedbackFunc);
 			
 			SetUpFeedbackActions();
 
@@ -125,9 +128,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			CallerIdNumberFeedback = new StringFeedback(CallerIdNumberFeedbackFunc);
 
 			LocalLayoutFeedback = new StringFeedback(LocalLayoutFeedbackFunc);
-
-			// TODO: #714 [ ] Feature Layout Size
-			LayoutSizeFeedback = new StringFeedback(LayoutSizeFeedbackFunc);			
 
 			LayoutViewIsOnFirstPageFeedback = new BoolFeedback(LayoutViewIsOnFirstPageFeedbackFunc);
 			LayoutViewIsOnLastPageFeedback = new BoolFeedback(LayoutViewIsOnLastPageFeedbackFunc);
@@ -227,6 +227,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					() =>
 						_currentSelfviewPipPosition != null
 							? _currentSelfviewPipPosition.Command ?? "Unknown"
+							: "Unknown";
+			}
+		}
+
+		// TODO: #714 [ ] SelfviewPipSizeFeedbackFunc
+		protected Func<string> SelfviewPipSizeFeedbackFunc
+		{
+			get
+			{
+				return
+					() =>
+						_currentSelfviewPipSize != null
+							? _currentSelfviewPipSize.Command ?? "Unknown"
 							: "Unknown";
 			}
 		}
@@ -498,7 +511,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				{
 					case "Position":
 						{
-							ComputeSelfviewPipStatus();
+							ComputeSelfviewPipPositionStatus();
 
 							SelfviewPipPositionFeedback.FireUpdate();
 
@@ -516,7 +529,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						}
 					case "Size":
 					{
-						
+						// TODO: #714 [ ] SetupFeedbackActions >> Size
+						ComputeSelfviewPipSizeStatus();
+
+						SelfviewPipSizeFeedback.FireUpdate();
+
 						break;
 					}
 
@@ -530,7 +547,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     case "Position":
                         {
-                            ComputeSelfviewPipStatus();
+                            ComputeSelfviewPipPositionStatus();
 
                             SelfviewPipPositionFeedback.FireUpdate();
 
@@ -1803,28 +1820,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						}
 					});
 
-				layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);
-
-				// TODO: #714 [ ] Feature Layout Size				
-				trilist.SetSigFalseAction(joinMap.SetLayoutSizeOff.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Off));
-				trilist.SetSigFalseAction(joinMap.SetLayoutSize1.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Size1));
-				trilist.SetSigFalseAction(joinMap.SetLayoutSize2.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Size2));
-				trilist.SetSigFalseAction(joinMap.SetLayoutSize3.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Size3));
-				trilist.SetSigFalseAction(joinMap.SetLayoutSizeStrip.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Strip));				
-				trilist.SetSigFalseAction(joinMap.GetSetCurrentLayoutSize.JoinNumber, layoutsCodec.GetCurrentLayoutSize);
-				trilist.SetStringSigAction(joinMap.GetSetCurrentLayoutSize.JoinNumber, (s) =>
-				{
-					try
-					{
-						var size = (zConfiguration.eLayoutSize)Enum.Parse(typeof(zConfiguration.eLayoutSize), s, true);
-						SetLayoutSize(size);
-					}
-					catch (Exception e)
-					{
-						Debug.Console(1, this, "Unable to parse '{0}' to zConfiguration.eLayoutSize: {1}", s, e);
-					}
-				});
-				layoutsCodec.LayoutSizeFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayoutSize.JoinNumber]);				
+				layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);								
 			}
 
 			var pinCodec = this as IHasParticipantPinUnpin;
@@ -1835,6 +1831,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				// Set the value of the local property to be used when pinning a participant
 				trilist.SetUShortSigAction(joinMap.ScreenIndexToPinUserTo.JoinNumber, (u) => ScreenIndexToPinUserTo = u);
 			}
+
+			// TODO: #714 [ ] LinkZoomRoomToApi >> layoutSizeCoodec
+			var layoutSizeCodec = this as IHasSelfviewSize;
+			if (layoutSizeCodec != null)
+			{
+				trilist.SetSigFalseAction(joinMap.GetSetSelfviewPipSize.JoinNumber, layoutSizeCodec.SelfviewPipSizeToggle);
+
+				layoutSizeCodec.SelfviewPipSizeFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetSelfviewPipSize.JoinNumber]);
+			}
+
 		}
 
 		public override void ExecuteSwitch(object selector)
@@ -2206,12 +2212,57 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             new CodecCommandWithLabel("DownLeft", "Lower Left")
         };
 
-		private void ComputeSelfviewPipStatus()
+		private void ComputeSelfviewPipPositionStatus()
 		{
 			_currentSelfviewPipPosition =
 				SelfviewPipPositions.FirstOrDefault(
 					p => p.Command.ToLower().Equals(Configuration.Call.Layout.Position.ToString().ToLower()));
 		}
+
+		#endregion
+
+		// TODO: #714 [ ] Implementation of IHasSelfviewPipSize
+		#region Implementation of IHasSelfviewPipSize
+
+		private CodecCommandWithLabel _currentSelfviewPipSize;
+
+		public StringFeedback SelfviewPipSizeFeedback { get; private set; }
+
+		public void SelfviewPipSizeSet(CodecCommandWithLabel size)
+		{
+			SendText(String.Format("zConfiguration Call Layout Size: {0}", size.Command));
+		}
+
+		public void SelfviewPipSizeToggle()
+		{
+			if (_currentSelfviewPipSize != null)
+			{
+				var nextPipSizeIndex = SelfviewPipSizes.IndexOf(_currentSelfviewPipSize) + 1;
+
+				if (nextPipSizeIndex >= SelfviewPipSizes.Count)
+					// Check if we need to loop back to the first item in the list
+					nextPipSizeIndex = 0;
+
+				SelfviewPipSizeSet(SelfviewPipSizes[nextPipSizeIndex]);
+			}
+		}
+
+		public List<CodecCommandWithLabel> SelfviewPipSizes = new List<CodecCommandWithLabel>()
+        {
+            new CodecCommandWithLabel("Off", "Off"),
+            new CodecCommandWithLabel("Size1", "Size 1"),
+            new CodecCommandWithLabel("Size2", "Size 2"),
+            new CodecCommandWithLabel("Size3", "Size 3"),
+			new CodecCommandWithLabel("Strip", "Strip")
+        };
+
+		private void ComputeSelfviewPipSizeStatus()
+		{
+			_currentSelfviewPipSize =
+				SelfviewPipSizes.FirstOrDefault(
+					p => p.Command.ToLower().Equals(Configuration.Call.Layout.Size.ToString().ToLower()));
+		}
+
 
 		#endregion
 
@@ -2332,46 +2383,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			SendText("zCommand Call Layout TurnPage Forward: Off");
 		}
-
-		// TODO: #714 [ ] Feature Layout Size
-		/// <summary>
-		/// Stores last selected layout size
-		/// </summary>
-		public zConfiguration.eLayoutSize LastSelectedLayoutSize { get; private set; }
-
-		// TODO: #714 [ ] Feature Layout Size
-		/// <summary>
-		/// Queries for current layout size
-		/// </summary>
-		public void GetCurrentLayoutSize()
-		{
-			SendText("zConfiguration Call Layout Size");
-		}
-
-		// TODO: #714 [ ] Feature Layout Size
-		/// <summary>
-		/// Sets selected layout size
-		/// </summary>
-		/// <param name="layoutSize">zConfiguration.eLayoutSize</param>
-		public void SetLayoutSize(zConfiguration.eLayoutSize layoutSize)
-		{
-			LastSelectedLayoutSize = layoutSize;
-			SendText(String.Format("zConfiguration Call Layout Size: {0}", layoutSize.ToString()));
-		}
-
-		// TODO: #714 [ ] Feature Layout Size
-		private Func<string> LayoutSizeFeedbackFunc
-		{
-			get
-			{
-				return () => Configuration.Call.Layout.Size.ToString();
-			}
-		}
-
-		/// <summary>
-		/// Layout size feedback 
-		/// </summary>
-		public StringFeedback LayoutSizeFeedback { get; private set; }
 
 		#endregion
 

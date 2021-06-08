@@ -162,9 +162,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				JoinType = eJoinType.DigitalSerial
 			});		
 
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutSizeOff")]
-		public JoinDataComplete SetLayoutSizeOff = new JoinDataComplete(
+		// TODO: #714 [ ] JoinMap >> SelfivewPipSizeToggle
+		[JoinName("SelfviewPipSizeToggle")]
+		public JoinDataComplete SelfviewPipSizeToggle = new JoinDataComplete(
 			new JoinData
 			{
 				JoinNumber = 231,
@@ -172,70 +172,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			},
 			new JoinMetadata
 			{
-				Description = "Sets layout size off",
+				Description = "Toggles the selfview pip size, (aka layout size)",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutSize1")]
-		public JoinDataComplete SetLayoutSize1 = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 232,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout size 1",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutSize2")]
-		public JoinDataComplete SetLayoutSize2 = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 233,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout size 2",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutSize3")]
-		public JoinDataComplete SetLayoutSize3 = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 234,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout size 3",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutSizeStrip")]
-		public JoinDataComplete SetLayoutSizeStrip = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 235,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout size strip",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
+			});		
 
         //[JoinName("ParticipantAudioMuteToggleStart")]
         //public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(
@@ -331,9 +271,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				JoinType = eJoinType.Serial
 			});
 
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("GetSetCurrentLayoutSize")]
-		public JoinDataComplete GetSetCurrentLayoutSize = new JoinDataComplete(
+		// TODO: #714 [ ] JoinMap >> GetSetSelfviewPipSize
+		[JoinName("GetSetSelfviewPipSize")]
+		public JoinDataComplete GetSetSelfviewPipSize = new JoinDataComplete(
 			new JoinData
 			{
 				JoinNumber = 230,
@@ -341,7 +281,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			},
 			new JoinMetadata
 			{
-				Description = "Sets and reports the current layout size.",
+				Description = "Sets and reports the selfview pip size, (aka layout size).",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.DigitalSerial
 			});
