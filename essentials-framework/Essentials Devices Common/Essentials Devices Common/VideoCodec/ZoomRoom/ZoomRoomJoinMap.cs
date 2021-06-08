@@ -6,8 +6,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
 	public class ZoomRoomJoinMap : VideoCodecControllerJoinMap
 	{
-		// TODO: #697 [X] Set join numbers
-
 		#region Digital
 
 		[JoinName("CanSwapContentWithThumbnail")]
@@ -237,141 +235,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				Description = "Sets layout size strip",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Digital
-			});		
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutPositionCenter")]
-		public JoinDataComplete SetLayoutPositionCenter = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 241,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout position to center",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutPositionUp")]
-		public JoinDataComplete SetLayoutPositionUp = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 242,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout position to up",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutPositionRight")]
-		public JoinDataComplete SetLayoutPositionRight = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 243,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout position to right",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutPositionUpRight")]
-		public JoinDataComplete SetLayoutPositionUpRight = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 244,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout position to up right",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutPositionDown")]
-		public JoinDataComplete SetLayoutPositionDown = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 245,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout position to down",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutPositionDownRight")]
-		public JoinDataComplete SetLayoutPositionDownRight = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 246,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout position to down right",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutPositionLeft")]
-		public JoinDataComplete SetLayoutPositionLeft = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 247,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout position todown left",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutPositionUpLeft")]
-		public JoinDataComplete SetLayoutPositionUpLeft = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 248,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout position to up left",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("SetLayoutPositionDownLeft")]
-		public JoinDataComplete SetLayoutPositionDownLeft = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 249,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets layout position to down left",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.Digital
 			});
 
         //[JoinName("ParticipantAudioMuteToggleStart")]
@@ -482,22 +345,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.DigitalSerial
 			});
-
-		// TODO: #714 [ ] Feature Layout Size
-		[JoinName("GetSetCurrentLayoutPosition")]
-		public JoinDataComplete GetSetCurrentLayoutPosition = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 240,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Sets and reports the current layout position.",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
-				JoinType = eJoinType.DigitalSerial
-			});
-
 
 		#endregion
 

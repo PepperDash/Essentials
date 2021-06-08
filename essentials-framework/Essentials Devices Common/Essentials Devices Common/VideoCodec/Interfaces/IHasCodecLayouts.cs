@@ -32,7 +32,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         BoolFeedback CanSwapContentWithThumbnailFeedback { get; }
         BoolFeedback ContentSwappedWithThumbnailFeedback { get; }
 		StringFeedback LayoutSizeFeedback { get; } // TODO: #714 [ ] Feature Layout Size
-		//StringFeedback LayoutPositionFeedback { get; } // TODO: #714 [ ] Feature Layout Size
 
         ZoomRoom.zConfiguration.eLayoutStyle LastSelectedLayout { get; }
         ZoomRoom.zConfiguration.eLayoutStyle AvailableLayouts { get; }
@@ -46,9 +45,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		void GetCurrentLayoutSize(); // TODO: #714 [ ] Feature Layout Size
 		void SetLayoutSize(ZoomRoom.zConfiguration.eLayoutSize layoutSize); // TODO: #714 [ ] Feature Layout Size
-
-		void GetCurrentLayoutPosition(); // TODO: #714 [ ] Feature Layout Size
-		void SetLayoutPosition(ZoomRoom.zConfiguration.eLayoutPosition layoutPosition);  // TODO: #714 [ ] Feature Layout Size
     }
 
     public class LayoutInfoChangedEventArgs : EventArgs

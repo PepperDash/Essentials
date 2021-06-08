@@ -108,10 +108,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			ReceivingContent = new BoolFeedback(FarEndIsSharingContentFeedbackFunc);
 
 			SelfviewPipPositionFeedback = new StringFeedback(SelfviewPipPositionFeedbackFunc);
-			// TODO: #714 [ ] Feature Layout Size
-			// Testing to see if the below is needed or if Selfview PiP Postion handles the feedback
-			//LayoutPositionFeedback = new StringFeedback(LayoutPositionFeedbackFunc);
-
+			
 			SetUpFeedbackActions();
 
 			Cameras = new List<CameraBase>();
@@ -131,7 +128,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			// TODO: #714 [ ] Feature Layout Size
 			LayoutSizeFeedback = new StringFeedback(LayoutSizeFeedbackFunc);			
-
 
 			LayoutViewIsOnFirstPageFeedback = new BoolFeedback(LayoutViewIsOnFirstPageFeedbackFunc);
 			LayoutViewIsOnLastPageFeedback = new BoolFeedback(LayoutViewIsOnLastPageFeedbackFunc);
@@ -1828,42 +1824,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						Debug.Console(1, this, "Unable to parse '{0}' to zConfiguration.eLayoutSize: {1}", s, e);
 					}
 				});
-				layoutsCodec.LayoutSizeFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayoutSize.JoinNumber]);
-
-				// TODO: #714 [ ] Feature Layout Size
-				trilist.SetSigFalseAction(joinMap.SetLayoutPositionCenter.JoinNumber,
-					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.Center));
-				trilist.SetSigFalseAction(joinMap.SetLayoutPositionUp.JoinNumber,
-					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.Up));
-				trilist.SetSigFalseAction(joinMap.SetLayoutPositionRight.JoinNumber,
-					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.Right));
-				trilist.SetSigFalseAction(joinMap.SetLayoutPositionUpRight.JoinNumber,
-					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.UpRight));
-				trilist.SetSigFalseAction(joinMap.SetLayoutPositionDown.JoinNumber,
-					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.Down));
-				trilist.SetSigFalseAction(joinMap.SetLayoutPositionDownRight.JoinNumber,
-					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.DownRight));
-				trilist.SetSigFalseAction(joinMap.SetLayoutPositionLeft.JoinNumber,
-					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.Left));
-				trilist.SetSigFalseAction(joinMap.SetLayoutPositionUpLeft.JoinNumber,
-					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.UpLeft));
-				trilist.SetSigFalseAction(joinMap.SetLayoutPositionDownLeft.JoinNumber,
-					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.DownLeft));
-				trilist.SetSigFalseAction(joinMap.GetSetCurrentLayoutPosition.JoinNumber, layoutsCodec.GetCurrentLayoutPosition);
-				trilist.SetStringSigAction(joinMap.GetSetCurrentLayoutPosition.JoinNumber, (s) =>
-				{
-					try
-					{
-						var position = (zConfiguration.eLayoutPosition) Enum.Parse(typeof (zConfiguration.eLayoutPosition), s, true);
-						SetLayoutPosition(position);
-					}
-					catch (Exception e)
-					{
-						Debug.Console(1, this, "Unable to parse '{0}' to zConfiguration.eLayoutPosition: {1}", s, e);
-					}
-				});
-				//layoutsCodec.LayoutPositionFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayoutPosition.JoinNumber]);
-				SelfviewPipPositionFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayoutPosition.JoinNumber]);
+				layoutsCodec.LayoutSizeFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayoutSize.JoinNumber]);				
 			}
 
 			var pinCodec = this as IHasParticipantPinUnpin;
@@ -2309,8 +2270,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		private void ComputeAvailableLayouts()
 		{
 			zConfiguration.eLayoutStyle availableLayouts = zConfiguration.eLayoutStyle.None;
-			// TODO: #697 [X] Compute the avaialble layouts and set the value of AvailableLayouts
-			// Will need to test and confirm that this logic evaluates correctly
 			if (Status.Layout.can_Switch_Wall_View)
 			{
 				availableLayouts |= zConfiguration.eLayoutStyle.Gallery;
@@ -2413,49 +2372,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// Layout size feedback 
 		/// </summary>
 		public StringFeedback LayoutSizeFeedback { get; private set; }
-
-		// TODO: #714 [ ] Feature Layout Size
-		/// <summary>
-		/// Stores last selected layout position
-		/// </summary>
-		public zConfiguration.eLayoutPosition LastSelectedLayoutPosition { get; private set; }
-		
-		// TODO: #714 [ ] Feature Layout Size
-		/// <summary>
-		/// Queries for current layout position
-		/// </summary>
-		public void GetCurrentLayoutPosition()
-		{
-			SendText("zConfiguration Call Layout Position");
-		}
-
-		// TODO: #714 [ ] Feature Layout Size
-		/// <summary>
-		/// Sets selected layout position
-		/// </summary>
-		/// <param name="layoutPosition"></param>
-		public void SetLayoutPosition(zConfiguration.eLayoutPosition layoutPosition)
-		{
-			LastSelectedLayoutPosition = layoutPosition;
-			SendText(String.Format("zConfiguration Call Layout Position: {0}", layoutPosition.ToString()));
-		}
-
-		// TODO: #714 [ ] Feature Layout Size
-		// commented out to test if SelfviewPipPositionFeedback & (Func) would provide feedback 
-		// --> in testing, feedback of the current position is still not updating
-		//private Func<string> LayoutPositionFeedbackFunc
-		//{
-		//    get
-		//    {
-		//        return () => Configuration.Call.Layout.Position.ToString();
-		//    }
-		//}
-
-		/// <summary>
-		/// Layout position feedback
-		/// </summary>
-		//public StringFeedback LayoutPositionFeedback { get; private set; }
-
 
 		#endregion
 
