@@ -77,10 +77,9 @@ namespace PepperDash.Essentials.Core
                 var mParams = method.GetParameters();
 
                 var convertedParams = mParams
-                                    .Select((p, i) => Convert.ChangeType(action.Params[i], p.ParameterType,
-                                        System.Globalization.CultureInfo.InvariantCulture))
+                                    .Select((p, i) => ConvertType(action.Params[i], p.ParameterType))
                                     .ToArray();
-                var ret = method.Invoke(obj, convertedParams);
+                method.Invoke(obj, convertedParams);
 
 		        CrestronConsole.ConsoleCommandResponse("Method {0} successfully called on device {1}", method.Name,
 		            action.DeviceKey);
@@ -90,6 +89,23 @@ namespace PepperDash.Essentials.Core
 		        CrestronConsole.ConsoleCommandResponse("Unable to call method with name {0}. {1}", action.MethodName,
 		            ex.Message);}
 		}
+
+	    private static object ConvertType(object value, Type conversionType)
+	    {
+	        if (!conversionType.IsEnum)
+	        {
+	            return Convert.ChangeType(value, conversionType, System.Globalization.CultureInfo.InvariantCulture);
+	        }
+
+	        var stringValue = Convert.ToString(value);
+
+	        if (String.IsNullOrEmpty(stringValue))
+	        {
+	            throw new InvalidCastException(
+	                String.Format("{0} cannot be converted to a string prior to conversion to enum"));
+	        }
+	        return Enum.Parse(conversionType, stringValue, true);
+	    }
 
 		/// <summary>
 		/// Gets the properties on a device
@@ -275,6 +291,8 @@ namespace PepperDash.Essentials.Core
             //var props = t.GetProperties().Select(p => new PropertyNameType(p, obj));
             //return JsonConvert.SerializeObject(props, Formatting.Indented);
         }
+
+        
 	}
 
 	public class DeviceActionWrapper
