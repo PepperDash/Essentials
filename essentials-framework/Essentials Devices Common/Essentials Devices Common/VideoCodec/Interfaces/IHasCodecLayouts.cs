@@ -31,7 +31,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         BoolFeedback LayoutViewIsOnLastPageFeedback { get; } // TODO: #697 [*] Consider modifying to report button visibility in func 
         BoolFeedback CanSwapContentWithThumbnailFeedback { get; }
         BoolFeedback ContentSwappedWithThumbnailFeedback { get; }
-		//StringFeedback LayoutSizeFeedback { get; } // TOOD: #714 [ ] Feature Layout Size
+		StringFeedback LayoutSizeFeedback { get; } // TODO: #714 [ ] Feature Layout Size
+		StringFeedback LayoutPositionFeedback { get; } // TODO: #714 [ ] Feature Layout Size
 
         ZoomRoom.zConfiguration.eLayoutStyle LastSelectedLayout { get; }
         ZoomRoom.zConfiguration.eLayoutStyle AvailableLayouts { get; }
@@ -43,8 +44,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         void LayoutTurnNextPage();
         void LayoutTurnPreviousPage();
 
-		void GetCurrentLayoutSize(); // TOOD: #714 [ ] Feature Layout Size
-		void SetLayoutSize(ZoomRoom.zConfiguration.eLayoutSize layoutSize); // TOOD: #714 [ ] Feature Layout Size
+		void GetCurrentLayoutSize(); // TODO: #714 [ ] Feature Layout Size
+		void SetLayoutSize(ZoomRoom.zConfiguration.eLayoutSize layoutSize); // TODO: #714 [ ] Feature Layout Size
+
+		void GetCurrentLayoutPosition(); // TODO: #714 [ ] Feature Layout Size
+		void SetLayoutPosition(ZoomRoom.zConfiguration.eLayoutPosition layoutPosition);  // TODO: #714 [ ] Feature Layout Size
     }
 
     public class LayoutInfoChangedEventArgs : EventArgs

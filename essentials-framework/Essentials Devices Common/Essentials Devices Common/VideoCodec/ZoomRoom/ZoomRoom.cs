@@ -126,6 +126,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			LocalLayoutFeedback = new StringFeedback(LocalLayoutFeedbackFunc);
 
+			// TODO: #714 [ ] Feature Layout Size
+			LayoutSizeFeedback = new StringFeedback(LayoutSizeFeedbackFunc);
+			LayoutPositionFeedback = new StringFeedback(LayoutPositionFeedbackFunc);
+
+
 			LayoutViewIsOnFirstPageFeedback = new BoolFeedback(LayoutViewIsOnFirstPageFeedbackFunc);
 			LayoutViewIsOnLastPageFeedback = new BoolFeedback(LayoutViewIsOnLastPageFeedbackFunc);
 			CanSwapContentWithThumbnailFeedback = new BoolFeedback(CanSwapContentWithThumbnailFeedbackFunc);
@@ -1797,13 +1802,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 				layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);
 
-				// TOOD: #714 [ ] Feature Layout Size				
+				// TODO: #714 [ ] Feature Layout Size				
 				trilist.SetSigFalseAction(joinMap.SetLayoutSizeOff.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Off));
 				trilist.SetSigFalseAction(joinMap.SetLayoutSize1.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Size1));
 				trilist.SetSigFalseAction(joinMap.SetLayoutSize2.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Size2));
 				trilist.SetSigFalseAction(joinMap.SetLayoutSize3.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Size3));
-				trilist.SetSigFalseAction(joinMap.SetLayoutSizeStrip.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Strip));
-				// TOOD: #714 [ ] Feature Layout Size
+				trilist.SetSigFalseAction(joinMap.SetLayoutSizeStrip.JoinNumber, () => layoutsCodec.SetLayoutSize(zConfiguration.eLayoutSize.Strip));				
 				trilist.SetSigFalseAction(joinMap.GetSetCurrentLayoutSize.JoinNumber, layoutsCodec.GetCurrentLayoutSize);
 				trilist.SetStringSigAction(joinMap.GetSetCurrentLayoutSize.JoinNumber, (s) =>
 				{
@@ -1817,6 +1821,41 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						Debug.Console(1, this, "Unable to parse '{0}' to zConfiguration.eLayoutSize: {1}", s, e);
 					}
 				});
+				layoutsCodec.LayoutSizeFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayoutSize.JoinNumber]);
+
+				// TODO: #714 [ ] Feature Layout Size
+				trilist.SetSigFalseAction(joinMap.SetLayoutPositionCenter.JoinNumber,
+					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.Center));
+				trilist.SetSigFalseAction(joinMap.SetLayoutPositionUp.JoinNumber,
+					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.Up));
+				trilist.SetSigFalseAction(joinMap.SetLayoutPositionRight.JoinNumber,
+					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.Right));
+				trilist.SetSigFalseAction(joinMap.SetLayoutPositionUpRight.JoinNumber,
+					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.UpRight));
+				trilist.SetSigFalseAction(joinMap.SetLayoutPositionDown.JoinNumber,
+					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.Down));
+				trilist.SetSigFalseAction(joinMap.SetLayoutPositionDownRight.JoinNumber,
+					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.DownRight));
+				trilist.SetSigFalseAction(joinMap.SetLayoutPositionLeft.JoinNumber,
+					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.Left));
+				trilist.SetSigFalseAction(joinMap.SetLayoutPositionUpLeft.JoinNumber,
+					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.UpLeft));
+				trilist.SetSigFalseAction(joinMap.SetLayoutPositionDownLeft.JoinNumber,
+					() => layoutsCodec.SetLayoutPosition(zConfiguration.eLayoutPosition.DownLeft));
+				trilist.SetSigFalseAction(joinMap.GetSetCurrentLayoutPosition.JoinNumber, layoutsCodec.GetCurrentLayoutPosition);
+				trilist.SetStringSigAction(joinMap.GetSetCurrentLayoutPosition.JoinNumber, (s) =>
+				{
+					try
+					{
+						var position = (zConfiguration.eLayoutPosition) Enum.Parse(typeof (zConfiguration.eLayoutPosition), s, true);
+						SetLayoutPosition(position);
+					}
+					catch (Exception e)
+					{
+						Debug.Console(1, this, "Unable to parse '{0}' to zConfiguration.eLayoutPosition: {1}", s, e);
+					}
+				});
+
 			}
 
 			var pinCodec = this as IHasParticipantPinUnpin;
@@ -2327,21 +2366,85 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			SendText("zCommand Call Layout TurnPage Forward: Off");
 		}
 
-		// TOOD: #714 [ ] Feature Layout Size
+		// TODO: #714 [ ] Feature Layout Size
+		/// <summary>
+		/// Stores last selected layout size
+		/// </summary>
 		public zConfiguration.eLayoutSize LastSelectedLayoutSize { get; private set; }
 
-		// TOOD: #714 [ ] Feature Layout Size
+		// TODO: #714 [ ] Feature Layout Size
+		/// <summary>
+		/// Queries for current layout size
+		/// </summary>
 		public void GetCurrentLayoutSize()
 		{
 			SendText("zConfiguration Call Layout Size");
 		}
 
-		// TOOD: #714 [ ] Feature Layout Size
+		// TODO: #714 [ ] Feature Layout Size
+		/// <summary>
+		/// Sets selected layout size
+		/// </summary>
+		/// <param name="layoutSize">zConfiguration.eLayoutSize</param>
 		public void SetLayoutSize(zConfiguration.eLayoutSize layoutSize)
 		{
 			LastSelectedLayoutSize = layoutSize;
 			SendText(String.Format("zConfiguration Call Layout Size: {0}", layoutSize.ToString()));
 		}
+
+		// TODO: #714 [ ] Feature Layout Size
+		private Func<string> LayoutSizeFeedbackFunc
+		{
+			get
+			{
+				return () => Configuration.Call.Layout.Size.ToString();
+			}
+		}
+
+		/// <summary>
+		/// Layout size feedback 
+		/// </summary>
+		public StringFeedback LayoutSizeFeedback { get; private set; }
+
+		// TODO: #714 [ ] Feature Layout Size
+		/// <summary>
+		/// Stores last selected layout position
+		/// </summary>
+		public zConfiguration.eLayoutPosition LastSelectedLayoutPosition { get; private set; }
+
+		// TODO: #714 [ ] Feature Layout Size
+		/// <summary>
+		/// Queries for current layout position
+		/// </summary>
+		public void GetCurrentLayoutPosition()
+		{
+			SendText("zConfiguration Call Layout Position");
+		}
+
+		// TODO: #714 [ ] Feature Layout Size
+		/// <summary>
+		/// Sets selected layout position
+		/// </summary>
+		/// <param name="layoutPosition"></param>
+		public void SetLayoutPosition(zConfiguration.eLayoutPosition layoutPosition)
+		{
+			LastSelectedLayoutPosition = layoutPosition;
+			SendText(String.Format("zConfiguration Call Layout Position: {0}", layoutPosition.ToString()));
+		}
+
+		// TODO: #714 [ ] Feature Layout Size
+		private Func<string> LayoutPositionFeedbackFunc
+		{
+			get
+			{
+				return () => Configuration.Call.Layout.Position.ToString();
+			}
+		}
+
+		/// <summary>
+		/// Layout position feedback
+		/// </summary>
+		public StringFeedback LayoutPositionFeedback { get; private set; }
 
 		#endregion
 
