@@ -108,6 +108,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			ReceivingContent = new BoolFeedback(FarEndIsSharingContentFeedbackFunc);
 
 			SelfviewPipPositionFeedback = new StringFeedback(SelfviewPipPositionFeedbackFunc);
+			// TODO: #714 [ ] Feature Layout Size
+			// Testing to see if the below is needed or if Selfview PiP Postion handles the feedback
+			//LayoutPositionFeedback = new StringFeedback(LayoutPositionFeedbackFunc);
 
 			SetUpFeedbackActions();
 
@@ -127,8 +130,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			LocalLayoutFeedback = new StringFeedback(LocalLayoutFeedbackFunc);
 
 			// TODO: #714 [ ] Feature Layout Size
-			LayoutSizeFeedback = new StringFeedback(LayoutSizeFeedbackFunc);
-			LayoutPositionFeedback = new StringFeedback(LayoutPositionFeedbackFunc);
+			LayoutSizeFeedback = new StringFeedback(LayoutSizeFeedbackFunc);			
 
 
 			LayoutViewIsOnFirstPageFeedback = new BoolFeedback(LayoutViewIsOnFirstPageFeedbackFunc);
@@ -516,6 +518,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							LocalLayoutFeedback.FireUpdate();
 							break;
 						}
+					case "Size":
+					{
+						
+						break;
+					}
 
 				}
 			};
@@ -1488,7 +1495,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				return;
 			}
 
-			Debug.Console(1, this, "****************************Call Participants***************************");
+			Debug.Console(1, this, "*************************** Call Participants **************************");
 			foreach (var participant in Participants.CurrentParticipants)
 			{
 				Debug.Console(1, this, "Name: {0} Audio: {1} IsHost: {2}", participant.Name,
@@ -1575,7 +1582,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				}
 			}
 
-			Debug.Console(1, this, "****************************Active Calls*********************************");
+			Debug.Console(1, this, "*************************** Active Calls ********************************");
 
 			// Clean up any disconnected calls left in the list
 			for (int i = 0; i < ActiveCalls.Count; i++)
@@ -1591,7 +1598,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 				if (!call.IsActiveCall)
 				{
-					Debug.Console(1, this, "******Removing Inactive Call: {0}******", call.Name);
+					Debug.Console(1, this, "***** Removing Inactive Call: {0} *****", call.Name);
 					ActiveCalls.Remove(call);
 				}
 			}
@@ -1855,7 +1862,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						Debug.Console(1, this, "Unable to parse '{0}' to zConfiguration.eLayoutPosition: {1}", s, e);
 					}
 				});
-
+				//layoutsCodec.LayoutPositionFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayoutPosition.JoinNumber]);
+				SelfviewPipPositionFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayoutPosition.JoinNumber]);
 			}
 
 			var pinCodec = this as IHasParticipantPinUnpin;
@@ -2411,7 +2419,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// Stores last selected layout position
 		/// </summary>
 		public zConfiguration.eLayoutPosition LastSelectedLayoutPosition { get; private set; }
-
+		
 		// TODO: #714 [ ] Feature Layout Size
 		/// <summary>
 		/// Queries for current layout position
@@ -2433,18 +2441,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		}
 
 		// TODO: #714 [ ] Feature Layout Size
-		private Func<string> LayoutPositionFeedbackFunc
-		{
-			get
-			{
-				return () => Configuration.Call.Layout.Position.ToString();
-			}
-		}
+		// commented out to test if SelfviewPipPositionFeedback & (Func) would provide feedback 
+		// --> in testing, feedback of the current position is still not updating
+		//private Func<string> LayoutPositionFeedbackFunc
+		//{
+		//    get
+		//    {
+		//        return () => Configuration.Call.Layout.Position.ToString();
+		//    }
+		//}
 
 		/// <summary>
 		/// Layout position feedback
 		/// </summary>
-		public StringFeedback LayoutPositionFeedback { get; private set; }
+		//public StringFeedback LayoutPositionFeedback { get; private set; }
+
 
 		#endregion
 
@@ -2479,7 +2490,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		public void MinMaxLayoutToggle()
 		{
 			throw new NotImplementedException();
-		}
+		}		
 
 		#endregion
 

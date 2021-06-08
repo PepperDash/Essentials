@@ -32,7 +32,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         BoolFeedback CanSwapContentWithThumbnailFeedback { get; }
         BoolFeedback ContentSwappedWithThumbnailFeedback { get; }
 		StringFeedback LayoutSizeFeedback { get; } // TODO: #714 [ ] Feature Layout Size
-		StringFeedback LayoutPositionFeedback { get; } // TODO: #714 [ ] Feature Layout Size
+		//StringFeedback LayoutPositionFeedback { get; } // TODO: #714 [ ] Feature Layout Size
 
         ZoomRoom.zConfiguration.eLayoutStyle LastSelectedLayout { get; }
         ZoomRoom.zConfiguration.eLayoutStyle AvailableLayouts { get; }
