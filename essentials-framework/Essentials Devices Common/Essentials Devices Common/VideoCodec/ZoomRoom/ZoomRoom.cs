@@ -1347,10 +1347,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                                         Debug.Console(1, this, "Pin Status notification for UserId: {0}, ScreenIndex: {1}", status.PinnedUserId, status.ScreenIndex);
 
+                                        Participant alreadyPinnedParticipant = null;
+
                                         // Check for a participant already pinned to the same screen index.
                                         if (status.PinnedUserId > 0)
                                         {
-                                            var alreadyPinnedParticipant = Participants.CurrentParticipants.FirstOrDefault(p => p.ScreenIndexIsPinnedToFb.Equals(status.ScreenIndex));
+                                            alreadyPinnedParticipant = Participants.CurrentParticipants.FirstOrDefault(p => p.ScreenIndexIsPinnedToFb.Equals(status.ScreenIndex));
 
                                             // Make sure that the already pinned participant isn't the same ID as for this message.  If true, clear the pinned fb.
                                             if (alreadyPinnedParticipant != null && alreadyPinnedParticipant.UserId != status.PinnedUserId)
@@ -1373,12 +1375,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 										{
 											participant = Participants.CurrentParticipants.FirstOrDefault(p => p.ScreenIndexIsPinnedToFb.Equals(status.ScreenIndex));
 
-											if (participant == null)
+											if (participant == null && alreadyPinnedParticipant == null)
 											{
 												Debug.Console(1, this, "no matching participant found by pinned_user_id: {0} or screen_index: {1}", status.PinnedUserId, status.ScreenIndex);
 												return;
 											}
-											else
+											else if (participant != null)
 											{
                                                 Debug.Console(2, this, "Unpinning {0} with id: {1} from screen index: {2}", participant.Name, participant.UserId, status.ScreenIndex);
 												participant.IsPinnedFb = false;
