@@ -621,21 +621,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			Status.Layout.PropertyChanged += (o, a) =>
 			{
-				switch (a.PropertyName)
+				Debug.Console(1, this, "Status.Layout.PropertyChanged a.PropertyName: {0}", a.PropertyName);
+				switch (a.PropertyName.ToLower())
 				{
-					case "can_Switch_Speaker_View":
-					case "can_Switch_Wall_View":
-					case "can_Switch_Share_On_All_Screens":
+					case "can_switch_speaker_view":
+					case "can_switch_wall_view":
+					case "can_switch_share_on_all_screens":
 						{
 							ComputeAvailableLayouts();
 							break;
 						}
-					case "is_In_First_Page":
+					case "is_in_first_page":
 						{
 							LayoutViewIsOnFirstPageFeedback.FireUpdate();
 							break;
 						}
-					case "is_In_Last_Page":
+					case "is_in_last_page":
 						{
 							LayoutViewIsOnLastPageFeedback.FireUpdate();
 							break;
@@ -1766,7 +1767,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			LinkVideoCodecToApi(this, trilist, joinMap);
 
-			LinkZoomRoomToApi(trilist, joinMap);
+			LinkZoomRoomToApi(trilist, joinMap);			
 		}
 
 		/// <summary>
@@ -1837,11 +1838,32 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			if (layoutSizeCodec != null)
 			{
 				trilist.SetSigFalseAction(joinMap.GetSetSelfviewPipSize.JoinNumber, layoutSizeCodec.SelfviewPipSizeToggle);
+				trilist.SetStringSigAction(joinMap.GetSetSelfviewPipSize.JoinNumber, (s) =>
+				{
+					try
+					{
+						var size = (zConfiguration.eLayoutSize)Enum.Parse(typeof(zConfiguration.eLayoutSize), s, true);					
+						var cmd = SelfviewPipSizes.FirstOrDefault(c => c.Command.Equals(size.ToString()));
+						SelfviewPipSizeSet(cmd);
+					}
+					catch (Exception e)
+					{
+						Debug.Console(1, this, "Unable to parse '{0}' to zConfiguration.eLayoutSize: {1}", s, e);
+					}
+				});
 
 				layoutSizeCodec.SelfviewPipSizeFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetSelfviewPipSize.JoinNumber]);
 			}
 
-		}
+			trilist.OnlineStatusChange += (device, args) =>
+			{
+				if (!args.DeviceOnLine) return;
+
+				layoutsCodec.LocalLayoutFeedback.FireUpdate();
+				pinCodec.NumberOfScreensFeedback.FireUpdate();
+				layoutSizeCodec.SelfviewPipSizeFeedback.FireUpdate();
+			};
+		}		
 
 		public override void ExecuteSwitch(object selector)
 		{
@@ -2320,6 +2342,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// </summary>
 		private void ComputeAvailableLayouts()
 		{
+			Debug.Console(1, this, "Computing available layouts...");
 			zConfiguration.eLayoutStyle availableLayouts = zConfiguration.eLayoutStyle.None;
 			if (Status.Layout.can_Switch_Wall_View)
 			{
@@ -2342,6 +2365,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				availableLayouts |= zConfiguration.eLayoutStyle.Strip;
 			}
+
+			Debug.Console(1, this, "Available layouts: {0}", availableLayouts);
 
 			var handler = AvailableLayoutsChanged;
 			if (handler != null)
