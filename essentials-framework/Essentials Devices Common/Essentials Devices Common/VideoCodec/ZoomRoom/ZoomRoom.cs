@@ -1345,7 +1345,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 									{
 										var status = responseObj.ToObject<zEvent.PinStatusOfScreenNotification>();
 
-                                        Debug.Console(1, this, "Pin Status notificatino for UserId: {0}, ScreenIndex: {1}", status.PinnedUserId, status.ScreenIndex);
+                                        Debug.Console(1, this, "Pin Status notification for UserId: {0}, ScreenIndex: {1}", status.PinnedUserId, status.ScreenIndex);
+
+                                        // Check for a participant already pinned to the same screen index.
+                                        var alreadyPinnedParticipant = Participants.CurrentParticipants.FirstOrDefault(p => p.ScreenIndexIsPinnedToFb.Equals(status.ScreenIndex));
+
+                                        // Make sure that the already pinned participant isn't the same ID as for this message.  If true, clear the pinned fb.
+                                        if (alreadyPinnedParticipant != null && alreadyPinnedParticipant.UserId != status.PinnedUserId)
+                                        {
+                                            Debug.Console(1, this, "Participant: {0} with id: {1} already pinned to screenIndex {2}.  Clearing pinned fb.",
+                                                alreadyPinnedParticipant.Name, alreadyPinnedParticipant.UserId, alreadyPinnedParticipant.ScreenIndexIsPinnedToFb);
+                                            alreadyPinnedParticipant.IsPinnedFb = false;
+                                            alreadyPinnedParticipant.ScreenIndexIsPinnedToFb = -1;
+                                        }
 
 										var participant = Participants.CurrentParticipants.FirstOrDefault(p => p.UserId.Equals(status.PinnedUserId));
 
@@ -2113,17 +2125,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void PinParticipant(int userId, int screenIndex)
 		{
-            // Try to see if anyone is already pinned to this screen
-            var pinnedParticipant = Participants.CurrentParticipants.FirstOrDefault(p => p.ScreenIndexIsPinnedToFb.Equals(screenIndex));
-
-            if (pinnedParticipant != null)
-            {
-                // If we find a participant already pinned, unpin this one and clear the feedback values
-                UnPinParticipant(pinnedParticipant.UserId);
-                pinnedParticipant.IsPinnedFb = false;
-                pinnedParticipant.ScreenIndexIsPinnedToFb = -1;
-            }
-
 			SendText(string.Format("zCommand Call Pin Id: {0} Enable: on Screen: {1}", userId, screenIndex));
 		}
 
