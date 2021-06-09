@@ -613,6 +613,37 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			{
 				if (meetingIndex >= maxParticipants * offset) break;
 
+                Debug.Console(2, this,
+@"Updating Participant on xsig:
+Name: {0} (s{8})
+AudioMute: {1} (d{9})
+VideoMute: {2} (d{10})
+CanMuteVideo: {3} ({d11})
+IsHost: {4} (d{12})
+HandIsRaised: {5} (d{13})
+IsPinned: {6} (d{14})
+ScreenIndexIsPinnedTo: {7} (a{15})
+",
+ participant.Name,
+ participant.AudioMuteFb,
+ participant.VideoMuteFb,
+ participant.CanMuteVideo,
+ participant.IsHost,
+ participant.HandIsRaisedFb,
+ participant.IsPinnedFb,
+ participant.ScreenIndexIsPinnedToFb,
+ stringIndex + 1,
+ digitalIndex + 1,
+ digitalIndex + 2,
+ digitalIndex + 3,
+ digitalIndex + 4,
+ digitalIndex + 5,
+ digitalIndex + 6,
+ digitalIndex + 7,
+ analogIndex + 1
+ );
+
+
 				//digitals
 				tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, participant.AudioMuteFb);
 				tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, participant.VideoMuteFb);

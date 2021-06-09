@@ -1440,7 +1440,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					CanMuteVideo = p.IsVideoCanMuteByHost,
 					CanUnmuteVideo = p.IsVideoCanUnmuteByHost,
 					AudioMuteFb = p.AudioStatusState == "AUDIO_MUTED",
-					VideoMuteFb = p.VideoStatusIsSending,
+					VideoMuteFb = !p.VideoStatusIsSending,
 					HandIsRaisedFb = p.HandStatus.HandIsRaisedAndValid,
 				}).ToList();
 			}

@@ -1345,6 +1345,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 									{
 										var status = responseObj.ToObject<zEvent.PinStatusOfScreenNotification>();
 
+                                        Debug.Console(1, this, "Pin Status notificatino for UserId: {0}, ScreenIndex: {1}", status.PinnedUserId, status.ScreenIndex);
+
 										var participant = Participants.CurrentParticipants.FirstOrDefault(p => p.UserId.Equals(status.PinnedUserId));
 
 										if (participant != null)
@@ -1358,11 +1360,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 											if (participant == null)
 											{
-												Debug.Console(2, this, "no matching participant found by pinned_user_id: {0} or screen_index: {1}", status.PinnedUserId, status.ScreenIndex);
+												Debug.Console(1, this, "no matching participant found by pinned_user_id: {0} or screen_index: {1}", status.PinnedUserId, status.ScreenIndex);
 												return;
 											}
 											else
 											{
+                                                Debug.Console(2, this, "Unpinning {0} with id: {1} from screen index: {2}", participant.Name, participant.UserId, status.ScreenIndex);
 												participant.IsPinnedFb = false;
 												participant.ScreenIndexIsPinnedToFb = -1;
 											}
