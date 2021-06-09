@@ -2113,6 +2113,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void PinParticipant(int userId, int screenIndex)
 		{
+            // Try to see if anyone is already pinned to this screen
+            var pinnedParticipant = Participants.CurrentParticipants.FirstOrDefault(p => p.ScreenIndexIsPinnedToFb.Equals(screenIndex));
+
+            if (pinnedParticipant != null)
+            {
+                // If we find a participant already pinned, unpin this one and clear the feedback values
+                UnPinParticipant(pinnedParticipant.UserId);
+                pinnedParticipant.IsPinnedFb = false;
+                pinnedParticipant.ScreenIndexIsPinnedToFb = -1;
+            }
+
 			SendText(string.Format("zCommand Call Pin Id: {0} Enable: on Screen: {1}", userId, screenIndex));
 		}
 
