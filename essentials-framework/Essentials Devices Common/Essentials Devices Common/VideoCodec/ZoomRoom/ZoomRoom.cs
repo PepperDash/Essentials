@@ -1348,15 +1348,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                         Debug.Console(1, this, "Pin Status notification for UserId: {0}, ScreenIndex: {1}", status.PinnedUserId, status.ScreenIndex);
 
                                         // Check for a participant already pinned to the same screen index.
-                                        var alreadyPinnedParticipant = Participants.CurrentParticipants.FirstOrDefault(p => p.ScreenIndexIsPinnedToFb.Equals(status.ScreenIndex));
-
-                                        // Make sure that the already pinned participant isn't the same ID as for this message.  If true, clear the pinned fb.
-                                        if (alreadyPinnedParticipant != null && alreadyPinnedParticipant.UserId != status.PinnedUserId)
+                                        if (status.PinnedUserId > 0)
                                         {
-                                            Debug.Console(1, this, "Participant: {0} with id: {1} already pinned to screenIndex {2}.  Clearing pinned fb.",
-                                                alreadyPinnedParticipant.Name, alreadyPinnedParticipant.UserId, alreadyPinnedParticipant.ScreenIndexIsPinnedToFb);
-                                            alreadyPinnedParticipant.IsPinnedFb = false;
-                                            alreadyPinnedParticipant.ScreenIndexIsPinnedToFb = -1;
+                                            var alreadyPinnedParticipant = Participants.CurrentParticipants.FirstOrDefault(p => p.ScreenIndexIsPinnedToFb.Equals(status.ScreenIndex));
+
+                                            // Make sure that the already pinned participant isn't the same ID as for this message.  If true, clear the pinned fb.
+                                            if (alreadyPinnedParticipant != null && alreadyPinnedParticipant.UserId != status.PinnedUserId)
+                                            {
+                                                Debug.Console(1, this, "Participant: {0} with id: {1} already pinned to screenIndex {2}.  Clearing pinned fb.",
+                                                    alreadyPinnedParticipant.Name, alreadyPinnedParticipant.UserId, alreadyPinnedParticipant.ScreenIndexIsPinnedToFb);
+                                                alreadyPinnedParticipant.IsPinnedFb = false;
+                                                alreadyPinnedParticipant.ScreenIndexIsPinnedToFb = -1;
+                                            }
                                         }
 
 										var participant = Participants.CurrentParticipants.FirstOrDefault(p => p.UserId.Equals(status.PinnedUserId));
