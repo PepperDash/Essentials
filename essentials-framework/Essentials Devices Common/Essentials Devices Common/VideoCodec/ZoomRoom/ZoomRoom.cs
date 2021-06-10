@@ -1817,9 +1817,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					trilist.SetString(joinMap.LayoutStripIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.Strip.ToString());
 					trilist.SetString(joinMap.LayoutShareAllIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.ShareAll.ToString());
 				};
+				
+				trilist.SetSigFalseAction(joinMap.SwapContentWithThumbnail.JoinNumber, () => layoutsCodec.SwapContentWithThumbnail());
 
 				layoutsCodec.CanSwapContentWithThumbnailFeedback.LinkInputSig(trilist.BooleanInput[joinMap.CanSwapContentWithThumbnail.JoinNumber]);
-				trilist.SetSigFalseAction(joinMap.SwapContentWithThumbnail.JoinNumber, () => layoutsCodec.SwapContentWithThumbnail());
 				layoutsCodec.ContentSwappedWithThumbnailFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SwapContentWithThumbnail.JoinNumber]);
 
 				layoutsCodec.LayoutViewIsOnFirstPageFeedback.LinkInputSig(trilist.BooleanInput[joinMap.LayoutIsOnFirstPage.JoinNumber]);
@@ -1879,7 +1880,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				if (!args.DeviceOnLine) return;
 
-				layoutsCodec.LocalLayoutFeedback.FireUpdate();
+				ComputeAvailableLayouts();
+				layoutsCodec.LocalLayoutFeedback.FireUpdate();								
+				layoutsCodec.CanSwapContentWithThumbnailFeedback.FireUpdate();
+				layoutsCodec.ContentSwappedWithThumbnailFeedback.FireUpdate();
+				layoutsCodec.LayoutViewIsOnFirstPageFeedback.FireUpdate();
+				layoutsCodec.LayoutViewIsOnLastPageFeedback.FireUpdate();
 				pinCodec.NumberOfScreensFeedback.FireUpdate();
 				layoutSizeCodec.SelfviewPipSizeFeedback.FireUpdate();
 			};
@@ -2386,7 +2392,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				availableLayouts |= zConfiguration.eLayoutStyle.Strip;
 			}
 
-			Debug.Console(1, this, "Available layouts: {0}", availableLayouts);
+			Debug.Console(1, this, "availablelayouts: {0}", availableLayouts);			
 
 			var handler = AvailableLayoutsChanged;
 			if (handler != null)
