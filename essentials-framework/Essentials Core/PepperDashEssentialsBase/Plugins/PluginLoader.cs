@@ -375,7 +375,7 @@ namespace PepperDash.Essentials
                     {
                         try
                         {
-                            if (typeof (IPluginDeviceFactory).IsAssignableFrom(type))
+                            if (typeof (IPluginDeviceFactory).IsAssignableFrom(type) && !type.IsAbstract)
                             {
                                 var plugin =
                                     (IPluginDeviceFactory) Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
