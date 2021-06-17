@@ -6,8 +6,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
 	public class ZoomRoomJoinMap : VideoCodecControllerJoinMap
 	{
-		// TODO: #697 [X] Set join numbers
-
 		#region Digital
 
 		[JoinName("CanSwapContentWithThumbnail")]
@@ -162,7 +160,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				Description = "FB Indicates if layout 'ShareAll' is available",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
 				JoinType = eJoinType.DigitalSerial
-			});
+			});		
+
+		// TODO: #714 [ ] JoinMap >> SelfivewPipSizeToggle
+		[JoinName("SelfviewPipSizeToggle")]
+		public JoinDataComplete SelfviewPipSizeToggle = new JoinDataComplete(
+			new JoinData
+			{
+				JoinNumber = 231,
+				JoinSpan = 1
+			},
+			new JoinMetadata
+			{
+				Description = "Toggles the selfview pip size, (aka layout size)",
+				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+				JoinType = eJoinType.Digital
+			});		
 
         //[JoinName("ParticipantAudioMuteToggleStart")]
         //public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(
@@ -256,7 +269,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				Description = "Sets and reports the current layout.  Use the LayoutXXXXIsAvailable signals to determine valid layouts",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Serial
-			});		
+			});
+
+		// TODO: #714 [ ] JoinMap >> GetSetSelfviewPipSize
+		[JoinName("GetSetSelfviewPipSize")]
+		public JoinDataComplete GetSetSelfviewPipSize = new JoinDataComplete(
+			new JoinData
+			{
+				JoinNumber = 230,
+				JoinSpan = 1
+			},
+			new JoinMetadata
+			{
+				Description = "Sets and reports the selfview pip size, (aka layout size).",
+				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+				JoinType = eJoinType.DigitalSerial
+			});
 
 		#endregion
 
