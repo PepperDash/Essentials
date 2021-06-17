@@ -1440,7 +1440,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					CanMuteVideo = p.IsVideoCanMuteByHost,
 					CanUnmuteVideo = p.IsVideoCanUnmuteByHost,
 					AudioMuteFb = p.AudioStatusState == "AUDIO_MUTED",
-					VideoMuteFb = p.VideoStatusIsSending,
+					VideoMuteFb = !p.VideoStatusIsSending,
 					HandIsRaisedFb = p.HandStatus.HandIsRaisedAndValid,
 				}).ToList();
 			}
@@ -1454,16 +1454,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				if (participants == null)
 				{
-					Debug.Console(1, "SortParticiapntListByHandStatu(participants == null)");
+					//Debug.Console(1, "SortParticiapntListByHandStatu(participants == null)");
 					return null;
 				}
 
 				// debug testing
-				foreach (ListParticipant participant in participants)
-				{
-					Debug.Console(1, "{0} | IsValid: {1} | IsRaiseHand: {2} | HandIsRaisedAndValid: {3}", 
-						participant.UserName, participant.HandStatus.IsValid, participant.HandStatus.IsRaiseHand.ToString(), participant.HandStatus.HandIsRaisedAndValid.ToString());
-				}
+				//foreach (ListParticipant participant in participants)
+				//{
+				//    Debug.Console(1, "{0} | IsValid: {1} | IsRaiseHand: {2} | HandIsRaisedAndValid: {3}", 
+				//        participant.UserName, participant.HandStatus.IsValid, participant.HandStatus.IsRaiseHand.ToString(), participant.HandStatus.HandIsRaisedAndValid.ToString());
+				//}
 
 				List<ListParticipant> handRaisedParticipantsList = participants.Where(p => p.HandStatus.HandIsRaisedAndValid).ToList();
 
@@ -1471,8 +1471,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				{
 					IOrderedEnumerable<ListParticipant> orderByDescending = handRaisedParticipantsList.OrderByDescending(p => p.HandStatus.TimeStamp);
 
-					foreach (var participant in handRaisedParticipantsList)
-						Debug.Console(1, "handRaisedParticipantList: {0} | {1}", participant.UserName, participant.UserId);
+					//foreach (var participant in handRaisedParticipantsList)
+					//    Debug.Console(1, "handRaisedParticipantList: {0} | {1}", participant.UserName, participant.UserId);
 				}
 
 				List<ListParticipant> allOtherParticipantsList = participants.Where(p => !p.HandStatus.HandIsRaisedAndValid).ToList();
@@ -1481,8 +1481,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				{
 					allOtherParticipantsList.OrderBy(p => p.UserName);
 
-					foreach (var participant in allOtherParticipantsList)
-						Debug.Console(1, "allOtherParticipantsList: {0} | {1}", participant.UserName, participant.UserId);
+					//foreach (var participant in allOtherParticipantsList)
+					//    Debug.Console(1, "allOtherParticipantsList: {0} | {1}", participant.UserName, participant.UserId);
 				}
 
 				// merge the lists

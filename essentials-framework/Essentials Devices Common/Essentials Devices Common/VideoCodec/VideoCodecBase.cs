@@ -530,27 +530,42 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		private void LinkVideoCodecParticipantsToApi(IHasParticipants codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
+            // make sure to update the values when the EISC comes online
+            trilist.OnlineStatusChange += (sender, args) =>
+                {
+                    if (sender.IsOnline)
+                    {
+                        UpdateParticipantsXSig(codec, trilist, joinMap);
+                    }
+                };
+
+            // set actions and update the values when the list changes
 			codec.Participants.ParticipantsListHasChanged += (sender, args) =>
 			{
-				string participantsXSig;
-
-				if (codec.Participants.CurrentParticipants.Count == 0)
-				{
-					participantsXSig = Encoding.GetEncoding(XSigEncoding).GetString(_clearBytes, 0, _clearBytes.Length);
-					trilist.SetString(joinMap.CurrentParticipants.JoinNumber, participantsXSig);
-					trilist.SetUshort(joinMap.ParticipantCount.JoinNumber, (ushort)codec.Participants.CurrentParticipants.Count);
-					return;
-				}
-
                 SetParticipantActions(trilist, joinMap, codec.Participants.CurrentParticipants);
 
-				participantsXSig = UpdateParticipantsXSig(codec.Participants.CurrentParticipants);
-
-				trilist.SetString(joinMap.CurrentParticipants.JoinNumber, participantsXSig);
-
-				trilist.SetUshort(joinMap.ParticipantCount.JoinNumber, (ushort)codec.Participants.CurrentParticipants.Count);
+                UpdateParticipantsXSig(codec, trilist, joinMap);
 			};
 		}
+
+        private void UpdateParticipantsXSig(IHasParticipants codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+			string participantsXSig;
+
+			if (codec.Participants.CurrentParticipants.Count == 0)
+			{
+				participantsXSig = Encoding.GetEncoding(XSigEncoding).GetString(_clearBytes, 0, _clearBytes.Length);
+				trilist.SetString(joinMap.CurrentParticipants.JoinNumber, participantsXSig);
+				trilist.SetUshort(joinMap.ParticipantCount.JoinNumber, (ushort)codec.Participants.CurrentParticipants.Count);
+				return;
+			}
+
+			participantsXSig = UpdateParticipantsXSig(codec.Participants.CurrentParticipants);
+
+			trilist.SetString(joinMap.CurrentParticipants.JoinNumber, participantsXSig);
+
+			trilist.SetUshort(joinMap.ParticipantCount.JoinNumber, (ushort)codec.Participants.CurrentParticipants.Count);
+        }
 
         /// <summary>
         /// Sets the actions for each participant in the list
@@ -613,6 +628,39 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			{
 				if (meetingIndex >= maxParticipants * offset) break;
 
+                Debug.Console(2, this,
+@"Updating Participant on xsig:
+Name: {0} (s{9})
+AudioMute: {1} (d{10})
+VideoMute: {2} (d{11})
+CanMuteVideo: {3} (d{12})
+CanUMuteVideo: {4} (d{13})
+IsHost: {5} (d{14})
+HandIsRaised: {6} (d{15})
+IsPinned: {7} (d{16})
+ScreenIndexIsPinnedTo: {8} (a{17})
+",
+ participant.Name,
+ participant.AudioMuteFb,
+ participant.VideoMuteFb,
+ participant.CanMuteVideo,
+ participant.CanUnmuteVideo,
+ participant.IsHost,
+ participant.HandIsRaisedFb,
+ participant.IsPinnedFb,
+ participant.ScreenIndexIsPinnedToFb,
+ stringIndex + 1,
+ digitalIndex + 1,
+ digitalIndex + 2,
+ digitalIndex + 3,
+ digitalIndex + 4,
+ digitalIndex + 5,
+ digitalIndex + 6,
+ digitalIndex + 7,
+ analogIndex + 1
+ );
+
+
 				//digitals
 				tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, participant.AudioMuteFb);
 				tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, participant.VideoMuteFb);
@@ -621,6 +669,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				tokenArray[digitalIndex + 4] = new XSigDigitalToken(digitalIndex + 5, participant.IsHost);
                 tokenArray[digitalIndex + 5] = new XSigDigitalToken(digitalIndex + 6, participant.HandIsRaisedFb);
                 tokenArray[digitalIndex + 6] = new XSigDigitalToken(digitalIndex + 7, participant.IsPinnedFb);
+
+                Debug.Console(2, this, "Index: {0} byte value: {1}", digitalIndex + 7, ComTextHelper.GetEscapedText(tokenArray[digitalIndex + 6].GetBytes()));
 
 				//serials
 				tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, participant.Name);
@@ -657,7 +707,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				analogIndex += maxAnalogs;
 			}
 
-			return GetXSigString(tokenArray);
+            var returnString = GetXSigString(tokenArray);
+
+            //Debug.Console(2, this, "{0}", ComTextHelper.GetEscapedText(Encoding.GetEncoding(28591).GetBytes(returnString)));
+
+
+            return returnString;
 		}
 
 		private void LinkVideoCodecContentSharingToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
