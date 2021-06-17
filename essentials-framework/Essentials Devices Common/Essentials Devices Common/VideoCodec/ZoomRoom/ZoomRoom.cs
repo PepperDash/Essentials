@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
 		IRouting,
 		IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
-		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin, IHasParticipantAudioMute
+		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin, IHasParticipantAudioMute, IHasSelfviewSize
 	{
 		private const long MeetingRefreshTimer = 60000;
 		private const uint DefaultMeetingDurationMin = 30;
@@ -109,6 +109,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			SelfviewPipPositionFeedback = new StringFeedback(SelfviewPipPositionFeedbackFunc);
 
+			// TODO: #714 [ ] SelfviewPipSizeFeedback
+			SelfviewPipSizeFeedback = new StringFeedback(SelfviewPipSizeFeedbackFunc);
+			
 			SetUpFeedbackActions();
 
 			Cameras = new List<CameraBase>();
@@ -224,6 +227,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					() =>
 						_currentSelfviewPipPosition != null
 							? _currentSelfviewPipPosition.Command ?? "Unknown"
+							: "Unknown";
+			}
+		}
+
+		// TODO: #714 [ ] SelfviewPipSizeFeedbackFunc
+		protected Func<string> SelfviewPipSizeFeedbackFunc
+		{
+			get
+			{
+				return
+					() =>
+						_currentSelfviewPipSize != null
+							? _currentSelfviewPipSize.Command ?? "Unknown"
 							: "Unknown";
 			}
 		}
@@ -495,7 +511,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				{
 					case "Position":
 						{
-							ComputeSelfviewPipStatus();
+							ComputeSelfviewPipPositionStatus();
 
 							SelfviewPipPositionFeedback.FireUpdate();
 
@@ -511,6 +527,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							LocalLayoutFeedback.FireUpdate();
 							break;
 						}
+					case "Size":
+					{
+						// TODO: #714 [ ] SetupFeedbackActions >> Size
+						ComputeSelfviewPipSizeStatus();
+
+						SelfviewPipSizeFeedback.FireUpdate();
+
+						break;
+					}
 
 				}
 			};
@@ -522,7 +547,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     case "Position":
                         {
-                            ComputeSelfviewPipStatus();
+                            ComputeSelfviewPipPositionStatus();
 
                             SelfviewPipPositionFeedback.FireUpdate();
 
@@ -596,21 +621,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			Status.Layout.PropertyChanged += (o, a) =>
 			{
-				switch (a.PropertyName)
+				Debug.Console(1, this, "Status.Layout.PropertyChanged a.PropertyName: {0}", a.PropertyName);
+				switch (a.PropertyName.ToLower())
 				{
-					case "can_Switch_Speaker_View":
-					case "can_Switch_Wall_View":
-					case "can_Switch_Share_On_All_Screens":
+					case "can_switch_speaker_view":
+					case "can_switch_wall_view":
+					case "can_switch_share_on_all_screens":
 						{
 							ComputeAvailableLayouts();
 							break;
 						}
-					case "is_In_First_Page":
+					case "is_in_first_page":
 						{
 							LayoutViewIsOnFirstPageFeedback.FireUpdate();
 							break;
 						}
-					case "is_In_Last_Page":
+					case "is_in_last_page":
 						{
 							LayoutViewIsOnLastPageFeedback.FireUpdate();
 							break;
@@ -1319,6 +1345,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 									{
 										var status = responseObj.ToObject<zEvent.PinStatusOfScreenNotification>();
 
+                                        Debug.Console(1, this, "Pin Status notification for UserId: {0}, ScreenIndex: {1}", status.PinnedUserId, status.ScreenIndex);
+
+                                        Participant alreadyPinnedParticipant = null;
+
+                                        // Check for a participant already pinned to the same screen index.
+                                        if (status.PinnedUserId > 0)
+                                        {
+                                            alreadyPinnedParticipant = Participants.CurrentParticipants.FirstOrDefault(p => p.ScreenIndexIsPinnedToFb.Equals(status.ScreenIndex));
+
+                                            // Make sure that the already pinned participant isn't the same ID as for this message.  If true, clear the pinned fb.
+                                            if (alreadyPinnedParticipant != null && alreadyPinnedParticipant.UserId != status.PinnedUserId)
+                                            {
+                                                Debug.Console(1, this, "Participant: {0} with id: {1} already pinned to screenIndex {2}.  Clearing pinned fb.",
+                                                    alreadyPinnedParticipant.Name, alreadyPinnedParticipant.UserId, alreadyPinnedParticipant.ScreenIndexIsPinnedToFb);
+                                                alreadyPinnedParticipant.IsPinnedFb = false;
+                                                alreadyPinnedParticipant.ScreenIndexIsPinnedToFb = -1;
+                                            }
+                                        }
+
 										var participant = Participants.CurrentParticipants.FirstOrDefault(p => p.UserId.Equals(status.PinnedUserId));
 
 										if (participant != null)
@@ -1330,13 +1375,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 										{
 											participant = Participants.CurrentParticipants.FirstOrDefault(p => p.ScreenIndexIsPinnedToFb.Equals(status.ScreenIndex));
 
-											if (participant == null)
+											if (participant == null && alreadyPinnedParticipant == null)
 											{
-												Debug.Console(2, this, "no matching participant found by pinned_user_id: {0} or screen_index: {1}", status.PinnedUserId, status.ScreenIndex);
+												Debug.Console(1, this, "no matching participant found by pinned_user_id: {0} or screen_index: {1}", status.PinnedUserId, status.ScreenIndex);
 												return;
 											}
-											else
+											else if (participant != null)
 											{
+                                                Debug.Console(2, this, "Unpinning {0} with id: {1} from screen index: {2}", participant.Name, participant.UserId, status.ScreenIndex);
 												participant.IsPinnedFb = false;
 												participant.ScreenIndexIsPinnedToFb = -1;
 											}
@@ -1483,7 +1529,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				return;
 			}
 
-			Debug.Console(1, this, "****************************Call Participants***************************");
+			Debug.Console(1, this, "*************************** Call Participants **************************");
 			foreach (var participant in Participants.CurrentParticipants)
 			{
 				Debug.Console(1, this, "Name: {0} Audio: {1} IsHost: {2}", participant.Name,
@@ -1570,7 +1616,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				}
 			}
 
-			Debug.Console(1, this, "****************************Active Calls*********************************");
+			Debug.Console(1, this, "*************************** Active Calls ********************************");
 
 			// Clean up any disconnected calls left in the list
 			for (int i = 0; i < ActiveCalls.Count; i++)
@@ -1586,7 +1632,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 				if (!call.IsActiveCall)
 				{
-					Debug.Console(1, this, "******Removing Inactive Call: {0}******", call.Name);
+					Debug.Console(1, this, "***** Removing Inactive Call: {0} *****", call.Name);
 					ActiveCalls.Remove(call);
 				}
 			}
@@ -1741,7 +1787,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			LinkVideoCodecToApi(this, trilist, joinMap);
 
-			LinkZoomRoomToApi(trilist, joinMap);
+			LinkZoomRoomToApi(trilist, joinMap);			
 		}
 
 		/// <summary>
@@ -1771,9 +1817,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					trilist.SetString(joinMap.LayoutStripIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.Strip.ToString());
 					trilist.SetString(joinMap.LayoutShareAllIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.ShareAll.ToString());
 				};
+				
+				trilist.SetSigFalseAction(joinMap.SwapContentWithThumbnail.JoinNumber, () => layoutsCodec.SwapContentWithThumbnail());
 
 				layoutsCodec.CanSwapContentWithThumbnailFeedback.LinkInputSig(trilist.BooleanInput[joinMap.CanSwapContentWithThumbnail.JoinNumber]);
-				trilist.SetSigFalseAction(joinMap.SwapContentWithThumbnail.JoinNumber, () => layoutsCodec.SwapContentWithThumbnail());
 				layoutsCodec.ContentSwappedWithThumbnailFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SwapContentWithThumbnail.JoinNumber]);
 
 				layoutsCodec.LayoutViewIsOnFirstPageFeedback.LinkInputSig(trilist.BooleanInput[joinMap.LayoutIsOnFirstPage.JoinNumber]);
@@ -1795,7 +1842,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						}
 					});
 
-				layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);				
+				layoutsCodec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetCurrentLayout.JoinNumber]);								
 			}
 
 			var pinCodec = this as IHasParticipantPinUnpin;
@@ -1806,7 +1853,43 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				// Set the value of the local property to be used when pinning a participant
 				trilist.SetUShortSigAction(joinMap.ScreenIndexToPinUserTo.JoinNumber, (u) => ScreenIndexToPinUserTo = u);
 			}
-		}
+
+			// TODO: #714 [ ] LinkZoomRoomToApi >> layoutSizeCoodec
+			var layoutSizeCodec = this as IHasSelfviewSize;
+			if (layoutSizeCodec != null)
+			{
+				trilist.SetSigFalseAction(joinMap.GetSetSelfviewPipSize.JoinNumber, layoutSizeCodec.SelfviewPipSizeToggle);
+				trilist.SetStringSigAction(joinMap.GetSetSelfviewPipSize.JoinNumber, (s) =>
+				{
+					try
+					{
+						var size = (zConfiguration.eLayoutSize)Enum.Parse(typeof(zConfiguration.eLayoutSize), s, true);					
+						var cmd = SelfviewPipSizes.FirstOrDefault(c => c.Command.Equals(size.ToString()));
+						SelfviewPipSizeSet(cmd);
+					}
+					catch (Exception e)
+					{
+						Debug.Console(1, this, "Unable to parse '{0}' to zConfiguration.eLayoutSize: {1}", s, e);
+					}
+				});
+
+				layoutSizeCodec.SelfviewPipSizeFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetSelfviewPipSize.JoinNumber]);
+			}
+
+			trilist.OnlineStatusChange += (device, args) =>
+			{
+				if (!args.DeviceOnLine) return;
+
+				ComputeAvailableLayouts();
+				layoutsCodec.LocalLayoutFeedback.FireUpdate();								
+				layoutsCodec.CanSwapContentWithThumbnailFeedback.FireUpdate();
+				layoutsCodec.ContentSwappedWithThumbnailFeedback.FireUpdate();
+				layoutsCodec.LayoutViewIsOnFirstPageFeedback.FireUpdate();
+				layoutsCodec.LayoutViewIsOnLastPageFeedback.FireUpdate();
+				pinCodec.NumberOfScreensFeedback.FireUpdate();
+				layoutSizeCodec.SelfviewPipSizeFeedback.FireUpdate();
+			};
+		}		
 
 		public override void ExecuteSwitch(object selector)
 		{
@@ -2177,12 +2260,57 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             new CodecCommandWithLabel("DownLeft", "Lower Left")
         };
 
-		private void ComputeSelfviewPipStatus()
+		private void ComputeSelfviewPipPositionStatus()
 		{
 			_currentSelfviewPipPosition =
 				SelfviewPipPositions.FirstOrDefault(
 					p => p.Command.ToLower().Equals(Configuration.Call.Layout.Position.ToString().ToLower()));
 		}
+
+		#endregion
+
+		// TODO: #714 [ ] Implementation of IHasSelfviewPipSize
+		#region Implementation of IHasSelfviewPipSize
+
+		private CodecCommandWithLabel _currentSelfviewPipSize;
+
+		public StringFeedback SelfviewPipSizeFeedback { get; private set; }
+
+		public void SelfviewPipSizeSet(CodecCommandWithLabel size)
+		{
+			SendText(String.Format("zConfiguration Call Layout Size: {0}", size.Command));
+		}
+
+		public void SelfviewPipSizeToggle()
+		{
+			if (_currentSelfviewPipSize != null)
+			{
+				var nextPipSizeIndex = SelfviewPipSizes.IndexOf(_currentSelfviewPipSize) + 1;
+
+				if (nextPipSizeIndex >= SelfviewPipSizes.Count)
+					// Check if we need to loop back to the first item in the list
+					nextPipSizeIndex = 0;
+
+				SelfviewPipSizeSet(SelfviewPipSizes[nextPipSizeIndex]);
+			}
+		}
+
+		public List<CodecCommandWithLabel> SelfviewPipSizes = new List<CodecCommandWithLabel>()
+        {
+            new CodecCommandWithLabel("Off", "Off"),
+            new CodecCommandWithLabel("Size1", "Size 1"),
+            new CodecCommandWithLabel("Size2", "Size 2"),
+            new CodecCommandWithLabel("Size3", "Size 3"),
+			new CodecCommandWithLabel("Strip", "Strip")
+        };
+
+		private void ComputeSelfviewPipSizeStatus()
+		{
+			_currentSelfviewPipSize =
+				SelfviewPipSizes.FirstOrDefault(
+					p => p.Command.ToLower().Equals(Configuration.Call.Layout.Size.ToString().ToLower()));
+		}
+
 
 		#endregion
 
@@ -2240,9 +2368,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// </summary>
 		private void ComputeAvailableLayouts()
 		{
+			Debug.Console(1, this, "Computing available layouts...");
 			zConfiguration.eLayoutStyle availableLayouts = zConfiguration.eLayoutStyle.None;
-			// TODO: #697 [X] Compute the avaialble layouts and set the value of AvailableLayouts
-			// Will need to test and confirm that this logic evaluates correctly
 			if (Status.Layout.can_Switch_Wall_View)
 			{
 				availableLayouts |= zConfiguration.eLayoutStyle.Gallery;
@@ -2264,6 +2391,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				availableLayouts |= zConfiguration.eLayoutStyle.Strip;
 			}
+
+			Debug.Console(1, this, "availablelayouts: {0}", availableLayouts);			
 
 			var handler = AvailableLayoutsChanged;
 			if (handler != null)
@@ -2339,7 +2468,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		public void MinMaxLayoutToggle()
 		{
 			throw new NotImplementedException();
-		}
+		}		
 
 		#endregion
 
