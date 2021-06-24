@@ -90,5 +90,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         public bool HandIsRaisedFb { get; set; }
         public bool IsPinnedFb { get; set; }
         public int ScreenIndexIsPinnedToFb { get; set; }
+
+        public Participant()
+        {
+            // Initialize to -1 (no screen)
+            ScreenIndexIsPinnedToFb = -1;
+        }
     }
 }
