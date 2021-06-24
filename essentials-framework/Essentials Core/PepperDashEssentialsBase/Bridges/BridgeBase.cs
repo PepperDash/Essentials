@@ -385,7 +385,7 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         public EiscApiAdvancedFactory()
         {
-            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced", "vceiscapiadv", "vceiscapiadvanced" };
+            TypeNames = new List<string> { "eiscapiadv", "eiscapiadvanced", "eiscapiadvancedserver", "eiscapiadvancedclient",  "vceiscapiadv", "vceiscapiadvanced" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
@@ -401,6 +401,16 @@ namespace PepperDash.Essentials.Core.Bridges
                 {
                     var eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(controlProperties.IpIdInt,
                         controlProperties.TcpSshProperties.Address, Global.ControlSystem);
+                    return new EiscApiAdvanced(dc, eisc);
+                }
+                case "eiscapiadvancedserver":
+                {
+                    var eisc = new EISCServer(controlProperties.IpIdInt, Global.ControlSystem);
+                    return new EiscApiAdvanced(dc, eisc);
+                }
+                case "eiscapiadvancedclient":
+                {
+                    var eisc = new EISCClient(controlProperties.IpIdInt, controlProperties.TcpSshProperties.Address, Global.ControlSystem);
                     return new EiscApiAdvanced(dc, eisc);
                 }
                 case "vceiscapiadv":
