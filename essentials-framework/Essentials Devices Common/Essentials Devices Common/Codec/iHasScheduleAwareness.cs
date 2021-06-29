@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
     public enum eMeetingEventChangeType
@@ -115,17 +117,24 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public class Meeting
     {
+        [JsonProperty("minutesBeforeMeeting")]
         public int MinutesBeforeMeeting;
 
+        [JsonProperty("id")]
         public string Id { get; set; }
+        [JsonProperty("organizer")]
         public string Organizer { get; set; }
+        [JsonProperty("title")]
         public string Title { get; set; }
+        [JsonProperty("agenda")]
         public string Agenda { get; set; }
 
+        [JsonProperty("meetingWarningMinutes")]
         public TimeSpan MeetingWarningMinutes
         {
             get { return TimeSpan.FromMinutes(MinutesBeforeMeeting); }
         }
+        [JsonProperty("timeToMeetingStart")]
         public TimeSpan TimeToMeetingStart
         {
             get
@@ -133,6 +142,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
                 return StartTime - DateTime.Now;
             }
         }
+        [JsonProperty("timeToMeetingEnd")]
         public TimeSpan TimeToMeetingEnd
         {
             get
@@ -140,8 +150,11 @@ namespace PepperDash.Essentials.Devices.Common.Codec
                 return EndTime - DateTime.Now;
             }
         }
+        [JsonProperty("startTime")]
         public DateTime StartTime { get; set; }
+        [JsonProperty("endTime")]
         public DateTime EndTime { get; set; }
+        [JsonProperty("duration")]
         public TimeSpan Duration
         {
             get
@@ -149,7 +162,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
                 return EndTime - StartTime;
             }
         }
+        [JsonProperty("privacy")]
         public eMeetingPrivacy Privacy { get; set; }
+        [JsonProperty("joinable")]
         public bool Joinable
         {
             get
@@ -159,9 +174,12 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             }
         }
         //public string ConferenceNumberToDial { get; set; }
+        [JsonProperty("conferencePassword")]
         public string ConferencePassword { get; set; }
+        [JsonProperty("isOneButtonToPushMeeting")]
         public bool IsOneButtonToPushMeeting { get; set; }
 
+        [JsonProperty("calls")]
         public List<Call> Calls { get; private set; }
 
         public Meeting()

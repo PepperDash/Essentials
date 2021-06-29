@@ -396,10 +396,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				if (_CodecSchedule == null || _CodecSchedule.Meetings.Count == 0
 					|| _CodecSchedule.Meetings[_CodecSchedule.Meetings.Count - 1].StartTime < DateTime.Now)
 				{
-					_CodecSchedule = new CodecScheduleAwareness();
+					_CodecSchedule = new CodecScheduleAwareness(10000);
 					for (int i = 0; i < 5; i++)
 					{
 						var m = new Meeting();
+                        m.Id = i.ToString();
+                        m.Organizer = "Employee " + 1;
 						m.StartTime = DateTime.Now.AddMinutes(3).AddHours(i);
 						m.EndTime = DateTime.Now.AddHours(i).AddMinutes(30);
 						m.Title = "Meeting " + i;
