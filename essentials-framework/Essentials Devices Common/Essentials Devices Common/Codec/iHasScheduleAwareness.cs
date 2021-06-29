@@ -4,13 +4,15 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using PepperDash.Core;
+
 using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Devices.Common.Codec
 {
     public enum eMeetingEventChangeType
     {
-        Unkown = 0,
+        Unknown = 0,
         MeetingStartWarning,
         MeetingStart,
         MeetingEndWarning,
@@ -33,6 +35,10 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         public event EventHandler<EventArgs> MeetingsListHasChanged;
 
         private int _meetingWarningMinutes = 5;
+
+        private Meeting _previousChangedMeeting;
+
+        private eMeetingEventChangeType _previousChangeType = eMeetingEventChangeType.Unknown;
 
         public int MeetingWarningMinutes
         {
@@ -90,24 +96,39 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         {
             //  Iterate the meeting list and check if any meeting need to do anythingk
 
-            const double meetingTimeEpsilon = 0.0001;
+            const double meetingTimeEpsilon = 0.05;
             foreach (var m in Meetings)
             {
-                var changeType = eMeetingEventChangeType.Unkown;
+                var changeType = eMeetingEventChangeType.Unknown;
 
-                if (m.TimeToMeetingStart.TotalMinutes <= m.MeetingWarningMinutes.TotalMinutes)       // Meeting is about to start
+                //Debug.Console(2, "Math.Abs(m.TimeToMeetingEnd.TotalMinutes) = {0}", Math.Abs(m.TimeToMeetingEnd.TotalMinutes));
+                if (_previousChangeType != eMeetingEventChangeType.MeetingStartWarning && m.TimeToMeetingStart.TotalMinutes <= m.MeetingWarningMinutes.TotalMinutes && m.TimeToMeetingStart.Seconds > 0)       // Meeting is about to start
+                {
+                    Debug.Console(2, "MeetingStartWarning. TotalMinutes: {0}  Seconds: {1}", m.TimeToMeetingStart.TotalMinutes, m.TimeToMeetingStart.Seconds);
                     changeType = eMeetingEventChangeType.MeetingStartWarning;
-                else if (Math.Abs(m.TimeToMeetingStart.TotalMinutes) < meetingTimeEpsilon)           // Meeting Start
+                }
+                else if (_previousChangeType != eMeetingEventChangeType.MeetingStart && Math.Abs(m.TimeToMeetingEnd.TotalMinutes) < meetingTimeEpsilon)           // Meeting Start
+                {
+                    Debug.Console(2, "MeetingStart");
                     changeType = eMeetingEventChangeType.MeetingStart;
-                else if (m.TimeToMeetingEnd.TotalMinutes <= m.MeetingWarningMinutes.TotalMinutes)    // Meeting is about to end
+                }
+                else if (_previousChangeType != eMeetingEventChangeType.MeetingEndWarning && m.TimeToMeetingEnd.TotalMinutes <= m.MeetingWarningMinutes.TotalMinutes && m.TimeToMeetingEnd.Seconds > 0)    // Meeting is about to end
                     changeType = eMeetingEventChangeType.MeetingEndWarning;
-                else if (Math.Abs(m.TimeToMeetingEnd.TotalMinutes) < meetingTimeEpsilon)             // Meeting has ended
+                else if (_previousChangeType != eMeetingEventChangeType.MeetingEnd && Math.Abs(m.TimeToMeetingEnd.TotalMinutes) < meetingTimeEpsilon)             // Meeting has ended
                     changeType = eMeetingEventChangeType.MeetingEnd;
 
-                if (changeType != eMeetingEventChangeType.Unkown)
-                    OnMeetingChange(changeType, m);
-            }
+                if (changeType != eMeetingEventChangeType.Unknown)
+                {
+                    // check to make sure this is not a redundant event for one that was fired last
+                    if (_previousChangedMeeting == null || (_previousChangedMeeting != m && _previousChangeType != changeType))
+                    {
+                        _previousChangeType = changeType;
+                        _previousChangedMeeting = m;
 
+                        OnMeetingChange(changeType, m);
+                    }
+                }
+            }
 
         }
     }
@@ -169,8 +190,10 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         {
             get
             {
-                return StartTime.AddMinutes(-MinutesBeforeMeeting) <= DateTime.Now
+                var joinable = StartTime.AddMinutes(-MinutesBeforeMeeting) <= DateTime.Now
                     && DateTime.Now <= EndTime; //.AddMinutes(-5);
+                Debug.Console(2, "Meeting Id: {0} joinable: {1}", Id, joinable);
+                return joinable;
             }
         }
         //public string ConferenceNumberToDial { get; set; }
