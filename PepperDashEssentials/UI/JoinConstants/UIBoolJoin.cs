@@ -764,6 +764,10 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public const uint NextMeetingModalVisible = 15049;
         /// <summary>
+        /// 15050
+        /// </summary>
+        public const uint NextMeetingNotificationRibbonVisible = 15050;
+        /// <summary>
         /// 15051
         /// </summary>
         public const uint Display1SelectPressAndFb = 15051;
