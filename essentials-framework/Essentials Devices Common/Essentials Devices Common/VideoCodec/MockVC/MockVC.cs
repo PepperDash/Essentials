@@ -416,8 +416,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         m.MinutesBeforeMeeting = 5;
                         m.Id = i.ToString();
                         m.Organizer = "Employee " + 1;
-						m.StartTime = DateTime.Now.AddMinutes(3).AddHours(i);
-						m.EndTime = DateTime.Now.AddHours(i).AddMinutes(55);
+						m.StartTime = DateTime.Now.AddMinutes(6).AddHours(i);
+						m.EndTime = DateTime.Now.AddHours(i).AddMinutes(16);
 						m.Title = "Meeting " + i;
                         m.Calls.Add(new Call() { Number = i + "meeting@fake.com"});
 						_CodecSchedule.Meetings.Add(m);
