@@ -59,6 +59,9 @@ namespace PepperDash.Essentials.Core
 
 			VolumeLevelFeedback = new IntFeedback(() => { return _FakeVolumeLevel; });
 			MuteFeedback = new BoolFeedback("MuteOn", () => _IsMuted);
+
+            WarmupTime = 10000;
+            CooldownTime = 5000;
 		}
 
 		public override void PowerOn()
