@@ -48,11 +48,11 @@ namespace PepperDash.Essentials.Core.CrestronIO
                                 .ControlFeedback.BoolValue);
 
                 RedLedBrightnessFeedback =
-                    new IntFeedback(() => (int)_device.Leds[(uint)StatusSign.Led.eLedColor.Red].BrightnessFeedback);
+                    new IntFeedback(() => (ushort)SimplSharpDeviceHelper.UshortToPercent((ushort)_device.Leds[(uint)StatusSign.Led.eLedColor.Red].BrightnessFeedback));
                 GreenLedBrightnessFeedback =
-                    new IntFeedback(() => (int)_device.Leds[(uint)StatusSign.Led.eLedColor.Green].BrightnessFeedback);
+                    new IntFeedback(() => (ushort)SimplSharpDeviceHelper.UshortToPercent((ushort)_device.Leds[(uint)StatusSign.Led.eLedColor.Green].BrightnessFeedback));
                 BlueLedBrightnessFeedback =
-                    new IntFeedback(() => (int)_device.Leds[(uint)StatusSign.Led.eLedColor.Blue].BrightnessFeedback);
+                    new IntFeedback(() => (ushort)SimplSharpDeviceHelper.UshortToPercent((ushort)_device.Leds[(uint)StatusSign.Led.eLedColor.Blue].BrightnessFeedback));
 
                 if (_device != null) _device.BaseEvent += _device_BaseEvent;
 
