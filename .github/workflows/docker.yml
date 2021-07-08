@@ -90,7 +90,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Upload the build package to the release
       - name: Upload Release Package
-        if: contains(env.VERSION,'-rc-') || contains(env.VERSION,'-hotfix-')
         id: upload_release
         uses: actions/upload-release-asset@v1
         with:
