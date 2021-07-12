@@ -33,7 +33,7 @@ namespace PepperDash.Essentials.Core.Fusion
         protected FusionRoom FusionRoom;
         protected Dictionary<int, FusionAsset> FusionStaticAssets;
         public long PushNotificationTimeout = 5000;
-        protected EssentialsRoomBase Room;
+        protected IEssentialsRoom Room;
         public long SchedulePollInterval = 300000;
 
         private Event _currentMeeting;
@@ -86,7 +86,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         #endregion
 
-        public EssentialsHuddleSpaceFusionSystemControllerBase(EssentialsRoomBase room, uint ipId, string joinMapKey)
+        public EssentialsHuddleSpaceFusionSystemControllerBase(IEssentialsRoom room, uint ipId, string joinMapKey)
             : base(room.Key + "-fusion")
         {
             try

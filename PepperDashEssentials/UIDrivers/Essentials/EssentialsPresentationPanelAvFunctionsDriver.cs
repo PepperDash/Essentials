@@ -983,7 +983,7 @@
 //        /// <summary>
 //        /// Handles source change
 //        /// </summary>
-//        void _CurrentRoom_SourceInfoChange(EssentialsRoomBase room, 
+//        void _CurrentRoom_SourceInfoChange(IEssentialsRoom room, 
 //            SourceListItem info, ChangeType change)
 //        {
 //            if (change == ChangeType.WillChange)
@@ -995,7 +995,7 @@
 //        /// <summary>
 //        /// 
 //        /// </summary>
-//        void _CurrentRoom_CurrentDisplay1SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+//        void _CurrentRoom_CurrentDisplay1SourceChange(IEssentialsRoom room, SourceListItem info, ChangeType type)
 //        {
 //            if (type == ChangeType.DidChange)
 //            {
@@ -1021,7 +1021,7 @@
 //        /// <summary>
 //        /// 
 //        /// </summary>
-//        void _CurrentRoom_CurrentDisplay2SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+//        void _CurrentRoom_CurrentDisplay2SourceChange(IEssentialsRoom room, SourceListItem info, ChangeType type)
 //        {
 //            if (type == ChangeType.DidChange)
 //            {

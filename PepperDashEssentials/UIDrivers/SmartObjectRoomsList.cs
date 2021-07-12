@@ -38,7 +38,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// Sets feedback for the given room
 		/// </summary>
-		public void SetFeedbackForRoom(EssentialsHuddleSpaceRoom room)
+		public void SetFeedbackForRoom(IEssentialsHuddleSpaceRoom room)
 		{
 			var itemToSet = Items.FirstOrDefault(i => i.Room == room);
 			if (itemToSet != null)
@@ -48,11 +48,11 @@ namespace PepperDash.Essentials
 
 	public class SmartObjectRoomsListItem
 	{
-		public EssentialsHuddleSpaceRoom Room { get; private set; }
+		public IEssentialsHuddleSpaceRoom Room { get; private set; }
 		SmartObjectRoomsList Parent;
 		public uint Index { get; private set; }
 
-		public SmartObjectRoomsListItem(EssentialsHuddleSpaceRoom room, uint index, SmartObjectRoomsList parent, 
+		public SmartObjectRoomsListItem(IEssentialsHuddleSpaceRoom room, uint index, SmartObjectRoomsList parent, 
 			Action<bool> buttonAction)
 		{
 			Room = room;

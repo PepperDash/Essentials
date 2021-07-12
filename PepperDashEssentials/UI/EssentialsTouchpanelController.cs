@@ -222,7 +222,7 @@ namespace PepperDash.Essentials
 
                 // spin up different room drivers depending on room type
                 var room = DeviceManager.GetDeviceForKey(props.DefaultRoomKey);
-                if (room is EssentialsHuddleSpaceRoom)
+                if (room is IEssentialsHuddleSpaceRoom)
                 {
                     // Screen Saver Driver
                     mainDriver.ScreenSaverController = new ScreenSaverController(mainDriver, props);
@@ -236,7 +236,7 @@ namespace PepperDash.Essentials
                     var avDriver = new EssentialsHuddlePanelAvFunctionsDriver(mainDriver, props);
                     avDriver.DefaultRoomKey = props.DefaultRoomKey;
                     mainDriver.AvDriver = avDriver;
-                    avDriver.CurrentRoom = room as EssentialsHuddleSpaceRoom;
+                    avDriver.CurrentRoom = room as IEssentialsHuddleSpaceRoom;
 
                     // Environment Driver
                     if (avDriver.CurrentRoom.PropertiesConfig.Environment != null && avDriver.CurrentRoom.PropertiesConfig.Environment.DeviceKeys.Count > 0)

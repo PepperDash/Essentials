@@ -733,10 +733,10 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public static void AllRoomsOff()
 		{
-			var allRooms = DeviceManager.AllDevices.Where(d => 
-				d is EssentialsHuddleSpaceRoom && !(d as EssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
+			var allRooms = DeviceManager.AllDevices.Where(d =>
+                d is IEssentialsRoom && !(d as IEssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
 			foreach (var room in allRooms)
-				(room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
+                (room as IEssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
 		}
 
 

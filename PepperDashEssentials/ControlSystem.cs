@@ -452,7 +452,7 @@ namespace PepperDash.Essentials
 
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
-                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
+                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as IEssentialsRoom;
                 if (room != null)
                 {
                     // default IPID
@@ -474,7 +474,7 @@ namespace PepperDash.Essentials
                         }
                     }
 
-                    if (room is EssentialsHuddleSpaceRoom)
+                    if (room is IEssentialsHuddleSpaceRoom)
                     {
                         DeviceManager.AddDevice(room);
 
@@ -524,7 +524,7 @@ namespace PepperDash.Essentials
 
         }
 
-        private static void CreateMobileControlBridge(EssentialsRoomBase room)
+        private static void CreateMobileControlBridge(IEssentialsRoom room)
         {
             var mobileControl = GetMobileControlDevice();
 
