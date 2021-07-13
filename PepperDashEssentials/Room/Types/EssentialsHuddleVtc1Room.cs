@@ -17,8 +17,7 @@ using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange,
-        IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback
+    public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IEssentialsHuddleVtc1Room
     {
         private bool _codecExternalSourceChange;
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;

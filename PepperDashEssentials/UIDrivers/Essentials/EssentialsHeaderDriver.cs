@@ -221,7 +221,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Sets up Header Buttons for the EssentialsHuddleVtc1Room type
         /// </summary>
-        public void SetupHeaderButtons(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, EssentialsHuddleVtc1Room currentRoom)
+        public void SetupHeaderButtons(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, IEssentialsHuddleVtc1Room currentRoom)
         {
             HeaderButtonsAreSetUp = false;
 
