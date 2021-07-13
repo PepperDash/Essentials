@@ -47,7 +47,7 @@ namespace PepperDash.Essentials.Room.Config
         /// Gets and operating, standalone emergegncy object that can be plugged into a room.
         /// Returns null if there is no emergency defined
         /// </summary>
-        public static EssentialsRoomEmergencyBase GetEmergency(EssentialsRoomPropertiesConfig props, EssentialsRoomBase room)
+        public static EssentialsRoomEmergencyBase GetEmergency(EssentialsRoomPropertiesConfig props, IEssentialsRoom room)
         {
             // This emergency 
             var emergency = props.Emergency;
@@ -96,7 +96,7 @@ namespace PepperDash.Essentials.Room.Config
 			if (behaviour == "trackroomstate")
 			{
 				// Tie LED enable to room power state
-                var essRoom = room as EssentialsRoomBase;
+                var essRoom = room as IEssentialsRoom;
                 essRoom.OnFeedback.OutputChange += (o, a) =>
 				{
                     if (essRoom.OnFeedback.BoolValue)

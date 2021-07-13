@@ -38,7 +38,7 @@ namespace PepperDash.Essentials.Core
 
         ScheduledEventGroup FeatureEventGroup;
 
-        public EssentialsRoomBase Room { get; private set; }
+        public IEssentialsRoom Room { get; private set; }
 
         private Fusion.EssentialsHuddleSpaceFusionSystemControllerBase FusionRoom;
 
@@ -84,7 +84,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         void SetUpDevice()
         {
-            Room = DeviceManager.GetDeviceForKey(PropertiesConfig.RoomKey) as EssentialsRoomBase;
+            Room = DeviceManager.GetDeviceForKey(PropertiesConfig.RoomKey) as IEssentialsRoom;
 
             if (Room != null)
             {

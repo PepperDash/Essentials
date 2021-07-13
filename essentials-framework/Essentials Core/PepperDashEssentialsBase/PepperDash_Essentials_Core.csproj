@@ -197,6 +197,7 @@
     <Compile Include="Devices\GenericIRController.cs" />
     <Compile Include="Devices\IDspPreset.cs" />
     <Compile Include="Devices\IProjectorInterfaces.cs" />
+    <Compile Include="Devices\IReconfigurableDevice.cs" />
     <Compile Include="Devices\PC\InRoomPc.cs" />
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
@@ -288,6 +289,7 @@
     <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />
     <Compile Include="Room\EssentialsRoomBase.cs" />
     <Compile Include="Room\Config\EssentialsRoomScheduledEventsConfig.cs" />
+    <Compile Include="Room\IEssentialsRoom.cs" />
     <Compile Include="Room\Interfaces.cs" />
     <Compile Include="Room\iOccupancyStatusProvider.cs" />
     <Compile Include="Routing\DummyRoutingInputsDevice.cs" />

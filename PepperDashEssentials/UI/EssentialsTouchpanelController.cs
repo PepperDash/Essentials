@@ -222,7 +222,7 @@ namespace PepperDash.Essentials
 
                 // spin up different room drivers depending on room type
                 var room = DeviceManager.GetDeviceForKey(props.DefaultRoomKey);
-                if (room is EssentialsHuddleSpaceRoom)
+                if (room is IEssentialsHuddleSpaceRoom)
                 {
                     // Screen Saver Driver
                     mainDriver.ScreenSaverController = new ScreenSaverController(mainDriver, props);
@@ -236,7 +236,7 @@ namespace PepperDash.Essentials
                     var avDriver = new EssentialsHuddlePanelAvFunctionsDriver(mainDriver, props);
                     avDriver.DefaultRoomKey = props.DefaultRoomKey;
                     mainDriver.AvDriver = avDriver;
-                    avDriver.CurrentRoom = room as EssentialsHuddleSpaceRoom;
+                    avDriver.CurrentRoom = room as IEssentialsHuddleSpaceRoom;
 
                     // Environment Driver
                     if (avDriver.CurrentRoom.PropertiesConfig.Environment != null && avDriver.CurrentRoom.PropertiesConfig.Environment.DeviceKeys.Count > 0)
@@ -270,7 +270,7 @@ namespace PepperDash.Essentials
                         tsw.Down.UserObject = new Action<bool>(avDriver.VolumeDownPress);
                     }
                 }
-                else if (room is EssentialsHuddleVtc1Room)
+                else if (room is IEssentialsHuddleVtc1Room)
                 {
                     Debug.Console(0, panelController, "Adding huddle space VTC AV driver");
 
@@ -284,11 +284,11 @@ namespace PepperDash.Essentials
                     var avDriver = new EssentialsHuddleVtc1PanelAvFunctionsDriver(mainDriver, props);
 
                     var codecDriver = new PepperDash.Essentials.UIDrivers.VC.EssentialsVideoCodecUiDriver(panelController.Panel, avDriver,
-                        (room as EssentialsHuddleVtc1Room).VideoCodec, mainDriver.HeaderDriver);
+                        (room as IEssentialsHuddleVtc1Room).VideoCodec, mainDriver.HeaderDriver);
                     avDriver.SetVideoCodecDriver(codecDriver);
                     avDriver.DefaultRoomKey = props.DefaultRoomKey;
                     mainDriver.AvDriver = avDriver;
-                    avDriver.CurrentRoom = room as EssentialsHuddleVtc1Room;
+                    avDriver.CurrentRoom = room as IEssentialsHuddleVtc1Room;
 
                     // Environment Driver
                     if (avDriver.CurrentRoom.PropertiesConfig.Environment != null && avDriver.CurrentRoom.PropertiesConfig.Environment.DeviceKeys.Count > 0)
