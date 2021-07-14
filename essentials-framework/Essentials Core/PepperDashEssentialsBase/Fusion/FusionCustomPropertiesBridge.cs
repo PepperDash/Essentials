@@ -82,7 +82,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
                         deviceConfig.Properties = JToken.FromObject(devProps);
                     }
-                    else if (device is EssentialsRoomBase)
+                    else if (device is IEssentialsRoom)
                     {
                         // Set the room name
                         if (!string.IsNullOrEmpty(roomInfo.Name))

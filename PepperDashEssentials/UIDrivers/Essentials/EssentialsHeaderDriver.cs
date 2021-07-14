@@ -52,7 +52,7 @@ namespace PepperDash.Essentials
             CaretInterlock = new JoinedSigInterlock(TriList);
         }
 
-        void SetUpGear(IAVDriver avDriver, EssentialsRoomBase currentRoom)
+        void SetUpGear(IAVDriver avDriver, IEssentialsRoom currentRoom)
         {
             // Gear
             TriList.SetString(UIStringJoin.HeaderButtonIcon5, "Gear");
@@ -105,7 +105,7 @@ namespace PepperDash.Essentials
             {
                 string message = null;
                 var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
-                    as EssentialsHuddleSpaceRoom;
+                    as IEssentialsHuddleSpaceRoom;
                 if (room != null)
                     message = room.PropertiesConfig.HelpMessage;
                 else
@@ -221,7 +221,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Sets up Header Buttons for the EssentialsHuddleVtc1Room type
         /// </summary>
-        public void SetupHeaderButtons(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, EssentialsHuddleVtc1Room currentRoom)
+        public void SetupHeaderButtons(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, IEssentialsHuddleVtc1Room currentRoom)
         {
             HeaderButtonsAreSetUp = false;
 
@@ -283,7 +283,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Sets up Header Buttons for the EssentialsHuddleSpaceRoom type
         /// </summary>
-        public void SetupHeaderButtons(EssentialsHuddlePanelAvFunctionsDriver avDriver, EssentialsHuddleSpaceRoom currentRoom)
+        public void SetupHeaderButtons(EssentialsHuddlePanelAvFunctionsDriver avDriver, IEssentialsHuddleSpaceRoom currentRoom)
         {
             HeaderButtonsAreSetUp = false;
 

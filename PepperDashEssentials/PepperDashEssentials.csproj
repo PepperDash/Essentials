@@ -149,6 +149,7 @@
     <Compile Include="Room\Types\EssentialsNDisplayRoomBase.cs" />
     <Compile Include="Room\Config\EssentialsRoomConfig.cs" />
     <Compile Include="Room\Types\EssentialsTechRoom.cs" />
+    <Compile Include="Room\Types\IEssentialsHuddleSpaceRoom.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsEnvironmentDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsLightingDriver.cs" />
     <Compile Include="UIDrivers\Environment Drivers\EssentialsShadeDriver.cs" />

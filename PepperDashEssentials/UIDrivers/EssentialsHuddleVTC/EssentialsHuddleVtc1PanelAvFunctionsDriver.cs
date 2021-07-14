@@ -50,7 +50,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 
         /// </summary>
-        public EssentialsHuddleVtc1Room CurrentRoom
+        public IEssentialsHuddleVtc1Room CurrentRoom
         {
             get { return _CurrentRoom; }
             set
@@ -58,7 +58,7 @@ namespace PepperDash.Essentials
                 SetCurrentRoom(value);
             }
         }
-        EssentialsHuddleVtc1Room _CurrentRoom;
+        IEssentialsHuddleVtc1Room _CurrentRoom;
 
         /// <summary>
         /// For hitting feedbacks
@@ -652,7 +652,7 @@ namespace PepperDash.Essentials
 				if (!CurrentRoom.OnFeedback.BoolValue)
 				{
 					// If there's no default, show UI elements
-					if (!CurrentRoom.RunDefaultPresentRoute())
+					if (!(CurrentRoom as IRunDefaultPresentRoute).RunDefaultPresentRoute())
 						TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
 				}
             }
@@ -743,7 +743,7 @@ namespace PepperDash.Essentials
         void UiSelectSource(string key)
         {
             // Run the route and when it calls back, show the source
-            CurrentRoom.RunRouteAction(key, new Action(() => { }));
+            CurrentRoom.RunRouteAction(key);
         }
 
         /// <summary>
@@ -894,7 +894,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Helper for property setter. Sets the panel to the given room, latching up all functionality
         /// </summary>
-        void RefreshCurrentRoom(EssentialsHuddleVtc1Room room)
+        void RefreshCurrentRoom(IEssentialsHuddleVtc1Room room)
         {
 
             if (_CurrentRoom != null)
@@ -969,7 +969,7 @@ namespace PepperDash.Essentials
             }
         }
 
-        void SetCurrentRoom(EssentialsHuddleVtc1Room room)
+        void SetCurrentRoom(IEssentialsHuddleVtc1Room room)
         {
             if (_CurrentRoom == room) return;
             // Disconnect current (probably never called)
@@ -1004,7 +1004,7 @@ namespace PepperDash.Essentials
             UpdateMCJoins(_CurrentRoom);
         }
 
-        void UpdateMCJoins(EssentialsHuddleVtc1Room room)
+        void UpdateMCJoins(IEssentialsHuddleVtc1Room room)
         {
             TriList.SetString(UIStringJoin.RoomMcUrl, room.MobileControlRoomBridge.McServerUrl);
             TriList.SetString(UIStringJoin.RoomMcQrCodeUrl, room.MobileControlRoomBridge.QrCodeUrl);
@@ -1443,7 +1443,7 @@ namespace PepperDash.Essentials
     /// </summary>
     public interface IAVWithVCDriver : IAVDriver
     {
-        EssentialsHuddleVtc1Room CurrentRoom { get; }
+        IEssentialsHuddleVtc1Room CurrentRoom { get; }
 
         PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; }
         /// <summary>

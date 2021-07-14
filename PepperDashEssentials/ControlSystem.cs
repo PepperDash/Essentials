@@ -452,7 +452,7 @@ namespace PepperDash.Essentials
 
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
-                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
+                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as IEssentialsRoom;
                 if (room != null)
                 {
                     // default IPID
@@ -474,7 +474,7 @@ namespace PepperDash.Essentials
                         }
                     }
 
-                    if (room is EssentialsHuddleSpaceRoom)
+                    if (room is IEssentialsHuddleSpaceRoom)
                     {
                         DeviceManager.AddDevice(room);
 
@@ -486,12 +486,12 @@ namespace PepperDash.Essentials
 
                         CreateMobileControlBridge(room);
                     }
-                    else if (room is EssentialsHuddleVtc1Room)
+                    else if (room is IEssentialsHuddleVtc1Room)
                     {
                         DeviceManager.AddDevice(room);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
+                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
@@ -524,7 +524,7 @@ namespace PepperDash.Essentials
 
         }
 
-        private static void CreateMobileControlBridge(EssentialsRoomBase room)
+        private static void CreateMobileControlBridge(IEssentialsRoom room)
         {
             var mobileControl = GetMobileControlDevice();
 
