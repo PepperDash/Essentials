@@ -13,7 +13,7 @@ using PepperDash.Essentials.Core.Config;
 namespace PepperDash.Essentials.Core
 {
 	[Description("Wrapper class for GLS Cresnet Partition Sensor")]
-	public class GlsPartitionSensorController : CrestronGenericBridgeableBaseDevice
+	public class GlsPartitionSensorController : CrestronGenericBridgeableBaseDevice, IPartitionStateProvider
 	{
 		private GlsPartCn _partitionSensor;
 
