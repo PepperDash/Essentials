@@ -233,6 +233,7 @@
     <Compile Include="Interfaces\ILogStringsWithLevel.cs" />
     <Compile Include="Occupancy\GlsOccupancySensorPropertiesConfig.cs" />
     <Compile Include="Occupancy\GlsOirOccupancySensorController.cs" />
+    <Compile Include="PartitionSensor\IPartitionStateProvider.cs" />
     <Compile Include="Queues\ComsMessage.cs" />
     <Compile Include="Queues\ProcessStringMessage.cs" />
     <Compile Include="Queues\GenericQueue.cs" />
@@ -287,6 +288,7 @@
     <Compile Include="Remotes\CrestronRemotePropertiesConfig.cs" />
     <Compile Include="Remotes\Hrxx0WirelessRemoteController.cs" />
     <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />
+    <Compile Include="Room\Combining\EssentialsRoomCombinerPropertiesConfig.cs" />
     <Compile Include="Room\EssentialsRoomBase.cs" />
     <Compile Include="Room\Config\EssentialsRoomScheduledEventsConfig.cs" />
     <Compile Include="Room\IEssentialsRoom.cs" />
