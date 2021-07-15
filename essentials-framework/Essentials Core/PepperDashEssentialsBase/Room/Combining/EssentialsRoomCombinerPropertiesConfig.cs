@@ -8,21 +8,30 @@ using PepperDash.Core;
 
 using Newtonsoft.Json;
 
-namespace PepperDash.Essentials.Core.Room
+namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// Config properties for an EssentialsRoomCombiner device
     /// </summary>
     public class EssentialsRoomCombinerPropertiesConfig
     {
+        /// <summary>
+        /// The list of partitions that device the rooms
+        /// </summary>
         [JsonProperty("partitions")]
         public List<PartitionConfig> Partitions {get; set;}
 
+        /// <summary>
+        /// The list of combinations scenarios for the rooms
+        /// </summary>
         [JsonProperty("scenarios")]
-        public List<RoomCombinationScenario> Scenarios { get; set; }
+        public List<RoomCombinationScenarioConfig> Scenarios { get; set; }
 
-        [JsonProperty("rooms")]
-        public List<IKeyed> Rooms {get; set;}
+        /// <summary>
+        /// The list of rooms that can be combined
+        /// </summary>
+        [JsonProperty("roomMap")]
+        public Dictionary<string, string> RoomMap {get; set;}
     }
 
     /// <summary>
@@ -46,7 +55,7 @@ namespace PepperDash.Essentials.Core.Room
     /// <summary>
     /// Config propeties for a room combination scenario
     /// </summary>
-    public class RoomCombinationScenario : IKeyName
+    public class RoomCombinationScenarioConfig : IKeyName
     {
         [JsonProperty("partitionStates")]
         public List<PartitionState> PartitionStates { get; set; }
@@ -67,6 +76,6 @@ namespace PepperDash.Essentials.Core.Room
         public string PartitionKey { get; set; }
 
         [JsonProperty("partitionSensedState")]
-        public bool PartitionSensedState { get; set; }
+        public bool PartitionPresent { get; set; }
     }
 }
