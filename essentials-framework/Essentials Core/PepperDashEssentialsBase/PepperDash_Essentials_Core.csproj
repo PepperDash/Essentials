@@ -288,6 +288,7 @@
     <Compile Include="Remotes\CrestronRemotePropertiesConfig.cs" />
     <Compile Include="Remotes\Hrxx0WirelessRemoteController.cs" />
     <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />
+    <Compile Include="Room\Combining\EssentialsRoomCombiner.cs" />
     <Compile Include="Room\Combining\EssentialsRoomCombinerPropertiesConfig.cs" />
     <Compile Include="Room\Combining\IEssentialsRoomCombiner.cs" />
     <Compile Include="Room\Combining\RoomCombinationScenario.cs" />

@@ -28,10 +28,22 @@ namespace PepperDash.Essentials.Core
         public List<RoomCombinationScenarioConfig> Scenarios { get; set; }
 
         /// <summary>
-        /// The list of rooms that can be combined
+        /// The list of rooms keys that can be combined
         /// </summary>
         [JsonProperty("roomMap")]
-        public Dictionary<string, string> RoomMap {get; set;}
+        public List<string> RoomKeys {get; set;}
+
+        /// <summary>
+        /// Set to true to default to manual mode
+        /// </summary>
+        [JsonProperty("defaultToManualMode")]
+        public bool defaultToManualMode { get; set; }
+
+        /// <summary>
+        /// The key of the scenario to default to at system startup if in manual mode
+        /// </summary>
+        [JsonProperty("defaultScenarioKey")]
+        public string defaultScenarioKey { get; set; }
     }
 
     /// <summary>
@@ -54,8 +66,8 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Keys of the rooms that this partion would be located between
         /// </summary>
-        [JsonProperty("roomKeys")]
-        public List<string> RoomKeys { get; set; }
+        [JsonProperty("adjacentRoomKeys")]
+        public List<string> AdjacentRoomKeys { get; set; }
     }
 
     /// <summary>
@@ -72,11 +84,14 @@ namespace PepperDash.Essentials.Core
         [JsonProperty("partitionStates")]
         public List<PartitionState> PartitionStates { get; set; }
 
-        [JsonProperty("enabledRoomKeys")]
-        public List<string> EnabledRoomKeys { get; set; }
+        [JsonProperty("roomMap")]
+        public Dictionary<string, string> RoomMap { get; set; }
 
-        [JsonProperty("actions")]
-        public List<DeviceActionWrapper> Actions { get; set; }    
+        [JsonProperty("activationActions")]
+        public List<DeviceActionWrapper> ActivationActions { get; set; }
+
+        [JsonProperty("deactivationActions")]
+        public List<DeviceActionWrapper> DeactivationActions { get; set; }    
     }
 
     /// <summary>
