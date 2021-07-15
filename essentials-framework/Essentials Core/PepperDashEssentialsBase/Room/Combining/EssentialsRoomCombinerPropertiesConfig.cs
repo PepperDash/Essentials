@@ -39,6 +39,12 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class PartitionConfig : IKeyName
     {
+        [JsonProperty("key")]
+        public string Key { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
         /// <summary>
         /// Key of the device that implements IPartitionStateProvider to provide the state of the partition
         /// </summary>
@@ -57,6 +63,12 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public class RoomCombinationScenarioConfig : IKeyName
     {
+        [JsonProperty("key")]
+        public string Key { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
         [JsonProperty("partitionStates")]
         public List<PartitionState> PartitionStates { get; set; }
 
