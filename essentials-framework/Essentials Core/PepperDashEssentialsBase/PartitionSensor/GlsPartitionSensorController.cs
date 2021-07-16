@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Core
 
 		public StringFeedback NameFeedback { get; private set; }
 		public BoolFeedback EnableFeedback { get; private set; }
-		public BoolFeedback PartitionSensedFeedback { get; private set; }
+		public BoolFeedback PartitionPresentFeedback { get; private set; }
 		public BoolFeedback PartitionNotSensedFeedback { get; private set; }
 		public IntFeedback SensitivityFeedback { get; private set; }
 
@@ -40,7 +40,7 @@ namespace PepperDash.Essentials.Core
 
                 NameFeedback = new StringFeedback(() => Name);
                 EnableFeedback = new BoolFeedback(() => _partitionSensor.EnableFeedback.BoolValue);
-                PartitionSensedFeedback = new BoolFeedback(() => _partitionSensor.PartitionSensedFeedback.BoolValue);
+                PartitionPresentFeedback = new BoolFeedback(() => _partitionSensor.PartitionSensedFeedback.BoolValue);
                 PartitionNotSensedFeedback = new BoolFeedback(() => _partitionSensor.PartitionNotSensedFeedback.BoolValue);
                 SensitivityFeedback = new IntFeedback(() => _partitionSensor.SensitivityFeedback.UShortValue);
 
@@ -61,7 +61,7 @@ namespace PepperDash.Essentials.Core
 					}
 				case (GlsPartCn.PartitionSensedFeedbackEventId):
 					{
-						PartitionSensedFeedback.FireUpdate();
+						PartitionPresentFeedback.FireUpdate();
 						break;
 					}
 				case (GlsPartCn.PartitionNotSensedFeedbackEventId):
@@ -186,7 +186,7 @@ namespace PepperDash.Essentials.Core
 			// link output to simpl
 			IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
 			EnableFeedback.LinkInputSig(trilist.BooleanInput[joinMap.Enable.JoinNumber]);
-			PartitionSensedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PartitionSensed.JoinNumber]);
+			PartitionPresentFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PartitionSensed.JoinNumber]);
 			PartitionNotSensedFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PartitionNotSensed.JoinNumber]);
 			SensitivityFeedback.LinkInputSig(trilist.UShortInput[joinMap.Sensitivity.JoinNumber]);
 
@@ -216,7 +216,7 @@ namespace PepperDash.Essentials.Core
 			IsOnline.FireUpdate();
 			NameFeedback.FireUpdate();
 			EnableFeedback.FireUpdate();
-			PartitionSensedFeedback.FireUpdate();
+			PartitionPresentFeedback.FireUpdate();
 			PartitionNotSensedFeedback.FireUpdate();
 			SensitivityFeedback.FireUpdate();
 		}

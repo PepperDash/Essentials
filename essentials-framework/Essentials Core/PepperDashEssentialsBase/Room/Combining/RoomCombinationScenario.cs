@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Core
 
         public List<PartitionState> PartitionStates { get; private set; }
 
-        public Dictionary<string, string> EnabledRoomMap { get; set; }
+        public Dictionary<string, string> UiMap { get; set; }
 
         private bool _isActive;
 
@@ -39,7 +39,7 @@ namespace PepperDash.Essentials.Core
 
             PartitionStates = config.PartitionStates;
 
-            EnabledRoomMap = config.RoomMap;
+            UiMap = config.UiMap;
 
             activationActions = config.ActivationActions;
 

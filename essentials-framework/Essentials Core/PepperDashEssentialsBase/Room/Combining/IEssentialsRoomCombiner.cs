@@ -11,7 +11,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Describes the functionality for an EssentailsRoomCombiner device
     /// </summary>
-    public interface IEssentialsRoomCombiner
+    public interface IEssentialsRoomCombiner : IKeyed
     {
         /// <summary>
         /// Indicates that the room combination scenario has changed
@@ -51,7 +51,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// The partition
         /// </summary>
-        List<IPartitionStateProvider> PartitionStateProviders { get; }
+        List<IPartitionStateProvider> Partitions { get; }
 
         /// <summary>
         /// Toggles the state of a manual partition sensor
@@ -77,6 +77,16 @@ namespace PepperDash.Essentials.Core
         /// Activates this room combination scenario
         /// </summary>
         void Activate();
+
+        /// <summary>
+        /// The state of the partitions that would activate this scenario
+        /// </summary>
+        List<PartitionState> PartitionStates { get; }
+
+        /// <summary>
+        /// The mapping of UIs by key to rooms by key
+        /// </summary>
+        Dictionary<string, string> UiMap { get; set; }
     }
 
 }

@@ -84,8 +84,8 @@ namespace PepperDash.Essentials.Core
         [JsonProperty("partitionStates")]
         public List<PartitionState> PartitionStates { get; set; }
 
-        [JsonProperty("roomMap")]
-        public Dictionary<string, string> RoomMap { get; set; }
+        [JsonProperty("uiMap")]
+        public Dictionary<string, string> UiMap { get; set; }
 
         [JsonProperty("activationActions")]
         public List<DeviceActionWrapper> ActivationActions { get; set; }

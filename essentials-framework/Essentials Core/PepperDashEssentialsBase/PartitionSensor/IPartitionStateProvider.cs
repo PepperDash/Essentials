@@ -13,15 +13,24 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IPartitionStateProvider : IKeyName
     {
-        BoolFeedback PartitionSensedFeedback { get; }
+        BoolFeedback PartitionPresentFeedback { get; }
     }
 
-    public interface IManualPartitionSensor : IPartitionStateProvider
+    /// <summary>
+    /// Describes the functionality of a device that can provide partition state either manually via user input or optionally via a sensor state
+    /// </summary>
+    public interface IPartitionController : IPartitionStateProvider
     {
+        List<string> AdjacentRoomKeys { get; set; }
+
         void SetPartitionStatePresent();
 
         void SetPartitionStateNotPresent();
 
         void ToggglePartitionState();
+
+        void SetManualMode();
+
+        void SetAutoMode();
     }
 }

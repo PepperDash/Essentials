@@ -42,14 +42,19 @@ namespace PepperDash.Essentials.Core
 
         void CreateScenarios()
         {
+            RoomCombinationScenarios = new List<IRoomCombinationScenario>();
+
             foreach (var scenarioConfig in _propertiesConfig.Scenarios)
             {
                 var scenario = new RoomCombinationScenario(scenarioConfig);
+                RoomCombinationScenarios.Add(scenario);
             }
         }
 
         void SetRooms()
         {
+            _rooms = new List<IEssentialsRoom>();
+
             foreach (var roomKey in _propertiesConfig.RoomKeys)
             {
                 var room = DeviceManager.GetDeviceForKey(roomKey) as IEssentialsRoom;
@@ -62,7 +67,36 @@ namespace PepperDash.Essentials.Core
 
         void SetupPartitionStateProviders()
         {
+            foreach (var pConfig in _propertiesConfig.Partitions)
+            {
+                var sensor = DeviceManager.GetDeviceForKey(pConfig.DeviceKey) as IPartitionStateProvider;
 
+                var partition = new EssentialsPartitionController(pConfig.Key, pConfig.Name, sensor, _propertiesConfig.defaultToManualMode, pConfig.AdjacentRoomKeys);
+
+                partition.PartitionPresentFeedback.OutputChange += PartitionPresentFeedback_OutputChange;
+
+                Partitions.Add(partition);
+            }
+        }
+
+        void PartitionPresentFeedback_OutputChange(object sender, FeedbackEventArgs e)
+        {
+            DetermineRoomCombinationScenario();
+        }
+
+
+        /// <summary>
+        /// Determines the current room combination scenario based on the state of the partition sensors
+        /// </summary>
+        void DetermineRoomCombinationScenario()
+        {
+            //RoomCombinationScenarios.FirstOrDefault((s) =>
+            //{
+            //    foreach (var partitionState in s.PartitionStates)
+            //    {
+            //        var partition = Partitions.FirstOrDefault(
+            //    }
+            //});
         }
 
         #region IEssentialsRoomCombiner Members
@@ -111,11 +145,11 @@ namespace PepperDash.Essentials.Core
 
         public List<IRoomCombinationScenario> RoomCombinationScenarios { get; private set; }
 
-        public List<IPartitionStateProvider> PartitionStateProviders { get; private set; }
+        public List<IPartitionStateProvider> Partitions { get; private set; }
 
         public void TogglePartitionState(string partitionKey)
         {
-            var partition = PartitionStateProviders.FirstOrDefault((p) => p.Key.Equals(partitionKey)) as IManualPartitionSensor;
+            var partition = Partitions.FirstOrDefault((p) => p.Key.Equals(partitionKey)) as IPartitionController;
 
             if (partition != null)
             {
