@@ -44,6 +44,9 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         [JsonProperty("defaultScenarioKey")]
         public string defaultScenarioKey { get; set; }
+
+        [JsonProperty("scenarioChangeDebounceTimeSeconds")]
+        public int ScenarioChangeDebounceTimeSeconds { get; set; }
     }
 
     /// <summary>

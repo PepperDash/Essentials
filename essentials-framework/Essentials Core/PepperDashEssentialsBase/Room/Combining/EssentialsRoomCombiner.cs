@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using PepperDash.Core;
+
 namespace PepperDash.Essentials.Core
 {
     public class EssentialsRoomCombiner : EssentialsDevice, IEssentialsRoomCombiner
@@ -16,10 +18,19 @@ namespace PepperDash.Essentials.Core
 
         private bool isInAutoMode;
 
+        private CTimer _scenarioChangeDebounceTimer;
+
+        private int _scenarioChangeDebounceTimeSeconds = 10; // default to 10s
+
         public EssentialsRoomCombiner(string key, EssentialsRoomCombinerPropertiesConfig props)
             : base(key)
         {
             _propertiesConfig = props;
+
+            if (_propertiesConfig.ScenarioChangeDebounceTimeSeconds > 0)
+            {
+                _scenarioChangeDebounceTimeSeconds = _propertiesConfig.ScenarioChangeDebounceTimeSeconds;
+            }
 
             IsInAutoModeFeedback = new BoolFeedback(() => isInAutoMode);
 
@@ -81,22 +92,61 @@ namespace PepperDash.Essentials.Core
 
         void PartitionPresentFeedback_OutputChange(object sender, FeedbackEventArgs e)
         {
-            DetermineRoomCombinationScenario();
+            StartDebounceTimer();
         }
 
+        void StartDebounceTimer()
+        {
+            var time = _scenarioChangeDebounceTimeSeconds * 1000;
+
+            if (_scenarioChangeDebounceTimer == null)
+            {
+                _scenarioChangeDebounceTimer = new CTimer((o) => DetermineRoomCombinationScenario(), time);
+            }
+            else
+            {
+                _scenarioChangeDebounceTimer.Reset(time);
+            }
+        }
 
         /// <summary>
         /// Determines the current room combination scenario based on the state of the partition sensors
         /// </summary>
         void DetermineRoomCombinationScenario()
         {
-            //RoomCombinationScenarios.FirstOrDefault((s) =>
-            //{
-            //    foreach (var partitionState in s.PartitionStates)
-            //    {
-            //        var partition = Partitions.FirstOrDefault(
-            //    }
-            //});
+            if (_scenarioChangeDebounceTimer != null)
+            {
+                _scenarioChangeDebounceTimer.Dispose();
+                _scenarioChangeDebounceTimer = null;
+            }
+
+            var currentScenario = RoomCombinationScenarios.FirstOrDefault((s) =>
+            {
+                // iterate the partition states
+                foreach (var partitionState in s.PartitionStates)
+                {
+                    // get the partition by key
+                    var partition = Partitions.FirstOrDefault((p) => p.Key.Equals(partitionState.PartitionKey));
+
+                    if (partition != null && partitionState.PartitionPresent != partition.PartitionPresentFeedback.BoolValue)
+                    {
+                        // the partition can't be found or the state doesn't match
+                        return false;
+                    }
+                    else
+                    {
+                        // check the next partition state
+                        continue;
+                    }
+                }
+                // if it hasn't returned false by now we have the matching scenario
+                return true;
+            });
+
+            if (currentScenario != null)
+            {
+                CurrentScenario = currentScenario;
+            }
         }
 
         #region IEssentialsRoomCombiner Members
@@ -114,6 +164,7 @@ namespace PepperDash.Essentials.Core
                 if (value != _currentScenario)
                 {
                     _currentScenario = value;
+                    Debug.Console(1, this, "Current Scenario: {0}", _currentScenario.Name);
                     var handler = RoomCombinationScenarioChanged;
                     if (handler != null)
                     {
@@ -145,7 +196,7 @@ namespace PepperDash.Essentials.Core
 
         public List<IRoomCombinationScenario> RoomCombinationScenarios { get; private set; }
 
-        public List<IPartitionStateProvider> Partitions { get; private set; }
+        public List<IPartitionController> Partitions { get; private set; }
 
         public void TogglePartitionState(string partitionKey)
         {
@@ -159,7 +210,35 @@ namespace PepperDash.Essentials.Core
 
         public void SetRoomCombinationScenario(string scenarioKey)
         {
+            if (isInAutoMode)
+            {
+                Debug.Console(0, this, "Cannot set room combination scenario when in auto mode.  Set to auto mode first.");
+                return;
+            }
 
+            // Get the scenario
+            var scenario = RoomCombinationScenarios.FirstOrDefault((s) => s.Key.Equals(scenarioKey));
+
+            // Set the parition states from the scenario manually
+            if (scenario != null)
+            {
+                foreach (var partitionState in scenario.PartitionStates)
+                {
+                    var partition = Partitions.FirstOrDefault((p) => p.Key.Equals(partitionState.PartitionKey));
+
+                    if (partition != null)
+                    {
+                        if (partitionState.PartitionPresent)
+                        {
+                            partition.SetPartitionStatePresent();
+                        }
+                        else
+                        {
+                            partition.SetPartitionStateNotPresent();
+                        }
+                    }
+                }
+            }
         }
 
         #endregion
