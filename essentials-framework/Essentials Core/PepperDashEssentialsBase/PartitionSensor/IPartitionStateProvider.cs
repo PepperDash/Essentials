@@ -21,7 +21,7 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public interface IPartitionController : IPartitionStateProvider
     {
-        List<string> AdjacentRoomKeys { get; set; }
+        List<string> AdjacentRoomKeys { get; }
 
         void SetPartitionStatePresent();
 
