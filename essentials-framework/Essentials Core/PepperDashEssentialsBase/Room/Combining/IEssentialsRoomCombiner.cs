@@ -51,7 +51,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// The partition
         /// </summary>
-        List<IPartitionStateProvider> Partitions { get; }
+        List<IPartitionController> Partitions { get; }
 
         /// <summary>
         /// Toggles the state of a manual partition sensor
