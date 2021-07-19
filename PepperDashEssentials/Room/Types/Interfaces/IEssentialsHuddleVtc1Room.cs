@@ -16,9 +16,9 @@ namespace PepperDash.Essentials
 
         IHasScheduleAwareness ScheduleSource { get; }
 
-        BoolFeedback InCallFeedback { get; }
+        new BoolFeedback InCallFeedback { get; }
 
-        BoolFeedback PrivacyModeIsOnFeedback { get; }
+        new BoolFeedback PrivacyModeIsOnFeedback { get; }
 
         string DefaultCodecRouteString { get; }
     }
