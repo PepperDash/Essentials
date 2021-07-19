@@ -162,6 +162,7 @@
     <Compile Include="Config\Essentials\ConfigWriter.cs" />
     <Compile Include="Config\Essentials\EssentialsConfig.cs" />
     <Compile Include="Config\SourceDevicePropertiesConfigBase.cs" />
+    <Compile Include="Crestron IO\C2nIo\C2nIoController.cs" />
     <Compile Include="Crestron IO\C2nRts\C2nRthsController.cs" />
     <Compile Include="Crestron IO\Cards\C3CardControllerBase.cs" />
     <Compile Include="Crestron IO\Cards\C3Com3Controller.cs" />
