@@ -257,7 +257,7 @@ namespace PepperDash.Essentials.Core
 
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
-                Debug.Console(1, "Factory Attempting to create new C2N-RTHS Device");
+                Debug.Console(1, "Factory Attempting to create new GlsPartitionSensorController Device");
 
                 return new GlsPartitionSensorController(dc.Key, GetGlsPartCnDevice, dc);
             }
