@@ -7,7 +7,7 @@ namespace PepperDash.Essentials.Core
     {
         [JsonProperty("deviceKeys")] public List<string> DeviceKeys { get; set; }
 
-        OccupancyAggregatorConfig()
+        public OccupancyAggregatorConfig()
         {
             DeviceKeys = new List<string>();
         }
