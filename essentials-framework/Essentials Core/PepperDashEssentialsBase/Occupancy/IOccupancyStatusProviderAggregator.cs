@@ -35,9 +35,38 @@ namespace PepperDash.Essentials.Core
         }
 
         public IOccupancyStatusProviderAggregator(string key, string name, OccupancyAggregatorConfig config)
-            : this(dc.Key, dc.Name)
+            : this(key, name)
         {
-            
+            AddPostActivationAction(() =>
+            {
+                if (config.DeviceKeys.Count == 0)
+                {
+                    return;
+                }
+
+                foreach (var deviceKey in config.DeviceKeys)
+                {
+                    var device = DeviceManager.GetDeviceForKey(deviceKey);
+
+                    if (device == null)
+                    {
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
+                            "Unable to retrieve Occupancy provider with key {0}", deviceKey);
+                        continue;
+                    }
+
+                    var provider = device as IOccupancyStatusProvider;
+
+                    if (provider == null)
+                    {
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
+                            "Device with key {0} does NOT implement IOccupancyStatusProvider. Please check configuration.");
+                        continue;
+                    }
+
+                    AddOccupancyStatusProvider(provider);
+                }
+            });
         }
 
         /// <summary>
@@ -53,13 +82,18 @@ namespace PepperDash.Essentials.Core
         {
             _aggregatedOccupancyStatus.RemoveOutputIn(statusProvider.RoomIsOccupiedFeedback);
         }
+
+        public void ClearOccupancyStatusProviders()
+        {
+            _aggregatedOccupancyStatus.ClearOutputs();
+        }
     }
 
     public class OccupancyAggregatorFactory : EssentialsDeviceFactory<IOccupancyStatusProviderAggregator>
     {
         public OccupancyAggregatorFactory()
         {
-            TypeNames = new List<string> { "glsodtccn" };
+            TypeNames = new List<string> { "occupancyAggregator", "occAggregate" };
         }
 
 
