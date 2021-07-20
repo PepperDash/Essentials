@@ -450,14 +450,13 @@ namespace PepperDash.Essentials
                 return;
             }
 
+            uint fusionIpId = 0xf1;
+
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
                 var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as IEssentialsRoom;
                 if (room != null)
                 {
-                    // default IPID
-                    uint fusionIpId = 0xf1;
-
                     // default to no join map key
                     string fusionJoinMapKey = string.Empty;
 
@@ -515,9 +514,13 @@ namespace PepperDash.Essentials
                         DeviceManager.AddDevice(room);
                     }
 
+                    fusionIpId += 1;
                 }
                 else
+                {
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Cannot create room from config, key '{0}' - Is this intentional?  This may be a valid configuration.", roomConfig.Key);
+                    
+                }
             }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");
