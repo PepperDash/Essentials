@@ -1371,6 +1371,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			public bool CanEditClosedCaption { get; set; }
 			[JsonProperty("can_record")]
 			public bool CanRecord { get; set; }
+			// TODO [ ] 2021-07-20, jkd: Evaluate if event can be used to re-poll participant list
+			// - when in waiting room: "event": "ZRCUserChangedEventJoinedMeeting",
+			// - when admitted to call: "event": "ZRCUserChangedEventUserInfoUpdated",
+			// ISSUE [ ] when a zoom rooms device connects to a call with a waiting room, once admitted the zoom rooms device will be present 2x's in the participant list
+			// - each instance of the zoom rooms device will have a unique user id
 			[JsonProperty("event")]
 			public string Event { get; set; }
 			[JsonProperty("hand_status")]
@@ -1587,7 +1592,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			public string schedule_option2 { get; set; }
 			public string support_callout_type { get; set; }
 			public string toll_free_number { get; set; }
-			public string user_type { get; set; }
+			public string user_type { get; set; }			
 
 			public InfoResult()
 			{

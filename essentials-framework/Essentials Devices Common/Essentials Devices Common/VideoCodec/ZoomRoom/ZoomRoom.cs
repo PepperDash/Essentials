@@ -970,9 +970,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								SendText("echo off");
 								Thread.Sleep(100);
 								// set feedback exclusions
-								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/info/callin_country_list");
+								// TODO [ ] 2021-07-02, jkd - Verify if the /info/ vs /Info/ exludes the unwanted data
+								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/callin_country_list");
 								Thread.Sleep(100);
-								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/info/callout_country_list");
+								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/callout_country_list");
+								Thread.Sleep(100);
+								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/toll_free_callin_list");
 								Thread.Sleep(100);
 
 								if (!_props.DisablePhonebookAutoDownload)
@@ -1277,6 +1280,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 									{
 										var disconnectEvent =
 											JsonConvert.DeserializeObject<zEvent.CallDisconnect>(responseObj.ToString());
+
+										// TODO [ ] 2021-07-20, jkd
+										Debug.Console(1, this, "zEvent disconnectEvent.Successful: {0}", disconnectEvent.Successful);
 
 										if (disconnectEvent.Successful)
 										{
@@ -1585,7 +1591,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								break;
 						}
 
-						var newCall = new CodecActiveCallItem { Status = newStatus };
+						// TODO [ ] 2021-07-20, jkd: Updated to populate name and ID when a new call is constructred
+						var newCall = new CodecActiveCallItem
+						{
+							Name = Status.Call.Info.meeting_list_item.meetingName,
+							Id = Status.Call.Info.meeting_id,
+							Status = newStatus
+						};
 
 						ActiveCalls.Add(newCall);
 
@@ -1601,7 +1613,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 					switch (callStatus)
 					{
-						case zStatus.eCallStatus.IN_MEETING:
+						case zStatus.eCallStatus.IN_MEETING:							
 							existingCall.Status = eCodecCallStatus.Connected;
 							break;
 						case zStatus.eCallStatus.NOT_IN_MEETING:
@@ -1641,7 +1653,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			//clear participants list after call cleanup
 			if (ActiveCalls.Count == 0)
 			{
-				Participants.CurrentParticipants = new List<Participant>();
+				var emptyList = new List<Participant>();
+				Participants.CurrentParticipants = emptyList;
 			}
 		}
 
