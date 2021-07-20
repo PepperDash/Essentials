@@ -213,7 +213,6 @@ namespace PepperDash.Essentials
             {
                 PropertiesConfig = JsonConvert.DeserializeObject<EssentialsConferenceRoomPropertiesConfig>
                     (config.Properties.ToString());
-                DefaultDisplay = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
 
                 VideoCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.VideoCodecKey) as
                     PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
@@ -266,42 +265,7 @@ namespace PepperDash.Essentials
                         return false;
                 });
 
-                var disp = DefaultDisplay as DisplayBase;
-                if (disp != null)
-                {
-                    // Link power, warming, cooling to display
-                    var dispTwoWay = disp as IHasPowerControlWithFeedback;
-                    if (dispTwoWay != null)
-                    {
-                        dispTwoWay.PowerIsOnFeedback.OutputChange += (o, a) =>
-                        {
-                            if (dispTwoWay.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
-                            {
-                                if (!dispTwoWay.PowerIsOnFeedback.BoolValue)
-                                    CurrentSourceInfo = null;
-                                OnFeedback.FireUpdate();
-                            }
-                            if (dispTwoWay.PowerIsOnFeedback.BoolValue)
-                            {
-                                SetDefaultLevels();
-                            }
-                        };
-                    }
-
-                    disp.IsWarmingUpFeedback.OutputChange += (o, a) =>
-                    {
-                        IsWarmingUpFeedback.FireUpdate();
-                        if (!IsWarmingUpFeedback.BoolValue)
-                            (CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
-                    };
-                    disp.IsCoolingDownFeedback.OutputChange += (o, a) =>
-                    {
-                        IsCoolingDownFeedback.FireUpdate();
-                    };
-
-                }
-
-
+                SetupDisplays();
 
                 // Get Microphone Privacy object, if any  MUST HAPPEN AFTER setting InCallFeedback
                 this.MicrophonePrivacy = EssentialsRoomConfigHelper.GetMicrophonePrivacy(PropertiesConfig, this);
@@ -336,6 +300,46 @@ namespace PepperDash.Essentials
             catch (Exception e)
             {
                 Debug.Console(0, this, "Error Initializing Room: {0}", e);
+            }
+        }
+
+        private void SetupDisplays()
+        {
+            //DefaultDisplay = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
+
+            var disp = DefaultDisplay as DisplayBase;
+            if (disp != null)
+            {
+                // Link power, warming, cooling to display
+                var dispTwoWay = disp as IHasPowerControlWithFeedback;
+                if (dispTwoWay != null)
+                {
+                    dispTwoWay.PowerIsOnFeedback.OutputChange += (o, a) =>
+                    {
+                        if (dispTwoWay.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
+                        {
+                            if (!dispTwoWay.PowerIsOnFeedback.BoolValue)
+                                CurrentSourceInfo = null;
+                            OnFeedback.FireUpdate();
+                        }
+                        if (dispTwoWay.PowerIsOnFeedback.BoolValue)
+                        {
+                            SetDefaultLevels();
+                        }
+                    };
+                }
+
+                disp.IsWarmingUpFeedback.OutputChange += (o, a) =>
+                {
+                    IsWarmingUpFeedback.FireUpdate();
+                    if (!IsWarmingUpFeedback.BoolValue)
+                        (CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
+                };
+                disp.IsCoolingDownFeedback.OutputChange += (o, a) =>
+                {
+                    IsCoolingDownFeedback.FireUpdate();
+                };
+
             }
         }
 
