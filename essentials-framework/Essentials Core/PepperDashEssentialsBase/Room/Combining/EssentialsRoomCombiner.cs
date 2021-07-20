@@ -59,8 +59,6 @@ namespace PepperDash.Essentials.Core
 
         void CreateScenarios()
         {
-            RoomCombinationScenarios = new List<IRoomCombinationScenario>();
-
             foreach (var scenarioConfig in _propertiesConfig.Scenarios)
             {
                 var scenario = new RoomCombinationScenario(scenarioConfig);
