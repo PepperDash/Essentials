@@ -27,6 +27,9 @@ namespace PepperDash.Essentials.Core
         {
             _propertiesConfig = props;
 
+            Partitions = new List<IPartitionController>();
+            RoomCombinationScenarios = new List<IRoomCombinationScenario>();
+
             if (_propertiesConfig.ScenarioChangeDebounceTimeSeconds > 0)
             {
                 _scenarioChangeDebounceTimeSeconds = _propertiesConfig.ScenarioChangeDebounceTimeSeconds;
@@ -135,11 +138,6 @@ namespace PepperDash.Essentials.Core
                     {
                         // the partition can't be found or the state doesn't match
                         return false;
-                    }
-                    else
-                    {
-                        // check the next partition state
-                        continue;
                     }
                 }
                 // if it hasn't returned false by now we have the matching scenario
