@@ -7,6 +7,9 @@ assignees: ''
 
 ---
 
+**Was this bug identified in a specific build version?**
+Please note the build version where this bug was identified
+
 **Describe the bug**
 A clear and concise description of what the bug is.  
 
