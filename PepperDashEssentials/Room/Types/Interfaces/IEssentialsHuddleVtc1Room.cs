@@ -12,6 +12,8 @@ namespace PepperDash.Essentials
     {
         EssentialsConferenceRoomPropertiesConfig PropertiesConfig { get; }
 
+        bool ExcludeFromGlobalFunctions { get; }
+
         void RunRouteAction(string routeKey);
 
         IHasScheduleAwareness ScheduleSource { get; }

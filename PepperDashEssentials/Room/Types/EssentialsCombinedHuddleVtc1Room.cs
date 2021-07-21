@@ -75,9 +75,18 @@ namespace PepperDash.Essentials
             {
                 return () =>
                 {
-                    var disp = DefaultDisplay as DisplayBase;
-                    if (disp != null)
-                        return disp.IsWarmingUpFeedback.BoolValue;
+                    var displays = Displays.Where((d) => d is TwoWayDisplayBase) as List<TwoWayDisplayBase>;
+                    if (displays != null)
+                    {
+                        var warmingDisplays = displays.Where((d) => d.IsWarmingUpFeedback.BoolValue);
+
+                        if (warmingDisplays.Count() > 0)
+                        {
+                            return true;
+                        }
+                        else
+                            return false;
+                    }
                     else
                         return false;
                 };
@@ -92,9 +101,18 @@ namespace PepperDash.Essentials
             {
                 return () =>
                 {
-                    var disp = DefaultDisplay as DisplayBase;
-                    if (disp != null)
-                        return disp.IsCoolingDownFeedback.BoolValue;
+                    var displays = Displays.Where((d) => d is TwoWayDisplayBase) as List<TwoWayDisplayBase>;
+                    if (displays != null)
+                    {
+                        var coolingDisplays = displays.Where((d) => d.IsCoolingDownFeedback.BoolValue);
+
+                        if (coolingDisplays.Count() > 0)
+                        {
+                            return true;
+                        }
+                        else
+                            return false;
+                    }
                     else
                         return false;
                 };
@@ -306,6 +324,53 @@ namespace PepperDash.Essentials
         private void SetupDisplays()
         {
             //DefaultDisplay = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
+
+            var destinationList = ConfigReader.ConfigObject.DestinationLists[PropertiesConfig.DestinationListKey];
+
+            foreach (var destination in destinationList)
+            {
+                var dest = destination.Value.SinkDevice as IRoutingSinkWithSwitching;
+
+                if (dest != null)
+                {
+                    Displays.Add(dest);
+                }
+
+                var display = dest as DisplayBase;
+                if (display != null)
+                {
+                    // Link power, warming, cooling to display
+                    var dispTwoWay = display as IHasPowerControlWithFeedback;
+                    if (dispTwoWay != null)
+                    {
+                        dispTwoWay.PowerIsOnFeedback.OutputChange += (o, a) =>
+                        {
+                            if (dispTwoWay.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
+                            {
+                                if (!dispTwoWay.PowerIsOnFeedback.BoolValue)
+                                    CurrentSourceInfo = null;
+                                OnFeedback.FireUpdate();
+                            }
+                            if (dispTwoWay.PowerIsOnFeedback.BoolValue)
+                            {
+                                SetDefaultLevels();
+                            }
+                        };
+                    }
+
+                    display.IsWarmingUpFeedback.OutputChange += (o, a) =>
+                    {
+                        IsWarmingUpFeedback.FireUpdate();
+                        if (!IsWarmingUpFeedback.BoolValue)
+                            (CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
+                    };
+                    display.IsCoolingDownFeedback.OutputChange += (o, a) =>
+                    {
+                        IsCoolingDownFeedback.FireUpdate();
+                    };
+
+                }
+            }
 
             var disp = DefaultDisplay as DisplayBase;
             if (disp != null)
