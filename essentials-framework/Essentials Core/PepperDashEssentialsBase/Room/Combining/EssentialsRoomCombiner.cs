@@ -54,6 +54,15 @@ namespace PepperDash.Essentials.Core
                 SetupPartitionStateProviders();
 
                 SetRooms();
+
+                if (isInAutoMode)
+                {
+                    DetermineRoomCombinationScenario();
+                }
+                else
+                {
+                    SetRoomCombinationScenario(_propertiesConfig.defaultScenarioKey);
+                }
             });
         }
 
