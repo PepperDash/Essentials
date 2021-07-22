@@ -39,6 +39,10 @@ namespace PepperDash.Essentials.Room.Config
 		    {
 		        return new EssentialsDualDisplayRoom(roomConfig);
 		    }
+            if (typeName == "combinedhuddlevtc1")
+            {
+                return new EssentialsCombinedHuddleVtc1Room(roomConfig);
+            }
 
 		    return typeName != "techroom" ? null : new EssentialsTechRoom(roomConfig);
 		}
