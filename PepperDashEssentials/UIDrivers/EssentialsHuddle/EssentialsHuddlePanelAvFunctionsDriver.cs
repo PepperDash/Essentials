@@ -306,7 +306,7 @@ namespace PepperDash.Essentials
 
 			TriList.SetSigFalseAction(UIBoolJoin.DisplayPowerTogglePress, () =>
 				{
-                    if (CurrentRoom != null && CurrentRoom.DefaultDisplay is IHasPowerControl)
+                    if (CurrentRoom != null && CurrentRoom.DefaultDisplay != null && CurrentRoom.DefaultDisplay is IHasPowerControl)
                         (CurrentRoom.DefaultDisplay as IHasPowerControl).PowerToggle();
 				});
 

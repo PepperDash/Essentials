@@ -57,10 +57,11 @@ namespace PepperDash.Essentials
             {
                 return () =>
                 {
-                    var disp = DefaultDisplay as DisplayBase;
+                    var displays = Displays.Where((d) => d is DisplayBase) as List<DisplayBase>;
+
                     var val = CurrentSourceInfo != null
                         && CurrentSourceInfo.Type == eSourceListItemType.Route
-                        && disp != null;
+                        && displays.Count() > 0;
                     //&& disp.PowerIsOnFeedback.BoolValue;
                     return val;
                 };
@@ -246,6 +247,8 @@ namespace PepperDash.Essentials
 
                 DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IBasicVolumeControls;
 
+                Displays = new List<IRoutingSinkWithSwitching>();
+
                 Initialize();
             }
             catch (Exception e)
@@ -347,8 +350,8 @@ namespace PepperDash.Essentials
                         {
                             if (dispTwoWay.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
                             {
-                                if (!dispTwoWay.PowerIsOnFeedback.BoolValue)
-                                    CurrentSourceInfo = null;
+                                //if (!dispTwoWay.PowerIsOnFeedback.BoolValue)
+                                //    CurrentSourceInfo = null;
                                 OnFeedback.FireUpdate();
                             }
                             if (dispTwoWay.PowerIsOnFeedback.BoolValue)
@@ -370,41 +373,6 @@ namespace PepperDash.Essentials
                     };
 
                 }
-            }
-
-            var disp = DefaultDisplay as DisplayBase;
-            if (disp != null)
-            {
-                // Link power, warming, cooling to display
-                var dispTwoWay = disp as IHasPowerControlWithFeedback;
-                if (dispTwoWay != null)
-                {
-                    dispTwoWay.PowerIsOnFeedback.OutputChange += (o, a) =>
-                    {
-                        if (dispTwoWay.PowerIsOnFeedback.BoolValue != OnFeedback.BoolValue)
-                        {
-                            if (!dispTwoWay.PowerIsOnFeedback.BoolValue)
-                                CurrentSourceInfo = null;
-                            OnFeedback.FireUpdate();
-                        }
-                        if (dispTwoWay.PowerIsOnFeedback.BoolValue)
-                        {
-                            SetDefaultLevels();
-                        }
-                    };
-                }
-
-                disp.IsWarmingUpFeedback.OutputChange += (o, a) =>
-                {
-                    IsWarmingUpFeedback.FireUpdate();
-                    if (!IsWarmingUpFeedback.BoolValue)
-                        (CurrentVolumeControls as IBasicVolumeWithFeedback).SetVolume(DefaultVolume);
-                };
-                disp.IsCoolingDownFeedback.OutputChange += (o, a) =>
-                {
-                    IsCoolingDownFeedback.FireUpdate();
-                };
-
             }
         }
 
@@ -624,8 +592,8 @@ namespace PepperDash.Essentials
                     if (string.IsNullOrEmpty(item.VolumeControlKey)
                         || item.VolumeControlKey.Equals("$defaultAudio", StringComparison.OrdinalIgnoreCase))
                         volDev = DefaultVolumeControls;
-                    else if (item.VolumeControlKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
-                        volDev = DefaultDisplay as IBasicVolumeControls;
+                    //else if (item.VolumeControlKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
+                    //    volDev = DefaultDisplay as IBasicVolumeControls;
                     // Or a specific device, probably rarely used.
                     else
                     {
@@ -717,14 +685,16 @@ namespace PepperDash.Essentials
             // if there is a $defaultAll on route, run two separate
             if (route.DestinationKey.Equals("$defaultAll", StringComparison.OrdinalIgnoreCase))
             {
-                // Going to assume a single-path route for now
-                var tempVideo = new SourceRouteListItem
+                foreach (var display in Displays)
                 {
-                    DestinationKey = "$defaultDisplay",
-                    SourceKey = route.SourceKey,
-                    Type = eRoutingSignalType.Video
-                };
-                DoRoute(tempVideo);
+                    var tempVideo = new SourceRouteListItem
+                    {
+                        DestinationKey = display.Key,
+                        SourceKey = route.SourceKey,
+                        Type = eRoutingSignalType.Video
+                    };
+                    DoRoute(tempVideo);
+                }
             }
             else
                 DoRoute(route);
@@ -740,11 +710,11 @@ namespace PepperDash.Essentials
             IRoutingSink dest = null;
 
             if (route.DestinationKey.Equals("$defaultaudio", StringComparison.OrdinalIgnoreCase))
-                dest = DefaultAudioDevice as IRoutingSinkNoSwitching;
-            else if (route.DestinationKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
-                dest = DefaultDisplay;
+                dest = DefaultAudioDevice as IRoutingSink;
+            //else if (route.DestinationKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
+            //    dest = DefaultDisplay;
             else
-                dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSinkNoSwitching;
+                dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSink;
 
             if (dest == null)
             {
