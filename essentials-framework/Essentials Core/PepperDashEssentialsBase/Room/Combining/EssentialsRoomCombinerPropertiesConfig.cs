@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// The list of rooms keys that can be combined
         /// </summary>
-        [JsonProperty("roomMap")]
+        [JsonProperty("roomKeys")]
         public List<string> RoomKeys {get; set;}
 
         /// <summary>

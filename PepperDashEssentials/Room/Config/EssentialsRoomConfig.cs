@@ -187,6 +187,12 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 
+        /// <summary>
+        /// Indicates if this room represents a combination of other rooms
+        /// </summary>
+        [JsonProperty("isRoomCombinationScenario")]
+        public bool IsRoomCombinationScenario { get; set; }
+
         public EssentialsRoomPropertiesConfig()
         {
             LogoLight = new EssentialsLogoPropertiesConfig();

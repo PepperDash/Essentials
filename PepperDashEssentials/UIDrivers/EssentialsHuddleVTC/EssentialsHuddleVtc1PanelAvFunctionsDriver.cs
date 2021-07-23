@@ -448,7 +448,7 @@ namespace PepperDash.Essentials
 				// and the LastMeetingDismissed != this meeting
 
 				var lastMeetingDismissed = meetings.FirstOrDefault(m => m.Id == LastMeetingDismissedId);
-				Debug.Console(0, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
+				Debug.Console(1, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
 					CurrentRoom.OnFeedback.BoolValue,
 					LastMeetingDismissedId,
 					lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToShortTimeString() : "");

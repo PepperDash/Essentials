@@ -16,6 +16,8 @@ namespace PepperDash.Essentials
 {
     public class EssentialsTouchpanelController : EssentialsDevice, IHasBasicTriListWithSmartObject
 	{
+        private CrestronTouchpanelPropertiesConfig _propertiesConfig;
+
 		public BasicTriListWithSmartObject Panel { get; private set; }
 
 		public PanelDriverBase PanelDriver { get; private set; }
@@ -50,6 +52,7 @@ namespace PepperDash.Essentials
 		public EssentialsTouchpanelController(string key, string name, string type, CrestronTouchpanelPropertiesConfig props, uint id)
 			: base(key, name)
 		{
+            _propertiesConfig = props;
 
             Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Creating touchpanel hardware...");
 			type = type.ToLower();
@@ -124,7 +127,37 @@ namespace PepperDash.Essentials
             Panel.LoadSmartObjects(sgdName);
             Panel.SigChange += Panel_SigChange;
 
+            AddPostActivationAction(() =>
+            {
+                // Check for IEssentialsRoomCombiner in DeviceManager and if found, subscribe to its event
+
+                var roomCombiner = DeviceManager.AllDevices.FirstOrDefault((d) => d is IEssentialsRoomCombiner) as IEssentialsRoomCombiner;
+
+                if (roomCombiner != null)
+                {
+                    roomCombiner.RoomCombinationScenarioChanged += new EventHandler<EventArgs>(roomCombiner_RoomCombinationScenarioChanged);
+                }
+            });
+
 		}
+
+        void roomCombiner_RoomCombinationScenarioChanged(object sender, EventArgs e)
+        {
+            var roomCombiner = sender as IEssentialsRoomCombiner;
+
+            string newRoomKey = null;
+
+            if (roomCombiner.CurrentScenario.UiMap.ContainsKey(Key))
+            {
+                newRoomKey = roomCombiner.CurrentScenario.UiMap[Key];
+            }
+            else if (roomCombiner.CurrentScenario.UiMap.ContainsKey(_propertiesConfig.DefaultRoomKey))
+            {
+                newRoomKey = roomCombiner.CurrentScenario.UiMap[_propertiesConfig.DefaultRoomKey];
+            }
+
+            // TODO: 
+        }
 
 		public void LoadAndShowDriver(PanelDriverBase driver)
 		{
