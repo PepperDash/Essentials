@@ -27,6 +27,27 @@ namespace PepperDash.Essentials.Core
         {
 
         }
+
+        private void SubscribeToActivateComplete()
+        {
+            DeviceManager.AllDevicesActivated += DeviceManagerOnAllDevicesActivated;
+        }
+
+        private void DeviceManagerOnAllDevicesActivated(object sender, EventArgs eventArgs)
+        {
+            CrestronInvoke.BeginInvoke((o) =>
+            {
+                try
+                {
+                    Initialize();
+                }
+                catch (Exception ex)
+                {
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Exception initializing device: {0}", ex.Message);
+                    Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.StackTrace);
+                }
+            });
+        }
     }
 
     [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = true)]
