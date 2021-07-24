@@ -150,7 +150,7 @@ namespace PepperDash.Essentials.Fusion
 
         protected override void CreateSymbolAndBasicSigs(uint ipId)
         {
-            Debug.Console(1, this, "Creating Fusion Room symbol with GUID: {0}", RoomGuid);
+            Debug.Console(0, this, "Creating Fusion Room symbol with GUID: {0} and IP-ID {1:X2}", RoomGuid, ipId);
 
             FusionRoom = new FusionRoom(ipId, Global.ControlSystem, Room.Name, RoomGuid);
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.Use();
