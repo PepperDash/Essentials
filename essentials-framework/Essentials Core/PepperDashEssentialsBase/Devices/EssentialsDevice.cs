@@ -19,13 +19,13 @@ namespace PepperDash.Essentials.Core
         protected EssentialsDevice(string key)
             : base(key)
         {
-
+            SubscribeToActivateComplete();
         }
 
         protected EssentialsDevice(string key, string name)
             : base(key, name)
         {
-
+            SubscribeToActivateComplete();
         }
 
         private void SubscribeToActivateComplete()
