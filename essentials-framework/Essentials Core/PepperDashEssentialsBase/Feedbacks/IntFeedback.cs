@@ -12,6 +12,7 @@ namespace PepperDash.Essentials.Core
         public override int IntValue { get { return _IntValue; } } // ValueFunc.Invoke(); } }
         int _IntValue;
         public ushort UShortValue { get { return (ushort)_IntValue; } }
+		public bool AlwaysSendValue; 
 
         //public override eCueType Type { get { return eCueType.Int; } }
 
@@ -51,10 +52,16 @@ namespace PepperDash.Essentials.Core
             ValueFunc = valueFunc;
         }
 
+		public IntFeedback(string key, bool alwaysSendValue, Func<int> valueFunc)
+			: this(key, valueFunc)
+		{
+			AlwaysSendValue = alwaysSendValue;
+		}
+
         public override void FireUpdate()
         {
             var newValue = InTestMode ? TestValue : ValueFunc.Invoke();
-            if (newValue != _IntValue)
+			if (newValue != _IntValue || AlwaysSendValue)
             {
                 _IntValue = newValue;
                 LinkedInputSigs.ForEach(s => UpdateSig(s));

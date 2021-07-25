@@ -23,6 +23,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public Func<string> ValueFunc { get; private set; }
         List<StringInputSig> LinkedInputSigs = new List<StringInputSig>();
+		public bool AlwaysSendValue; 
 
         /// <summary>
         /// Creates the feedback with the Func as described.
@@ -51,13 +52,17 @@ namespace PepperDash.Essentials.Core
         {
             ValueFunc = valueFunc;
         }
-
+		public StringFeedback(string key, bool alwaysSendValue, Func<string> valueFunc)
+			: this(key, valueFunc)
+		{
+			AlwaysSendValue = alwaysSendValue;
+		}
 
 
         public override void FireUpdate()
         {
             var newValue = InTestMode ? TestValue : ValueFunc.Invoke();
-            if (newValue != _StringValue)
+            if (newValue != _StringValue || AlwaysSendValue)
             {
                 _StringValue = newValue;
                 LinkedInputSigs.ForEach(s => UpdateSig(s));

@@ -18,6 +18,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public override bool BoolValue { get { return _BoolValue; } }
         bool _BoolValue;
+		public bool AlwaysSendValue;
 
         /// <summary>
         /// Fake value to be used in test mode
@@ -62,10 +63,16 @@ namespace PepperDash.Essentials.Core
             ValueFunc = valueFunc;
         }
 
+		public BoolFeedback(string key, bool alwaysSendValue, Func<bool> valueFunc)
+			: this(key, valueFunc)
+		{
+			AlwaysSendValue = alwaysSendValue;
+		}
+
         public override void FireUpdate()
         {
             bool newValue = InTestMode ? TestValue : ValueFunc.Invoke();
-            if (newValue != _BoolValue)
+            if (newValue != _BoolValue || AlwaysSendValue)
             {
                 _BoolValue = newValue;
                 LinkedInputSigs.ForEach(s => UpdateSig(s));
