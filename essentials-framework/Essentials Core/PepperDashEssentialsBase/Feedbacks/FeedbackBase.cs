@@ -42,8 +42,6 @@ namespace PepperDash.Essentials.Core
                 Key = key;
         }
 
-
-
 		/// <summary>
 		/// Clears test mode and fires update.
 		/// </summary>
@@ -53,9 +51,9 @@ namespace PepperDash.Essentials.Core
 			FireUpdate();
 		}
 
-		/// <summary>
-		/// Fires an update synchronously
-		/// </summary>
+        /// <summary>
+        /// Computes the value by running the ValueFunc and if the value has changed, updates the linked sigs and fires the OnOutputChange event
+        /// </summary>
 		public abstract void FireUpdate();
 
 		/// <summary>
@@ -66,13 +64,7 @@ namespace PepperDash.Essentials.Core
 			CrestronInvoke.BeginInvoke(o => FireUpdate());
 		}
 
-        ///// <summary>
-        ///// Helper method that fires event. Use this intstead of calling OutputChange
-        ///// </summary>
-        //protected void OnOutputChange()
-        //{
-        //    if (OutputChange != null) OutputChange(this, EventArgs.Empty);
-        //}
+        // Helper Methods for firing event
 
         protected void OnOutputChange(bool value)
         {

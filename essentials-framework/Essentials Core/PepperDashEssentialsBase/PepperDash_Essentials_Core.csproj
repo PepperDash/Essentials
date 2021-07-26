@@ -157,6 +157,9 @@
     <Compile Include="Comm and IR\GenericComm.cs" />
     <Compile Include="Comm and IR\GenericHttpClient.cs" />
     <Compile Include="Comm and IR\IRPortHelper.cs" />
+    <Compile Include="SigCommands\BoolSigCommand.cs" />
+    <Compile Include="SigCommands\IntSigCommand.cs" />
+    <Compile Include="SigCommands\SigCommandBase.cs" />
     <Compile Include="Config\Essentials\ConfigUpdater.cs" />
     <Compile Include="Config\Essentials\ConfigReader.cs" />
     <Compile Include="Config\Essentials\ConfigWriter.cs" />
@@ -332,6 +335,7 @@
     <Compile Include="Shades\Shade Interfaces.cs" />
     <Compile Include="Shades\ShadeBase.cs" />
     <Compile Include="Shades\ShadeController.cs" />
+    <Compile Include="SigCommands\StringSigCommand.cs" />
     <Compile Include="SmartObjects\SmartObjectNumeric.cs" />
     <Compile Include="SmartObjects\SmartObjectDynamicList.cs" />
     <Compile Include="SmartObjects\SmartObjectDPad.cs" />
