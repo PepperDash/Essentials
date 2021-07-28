@@ -1650,7 +1650,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			//clear participants list after call cleanup
 			if (ActiveCalls.Count == 0)
 			{
-				Participants.CurrentParticipants = new List<Participant>();
+                var emptyList = new List<Participant>();
+				Participants.CurrentParticipants = emptyList;
 			}
 		}
 
