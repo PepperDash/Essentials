@@ -972,10 +972,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								SendText("echo off");
 								Thread.Sleep(100);
 								// set feedback exclusions
-								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/info/callin_country_list");
+								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/callin_country_list");
 								Thread.Sleep(100);
-								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/info/callout_country_list");
+								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/callout_country_list");
 								Thread.Sleep(100);
+                                SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/toll_free_callinLlist");
+                                Thread.Sleep(100);
 
 								if (!_props.DisablePhonebookAutoDownload)
 								{
