@@ -1035,7 +1035,7 @@ namespace PepperDash.Essentials
 				if (CurrentRoom.CurrentSourceInfo != null &&  CurrentRoom.CurrentSourceInfo.DisableCodecSharing)
 				{
 					Debug.Console(1, CurrentRoom, "Transitioning to in-call, cancelling non-sharable source");
-					CurrentRoom.RunRouteAction("codecOsd", CurrentRoom.SourceListKey);
+					CurrentRoom.RunRouteAction("codecOsd");
 				}
 			}
 

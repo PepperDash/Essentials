@@ -1569,6 +1569,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					Debug.Console(1, this, "Creating new Status.Call object");
 					Status.Call = new zStatus.Call { Status = callStatus };
 
+                    OnCallStatusChange( new CodecActiveCallItem() { Status = eCodecCallStatus.Disconnected });
+
 					SetUpCallFeedbackActions();
 				}
 
@@ -1603,6 +1605,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 						OnCallStatusChange(newCall);
 					}
+
+
 				}
 				else
 				{
