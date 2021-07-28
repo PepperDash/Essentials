@@ -207,6 +207,7 @@ namespace PepperDash.Essentials
             //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
 
             // Set the call status text
+            Debug.Console(1, "Active Call Count: {0}", codec.ActiveCalls.Count);
             if (codec.ActiveCalls.Count > 0)
             {
                 if (codec.ActiveCalls.Count == 1)
