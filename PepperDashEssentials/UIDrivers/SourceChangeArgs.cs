@@ -12,5 +12,5 @@ namespace PepperDash.Essentials
     ///// <summary>
     ///// The handler type for a Room's SourceInfoChange
     ///// </summary>
-    //public delegate void SourceInfoChangeHandler(EssentialsRoomBase room, SourceListItem info, ChangeType type);
+    //public delegate void SourceInfoChangeHandler(IEssentialsRoom room, SourceListItem info, ChangeType type);
 }

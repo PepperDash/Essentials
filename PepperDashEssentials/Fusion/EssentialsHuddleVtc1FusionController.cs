@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.Fusion
     {
         BooleanSigData CodecIsInCall;
 
-        public EssentialsHuddleVtc1FusionController(EssentialsHuddleVtc1Room room, uint ipId, string joinMapKey)
+        public EssentialsHuddleVtc1FusionController(IEssentialsHuddleVtc1Room room, uint ipId, string joinMapKey)
             : base(room, ipId, joinMapKey)
         {
 
@@ -37,7 +37,7 @@ namespace PepperDash.Essentials.Fusion
         {
             try
             {
-                var codec = (Room as EssentialsHuddleVtc1Room).VideoCodec;
+                var codec = (Room as IEssentialsHuddleVtc1Room).VideoCodec;
 
                 if (codec == null)
                 {
@@ -141,7 +141,7 @@ namespace PepperDash.Essentials.Fusion
 
         void codec_CallStatusChange(object sender, PepperDash.Essentials.Devices.Common.Codec.CodecCallStatusItemChangeEventArgs e)
         {
-            var codec = (Room as EssentialsHuddleVtc1Room).VideoCodec;
+            var codec = (Room as IEssentialsHuddleVtc1Room).VideoCodec;
 
             CodecIsInCall.InputSig.BoolValue = codec.IsInCall;
         }
@@ -150,7 +150,7 @@ namespace PepperDash.Essentials.Fusion
 
         protected override void CreateSymbolAndBasicSigs(uint ipId)
         {
-            Debug.Console(1, this, "Creating Fusion Room symbol with GUID: {0}", RoomGuid);
+            Debug.Console(0, this, "Creating Fusion Room symbol with GUID: {0} and IP-ID {1:X2}", RoomGuid, ipId);
 
             FusionRoom = new FusionRoom(ipId, Global.ControlSystem, Room.Name, RoomGuid);
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.Use();
@@ -174,11 +174,11 @@ namespace PepperDash.Essentials.Fusion
             // Moved to 
             CurrentRoomSourceNameSig = FusionRoom.CreateOffsetStringSig(JoinMap.Display1CurrentSourceName.JoinNumber, JoinMap.Display1CurrentSourceName.AttributeName, eSigIoMask.InputSigOnly);
             // Don't think we need to get current status of this as nothing should be alive yet. 
-            (Room as EssentialsHuddleVtc1Room).CurrentSourceChange += Room_CurrentSourceInfoChange;
+            (Room as IEssentialsHuddleVtc1Room).CurrentSourceChange += Room_CurrentSourceInfoChange;
 
 
-            FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction((Room as EssentialsHuddleVtc1Room).PowerOnToDefaultOrLastSource);
-            FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() => (Room as EssentialsHuddleVtc1Room).RunRouteAction("roomOff", Room.SourceListKey));
+            FusionRoom.SystemPowerOn.OutputSig.SetSigFalseAction((Room as IEssentialsHuddleVtc1Room).PowerOnToDefaultOrLastSource);
+            FusionRoom.SystemPowerOff.OutputSig.SetSigFalseAction(() => (Room as IEssentialsHuddleVtc1Room).RunRouteAction("roomOff", Room.SourceListKey));
  
 
             CrestronEnvironment.EthernetEventHandler += CrestronEnvironment_EthernetEventHandler;
@@ -187,7 +187,7 @@ namespace PepperDash.Essentials.Fusion
         protected override void SetUpSources()
         {
             // Sources
-            var dict = ConfigReader.ConfigObject.GetSourceListForKey((Room as EssentialsHuddleVtc1Room).SourceListKey);
+            var dict = ConfigReader.ConfigObject.GetSourceListForKey((Room as IEssentialsHuddleVtc1Room).SourceListKey);
             if (dict != null)
             {
                 // NEW PROCESS:
@@ -238,7 +238,7 @@ namespace PepperDash.Essentials.Fusion
             else
             {
                 Debug.Console(1, this, "WARNING: Config source list '{0}' not found for room '{1}'",
-                    (Room as EssentialsHuddleVtc1Room).SourceListKey, Room.Key);
+                    (Room as IEssentialsHuddleVtc1Room).SourceListKey, Room.Key);
             }
         }
 
@@ -259,7 +259,7 @@ namespace PepperDash.Essentials.Fusion
                     display.UsageTracker.DeviceUsageEnded += new EventHandler<DeviceUsageEventArgs>(UsageTracker_DeviceUsageEnded);
                 }
 
-                var defaultDisplay = (Room as EssentialsHuddleVtc1Room).DefaultDisplay as DisplayBase;
+                var defaultDisplay = (Room as IEssentialsHuddleVtc1Room).DefaultDisplay as DisplayBase;
                 if (defaultDisplay == null)
                 {
                     Debug.Console(1, this, "Cannot link null display to Fusion because default display is null");
@@ -332,7 +332,7 @@ namespace PepperDash.Essentials.Fusion
             string displayName = string.Format("Display {0} - ", displayIndex);
 
 
-            if (display == (Room as EssentialsHuddleVtc1Room).DefaultDisplay)
+            if (display == (Room as IEssentialsHuddleVtc1Room).DefaultDisplay)
             {
                 // Power on
                 var defaultDisplayPowerOn = FusionRoom.CreateOffsetBoolSig((uint)joinOffset, displayName + "Power On", eSigIoMask.InputOutputSig);
@@ -351,7 +351,7 @@ namespace PepperDash.Essentials.Fusion
 
                 // Current Source
                 var defaultDisplaySourceNone = FusionRoom.CreateOffsetBoolSig((uint)joinOffset + 8, displayName + "Source None", eSigIoMask.InputOutputSig);
-                defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b => { if (!b) (Room as EssentialsHuddleVtc1Room).RunRouteAction("roomOff", Room.SourceListKey); }); ;
+                defaultDisplaySourceNone.OutputSig.UserObject = new Action<bool>(b => { if (!b) (Room as IEssentialsHuddleVtc1Room).RunRouteAction("roomOff", Room.SourceListKey); }); ;
             }
         }
     }
