@@ -667,6 +667,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			DirectoryRoot = new CodecDirectory();
 
+            _currentDirectoryResult = DirectoryRoot;
+
 			DirectoryBrowseHistory = new List<CodecDirectory>();
 			DirectoryBrowseHistoryStack = new Stack<CodecDirectory>();
 
