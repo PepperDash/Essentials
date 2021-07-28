@@ -79,6 +79,16 @@ namespace PepperDash.Essentials
                     Panel = new Tsw1052(id, Global.ControlSystem);
                 else if (type == "tsw1060")
                     Panel = new Tsw1060(id, Global.ControlSystem);
+                else if (type == "tsw570")
+                    Panel = new Tsw570(id, Global.ControlSystem);
+                else if (type == "tsw770")
+                    Panel = new Tsw770(id, Global.ControlSystem);
+                else if (type == "ts770")
+                    Panel = new Ts770(id, Global.ControlSystem);
+                else if (type == "tsw1070")
+                    Panel = new Tsw1070(id, Global.ControlSystem);
+                else if (type == "ts1070")
+                    Panel = new Ts1070(id, Global.ControlSystem);
                 else
                 {
                     Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create TSW controller with type '{0}'", type);
@@ -203,7 +213,7 @@ namespace PepperDash.Essentials
     {
         public EssentialsTouchpanelControllerFactory()
         {
-            TypeNames = new List<string>() { "tsw550", "tsw750", "tsw1050", "tsw560", "tsw760", "tsw1060", "xpanel" };
+            TypeNames = new List<string>() { "tsw550", "tsw750", "tsw1050", "tsw560", "tsw760", "tsw1060", "tsw570", "tsw770", "ts770", "tsw1070", "ts1070", "xpanel" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
