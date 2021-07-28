@@ -1589,7 +1589,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								break;
 						}
 
-						var newCall = new CodecActiveCallItem { Status = newStatus };
+						var newCall = new CodecActiveCallItem 
+                        {
+                            Name = Status.Call.Info.meeting_list_item.meetingName,
+                            Id = Status.Call.Info.meeting_id,
+                            Status = newStatus 
+                        };
 
 						ActiveCalls.Add(newCall);
 
