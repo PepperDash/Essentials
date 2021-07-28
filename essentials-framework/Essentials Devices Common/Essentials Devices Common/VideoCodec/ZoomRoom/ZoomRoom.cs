@@ -667,6 +667,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			DirectoryRoot = new CodecDirectory();
 
+            _currentDirectoryResult = DirectoryRoot;
+
 			DirectoryBrowseHistory = new List<CodecDirectory>();
 			DirectoryBrowseHistoryStack = new Stack<CodecDirectory>();
 
@@ -970,10 +972,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								SendText("echo off");
 								Thread.Sleep(100);
 								// set feedback exclusions
-								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/info/callin_country_list");
+								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/callin_country_list");
 								Thread.Sleep(100);
-								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/info/callout_country_list");
+								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/callout_country_list");
 								Thread.Sleep(100);
+                                SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/toll_free_callinLlist");
+                                Thread.Sleep(100);
 
 								if (!_props.DisablePhonebookAutoDownload)
 								{
@@ -1565,6 +1569,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					Debug.Console(1, this, "Creating new Status.Call object");
 					Status.Call = new zStatus.Call { Status = callStatus };
 
+                    OnCallStatusChange( new CodecActiveCallItem() { Status = eCodecCallStatus.Disconnected });
+
 					SetUpCallFeedbackActions();
 				}
 
@@ -1585,7 +1591,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								break;
 						}
 
-						var newCall = new CodecActiveCallItem { Status = newStatus };
+						var newCall = new CodecActiveCallItem 
+                        {
+                            Name = Status.Call.Info.meeting_list_item.meetingName,
+                            Id = Status.Call.Info.meeting_id,
+                            Status = newStatus 
+                        };
 
 						ActiveCalls.Add(newCall);
 
@@ -1594,6 +1605,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 						OnCallStatusChange(newCall);
 					}
+
+
 				}
 				else
 				{
@@ -1641,7 +1654,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			//clear participants list after call cleanup
 			if (ActiveCalls.Count == 0)
 			{
-				Participants.CurrentParticipants = new List<Participant>();
+                var emptyList = new List<Participant>();
+				Participants.CurrentParticipants = emptyList;
 			}
 		}
 
