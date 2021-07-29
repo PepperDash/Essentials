@@ -142,7 +142,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadVisible);
 
                 StagingBarsInterlock = new JoinedSigInterlock(triList);
-                StagingBarsInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverVisible);
+                if(Codec is IHasCallHistory)
+                    StagingBarsInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverWithRecentsVisible);
+                else
+                    StagingBarsInterlock.SetButDontShow(UIBoolJoin.VCStagingInactivePopoverWithoutRecentsVisible);
 
                 StagingButtonsFeedbackInterlock = new JoinedSigInterlock(triList);
                 StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
@@ -351,10 +354,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
             TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(Codec.IsInCall ? 1 : 0);
 			
 			uint stageJoin;
-			if (Codec.IsInCall)
-				stageJoin = UIBoolJoin.VCStagingActivePopoverVisible;
-			else
-				stageJoin = UIBoolJoin.VCStagingInactivePopoverVisible;
+            if (Codec.IsInCall)
+                stageJoin = UIBoolJoin.VCStagingActivePopoverVisible;
+            else
+            {
+                if (Codec is IHasCallHistory)
+                    stageJoin = UIBoolJoin.VCStagingInactivePopoverWithRecentsVisible;
+                else
+                    stageJoin = UIBoolJoin.VCStagingInactivePopoverWithoutRecentsVisible;
+            }
 			if (IsVisible)
 				StagingBarsInterlock.ShowInterlocked(stageJoin);
 			else
@@ -513,9 +521,13 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 var codecOffCameras = Codec as IHasCameraOff;
 
+                var supportsCameraOffMode = Codec.SupportsCameraOff;
+
                 var codecAutoCameras = Codec as IHasCameraAutoMode;
 
-                if (codecAutoCameras != null)
+                var supportsAutoCameraMode = Codec.SupportsCameraAutoMode;
+
+                if (codecAutoCameras != null && supportsAutoCameraMode)
                 {
                     CameraModeList.SetItemButtonAction(1,(b) => codecAutoCameras.CameraAutoModeOn());
                     TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 1 Visible"].BoolValue = true;
@@ -554,7 +566,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 //TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanOutput["Item 2 Pressed"].SetSigFalseAction(
                 //    () => ShowCameraManualMode());
 
-                if (codecOffCameras != null)
+                if (codecOffCameras != null && supportsCameraOffMode)
                 {
                     TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 3 Visible"].BoolValue = true;
                     codecOffCameras.CameraIsOffFeedback.LinkInputSig(CameraModeList.SmartObject.BooleanInput["Item 3 Selected"]);
