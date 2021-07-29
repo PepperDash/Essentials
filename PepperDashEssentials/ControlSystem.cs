@@ -131,29 +131,46 @@ namespace PepperDash.Essentials
 
                 if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on {1} Appliance", Global.AssemblyVersion, Global.ProcessorSeries.ToString());
+                    string userFolder;
+                    string nvramFolder;
+                    bool is4series = false;
+
+                    if (eCrestronSeries.Series4 == (Global.ProcessorSeries & eCrestronSeries.Series4)) // Handle 4-series
+                    {
+                        is4series = true;
+                        // Set path to user/
+                        userFolder = "user";
+                        nvramFolder = "nvram";
+                    }
+                    else
+                    {
+                        userFolder = "User";
+                        nvramFolder = "Nvram";
+                    }
+
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on {1} Appliance", Global.AssemblyVersion, is4series ? "4-series" : "3-series");
 
                     // Check if User/ProgramX exists
-                    if (Directory.Exists(Global.ApplicationDirectoryPathPrefix + dirSeparator + "User"
+                    if (Directory.Exists(Global.ApplicationDirectoryPathPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                     {
-                        Debug.Console(0, @"User/program{0} directory found", InitialParametersClass.ApplicationNumber);
-                        filePathPrefix = directoryPrefix + dirSeparator + "User"
+                        Debug.Console(0, @"{0}/program{1} directory found", userFolder, InitialParametersClass.ApplicationNumber);
+                        filePathPrefix = directoryPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
                     // Check if Nvram/Programx exists
-                    else if (Directory.Exists(directoryPrefix + dirSeparator + "Nvram"
+                    else if (Directory.Exists(directoryPrefix + dirSeparator + nvramFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                     {
-                        Debug.Console(0, @"Nvram/program{0} directory found", InitialParametersClass.ApplicationNumber);
-                        filePathPrefix = directoryPrefix + dirSeparator + "Nvram"
+                        Debug.Console(0, @"{0}/program{1} directory found", nvramFolder, InitialParametersClass.ApplicationNumber);
+                        filePathPrefix = directoryPrefix + dirSeparator + nvramFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
                     // If neither exists, set path to User/ProgramX
                     else
                     {
-                        Debug.Console(0, @"No previous directory found.  Using User/program{0}", InitialParametersClass.ApplicationNumber);
-                        filePathPrefix = directoryPrefix + dirSeparator + "User"
+                        Debug.Console(0, @"No previous directory found.  Using {0}/program{1}", userFolder, InitialParametersClass.ApplicationNumber);
+                        filePathPrefix = directoryPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
                 }
@@ -435,7 +452,7 @@ namespace PepperDash.Essentials
 
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
-                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
+                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as IEssentialsRoom;
                 if (room != null)
                 {
                     // default IPID
@@ -457,7 +474,7 @@ namespace PepperDash.Essentials
                         }
                     }
 
-                    if (room is EssentialsHuddleSpaceRoom)
+                    if (room is IEssentialsHuddleSpaceRoom)
                     {
                         DeviceManager.AddDevice(room);
 
@@ -469,12 +486,12 @@ namespace PepperDash.Essentials
 
                         CreateMobileControlBridge(room);
                     }
-                    else if (room is EssentialsHuddleVtc1Room)
+                    else if (room is IEssentialsHuddleVtc1Room)
                     {
                         DeviceManager.AddDevice(room);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
+                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
@@ -507,7 +524,7 @@ namespace PepperDash.Essentials
 
         }
 
-        private static void CreateMobileControlBridge(EssentialsRoomBase room)
+        private static void CreateMobileControlBridge(IEssentialsRoom room)
         {
             var mobileControl = GetMobileControlDevice();
 

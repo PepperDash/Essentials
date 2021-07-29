@@ -17,11 +17,11 @@ namespace PepperDash.Essentials.Room
 
     public class EssentialsRoomEmergencyContactClosure : EssentialsRoomEmergencyBase
     {
-        EssentialsRoomBase Room;
+        IEssentialsRoom Room;
         string Behavior;
         bool TriggerOnClose;
 
-        public EssentialsRoomEmergencyContactClosure(string key, EssentialsRoomEmergencyConfig config, EssentialsRoomBase room) :
+        public EssentialsRoomEmergencyContactClosure(string key, EssentialsRoomEmergencyConfig config, IEssentialsRoom room) :
             base(key)
         {
             Room = room;

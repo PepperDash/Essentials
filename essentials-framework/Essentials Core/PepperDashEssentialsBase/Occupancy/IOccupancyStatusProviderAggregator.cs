@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
-
+using Crestron.SimplSharpPro.GeneralIO;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// Aggregates the RoomIsOccupied feedbacks of one or more IOccupancyStatusProvider objects
     /// </summary>
-    public class IOccupancyStatusProviderAggregator : Device, IOccupancyStatusProvider
+    public class IOccupancyStatusProviderAggregator : EssentialsDevice, IOccupancyStatusProvider
     {
         /// <summary>
         /// Aggregated feedback of all linked IOccupancyStatusProvider devices
@@ -21,16 +22,51 @@ namespace PepperDash.Essentials.Core
         {
             get
             {
-                return AggregatedOccupancyStatus.Output;
+                return _aggregatedOccupancyStatus.Output;
             }
         }
 
-        private BoolFeedbackOr AggregatedOccupancyStatus;
+        private readonly BoolFeedbackOr _aggregatedOccupancyStatus;
 
         public IOccupancyStatusProviderAggregator(string key, string name) 
             : base(key, name)
         {
-            AggregatedOccupancyStatus = new BoolFeedbackOr();
+            _aggregatedOccupancyStatus = new BoolFeedbackOr();
+        }
+
+        public IOccupancyStatusProviderAggregator(string key, string name, OccupancyAggregatorConfig config)
+            : this(key, name)
+        {
+            AddPostActivationAction(() =>
+            {
+                if (config.DeviceKeys.Count == 0)
+                {
+                    return;
+                }
+
+                foreach (var deviceKey in config.DeviceKeys)
+                {
+                    var device = DeviceManager.GetDeviceForKey(deviceKey);
+
+                    if (device == null)
+                    {
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
+                            "Unable to retrieve Occupancy provider with key {0}", deviceKey);
+                        continue;
+                    }
+
+                    var provider = device as IOccupancyStatusProvider;
+
+                    if (provider == null)
+                    {
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Notice,
+                            "Device with key {0} does NOT implement IOccupancyStatusProvider. Please check configuration.");
+                        continue;
+                    }
+
+                    AddOccupancyStatusProvider(provider);
+                }
+            });
         }
 
         /// <summary>
@@ -39,7 +75,35 @@ namespace PepperDash.Essentials.Core
         /// <param name="statusProvider"></param>
         public void AddOccupancyStatusProvider(IOccupancyStatusProvider statusProvider)
         {
-            AggregatedOccupancyStatus.AddOutputIn(statusProvider.RoomIsOccupiedFeedback);
+            _aggregatedOccupancyStatus.AddOutputIn(statusProvider.RoomIsOccupiedFeedback);
+        }
+
+        public void RemoveOccupancyStatusProvider(IOccupancyStatusProvider statusProvider)
+        {
+            _aggregatedOccupancyStatus.RemoveOutputIn(statusProvider.RoomIsOccupiedFeedback);
+        }
+
+        public void ClearOccupancyStatusProviders()
+        {
+            _aggregatedOccupancyStatus.ClearOutputs();
+        }
+    }
+
+    public class OccupancyAggregatorFactory : EssentialsDeviceFactory<IOccupancyStatusProviderAggregator>
+    {
+        public OccupancyAggregatorFactory()
+        {
+            TypeNames = new List<string> { "occupancyAggregator", "occAggregate" };
+        }
+
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
+
+            var config = dc.Properties.ToObject<OccupancyAggregatorConfig>();
+                
+            return new IOccupancyStatusProviderAggregator(dc.Key, dc.Name, config);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// 
     /// </summary>
-    public abstract class EssentialsRoomBase : ReconfigurableDevice
+    public abstract class EssentialsRoomBase : ReconfigurableDevice, IEssentialsRoom
     {
         /// <summary>
         ///

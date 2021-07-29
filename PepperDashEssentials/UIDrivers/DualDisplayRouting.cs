@@ -146,18 +146,18 @@
 
 //        }
 
-//        void CurrentRoom_CurrentSourceInfoChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+//        void CurrentRoom_CurrentSourceInfoChange(IEssentialsRoom room, SourceListItem info, ChangeType type)
 //        {
             
 //        }
 
-//        void CurrentRoom_CurrentDisplay1SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+//        void CurrentRoom_CurrentDisplay1SourceChange(IEssentialsRoom room, SourceListItem info, ChangeType type)
 //        {
 //            TriList.StringInput[UIStringJoin.Display1SourceLabel].StringValue = PendingSource.PreferredName;
 
 //        }
 
-//        void CurrentRoom_CurrentDisplay2SourceChange(EssentialsRoomBase room, SourceListItem info, ChangeType type)
+//        void CurrentRoom_CurrentDisplay2SourceChange(IEssentialsRoom room, SourceListItem info, ChangeType type)
 //        {
 //            TriList.StringInput[UIStringJoin.Display2SourceLabel].StringValue = PendingSource.PreferredName;
 //        }

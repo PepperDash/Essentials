@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.Core
 
 		protected bool ComputedValue;
 
-		public BoolFeedbackLogic()
+	    protected BoolFeedbackLogic()
 		{
 			Output = new BoolFeedback(() => ComputedValue);
 		}	
@@ -40,21 +40,18 @@ namespace PepperDash.Essentials.Core
 
 		public void AddOutputsIn(List<BoolFeedback> outputs)
 		{
-			foreach (var o in outputs)
-			{
-				// skip existing
-				if (OutputsIn.Contains(o)) continue;
-			
-				OutputsIn.Add(o);
-				o.OutputChange += AnyInput_OutputChange;
-			}
-			Evaluate();
+		    foreach (var o in outputs.Where(o => !OutputsIn.Contains(o)))
+		    {
+		        OutputsIn.Add(o);
+		        o.OutputChange += AnyInput_OutputChange;
+		    }
+		    Evaluate();
 		}
 
-		public void RemoveOutputIn(BoolFeedback output)
+	    public void RemoveOutputIn(BoolFeedback output)
 		{
 			// Don't double up outputs
-			if (OutputsIn.Contains(output)) return;
+			if (!OutputsIn.Contains(output)) return;
 
 			OutputsIn.Remove(output);
 			output.OutputChange -= AnyInput_OutputChange;
@@ -71,6 +68,12 @@ namespace PepperDash.Essentials.Core
 			Evaluate();
 		}
 
+	    public void ClearOutputs()
+	    {
+	        OutputsIn.Clear();
+            Evaluate();
+	    }
+
 		void AnyInput_OutputChange(object sender, EventArgs e)
 		{
 			Evaluate();
@@ -85,11 +88,12 @@ namespace PepperDash.Essentials.Core
 		{
 			var prevValue = ComputedValue;
 			var newValue = OutputsIn.All(o => o.BoolValue);
-			if (newValue != prevValue)
-			{
-				ComputedValue = newValue;
-				Output.FireUpdate();
-			}
+		    if (newValue == prevValue)
+		    {
+		        return;
+		    }
+		    ComputedValue = newValue;
+		    Output.FireUpdate();
 		}
 	}
 
@@ -99,33 +103,35 @@ namespace PepperDash.Essentials.Core
 		{
 			var prevValue = ComputedValue;
 			var newValue = OutputsIn.Any(o => o.BoolValue);
-			if (newValue != prevValue)
-			{
-				ComputedValue = newValue;
-				Output.FireUpdate();
-			}
+		    if (newValue == prevValue)
+		    {
+		        return;
+		    }
+		    ComputedValue = newValue;
+		    Output.FireUpdate();
 		}
 	}
 
 	public class BoolFeedbackLinq : BoolFeedbackLogic
 	{
-		Func<IEnumerable<BoolFeedback>, bool> Predicate;
+	    readonly Func<IEnumerable<BoolFeedback>, bool> _predicate;
 
 		public BoolFeedbackLinq(Func<IEnumerable<BoolFeedback>, bool> predicate)
 			: base()
 		{
-			Predicate = predicate;
+			_predicate = predicate;
 		}
 
 		protected override void Evaluate()
 		{
 			var prevValue = ComputedValue;
-			var newValue = Predicate(OutputsIn);
-			if (newValue != prevValue)
-			{
-				ComputedValue = newValue;
-				Output.FireUpdate();
-			}
+			var newValue = _predicate(OutputsIn);
+		    if (newValue == prevValue)
+		    {
+		        return;
+		    }
+		    ComputedValue = newValue;
+		    Output.FireUpdate();
 		} 
 	}
 }

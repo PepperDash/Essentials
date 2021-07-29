@@ -17,8 +17,7 @@ using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange,
-        IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback
+    public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IEssentialsHuddleVtc1Room
     {
         private bool _codecExternalSourceChange;
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
@@ -733,10 +732,10 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public static void AllRoomsOff()
 		{
-			var allRooms = DeviceManager.AllDevices.Where(d => 
-				d is EssentialsHuddleSpaceRoom && !(d as EssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
+			var allRooms = DeviceManager.AllDevices.Where(d =>
+                d is IEssentialsRoom && !(d as IEssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
 			foreach (var room in allRooms)
-				(room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
+                (room as IEssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
 		}
 
 

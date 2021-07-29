@@ -78,7 +78,7 @@ namespace PepperDash.Essentials
 		/// <summary>
 		/// 
 		/// </summary>
-		public EssentialsHuddleSpaceRoom CurrentRoom
+		public IEssentialsHuddleSpaceRoom CurrentRoom
 		{
 			get { return _CurrentRoom; }
 			set
@@ -86,7 +86,7 @@ namespace PepperDash.Essentials
 				SetCurrentRoom(value);
 			}
 		}
-		EssentialsHuddleSpaceRoom _CurrentRoom;
+		IEssentialsHuddleSpaceRoom _CurrentRoom;
 
         /// <summary>
         /// 
@@ -498,7 +498,7 @@ namespace PepperDash.Essentials
             TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = true;
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
-                CurrentRoom.RunDefaultPresentRoute();
+                (CurrentRoom as IRunDefaultPresentRoute).RunDefaultPresentRoute();
         }
 
 
@@ -583,7 +583,7 @@ namespace PepperDash.Essentials
 		void UiSelectSource(string key)
 		{
 			// Run the route and when it calls back, show the source
-			CurrentRoom.RunRouteAction(key, new Action(() => { }));
+			CurrentRoom.RunRouteAction(key);
 		}
 
 		/// <summary>
@@ -745,7 +745,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Helper for property setter. Sets the panel to the given room, latching up all functionality
         /// </summary>
-        public void RefreshCurrentRoom(EssentialsHuddleSpaceRoom room)
+        public void RefreshCurrentRoom(IEssentialsHuddleSpaceRoom room)
         {
             if (_CurrentRoom != null)
             {
@@ -836,7 +836,7 @@ namespace PepperDash.Essentials
             }
         }
 
-		void SetCurrentRoom(EssentialsHuddleSpaceRoom room)
+		void SetCurrentRoom(IEssentialsHuddleSpaceRoom room)
 		{
 			if (_CurrentRoom == room) return;
             // Disconnect current (probably never called)
@@ -871,7 +871,7 @@ namespace PepperDash.Essentials
             UpdateMCJoins(_CurrentRoom);
         }
 
-        void UpdateMCJoins(EssentialsHuddleSpaceRoom room)
+        void UpdateMCJoins(IEssentialsHuddleSpaceRoom room)
         {
             TriList.SetString(UIStringJoin.RoomMcUrl, room.MobileControlRoomBridge.McServerUrl);
             TriList.SetString(UIStringJoin.RoomMcQrCodeUrl, room.MobileControlRoomBridge.QrCodeUrl);
