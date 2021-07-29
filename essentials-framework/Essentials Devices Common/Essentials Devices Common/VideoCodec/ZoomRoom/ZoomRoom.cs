@@ -15,6 +15,7 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Cisco;
@@ -30,10 +31,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		private const long MeetingRefreshTimer = 60000;
 		private const uint DefaultMeetingDurationMin = 30;
 		private const string Delimiter = "\x0D\x0A";
-		private readonly CrestronQueue<string> _receiveQueue;
+
+        private readonly GenericQueue _receiveQueue;
+        //private readonly CrestronQueue<string> _receiveQueue;
 
 
-		private readonly Thread _receiveThread;
+        //private readonly Thread _receiveThread;
 
 		private readonly ZoomRoomSyncState _syncState;
 		public bool CommDebuggingIsOn;
@@ -51,11 +54,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			_props = JsonConvert.DeserializeObject<ZoomRoomPropertiesConfig>(config.Properties.ToString());
 
-			// The queue that will collect the repsonses in the order they are received
-			_receiveQueue = new CrestronQueue<string>(1024);
-
-			// The thread responsible for dequeuing and processing the messages
-			_receiveThread = new Thread(o => ProcessQueue(), null) { Priority = Thread.eThreadPriority.MediumPriority };
+            _receiveQueue = new GenericQueue(Key + "-rxQueue", Thread.eThreadPriority.MediumPriority, 512);
 
 			Communication = comm;
 
@@ -787,37 +786,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			//if (CommDebuggingIsOn)
 			//    Debug.Console(1, this, "Gathered: '{0}'", args.Text);
 
-			_receiveQueue.Enqueue(args.Text);
-
-			// If the receive thread has for some reason stopped, this will restart it
-			if (_receiveThread.ThreadState != Thread.eThreadStates.ThreadRunning)
-			{
-				_receiveThread.Start();
-			}
-		}
-
-
-		/// <summary>
-		/// Runs in it's own thread to dequeue messages in the order they were received to be processed
-		/// </summary>
-		/// <returns></returns>
-		private object ProcessQueue()
-		{
-			try
-			{
-				while (true)
-				{
-					var message = _receiveQueue.Dequeue();
-
-					ProcessMessage(message);
-				}
-			}
-			catch (Exception e)
-			{
-				Debug.Console(1, this, "Error Processing Queue: {0}", e);
-			}
-
-			return null;
+			_receiveQueue.Enqueue(new ProcessStringMessage(args.Text, ProcessMessage));
 		}
 
 
