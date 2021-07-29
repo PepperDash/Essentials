@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DM;
 using Newtonsoft.Json;
@@ -43,14 +44,19 @@ namespace PepperDash.Essentials.DM.Chassis
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
             OutputPorts.Add(new RoutingOutputPort(DmPortName.HdmiOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, null, this));
-
+	        
             // physical settings
             if (props != null && props.Inputs != null)
             {
+				var inputRegex = new Regex(@"(?<InputNum>\d)", RegexOptions.IgnoreCase);
                 foreach (var kvp in props.Inputs)
                 {
-                    // strip "hdmiIn"
-                    var inputNum = Convert.ToUInt32(kvp.Key.Substring(6));
+                    // get numnbers from key and convert to int
+                    //var inputNum = Convert.ToUInt32(kvp.Key.Substring(6));
+					var inputMatch = inputRegex.Match(kvp.Key);
+	                if (inputMatch == null) continue;
+					
+					var inputNum = Convert.ToUInt32(inputMatch.Groups["InputNum"].Value);
 
                     var port = chassis.HdmiInputs[inputNum].HdmiInputPort;
                     // set hdcp disables
