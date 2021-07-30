@@ -71,10 +71,6 @@ namespace PepperDash.Essentials.DM.Chassis
 				}
 				OutputNames = props.Outputs;
 			}
-			//else
-			//{
-			//    OutputNames.Add(1, "Output");
-			//}
 
 			VideoInputSyncFeedbacks = new FeedbackCollection<BoolFeedback>();
 			VideoOutputRouteFeedbacks = new FeedbackCollection<IntFeedback>();
@@ -117,7 +113,7 @@ namespace PepperDash.Essentials.DM.Chassis
 			{
 				var index = i;
 				var outputName = OutputNames[index];
-				_Chassis.Outputs[i].Name.StringValue = outputName;
+				//_Chassis.Outputs[i].Name.StringValue = outputName;
 
 				OutputPorts.Add(new RoutingOutputPort(outputName, eRoutingSignalType.AudioVideo,
 					eRoutingPortConnectionType.Hdmi, index, this)
@@ -125,12 +121,12 @@ namespace PepperDash.Essentials.DM.Chassis
 					FeedbackMatchObject = _Chassis.HdmiOutputs[index]
 				});
 				VideoOutputRouteFeedbacks.Add(new IntFeedback(outputName, () => (int)_Chassis.Outputs[index].VideoOutFeedback.Number));
-				OutputNameFeedbacks.Add(new StringFeedback(outputName, () => _Chassis.Outputs[index].Name.StringValue));
+				OutputNameFeedbacks.Add(new StringFeedback(outputName, () => OutputNames[index]));
 				OutputRouteNameFeedbacks.Add(new StringFeedback(outputName, () => _Chassis.Outputs[index].VideoOutFeedback.NameFeedback.StringValue));
 			}
 
-			_Chassis.DMInputChange += new DMInputEventHandler(Chassis_DMInputChange);
-			_Chassis.DMOutputChange += new DMOutputEventHandler(Chassis_DMOutputChange);
+			_Chassis.DMInputChange += Chassis_DMInputChange;
+			_Chassis.DMOutputChange += Chassis_DMOutputChange;
 
 			AddPostActivationAction(AddFeedbackCollections);
 		}
@@ -354,18 +350,18 @@ namespace PepperDash.Essentials.DM.Chassis
 				OutputRouteNameFeedbacks[OutputNames[i]].LinkInputSig(trilist.StringInput[joinMap.OutputRoutedName.JoinNumber + joinIndex]);
 			}
 
-			_Chassis.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(Chassis_OnlineStatusChange);
+			_Chassis.OnlineStatusChange += Chassis_OnlineStatusChange;
 
-			trilist.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler((d, args) =>
+			trilist.OnlineStatusChange += (d, args) =>
 			{
-				if (args.DeviceOnLine)
-				{
-					foreach (var feedback in Feedbacks)
-					{
-						feedback.FireUpdate();
-					}
-				}
-			});
+			    if (args.DeviceOnLine)
+			    {
+			        foreach (var feedback in Feedbacks)
+			        {
+			            feedback.FireUpdate();
+			        }
+			    }
+			};
 		}
 
 
