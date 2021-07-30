@@ -39,10 +39,10 @@ namespace PepperDash.Essentials.Core
                 RegisterCrestronGenericBase(_partitionSensor);
 
                 NameFeedback = new StringFeedback(() => Name);
-                EnableFeedback = new BoolFeedback(() => _partitionSensor.EnableFeedback.BoolValue);
-                PartitionPresentFeedback = new BoolFeedback(() => _partitionSensor.PartitionSensedFeedback.BoolValue);
-                PartitionNotSensedFeedback = new BoolFeedback(() => _partitionSensor.PartitionNotSensedFeedback.BoolValue);
-                SensitivityFeedback = new IntFeedback(() => _partitionSensor.SensitivityFeedback.UShortValue);
+                EnableFeedback = new BoolFeedback(() => InTestMode ? TestEnableFeedback : _partitionSensor.EnableFeedback.BoolValue);
+                PartitionPresentFeedback = new BoolFeedback(() => InTestMode ? TestPartitionSensedFeedback : _partitionSensor.PartitionSensedFeedback.BoolValue);
+                PartitionNotSensedFeedback = new BoolFeedback(() => InTestMode ? !TestPartitionSensedFeedback : _partitionSensor.PartitionNotSensedFeedback.BoolValue);
+                SensitivityFeedback = new IntFeedback(() => InTestMode ? TestSensitivityFeedback : _partitionSensor.SensitivityFeedback.UShortValue);
 
                 if (_partitionSensor != null) _partitionSensor.BaseEvent += PartitionSensor_BaseEvent;
             });
@@ -93,6 +93,9 @@ namespace PepperDash.Essentials.Core
 			if (InTestMode)
 			{
 				TestEnableFeedback = state;
+
+			    EnableFeedback.FireUpdate();
+
 				Debug.Console(1, this, "TestEnableFeedback: {0}", TestEnableFeedback.ToString());
 				return;
 			}
@@ -105,6 +108,10 @@ namespace PepperDash.Essentials.Core
 			if (InTestMode)
 			{
 				TestPartitionSensedFeedback = state;
+
+                PartitionPresentFeedback.FireUpdate();
+                PartitionNotSensedFeedback.FireUpdate();
+
 				Debug.Console(1, this, "TestPartitionSensedFeedback: {0}", TestPartitionSensedFeedback.ToString());
 				return;
 			}
@@ -117,6 +124,8 @@ namespace PepperDash.Essentials.Core
 			if (InTestMode)
 			{
 				TestSensitivityFeedback = value;
+
+                SensitivityFeedback.FireUpdate();
 				Debug.Console(1, this, "TestSensitivityFeedback: {0}", TestSensitivityFeedback);
 				return;
 			}
