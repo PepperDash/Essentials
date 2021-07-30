@@ -51,6 +51,8 @@ namespace PepperDash.Essentials
 
         public override void Show()
         {
+            Debug.Console(2, "Showing ScreenSaverController");
+
             if (_parent.AvDriver != null)
             {
                 _parent.AvDriver.PopupInterlock.ShowInterlocked(UIBoolJoin.MCScreenSaverVisible);
@@ -86,6 +88,8 @@ namespace PepperDash.Essentials
 
         void StartPositionTimer()
         {
+            Debug.Console(2,  "Starting Position Timer");
+
             if (PositionTimer == null)
             {
                 PositionTimer = new CTimer((o) => PositionTimerExpired(), PositionTimeoutMs);
@@ -117,7 +121,7 @@ namespace PepperDash.Essentials
                 CurrentPositionIndex = 0;
             }
 
-            //Debug.Console(2, "ScreenSaver Position Timer Expired: Setting new position: {0}", CurrentPositionIndex);
+            Debug.Console(2, "ScreenSaver Position Timer Expired: Setting new position: {0}", CurrentPositionIndex);
         }
 
         //
