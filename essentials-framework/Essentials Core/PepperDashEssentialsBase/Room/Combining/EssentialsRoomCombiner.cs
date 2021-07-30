@@ -167,7 +167,7 @@ namespace PepperDash.Essentials.Core
             {
                 return _currentScenario;
             }
-            set
+            private set
             {
                 if (value != _currentScenario)
                 {
@@ -227,9 +227,11 @@ namespace PepperDash.Essentials.Core
             // Get the scenario
             var scenario = RoomCombinationScenarios.FirstOrDefault((s) => s.Key.Equals(scenarioKey));
 
+
             // Set the parition states from the scenario manually
             if (scenario != null)
             {
+                Debug.Console(0, this, "Manually setting scenario to '{0}'", scenario.Key);
                 foreach (var partitionState in scenario.PartitionStates)
                 {
                     var partition = Partitions.FirstOrDefault((p) => p.Key.Equals(partitionState.PartitionKey));
@@ -238,14 +240,24 @@ namespace PepperDash.Essentials.Core
                     {
                         if (partitionState.PartitionPresent)
                         {
+                            Debug.Console(0, this, "Manually setting state to Present for: '{0}'", partition.Key);
                             partition.SetPartitionStatePresent();
                         }
                         else
                         {
+                            Debug.Console(0, this, "Manually setting state to Not Present for: '{0}'", partition.Key);
                             partition.SetPartitionStateNotPresent();
                         }
                     }
+                    else
+                    {
+                        Debug.Console(1, this, "Unable to find partition with key: '{0}'", partitionState.PartitionKey);
+                    }
                 }
+            }
+            else
+            {
+                Debug.Console(1, this, "Unable to find scenario with key: '{0}'", scenarioKey);
             }
         }
 

@@ -12,7 +12,7 @@ namespace PepperDash.Essentials
     /// <summary>
     /// Driver responsible for controlling the screenshaver showing the client logo, MC connection information and QR Code.  Moves the elements around to prevent screen burn in
     /// </summary>
-    public class ScreenSaverController : PanelDriverBase
+    public class ScreenSaverController : PanelDriverBase, IDisposable
     {
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace PepperDash.Essentials
 
         public override void Hide()
         {
-            Debug.Console(1, "Hiding ScreenSaverController");
+            Debug.Console(2, "Hiding ScreenSaverController");
 
             if (PositionTimer != null)
             {
@@ -117,7 +117,7 @@ namespace PepperDash.Essentials
                 CurrentPositionIndex = 0;
             }
 
-            Debug.Console(1, "ScreenSaver Position Timer Expired: Setting new position: {0}", CurrentPositionIndex);
+            //Debug.Console(2, "ScreenSaver Position Timer Expired: Setting new position: {0}", CurrentPositionIndex);
         }
 
         //
@@ -129,9 +129,18 @@ namespace PepperDash.Essentials
 
         void ClearAllPositions()
         {
-            Debug.Console(1, "Hiding all screensaver positions");
+            Debug.Console(2, "Hiding all screensaver positions");
             PositionInterlock.HideAndClear();
         }
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            Hide();
+        }
+
+        #endregion
     }
  
 }
