@@ -14,6 +14,7 @@ using PepperDash.Essentials.DM.Config;
 
 namespace PepperDash.Essentials.DM.Chassis
 {
+    [Obsolete("Please use HdMdNxM4kEBridgeable Controller")]
     public class HdMdNxM4kEController : CrestronGenericBaseDevice, IRoutingInputsOutputs, IRouting
     {
         public HdMdNxM Chassis { get; private set; }
@@ -32,6 +33,7 @@ namespace PepperDash.Essentials.DM.Chassis
             HdMdNxM4kEPropertiesConfig props)
             : base(key, name, chassis)
         {
+            Debug.Console(0, this, "Type hdmd4x14ke is obsolete. Please use hdmd4x14ke-bridgeable");
             Chassis = chassis;
 
             // logical ports
