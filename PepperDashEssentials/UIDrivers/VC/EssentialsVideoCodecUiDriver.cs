@@ -532,6 +532,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     CameraModeList.SetItemButtonAction(1,(b) => codecAutoCameras.CameraAutoModeOn());
                     TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 1 Visible"].BoolValue = true;
                     codecAutoCameras.CameraAutoModeIsOnFeedback.LinkInputSig(CameraModeList.SmartObject.BooleanInput["Item 1 Selected"]);
+                    codecAutoCameras.CameraAutoModeIsOnFeedback.LinkInputSig(TriList.BooleanInput[UIBoolJoin.VCCameraAutoModeIsOnFb]);
                     //TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanOutput["Item 1 Pressed"].SetSigFalseAction(
                     //() => codecAutoCameras.CameraAutoModeOn());
 
@@ -857,19 +858,32 @@ namespace PepperDash.Essentials.UIDrivers.VC
         // Determines if codec is in manual camera control mode and shows feedback
         void ShowCameraManualMode()
         {
+            Debug.Console(2, "ShowCameraManualMode");
+
             var inManualMode = true;
 
             var codecOffCameras = Codec as IHasCameraOff;
 
             var codecAutoCameras = Codec as IHasCameraAutoMode;
 
+            var supportsAutoCameras = codecAutoCameras != null && Codec.SupportsCameraAutoMode;
+
             if (codecOffCameras != null && codecOffCameras.CameraIsOffFeedback.BoolValue)
             {
                 inManualMode = false;
+
+                var codecCameraMute = Codec as IHasCameraMute;
+
+                if (codecCameraMute != null)
+                {
+                    codecCameraMute.CameraMuteOff();
+                    inManualMode = true;
+
+                }
             }
 
             // Clear auto mode
-            if (codecAutoCameras != null )
+            if (supportsAutoCameras)
             {
                 if (codecAutoCameras.CameraAutoModeIsOnFeedback.BoolValue)
                 {
@@ -1213,7 +1227,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 			var lc = Codec as IHasCodecLayouts;
 			if (lc != null)
 			{
-                TriList.SetSigFalseAction(UIBoolJoin.VCLayoutTogglePress, lc.LocalLayoutToggleSingleProminent);
+
 				lc.LocalLayoutFeedback.LinkInputSig(TriList.StringInput[UIStringJoin.VCLayoutModeText]);
 				lc.LocalLayoutFeedback.OutputChange += (o,a) => 
 				{
@@ -1226,14 +1240,24 @@ namespace PepperDash.Essentials.UIDrivers.VC
 				var cisco = Codec as PepperDash.Essentials.Devices.Common.VideoCodec.Cisco.CiscoSparkCodec;
 				if (cisco != null)
 				{
+                    TriList.SetSigFalseAction(UIBoolJoin.VCLayoutTogglePress, lc.LocalLayoutToggleSingleProminent);
 					// Cisco has min/max buttons that need special sauce
 					cisco.SharingContentIsOnFeedback.OutputChange += CiscoSharingAndPresentation_OutputChanges;
 					//cisco.PresentationViewMaximizedFeedback.OutputChange += CiscoSharingAndPresentation_OutputChanges;
 
 					TriList.SetSigFalseAction(UIBoolJoin.VCMinMaxPress, cisco.MinMaxLayoutToggle);
 				}
+
+                var zoomRoom = Codec as PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom.ZoomRoom;
+                if (zoomRoom != null)
+                {
+                    TriList.BooleanInput[UIBoolJoin.VCLayoutToggleEnable].BoolValue = true;
+                    TriList.SetSigFalseAction(UIBoolJoin.VCLayoutTogglePress, lc.LocalLayoutToggle);
+                }
 				 
 			}
+
+            
 		}
 
 		/// <summary>

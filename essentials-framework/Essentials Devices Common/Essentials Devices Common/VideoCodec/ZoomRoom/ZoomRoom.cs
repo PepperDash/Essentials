@@ -123,7 +123,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			Participants = new CodecParticipants();
 
-			SupportsCameraOff = _props.SupportsCameraOff;
+			SupportsCameraOff = true;  // Always allow turning off the camera for zoom calls?
 			SupportsCameraAutoMode = _props.SupportsCameraAutoMode;
 
 			PhoneOffHookFeedback = new BoolFeedback(PhoneOffHookFeedbackFunc);
@@ -2446,8 +2446,50 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void LocalLayoutToggle()
 		{
-			throw new NotImplementedException();
+            var currentLayout = LocalLayoutFeedback.StringValue;
+
+            var eCurrentLayout = (int)Enum.Parse(typeof(zConfiguration.eLayoutStyle), currentLayout, true);
+
+            var nextLayout = GetNextLayout(eCurrentLayout);
+
+            if (nextLayout != zConfiguration.eLayoutStyle.None)
+            {
+                SetLayout(nextLayout);
+            }
 		}
+
+        /// <summary>
+        /// Tries to get the next available layout
+        /// </summary>
+        /// <param name="currentLayout"></param>
+        /// <returns></returns>
+        private zConfiguration.eLayoutStyle GetNextLayout(int currentLayout)
+        {
+            if (AvailableLayouts == zConfiguration.eLayoutStyle.None)
+            {
+                return zConfiguration.eLayoutStyle.None;
+            }
+
+            zConfiguration.eLayoutStyle nextLayout;
+
+            if (((zConfiguration.eLayoutStyle)currentLayout & zConfiguration.eLayoutStyle.ShareAll) == zConfiguration.eLayoutStyle.ShareAll)
+            {
+                nextLayout = zConfiguration.eLayoutStyle.Gallery;
+            }
+            else
+            {
+                nextLayout = (zConfiguration.eLayoutStyle)(currentLayout << 1);
+            }
+
+            if ((AvailableLayouts & nextLayout) == nextLayout)
+            {
+                return nextLayout;
+            }
+            else
+            {
+                return GetNextLayout((int)nextLayout);
+            }
+        }
 
 		public void LocalLayoutToggleSingleProminent()
 		{

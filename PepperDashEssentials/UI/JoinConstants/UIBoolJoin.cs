@@ -248,6 +248,10 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint VCCameraSelectBarWithoutModeVisible = 1261;
 
+        /// <summary>
+        /// 1262
+        /// </summary>
+        public const uint VCCameraAutoModeIsOnFb = 1262;
 
         /// <summary>
         /// 1271
