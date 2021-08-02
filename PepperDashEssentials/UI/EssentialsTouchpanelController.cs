@@ -71,6 +71,8 @@ namespace PepperDash.Essentials
                     app.ParameterProjectName.Value = props.ProjectName;
                     Panel = app;
                 }
+                else if (type == "xpanel")
+                    Panel = new XpanelForSmartGraphics(id, Global.ControlSystem);
                 else if (type == "tsw550")
                     Panel = new Tsw550(id, Global.ControlSystem);
                 else if (type == "tsw552")
