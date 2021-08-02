@@ -103,7 +103,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 1202
         /// </summary>
-        public const uint VCStagingInactivePopoverVisible = 1202;
+        public const uint VCStagingInactivePopoverWithRecentsVisible = 1202;
         /// <summary>
         /// 
         /// </summary>
@@ -120,6 +120,11 @@ namespace PepperDash.Essentials
         /// 1206
         /// </summary>
         public const uint VCRecentsVisible = 1206;
+
+        /// <summary>
+        /// 1202
+        /// </summary>
+        public const uint VCStagingInactivePopoverWithoutRecentsVisible = 1207;
 
 		/// <summary>
 		/// 1208
@@ -243,6 +248,10 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint VCCameraSelectBarWithoutModeVisible = 1261;
 
+        /// <summary>
+        /// 1262
+        /// </summary>
+        public const uint VCCameraAutoModeIsOnFb = 1262;
 
         /// <summary>
         /// 1271

@@ -8,7 +8,7 @@ namespace PepperDash.Essentials.Core.DeviceTypeInterfaces
     /// </summary>
     public interface IMobileControl : IKeyed
     {
-        void CreateMobileControlRoomBridge(IEssentialsRoom room, IMobileControl parent);
+        void CreateMobileControlRoomBridge(EssentialsRoomBase room, IMobileControl parent);
 
         void LinkSystemMonitorToAppServer();
     }

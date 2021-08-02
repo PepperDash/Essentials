@@ -314,7 +314,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			FarEndIsSharingContentFeedback = new BoolFeedback(FarEndIsSharingContentFeedbackFunc);
             CameraIsOffFeedback = new BoolFeedback(() => CodecStatus.Status.Video.Input.MainVideoMute.BoolValue);
             CameraIsMutedFeedback = CameraIsOffFeedback;
-
+            SupportsCameraOff = true;
 
 			PresentationViewMaximizedFeedback = new BoolFeedback(() => CurrentPresentationView == "Maximized");
 
@@ -417,6 +417,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.RoomAnalytics.PeoplePresence.ValueChangedAction = RoomIsOccupiedFeedback.FireUpdate;
             CodecStatus.Status.RoomAnalytics.PeopleCount.Current.ValueChangedAction = PeopleCountFeedback.FireUpdate;
             CodecStatus.Status.Cameras.SpeakerTrack.Status.ValueChangedAction = CameraAutoModeIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Cameras.SpeakerTrack.Availability.ValueChangedAction = () => { SupportsCameraAutoMode = CodecStatus.Status.Cameras.SpeakerTrack.Availability.BoolValue; };
             CodecStatus.Status.Video.Selfview.Mode.ValueChangedAction = SelfviewIsOnFeedback.FireUpdate;
             CodecStatus.Status.Video.Selfview.PIPPosition.ValueChangedAction = ComputeSelfviewPipStatus;
             CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
