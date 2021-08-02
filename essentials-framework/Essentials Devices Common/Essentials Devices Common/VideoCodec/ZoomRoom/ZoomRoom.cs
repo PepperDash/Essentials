@@ -15,6 +15,7 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.Queues;
 using PepperDash.Essentials.Devices.Common.Cameras;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec.Cisco;
@@ -30,10 +31,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		private const long MeetingRefreshTimer = 60000;
 		private const uint DefaultMeetingDurationMin = 30;
 		private const string Delimiter = "\x0D\x0A";
-		private readonly CrestronQueue<string> _receiveQueue;
+
+        private readonly GenericQueue _receiveQueue;
+        //private readonly CrestronQueue<string> _receiveQueue;
 
 
-		private readonly Thread _receiveThread;
+        //private readonly Thread _receiveThread;
 
 		private readonly ZoomRoomSyncState _syncState;
 		public bool CommDebuggingIsOn;
@@ -51,11 +54,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			_props = JsonConvert.DeserializeObject<ZoomRoomPropertiesConfig>(config.Properties.ToString());
 
-			// The queue that will collect the repsonses in the order they are received
-			_receiveQueue = new CrestronQueue<string>(1024);
-
-			// The thread responsible for dequeuing and processing the messages
-			_receiveThread = new Thread(o => ProcessQueue(), null) { Priority = Thread.eThreadPriority.MediumPriority };
+            _receiveQueue = new GenericQueue(Key + "-rxQueue", Thread.eThreadPriority.MediumPriority, 512);
 
 			Communication = comm;
 
@@ -95,6 +94,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				eRoutingSignalType.Audio | eRoutingSignalType.Video,
 				eRoutingPortConnectionType.Hdmi, null, this);
 
+            Output2 = new RoutingOutputPort(RoutingPortNames.AnyVideoOut,
+                eRoutingSignalType.Video,
+                eRoutingPortConnectionType.DisplayPort, null, this);
+
 			SelfviewIsOnFeedback = new BoolFeedback(SelfViewIsOnFeedbackFunc);
 
 			CameraIsOffFeedback = new BoolFeedback(CameraIsOffFeedbackFunc);
@@ -120,7 +123,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			Participants = new CodecParticipants();
 
-			SupportsCameraOff = _props.SupportsCameraOff;
+			SupportsCameraOff = true;  // Always allow turning off the camera for zoom calls?
 			SupportsCameraAutoMode = _props.SupportsCameraAutoMode;
 
 			PhoneOffHookFeedback = new BoolFeedback(PhoneOffHookFeedbackFunc);
@@ -252,6 +255,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public RoutingInputPort CodecOsdIn { get; private set; }
 		public RoutingOutputPort Output1 { get; private set; }
+        public RoutingOutputPort Output2 { get; private set; }
 
 		#region ICommunicationMonitor Members
 
@@ -685,6 +689,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			// Set up output ports
 			OutputPorts.Add(Output1);
+            OutputPorts.Add(Output2);
 		}
 
 		/// <summary>
@@ -790,37 +795,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			//if (CommDebuggingIsOn)
 			//    Debug.Console(1, this, "Gathered: '{0}'", args.Text);
 
-			_receiveQueue.Enqueue(args.Text);
-
-			// If the receive thread has for some reason stopped, this will restart it
-			if (_receiveThread.ThreadState != Thread.eThreadStates.ThreadRunning)
-			{
-				_receiveThread.Start();
-			}
-		}
-
-
-		/// <summary>
-		/// Runs in it's own thread to dequeue messages in the order they were received to be processed
-		/// </summary>
-		/// <returns></returns>
-		private object ProcessQueue()
-		{
-			try
-			{
-				while (true)
-				{
-					var message = _receiveQueue.Dequeue();
-
-					ProcessMessage(message);
-				}
-			}
-			catch (Exception e)
-			{
-				Debug.Console(1, this, "Error Processing Queue: {0}", e);
-			}
-
-			return null;
+			_receiveQueue.Enqueue(new ProcessStringMessage(args.Text, ProcessMessage));
 		}
 
 
@@ -2480,8 +2455,50 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void LocalLayoutToggle()
 		{
-			throw new NotImplementedException();
+            var currentLayout = LocalLayoutFeedback.StringValue;
+
+            var eCurrentLayout = (int)Enum.Parse(typeof(zConfiguration.eLayoutStyle), currentLayout, true);
+
+            var nextLayout = GetNextLayout(eCurrentLayout);
+
+            if (nextLayout != zConfiguration.eLayoutStyle.None)
+            {
+                SetLayout(nextLayout);
+            }
 		}
+
+        /// <summary>
+        /// Tries to get the next available layout
+        /// </summary>
+        /// <param name="currentLayout"></param>
+        /// <returns></returns>
+        private zConfiguration.eLayoutStyle GetNextLayout(int currentLayout)
+        {
+            if (AvailableLayouts == zConfiguration.eLayoutStyle.None)
+            {
+                return zConfiguration.eLayoutStyle.None;
+            }
+
+            zConfiguration.eLayoutStyle nextLayout;
+
+            if (((zConfiguration.eLayoutStyle)currentLayout & zConfiguration.eLayoutStyle.ShareAll) == zConfiguration.eLayoutStyle.ShareAll)
+            {
+                nextLayout = zConfiguration.eLayoutStyle.Gallery;
+            }
+            else
+            {
+                nextLayout = (zConfiguration.eLayoutStyle)(currentLayout << 1);
+            }
+
+            if ((AvailableLayouts & nextLayout) == nextLayout)
+            {
+                return nextLayout;
+            }
+            else
+            {
+                return GetNextLayout((int)nextLayout);
+            }
+        }
 
 		public void LocalLayoutToggleSingleProminent()
 		{

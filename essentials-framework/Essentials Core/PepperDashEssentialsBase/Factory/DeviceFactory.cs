@@ -156,6 +156,15 @@ namespace PepperDash.Essentials.Core
                 Debug.Console(0, Debug.ErrorLogLevel.Error, "Exception occurred while creating device {0}: {1}", dc.Key, ex.Message);
 
                 Debug.Console(2, "{0}", ex.StackTrace);
+
+                if (ex.InnerException == null)
+                {
+                    return null;
+                }
+
+                Debug.Console(0, Debug.ErrorLogLevel.Error, "Inner exception while creating device {0}: {1}", dc.Key,
+                    ex.InnerException.Message);
+                Debug.Console(2, "{0}", ex.InnerException.StackTrace);
                 return null;
             }
         }
