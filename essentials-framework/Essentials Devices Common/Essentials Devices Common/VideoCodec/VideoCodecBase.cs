@@ -65,8 +65,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		public bool ShowSelfViewByDefault { get; protected set; }
 
-		protected bool SupportsCameraOff;
-		protected bool SupportsCameraAutoMode;
+        public bool SupportsCameraOff { get; protected set; }
+        public bool SupportsCameraAutoMode { get; protected set; }
 
 		public bool IsReady { get; protected set; }
 

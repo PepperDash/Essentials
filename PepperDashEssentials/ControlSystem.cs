@@ -483,7 +483,7 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
-                        CreateMobileControlBridge(room);
+                        CreateMobileControlBridge(room as EssentialsRoomBase);
                     }
                     else if (room is IEssentialsHuddleVtc1Room)
                     {
@@ -497,7 +497,7 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
-                        CreateMobileControlBridge(room);
+                        CreateMobileControlBridge(room as EssentialsRoomBase);
                     }
                     else if (room is EssentialsTechRoom)
                     {
@@ -509,7 +509,7 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
 
-                        CreateMobileControlBridge(room);
+                        CreateMobileControlBridge(room as EssentialsRoomBase);
                     }
                     else
                     {
@@ -530,7 +530,7 @@ namespace PepperDash.Essentials
 
         }
 
-        private static void CreateMobileControlBridge(IEssentialsRoom room)
+        private static void CreateMobileControlBridge(EssentialsRoomBase room)
         {
             var mobileControl = GetMobileControlDevice();
 
