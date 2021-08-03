@@ -277,9 +277,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public SoftwareID SoftwareID { get; set; }
         }
 
-        public class Availability
+        public class Availability : ValueProperty
         {
-            public string Value { get; set; }
+            string _Value;
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    // If the incoming value is "Available" it sets the BoolValue true, otherwise sets it false
+                    _Value = value;
+                    BoolValue = value == "Available";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class Status2 : ValueProperty
