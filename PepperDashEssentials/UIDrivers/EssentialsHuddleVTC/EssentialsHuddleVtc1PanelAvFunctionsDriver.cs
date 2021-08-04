@@ -448,10 +448,10 @@ namespace PepperDash.Essentials
 				// and the LastMeetingDismissed != this meeting
 
 				var lastMeetingDismissed = meetings.FirstOrDefault(m => m.Id == LastMeetingDismissedId);
-				Debug.Console(1, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
-					CurrentRoom.OnFeedback.BoolValue,
-					LastMeetingDismissedId,
-					lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToShortTimeString() : "");
+                //Debug.Console(1, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
+                //    CurrentRoom.OnFeedback.BoolValue,
+                //    LastMeetingDismissedId,
+                //    lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToShortTimeString() : "");
 
 				var meeting = meetings.LastOrDefault(m => m.Joinable);
 				if (CurrentRoom.OnFeedback.BoolValue

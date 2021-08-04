@@ -352,8 +352,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             CallHistory = new CodecCallHistory();
 
-			
-            if (props.Favorites != null)
+			if (props.Favorites != null)
             {
                 CallFavorites = new CodecCallFavorites();
                 CallFavorites.Favorites = props.Favorites;
@@ -369,9 +368,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             CodecSchedule = new CodecScheduleAwareness();
  
-            //Set Feedback Actions
-            SetFeedbackActions();
-
             CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
 			HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
@@ -406,6 +402,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             BrandingEnabled = props.UiBranding.Enable;
 
             _brandingUrl = props.UiBranding.BrandingUrl;
+
+            //Set Feedback Actions
+            SetFeedbackActions();
         }
 
         private void SetFeedbackActions()
@@ -429,11 +428,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
             catch (Exception ex)
             {
-                Debug.Console(0, this, "Error setting MainVideuMute Action: {0}", ex);
+                Debug.Console(0, this, "Error setting MainVideoMute Action: {0}", ex);
 
                 if (ex.InnerException != null)
                 {
-                    Debug.Console(0, this, "Error setting MainVideuMute Action: {0}", ex);
+                    Debug.Console(0, this, "Error setting MainVideoMute Action: {0}", ex);
                 }
             }
         }
@@ -1879,17 +1878,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    if (CodecStatus.Status.SIP != null && CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value != null)
+                    try
                     {
-                        return CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value;
+                        if (CodecStatus.Status.SIP != null && CodecStatus.Status.SIP.AlternateURI != null)
+                        {
+                            return CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value;
+                        }
+                        else if (CodecStatus.Status.UserInterface != null &&
+                                 CodecStatus.Status.UserInterface.ContactInfo != null  && CodecStatus.Status.UserInterface.ContactInfo != null)
+                        {
+                            return CodecStatus.Status.UserInterface.ContactInfo.ContactMethod[0].Number.Value;
+                        }
+                        else
+                            return string.Empty;
                     }
-                    else if (CodecStatus.Status.UserInterface != null &&
-                             CodecStatus.Status.UserInterface.ContactInfo.ContactMethod[0].Number.Value != null)
+                    catch (Exception e)
                     {
-                        return CodecStatus.Status.UserInterface.ContactInfo.ContactMethod[0].Number.Value;
-                    }
-                    else
+                        Debug.Console(2, "Error getting SipUri: {0}", e);
                         return string.Empty;
+                    }
                 }
             }
 

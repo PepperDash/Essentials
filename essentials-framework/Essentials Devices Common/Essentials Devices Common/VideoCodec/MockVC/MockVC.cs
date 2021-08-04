@@ -416,8 +416,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                         m.MinutesBeforeMeeting = 5;
                         m.Id = i.ToString();
                         m.Organizer = "Employee " + 1;
-						m.StartTime = DateTime.Now.AddMinutes(6).AddHours(i);
-						m.EndTime = DateTime.Now.AddHours(i).AddMinutes(16);
+						m.StartTime = DateTime.Now.AddMinutes(5).AddHours(i);
+						m.EndTime = DateTime.Now.AddHours(i).AddMinutes(50);
 						m.Title = "Meeting " + i;
                         m.Calls.Add(new Call() { Number = i + "meeting@fake.com"});
 						_CodecSchedule.Meetings.Add(m);
@@ -583,6 +583,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             CameraAutoModeIsOnFeedback = new BoolFeedback(() => _CameraAutoModeIsOn);
 
+            SupportsCameraAutoMode = true;
+
             CameraAutoModeIsOnFeedback.FireUpdate();
 
             DeviceManager.AddDevice(internalCamera);
@@ -590,7 +592,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             NearEndPresets = new List<CodecRoomPreset>(15); // Fix the capacity to emulate Cisco
 
-            NearEndPresets = PropertiesConfig.Presets;
+            if (PropertiesConfig.Presets != null && PropertiesConfig.Presets.Count > 0)
+            {
+                NearEndPresets = PropertiesConfig.Presets;
+            }
+            else
+            {
+                for (int i = 1; i <= NearEndPresets.Capacity; i++)
+                {
+                    var label = string.Format("Near End Preset {0}", i);
+                    NearEndPresets.Add(new CodecRoomPreset(i, label, true, false));
+                }
+            }
 
             FarEndRoomPresets = new List<CodecRoomPreset>(15); // Fix the capacity to emulate Cisco
 
