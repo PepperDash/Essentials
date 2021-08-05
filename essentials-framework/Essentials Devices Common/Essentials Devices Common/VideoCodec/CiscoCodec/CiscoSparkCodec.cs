@@ -1880,17 +1880,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 {
                     try
                     {
-                        if (CodecStatus.Status.SIP != null && CodecStatus.Status.SIP.AlternateURI != null)
+                        if (CodecStatus.Status.SIP != null && !string.IsNullOrEmpty(CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value))
                         {
                             return CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value;
                         }
                         else if (CodecStatus.Status.UserInterface != null &&
-                                 CodecStatus.Status.UserInterface.ContactInfo != null  && CodecStatus.Status.UserInterface.ContactInfo != null)
+                                 CodecStatus.Status.UserInterface.ContactInfo != null && CodecStatus.Status.UserInterface.ContactInfo.ContactMethod != null)
                         {
                             return CodecStatus.Status.UserInterface.ContactInfo.ContactMethod[0].Number.Value;
                         }
                         else
+                        {
                             return string.Empty;
+                        }
                     }
                     catch (Exception e)
                     {
