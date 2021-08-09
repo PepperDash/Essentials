@@ -157,7 +157,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			get
 			{
-				return () => CrestronEnvironment.ScaleWithLimits(Configuration.Audio.Output.Volume, 100, 0, 65535, 0);
+				return () => 
+                {
+                    var scaledVol = CrestronEnvironment.ScaleWithLimits(Configuration.Audio.Output.Volume, 100, 0, 65535, 0);
+
+                    if (Configuration.Audio.Output.Volume != 0)
+                    {
+                        Debug.Console(2, this, "Storing previous volume level as: {0}, scaled: {1}", Configuration.Audio.Output.Volume, scaledVol);
+                        _previousVolumeLevel = scaledVol; // Store the previous level for recall
+                    }
+
+                    return scaledVol;
+                };
 			}
 		}
 
@@ -1684,12 +1695,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public override void MuteOff()
 		{
+            Debug.Console(2, this, "Unmuting to previous level: {0}", _previousVolumeLevel);
 			SetVolume((ushort)_previousVolumeLevel);
 		}
 
 		public override void MuteOn()
 		{
-			_previousVolumeLevel = Configuration.Audio.Output.Volume; // Store the previous level for recall
 
 			SetVolume(0);
 		}
