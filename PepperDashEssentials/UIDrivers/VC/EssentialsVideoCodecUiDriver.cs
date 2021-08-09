@@ -782,12 +782,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             if (camerasCodec != null && camerasCodec.SelectedCamera != null)
             {
-
+                Debug.Console(2, "Attempting to map camera actions to selected camera: '{0}'", camerasCodec.SelectedCamera.Key);
                 var dpad = CameraPtzPad;
 
                 var camera = camerasCodec.SelectedCamera as IHasCameraPtzControl;
                 if (camera != null)
                 {
+
+                    Debug.Console(2, "Selected camera is IHasCameraPtzControl");
                     if (camerasCodec.SelectedCamera.CanTilt)
                     {
                         dpad.SigUp.SetBoolSigAction((b) =>
@@ -852,6 +854,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     }
 
                 }
+                else
+                {
+                    Debug.Console(2, "Selected Camera is not IHasCameraPtzControl.  No controls to map");
+                }
+            }
+            else
+            {
+                Debug.Console(2, "Codec does not have cameras of selected camera is null");
             }
         }
 

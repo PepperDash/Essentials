@@ -281,7 +281,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				var handler = CameraSelected;
 				if (handler != null)
 				{
-					handler(this, new CameraSelectedEventArgs(SelectedCamera));
+					handler(this, new CameraSelectedEventArgs(_selectedCamera));
 				}
 			}
 		}
@@ -2015,6 +2015,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			foreach (var cam in Status.Cameras)
 			{
+                // Known Issue:
+                // Crestron UC engine systems seem to report an item in the cameras list that represnts the USB bridge device. 
+                // If we know the name and it's reliably consistent, we could ignore it here...
+
+                if (cam.Name.IndexOf("HD-CONV-USB") > -1)
+                {
+                    // Skip this as it's the Crestron USB box, not a real camera
+                    continue;
+                }
+
 				var camera = new ZoomRoomCamera(cam.id, cam.Name, this);
 
 				Cameras.Add(camera);
