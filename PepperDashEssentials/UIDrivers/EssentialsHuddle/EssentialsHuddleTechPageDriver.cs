@@ -316,7 +316,7 @@ namespace PepperDash.Essentials.UIDrivers
         void CommunicationMonitor_StatusChange(object sender, MonitorStatusChangeEventArgs e)
         {
             var c = sender as ICommunicationMonitor;
-            if (StatusListDeviceIndexes.ContainsKey(c))
+            if (c != null && StatusListDeviceIndexes.ContainsKey(c))
             {
                 var i = StatusListDeviceIndexes[c];
                 StatusList.UShortInputSig(i, 1).UShortValue = (ushort)e.Status;

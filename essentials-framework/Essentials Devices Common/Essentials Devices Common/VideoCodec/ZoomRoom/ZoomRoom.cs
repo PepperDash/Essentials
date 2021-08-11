@@ -157,7 +157,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			get
 			{
-				return () => CrestronEnvironment.ScaleWithLimits(Configuration.Audio.Output.Volume, 100, 0, 65535, 0);
+				return () => 
+                {
+                    var scaledVol = CrestronEnvironment.ScaleWithLimits(Configuration.Audio.Output.Volume, 100, 0, 65535, 0);
+
+                    if (Configuration.Audio.Output.Volume != 0)
+                    {
+                        Debug.Console(2, this, "Storing previous volume level as: {0}, scaled: {1}", Configuration.Audio.Output.Volume, scaledVol);
+                        _previousVolumeLevel = scaledVol; // Store the previous level for recall
+                    }
+
+                    return scaledVol;
+                };
 			}
 		}
 
@@ -281,7 +292,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				var handler = CameraSelected;
 				if (handler != null)
 				{
-					handler(this, new CameraSelectedEventArgs(SelectedCamera));
+					handler(this, new CameraSelectedEventArgs(_selectedCamera));
 				}
 			}
 		}
@@ -1693,12 +1704,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public override void MuteOff()
 		{
+            Debug.Console(2, this, "Unmuting to previous level: {0}", _previousVolumeLevel);
 			SetVolume((ushort)_previousVolumeLevel);
 		}
 
 		public override void MuteOn()
 		{
-			_previousVolumeLevel = Configuration.Audio.Output.Volume; // Store the previous level for recall
 
 			SetVolume(0);
 		}
@@ -2024,6 +2035,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			foreach (var cam in Status.Cameras)
 			{
+                // Known Issue:
+                // Crestron UC engine systems seem to report an item in the cameras list that represnts the USB bridge device. 
+                // If we know the name and it's reliably consistent, we could ignore it here...
+
+                if (cam.Name.IndexOf("HD-CONV-USB") > -1)
+                {
+                    // Skip this as it's the Crestron USB box, not a real camera
+                    continue;
+                }
+
 				var camera = new ZoomRoomCamera(cam.id, cam.Name, this);
 
 				Cameras.Add(camera);
