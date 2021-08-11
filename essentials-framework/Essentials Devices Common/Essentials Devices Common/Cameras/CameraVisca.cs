@@ -170,6 +170,8 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 	    public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 	    {
 	        LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
+
+			OnPresetsListHasChanged();
 	    }
 
 	    void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
@@ -525,6 +527,15 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public event EventHandler<EventArgs> PresetsListHasChanged;
 
+		protected void OnPresetsListHasChanged()
+		{
+			var handler = PresetsListHasChanged;
+			if (handler == null)
+				return;
+
+			handler.Invoke(this, EventArgs.Empty);
+		}
+
         public List<CameraPreset> Presets { get; private set; }
 
         public void PresetSelect(int preset)
@@ -536,6 +547,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         {
             SavePreset(preset);
         }
+
 
         #endregion
 
