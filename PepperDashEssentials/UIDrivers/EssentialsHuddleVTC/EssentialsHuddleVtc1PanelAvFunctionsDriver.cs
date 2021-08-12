@@ -626,13 +626,21 @@ namespace PepperDash.Essentials
         /// </summary>
         void SetActivityFooterFeedbacks()
         {
+            var startMode = CurrentMode == UiDisplayMode.Start;
+            var presentationMode = CurrentMode == UiDisplayMode.Presentation;
+            var callMode = CurrentMode == UiDisplayMode.Call;
+
+            TriList.SetBool(StartPageVisibleJoin, startMode ? true : false);
+            TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, presentationMode ? true : false);
+
             if (CurrentRoom != null)
             {
-                CallButtonSig.BoolValue = CurrentMode == UiDisplayMode.Call
+                CallButtonSig.BoolValue = startMode
                     && CurrentRoom.ShutdownType == eShutdownType.None;
-                ShareButtonSig.BoolValue = CurrentMode == UiDisplayMode.Presentation
+                ShareButtonSig.BoolValue = presentationMode
                     && CurrentRoom.ShutdownType == eShutdownType.None;
                 EndMeetingButtonSig.BoolValue = CurrentRoom.ShutdownType != eShutdownType.None;
+
             }
         }
 
@@ -645,9 +653,9 @@ namespace PepperDash.Essentials
                 return;
             HideLogo();
 			HideNextMeetingPopup();
-            TriList.SetBool(StartPageVisibleJoin, false);
-            TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
-            TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
+            //TriList.SetBool(StartPageVisibleJoin, false);
+            //TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
+            //TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
             if (CurrentSourcePageManager != null)
                 CurrentSourcePageManager.Hide();
 			PowerOnFromCall();
@@ -664,9 +672,6 @@ namespace PepperDash.Essentials
             if (VCDriver.IsVisible)
                 VCDriver.Hide();
 			HideNextMeetingPopup();
-            TriList.SetBool(StartPageVisibleJoin, false);
-            TriList.SetBool(UIBoolJoin.CallStagingBarVisible, false);
-            TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
             { 
@@ -1240,8 +1245,8 @@ namespace PepperDash.Essentials
                     VCDriver.Hide();
                 SetupActivityFooterWhenRoomOff();
                 ShowLogo();
-                TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
-                TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
+                //TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
+                //TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
 				// Clear this so that the pesky meeting warning can resurface every minute when off
 				LastMeetingDismissedId = null;
             }
