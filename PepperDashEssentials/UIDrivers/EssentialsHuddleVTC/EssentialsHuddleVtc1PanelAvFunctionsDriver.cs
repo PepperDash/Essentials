@@ -626,21 +626,20 @@ namespace PepperDash.Essentials
         /// </summary>
         void SetActivityFooterFeedbacks()
         {
-            var startMode = CurrentMode == UiDisplayMode.Start;
-            var presentationMode = CurrentMode == UiDisplayMode.Presentation;
-            var callMode = CurrentMode == UiDisplayMode.Call;
-
-            TriList.SetBool(StartPageVisibleJoin, startMode ? true : false);
-            TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, presentationMode ? true : false);
-
             if (CurrentRoom != null)
             {
+                var startMode = CurrentMode == UiDisplayMode.Start;
+                var presentationMode = CurrentMode == UiDisplayMode.Presentation;
+                var callMode = CurrentMode == UiDisplayMode.Call;
+
+                TriList.SetBool(StartPageVisibleJoin, startMode ? true : false);
+                TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, presentationMode ? true : false);
+
                 CallButtonSig.BoolValue = startMode
                     && CurrentRoom.ShutdownType == eShutdownType.None;
                 ShareButtonSig.BoolValue = presentationMode
                     && CurrentRoom.ShutdownType == eShutdownType.None;
                 EndMeetingButtonSig.BoolValue = CurrentRoom.ShutdownType != eShutdownType.None;
-
             }
         }
 
