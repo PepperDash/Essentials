@@ -171,7 +171,8 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 	    {
 	        LinkCameraToApi(this, trilist, joinStart, joinMapKey, bridge);
 
-			OnPresetsListHasChanged();
+			//OnPresetsListHasChanged();
+
 	    }
 
 	    void socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
