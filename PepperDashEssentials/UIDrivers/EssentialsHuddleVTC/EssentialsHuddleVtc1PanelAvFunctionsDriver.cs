@@ -635,7 +635,7 @@ namespace PepperDash.Essentials
                 TriList.SetBool(StartPageVisibleJoin, startMode ? true : false);
                 TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, presentationMode ? true : false);
 
-                CallButtonSig.BoolValue = startMode
+                CallButtonSig.BoolValue = callMode
                     && CurrentRoom.ShutdownType == eShutdownType.None;
                 ShareButtonSig.BoolValue = presentationMode
                     && CurrentRoom.ShutdownType == eShutdownType.None;
