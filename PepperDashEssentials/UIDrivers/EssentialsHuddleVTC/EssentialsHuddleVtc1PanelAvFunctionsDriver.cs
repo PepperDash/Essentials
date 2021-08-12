@@ -173,10 +173,28 @@ namespace PepperDash.Essentials
         /// </summary>
         public PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; private set; }
 
+
+        private UiDisplayMode _currentMode;
+
         /// <summary>
         /// The mode showing. Presentation or call.
         /// </summary>
-        UiDisplayMode CurrentMode = UiDisplayMode.Start;
+        UiDisplayMode CurrentMode
+        {
+            get
+            {
+                return _currentMode;
+            }
+            set
+            {
+                if (value != _currentMode)
+                {
+                    _currentMode = value;
+
+                    SetActivityFooterFeedbacks();
+                }
+            }
+        }
 
 		CTimer NextMeetingTimer;
 
@@ -207,6 +225,7 @@ namespace PepperDash.Essentials
 
 			MeetingOrContactMethodModalSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.MeetingListSRL, 3, 3, 5);
 
+            CurrentMode = UiDisplayMode.Start;
 
 			// buttons are added in SetCurrentRoom
 			//HeaderButtonsList = new SmartObjectHeaderButtonList(TriList.SmartObjects[UISmartObjectJoin.HeaderButtonList]);
@@ -630,7 +649,6 @@ namespace PepperDash.Essentials
                 CurrentSourcePageManager.Hide();
 			PowerOnFromCall();
             CurrentMode = UiDisplayMode.Call;
-            SetActivityFooterFeedbacks();
             VCDriver.Show();
         }
 
@@ -665,7 +683,6 @@ namespace PepperDash.Essentials
             }
             CurrentMode = UiDisplayMode.Presentation;
 			SetupSourceList();
-            SetActivityFooterFeedbacks();
         }
 
 		/// <summary>
@@ -706,6 +723,8 @@ namespace PepperDash.Essentials
         {
 			if (CurrentRoom.CurrentSourceInfo == null)
 				return;
+
+            CurrentMode = UiDisplayMode.Presentation;
 
 			if (CurrentRoom.CurrentSourceInfo.SourceDevice == null)
 			{
@@ -1218,7 +1237,6 @@ namespace PepperDash.Essentials
                     VCDriver.Hide();
                 SetupActivityFooterWhenRoomOff();
                 ShowLogo();
-                SetActivityFooterFeedbacks();
                 TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
 				// Clear this so that the pesky meeting warning can resurface every minute when off
