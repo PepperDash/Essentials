@@ -626,11 +626,14 @@ namespace PepperDash.Essentials
         /// </summary>
         void SetActivityFooterFeedbacks()
         {
-            CallButtonSig.BoolValue = CurrentMode == UiDisplayMode.Call 
-                && CurrentRoom.ShutdownType == eShutdownType.None;
-            ShareButtonSig.BoolValue = CurrentMode == UiDisplayMode.Presentation 
-                && CurrentRoom.ShutdownType == eShutdownType.None;
-            EndMeetingButtonSig.BoolValue = CurrentRoom.ShutdownType != eShutdownType.None;
+            if (CurrentRoom != null)
+            {
+                CallButtonSig.BoolValue = CurrentMode == UiDisplayMode.Call
+                    && CurrentRoom.ShutdownType == eShutdownType.None;
+                ShareButtonSig.BoolValue = CurrentMode == UiDisplayMode.Presentation
+                    && CurrentRoom.ShutdownType == eShutdownType.None;
+                EndMeetingButtonSig.BoolValue = CurrentRoom.ShutdownType != eShutdownType.None;
+            }
         }
 
         /// <summary>
