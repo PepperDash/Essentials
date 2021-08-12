@@ -57,11 +57,12 @@ namespace PepperDash.Essentials
             {
                 return () =>
                 {
-                    var displays = Displays.Where((d) => d is DisplayBase) as List<DisplayBase>;
+
+                    var displays = Displays.OfType<DisplayBase>().ToList();
 
                     var val = CurrentSourceInfo != null
                         && CurrentSourceInfo.Type == eSourceListItemType.Route
-                        && displays.Count() > 0;
+                        && displays.Count > 0;
                     //&& disp.PowerIsOnFeedback.BoolValue;
                     return val;
                 };
@@ -74,23 +75,7 @@ namespace PepperDash.Essentials
         {
             get
             {
-                return () =>
-                {
-                    var displays = Displays.Where((d) => d is TwoWayDisplayBase) as List<TwoWayDisplayBase>;
-                    if (displays != null)
-                    {
-                        var warmingDisplays = displays.Where((d) => d.IsWarmingUpFeedback.BoolValue);
-
-                        if (warmingDisplays.Count() > 0)
-                        {
-                            return true;
-                        }
-                        else
-                            return false;
-                    }
-                    else
-                        return false;
-                };
+                return () => Displays.OfType<TwoWayDisplayBase>().Any((d) => d.IsWarmingUpFeedback.BoolValue);
             }
         }
         /// <summary>
@@ -100,23 +85,7 @@ namespace PepperDash.Essentials
         {
             get
             {
-                return () =>
-                {
-                    var displays = Displays.Where((d) => d is TwoWayDisplayBase) as List<TwoWayDisplayBase>;
-                    if (displays != null)
-                    {
-                        var coolingDisplays = displays.Where((d) => d.IsCoolingDownFeedback.BoolValue);
-
-                        if (coolingDisplays.Count() > 0)
-                        {
-                            return true;
-                        }
-                        else
-                            return false;
-                    }
-                    else
-                        return false;
-                };
+                return () => Displays.OfType<TwoWayDisplayBase>().Any((d) => d.IsCoolingDownFeedback.BoolValue);
             }
         }
 
