@@ -173,10 +173,28 @@ namespace PepperDash.Essentials
         /// </summary>
         public PepperDash.Essentials.Core.Touchpanels.Keyboards.HabaneroKeyboardController Keyboard { get; private set; }
 
+
+        private UiDisplayMode _currentMode;
+
         /// <summary>
         /// The mode showing. Presentation or call.
         /// </summary>
-        UiDisplayMode CurrentMode = UiDisplayMode.Start;
+        UiDisplayMode CurrentMode
+        {
+            get
+            {
+                return _currentMode;
+            }
+            set
+            {
+                if (value != _currentMode)
+                {
+                    _currentMode = value;
+
+                    SetActivityFooterFeedbacks();
+                }
+            }
+        }
 
 		CTimer NextMeetingTimer;
 
@@ -207,6 +225,7 @@ namespace PepperDash.Essentials
 
 			MeetingOrContactMethodModalSrl = new SubpageReferenceList(TriList, UISmartObjectJoin.MeetingListSRL, 3, 3, 5);
 
+            CurrentMode = UiDisplayMode.Start;
 
 			// buttons are added in SetCurrentRoom
 			//HeaderButtonsList = new SmartObjectHeaderButtonList(TriList.SmartObjects[UISmartObjectJoin.HeaderButtonList]);
@@ -607,11 +626,21 @@ namespace PepperDash.Essentials
         /// </summary>
         void SetActivityFooterFeedbacks()
         {
-            CallButtonSig.BoolValue = CurrentMode == UiDisplayMode.Call 
-                && CurrentRoom.ShutdownType == eShutdownType.None;
-            ShareButtonSig.BoolValue = CurrentMode == UiDisplayMode.Presentation 
-                && CurrentRoom.ShutdownType == eShutdownType.None;
-            EndMeetingButtonSig.BoolValue = CurrentRoom.ShutdownType != eShutdownType.None;
+            if (CurrentRoom != null)
+            {
+                var startMode = CurrentMode == UiDisplayMode.Start;
+                var presentationMode = CurrentMode == UiDisplayMode.Presentation;
+                var callMode = CurrentMode == UiDisplayMode.Call;
+
+                TriList.SetBool(StartPageVisibleJoin, startMode ? true : false);
+                TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, presentationMode ? true : false);
+
+                CallButtonSig.BoolValue = startMode
+                    && CurrentRoom.ShutdownType == eShutdownType.None;
+                ShareButtonSig.BoolValue = presentationMode
+                    && CurrentRoom.ShutdownType == eShutdownType.None;
+                EndMeetingButtonSig.BoolValue = CurrentRoom.ShutdownType != eShutdownType.None;
+            }
         }
 
         /// <summary>
@@ -623,14 +652,13 @@ namespace PepperDash.Essentials
                 return;
             HideLogo();
 			HideNextMeetingPopup();
-            TriList.SetBool(StartPageVisibleJoin, false);
-            TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
-            TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
+            //TriList.SetBool(StartPageVisibleJoin, false);
+            //TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
+            //TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
             if (CurrentSourcePageManager != null)
                 CurrentSourcePageManager.Hide();
 			PowerOnFromCall();
             CurrentMode = UiDisplayMode.Call;
-            SetActivityFooterFeedbacks();
             VCDriver.Show();
         }
 
@@ -643,9 +671,6 @@ namespace PepperDash.Essentials
             if (VCDriver.IsVisible)
                 VCDriver.Hide();
 			HideNextMeetingPopup();
-            TriList.SetBool(StartPageVisibleJoin, false);
-            TriList.SetBool(UIBoolJoin.CallStagingBarVisible, false);
-            TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, true);
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
             { 
@@ -665,7 +690,6 @@ namespace PepperDash.Essentials
             }
             CurrentMode = UiDisplayMode.Presentation;
 			SetupSourceList();
-            SetActivityFooterFeedbacks();
         }
 
 		/// <summary>
@@ -706,6 +730,8 @@ namespace PepperDash.Essentials
         {
 			if (CurrentRoom.CurrentSourceInfo == null)
 				return;
+
+            CurrentMode = UiDisplayMode.Presentation;
 
 			if (CurrentRoom.CurrentSourceInfo.SourceDevice == null)
 			{
@@ -1218,9 +1244,8 @@ namespace PepperDash.Essentials
                     VCDriver.Hide();
                 SetupActivityFooterWhenRoomOff();
                 ShowLogo();
-                SetActivityFooterFeedbacks();
-                TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
-                TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
+                //TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = false;
+                //TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
 				// Clear this so that the pesky meeting warning can resurface every minute when off
 				LastMeetingDismissedId = null;
             }

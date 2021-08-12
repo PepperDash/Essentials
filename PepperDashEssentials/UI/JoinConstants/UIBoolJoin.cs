@@ -752,10 +752,10 @@ namespace PepperDash.Essentials
         /// 15044 Close button for source modal overlay
         /// </summary>
         public const uint SourceBackgroundOverlayClosePress = 15044;
-        /// <summary>
-        /// 15045 - Visibility for the bar containing call navigation button list
-        /// </summary>
-        public const uint CallStagingBarVisible = 15045;
+        ///// <summary>
+        ///// 15045 - Visibility for the bar containing call navigation button list
+        ///// </summary>
+        //public const uint CallStagingBarVisible = 15045;
 		/// <summary>
 		/// 15046
 		/// </summary>
