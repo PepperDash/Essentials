@@ -361,6 +361,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		public CodecDirectory CurrentDirectoryResult
 		{
 			get { return _currentDirectoryResult; }
+            private set
+            {
+                _currentDirectoryResult = value;
+
+                Debug.Console(2, this, "CurrentDirectoryResult Updated.  ResultsFolderId: {0}", _currentDirectoryResult.ResultsFolderId);
+
+                CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+
+                OnDirectoryResultReturned(_currentDirectoryResult);
+            }
 		}
 
 		public CodecPhonebookSyncState PhonebookSyncState { get; private set; }
@@ -374,9 +384,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					c => c.Name.IndexOf(searchString, 0, StringComparison.OrdinalIgnoreCase) > -1));
 
 			DirectoryBrowseHistoryStack.Clear();
-			_currentDirectoryResult = directoryResults;
+			CurrentDirectoryResult = directoryResults;
 
-			OnDirectoryResultReturned(directoryResults);
 		}
 
 		public void GetDirectoryFolderContents(string folderId)
@@ -388,19 +397,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			DirectoryBrowseHistoryStack.Push(_currentDirectoryResult);
 
-			_currentDirectoryResult = directoryResults;
+			CurrentDirectoryResult = directoryResults;
 
-			OnDirectoryResultReturned(directoryResults);
 		}
 
 		public void SetCurrentDirectoryToRoot()
 		{
 			DirectoryBrowseHistoryStack.Clear();
 
-			_currentDirectoryResult = DirectoryRoot;
-
-			OnDirectoryResultReturned(DirectoryRoot);
-		}
+            CurrentDirectoryResult = DirectoryRoot;
+        }
 
 		public void GetDirectoryParentFolderContents()
 		{
@@ -411,10 +417,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			var currentDirectory = DirectoryBrowseHistoryStack.Pop();
 
-			_currentDirectoryResult = currentDirectory;
-
-			OnDirectoryResultReturned(currentDirectory);
-		}
+            CurrentDirectoryResult = currentDirectory;
+        }
 
 		public BoolFeedback CurrentDirectoryResultIsNotDirectoryRoot { get; private set; }
 
@@ -680,16 +684,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		private void SetUpDirectory()
 		{
-			DirectoryRoot = new CodecDirectory();
+            DirectoryRoot = new CodecDirectory() { ResultsFolderId = "root" };
 
-            _currentDirectoryResult = DirectoryRoot;
+            CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => CurrentDirectoryResult.ResultsFolderId != "root");
+
+            CurrentDirectoryResult = DirectoryRoot;
 
 			DirectoryBrowseHistory = new List<CodecDirectory>();
 			DirectoryBrowseHistoryStack = new Stack<CodecDirectory>();
 
-			CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => _currentDirectoryResult != DirectoryRoot);
-
-			CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
 		}
 
 		private void SetUpRouting()
@@ -1063,24 +1066,30 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 									}
 								case "phonebooklistresult":
 									{
+                                        //  This result will always be the complete contents of the directory and never
+                                        //  A subset of the results via a search
+
 										JsonConvert.PopulateObject(responseObj.ToString(), Status.Phonebook);
+
+                                        var directoryResults =
+                                            zStatus.Phonebook.ConvertZoomContactsToGeneric(Status.Phonebook.Contacts);
 
 										if (!PhonebookSyncState.InitialSyncComplete)
 										{
 											PhonebookSyncState.InitialPhonebookFoldersReceived();
 											PhonebookSyncState.PhonebookRootEntriesReceived();
-											PhonebookSyncState.SetPhonebookHasFolders(false);
+											PhonebookSyncState.SetPhonebookHasFolders(true);
 											PhonebookSyncState.SetNumberOfContacts(Status.Phonebook.Contacts.Count);
 										}
 
-										var directoryResults =
-											zStatus.Phonebook.ConvertZoomContactsToGeneric(Status.Phonebook.Contacts);
+                                        if (directoryResults.ResultsFolderId != "root")
+                                        {
+                                            directoryResults.ResultsFolderId = "root";
+                                        }
 
-										DirectoryRoot = directoryResults;
+                                        DirectoryRoot = directoryResults;
 
-										_currentDirectoryResult = DirectoryRoot;
-
-										OnDirectoryResultReturned(directoryResults);
+										CurrentDirectoryResult = directoryResults;
 
 										break;
 									}
@@ -1236,7 +1245,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 											{
 												Direction = eCodecCallDirection.Incoming,
 												Status = eCodecCallStatus.Ringing,
-												Type = eCodecCallType.Unknown,
+												Type = eCodecCallType.Video,
 												Name = incomingCall.callerName,
 												Id = incomingCall.callerJID
 											};
@@ -1589,8 +1598,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						var newCall = new CodecActiveCallItem 
                         {
                             Name = Status.Call.Info.meeting_list_item.meetingName,
+                            Number = Status.Call.Info.meeting_id,
                             Id = Status.Call.Info.meeting_id,
-                            Status = newStatus 
+                            Status = newStatus,
+                            Type = eCodecCallType.Video,
                         };
 
 						ActiveCalls.Add(newCall);
@@ -2008,18 +2019,43 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// <param name="result"></param>
 		private void OnDirectoryResultReturned(CodecDirectory result)
 		{
-			CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+            try
+            {
+                Debug.Console(2, this, "OnDirectoryResultReturned");
 
-			// This will return the latest results to all UIs.  Multiple indendent UI Directory browsing will require a different methodology
-			var handler = DirectoryResultReturned;
-			if (handler != null)
-			{
-				handler(this, new DirectoryEventArgs
-				{
-					Directory = result,
-					DirectoryIsOnRoot = !CurrentDirectoryResultIsNotDirectoryRoot.BoolValue
-				});
-			}
+                var directoryResult = new CodecDirectory();
+
+                // If result is Root, create a copy and filter out contacts whose parent folder is not root
+                if (!CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
+                {
+                    Debug.Console(2, this, "Filtering DirectoryRoot to remove contacts for display");
+
+                    directoryResult.ResultsFolderId = result.ResultsFolderId;
+                    directoryResult.AddFoldersToDirectory(result.Folders);
+                    directoryResult.AddContactsToDirectory(result.Contacts.Where((c) => c.ParentFolderId == result.ResultsFolderId).ToList());
+                }
+                else
+                {
+                    directoryResult = result;
+                }
+
+                Debug.Console(2, this, "Updating directoryResult. IsOnRoot: {0}", !CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+
+                // This will return the latest results to all UIs.  Multiple indendent UI Directory browsing will require a different methodology
+                var handler = DirectoryResultReturned;
+                if (handler != null)
+                {
+                    handler(this, new DirectoryEventArgs
+                    {
+                        Directory = directoryResult,
+                        DirectoryIsOnRoot = !CurrentDirectoryResultIsNotDirectoryRoot.BoolValue
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(2, this, "Error: {0}", e);
+            }
 
 			//PrintDirectory(result);
 		}
