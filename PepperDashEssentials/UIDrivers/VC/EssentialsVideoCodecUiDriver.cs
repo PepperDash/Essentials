@@ -1080,10 +1080,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             var codec = Codec as IHasDirectory;
 
-            SetCurrentDirectoryToRoot();
+            if (codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
+            {
+                SetCurrentDirectoryToRoot();
 
-            RefreshDirectory();
-            
+                RefreshDirectory();
+            }
         }
 
 		/// <summary>
@@ -1161,10 +1163,23 @@ namespace PepperDash.Essentials.UIDrivers.VC
                             });
 
                         }
+                        else if (dc.ContactMethods.Count == 1)
+                        {
+                            var invitableContact = dc as IInvitableContact;
+
+                            if (invitableContact != null)
+                            {
+                                DirectoryList.SetItemButtonAction(i, b => { if (!b) Codec.Dial(invitableContact); });
+                            }
+                            else
+                            {
+                                // If only one contact method, just dial that method
+                                DirectoryList.SetItemButtonAction(i, b => { if (!b) Codec.Dial(dc.ContactMethods[0].Number); });
+                            }
+                        }
                         else
                         {
-                            // If only one contact method, just dial that method
-							DirectoryList.SetItemButtonAction(i, b => { if (!b) Codec.Dial(dc.ContactMethods[0].Number); });
+                            Debug.Console(1, "Unable to dial contact.  No availble ContactMethod(s) specified");
                         }
                     }
                     else    // is DirectoryFolder

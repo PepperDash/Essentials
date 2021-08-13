@@ -276,6 +276,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				if (zoomRooms.Count > 0)
 				{
 					// If so, setup a rooms and contacts folder and add them.
+
+                    directory.ResultsFolderId = "root";
+
 					roomFolder.Name = "Rooms";
 					roomFolder.ParentFolderId = "root";
 					roomFolder.FolderId = "rooms";
@@ -292,22 +295,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 				try
 				{
-					if (zoomContacts.Count == 0) return directory;
+                    if (zoomContacts.Count == 0)
+                    {
+                        return directory;
+                    }
+					
+					foreach (Contact c in zoomContacts)
 					{
-						foreach (Contact c in zoomContacts)
+						var contact = new ZoomDirectoryContact { Name = c.ScreenName, ContactId = c.Jid };
+
+                        contact.ContactMethods.Add(new ContactMethod() { Number = c.Jid, Device = eContactMethodDevice.Video, CallType = eContactMethodCallType.Video, ContactMethodId = c.Jid });
+
+						if (folders.Count > 0)
 						{
-							var contact = new ZoomDirectoryContact { Name = c.ScreenName, ContactId = c.Jid };
-
-							if (folders.Count > 0)
-							{
-								contact.ParentFolderId = c.IsZoomRoom ? "rooms" : "contacts";
-							}
-
-							contacts.Add(contact);
+							contact.ParentFolderId = c.IsZoomRoom ? "rooms" : "contacts";
 						}
 
-						directory.AddContactsToDirectory(contacts);
+						contacts.Add(contact);
 					}
+
+					directory.AddContactsToDirectory(contacts);
 				}
 				catch (Exception e)
 				{
