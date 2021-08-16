@@ -329,6 +329,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public BoolFeedback SelfviewIsOnFeedback { get; private set; }
 
+		public void GetSelfViewMode()
+		{
+			SendText("zConfiguration Video hide_conf_self_video");
+		}
+
 		public void SelfViewModeOn()
 		{
 			SendText("zConfiguration Video hide_conf_self_video: off");

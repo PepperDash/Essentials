@@ -1168,11 +1168,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				}
 				set
 				{
-					if (value != _hideConfSelfVideo)
-					{
+					//if (value != _hideConfSelfVideo)
+					//{
 						_hideConfSelfVideo = value;
 						NotifyPropertyChanged("HideConfSelfVideo");
-					}
+					//}
 				}
 			}
 
