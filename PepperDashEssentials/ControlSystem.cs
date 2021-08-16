@@ -483,7 +483,7 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
-                        CreateMobileControlBridge(room as EssentialsRoomBase);
+                        CreateMobileControlBridge(room);
                     }
                     else if (room is IEssentialsHuddleVtc1Room)
                     {
@@ -494,7 +494,7 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
-                        CreateMobileControlBridge(room as EssentialsRoomBase);
+                        CreateMobileControlBridge(room);
                     }
                     else if (room is EssentialsTechRoom)
                     {
@@ -506,7 +506,7 @@ namespace PepperDash.Essentials
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
 
-                        CreateMobileControlBridge(room as EssentialsRoomBase);
+                        CreateMobileControlBridge(room);
                     }
                     else
                     {
@@ -527,13 +527,22 @@ namespace PepperDash.Essentials
 
         }
 
-        private static void CreateMobileControlBridge(EssentialsRoomBase room)
+        private static void CreateMobileControlBridge(object room)
         {
             var mobileControl = GetMobileControlDevice();
 
             if (mobileControl == null) return;
 
-            mobileControl.CreateMobileControlRoomBridge(room, mobileControl);
+            var mobileControl3 = mobileControl as IMobileControl3;
+
+            if (mobileControl3 != null)
+            {
+                mobileControl3.CreateMobileControlRoomBridge(room as IEssentialsRoom, mobileControl);
+            }
+            else
+            {
+                mobileControl.CreateMobileControlRoomBridge(room as EssentialsRoomBase, mobileControl);
+            }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control Bridge Added...");
         }
