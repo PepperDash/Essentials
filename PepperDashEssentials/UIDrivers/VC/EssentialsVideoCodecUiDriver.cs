@@ -787,12 +787,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             if (camerasCodec != null && camerasCodec.SelectedCamera != null)
             {
-
+                Debug.Console(2, "Attempting to map camera actions to selected camera: '{0}'", camerasCodec.SelectedCamera.Key);
                 var dpad = CameraPtzPad;
 
                 var camera = camerasCodec.SelectedCamera as IHasCameraPtzControl;
                 if (camera != null)
                 {
+
+                    Debug.Console(2, "Selected camera is IHasCameraPtzControl");
                     if (camerasCodec.SelectedCamera.CanTilt)
                     {
                         dpad.SigUp.SetBoolSigAction((b) =>
@@ -857,6 +859,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     }
 
                 }
+                else
+                {
+                    Debug.Console(2, "Selected Camera is not IHasCameraPtzControl.  No controls to map");
+                }
+            }
+            else
+            {
+                Debug.Console(2, "Codec does not have cameras of selected camera is null");
             }
         }
 
@@ -1036,22 +1046,21 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		void SetupDirectoryList()
 		{
 			var codec = Codec as IHasDirectory;
-			if (codec != null)
-			{
-				DirectoryList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCDirectoryList],
-					true, 1300);
-				codec.DirectoryResultReturned += new EventHandler<DirectoryEventArgs>(dir_DirectoryResultReturned);
+		    if (codec == null)
+		    {
+		        return;
+		    }
 
-				if (codec.PhonebookSyncState.InitialSyncComplete)
-					SetCurrentDirectoryToRoot();
-				else
-				{
-					codec.PhonebookSyncState.InitialSyncCompleted += new EventHandler<EventArgs>(PhonebookSyncState_InitialSyncCompleted);
-				}
+		    DirectoryList = new SmartObjectDynamicList(TriList.SmartObjects[UISmartObjectJoin.VCDirectoryList],
+		        true, 1300);
+		    codec.DirectoryResultReturned += dir_DirectoryResultReturned;
 
-			    RefreshDirectory();
-				
-			}
+		    if (codec.PhonebookSyncState.InitialSyncComplete)
+		        SetCurrentDirectoryToRoot();
+		    else
+		    {
+		        codec.PhonebookSyncState.InitialSyncCompleted += PhonebookSyncState_InitialSyncCompleted;
+		    }
 		}
 
         /// <summary>
@@ -1059,11 +1068,15 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void SetCurrentDirectoryToRoot()
         {
-            (Codec as IHasDirectory).SetCurrentDirectoryToRoot();
+            var hasDirectory = Codec as IHasDirectory;
 
+            if (hasDirectory == null)
+            {
+                return;
+            }
+
+            hasDirectory.SetCurrentDirectoryToRoot();
             SearchKeypadClear();
-
-            RefreshDirectory();
         }
 
         /// <summary>
@@ -1075,10 +1088,17 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             var codec = Codec as IHasDirectory;
 
-            SetCurrentDirectoryToRoot();
+            if (codec == null)
+            {
+                return;
+            }
 
-            RefreshDirectory();
-            
+            if (!codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
+            {
+                return;
+            }
+
+            SetCurrentDirectoryToRoot();
         }
 
 		/// <summary>
@@ -1088,8 +1108,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 		/// <param name="e"></param>
 		void dir_DirectoryResultReturned(object sender, DirectoryEventArgs e)
 		{
-
-			RefreshDirectory();
+		    RefreshDirectory(e.Directory);
 		}
 
         /// <summary>
@@ -1118,16 +1137,27 @@ namespace PepperDash.Essentials.UIDrivers.VC
  
         }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="dir"></param>
-		void RefreshDirectory()
+        /// <summary>
+        /// 
+        /// </summary>
+        void RefreshDirectory()
 		{
-            if ((Codec as IHasDirectory).CurrentDirectoryResult.CurrentDirectoryResults.Count > 0)
+		    var codec = Codec as IHasDirectory;
+
+		    if (codec == null)
+		    {
+		        return;
+		    }
+
+		    RefreshDirectory(codec.CurrentDirectoryResult);
+		}
+
+        void RefreshDirectory(CodecDirectory directory)
+        {
+            if (directory.CurrentDirectoryResults.Count > 0)
             {
                 ushort i = 0;
-                foreach (var r in (Codec as IHasDirectory).CurrentDirectoryResult.CurrentDirectoryResults)
+                foreach (var r in directory.CurrentDirectoryResults)
                 {
                     if (i == DirectoryList.MaxCount)
                     {
@@ -1147,19 +1177,33 @@ namespace PepperDash.Essentials.UIDrivers.VC
                             // If more than one contact method, show contact method modal dialog
                             DirectoryList.SetItemButtonAction(i, b =>
                             {
-                                if (!b)
+                                if (b)
                                 {
-                                    // Refresh the contact methods list
-                                    RefreshContactMethodsModalList(dc);
-                                    Parent.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsOrContacMethodsListVisible);
+                                    return;
                                 }
+                                // Refresh the contact methods list
+                                RefreshContactMethodsModalList(dc);
+                                Parent.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.MeetingsOrContacMethodsListVisible);
                             });
 
                         }
+                        else if (dc.ContactMethods.Count == 1)
+                        {
+                            var invitableContact = dc as IInvitableContact;
+
+                            if (invitableContact != null)
+                            {
+                                DirectoryList.SetItemButtonAction(i, b => { if (!b) Codec.Dial(invitableContact); });
+                            }
+                            else
+                            {
+                                // If only one contact method, just dial that method
+                                DirectoryList.SetItemButtonAction(i, b => { if (!b) Codec.Dial(dc.ContactMethods[0].Number); });
+                            }
+                        }
                         else
                         {
-                            // If only one contact method, just dial that method
-							DirectoryList.SetItemButtonAction(i, b => { if (!b) Codec.Dial(dc.ContactMethods[0].Number); });
+                            Debug.Console(1, "Unable to dial contact.  No availble ContactMethod(s) specified");
                         }
                     }
                     else    // is DirectoryFolder
@@ -1186,8 +1230,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 DirectoryList.SetItemMainText(1, "No Results Found");
             }
-
-		}
+        }
 
         void RefreshContactMethodsModalList(DirectoryContact contact)
         {

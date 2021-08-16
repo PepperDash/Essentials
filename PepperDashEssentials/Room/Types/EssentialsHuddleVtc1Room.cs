@@ -454,7 +454,8 @@ namespace PepperDash.Essentials
             else
             {
                 Debug.Console(1, this, "sourceListKey present but not yet implemented");
-                throw new NotImplementedException();
+
+                RunRouteAction(routeKey, new Action(() => { }));
             }
         }
 
@@ -471,7 +472,11 @@ namespace PepperDash.Essentials
                 RunRouteAction(routeKey, successCallback);
             }
             else
-                throw new NotImplementedException();
+            {
+                Debug.Console(1, this, "sourceListKey present but not yet implemented");
+
+                RunRouteAction(routeKey, successCallback);
+            }
         }
 
 		/// <summary>

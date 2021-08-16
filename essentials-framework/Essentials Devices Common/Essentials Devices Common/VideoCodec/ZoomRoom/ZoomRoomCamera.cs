@@ -63,6 +63,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             : base(key, name)
         {
             ParentCodec = codec;
+
+            Capabilities = eCameraCapabilities.Pan | eCameraCapabilities.Tilt | eCameraCapabilities.Zoom;
         }
 
         /// <summary>
