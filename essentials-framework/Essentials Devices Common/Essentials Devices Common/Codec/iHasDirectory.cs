@@ -69,6 +69,22 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 		[JsonProperty("directoryResults")]
         public List<DirectoryItem> CurrentDirectoryResults { get; private set; }
 
+        public List<DirectoryItem> Contacts
+        {
+            get
+            {
+                return CurrentDirectoryResults.OfType<DirectoryContact>().Cast<DirectoryItem>().ToList();
+            }
+        }
+
+        public List<DirectoryItem> Folders
+        {
+            get
+            {
+                return CurrentDirectoryResults.OfType<DirectoryFolder>().Cast<DirectoryItem>().ToList();
+            }
+        }
+
         /// <summary>
         /// Used to store the ID of the current folder for CurrentDirectoryResults
         /// </summary>
@@ -102,6 +118,15 @@ namespace PepperDash.Essentials.Devices.Common.Codec
                 CurrentDirectoryResults.AddRange(contacts);
 
             SortDirectory();
+        }
+
+        /// <summary>
+        /// Filters the CurrentDirectoryResults by the predicate
+        /// </summary>
+        /// <param name="predicate"></param>
+        public void FilterContacts(Func<DirectoryItem, bool> predicate)
+        {
+            CurrentDirectoryResults = CurrentDirectoryResults.Where(predicate).ToList();
         }
 
         /// <summary>
