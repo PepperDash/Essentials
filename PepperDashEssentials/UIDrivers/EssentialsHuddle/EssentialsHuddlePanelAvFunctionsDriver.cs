@@ -918,6 +918,7 @@ namespace PepperDash.Essentials
                 TriList.BooleanInput[StartPageVisibleJoin].BoolValue = true;
                 TriList.BooleanInput[UIBoolJoin.VolumeSingleMute1Visible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue = false;
+                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
             }
         }
 

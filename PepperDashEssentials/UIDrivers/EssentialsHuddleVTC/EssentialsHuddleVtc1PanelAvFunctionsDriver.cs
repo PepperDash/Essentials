@@ -633,7 +633,10 @@ namespace PepperDash.Essentials
                 var callMode = CurrentMode == UiDisplayMode.Call;
 
                 TriList.SetBool(StartPageVisibleJoin, startMode ? true : false);
+
                 TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, presentationMode ? true : false);
+                if (!presentationMode)
+                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
 
                 CallButtonSig.BoolValue = callMode
                     && CurrentRoom.ShutdownType == eShutdownType.None;
@@ -674,19 +677,19 @@ namespace PepperDash.Essentials
             // Run default source when room is off and share is pressed
             if (!CurrentRoom.OnFeedback.BoolValue)
             { 
-				if (!CurrentRoom.OnFeedback.BoolValue)
-				{
-					// If there's no default, show UI elements
-					if (!(CurrentRoom as IRunDefaultPresentRoute).RunDefaultPresentRoute())
-						TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
-				}
-            }
+				// If there's no default, show UI elements
+				if (!(CurrentRoom as IRunDefaultPresentRoute).RunDefaultPresentRoute())
+					TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);				
+           }
             else // room is on show what's active or select a source if nothing is yet active
             {
-                if(CurrentRoom.CurrentSourceInfo == null || CurrentRoom.CurrentSourceInfoKey == CurrentRoom.DefaultCodecRouteString)
+                if(CurrentRoom.CurrentSourceInfo == null || (CurrentRoom.VideoCodec != null && CurrentRoom.CurrentSourceInfo.SourceDevice.Key == CurrentRoom.VideoCodec.OsdSource.Key))
                     TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
                 else if (CurrentSourcePageManager != null)
+                {
+                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
                     CurrentSourcePageManager.Show();
+                }
             }
             CurrentMode = UiDisplayMode.Presentation;
 			SetupSourceList();
@@ -1131,6 +1134,30 @@ namespace PepperDash.Essentials
         /// <param name="type"></param>
         void CurrentRoom_CurrentSingleSourceChange(SourceListItem info, ChangeType type)
         {
+            Debug.Console(1, "AvFunctionsDriver: CurrentSingleSourceChange");
+
+            // Show the Select a source subpage 
+            if (TriList.BooleanInput[UIBoolJoin.SourceStagingBarVisible].BoolValue)
+            {
+                Debug.Console(1, "AvFunctionsDriver: CurrentSingleSourceChange SourceStagingBarVisisble: true");
+
+                if (_CurrentRoom.CurrentSourceInfo == null || (_CurrentRoom.VideoCodec != null && _CurrentRoom.CurrentSourceInfo.SourceDevice.Key == _CurrentRoom.VideoCodec.OsdSource.Key))
+                {
+                    Debug.Console(1, "AvFunctionsDriver: CurrentSingleSourceChange Showing SelectASourceVisible");
+                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
+                }
+                else
+                {
+                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
+                    Debug.Console(1, "AvFunctionsDriver: CurrentSingleSourceChange Hiding SelectASourceVisible");
+                }
+            }
+            else
+            {
+                Debug.Console(1, "AvFunctionsDriver: CurrentSingleSourceChange Hiding SelectASourceVisible");
+                TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
+            }
+
             if (_CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue && _CurrentRoom.CurrentSourceInfo != null)
                 TriList.StringInput[UIStringJoin.CallSharedSourceNameText].StringValue = _CurrentRoom.CurrentSourceInfo.PreferredName;
         }
@@ -1228,12 +1255,12 @@ namespace PepperDash.Essentials
             var value = _CurrentRoom.OnFeedback.BoolValue;
             TriList.BooleanInput[UIBoolJoin.RoomIsOn].BoolValue = value;
 
-            TriList.BooleanInput[StartPageVisibleJoin].BoolValue = !value;
+            //TriList.BooleanInput[StartPageVisibleJoin].BoolValue = !value;
 
             if (value) //ON
             {
                 SetupActivityFooterWhenRoomOn();
-                TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
+                //TriList.BooleanInput[UIBoolJoin.SelectASourceVisible].BoolValue = false;
                 TriList.BooleanInput[UIBoolJoin.VolumeDualMute1Visible].BoolValue = true;
 
             }
