@@ -24,9 +24,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 	public enum eExternalSourceType {camera, desktop, document_camera, mediaplayer, PC, whiteboard, other}
-	public enum eExternalSourceMode {Ready, NotReady, Hidden, Error} 
+	public enum eExternalSourceMode {Ready, NotReady, Hidden, Error}
 
-    public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
+    public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectoryHistoryStack,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
         ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute
     {
@@ -106,6 +106,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public CodecDirectory DirectoryRoot { get; private set; }
 
+
+        private CodecDirectory _currentDirectoryResult;
+
         /// <summary>
         /// Represents the current state of the directory and is computed on get
         /// </summary>
@@ -113,10 +116,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             get
             {
-                if (DirectoryBrowseHistory.Count > 0)
-                    return DirectoryBrowseHistory[DirectoryBrowseHistory.Count - 1];
-                else
-                    return DirectoryRoot;
+                return _currentDirectoryResult;
+            }
+            private set
+            {
+                _currentDirectoryResult = value;
+
+                CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+
+                OnDirectoryResultReturned(_currentDirectoryResult);
             }
         }
 
@@ -126,6 +134,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// Tracks the directory browse history when browsing beyond the root directory
         /// </summary>
         public List<CodecDirectory> DirectoryBrowseHistory { get; private set; }
+
+        public Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; private set; }
 
         public CodecScheduleAwareness CodecSchedule { get; private set; }
 
@@ -362,9 +372,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             DirectoryBrowseHistory = new List<CodecDirectory>();
 
-            CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => DirectoryBrowseHistory.Count > 0);
+            DirectoryBrowseHistoryStack = new Stack<CodecDirectory>();
 
-            CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+            CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => CurrentDirectoryResult != DirectoryRoot);
 
             CodecSchedule = new CodecScheduleAwareness();
  
@@ -1024,6 +1034,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                             PhonebookSyncState.PhonebookRootEntriesReceived();
 
+                            CurrentDirectoryResult = DirectoryRoot;
+
                             PrintDirectory(DirectoryRoot);
                         }
                         else if (PhonebookSyncState.InitialSyncComplete)
@@ -1035,9 +1047,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                             PrintDirectory(directoryResults);
 
-                            DirectoryBrowseHistory.Add(directoryResults);
-
-                            OnDirectoryResultReturned(directoryResults);
+                            CurrentDirectoryResult = directoryResults;
    
                         }
                     }
@@ -1068,8 +1078,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="result"></param>
         void OnDirectoryResultReturned(CodecDirectory result)
         {
-            CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
-
             // This will return the latest results to all UIs.  Multiple indendent UI Directory browsing will require a different methodology
             var handler = DirectoryResultReturned;
             if (handler != null)
@@ -1221,6 +1229,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="searchString"></param>
         public void SearchDirectory(string searchString)
         {
+            DirectoryBrowseHistoryStack.Push(CurrentDirectoryResult);
+
             SendText(string.Format("xCommand Phonebook Search SearchString: \"{0}\" PhonebookType: {1} ContactType: Contact Limit: {2}", searchString, PhonebookMode, PhonebookResultsLimit));
         }
 
@@ -1230,6 +1240,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="folderId"></param>
         public void GetDirectoryFolderContents(string folderId)
         {
+            DirectoryBrowseHistoryStack.Push(CurrentDirectoryResult);
+
             SendText(string.Format("xCommand Phonebook Search FolderId: {0} PhonebookType: {1} ContactType: Any Limit: {2}", folderId, PhonebookMode, PhonebookResultsLimit));
         }
 
@@ -1239,24 +1251,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <returns></returns>
         public void GetDirectoryParentFolderContents()
         {
-            var currentDirectory = new CodecDirectory();
-
-            if (DirectoryBrowseHistory.Count > 0)
+            if (DirectoryBrowseHistoryStack.Count == 0)
             {
-                var lastItemIndex = DirectoryBrowseHistory.Count - 1;
-                var parentDirectoryContents = DirectoryBrowseHistory[lastItemIndex];
-
-                DirectoryBrowseHistory.Remove(DirectoryBrowseHistory[lastItemIndex]);
-
-                currentDirectory = parentDirectoryContents;
-
-            }
-            else
-            {
-                currentDirectory = DirectoryRoot;
+                return;
             }
 
-            OnDirectoryResultReturned(currentDirectory);
+            CurrentDirectoryResult = DirectoryBrowseHistoryStack.Pop();
         }
 
         /// <summary>
@@ -1264,9 +1264,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SetCurrentDirectoryToRoot()
         {
-            DirectoryBrowseHistory.Clear();
+            DirectoryBrowseHistoryStack.Clear();
 
-            OnDirectoryResultReturned(DirectoryRoot);
+            CurrentDirectoryResult = DirectoryRoot;
         }
 
         /// <summary>
