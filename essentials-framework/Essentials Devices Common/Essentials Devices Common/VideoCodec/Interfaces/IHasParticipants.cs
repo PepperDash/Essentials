@@ -56,10 +56,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 			set
 			{
 				_currentParticipants = value;
-				foreach (var participant in _currentParticipants)
-				{
-					Debug.Console(1, "[CurrentParticipants] participant UserId: {0} Name: {1} IsHost: {2}", participant.UserId, participant.Name, participant.IsHost);	
-				}
 				OnParticipantsChanged();
 			}
 		}
@@ -74,8 +70,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 		public void OnParticipantsChanged()
 		{
 			var handler = ParticipantsListHasChanged;
-
-			Debug.Console(1, "[OnParticipantsChanged] Event Fired - handler is {0}", handler == null ? "null" : "not null");
 
 			if (handler == null) return;
 
