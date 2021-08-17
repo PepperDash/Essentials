@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
@@ -763,12 +764,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			if (s == "1")
 			{
 				CommDebuggingIsOn = true;
-				Debug.Console(0, this, "Comm Debug Enabled.");
+				Debug.Console(1, this, "Comm Debug Enabled.");
 			}
 			else
 			{
 				CommDebuggingIsOn = false;
-				Debug.Console(0, this, "Comm Debug Disabled.");
+				Debug.Console(1, this, "Comm Debug Disabled.");
 			}
 		}
 
@@ -876,7 +877,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			// Counts the curly braces
 			if (message.Contains("client_loop: send disconnect: Broken pipe"))
 			{
-				Debug.Console(0, this, Debug.ErrorLogLevel.Error,
+				Debug.Console(1, this, Debug.ErrorLogLevel.Error,
 					"Zoom Room Controller or App connected. Essentials will NOT control the Zoom Room until it is disconnected.");
 
 				return;
@@ -966,7 +967,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								SendText("echo off");
 								Thread.Sleep(100);
 								// set feedback exclusions
-								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/callin_country_list");
+								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/callin_country_list");								
 								Thread.Sleep(100);
 								SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/callout_country_list");
 								Thread.Sleep(100);
@@ -1110,6 +1111,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 													if (participant != null)
 													{
+														Debug.Console(1, this, "[DeserializeResponse] zCommands.listparticipantresult - participant.event: {0} **********************************", participant.Event);
+														Debug.Console(1, this, "[DeserializeResponse] zCommands.listparticipantresult - participant.event: {0} - UserId: {1} Name: {2} IsHost: {3}",
+																participant.Event, participant.UserId, participant.UserName, participant.IsHost);
+														
 														switch (participant.Event)
 														{
 															case "ZRCUserChangedEventUserInfoUpdated":
@@ -1135,9 +1140,36 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 																}
 																break;
 															case "ZRCUserChangedEventJoinedMeeting":
-																Status.Call.Participants.Add(participant);
+															{
+																var existingParticipant =
+																	Status.Call.Participants.FirstOrDefault(p => p.UserId.Equals(participant.UserId));
+
+																// found matching participant.UserId
+																if (existingParticipant != null)
+																{
+																	Debug.Console(1, this, "[DeserializeResponse] zCommands.listparticipantresult - participant.event: {0} ...updating matching UserId participant with UserId: {1} UserName: {2}",
+																		participant.Event, participant.UserId, participant.UserName);
+																	
+																	JsonConvert.PopulateObject(responseObj.ToString(), existingParticipant);
+																}
+																else
+																{
+																	Debug.Console(1, this, "[DeserializeResponse] zCommands.listparticipantresult - participant.event: {0} ...adding participant with UserId: {1} UserName: {2}",
+																		participant.Event, participant.UserId, participant.UserName);
+
+																	Status.Call.Participants.Add(participant);
+																	
+																	//var emptyList = new List<Participant>();
+																	//Participants.CurrentParticipants = emptyList;
+																	
+																	//GetCurrentCallParticipants();			
+																}
+
 																break;
+															}
 														}
+														
+														Debug.Console(1, this, "[DeserializeResponse] zCommands.listparticipantresult - participant.event: {0} ***********************************", participant.Event);
 													}
 												}
 												break;
@@ -1148,7 +1180,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 												Status.Call.Participants);
 
 										Participants.CurrentParticipants = participants;
-
 										PrintCurrentCallParticipants();
 
 										break;
@@ -1282,22 +1313,30 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 										var disconnectEvent =
 											JsonConvert.DeserializeObject<zEvent.CallDisconnect>(responseObj.ToString());
 
+										Debug.Console(1, this, "[DeserializeResponse] zEvent.calldisconnect ********************************************");
+										Debug.Console(1, this, "[DeserializeResponse] zEvent.calldisconnect - disconnectEvent.Successful: {0}", disconnectEvent.Successful);
+
 										if (disconnectEvent.Successful)
 										{
 											if (ActiveCalls.Count > 0)
-											{
+											{												
 												var activeCall = ActiveCalls.FirstOrDefault(c => c.IsActiveCall);
-
+												
 												if (activeCall != null)
 												{
+													Debug.Console(1, this, "[DeserializeResponse] zEvent.calldisconnect - ActiveCalls.Count: {0} activeCall.Id: {1}, activeCall.Number: {2} activeCall.Name: {3}, activeCall.IsActive: {4}", ActiveCalls.Count, activeCall.Id, activeCall.Number, activeCall.Name, activeCall.IsActiveCall);
 													activeCall.Status = eCodecCallStatus.Disconnected;
 
 													OnCallStatusChange(activeCall);
 												}
-											}
+											}											
+
 											var emptyList = new List<Participant>();
 											Participants.CurrentParticipants = emptyList;
+											//Participants.OnParticipantsChanged();
 										}
+
+										Debug.Console(1, this, "[DeserializeResponse] zEvent.calldisconnect ********************************************");
 
 										UpdateCallStatus();
 										break;
@@ -1431,6 +1470,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 									{
 										JsonConvert.PopulateObject(responseObj.ToString(), Status.Call);
 
+										Debug.Console(1, this, "[DeserializeResponse] zStatus.call - Status.Call.Info.meeting_id: {0} Status.Call.Info.meeting_list_item.meetingName: {1}", Status.Call.Info.meeting_id, Status.Call.Info.meeting_list_item.meetingName);
+										foreach (var participant in Status.Call.Participants)
+										{
+											Debug.Console(1, this, "[DeserializeResponse] zStatus.call - Status.Call.Participants participant.UserId: {0} participant.UserName: {1}", participant.UserId, participant.UserName);
+										}
+										
 										UpdateCallStatus();
 
 										break;
@@ -1536,10 +1581,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			Debug.Console(1, this, "*************************** Call Participants **************************");
 			foreach (var participant in Participants.CurrentParticipants)
 			{
-				Debug.Console(1, this, "Name: {0} Audio: {1} IsHost: {2}", participant.Name,
-					participant.AudioMuteFb, participant.IsHost);
+				Debug.Console(1, this, "UserId: {3} Name: {0} Audio: {1} IsHost: {2}", 
+					participant.Name, participant.AudioMuteFb, participant.IsHost, participant.UserId);
 			}
 			Debug.Console(1, this, "************************************************************************");
+		}
+
+		public void GetCurrentCallParticipants()
+		{
+			SendText("zCommand Call ListParticipants");
 		}
 
 		/// <summary>
@@ -1557,16 +1607,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		private void UpdateCallStatus()
 		{
 			Debug.Console(1, this, "[UpdateCallStatus] Current Call Status: {0}",
-				Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
+				Status.Call != null ? Status.Call.Status.ToString() : "no call");
+
+			//var emptyList = new List<Participant>();
 
 			if (Status.Call != null)
 			{
 				var callStatus = Status.Call.Status;
 
-				// If not currently in a meeting, intialize the call object
+				// If not crrently in a meeting, intialize the call object
 				if (callStatus != zStatus.eCallStatus.IN_MEETING && callStatus != zStatus.eCallStatus.CONNECTING_MEETING)
 				{
-					Debug.Console(1, this, "Creating new Status.Call object");
+					Debug.Console(1, this, "[UpdateCallStatus] Creating new Status.Call object");
 					Status.Call = new zStatus.Call { Status = callStatus };
 
                     OnCallStatusChange( new CodecActiveCallItem() { Status = eCodecCallStatus.Disconnected });
@@ -1583,7 +1635,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 						switch (callStatus)
 						{
-							case zStatus.eCallStatus.CONNECTING_MEETING:
+							case zStatus.eCallStatus.CONNECTING_MEETING:								
 								newStatus = eCodecCallStatus.Connecting;
 								break;
 							case zStatus.eCallStatus.IN_MEETING:
@@ -1591,28 +1643,38 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								break;
 						}
 
-						var newCall = new CodecActiveCallItem 
-                        {
-                            Name = Status.Call.Info.meeting_list_item.meetingName,
-                            Number = Status.Call.Info.meeting_id,
-                            Id = Status.Call.Info.meeting_id,
-                            Status = newStatus,
-                            Type = eCodecCallType.Video,
-                        };
+						if (!string.IsNullOrEmpty(Status.Call.Info.meeting_id))
+						{
+							var newCall = new CodecActiveCallItem
+							{
+								Name = Status.Call.Info.meeting_list_item.meetingName,
+								Number = Status.Call.Info.meeting_list_item.meetingNumber,
+								Id = Status.Call.Info.meeting_id,
+								Status = newStatus,
+								Type = eCodecCallType.Video,
+							};
 
-						ActiveCalls.Add(newCall);
+							//Participants.CurrentParticipants = emptyList;
 
-						Debug.Console(1, this, "[UpdateCallStatus] Current Call Status: {0}",
-							Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
+							ActiveCalls.Add(newCall);
 
-						OnCallStatusChange(newCall);
+							Debug.Console(1, this, "[UpdateCallStatus] IF w/ meeting_id AcitveCalls.Count == {1} - Current Call Status: {0}",
+								Status.Call != null ? Status.Call.Status.ToString() : "no call", ActiveCalls.Count);
+
+							OnCallStatusChange(newCall);
+						}
+						else
+						{
+							Debug.Console(1, this, "[UpdateCallStatus] IF w/o meeting_id AcitveCalls.Count == {1} - Current Call Status: {0}",
+								Status.Call != null ? Status.Call.Status.ToString() : "no call", ActiveCalls.Count);
+
+							//Participants.CurrentParticipants = emptyList;
+						}
 					}
-
-
 				}
 				else
 				{
-					var existingCall = ActiveCalls.FirstOrDefault(c => !c.Status.Equals(eCodecCallStatus.Ringing));
+					var existingCall = ActiveCalls.FirstOrDefault(c => !c.Status.Equals(eCodecCallStatus.Ringing));					
 
 					switch (callStatus)
 					{
@@ -1620,18 +1682,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							existingCall.Status = eCodecCallStatus.Connected;
 							break;
 						case zStatus.eCallStatus.NOT_IN_MEETING:
+							//Participants.CurrentParticipants = emptyList;
 							existingCall.Status = eCodecCallStatus.Disconnected;
-							break;
+							break;						
+						//default:
+						//    Participants.CurrentParticipants = emptyList;
+						//    break;
 					}
 
-					Debug.Console(1, this, "[UpdateCallStatus] Current Call Status: {0}",
-						Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
+					Debug.Console(1, this, "[UpdateCallStatus] ELSE ActiveCalls.Count == {1} - Current Call Status: {0}",
+						Status.Call != null ? Status.Call.Status.ToString() : "no call", ActiveCalls.Count);
 
 					OnCallStatusChange(existingCall);
 				}
 			}
 
-			Debug.Console(1, this, "*************************** Active Calls ********************************");
+			Debug.Console(1, this, "[UpdateCallStatus] Active Calls ------------------------------");
 
 			// Clean up any disconnected calls left in the list
 			for (int i = 0; i < ActiveCalls.Count; i++)
@@ -1639,25 +1705,33 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				var call = ActiveCalls[i];
 
 				Debug.Console(1, this,
-					@"Name: {0}
-                    ID: {1}
+					@"ID: {1}
+					Number: {5}
+					Name: {0}                    
                     IsActive: {2}
                     Status: {3}
-                    Direction: {4}", call.Name, call.Id, call.IsActiveCall, call.Status, call.Direction);
+                    Direction: {4}
+					IsActiveCall: {6}", call.Name, call.Id, call.IsActiveCall, call.Status, call.Direction, call.Number, call.IsActiveCall);
 
 				if (!call.IsActiveCall)
 				{
-					Debug.Console(1, this, "***** Removing Inactive Call: {0} *****", call.Name);
+					Debug.Console(1, this, "[UpdateCallStatus] Removing Inactive call.Id: {1} call.Name: {0}", call.Name, call.Id);
 					ActiveCalls.Remove(call);
 				}
 			}
-			Debug.Console(1, this, "**************************************************************************");
+			Debug.Console(1, this, "[UpdateCallStatus] Active Calls ------------------------------");
 
 			//clear participants list after call cleanup
 			if (ActiveCalls.Count == 0)
 			{
-                var emptyList = new List<Participant>();
+				var emptyList = new List<Participant>();
 				Participants.CurrentParticipants = emptyList;
+			}
+			else
+			{
+				var emptyList = new List<Participant>();
+				Participants.CurrentParticipants = emptyList;
+				GetCurrentCallParticipants();
 			}
 		}
 
@@ -1666,7 +1740,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			base.OnCallStatusChange(item);
 
 			Debug.Console(1, this, "[OnCallStatusChange] Current Call Status: {0}",
-				Status.Call != null ? Status.Call.Sharing.State.ToString() : "no call");
+				Status.Call != null ? Status.Call.Status.ToString() : "no call");
 
 			if (_props.AutoDefaultLayouts)
 			{
