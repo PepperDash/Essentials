@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Describes the basic functionality of an EssentialsRoom
     /// </summary>
-    public interface IEssentialsRoom : IKeyName, IReconfigurableDevice
+    public interface IEssentialsRoom : IKeyName, IReconfigurableDevice, IRunDefaultPresentRoute
     {
         BoolFeedback OnFeedback { get; }
 
@@ -56,7 +56,6 @@ namespace PepperDash.Essentials.Core
         void SetRoomOccupancy(IOccupancyStatusProvider statusProvider, int timeoutMinutes);
 
         void PowerOnToDefaultOrLastSource();
-        bool RunDefaultPresentRoute();
 
         void SetDefaultLevels();
 
