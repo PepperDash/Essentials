@@ -927,6 +927,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			PhoneCallStatus_InCall,
 			PhoneCallStatus_Init,
 		}
+
+        public class MeetingNeedsPassword
+        {
+            [JsonProperty("needsPassword")]
+            public bool NeedsPassword { get; set; }
+
+            [JsonProperty("wrongAndRetry")]
+            public bool WrongAndRetry { get; set; }
+        }
 	}
 
 	/// <summary>

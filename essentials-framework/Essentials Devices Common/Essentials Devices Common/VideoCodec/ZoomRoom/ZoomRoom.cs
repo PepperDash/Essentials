@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		IRouting,
 		IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
 		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin,
-		IHasParticipantAudioMute, IHasSelfviewSize
+		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt
 	{
 		private const long MeetingRefreshTimer = 60000;
 		private const uint DefaultMeetingDurationMin = 30;
@@ -45,6 +45,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		private StringBuilder _jsonMessage;
 		private int _previousVolumeLevel;
 		private CameraBase _selectedCamera;
+        private string _lastDialedMeetingNumber;
 
 		private readonly ZoomRoomPropertiesConfig _props;
 
@@ -1349,7 +1350,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							}
 							case "meetingneedspassword":
 							{
-								// TODO: notify user to enter a password
+                                var meetingNeedsPassword =
+                                    responseObj.ToObject<zEvent.MeetingNeedsPassword>();
+
+                                if (meetingNeedsPassword.NeedsPassword)
+                                {
+                                    var prompt = "Password required to join this meeting.  Please enter the meeting password.";
+
+                                    OnPasswordRequired(meetingNeedsPassword.WrongAndRetry, false, false, prompt);
+                                }
+
 								break;
 							}
 							case "needwaitforhost":
@@ -2041,8 +2051,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public override void Dial(string number)
 		{
+            _lastDialedMeetingNumber = number;
 			SendText(string.Format("zCommand Dial Join meetingNumber: {0}", number));
 		}
+
+        /// <summary>
+        /// Dials a meeting with a password
+        /// </summary>
+        /// <param name="number"></param>
+        /// <param name="password"></param>
+        public void Dial(string number, string password)
+        {
+            SendText(string.Format("zCommand Dial Join meetingNumber: {0} password: {1}", number, password));
+        }
 
 		/// <summary>
 		/// Invites a contact to either a new meeting (if not already in a meeting) or the current meeting.
@@ -2672,7 +2693,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		}
 
 		#endregion
-	}
+
+        #region IPasswordPrompt Members
+
+        public event EventHandler<PasswordPromptEventArgs> PasswordRequired;
+
+        public void SubmitPassword(string password)
+        {
+            Dial(_lastDialedMeetingNumber, password);
+        }
+
+        void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
+        {
+            var handler = PasswordRequired;
+            if (handler != null)
+            {
+                handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
+            }
+        }
+
+        #endregion
+    }
 
 	/// <summary>
 	/// Zoom Room specific info object
