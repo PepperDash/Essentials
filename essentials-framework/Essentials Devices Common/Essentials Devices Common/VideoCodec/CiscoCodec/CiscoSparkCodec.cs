@@ -551,6 +551,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CrestronConsole.AddNewConsoleCommand(GetPhonebook, "GetCodecPhonebook", "Triggers a refresh of the codec phonebook", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(GetBookings, "GetCodecBookings", "Triggers a refresh of the booking data for today", ConsoleAccessLevelEnum.AccessOperator);
 
+            return base.CustomActivate();
+        }
+
+        #region Overrides of Device
+
+        public override void Initialize()
+        {
             var socket = Communication as ISocketStatus;
             if (socket != null)
             {
@@ -559,9 +566,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             Communication.Connect();
 
-			CommunicationMonitor.Start();
+            CommunicationMonitor.Start();
 
-            string prefix = "xFeedback register ";
+            const string prefix = "xFeedback register ";
 
             CliFeedbackRegistrationExpression =
                 prefix + "/Configuration" + Delimiter +
@@ -576,13 +583,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Video/Layout" + Delimiter +
                 prefix + "/Status/Video/Input/MainVideoMute" + Delimiter +
                 prefix + "/Bookings" + Delimiter +
-                prefix + "/Event/CallDisconnect" + Delimiter + 
+                prefix + "/Event/CallDisconnect" + Delimiter +
                 prefix + "/Event/Bookings" + Delimiter +
                 prefix + "/Event/CameraPresetListUpdated" + Delimiter +
-				prefix + "/Event/UserInterface/Presentation/ExternalSource/Selected/SourceIdentifier" + Delimiter;
-
-            return base.CustomActivate();
+                prefix + "/Event/UserInterface/Presentation/ExternalSource/Selected/SourceIdentifier" + Delimiter;
         }
+
+        #endregion
 
         /// <summary>
         /// Fires when initial codec sync is completed.  Used to then send commands to get call history, phonebook, bookings, etc.
