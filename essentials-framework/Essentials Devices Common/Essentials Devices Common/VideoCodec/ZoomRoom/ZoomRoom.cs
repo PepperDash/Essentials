@@ -1359,6 +1359,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                                     OnPasswordRequired(meetingNeedsPassword.WrongAndRetry, false, false, prompt);
                                 }
+                                else
+                                {
+                                    OnPasswordRequired(false, false, true, "");
+                                }
 
 								break;
 							}
@@ -2062,6 +2066,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// <param name="password"></param>
         public void Dial(string number, string password)
         {
+            Debug.Console(2, this, "Dialing meeting number: {0} with password: {1}", number, password);
             SendText(string.Format("zCommand Dial Join meetingNumber: {0} password: {1}", number, password));
         }
 
@@ -2700,6 +2705,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void SubmitPassword(string password)
         {
+            Debug.Console(2, this, "Password Submitted: {0}", password);
             Dial(_lastDialedMeetingNumber, password);
         }
 

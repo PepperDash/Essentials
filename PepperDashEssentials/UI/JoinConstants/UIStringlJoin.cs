@@ -118,6 +118,14 @@ namespace PepperDash.Essentials
 
         //----- through 3120
 
+        /// <summary>
+        /// 3201
+        /// </summary>
+        public const uint PasswordPromptMessageText = 3201;
+        /// <summary>
+        /// 3202
+        /// </summary>
+        public const uint PasswordPromptPasswordText = 3202;
 
         /// <summary>
         /// 3812

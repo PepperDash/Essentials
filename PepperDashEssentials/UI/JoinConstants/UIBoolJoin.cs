@@ -948,5 +948,24 @@ namespace PepperDash.Essentials
         /// 15214
         /// </summary>
         public const uint PinDialogDot4 = 15214;
+
+        //  Password Prompt Dialog **************************
+
+        /// <summary>
+        /// 15301
+        /// </summary>
+        public const uint PasswordPromptDialogVisible = 15301;
+        /// <summary>
+        /// 15302
+        /// </summary>
+        public const uint PasswordPromptTextPress = 15302;
+        /// <summary>
+        /// 15306
+        /// </summary>
+        public const uint PasswordPromptCancelPress = 15306;
+        /// <summary>
+        /// 15307
+        /// </summary>
+        public const uint PasswordPromptErrorVisible = 15307;
     }
 }
