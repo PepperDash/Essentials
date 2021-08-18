@@ -8,12 +8,9 @@ on:
       - bugfix/*
       - release/*
       - development
-  pull_request:
-    branches:
-      - development
 
 env:
-  # solution path doesn't need slashes unless there it is multiple folders deep
+  # solution path doesn't need slashes unless it is multiple folders deep
   # solution name does not include extension. .sln is assumed
   SOLUTION_PATH: PepperDashEssentials
   SOLUTION_FILE: PepperDashEssentials

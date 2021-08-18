@@ -17,7 +17,7 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials
 {
-    public interface IEssentialsHuddleSpaceRoom : IEssentialsRoom, IHasCurrentSourceInfoChange, IRunRouteAction, IRunDefaultPresentRoute, IHasDefaultDisplay
+    public interface IEssentialsHuddleSpaceRoom : IEssentialsRoom, IHasCurrentSourceInfoChange, IRunRouteAction, IHasDefaultDisplay
     {
         bool ExcludeFromGlobalFunctions { get; }
 
@@ -31,17 +31,13 @@ namespace PepperDash.Essentials
     }
 
     public interface IEssentialsHuddleVtc1Room : IEssentialsRoom, IHasCurrentSourceInfoChange,
-        IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback
+        IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay
     {
         EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; }
 
         void RunRouteAction(string routeKey);
 
         IHasScheduleAwareness ScheduleSource { get; }
-
-        BoolFeedback InCallFeedback { get; }
-
-        BoolFeedback PrivacyModeIsOnFeedback { get; }
 
         string DefaultCodecRouteString { get; }
     }
