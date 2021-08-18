@@ -327,6 +327,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public SpeakerTrack()
             {
                 Status = new Status2();
+                Availability = new Availability();
             }
         }
 
