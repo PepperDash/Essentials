@@ -28,22 +28,22 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// Indicates if the last submitted password was incorrect
         /// </summary>
-        bool LastAttemptWasIncorrect { get; private set; }
+        public bool LastAttemptWasIncorrect { get; private set; }
 
         /// <summary>
         /// Indicates that the login attempt has failed
         /// </summary>
-        bool LoginAttemptFailed { get; private set; }
+        public bool LoginAttemptFailed { get; private set; }
 
         /// <summary>
         /// Indicates that the process was cancelled and the prompt should be dismissed
         /// </summary>
-        bool LoginAttemptCancelled { get; private set; }
+        public bool LoginAttemptCancelled { get; private set; }
 
         /// <summary>
         /// A message to be displayed to the user
         /// </summary>
-        string Message { get; private set; }
+        public string Message { get; private set; }
 
         public PasswordPromptEventArgs(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
         {
