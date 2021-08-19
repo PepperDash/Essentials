@@ -193,7 +193,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     else
                     {
                         Parent.Keyboard.DisableGoButton();
-                        return "Tap for keyboard";
+                        return "";
                     }
                 });
                 PasswordStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.PasswordPromptPasswordText]);
@@ -1859,7 +1859,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void ShowPasswordPrompt()
         {
             // Clear out any previous data
-            PasswordStringBuilder.Remove(0, PasswordStringBuilder.Length);
+            PasswordKeypadClear();
 
             _passwordPromptDialogVisible = true;
             TriList.SetBool(UIBoolJoin.PasswordPromptDialogVisible, _passwordPromptDialogVisible);
