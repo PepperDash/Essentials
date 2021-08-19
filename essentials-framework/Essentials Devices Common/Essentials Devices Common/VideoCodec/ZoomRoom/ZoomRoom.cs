@@ -25,10 +25,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		IRouting,
 		IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
 		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin,
-		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt
+		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting
 	{
 		private const long MeetingRefreshTimer = 60000;
-		private const uint DefaultMeetingDurationMin = 30;
+        public uint DefaultMeetingDurationMin { get; private set; }
+
 		private const string Delimiter = "\x0D\x0A";
 
 		private readonly GenericQueue _receiveQueue;
@@ -52,6 +53,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		public ZoomRoom(DeviceConfig config, IBasicCommunication comm)
 			: base(config)
 		{
+            DefaultMeetingDurationMin = 30;
+
 			_props = JsonConvert.DeserializeObject<ZoomRoomPropertiesConfig>(config.Properties.ToString());
 
 			_receiveQueue = new GenericQueue(Key + "-rxQueue", Thread.eThreadPriority.MediumPriority, 512);
@@ -2094,6 +2097,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				}
 			}
 		}
+
+
+        /// <summary>
+        /// Starts a PMI Meeting for the specified duration (or default meeting duration if 0 is specified)
+        /// </summary>
+        /// <param name="duration">duration of meeting</param>
+        public void StartMeeting(uint duration)
+        {
+            uint dur = DefaultMeetingDurationMin;
+
+            if (duration > 0)
+                dur = duration;
+
+            SendText(string.Format("zCommand Dial StartPmi Duration: {0}", dur);
+        }
 
 		public override void EndCall(CodecActiveCallItem call)
 		{
