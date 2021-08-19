@@ -734,7 +734,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				ConsoleAccessLevelEnum.AccessOperator);
 			if (!_props.DisablePhonebookAutoDownload)
 			{
-				CrestronConsole.AddNewConsoleCommand(s => SendText("zCommand Phonebook List Offset: 0 Limit: 512"),
+				CrestronConsole.AddNewConsoleCommand(s => SendText("zCommand Phonebook List Offset: 0 Limit: 10000"),
 					"GetZoomRoomContacts", "Triggers a refresh of the codec phonebook",
 					ConsoleAccessLevelEnum.AccessOperator);
 			}
@@ -2110,7 +2110,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             if (duration > 0)
                 dur = duration;
 
-            SendText(string.Format("zCommand Dial StartPmi Duration: {0}", dur);
+            SendText(string.Format("zCommand Dial StartPmi Duration: {0}", dur));
         }
 
 		public override void EndCall(CodecActiveCallItem call)
