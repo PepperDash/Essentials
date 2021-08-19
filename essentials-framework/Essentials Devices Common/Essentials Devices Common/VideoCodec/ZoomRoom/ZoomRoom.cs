@@ -852,7 +852,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			if (!_props.DisablePhonebookAutoDownload)
 			{
-				_syncState.AddQueryToQueue("zCommand Phonebook List Offset: 0 Limit: 512");
+				_syncState.AddQueryToQueue("zCommand Phonebook List Offset: 0 Limit: 10000");
 			}
 
 			_syncState.AddQueryToQueue("zCommand Bookings List");
