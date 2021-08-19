@@ -209,7 +209,14 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 		[JsonProperty("title")]
         public string Title { get; set; }
 
-        
+        [JsonProperty("isInvitableContact")]
+        public bool IsInvitableContact
+        {
+            get 
+            {
+                return this is IInvitableContact;
+            }
+        }
 
 		[JsonProperty("contactMethods")]
         public List<ContactMethod> ContactMethods { get; set; }
