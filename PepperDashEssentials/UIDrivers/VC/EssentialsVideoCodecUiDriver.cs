@@ -322,6 +322,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             {
                 case eCodecCallStatus.Connected:
                     // fire at SRL item
+                    HidePasswordPrompt();
                     KeypadMode = eKeypadMode.DTMF;
                     DialStringBuilder.Remove(0, DialStringBuilder.Length);
                     DialStringFeedback.FireUpdate();
@@ -1868,9 +1869,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
         void HidePasswordPrompt()
         {
-            _passwordPromptDialogVisible = false;
-            Parent.Keyboard.Hide();
-            TriList.SetBool(UIBoolJoin.PasswordPromptDialogVisible, _passwordPromptDialogVisible);
+            if (_passwordPromptDialogVisible)
+            {
+                _passwordPromptDialogVisible = false;
+                Parent.Keyboard.Hide();
+                TriList.SetBool(UIBoolJoin.PasswordPromptDialogVisible, _passwordPromptDialogVisible);
+            }
         }
     }
 }
