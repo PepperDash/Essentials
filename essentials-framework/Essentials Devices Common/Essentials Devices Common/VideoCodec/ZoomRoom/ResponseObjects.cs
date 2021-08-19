@@ -236,14 +236,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 		}
 
-		/// <summary>
-		/// Used to be able to inplement IInvitableContact on DirectoryContact
-		/// </summary>
-		public class ZoomDirectoryContact : DirectoryContact, IInvitableContact
-		{
-
-		}
-
 		public class Phonebook
 		{
 			[JsonProperty("Contacts")]
@@ -302,7 +294,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					
 					foreach (Contact c in zoomContacts)
 					{
-						var contact = new ZoomDirectoryContact { Name = c.ScreenName, ContactId = c.Jid };
+						var contact = new InvitableDirectoryContact { Name = c.ScreenName, ContactId = c.Jid };
 
                         contact.ContactMethods.Add(new ContactMethod() { Number = c.Jid, Device = eContactMethodDevice.Video, CallType = eContactMethodCallType.Video, ContactMethodId = c.Jid });
 

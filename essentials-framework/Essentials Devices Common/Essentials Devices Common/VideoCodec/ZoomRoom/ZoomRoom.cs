@@ -2077,7 +2077,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// <param name="contact"></param>
 		public override void Dial(IInvitableContact contact)
 		{
-			var ic = contact as zStatus.ZoomDirectoryContact;
+            var ic = contact as InvitableDirectoryContact;
 
 			if (ic != null)
 			{
