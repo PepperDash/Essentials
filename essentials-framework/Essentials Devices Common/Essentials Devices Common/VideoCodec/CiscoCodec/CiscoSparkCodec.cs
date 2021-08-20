@@ -736,6 +736,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 
         }
 
+        /// <summary>
+        /// Appends the delimiter and send the command to the codec
+        /// </summary>
+        /// <param name="command"></param>
         public void SendText(string command)
         {
             if (CommDebuggingIsOn)
