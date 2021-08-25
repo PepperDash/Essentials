@@ -78,6 +78,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             SetupCameras();
 
+            CreateOsdSource();
+
             SetIsReady();
        }
 
@@ -117,6 +119,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
         bool _StandbyIsOn;
 
+        /// <summary>
+        /// Creates the fake OSD source, and connects it's AudioVideo output to the CodecOsdIn input
+        /// to enable routing 
+        /// </summary>
+        void CreateOsdSource()
+        {
+            OsdSource = new DummyRoutingInputsDevice(Key + "[osd]");
+            DeviceManager.AddDevice(OsdSource);
+            var tl = new TieLine(OsdSource.AudioVideoOutputPort, CodecOsdIn);
+            TieLineCollection.Default.Add(tl);
+        }
 
         /// <summary>
         /// Dials, yo!
