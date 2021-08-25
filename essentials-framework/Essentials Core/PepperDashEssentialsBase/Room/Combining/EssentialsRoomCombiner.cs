@@ -171,8 +171,22 @@ namespace PepperDash.Essentials.Core
             {
                 if (value != _currentScenario)
                 {
+                    // Deactivate the old scenario first
+                    if (_currentScenario != null)
+                    {
+                        _currentScenario.Deactivate();
+                    }
+
                     _currentScenario = value;
-                    Debug.Console(1, this, "Current Scenario: {0}", _currentScenario.Name);
+
+                    // Activate the new scenario
+                    if (_currentScenario != null)
+                    {
+                        _currentScenario.Activate();
+
+                        Debug.Console(1, this, "Current Scenario: {0}", _currentScenario.Name);
+                    }
+
                     var handler = RoomCombinationScenarioChanged;
                     if (handler != null)
                     {

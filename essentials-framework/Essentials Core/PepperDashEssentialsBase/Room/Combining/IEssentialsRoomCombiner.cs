@@ -79,6 +79,11 @@ namespace PepperDash.Essentials.Core
         void Activate();
 
         /// <summary>
+        /// Deactivates this room combination scenario
+        /// </summary>
+        void Deactivate();
+
+        /// <summary>
         /// The state of the partitions that would activate this scenario
         /// </summary>
         List<PartitionState> PartitionStates { get; }
