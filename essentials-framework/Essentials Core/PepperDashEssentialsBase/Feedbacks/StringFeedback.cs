@@ -52,7 +52,10 @@ namespace PepperDash.Essentials.Core
             ValueFunc = valueFunc;
         }
 
-
+        public void SetValueFunc(Func<string> newFunc)
+        {
+            ValueFunc = newFunc;
+        }
 
         public override void FireUpdate()
         {
