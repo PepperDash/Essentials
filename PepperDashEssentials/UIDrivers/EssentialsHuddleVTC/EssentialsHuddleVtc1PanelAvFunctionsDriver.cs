@@ -477,6 +477,10 @@ namespace PepperDash.Essentials
 				if (CurrentRoom.OnFeedback.BoolValue
 					&& lastMeetingDismissed == meeting)
 				{
+                    // meeting no longer joinable, hide popup
+                    if(meeting == null)
+                        HideNextMeetingPopup();
+
 					return;
 				}
 
