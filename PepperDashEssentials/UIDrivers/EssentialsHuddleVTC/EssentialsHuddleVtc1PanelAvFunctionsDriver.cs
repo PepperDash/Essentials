@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Globalization;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.UI;
@@ -470,7 +471,7 @@ namespace PepperDash.Essentials
 				Debug.Console(0, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
 					CurrentRoom.OnFeedback.BoolValue,
 					LastMeetingDismissedId,
-					lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToShortTimeString() : "");
+                    lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToString("t", Global.Culture) : "");
 
 				var meeting = meetings.LastOrDefault(m => m.Joinable);
 				if (CurrentRoom.OnFeedback.BoolValue
@@ -487,9 +488,11 @@ namespace PepperDash.Essentials
 				}
 				else
 				{
+
+
 					TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Upcoming meeting");
-					TriList.SetString(UIStringJoin.NextMeetingStartTimeText, meeting.StartTime.ToShortTimeString());
-					TriList.SetString(UIStringJoin.NextMeetingEndTimeText, meeting.EndTime.ToShortTimeString());
+                    TriList.SetString(UIStringJoin.NextMeetingStartTimeText, meeting.StartTime.ToString("t", Global.Culture));
+                    TriList.SetString(UIStringJoin.NextMeetingEndTimeText, meeting.EndTime.ToString("t", Global.Culture));
 					TriList.SetString(UIStringJoin.NextMeetingTitleText, meeting.Title);
 					TriList.SetString(UIStringJoin.NextMeetingNameText, meeting.Organizer);
 					TriList.SetString(UIStringJoin.NextMeetingButtonLabel, "Join");
@@ -512,7 +515,7 @@ namespace PepperDash.Essentials
 					// indexOf = 3, 4 meetings :  
 					if (indexOfNext < meetings.Count)
 						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
-							meetings[indexOfNext].StartTime.ToShortTimeString());
+                            meetings[indexOfNext].StartTime.ToString("t", Global.Culture));
 					else
 						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText, "No more meetings today");
 
@@ -1209,8 +1212,8 @@ namespace PepperDash.Essentials
 			foreach (var m in CurrentRoom.ScheduleSource.CodecSchedule.Meetings)
 			{
 				i++;
-				MeetingOrContactMethodModalSrl.StringInputSig(i, 1).StringValue = m.StartTime.ToShortTimeString();
-				MeetingOrContactMethodModalSrl.StringInputSig(i, 2).StringValue = m.EndTime.ToShortTimeString();
+                MeetingOrContactMethodModalSrl.StringInputSig(i, 1).StringValue = m.StartTime.ToString("t", Global.Culture);
+                MeetingOrContactMethodModalSrl.StringInputSig(i, 2).StringValue = m.EndTime.ToString("t", Global.Culture);
 				MeetingOrContactMethodModalSrl.StringInputSig(i, 3).StringValue = m.Title;
                 MeetingOrContactMethodModalSrl.StringInputSig(i, 4).StringValue = string.Format("<br>{0}",m.Organizer);
                 MeetingOrContactMethodModalSrl.StringInputSig(i, 5).StringValue = "Join";

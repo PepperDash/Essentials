@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
@@ -1008,7 +1009,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					// if it's today, show a simpler string
 					string timeText = null;
 					if (c.StartTime.Date == DateTime.Now.Date)
-						timeText = c.StartTime.ToShortTimeString();
+                        timeText = c.StartTime.ToString("t", Global.Culture);
 					else if (c.StartTime == DateTime.MinValue)
 						timeText = "";
 					else
