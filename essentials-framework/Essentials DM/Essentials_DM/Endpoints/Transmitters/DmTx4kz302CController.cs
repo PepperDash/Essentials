@@ -339,7 +339,7 @@ namespace PepperDash.Essentials.DM
             var localVideoInputPort =
                 InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.VideoSourceFeedback);
             var localAudioInputPort =
-                InputPorts.FirstOrDefault(p => (eAst)p.Selector == Tx.AudioSourceFeedback);
+                InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.VideoSourceFeedback);
 
             ActiveVideoInputFeedback.FireUpdate();
             VideoSourceNumericFeedback.FireUpdate();
@@ -364,8 +364,8 @@ namespace PepperDash.Essentials.DM
                     OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, OutputPorts.First(), localVideoInputPort, eRoutingSignalType.Video));
                     break;
                 case EndpointTransmitterBase.AudioSourceFeedbackEventId:
-                    var localInputAudioPort = InputPorts.FirstOrDefault(p => (eAst)p.Selector == Tx.AudioSourceFeedback);
-                    Debug.Console(2, this, "  Audio Source: {0}", Tx.AudioSourceFeedback);
+                    var localInputAudioPort = InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.VideoSourceFeedback);
+                    Debug.Console(2, this, "  Audio Source: {0}", Tx.VideoSourceFeedback);
                     AudioSourceNumericFeedback.FireUpdate();
                     OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue, OutputPorts.First(), localInputAudioPort, eRoutingSignalType.Audio));
                     break;

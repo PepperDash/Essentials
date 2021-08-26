@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using System.Globalization;
 using Crestron.SimplSharp;
 using System.Collections.Generic;
 using Crestron.SimplSharp.CrestronIO;
@@ -27,6 +28,10 @@ namespace PepperDash.Essentials.Core
 		public static LicenseManager LicenseManager { get; set; }
 
         public static eCrestronSeries ProcessorSeries { get { return CrestronEnvironment.ProgramCompatibility; } }
+
+        // TODO: consider making this configurable later
+        public static IFormatProvider Culture = CultureInfo.CreateSpecificCulture("en-US");
+
 
         /// <summary>
         /// The file path prefix to the folder containing configuration files
