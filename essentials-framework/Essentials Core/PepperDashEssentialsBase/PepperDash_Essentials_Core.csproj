@@ -203,6 +203,7 @@
     <Compile Include="Devices\PC\Laptop.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
+    <Compile Include="DeviceTypeInterfaces\IPasswordPrompt.cs" />
     <Compile Include="DeviceTypeInterfaces\ITvPresetsProvider.cs" />
     <Compile Include="DeviceTypeInterfaces\LanguageLabel.cs" />
     <Compile Include="DeviceTypeInterfaces\ILanguageProvider.cs" />

@@ -25,10 +25,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		IRouting,
 		IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
 		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin,
-		IHasParticipantAudioMute, IHasSelfviewSize
+		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting
 	{
 		private const long MeetingRefreshTimer = 60000;
-		private const uint DefaultMeetingDurationMin = 30;
+        public uint DefaultMeetingDurationMin { get; private set; }
+
 		private const string Delimiter = "\x0D\x0A";
 
 		private readonly GenericQueue _receiveQueue;
@@ -45,12 +46,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		private StringBuilder _jsonMessage;
 		private int _previousVolumeLevel;
 		private CameraBase _selectedCamera;
+        private string _lastDialedMeetingNumber;
 
 		private readonly ZoomRoomPropertiesConfig _props;
 
 		public ZoomRoom(DeviceConfig config, IBasicCommunication comm)
 			: base(config)
 		{
+            DefaultMeetingDurationMin = 30;
+
 			_props = JsonConvert.DeserializeObject<ZoomRoomPropertiesConfig>(config.Properties.ToString());
 
 			_receiveQueue = new GenericQueue(Key + "-rxQueue", Thread.eThreadPriority.MediumPriority, 512);
@@ -730,7 +734,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				ConsoleAccessLevelEnum.AccessOperator);
 			if (!_props.DisablePhonebookAutoDownload)
 			{
-				CrestronConsole.AddNewConsoleCommand(s => SendText("zCommand Phonebook List Offset: 0 Limit: 512"),
+				CrestronConsole.AddNewConsoleCommand(s => SendText("zCommand Phonebook List Offset: 0 Limit: 10000"),
 					"GetZoomRoomContacts", "Triggers a refresh of the codec phonebook",
 					ConsoleAccessLevelEnum.AccessOperator);
 			}
@@ -860,7 +864,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			if (!_props.DisablePhonebookAutoDownload)
 			{
-				_syncState.AddQueryToQueue("zCommand Phonebook List Offset: 0 Limit: 512");
+				_syncState.AddQueryToQueue("zCommand Phonebook List Offset: 0 Limit: 10000");
 			}
 
 			_syncState.AddQueryToQueue("zCommand Bookings List");
@@ -1358,7 +1362,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							}
 							case "meetingneedspassword":
 							{
-								// TODO: notify user to enter a password
+                                var meetingNeedsPassword =
+                                    responseObj.ToObject<zEvent.MeetingNeedsPassword>();
+
+                                if (meetingNeedsPassword.NeedsPassword)
+                                {
+                                    var prompt = "Password required to join this meeting.  Please enter the meeting password.";
+
+                                    OnPasswordRequired(meetingNeedsPassword.WrongAndRetry, false, false, prompt);
+                                }
+                                else
+                                {
+                                    OnPasswordRequired(false, false, true, "");
+                                }
+
 								break;
 							}
 							case "needwaitforhost":
@@ -2050,8 +2067,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public override void Dial(string number)
 		{
+            _lastDialedMeetingNumber = number;
 			SendText(string.Format("zCommand Dial Join meetingNumber: {0}", number));
 		}
+
+        /// <summary>
+        /// Dials a meeting with a password
+        /// </summary>
+        /// <param name="number"></param>
+        /// <param name="password"></param>
+        public void Dial(string number, string password)
+        {
+            Debug.Console(2, this, "Dialing meeting number: {0} with password: {1}", number, password);
+            SendText(string.Format("zCommand Dial Join meetingNumber: {0} password: {1}", number, password));
+        }
 
 		/// <summary>
 		/// Invites a contact to either a new meeting (if not already in a meeting) or the current meeting.
@@ -2060,7 +2089,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// <param name="contact"></param>
 		public override void Dial(IInvitableContact contact)
 		{
-			var ic = contact as zStatus.ZoomDirectoryContact;
+            var ic = contact as InvitableDirectoryContact;
 
 			if (ic != null)
 			{
@@ -2077,6 +2106,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				}
 			}
 		}
+
+
+        /// <summary>
+        /// Starts a PMI Meeting for the specified duration (or default meeting duration if 0 is specified)
+        /// </summary>
+        /// <param name="duration">duration of meeting</param>
+        public void StartMeeting(uint duration)
+        {
+            uint dur = DefaultMeetingDurationMin;
+
+            if (duration > 0)
+                dur = duration;
+
+            SendText(string.Format("zCommand Dial StartPmi Duration: {0}", dur));
+        }
 
 		public override void EndCall(CodecActiveCallItem call)
 		{
@@ -2681,7 +2725,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		}
 
 		#endregion
-	}
+
+        #region IPasswordPrompt Members
+
+        public event EventHandler<PasswordPromptEventArgs> PasswordRequired;
+
+        public void SubmitPassword(string password)
+        {
+            Debug.Console(2, this, "Password Submitted: {0}", password);
+            Dial(_lastDialedMeetingNumber, password);
+        }
+
+        void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
+        {
+            var handler = PasswordRequired;
+            if (handler != null)
+            {
+                handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
+            }
+        }
+
+        #endregion
+    }
 
 	/// <summary>
 	/// Zoom Room specific info object

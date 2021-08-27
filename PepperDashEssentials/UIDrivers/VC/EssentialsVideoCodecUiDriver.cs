@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
@@ -82,6 +83,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
         StringFeedback SearchStringFeedback;
         StringBuilder SearchStringBuilder = new StringBuilder();
         BoolFeedback SearchStringBackspaceVisibleFeedback;
+
+        StringFeedback PasswordStringFeedback;
+        StringBuilder PasswordStringBuilder = new StringBuilder();
 
         ModalDialog IncomingCallModal;
 
@@ -180,8 +184,22 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 });
                 SearchStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecDirectorySearchEntryText]);
 
-                SetupDirectoryList();
+                PasswordStringFeedback = new StringFeedback(() =>
+                {
+                    if (PasswordStringBuilder.Length > 0)
+                    {
+                        Parent.Keyboard.EnableGoButton();
+                        return PasswordStringBuilder.ToString();
+                    }
+                    else
+                    {
+                        Parent.Keyboard.DisableGoButton();
+                        return "";
+                    }
+                });
+                PasswordStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.PasswordPromptPasswordText]);
 
+                SetupDirectoryList();
 
                 SearchStringBackspaceVisibleFeedback = new BoolFeedback(() => SearchStringBuilder.Length > 0);
                 SearchStringBackspaceVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackspaceVisible]);
@@ -198,6 +216,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 triList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
                     StartSearchBackspaceRepeat, StopSearchBackspaceRepeat, SearchKeypadBackspacePress);
+
+
+                if (Codec is IPasswordPrompt)
+                {
+                    SetupPasswordPrompt();
+                }
 
             }
             catch (Exception e)
@@ -299,6 +323,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
             {
                 case eCodecCallStatus.Connected:
                     // fire at SRL item
+                    HidePasswordPrompt();
                     KeypadMode = eKeypadMode.DTMF;
                     DialStringBuilder.Remove(0, DialStringBuilder.Length);
                     DialStringFeedback.FireUpdate();
@@ -984,7 +1009,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					// if it's today, show a simpler string
 					string timeText = null;
 					if (c.StartTime.Date == DateTime.Now.Date)
-						timeText = c.StartTime.ToShortTimeString();
+                        timeText = c.StartTime.ToString("t", Global.Culture);
 					else if (c.StartTime == DateTime.MinValue)
 						timeText = "";
 					else
@@ -1328,7 +1353,21 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void RevealKeyboard()
         {
-            if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCKeypadWithFavoritesVisible && KeypadMode == eKeypadMode.Dial)
+            if (_passwordPromptDialogVisible)
+            {
+                Debug.Console(2, "Attaching Keyboard to PasswordPromptDialog");
+                DetachDialKeyboard();
+                DetachSearchKeyboard();
+                var kb = Parent.Keyboard;
+                kb.KeyPress -= Keyboard_PasswordKeyPress;
+                kb.KeyPress += Keyboard_PasswordKeyPress;
+                kb.HideAction = this.DetachPasswordKeyboard;
+                kb.GoButtonText = "Submit";
+                kb.GoButtonVisible = true;
+                PasswordStringCheckEnables();
+                kb.Show();
+            }
+            else if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCKeypadWithFavoritesVisible && KeypadMode == eKeypadMode.Dial)
             {
                 var kb = Parent.Keyboard;
 				kb.KeyPress -= Keyboard_DialKeyPress;
@@ -1350,6 +1389,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 SearchStringKeypadCheckEnables();
                 kb.Show();
             }
+
         }
 
         /// <summary>
@@ -1405,6 +1445,32 @@ namespace PepperDash.Essentials.UIDrivers.VC
             }
         }
 
+        /// <summary>
+        /// Event handler for keyboard dialing
+        /// </summary>
+        void Keyboard_PasswordKeyPress(object sender, PepperDash.Essentials.Core.Touchpanels.Keyboards.KeyboardControllerPressEventArgs e)
+        {
+            if (_passwordPromptDialogVisible)
+            {
+                if (e.Text != null)
+                    PasswordStringBuilder.Append(e.Text);
+                else
+                {
+                    if (e.SpecialKey == KeyboardSpecialKey.Backspace)
+                        PasswordKeypadBackspacePress();
+                    else if (e.SpecialKey == KeyboardSpecialKey.Clear)
+                        PasswordKeypadClear();
+                    else if (e.SpecialKey == KeyboardSpecialKey.GoButton)
+                    {
+                        (Codec as IPasswordPrompt).SubmitPassword(PasswordStringBuilder.ToString());
+                        HidePasswordPrompt();
+                    }
+                }
+                PasswordStringFeedback.FireUpdate();
+                PasswordStringCheckEnables();
+            }
+        }
+
 		/// <summary>
 		/// Call
 		/// </summary>
@@ -1416,6 +1482,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void DetachSearchKeyboard()
         {
             Parent.Keyboard.KeyPress -= Keyboard_SearchKeyPress;
+        }
+
+        void DetachPasswordKeyboard()
+        {
+            Parent.Keyboard.KeyPress -= Keyboard_PasswordKeyPress;
         }
 
         /// <summary>
@@ -1671,6 +1742,40 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 Parent.Keyboard.DisableGoButton();
         }
 
+        /// <summary>
+        /// Clears the Password keypad
+        /// </summary>
+        void PasswordKeypadClear()
+        {
+            PasswordStringBuilder.Remove(0, SearchStringBuilder.Length);
+            PasswordStringFeedback.FireUpdate();
+            PasswordStringCheckEnables();
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void PasswordKeypadBackspacePress()
+        {
+            PasswordStringBuilder.Remove(PasswordStringBuilder.Length - 1, 1);
+
+            PasswordStringFeedback.FireUpdate();
+            PasswordStringCheckEnables();
+        }
+
+        /// <summary>
+        /// Checks the enabled states of various elements around the keypad
+        /// </summary>
+        void PasswordStringCheckEnables()
+        {
+            var textIsEntered = PasswordStringBuilder.Length > 0;
+            if (textIsEntered)
+                Parent.Keyboard.EnableGoButton();
+            else
+                Parent.Keyboard.DisableGoButton();
+        }
+
 
         /// <summary>
         /// Returns the text value for the keypad dial entry field
@@ -1715,6 +1820,62 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             Dial = 0,
             DTMF
+        }
+
+        void SetupPasswordPrompt()
+        {
+            var passwordPromptCodec = Codec as IPasswordPrompt;
+
+            passwordPromptCodec.PasswordRequired += new EventHandler<PasswordPromptEventArgs>(passwordPromptCodec_PasswordRequired);
+
+            TriList.SetSigFalseAction(UIBoolJoin.PasswordPromptCancelPress, HidePasswordPrompt);
+            TriList.SetSigFalseAction(UIBoolJoin.PasswordPromptTextPress, RevealKeyboard);
+        }
+
+        void passwordPromptCodec_PasswordRequired(object sender, PasswordPromptEventArgs e)
+        {
+            if (e.LoginAttemptCancelled)
+            {
+                HidePasswordPrompt();
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(e.Message))
+            {
+                TriList.SetString(UIStringJoin.PasswordPromptMessageText, e.Message);
+            }
+
+            if (e.LoginAttemptFailed)
+            {
+                // TODO: Show a message modal to indicate the login attempt failed
+                return;
+            }
+
+            TriList.SetBool(UIBoolJoin.PasswordPromptErrorVisible, e.LastAttemptWasIncorrect);
+
+            ShowPasswordPrompt();
+        }
+
+        private bool _passwordPromptDialogVisible;
+
+        void ShowPasswordPrompt()
+        {
+            // Clear out any previous data
+            PasswordKeypadClear();
+
+            _passwordPromptDialogVisible = true;
+            TriList.SetBool(UIBoolJoin.PasswordPromptDialogVisible, _passwordPromptDialogVisible);
+            RevealKeyboard();
+        }
+
+        void HidePasswordPrompt()
+        {
+            if (_passwordPromptDialogVisible)
+            {
+                _passwordPromptDialogVisible = false;
+                Parent.Keyboard.Hide();
+                TriList.SetBool(UIBoolJoin.PasswordPromptDialogVisible, _passwordPromptDialogVisible);
+            }
         }
     }
 }

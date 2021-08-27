@@ -123,6 +123,7 @@
     <Compile Include="VideoCodec\Interfaces\IHasParticipants.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasSelfviewPosition.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasSelfviewSize.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasStartMeeting.cs" />
     <Compile Include="VideoCodec\Interfaces\iVideoCodecInfo.cs" />
     <Compile Include="Codec\iHasCallFavorites.cs" />
     <Compile Include="Codec\iHasCallHistory.cs" />

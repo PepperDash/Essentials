@@ -160,7 +160,19 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public interface IInvitableContact
     {
+        bool IsInvitableContact { get; }
+    }
 
+    public class InvitableDirectoryContact : DirectoryContact, IInvitableContact
+    {
+        [JsonProperty("isInvitableContact")]
+        public bool IsInvitableContact
+        {
+            get
+            {
+                return this is IInvitableContact;
+            }
+        }
     }
 
 	/// <summary>
@@ -208,8 +220,6 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
 		[JsonProperty("title")]
         public string Title { get; set; }
-
-        
 
 		[JsonProperty("contactMethods")]
         public List<ContactMethod> ContactMethods { get; set; }
