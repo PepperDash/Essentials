@@ -164,7 +164,7 @@ namespace PepperDash.Essentials
             CallCaretVisible = tempJoin + 10;
             TriList.SetSigFalseAction(tempJoin, () =>
                 {
-                    avDriver.ShowActiveCallsList();
+                    avDriver.ShowActiveCallsListOrMeetingInfo();
                     if(avDriver.CurrentRoom.InCallFeedback.BoolValue)
                         CaretInterlock.ShowInterlocked(CallCaretVisible);
                 });
@@ -256,7 +256,7 @@ namespace PepperDash.Essentials
             TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusLabelPress,
                 () =>
                 {
-                    avDriver.ShowActiveCallsList();
+                    avDriver.ShowActiveCallsListOrMeetingInfo();
                     if (avDriver.CurrentRoom.InCallFeedback.BoolValue)
                         CaretInterlock.ShowInterlocked(CallCaretVisible);
                 });
@@ -353,6 +353,8 @@ namespace PepperDash.Essentials
                 if (Parent.EnvironmentDriver != null && e.NewJoin == Parent.EnvironmentDriver.BackgroundSubpageJoin)
                     headerPopupShown = true;
                 else if (e.NewJoin == UIBoolJoin.HeaderActiveCallsListVisible)
+                    headerPopupShown = true;
+                else if (e.NewJoin == UIBoolJoin.HeaderMeetingInfoVisible)
                     headerPopupShown = true;
                 else if (e.NewJoin == UIBoolJoin.HelpPageVisible)
                     headerPopupShown = true;

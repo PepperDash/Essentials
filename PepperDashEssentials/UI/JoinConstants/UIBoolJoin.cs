@@ -49,6 +49,15 @@ namespace PepperDash.Essentials
 		/// 1006
 		/// </summary>
 		public const uint CallEndAllConfirmVisible = 1006;
+        /// <summary>
+        /// 1007
+        /// </summary>
+        public const uint MeetingPasswordVisible = 1007;
+        /// <summary>
+        /// 1008
+        /// </summary>
+        public const uint MeetingLeavePress = 1008;
+
 
 
 
@@ -153,6 +162,11 @@ namespace PepperDash.Essentials
         public const uint VCFavoriteVisibleStart = 1221;
         //									RANGE IN USE
         public const uint VCFavoriteVisibleEnd = 1225;
+
+        /// <summary>
+        /// 1230
+        /// </summary>
+        public const uint VCStagingMeetNowPress = 1230;
         /// <summary>
         /// 1231
         /// </summary>
@@ -844,6 +858,11 @@ namespace PepperDash.Essentials
         /// 15067
         /// </summary>
         public const uint NotificationRibbonVisible = 15067;
+        /// <summary>
+        /// 15068
+        /// </summary>
+        public const uint HeaderMeetingInfoVisible = 15068;
+
         /// <summary>
         /// 15083 - Press for Call help desk on AC/VC
         /// </summary>

@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		IRouting,
 		IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
 		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin,
-		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting
+		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting, IHasMeetingInfo
 	{
 		private const long MeetingRefreshTimer = 60000;
         public uint DefaultMeetingDurationMin { get; private set; }
@@ -470,6 +470,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				{
 					SharingContentIsOnFeedback.FireUpdate();
 					ReceivingContent.FireUpdate();
+
+                    // Update the share status of the meeting info
+                    var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, GetSharingStatus());
+                    MeetingInfo = meetingInfo;
 				}
 			};
 
@@ -618,6 +622,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						break;
 					case "password":
 						break;
+                    case "isAirHostClientConnected":
+                    case "isDirectPresentationConnected":
+                    case "isSharingBlackMagic":
+                        {
+                            // Update the share status of the meeting info
+                            var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, MeetingInfo.Host, MeetingInfo.Password, GetSharingStatus());
+                            MeetingInfo = meetingInfo;
+                            break;
+                        }
 				}
 			};
 
@@ -957,9 +970,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					{
 						_syncState.LoginMessageReceived();
 
+
 						// Fire up a thread to send the intial commands.
 						CrestronInvoke.BeginInvoke(o =>
 						{
+                            // Currently the feedback exclusions don't work when using the API in JSON response mode
+                            // But leave these here in case the API gets updated in the future 
+
+
 							Thread.Sleep(100);
 							// disable echo of commands
 							SendText("echo off");
@@ -1179,6 +1197,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 										Status.Call.Participants);
 
 								Participants.CurrentParticipants = participants;
+
+                                // Update the share status of the meeting info
+                                var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, MeetingInfo.ShareStatus);
+                                MeetingInfo = meetingInfo;
+
 								PrintCurrentCallParticipants();
 
 								break;
@@ -1642,7 +1665,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				// If not crrently in a meeting, intialize the call object
 				if (callStatus != zStatus.eCallStatus.IN_MEETING && callStatus != zStatus.eCallStatus.CONNECTING_MEETING)
 				{
-					Debug.Console(1, this, "[UpdateCallStatus] Creating new Status.Call object");
+                    //Debug.Console(1, this, "[UpdateCallStatus] Creating new Status.Call object");
 					Status.Call = new zStatus.Call {Status = callStatus};
 
 					OnCallStatusChange(new CodecActiveCallItem() {Status = eCodecCallStatus.Disconnected});
@@ -1680,15 +1703,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 							ActiveCalls.Add(newCall);
 
-							Debug.Console(1, this, "[UpdateCallStatus] IF w/ meeting_id AcitveCalls.Count == {1} - Current Call Status: {0}",
-								Status.Call != null ? Status.Call.Status.ToString() : "no call", ActiveCalls.Count);
+                            //Debug.Console(1, this, "[UpdateCallStatus] IF w/ meeting_id AcitveCalls.Count == {1} - Current Call Status: {0}",
+                                //Status.Call != null ? Status.Call.Status.ToString() : "no call", ActiveCalls.Count);
 
 							OnCallStatusChange(newCall);
 						}
 						else
 						{
-							Debug.Console(1, this, "[UpdateCallStatus] IF w/o meeting_id AcitveCalls.Count == {1} - Current Call Status: {0}",
-								Status.Call != null ? Status.Call.Status.ToString() : "no call", ActiveCalls.Count);
+                            //Debug.Console(1, this, "[UpdateCallStatus] IF w/o meeting_id AcitveCalls.Count == {1} - Current Call Status: {0}",
+                                //Status.Call != null ? Status.Call.Status.ToString() : "no call", ActiveCalls.Count);
 						}
 					}
 				}
@@ -1748,6 +1771,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			base.OnCallStatusChange(item);
 
+            if (item.Status == eCodecCallStatus.Connected)
+            {
+
+                var host = "";
+
+                if (Participants.Host != null)
+                    host = Participants.Host.Name;
+
+                MeetingInfo = new MeetingInfo(
+                    Status.Call.Info.meeting_id,
+                    Status.Call.Info.meeting_list_item.meetingName,
+                    host,
+                    Status.Call.Info.meeting_password,
+                    GetSharingStatus()
+                    );
+            }
+
 			Debug.Console(1, this, "[OnCallStatusChange] Current Call Status: {0}",
 				Status.Call != null ? Status.Call.Status.ToString() : "no call");
 
@@ -1756,6 +1796,30 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				SetLayout();
 			}
 		}
+
+        private string GetSharingStatus()
+        {
+            string sharingState = "None";
+
+            if (Status.Call.Sharing.State == zEvent.eSharingState.Receiving)
+            {
+                sharingState = "Receiving Content";
+            }
+            if (Status.Sharing.isAirHostClientConnected)
+            {
+                sharingState = "Sharing AirPlay";
+            }
+            if (Status.Sharing.isDirectPresentationConnected)
+            {
+                sharingState = "Sharing Laptop";
+            }
+            if (Status.Sharing.isSharingBlackMagic)
+            {
+                sharingState = "Sharing HDMI Source";
+            }
+
+            return sharingState;
+        }
 
 		public override void StartSharing()
 		{
@@ -2111,6 +2175,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 dur = duration;
 
             SendText(string.Format("zCommand Dial StartPmi Duration: {0}", dur));
+        }
+
+        public void LeaveMeeting()
+        {
+            SendText("zCommand Call Leave");
         }
 
 		public override void EndCall(CodecActiveCallItem call)
@@ -2733,6 +2802,32 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             if (handler != null)
             {
                 handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
+            }
+        }
+
+        #endregion
+
+        #region IHasMeetingInfo Members
+
+        public event EventHandler<MeetingInfoEventArgs> MeetingInfoChanged;
+
+        private MeetingInfo _meetingInfo;
+
+        public MeetingInfo MeetingInfo
+        {
+            get { return _meetingInfo; }
+            private set
+            {
+                if (value != _meetingInfo)
+                {
+                    _meetingInfo = value;
+
+                    var handler = MeetingInfoChanged;
+                    if (handler != null)
+                    {
+                        handler(this, new MeetingInfoEventArgs(_meetingInfo));
+                    }
+                }
             }
         }
 

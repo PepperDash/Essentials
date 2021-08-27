@@ -431,6 +431,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			private string _dispState;
 			private string _password;
+            private bool _isAirHostClientConnected;
+            private bool _isSharingBlackMagic;
+            private bool _isDirectPresentationConnected;
+
 
 			public string directPresentationPairingCode { get; set; }
 			/// <summary>
@@ -452,11 +456,51 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					}
 				}
 			}
-			public bool isAirHostClientConnected { get; set; }
+
+			public bool isAirHostClientConnected 
+            {
+                get { return _isAirHostClientConnected; }
+                set
+                {
+                    if (value != _isAirHostClientConnected)
+                    {
+                        _isAirHostClientConnected = value;
+                        NotifyPropertyChanged("isAirHostClientConnected");
+                    }
+                }
+            }
+
 			public bool isBlackMagicConnected { get; set; }
 			public bool isBlackMagicDataAvailable { get; set; }
-			public bool isDirectPresentationConnected { get; set; }
-			public bool isSharingBlackMagic { get; set; }
+
+			public bool isDirectPresentationConnected
+            {
+                get { return _isDirectPresentationConnected; }
+                set
+                {
+                    if (value != _isDirectPresentationConnected)
+                    {
+                        _isDirectPresentationConnected = value;
+                        NotifyPropertyChanged("isDirectPresentationConnected");
+                    }
+                }
+            }
+
+			public bool isSharingBlackMagic
+            {
+                get { return _isSharingBlackMagic; }
+                set
+                {
+                    if (value != _isSharingBlackMagic)
+                    {
+                        _isSharingBlackMagic = value;
+                        NotifyPropertyChanged("isSharingBlackMagic");
+                    }
+                }
+            }
+
+
+
 			/// <summary>
 			/// IOS Airplay code
 			/// </summary>
@@ -779,7 +823,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			private bool _paused;
 			private eSharingState _state;
 
-			public bool IsSharing;
+            public bool IsSharing { get; private set; }
 
 			[JsonProperty("paused")]
 			public bool Paused

@@ -14,6 +14,7 @@ using PepperDash.Essentials.Core.PageManagers;
 using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 
 namespace PepperDash.Essentials
 {
@@ -98,6 +99,9 @@ namespace PepperDash.Essentials
 		/// 
 		/// </summary>
         public SubpageReferenceList MeetingOrContactMethodModalSrl { get; set; }
+
+        public uint CallListOrMeetingInfoPopoverVisibilityJoin { get; private set; }
+
 
 		/// <summary>
 		/// The list of buttons on the header. Managed with visibility only
@@ -351,15 +355,17 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Allows PopupInterlock to be toggled if the calls list is already visible, or if the codec is in a call
         /// </summary>
-        public void ShowActiveCallsList()
+        public void ShowActiveCallsListOrMeetingInfo()
         {
 			TriList.SetBool(UIBoolJoin.CallEndAllConfirmVisible, true);
-            if(PopupInterlock.CurrentJoin == UIBoolJoin.HeaderActiveCallsListVisible) 
-                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
+
+
+            if(PopupInterlock.CurrentJoin == CallListOrMeetingInfoPopoverVisibilityJoin)
+                PopupInterlock.ShowInterlockedWithToggle(CallListOrMeetingInfoPopoverVisibilityJoin);
             else
             {
-                if((CurrentRoom.ScheduleSource as VideoCodecBase).IsInCall)
-                    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
+                if(CurrentRoom.VideoCodec.IsInCall)
+                    PopupInterlock.ShowInterlockedWithToggle(CallListOrMeetingInfoPopoverVisibilityJoin);
             }
         }
 
@@ -948,6 +954,18 @@ namespace PepperDash.Essentials
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange -= CurrentRoom_IsWarmingFeedback_OutputChange;
                 _CurrentRoom.IsCoolingDownFeedback.OutputChange -= CurrentRoom_IsCoolingDownFeedback_OutputChange;
 				_CurrentRoom.InCallFeedback.OutputChange -= CurrentRoom_InCallFeedback_OutputChange;
+
+                var scheduleAwareCodec = _CurrentRoom.VideoCodec as IHasScheduleAwareness;
+                if (scheduleAwareCodec != null)
+                {
+                    scheduleAwareCodec.CodecSchedule.MeetingsListHasChanged -= CodecSchedule_MeetingsListHasChanged;
+                }
+
+                var meetingInfoCodec = _CurrentRoom.VideoCodec as IHasMeetingInfo;
+                if (meetingInfoCodec != null)
+                {
+                    meetingInfoCodec.MeetingInfoChanged -= meetingInfoCodec_MeetingInfoChanged;
+                }
             }
 
             _CurrentRoom = room;
@@ -980,9 +998,23 @@ namespace PepperDash.Essentials
                 _CurrentRoom.CurrentSourceChange += CurrentRoom_SourceInfoChange;
                 RefreshSourceInfo();
 
-                if (_CurrentRoom.VideoCodec is IHasScheduleAwareness)
+                
+                var scheduleAwareCodec = _CurrentRoom.VideoCodec as IHasScheduleAwareness;
+                if (scheduleAwareCodec != null)
                 {
-                    (_CurrentRoom.VideoCodec as IHasScheduleAwareness).CodecSchedule.MeetingsListHasChanged += CodecSchedule_MeetingsListHasChanged;
+                    scheduleAwareCodec.CodecSchedule.MeetingsListHasChanged += CodecSchedule_MeetingsListHasChanged;
+                }
+              
+                var meetingInfoCodec = _CurrentRoom.VideoCodec as IHasMeetingInfo;
+                if (meetingInfoCodec != null)
+                {
+                    meetingInfoCodec.MeetingInfoChanged += new EventHandler<MeetingInfoEventArgs>(meetingInfoCodec_MeetingInfoChanged);
+
+                    CallListOrMeetingInfoPopoverVisibilityJoin = UIBoolJoin.HeaderMeetingInfoVisible;
+                }
+                else
+                {
+                    CallListOrMeetingInfoPopoverVisibilityJoin = UIBoolJoin.HeaderActiveCallsListVisible;
                 }
 
                 CallSharingInfoVisibleFeedback = new BoolFeedback(() => _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue);
@@ -994,7 +1026,8 @@ namespace PepperDash.Essentials
                 if (_CurrentRoom != null)
                     _CurrentRoom.CurrentSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
 
-                TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, () => _CurrentRoom.RunRouteAction("codecOsd", _CurrentRoom.SourceListKey));
+                // Moved to EssentialsVideoCodecUiDriver
+                //TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, () => _CurrentRoom.RunRouteAction("codecOsd", _CurrentRoom.SourceListKey));
 
                 (Parent as EssentialsPanelMainInterfaceDriver).HeaderDriver.SetupHeaderButtons(this, CurrentRoom);
             }
@@ -1003,6 +1036,19 @@ namespace PepperDash.Essentials
                 // Clear sigs that need to be
                 TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = "Select a room";
             }
+        }
+
+        void meetingInfoCodec_MeetingInfoChanged(object sender, MeetingInfoEventArgs e)
+        {
+            TriList.SetString(UIStringJoin.MeetingIdText, e.Info.Id);
+            TriList.SetString(UIStringJoin.MeetingHostText, e.Info.Host);
+            TriList.SetString(UIStringJoin.MeetingNameText, e.Info.Name);
+
+            TriList.SetString(UIStringJoin.MeetingPasswordText, e.Info.Password);
+            // Show the password fields if one is present
+            TriList.SetBool(UIBoolJoin.MeetingPasswordVisible, string.IsNullOrEmpty(e.Info.Password) ? false : true);
+
+            TriList.SetString(UIStringJoin.CallSharedSourceNameText, e.Info.ShareStatus);
         }
 
         void SetCurrentRoom(IEssentialsHuddleVtc1Room room)
@@ -1513,6 +1559,8 @@ namespace PepperDash.Essentials
         /// Allows the codec to trigger the main UI to clear up if call is coming in.
         /// </summary>
         void PrepareForCodecIncomingCall();
+
+        uint CallListOrMeetingInfoPopoverVisibilityJoin { get; }
 
         SubpageReferenceList MeetingOrContactMethodModalSrl { get; }
     }

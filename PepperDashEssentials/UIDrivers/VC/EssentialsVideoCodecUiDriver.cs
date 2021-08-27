@@ -15,6 +15,7 @@ using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.Touchpanels.Keyboards;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.UIDrivers.VC
@@ -422,8 +423,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 ActiveCallsSRL.Count = (ushort)activeList.Count;
 
             // If Active Calls list is visible and codec is not in a call, hide the list    
-            if (!Codec.IsInCall && Parent.PopupInterlock.CurrentJoin == UIBoolJoin.HeaderActiveCallsListVisible)
-                Parent.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
+            if (!Codec.IsInCall && Parent.PopupInterlock.CurrentJoin == Parent.CallListOrMeetingInfoPopoverVisibilityJoin)
+                Parent.PopupInterlock.ShowInterlockedWithToggle(Parent.CallListOrMeetingInfoPopoverVisibilityJoin);
         }
         
         /// <summary>
@@ -514,15 +515,19 @@ namespace PepperDash.Essentials.UIDrivers.VC
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingRecentsPress, ShowRecents);
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingCameraPress, ShowCameraControls);
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingConnectPress, ConnectPress);
+            TriList.SetSigFalseAction(UIBoolJoin.VCStagingMeetNowPress, MeetNowPress);
+            TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, CallStopSharingPress);
+
             TriList.SetSigFalseAction(UIBoolJoin.CallEndPress, () =>
                 {
                     if (Codec.ActiveCalls.Count > 1)
                     {
-                        Parent.PopupInterlock.ShowInterlocked(UIBoolJoin.HeaderActiveCallsListVisible);
+                        Parent.PopupInterlock.ShowInterlocked(Parent.CallListOrMeetingInfoPopoverVisibilityJoin);
                     }
                     else
                         Codec.EndAllCalls();
                 });
+
 			TriList.SetSigFalseAction(UIBoolJoin.CallEndAllConfirmPress, () =>
 				{
 					Parent.PopupInterlock.HideAndClear();
@@ -1567,6 +1572,22 @@ namespace PepperDash.Essentials.UIDrivers.VC
         }
 
         /// <summary>
+        /// Meet Now button
+        /// </summary>
+        void MeetNowPress()
+        {
+            var startMeetingCodec = Codec as IHasStartMeeting;
+            if (startMeetingCodec != null)
+            {
+                startMeetingCodec.StartMeeting(startMeetingCodec.DefaultMeetingDurationMin);
+            }
+            else
+            {
+                Debug.Console(2, "Codce does not implment IHasStartMeeting. Cannot meet now");
+            }
+        }
+
+        /// <summary>
         /// Connect call button
         /// </summary>
         void ConnectPress()
@@ -1575,6 +1596,16 @@ namespace PepperDash.Essentials.UIDrivers.VC
 				Parent.Keyboard.Hide();
             Codec.Dial(DialStringBuilder.ToString());
         }
+
+        /// <summary>
+        /// Stop Sharing button
+        /// </summary>
+        void CallStopSharingPress()
+        {
+            Codec.StopSharing();
+            Parent.CurrentRoom.RunRouteAction("codecOsd", Parent.CurrentRoom.SourceListKey);
+        }
+
 
         /// <summary>
         /// 

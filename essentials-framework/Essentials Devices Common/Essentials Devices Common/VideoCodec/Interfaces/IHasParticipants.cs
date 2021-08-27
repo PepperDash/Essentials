@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -59,6 +60,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 				OnParticipantsChanged();
 			}
 		}
+
+        public Participant Host
+        {
+            get
+            {
+                return _currentParticipants.FirstOrDefault(p => p.IsHost);
+            }
+        }
 
 		public event EventHandler<EventArgs> ParticipantsListHasChanged;
 

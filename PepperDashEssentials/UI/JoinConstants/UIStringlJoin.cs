@@ -27,6 +27,23 @@ namespace PepperDash.Essentials
         /// 1004
         /// </summary>
         public const uint CallSharedSourceNameText = 1004;
+        /// <summary>
+        /// 1005
+        /// </summary>
+        public const uint MeetingIdText = 1005;
+        /// <summary>
+        /// 1006
+        /// </summary>
+        public const uint MeetingHostText = 1006;
+        /// <summary>
+        /// 1007
+        /// </summary>
+        public const uint MeetingPasswordText = 1007;
+        /// <summary>
+        /// 1008
+        /// </summary>
+        public const uint MeetingNameText = 1008;
+
 
 
         /// <summary>
