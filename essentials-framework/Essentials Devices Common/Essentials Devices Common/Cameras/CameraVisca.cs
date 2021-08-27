@@ -525,6 +525,15 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         public event EventHandler<EventArgs> PresetsListHasChanged;
 
+		protected void OnPresetsListHasChanged()
+		{
+			var handler = PresetsListHasChanged;
+			if (handler == null)
+				return;
+
+			handler.Invoke(this, EventArgs.Empty);
+		}
+
         public List<CameraPreset> Presets { get; private set; }
 
         public void PresetSelect(int preset)
@@ -536,6 +545,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         {
             SavePreset(preset);
         }
+
 
         #endregion
 
