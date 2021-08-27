@@ -127,12 +127,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 codec.CallStatusChange += new EventHandler<CodecCallStatusItemChangeEventArgs>(Codec_CallStatusChange);
 
-                // If the codec is ready, then get the values we want, otherwise wait
-                if (Codec.IsReady)
-                    Codec_IsReady();
-                else
-                    codec.IsReadyChange += (o, a) => Codec_IsReady();
-
                 //InCall = new BoolFeedback(() => false);
                 LocalPrivacyIsMuted = new BoolFeedback(() => false);
 
@@ -223,6 +217,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     SetupPasswordPrompt();
                 }
 
+
+                // If the codec is ready, then get the values we want, otherwise wait
+                if (Codec.IsReady)
+                    Codec_IsReady();
+                else
+                    codec.IsReadyChange += (o, a) => Codec_IsReady();
             }
             catch (Exception e)
             {
