@@ -152,7 +152,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 // Return formatted when dialing, straight digits when in call
                 DialStringFeedback = new StringFeedback(() =>
                 {
-                    if (KeypadMode == eKeypadMode.Dial)
+                    if (KeypadMode == eKeypadMode.Dial  && !(Codec is IHasStartMeeting))
                         return GetFormattedDialString(DialStringBuilder.ToString());
                     else
                         return DialStringBuilder.ToString();
