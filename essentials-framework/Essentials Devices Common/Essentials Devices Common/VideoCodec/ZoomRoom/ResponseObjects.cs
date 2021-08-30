@@ -1489,6 +1489,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					UserId = p.UserId,
 					Name = p.UserName,
 					IsHost = p.IsHost,
+                    IsMyself = p.IsMyself,
 					CanMuteVideo = p.IsVideoCanMuteByHost,
 					CanUnmuteVideo = p.IsVideoCanUnmuteByHost,
 					AudioMuteFb = p.AudioStatusState == "AUDIO_MUTED",

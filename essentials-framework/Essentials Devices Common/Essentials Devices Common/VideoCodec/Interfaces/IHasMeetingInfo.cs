@@ -34,14 +34,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         public string Password { get; private set; }
         [JsonProperty("shareStatus")]
         public string ShareStatus { get; private set; }
+        [JsonProperty("isHost")]
+        public Boolean IsHost { get; private set; }
 
-        public MeetingInfo(string id, string name, string host, string password, string shareStatus)
+        public MeetingInfo(string id, string name, string host, string password, string shareStatus, bool isHost)
         {
             Id = id;
             Name = name;
             Host = host;
             Password = password;
             ShareStatus = shareStatus;
+            IsHost = IsHost;
         }
     }
 

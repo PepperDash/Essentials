@@ -472,7 +472,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					ReceivingContent.FireUpdate();
 
                     // Update the share status of the meeting info
-                    var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, GetSharingStatus());
+                    var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself());
                     MeetingInfo = meetingInfo;
 				}
 			};
@@ -627,7 +627,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     case "isSharingBlackMagic":
                         {
                             // Update the share status of the meeting info
-                            var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, MeetingInfo.Host, MeetingInfo.Password, GetSharingStatus());
+                            var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, MeetingInfo.Host, MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself());
                             MeetingInfo = meetingInfo;
                             break;
                         }
@@ -1199,7 +1199,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								Participants.CurrentParticipants = participants;
 
                                 // Update the share status of the meeting info
-                                var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, MeetingInfo.ShareStatus);
+                                var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, MeetingInfo.ShareStatus, GetIsHostMyself());
                                 MeetingInfo = meetingInfo;
 
 								PrintCurrentCallParticipants();
@@ -1784,7 +1784,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     Status.Call.Info.meeting_list_item.meetingName,
                     host,
                     Status.Call.Info.meeting_password,
-                    GetSharingStatus()
+                    GetSharingStatus(),
+                    GetIsHostMyself()
                     );
             }
 
@@ -1819,6 +1820,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             }
 
             return sharingState;
+        }
+
+        /// <summary>
+        /// Will return true if the host is myself (this zoom room)
+        /// </summary>
+        /// <returns></returns>
+        private bool GetIsHostMyself()
+        {
+            var host = Participants.Host;
+
+            if(host == null)
+            {
+                Debug.Console(2, this, "Host is currently null");
+                return false;
+            }
+            Debug.Console(2, this, "Host is: {0} myself?: {1}", host.Name, host.IsMyself);
+            return host.IsMyself;
         }
 
 		public override void StartSharing()

@@ -93,6 +93,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 	{
 		public int UserId { get; set; }
 		public bool IsHost { get; set; }
+        public bool IsMyself { get; set; }
 		public string Name { get; set; }
 		public bool CanMuteVideo { get; set; }
 		public bool CanUnmuteVideo { get; set; }
