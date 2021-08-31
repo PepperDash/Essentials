@@ -1835,7 +1835,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 Debug.Console(2, this, "Host is currently null");
                 return false;
             }
-            Debug.Console(2, this, "Host is: {0} myself?: {1}", host.Name, host.IsMyself);
+            Debug.Console(2, this, "Host is: '{0}' IsMyself?: {1}", host.Name, host.IsMyself);
             return host.IsMyself;
         }
 

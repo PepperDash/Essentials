@@ -29,7 +29,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         [JsonProperty("name")]
         public string Name { get; private set; }
         [JsonProperty("host")]
-        public string Host { get; set; }
+        public string Host { get; private set; }
         [JsonProperty("password")]
         public string Password { get; private set; }
         [JsonProperty("shareStatus")]
