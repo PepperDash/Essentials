@@ -534,6 +534,28 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					Parent.PopupInterlock.HideAndClear();
 					Codec.EndAllCalls();
 				});
+
+            var meetingInfoCodec = Codec as IHasMeetingInfo;
+            if (meetingInfoCodec != null)
+            {
+                TriList.SetSigFalseAction(UIBoolJoin.MeetingLeavePress, () =>
+                    {
+                        Parent.PopupInterlock.HideAndClear();
+
+                        if (meetingInfoCodec.MeetingInfo.IsHost)
+                        {
+                            Codec.EndAllCalls();
+                        }
+                        else
+                        {
+                            var startMeetingCodec = Codec as IHasStartMeeting;
+                            if (startMeetingCodec != null)
+                            {
+                                startMeetingCodec.LeaveMeeting();
+                            }
+                        }
+                    });
+            }
         }
 
         void SetupCameraControls()

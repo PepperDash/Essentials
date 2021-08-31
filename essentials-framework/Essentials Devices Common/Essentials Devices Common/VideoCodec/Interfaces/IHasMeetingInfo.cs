@@ -44,7 +44,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
             Host = host;
             Password = password;
             ShareStatus = shareStatus;
-            IsHost = IsHost;
+            IsHost = isHost;
         }
     }
 

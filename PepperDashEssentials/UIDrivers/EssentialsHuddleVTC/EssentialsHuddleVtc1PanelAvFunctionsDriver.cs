@@ -181,6 +181,8 @@ namespace PepperDash.Essentials
 
         private UiDisplayMode _currentMode;
 
+        private uint _sourceListCount;
+
         /// <summary>
         /// The mode showing. Presentation or call.
         /// </summary>
@@ -647,9 +649,24 @@ namespace PepperDash.Essentials
 
                 TriList.SetBool(StartPageVisibleJoin, startMode ? true : false);
 
-                TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, presentationMode ? true : false);
+                if (presentationMode && CurrentRoom.VideoCodec is IHasMeetingInfo && _sourceListCount < 2)
+                {
+                    // For now, if this is a Zoom Room and there are no shareable sources just display the informational subpage
+                    TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
+                    TriList.SetBool(UIBoolJoin.ZoomRoomContentSharingVisible, true);
+                }
+                else
+                {
+                    // Otherwise, show the staging bar 
+                    TriList.SetBool(UIBoolJoin.ZoomRoomContentSharingVisible, false);
+                    TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, presentationMode ? true : false);
+
+                }
                 if (!presentationMode)
+                {
+                    TriList.SetBool(UIBoolJoin.ZoomRoomContentSharingVisible, false);
                     TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
+                }
 
                 CallButtonSig.BoolValue = callMode
                     && CurrentRoom.ShutdownType == eShutdownType.None;
@@ -1049,6 +1066,8 @@ namespace PepperDash.Essentials
             TriList.SetBool(UIBoolJoin.MeetingPasswordVisible, string.IsNullOrEmpty(e.Info.Password) ? false : true);
 
             TriList.SetString(UIStringJoin.CallSharedSourceNameText, e.Info.ShareStatus);
+
+            TriList.SetString(UIStringJoin.MeetingLeaveText, e.Info.IsHost ? "End Meeting" : "Leave Meeting");    
         }
 
         void SetCurrentRoom(IEssentialsHuddleVtc1Room room)
@@ -1164,7 +1183,8 @@ namespace PepperDash.Essentials
 					Debug.Console(1, "**** KEY {0}", kvp.Key);
 					
 				}
-				SourceStagingSrl.Count = (ushort)(i - 1);
+                _sourceListCount = (i - 1);
+                SourceStagingSrl.Count = (ushort)_sourceListCount;
 			}
 
 		}

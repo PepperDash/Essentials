@@ -42,7 +42,12 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 1008
         /// </summary>
-        public const uint MeetingNameText = 1008;
+        public const uint MeetingLeaveText = 1008;
+        /// <summary>
+        /// 1009
+        /// </summary>
+        public const uint MeetingNameText = 1009;
+
 
 
 
