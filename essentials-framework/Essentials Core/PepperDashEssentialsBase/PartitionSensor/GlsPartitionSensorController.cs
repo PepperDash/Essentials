@@ -135,14 +135,16 @@ namespace PepperDash.Essentials.Core
 
 		public void SetEnableState(bool state)
 		{
+            Debug.Console(2,this, "SetEnableState: state = {0} | _partitionSensor is {1}", state, _partitionSensor == null ? "null" : "not null");
 			if (_partitionSensor == null)
 				return;
 
-			_partitionSensor.Enable.BoolValue = state;
+			_partitionSensor.Enable.BoolValue = state;		    
 		}
 
 		public void IncreaseSensitivity()
 		{
+            Debug.Console(2, this, "IncreaseSensitivity: _partitionSensor is {0}", _partitionSensor == null ? "null" : "not null");
 			if (_partitionSensor == null)
 				return;
 
@@ -151,6 +153,7 @@ namespace PepperDash.Essentials.Core
 
 		public void DecreaseSensitivity()
 		{
+            Debug.Console(2, this, "DecreaseSensitivity: _partitionSensor is {0}", _partitionSensor == null ? "null" : "not null");
 			if (_partitionSensor == null)
 				return;
 
@@ -158,8 +161,9 @@ namespace PepperDash.Essentials.Core
 		}
 
 		public void SetSensitivity(ushort value)
-		{
-			if (_partitionSensor == null)
+        {
+            Debug.Console(2, this, "SetSensitivity: value = {0} | _partitionSensor is {1}", value, _partitionSensor == null ? "null" : "not null");
+            if (_partitionSensor == null)
 				return;
 
 			_partitionSensor.Sensitivity.UShortValue = value;
@@ -186,8 +190,7 @@ namespace PepperDash.Essentials.Core
 			Debug.Console(0, this, "Linking to Bridge Type {0}", GetType().Name);
 
 			// link input from simpl
-			trilist.SetSigTrueAction(joinMap.Enable.JoinNumber, () => SetEnableState(true));
-			trilist.SetSigFalseAction(joinMap.Enable.JoinNumber, () => SetEnableState(false));
+			trilist.SetBoolSigAction(joinMap.Enable.JoinNumber, SetEnableState);
 			trilist.SetSigTrueAction(joinMap.IncreaseSensitivity.JoinNumber, IncreaseSensitivity);
 			trilist.SetSigTrueAction(joinMap.DecreaseSensitivity.JoinNumber, DecreaseSensitivity);
 			trilist.SetUShortSigAction(joinMap.Sensitivity.JoinNumber, SetSensitivity);
@@ -244,8 +247,8 @@ namespace PepperDash.Essentials.Core
                 Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
                 return new GlsPartCn(cresnetId, Global.ControlSystem);
             }
+            
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
-
             if (cresnetBridge != null)
             {
                 Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
