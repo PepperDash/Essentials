@@ -181,6 +181,14 @@ namespace PepperDash.Essentials
 
         private UiDisplayMode _currentMode;
 
+        private bool _isZoomRoomWithNoExternalSources
+        {
+            get
+            {
+                return CurrentRoom.VideoCodec is Essentials.Devices.Common.VideoCodec.ZoomRoom.ZoomRoom && _sourceListCount <= 1;
+            }
+        }
+
         private uint _sourceListCount;
 
         /// <summary>
@@ -649,7 +657,7 @@ namespace PepperDash.Essentials
 
                 TriList.SetBool(StartPageVisibleJoin, startMode ? true : false);
 
-                if (presentationMode && CurrentRoom.VideoCodec is IHasMeetingInfo && _sourceListCount < 2)
+                if (presentationMode &&_isZoomRoomWithNoExternalSources)
                 {
                     // For now, if this is a Zoom Room and there are no shareable sources just display the informational subpage
                     TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
@@ -704,25 +712,39 @@ namespace PepperDash.Essentials
             if (VCDriver.IsVisible)
                 VCDriver.Hide();
 			HideNextMeetingPopup();
-            // Run default source when room is off and share is pressed
-            if (!CurrentRoom.OnFeedback.BoolValue)
-            { 
-				// If there's no default, show UI elements
-				if (!(CurrentRoom as IRunDefaultPresentRoute).RunDefaultPresentRoute())
-					TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);				
-           }
-            else // room is on show what's active or select a source if nothing is yet active
+
+
+            if (_isZoomRoomWithNoExternalSources)
             {
-                if(CurrentRoom.CurrentSourceInfo == null || (CurrentRoom.VideoCodec != null && CurrentRoom.CurrentSourceInfo.SourceDevice.Key == CurrentRoom.VideoCodec.OsdSource.Key))
-                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
-                else if (CurrentSourcePageManager != null)
+                (CurrentRoom as IRunDefaultPresentRoute).RunDefaultPresentRoute();
+                // For now, if this is a Zoom Room and there are no shareable sources just display the informational subpage
+                TriList.SetBool(UIBoolJoin.ZoomRoomContentSharingVisible, true);
+
+                if (CurrentSourcePageManager != null)
+                    CurrentSourcePageManager.Hide();
+            }
+            else
+            {
+                // Run default source when room is off and share is pressed
+                if (!CurrentRoom.OnFeedback.BoolValue)
                 {
-                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
-                    CurrentSourcePageManager.Show();
+                    // If there's no default, show UI elements
+                    if (!(CurrentRoom as IRunDefaultPresentRoute).RunDefaultPresentRoute())
+                        TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
                 }
+                else // room is on show what's active or select a source if nothing is yet active
+                {
+                    if (CurrentRoom.CurrentSourceInfo == null || (CurrentRoom.VideoCodec != null && CurrentRoom.CurrentSourceInfo.SourceDevice.Key == CurrentRoom.VideoCodec.OsdSource.Key))
+                        TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
+                    else if (CurrentSourcePageManager != null)
+                    {
+                        TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
+                        CurrentSourcePageManager.Show();
+                    }
+                }
+                SetupSourceList();
             }
             CurrentMode = UiDisplayMode.Presentation;
-			SetupSourceList();
         }
 
 		/// <summary>
@@ -761,7 +783,7 @@ namespace PepperDash.Essentials
         /// </summary>
         void ShowCurrentSource()
         {
-			if (CurrentRoom.CurrentSourceInfo == null)
+			if (CurrentRoom.CurrentSourceInfo == null || _isZoomRoomWithNoExternalSources)
 				return;
 
             CurrentMode = UiDisplayMode.Presentation;
