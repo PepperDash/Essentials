@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -60,6 +61,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 			}
 		}
 
+        public Participant Host
+        {
+            get
+            {
+                return _currentParticipants.FirstOrDefault(p => p.IsHost);
+            }
+        }
+
 		public event EventHandler<EventArgs> ParticipantsListHasChanged;
 
 		public CodecParticipants()
@@ -84,6 +93,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 	{
 		public int UserId { get; set; }
 		public bool IsHost { get; set; }
+        public bool IsMyself { get; set; }
 		public string Name { get; set; }
 		public bool CanMuteVideo { get; set; }
 		public bool CanUnmuteVideo { get; set; }
