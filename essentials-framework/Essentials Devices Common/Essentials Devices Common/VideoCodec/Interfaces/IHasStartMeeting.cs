@@ -21,5 +21,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         /// </summary>
         /// <param name="duration"></param>
         void StartMeeting(uint duration);
+
+        /// <summary>
+        /// Leaves a meeting without ending it
+        /// </summary>
+        void LeaveMeeting();
     }
 }
