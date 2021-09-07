@@ -626,6 +626,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     case "isDirectPresentationConnected":
                     case "isSharingBlackMagic":
                         {
+                            Debug.Console(2, this, "Updating sharing status: {0}", a.PropertyName);
+
+                            if (MeetingInfo == null)
+                            {
+                                MeetingInfo = new MeetingInfo("", "", "", "",
+                                    GetSharingStatus(), GetIsHostMyself());
+                            }
                             // Update the share status of the meeting info
                             var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, MeetingInfo.Host, MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself());
                             MeetingInfo = meetingInfo;
@@ -1828,6 +1835,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// <returns></returns>
         private bool GetIsHostMyself()
         {
+            if (Participants.CurrentParticipants.Count == 0)
+            {
+                Debug.Console(2, this, "No current participants");
+                return false;
+            }
+
             var host = Participants.Host;
 
             if(host == null)
