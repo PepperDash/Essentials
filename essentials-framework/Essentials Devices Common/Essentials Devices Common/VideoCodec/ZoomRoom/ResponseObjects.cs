@@ -756,6 +756,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	/// </summary>
 	public class zEvent
 	{
+	    public class StartLocalPresentMeeting
+	    {
+	        public bool Success { get; set; }
+	    }
 		public class NeedWaitForHost
 		{
 			public bool Wait { get; set; }
