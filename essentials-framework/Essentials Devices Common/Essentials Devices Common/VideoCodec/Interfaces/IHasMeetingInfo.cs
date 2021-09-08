@@ -36,8 +36,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         public string ShareStatus { get; private set; }
         [JsonProperty("isHost")]
         public Boolean IsHost { get; private set; }
+        [JsonProperty("isSharingMeeting")]
+        public Boolean IsSharingMeeting { get; private set; }
 
-        public MeetingInfo(string id, string name, string host, string password, string shareStatus, bool isHost)
+        public MeetingInfo(string id, string name, string host, string password, string shareStatus, bool isHost, bool isSharingMeeting)
         {
             Id = id;
             Name = name;
@@ -45,6 +47,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
             Password = password;
             ShareStatus = shareStatus;
             IsHost = isHost;
+            IsSharingMeeting = isSharingMeeting;
         }
     }
 
