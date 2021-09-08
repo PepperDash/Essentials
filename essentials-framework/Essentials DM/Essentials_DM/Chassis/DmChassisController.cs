@@ -1051,6 +1051,18 @@ namespace PepperDash.Essentials.DM
                                 Debug.Console(2, this, "No index of {0} found in InputStreamCardStateFeedbacks");
                             break;
                         }
+                    case DMInputEventIds.ResolutionEventId:
+                    {
+                        var inputPort =
+                            InputPorts.Cast<RoutingInputPortWithVideoStatuses>()
+                                .FirstOrDefault((ip) => ip.Key.Contains(String.Format("inputCard{0}", args.Number)));
+
+                        if (inputPort != null)
+                        {
+                            inputPort.VideoStatus.VideoResolutionFeedback.FireUpdate();
+                        }
+                        break;
+                    }
                     default:
                         {
                             Debug.Console(2, this, "DMInputChange fired for Input {0} with Unhandled EventId: {1}", args.Number, args.EventId);
