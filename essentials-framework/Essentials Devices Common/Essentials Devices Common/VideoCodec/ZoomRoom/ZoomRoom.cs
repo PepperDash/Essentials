@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		IRouting,
 		IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
 		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin,
-		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting, IHasMeetingInfo
+		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting, IHasMeetingInfo, IHasPresentationOnlyMeeting
 	{
 		private const long MeetingRefreshTimer = 60000;
         public uint DefaultMeetingDurationMin { get; private set; }
@@ -472,7 +472,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					ReceivingContent.FireUpdate();
 
                     // Update the share status of the meeting info
-                    var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself());
+                    var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself(), MeetingInfo.IsSharingMeeting);
                     MeetingInfo = meetingInfo;
 				}
 			};
@@ -630,11 +630,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                             if (MeetingInfo == null)
                             {
-                                MeetingInfo = new MeetingInfo("", "", "", "",
-                                    GetSharingStatus(), GetIsHostMyself());
+                                //Ignoring for now, as the CallInfo return will create the appropriate value
+                                return;
                             }
                             // Update the share status of the meeting info
-                            var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, MeetingInfo.Host, MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself());
+                            var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, MeetingInfo.Host, MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself(), MeetingInfo.IsSharingMeeting);
                             MeetingInfo = meetingInfo;
                             break;
                         }
@@ -1206,7 +1206,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								Participants.CurrentParticipants = participants;
 
                                 // Update the share status of the meeting info
-                                var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, MeetingInfo.ShareStatus, GetIsHostMyself());
+                                var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, MeetingInfo.ShareStatus, GetIsHostMyself(), MeetingInfo.IsSharingMeeting);
                                 MeetingInfo = meetingInfo;
 
 								PrintCurrentCallParticipants();
@@ -1485,6 +1485,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 								break;
 							}
+                            case "startlocalpresentmeeting":
+						    {
+                                var result = JsonConvert.DeserializeObject<zEvent.StartLocalPresentMeeting>(responseObj.ToString());
+
+						        if (result.Success)
+						        {
+						            MeetingInfo = new MeetingInfo("", "", "", "", "", true, true);
+						            break;
+						        }
+
+						        break;
+						    }
 							default:
 							{
 								break;
@@ -1776,8 +1788,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		protected override void OnCallStatusChange(CodecActiveCallItem item)
 		{
-			base.OnCallStatusChange(item);
-
             if (item.Status == eCodecCallStatus.Connected)
             {
 
@@ -1792,9 +1802,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     host,
                     Status.Call.Info.meeting_password,
                     GetSharingStatus(),
-                    GetIsHostMyself()
+                    GetIsHostMyself(),
+                    !String.Equals(Status.Call.Info.meeting_type,"NORMAL")
                     );
             }
+
+            base.OnCallStatusChange(item);
 
 			Debug.Console(1, this, "[OnCallStatusChange] Current Call Status: {0}",
 				Status.Call != null ? Status.Call.Status.ToString() : "no call");
@@ -2153,6 +2166,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public override void Dial(string number)
 		{
+		    Debug.Console(2, this, "Dialing number: {0}", number);
             _lastDialedMeetingNumber = number;
 			SendText(string.Format("zCommand Dial Join meetingNumber: {0}", number));
 		}
@@ -2863,7 +2877,37 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         }
 
         #endregion
-    }
+
+	    #region Implementation of IHasPresentationOnlyMeeting
+
+	    public void StartSharingOnlyMeeting()
+	    {
+	        StartSharingOnlyMeeting(eSharingMeetingMode.None, 30, String.Empty);
+	    }
+
+	    public void StartSharingOnlyMeeting(eSharingMeetingMode mode)
+	    {
+	        StartSharingOnlyMeeting(mode, 30, String.Empty);
+	    }
+
+	    public void StartSharingOnlyMeeting(eSharingMeetingMode mode, ushort duration)
+	    {
+	        StartSharingOnlyMeeting(mode, duration, String.Empty);
+	    }
+
+	    public void StartSharingOnlyMeeting(eSharingMeetingMode mode, ushort duration, string password)
+	    {
+            SendText(String.Format("zCommand Dial Sharing Duration: {0} DisplayState: {1} Password: {2}", duration, mode, password));
+	    }
+
+	    public void StartNormalMeetingFromSharingOnlyMeeting()
+	    {
+            Debug.Console(2, this, "Converting Sharing Meeting to Normal Meeting");
+	        SendText("zCommand call sharing ToNormal");
+	    }
+
+	    #endregion
+	}
 
 	/// <summary>
 	/// Zoom Room specific info object
