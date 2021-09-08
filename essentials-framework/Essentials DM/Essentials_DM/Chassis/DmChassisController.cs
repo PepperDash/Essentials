@@ -672,9 +672,21 @@ namespace PepperDash.Essentials.DM
             AddInCardHdmiAndAudioLoopPorts(number);
         }
 
+        void AddDmInCardPorts(uint number, ICec cecPort, IVideoAttributesBasic videoAttributes)
+        {
+            AddInputPortWithDebug(number, "dmIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, cecPort, videoAttributes);
+            AddInCardHdmiAndAudioLoopPorts(number);
+        }
+
         void AddHdmiInCardPorts(uint number, ICec cecPort)
         {
             AddInputPortWithDebug(number, "hdmiIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, cecPort);
+            AddInCardHdmiAndAudioLoopPorts(number);
+        }
+
+        void AddHdmiInCardPorts(uint number, ICec cecPort, IVideoAttributesBasic videoAttributes)
+        {
+            AddInputPortWithDebug(number, "hdmiIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, cecPort, videoAttributes);
             AddInCardHdmiAndAudioLoopPorts(number);
         }
 
