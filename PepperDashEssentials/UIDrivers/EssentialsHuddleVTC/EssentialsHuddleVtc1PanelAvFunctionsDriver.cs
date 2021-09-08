@@ -716,9 +716,16 @@ namespace PepperDash.Essentials
 
             if (_isZoomRoomWithNoExternalSources)
             {
-                (CurrentRoom as IRunDefaultPresentRoute).RunDefaultPresentRoute();
+                CurrentRoom.RunDefaultPresentRoute();
                 // For now, if this is a Zoom Room and there are no shareable sources just display the informational subpage
                 TriList.SetBool(UIBoolJoin.ZoomRoomContentSharingVisible, true);
+
+                var presentationMeetingCodec = CurrentRoom.VideoCodec as IHasPresentationOnlyMeeting;
+
+                if (presentationMeetingCodec != null && !CurrentRoom.VideoCodec.IsInCall)
+                {
+                    presentationMeetingCodec.StartSharingOnlyMeeting(eSharingMeetingMode.Laptop);
+                }
 
                 if (CurrentSourcePageManager != null)
                     CurrentSourcePageManager.Hide();

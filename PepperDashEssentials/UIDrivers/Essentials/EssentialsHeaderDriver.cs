@@ -12,6 +12,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
@@ -191,6 +192,8 @@ namespace PepperDash.Essentials
                 return;
             }
 
+            var meetingInfoCodec = codec as IHasMeetingInfo;
+
             // Set mode of header button
             if (!codec.IsInCall)
             {
@@ -210,8 +213,15 @@ namespace PepperDash.Essentials
             Debug.Console(1, "Active Call Count: {0}", codec.ActiveCalls.Count);
             if (codec.ActiveCalls.Count > 0)
             {
-                if (codec.ActiveCalls.Count == 1)
+                if (codec.ActiveCalls.Count == 1 && meetingInfoCodec == null)
                     TriList.SetString(UIStringJoin.HeaderCallStatusLabel, "1 Active Call");
+                else if (codec.ActiveCalls.Count == 1 && meetingInfoCodec != null)
+                {
+                    var headerCallStatusLabel = meetingInfoCodec.MeetingInfo.IsSharingMeeting
+                        ? "Sharing Active"
+                        : "Active Meeting";
+                    TriList.SetString(UIStringJoin.HeaderCallStatusLabel, headerCallStatusLabel);
+                }
                 else if (codec.ActiveCalls.Count > 1)
                     TriList.SetString(UIStringJoin.HeaderCallStatusLabel, string.Format("{0} Active Calls", codec.ActiveCalls.Count));
             }
