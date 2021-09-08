@@ -816,20 +816,47 @@ namespace PepperDash.Essentials.DM
         /// </summary>
         void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType)
         {
-            AddInputPortWithDebug(cardNum, portName, sigType, portType, null);
+            //Cast is necessary here to determine the correct overload
+            AddInputPortWithDebug(cardNum, portName, sigType, portType, null, null);
+        }
+
+        private void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType,
+            eRoutingPortConnectionType portType, ICec cecPort)
+        {
+            //Cast is necessary here to determine the correct overload
+            AddInputPortWithDebug(cardNum, portName, sigType, portType, cecPort, null);
         }
 
         /// <summary>
-        /// Adds InputPort and sets Port as ICec object
+        /// Adds InputPort and sets Port as ICec object. If videoAttributesBasic is defined, RoutingPort will be RoutingInputPortWithVideoStatuses
         /// </summary>
-        void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, ICec cecPort)
+        void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, ICec cecPort, IVideoAttributesBasic videoAttributesBasic)
         {
             var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, Chassis.Inputs[cardNum], this)
+
+            RoutingInputPort inputPort;
+
+            if (videoAttributesBasic != null)
             {
-                FeedbackMatchObject = Chassis.Inputs[cardNum]
-            }; ;
+                var statusFuncs = new VideoStatusFuncsWrapper
+                {
+                    VideoResolutionFeedbackFunc = () => videoAttributesBasic.VideoAttributes.GetVideoResolutionString()
+                };
+                inputPort = new RoutingInputPortWithVideoStatuses(portKey, sigType, portType,
+                    Chassis.Inputs[cardNum], this, statusFuncs)
+                {
+                    FeedbackMatchObject = Chassis.Inputs[cardNum]
+                };
+            }
+            else
+            {
+                inputPort = new RoutingInputPort(portKey, sigType, portType,
+                    Chassis.Inputs[cardNum], this)
+                {
+                    FeedbackMatchObject = Chassis.Inputs[cardNum]
+                };
+            }
 
             if (cecPort != null)
                 inputPort.Port = cecPort;
