@@ -1051,14 +1051,19 @@ namespace PepperDash.Essentials.DM
                                 Debug.Console(2, this, "No index of {0} found in InputStreamCardStateFeedbacks");
                             break;
                         }
+                    case DMInputEventIds.HorizontalResolutionFeedbackEventId:
+                    case DMInputEventIds.VerticalResolutionFeedbackEventId:
+                    case DMInputEventIds.FramesPerSecondFeedbackEventId:
                     case DMInputEventIds.ResolutionEventId:
                     {
+                        Debug.Console(1, this, "Input {0} resolution updated", args.Number);
                         var inputPort =
                             InputPorts.Cast<RoutingInputPortWithVideoStatuses>()
                                 .FirstOrDefault((ip) => ip.Key.Contains(String.Format("inputCard{0}", args.Number)));
 
                         if (inputPort != null)
                         {
+                            Debug.Console(1, this, "Updating resolution feedback for input {0}", args.Number);
                             inputPort.VideoStatus.VideoResolutionFeedback.FireUpdate();
                         }
                         break;
