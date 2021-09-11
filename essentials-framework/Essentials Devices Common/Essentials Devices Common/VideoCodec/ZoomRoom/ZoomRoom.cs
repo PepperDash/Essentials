@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
@@ -464,18 +465,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		private void SetUpCallFeedbackActions()
 		{
-			Status.Call.Sharing.PropertyChanged += (o, a) =>
-			{
-				if (a.PropertyName == "State")
-				{
-					SharingContentIsOnFeedback.FireUpdate();
-					ReceivingContent.FireUpdate();
-
-                    // Update the share status of the meeting info
-                    var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself(), MeetingInfo.IsSharingMeeting);
-                    MeetingInfo = meetingInfo;
-				}
-			};
+		    Status.Call.Sharing.PropertyChanged += HandleSharingStateUpdate;
 
 			Status.Call.PropertyChanged += (o, a) =>
 			{
@@ -486,6 +476,39 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				}
 			};
 		}
+
+	    private void HandleSharingStateUpdate(object sender, PropertyChangedEventArgs a)
+	    {
+            if (a.PropertyName != "State")
+            {
+                return;
+            }
+
+            SharingContentIsOnFeedback.FireUpdate();
+            ReceivingContent.FireUpdate();
+            try
+            {
+
+                // Update the share status of the meeting info
+                if (MeetingInfo == null)
+                {
+                    var sharingStatus = GetSharingStatus();
+
+                    MeetingInfo = new MeetingInfo("", "", "", "", sharingStatus, GetIsHostMyself(), true);
+                    return;
+                }
+
+                var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host != null ? Participants.Host.Name : "None",
+                    MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself(), MeetingInfo.IsSharingMeeting);
+                MeetingInfo = meetingInfo;
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "Error processing state property update. {0}", e.Message);
+                Debug.Console(2, this, e.StackTrace);
+                MeetingInfo = new MeetingInfo("", "", "", "", "None", false, false);
+            }
+	    }
 
 		/// <summary>
 		/// Subscribes to the PropertyChanged events on the state objects and fires the corresponding feedbacks.
@@ -1614,7 +1637,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 			catch (Exception ex)
 			{
-				Debug.Console(1, this, "Error Deserializing feedback: {0}", ex);
+				Debug.Console(1, this, "Error Deserializing feedback: {0}", ex.Message);
+			    Debug.Console(2, this, "{0}", ex);
+
+			    if (ex.InnerException != null)
+			    {
+			        Debug.Console(1, this,"Error Deserializing feedback inner exception: {0}", ex.InnerException.Message);
+                    Debug.Console(2, this, "{0}", ex.InnerException.StackTrace);
+			    }
 			}
 		}
 
@@ -1822,24 +1852,33 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         {
             string sharingState = "None";
 
-            if (Status.Call.Sharing.State == zEvent.eSharingState.Receiving)
+            try
             {
-                sharingState = "Receiving Content";
-            }
-            if (Status.Sharing.isAirHostClientConnected)
-            {
-                sharingState = "Sharing AirPlay";
-            }
-            if (Status.Sharing.isDirectPresentationConnected)
-            {
-                sharingState = "Sharing Laptop";
-            }
-            if (Status.Sharing.isSharingBlackMagic)
-            {
-                sharingState = "Sharing HDMI Source";
-            }
+                if (Status.Call.Sharing.State == zEvent.eSharingState.Receiving)
+                {
+                    sharingState = "Receiving Content";
+                }
+                if (Status.Sharing.isAirHostClientConnected)
+                {
+                    sharingState = "Sharing AirPlay";
+                }
+                if (Status.Sharing.isDirectPresentationConnected)
+                {
+                    sharingState = "Sharing Laptop";
+                }
+                if (Status.Sharing.isSharingBlackMagic)
+                {
+                    sharingState = "Sharing HDMI Source";
+                }
 
-            return sharingState;
+                return sharingState;
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, this, "Exception getting sharing status: {0}", e.Message);
+                Debug.Console(2, this, "{0}", e.StackTrace);
+                return sharingState;
+            }
         }
 
         /// <summary>
@@ -1848,21 +1887,30 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// <returns></returns>
         private bool GetIsHostMyself()
         {
-            if (Participants.CurrentParticipants.Count == 0)
+            try
             {
-                Debug.Console(2, this, "No current participants");
+                if (Participants.CurrentParticipants.Count == 0)
+                {
+                    Debug.Console(2, this, "No current participants");
+                    return false;
+                }
+
+                var host = Participants.Host;
+
+                if(host == null)
+                {
+                    Debug.Console(2, this, "Host is currently null");
+                    return false;
+                }
+                Debug.Console(2, this, "Host is: '{0}' IsMyself?: {1}", host.Name, host.IsMyself);
+                return host.IsMyself;
+            }
+            catch (Exception e)
+            {
+                Debug.Console(1, "Exception getting isHost: {0}", e.Message);
+                Debug.Console(2, "{0}", e.StackTrace);
                 return false;
             }
-
-            var host = Participants.Host;
-
-            if(host == null)
-            {
-                Debug.Console(2, this, "Host is currently null");
-                return false;
-            }
-            Debug.Console(2, this, "Host is: '{0}' IsMyself?: {1}", host.Name, host.IsMyself);
-            return host.IsMyself;
         }
 
 		public override void StartSharing()
