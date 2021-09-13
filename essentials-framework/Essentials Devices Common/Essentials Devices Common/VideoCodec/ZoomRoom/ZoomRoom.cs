@@ -2209,6 +2209,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		public override void Dial(Meeting meeting)
 		{
 			Debug.Console(1, this, "Dialing meeting.Id: {0} Title: {1}", meeting.Id, meeting.Title);
+		    _lastDialedMeetingNumber = meeting.Id;
 			SendText(string.Format("zCommand Dial Start meetingNumber: {0}", meeting.Id));
 		}
 
