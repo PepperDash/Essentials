@@ -656,6 +656,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         {
                             Debug.Console(2, this, "Updating sharing status: {0}", a.PropertyName);
 
+                            SharingContentIsOnFeedback.FireUpdate();
                             if (MeetingInfo == null)
                             {
                                 //Ignoring for now, as the CallInfo return will create the appropriate value
@@ -1979,7 +1980,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// </summary>
 		public override void StopSharing()
 		{
-			SendText("zCommand Call Sharing Disconnect");
+		    if (Status.Sharing.isSharingBlackMagic)
+		    {
+		        SendText("zCommand Call Sharing HDMI Stop");
+		    }
+		    else
+		    {
+		        SendText("zCommand Call Sharing Disconnect");
+		    }
 		}
 
 		public override void PrivacyModeOn()

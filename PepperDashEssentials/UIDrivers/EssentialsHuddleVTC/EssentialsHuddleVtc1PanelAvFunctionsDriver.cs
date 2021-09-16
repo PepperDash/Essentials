@@ -9,6 +9,7 @@ using Crestron.SimplSharpPro.UI;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
 using PepperDash.Essentials.Room.Config;
@@ -730,15 +731,30 @@ namespace PepperDash.Essentials
 
             if (_isZoomRoomWithNoExternalSources)
             {
-                CurrentRoom.RunDefaultPresentRoute();
+                if (!CurrentRoom.OnFeedback.BoolValue)
+                {
+                    CurrentRoom.RunDefaultPresentRoute();
+                }
                 // For now, if this is a Zoom Room and there are no shareable sources just display the informational subpage
                 TriList.SetBool(UIBoolJoin.ZoomRoomContentSharingVisible, true);
 
                 var presentationMeetingCodec = CurrentRoom.VideoCodec as IHasPresentationOnlyMeeting;
+                var farEndContentStatusCodec = CurrentRoom.VideoCodec as IHasFarEndContentStatus;
+                var receivingContent = false;
+
+                if (farEndContentStatusCodec != null)
+                {
+                    receivingContent = farEndContentStatusCodec.ReceivingContent.BoolValue;
+                }
 
                 if (presentationMeetingCodec != null && !CurrentRoom.VideoCodec.IsInCall)
                 {
                     presentationMeetingCodec.StartSharingOnlyMeeting(eSharingMeetingMode.Laptop);
+                }
+                else if (CurrentRoom.VideoCodec.IsInCall && !CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue &&
+                         !receivingContent)
+                {
+                    CurrentRoom.VideoCodec.StartSharing();
                 }
 
                 if (CurrentSourcePageManager != null)
@@ -755,7 +771,9 @@ namespace PepperDash.Essentials
                 }
                 else // room is on show what's active or select a source if nothing is yet active
                 {
-                    if (CurrentRoom.CurrentSourceInfo == null || (CurrentRoom.VideoCodec != null && CurrentRoom.CurrentSourceInfo.SourceDevice.Key == CurrentRoom.VideoCodec.OsdSource.Key))
+                    if (CurrentRoom.CurrentSourceInfo == null ||
+                        (CurrentRoom.VideoCodec != null &&
+                         CurrentRoom.CurrentSourceInfo.SourceDevice.Key == CurrentRoom.VideoCodec.OsdSource.Key))
                         TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
                     else if (CurrentSourcePageManager != null)
                     {
