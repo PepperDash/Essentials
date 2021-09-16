@@ -195,22 +195,11 @@ namespace PepperDash.Essentials
             var meetingInfoCodec = codec as IHasMeetingInfo;
 
             // Set mode of header button
-            if (!codec.IsInCall)
-            {
-                HeaderCallButtonIconSig.StringValue = "DND";
-                //HeaderCallButton.SetIcon(HeaderListButton.OnHook);
-            }
-            else if (codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
-                HeaderCallButtonIconSig.StringValue = "Misc-06_Dark";
-            //HeaderCallButton.SetIcon(HeaderListButton.Camera);
-            //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
-            else
-                HeaderCallButtonIconSig.StringValue = "Misc-09_Dark";
-            //HeaderCallButton.SetIcon(HeaderListButton.Phone);
-            //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
+            SetHeaderCallIcon(codec);
 
             // Set the call status text
             Debug.Console(1, "Active Call Count: {0}", codec.ActiveCalls.Count);
+
             if (codec.ActiveCalls.Count > 0)
             {
                 if (codec.ActiveCalls.Count == 1 && meetingInfoCodec == null)
@@ -218,8 +207,13 @@ namespace PepperDash.Essentials
                 else if (codec.ActiveCalls.Count == 1 && meetingInfoCodec != null)
                 {
                     var headerCallStatusLabel = meetingInfoCodec.MeetingInfo.IsSharingMeeting
-                        ? "Sharing Active"
+                        ? "Sharing-Only Meeting"
                         : "Active Meeting";
+
+                    headerCallStatusLabel = meetingInfoCodec.MeetingInfo.WaitingForHost
+                        ? "Waiting For Host"
+                        : headerCallStatusLabel;
+
                     TriList.SetString(UIStringJoin.HeaderCallStatusLabel, headerCallStatusLabel);
                 }
                 else if (codec.ActiveCalls.Count > 1)
@@ -227,6 +221,27 @@ namespace PepperDash.Essentials
             }
             else
                 TriList.SetString(UIStringJoin.HeaderCallStatusLabel, "No Active Calls");
+        }
+
+        private void SetHeaderCallIcon(VideoCodecBase codec)
+        {
+            if (!codec.IsInCall)
+            {
+                HeaderCallButtonIconSig.StringValue = "DND";
+                //HeaderCallButton.SetIcon(HeaderListButton.OnHook);
+            }
+            else if (codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
+            {
+                HeaderCallButtonIconSig.StringValue = "Misc-06_Dark";
+            }
+                //HeaderCallButton.SetIcon(HeaderListButton.Camera);
+                //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
+            else
+            {
+                HeaderCallButtonIconSig.StringValue = "Misc-09_Dark";
+            }
+            //HeaderCallButton.SetIcon(HeaderListButton.Phone);
+            //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
         }
 
         /// <summary>

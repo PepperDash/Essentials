@@ -471,85 +471,92 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void ShowNextMeetingTimerCallback()
 		{
+            //Update calendar for Zoom. Zoom doesn't automatically update when meetings are in the past
+            if (_isZoomRoomWithNoExternalSources)
+            {
+                CurrentRoom.ScheduleSource.GetSchedule();
+            }
+
 			// Every 60 seconds, refresh the calendar
 			RefreshMeetingsList();
 			// check meetings list for the closest, joinable meeting
 			var ss = CurrentRoom.ScheduleSource;
 			var meetings = ss.CodecSchedule.Meetings;
 
-			if (meetings.Count > 0)
-			{
-				// If the room is off pester the user
-				// If the room is on, and the meeting is joinable
-				// and the LastMeetingDismissed != this meeting
+		    if (meetings.Count <= 0)
+		    {
+		        return;
+		    }
+		    // If the room is off pester the user
+		    // If the room is on, and the meeting is joinable
+		    // and the LastMeetingDismissed != this meeting
 
-				var lastMeetingDismissed = meetings.FirstOrDefault(m => m.Id == LastMeetingDismissedId);
-				Debug.Console(0, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
-					CurrentRoom.OnFeedback.BoolValue,
-					LastMeetingDismissedId,
-                    lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToString("t", Global.Culture) : "");
+		    var lastMeetingDismissed = meetings.FirstOrDefault(m => m.Id == LastMeetingDismissedId);
+		    Debug.Console(0, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
+		        CurrentRoom.OnFeedback.BoolValue,
+		        LastMeetingDismissedId,
+		        lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToString("t", Global.Culture) : "");
 
-				var meeting = meetings.LastOrDefault(m => m.Joinable);
-				if (CurrentRoom.OnFeedback.BoolValue
-					&& lastMeetingDismissed == meeting)
-				{
-                    // meeting no longer joinable, hide popup
-                    if(meeting == null)
-                        HideNextMeetingPopup();
+		    var meeting = meetings.LastOrDefault(m => m.Joinable);
+		    if (CurrentRoom.OnFeedback.BoolValue
+		        && lastMeetingDismissed == meeting)
+		    {
+		        // meeting no longer joinable, hide popup
+		        if(meeting == null)
+		            HideNextMeetingPopup();
 
-					return;
-				}
+		        return;
+		    }
 
-				LastMeetingDismissedId = null;
-				// Clear the popup when we run out of meetings
-				if (meeting == null)
-				{
-					HideNextMeetingPopup();
-				}
-				else
-				{
+		    LastMeetingDismissedId = null;
+		    // Clear the popup when we run out of meetings
+		    if (meeting == null)
+		    {
+		        HideNextMeetingPopup();
+		    }
+		    else
+		    {
 
 
-					TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Upcoming meeting");
-                    TriList.SetString(UIStringJoin.NextMeetingStartTimeText, meeting.StartTime.ToString("t", Global.Culture));
-                    TriList.SetString(UIStringJoin.NextMeetingEndTimeText, meeting.EndTime.ToString("t", Global.Culture));
-					TriList.SetString(UIStringJoin.NextMeetingTitleText, meeting.Title);
-					TriList.SetString(UIStringJoin.NextMeetingNameText, meeting.Organizer);
-					TriList.SetString(UIStringJoin.NextMeetingButtonLabel, "Join");
-					TriList.SetSigFalseAction(UIBoolJoin.NextMeetingJoinPress, () =>
-					{
-						HideNextMeetingPopup();
-						PopupInterlock.Hide();
-						RoomOnAndDialMeeting(meeting);
-					});
-					TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
-					TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
-					{
-						HideNextMeetingPopup();
-						//CalendarPress();
-						RefreshMeetingsList();
-						PopupInterlock.ShowInterlocked(UIBoolJoin.MeetingsOrContacMethodsListVisible);
-					});
-					var indexOfNext = meetings.IndexOf(meeting) + 1;
+		        TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Upcoming meeting");
+		        TriList.SetString(UIStringJoin.NextMeetingStartTimeText, meeting.StartTime.ToString("t", Global.Culture));
+		        TriList.SetString(UIStringJoin.NextMeetingEndTimeText, meeting.EndTime.ToString("t", Global.Culture));
+		        TriList.SetString(UIStringJoin.NextMeetingTitleText, meeting.Title);
+		        TriList.SetString(UIStringJoin.NextMeetingNameText, meeting.Organizer);
+		        TriList.SetString(UIStringJoin.NextMeetingButtonLabel, "Join");
+		        TriList.SetSigFalseAction(UIBoolJoin.NextMeetingJoinPress, () =>
+		        {
+		            HideNextMeetingPopup();
+		            PopupInterlock.Hide();
+		            RoomOnAndDialMeeting(meeting);
+		        });
+		        TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
+		        TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
+		        {
+		            HideNextMeetingPopup();
+		            //CalendarPress();
+		            RefreshMeetingsList();
+		            PopupInterlock.ShowInterlocked(UIBoolJoin.MeetingsOrContacMethodsListVisible);
+		        });
+		        var indexOfNext = meetings.IndexOf(meeting) + 1;
 
-					// indexOf = 3, 4 meetings :  
-					if (indexOfNext < meetings.Count)
-						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
-                            meetings[indexOfNext].StartTime.ToString("t", Global.Culture));
-					else
-						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText, "No more meetings today");
+		        // indexOf = 3, 4 meetings :  
+		        if (indexOfNext < meetings.Count)
+		            TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
+		                meetings[indexOfNext].StartTime.ToString("t", Global.Culture));
+		        else
+		            TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText, "No more meetings today");
 
-					TriList.SetSigFalseAction(UIBoolJoin.NextMeetingModalClosePress, () =>
-						{
-							// Mark the meeting to not re-harass the user
-							if(CurrentRoom.OnFeedback.BoolValue)
-								LastMeetingDismissedId = meeting.Id;
-							HideNextMeetingPopup();
-						});
+		        TriList.SetSigFalseAction(UIBoolJoin.NextMeetingModalClosePress, () =>
+		        {
+		            // Mark the meeting to not re-harass the user
+		            if(CurrentRoom.OnFeedback.BoolValue)
+		                LastMeetingDismissedId = meeting.Id;
+		            HideNextMeetingPopup();
+		        });
 
-					TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, true);
-				}
-			}
+		        TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, true);
+		    }
 		}
 		
 		/// <summary>
@@ -575,19 +582,26 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void RoomOnAndDialMeeting(Meeting meeting)
 		{
+		    Debug.Console(1, "[RoomOnAndDialMeeting] Joining meeting [{0}]", meeting);
 			Action dialAction = () => 
 				{
 					var d = CurrentRoom.ScheduleSource as VideoCodecBase;
                     if (d != null)
                     {
+                        Debug.Console(1,
+                            "[RoomOnAndDialMeeting] [dialAction] Sending command to codec to join meeting {0}", meeting);
                         d.Dial(meeting);
 						LastMeetingDismissedId = meeting.Id; // To prevent prompts for already-joined call
                     }
 				};
-			if (CurrentRoom.OnFeedback.BoolValue)
-				dialAction();
+		    if (CurrentRoom.OnFeedback.BoolValue)
+		    {
+                Debug.Console(1, "[RoomOnAndDialMeeting] Room is on.");
+		        dialAction();
+		    }
 			else
-			{
+		    {
+		        Debug.Console(1, "RoomOnAndDialMeeting] Room is off or warming. Registering for Warming Feedback");
 				// Rig a one-time handler to catch when the room is warmed and then dial call
 				EventHandler<FeedbackEventArgs> oneTimeHandler = null;
 				oneTimeHandler = (o, a) =>
@@ -1086,13 +1100,18 @@ namespace PepperDash.Essentials
 
         void meetingInfoCodec_MeetingInfoChanged(object sender, MeetingInfoEventArgs e)
         {
+            if (e.Info == null)
+            {
+                return;
+            }
+
             TriList.SetString(UIStringJoin.MeetingIdText, e.Info.Id);
             TriList.SetString(UIStringJoin.MeetingHostText, e.Info.Host);
             TriList.SetString(UIStringJoin.MeetingNameText, e.Info.Name);
 
             TriList.SetString(UIStringJoin.MeetingPasswordText, e.Info.Password);
             // Show the password fields if one is present
-            TriList.SetBool(UIBoolJoin.MeetingPasswordVisible, string.IsNullOrEmpty(e.Info.Password) ? false : true);
+            TriList.SetBool(UIBoolJoin.MeetingPasswordVisible, !string.IsNullOrEmpty(e.Info.Password));
 
             TriList.SetString(UIStringJoin.CallSharedSourceNameText, e.Info.ShareStatus);
 
@@ -1302,9 +1321,8 @@ namespace PepperDash.Essentials
 		{
             // See if this is helpful or if the callback response in the codec class maybe doesn't come it time?
             // Let's build list from event
-			// CurrentRoom.ScheduleSource.GetSchedule();
 
-            TriList.SetString(UIStringJoin.MeetingsOrContactMethodListIcon, "Calendar");
+		    TriList.SetString(UIStringJoin.MeetingsOrContactMethodListIcon, "Calendar");
             TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Today's Meetings");
 
 			ushort i = 0;

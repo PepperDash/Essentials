@@ -327,20 +327,14 @@ namespace PepperDash.Essentials.UIDrivers.VC
             {
                 case eCodecCallStatus.Connected:
                     // fire at SRL item
-                    HidePasswordPrompt();
-                    KeypadMode = eKeypadMode.DTMF;
-                    DialStringBuilder.Remove(0, DialStringBuilder.Length);
-                    DialStringFeedback.FireUpdate();
-					DialStringTextCheckEnables();
                     Parent.ShowNotificationRibbon("Connected", 2000);
-                    StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
-					ShowKeypad();
-                    ((Parent.CurrentRoom as IHasCurrentVolumeControls).CurrentVolumeControls as IBasicVolumeWithFeedback).MuteOff();
+                    OnCallConnected();
 					//VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
                     break;
                 case eCodecCallStatus.Connecting:
                     // fire at SRL item
                     Parent.ShowNotificationRibbon("Connecting", 0);
+                    OnCallConnected();
                     break;
                 case eCodecCallStatus.Dialing:
                     Parent.ShowNotificationRibbon("Connecting", 0);
@@ -415,6 +409,36 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             // Update active call list
             UpdateHeaderActiveCallList();
+        }
+
+        private void OnCallConnected()
+        {
+            HidePasswordPrompt();
+            KeypadMode = eKeypadMode.DTMF;
+            DialStringBuilder.Remove(0, DialStringBuilder.Length);
+            DialStringFeedback.FireUpdate();
+            DialStringTextCheckEnables();
+
+            StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
+            ShowKeypad();
+
+            UnmuteRoomOnCallConnect();
+        }
+
+        private void UnmuteRoomOnCallConnect()
+        {
+            var volControl = Parent.CurrentRoom as IHasCurrentVolumeControls;
+
+            if (volControl == null)
+            {
+                return;
+            }
+            var currentVolControls = volControl.CurrentVolumeControls as IBasicVolumeWithFeedback;
+
+            if (currentVolControls != null)
+            {
+                currentVolControls.MuteOff();
+            }
         }
 
         /// <summary>
