@@ -723,28 +723,36 @@ namespace PepperDash.Essentials.DM
 
         void Dmps_DMInputChange(Switch device, DMInputEventArgs args)
         {
-            //Debug.Console(2, this, "DMSwitch:{0} Input:{1} Event:{2}'", this.Name, args.Number, args.EventId.ToString());
-
-            switch (args.EventId)
+            try
             {
-                case (DMInputEventIds.OnlineFeedbackEventId):
-                    {
-                        Debug.Console(2, this, "DM Input OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
-                        InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
-                        break;
-                    }
-                case (DMInputEventIds.VideoDetectedEventId):
-                    {
-                        Debug.Console(2, this, "DM Input {0} VideoDetectedEventId", args.Number);
-                        VideoInputSyncFeedbacks[args.Number].FireUpdate();
-                        break;
-                    }
-                case (DMInputEventIds.InputNameEventId):
-                    {
-                        Debug.Console(2, this, "DM Input {0} NameFeedbackEventId", args.Number);
-                        InputNameFeedbacks[args.Number].FireUpdate();
-                        break;
-                    }
+                switch (args.EventId)
+                {
+                    case (DMInputEventIds.OnlineFeedbackEventId):
+                        {
+                            Debug.Console(2, this, "DM Input OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
+                            InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
+                            break;
+                        }
+                    case (DMInputEventIds.VideoDetectedEventId):
+                        {
+                            Debug.Console(2, this, "DM Input {0} VideoDetectedEventId", args.Number);
+                            VideoInputSyncFeedbacks[args.Number].FireUpdate();
+                            break;
+                        }
+                    case (DMInputEventIds.InputNameEventId):
+                        {
+                            Debug.Console(2, this, "DM Input {0} NameFeedbackEventId", args.Number);
+                            if(InputNameFeedbacks.ContainsKey(args.Number))
+                            {
+                                InputNameFeedbacks[args.Number].FireUpdate();
+                            }
+                            break;
+                        }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Notice, "DMSwitch Input Change:{0} Input:{1} Event:{2}\rException: {3}", this.Name, args.Number, args.EventId.ToString(), e.ToString());
             }
         }
         void Dmps_DMOutputChange(Switch device, DMOutputEventArgs args)
