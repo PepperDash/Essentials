@@ -343,7 +343,7 @@ namespace PepperDash.Essentials
                     {
                         var prompt = Global.ControlSystem.ControllerPrompt;
 
-                        var typeMatch = String.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) &&
+                        var typeMatch = String.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) ||
                                         String.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
 
                         if (!typeMatch)
@@ -361,7 +361,8 @@ namespace PepperDash.Essentials
                             if(propertiesConfig == null)
                                 propertiesConfig =  new DM.Config.DmpsRoutingPropertiesConfig();
 
-                            var dmpsRoutingController = DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig);
+                            bool dmps4kType = this.ControllerPrompt.IndexOf("4k", StringComparison.OrdinalIgnoreCase) > -1;
+                            var dmpsRoutingController = DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig, dmps4kType);                            
 
                             DeviceManager.AddDevice(dmpsRoutingController);
                         }

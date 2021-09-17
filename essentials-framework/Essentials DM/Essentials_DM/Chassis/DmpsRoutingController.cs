@@ -25,6 +25,9 @@ namespace PepperDash.Essentials.DM
 
         public CrestronControlSystem Dmps { get; set; }
         public ISystemControl SystemControl { get; private set; }
+        
+        //Check if DMPS is a DMPS3-4K type for endpoint creation
+        public bool Dmps4kType { get; private set; }
 
         //IroutingNumericEvent
         public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
@@ -73,7 +76,7 @@ namespace PepperDash.Essentials.DM
 
 
         public static DmpsRoutingController GetDmpsRoutingController(string key, string name,
-            DmpsRoutingPropertiesConfig properties)
+            DmpsRoutingPropertiesConfig properties, bool dmps4kType)
         {
             try
             {
@@ -84,7 +87,7 @@ namespace PepperDash.Essentials.DM
                     return null;
                 }
 
-                var controller = new DmpsRoutingController(key, name, systemControl)
+                var controller = new DmpsRoutingController(key, name, systemControl, dmps4kType)
                 {
                     InputNames = properties.InputNames,
                     OutputNames = properties.OutputNames
@@ -110,12 +113,13 @@ namespace PepperDash.Essentials.DM
         /// <param name="key"></param>
         /// <param name="name"></param>
         /// <param name="chassis"></param>
-        public DmpsRoutingController(string key, string name, ISystemControl systemControl)
+        public DmpsRoutingController(string key, string name, ISystemControl systemControl, bool dmps4kType)
             : base(key, name)
         {
             
             Dmps = Global.ControlSystem;
             SystemControl = systemControl;
+            Dmps4kType = dmps4kType;
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
