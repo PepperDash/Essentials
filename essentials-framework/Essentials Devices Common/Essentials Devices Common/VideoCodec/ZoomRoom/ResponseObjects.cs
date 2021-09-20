@@ -59,6 +59,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		public List<zStatus.AudioVideoInputOutputLineItem> AudioOuputs { get; set; }
 		public List<zStatus.AudioVideoInputOutputLineItem> Cameras { get; set; }
 		public zEvent.PhoneCallStatus PhoneCall { get; set; }
+        public zEvent.NeedWaitForHost NeedWaitForHost { get; set; }
 
 		public ZoomRoomStatus()
 		{
@@ -76,6 +77,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			AudioOuputs = new List<zStatus.AudioVideoInputOutputLineItem>();
 			Cameras = new List<zStatus.AudioVideoInputOutputLineItem>();
 			PhoneCall = new zEvent.PhoneCallStatus();
+		    NeedWaitForHost = new zEvent.NeedWaitForHost();
 		}
 	}
 
@@ -756,6 +758,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	/// </summary>
 	public class zEvent
 	{
+	    public class StartLocalPresentMeeting
+	    {
+	        public bool Success { get; set; }
+	    }
 		public class NeedWaitForHost
 		{
 			public bool Wait { get; set; }
@@ -1471,6 +1477,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			public static List<Participant> GetGenericParticipantListFromParticipantsResult(
 				List<ListParticipant> participants)
 			{
+			    if (participants.Count == 0)
+			    {
+			        return new List<Participant>();
+			    }
 				//return participants.Select(p => new Participant
 				//            {
 				//                UserId = p.UserId,
