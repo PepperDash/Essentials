@@ -8,6 +8,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM;
 using Crestron.SimplSharpPro.DM.Cards;
 using Crestron.SimplSharpPro.DM.Endpoints;
+using Crestron.SimplSharpProInternal;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
@@ -482,6 +483,29 @@ namespace PepperDash.Essentials.DM
             
         }
 
+        private void RegisterForInputResolutionFeedback(IVideoAttributesBasic input, uint number, RoutingInputPortWithVideoStatuses inputPort)
+        {
+            if (input == null)
+            {
+                return;
+            }
+
+            input.VideoAttributes.AttributeChange += (sender, args) =>
+            {
+                var inputAttributes = sender as IVideoAttributesBasic;
+
+                if (inputAttributes == null)
+                {
+                    return;
+                }
+
+                Debug.Console(1, this, "Input {0} resolution updated", number);
+
+                Debug.Console(1, this, "Updating resolution feedback for input {0}", number);
+                inputPort.VideoStatus.VideoResolutionFeedback.FireUpdate();
+            };
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -883,6 +907,8 @@ namespace PepperDash.Essentials.DM
                 {
                     FeedbackMatchObject = Chassis.Inputs[cardNum]
                 };
+
+                RegisterForInputResolutionFeedback(videoAttributesBasic, cardNum, inputPort as RoutingInputPortWithVideoStatuses);
             }
             else
             {
