@@ -134,11 +134,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 VCControlsInterlock = new JoinedSigInterlock(triList);
                 VCCameraControlModeInterlock = new JoinedSigInterlock(triList);
 
+                VCControlsInterlock.HideAndClear();
 
-                if (CodecHasFavorites)
+                /* if (CodecHasFavorites || codec is IHasZoomRoomLayouts) //Checking for Zoom Room...picked a ZoomRoom specific interface to check for
                     VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadWithFavoritesVisible);
                 else
-                    VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadVisible);
+                    VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadVisible); */
 
                 StagingBarsInterlock = new JoinedSigInterlock(triList);
                 if(Codec is IHasCallHistory)
@@ -320,25 +321,20 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void Codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
         {
             var call = e.CallItem;
+            var meetingInfoSender = sender as IHasMeetingInfo;
 
             switch (e.CallItem.Status)
             {
                 case eCodecCallStatus.Connected:
                     // fire at SRL item
-                    HidePasswordPrompt();
-                    KeypadMode = eKeypadMode.DTMF;
-                    DialStringBuilder.Remove(0, DialStringBuilder.Length);
-                    DialStringFeedback.FireUpdate();
-					DialStringTextCheckEnables();
                     Parent.ShowNotificationRibbon("Connected", 2000);
-                    StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
-					ShowKeypad();
-                    ((Parent.CurrentRoom as IHasCurrentVolumeControls).CurrentVolumeControls as IBasicVolumeWithFeedback).MuteOff();
+                    OnCallConnected();
 					//VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
                     break;
                 case eCodecCallStatus.Connecting:
                     // fire at SRL item
                     Parent.ShowNotificationRibbon("Connecting", 0);
+                    OnCallConnected();
                     break;
                 case eCodecCallStatus.Dialing:
                     Parent.ShowNotificationRibbon("Connecting", 0);
@@ -354,7 +350,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
                         DialStringBuilder.Remove(0, DialStringBuilder.Length);
                         DialStringFeedback.FireUpdate();
                         Parent.ShowNotificationRibbon("Disconnected", 2000);
+                        Debug.Console(0, "Setting Connect Button mode to 0");
                     }
+
+                    
                     break;
                 case eCodecCallStatus.Disconnecting:
                     break;
@@ -375,12 +374,23 @@ namespace PepperDash.Essentials.UIDrivers.VC
                             ShowIncomingModal(call);
                         break;
                     }
-                default:
-                    break;
             }
-            TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(Codec.IsInCall ? 1 : 0);
-			
-			uint stageJoin;
+
+            if (meetingInfoSender != null && Codec.IsInCall)
+            {
+                var meetingInfo = meetingInfoSender.MeetingInfo;
+
+                TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue =
+                    (ushort) (meetingInfo.IsSharingMeeting ? 2 : 1);
+            }
+            else
+            {
+
+                TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue =
+                    (ushort) (Codec.IsInCall ? 1 : 0);
+            }
+
+            uint stageJoin;
             if (Codec.IsInCall)
                 stageJoin = UIBoolJoin.VCStagingActivePopoverVisible;
             else
@@ -399,6 +409,36 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             // Update active call list
             UpdateHeaderActiveCallList();
+        }
+
+        private void OnCallConnected()
+        {
+            HidePasswordPrompt();
+            KeypadMode = eKeypadMode.DTMF;
+            DialStringBuilder.Remove(0, DialStringBuilder.Length);
+            DialStringFeedback.FireUpdate();
+            DialStringTextCheckEnables();
+
+            StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
+            ShowKeypad();
+
+            UnmuteRoomOnCallConnect();
+        }
+
+        private void UnmuteRoomOnCallConnect()
+        {
+            var volControl = Parent.CurrentRoom as IHasCurrentVolumeControls;
+
+            if (volControl == null)
+            {
+                return;
+            }
+            var currentVolControls = volControl.CurrentVolumeControls as IBasicVolumeWithFeedback;
+
+            if (currentVolControls != null)
+            {
+                currentVolControls.MuteOff();
+            }
         }
 
         /// <summary>
@@ -519,14 +559,35 @@ namespace PepperDash.Essentials.UIDrivers.VC
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingMeetNowPress, MeetNowPress);
             TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, CallStopSharingPress);
 
+            var meetingInfoCodec = Codec as IHasMeetingInfo;
+
             TriList.SetSigFalseAction(UIBoolJoin.CallEndPress, () =>
                 {
                     if (Codec.ActiveCalls.Count > 1)
                     {
                         Parent.PopupInterlock.ShowInterlocked(Parent.CallListOrMeetingInfoPopoverVisibilityJoin);
                     }
+                    else if (meetingInfoCodec != null && Codec.ActiveCalls.Count == 1)
+                    {
+                        var meetingInfo = meetingInfoCodec.MeetingInfo;
+
+                        if (meetingInfo != null && meetingInfo.IsSharingMeeting)
+                        {
+                            var presentationMeetingCodec = Codec as IHasPresentationOnlyMeeting;
+                            if (presentationMeetingCodec != null)
+                            {
+                                presentationMeetingCodec.StartNormalMeetingFromSharingOnlyMeeting();
+                            }
+                        }
+                        else
+                        {
+                            Codec.EndAllCalls();
+                        }
+                    }
                     else
+                    {
                         Codec.EndAllCalls();
+                    }
                 });
 
 			TriList.SetSigFalseAction(UIBoolJoin.CallEndAllConfirmPress, () =>
@@ -535,7 +596,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					Codec.EndAllCalls();
 				});
 
-            var meetingInfoCodec = Codec as IHasMeetingInfo;
+            
             if (meetingInfoCodec != null)
             {
                 TriList.SetSigFalseAction(UIBoolJoin.MeetingLeavePress, () =>
@@ -1801,7 +1862,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void PasswordKeypadClear()
         {
-            PasswordStringBuilder.Remove(0, SearchStringBuilder.Length);
+            PasswordStringBuilder.Remove(0, PasswordStringBuilder.Length);
             PasswordStringFeedback.FireUpdate();
             PasswordStringCheckEnables();
 
@@ -1929,6 +1990,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 _passwordPromptDialogVisible = false;
                 Parent.Keyboard.Hide();
                 TriList.SetBool(UIBoolJoin.PasswordPromptDialogVisible, _passwordPromptDialogVisible);
+                PasswordKeypadClear();
             }
         }
     }

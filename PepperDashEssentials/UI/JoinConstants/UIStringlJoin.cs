@@ -48,6 +48,11 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint MeetingNameText = 1009;
 
+	    ///<summary>
+	    /// 1240 - Used to determine text for meeting start button
+	    ///</summary>
+	    public const uint MeetingStartButtonText = 1240;
+
 
 
 

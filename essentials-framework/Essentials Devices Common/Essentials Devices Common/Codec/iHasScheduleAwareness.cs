@@ -235,6 +235,15 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         {
             Calls = new List<Call>();
         }
+
+        #region Overrides of Object
+
+        public override string ToString()
+        {
+            return String.Format("{0}:{1}: {2}-{3}", Title, Agenda, StartTime, EndTime);
+        }
+
+        #endregion
     }
 
     public class Call
