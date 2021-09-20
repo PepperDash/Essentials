@@ -119,9 +119,21 @@ namespace PepperDash.Essentials.Core.Fusion
                 var slot = Global.ControlSystem.ProgramNumber;
 
                 var guidFilePath = Global.FilePathPrefix +
-                                   string.Format(@"{0}-FusionGuids.json", InitialParametersClass.ProgramIDTag);
+                                   string.Format(@"{0}-FusionGuids-{1:X2}.json", InitialParametersClass.ProgramIDTag, _ipId);
 
-                _guidFileExists = File.Exists(guidFilePath);
+                var oldGuidFilePath = Global.FilePathPrefix +
+                                      string.Format(@"{0}-FusionGuids.json", InitialParametersClass.ProgramIDTag);
+
+                if (File.Exists(oldGuidFilePath))
+                {
+                    Debug.Console(0, this, "Migrating from old Fusion GUID file to new Fusion GUID File");
+
+                    File.Copy(oldGuidFilePath, guidFilePath);
+
+                    File.Delete(oldGuidFilePath);
+                }
+
+                _guidFileExists = File.Exists(guidFilePath); 
 
                 // Check if file exists
                 if (!_guidFileExists)
@@ -149,24 +161,26 @@ namespace PepperDash.Essentials.Core.Fusion
                 }
 
 
-                AddPostActivationAction(() =>
-                {
-                    CreateSymbolAndBasicSigs(_ipId);
-                    SetUpSources();
-                    SetUpCommunitcationMonitors();
-                    SetUpDisplay();
-                    SetUpError();
-                    ExecuteCustomSteps();
-
-                    FusionRVI.GenerateFileForAllFusionDevices();
-
-                    GenerateGuidFile(guidFilePath);
-                });
+                AddPostActivationAction(() => PostActivate(guidFilePath));
             }
             catch (Exception e)
             {
                 Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Error Building Fusion System Controller: {0}", e);
             }
+        }
+
+        private void PostActivate(string guidFilePath)
+        {
+            CreateSymbolAndBasicSigs(_ipId);
+            SetUpSources();
+            SetUpCommunitcationMonitors();
+            SetUpDisplay();
+            SetUpError();
+            ExecuteCustomSteps();
+
+            FusionRVI.GenerateFileForAllFusionDevices();
+
+            GenerateGuidFile(guidFilePath);
         }
 
         protected string RoomGuid
@@ -314,7 +328,7 @@ namespace PepperDash.Essentials.Core.Fusion
 
         protected virtual void CreateSymbolAndBasicSigs(uint ipId)
         {
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Creating Fusion Room symbol with GUID: {0}", RoomGuid);
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Creating Fusion Room symbol with GUID: {0} and IP-ID {1:X2}", RoomGuid, ipId);
 
             FusionRoom = new FusionRoom(ipId, Global.ControlSystem, Room.Name, RoomGuid);
             FusionRoom.ExtenderRoomViewSchedulingDataReservedSigs.Use();
