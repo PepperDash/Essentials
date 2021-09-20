@@ -122,6 +122,7 @@
     <Compile Include="Display\PanasonicThDisplay.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasMeetingInfo.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasParticipants.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasPresentationOnlyMeeting.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasSelfviewPosition.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasSelfviewSize.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasStartMeeting.cs" />

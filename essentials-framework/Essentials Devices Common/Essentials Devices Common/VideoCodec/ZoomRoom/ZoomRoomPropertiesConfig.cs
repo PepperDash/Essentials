@@ -25,5 +25,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         //This layout will be selected when a call is connected and no content is being shared
         public string DefaultCallLayout { get; set; }
+
+        public int MinutesBeforeMeetingStart { get; set; }
     }
 }
