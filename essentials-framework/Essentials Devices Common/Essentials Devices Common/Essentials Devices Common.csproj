@@ -108,6 +108,7 @@
     <Compile Include="Codec\eCodecCallStatus.cs" />
     <Compile Include="Codec\eMeetingPrivacy.cs" />
     <Compile Include="Codec\iCodecAudio.cs" />
+    <Compile Include="Codec\IHasDoNotDisturb.cs" />
     <Compile Include="Codec\IHasExternalSourceSwitching.cs" />
     <Compile Include="ImageProcessors\TVOneCorio.cs" />
     <Compile Include="ImageProcessors\TVOneCorioPropertiesConfig.cs" />
@@ -117,6 +118,7 @@
     <Compile Include="ImageProcessors\AnalogWay\AnalogWayLiveCorePropertiesConfig.cs" />
     <Compile Include="SoftCodec\BlueJeansPc.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CiscoCamera.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\CiscoCodecJoinMap.cs" />
     <Compile Include="VideoCodec\CiscoCodec\RoomPresets.cs" />
     <Compile Include="Cameras\CameraControl.cs" />
     <Compile Include="Display\PanasonicThDisplay.cs" />
@@ -125,6 +127,7 @@
     <Compile Include="VideoCodec\Interfaces\IHasPresentationOnlyMeeting.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasSelfviewPosition.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasSelfviewSize.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasStandbyMode.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasStartMeeting.cs" />
     <Compile Include="VideoCodec\Interfaces\iVideoCodecInfo.cs" />
     <Compile Include="Codec\iHasCallFavorites.cs" />

@@ -440,9 +440,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public CallId CallId { get; set; }
         }
 
-        public class DoNotDisturb
+        public class DoNotDisturb : ValueProperty
         {
-            public string Value { get; set; }
+            string _Value;
+
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "On" || value == "Active";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class Mode
@@ -600,6 +617,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Conference2()
             {
                 Presentation = new Presentation();
+                DoNotDisturb = new DoNotDisturb();
             }
         }
 
@@ -1380,12 +1398,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class State : ValueProperty
         {
+            string _value;
+
             public bool BoolValue { get; private set; }
 
             public string Value // Valid values are Standby/EnteringStandby/Halfwake/Off
             {
+                get { return _value; }
                 set
                 {
+                    _value = value;
                     // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
                     BoolValue = value == "On" || value == "Standby";
                     OnValueChanged();
