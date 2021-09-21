@@ -59,7 +59,7 @@ namespace PepperDash.Essentials.DM.Chassis
 			{
 				foreach (var kvp in props.Inputs)
 				{
-					Debug.Console(0, this, "props.Inputs: {0}-{1}", kvp.Key, kvp.Value);
+					Debug.Console(1, this, "props.Inputs: {0}-{1}", kvp.Key, kvp.Value);
 				}
 				InputNames = props.Inputs;
 			}
@@ -67,7 +67,7 @@ namespace PepperDash.Essentials.DM.Chassis
 			{
 				foreach (var kvp in props.Outputs)
 				{
-					Debug.Console(0, this, "props.Outputs: {0}-{1}", kvp.Key, kvp.Value);
+					Debug.Console(1, this, "props.Outputs: {0}-{1}", kvp.Key, kvp.Value);
 				}
 				OutputNames = props.Outputs;
 			}
@@ -100,7 +100,7 @@ namespace PepperDash.Essentials.DM.Chassis
 				_Chassis.Inputs[index].Name.StringValue = inputName;
 
 				InputPorts.Add(new RoutingInputPort(inputName, eRoutingSignalType.AudioVideo,
-					eRoutingPortConnectionType.Hdmi, index, this)
+					eRoutingPortConnectionType.Hdmi, _Chassis.HdmiInputs[index], this)
 				{
 					FeedbackMatchObject = _Chassis.HdmiInputs[index]
 				});
@@ -116,7 +116,7 @@ namespace PepperDash.Essentials.DM.Chassis
 				//_Chassis.Outputs[i].Name.StringValue = outputName;
 
 				OutputPorts.Add(new RoutingOutputPort(outputName, eRoutingSignalType.AudioVideo,
-					eRoutingPortConnectionType.Hdmi, index, this)
+					eRoutingPortConnectionType.Hdmi, _Chassis.HdmiOutputs[index], this)
 				{
 					FeedbackMatchObject = _Chassis.HdmiOutputs[index]
 				});
@@ -275,10 +275,19 @@ namespace PepperDash.Essentials.DM.Chassis
 
 		public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
 		{
+		    var input = inputSelector as HdMdNxM4kzEHdmiInput;
+		    var output = outputSelector as HdMdNxMHdmiOutput;
+
+		    if (output == null)
+		    {
+		        Debug.Console(0, this, "Unable to make switch. output selector is not HdMdNxMHdmiOutput");
+		        return;
+		    }
+
 			// Try to make switch only when necessary.  The unit appears to toggle when already selected.
-			var current = _Chassis.HdmiOutputs[(uint)outputSelector].VideoOut;
-			if (current != _Chassis.HdmiInputs[(uint)inputSelector])
-				_Chassis.HdmiOutputs[(uint)outputSelector].VideoOut = _Chassis.HdmiInputs[(uint)inputSelector];
+			var current = output.VideoOut;
+			if (current != input)
+				output.VideoOut = input;
 		}
 
 		#endregion
@@ -287,7 +296,9 @@ namespace PepperDash.Essentials.DM.Chassis
 
 		public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType signalType)
 		{
-			ExecuteSwitch(inputSelector, outputSelector, signalType);
+		    var input = inputSelector == 0 ? null : _Chassis.HdmiInputs[inputSelector];
+		    var output = _Chassis.HdmiOutputs[outputSelector];
+			ExecuteSwitch(input, output, signalType);
 		}
 
 		#endregion
@@ -327,12 +338,13 @@ namespace PepperDash.Essentials.DM.Chassis
 			for (uint i = 1; i <= _Chassis.NumberOfInputs; i++)
 			{
 				var joinIndex = i - 1;
+			    var input = i;
 				//Digital
 				VideoInputSyncFeedbacks[InputNames[i]].LinkInputSig(trilist.BooleanInput[joinMap.InputSync.JoinNumber + joinIndex]);
 				InputHdcpEnableFeedback[InputNames[i]].LinkInputSig(trilist.BooleanInput[joinMap.EnableInputHdcp.JoinNumber + joinIndex]);
 				InputHdcpEnableFeedback[InputNames[i]].LinkComplementInputSig(trilist.BooleanInput[joinMap.DisableInputHdcp.JoinNumber + joinIndex]);
-				trilist.SetSigTrueAction(joinMap.EnableInputHdcp.JoinNumber + joinIndex, () => EnableHdcp(i));
-				trilist.SetSigTrueAction(joinMap.DisableInputHdcp.JoinNumber + joinIndex, () => DisableHdcp(i));
+				trilist.SetSigTrueAction(joinMap.EnableInputHdcp.JoinNumber + joinIndex, () => EnableHdcp(input));
+				trilist.SetSigTrueAction(joinMap.DisableInputHdcp.JoinNumber + joinIndex, () => DisableHdcp(input));
 
 				//Serial
 				InputNameFeedbacks[InputNames[i]].LinkInputSig(trilist.StringInput[joinMap.InputName.JoinNumber + joinIndex]);
@@ -341,9 +353,10 @@ namespace PepperDash.Essentials.DM.Chassis
 			for (uint i = 1; i <= _Chassis.NumberOfOutputs; i++)
 			{
 				var joinIndex = i - 1;
+			    var output = i;
 				//Analog
 				VideoOutputRouteFeedbacks[OutputNames[i]].LinkInputSig(trilist.UShortInput[joinMap.OutputRoute.JoinNumber + joinIndex]);
-				trilist.SetUShortSigAction(joinMap.OutputRoute.JoinNumber + joinIndex, (a) => ExecuteSwitch(a, i, eRoutingSignalType.AudioVideo));
+				trilist.SetUShortSigAction(joinMap.OutputRoute.JoinNumber + joinIndex, (a) => ExecuteNumericSwitch(a, (ushort) output, eRoutingSignalType.AudioVideo));
 
 				//Serial
 				OutputNameFeedbacks[OutputNames[i]].LinkInputSig(trilist.StringInput[joinMap.OutputName.JoinNumber + joinIndex]);
@@ -354,12 +367,19 @@ namespace PepperDash.Essentials.DM.Chassis
 
 			trilist.OnlineStatusChange += (d, args) =>
 			{
-			    if (args.DeviceOnLine)
+			    if (!args.DeviceOnLine)
 			    {
-			        foreach (var feedback in Feedbacks)
-			        {
-			            feedback.FireUpdate();
-			        }
+			        return;
+			    }
+			    foreach (var feedback in Feedbacks)
+			    {
+			        feedback.FireUpdate();
+			    }
+
+			    foreach (var name in InputNames)
+			    {
+			        trilist.SetString(joinMap.InputName.JoinNumber + (name.Key - 1),
+			            InputNameFeedbacks[(int) name.Key].StringValue);
 			    }
 			};
 		}
@@ -376,10 +396,11 @@ namespace PepperDash.Essentials.DM.Chassis
 			{
 				_Chassis.Inputs[i].Name.StringValue = InputNames[i];
 			}
-			for (uint i = 1; i <= _Chassis.NumberOfOutputs; i++)
+
+			/*for (uint i = 1; i <= _Chassis.NumberOfOutputs; i++)
 			{
 				_Chassis.Outputs[i].Name.StringValue = OutputNames[i];
-			}
+			}*/
 
 			foreach (var feedback in Feedbacks)
 			{
@@ -391,7 +412,28 @@ namespace PepperDash.Essentials.DM.Chassis
 		{
 			if (args.EventId != DMOutputEventIds.VideoOutEventId) return;
 
-			for (var i = 0; i < VideoOutputRouteFeedbacks.Count; i++)
+		    var output = args.Number;
+
+		    var inputNumber = _Chassis.HdmiOutputs[output].VideoOutFeedback == null
+		        ? 0
+		        : _Chassis.HdmiOutputs[output].VideoOutFeedback.Number;
+
+		    var outputName = OutputNames[output];
+
+		    var feedback = VideoOutputRouteFeedbacks[outputName];
+
+		    if (feedback == null)
+		    {
+		        return;
+		    }
+		    var inPort =
+		        InputPorts.FirstOrDefault(p => p.FeedbackMatchObject == _Chassis.HdmiOutputs[output].VideoOutFeedback);
+		    var outPort = OutputPorts.FirstOrDefault(p => p.FeedbackMatchObject == _Chassis.HdmiOutputs[output]);
+
+		    feedback.FireUpdate();
+		    OnSwitchChange(new RoutingNumericEventArgs(output, inputNumber, outPort, inPort, eRoutingSignalType.AudioVideo));
+
+		    /*for (var i = 0; i < VideoOutputRouteFeedbacks.Count; i++)
 			{
 				var index = i;
 				var localInputPort = InputPorts.FirstOrDefault(p => (DMInput)p.FeedbackMatchObject == _Chassis.HdmiOutputs[(uint)index + 1].VideoOutFeedback);
@@ -401,7 +443,7 @@ namespace PepperDash.Essentials.DM.Chassis
 
 				VideoOutputRouteFeedbacks[i].FireUpdate();
 				OnSwitchChange(new RoutingNumericEventArgs((ushort)i, VideoOutputRouteFeedbacks[i].UShortValue, localOutputPort, localInputPort, eRoutingSignalType.AudioVideo));
-			}
+			}*/
 		}
 
 		void Chassis_DMInputChange(Switch device, DMInputEventArgs args)
