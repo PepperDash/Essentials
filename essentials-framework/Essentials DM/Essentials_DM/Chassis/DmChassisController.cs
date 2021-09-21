@@ -490,15 +490,10 @@ namespace PepperDash.Essentials.DM
                 return;
             }
 
+            Debug.Console(1, this, "Registering for resolution feedback for input {0} using Routing Port {1}", number, inputPort.Key);
+
             input.VideoAttributes.AttributeChange += (sender, args) =>
             {
-                var inputAttributes = sender as IVideoAttributesBasic;
-
-                if (inputAttributes == null)
-                {
-                    return;
-                }
-
                 Debug.Console(1, this, "Input {0} resolution updated", number);
 
                 Debug.Console(1, this, "Updating resolution feedback for input {0}", number);
@@ -898,9 +893,15 @@ namespace PepperDash.Essentials.DM
 
             if (videoAttributesBasic != null)
             {
+                Debug.Console(1, this, "card {0} supports IVideoAttributesBasic", cardNum);
                 var statusFuncs = new VideoStatusFuncsWrapper
                 {
-                    VideoResolutionFeedbackFunc = () => videoAttributesBasic.VideoAttributes.GetVideoResolutionString()
+                    VideoResolutionFeedbackFunc = () =>
+                    {
+                        var resolution = videoAttributesBasic.VideoAttributes.GetVideoResolutionString();
+                        Debug.Console(1, this, "Updating resolution for input {0}. New resolution: {1}", cardNum, resolution);
+                        return resolution;
+                    }
                 };
                 inputPort = new RoutingInputPortWithVideoStatuses(portKey, sigType, portType,
                     Chassis.Inputs[cardNum], this, statusFuncs)
@@ -1496,10 +1497,13 @@ namespace PepperDash.Essentials.DM
 
             var videoStatus = inputPort as RoutingInputPortWithVideoStatuses;
 
-            if (videoStatus != null)
+            if (videoStatus == null)
             {
-                videoStatus.VideoStatus.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.InputCurrentResolution.JoinNumber + ioSlotJoin]);
+                return;
             }
+
+            Debug.Console(1, this, "Linking {0} to join {1} for resolution feedback.", videoStatus.Key, joinMap.InputCurrentResolution.JoinNumber + ioSlotJoin);
+            videoStatus.VideoStatus.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.InputCurrentResolution.JoinNumber + ioSlotJoin]);
         }
 
         private void LinkStreamInputToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap, uint ioSlotJoin)
@@ -1686,14 +1690,16 @@ namespace PepperDash.Essentials.DM
 
             var videoStatus = inputPort as RoutingInputPortWithVideoStatuses;
 
-            if (videoStatus != null)
+            if (videoStatus == null)
             {
-                videoStatus.VideoStatus.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.InputCurrentResolution.JoinNumber + ioSlotJoin]);
+                return;
             }
+            Debug.Console(1, this, "Linking {0} to join {1} for resolution feedback.", videoStatus.Key, joinMap.InputCurrentResolution.JoinNumber + ioSlotJoin);
+            videoStatus.VideoStatus.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.InputCurrentResolution.JoinNumber + ioSlotJoin]);
         }
 
         private void LinkAdvancedTxToApi(BasicTriList trilist, DmChassisControllerJoinMap joinMap,
-           uint ioSlot, uint ioSlotJoin, BasicDmTxControllerBase basicTransmitter)
+            uint ioSlot, uint ioSlotJoin, BasicDmTxControllerBase basicTransmitter)
         {
             var transmitter = basicTransmitter as DmTxControllerBase;
             if (transmitter == null) return;
@@ -1707,7 +1713,9 @@ namespace PepperDash.Essentials.DM
 
             if (txRoutingInputs == null) return;
 
-            var inputPorts = txRoutingInputs.InputPorts.Where((p) => p.Port is EndpointHdmiInput || p.Port is EndpointDisplayPortInput).ToList();
+            var inputPorts =
+                txRoutingInputs.InputPorts.Where(
+                    (p) => p.Port is EndpointHdmiInput || p.Port is EndpointDisplayPortInput).ToList();
 
             if (inputPorts.Count == 0)
             {
@@ -1741,12 +1749,18 @@ namespace PepperDash.Essentials.DM
             trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber + ioSlotJoin].UShortValue =
                 (ushort) transmitter.HdcpSupportCapability;
 
-            var videoStatus = txRoutingInputs.InputPorts.Cast<RoutingInputPortWithVideoStatuses>().FirstOrDefault((ip) => ip.Key == DmPortName.AnyVideoIn);
 
-            if (videoStatus != null)
+            var videoStatus =
+                InputPorts[string.Format("inputCard{0}--dmIn", ioSlot)] as RoutingInputPortWithVideoStatuses;
+
+            if (videoStatus == null)
             {
-                videoStatus.VideoStatus.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.InputCurrentResolution.JoinNumber + ioSlotJoin]);
+                return;
             }
+            Debug.Console(1, this, "Linking {0} to join {1} for resolution feedback.", videoStatus.Key,
+                joinMap.InputCurrentResolution.JoinNumber + ioSlotJoin);
+            videoStatus.VideoStatus.VideoResolutionFeedback.LinkInputSig(
+                trilist.StringInput[joinMap.InputCurrentResolution.JoinNumber + ioSlotJoin]);
         }
 
         private void LinkTxOnlineFeedbackToApi(BasicTriList trilist, uint ioSlot, DmChassisControllerJoinMap joinMap,
