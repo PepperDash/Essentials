@@ -791,7 +791,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			CrestronConsole.AddNewConsoleCommand(s => GetBookings(), "GetZoomRoomBookings",
 				"Triggers a refresh of the booking data for today", ConsoleAccessLevelEnum.AccessOperator);
 
-			var socket = Communication as ISocketStatus;
+			
+
+			return base.CustomActivate();
+		}
+
+	    #region Overrides of Device
+
+	    public override void Initialize()
+	    {
+	        var socket = Communication as ISocketStatus;
 			if (socket != null)
 			{
 				socket.ConnectionChange += socket_ConnectionChange;
@@ -802,11 +811,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			Communication.Connect();
 
 			CommunicationMonitor.Start();
+	    }
 
-			return base.CustomActivate();
-		}
+	    #endregion
 
-		public void SetCommDebug(string s)
+	    public void SetCommDebug(string s)
 		{
 			if (s == "1")
 			{
