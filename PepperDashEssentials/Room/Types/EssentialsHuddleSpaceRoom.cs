@@ -156,7 +156,7 @@ namespace PepperDash.Essentials
 
                 DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IRoutingSinkWithSwitching;
 
-                Initialize();
+                InitializeRoom();
             }
             catch (Exception e)
             {
@@ -164,7 +164,7 @@ namespace PepperDash.Essentials
             }
         }
 
-		void Initialize()
+		void InitializeRoom()
 		{
             if (DefaultAudioDevice is IBasicVolumeControls)
                 DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;

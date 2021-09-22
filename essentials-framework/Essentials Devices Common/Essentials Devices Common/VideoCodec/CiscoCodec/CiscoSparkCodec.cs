@@ -28,7 +28,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
     public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectoryHistoryStack,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
-        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute
+        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, 
+        IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute, IHasDoNotDisturbMode,
+        IHasHalfWakeMode
     {
         private bool _externalSourceChangeRequested;
 
@@ -326,6 +328,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CameraIsMutedFeedback = CameraIsOffFeedback;
             SupportsCameraOff = true;
 
+            DoNotDisturbModeIsOnFeedback = new BoolFeedback(() => CodecStatus.Status.Conference.DoNotDisturb.BoolValue);
+            HalfWakeModeIsOnFeedback = new BoolFeedback(() => CodecStatus.Status.Standby.State.Value == "Halfwake");
+
 			PresentationViewMaximizedFeedback = new BoolFeedback(() => CurrentPresentationView == "Maximized");
 
             Communication = comm;
@@ -422,7 +427,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
             CodecStatus.Status.Audio.VolumeMute.ValueChangedAction = MuteFeedback.FireUpdate;
             CodecStatus.Status.Audio.Microphones.Mute.ValueChangedAction = PrivacyModeIsOnFeedback.FireUpdate;
-            CodecStatus.Status.Standby.State.ValueChangedAction = StandbyIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Standby.State.ValueChangedAction = new Action(() =>
+                {
+                    StandbyIsOnFeedback.FireUpdate();
+                    HalfWakeModeIsOnFeedback.FireUpdate();
+                });
             CodecStatus.Status.RoomAnalytics.PeoplePresence.ValueChangedAction = RoomIsOccupiedFeedback.FireUpdate;
             CodecStatus.Status.RoomAnalytics.PeopleCount.Current.ValueChangedAction = PeopleCountFeedback.FireUpdate;
             CodecStatus.Status.Cameras.SpeakerTrack.Status.ValueChangedAction = CameraAutoModeIsOnFeedback.FireUpdate;
@@ -432,6 +441,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
             CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = SharingContentIsOnFeedback.FireUpdate;
             CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = FarEndIsSharingContentFeedback.FireUpdate;
+            CodecStatus.Status.Conference.DoNotDisturb.ValueChangedAction = DoNotDisturbModeIsOnFeedback.FireUpdate;
+
             try
             {
                 CodecStatus.Status.Video.Input.MainVideoMute.ValueChangedAction = CameraIsOffFeedback.FireUpdate;
@@ -584,6 +595,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Audio" + Delimiter +
                 prefix + "/Status/Call" + Delimiter +
                 prefix + "/Status/Conference/Presentation" + Delimiter +
+                prefix + "/Status/Conference/DoNotDisturb" + Delimiter +
                 prefix + "/Status/Cameras/SpeakerTrack" + Delimiter +
                 prefix + "/Status/RoomAnalytics" + Delimiter +
                 prefix + "/Status/RoomPreset" + Delimiter +
@@ -592,10 +604,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Video/Layout" + Delimiter +
                 prefix + "/Status/Video/Input/MainVideoMute" + Delimiter +
                 prefix + "/Bookings" + Delimiter +
-                prefix + "/Event/CallDisconnect" + Delimiter +
                 prefix + "/Event/Bookings" + Delimiter +
                 prefix + "/Event/CameraPresetListUpdated" + Delimiter +
-                prefix + "/Event/UserInterface/Presentation/ExternalSource/Selected/SourceIdentifier" + Delimiter;
+                prefix + "/Event/UserInterface/Presentation/ExternalSource/Selected/SourceIdentifier" + Delimiter +
+                prefix + "/Event/CallDisconnect" + Delimiter; // Keep CallDisconnect last to detect when feedback registration completes correctly
+
         }
 
         #endregion
@@ -752,6 +765,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 
         }
 
+        /// <summary>
+        /// Appends the delimiter and send the command to the codec
+        /// </summary>
+        /// <param name="command"></param>
         public void SendText(string command)
         {
             if (CommDebuggingIsOn)
@@ -1490,7 +1507,49 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
+            var joinMap = new CiscoCodecJoinMap(joinStart);
+
+            var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
+
+            if (customJoins != null)
+            {
+                joinMap.SetCustomJoinData(customJoins);
+            }
+
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+
             LinkVideoCodecToApi(this, trilist, joinStart, joinMapKey, bridge);
+
+            LinkCiscoCodecToApi(trilist, joinMap);
+        }
+
+        public void LinkCiscoCodecToApi(BasicTriList trilist, CiscoCodecJoinMap joinMap)
+        {
+            var dndCodec = this as IHasDoNotDisturbMode;
+            if (dndCodec != null)
+            {
+                dndCodec.DoNotDisturbModeIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.ActivateDoNotDisturbMode.JoinNumber]);
+                dndCodec.DoNotDisturbModeIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.DeactivateDoNotDisturbMode.JoinNumber]);
+
+                trilist.SetSigFalseAction(joinMap.ActivateDoNotDisturbMode.JoinNumber, () => dndCodec.ActivateDoNotDisturbMode());
+                trilist.SetSigFalseAction(joinMap.DeactivateDoNotDisturbMode.JoinNumber, () => dndCodec.DeactivateDoNotDisturbMode());
+                trilist.SetSigFalseAction(joinMap.ToggleDoNotDisturbMode.JoinNumber, () => dndCodec.ToggleDoNotDisturbMode());
+            }
+
+            var halfwakeCodec = this as IHasHalfWakeMode;
+            if (halfwakeCodec != null)
+            {
+                halfwakeCodec.StandbyIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.ActivateStandby.JoinNumber]);
+                halfwakeCodec.StandbyIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.DeactivateStandby.JoinNumber]);
+                halfwakeCodec.HalfWakeModeIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.ActivateHalfWakeMode.JoinNumber]);
+
+                trilist.SetSigFalseAction(joinMap.ActivateStandby.JoinNumber, () => halfwakeCodec.StandbyActivate());
+                trilist.SetSigFalseAction(joinMap.DeactivateStandby.JoinNumber, () => halfwakeCodec.StandbyDeactivate());
+                trilist.SetSigFalseAction(joinMap.ActivateHalfWakeMode.JoinNumber, () => halfwakeCodec.HalfwakeActivate());
+            }
         }
 
         /// <summary>
@@ -2074,6 +2133,45 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             else
                 CameraMuteOn();
         }
+
+        #region IHasDoNotDisturbMode Members
+
+        public BoolFeedback DoNotDisturbModeIsOnFeedback { get; private set; }
+
+        public void ActivateDoNotDisturbMode()
+        {
+            SendText("xCommand Conference DoNotDisturb Activate");
+        }
+
+        public void DeactivateDoNotDisturbMode()
+        {
+            SendText("xCommand Conference DoNotDisturb Deactivate");
+        }
+
+        public void ToggleDoNotDisturbMode()
+        {
+            if (DoNotDisturbModeIsOnFeedback.BoolValue)
+            {
+                DeactivateDoNotDisturbMode();
+            }
+            else
+            {
+                ActivateDoNotDisturbMode();
+            }
+        }
+
+        #endregion
+
+        #region IHasHalfWakeMode Members
+
+        public BoolFeedback HalfWakeModeIsOnFeedback { get; private set; }
+
+        public void HalfwakeActivate()
+        {
+            SendText("xCommand Standby Halfwake");
+        }
+
+        #endregion
     }
 
 

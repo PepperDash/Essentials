@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Globalization;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.UI;
@@ -8,11 +9,13 @@ using Crestron.SimplSharpPro.UI;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
 using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 
 namespace PepperDash.Essentials
 {
@@ -98,6 +101,9 @@ namespace PepperDash.Essentials
 		/// </summary>
         public SubpageReferenceList MeetingOrContactMethodModalSrl { get; set; }
 
+        public uint CallListOrMeetingInfoPopoverVisibilityJoin { get; private set; }
+
+
 		/// <summary>
 		/// The list of buttons on the header. Managed with visibility only
 		/// </summary>
@@ -175,6 +181,16 @@ namespace PepperDash.Essentials
 
 
         private UiDisplayMode _currentMode;
+
+        private bool _isZoomRoomWithNoExternalSources
+        {
+            get
+            {
+                return CurrentRoom.VideoCodec is Essentials.Devices.Common.VideoCodec.ZoomRoom.ZoomRoom && _sourceListCount <= 1;
+            }
+        }
+
+        private uint _sourceListCount;
 
         /// <summary>
         /// The mode showing. Presentation or call.
@@ -350,15 +366,17 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Allows PopupInterlock to be toggled if the calls list is already visible, or if the codec is in a call
         /// </summary>
-        public void ShowActiveCallsList()
+        public void ShowActiveCallsListOrMeetingInfo()
         {
 			TriList.SetBool(UIBoolJoin.CallEndAllConfirmVisible, true);
-            if(PopupInterlock.CurrentJoin == UIBoolJoin.HeaderActiveCallsListVisible) 
-                PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
+
+
+            if(PopupInterlock.CurrentJoin == CallListOrMeetingInfoPopoverVisibilityJoin)
+                PopupInterlock.ShowInterlockedWithToggle(CallListOrMeetingInfoPopoverVisibilityJoin);
             else
             {
-                if((CurrentRoom.ScheduleSource as VideoCodecBase).IsInCall)
-                    PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
+                if(CurrentRoom.VideoCodec.IsInCall)
+                    PopupInterlock.ShowInterlockedWithToggle(CallListOrMeetingInfoPopoverVisibilityJoin);
             }
         }
 
@@ -454,79 +472,92 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void ShowNextMeetingTimerCallback()
 		{
+            //Update calendar for Zoom. Zoom doesn't automatically update when meetings are in the past
+            if (_isZoomRoomWithNoExternalSources)
+            {
+                CurrentRoom.ScheduleSource.GetSchedule();
+            }
+
 			// Every 60 seconds, refresh the calendar
 			RefreshMeetingsList();
 			// check meetings list for the closest, joinable meeting
 			var ss = CurrentRoom.ScheduleSource;
 			var meetings = ss.CodecSchedule.Meetings;
 
-			if (meetings.Count > 0)
-			{
-				// If the room is off pester the user
-				// If the room is on, and the meeting is joinable
-				// and the LastMeetingDismissed != this meeting
+		    if (meetings.Count <= 0)
+		    {
+		        return;
+		    }
+		    // If the room is off pester the user
+		    // If the room is on, and the meeting is joinable
+		    // and the LastMeetingDismissed != this meeting
 
-				var lastMeetingDismissed = meetings.FirstOrDefault(m => m.Id == LastMeetingDismissedId);
-                //Debug.Console(1, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
-                //    CurrentRoom.OnFeedback.BoolValue,
-                //    LastMeetingDismissedId,
-                //    lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToShortTimeString() : "");
+		    var lastMeetingDismissed = meetings.FirstOrDefault(m => m.Id == LastMeetingDismissedId);
+		    Debug.Console(0, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
+		        CurrentRoom.OnFeedback.BoolValue,
+		        LastMeetingDismissedId,
+		        lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToString("t", Global.Culture) : "");
 
-				var meeting = meetings.LastOrDefault(m => m.Joinable);
-				if (CurrentRoom.OnFeedback.BoolValue
-					&& lastMeetingDismissed == meeting)
-				{
-					return;
-				}
+		    var meeting = meetings.LastOrDefault(m => m.Joinable);
+		    if (CurrentRoom.OnFeedback.BoolValue
+		        && lastMeetingDismissed == meeting)
+		    {
+		        // meeting no longer joinable, hide popup
+		        if(meeting == null)
+		            HideNextMeetingPopup();
 
-				LastMeetingDismissedId = null;
-				// Clear the popup when we run out of meetings
-				if (meeting == null)
-				{
-					HideNextMeetingPopup();
-				}
-				else
-				{
-					TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Upcoming meeting");
-					TriList.SetString(UIStringJoin.NextMeetingStartTimeText, meeting.StartTime.ToShortTimeString());
-					TriList.SetString(UIStringJoin.NextMeetingEndTimeText, meeting.EndTime.ToShortTimeString());
-					TriList.SetString(UIStringJoin.NextMeetingTitleText, meeting.Title);
-					TriList.SetString(UIStringJoin.NextMeetingNameText, meeting.Organizer);
-					TriList.SetString(UIStringJoin.NextMeetingButtonLabel, "Join");
-					TriList.SetSigFalseAction(UIBoolJoin.NextMeetingJoinPress, () =>
-					{
-						HideNextMeetingPopup();
-						PopupInterlock.Hide();
-						RoomOnAndDialMeeting(meeting);
-					});
-					TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
-					TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
-					{
-						HideNextMeetingPopup();
-						//CalendarPress();
-						RefreshMeetingsList();
-						PopupInterlock.ShowInterlocked(UIBoolJoin.MeetingsOrContacMethodsListVisible);
-					});
-					var indexOfNext = meetings.IndexOf(meeting) + 1;
+		        return;
+		    }
 
-					// indexOf = 3, 4 meetings :  
-					if (indexOfNext < meetings.Count)
-						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
-							meetings[indexOfNext].StartTime.ToShortTimeString());
-					else
-						TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText, "No more meetings today");
+		    LastMeetingDismissedId = null;
+		    // Clear the popup when we run out of meetings
+		    if (meeting == null)
+		    {
+		        HideNextMeetingPopup();
+		    }
+		    else
+		    {
 
-					TriList.SetSigFalseAction(UIBoolJoin.NextMeetingModalClosePress, () =>
-						{
-							// Mark the meeting to not re-harass the user
-							if(CurrentRoom.OnFeedback.BoolValue)
-								LastMeetingDismissedId = meeting.Id;
-							HideNextMeetingPopup();
-						});
 
-					TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, true);
-				}
-			}
+		        TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Upcoming meeting");
+		        TriList.SetString(UIStringJoin.NextMeetingStartTimeText, meeting.StartTime.ToString("t", Global.Culture));
+		        TriList.SetString(UIStringJoin.NextMeetingEndTimeText, meeting.EndTime.ToString("t", Global.Culture));
+		        TriList.SetString(UIStringJoin.NextMeetingTitleText, meeting.Title);
+		        TriList.SetString(UIStringJoin.NextMeetingNameText, meeting.Organizer);
+		        TriList.SetString(UIStringJoin.NextMeetingButtonLabel, "Join");
+		        TriList.SetSigFalseAction(UIBoolJoin.NextMeetingJoinPress, () =>
+		        {
+		            HideNextMeetingPopup();
+		            PopupInterlock.Hide();
+		            RoomOnAndDialMeeting(meeting);
+		        });
+		        TriList.SetString(UIStringJoin.NextMeetingSecondaryButtonLabel, "Show Schedule");
+		        TriList.SetSigFalseAction(UIBoolJoin.CalendarHeaderButtonPress, () =>
+		        {
+		            HideNextMeetingPopup();
+		            //CalendarPress();
+		            RefreshMeetingsList();
+		            PopupInterlock.ShowInterlocked(UIBoolJoin.MeetingsOrContacMethodsListVisible);
+		        });
+		        var indexOfNext = meetings.IndexOf(meeting) + 1;
+
+		        // indexOf = 3, 4 meetings :  
+		        if (indexOfNext < meetings.Count)
+		            TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText,
+		                meetings[indexOfNext].StartTime.ToString("t", Global.Culture));
+		        else
+		            TriList.SetString(UIStringJoin.NextMeetingFollowingMeetingText, "No more meetings today");
+
+		        TriList.SetSigFalseAction(UIBoolJoin.NextMeetingModalClosePress, () =>
+		        {
+		            // Mark the meeting to not re-harass the user
+		            if(CurrentRoom.OnFeedback.BoolValue)
+		                LastMeetingDismissedId = meeting.Id;
+		            HideNextMeetingPopup();
+		        });
+
+		        TriList.SetBool(UIBoolJoin.NextMeetingModalVisible, true);
+		    }
 		}
 		
 		/// <summary>
@@ -552,19 +583,26 @@ namespace PepperDash.Essentials
 		/// </summary>
 		void RoomOnAndDialMeeting(Meeting meeting)
 		{
+		    Debug.Console(1, "[RoomOnAndDialMeeting] Joining meeting [{0}]", meeting);
 			Action dialAction = () => 
 				{
 					var d = CurrentRoom.ScheduleSource as VideoCodecBase;
                     if (d != null)
                     {
+                        Debug.Console(1,
+                            "[RoomOnAndDialMeeting] [dialAction] Sending command to codec to join meeting {0}", meeting);
                         d.Dial(meeting);
 						LastMeetingDismissedId = meeting.Id; // To prevent prompts for already-joined call
                     }
 				};
-			if (CurrentRoom.OnFeedback.BoolValue)
-				dialAction();
+		    if (CurrentRoom.OnFeedback.BoolValue)
+		    {
+                Debug.Console(1, "[RoomOnAndDialMeeting] Room is on.");
+		        dialAction();
+		    }
 			else
-			{
+		    {
+		        Debug.Console(1, "RoomOnAndDialMeeting] Room is off or warming. Registering for Warming Feedback");
 				// Rig a one-time handler to catch when the room is warmed and then dial call
 				EventHandler<FeedbackEventArgs> oneTimeHandler = null;
 				oneTimeHandler = (o, a) =>
@@ -634,9 +672,24 @@ namespace PepperDash.Essentials
 
                 TriList.SetBool(StartPageVisibleJoin, startMode ? true : false);
 
-                TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, presentationMode ? true : false);
+                if (presentationMode &&_isZoomRoomWithNoExternalSources)
+                {
+                    // For now, if this is a Zoom Room and there are no shareable sources just display the informational subpage
+                    TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, false);
+                    TriList.SetBool(UIBoolJoin.ZoomRoomContentSharingVisible, true);
+                }
+                else
+                {
+                    // Otherwise, show the staging bar 
+                    TriList.SetBool(UIBoolJoin.ZoomRoomContentSharingVisible, false);
+                    TriList.SetBool(UIBoolJoin.SourceStagingBarVisible, presentationMode ? true : false);
+
+                }
                 if (!presentationMode)
+                {
+                    TriList.SetBool(UIBoolJoin.ZoomRoomContentSharingVisible, false);
                     TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
+                }
 
                 CallButtonSig.BoolValue = callMode
                     && CurrentRoom.ShutdownType == eShutdownType.None;
@@ -674,25 +727,63 @@ namespace PepperDash.Essentials
             if (VCDriver.IsVisible)
                 VCDriver.Hide();
 			HideNextMeetingPopup();
-            // Run default source when room is off and share is pressed
-            if (!CurrentRoom.OnFeedback.BoolValue)
-            { 
-				// If there's no default, show UI elements
-				if (!(CurrentRoom as IRunDefaultPresentRoute).RunDefaultPresentRoute())
-					TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);				
-           }
-            else // room is on show what's active or select a source if nothing is yet active
+
+
+            if (_isZoomRoomWithNoExternalSources)
             {
-                if(CurrentRoom.CurrentSourceInfo == null || (CurrentRoom.VideoCodec != null && CurrentRoom.CurrentSourceInfo.SourceDevice.Key == CurrentRoom.VideoCodec.OsdSource.Key))
-                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
-                else if (CurrentSourcePageManager != null)
+                if (!CurrentRoom.OnFeedback.BoolValue)
                 {
-                    TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
-                    CurrentSourcePageManager.Show();
+                    CurrentRoom.RunDefaultPresentRoute();
                 }
+                // For now, if this is a Zoom Room and there are no shareable sources just display the informational subpage
+                TriList.SetBool(UIBoolJoin.ZoomRoomContentSharingVisible, true);
+
+                var presentationMeetingCodec = CurrentRoom.VideoCodec as IHasPresentationOnlyMeeting;
+                var farEndContentStatusCodec = CurrentRoom.VideoCodec as IHasFarEndContentStatus;
+                var receivingContent = false;
+
+                if (farEndContentStatusCodec != null)
+                {
+                    receivingContent = farEndContentStatusCodec.ReceivingContent.BoolValue;
+                }
+
+                if (presentationMeetingCodec != null && !CurrentRoom.VideoCodec.IsInCall)
+                {
+                    presentationMeetingCodec.StartSharingOnlyMeeting(eSharingMeetingMode.Laptop);
+                }
+                else if (CurrentRoom.VideoCodec.IsInCall && !CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue &&
+                         !receivingContent)
+                {
+                    CurrentRoom.VideoCodec.StartSharing();
+                }
+
+                if (CurrentSourcePageManager != null)
+                    CurrentSourcePageManager.Hide();
+            }
+            else
+            {
+                // Run default source when room is off and share is pressed
+                if (!CurrentRoom.OnFeedback.BoolValue)
+                {
+                    // If there's no default, show UI elements
+                    if (!(CurrentRoom as IRunDefaultPresentRoute).RunDefaultPresentRoute())
+                        TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
+                }
+                else // room is on show what's active or select a source if nothing is yet active
+                {
+                    if (CurrentRoom.CurrentSourceInfo == null ||
+                        (CurrentRoom.VideoCodec != null &&
+                         CurrentRoom.CurrentSourceInfo.SourceDevice.Key == CurrentRoom.VideoCodec.OsdSource.Key))
+                        TriList.SetBool(UIBoolJoin.SelectASourceVisible, true);
+                    else if (CurrentSourcePageManager != null)
+                    {
+                        TriList.SetBool(UIBoolJoin.SelectASourceVisible, false);
+                        CurrentSourcePageManager.Show();
+                    }
+                }
+                SetupSourceList();
             }
             CurrentMode = UiDisplayMode.Presentation;
-			SetupSourceList();
         }
 
 		/// <summary>
@@ -731,7 +822,7 @@ namespace PepperDash.Essentials
         /// </summary>
         void ShowCurrentSource()
         {
-			if (CurrentRoom.CurrentSourceInfo == null)
+			if (CurrentRoom.CurrentSourceInfo == null || _isZoomRoomWithNoExternalSources)
 				return;
 
             CurrentMode = UiDisplayMode.Presentation;
@@ -941,6 +1032,18 @@ namespace PepperDash.Essentials
                 _CurrentRoom.IsWarmingUpFeedback.OutputChange -= CurrentRoom_IsWarmingFeedback_OutputChange;
                 _CurrentRoom.IsCoolingDownFeedback.OutputChange -= CurrentRoom_IsCoolingDownFeedback_OutputChange;
 				_CurrentRoom.InCallFeedback.OutputChange -= CurrentRoom_InCallFeedback_OutputChange;
+
+                var scheduleAwareCodec = _CurrentRoom.VideoCodec as IHasScheduleAwareness;
+                if (scheduleAwareCodec != null)
+                {
+                    scheduleAwareCodec.CodecSchedule.MeetingsListHasChanged -= CodecSchedule_MeetingsListHasChanged;
+                }
+
+                var meetingInfoCodec = _CurrentRoom.VideoCodec as IHasMeetingInfo;
+                if (meetingInfoCodec != null)
+                {
+                    meetingInfoCodec.MeetingInfoChanged -= meetingInfoCodec_MeetingInfoChanged;
+                }
             }
 
             _CurrentRoom = room;
@@ -973,9 +1076,23 @@ namespace PepperDash.Essentials
                 _CurrentRoom.CurrentSourceChange += CurrentRoom_SourceInfoChange;
                 RefreshSourceInfo();
 
-                if (_CurrentRoom.VideoCodec is IHasScheduleAwareness)
+                
+                var scheduleAwareCodec = _CurrentRoom.VideoCodec as IHasScheduleAwareness;
+                if (scheduleAwareCodec != null)
                 {
-                    (_CurrentRoom.VideoCodec as IHasScheduleAwareness).CodecSchedule.MeetingsListHasChanged += CodecSchedule_MeetingsListHasChanged;
+                    scheduleAwareCodec.CodecSchedule.MeetingsListHasChanged += CodecSchedule_MeetingsListHasChanged;
+                }
+              
+                var meetingInfoCodec = _CurrentRoom.VideoCodec as IHasMeetingInfo;
+                if (meetingInfoCodec != null)
+                {
+                    meetingInfoCodec.MeetingInfoChanged += new EventHandler<MeetingInfoEventArgs>(meetingInfoCodec_MeetingInfoChanged);
+
+                    CallListOrMeetingInfoPopoverVisibilityJoin = UIBoolJoin.HeaderMeetingInfoVisible;
+                }
+                else
+                {
+                    CallListOrMeetingInfoPopoverVisibilityJoin = UIBoolJoin.HeaderActiveCallsListVisible;
                 }
 
                 CallSharingInfoVisibleFeedback = new BoolFeedback(() => _CurrentRoom.VideoCodec.SharingContentIsOnFeedback.BoolValue);
@@ -987,7 +1104,8 @@ namespace PepperDash.Essentials
                 if (_CurrentRoom != null)
                     _CurrentRoom.CurrentSourceChange += new SourceInfoChangeHandler(CurrentRoom_CurrentSingleSourceChange);
 
-                TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, () => _CurrentRoom.RunRouteAction("codecOsd", _CurrentRoom.SourceListKey));
+                // Moved to EssentialsVideoCodecUiDriver
+                //TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, () => _CurrentRoom.RunRouteAction("codecOsd", _CurrentRoom.SourceListKey));
 
                 (Parent as EssentialsPanelMainInterfaceDriver).HeaderDriver.SetupHeaderButtons(this, CurrentRoom);
             }
@@ -996,6 +1114,26 @@ namespace PepperDash.Essentials
                 // Clear sigs that need to be
                 TriList.StringInput[UIStringJoin.CurrentRoomName].StringValue = "Select a room";
             }
+        }
+
+        void meetingInfoCodec_MeetingInfoChanged(object sender, MeetingInfoEventArgs e)
+        {
+            if (e.Info == null)
+            {
+                return;
+            }
+
+            TriList.SetString(UIStringJoin.MeetingIdText, e.Info.Id);
+            TriList.SetString(UIStringJoin.MeetingHostText, e.Info.Host);
+            TriList.SetString(UIStringJoin.MeetingNameText, e.Info.Name);
+
+            TriList.SetString(UIStringJoin.MeetingPasswordText, e.Info.Password);
+            // Show the password fields if one is present
+            TriList.SetBool(UIBoolJoin.MeetingPasswordVisible, !string.IsNullOrEmpty(e.Info.Password));
+
+            TriList.SetString(UIStringJoin.CallSharedSourceNameText, e.Info.ShareStatus);
+
+            TriList.SetString(UIStringJoin.MeetingLeaveText, e.Info.IsHost ? "End Meeting" : "Leave Meeting");    
         }
 
         void SetCurrentRoom(IEssentialsHuddleVtc1Room room)
@@ -1111,7 +1249,8 @@ namespace PepperDash.Essentials
 					Debug.Console(1, "**** KEY {0}", kvp.Key);
 					
 				}
-				SourceStagingSrl.Count = (ushort)(i - 1);
+                _sourceListCount = (i - 1);
+                SourceStagingSrl.Count = (ushort)_sourceListCount;
 			}
 
 		}
@@ -1200,17 +1339,16 @@ namespace PepperDash.Essentials
 		{
             // See if this is helpful or if the callback response in the codec class maybe doesn't come it time?
             // Let's build list from event
-			// CurrentRoom.ScheduleSource.GetSchedule();
 
-            TriList.SetString(UIStringJoin.MeetingsOrContactMethodListIcon, "Calendar");
+		    TriList.SetString(UIStringJoin.MeetingsOrContactMethodListIcon, "Calendar");
             TriList.SetString(UIStringJoin.MeetingsOrContactMethodListTitleText, "Today's Meetings");
 
 			ushort i = 0;
 			foreach (var m in CurrentRoom.ScheduleSource.CodecSchedule.Meetings)
 			{
 				i++;
-				MeetingOrContactMethodModalSrl.StringInputSig(i, 1).StringValue = m.StartTime.ToShortTimeString();
-				MeetingOrContactMethodModalSrl.StringInputSig(i, 2).StringValue = m.EndTime.ToShortTimeString();
+                MeetingOrContactMethodModalSrl.StringInputSig(i, 1).StringValue = m.StartTime.ToString("t", Global.Culture);
+                MeetingOrContactMethodModalSrl.StringInputSig(i, 2).StringValue = m.EndTime.ToString("t", Global.Culture);
 				MeetingOrContactMethodModalSrl.StringInputSig(i, 3).StringValue = m.Title;
                 MeetingOrContactMethodModalSrl.StringInputSig(i, 4).StringValue = string.Format("<br>{0}",m.Organizer);
                 MeetingOrContactMethodModalSrl.StringInputSig(i, 5).StringValue = "Join";
@@ -1506,6 +1644,8 @@ namespace PepperDash.Essentials
         /// Allows the codec to trigger the main UI to clear up if call is coming in.
         /// </summary>
         void PrepareForCodecIncomingCall();
+
+        uint CallListOrMeetingInfoPopoverVisibilityJoin { get; }
 
         SubpageReferenceList MeetingOrContactMethodModalSrl { get; }
     }

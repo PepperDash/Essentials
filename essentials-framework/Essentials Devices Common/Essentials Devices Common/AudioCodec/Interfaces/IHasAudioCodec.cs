@@ -11,10 +11,9 @@ namespace PepperDash.Essentials.Devices.Common.AudioCodec
     /// <summary>
     /// For rooms that have audio codec
     /// </summary>
-    public interface IHasAudioCodec
+    public interface IHasAudioCodec:IHasInCallFeedback
     {
         AudioCodecBase AudioCodec { get; }
-        BoolFeedback InCallFeedback { get; }
 
         ///// <summary>
         ///// Make this more specific

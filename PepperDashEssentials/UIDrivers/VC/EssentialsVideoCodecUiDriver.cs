@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
@@ -14,6 +15,7 @@ using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.Touchpanels.Keyboards;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.UIDrivers.VC
@@ -83,6 +85,9 @@ namespace PepperDash.Essentials.UIDrivers.VC
         StringBuilder SearchStringBuilder = new StringBuilder();
         BoolFeedback SearchStringBackspaceVisibleFeedback;
 
+        StringFeedback PasswordStringFeedback;
+        StringBuilder PasswordStringBuilder = new StringBuilder();
+
         ModalDialog IncomingCallModal;
 
         eKeypadMode KeypadMode;
@@ -129,11 +134,12 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 VCControlsInterlock = new JoinedSigInterlock(triList);
                 VCCameraControlModeInterlock = new JoinedSigInterlock(triList);
 
+                VCControlsInterlock.HideAndClear();
 
-                if (CodecHasFavorites)
+                /* if (CodecHasFavorites || codec is IHasZoomRoomLayouts) //Checking for Zoom Room...picked a ZoomRoom specific interface to check for
                     VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadWithFavoritesVisible);
                 else
-                    VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadVisible);
+                    VCControlsInterlock.SetButDontShow(UIBoolJoin.VCKeypadVisible); */
 
                 StagingBarsInterlock = new JoinedSigInterlock(triList);
                 if(Codec is IHasCallHistory)
@@ -147,7 +153,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 // Return formatted when dialing, straight digits when in call
                 DialStringFeedback = new StringFeedback(() =>
                 {
-                    if (KeypadMode == eKeypadMode.Dial)
+                    // Format the number feedback if in dial mode and the codec is not IHasStartMeeting (ZoomRoom)
+                    if (KeypadMode == eKeypadMode.Dial  && !(Codec is IHasStartMeeting))
                         return GetFormattedDialString(DialStringBuilder.ToString());
                     else
                         return DialStringBuilder.ToString();
@@ -174,8 +181,22 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 });
                 SearchStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.CodecDirectorySearchEntryText]);
 
-                SetupDirectoryList();
+                PasswordStringFeedback = new StringFeedback(() =>
+                {
+                    if (PasswordStringBuilder.Length > 0)
+                    {
+                        Parent.Keyboard.EnableGoButton();
+                        return PasswordStringBuilder.ToString();
+                    }
+                    else
+                    {
+                        Parent.Keyboard.DisableGoButton();
+                        return "";
+                    }
+                });
+                PasswordStringFeedback.LinkInputSig(triList.StringInput[UIStringJoin.PasswordPromptPasswordText]);
 
+                SetupDirectoryList();
 
                 SearchStringBackspaceVisibleFeedback = new BoolFeedback(() => SearchStringBuilder.Length > 0);
                 SearchStringBackspaceVisibleFeedback.LinkInputSig(triList.BooleanInput[UIBoolJoin.VCDirectoryBackspaceVisible]);
@@ -193,14 +214,18 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 triList.SetSigHeldAction(UIBoolJoin.VCDirectoryBackspacePress, 500,
                     StartSearchBackspaceRepeat, StopSearchBackspaceRepeat, SearchKeypadBackspacePress);
 
+
+                if (Codec is IPasswordPrompt)
+                {
+                    SetupPasswordPrompt();
+                }
+
+
                 // If the codec is ready, then get the values we want, otherwise wait
                 if (Codec.IsReady)
                     Codec_IsReady();
                 else
                     codec.IsReadyChange += (o, a) => Codec_IsReady();
-
-
-
             }
             catch (Exception e)
             {
@@ -296,24 +321,20 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void Codec_CallStatusChange(object sender, CodecCallStatusItemChangeEventArgs e)
         {
             var call = e.CallItem;
+            var meetingInfoSender = sender as IHasMeetingInfo;
 
             switch (e.CallItem.Status)
             {
                 case eCodecCallStatus.Connected:
                     // fire at SRL item
-                    KeypadMode = eKeypadMode.DTMF;
-                    DialStringBuilder.Remove(0, DialStringBuilder.Length);
-                    DialStringFeedback.FireUpdate();
-					DialStringTextCheckEnables();
                     Parent.ShowNotificationRibbon("Connected", 2000);
-                    StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
-					ShowKeypad();
-                    ((Parent.CurrentRoom as IHasCurrentVolumeControls).CurrentVolumeControls as IBasicVolumeWithFeedback).MuteOff();
+                    OnCallConnected();
 					//VCControlsInterlock.ShowInterlocked(UIBoolJoin.VCKeypadVisible);
                     break;
                 case eCodecCallStatus.Connecting:
                     // fire at SRL item
                     Parent.ShowNotificationRibbon("Connecting", 0);
+                    OnCallConnected();
                     break;
                 case eCodecCallStatus.Dialing:
                     Parent.ShowNotificationRibbon("Connecting", 0);
@@ -329,7 +350,10 @@ namespace PepperDash.Essentials.UIDrivers.VC
                         DialStringBuilder.Remove(0, DialStringBuilder.Length);
                         DialStringFeedback.FireUpdate();
                         Parent.ShowNotificationRibbon("Disconnected", 2000);
+                        Debug.Console(0, "Setting Connect Button mode to 0");
                     }
+
+                    
                     break;
                 case eCodecCallStatus.Disconnecting:
                     break;
@@ -350,12 +374,23 @@ namespace PepperDash.Essentials.UIDrivers.VC
                             ShowIncomingModal(call);
                         break;
                     }
-                default:
-                    break;
             }
-            TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue = (ushort)(Codec.IsInCall ? 1 : 0);
-			
-			uint stageJoin;
+
+            if (meetingInfoSender != null && Codec.IsInCall)
+            {
+                var meetingInfo = meetingInfoSender.MeetingInfo;
+
+                TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue =
+                    (ushort) (meetingInfo.IsSharingMeeting ? 2 : 1);
+            }
+            else
+            {
+
+                TriList.UShortInput[UIUshortJoin.VCStagingConnectButtonMode].UShortValue =
+                    (ushort) (Codec.IsInCall ? 1 : 0);
+            }
+
+            uint stageJoin;
             if (Codec.IsInCall)
                 stageJoin = UIBoolJoin.VCStagingActivePopoverVisible;
             else
@@ -374,6 +409,36 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
             // Update active call list
             UpdateHeaderActiveCallList();
+        }
+
+        private void OnCallConnected()
+        {
+            HidePasswordPrompt();
+            KeypadMode = eKeypadMode.DTMF;
+            DialStringBuilder.Remove(0, DialStringBuilder.Length);
+            DialStringFeedback.FireUpdate();
+            DialStringTextCheckEnables();
+
+            StagingButtonsFeedbackInterlock.ShowInterlocked(UIBoolJoin.VCStagingKeypadPress);
+            ShowKeypad();
+
+            UnmuteRoomOnCallConnect();
+        }
+
+        private void UnmuteRoomOnCallConnect()
+        {
+            var volControl = Parent.CurrentRoom as IHasCurrentVolumeControls;
+
+            if (volControl == null)
+            {
+                return;
+            }
+            var currentVolControls = volControl.CurrentVolumeControls as IBasicVolumeWithFeedback;
+
+            if (currentVolControls != null)
+            {
+                currentVolControls.MuteOff();
+            }
         }
 
         /// <summary>
@@ -399,8 +464,8 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 ActiveCallsSRL.Count = (ushort)activeList.Count;
 
             // If Active Calls list is visible and codec is not in a call, hide the list    
-            if (!Codec.IsInCall && Parent.PopupInterlock.CurrentJoin == UIBoolJoin.HeaderActiveCallsListVisible)
-                Parent.PopupInterlock.ShowInterlockedWithToggle(UIBoolJoin.HeaderActiveCallsListVisible);
+            if (!Codec.IsInCall && Parent.PopupInterlock.CurrentJoin == Parent.CallListOrMeetingInfoPopoverVisibilityJoin)
+                Parent.PopupInterlock.ShowInterlockedWithToggle(Parent.CallListOrMeetingInfoPopoverVisibilityJoin);
         }
         
         /// <summary>
@@ -491,20 +556,67 @@ namespace PepperDash.Essentials.UIDrivers.VC
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingRecentsPress, ShowRecents);
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingCameraPress, ShowCameraControls);
             TriList.SetSigFalseAction(UIBoolJoin.VCStagingConnectPress, ConnectPress);
+            TriList.SetSigFalseAction(UIBoolJoin.VCStagingMeetNowPress, MeetNowPress);
+            TriList.SetSigFalseAction(UIBoolJoin.CallStopSharingPress, CallStopSharingPress);
+
+            var meetingInfoCodec = Codec as IHasMeetingInfo;
+
             TriList.SetSigFalseAction(UIBoolJoin.CallEndPress, () =>
                 {
                     if (Codec.ActiveCalls.Count > 1)
                     {
-                        Parent.PopupInterlock.ShowInterlocked(UIBoolJoin.HeaderActiveCallsListVisible);
+                        Parent.PopupInterlock.ShowInterlocked(Parent.CallListOrMeetingInfoPopoverVisibilityJoin);
+                    }
+                    else if (meetingInfoCodec != null && Codec.ActiveCalls.Count == 1)
+                    {
+                        var meetingInfo = meetingInfoCodec.MeetingInfo;
+
+                        if (meetingInfo != null && meetingInfo.IsSharingMeeting)
+                        {
+                            var presentationMeetingCodec = Codec as IHasPresentationOnlyMeeting;
+                            if (presentationMeetingCodec != null)
+                            {
+                                presentationMeetingCodec.StartNormalMeetingFromSharingOnlyMeeting();
+                            }
+                        }
+                        else
+                        {
+                            Codec.EndAllCalls();
+                        }
                     }
                     else
+                    {
                         Codec.EndAllCalls();
+                    }
                 });
+
 			TriList.SetSigFalseAction(UIBoolJoin.CallEndAllConfirmPress, () =>
 				{
 					Parent.PopupInterlock.HideAndClear();
 					Codec.EndAllCalls();
 				});
+
+            
+            if (meetingInfoCodec != null)
+            {
+                TriList.SetSigFalseAction(UIBoolJoin.MeetingLeavePress, () =>
+                    {
+                        Parent.PopupInterlock.HideAndClear();
+
+                        if (meetingInfoCodec.MeetingInfo.IsHost)
+                        {
+                            Codec.EndAllCalls();
+                        }
+                        else
+                        {
+                            var startMeetingCodec = Codec as IHasStartMeeting;
+                            if (startMeetingCodec != null)
+                            {
+                                startMeetingCodec.LeaveMeeting();
+                            }
+                        }
+                    });
+            }
         }
 
         void SetupCameraControls()
@@ -989,7 +1101,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 					// if it's today, show a simpler string
 					string timeText = null;
 					if (c.StartTime.Date == DateTime.Now.Date)
-						timeText = c.StartTime.ToShortTimeString();
+                        timeText = c.StartTime.ToString("t", Global.Culture);
 					else if (c.StartTime == DateTime.MinValue)
 						timeText = "";
 					else
@@ -1333,7 +1445,21 @@ namespace PepperDash.Essentials.UIDrivers.VC
         /// </summary>
         void RevealKeyboard()
         {
-            if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCKeypadWithFavoritesVisible && KeypadMode == eKeypadMode.Dial)
+            if (_passwordPromptDialogVisible)
+            {
+                Debug.Console(2, "Attaching Keyboard to PasswordPromptDialog");
+                DetachDialKeyboard();
+                DetachSearchKeyboard();
+                var kb = Parent.Keyboard;
+                kb.KeyPress -= Keyboard_PasswordKeyPress;
+                kb.KeyPress += Keyboard_PasswordKeyPress;
+                kb.HideAction = this.DetachPasswordKeyboard;
+                kb.GoButtonText = "Submit";
+                kb.GoButtonVisible = true;
+                PasswordStringCheckEnables();
+                kb.Show();
+            }
+            else if (VCControlsInterlock.CurrentJoin == UIBoolJoin.VCKeypadWithFavoritesVisible && KeypadMode == eKeypadMode.Dial)
             {
                 var kb = Parent.Keyboard;
 				kb.KeyPress -= Keyboard_DialKeyPress;
@@ -1355,6 +1481,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 SearchStringKeypadCheckEnables();
                 kb.Show();
             }
+
         }
 
         /// <summary>
@@ -1410,6 +1537,32 @@ namespace PepperDash.Essentials.UIDrivers.VC
             }
         }
 
+        /// <summary>
+        /// Event handler for keyboard dialing
+        /// </summary>
+        void Keyboard_PasswordKeyPress(object sender, PepperDash.Essentials.Core.Touchpanels.Keyboards.KeyboardControllerPressEventArgs e)
+        {
+            if (_passwordPromptDialogVisible)
+            {
+                if (e.Text != null)
+                    PasswordStringBuilder.Append(e.Text);
+                else
+                {
+                    if (e.SpecialKey == KeyboardSpecialKey.Backspace)
+                        PasswordKeypadBackspacePress();
+                    else if (e.SpecialKey == KeyboardSpecialKey.Clear)
+                        PasswordKeypadClear();
+                    else if (e.SpecialKey == KeyboardSpecialKey.GoButton)
+                    {
+                        (Codec as IPasswordPrompt).SubmitPassword(PasswordStringBuilder.ToString());
+                        HidePasswordPrompt();
+                    }
+                }
+                PasswordStringFeedback.FireUpdate();
+                PasswordStringCheckEnables();
+            }
+        }
+
 		/// <summary>
 		/// Call
 		/// </summary>
@@ -1421,6 +1574,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
         void DetachSearchKeyboard()
         {
             Parent.Keyboard.KeyPress -= Keyboard_SearchKeyPress;
+        }
+
+        void DetachPasswordKeyboard()
+        {
+            Parent.Keyboard.KeyPress -= Keyboard_PasswordKeyPress;
         }
 
         /// <summary>
@@ -1501,6 +1659,22 @@ namespace PepperDash.Essentials.UIDrivers.VC
         }
 
         /// <summary>
+        /// Meet Now button
+        /// </summary>
+        void MeetNowPress()
+        {
+            var startMeetingCodec = Codec as IHasStartMeeting;
+            if (startMeetingCodec != null)
+            {
+                startMeetingCodec.StartMeeting(startMeetingCodec.DefaultMeetingDurationMin);
+            }
+            else
+            {
+                Debug.Console(2, "Codce does not implment IHasStartMeeting. Cannot meet now");
+            }
+        }
+
+        /// <summary>
         /// Connect call button
         /// </summary>
         void ConnectPress()
@@ -1509,6 +1683,16 @@ namespace PepperDash.Essentials.UIDrivers.VC
 				Parent.Keyboard.Hide();
             Codec.Dial(DialStringBuilder.ToString());
         }
+
+        /// <summary>
+        /// Stop Sharing button
+        /// </summary>
+        void CallStopSharingPress()
+        {
+            Codec.StopSharing();
+            Parent.CurrentRoom.RunRouteAction("codecOsd", Parent.CurrentRoom.SourceListKey);
+        }
+
 
         /// <summary>
         /// 
@@ -1676,6 +1860,40 @@ namespace PepperDash.Essentials.UIDrivers.VC
                 Parent.Keyboard.DisableGoButton();
         }
 
+        /// <summary>
+        /// Clears the Password keypad
+        /// </summary>
+        void PasswordKeypadClear()
+        {
+            PasswordStringBuilder.Remove(0, PasswordStringBuilder.Length);
+            PasswordStringFeedback.FireUpdate();
+            PasswordStringCheckEnables();
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void PasswordKeypadBackspacePress()
+        {
+            PasswordStringBuilder.Remove(PasswordStringBuilder.Length - 1, 1);
+
+            PasswordStringFeedback.FireUpdate();
+            PasswordStringCheckEnables();
+        }
+
+        /// <summary>
+        /// Checks the enabled states of various elements around the keypad
+        /// </summary>
+        void PasswordStringCheckEnables()
+        {
+            var textIsEntered = PasswordStringBuilder.Length > 0;
+            if (textIsEntered)
+                Parent.Keyboard.EnableGoButton();
+            else
+                Parent.Keyboard.DisableGoButton();
+        }
+
 
         /// <summary>
         /// Returns the text value for the keypad dial entry field
@@ -1720,6 +1938,63 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             Dial = 0,
             DTMF
+        }
+
+        void SetupPasswordPrompt()
+        {
+            var passwordPromptCodec = Codec as IPasswordPrompt;
+
+            passwordPromptCodec.PasswordRequired += new EventHandler<PasswordPromptEventArgs>(passwordPromptCodec_PasswordRequired);
+
+            TriList.SetSigFalseAction(UIBoolJoin.PasswordPromptCancelPress, HidePasswordPrompt);
+            TriList.SetSigFalseAction(UIBoolJoin.PasswordPromptTextPress, RevealKeyboard);
+        }
+
+        void passwordPromptCodec_PasswordRequired(object sender, PasswordPromptEventArgs e)
+        {
+            if (e.LoginAttemptCancelled)
+            {
+                HidePasswordPrompt();
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(e.Message))
+            {
+                TriList.SetString(UIStringJoin.PasswordPromptMessageText, e.Message);
+            }
+
+            if (e.LoginAttemptFailed)
+            {
+                // TODO: Show a message modal to indicate the login attempt failed
+                return;
+            }
+
+            TriList.SetBool(UIBoolJoin.PasswordPromptErrorVisible, e.LastAttemptWasIncorrect);
+
+            ShowPasswordPrompt();
+        }
+
+        private bool _passwordPromptDialogVisible;
+
+        void ShowPasswordPrompt()
+        {
+            // Clear out any previous data
+            PasswordKeypadClear();
+
+            _passwordPromptDialogVisible = true;
+            TriList.SetBool(UIBoolJoin.PasswordPromptDialogVisible, _passwordPromptDialogVisible);
+            RevealKeyboard();
+        }
+
+        void HidePasswordPrompt()
+        {
+            if (_passwordPromptDialogVisible)
+            {
+                _passwordPromptDialogVisible = false;
+                Parent.Keyboard.Hide();
+                TriList.SetBool(UIBoolJoin.PasswordPromptDialogVisible, _passwordPromptDialogVisible);
+                PasswordKeypadClear();
+            }
         }
     }
 }

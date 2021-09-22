@@ -11,10 +11,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 	/// <summary>
 	/// For rooms that have video codec
 	/// </summary>
-	public interface IHasVideoCodec
+	public interface IHasVideoCodec:IHasInCallFeedback,IPrivacy
 	{
 		VideoCodecBase VideoCodec { get; }
-		BoolFeedback InCallFeedback { get; }
 
         ///// <summary>
         ///// Make this more specific
@@ -25,11 +24,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		/// States: 0 for on hook, 1 for video, 2 for audio, 3 for telekenesis
 		/// </summary>
 		IntFeedback CallTypeFeedback { get; }
-
-		/// <summary>
-		/// 
-		/// </summary>
-		BoolFeedback PrivacyModeIsOnFeedback { get; }
 
 		/// <summary>
 		/// When something in the room is sharing with the far end or through other means

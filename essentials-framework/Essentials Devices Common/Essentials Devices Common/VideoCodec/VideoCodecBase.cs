@@ -25,7 +25,7 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
 	public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutputs,
-		IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo, IBridgeAdvanced
+		IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo, IBridgeAdvanced, IHasStandbyMode
 	{
 		private const int XSigEncoding = 28591;
         protected const int MaxParticipants = 50;
@@ -836,10 +836,10 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 				//serials
 				tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, meeting.Organizer);
 				tokenArray[stringIndex + 1] = new XSigSerialToken(stringIndex + 2, meeting.Title);
-				tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, meeting.StartTime.ToShortDateString());
-				tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, meeting.StartTime.ToShortTimeString());
-				tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, meeting.EndTime.ToShortDateString());
-				tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 6, meeting.EndTime.ToShortTimeString());
+                tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, meeting.StartTime.ToString("t", Global.Culture));
+				tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, meeting.StartTime.ToString("t", Global.Culture));
+                tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, meeting.EndTime.ToString("t", Global.Culture));
+				tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 6, meeting.EndTime.ToString("t", Global.Culture));
 				tokenArray[stringIndex + 6] = new XSigSerialToken(stringIndex + 7, meeting.Id);
 
 

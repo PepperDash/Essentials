@@ -27,6 +27,33 @@ namespace PepperDash.Essentials
         /// 1004
         /// </summary>
         public const uint CallSharedSourceNameText = 1004;
+        /// <summary>
+        /// 1005
+        /// </summary>
+        public const uint MeetingIdText = 1005;
+        /// <summary>
+        /// 1006
+        /// </summary>
+        public const uint MeetingHostText = 1006;
+        /// <summary>
+        /// 1007
+        /// </summary>
+        public const uint MeetingPasswordText = 1007;
+        /// <summary>
+        /// 1008
+        /// </summary>
+        public const uint MeetingLeaveText = 1008;
+        /// <summary>
+        /// 1009
+        /// </summary>
+        public const uint MeetingNameText = 1009;
+
+	    ///<summary>
+	    /// 1240 - Used to determine text for meeting start button
+	    ///</summary>
+	    public const uint MeetingStartButtonText = 1240;
+
+
 
 
         /// <summary>
@@ -118,6 +145,14 @@ namespace PepperDash.Essentials
 
         //----- through 3120
 
+        /// <summary>
+        /// 3201
+        /// </summary>
+        public const uint PasswordPromptMessageText = 3201;
+        /// <summary>
+        /// 3202
+        /// </summary>
+        public const uint PasswordPromptPasswordText = 3202;
 
         /// <summary>
         /// 3812

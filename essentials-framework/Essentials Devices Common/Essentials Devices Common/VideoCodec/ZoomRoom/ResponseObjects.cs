@@ -59,6 +59,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		public List<zStatus.AudioVideoInputOutputLineItem> AudioOuputs { get; set; }
 		public List<zStatus.AudioVideoInputOutputLineItem> Cameras { get; set; }
 		public zEvent.PhoneCallStatus PhoneCall { get; set; }
+        public zEvent.NeedWaitForHost NeedWaitForHost { get; set; }
 
 		public ZoomRoomStatus()
 		{
@@ -76,6 +77,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			AudioOuputs = new List<zStatus.AudioVideoInputOutputLineItem>();
 			Cameras = new List<zStatus.AudioVideoInputOutputLineItem>();
 			PhoneCall = new zEvent.PhoneCallStatus();
+		    NeedWaitForHost = new zEvent.NeedWaitForHost();
 		}
 	}
 
@@ -236,14 +238,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 		}
 
-		/// <summary>
-		/// Used to be able to inplement IInvitableContact on DirectoryContact
-		/// </summary>
-		public class ZoomDirectoryContact : DirectoryContact, IInvitableContact
-		{
-
-		}
-
 		public class Phonebook
 		{
 			[JsonProperty("Contacts")]
@@ -302,7 +296,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					
 					foreach (Contact c in zoomContacts)
 					{
-						var contact = new ZoomDirectoryContact { Name = c.ScreenName, ContactId = c.Jid };
+						var contact = new InvitableDirectoryContact { Name = c.ScreenName, ContactId = c.Jid };
 
                         contact.ContactMethods.Add(new ContactMethod() { Number = c.Jid, Device = eContactMethodDevice.Video, CallType = eContactMethodCallType.Video, ContactMethodId = c.Jid });
 
@@ -439,6 +433,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			private string _dispState;
 			private string _password;
+            private bool _isAirHostClientConnected;
+            private bool _isSharingBlackMagic;
+            private bool _isDirectPresentationConnected;
+
 
 			public string directPresentationPairingCode { get; set; }
 			/// <summary>
@@ -460,11 +458,51 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					}
 				}
 			}
-			public bool isAirHostClientConnected { get; set; }
+
+			public bool isAirHostClientConnected 
+            {
+                get { return _isAirHostClientConnected; }
+                set
+                {
+                    if (value != _isAirHostClientConnected)
+                    {
+                        _isAirHostClientConnected = value;
+                        NotifyPropertyChanged("isAirHostClientConnected");
+                    }
+                }
+            }
+
 			public bool isBlackMagicConnected { get; set; }
 			public bool isBlackMagicDataAvailable { get; set; }
-			public bool isDirectPresentationConnected { get; set; }
-			public bool isSharingBlackMagic { get; set; }
+
+			public bool isDirectPresentationConnected
+            {
+                get { return _isDirectPresentationConnected; }
+                set
+                {
+                    if (value != _isDirectPresentationConnected)
+                    {
+                        _isDirectPresentationConnected = value;
+                        NotifyPropertyChanged("isDirectPresentationConnected");
+                    }
+                }
+            }
+
+			public bool isSharingBlackMagic
+            {
+                get { return _isSharingBlackMagic; }
+                set
+                {
+                    if (value != _isSharingBlackMagic)
+                    {
+                        _isSharingBlackMagic = value;
+                        NotifyPropertyChanged("isSharingBlackMagic");
+                    }
+                }
+            }
+
+
+
 			/// <summary>
 			/// IOS Airplay code
 			/// </summary>
@@ -720,6 +758,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	/// </summary>
 	public class zEvent
 	{
+	    public class StartLocalPresentMeeting
+	    {
+	        public bool Success { get; set; }
+	    }
 		public class NeedWaitForHost
 		{
 			public bool Wait { get; set; }
@@ -787,7 +829,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			private bool _paused;
 			private eSharingState _state;
 
-			public bool IsSharing;
+            public bool IsSharing { get; private set; }
 
 			[JsonProperty("paused")]
 			public bool Paused
@@ -927,6 +969,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			PhoneCallStatus_InCall,
 			PhoneCallStatus_Init,
 		}
+
+        public class MeetingNeedsPassword
+        {
+            [JsonProperty("needsPassword")]
+            public bool NeedsPassword { get; set; }
+
+            [JsonProperty("wrongAndRetry")]
+            public bool WrongAndRetry { get; set; }
+        }
 	}
 
 	/// <summary>
@@ -1426,6 +1477,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			public static List<Participant> GetGenericParticipantListFromParticipantsResult(
 				List<ListParticipant> participants)
 			{
+			    if (participants.Count == 0)
+			    {
+			        return new List<Participant>();
+			    }
 				//return participants.Select(p => new Participant
 				//            {
 				//                UserId = p.UserId,
@@ -1444,6 +1499,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					UserId = p.UserId,
 					Name = p.UserName,
 					IsHost = p.IsHost,
+                    IsMyself = p.IsMyself,
 					CanMuteVideo = p.IsVideoCanMuteByHost,
 					CanUnmuteVideo = p.IsVideoCanUnmuteByHost,
 					AudioMuteFb = p.AudioStatusState == "AUDIO_MUTED",

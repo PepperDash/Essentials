@@ -135,6 +135,7 @@ namespace PepperDash.Essentials.Core
 
 		public void SetEnableState(bool state)
 		{
+            Debug.Console(2, this, "Sensor is {0}, SetEnableState: {1}", _partitionSensor == null ? "null" : "not null", state);
 			if (_partitionSensor == null)
 				return;
 
@@ -143,6 +144,7 @@ namespace PepperDash.Essentials.Core
 
 		public void IncreaseSensitivity()
 		{
+            Debug.Console(2, this, "Sensor is {0}, IncreaseSensitivity", _partitionSensor == null ? "null" : "not null");
 			if (_partitionSensor == null)
 				return;
 
@@ -151,6 +153,7 @@ namespace PepperDash.Essentials.Core
 
 		public void DecreaseSensitivity()
 		{
+            Debug.Console(2, this, "Sensor is {0}, DecreaseSensitivity", _partitionSensor == null ? "null" : "not null");
 			if (_partitionSensor == null)
 				return;
 
@@ -159,6 +162,7 @@ namespace PepperDash.Essentials.Core
 
 		public void SetSensitivity(ushort value)
 		{
+            Debug.Console(2, this, "Sensor is {0}, SetSensitivity: {1}", _partitionSensor == null ? "null" : "not null", value);
 			if (_partitionSensor == null)
 				return;
 
@@ -186,8 +190,7 @@ namespace PepperDash.Essentials.Core
 			Debug.Console(0, this, "Linking to Bridge Type {0}", GetType().Name);
 
 			// link input from simpl
-			trilist.SetSigTrueAction(joinMap.Enable.JoinNumber, () => SetEnableState(true));
-			trilist.SetSigFalseAction(joinMap.Enable.JoinNumber, () => SetEnableState(false));
+		    trilist.SetBoolSigAction(joinMap.Enable.JoinNumber, SetEnableState);
 			trilist.SetSigTrueAction(joinMap.IncreaseSensitivity.JoinNumber, IncreaseSensitivity);
 			trilist.SetSigTrueAction(joinMap.DecreaseSensitivity.JoinNumber, DecreaseSensitivity);
 			trilist.SetUShortSigAction(joinMap.Sensitivity.JoinNumber, SetSensitivity);

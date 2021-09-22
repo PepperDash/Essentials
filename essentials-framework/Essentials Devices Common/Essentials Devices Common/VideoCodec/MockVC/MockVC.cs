@@ -123,12 +123,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// Creates the fake OSD source, and connects it's AudioVideo output to the CodecOsdIn input
         /// to enable routing 
         /// </summary>
-        void CreateOsdSource()
+        private void CreateOsdSource()
         {
             OsdSource = new DummyRoutingInputsDevice(Key + "[osd]");
             DeviceManager.AddDevice(OsdSource);
             var tl = new TieLine(OsdSource.AudioVideoOutputPort, CodecOsdIn);
             TieLineCollection.Default.Add(tl);
+
+            //foreach(var input in Status.Video.
         }
 
         /// <summary>
@@ -580,6 +582,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         void SetupCameras()
         {
+            SupportsCameraAutoMode = true;
+
+            SupportsCameraOff = false;
+
             Cameras = new List<CameraBase>();
 
             var internalCamera = new MockVCCamera(Key + "-camera1", "Near End", this);

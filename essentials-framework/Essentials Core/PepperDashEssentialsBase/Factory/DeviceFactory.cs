@@ -69,13 +69,13 @@ namespace PepperDash.Essentials.Core
 		/// <returns></returns>
 		public static void AddFactoryForType(string typeName, Func<DeviceConfig, IKeyed> method) 
 		{
-			Debug.Console(1, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", typeName);
+            //Debug.Console(1, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", typeName);
             DeviceFactory.FactoryMethods.Add(typeName, new DeviceFactoryWrapper() { FactoryMethod = method});
 		}
 
         public static void AddFactoryForType(string typeName, string description, CType cType, Func<DeviceConfig, IKeyed> method)
         {
-            Debug.Console(1, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", typeName);
+            //Debug.Console(1, Debug.ErrorLogLevel.Notice, "Adding factory method for type '{0}'", typeName);
 
             if(FactoryMethods.ContainsKey(typeName))
             {
