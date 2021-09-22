@@ -2113,6 +2113,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Conference = new Conference2();
                 SystemUnit = new SystemUnit();
                 Video = new Video();
+                Conference = new Conference2();
             }
         }
 

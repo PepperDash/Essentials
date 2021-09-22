@@ -586,6 +586,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Audio" + Delimiter +
                 prefix + "/Status/Call" + Delimiter +
                 prefix + "/Status/Conference/Presentation" + Delimiter +
+                prefix + "/Status/Conference/DoNotDisturb" + Delimiter +
                 prefix + "/Status/Cameras/SpeakerTrack" + Delimiter +
                 prefix + "/Status/RoomAnalytics" + Delimiter +
                 prefix + "/Status/RoomPreset" + Delimiter +
@@ -594,10 +595,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Video/Layout" + Delimiter +
                 prefix + "/Status/Video/Input/MainVideoMute" + Delimiter +
                 prefix + "/Bookings" + Delimiter +
-                prefix + "/Event/CallDisconnect" + Delimiter +
                 prefix + "/Event/Bookings" + Delimiter +
                 prefix + "/Event/CameraPresetListUpdated" + Delimiter +
-                prefix + "/Event/UserInterface/Presentation/ExternalSource/Selected/SourceIdentifier" + Delimiter;
+                prefix + "/Event/UserInterface/Presentation/ExternalSource/Selected/SourceIdentifier" + Delimiter +
+                prefix + "/Event/CallDisconnect" + Delimiter; // Keep CallDisconnect last to detect when feedback registration completes correctly
+
         }
 
         #endregion
