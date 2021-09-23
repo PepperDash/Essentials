@@ -28,9 +28,11 @@ namespace PepperDash.Essentials.Core
 		public static List<IKeyed> AllDevices { get { return new List<IKeyed>(Devices.Values); } }
 
 	    public static bool AddDeviceEnabled;
+        public static bool AllDevicesActivatedFb;
 
 		public static void Initialize(CrestronControlSystem cs)
 		{
+            AllDevicesActivatedFb = false;
 		    AddDeviceEnabled = true;
 			CrestronConsole.AddNewConsoleCommand(ListDeviceCommStatuses, "devcommstatus", "Lists the communication status of all devices",
 				ConsoleAccessLevelEnum.AccessOperator);
@@ -122,6 +124,7 @@ namespace PepperDash.Essentials.Core
 
         private static void OnAllDevicesActivated()
         {
+            AllDevicesActivatedFb = true;
             var handler = AllDevicesActivated;
             if (handler != null)
             {

@@ -46,6 +46,13 @@ namespace PepperDash.Essentials
         public override void InitializeSystem()
         {
             _startTimer = new CTimer(StartSystem,StartupTime);
+            ushort count = 0;
+            while (!DeviceManager.AllDevicesActivatedFb && count < 60)
+            {
+                //Wait for devices to register before returning, as required by DMPS. Max wait is 60 seconds.
+                CrestronEnvironment.Sleep(1000);
+                count++;
+            }
         }
 
         private void StartSystem(object obj)
@@ -361,10 +368,7 @@ namespace PepperDash.Essentials
                             if(propertiesConfig == null)
                                 propertiesConfig =  new DM.Config.DmpsRoutingPropertiesConfig();
 
-                            bool dmps4kType = this.ControllerPrompt.IndexOf("4k", StringComparison.OrdinalIgnoreCase) > -1;
-                            var dmpsRoutingController = DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig, dmps4kType);                            
-
-                            DeviceManager.AddDevice(dmpsRoutingController);
+                            DeviceManager.AddDevice(DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig));
                         }
                         else if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
                         {
