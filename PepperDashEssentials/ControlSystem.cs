@@ -60,7 +60,7 @@ namespace PepperDash.Essentials
                     _initializeEvent.Set();
                 };
 
-                _initializeEvent.Wait(20000);
+                _initializeEvent.Wait(30000);
             }
         }
 
