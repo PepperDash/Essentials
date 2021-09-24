@@ -28,6 +28,7 @@ namespace PepperDash.Essentials
         HttpLogoServer LogoServer;
 
         private CTimer _startTimer;
+        private CEvent _initializeEvent;
         private const long StartupTime = 500;
 
         public ControlSystem()
@@ -46,12 +47,20 @@ namespace PepperDash.Essentials
         public override void InitializeSystem()
         {
             _startTimer = new CTimer(StartSystem,StartupTime);
-            ushort count = 0;
-            while (!DeviceManager.AllDevicesActivatedFb && count < 60)
+
+
+            // If the control system is a DMPS type, we need to wait to exit this method until all devices have had time to activate
+            // to allow any HD-BaseT DM endpoints to register first.
+            if (Global.ControlSystemIsDmpsType)
             {
-                //Wait for devices to register before returning, as required by DMPS. Max wait is 60 seconds.
-                CrestronEnvironment.Sleep(1000);
-                count++;
+                _initializeEvent = new CEvent();
+
+                DeviceManager.AllDevicesActivated += (o, a) =>
+                {
+                    _initializeEvent.Set();
+                };
+
+                _initializeEvent.Wait(20000);
             }
         }
 
