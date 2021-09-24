@@ -27,6 +27,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     {
         BoolFeedback HalfWakeModeIsOnFeedback { get; }
 
+        BoolFeedback EnteringStandbyModeFeedback { get; }
+
         void HalfwakeActivate();
     }
 }
