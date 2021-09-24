@@ -65,99 +65,136 @@ namespace PepperDash.Essentials.DM
 				{
 					Debug.Console(0, "[{0}] WARNING: Cannot create DM-TX device: {1}", key, e);
 				}
+                return null;
 			}
-			else
-			{
-				var parentDev = DeviceManager.GetDeviceForKey(pKey);
-				if (!(parentDev is IDmSwitch))
-				{
-					Debug.Console(0, "Cannot create DM device '{0}'. '{1}' is not a DM Chassis.",
-						key, pKey);
-					return null;
-				}
 
+            var parentDev = DeviceManager.GetDeviceForKey(pKey);
+            DMInput dmInput;
+            bool noIpId = false;
+
+		    if (parentDev is IDmSwitch)
+            {
                 // Get the Crestron chassis and link stuff up
-				var switchDev = (parentDev as IDmSwitch);
-				var chassis = switchDev.Chassis;
+			    var switchDev = (parentDev as IDmSwitch);
+			    var chassis = switchDev.Chassis;
 
-				var num = props.ParentInputNumber;
-				if (num <= 0 || num > chassis.NumberOfInputs)
-				{
-					Debug.Console(0, "Cannot create DM device '{0}'.  Input number '{1}' is out of range",
-						key, num);
-					return null;
-				}
-                else
+                //Check that the input is within range of this chassis' possible inputs
+			    var num = props.ParentInputNumber;
+			    if (num <= 0 || num > chassis.NumberOfInputs)
+			    {
+				    Debug.Console(0, "Cannot create DM device '{0}'. Input number '{1}' is out of range",
+					    key, num);
+				    return null;
+			    }
+
+                switchDev.TxDictionary.Add(num, key);
+                dmInput = chassis.Inputs[num];
+
+                //Determine if IpId is needed for this chassis type
+                if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
+                    chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
+                    chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
+                    chassis is DmMd128x128 || chassis is DmMd64x64)
                 {
-                    var controller = (parentDev as IDmSwitch);
-                    controller.TxDictionary.Add(num, key);
+                    noIpId = true;
                 }
 
-				// Catch constructor failures, mainly dues to IPID
-				try
-				{
-					// Must use different constructor for CPU3 chassis types. No IPID
-					if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
-					chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
-					chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps||
-                    chassis is DmMd128x128 || chassis is DmMd64x64)
-					{
-						if (typeName.StartsWith("dmtx200"))
-							return new DmTx200Controller(key, name, new DmTx200C2G(chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx201c"))
-							return new DmTx201CController(key, name, new DmTx201C(chassis.Inputs[num]));
-                        if (typeName.StartsWith("dmtx201s"))
-                            return new DmTx201SController(key, name, new DmTx201S(chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx4k100"))
-							return new DmTx4k100Controller(key, name, new DmTx4K100C1G(chassis.Inputs[num]));
-                        if (typeName.StartsWith("dmtx4kz100"))
-                            return new DmTx4kz100Controller(key, name, new DmTx4kz100C1G(chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx4k202"))
-							return new DmTx4k202CController(key, name, new DmTx4k202C(chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx4kz202"))
-							return new DmTx4kz202CController(key, name, new DmTx4kz202C(chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx4k302"))
-							return new DmTx4k302CController(key, name, new DmTx4k302C(chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx4kz302"))
-							return new DmTx4kz302CController(key, name, new DmTx4kz302C(chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx401"))
-							return new DmTx401CController(key, name, new DmTx401C(chassis.Inputs[num]));
-                        if (typeName.StartsWith("hdbasettx"))
-                            return new HDBaseTTxController(key, name, new HDTx3CB(chassis.Inputs[num]));
-                    }
-					else
-					{
-						if (typeName.StartsWith("dmtx200"))
-							return new DmTx200Controller(key, name, new DmTx200C2G(ipid, chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx201c"))
-							return new DmTx201CController(key, name, new DmTx201C(ipid, chassis.Inputs[num]));
-                        if (typeName.StartsWith("dmtx201s"))
-                            return new DmTx201SController(key, name, new DmTx201S(ipid, chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx4k100"))
-							return new DmTx4k100Controller(key, name, new DmTx4K100C1G(ipid, chassis.Inputs[num]));
-                        if (typeName.StartsWith("dmtx4kz100"))
-                            return new DmTx4kz100Controller(key, name, new DmTx4kz100C1G(ipid, chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx4k202"))
-							return new DmTx4k202CController(key, name, new DmTx4k202C(ipid, chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx4kz202"))
-							return new DmTx4kz202CController(key, name, new DmTx4kz202C(ipid, chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx4k302"))
-							return new DmTx4k302CController(key, name, new DmTx4k302C(ipid, chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx4kz302"))
-							return new DmTx4kz302CController(key, name, new DmTx4kz302C(ipid, chassis.Inputs[num]));
-						if (typeName.StartsWith("dmtx401"))
-							return new DmTx401CController(key, name, new DmTx401C(ipid, chassis.Inputs[num]));
-                        if (typeName.StartsWith("hdbasettx"))
-                            return new HDBaseTTxController(key, name, new HDTx3CB(ipid, chassis.Inputs[num]));
-                    }
-				}
-				catch (Exception e)
-				{
-					Debug.Console(0, "[{0}] WARNING: Cannot create DM-TX device: {1}", key, e);
-				}
+            }
+            else if(parentDev is DmpsRoutingController)
+            {
+                // Get the DMPS chassis and link stuff up
+                var dmpsDev = (parentDev as DmpsRoutingController);
+                var chassis = dmpsDev.Dmps;
+
+                //Check that the input is within range of this chassis' possible inputs
+                var num = props.ParentInputNumber;
+                if (num <= 0 || num > chassis.SwitcherInputs.Count)
+                {
+                    Debug.Console(0, "Cannot create DMPS device '{0}'. Input number '{1}' is out of range",
+                        key, num);
+                    return null;
+                }
+
+                dmpsDev.TxDictionary.Add(num, key);
+                noIpId = dmpsDev.Dmps4kType;
+
+                try
+                {
+                    dmInput = chassis.SwitcherInputs[num] as DMInput;
+                }
+                catch
+                {
+                    Debug.Console(0, "Cannot create DMPS device '{0}'. Input number '{1}' is not a DM input", key, num);
+                    return null;
+                }
+            }
+
+            else
+            {
+			    Debug.Console(0, "Cannot create DM device '{0}'. '{1}' is not a processor, DM Chassis or DMPS.", key, pKey);
+			    return null;
 			}
-			
-			return null;
+
+        	try
+		    {
+			    // Must use different constructor for CPU3 or DMPS3-4K types. No IPID
+			    if (noIpId)
+			    {
+				    if (typeName.StartsWith("dmtx200"))
+					    return new DmTx200Controller(key, name, new DmTx200C2G(dmInput));
+				    if (typeName.StartsWith("dmtx201c"))
+                        return new DmTx201CController(key, name, new DmTx201C(dmInput));
+                    if (typeName.StartsWith("dmtx201s"))
+                        return new DmTx201SController(key, name, new DmTx201S(dmInput));
+				    if (typeName.StartsWith("dmtx4k100"))
+                        return new DmTx4k100Controller(key, name, new DmTx4K100C1G(dmInput));
+                    if (typeName.StartsWith("dmtx4kz100"))
+                        return new DmTx4kz100Controller(key, name, new DmTx4kz100C1G(dmInput));
+				    if (typeName.StartsWith("dmtx4k202"))
+                        return new DmTx4k202CController(key, name, new DmTx4k202C(dmInput));
+				    if (typeName.StartsWith("dmtx4kz202"))
+                        return new DmTx4kz202CController(key, name, new DmTx4kz202C(dmInput));
+				    if (typeName.StartsWith("dmtx4k302"))
+                        return new DmTx4k302CController(key, name, new DmTx4k302C(dmInput));
+				    if (typeName.StartsWith("dmtx4kz302"))
+                        return new DmTx4kz302CController(key, name, new DmTx4kz302C(dmInput));
+				    if (typeName.StartsWith("dmtx401"))
+                        return new DmTx401CController(key, name, new DmTx401C(dmInput));
+                    if (typeName.StartsWith("hdbasettx"))
+                        return new HDBaseTTxController(key, name, new HDTx3CB(dmInput));
+                }
+			    else
+			    {
+				    if (typeName.StartsWith("dmtx200"))
+                        return new DmTx200Controller(key, name, new DmTx200C2G(ipid, dmInput));
+				    if (typeName.StartsWith("dmtx201c"))
+                        return new DmTx201CController(key, name, new DmTx201C(ipid, dmInput));
+                    if (typeName.StartsWith("dmtx201s"))
+                        return new DmTx201SController(key, name, new DmTx201S(ipid, dmInput));
+				    if (typeName.StartsWith("dmtx4k100"))
+                        return new DmTx4k100Controller(key, name, new DmTx4K100C1G(ipid, dmInput));
+                    if (typeName.StartsWith("dmtx4kz100"))
+                        return new DmTx4kz100Controller(key, name, new DmTx4kz100C1G(ipid, dmInput));
+				    if (typeName.StartsWith("dmtx4k202"))
+                        return new DmTx4k202CController(key, name, new DmTx4k202C(ipid, dmInput));
+				    if (typeName.StartsWith("dmtx4kz202"))
+                        return new DmTx4kz202CController(key, name, new DmTx4kz202C(ipid, dmInput));
+				    if (typeName.StartsWith("dmtx4k302"))
+                        return new DmTx4k302CController(key, name, new DmTx4k302C(ipid, dmInput));
+				    if (typeName.StartsWith("dmtx4kz302"))
+                        return new DmTx4kz302CController(key, name, new DmTx4kz302C(ipid, dmInput));
+				    if (typeName.StartsWith("dmtx401"))
+                        return new DmTx401CController(key, name, new DmTx401C(ipid, dmInput));
+                    if (typeName.StartsWith("hdbasettx"))
+                        return new HDBaseTTxController(key, name, new HDTx3CB(ipid, dmInput));
+                }
+		    }
+		    catch (Exception e)
+		    {
+			    Debug.Console(0, "[{0}] WARNING: Cannot create DM-TX device: {1}", key, e);
+		    }
+
+            return null;
 		}
 	}
 
