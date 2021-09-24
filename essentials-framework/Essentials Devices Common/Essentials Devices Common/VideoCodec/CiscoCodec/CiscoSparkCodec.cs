@@ -319,7 +319,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SupportsCameraOff = true;
 
             DoNotDisturbModeIsOnFeedback = new BoolFeedback(() => CodecStatus.Status.Conference.DoNotDisturb.BoolValue);
-            HalfWakeModeIsOnFeedback = new BoolFeedback(() => CodecStatus.Status.Standby.State.Value == "Halfwake");
+            HalfWakeModeIsOnFeedback = new BoolFeedback(() => CodecStatus.Status.Standby.State.Value.ToLower() == "halfwake");
+            EnteringStandbyModeFeedback = new BoolFeedback(() => CodecStatus.Status.Standby.State.Value.ToLower() == "enteringstandby");
 
 			PresentationViewMaximizedFeedback = new BoolFeedback(() => CurrentPresentationView == "Maximized");
 
@@ -422,6 +423,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 {
                     StandbyIsOnFeedback.FireUpdate();
                     HalfWakeModeIsOnFeedback.FireUpdate();
+                    EnteringStandbyModeFeedback.FireUpdate();
                 });
             CodecStatus.Status.RoomAnalytics.PeoplePresence.ValueChangedAction = RoomIsOccupiedFeedback.FireUpdate;
             CodecStatus.Status.RoomAnalytics.PeopleCount.Current.ValueChangedAction = PeopleCountFeedback.FireUpdate;
@@ -1546,6 +1548,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 halfwakeCodec.StandbyIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.ActivateStandby.JoinNumber]);
                 halfwakeCodec.StandbyIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.DeactivateStandby.JoinNumber]);
                 halfwakeCodec.HalfWakeModeIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.ActivateHalfWakeMode.JoinNumber]);
+                halfwakeCodec.EnteringStandbyModeFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnteringStandbyMode.JoinNumber]);
 
                 trilist.SetSigFalseAction(joinMap.ActivateStandby.JoinNumber, () => halfwakeCodec.StandbyActivate());
                 trilist.SetSigFalseAction(joinMap.DeactivateStandby.JoinNumber, () => halfwakeCodec.StandbyDeactivate());
@@ -2156,6 +2159,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         #region IHasHalfWakeMode Members
 
         public BoolFeedback HalfWakeModeIsOnFeedback { get; private set; }
+
+        public BoolFeedback EnteringStandbyModeFeedback { get; private set; }
 
         public void HalfwakeActivate()
         {

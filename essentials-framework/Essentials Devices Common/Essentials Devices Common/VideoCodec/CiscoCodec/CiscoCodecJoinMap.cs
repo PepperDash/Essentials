@@ -93,6 +93,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 JoinType = eJoinType.Digital
             });
 
+        [JoinName("EnteringStandbyMode")]
+        public JoinDataComplete EnteringStandbyMode = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 229,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "High to indicate that the codec is entering standby mode",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
         #endregion
 
 
