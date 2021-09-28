@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("MasterVolumeDown")]
         public JoinDataComplete MasterVolumeDown = new JoinDataComplete(new JoinData { JoinNumber = 4, JoinSpan = 1 },
-            new JoinMetadata { Description = "Master Volume Mute Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata { Description = "Master Volume Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("SourceVolumeLevel")]
         public JoinDataComplete SourceVolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 11, JoinSpan = 1 },
@@ -43,7 +43,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("SourceVolumeDown")]
         public JoinDataComplete SourceVolumeDown = new JoinDataComplete(new JoinData { JoinNumber = 14, JoinSpan = 1 },
-            new JoinMetadata { Description = "Source Volume Mute Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata { Description = "Source Volume Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("Codec1VolumeLevel")]
         public JoinDataComplete Codec1VolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 21, JoinSpan = 1 },
@@ -63,7 +63,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("Codec1VolumeDown")]
         public JoinDataComplete Codec1VolumeDown = new JoinDataComplete(new JoinData { JoinNumber = 24, JoinSpan = 1 },
-            new JoinMetadata { Description = "Codec1 Volume Mute Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata { Description = "Codec1 Volume Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("Codec2VolumeLevel")]
         public JoinDataComplete Codec2VolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 31, JoinSpan = 1 },
@@ -83,7 +83,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("Codec2VolumeDown")]
         public JoinDataComplete Codec2VolumeDown = new JoinDataComplete(new JoinData { JoinNumber = 34, JoinSpan = 1 },
-            new JoinMetadata { Description = "Codec2 Volume Mute Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata { Description = "Codec2 Volume Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
 
         /// <summary>

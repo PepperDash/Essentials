@@ -586,7 +586,7 @@ namespace PepperDash.Essentials.DM
             {
                 AddAudioOnlyOutputPort(number, "Program");
 
-                var programOutput = new DmpsAudioOutputController(string.Format("processor-programAudioOutput"), "Program Audio Output", outputCard as Card.Dmps3OutputBase);
+                var programOutput = new DmpsAudioOutputController(string.Format("processor-programAudioOutput"), "Program Audio Output", outputCard as Card.Dmps3ProgramOutput);
 
                 DeviceManager.AddDevice(programOutput);
             }
@@ -598,7 +598,7 @@ namespace PepperDash.Essentials.DM
                     {
                         AddAudioOnlyOutputPort(number, "Aux1");
 
-                        var aux1Output = new DmpsAudioOutputController(string.Format("processor-aux1AudioOutput"), "Program Audio Output", outputCard as Card.Dmps3OutputBase);
+                        var aux1Output = new DmpsAudioOutputController(string.Format("processor-aux1AudioOutput"), "Program Audio Output", outputCard as Card.Dmps3Aux1Output);
 
                         DeviceManager.AddDevice(aux1Output);
                     }
@@ -607,7 +607,7 @@ namespace PepperDash.Essentials.DM
                     {
                         AddAudioOnlyOutputPort(number, "Aux2");
 
-                        var aux2Output = new DmpsAudioOutputController(string.Format("processor-aux2AudioOutput"), "Program Audio Output", outputCard as Card.Dmps3OutputBase);
+                        var aux2Output = new DmpsAudioOutputController(string.Format("processor-aux2AudioOutput"), "Program Audio Output", outputCard as Card.Dmps3Aux2Output);
 
                         DeviceManager.AddDevice(aux2Output);
                     }
