@@ -69,19 +69,28 @@ namespace PepperDash.Essentials.Core
 		public override bool CustomActivate()
 		{
             Debug.Console(0, this, "Activating");
-			if (!PreventRegistration)
-			{
+            if (!PreventRegistration)
+            {
                 //Debug.Console(1, this, "  Does not require registration. Skipping");
 
-				var response = Hardware.RegisterWithLogging(Key);
-				if (response != eDeviceRegistrationUnRegistrationResponse.Success)
-				{
-					//Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
-					return false;
-				}
+                var response = Hardware.RegisterWithLogging(Key);
+                if (response != eDeviceRegistrationUnRegistrationResponse.Success)
+                {
+                    //Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
+                    return false;
+                }
 
                 IsRegistered.FireUpdate();
-			}
+            }
+            else
+            {
+                AddPostActivationAction(() =>
+                    {
+                        var response = Hardware.RegisterWithLogging(Key);
+
+                        IsRegistered.FireUpdate();
+                    });
+            }
 
             foreach (var f in Feedbacks)
             {

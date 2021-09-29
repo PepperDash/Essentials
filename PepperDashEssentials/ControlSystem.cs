@@ -28,6 +28,7 @@ namespace PepperDash.Essentials
         HttpLogoServer LogoServer;
 
         private CTimer _startTimer;
+        private CEvent _initializeEvent;
         private const long StartupTime = 500;
 
         public ControlSystem()
@@ -46,6 +47,24 @@ namespace PepperDash.Essentials
         public override void InitializeSystem()
         {
             _startTimer = new CTimer(StartSystem,StartupTime);
+
+
+            // If the control system is a DMPS type, we need to wait to exit this method until all devices have had time to activate
+            // to allow any HD-BaseT DM endpoints to register first.
+            if (Global.ControlSystemIsDmpsType)
+            {
+                Debug.Console(2, "******************* InitializeSystem() Entering **********************");
+
+                _initializeEvent = new CEvent();
+
+                DeviceManager.AllDevicesActivated += (o, a) =>
+                {
+                    _initializeEvent.Set();
+                    Debug.Console(2, "******************* InitializeSystem() Exiting **********************");
+                };
+
+                _initializeEvent.Wait(30000);
+            }
         }
 
         private void StartSystem(object obj)
@@ -343,7 +362,7 @@ namespace PepperDash.Essentials
                     {
                         var prompt = Global.ControlSystem.ControllerPrompt;
 
-                        var typeMatch = String.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) &&
+                        var typeMatch = String.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) ||
                                         String.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
 
                         if (!typeMatch)
@@ -361,9 +380,7 @@ namespace PepperDash.Essentials
                             if(propertiesConfig == null)
                                 propertiesConfig =  new DM.Config.DmpsRoutingPropertiesConfig();
 
-                            var dmpsRoutingController = DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig);
-
-                            DeviceManager.AddDevice(dmpsRoutingController);
+                            DeviceManager.AddDevice(DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig));
                         }
                         else if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
                         {

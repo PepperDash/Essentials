@@ -24,9 +24,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 	public enum eExternalSourceType {camera, desktop, document_camera, mediaplayer, PC, whiteboard, other}
-	public enum eExternalSourceMode {Ready, NotReady, Hidden, Error}
+	public enum eExternalSourceMode {Ready, NotReady, Hidden, Error} 
 
-    public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectoryHistoryStack,
+    public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
         ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, 
         IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute, IHasDoNotDisturbMode,
@@ -108,9 +108,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public CodecDirectory DirectoryRoot { get; private set; }
 
-
-        private CodecDirectory _currentDirectoryResult;
-
         /// <summary>
         /// Represents the current state of the directory and is computed on get
         /// </summary>
@@ -118,15 +115,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             get
             {
-                return _currentDirectoryResult;
-            }
-            private set
-            {
-                _currentDirectoryResult = value;
-
-                CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
-
-                OnDirectoryResultReturned(_currentDirectoryResult);
+                if (DirectoryBrowseHistory.Count > 0)
+                    return DirectoryBrowseHistory[DirectoryBrowseHistory.Count - 1];
+                else
+                    return DirectoryRoot;
             }
         }
 
@@ -136,8 +128,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// Tracks the directory browse history when browsing beyond the root directory
         /// </summary>
         public List<CodecDirectory> DirectoryBrowseHistory { get; private set; }
-
-        public Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; private set; }
 
         public CodecScheduleAwareness CodecSchedule { get; private set; }
 
@@ -329,7 +319,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SupportsCameraOff = true;
 
             DoNotDisturbModeIsOnFeedback = new BoolFeedback(() => CodecStatus.Status.Conference.DoNotDisturb.BoolValue);
-            HalfWakeModeIsOnFeedback = new BoolFeedback(() => CodecStatus.Status.Standby.State.Value == "Halfwake");
+            HalfWakeModeIsOnFeedback = new BoolFeedback(() => CodecStatus.Status.Standby.State.Value.ToLower() == "halfwake");
+            EnteringStandbyModeFeedback = new BoolFeedback(() => CodecStatus.Status.Standby.State.Value.ToLower() == "enteringstandby");
 
 			PresentationViewMaximizedFeedback = new BoolFeedback(() => CurrentPresentationView == "Maximized");
 
@@ -367,7 +358,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             CallHistory = new CodecCallHistory();
 
-			if (props.Favorites != null)
+			
+            if (props.Favorites != null)
             {
                 CallFavorites = new CodecCallFavorites();
                 CallFavorites.Favorites = props.Favorites;
@@ -377,12 +369,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             DirectoryBrowseHistory = new List<CodecDirectory>();
 
-            DirectoryBrowseHistoryStack = new Stack<CodecDirectory>();
+            CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => DirectoryBrowseHistory.Count > 0);
 
-            CurrentDirectoryResultIsNotDirectoryRoot = new BoolFeedback(() => CurrentDirectoryResult != DirectoryRoot);
+            CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
 
             CodecSchedule = new CodecScheduleAwareness();
  
+            //Set Feedback Actions
+            SetFeedbackActions();
+
             CodecOsdIn = new RoutingInputPort(RoutingPortNames.CodecOsd, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
 				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
 			HdmiIn2 = new RoutingInputPort(RoutingPortNames.HdmiIn2, eRoutingSignalType.Audio | eRoutingSignalType.Video, 
@@ -417,9 +412,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             BrandingEnabled = props.UiBranding.Enable;
 
             _brandingUrl = props.UiBranding.BrandingUrl;
-
-            //Set Feedback Actions
-            SetFeedbackActions();
         }
 
         private void SetFeedbackActions()
@@ -431,6 +423,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 {
                     StandbyIsOnFeedback.FireUpdate();
                     HalfWakeModeIsOnFeedback.FireUpdate();
+                    EnteringStandbyModeFeedback.FireUpdate();
                 });
             CodecStatus.Status.RoomAnalytics.PeoplePresence.ValueChangedAction = RoomIsOccupiedFeedback.FireUpdate;
             CodecStatus.Status.RoomAnalytics.PeopleCount.Current.ValueChangedAction = PeopleCountFeedback.FireUpdate;
@@ -449,11 +442,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
             catch (Exception ex)
             {
-                Debug.Console(0, this, "Error setting MainVideoMute Action: {0}", ex);
+                Debug.Console(0, this, "Error setting MainVideuMute Action: {0}", ex);
 
                 if (ex.InnerException != null)
                 {
-                    Debug.Console(0, this, "Error setting MainVideoMute Action: {0}", ex);
+                    Debug.Console(0, this, "Error setting MainVideuMute Action: {0}", ex);
                 }
             }
         }
@@ -1051,8 +1044,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                             PhonebookSyncState.PhonebookRootEntriesReceived();
 
-                            CurrentDirectoryResult = DirectoryRoot;
-
                             PrintDirectory(DirectoryRoot);
                         }
                         else if (PhonebookSyncState.InitialSyncComplete)
@@ -1064,7 +1055,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                             PrintDirectory(directoryResults);
 
-                            CurrentDirectoryResult = directoryResults;
+                            DirectoryBrowseHistory.Add(directoryResults);
+
+                            OnDirectoryResultReturned(directoryResults);
    
                         }
                     }
@@ -1095,6 +1088,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="result"></param>
         void OnDirectoryResultReturned(CodecDirectory result)
         {
+            CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+
             // This will return the latest results to all UIs.  Multiple indendent UI Directory browsing will require a different methodology
             var handler = DirectoryResultReturned;
             if (handler != null)
@@ -1246,8 +1241,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="searchString"></param>
         public void SearchDirectory(string searchString)
         {
-            DirectoryBrowseHistoryStack.Push(CurrentDirectoryResult);
-
             SendText(string.Format("xCommand Phonebook Search SearchString: \"{0}\" PhonebookType: {1} ContactType: Contact Limit: {2}", searchString, PhonebookMode, PhonebookResultsLimit));
         }
 
@@ -1257,8 +1250,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="folderId"></param>
         public void GetDirectoryFolderContents(string folderId)
         {
-            DirectoryBrowseHistoryStack.Push(CurrentDirectoryResult);
-
             SendText(string.Format("xCommand Phonebook Search FolderId: {0} PhonebookType: {1} ContactType: Any Limit: {2}", folderId, PhonebookMode, PhonebookResultsLimit));
         }
 
@@ -1268,12 +1259,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <returns></returns>
         public void GetDirectoryParentFolderContents()
         {
-            if (DirectoryBrowseHistoryStack.Count == 0)
+            var currentDirectory = new CodecDirectory();
+
+            if (DirectoryBrowseHistory.Count > 0)
             {
-                return;
+                var lastItemIndex = DirectoryBrowseHistory.Count - 1;
+                var parentDirectoryContents = DirectoryBrowseHistory[lastItemIndex];
+
+                DirectoryBrowseHistory.Remove(DirectoryBrowseHistory[lastItemIndex]);
+
+                currentDirectory = parentDirectoryContents;
+
+            }
+            else
+            {
+                currentDirectory = DirectoryRoot;
             }
 
-            CurrentDirectoryResult = DirectoryBrowseHistoryStack.Pop();
+            OnDirectoryResultReturned(currentDirectory);
         }
 
         /// <summary>
@@ -1281,9 +1284,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SetCurrentDirectoryToRoot()
         {
-            DirectoryBrowseHistoryStack.Clear();
+            DirectoryBrowseHistory.Clear();
 
-            CurrentDirectoryResult = DirectoryRoot;
+            OnDirectoryResultReturned(DirectoryRoot);
         }
 
         /// <summary>
@@ -1545,6 +1548,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 halfwakeCodec.StandbyIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.ActivateStandby.JoinNumber]);
                 halfwakeCodec.StandbyIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.DeactivateStandby.JoinNumber]);
                 halfwakeCodec.HalfWakeModeIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.ActivateHalfWakeMode.JoinNumber]);
+                halfwakeCodec.EnteringStandbyModeFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnteringStandbyMode.JoinNumber]);
 
                 trilist.SetSigFalseAction(joinMap.ActivateStandby.JoinNumber, () => halfwakeCodec.StandbyActivate());
                 trilist.SetSigFalseAction(joinMap.DeactivateStandby.JoinNumber, () => halfwakeCodec.StandbyDeactivate());
@@ -1937,27 +1941,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    try
+                    if (CodecStatus.Status.SIP != null && CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value != null)
                     {
-                        if (CodecStatus.Status.SIP != null && !string.IsNullOrEmpty(CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value))
-                        {
-                            return CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value;
-                        }
-                        else if (CodecStatus.Status.UserInterface != null &&
-                                 CodecStatus.Status.UserInterface.ContactInfo != null && CodecStatus.Status.UserInterface.ContactInfo.ContactMethod != null)
-                        {
-                            return CodecStatus.Status.UserInterface.ContactInfo.ContactMethod[0].Number.Value;
-                        }
-                        else
-                        {
-                            return string.Empty;
-                        }
+                        return CodecStatus.Status.SIP.AlternateURI.Primary.URI.Value;
                     }
-                    catch (Exception e)
+                    else if (CodecStatus.Status.UserInterface != null &&
+                             CodecStatus.Status.UserInterface.ContactInfo.ContactMethod[0].Number.Value != null)
                     {
-                        Debug.Console(2, "Error getting SipUri: {0}", e);
+                        return CodecStatus.Status.UserInterface.ContactInfo.ContactMethod[0].Number.Value;
+                    }
+                    else
                         return string.Empty;
-                    }
                 }
             }
 
@@ -2165,6 +2159,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         #region IHasHalfWakeMode Members
 
         public BoolFeedback HalfWakeModeIsOnFeedback { get; private set; }
+
+        public BoolFeedback EnteringStandbyModeFeedback { get; private set; }
 
         public void HalfwakeActivate()
         {
