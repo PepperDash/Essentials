@@ -36,7 +36,7 @@ namespace PepperDash.Essentials.DM
 	        var ipid = props.Control.IpIdInt;
 	        var pKey = props.ParentDeviceKey.ToLower();
 
-	        if (pKey == "processor")
+            if (pKey == "processor")
 	        {
 				// Catch constructor failures, mainly dues to IPID
 				try
@@ -70,7 +70,7 @@ namespace PepperDash.Essentials.DM
 
             var parentDev = DeviceManager.GetDeviceForKey(pKey);
             DMInput dmInput;
-            bool noIpId = false;
+            bool isCpu3 = false;
 
 		    if (parentDev is IDmSwitch)
             {
@@ -96,7 +96,7 @@ namespace PepperDash.Essentials.DM
                     chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
                     chassis is DmMd128x128 || chassis is DmMd64x64)
                 {
-                    noIpId = true;
+                    isCpu3 = true;
                 }
 
             }
@@ -116,7 +116,6 @@ namespace PepperDash.Essentials.DM
                 }
 
                 dmpsDev.TxDictionary.Add(num, key);
-                noIpId = dmpsDev.Dmps4kType;
 
                 try
                 {
@@ -138,7 +137,7 @@ namespace PepperDash.Essentials.DM
         	try
 		    {
 			    // Must use different constructor for CPU3 or DMPS3-4K types. No IPID
-			    if (noIpId)
+			    if (isCpu3 || Global.ControlSystemIsDmps4kType)
 			    {
 				    if (typeName.StartsWith("dmtx200"))
 					    return new DmTx200Controller(key, name, new DmTx200C2G(dmInput));
@@ -222,11 +221,12 @@ namespace PepperDash.Essentials.DM
 	    protected DmTxControllerBase(string key, string name, EndpointTransmitterBase hardware)
 			: base(key, name, hardware) 
 		{
-			// if wired to a chassis, skip registration step in base class
-			if (hardware.DMInput != null)
-			{
-				this.PreventRegistration = true;
-			}
+            // if wired to a chassis or DMPS, skip registration step in base class
+            if (hardware.DMInput != null || (Global.ControlSystemIsDmpsType && hardware.DMInput != null))
+            {
+                this.PreventRegistration = true;
+            }
+
             AddToFeedbackList(ActiveVideoInputFeedback);
 		}
 

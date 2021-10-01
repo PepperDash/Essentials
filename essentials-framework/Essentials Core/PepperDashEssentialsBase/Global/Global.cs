@@ -44,6 +44,17 @@ namespace PepperDash.Essentials.Core
         }
 
         /// <summary>
+        /// True when the processor type is a DMPS 4K variant
+        /// </summary>
+        public static bool ControlSystemIsDmps4kType
+        {
+            get
+            {
+                return ControlSystemIsDmpsType && ControlSystem.ControllerPrompt.ToLower().IndexOf("4k") > -1;
+            }
+        }
+
+        /// <summary>
         /// The file path prefix to the folder containing configuration files
         /// </summary>
         public static string FilePathPrefix { get; private set; }
