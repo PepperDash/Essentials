@@ -9,6 +9,10 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete MasterVolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Master Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
+        [JoinName("MasterVolumeLevelScaled")]
+        public JoinDataComplete MasterVolumeLevelScaled = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata { Description = "Master Volume Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
         [JoinName("MasterVolumeMuteOn")]
         public JoinDataComplete MasterVolumeMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Master Volume Mute On Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
@@ -28,6 +32,10 @@ namespace PepperDash.Essentials.Core.Bridges
         [JoinName("SourceVolumeLevel")]
         public JoinDataComplete SourceVolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 11, JoinSpan = 1 },
             new JoinMetadata { Description = "Source Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("SourceVolumeLevelScaled")]
+        public JoinDataComplete SourceVolumeLevelScaled = new JoinDataComplete(new JoinData { JoinNumber = 12, JoinSpan = 1 },
+            new JoinMetadata { Description = "Source Volume Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("SourceVolumeMuteOn")]
         public JoinDataComplete SourceVolumeMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 11, JoinSpan = 1 },
@@ -49,6 +57,10 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete Codec1VolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 21, JoinSpan = 1 },
             new JoinMetadata { Description = "Codec1 Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
+        [JoinName("Codec1VolumeLevelScaled")]
+        public JoinDataComplete Codec1VolumeLevelScaled = new JoinDataComplete(new JoinData { JoinNumber = 22, JoinSpan = 1 },
+            new JoinMetadata { Description = "Codec1 Volume Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
         [JoinName("Codec1VolumeMuteOn")]
         public JoinDataComplete Codec1VolumeMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 21, JoinSpan = 1 },
             new JoinMetadata { Description = "Codec1 Volume Mute On Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
@@ -69,6 +81,10 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete Codec2VolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 31, JoinSpan = 1 },
             new JoinMetadata { Description = "Codec2 Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
+        [JoinName("Codec2VolumeLevelScaled")]
+        public JoinDataComplete Codec2VolumeLevelScaled = new JoinDataComplete(new JoinData { JoinNumber = 32, JoinSpan = 1 },
+            new JoinMetadata { Description = "Codec2 Volume Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
         [JoinName("Codec2VolumeMuteOn")]
         public JoinDataComplete Codec2VolumeMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 31, JoinSpan = 1 },
             new JoinMetadata { Description = "Codec2 Volume Mute On Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
@@ -85,6 +101,29 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete Codec2VolumeDown = new JoinDataComplete(new JoinData { JoinNumber = 34, JoinSpan = 1 },
             new JoinMetadata { Description = "Codec2 Volume Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
+        [JoinName("MicsMasterVolumeLevel")]
+        public JoinDataComplete MicsMasterVolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 41, JoinSpan = 1 },
+            new JoinMetadata { Description = "MicsMaster Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("MicsMasterVolumeLevelScaled")]
+        public JoinDataComplete MicsMasterVolumeLevelScaled = new JoinDataComplete(new JoinData { JoinNumber = 42, JoinSpan = 1 },
+            new JoinMetadata { Description = "MicsMaster Volume Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("MicsMasterVolumeMuteOn")]
+        public JoinDataComplete MicsMasterVolumeMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 41, JoinSpan = 1 },
+            new JoinMetadata { Description = "MicsMaster Volume Mute On Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("MicsMasterVolumeMuteOff")]
+        public JoinDataComplete MicsMasterVolumeMuteOff = new JoinDataComplete(new JoinData { JoinNumber = 42, JoinSpan = 1 },
+            new JoinMetadata { Description = "MicsMaster Volume Mute Off Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("MicsMasterVolumeUp")]
+        public JoinDataComplete MicsMasterVolumeUp = new JoinDataComplete(new JoinData { JoinNumber = 43, JoinSpan = 1 },
+            new JoinMetadata { Description = "MicsMaster Volume Level Up", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("MicsMasterVolumeDown")]
+        public JoinDataComplete MicsMasterVolumeDown = new JoinDataComplete(new JoinData { JoinNumber = 44, JoinSpan = 1 },
+            new JoinMetadata { Description = "MicsMaster Volume Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         /// <summary>
         /// Constructor to use when instantiating this Join Map without inheriting from it
