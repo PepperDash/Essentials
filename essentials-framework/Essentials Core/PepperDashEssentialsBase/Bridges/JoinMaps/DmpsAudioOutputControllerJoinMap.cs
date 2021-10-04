@@ -7,11 +7,11 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("MasterVolumeLevel")]
         public JoinDataComplete MasterVolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata { Description = "Master Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "Master Volume Signed dB Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("MasterVolumeLevelScaled")]
         public JoinDataComplete MasterVolumeLevelScaled = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
-            new JoinMetadata { Description = "Master Volume Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "Master Volume 16bit Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("MasterVolumeMuteOn")]
         public JoinDataComplete MasterVolumeMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
@@ -31,11 +31,11 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("SourceVolumeLevel")]
         public JoinDataComplete SourceVolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 11, JoinSpan = 1 },
-            new JoinMetadata { Description = "Source Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "Source Volume Signed dB Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("SourceVolumeLevelScaled")]
         public JoinDataComplete SourceVolumeLevelScaled = new JoinDataComplete(new JoinData { JoinNumber = 12, JoinSpan = 1 },
-            new JoinMetadata { Description = "Source Volume Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "Source Volume 16bit Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("SourceVolumeMuteOn")]
         public JoinDataComplete SourceVolumeMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 11, JoinSpan = 1 },
@@ -55,11 +55,11 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("Codec1VolumeLevel")]
         public JoinDataComplete Codec1VolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 21, JoinSpan = 1 },
-            new JoinMetadata { Description = "Codec1 Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "Codec1 Volume Signed dB Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("Codec1VolumeLevelScaled")]
         public JoinDataComplete Codec1VolumeLevelScaled = new JoinDataComplete(new JoinData { JoinNumber = 22, JoinSpan = 1 },
-            new JoinMetadata { Description = "Codec1 Volume Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "Codec1 Volume 16bit Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("Codec1VolumeMuteOn")]
         public JoinDataComplete Codec1VolumeMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 21, JoinSpan = 1 },
@@ -79,11 +79,11 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("Codec2VolumeLevel")]
         public JoinDataComplete Codec2VolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 31, JoinSpan = 1 },
-            new JoinMetadata { Description = "Codec2 Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "Codec2 Volume Signed dB Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("Codec2VolumeLevelScaled")]
         public JoinDataComplete Codec2VolumeLevelScaled = new JoinDataComplete(new JoinData { JoinNumber = 32, JoinSpan = 1 },
-            new JoinMetadata { Description = "Codec2 Volume Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "Codec2 Volume 16bit Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("Codec2VolumeMuteOn")]
         public JoinDataComplete Codec2VolumeMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 31, JoinSpan = 1 },
@@ -103,11 +103,11 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("MicsMasterVolumeLevel")]
         public JoinDataComplete MicsMasterVolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 41, JoinSpan = 1 },
-            new JoinMetadata { Description = "MicsMaster Volume Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "MicsMaster Volume Signed dB Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("MicsMasterVolumeLevelScaled")]
         public JoinDataComplete MicsMasterVolumeLevelScaled = new JoinDataComplete(new JoinData { JoinNumber = 42, JoinSpan = 1 },
-            new JoinMetadata { Description = "MicsMaster Volume Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "MicsMaster Volume 16bit Scaled Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("MicsMasterVolumeMuteOn")]
         public JoinDataComplete MicsMasterVolumeMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 41, JoinSpan = 1 },

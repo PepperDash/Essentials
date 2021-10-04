@@ -29,7 +29,6 @@ namespace PepperDash.Essentials.DM
         public DmpsAudioOutput Codec1VolumeLevel { get; private set; }
         public DmpsAudioOutput Codec2VolumeLevel { get; private set; }
 
-
         public DmpsAudioOutputController(string key, string name, Card.Dmps3OutputBase card)
             : base(key, name)
         {
@@ -37,22 +36,42 @@ namespace PepperDash.Essentials.DM
 
             OutputCard.BaseDevice.DMOutputChange += new DMOutputEventHandler(BaseDevice_DMOutputChange);
 
-            MasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Master);
-            SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
-            MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
-
             if (card is Card.Dmps3ProgramOutput)
             {
+                MasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Master)
+                {
+                    Mixer = (card as Card.Dmps3ProgramOutput).OutputMixer
+                };
+                SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
+                MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
                 Codec1VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec1);
                 Codec2VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec2);
             }
             else if (card is Card.Dmps3Aux1Output)
             {
+                MasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Master)
+                {
+                    Mixer = (card as Card.Dmps3Aux1Output).OutputMixer
+                };
+                SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
+                MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
                 Codec2VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec2);
             }
             else if (card is Card.Dmps3Aux2Output)
             {
+                MasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Master)
+                {
+                    Mixer = (card as Card.Dmps3Aux2Output).OutputMixer
+                };
+                SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
+                MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
                 Codec1VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec1);
+            }
+            else //Digital Outputs
+            {
+                MasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Master);
+                SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
+                MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
             }
         }
 
@@ -63,6 +82,7 @@ namespace PepperDash.Essentials.DM
                 case DMOutputEventIds.MasterVolumeFeedBackEventId:
                 {
                     MasterVolumeLevel.VolumeLevelFeedback.FireUpdate();
+                    MasterVolumeLevel.VolumeLevelScaledFeedback.FireUpdate();
                     break;
                 }
                 case DMOutputEventIds.MasterMuteOnFeedBackEventId:
@@ -73,11 +93,18 @@ namespace PepperDash.Essentials.DM
                 case DMOutputEventIds.SourceLevelFeedBackEventId:
                 {
                     SourceVolumeLevel.VolumeLevelFeedback.FireUpdate();
+                    SourceVolumeLevel.VolumeLevelScaledFeedback.FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.SourceMuteOnFeedBackEventId:
+                {
+                    SourceVolumeLevel.MuteFeedback.FireUpdate();
                     break;
                 }
                 case DMOutputEventIds.MicMasterLevelFeedBackEventId:
                 {
                     MicsMasterVolumeLevel.VolumeLevelFeedback.FireUpdate();
+                    MicsMasterVolumeLevel.VolumeLevelScaledFeedback.FireUpdate();
                     break;
                 }
                 case DMOutputEventIds.MicMasterMuteOnFeedBackEventId:
@@ -87,8 +114,11 @@ namespace PepperDash.Essentials.DM
                 }
                 case DMOutputEventIds.Codec1LevelFeedBackEventId:
                 {
-                    if(Codec1VolumeLevel != null)
+                    if (Codec1VolumeLevel != null)
+                    {
                         Codec1VolumeLevel.VolumeLevelFeedback.FireUpdate();
+                        Codec1VolumeLevel.VolumeLevelScaledFeedback.FireUpdate();
+                    }
                     break;
                 }
                 case DMOutputEventIds.Codec1MuteOnFeedBackEventId:
@@ -100,13 +130,34 @@ namespace PepperDash.Essentials.DM
                 case DMOutputEventIds.Codec2LevelFeedBackEventId:
                 {
                     if (Codec2VolumeLevel != null)
+                    {
                         Codec2VolumeLevel.VolumeLevelFeedback.FireUpdate();
+                        Codec2VolumeLevel.VolumeLevelScaledFeedback.FireUpdate();
+                    }
                     break;
                 }
                 case DMOutputEventIds.Codec2MuteOnFeedBackEventId:
                 {
                     if (Codec2VolumeLevel != null)
                         Codec2VolumeLevel.MuteFeedback.FireUpdate();
+                    break;
+                }
+                case DMOutputEventIds.MinVolumeFeedBackEventId:
+                {
+                    Debug.Console(2, this, "MinVolumeFeedBackEventId: {0}", args.Index);
+                    if (MasterVolumeLevel != null)
+                    {
+                        MasterVolumeLevel.GetVolumeMin();
+                    }
+                    break;
+                }
+                case DMOutputEventIds.MaxVolumeFeedBackEventId:
+                {
+                    Debug.Console(2, this, "MaxVolumeFeedBackEventId: {0}", args.Index);
+                    if (MasterVolumeLevel != null)
+                    {
+                        MasterVolumeLevel.GetVolumeMax();
+                    }
                     break;
                 }
             }
@@ -187,13 +238,13 @@ namespace PepperDash.Essentials.DM
     public class DmpsAudioOutput : IBasicVolumeWithFeedback
     {
         Card.Dmps3OutputBase Output;
-
-        UShortInputSig Level;
-        UShortOutputSig MinLevel;
-        UShortOutputSig MaxLevel;
-
         eDmpsLevelType Type;
+        UShortInputSig Level;
 
+        public short MinLevel { get; private set; }
+        public short MaxLevel { get; private set; }
+
+        public CrestronControlSystem.Dmps3OutputMixerWithMonoAndStereo Mixer { get; set; }
         public BoolFeedback MuteFeedback { get; private set; }
         public IntFeedback VolumeLevelFeedback { get; private set; }
         public IntFeedback VolumeLevelScaledFeedback { get; private set; }
@@ -206,11 +257,9 @@ namespace PepperDash.Essentials.DM
         public DmpsAudioOutput(Card.Dmps3OutputBase output, eDmpsLevelType type)
         {
             Output = output;
-
             Type = type;
-
-            MinLevel = (output as Card.Dmps3ProgramOutput).OutputMixer.MinVolumeFeedback;
-            MaxLevel = (output as Card.Dmps3ProgramOutput).OutputMixer.MaxVolumeFeedback;
+            MinLevel = -800;
+            MaxLevel = 100;
 
             switch (type)
             {
@@ -224,7 +273,7 @@ namespace PepperDash.Essentials.DM
                         MuteOffAction = new Action(Output.MasterMuteOff);
                         VolumeUpAction = new Action<bool>((b) => Output.MasterVolumeUp.BoolValue = b);
                         VolumeDownAction = new Action<bool>((b) => Output.MasterVolumeDown.BoolValue = b);
-                        
+
                         break;
                     }
                 case eDmpsLevelType.MicsMaster:
@@ -315,35 +364,48 @@ namespace PepperDash.Essentials.DM
                         break;
                     }
             }
-
-            VolumeLevelScaledFeedback = new IntFeedback(new Func<int>(() => ScaleVolumeFeedback(VolumeLevelFeedback.UShortValue)));
+            if (VolumeLevelFeedback != null)
+            {
+                VolumeLevelScaledFeedback = new IntFeedback(new Func<int>(() => ScaleVolumeFeedback(VolumeLevelFeedback.UShortValue)));
+            }
         }
 
         public void SetVolumeScaled(ushort level)
         {
-            //Master fader scaling depends on min and max settings on DMPS
-            if (Type == eDmpsLevelType.Master)
-            {
-                Level.UShortValue = (ushort)(level * (MaxLevel.UShortValue - MinLevel.UShortValue) / 65535 + MinLevel.UShortValue);
-            }
-            // Other faders have min = -800 and max = 100
-            else
-            {
-                Level.UShortValue = (ushort)(level * 900 / 65535 - 800);
-            }
+            Debug.Console(2, Debug.ErrorLogLevel.None, "Scaling DMPS volume:{0} level:{1} min:{2} max:{3}", Output.Name, level.ToString(), MinLevel.ToString(), MaxLevel.ToString());
+            Level.UShortValue = (ushort)(level * (MaxLevel - MinLevel) / ushort.MaxValue + MinLevel);
         }
 
         public ushort ScaleVolumeFeedback(ushort level)
         {
-            //Master fader scaling depends on min and max settings on DMPS
-            if (Type == eDmpsLevelType.Master)
+            short signedLevel = (short)level;
+            Debug.Console(2, Debug.ErrorLogLevel.None, "Scaling DMPS volume:{0} feedback:{1} min:{2} max:{3}", Output.Name, signedLevel.ToString(), MinLevel.ToString(), MaxLevel.ToString());
+            return (ushort)((signedLevel - MinLevel) * ushort.MaxValue / (MaxLevel - MinLevel));
+        }
+
+        public void GetVolumeMin()
+        {
+            if (Mixer != null)
             {
-                return (ushort)((level - MinLevel.UShortValue) * 65535 / (MaxLevel.UShortValue - MinLevel.UShortValue));
+                MinLevel = (short)Mixer.MinVolumeFeedback.UShortValue;
+                Debug.Console(2, Debug.ErrorLogLevel.None, "DMPS set {0} min level:{1}", Output.Name, MinLevel);
+                if (VolumeLevelScaledFeedback != null)
+                {
+                    VolumeLevelScaledFeedback.FireUpdate();
+                }
             }
-            // Other faders have min = -800 and max = 100
-            else
+        }
+
+        public void GetVolumeMax()
+        {
+            if (Mixer != null)
             {
-                return (ushort)((level + 800) * 65535 / 900);
+                MaxLevel = (short)Mixer.MaxVolumeFeedback.UShortValue;
+                Debug.Console(2, Debug.ErrorLogLevel.None, "DMPS set {0} max level:{1}", Output.Name, MaxLevel);
+                if (VolumeLevelScaledFeedback != null)
+                {
+                    VolumeLevelScaledFeedback.FireUpdate();
+                }
             }
         }
 
