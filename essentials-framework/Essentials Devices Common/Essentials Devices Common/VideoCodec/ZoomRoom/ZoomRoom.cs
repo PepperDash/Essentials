@@ -1306,11 +1306,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								var codecBookings = JsonConvert.DeserializeObject<List<zCommand.BookingsListResult>>(
 									responseObj.ToString());
 
-								if (codecBookings != null && codecBookings.Count > 0)
-								{
-									CodecSchedule.Meetings = zCommand.GetGenericMeetingsFromBookingResult(
-										codecBookings, CodecSchedule.MeetingWarningMinutes);
-								}
+							    if (codecBookings != null && codecBookings.Count > 0)
+							    {
+							        CodecSchedule.Meetings = zCommand.GetGenericMeetingsFromBookingResult(
+							            codecBookings, CodecSchedule.MeetingWarningMinutes);
+							    }
+							    else
+							    {
+							        //need to clear the list if it's empty
+							        CodecSchedule.Meetings = new List<Meeting>();
+							    }
 
 								break;
 							}

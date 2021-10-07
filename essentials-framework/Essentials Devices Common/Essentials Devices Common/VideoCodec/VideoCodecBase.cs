@@ -298,6 +298,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			}
 
 			LinkVideoCodecToApi(codec, trilist, joinMap);
+
+		    trilist.OnlineStatusChange += (device, args) =>
+		    {
+		        if (!args.DeviceOnLine) return;
+
+		        trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
+		    };
 		}
 
 		/// <summary>
@@ -784,6 +791,16 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 			var currentTime = DateTime.Now;
 
 			_currentMeetings = codec.CodecSchedule.Meetings.Where(m => m.StartTime >= currentTime || m.EndTime >= currentTime).ToList();
+
+            if (_currentMeetings.Count == 0)
+            {
+                var emptyXSigByteArray = XSigHelpers.ClearOutputs();
+                var emptyXSigString = Encoding.GetEncoding(XSigEncoding)
+                    .GetString(emptyXSigByteArray, 0, emptyXSigByteArray.Length);
+
+                trilist.SetString(joinMap.Schedule.JoinNumber, emptyXSigString);
+                return;
+            }
 
 			var meetingsData = UpdateMeetingsListXSig(_currentMeetings);
 			trilist.SetString(joinMap.Schedule.JoinNumber, meetingsData);
