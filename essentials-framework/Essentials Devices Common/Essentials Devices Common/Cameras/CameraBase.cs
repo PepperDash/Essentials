@@ -221,7 +221,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
                 SendCameraPresetNamesToApi(presetsCamera, joinMap, trilist);
 
-                for (int i = 0; i < joinMap.NumberOfPresets.JoinNumber; i++)
+                for (int i = 0; i < 20; i++)
                 {
                     int tempNum = i;
 
