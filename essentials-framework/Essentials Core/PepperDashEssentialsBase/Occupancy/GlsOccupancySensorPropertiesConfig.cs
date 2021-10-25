@@ -47,5 +47,35 @@ namespace PepperDash.Essentials.Core
 
         [JsonProperty("andWhenVacatedState")]
         public bool? AndWhenVacatedState { get; set; }
+
+        // PoE Sensors: CenOdtCPoe
+
+        /// <summary>
+        /// Sets the sensitivity level for US while sensor is in occupied state
+        /// 1 = low; 2 = medium; 3 = high; 4 = xlow; 5 = 2xlow; 6 = 3xlow
+        /// </summary>
+        [JsonProperty("usSensitivityOccupied")]
+        public ushort? UsSensitivityOccupied { get; set; }
+
+        /// <summary>
+        /// Sets the sensitivity level for US while sensor is in vacant state
+        /// 1 = low; 2 = medium; 3 = high; 4 = xlow; 5 = 2xlow; 6 = 3xlow
+        /// </summary>
+        [JsonProperty("usSensitivityVacant")]
+        public ushort? UsSensitivityVacant { get; set; }
+
+        /// <summary>
+        /// Sets the sensitivity level for PIR while sensor is in occupied state
+        /// 1 = low; 2 = medium; 3 = high
+        /// </summary>
+        [JsonProperty("pirSensitivityOccupied")]
+        public ushort? PirSensitivityOccupied { get; set; }
+
+        /// <summary>
+        /// Sets the sensitivity level for PIR while sensor is in vacant state
+        /// 1 = low; 2 = medium; 3 = high
+        /// </summary>
+        [JsonProperty("PirSensitivityVacant")]
+        public ushort? PirSensitivityVacant { get; set; }
     }
 }
