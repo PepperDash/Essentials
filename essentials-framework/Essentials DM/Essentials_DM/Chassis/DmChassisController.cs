@@ -1285,7 +1285,10 @@ namespace PepperDash.Essentials.DM
 
             var output = outputSelector as DMOutput;
 
-            if (output == null)
+            var isUsbInput = (sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput;
+            var isUsbOutput = (sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput;
+
+            if (output == null && !(isUsbOutput || isUsbInput))
             {
                 Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
                     "Unable to execute switch for inputSelector {0} to outputSelector {1}", inputSelector,
@@ -1316,7 +1319,10 @@ namespace PepperDash.Essentials.DM
             if ((sigType & eRoutingSignalType.Video) == eRoutingSignalType.Video)
             {
                 Chassis.VideoEnter.BoolValue = true;
-                output.VideoOut = input; //Chassis.Outputs[output].VideoOut = inCard;
+                if (output != null)
+                {
+                    output.VideoOut = input; //Chassis.Outputs[output].VideoOut = inCard;
+                }
             }
 
             if ((sigType & eRoutingSignalType.Audio) == eRoutingSignalType.Audio)
@@ -1326,17 +1332,66 @@ namespace PepperDash.Essentials.DM
                 {
                     dmMdMnxn.AudioEnter.BoolValue = true;
                 }
-                output.AudioOut = input;
-                //Chassis.Outputs[output].AudioOut = inCard;
+                if (output != null)
+                {
+                    output.AudioOut = input;
+                }
             }
 
-            if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput || (sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
+            if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
+                
             {
-                Chassis.USBEnter.BoolValue = true;
-                output.USBRoutedTo = input;
+               Chassis.USBEnter.BoolValue = true;
+                if (inputSelector == null && output != null)
+                {
+                    //clearing the route is intended
+                    output.USBRoutedTo = null;
+                    return;
+                }
+
+                if (inputSelector != null && input == null)
+                {
+                    //input selector is DMOutput...we're doing a out to out route
+                    var tempInput = inputSelector as DMOutput;
+
+                    if (tempInput == null || output == null)
+                    {
+                        return;
+                    }
+                    output.USBRoutedTo = tempInput;
+                    return;
+                }
+
+                if (input != null & output != null)
+                {
+                    output.USBRoutedTo = input;
+                }
             }
 
+            if((sigType & eRoutingSignalType.UsbInput) != eRoutingSignalType.UsbInput)
+            {
+                return;
+            }
+
+            Chassis.USBEnter.BoolValue = true;
+            if (output != null)
+            {
+                output.USBRoutedTo = input;
+                return;
+            }
+            var tempOutput = outputSelector as DMInput;
+
+            if (tempOutput == null)
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+                    "Unable to execute switch for inputSelector {0} to outputSelector {1}", inputSelector,
+                    outputSelector);
+                return;
+            }
+
+            tempOutput.USBRoutedTo = input;
         }
+
         #endregion
 
         #region IRoutingNumeric Members
@@ -1349,8 +1404,10 @@ namespace PepperDash.Essentials.DM
 
             DMInputOutputBase dmCard;
 
+            //Routing Input to Input or Output to Input
             if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
             {
+                Debug.Console(2, this, "Executing USB Input switch.\r\n in:{0} output: {1}", inputSelector, outputSelector);
                 if (outputSelector > chassisSize)
                 {
                     uint outputIndex;
@@ -1370,13 +1427,14 @@ namespace PepperDash.Essentials.DM
                     dmCard = Chassis.Inputs[inputSelector];
                 }
 
-                ExecuteSwitch(dmCard, Chassis.Outputs[outputSelector], sigType);
+                ExecuteSwitch(dmCard, Chassis.Inputs[outputSelector], sigType);
                 return;
             }
             if ((sigType & eRoutingSignalType.UsbOutput) == eRoutingSignalType.UsbOutput)
             {
                 Debug.Console(2, this, "Executing USB Output switch.\r\n in:{0} output: {1}", inputSelector, outputSelector);
 
+                //routing Output to Output or Input to Output
                 if (inputSelector > chassisSize)
                 {
                     //wanting to route an output to an output. Subtract chassis size and get output, unless it's 8x8
