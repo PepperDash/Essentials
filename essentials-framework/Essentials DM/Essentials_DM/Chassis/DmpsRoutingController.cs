@@ -25,6 +25,7 @@ namespace PepperDash.Essentials.DM
 
         public CrestronControlSystem Dmps { get; set; }
         public ISystemControl SystemControl { get; private set; }
+        public bool? EnableRouting { get; private set; }
         
         //Check if DMPS is a DMPS3-4K type for endpoint creation
         public bool Dmps4kType { get; private set; }
@@ -204,10 +205,26 @@ namespace PepperDash.Essentials.DM
             Dmps.DMInputChange += Dmps_DMInputChange;
             Dmps.DMOutputChange += Dmps_DMOutputChange;
             Dmps.DMSystemChange += Dmps_DMSystemChange;
-
-            foreach (var input in VideoInputSyncFeedbacks)
+            
+            foreach (var x in VideoOutputFeedbacks)
             {
-                input.Value.FireUpdate();
+                x.Value.FireUpdate();
+            }
+            foreach (var x in AudioOutputFeedbacks)
+            {
+                x.Value.FireUpdate();
+            }
+            foreach (var x in VideoInputSyncFeedbacks)
+            {
+                x.Value.FireUpdate();
+            }
+            foreach (var x in InputEndpointOnlineFeedbacks)
+            {
+                x.Value.FireUpdate();
+            }
+            foreach (var x in OutputEndpointOnlineFeedbacks)
+            {
+                x.Value.FireUpdate();
             }
 
             return base.CustomActivate();
@@ -244,6 +261,12 @@ namespace PepperDash.Essentials.DM
                     input.Name.StringValue = kvp.Value;
                 }
             }
+        }
+
+        public void SetRoutingEnable(bool enable)
+        {
+            CrestronEnvironment.Sleep(1000);
+            EnableRouting = enable;
         }
 
         public void SetPowerOn(bool a)
@@ -295,6 +318,8 @@ namespace PepperDash.Essentials.DM
                 SystemPowerOffFeedback.LinkInputSig(
                     trilist.BooleanInput[joinMap.SystemPowerOff.JoinNumber]);
             }
+
+            trilist.SetBoolSigAction(joinMap.EnableRouting.JoinNumber, SetRoutingEnable);
 
             // Link up outputs
             LinkInputsToApi(trilist, joinMap);
@@ -837,13 +862,17 @@ namespace PepperDash.Essentials.DM
         }
         void Dmps_DMOutputChange(Switch device, DMOutputEventArgs args)
         {
-            //Debug.Console(2, this, "DMOutputChange Output: {0} EventId: {1}", args.Number, args.EventId.ToString());
+            Debug.Console(2, this, "DMOutputChange Output: {0} EventId: {1}", args.Number, args.EventId.ToString());
 
             var output = args.Number;
 
             DMOutput outputCard = Dmps.SwitcherOutputs[output] as DMOutput;
 
-            if (args.EventId == DMOutputEventIds.OnlineFeedbackEventId
+            if (args.EventId == DMOutputEventIds.VolumeEventId && VolumeControls.ContainsKey(output))
+            {
+                VolumeControls[args.Number].VolumeEventFromChassis();
+            }
+            else if (args.EventId == DMOutputEventIds.OnlineFeedbackEventId
                 && OutputEndpointOnlineFeedbacks.ContainsKey(output))
             {
                 OutputEndpointOnlineFeedbacks[output].FireUpdate();
@@ -933,6 +962,10 @@ namespace PepperDash.Essentials.DM
         {
             try
             {
+                if (EnableRouting == false)
+                {
+                    return;
+                }
 
                 Debug.Console(2, this, "Attempting a DM route from input {0} to output {1} {2}", inputSelector, outputSelector, sigType);
 

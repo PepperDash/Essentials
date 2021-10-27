@@ -29,6 +29,10 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete MasterVolumeDown = new JoinDataComplete(new JoinData { JoinNumber = 4, JoinSpan = 1 },
             new JoinMetadata { Description = "Master Volume Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
+        [JoinName("MasterVolumeLevelScaledSend")]
+        public JoinDataComplete MasterVolumeLevelScaledSend = new JoinDataComplete(new JoinData { JoinNumber = 5, JoinSpan = 1 },
+            new JoinMetadata { Description = "Master Volume Scaled Send", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
         [JoinName("SourceVolumeLevel")]
         public JoinDataComplete SourceVolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 11, JoinSpan = 1 },
             new JoinMetadata { Description = "Source Volume Signed dB Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });

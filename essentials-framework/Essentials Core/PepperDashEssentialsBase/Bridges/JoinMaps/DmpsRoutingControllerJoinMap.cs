@@ -4,6 +4,10 @@ namespace PepperDash.Essentials.Core.Bridges
 {
     public class DmpsRoutingControllerJoinMap : JoinMapBaseAdvanced
     {
+        [JoinName("EnableRouting")]
+        public JoinDataComplete EnableRouting = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata { Description = "DMPS Enable Audio and Video Routing", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
         [JoinName("SystemPowerOn")]
         public JoinDataComplete SystemPowerOn = new JoinDataComplete(new JoinData { JoinNumber = 12, JoinSpan = 1 },
             new JoinMetadata { Description = "DMPS System Power On Get/Set", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });

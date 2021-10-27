@@ -43,8 +43,6 @@ namespace PepperDash.Essentials.DM
                 MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
                 Codec1VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec1);
                 Codec2VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec2);
-                ((DmpsAudioOutputWithMixer)MasterVolumeLevel).GetVolumeMax();
-                ((DmpsAudioOutputWithMixer)MasterVolumeLevel).GetVolumeMin();
             }
             else if (card is Card.Dmps3Aux1Output)
             {
@@ -52,8 +50,6 @@ namespace PepperDash.Essentials.DM
                 SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
                 MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
                 Codec2VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec2);
-                ((DmpsAudioOutputWithMixer)MasterVolumeLevel).GetVolumeMax();
-                ((DmpsAudioOutputWithMixer)MasterVolumeLevel).GetVolumeMin();
             }
             else if (card is Card.Dmps3Aux2Output)
             {
@@ -61,8 +57,6 @@ namespace PepperDash.Essentials.DM
                 SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
                 MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
                 Codec1VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec1);
-                ((DmpsAudioOutputWithMixer)MasterVolumeLevel).GetVolumeMax();
-                ((DmpsAudioOutputWithMixer)MasterVolumeLevel).GetVolumeMin();
             }
             else //Digital Outputs
             {
@@ -166,11 +160,6 @@ namespace PepperDash.Essentials.DM
         {
             var joinMap = new DmpsAudioOutputControllerJoinMap(joinStart);
 
-            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
-
-            if (!string.IsNullOrEmpty(joinMapSerialized))
-                joinMap = JsonConvert.DeserializeObject<DmpsAudioOutputControllerJoinMap>(joinMapSerialized);
-
             if (bridge != null)
             {
                 bridge.AddJoinMap(Key, joinMap);
@@ -206,22 +195,19 @@ namespace PepperDash.Essentials.DM
             {
                 SetUpDmpsAudioOutputJoins(trilist, Codec2VolumeLevel, joinMap.Codec2VolumeLevel.JoinNumber);
             }
-
         }
 
         static void SetUpDmpsAudioOutputJoins(BasicTriList trilist, DmpsAudioOutput output, uint joinStart)
         {
             var volumeLevelJoin = joinStart;
-            var volumeLevelScaledJoin = joinStart + 1;
+            var volumeLevelScaledJoin = joinStart + 1;            
             var muteOnJoin = joinStart;
             var muteOffJoin = joinStart + 1;
             var volumeUpJoin = joinStart + 2;
             var volumeDownJoin = joinStart + 3;
+            var volumeLevelScaledSendJoin = joinStart + 4;
 
-            trilist.SetUShortSigAction(volumeLevelJoin, output.SetVolume);
             output.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[volumeLevelJoin]);
-
-            trilist.SetUShortSigAction(volumeLevelScaledJoin, output.SetVolumeScaled);
             output.VolumeLevelScaledFeedback.LinkInputSig(trilist.UShortInput[volumeLevelScaledJoin]);
 
             trilist.SetSigTrueAction(muteOnJoin, output.MuteOn);
@@ -231,9 +217,9 @@ namespace PepperDash.Essentials.DM
 
             trilist.SetBoolSigAction(volumeUpJoin, output.VolumeUp);
             trilist.SetBoolSigAction(volumeDownJoin, output.VolumeDown);
-
-            trilist.OnlineStatusChange += (a, b) => output.VolumeLevelFeedback.FireUpdate();
-            trilist.OnlineStatusChange += (a, b) => output.VolumeLevelScaledFeedback.FireUpdate();
+            trilist.SetBoolSigAction(volumeLevelScaledJoin, output.SendScaledVolume);
+            trilist.SetUShortSigAction(volumeLevelJoin, output.SetVolume);
+            trilist.SetUShortSigAction(volumeLevelScaledJoin, output.SetVolumeScaled);
         }
     }
 
@@ -245,6 +231,8 @@ namespace PepperDash.Essentials.DM
             : base(output, type)
         {
             Mixer = mixer;
+            GetVolumeMax();
+            GetVolumeMin();
         }
 
         public void GetVolumeMin()
@@ -272,6 +260,8 @@ namespace PepperDash.Essentials.DM
         eDmpsLevelType Type;
         UShortInputSig Level;
 
+        private bool VolumeLevelScaledSend;
+        private ushort VolumeLevelScaled;
         protected short MinLevel { get; set; }
         protected short MaxLevel { get; set; }
 
@@ -287,6 +277,8 @@ namespace PepperDash.Essentials.DM
         public DmpsAudioOutput(Card.Dmps3OutputBase output, eDmpsLevelType type)
         {
             Output = output;
+            VolumeLevelScaled = 0;
+            VolumeLevelScaledSend = false;
             Type = type;
             MinLevel = -800;
             MaxLevel = 100;
@@ -396,13 +388,19 @@ namespace PepperDash.Essentials.DM
             if (VolumeLevelFeedback != null)
             {
                 VolumeLevelScaledFeedback = new IntFeedback(new Func<int>(() => ScaleVolumeFeedback(VolumeLevelFeedback.UShortValue)));
+                VolumeLevelFeedback.FireUpdate();
+                VolumeLevelScaledFeedback.FireUpdate();
             }
         }
 
         public void SetVolumeScaled(ushort level)
         {
             Debug.Console(2, Debug.ErrorLogLevel.None, "Scaling DMPS volume:{0} level:{1} min:{2} max:{3}", Output.Name, level.ToString(), MinLevel.ToString(), MaxLevel.ToString());
-            Level.UShortValue = (ushort)(level * (MaxLevel - MinLevel) / ushort.MaxValue + MinLevel);
+            VolumeLevelScaled = (ushort)(level * (MaxLevel - MinLevel) / ushort.MaxValue + MinLevel);
+            if (VolumeLevelScaledSend == true)
+            {
+                Level.UShortValue = VolumeLevelScaled;
+            }
         }
 
         public ushort ScaleVolumeFeedback(ushort level)
@@ -410,6 +408,15 @@ namespace PepperDash.Essentials.DM
             short signedLevel = (short)level;
             Debug.Console(2, Debug.ErrorLogLevel.None, "Scaling DMPS volume:{0} feedback:{1} min:{2} max:{3}", Output.Name, signedLevel.ToString(), MinLevel.ToString(), MaxLevel.ToString());
             return (ushort)((signedLevel - MinLevel) * ushort.MaxValue / (MaxLevel - MinLevel));
+        }
+
+        public void SendScaledVolume(bool pressRelease)
+        {
+            VolumeLevelScaledSend = pressRelease;
+            if(pressRelease == false)
+            {
+                Level.UShortValue = VolumeLevelScaled;
+            }
         }
 
         #region IBasicVolumeWithFeedback Members
