@@ -205,6 +205,11 @@ namespace PepperDash.Essentials.DM
             Dmps.DMOutputChange += Dmps_DMOutputChange;
             Dmps.DMSystemChange += Dmps_DMSystemChange;
 
+            foreach (var input in VideoInputSyncFeedbacks)
+            {
+                input.Value.FireUpdate();
+            }
+
             return base.CustomActivate();
         }
 
@@ -832,18 +837,13 @@ namespace PepperDash.Essentials.DM
         }
         void Dmps_DMOutputChange(Switch device, DMOutputEventArgs args)
         {
-            Debug.Console(2, this, "DMOutputChange Output: {0} EventId: {1}", args.Number, args.EventId.ToString());
+            //Debug.Console(2, this, "DMOutputChange Output: {0} EventId: {1}", args.Number, args.EventId.ToString());
 
             var output = args.Number;
 
             DMOutput outputCard = Dmps.SwitcherOutputs[output] as DMOutput;
 
-            if (args.EventId == DMOutputEventIds.VolumeEventId &&
-                VolumeControls.ContainsKey(output))
-            {
-                VolumeControls[args.Number].VolumeEventFromChassis();
-            }
-            else if (args.EventId == DMOutputEventIds.OnlineFeedbackEventId
+            if (args.EventId == DMOutputEventIds.OnlineFeedbackEventId
                 && OutputEndpointOnlineFeedbacks.ContainsKey(output))
             {
                 OutputEndpointOnlineFeedbacks[output].FireUpdate();
