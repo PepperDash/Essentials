@@ -263,6 +263,7 @@ namespace PepperDash.Essentials.DM
             tx.AnyVideoInput.VideoStatus.VideoSyncFeedback.LinkInputSig(trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber]);
             tx.AnyVideoInput.VideoStatus.VideoResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentInputResolution.JoinNumber]);
             trilist.UShortInput[joinMap.HdcpSupportCapability.JoinNumber].UShortValue = (ushort)tx.HdcpSupportCapability;
+            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = tx.Name;
 
             bool hdcpTypeSimple;
 

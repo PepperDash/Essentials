@@ -32,6 +32,10 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete AudioVideoSource = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "DM RMC Audio Video Source Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
 
+        [JoinName("Name")]
+        public JoinDataComplete Name = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM RMC Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
         /// <summary>
         /// Constructor to use when instantiating this Join Map without inheriting from it
         /// </summary>
