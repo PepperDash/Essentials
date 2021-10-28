@@ -68,6 +68,7 @@ namespace PepperDash.Essentials.DM
 
         void BaseDevice_DMOutputChange(Switch device, DMOutputEventArgs args)
         {
+            Debug.Console(2, this, "Dmps Audio Controller Event Output: {0} EventId: {1}", args.Number, args.EventId.ToString());
             switch (args.EventId)
             {
                 case DMOutputEventIds.MasterVolumeFeedBackEventId:
@@ -205,7 +206,7 @@ namespace PepperDash.Essentials.DM
             var muteOffJoin = joinStart + 1;
             var volumeUpJoin = joinStart + 2;
             var volumeDownJoin = joinStart + 3;
-            var volumeLevelScaledSendJoin = joinStart + 4;
+            var sendScaledVolumeJoin = joinStart + 4;
 
             output.VolumeLevelFeedback.LinkInputSig(trilist.UShortInput[volumeLevelJoin]);
             output.VolumeLevelScaledFeedback.LinkInputSig(trilist.UShortInput[volumeLevelScaledJoin]);
@@ -217,7 +218,7 @@ namespace PepperDash.Essentials.DM
 
             trilist.SetBoolSigAction(volumeUpJoin, output.VolumeUp);
             trilist.SetBoolSigAction(volumeDownJoin, output.VolumeDown);
-            trilist.SetBoolSigAction(volumeLevelScaledJoin, output.SendScaledVolume);
+            trilist.SetBoolSigAction(sendScaledVolumeJoin, output.SendScaledVolume);
             trilist.SetUShortSigAction(volumeLevelJoin, output.SetVolume);
             trilist.SetUShortSigAction(volumeLevelScaledJoin, output.SetVolumeScaled);
         }
@@ -260,8 +261,8 @@ namespace PepperDash.Essentials.DM
         eDmpsLevelType Type;
         UShortInputSig Level;
 
-        private bool VolumeLevelScaledSend;
-        private ushort VolumeLevelScaled;
+        private bool EnableVolumeSend;
+        private ushort VolumeLevelInput;
         protected short MinLevel { get; set; }
         protected short MaxLevel { get; set; }
 
@@ -277,8 +278,8 @@ namespace PepperDash.Essentials.DM
         public DmpsAudioOutput(Card.Dmps3OutputBase output, eDmpsLevelType type)
         {
             Output = output;
-            VolumeLevelScaled = 0;
-            VolumeLevelScaledSend = false;
+            VolumeLevelInput = 0;
+            EnableVolumeSend = false;
             Type = type;
             MinLevel = -800;
             MaxLevel = 100;
@@ -307,7 +308,6 @@ namespace PepperDash.Essentials.DM
                         MuteOffAction = new Action(Output.MicMasterMuteOff);
                         VolumeUpAction = new Action<bool>((b) => Output.MicMasterLevelUp.BoolValue = b);
                         VolumeDownAction = new Action<bool>((b) => Output.MicMasterLevelDown.BoolValue = b);
-
                         break;
                     }
                 case eDmpsLevelType.Source:
@@ -336,7 +336,6 @@ namespace PepperDash.Essentials.DM
                             MuteOffAction = new Action(programOutput.Codec1MuteOff);
                             VolumeUpAction = new Action<bool>((b) => programOutput.Codec1LevelUp.BoolValue = b);
                             VolumeDownAction = new Action<bool>((b) => programOutput.Codec1LevelDown.BoolValue = b);
-
                         }
                         else
                         {
@@ -367,7 +366,6 @@ namespace PepperDash.Essentials.DM
                             MuteOffAction = new Action(programOutput.Codec2MuteOff);
                             VolumeUpAction = new Action<bool>((b) => programOutput.Codec2LevelUp.BoolValue = b);
                             VolumeDownAction = new Action<bool>((b) => programOutput.Codec2LevelDown.BoolValue = b);
-
                         }
                         else
                         {
@@ -396,10 +394,10 @@ namespace PepperDash.Essentials.DM
         public void SetVolumeScaled(ushort level)
         {
             Debug.Console(2, Debug.ErrorLogLevel.None, "Scaling DMPS volume:{0} level:{1} min:{2} max:{3}", Output.Name, level.ToString(), MinLevel.ToString(), MaxLevel.ToString());
-            VolumeLevelScaled = (ushort)(level * (MaxLevel - MinLevel) / ushort.MaxValue + MinLevel);
-            if (VolumeLevelScaledSend == true)
+            VolumeLevelInput = (ushort)(level * (MaxLevel - MinLevel) / ushort.MaxValue + MinLevel);
+            if (EnableVolumeSend == true)
             {
-                Level.UShortValue = VolumeLevelScaled;
+                Level.UShortValue = VolumeLevelInput;
             }
         }
 
@@ -412,10 +410,10 @@ namespace PepperDash.Essentials.DM
 
         public void SendScaledVolume(bool pressRelease)
         {
-            VolumeLevelScaledSend = pressRelease;
-            if(pressRelease == false)
+            EnableVolumeSend = pressRelease;
+            if (pressRelease == false)
             {
-                Level.UShortValue = VolumeLevelScaled;
+                SetVolumeScaled(VolumeLevelInput);
             }
         }
 

@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("MasterVolumeLevelScaledSend")]
         public JoinDataComplete MasterVolumeLevelScaledSend = new JoinDataComplete(new JoinData { JoinNumber = 5, JoinSpan = 1 },
-            new JoinMetadata { Description = "Master Volume Scaled Send", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+            new JoinMetadata { Description = "Master Volume Scaled Send Enable/Disable", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("SourceVolumeLevel")]
         public JoinDataComplete SourceVolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 11, JoinSpan = 1 },
@@ -57,6 +57,10 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete SourceVolumeDown = new JoinDataComplete(new JoinData { JoinNumber = 14, JoinSpan = 1 },
             new JoinMetadata { Description = "Source Volume Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
+        [JoinName("SourceVolumeLevelScaledSend")]
+        public JoinDataComplete SourceVolumeLevelScaledSend = new JoinDataComplete(new JoinData { JoinNumber = 15, JoinSpan = 1 },
+            new JoinMetadata { Description = "Source Volume Scaled Send Enable/Disable", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
         [JoinName("Codec1VolumeLevel")]
         public JoinDataComplete Codec1VolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 21, JoinSpan = 1 },
             new JoinMetadata { Description = "Codec1 Volume Signed dB Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
@@ -80,6 +84,10 @@ namespace PepperDash.Essentials.Core.Bridges
         [JoinName("Codec1VolumeDown")]
         public JoinDataComplete Codec1VolumeDown = new JoinDataComplete(new JoinData { JoinNumber = 24, JoinSpan = 1 },
             new JoinMetadata { Description = "Codec1 Volume Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("Codec1VolumeLevelScaledSend")]
+        public JoinDataComplete Codec1VolumeLevelScaledSend = new JoinDataComplete(new JoinData { JoinNumber = 25, JoinSpan = 1 },
+            new JoinMetadata { Description = "Codec1 Volume Scaled Send Enable/Disable", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("Codec2VolumeLevel")]
         public JoinDataComplete Codec2VolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 31, JoinSpan = 1 },
@@ -105,6 +113,10 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete Codec2VolumeDown = new JoinDataComplete(new JoinData { JoinNumber = 34, JoinSpan = 1 },
             new JoinMetadata { Description = "Codec2 Volume Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
+        [JoinName("Codec2VolumeLevelScaledSend")]
+        public JoinDataComplete Codec2VolumeLevelScaledSend = new JoinDataComplete(new JoinData { JoinNumber = 35, JoinSpan = 1 },
+            new JoinMetadata { Description = "Codec2 Volume Scaled Send Enable/Disable", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
         [JoinName("MicsMasterVolumeLevel")]
         public JoinDataComplete MicsMasterVolumeLevel = new JoinDataComplete(new JoinData { JoinNumber = 41, JoinSpan = 1 },
             new JoinMetadata { Description = "MicsMaster Volume Signed dB Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
@@ -128,6 +140,10 @@ namespace PepperDash.Essentials.Core.Bridges
         [JoinName("MicsMasterVolumeDown")]
         public JoinDataComplete MicsMasterVolumeDown = new JoinDataComplete(new JoinData { JoinNumber = 44, JoinSpan = 1 },
             new JoinMetadata { Description = "MicsMaster Volume Level Down", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("MicsMasterVolumeLevelScaledSend")]
+        public JoinDataComplete MicsMasterVolumeLevelScaledSend = new JoinDataComplete(new JoinData { JoinNumber = 45, JoinSpan = 1 },
+            new JoinMetadata { Description = "Mics Master Volume Scaled Send Enable/Disable", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
 
         /// <summary>
         /// Constructor to use when instantiating this Join Map without inheriting from it
