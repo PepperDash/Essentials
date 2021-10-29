@@ -62,6 +62,8 @@ namespace PepperDash.Essentials.Core
 
 		public BoolFeedback RawOccupancyUsFeedback { get; private set; }
 
+        public BoolFeedback IdentityModeFeedback { get; private set; }
+
 		// Debug properties
 		public bool InTestMode { get; private set; }
 
@@ -117,6 +119,8 @@ namespace PepperDash.Essentials.Core
 			RawOccupancyPirFeedback = new BoolFeedback(() => OccSensor.RawOccupancyDetectedByPassiveInfraredSensorFeedback.BoolValue);
 
 			RawOccupancyUsFeedback = new BoolFeedback(() => OccSensor.RawOccupancyDetectedByUltrasonicSensorFeedback.BoolValue);
+
+            IdentityModeFeedback = new BoolFeedback(()=>OccSensor.IdentityModeOnFeedback.BoolValue);
 
 			UltrasonicSensitivityInVacantStateFeedback = new IntFeedback(() => (int)OccSensor.UltrasonicSensorSensitivityInVacantStateFeedback);
 
@@ -731,7 +735,11 @@ namespace PepperDash.Essentials.Core
 
 			//Sensor Raw States
 			occController.RawOccupancyPirFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyPirFeedback.JoinNumber]);
-			occController.RawOccupancyUsFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyUsFeedback.JoinNumber]);           
+			occController.RawOccupancyUsFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyUsFeedback.JoinNumber]);  
+         
+            // Identity mode
+		    trilist.SetBoolSigAction(joinMap.IdentityMode.JoinNumber, occController.SetIdentityMode);
+            occController.IdentityModeFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IdentityModeFeedback.JoinNumber]);
 		}
 
 		public class CenOdtOccupancySensorBaseControllerFactory : EssentialsDeviceFactory<CenOdtOccupancySensorBaseController>
