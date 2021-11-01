@@ -75,7 +75,7 @@ namespace PepperDash.Essentials.Core
         /// Sets the sensitivity level for PIR while sensor is in vacant state
         /// 1 = low; 2 = medium; 3 = high
         /// </summary>
-        [JsonProperty("PirSensitivityVacant")]
+        [JsonProperty("pirSensitivityVacant")]
         public ushort? PirSensitivityVacant { get; set; }
     }
 }
