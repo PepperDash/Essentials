@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Resources;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
@@ -61,6 +62,8 @@ namespace PepperDash.Essentials.Core
 
 		public BoolFeedback RawOccupancyUsFeedback { get; private set; }
 
+        public BoolFeedback IdentityModeFeedback { get; private set; }
+
 		// Debug properties
 		public bool InTestMode { get; private set; }
 
@@ -116,6 +119,8 @@ namespace PepperDash.Essentials.Core
 			RawOccupancyPirFeedback = new BoolFeedback(() => OccSensor.RawOccupancyDetectedByPassiveInfraredSensorFeedback.BoolValue);
 
 			RawOccupancyUsFeedback = new BoolFeedback(() => OccSensor.RawOccupancyDetectedByUltrasonicSensorFeedback.BoolValue);
+
+            IdentityModeFeedback = new BoolFeedback(()=>OccSensor.IdentityModeOnFeedback.BoolValue);
 
 			UltrasonicSensitivityInVacantStateFeedback = new IntFeedback(() => (int)OccSensor.UltrasonicSensorSensitivityInVacantStateFeedback);
 
@@ -199,6 +204,27 @@ namespace PepperDash.Essentials.Core
             {
                 SetAndWhenVacatedState((bool)PropertiesConfig.AndWhenVacatedState);
             }
+
+            // TODO [ ] feature/cenoodtcpoe-sensor-sensitivity-configuration
+            if (PropertiesConfig.UsSensitivityOccupied != null)
+            {
+                SetUsSensitivityOccupied((ushort)PropertiesConfig.UsSensitivityOccupied);
+            }
+
+            if (PropertiesConfig.UsSensitivityVacant != null)
+            {
+                SetUsSensitivityVacant((ushort)PropertiesConfig.UsSensitivityVacant);
+            }
+
+            if (PropertiesConfig.PirSensitivityOccupied != null)
+            {
+                SetPirSensitivityOccupied((ushort)PropertiesConfig.PirSensitivityOccupied);
+            }
+
+            if (PropertiesConfig.PirSensitivityVacant != null)
+            {
+                SetPirSensitivityVacant((ushort)PropertiesConfig.PirSensitivityVacant);
+            }
         }
 
 		/// <summary>
@@ -279,7 +305,21 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		/// <summary>
+        /// <summary>
+        /// Sets the identity mode on or off
+        /// </summary>
+        /// <param name="state"></param>
+	    public void SetIdentityMode(bool state)
+        {
+            if (state)
+                OccSensor.IdentityModeOn();
+            else
+                OccSensor.IdentityModeOff();
+
+            Debug.Console(1, this, "Identity Mode: {0}", OccSensor.IdentityModeOnFeedback.BoolValue ? "On" : "Off");
+        }
+
+	    /// <summary>
 		/// Enables or disables the PIR sensor
 		/// </summary>
 		/// <param name="state"></param>
@@ -506,6 +546,54 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
+        /// <summary>
+        /// Sets the US sensor sensitivity for occupied state
+        /// </summary>
+        /// <param name="sensitivity"></param>
+	    public void SetUsSensitivityOccupied(ushort sensitivity)
+        {
+            var level = (eSensitivityLevel) sensitivity;
+            if (level == 0) return;
+
+            OccSensor.UltrasonicSensorSensitivityInOccupiedState = level;
+        }
+
+        /// <summary>
+        /// Sets the US sensor sensitivity for vacant state
+        /// </summary>
+        /// <param name="sensitivity"></param>
+        public void SetUsSensitivityVacant(ushort sensitivity)
+        {
+            var level = (eSensitivityLevel)sensitivity;
+            if (level == 0) return;
+
+            OccSensor.UltrasonicSensorSensitivityInVacantState = level;
+        }
+
+        /// <summary>
+        /// Sets the PIR sensor sensitivity for occupied state
+        /// </summary>
+        /// <param name="sensitivity"></param>
+        public void SetPirSensitivityOccupied(ushort sensitivity)
+        {
+            var level = (eSensitivityLevel)sensitivity;
+            if (level == 0) return;
+
+            OccSensor.PassiveInfraredSensorSensitivityInOccupiedState = level;
+        }
+
+        /// <summary>
+        /// Sets the PIR sensor sensitivity for vacant state
+        /// </summary>
+        /// <param name="sensitivity"></param>
+        public void SetPirSensitivityVacant(ushort sensitivity)
+        {
+            var level = (eSensitivityLevel)sensitivity;
+            if (level == 0) return;
+
+            OccSensor.PassiveInfraredSensorSensitivityInVacantState = level;
+        }
+
 		/// <summary>
 		/// Method to print current settings to console
 		/// </summary>
@@ -647,8 +735,11 @@ namespace PepperDash.Essentials.Core
 
 			//Sensor Raw States
 			occController.RawOccupancyPirFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyPirFeedback.JoinNumber]);
-			occController.RawOccupancyUsFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyUsFeedback.JoinNumber]);
-
+			occController.RawOccupancyUsFeedback.LinkInputSig(trilist.BooleanInput[joinMap.RawOccupancyUsFeedback.JoinNumber]);  
+         
+            // Identity mode
+		    trilist.SetBoolSigAction(joinMap.IdentityMode.JoinNumber, occController.SetIdentityMode);
+            occController.IdentityModeFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IdentityModeFeedback.JoinNumber]);
 		}
 
 		public class CenOdtOccupancySensorBaseControllerFactory : EssentialsDeviceFactory<CenOdtOccupancySensorBaseController>
