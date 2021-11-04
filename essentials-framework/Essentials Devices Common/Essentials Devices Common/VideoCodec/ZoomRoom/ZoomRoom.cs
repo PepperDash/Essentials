@@ -2349,7 +2349,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// </summary>
         /// <param name="contacts"></param>
         /// <param name="duration"></param>
-        public void InviteContactsToNewMeeting(InvitableDirectoryContact[] contacts, uint duration)
+        public void InviteContactsToNewMeeting(List<InvitableDirectoryContact> contacts, uint duration)
         {
             if(duration == 0)
             {
@@ -2376,7 +2376,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// Invites contacts to an existing meeting
         /// </summary>
         /// <param name="contacts"></param>
-        public void InviteContactsToExistingMeeting(InvitableDirectoryContact[] contacts)
+        public void InviteContactsToExistingMeeting(List<InvitableDirectoryContact> contacts)
         {
             StringBuilder message = new StringBuilder();
 
