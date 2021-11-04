@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		IRouting,
 		IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
 		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin,
-		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting, IHasMeetingInfo, IHasPresentationOnlyMeeting
+		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting, IHasMeetingInfo, IHasPresentationOnlyMeeting, IHasMeetingLock
 	{
 		private const long MeetingRefreshTimer = 60000;
         public uint DefaultMeetingDurationMin { get; private set; }
@@ -147,6 +147,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			ContentSwappedWithThumbnailFeedback = new BoolFeedback(ContentSwappedWithThumbnailFeedbackFunc);
 
 			NumberOfScreensFeedback = new IntFeedback(NumberOfScreensFeedbackFunc);
+
+            MeetingIsLockedFeedback = new BoolFeedback(() => Configuration.Call.Lock.Enable );
 		}
 
 		public CommunicationGather PortGather { get; private set; }
@@ -596,6 +598,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					}
 				}
 			};
+
+            Configuration.Call.Lock.PropertyChanged += (o, a) =>
+                {
+                    if (a.PropertyName == "Enable")
+                    {
+                        MeetingIsLockedFeedback.FireUpdate();
+                    }
+                };
 
 			// This is to deal with incorrect object structure coming back from the Zoom Room on v 5.6.3
 			Configuration.Client.Call.Layout.PropertyChanged += (o, a) =>
@@ -2334,6 +2344,56 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 		}
 
+        /// <summary>
+        /// Invites contacts to a new meeting for a specified duration
+        /// </summary>
+        /// <param name="contacts"></param>
+        /// <param name="duration"></param>
+        public void InviteContactsToNewMeeting(InvitableDirectoryContact[] contacts, uint duration)
+        {
+            if(duration == 0)
+            {
+                duration = DefaultMeetingDurationMin;
+            }
+
+            StringBuilder message = new StringBuilder();
+
+            // Add the prefix
+            message.Append(string.Format("zCommand Invite Duration: {0}", duration));
+
+            // Add each invitee
+            foreach (var contact in contacts)
+            {
+                var invitee = string.Format(" user: {0}", contact.ContactId);
+
+                message.Append(invitee);
+            }
+
+            SendText(message.ToString());
+        }
+
+        /// <summary>
+        /// Invites contacts to an existing meeting
+        /// </summary>
+        /// <param name="contacts"></param>
+        public void InviteContactsToExistingMeeting(InvitableDirectoryContact[] contacts)
+        {
+            StringBuilder message = new StringBuilder();
+
+            // Add the prefix
+            message.Append(string.Format("zCommand Call Invite"));
+
+            // Add each invitee
+            foreach (var contact in contacts)
+            {
+                var invitee = string.Format(" user: {0}", contact.ContactId);
+
+                message.Append(invitee);
+            }
+
+            SendText(message.ToString());
+        }
+
 
         /// <summary>
         /// Starts a PMI Meeting for the specified duration (or default meeting duration if 0 is specified)
@@ -2469,9 +2529,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public CodecParticipants Participants { get; private set; }
 
+        public void RemoveParticipant(Participant participant)
+        {
+            SendText(string.Format("zCommand Call Expel Id: {0}", participant.UserId));
+        }
+
+        public void SetParticipantAsHost(Participant participant)
+        {
+            SendText(string.Format("zCommand Call HostChange Id: {0}", participant.UserId));
+        }
+
 		#endregion
 
 		#region IHasParticipantAudioMute Members
+
+        public void MuteAudioForAllParticipants()
+        {
+            SendText(string.Format("zCommand Call MuteAll Mute: on"));
+        }
 
 		public void MuteAudioForParticipant(int userId)
 		{
@@ -3034,7 +3109,35 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	    }
 
 	    #endregion
-	}
+
+        #region IHasMeetingLock Members
+
+        public BoolFeedback MeetingIsLockedFeedback { get; private set; }
+
+        public void LockMeeting()
+        {
+            SendText(string.Format("zConfiguration Call Lock Enable: on"));
+        }
+
+        public void UnLockMeeting()
+        {
+            SendText(string.Format("zConfiguration Call Lock Enable: off"));
+        }
+
+        public void ToggleMeetingLock()
+        {
+            if (MeetingIsLockedFeedback.BoolValue)
+            {
+                UnLockMeeting();
+            }
+            else
+            {
+                LockMeeting();
+            }
+        }
+
+        #endregion
+    }
 
 	/// <summary>
 	/// Zoom Room specific info object

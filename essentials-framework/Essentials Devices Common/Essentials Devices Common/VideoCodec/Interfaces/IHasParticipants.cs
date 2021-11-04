@@ -12,6 +12,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 	public interface IHasParticipants
 	{
 		CodecParticipants Participants { get; }
+
+        /// <summary>
+        /// Removes the participant from the meeting
+        /// </summary>
+        /// <param name="participant"></param>
+        void RemoveParticipant(Participant participant);
+
+        /// <summary>
+        /// Sets the participant as the new host
+        /// </summary>
+        /// <param name="participant"></param>
+        void SetParticipantAsHost(Participant participant);
 	}
 
 	/// <summary>
@@ -29,6 +41,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
 	/// </summary>
 	public interface IHasParticipantAudioMute : IHasParticipantVideoMute
 	{
+        /// <summary>
+        /// Mute audio of all participants
+        /// </summary>
+        void MuteAudioForAllParticipants();
+
 		void MuteAudioForParticipant(int userId);
 		void UnmuteAudioForParticipant(int userId);
 		void ToggleAudioForParticipant(int userId);

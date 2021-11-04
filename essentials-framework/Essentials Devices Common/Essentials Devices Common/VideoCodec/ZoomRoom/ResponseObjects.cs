@@ -1123,9 +1123,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 		}
 
-		public class Lock
+		public class Lock : NotifiableObject
 		{
-			public bool Enable { get; set; }
+            private bool _enable;
+
+			public bool Enable 
+            {
+                get
+                {
+                    return _enable;
+                }
+                set
+                {
+                    if (value != _enable)
+                    {
+                        _enable = value;
+                        NotifyPropertyChanged("Enable");
+                    }
+                }
+            }
 		}
 
 		public class ClosedCaption
