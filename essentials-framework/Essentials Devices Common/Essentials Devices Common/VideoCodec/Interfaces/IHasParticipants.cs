@@ -17,13 +17,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         /// Removes the participant from the meeting
         /// </summary>
         /// <param name="participant"></param>
-        void RemoveParticipant(Participant participant);
+        void RemoveParticipant(int userId);
 
         /// <summary>
         /// Sets the participant as the new host
         /// </summary>
         /// <param name="participant"></param>
-        void SetParticipantAsHost(Participant participant);
+        void SetParticipantAsHost(int userId);
 	}
 
 	/// <summary>

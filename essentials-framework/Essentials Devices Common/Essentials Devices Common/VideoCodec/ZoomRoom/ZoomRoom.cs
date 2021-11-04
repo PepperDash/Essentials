@@ -2529,14 +2529,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public CodecParticipants Participants { get; private set; }
 
-        public void RemoveParticipant(Participant participant)
+        public void RemoveParticipant(int userId)
         {
-            SendText(string.Format("zCommand Call Expel Id: {0}", participant.UserId));
+            SendText(string.Format("zCommand Call Expel Id: {0}", userId));
         }
 
-        public void SetParticipantAsHost(Participant participant)
+        public void SetParticipantAsHost(int userId)
         {
-            SendText(string.Format("zCommand Call HostChange Id: {0}", participant.UserId));
+            SendText(string.Format("zCommand Call HostChange Id: {0}", userId));
         }
 
 		#endregion
