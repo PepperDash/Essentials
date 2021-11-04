@@ -744,12 +744,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 		}
 
-		public class CallRecordInfo
+		public class CallRecordInfo : NotifiableObject
 		{
+            private bool _meetingIsBeingRecorded;
+
 			public bool canRecord { get; set; }
 			public bool emailRequired { get; set; }
 			public bool amIRecording { get; set; }
-			public bool meetingIsBeingRecorded { get; set; }
+
+			public bool meetingIsBeingRecorded 
+            {
+                get
+                {
+                    return _meetingIsBeingRecorded;
+                }
+                set
+                {
+                    if (value != _meetingIsBeingRecorded)
+                    {
+                        _meetingIsBeingRecorded = value;
+                        NotifyPropertyChanged("meetingIsBeingRecorded");
+                    }
+                }
+            }
 		}
 	}
 

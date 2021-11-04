@@ -26,7 +26,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		IRouting,
 		IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
 		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin,
-		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting, IHasMeetingInfo, IHasPresentationOnlyMeeting, IHasMeetingLock
+		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting, IHasMeetingInfo, IHasPresentationOnlyMeeting,
+        IHasMeetingLock, IHasMeetingRecording
 	{
 		private const long MeetingRefreshTimer = 60000;
         public uint DefaultMeetingDurationMin { get; private set; }
@@ -149,6 +150,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			NumberOfScreensFeedback = new IntFeedback(NumberOfScreensFeedbackFunc);
 
             MeetingIsLockedFeedback = new BoolFeedback(() => Configuration.Call.Lock.Enable );
+
+            MeetingIsRecordingFeedback = new BoolFeedback(() => Status.Call.CallRecordInfo.meetingIsBeingRecorded );
 		}
 
 		public CommunicationGather PortGather { get; private set; }
@@ -650,6 +653,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					UpdateCallStatus();
 				}
 			};
+
+            Status.Call.CallRecordInfo.PropertyChanged += (o, a) =>
+                {
+                    if (a.PropertyName == "meetingIsBeingRecorded")
+                    {
+                        MeetingIsRecordingFeedback.FireUpdate();
+                    }
+                };
 
 			Status.Sharing.PropertyChanged += (o, a) =>
 			{
@@ -3133,6 +3144,34 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             else
             {
                 LockMeeting();
+            }
+        }
+
+        #endregion
+
+        #region IHasMeetingRecording Members
+
+        public BoolFeedback MeetingIsRecordingFeedback { get; private set; }
+
+        public void StartRecording()
+        {
+            SendText(string.Format("Command Call Record Enable: on"));
+        }
+
+        public void StopRecording()
+        {
+            SendText(string.Format("Command Call Record Enable: off"));
+        }
+
+        public void ToggleRecording()
+        {
+            if (MeetingIsRecordingFeedback.BoolValue)
+            {
+                StopRecording();
+            }
+            else
+            {
+                StartRecording();
             }
         }
 
