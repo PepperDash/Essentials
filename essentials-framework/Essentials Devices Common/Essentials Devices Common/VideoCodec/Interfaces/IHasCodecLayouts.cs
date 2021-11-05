@@ -46,7 +46,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     public class LayoutInfoChangedEventArgs : EventArgs
     {
         public ZoomRoom.zConfiguration.eLayoutStyle AvailableLayouts { get; set; }
-        public ZoomRoom.zConfiguration.eLayoutStyle LastSelectedLayout { get; set; }
+        public ZoomRoom.zConfiguration.eLayoutStyle CurrentSelectedLayout { get; set; }
         public bool CanSwapContentWithThumbnail { get; set; }
         public bool ContentSwappedWithThumbnail { get; set; }
         public bool LayoutViewIsOnFirstPage { get; set; }
