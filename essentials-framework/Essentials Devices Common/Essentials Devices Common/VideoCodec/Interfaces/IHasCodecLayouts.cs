@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     /// </summary>
     public interface IHasZoomRoomLayouts : IHasCodecLayouts
     {
-        event EventHandler<LayoutInfoChangedEventArgs> AvailableLayoutsChanged;
+        event EventHandler<LayoutInfoChangedEventArgs> LayoutInfoChanged;
 
         BoolFeedback LayoutViewIsOnFirstPageFeedback { get; }  // TODO: #697 [*] Consider modifying to report button visibility in func
         BoolFeedback LayoutViewIsOnLastPageFeedback { get; } // TODO: #697 [*] Consider modifying to report button visibility in func 
@@ -46,5 +46,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     public class LayoutInfoChangedEventArgs : EventArgs
     {
         public ZoomRoom.zConfiguration.eLayoutStyle AvailableLayouts { get; set; }
+        public ZoomRoom.zConfiguration.eLayoutStyle LastSelectedLayout { get; set; }
+        public bool CanSwapContentWithThumbnail { get; set; }
+        public bool ContentSwappedWithThumbnail { get; set; }
+        public bool LayoutViewIsOnFirstPage { get; set; }
+        public bool LayoutViewIsOnLastPage { get; set; }
     }
 }

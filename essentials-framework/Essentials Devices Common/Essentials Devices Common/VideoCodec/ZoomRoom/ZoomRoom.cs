@@ -583,11 +583,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					case "ShareThumb":
 					{
 						ContentSwappedWithThumbnailFeedback.FireUpdate();
+                        OnLayoutInfoChanged();
 						break;
 					}
 					case "Style":
 					{
 						LocalLayoutFeedback.FireUpdate();
+                        OnLayoutInfoChanged();
 						break;
 					}
 					case "Size":
@@ -626,11 +628,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					case "ShareThumb":
 					{
 						ContentSwappedWithThumbnailFeedback.FireUpdate();
+                        OnLayoutInfoChanged();
 						break;
 					}
 					case "Style":
 					{
 						LocalLayoutFeedback.FireUpdate();
+                        OnLayoutInfoChanged();
 						break;
 					}
 				}
@@ -735,13 +739,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						LayoutViewIsOnLastPageFeedback.FireUpdate();
 						break;
 					}
-						//case "video_type":
-						//    {
-						//        It appears as though the actual value we want to watch is Configuration.Call.Layout.Style
-						//        LocalLayoutFeedback.FireUpdate();
-						//        break;
-						//    }
+                    case "can_Switch_Floating_Share_Content":
+                    {
+                        CanSwapContentWithThumbnailFeedback.FireUpdate();
+                        break;
+                    }
 				}
+                OnLayoutInfoChanged();
 			};
 
 			Status.NumberOfScreens.PropertyChanged += (o, a) =>
@@ -2153,7 +2157,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			var layoutsCodec = this as IHasZoomRoomLayouts;
 			if (layoutsCodec != null)
 			{
-				layoutsCodec.AvailableLayoutsChanged += (o, a) =>
+				layoutsCodec.LayoutInfoChanged += (o, a) =>
 				{
 					trilist.SetBool(joinMap.LayoutGalleryIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.Gallery
 					                                                             ==
@@ -2856,7 +2860,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		#region IHasZoomRoomLayouts Members
 
-		public event EventHandler<LayoutInfoChangedEventArgs> AvailableLayoutsChanged;
+		public event EventHandler<LayoutInfoChangedEventArgs> LayoutInfoChanged;
 
 		private Func<bool> LayoutViewIsOnFirstPageFeedbackFunc
 		{
@@ -2922,14 +2926,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			Debug.Console(1, this, "availablelayouts: {0}", availableLayouts);
 
-			var handler = AvailableLayoutsChanged;
-			if (handler != null)
-			{
-				handler(this, new LayoutInfoChangedEventArgs() {AvailableLayouts = availableLayouts});
-			}
-
 			AvailableLayouts = availableLayouts;
 		}
+
+        private void OnLayoutInfoChanged()
+        {
+            var handler = LayoutInfoChanged;
+            if (handler != null)
+            {
+                handler(this, new LayoutInfoChangedEventArgs()
+                {
+                    AvailableLayouts = AvailableLayouts,
+                    LastSelectedLayout = (zConfiguration.eLayoutStyle)Enum.Parse(typeof(zConfiguration.eLayoutStyle),LocalLayoutFeedback.StringValue, true),
+                    LayoutViewIsOnFirstPage = LayoutViewIsOnFirstPageFeedback.BoolValue,
+                    LayoutViewIsOnLastPage = LayoutViewIsOnLastPageFeedback.BoolValue,
+                    CanSwapContentWithThumbnail = CanSwapContentWithThumbnailFeedback.BoolValue,
+                    ContentSwappedWithThumbnail = ContentSwappedWithThumbnailFeedback.BoolValue,
+                });
+            }
+        }
 
 		public void GetAvailableLayouts()
 		{
