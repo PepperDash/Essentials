@@ -12,8 +12,8 @@ on:
 env:
   # solution path doesn't need slashes unless it is multiple folders deep
   # solution name does not include extension. .sln is assumed
-  SOLUTION_PATH: PepperDashEssentials
-  SOLUTION_FILE: PepperDashEssentials
+  SOLUTION_PATH: epi-utilit-io-action
+  SOLUTION_FILE: epi-utilit-io-action
   # Do not edit this, we're just creating it here
   VERSION: 0.0.0-buildtype-buildnumber
   # Defaults to debug for build type
