@@ -130,6 +130,7 @@
     <Compile Include="VideoCodec\Interfaces\IHasSelfviewSize.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasStandbyMode.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasStartMeeting.cs" />
+    <Compile Include="VideoCodec\Interfaces\IJoinCalls.cs" />
     <Compile Include="VideoCodec\Interfaces\iVideoCodecInfo.cs" />
     <Compile Include="Codec\iHasCallFavorites.cs" />
     <Compile Include="Codec\iHasCallHistory.cs" />

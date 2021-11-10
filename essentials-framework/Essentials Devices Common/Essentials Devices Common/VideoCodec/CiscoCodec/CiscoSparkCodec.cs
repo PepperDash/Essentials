@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
         ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, 
         IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute, IHasDoNotDisturbMode,
-        IHasHalfWakeMode, IHasCallHold
+        IHasHalfWakeMode, IHasCallHold, IJoinCalls
     {
         private bool _externalSourceChangeRequested;
 
@@ -1398,6 +1398,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public void ResumeCall(CodecActiveCallItem activeCall)
         {
             SendText(string.Format("xCommand Call Resume CallId: {0}", activeCall.Id));
+        }
+
+        #endregion
+        #region IJoinCalls
+
+        public void JoinCall(CodecActiveCallItem activeCall)
+        {
+            SendText(string.Format("xCommand Call Join CallId: {0}", activeCall.Id));
+        }
+
+        public void JoinAllCalls()
+        {
+            foreach (var call in ActiveCalls)
+            {
+                if(call.IsActiveCall)
+                    JoinCall(call);
+            }
         }
 
         #endregion
