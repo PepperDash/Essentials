@@ -1949,9 +1949,30 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Duration
+        public class Duration : ValueProperty
         {
-            public string Value { get; set; }
+            private string _Value;
+
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    OnValueChanged();
+                }
+            }
+
+            public TimeSpan DurationValue
+            {
+                get
+                {
+                    return new TimeSpan(0, 0, Int32.Parse(_Value));
+                }
+            }
         }
 
         public class FacilityServiceId
@@ -1964,9 +1985,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class PlacedOnHold
+        public class PlacedOnHold : ValueProperty
         {
-            public string Value { get; set; }
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                set
+                {
+                    // If the incoming value is "True" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "True";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class Protocol
@@ -2014,6 +2045,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 CallType = new CallType();
                 Status = new Status2();
+                Duration = new Duration();
             }
         }
 

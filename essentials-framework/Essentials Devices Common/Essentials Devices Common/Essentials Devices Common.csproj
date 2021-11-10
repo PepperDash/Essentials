@@ -108,6 +108,7 @@
     <Compile Include="Codec\eCodecCallStatus.cs" />
     <Compile Include="Codec\eMeetingPrivacy.cs" />
     <Compile Include="Codec\iCodecAudio.cs" />
+    <Compile Include="Codec\IHasCallHold.cs" />
     <Compile Include="Codec\IHasDoNotDisturb.cs" />
     <Compile Include="Codec\IHasExternalSourceSwitching.cs" />
     <Compile Include="ImageProcessors\TVOneCorio.cs" />

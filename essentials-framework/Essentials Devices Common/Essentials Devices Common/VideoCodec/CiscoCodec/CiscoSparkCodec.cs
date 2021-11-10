@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
         ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, 
         IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute, IHasDoNotDisturbMode,
-        IHasHalfWakeMode
+        IHasHalfWakeMode, IHasCallHold
     {
         private bool _externalSourceChangeRequested;
 
@@ -847,6 +847,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                         changeDetected = true;
                                     }
                                 }
+                                if(call.Duration != null)
+                                {
+                                    if(!string.IsNullOrEmpty(call.Duration.Value))
+                                    {
+                                        tempActiveCall.Duration = call.Duration.DurationValue;
+                                        changeDetected = true;
+                                    }
+                                }
+                                if(call.PlacedOnHold != null)
+                                {
+                                    tempActiveCall.IsOnHold = call.PlacedOnHold.BoolValue;
+                                    changeDetected = true;
+                                }
 
                                 if (changeDetected)
                                 {
@@ -865,7 +878,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                     Name = call.DisplayName.Value,
                                     Number = call.RemoteNumber.Value,
                                     Type = CodecCallType.ConvertToTypeEnum(call.CallType.Value),
-                                    Direction = CodecCallDirection.ConvertToDirectionEnum(call.Direction.Value)
+                                    Direction = CodecCallDirection.ConvertToDirectionEnum(call.Direction.Value),
+                                    Duration = call.Duration.DurationValue,
+                                    IsOnHold = call.PlacedOnHold.BoolValue,
                                 };
 
                                 // Add it to the ActiveCalls List
@@ -1348,7 +1363,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             SendText(string.Format("xCommand Dial Number: \"{0}\" Protocol: {1} CallRate: {2} CallType: {3} BookingId: {4}", number, protocol, callRate, callType, meetingId));
         }
- 
+
+
         public override void EndCall(CodecActiveCallItem activeCall)
         {
             SendText(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
@@ -1371,6 +1387,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             SendText("xCommand Call Reject");
         }
+
+        #region IHasCallHold Members
+
+        public void HoldCall(CodecActiveCallItem activeCall)
+        {
+            SendText(string.Format("xCommand Call Hold CallId: {0}", activeCall.Id));
+        }
+
+        public void ResumeCall(CodecActiveCallItem activeCall)
+        {
+            SendText(string.Format("xCommand Call Resume CallId: {0}", activeCall.Id));
+        }
+
+        #endregion
 
         public override void SendDtmf(string s)
         {
