@@ -64,6 +64,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public BoolFeedback FarEndIsSharingContentFeedback { get; private set; }
 
+        public IntFeedback RingtoneVolumeFeedback { get; private set; }
+
         private CodecCommandWithLabel CurrentSelfviewPipPosition;
 
         private CodecCommandWithLabel CurrentLocalLayout;
@@ -324,6 +326,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
 			PresentationViewMaximizedFeedback = new BoolFeedback(() => CurrentPresentationView == "Maximized");
 
+            RingtoneVolumeFeedback = new IntFeedback(() => CodecConfiguration.Configuration.Audio.SoundsAndAlerts.RingVolume.Volume);
+
             Communication = comm;
 
             if (props.CommunicationMonitorProperties != null)
@@ -435,6 +439,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = SharingContentIsOnFeedback.FireUpdate;
             CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = FarEndIsSharingContentFeedback.FireUpdate;
             CodecStatus.Status.Conference.DoNotDisturb.ValueChangedAction = DoNotDisturbModeIsOnFeedback.FireUpdate;
+
+            CodecConfiguration.Configuration.Audio.SoundsAndAlerts.RingVolume.ValueChangedAction = RingtoneVolumeFeedback.FireUpdate;
 
             try
             {
@@ -1419,9 +1425,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         #endregion
 
+        /// <summary>
+        /// Sends tones to the last connected call
+        /// </summary>
+        /// <param name="s"></param>
         public override void SendDtmf(string s)
         {
             SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
+        }
+
+        /// <summary>
+        /// Sends tones to a specific call
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="activeCall"></param>
+        public void SendDtmf(string s, CodecActiveCallItem activeCall)
+        {
+            SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", activeCall.Id, s));
         }
 
         public void SelectPresentationSource(int source)
@@ -1429,6 +1449,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             PresentationSource = source;
 
             StartSharing();
+        }
+
+        /// <summary>
+        /// Sets the ringtone volume level
+        /// </summary>
+        /// <param name="volume">level from 0 - 100 in increments of 5</param>
+        public void SetRingtoneVolume(int volume)
+        {
+            SendText(string.Format("xConfiguration Audio SoundsAndAlerts RingVolume: [0]", volume));
         }
 
         /// <summary>
@@ -1446,6 +1475,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             SelectPresentationSource(3);
         }
+
+
 
         /// <summary>
         /// Starts presentation sharing
@@ -1472,6 +1503,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             SendText("xCommand Presentation Stop");
         }
+
+
 
         public override void PrivacyModeOn()
         {
@@ -1601,6 +1634,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 trilist.SetSigFalseAction(joinMap.DeactivateStandby.JoinNumber, () => halfwakeCodec.StandbyDeactivate());
                 trilist.SetSigFalseAction(joinMap.ActivateHalfWakeMode.JoinNumber, () => halfwakeCodec.HalfwakeActivate());
             }
+
+            // TODO: Add mechanism to select a call instance to be able to direct DTMF tones to...
         }
 
         /// <summary>

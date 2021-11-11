@@ -525,6 +525,48 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+        [JoinName("CameraFocusNear")]
+        public JoinDataComplete CameraFocusNear = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 117,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Camera Focus Near",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("CameraFocusFar")]
+        public JoinDataComplete CameraFocusFar = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 118,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Camera Focus Far",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("CameraFocusAuto")]
+        public JoinDataComplete CameraFocusAuto = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 119,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Camera Auto Focus Trigger",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
 		[JoinName("CameraPresetSave")]
 		public JoinDataComplete CameraPresetSave = new JoinDataComplete(
 			new JoinData

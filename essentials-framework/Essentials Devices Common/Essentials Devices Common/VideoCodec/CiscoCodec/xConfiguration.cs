@@ -112,16 +112,46 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class RingVolume
+        public class RingVolume : ValueProperty
         {
             public string valueSpaceRef { get; set; }
-            public string Value { get; set; }
+
+            string _Value;
+
+            /// <summary>
+            /// Sets Value and triggers the action when set
+            /// </summary>
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    OnValueChanged();
+                }
+            }
+
+            public int Volume
+            {
+                get
+                {
+                    return Int32.Parse(_Value);
+                }
+            }
         }
 
         public class SoundsAndAlerts
         {
             public RingTone RingTone { get; set; }
             public RingVolume RingVolume { get; set; }
+
+            public SoundsAndAlerts()
+            {
+                RingVolume = new RingVolume();
+            }
         }
 
         public class Audio
@@ -131,6 +161,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Microphones Microphones { get; set; }
             public Output Output { get; set; }
             public SoundsAndAlerts SoundsAndAlerts { get; set; }
+
+
+            public Audio()
+            {
+                SoundsAndAlerts = new SoundsAndAlerts();
+            }
         }
 
         public class DefaultMode
@@ -1797,6 +1833,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public UserInterface UserInterface { get; set; }
             public UserManagement UserManagement { get; set; }
             public Video2 Video { get; set; }
+
+            public Configuration()
+            {
+                Audio = new Audio();
+            }
         }
 
         public class RootObject

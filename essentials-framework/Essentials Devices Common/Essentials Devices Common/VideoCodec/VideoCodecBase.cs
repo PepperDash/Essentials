@@ -1201,6 +1201,39 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 				else camera.ZoomStop();
 			});
 
+
+            trilist.SetBoolSigAction(joinMap.CameraFocusNear.JoinNumber, (b) =>
+            {
+                if (codec.SelectedCamera == null) return;
+                var camera = codec.SelectedCamera as IHasCameraFocusControl;
+
+                if (camera == null) return;
+
+                if (b) camera.FocusNear();
+                else camera.FocusStop();
+            });
+
+            trilist.SetBoolSigAction(joinMap.CameraFocusFar.JoinNumber, (b) =>
+            {
+                if (codec.SelectedCamera == null) return;
+                var camera = codec.SelectedCamera as IHasCameraFocusControl;
+
+                if (camera == null) return;
+
+                if (b) camera.FocusFar();
+                else camera.FocusStop();
+            });
+
+            trilist.SetSigFalseAction(joinMap.CameraFocusAuto.JoinNumber, () =>
+            {
+                if (codec.SelectedCamera == null) return;
+                var camera = codec.SelectedCamera as IHasCameraFocusControl;
+
+                if (camera == null) return;
+
+                camera.TriggerAutoFocus();
+            });
+
 			//Camera Select
 			trilist.SetUShortSigAction(joinMap.CameraNumberSelect.JoinNumber, (i) =>
 			{

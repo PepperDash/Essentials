@@ -12,28 +12,28 @@ using PepperDash.Essentials.Devices.Common.VideoCodec.CiscoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
+    // Helper Classes for Proerties
+    public abstract class ValueProperty
+    {
+        /// <summary>
+        /// Triggered when Value is set
+        /// </summary>
+        public Action ValueChangedAction { get; set; }
+
+        protected void OnValueChanged()
+        {
+            var a = ValueChangedAction;
+            if (a != null)
+                a();
+        }
+
+    }
+
 	/// <summary>
 	/// This class exists to capture serialized data sent back by a Cisco codec in JSON output mode
 	/// </summary>
     public class CiscoCodecStatus
     {
-        // Helper Classes for Proerties
-        public abstract class ValueProperty
-        {
-            /// <summary>
-            /// Triggered when Value is set
-            /// </summary>
-            public Action ValueChangedAction { get; set; }
-
-            protected void OnValueChanged()
-            {
-                var a = ValueChangedAction;
-                if (a != null)
-                    a();
-            }
-
-        }
-
 
         public class ConnectionStatus
         {
