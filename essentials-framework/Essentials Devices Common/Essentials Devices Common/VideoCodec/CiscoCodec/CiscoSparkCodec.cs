@@ -1407,6 +1407,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         }
 
         #endregion
+
         #region IJoinCalls
 
         public void JoinCall(CodecActiveCallItem activeCall)
@@ -1416,10 +1417,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void JoinAllCalls()
         {
+            StringBuilder ids = new StringBuilder();
+
             foreach (var call in ActiveCalls)
             {
-                if(call.IsActiveCall)
-                    JoinCall(call);
+                if (call.IsActiveCall)
+                {
+                    ids.Append(string.Format(" CallId: {0}", call.Id));
+                }
+            }
+
+            if (ids.Length > 0)
+            {
+                SendText(string.Format("xCommand Call Join {0}", ids.ToString()));
             }
         }
 

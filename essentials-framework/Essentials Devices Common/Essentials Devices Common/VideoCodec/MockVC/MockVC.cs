@@ -751,6 +751,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             SetConfig(Config);
         }
 
+        public void SelectFarEndPreset(int i)
+        {
+            Debug.Console(1, this, "Selecting Far End Preset: {0}", i);
+        }
+
         #endregion
 
         protected override void CustomSetConfig(DeviceConfig config)

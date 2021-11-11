@@ -149,6 +149,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		public abstract void AcceptCall(CodecActiveCallItem call);
 		public abstract void RejectCall(CodecActiveCallItem call);
 		public abstract void SendDtmf(string s);
+        public virtual void SendDtmf(string s, CodecActiveCallItem call) { }
 
 		#endregion
 
@@ -978,8 +979,21 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 			trilist.SetSigFalseAction(joinMap.ManualDial.JoinNumber,
 				() => Dial(trilist.StringOutput[joinMap.CurrentDialString.JoinNumber].StringValue));
 
-			//End All calls for now
-			trilist.SetSigFalseAction(joinMap.EndCall.JoinNumber, EndAllCalls);
+			//End All calls
+			trilist.SetSigFalseAction(joinMap.EndAllCalls.JoinNumber, EndAllCalls);
+
+            //End a specific call, specified by index
+            trilist.SetUShortSigAction(joinMap.EndCall.JoinNumber, (i) =>
+                {
+                    if (i > 0 && i <= 8)
+                    {
+                        var call = ActiveCalls[i - 1];
+                        if (call != null)
+                        {
+                            EndCall(call);
+                        }
+                    }
+                });
 
 			trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 
@@ -998,6 +1012,8 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 				}
 
 				trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
+
+                trilist.SetUshort(joinMap.ConnectedCallCount.JoinNumber, (ushort)ActiveCalls.Count);
 			};
 		}
 
@@ -1018,6 +1034,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 					break;
 				//digitals
 				tokenArray[arrayIndex] = new XSigDigitalToken(digitalIndex + 1, call.IsActiveCall);
+                tokenArray[arrayIndex + 1] = new XSigDigitalToken(digitalIndex + 2, call.IsOnHold);
 
 				//serials
 				tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 1, call.Name ?? String.Empty);
@@ -1025,6 +1042,12 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 				tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 3, call.Direction.ToString());
 				tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 4, call.Type.ToString());
 				tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 5, call.Status.ToString());
+                if(call.Duration != null)
+                {
+                    // May need to verify correct string format here
+                    var dur = string.Format("{0:c}", call.Duration);
+                    tokenArray[arrayIndex + 6] = new XSigSerialToken(stringIndex + 6, dur);
+                }
 
 				arrayIndex += offset;
 				stringIndex += maxStrings;
@@ -1034,13 +1057,16 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 			{
 				//digitals
 				tokenArray[arrayIndex] = new XSigDigitalToken(digitalIndex + 1, false);
+                tokenArray[arrayIndex + 1] = new XSigDigitalToken(digitalIndex + 2, false);
 
-				//serials
+
+                //serials
 				tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 1, String.Empty);
 				tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 2, String.Empty);
 				tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 3, String.Empty);
 				tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 4, String.Empty);
 				tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 5, String.Empty);
+                tokenArray[arrayIndex + 6] = new XSigSerialToken(stringIndex + 6, String.Empty);
 
 				arrayIndex += offset;
 				stringIndex += maxStrings;
@@ -1052,19 +1078,55 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 		private void LinkVideoCodecDtmfToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
-			trilist.SetSigFalseAction(joinMap.Dtmf0.JoinNumber, () => SendDtmf("0"));
-			trilist.SetSigFalseAction(joinMap.Dtmf1.JoinNumber, () => SendDtmf("1"));
-			trilist.SetSigFalseAction(joinMap.Dtmf2.JoinNumber, () => SendDtmf("2"));
-			trilist.SetSigFalseAction(joinMap.Dtmf3.JoinNumber, () => SendDtmf("3"));
-			trilist.SetSigFalseAction(joinMap.Dtmf4.JoinNumber, () => SendDtmf("4"));
-			trilist.SetSigFalseAction(joinMap.Dtmf5.JoinNumber, () => SendDtmf("5"));
-			trilist.SetSigFalseAction(joinMap.Dtmf6.JoinNumber, () => SendDtmf("6"));
-			trilist.SetSigFalseAction(joinMap.Dtmf7.JoinNumber, () => SendDtmf("7"));
-			trilist.SetSigFalseAction(joinMap.Dtmf8.JoinNumber, () => SendDtmf("8"));
-			trilist.SetSigFalseAction(joinMap.Dtmf9.JoinNumber, () => SendDtmf("9"));
-			trilist.SetSigFalseAction(joinMap.DtmfStar.JoinNumber, () => SendDtmf("*"));
-			trilist.SetSigFalseAction(joinMap.DtmfPound.JoinNumber, () => SendDtmf("#"));
+            trilist.SetSigFalseAction(joinMap.Dtmf0.JoinNumber, () => SendDtmfAction("0", trilist, joinMap));
+            trilist.SetSigFalseAction(joinMap.Dtmf1.JoinNumber, () => SendDtmfAction("1", trilist, joinMap));
+            trilist.SetSigFalseAction(joinMap.Dtmf2.JoinNumber, () => SendDtmfAction("2", trilist, joinMap));
+            trilist.SetSigFalseAction(joinMap.Dtmf3.JoinNumber, () => SendDtmfAction("3", trilist, joinMap));
+            trilist.SetSigFalseAction(joinMap.Dtmf4.JoinNumber, () => SendDtmfAction("4", trilist, joinMap));
+            trilist.SetSigFalseAction(joinMap.Dtmf5.JoinNumber, () => SendDtmfAction("5", trilist, joinMap));
+            trilist.SetSigFalseAction(joinMap.Dtmf6.JoinNumber, () => SendDtmfAction("6", trilist, joinMap));
+            trilist.SetSigFalseAction(joinMap.Dtmf7.JoinNumber, () => SendDtmfAction("7", trilist, joinMap));
+            trilist.SetSigFalseAction(joinMap.Dtmf8.JoinNumber, () => SendDtmfAction("8", trilist, joinMap));
+            trilist.SetSigFalseAction(joinMap.Dtmf9.JoinNumber, () => SendDtmfAction("9", trilist, joinMap));
+            trilist.SetSigFalseAction(joinMap.DtmfStar.JoinNumber, () => SendDtmfAction("*", trilist, joinMap));
+            trilist.SetSigFalseAction(joinMap.DtmfPound.JoinNumber, () => SendDtmfAction("#", trilist, joinMap));       
 		}
+
+        /// <summary>
+        /// Sends the specified string as a DTMF command.
+        /// Reads the value of the SendDtmfToSpecificCallInstance digital join and SelectCall analog join to determine
+        /// Whther to send to a specific call index or to the last connected call
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="trilist"></param>
+        /// <param name="joinMap"></param>
+        private void SendDtmfAction(string s, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            if (!trilist.GetBool(joinMap.SendDtmfToSpecificCallIndex.JoinNumber))
+            {
+                SendDtmf(s);
+            }
+            else
+            {
+                var callIndex = trilist.GetUshort(joinMap.SelectCall.JoinNumber);
+                if (callIndex > 0 && callIndex <= 8)
+                {
+                    var call = ActiveCalls[callIndex - 1];
+                    if (call != null && call.IsActiveCall)
+                    {
+                        SendDtmf(s, call);
+                    }
+                    else
+                    {
+                        Debug.Console(0, this, "Warning: No call found at index {0} or call is not active.", callIndex);
+                    }
+                }
+                else
+                {
+                    Debug.Console(0, this, "Warning: Invalid call index specified.  Please use a value of 1-8.");
+                }
+            }
+        }
 
 		private void LinkVideoCodecCameraLayoutsToApi(IHasCodecLayouts codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
@@ -1288,9 +1350,15 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 			trilist.SetUShortSigAction(joinMap.CameraPresetSelect.JoinNumber, (i) =>
 			{
 				presetCodec.CodecRoomPresetSelect(i);
-
-				trilist.SetUshort(joinMap.CameraPresetSelect.JoinNumber, i);
 			});
+
+
+            // Far End Presets
+            trilist.SetUShortSigAction(joinMap.FarEndPresetSelect.JoinNumber, (i) =>
+            {
+                presetCodec.SelectFarEndPreset(i);
+            });
+
 
 			trilist.SetSigFalseAction(joinMap.CameraPresetSave.JoinNumber,
 					() =>

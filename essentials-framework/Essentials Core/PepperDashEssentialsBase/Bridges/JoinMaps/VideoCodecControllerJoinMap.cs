@@ -20,6 +20,20 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+        [JoinName("SendDtmfToSpecificCallIndex")]
+        public JoinDataComplete SendDtmfToSpecificCallIndex = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 10,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "If High, will send DTMF tones to the call set by SelectCall analog.  If low sends DTMF tones to last connected call.",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
 		[JoinName("1")]
 		public JoinDataComplete Dtmf1 = new JoinDataComplete(
 			new JoinData
@@ -188,8 +202,8 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("EndCall")]
-		public JoinDataComplete EndCall = new JoinDataComplete(
+        [JoinName("EndAllCalls")]
+		public JoinDataComplete EndAllCalls = new JoinDataComplete(
 			new JoinData
 			{
 				JoinNumber = 24,
@@ -197,7 +211,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Hang Up",
+				Description = "End All Calls",
 				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Digital
 			});
@@ -576,7 +590,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Save Selected Preset",
+				Description = "Pulse to save selected preset.  FB will pulse for 3s when preset saved.",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Digital
 			});
@@ -966,6 +980,48 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 
 		#region Analog
 
+        [JoinName("SelectCall")]
+        public JoinDataComplete SelectCall = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 24,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Sets the selected Call. Valid values 1-8",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
+        [JoinName("EndCall")]
+        public JoinDataComplete EndCall = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 24,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "End a specific call by call index. Valid values 1-8",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
+        [JoinName("ConnectedCallCount")]
+        public JoinDataComplete ConnectedCallCount = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 25,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Reports the number of currently connected calls",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
 		[JoinName("MinutesBeforeMeetingStart")]
 		public JoinDataComplete MinutesBeforeMeetingStart = new JoinDataComplete(
 			new JoinData
@@ -1032,9 +1088,23 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			new JoinMetadata
 			{
 				Description = "Camera Preset Select",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+				JoinCapabilities = eJoinCapabilities.ToSIMPL,
 				JoinType = eJoinType.Analog
 			});
+
+        [JoinName("FarEndPresetSelect")]
+        public JoinDataComplete FarEndPresetSelect = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 122,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Far End Preset Preset Select",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog
+            });
 
 		[JoinName("ParticipantCount")]
 		public JoinDataComplete ParticipantCount = new JoinDataComplete(
