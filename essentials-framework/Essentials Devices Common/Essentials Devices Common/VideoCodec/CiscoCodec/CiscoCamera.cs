@@ -116,7 +116,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <summary>
         /// The ID of the camera on the codec
         /// </summary>
-        protected uint CameraId { get; private set; }
+        public uint CameraId { get; private set; }
 
         /// <summary>
         /// Valid range 1-15

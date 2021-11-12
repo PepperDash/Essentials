@@ -342,6 +342,48 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+        [JoinName("EndCallStart")]
+        public JoinDataComplete EndCallStart = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 81,
+                JoinSpan = 8
+            },
+            new JoinMetadata
+            {
+                Description = "End a specific call by call index. ",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("JoinAllCalls")]
+        public JoinDataComplete JoinAllCalls = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 90,
+                JoinSpan = 8
+            },
+            new JoinMetadata
+            {
+                Description = "End a specific call by call index. ",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("JoinCallStart")]
+        public JoinDataComplete JoinCallStart = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 91,
+                JoinSpan = 8
+            },
+            new JoinMetadata
+            {
+                Description = "End a specific call by call index. ",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
 		[JoinName("DirectorySearchBusy")]
 		public JoinDataComplete DirectorySearchBusy = new JoinDataComplete(
 			new JoinData
@@ -931,6 +973,34 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+        [JoinName("HoldCallsStart")]
+        public JoinDataComplete HoldCallsStart = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 221,
+                JoinSpan = 8
+            },
+            new JoinMetadata
+            {
+                Description = "Holds Call at specified index",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("ResumeCallsStart")]
+        public JoinDataComplete ResumeCallsStart = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 231,
+                JoinSpan = 8
+            },
+            new JoinMetadata
+            {
+                Description = "Resume Call at specified index",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
         [JoinName("ParticipantAudioMuteToggleStart")]
         public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(
 			new JoinData 
@@ -989,24 +1059,11 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             },
             new JoinMetadata
             {
-                Description = "Sets the selected Call. Valid values 1-8",
+                Description = "Sets the selected Call for DTMF commands. Valid values 1-8",
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Analog
             });
 
-        [JoinName("EndCall")]
-        public JoinDataComplete EndCall = new JoinDataComplete(
-            new JoinData
-            {
-                JoinNumber = 24,
-                JoinSpan = 1
-            },
-            new JoinMetadata
-            {
-                Description = "End a specific call by call index. Valid values 1-8",
-                JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                JoinType = eJoinType.Analog
-            });
 
         [JoinName("ConnectedCallCount")]
         public JoinDataComplete ConnectedCallCount = new JoinDataComplete(
@@ -1045,10 +1102,24 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Camera Number Select/FB",
+				Description = "Camera Number Select/FB.  1 based index.  Valid range is 1 to the value reported by CameraCount.",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Analog
 			});
+
+        [JoinName("CameraCount")]
+        public JoinDataComplete CameraCount = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 61,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Reports the number of cameras",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog
+            });
 
 		[JoinName("DirectoryRowCount")]
 		public JoinDataComplete DirectoryRowCount = new JoinDataComplete(
@@ -1322,6 +1393,20 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
 				JoinType = eJoinType.Serial
 			});
+
+        [JoinName("CameraNamesFb")]
+        public JoinDataComplete CameraNamesFb = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 161,
+                JoinSpan = 10
+            },
+            new JoinMetadata
+            {
+                Description = "Camera Name Fb",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
 
 		[JoinName("CurrentSource")]
 		public JoinDataComplete CurrentSource = new JoinDataComplete(

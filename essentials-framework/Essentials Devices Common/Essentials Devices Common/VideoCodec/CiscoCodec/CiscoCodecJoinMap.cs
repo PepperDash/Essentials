@@ -9,6 +9,34 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
     {
         #region Digital
 
+        [JoinName("PresentationLocalOnly")]
+        public JoinDataComplete PresentationLocalOnly = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 205,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Presentation Local Only Feedback",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("PresentationLocalRemote")]
+        public JoinDataComplete PresentationLocalRemote = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 206,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Presentation Local Only Feedback",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
         [JoinName("ActivateDoNotDisturbMode")]
         public JoinDataComplete ActivateDoNotDisturbMode = new JoinDataComplete(
             new JoinData
@@ -111,6 +139,34 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
 
         #region Analog
+
+        [JoinName("RingtoneVolume")]
+        public JoinDataComplete RingtoneVolume = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 21,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Ringtone volume set/FB.  Valid values are 0 - 100 in increments of 5 (5, 10, 15, 20, etc.)",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
+        [JoinName("PresentationSource")]
+        public JoinDataComplete PresentationSource = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 201,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Presentation set/FB.  Valid values are 0 - 6 depending on the codec model.",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Analog
+            });
 
 
         #endregion

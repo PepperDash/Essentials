@@ -982,18 +982,22 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 			//End All calls
 			trilist.SetSigFalseAction(joinMap.EndAllCalls.JoinNumber, EndAllCalls);
 
-            //End a specific call, specified by index
-            trilist.SetUShortSigAction(joinMap.EndCall.JoinNumber, (i) =>
-                {
-                    if (i > 0 && i <= 8)
+            //End a specific call, specified by index. Maximum 8 calls supported
+            for (int i = 0; i < joinMap.EndCallStart.JoinSpan; i++)
+            {
+                trilist.SetSigFalseAction((uint)(joinMap.EndCallStart.JoinNumber + i), () =>
                     {
-                        var call = ActiveCalls[i - 1];
+                        var call = ActiveCalls[i];
                         if (call != null)
                         {
                             EndCall(call);
                         }
-                    }
-                });
+                        else
+                        {
+                            Debug.Console(0, this, "[End Call] Unable to find call at index '{0}'", i);
+                        }
+                    });
+            }
 
 			trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 
@@ -1015,6 +1019,61 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
                 trilist.SetUshort(joinMap.ConnectedCallCount.JoinNumber, (ushort)ActiveCalls.Count);
 			};
+
+            var joinCodec = this as IJoinCalls;
+            if (joinCodec != null)
+            {
+                trilist.SetSigFalseAction(joinMap.JoinAllCalls.JoinNumber, () => joinCodec.JoinAllCalls());
+
+                for (int i = 0; i < joinMap.JoinCallStart.JoinSpan; i++)
+                {
+                    trilist.SetSigFalseAction((uint)(joinMap.JoinCallStart.JoinNumber + i), () =>
+                        {
+                            var call = ActiveCalls[i];
+                            if (call != null)
+                            {
+                                joinCodec.JoinCall(call);
+                            } 
+                            else
+                            {
+                                Debug.Console(0, this, "[Join Call] Unable to find call at index '{0}'", i);
+                            }
+                        });
+                }
+            }
+
+            var holdCodec = this as IHasCallHold;
+            if (holdCodec != null)
+            {
+                for (int i = 0; i < joinMap.JoinCallStart.JoinSpan; i++)
+                {
+                    trilist.SetSigFalseAction((uint)(joinMap.HoldCallsStart.JoinNumber + i), () =>
+                        {
+                            var call = ActiveCalls[i];
+                            if (call != null)
+                            {
+                                holdCodec.HoldCall(call);
+                            } 
+                            else
+                            {
+                                Debug.Console(0, this, "[Hold Call] Unable to find call at index '{0}'", i);
+                            }
+                        });
+
+                    trilist.SetSigFalseAction((uint)(joinMap.ResumeCallsStart.JoinNumber + i), () =>
+                        {
+                            var call = ActiveCalls[i];
+                            if (call != null)
+                            {
+                                holdCodec.ResumeCall(call);
+                            } 
+                            else
+                            {
+                                Debug.Console(0, this, "[Resume Call] Unable to find call at index '{0}'", i);
+                            }
+                        });
+                }
+            }
 		}
 
 		private string UpdateCallStatusXSig()
@@ -1296,17 +1355,46 @@ ScreenIndexIsPinnedTo: {8} (a{17})
                 camera.TriggerAutoFocus();
             });
 
+            // Camera count
+            trilist.SetUshort(joinMap.CameraCount.JoinNumber, (ushort)codec.Cameras.Count);
+
+            // Camera names
+            for (uint i = 0; i < joinMap.CameraNamesFb.JoinSpan; i++)
+            {
+                if (codec.Cameras[(int)i] != null)
+                {
+                    trilist.SetString(joinMap.CameraNamesFb.JoinNumber + i, codec.Cameras[(int)i].Name);
+                }
+                else
+                {
+                    trilist.SetString(joinMap.CameraNamesFb.JoinNumber + i, "");
+                }
+            }
+
 			//Camera Select
 			trilist.SetUShortSigAction(joinMap.CameraNumberSelect.JoinNumber, (i) =>
 			{
-				if (codec.SelectedCamera == null) return;
-
-				codec.SelectCamera(codec.Cameras[i].Key);
+                if (i > 0 && i <= codec.Cameras.Count)
+                {
+                    codec.SelectCamera(codec.Cameras[i - 1].Key);
+                }
+                else
+                {
+                    Debug.Console(0, this, "Unable to select.  No camera found at index {0}", i);
+                }
 			});
+
+            // Set initial selected camera feedback
+            if (codec.SelectedCamera != null)
+            {
+                trilist.SetUshort(joinMap.CameraNumberSelect.JoinNumber, (ushort)codec.Cameras.FindIndex((c) => c.Key == codec.SelectedCamera.Key));
+            }
 
 			codec.CameraSelected += (sender, args) =>
 			{
 				var i = (ushort)codec.Cameras.FindIndex((c) => c.Key == args.SelectedCamera.Key);
+
+                trilist.SetUshort(joinMap.CameraNumberSelect.JoinNumber, (ushort)(i + 1));
 
 				if (codec is IHasCodecRoomPresets)
 				{

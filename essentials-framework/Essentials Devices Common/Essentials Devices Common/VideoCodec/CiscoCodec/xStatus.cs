@@ -558,9 +558,41 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        public class SendingMode
+        public class SendingMode : ValueProperty
         {
-            public string Value { get; set; }
+            string _Value;
+
+            /// <summary>
+            /// Sets Value and triggers the action when set
+            /// </summary>
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    OnValueChanged();
+                }
+            }
+
+            public bool LocalOnly
+            {
+                get
+                {
+                    return _Value.ToLower() == "localonly";
+                }
+            }
+
+            public bool LocalRemote
+            {
+                get
+                {
+                    return _Value.ToLower() == "localremote";
+                }
+            }
         }
 
         public class LocalInstance
@@ -573,6 +605,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public LocalInstance()
             {
                 Source = new Source2();
+                SendingMode = new SendingMode();
             }
         }
 
