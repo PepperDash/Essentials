@@ -32,6 +32,10 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete CurrentInputResolution = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "DM TX Current Input Resolution", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
+        [JoinName("Name")]
+        public JoinDataComplete Name = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM TX Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
         [JoinName("VideoInput")]
         public JoinDataComplete VideoInput = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "DM TX Video Input Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
@@ -59,10 +63,6 @@ namespace PepperDash.Essentials.Core.Bridges
         [JoinName("VgaContrast")]
         public JoinDataComplete VgaContrast = new JoinDataComplete(new JoinData { JoinNumber = 7, JoinSpan = 1 },
             new JoinMetadata { Description = "DM TX Online", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
-
-        [JoinName("Name")]
-        public JoinDataComplete Name = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
-            new JoinMetadata { Description = "DM TX Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
         /// <summary>
         /// Constructor to use when instantiating this Join Map without inheriting from it
