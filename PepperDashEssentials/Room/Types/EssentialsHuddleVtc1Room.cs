@@ -214,17 +214,25 @@ namespace PepperDash.Essentials
 
                 VideoCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.VideoCodecKey) as
                     PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
-				
+
 
                 if (VideoCodec == null)
-                    throw new ArgumentNullException("codec cannot be null");
-				
+                {
+                    Debug.Console(0, Debug.ErrorLogLevel.Error, "No Video Codec set.  Please check 'videoCodecKey' property in room config");
+                    throw new ArgumentNullException("VideoCodec cannot be null");
+                }
+
                 AudioCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.AudioCodecKey) as
                     PepperDash.Essentials.Devices.Common.AudioCodec.AudioCodecBase;
                 if (AudioCodec == null)
                     Debug.Console(0, this, "No Audio Codec Found");
 
                 DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IBasicVolumeControls;
+                if (DefaultAudioDevice == null)
+                {
+                    Debug.Console(0, Debug.ErrorLogLevel.Error, "No Default Audio Device set.  Please check 'defaultAudioKey' property in room config");
+                    throw new ArgumentNullException("DefaultAudioDevice cannot be null");
+                }
 
                 InitializeRoom();
             }
