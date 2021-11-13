@@ -496,6 +496,19 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+        [JoinName("DirectoryDisableAutoDialSelectedLine")]
+        public JoinDataComplete DirectoryDisableAutoDialSelectedLine = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 107,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Set high to disable automatic dialing of a contact when selected",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
 
 		[JoinName("CameraTiltUp")]
 		public JoinDataComplete CameraTiltUp = new JoinDataComplete(
@@ -903,6 +916,20 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+        [JoinName("RemoveSelectedRecentCallItem")]
+        public JoinDataComplete RemoveSelectedRecentCallItem = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 181,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Removes the selected recent call item",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
 		[JoinName("SourceShareStart")]
 		public JoinDataComplete SourceShareStart = new JoinDataComplete(
 			new JoinData
@@ -1219,6 +1246,34 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Analog
 			});
 
+        [JoinName("SelectRecentCallItem")]
+        public JoinDataComplete SelectRecentCallItem = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 180,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Select/FB for Recent Call Item.  Valid values 1 - 10",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
+        [JoinName("RecentCallOccurrenceType")]
+        public JoinDataComplete RecentCallOccurrenceType = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 181,
+                JoinSpan = 10
+            },
+            new JoinMetadata
+            {
+                Description = "Recent Call Occurrence Type. [0-3] 0 = Unknown, 1 = Placed, 2 = Received, 3 = NoAnswer",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
 		#endregion
 
 
@@ -1352,6 +1407,20 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
+        [JoinName("ContactMethods")]
+        public JoinDataComplete ContactMethods = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 103,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Contact Methods - XSig, 10 entries",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
 		[JoinName("CameraPresetNames")]
 		public JoinDataComplete CameraPresetNames = new JoinDataComplete(
 			new JoinData
@@ -1404,6 +1473,62 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             new JoinMetadata
             {
                 Description = "Camera Name Fb",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("SelectedRecentCallName")]
+        public JoinDataComplete SelectedRecentCallName = new JoinDataComplete(
+         new JoinData
+         {
+             JoinNumber = 171,
+             JoinSpan = 1
+         },
+         new JoinMetadata
+         {
+             Description = "Selected Recent Call Name",
+             JoinCapabilities = eJoinCapabilities.ToSIMPL,
+             JoinType = eJoinType.Serial
+         });
+
+        [JoinName("SelectedRecentCallNumber")]
+        public JoinDataComplete SelectedRecentCallNumber = new JoinDataComplete(
+         new JoinData
+         {
+             JoinNumber = 172,
+             JoinSpan = 1
+         },
+         new JoinMetadata
+         {
+             Description = "Selected Recent Call Number",
+             JoinCapabilities = eJoinCapabilities.ToSIMPL,
+             JoinType = eJoinType.Serial
+         });
+
+        [JoinName("RecentCallNamesStart")]
+        public JoinDataComplete RecentCallNamesStart = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 181,
+                JoinSpan = 10
+            },
+            new JoinMetadata
+            {
+                Description = "Recent Call Names",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("RecentCallTimesStart")]
+        public JoinDataComplete RecentCallTimesStart = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 191,
+                JoinSpan = 10
+            },
+            new JoinMetadata
+            {
+                Description = "Recent Calls Times",
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.Serial
             });
