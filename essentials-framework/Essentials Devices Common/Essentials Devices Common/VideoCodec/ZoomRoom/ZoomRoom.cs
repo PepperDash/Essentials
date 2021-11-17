@@ -3204,8 +3204,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			Configuration = configuration;
 		}
 
+        [JsonIgnore]
 		public ZoomRoomStatus Status { get; private set; }
-		public ZoomRoomConfiguration Configuration { get; private set; }
+        [JsonIgnore]
+        public ZoomRoomConfiguration Configuration { get; private set; }
 
 		public override bool AutoAnswerEnabled
 		{
