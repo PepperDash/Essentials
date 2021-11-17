@@ -328,15 +328,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 			LinkVideoCodecVolumeToApi(trilist, joinMap);
 
+            // Register for this event to link any functions that require the codec to be ready first
+            codec.IsReadyChange += (o, a) =>
+                {
+                    if (codec is IHasCodecCameras)
+                    {
+                        LinkVideoCodecCameraToApi(codec as IHasCodecCameras, trilist, joinMap);
+                    }
+                };
+
 			if (codec is ICommunicationMonitor)
 			{
 				LinkVideoCodecCommMonitorToApi(codec as ICommunicationMonitor, trilist, joinMap);
 			}
 
-			if (codec is IHasCodecCameras)
-			{
-				LinkVideoCodecCameraToApi(codec as IHasCodecCameras, trilist, joinMap);
-			}
 
 			if (codec is IHasCodecSelfView)
 			{

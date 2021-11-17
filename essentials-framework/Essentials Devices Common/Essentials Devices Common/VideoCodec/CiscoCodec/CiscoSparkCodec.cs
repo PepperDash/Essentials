@@ -32,6 +32,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute, IHasDoNotDisturbMode,
         IHasHalfWakeMode, IHasCallHold, IJoinCalls
     {
+        private CiscoSparkCodecPropertiesConfig _config;
+
         private bool _externalSourceChangeRequested;
 
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
@@ -314,6 +316,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             var props = JsonConvert.DeserializeObject<Codec.CiscoSparkCodecPropertiesConfig>(config.Properties.ToString());
 
+            _config = props;
+
             // Use the configured phonebook results limit if present
             if (props.PhonebookResultsLimit > 0)
             {
@@ -417,9 +421,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			InputPorts.Add(HdmiIn2);
 			InputPorts.Add(HdmiIn3);
 			OutputPorts.Add(HdmiOut1);
-
-            SetUpCameras(props.CameraInfo);
-
 			CreateOsdSource();
 
             ExternalSourceListEnabled = props.ExternalSourceListEnabled;
@@ -638,6 +639,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="e"></param>
         void SyncState_InitialSyncCompleted(object sender, EventArgs e)
         {
+            SetUpCameras(_config.CameraInfo);
+
             // Fire the ready event
             SetIsReady();
             //CommDebuggingIsOn = false;
@@ -1912,9 +1915,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 var internalCamera = new CiscoSparkCamera(Key + "-camera1", "Near End", this, 1);
 
-                if (CodecStatus.Status.Cameras.Camera[0] != null && CodecStatus.Status.Cameras.Camera[0].Capabilities != null)
+                if (camCount > 0)
                 {
-                    internalCamera.SetCapabilites(CodecStatus.Status.Cameras.Camera[0].Capabilities.Options.Value);
+                    // Try to get the capabilities from the codec
+                    if (CodecStatus.Status.Cameras.Camera[0] != null && CodecStatus.Status.Cameras.Camera[0].Capabilities != null)
+                    {
+                        internalCamera.SetCapabilites(CodecStatus.Status.Cameras.Camera[0].Capabilities.Options.Value);
+                    }
                 }
 
                 Cameras.Add(internalCamera);
