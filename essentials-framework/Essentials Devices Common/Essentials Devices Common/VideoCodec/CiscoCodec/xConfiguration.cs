@@ -1843,6 +1843,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public class RootObject
         {
             public Configuration Configuration { get; set; }
+
+            public RootObject()
+            {
+                Configuration = new Configuration();
+            }   
         }
     }
 }
