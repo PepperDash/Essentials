@@ -504,19 +504,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     var sharingStatus = GetSharingStatus();
 
-                    MeetingInfo = new MeetingInfo("", "", "", "", sharingStatus, GetIsHostMyself(), true, false);
+                    MeetingInfo = new MeetingInfo("", "", "", "", sharingStatus, GetIsHostMyself(), true, false, MeetingIsLockedFeedback.BoolValue);
                     return;
                 }
 
                 var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host != null ? Participants.Host.Name : "None",
-                    MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself(), MeetingInfo.IsSharingMeeting, MeetingInfo.WaitingForHost);
+                    MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself(), MeetingInfo.IsSharingMeeting, MeetingInfo.WaitingForHost, MeetingIsLockedFeedback.BoolValue);
                 MeetingInfo = meetingInfo;
             }
             catch (Exception e)
             {
                 Debug.Console(1, this, "Error processing state property update. {0}", e.Message);
                 Debug.Console(2, this, e.StackTrace);
-                MeetingInfo = new MeetingInfo("", "", "", "", "None", false, false, false);
+                MeetingInfo = new MeetingInfo("", "", "", "", "None", false, false, false, MeetingIsLockedFeedback.BoolValue);
             }
 	    }
 
@@ -688,7 +688,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                 return;
                             }
                             // Update the share status of the meeting info
-                            var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, MeetingInfo.Host, MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself(), MeetingInfo.IsSharingMeeting, MeetingInfo.WaitingForHost);
+                            var meetingInfo = new MeetingInfo(MeetingInfo.Id, 
+                                MeetingInfo.Name, 
+                                MeetingInfo.Host, 
+                                MeetingInfo.Password, 
+                                GetSharingStatus(), 
+                                GetIsHostMyself(), 
+                                MeetingInfo.IsSharingMeeting, 
+                                MeetingInfo.WaitingForHost, 
+                                MeetingIsLockedFeedback.BoolValue);
                             MeetingInfo = meetingInfo;
                             break;
                         }
@@ -1269,7 +1277,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								Participants.CurrentParticipants = participants;
 
                                 // Update the share status of the meeting info
-                                var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host.Name, MeetingInfo.Password, MeetingInfo.ShareStatus, GetIsHostMyself(), MeetingInfo.IsSharingMeeting, MeetingInfo.WaitingForHost);
+                                var meetingInfo = new MeetingInfo(
+                                    MeetingInfo.Id, 
+                                    MeetingInfo.Name, 
+                                    Participants.Host.Name, 
+                                    MeetingInfo.Password, 
+                                    MeetingInfo.ShareStatus, 
+                                    GetIsHostMyself(), 
+                                    MeetingInfo.IsSharingMeeting, 
+                                    MeetingInfo.WaitingForHost, 
+                                    MeetingIsLockedFeedback.BoolValue);
                                 MeetingInfo = meetingInfo;
 
 								PrintCurrentCallParticipants();
@@ -1478,14 +1495,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							        if (MeetingInfo == null)
 							        {
 							            MeetingInfo = new MeetingInfo("Waiting For Host", "Waiting For Host", "Waiting For Host", "",
-							                GetSharingStatus(), false, false, true);
+                                            GetSharingStatus(), false, false, true, MeetingIsLockedFeedback.BoolValue);
 
                                         UpdateCallStatus();
 							            break;
 							        }
 
                                     MeetingInfo = new MeetingInfo("Waiting For Host", "Waiting For Host", "Waiting For Host", "",
-							            GetSharingStatus(), false, false, true);
+                                        GetSharingStatus(), false, false, true, MeetingIsLockedFeedback.BoolValue);
 
 							        UpdateCallStatus();
 
@@ -1495,12 +1512,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							    if (MeetingInfo == null)
 							    {
 							        MeetingInfo = new MeetingInfo("Waiting For Host", "Waiting For Host", "Waiting For Host", "",
-							            GetSharingStatus(), false, false, false);
+                                        GetSharingStatus(), false, false, false, MeetingIsLockedFeedback.BoolValue);
 							        break;
 							    }
 
 							    MeetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, MeetingInfo.Host, MeetingInfo.Password,
-							        GetSharingStatus(), GetIsHostMyself(), false, false);
+                                    GetSharingStatus(), GetIsHostMyself(), false, false, MeetingIsLockedFeedback.BoolValue);
 
 							    break;
 							}
@@ -1584,7 +1601,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 						        if (result.Success)
 						        {
-						            MeetingInfo = new MeetingInfo("", "", "", "", "", true, true, MeetingInfo.WaitingForHost);
+                                    MeetingInfo = new MeetingInfo("", "", "", "", "", true, true, MeetingInfo.WaitingForHost, MeetingIsLockedFeedback.BoolValue);
 						            break;
 						        }
 
@@ -1929,7 +1946,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     GetSharingStatus(),
                     GetIsHostMyself(),
                     !String.Equals(Status.Call.Info.meeting_type,"NORMAL"),
-                    false
+                    false,
+                    MeetingIsLockedFeedback.BoolValue
                     );
             }
 
