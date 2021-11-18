@@ -609,6 +609,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     if (a.PropertyName == "Enable")
                     {
                         MeetingIsLockedFeedback.FireUpdate();
+                        MeetingInfo = new MeetingInfo
+                            (
+                                MeetingInfo.Id, 
+                                MeetingInfo.Name, 
+                                MeetingInfo.Host,
+                                MeetingInfo.Password,
+                                GetSharingStatus(), 
+                                MeetingInfo.IsHost, 
+                                MeetingInfo.IsSharingMeeting, 
+                                MeetingInfo.WaitingForHost, 
+                                MeetingIsLockedFeedback.BoolValue
+                            );
                     }
                 };
 
@@ -651,11 +663,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			Status.Call.PropertyChanged += (o, a) =>
 			{
-				if (a.PropertyName == "Info")
+                switch(a.PropertyName)
+                {
+                    case "Info":
 				{
 					Debug.Console(1, this, "Updating Call Status");
 					UpdateCallStatus();
+                    break;
 				}
+
+                case "Status":
+                    {
+                        UpdateCallStatus();
+                        break;
+                    }
+                    }
 			};
 
             Status.Call.CallRecordInfo.PropertyChanged += (o, a) =>
