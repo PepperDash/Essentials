@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.Core
     /// <summary>
     /// Describes the basic functionality of an EssentialsRoom
     /// </summary>
-    public interface IEssentialsRoom : IKeyName, IReconfigurableDevice, IRunDefaultPresentRoute
+    public interface IEssentialsRoom : IKeyName, IReconfigurableDevice, IRunDefaultPresentRoute, IEnvironmentalControls
     {
         BoolFeedback OnFeedback { get; }
 
