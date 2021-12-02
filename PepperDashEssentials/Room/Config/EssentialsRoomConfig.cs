@@ -160,7 +160,7 @@ namespace PepperDash.Essentials.Room.Config
                 }
                 else
                 {
-                    return HelpMessage;
+                    return HelpMessage; 
                 }
             }
         }
