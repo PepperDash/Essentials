@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.Core.Shades
     public interface IShadesOpenCloseStop : IShadesOpenClose
     {
         void StopOrPreset();
-        string StopOrPresetButtonLabel;
+        string StopOrPresetButtonLabel { get; }
     }
 
 	/// <summary>
