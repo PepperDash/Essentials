@@ -133,8 +133,7 @@ namespace PepperDash.Essentials.Core
         public EssentialsRoomBase(DeviceConfig config)
             : base(config)
         {
-
-
+            EnvironmentalControlDevices = new List<EssentialsDevice>();
 
             // Setup the ShutdownPromptTimer
             ShutdownPromptTimer = new SecondsCountdownTimer(Key + "-offTimer");
