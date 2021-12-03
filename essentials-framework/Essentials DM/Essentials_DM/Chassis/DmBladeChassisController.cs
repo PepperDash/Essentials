@@ -425,7 +425,7 @@ namespace PepperDash.Essentials.DM {
             Debug.Console(2, this, "Adding output port '{0}'", portKey);
             OutputPorts.Add(new RoutingOutputPort(portKey, sigType, portType, selector, this)
             {
-                FeedbackMatchObject = Chassis.Outputs[(uint)selector]
+                FeedbackMatchObject = selector
             });
         }
 
