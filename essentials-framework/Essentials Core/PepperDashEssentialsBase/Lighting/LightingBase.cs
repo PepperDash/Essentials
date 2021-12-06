@@ -113,9 +113,12 @@ namespace PepperDash.Essentials.Core.Lighting
 
     public class LightingScene
     {
+        [JsonProperty("name", NullValueHandling=NullValueHandling.Ignore)]
         public string Name { get; set; }
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public string ID { get; set; }
         bool _IsActive;
+        [JsonProperty("isActive", NullValueHandling = NullValueHandling.Ignore)]
         public bool IsActive 
         {
             get
@@ -128,6 +131,7 @@ namespace PepperDash.Essentials.Core.Lighting
                 IsActiveFeedback.FireUpdate();
             }
         }
+        [JsonIgnore]
         public BoolFeedback IsActiveFeedback { get; set; }
 
         public LightingScene()
