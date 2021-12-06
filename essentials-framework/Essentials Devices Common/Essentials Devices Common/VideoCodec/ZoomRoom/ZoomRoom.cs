@@ -2283,6 +2283,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				layoutSizeCodec.SelfviewPipSizeFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetSelfviewPipSize.JoinNumber]);
 			}
 
+            // TODO [ ] #868
+            
+
 			trilist.OnlineStatusChange += (device, args) =>
 			{
 				if (!args.DeviceOnLine) return;
