@@ -556,7 +556,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 if (!args.DeviceOnLine) return;
 
-                // TODO [ ] #868
+                // TODO [ ] Issue #868
                 trilist.SetString(joinMap.CurrentParticipants.JoinNumber, "\xFC");
                 UpdateParticipantsXSig(codec, trilist, joinMap);
             };
@@ -796,7 +796,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             {
                 if (!args.DeviceOnLine) return;
 
-                // TODO [ ] #868
+                // TODO [ ] Issue #868
                 trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
                 UpdateMeetingsList(codec, trilist, joinMap);
             };
@@ -826,7 +826,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             {
                 if (!args.DeviceOnLine) return;
 
-                // TODO [ ] #868
+                // TODO [ ] Issue #868
                 trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
                 UpdateMeetingsListXSig(_currentMeetings);
             };
@@ -948,7 +948,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             {
                 if (!args.DeviceOnLine) return;
 
-                // TODO [ ] #868
+                // TODO [ ] Issue #868
                 trilist.SetString(joinMap.DirectoryEntries.JoinNumber, "\xFC");
                 UpdateDirectoryXSig(codec.CurrentDirectoryResult,
                     !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
@@ -1039,7 +1039,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             {
                 if (!args.DeviceOnLine) return;
 
-                // TODO [ ] #868
+                // TODO [ ] Issue #868
                 trilist.SetString(joinMap.CurrentCallData.JoinNumber, "\xFC");
                 UpdateCallStatusXSig();
             };
@@ -1315,7 +1315,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             {
                 if (!args.DeviceOnLine) return;
 
-                // TODO [ ] #868
+                // TODO [ ] Issue #868
                 trilist.SetString(joinMap.CameraPresetNames.JoinNumber, "\xFC");
                 SetCameraPresetNames(presetCodec.NearEndPresets);
             };
