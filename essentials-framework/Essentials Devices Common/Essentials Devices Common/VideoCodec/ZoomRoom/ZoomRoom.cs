@@ -1510,7 +1510,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							{
                                 Status.NeedWaitForHost = JsonConvert.DeserializeObject<zEvent.NeedWaitForHost>(responseObj.ToString());
 
-							    Debug.Console(1, this, "NeedWaitForHost: {0}", Status.NeedWaitForHost.Wait);
+							    Debug.Console(1, this, "WaitingForHost: {0}", Status.NeedWaitForHost.Wait);
 
                                 if (Status.NeedWaitForHost.Wait)
 							    {
@@ -1972,6 +1972,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     MeetingIsLockedFeedback.BoolValue
                     );
             }
+            // TODO [ ] Issue #868
+            else if (item.Status == eCodecCallStatus.Disconnected)
+            {
+                MeetingInfo = new MeetingInfo(
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    false,
+                    false,
+                    false,
+                    false
+                    );
+            }
 
             base.OnCallStatusChange(item);
 
@@ -2283,8 +2298,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				layoutSizeCodec.SelfviewPipSizeFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetSelfviewPipSize.JoinNumber]);
 			}
 
-            // TODO [ ] #868
-            
+            // TODO [ ] Issue #868
+		    MeetingInfoChanged += (device, args) =>
+		    {
+                trilist.SetString(joinMap.MeetingInfoId.JoinNumber, args.Info.Id);
+                trilist.SetString(joinMap.MeetingInfoHost.JoinNumber, args.Info.Host);
+                trilist.SetString(joinMap.MeetingInfoPassword.JoinNumber, args.Info.Password);
+		        trilist.SetBool(joinMap.IsHost.JoinNumber, args.Info.IsHost);
+		        trilist.SetBool(joinMap.ShareOnlyMeeting.JoinNumber, args.Info.IsSharingMeeting);
+                trilist.SetBool(joinMap.WaitingForHost.JoinNumber, args.Info.WaitingForHost);
+                //trilist.SetString(joinMap.CurrentSource.JoinNumber, args.Info.ShareStatus);
+		    };
+
+            // TODO [ ] Issue #868
+		    trilist.SetSigTrueAction(joinMap.StartMeetingNow.JoinNumber, () => StartMeeting(0));
+		    trilist.SetSigTrueAction(joinMap.ShareOnlyMeeting.JoinNumber, StartSharingOnlyMeeting);
+            trilist.SetSigTrueAction(joinMap.StartNormalMeetingFromSharingOnlyMeeting.JoinNumber, StartNormalMeetingFromSharingOnlyMeeting);
 
 			trilist.OnlineStatusChange += (device, args) =>
 			{

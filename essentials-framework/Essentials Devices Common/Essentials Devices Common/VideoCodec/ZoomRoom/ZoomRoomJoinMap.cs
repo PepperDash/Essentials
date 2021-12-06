@@ -39,8 +39,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             });
 
         // TODO [ ] Issue #868
-        [JoinName("NeedWaitForHost")]
-        public JoinDataComplete NeedWaitForHost = new JoinDataComplete(
+        [JoinName("WaitingForHost")]
+        public JoinDataComplete WaitingForHost = new JoinDataComplete(
             new JoinData
             {
                 JoinNumber = 8,
@@ -94,6 +94,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             new JoinMetadata
             {
                 Description = "Triggers a share only meeting, feedback indicates the current meeting is share only",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("StartNormalMeetingFromSharingOnlyMeeting")]
+        public JoinDataComplete StartNormalMeetingFromSharingOnlyMeeting = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 27,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Starts a normal meeting from a share only meeting",
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.Digital
             });
