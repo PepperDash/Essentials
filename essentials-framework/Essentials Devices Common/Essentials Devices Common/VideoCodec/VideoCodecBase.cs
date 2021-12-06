@@ -302,8 +302,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		    trilist.OnlineStatusChange += (device, args) =>
 		    {
 		        if (!args.DeviceOnLine) return;
-
-		        trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
 		    };
 		}
 
@@ -553,6 +551,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                 UpdateParticipantsXSig(codec, trilist, joinMap);
 			};
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] #868
+                trilist.SetString(joinMap.CurrentParticipants.JoinNumber, "\xFC");
+                UpdateParticipantsXSig(codec, trilist, joinMap);
+            };
 		}
 
         private void UpdateParticipantsXSig(IHasParticipants codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
@@ -784,7 +791,16 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 						UpdateMeetingsList(codec, trilist, joinMap);
 					}
 				};
-		}
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] #868
+                trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
+                UpdateMeetingsList(codec, trilist, joinMap);
+            };
+        }
 
 		private void UpdateMeetingsList(IHasScheduleAwareness codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
@@ -805,6 +821,15 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 			var meetingsData = UpdateMeetingsListXSig(_currentMeetings);
 			trilist.SetString(joinMap.Schedule.JoinNumber, meetingsData);
 			trilist.SetUshort(joinMap.MeetingCount.JoinNumber, (ushort)_currentMeetings.Count);
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] #868
+                trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
+                UpdateMeetingsListXSig(_currentMeetings);
+            };
 		}
 
 		private string UpdateMeetingsListXSig(List<Meeting> meetings)
@@ -918,6 +943,16 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 				trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
 			};
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] #868
+                trilist.SetString(joinMap.DirectoryEntries.JoinNumber, "\xFC");
+                UpdateDirectoryXSig(codec.CurrentDirectoryResult,
+                    !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+            };
 		}
 
 		private void SelectDirectoryEntry(IHasDirectory codec, ushort i)
@@ -999,6 +1034,15 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 				trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
 			};
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] #868
+                trilist.SetString(joinMap.CurrentCallData.JoinNumber, "\xFC");
+                UpdateCallStatusXSig();
+            };
 		}
 
 		private string UpdateCallStatusXSig()
@@ -1266,6 +1310,15 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 							trilist.UShortOutput[joinMap.CameraPresetSelect.JoinNumber].UShortValue, String.Empty);
 						trilist.PulseBool(joinMap.CameraPresetSave.JoinNumber, 3000);
 					});
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] #868
+                trilist.SetString(joinMap.CameraPresetNames.JoinNumber, "\xFC");
+                SetCameraPresetNames(presetCodec.NearEndPresets);
+            };
 		}
 
 		private string SetCameraPresetNames(IEnumerable<CodecRoomPreset> presets)
