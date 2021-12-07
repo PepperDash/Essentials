@@ -7,6 +7,7 @@ using Crestron.SimplSharp;
 using PepperDash.Essentials.Core;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
@@ -47,8 +48,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
     public class LayoutInfoChangedEventArgs : EventArgs
     {
+        [JsonConverter(typeof(StringEnumConverter))]
         [JsonProperty("availableLayouts", NullValueHandling = NullValueHandling.Ignore)]
         public ZoomRoom.zConfiguration.eLayoutStyle AvailableLayouts { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
         [JsonProperty("currentSelectedLayout", NullValueHandling = NullValueHandling.Ignore)]
         public ZoomRoom.zConfiguration.eLayoutStyle CurrentSelectedLayout { get; set; }
         [JsonProperty("canSwapContentWithThumbnail", NullValueHandling = NullValueHandling.Ignore)]

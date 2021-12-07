@@ -350,14 +350,14 @@ namespace PepperDash.Essentials
         {
             if (PropertiesConfig.Environment != null)
             {
-                if (PropertiesConfig.Environment.Enabled)
-                {
+                //if (PropertiesConfig.Environment.Enabled)
+                //{
                     foreach (var d in PropertiesConfig.Environment.DeviceKeys)
                     {
                         var envDevice = DeviceManager.GetDeviceForKey(d) as EssentialsDevice;
                         EnvironmentalControlDevices.Add(envDevice);
                     }
-                }
+                //}
             }
         }
 
