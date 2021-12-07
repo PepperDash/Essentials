@@ -1662,6 +1662,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void LinkCiscoCodecToApi(BasicTriList trilist, CiscoCodecJoinMap joinMap)
         {
+            // Custom commands to codec
+            trilist.SetStringSigAction(joinMap.CommandToDevice.JoinNumber, (s) => this.SendText(s));
+
+
             var dndCodec = this as IHasDoNotDisturbMode;
             if (dndCodec != null)
             {

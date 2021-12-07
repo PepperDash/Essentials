@@ -328,6 +328,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 			LinkVideoCodecVolumeToApi(trilist, joinMap);
 
+            LinkVideoCodecInfoToApi(trilist, joinMap);
+
             // Register for this event to link any functions that require the codec to be ready first
             codec.IsReadyChange += (o, a) =>
                 {
@@ -458,6 +460,31 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
 			};
 		}
+
+        private void LinkVideoCodecInfoToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+        {
+            trilist.SetBool(joinMap.MultiSiteOptionIsEnabled.JoinNumber, this.CodecInfo.MultiSiteOptionIsEnabled);
+            trilist.SetBool(joinMap.AutoAnswerEnabled.JoinNumber, this.CodecInfo.AutoAnswerEnabled);
+            trilist.SetString(joinMap.DeviceIpAddresss.JoinNumber, this.CodecInfo.IpAddress);
+            trilist.SetString(joinMap.SipPhoneNumber.JoinNumber, this.CodecInfo.SipPhoneNumber);
+            trilist.SetString(joinMap.E164Alias.JoinNumber, this.CodecInfo.E164Alias);
+            trilist.SetString(joinMap.H323Id.JoinNumber, this.CodecInfo.H323Id);
+            trilist.SetString(joinMap.SipUri.JoinNumber, this.CodecInfo.SipUri);
+
+            trilist.OnlineStatusChange += (o, a) =>
+            {
+                if (a.DeviceOnLine)
+                {
+                    trilist.SetBool(joinMap.MultiSiteOptionIsEnabled.JoinNumber, this.CodecInfo.MultiSiteOptionIsEnabled);
+                    trilist.SetBool(joinMap.AutoAnswerEnabled.JoinNumber, this.CodecInfo.AutoAnswerEnabled);
+                    trilist.SetString(joinMap.DeviceIpAddresss.JoinNumber, this.CodecInfo.IpAddress);
+                    trilist.SetString(joinMap.SipPhoneNumber.JoinNumber, this.CodecInfo.SipPhoneNumber);
+                    trilist.SetString(joinMap.E164Alias.JoinNumber, this.CodecInfo.E164Alias);
+                    trilist.SetString(joinMap.H323Id.JoinNumber, this.CodecInfo.H323Id);
+                    trilist.SetString(joinMap.SipUri.JoinNumber, this.CodecInfo.SipUri);
+                }
+            };
+        }
 
 		private void LinkVideoCodecPhoneToApi(IHasPhoneDialing codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
@@ -1274,7 +1301,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 		{
 			trilist.SetSigFalseAction(joinMap.CameraLayout.JoinNumber, codec.LocalLayoutToggle);
 
-			codec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.CameraLayoutStringFb.JoinNumber]);
+			codec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentLayoutStringFb.JoinNumber]);
 		}
 
 		private void LinkVideoCodecCameraModeToApi(IHasCameraAutoMode codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)

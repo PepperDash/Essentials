@@ -34,7 +34,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
-		[JoinName("1")]
+        [JoinName("Dtmf1")]
 		public JoinDataComplete Dtmf1 = new JoinDataComplete(
 			new JoinData
 			{
@@ -48,7 +48,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("2")]
+        [JoinName("Dtmf2")]
 		public JoinDataComplete Dtmf2 = new JoinDataComplete(
 			new JoinData
 			{
@@ -62,7 +62,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("3")]
+        [JoinName("Dtmf3")]
 		public JoinDataComplete Dtmf3 = new JoinDataComplete(
 			new JoinData
 			{
@@ -76,7 +76,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("4")]
+        [JoinName("Dtmf4")]
 		public JoinDataComplete Dtmf4 = new JoinDataComplete(
 			new JoinData
 			{
@@ -90,7 +90,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("5")]
+        [JoinName("Dtmf5")]
 		public JoinDataComplete Dtmf5 = new JoinDataComplete(
 			new JoinData
 			{
@@ -104,7 +104,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("6")]
+        [JoinName("Dtmf6")]
 		public JoinDataComplete Dtmf6 = new JoinDataComplete(
 			new JoinData
 			{
@@ -118,7 +118,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("7")]
+        [JoinName("Dtmf7")]
 		public JoinDataComplete Dtmf7 = new JoinDataComplete(
 			new JoinData
 			{
@@ -132,7 +132,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("8")]
+        [JoinName("Dtmf8")]
 		public JoinDataComplete Dtmf8 = new JoinDataComplete(
 			new JoinData
 			{
@@ -146,7 +146,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("9")]
+        [JoinName("Dtmf9")]
 		public JoinDataComplete Dtmf9 = new JoinDataComplete(
 			new JoinData
 			{
@@ -160,7 +160,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("0")]
+        [JoinName("Dtmf0")]
 		public JoinDataComplete Dtmf0 = new JoinDataComplete(
 			new JoinData
 			{
@@ -174,7 +174,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("*")]
+        [JoinName("DtmfStar")]
 		public JoinDataComplete DtmfStar = new JoinDataComplete(
 			new JoinData
 			{
@@ -188,7 +188,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("#")]
+        [JoinName("DtmfPound")]
 		public JoinDataComplete DtmfPound = new JoinDataComplete(
 			new JoinData
 			{
@@ -295,12 +295,12 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Dial manual string",
+				Description = "Dial manual string specified by CurrentDialString serial join",
 				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("DialPhoneCall")]
+        [JoinName("DialPhone")]
 		public JoinDataComplete DialPhone = new JoinDataComplete(
 			new JoinData
 			{
@@ -328,7 +328,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("EndPhoneCall")]
+        [JoinName("HangUpPhone")]
 		public JoinDataComplete HangUpPhone = new JoinDataComplete(
 			new JoinData
 			{
@@ -337,7 +337,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Hang Up PHone",
+				Description = "Hang Up Phone",
 				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Digital
 			});
@@ -361,11 +361,11 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             new JoinData
             {
                 JoinNumber = 90,
-                JoinSpan = 8
+                JoinSpan = 1
             },
             new JoinMetadata
             {
-                Description = "End a specific call by call index. ",
+                Description = "Join all calls",
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
@@ -379,7 +379,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             },
             new JoinMetadata
             {
-                Description = "End a specific call by call index. ",
+                Description = "Join a specific call by call index. ",
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
@@ -645,7 +645,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Pulse to save selected preset.  FB will pulse for 3s when preset saved.",
+				Description = "Pulse to save selected preset spcified by CameraPresetSelect analog join.  FB will pulse for 3s when preset saved.",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Digital
 			});
@@ -659,7 +659,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Camera Mode Auto",
+				Description = "Camera Mode Auto.  Enables camera auto tracking mode, with feedback",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Digital
 			});
@@ -673,7 +673,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Camera Mode Manual",
+				Description = "Camera Mode Manual.  Disables camera auto tracking mode, with feedback",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Digital
 			});
@@ -687,7 +687,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Camera Mode Off",
+				Description = "Camera Mode Off.  Disables camera video, with feedback. Works like video mute.",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Digital
 			});
@@ -925,7 +925,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             },
             new JoinMetadata
             {
-                Description = "Removes the selected recent call item",
+                Description = "Removes the selected recent call item specified by the SelectRecentCallItem analog join",
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.Digital
             });
@@ -995,7 +995,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "advance selfview position",
+				Description = "Toggles selfview position",
 				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Digital
 			});
@@ -1010,7 +1010,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             new JoinMetadata
             {
                 Description = "Holds Call at specified index",
-                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.Digital
             });
 
@@ -1025,6 +1025,34 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             {
                 Description = "Resume Call at specified index",
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("MultiSiteOptionIsEnabled")]
+        public JoinDataComplete MultiSiteOptionIsEnabled = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 301,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Multi site option is enabled FB",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("AutoAnswerEnabled")]
+        public JoinDataComplete AutoAnswerEnabled = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 302,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Auto Answer is enabled FB",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.Digital
             });
 
@@ -1289,12 +1317,12 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Current Dial String",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+				Description = "Value to dial when ManualDial digital join is pulsed",
+				JoinCapabilities = eJoinCapabilities.ToSIMPL,
 				JoinType = eJoinType.Serial
 			});
 
-		[JoinName("PhoneString")]
+        [JoinName("PhoneDialString")]
 		public JoinDataComplete PhoneDialString = new JoinDataComplete(
 			new JoinData
 			{
@@ -1308,7 +1336,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
-		[JoinName("CurrentCallName")]
+        [JoinName("CurrentCallData")]
 		public JoinDataComplete CurrentCallData = new JoinDataComplete(
 			new JoinData
 			{
@@ -1435,8 +1463,8 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Serial
 			});
 
-		[JoinName("CameraLayoutStringFb")]
-		public JoinDataComplete CameraLayoutStringFb = new JoinDataComplete(
+        [JoinName("CurrentLayoutStringFb")]
+		public JoinDataComplete CurrentLayoutStringFb = new JoinDataComplete(
 			new JoinData
 			{
 				JoinNumber = 141,
@@ -1559,7 +1587,77 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				Description = "advance selfview position",
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
 				JoinType = eJoinType.Serial
-			});		
+			});
+
+        [JoinName("DeviceIpAddresss")]
+        public JoinDataComplete DeviceIpAddresss = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 301,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "IP Address of device",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("SipPhoneNumber")]
+        public JoinDataComplete SipPhoneNumber = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 302,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "SIP phone number of device",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("E164Alias")]
+        public JoinDataComplete E164Alias = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 303,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "E164 alias of device",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("H323Id")]
+        public JoinDataComplete H323Id = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 304,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "H323 ID of device",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("SipUri")]
+        public JoinDataComplete SipUri = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 305,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "SIP URI of device",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
 
 		[JoinName("DirectoryEntrySelectedName")]
 		public JoinDataComplete DirectoryEntrySelectedName = new JoinDataComplete(
