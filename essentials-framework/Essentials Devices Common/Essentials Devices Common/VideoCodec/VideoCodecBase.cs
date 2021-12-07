@@ -972,6 +972,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 			if (entry is DirectoryFolder)
 			{
 				codec.GetDirectoryFolderContents(entry.FolderId);
+                trilist.SetUshort(joinMap.SelectedContactMethodCount.JoinNumber, 0);
 				return;
 			}
 
@@ -998,9 +999,15 @@ ScreenIndexIsPinnedTo: {8} (a{17})
                 // If auto dial is disabled...
     			var entryToDial = entry as DirectoryContact;
 
-		        if (entryToDial == null) return;
+                if (entryToDial == null)
+                {
+                    trilist.SetUshort(joinMap.SelectedContactMethodCount.JoinNumber, 0);
+                    return;
+                }
 
                 trilist.SetSigFalseAction(joinMap.DirectoryDialSelectedLine.JoinNumber, () => Dial(entryToDial.ContactMethods[0].Number));
+
+                trilist.SetUshort(joinMap.SelectedContactMethodCount.JoinNumber, (ushort)entryToDial.ContactMethods.Count);
 
                 var clearBytes = XSigHelpers.ClearOutputs();
 

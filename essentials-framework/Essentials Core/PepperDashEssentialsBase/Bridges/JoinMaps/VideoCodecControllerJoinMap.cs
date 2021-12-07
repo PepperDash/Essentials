@@ -1204,6 +1204,20 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Analog
 			});
 
+        [JoinName("SelectedContactMethodCount")]
+        public JoinDataComplete SelectedContactMethodCount = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 102,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Reports the number of contact methods for the selected contact",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
 		[JoinName("CameraPresetSelect")]
 		public JoinDataComplete CameraPresetSelect = new JoinDataComplete(
 			new JoinData
