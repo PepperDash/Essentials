@@ -2315,6 +2315,31 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		    trilist.SetSigTrueAction(joinMap.ShareOnlyMeeting.JoinNumber, StartSharingOnlyMeeting);
             trilist.SetSigTrueAction(joinMap.StartNormalMeetingFromSharingOnlyMeeting.JoinNumber, StartNormalMeetingFromSharingOnlyMeeting);
 
+			// TODO [ ] Issue #868
+			trilist.SetStringSigAction(joinMap.SubmitPassword.JoinNumber, SubmitPassword);
+			PasswordRequired += (devices, args) =>
+			{
+				if (args.LoginAttemptCancelled)
+				{
+					trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, false);
+					return;
+				}
+
+				if (!string.IsNullOrEmpty(args.Message))
+				{
+					trilist.SetString(joinMap.PasswordPromptMessage.JoinNumber, args.Message);
+				}
+
+				if (args.LoginAttemptFailed)
+				{
+					// login attempt failed
+					return;
+				}
+
+				trilist.SetBool(joinMap.PasswordIncorrect.JoinNumber, args.LastAttemptWasIncorrect);
+				trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, true);
+			};
+			
 			trilist.OnlineStatusChange += (device, args) =>
 			{
 				if (!args.DeviceOnLine) return;
