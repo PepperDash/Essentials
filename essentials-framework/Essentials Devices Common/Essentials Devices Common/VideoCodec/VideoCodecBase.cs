@@ -1598,12 +1598,14 @@ ScreenIndexIsPinnedTo: {8} (a{17})
                         trilist.SetString(joinMap.SelectedRecentCallName.JoinNumber, _selectedRecentCallItem.Name);
                         trilist.SetString(joinMap.SelectedRecentCallNumber.JoinNumber, _selectedRecentCallItem.Number);
                         trilist.SetSigFalseAction(joinMap.RemoveSelectedRecentCallItem.JoinNumber, () => codec.RemoveCallHistoryEntry(_selectedRecentCallItem));
+                        trilist.SetSigFalseAction(joinMap.DialSelectedRecentCallItem.JoinNumber, () => this.Dial(_selectedRecentCallItem.Number));
                     }
                     else
                     {
                         trilist.SetString(joinMap.SelectedRecentCallName.JoinNumber, string.Empty);
                         trilist.SetString(joinMap.SelectedRecentCallNumber.JoinNumber, string.Empty);
                         trilist.ClearBoolSigAction(joinMap.RemoveSelectedRecentCallItem.JoinNumber);
+                        trilist.ClearBoolSigAction(joinMap.DialSelectedRecentCallItem.JoinNumber);
                     }
                 });
         }

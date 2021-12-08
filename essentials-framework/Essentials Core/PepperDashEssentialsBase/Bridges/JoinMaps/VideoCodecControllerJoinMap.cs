@@ -925,7 +925,21 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             },
             new JoinMetadata
             {
-                Description = "Removes the selected recent call item specified by the SelectRecentCallItem analog join",
+                Description = "Pulse to remove the selected recent call item specified by the SelectRecentCallItem analog join",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("DialSelectedRecentCallItem")]
+        public JoinDataComplete DialSelectedRecentCallItem = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 182,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Pulse to dial the selected recent call item specified by the SelectRecentCallItem analog join",
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.Digital
             });
