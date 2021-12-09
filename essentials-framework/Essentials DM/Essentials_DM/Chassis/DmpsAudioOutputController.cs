@@ -175,6 +175,11 @@ namespace PepperDash.Essentials.DM
             if (MasterVolumeLevel != null)
             {
                 SetUpDmpsAudioOutputJoins(trilist, MasterVolumeLevel, joinMap.MasterVolumeLevel.JoinNumber);
+                var mixer = MasterVolumeLevel as DmpsAudioOutputWithMixer;
+                if (mixer != null)
+                {
+                    trilist.SetUShortSigAction(3, mixer.RecallPreset);
+                }
             }
 
             if (SourceVolumeLevel != null)
@@ -252,6 +257,12 @@ namespace PepperDash.Essentials.DM
             {
                 VolumeLevelScaledFeedback.FireUpdate();
             }
+        }
+
+        public void RecallPreset(ushort preset)
+        {
+            Mixer.PresetNumber.UShortValue = preset;
+            Mixer.RecallPreset();
         }
     }
 

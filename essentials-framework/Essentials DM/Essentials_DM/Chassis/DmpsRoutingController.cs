@@ -60,6 +60,7 @@ namespace PepperDash.Essentials.DM
         public Dictionary<uint, string> InputNames { get; set; }
         public Dictionary<uint, string> OutputNames { get; set; }
         public Dictionary<uint, DmCardAudioOutputController> VolumeControls { get; private set; }
+        public DmpsMicrophoneController Microphones { get; private set; }
 
         public const int RouteOffTime = 500;
         Dictionary<PortNumberType, CTimer> RouteOffTimers = new Dictionary<PortNumberType, CTimer>();
@@ -192,6 +193,8 @@ namespace PepperDash.Essentials.DM
             SetupOutputCards();
 
             SetupInputCards();
+
+            Microphones = new DmpsMicrophoneController(Dmps);
         }
 
         public override bool CustomActivate()
