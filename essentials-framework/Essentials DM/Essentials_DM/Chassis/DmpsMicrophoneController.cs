@@ -42,7 +42,7 @@ namespace PepperDash.Essentials.DM
 
             if(Mics.ContainsKey(mic.ID))
             {
-                Mics[mic.ID].Event();
+                Mics[mic.ID].Event(args.EventId);
             }
         }
     }
@@ -113,11 +113,17 @@ namespace PepperDash.Essentials.DM
             trilist.SetSigTrueAction(joinMap.MicMuteOff.JoinNumber, MuteOffAction);
         }
 
-        public void Event()
+        public void Event(int id)
         {
-            VolumeLevelFeedback.FireUpdate();
-            VolumeLevelScaledFeedback.FireUpdate();
-            MuteFeedback.FireUpdate();
+            if (id == MicrophoneEventIds.MuteOnFeedBackEventId)
+            {
+                MuteFeedback.FireUpdate();
+            }
+            else if (id == MicrophoneEventIds.GainFeedBackEventId)
+            {
+                VolumeLevelFeedback.FireUpdate();
+                VolumeLevelScaledFeedback.FireUpdate();
+            }
         }
 
         public void SetVolumeScaled(ushort level)
