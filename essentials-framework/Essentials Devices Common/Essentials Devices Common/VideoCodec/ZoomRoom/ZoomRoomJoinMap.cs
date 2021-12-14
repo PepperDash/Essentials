@@ -39,11 +39,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             });
 
         // TODO [ ] Issue #868
+        [JoinName("PassowrdLoginFailed")]
+        public JoinDataComplete PasswordLoginFailed = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 8,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "FB Indicates the password entered is incorrect",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO [ ] Issue #868
         [JoinName("WaitingForHost")]
         public JoinDataComplete WaitingForHost = new JoinDataComplete(
             new JoinData
             {
-                JoinNumber = 8,
+                JoinNumber = 9,
                 JoinSpan = 1
             },
             new JoinMetadata
@@ -58,7 +73,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public JoinDataComplete IsHost = new JoinDataComplete(
             new JoinData
             {
-                JoinNumber = 9,
+                JoinNumber = 10,
                 JoinSpan = 1
             },
             new JoinMetadata
