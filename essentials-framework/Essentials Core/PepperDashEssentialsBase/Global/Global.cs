@@ -32,6 +32,27 @@ namespace PepperDash.Essentials.Core
         // TODO: consider making this configurable later
         public static IFormatProvider Culture = CultureInfo.CreateSpecificCulture("en-US");
 
+        /// <summary>
+        /// True when the processor type is a DMPS variant
+        /// </summary>
+        public static bool ControlSystemIsDmpsType
+        {
+            get
+            {
+                return ControlSystem.ControllerPrompt.ToLower().IndexOf("dmps") > -1;
+            }
+        }
+
+        /// <summary>
+        /// True when the processor type is a DMPS 4K variant
+        /// </summary>
+        public static bool ControlSystemIsDmps4kType
+        {
+            get
+            {
+                return ControlSystemIsDmpsType && ControlSystem.ControllerPrompt.ToLower().IndexOf("4k") > -1;
+            }
+        }
 
         /// <summary>
         /// The file path prefix to the folder containing configuration files

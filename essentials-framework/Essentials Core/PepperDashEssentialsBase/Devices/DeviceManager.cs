@@ -60,6 +60,7 @@ namespace PepperDash.Essentials.Core
 		        DeviceCriticalSection.Enter();
                 AddDeviceEnabled = false;
 		        // PreActivate all devices
+                Debug.Console(0,"****PreActivation starting...****");
 		        foreach (var d in Devices.Values)
 		        {
 		            try
@@ -69,9 +70,12 @@ namespace PepperDash.Essentials.Core
 		            }
 		            catch (Exception e)
 		            {
-		                Debug.Console(0, d, "ERROR: Device PreActivation failure:\r{0}", e);
+                        Debug.Console(0, d, "ERROR: Device {1} PreActivation failure: {0}", e.Message, d.Key);
+                        Debug.Console(1, d, "Stack Trace: {0}", e.StackTrace);
 		            }
 		        }
+                Debug.Console(0, "****PreActivation complete****");
+		        Debug.Console(0, "****Activation starting...****");
 
 		        // Activate all devices
 		        foreach (var d in Devices.Values)
@@ -83,9 +87,13 @@ namespace PepperDash.Essentials.Core
 		            }
 		            catch (Exception e)
 		            {
-		                Debug.Console(0, d, "ERROR: Device Activation failure:\r{0}", e);
+                        Debug.Console(0, d, "ERROR: Device {1} Activation failure: {0}", e.Message, d.Key);
+                        Debug.Console(1, d, "Stack Trace: {0}", e.StackTrace);
 		            }
 		        }
+
+                Debug.Console(0, "****Activation complete****");
+                Debug.Console(0, "****PostActivation starting...****");
 
 		        // PostActivate all devices
 		        foreach (var d in Devices.Values)
@@ -97,9 +105,12 @@ namespace PepperDash.Essentials.Core
 		            }
 		            catch (Exception e)
 		            {
-		                Debug.Console(0, d, "ERROR: Device PostActivation failure:\r{0}", e);
+		                Debug.Console(0, d, "ERROR: Device {1} PostActivation failure: {0}", e.Message, d.Key);
+		                Debug.Console(1, d, "Stack Trace: {0}", e.StackTrace);
 		            }
 		        }
+
+                Debug.Console(0, "****PostActivation complete****");
 
                 OnAllDevicesActivated();
 		    }
