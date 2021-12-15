@@ -2338,6 +2338,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		    trilist.SetSigTrueAction(joinMap.ShareOnlyMeeting.JoinNumber, StartSharingOnlyMeeting);
             trilist.SetSigTrueAction(joinMap.StartNormalMeetingFromSharingOnlyMeeting.JoinNumber, StartNormalMeetingFromSharingOnlyMeeting);
 
+<<<<<<< HEAD
 
             // TODO [ ] Issue #868
             // not sure if this would be needed here, should be handled by VideoCodecBase.cs LinkToApi methods
@@ -2347,6 +2348,33 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             //};
 
+=======
+			// TODO [ ] Issue #868
+			trilist.SetStringSigAction(joinMap.SubmitPassword.JoinNumber, SubmitPassword);
+			PasswordRequired += (devices, args) =>
+			{
+				if (args.LoginAttemptCancelled)
+				{
+					trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, false);
+					return;
+				}
+
+				if (!string.IsNullOrEmpty(args.Message))
+				{
+					trilist.SetString(joinMap.PasswordPromptMessage.JoinNumber, args.Message);
+				}
+
+				if (args.LoginAttemptFailed)
+				{
+					// login attempt failed
+					return;
+				}
+
+				trilist.SetBool(joinMap.PasswordIncorrect.JoinNumber, args.LastAttemptWasIncorrect);
+				trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, true);
+			};
+			
+>>>>>>> 2f901b9fc4cd67fd1e06c8bcda396e9c8c57d6c1
 			trilist.OnlineStatusChange += (device, args) =>
 			{
 				if (!args.DeviceOnLine) return;
