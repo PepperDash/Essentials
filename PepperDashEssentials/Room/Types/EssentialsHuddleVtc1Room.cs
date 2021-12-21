@@ -444,6 +444,14 @@ namespace PepperDash.Essentials
         /// <returns></returns>
         public bool RunDefaultCallRoute()
         {
+            Debug.Console(2, this, "RunDefaultCallRoute() Currently Sharing Content: {0}", VideoCodec.SharingContentIsOnFeedback.BoolValue); 
+
+            if (VideoCodec.SharingContentIsOnFeedback.BoolValue)
+            {
+                Debug.Console(2, this, "Currently sharing content.  Ignoring request to run default call route.");
+                return false;
+            }
+
             RunRouteAction(DefaultCodecRouteString);
             return true;
         }
