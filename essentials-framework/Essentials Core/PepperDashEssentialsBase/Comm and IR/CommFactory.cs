@@ -81,6 +81,12 @@ namespace PepperDash.Essentials.Core
                         }
 					case eControlMethod.Telnet:
 						break;
+					case eControlMethod.Http:
+						{
+							var http = new GenericHttpClient(deviceConfig.Key + "-http", deviceConfig.Name + "-http" ,c.Address);
+							comm = http;
+							break;
+						}
 					default:
 						break;
 				}				
