@@ -2214,14 +2214,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				layoutsCodec.LayoutInfoChanged += (o, a) =>
 				{
-					trilist.SetBool(joinMap.LayoutGalleryIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.Gallery
-					                                                             ==
-					                                                             (a.AvailableLayouts &
-					                                                              zConfiguration.eLayoutStyle.Gallery));
-					trilist.SetBool(joinMap.LayoutSpeakerIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.Speaker
-					                                                             ==
-					                                                             (a.AvailableLayouts &
-					                                                              zConfiguration.eLayoutStyle.Speaker));
+					trilist.SetBool(joinMap.LayoutGalleryIsAvailable.JoinNumber, 
+                        zConfiguration.eLayoutStyle.Gallery == (a.AvailableLayouts & zConfiguration.eLayoutStyle.Gallery));
+
+					trilist.SetBool(joinMap.LayoutSpeakerIsAvailable.JoinNumber, 
+                        zConfiguration.eLayoutStyle.Speaker == (a.AvailableLayouts & zConfiguration.eLayoutStyle.Speaker));
+					                                                             
+					                                                             
+					                                                              
 					trilist.SetBool(joinMap.LayoutStripIsAvailable.JoinNumber, zConfiguration.eLayoutStyle.Strip
 					                                                           ==
 					                                                           (a.AvailableLayouts & zConfiguration.eLayoutStyle.Strip));
@@ -2338,8 +2338,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		    trilist.SetSigTrueAction(joinMap.ShareOnlyMeeting.JoinNumber, StartSharingOnlyMeeting);
             trilist.SetSigTrueAction(joinMap.StartNormalMeetingFromSharingOnlyMeeting.JoinNumber, StartNormalMeetingFromSharingOnlyMeeting);
 
-<<<<<<< HEAD
-
             // TODO [ ] Issue #868
             // not sure if this would be needed here, should be handled by VideoCodecBase.cs LinkToApi methods
             //DirectoryResultReturned += (device, args) =>
@@ -2348,7 +2346,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
             //};
 
-=======
+
 			// TODO [ ] Issue #868
 			trilist.SetStringSigAction(joinMap.SubmitPassword.JoinNumber, SubmitPassword);
 			PasswordRequired += (devices, args) =>
@@ -2373,8 +2371,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				trilist.SetBool(joinMap.PasswordIncorrect.JoinNumber, args.LastAttemptWasIncorrect);
 				trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, true);
 			};
-			
->>>>>>> 2f901b9fc4cd67fd1e06c8bcda396e9c8c57d6c1
+
 			trilist.OnlineStatusChange += (device, args) =>
 			{
 				if (!args.DeviceOnLine) return;
