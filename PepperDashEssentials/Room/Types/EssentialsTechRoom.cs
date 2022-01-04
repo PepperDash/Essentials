@@ -375,7 +375,7 @@ Params: {2}"
             {
                 bridge.AddJoinMap(Key, joinMap);
             }
-            uint i;
+
             if (_config.IsPrimary)
             {
                 Debug.Console(1, this, "Linking Primary system Tuner Preset Mirroring");
