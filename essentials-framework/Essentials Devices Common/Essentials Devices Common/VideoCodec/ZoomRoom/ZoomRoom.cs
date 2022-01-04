@@ -2276,7 +2276,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				trilist.SetUShortSigAction(joinMap.ScreenIndexToPinUserTo.JoinNumber, (u) => ScreenIndexToPinUserTo = u);
 			}
 
-			// TODO: #714 [ ] LinkZoomRoomToApi >> layoutSizeCoodec
 			var layoutSizeCodec = this as IHasSelfviewSize;
 			if (layoutSizeCodec != null)
 			{
@@ -2298,7 +2297,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				layoutSizeCodec.SelfviewPipSizeFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetSelfviewPipSize.JoinNumber]);
 			}
 
-            // TODO [ ] Issue #868
 		    PasswordRequired += (device, args) =>
 		    {
 		        if (args.LoginAttemptCancelled)
@@ -2321,7 +2319,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, true);
 		    };
 
-            // TODO [ ] Issue #868
 		    MeetingInfoChanged += (device, args) =>
 		    {
                 trilist.SetString(joinMap.MeetingInfoId.JoinNumber, args.Info.Id);
@@ -2333,12 +2330,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 //trilist.SetString(joinMap.CurrentSource.JoinNumber, args.Info.ShareStatus);
 		    };
 
-            // TODO [ ] Issue #868
 		    trilist.SetSigTrueAction(joinMap.StartMeetingNow.JoinNumber, () => StartMeeting(0));
 		    trilist.SetSigTrueAction(joinMap.ShareOnlyMeeting.JoinNumber, StartSharingOnlyMeeting);
             trilist.SetSigTrueAction(joinMap.StartNormalMeetingFromSharingOnlyMeeting.JoinNumber, StartNormalMeetingFromSharingOnlyMeeting);
 
-            // TODO [ ] Issue #868
             // not sure if this would be needed here, should be handled by VideoCodecBase.cs LinkToApi methods
             //DirectoryResultReturned += (device, args) =>
             //{
@@ -2347,7 +2342,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             //};
 
 
-			// TODO [ ] Issue #868
 			trilist.SetStringSigAction(joinMap.SubmitPassword.JoinNumber, SubmitPassword);
 			PasswordRequired += (devices, args) =>
 			{
