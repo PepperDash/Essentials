@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using PepperDash.Core;
+
 
 namespace PepperDash.Essentials.Core
 {
@@ -66,6 +68,14 @@ namespace PepperDash.Essentials.Core
         bool RunDefaultCallRoute();
     }
 
+    /// <summary>
+    /// Describes environmental controls available on a room such as lighting, shades, temperature, etc.
+    /// </summary>
+    public interface IEnvironmentalControls
+    {
+        List<EssentialsDevice> EnvironmentalControlDevices { get; }
 
+        bool HasEnvironmentalControlDevices { get; }
+    }
 
 }

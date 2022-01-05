@@ -618,13 +618,31 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			private bool _can_Switch_Speaker_View;
 			private bool _can_Switch_Wall_View;
 			private bool _can_Switch_Share_On_All_Screens;
+            private bool _can_Switch_Floating_Share_Content;
 			private bool _is_In_First_Page;
 			private bool _is_In_Last_Page;
 			private string _video_type;
 
 
 			public bool can_Adjust_Floating_Video { get; set; }
-			public bool can_Switch_Floating_Share_Content { get; set; }
+
+
+			public bool can_Switch_Floating_Share_Content
+            {
+                get
+                {
+                    return _can_Switch_Floating_Share_Content;
+                }
+                set
+                {
+                    if (value != _can_Switch_Floating_Share_Content)
+                    {
+                        _can_Switch_Floating_Share_Content = value;
+                        NotifyPropertyChanged("can_Switch_Floating_Share_Content");
+                    }
+                }
+            }
+
 
 			/// <summary>
 			/// [on/off] // Set to On if it is possible to invoke zConfiguration Call Layout Style: ShareAll, to switch to the ShareAll mode, where the content sharing is shown full screen on all monitors.
@@ -744,12 +762,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 		}
 
-		public class CallRecordInfo
+		public class CallRecordInfo : NotifiableObject
 		{
+            private bool _meetingIsBeingRecorded;
+
 			public bool canRecord { get; set; }
 			public bool emailRequired { get; set; }
 			public bool amIRecording { get; set; }
-			public bool meetingIsBeingRecorded { get; set; }
+
+			public bool meetingIsBeingRecorded 
+            {
+                get
+                {
+                    return _meetingIsBeingRecorded;
+                }
+                set
+                {
+                    if (value != _meetingIsBeingRecorded)
+                    {
+                        _meetingIsBeingRecorded = value;
+                        NotifyPropertyChanged("meetingIsBeingRecorded");
+                    }
+                }
+            }
 		}
 	}
 
@@ -1123,9 +1158,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 		}
 
-		public class Lock
+		public class Lock : NotifiableObject
 		{
-			public bool Enable { get; set; }
+            private bool _enable;
+
+			public bool Enable 
+            {
+                get
+                {
+                    return _enable;
+                }
+                set
+                {
+                    if (value != _enable)
+                    {
+                        _enable = value;
+                        NotifyPropertyChanged("Enable");
+                    }
+                }
+            }
 		}
 
 		public class ClosedCaption

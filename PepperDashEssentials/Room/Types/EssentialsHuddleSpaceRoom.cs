@@ -202,10 +202,27 @@ namespace PepperDash.Essentials
                 };
             }
 
+            SetupEnvironmentalControlDevices();
+
             SetSourceListKey();
           
 			EnablePowerOnToLastSource = true;
    		}
+
+        private void SetupEnvironmentalControlDevices()
+        {
+            if (PropertiesConfig.Environment != null)
+            {
+                if (PropertiesConfig.Environment.Enabled)
+                {
+                    foreach (var d in PropertiesConfig.Environment.DeviceKeys)
+                    {
+                        var envDevice = DeviceManager.GetDeviceForKey(d) as EssentialsDevice;
+                        EnvironmentalControlDevices.Add(envDevice);
+                    }
+                }
+            }
+        }
 
         private void SetSourceListKey()
         {

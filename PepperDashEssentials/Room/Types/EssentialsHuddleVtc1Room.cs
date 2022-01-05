@@ -334,6 +334,8 @@ namespace PepperDash.Essentials
 
                 CallTypeFeedback = new IntFeedback(() => 0);
 
+                SetupEnvironmentalControlDevices();
+
                 SetSourceListKey();
 
                 EnablePowerOnToLastSource = true;
@@ -343,6 +345,21 @@ namespace PepperDash.Essentials
                 Debug.Console(0, this, "Error Initializing Room: {0}", e);
             }
    		}
+
+        private void SetupEnvironmentalControlDevices()
+        {
+            if (PropertiesConfig.Environment != null)
+            {
+                if (PropertiesConfig.Environment.Enabled)
+                {
+                    foreach (var d in PropertiesConfig.Environment.DeviceKeys)
+                    {
+                        var envDevice = DeviceManager.GetDeviceForKey(d) as EssentialsDevice;
+                        EnvironmentalControlDevices.Add(envDevice);
+                    }
+                }
+            }
+        }
 
 
         private void SetSourceListKey()
@@ -427,6 +444,14 @@ namespace PepperDash.Essentials
         /// <returns></returns>
         public bool RunDefaultCallRoute()
         {
+            Debug.Console(2, this, "RunDefaultCallRoute() Currently Sharing Content: {0}", VideoCodec.SharingContentIsOnFeedback.BoolValue); 
+
+            if (VideoCodec.SharingContentIsOnFeedback.BoolValue)
+            {
+                Debug.Console(2, this, "Currently sharing content.  Ignoring request to run default call route.");
+                return false;
+            }
+
             RunRouteAction(DefaultCodecRouteString);
             return true;
         }

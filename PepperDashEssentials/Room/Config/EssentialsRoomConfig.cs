@@ -147,6 +147,24 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("helpMessage")]
 		public string HelpMessage { get; set; }
 
+        /// <summary>
+        /// Read this value to get the help message.  It checks for the old and new config format.
+        /// </summary>
+        public string HelpMessageForDisplay
+        {
+            get
+            {
+                if(Help != null && !string.IsNullOrEmpty(Help.Message))
+                {
+                    return Help.Message;
+                }
+                else
+                {
+                    return HelpMessage; 
+                }
+            }
+        }
+
 		[JsonProperty("environment")]
 		public EssentialsEnvironmentPropertiesConfig Environment { get; set; }
 
