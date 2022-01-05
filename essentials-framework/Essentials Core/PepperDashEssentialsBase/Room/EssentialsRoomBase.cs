@@ -11,6 +11,8 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
@@ -18,6 +20,8 @@ namespace PepperDash.Essentials.Core
     /// </summary>
     public abstract class EssentialsRoomBase : ReconfigurableDevice, IEssentialsRoom
     {
+
+
         /// <summary>
         ///
         /// </summary>
@@ -34,6 +38,16 @@ namespace PepperDash.Essentials.Core
         public IOccupancyStatusProvider RoomOccupancy { get; private set; }
 
         public bool OccupancyStatusProviderIsRemote { get; private set; }
+
+        public List<EssentialsDevice> EnvironmentalControlDevices { get; protected set; }
+
+        public bool HasEnvironmentalControlDevices
+        {
+            get
+            {
+                return EnvironmentalControlDevices != null && EnvironmentalControlDevices.Count > 0;
+            }
+        }
 
         protected abstract Func<bool> IsWarmingFeedbackFunc { get; }
         protected abstract Func<bool> IsCoolingFeedbackFunc { get; }
@@ -119,6 +133,8 @@ namespace PepperDash.Essentials.Core
         public EssentialsRoomBase(DeviceConfig config)
             : base(config)
         {
+            EnvironmentalControlDevices = new List<EssentialsDevice>();
+
             // Setup the ShutdownPromptTimer
             ShutdownPromptTimer = new SecondsCountdownTimer(Key + "-offTimer");
             ShutdownPromptTimer.IsRunningFeedback.OutputChange += (o, a) =>

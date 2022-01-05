@@ -334,6 +334,8 @@ namespace PepperDash.Essentials
 
                 CallTypeFeedback = new IntFeedback(() => 0);
 
+                SetupEnvironmentalControlDevices();
+
                 SetSourceListKey();
 
                 EnablePowerOnToLastSource = true;
@@ -343,6 +345,21 @@ namespace PepperDash.Essentials
                 Debug.Console(0, this, "Error Initializing Room: {0}", e);
             }
    		}
+
+        private void SetupEnvironmentalControlDevices()
+        {
+            if (PropertiesConfig.Environment != null)
+            {
+                if (PropertiesConfig.Environment.Enabled)
+                {
+                    foreach (var d in PropertiesConfig.Environment.DeviceKeys)
+                    {
+                        var envDevice = DeviceManager.GetDeviceForKey(d) as EssentialsDevice;
+                        EnvironmentalControlDevices.Add(envDevice);
+                    }
+                }
+            }
+        }
 
 
         private void SetSourceListKey()
