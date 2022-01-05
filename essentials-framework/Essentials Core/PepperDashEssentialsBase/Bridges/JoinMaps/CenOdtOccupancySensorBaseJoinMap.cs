@@ -46,6 +46,14 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete RawOccupancyUsFeedback = new JoinDataComplete(new JoinData { JoinNumber = 7, JoinSpan = 1 },
             new JoinMetadata { Description = "Raw Occupancy Us Feedback", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
+        [JoinName("IdentityModeOn")]
+        public JoinDataComplete IdentityMode = new JoinDataComplete(new JoinData { JoinNumber = 8, JoinSpan = 1 },
+            new JoinMetadata { Description = "Enable Identity Mode", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("IdentityModeFeedback")]
+        public JoinDataComplete IdentityModeFeedback = new JoinDataComplete(new JoinData { JoinNumber = 8, JoinSpan = 1 },
+            new JoinMetadata { Description = "Identity Mode Feedback", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
+
         [JoinName("EnableLedFlash")]
         public JoinDataComplete EnableLedFlash = new JoinDataComplete(new JoinData { JoinNumber = 11, JoinSpan = 1 },
             new JoinMetadata { Description = "Enable Led Flash", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
