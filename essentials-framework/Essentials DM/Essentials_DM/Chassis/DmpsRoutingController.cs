@@ -60,7 +60,6 @@ namespace PepperDash.Essentials.DM
         public Dictionary<uint, string> InputNames { get; set; }
         public Dictionary<uint, string> OutputNames { get; set; }
         public Dictionary<uint, DmCardAudioOutputController> VolumeControls { get; private set; }
-        public DmpsMicrophoneController Microphones { get; private set; }
 
         public const int RouteOffTime = 500;
         Dictionary<PortNumberType, CTimer> RouteOffTimers = new Dictionary<PortNumberType, CTimer>();
@@ -193,8 +192,6 @@ namespace PepperDash.Essentials.DM
             SetupOutputCards();
 
             SetupInputCards();
-
-            Microphones = new DmpsMicrophoneController(Dmps);
         }
 
         public override bool CustomActivate()
@@ -412,13 +409,13 @@ namespace PepperDash.Essentials.DM
                 var ioSlot = i;
                 var ioSlotJoin = ioSlot - 1;
 
-                if (VideoInputSyncFeedbacks[ioSlot] != null)
+                if (VideoInputSyncFeedbacks.ContainsKey(ioSlot) && VideoInputSyncFeedbacks[ioSlot] != null)
                 {
                     VideoInputSyncFeedbacks[ioSlot].LinkInputSig(
                         trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
                 }
 
-                if (InputNameFeedbacks[ioSlot] != null)
+                if (InputNameFeedbacks.ContainsKey(ioSlot) &&  InputNameFeedbacks[ioSlot] != null)
                 {
                     InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + ioSlotJoin]);
                 }
@@ -445,7 +442,7 @@ namespace PepperDash.Essentials.DM
                 });
 
 
-                if (InputEndpointOnlineFeedbacks[ioSlot] != null)
+                if (InputEndpointOnlineFeedbacks.ContainsKey(ioSlot) && InputEndpointOnlineFeedbacks[ioSlot] != null)
                 {
                     InputEndpointOnlineFeedbacks[ioSlot].LinkInputSig(
                         trilist.BooleanInput[joinMap.InputEndpointOnline.JoinNumber + ioSlotJoin]);
@@ -542,7 +539,7 @@ namespace PepperDash.Essentials.DM
 
                     InputEndpointOnlineFeedbacks[inputCard.Number] = new BoolFeedback(() => inputCard.EndpointOnlineFeedback);
 
-                    if (inputCard.VideoDetectedFeedback != null)
+                    if (inputCard.VideoDetectedFeedback != null && inputCard.VideoDetectedFeedback.Supported)
                     {
                         VideoInputSyncFeedbacks[inputCard.Number] = new BoolFeedback(() => inputCard.VideoDetectedFeedback.BoolValue);
                     }
