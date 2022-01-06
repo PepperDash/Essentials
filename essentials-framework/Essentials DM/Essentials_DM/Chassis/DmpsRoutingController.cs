@@ -226,19 +226,9 @@ namespace PepperDash.Essentials.DM
             }
             foreach (var x in InputNameFeedbacks)
             {
-                Debug.Console(0, this, "input {0} name update", x.Key);
                 x.Value.FireUpdate();
             }
             foreach (var x in OutputNameFeedbacks)
-            {
-                Debug.Console(0, this, "output {0} name update", x.Key);
-                x.Value.FireUpdate();
-            }
-            foreach (var x in OutputVideoRouteNameFeedbacks)
-            {
-                x.Value.FireUpdate();
-            }
-            foreach (var x in OutputAudioRouteNameFeedbacks)
             {
                 x.Value.FireUpdate();
             }
