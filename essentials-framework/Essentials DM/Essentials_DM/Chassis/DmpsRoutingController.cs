@@ -124,18 +124,16 @@ namespace PepperDash.Essentials.DM
         {            
             Dmps = Global.ControlSystem;
             
-            switch (name.Replace("-", "").Replace("c", "").Replace("C", ""))
+            switch (systemControl.SystemControlType)
             {
-                case "dmps34k50":
-                case "dmps34k100":
-                case "dmps34k150":
+                case eSystemControlType.Dmps34K150CSystemControl:
                     SystemControl = systemControl as Dmps34K150CSystemControl;
                     Dmps4kType = true;
                     break;
-                case "dmps34k200":
-                case "dmps34k250":
-                case "dmps34k300":
-                case "dmps34k350":
+                case eSystemControlType.Dmps34K200CSystemControl:
+                case eSystemControlType.Dmps34K250CSystemControl:
+                case eSystemControlType.Dmps34K300CSystemControl:
+                case eSystemControlType.Dmps34K350CSystemControl:
                     SystemControl = systemControl as Dmps34K300CSystemControl;
                     Dmps4kType = true;
                     break;
@@ -144,6 +142,7 @@ namespace PepperDash.Essentials.DM
                     Dmps4kType = false;
                     break;
             }
+            Debug.Console(1, this, "DMPS Type = {0}, 4K Type = {1}", systemControl.SystemControlType, Dmps4kType);
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
