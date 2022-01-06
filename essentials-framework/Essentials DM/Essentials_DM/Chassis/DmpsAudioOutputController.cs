@@ -71,6 +71,11 @@ namespace PepperDash.Essentials.DM
             Debug.Console(2, this, "Dmps Audio Controller Event Output: {0} EventId: {1}", args.Number, args.EventId.ToString());
             switch (args.EventId)
             {
+                case DMOutputEventIds.OutputVuFeedBackEventId:
+                    {
+                        //Frequently called event that isn't needed
+                        break;
+                    }
                 case DMOutputEventIds.MasterVolumeFeedBackEventId:
                     {
                         MasterVolumeLevel.VolumeLevelFeedback.FireUpdate();
