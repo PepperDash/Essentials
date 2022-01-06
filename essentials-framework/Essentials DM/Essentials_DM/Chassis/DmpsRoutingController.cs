@@ -513,7 +513,7 @@ namespace PepperDash.Essentials.DM
 
                 OutputNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
                 {
-                    if (outputCard.NameFeedback != null && !string.IsNullOrEmpty(outputCard.NameFeedback.StringValue))
+                    if (outputCard.NameFeedback != null && outputCard.NameFeedback != CrestronControlSystem.NullStringOutputSig && !string.IsNullOrEmpty(outputCard.NameFeedback.StringValue))
                     {
                         Debug.Console(2, this, "Output Card {0} Name: {1}", outputCard.Number, outputCard.NameFeedback.StringValue);
                         return outputCard.NameFeedback.StringValue;
