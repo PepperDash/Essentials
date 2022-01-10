@@ -391,6 +391,8 @@ namespace PepperDash.Essentials.DM
                 if (OutputNameFeedbacks[ioSlot] != null)
                 {
                     OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + ioSlotJoin]);
+                    OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputVideoNames.JoinNumber + ioSlotJoin]);
+                    OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputAudioNames.JoinNumber + ioSlotJoin]);
                 }
                 if (OutputVideoRouteNameFeedbacks[ioSlot] != null)
                 {
@@ -412,6 +414,14 @@ namespace PepperDash.Essentials.DM
 
         private void LinkInputsToApi(BasicTriList trilist, DmpsRoutingControllerJoinMap joinMap)
         {
+            if (Dmps4kType)
+            {
+                //DMPS-4K audio inputs 1-5 are aux inputs
+                for (uint i = 1; i <= 5; i++)
+                {
+                    trilist.StringInput[joinMap.InputAudioNames.JoinNumber + i - 1].StringValue = String.Format("Aux Input {0}", i);
+                }
+            }
             for (uint i = 1; i <= Dmps.SwitcherInputs.Count; i++)
             {
                 Debug.Console(2, this, "Linking Input Card {0}", i);
@@ -428,6 +438,17 @@ namespace PepperDash.Essentials.DM
                 if (InputNameFeedbacks.ContainsKey(ioSlot) &&  InputNameFeedbacks[ioSlot] != null)
                 {
                     InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + ioSlotJoin]);
+                    InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputVideoNames.JoinNumber + ioSlotJoin]);
+
+                    if (Dmps4kType)
+                    {
+                        //DMPS-4K Audio Inputs are offset by 5
+                        InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputAudioNames.JoinNumber + ioSlotJoin + 5]);
+                    }
+                    else
+                    {
+                        InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputAudioNames.JoinNumber + ioSlotJoin]);
+                    }
                 }
 
                 trilist.SetStringSigAction(joinMap.InputNames.JoinNumber + ioSlotJoin, s =>
