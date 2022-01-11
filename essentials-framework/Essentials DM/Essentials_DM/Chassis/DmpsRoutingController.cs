@@ -895,6 +895,12 @@ namespace PepperDash.Essentials.DM
         {
             Debug.Console(2, this, "DMOutputChange Output: {0} EventId: {1}", args.Number, args.EventId.ToString());
 
+            if (args.EventId == DMOutputEventIds.OutputVuFeedBackEventId)
+            {
+                //Frequently called event that isn't needed
+                return;
+            }
+
             var output = args.Number;
 
             DMOutput outputCard = Dmps.SwitcherOutputs[output] as DMOutput;

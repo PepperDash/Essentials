@@ -74,7 +74,7 @@ namespace PepperDash.Essentials.DM
                 case DMOutputEventIds.OutputVuFeedBackEventId:
                     {
                         //Frequently called event that isn't needed
-                        break;
+                        return;
                     }
                 case DMOutputEventIds.MasterVolumeFeedBackEventId:
                     {
@@ -183,7 +183,7 @@ namespace PepperDash.Essentials.DM
                 var mixer = MasterVolumeLevel as DmpsAudioOutputWithMixer;
                 if (mixer != null)
                 {
-                    trilist.SetUShortSigAction(3, mixer.RecallPreset);
+                    trilist.SetUShortSigAction(joinMap.MixerPresetRecall.JoinNumber, mixer.RecallPreset);
                 }
             }
 
@@ -266,6 +266,7 @@ namespace PepperDash.Essentials.DM
 
         public void RecallPreset(ushort preset)
         {
+            Debug.Console(1, "DMPS Recalling Preset {0}", preset);
             Mixer.PresetNumber.UShortValue = preset;
             Mixer.RecallPreset();
         }
