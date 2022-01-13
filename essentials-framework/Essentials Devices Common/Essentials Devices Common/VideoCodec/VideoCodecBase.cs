@@ -41,6 +41,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			SharingSourceFeedback = new StringFeedback(SharingSourceFeedbackFunc);
 			SharingContentIsOnFeedback = new BoolFeedback(SharingContentIsOnFeedbackFunc);
 
+            // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+            MeetingsToDisplayFeedback = new IntFeedback(() => MeetingsToDisplay);
+
 			InputPorts = new RoutingPortCollection<RoutingInputPort>();
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
@@ -792,6 +795,10 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 					}
 				};
 
+            // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+            trilist.SetUShortSigAction(joinMap.MeetingsToDisplay.JoinNumber, m => MeetingsToDisplay = m);
+            MeetingsToDisplayFeedback.LinkInputSig(trilist.UShortInput[joinMap.MeetingsToDisplay.JoinNumber]);
+
             trilist.OnlineStatusChange += (device, args) =>
             {
                 if (!args.DeviceOnLine) return;
@@ -799,6 +806,8 @@ ScreenIndexIsPinnedTo: {8} (a{17})
                 // TODO [ ] Issue #868
                 trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
                 UpdateMeetingsList(codec, trilist, joinMap);
+                // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+                MeetingsToDisplayFeedback.LinkInputSig(trilist.UShortInput[joinMap.MeetingsToDisplay.JoinNumber]);
             };
         }
 
@@ -832,17 +841,34 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             };
 		}
 
+
+        // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+	    private int _meetingsToDisplay = 3;
+        // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+	    protected int MeetingsToDisplay
+	    {
+	        get { return _meetingsToDisplay; }
+	        set {
+                _meetingsToDisplay = (ushort) (value == 0 ? 3 : value);
+                MeetingsToDisplayFeedback.FireUpdate();
+	        }
+	    }
+
+        // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+        public IntFeedback MeetingsToDisplayFeedback { get; set; }
+
 		private string UpdateMeetingsListXSig(List<Meeting> meetings)
 		{
-			const int maxMeetings = 3;
+            // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+            //const int _meetingsToDisplay = 3;            
 			const int maxDigitals = 2;
 			const int maxStrings = 7;
 			const int offset = maxDigitals + maxStrings;
-			var digitalIndex = maxStrings * maxMeetings; //15
+			var digitalIndex = maxStrings * _meetingsToDisplay; //15
 			var stringIndex = 0;
 			var meetingIndex = 0;
 
-			var tokenArray = new XSigToken[maxMeetings * offset];
+			var tokenArray = new XSigToken[_meetingsToDisplay * offset];
 			/* 
 			 * Digitals
 			 * IsJoinable - 1
@@ -865,7 +891,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 				if (meeting.StartTime < currentTime && meeting.EndTime < currentTime) continue;
 
-				if (meetingIndex >= maxMeetings * offset)
+				if (meetingIndex >= _meetingsToDisplay * offset)
 				{
 					Debug.Console(2, this, "Max Meetings reached");
 					break;
@@ -890,10 +916,10 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 				stringIndex += maxStrings;
 			}
 
-			while (meetingIndex < maxMeetings * offset)
+			while (meetingIndex < _meetingsToDisplay * offset)
 			{
 				Debug.Console(2, this, "Clearing unused data. Meeting Index: {0} MaxMeetings * Offset: {1}",
-					meetingIndex, maxMeetings * offset);
+					meetingIndex, _meetingsToDisplay * offset);
 
 				//digitals
 				tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
