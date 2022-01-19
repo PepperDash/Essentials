@@ -54,6 +54,10 @@ Utilization of Essentials Framework falls into the following categories:
 
 For detailed documentation, see the [Wiki](https://github.com/PepperDash/EssentialsFramework/wiki).
 
+## Support
+
+* Check out our [Discord Server](https://discord.gg/rWyeRH3K)
+
 ## How-To (Getting Started)
 
 See [Getting Started](https://github.com/PepperDash/Essentials/wiki/Get-started#how-to-get-started)

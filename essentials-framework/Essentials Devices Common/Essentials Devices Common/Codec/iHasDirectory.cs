@@ -69,6 +69,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 		[JsonProperty("directoryResults")]
         public List<DirectoryItem> CurrentDirectoryResults { get; private set; }
 
+        [JsonProperty("contacts")]
         public List<DirectoryItem> Contacts
         {
             get
@@ -77,6 +78,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             }
         }
 
+        [JsonProperty("folders")]
         public List<DirectoryItem> Folders
         {
             get
