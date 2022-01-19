@@ -2195,5 +2195,4 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             return new VideoCodec.Cisco.CiscoSparkCodec(dc, comm);
         }
     }
-
 }
