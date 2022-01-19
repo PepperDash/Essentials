@@ -343,7 +343,7 @@ namespace PepperDash.Essentials
                     {
                         var prompt = Global.ControlSystem.ControllerPrompt;
 
-                        var typeMatch = String.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) &&
+                        var typeMatch = String.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) ||
                                         String.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
 
                         if (!typeMatch)
