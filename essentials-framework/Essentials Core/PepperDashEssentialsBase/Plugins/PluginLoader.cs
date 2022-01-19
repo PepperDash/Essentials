@@ -123,7 +123,7 @@ namespace PepperDash.Essentials
         /// <param name="fileName"></param>
         static LoadedAssembly LoadAssembly(string filePath)
         {
-            Debug.Console(2, "Attempting to load {0}", filePath);
+            //Debug.Console(2, "Attempting to load {0}", filePath);
             var assembly = Assembly.LoadFrom(filePath);
             if (assembly != null)
             {

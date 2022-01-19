@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinMetadata
             {
                 Description = "DM Chassis enable audio breakaway routing",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
 
@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinMetadata
             {
                 Description = "DM Chassis enable USB breakaway routing",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
 

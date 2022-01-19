@@ -62,6 +62,11 @@ namespace PepperDash.Essentials.Core
             ValueFunc = valueFunc;
         }
 
+        public void SetValueFunc(Func<bool> newFunc)
+        {
+            ValueFunc = newFunc;
+        }
+
         public override void FireUpdate()
         {
             bool newValue = InTestMode ? TestValue : ValueFunc.Invoke();
