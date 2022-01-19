@@ -213,7 +213,7 @@ namespace PepperDash.Essentials
     {
         public EssentialsTouchpanelControllerFactory()
         {
-            TypeNames = new List<string>() { "tsw550", "tsw750", "tsw1050", "tsw560", "tsw760", "tsw1060", "tsw570", "tsw770", "ts770", "tsw1070", "ts1070", "xpanel" };
+            TypeNames = new List<string>() { "crestronapp", "tsw550", "tsw750", "tsw1050", "tsw560", "tsw760", "tsw1060", "tsw570", "tsw770", "ts770", "tsw1070", "ts1070", "xpanel" };
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
