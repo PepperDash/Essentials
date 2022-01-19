@@ -114,7 +114,7 @@
             {
                 "name": "Wireless Video",
                 "key": "wePresent-1",
-                "type": "wePresent",
+                "type": "genericSource",
                 "properties": {},
                 "group": "genericSource",
                 "uid": 3
