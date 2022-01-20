@@ -33,9 +33,11 @@ namespace PepperDash.Essentials.DM
         //IroutingNumericEvent
         public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
         
-        //Feedback for DMPS System Power
+        //Feedback for DMPS System Control
         public BoolFeedback SystemPowerOnFeedback { get; private set; }
         public BoolFeedback SystemPowerOffFeedback { get; private set; }
+        public BoolFeedback FrontPanelLockOnFeedback { get; private set; }
+        public BoolFeedback FrontPanelLockOffFeedback { get; private set; }
 
         // Feedbacks for EssentialDM
         public Dictionary<uint, IntFeedback> VideoOutputFeedbacks { get; private set; }
@@ -129,6 +131,8 @@ namespace PepperDash.Essentials.DM
                 case eSystemControlType.Dmps34K150CSystemControl:
                     SystemControl = systemControl as Dmps34K150CSystemControl;
                     Dmps4kType = true;
+                    SystemPowerOnFeedback = new BoolFeedback(() => { return true; });
+                    SystemPowerOffFeedback = new BoolFeedback(() => { return false; });
                     break;
                 case eSystemControlType.Dmps34K200CSystemControl:
                 case eSystemControlType.Dmps34K250CSystemControl:
@@ -136,10 +140,20 @@ namespace PepperDash.Essentials.DM
                 case eSystemControlType.Dmps34K350CSystemControl:
                     SystemControl = systemControl as Dmps34K300CSystemControl;
                     Dmps4kType = true;
+                    SystemPowerOnFeedback = new BoolFeedback(() => { return true; });
+                    SystemPowerOffFeedback = new BoolFeedback(() => { return false; });
                     break;
                 default:
                     SystemControl = systemControl as Dmps3SystemControl;
                     Dmps4kType = false;
+                    SystemPowerOnFeedback = new BoolFeedback(() =>
+                    {
+                        return ((Dmps3SystemControl)SystemControl).SystemPowerOnFeedBack.BoolValue;
+                    });
+                    SystemPowerOffFeedback = new BoolFeedback(() =>
+                    {
+                        return ((Dmps3SystemControl)SystemControl).SystemPowerOffFeedBack.BoolValue;
+                    });
                     break;
             }
             Debug.Console(1, this, "DMPS Type = {0}, 4K Type = {1}", systemControl.SystemControlType, Dmps4kType);
@@ -150,27 +164,13 @@ namespace PepperDash.Essentials.DM
             TxDictionary = new Dictionary<uint, string>();
             RxDictionary = new Dictionary<uint, string>();
 
-            SystemPowerOnFeedback = new BoolFeedback(() =>
+            FrontPanelLockOnFeedback = new BoolFeedback(() =>
             {
-                if (SystemControl is Dmps3SystemControl)
-                {
-                    return ((Dmps3SystemControl)SystemControl).SystemPowerOnFeedBack.BoolValue;
-                }
-                else
-                {
-                    return false;
-                }
+                return SystemControl.FrontPanelLockOnFeedback.BoolValue;
             });
-            SystemPowerOffFeedback = new BoolFeedback(() =>
+            FrontPanelLockOffFeedback = new BoolFeedback(() =>
             {
-                if (SystemControl is Dmps3SystemControl)
-                {
-                    return ((Dmps3SystemControl)SystemControl).SystemPowerOffFeedBack.BoolValue;
-                }
-                else
-                {
-                    return false;
-                }
+                return SystemControl.FrontPanelLockOffFeedback.BoolValue;
             });
 
             VideoOutputFeedbacks = new Dictionary<uint, IntFeedback>();
@@ -237,6 +237,12 @@ namespace PepperDash.Essentials.DM
                 x.Value.FireUpdate();
             }
 
+            SystemPowerOnFeedback.FireUpdate();
+            SystemPowerOffFeedback.FireUpdate();
+
+            FrontPanelLockOnFeedback.FireUpdate();
+            FrontPanelLockOffFeedback.FireUpdate();
+
             return base.CustomActivate();
         }
 
@@ -279,22 +285,6 @@ namespace PepperDash.Essentials.DM
             EnableRouting = enable;
         }
 
-        public void SetPowerOn(bool a)
-        {
-            if (SystemControl is Dmps3SystemControl)
-            {
-                ((Dmps3SystemControl)SystemControl).SystemPowerOn();
-            }
-        }
-
-        public void SetPowerOff(bool a)
-        {
-            if (SystemControl is Dmps3SystemControl)
-            {
-                ((Dmps3SystemControl)SystemControl).SystemPowerOff();
-            }
-        }
-
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new DmpsRoutingControllerJoinMap(joinStart);
@@ -315,19 +305,21 @@ namespace PepperDash.Essentials.DM
 
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
-            //Link up system
-            trilist.SetBoolSigAction(joinMap.SystemPowerOn.JoinNumber, SetPowerOn);
-            trilist.SetBoolSigAction(joinMap.SystemPowerOff.JoinNumber, SetPowerOff);
-            if (SystemPowerOnFeedback != null)
+            //Link up system power only for non-4k DMPS3
+            if (SystemControl is Dmps3SystemControl)
             {
-                SystemPowerOnFeedback.LinkInputSig(
-                    trilist.BooleanInput[joinMap.SystemPowerOn.JoinNumber]);
+                trilist.SetBoolSigAction(joinMap.SystemPowerOn.JoinNumber, a => { if (a) { ((Dmps3SystemControl)SystemControl).SystemPowerOff(); } });
+                trilist.SetBoolSigAction(joinMap.SystemPowerOff.JoinNumber, a => { if (a) { ((Dmps3SystemControl)SystemControl).SystemPowerOff(); } });
             }
-            if (SystemPowerOffFeedback != null)
-            {
-                SystemPowerOffFeedback.LinkInputSig(
-                    trilist.BooleanInput[joinMap.SystemPowerOff.JoinNumber]);
-            }
+
+            SystemPowerOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SystemPowerOn.JoinNumber]);
+            SystemPowerOffFeedback.LinkInputSig(trilist.BooleanInput[joinMap.SystemPowerOff.JoinNumber]);
+
+            trilist.SetBoolSigAction(joinMap.FrontPanelLockOn.JoinNumber, a => { if (a) {SystemControl.FrontPanelLockOn();}});
+            trilist.SetBoolSigAction(joinMap.FrontPanelLockOff.JoinNumber, a => { if (a) {SystemControl.FrontPanelLockOff();}});
+            
+            FrontPanelLockOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.FrontPanelLockOn.JoinNumber]);
+            FrontPanelLockOffFeedback.LinkInputSig(trilist.BooleanInput[joinMap.FrontPanelLockOff.JoinNumber]);
 
             trilist.SetBoolSigAction(joinMap.EnableRouting.JoinNumber, SetRoutingEnable);
 
@@ -970,13 +962,17 @@ namespace PepperDash.Essentials.DM
             switch (args.EventId)
             {
                 case DMSystemEventIds.SystemPowerOnEventId:
-                {
-                    SystemPowerOnFeedback.FireUpdate();
-                    break;
-                }
                 case DMSystemEventIds.SystemPowerOffEventId:
                 {
+                    SystemPowerOnFeedback.FireUpdate();
                     SystemPowerOffFeedback.FireUpdate();
+                    break;
+                }
+                case DMSystemEventIds.FrontPanelLockOnEventId:
+                case DMSystemEventIds.FrontPanelLockOffEventId:
+                {
+                    FrontPanelLockOnFeedback.FireUpdate();
+                    FrontPanelLockOffFeedback.FireUpdate();
                     break;
                 }
             }

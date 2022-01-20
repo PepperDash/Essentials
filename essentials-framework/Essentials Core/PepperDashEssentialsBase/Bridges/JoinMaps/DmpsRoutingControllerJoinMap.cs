@@ -16,6 +16,14 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete SystemPowerOff = new JoinDataComplete(new JoinData { JoinNumber = 13, JoinSpan = 1 },
             new JoinMetadata { Description = "DMPS System Power Off Get/Set", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
+        [JoinName("FrontPanelLockOn")]
+        public JoinDataComplete FrontPanelLockOn = new JoinDataComplete(new JoinData { JoinNumber = 14, JoinSpan = 1 },
+            new JoinMetadata { Description = "DMPS Front Panel Lock On Get/Set", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("FrontPanelLockOff")]
+        public JoinDataComplete FrontPanelLockOff = new JoinDataComplete(new JoinData { JoinNumber = 15, JoinSpan = 1 },
+            new JoinMetadata { Description = "DMPS Front Panel Lock  Off Get/Set", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
         [JoinName("VideoSyncStatus")]
         public JoinDataComplete VideoSyncStatus = new JoinDataComplete(new JoinData { JoinNumber = 101, JoinSpan = 32 },
             new JoinMetadata { Description = "DM Input Video Sync", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
