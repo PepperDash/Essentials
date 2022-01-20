@@ -308,7 +308,7 @@ namespace PepperDash.Essentials.DM
             //Link up system power only for non-4k DMPS3
             if (SystemControl is Dmps3SystemControl)
             {
-                trilist.SetBoolSigAction(joinMap.SystemPowerOn.JoinNumber, a => { if (a) { ((Dmps3SystemControl)SystemControl).SystemPowerOff(); } });
+                trilist.SetBoolSigAction(joinMap.SystemPowerOn.JoinNumber, a => { if (a) { ((Dmps3SystemControl)SystemControl).SystemPowerOn(); } });
                 trilist.SetBoolSigAction(joinMap.SystemPowerOff.JoinNumber, a => { if (a) { ((Dmps3SystemControl)SystemControl).SystemPowerOff(); } });
             }
 
