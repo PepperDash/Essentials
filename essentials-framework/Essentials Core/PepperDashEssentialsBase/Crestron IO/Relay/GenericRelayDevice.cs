@@ -90,12 +90,13 @@ namespace PepperDash.Essentials.Core.CrestronIO
                 return null;
             }
 
-            if (dc.PortNumber > relayDevice.NumberOfRelayPorts)
+            if (dc.PortNumber <= relayDevice.NumberOfRelayPorts)
             {
-                Debug.Console(0, "Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
+                return relayDevice.RelayPorts[dc.PortNumber];
             }
-            
-            return relayDevice.RelayPorts[dc.PortNumber];
+
+            Debug.Console(0, "Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
+            return null;
         }
 
         #endregion
