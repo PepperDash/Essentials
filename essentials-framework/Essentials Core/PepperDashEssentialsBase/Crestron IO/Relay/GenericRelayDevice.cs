@@ -44,6 +44,12 @@ namespace PepperDash.Essentials.Core.CrestronIO
             {
                 RelayOutput = postActivationFunc(config);
 
+                if (RelayOutput == null)
+                {
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Unable to get parent relay device for device key {0} and port {1}", config.PortDeviceKey, config.PortNumber);
+                    return;
+                }
+
                 RelayOutput.Register();
 
                 RelayOutput.StateChange += RelayOutput_StateChange;
@@ -61,30 +67,32 @@ namespace PepperDash.Essentials.Core.CrestronIO
             {
                 if (!Global.ControlSystem.SupportsRelay)
                 {
-                    Debug.Console(0, "GetRelayDevice: Processor does not support relays");
+                    Debug.Console(0, "Processor does not support relays");
                     return null;
                 }
                 relayDevice = Global.ControlSystem;
+
+                return relayDevice.RelayPorts[dc.PortNumber];
             }
-            else
+            
+            var essentialsDevice = DeviceManager.GetDeviceForKey(dc.PortDeviceKey);
+            if (essentialsDevice == null)
             {
-                var relayDev = DeviceManager.GetDeviceForKey(dc.PortDeviceKey) as IRelayPorts;
-                if (relayDev == null)
-                {
-                    Debug.Console(0, "GetRelayDevice: Device {0} is not a valid device", dc.PortDeviceKey);
-                    return null;
-                }
-                relayDevice = relayDev;
+                Debug.Console(0, "Device {0} was not found in Device Manager. Check configuration or for errors with device.", dc.PortDeviceKey);
+                return null;
             }
+
+            relayDevice = essentialsDevice as IRelayPorts;
+            
             if (relayDevice == null)
             {
-                Debug.Console(0, "GetRelayDevice: Device '0' is not a valid IRelayPorts Device", dc.PortDeviceKey);
+                Debug.Console(0, "Device {0} is not a valid relay parent. Please check configuration.", dc.PortDeviceKey);
                 return null;
             }
 
             if (dc.PortNumber > relayDevice.NumberOfRelayPorts)
             {
-                Debug.Console(0, "GetRelayDevice: Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
+                Debug.Console(0, "Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
             }
             
             return relayDevice.RelayPorts[dc.PortNumber];
