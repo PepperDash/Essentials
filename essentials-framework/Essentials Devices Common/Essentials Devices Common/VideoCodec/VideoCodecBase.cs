@@ -25,7 +25,7 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
 	public abstract class VideoCodecBase : ReconfigurableDevice, IRoutingInputsOutputs,
-		IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo, IBridgeAdvanced
+		IUsageTracking, IHasDialer, IHasContentSharing, ICodecAudio, iVideoCodecInfo, IBridgeAdvanced, IHasStandbyMode
 	{
 		private const int XSigEncoding = 28591;
         protected const int MaxParticipants = 50;
