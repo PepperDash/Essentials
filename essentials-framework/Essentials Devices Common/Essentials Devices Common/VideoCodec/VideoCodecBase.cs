@@ -41,6 +41,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			SharingSourceFeedback = new StringFeedback(SharingSourceFeedbackFunc);
 			SharingContentIsOnFeedback = new BoolFeedback(SharingContentIsOnFeedbackFunc);
 
+            // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+            MeetingsToDisplayFeedback = new IntFeedback(() => MeetingsToDisplay);
+
 			InputPorts = new RoutingPortCollection<RoutingInputPort>();
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
@@ -298,6 +301,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			}
 
 			LinkVideoCodecToApi(codec, trilist, joinMap);
+
+		    trilist.OnlineStatusChange += (device, args) =>
+		    {
+		        if (!args.DeviceOnLine) return;
+		    };
 		}
 
 		/// <summary>
@@ -546,6 +554,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                 UpdateParticipantsXSig(codec, trilist, joinMap);
 			};
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] Issue #868
+                trilist.SetString(joinMap.CurrentParticipants.JoinNumber, "\xFC");
+                UpdateParticipantsXSig(codec, trilist, joinMap);
+            };
 		}
 
         private void UpdateParticipantsXSig(IHasParticipants codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
@@ -777,7 +794,22 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 						UpdateMeetingsList(codec, trilist, joinMap);
 					}
 				};
-		}
+
+            // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+            trilist.SetUShortSigAction(joinMap.MeetingsToDisplay.JoinNumber, m => MeetingsToDisplay = m);
+            MeetingsToDisplayFeedback.LinkInputSig(trilist.UShortInput[joinMap.MeetingsToDisplay.JoinNumber]);
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] Issue #868
+                trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
+                UpdateMeetingsList(codec, trilist, joinMap);
+                // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+                MeetingsToDisplayFeedback.LinkInputSig(trilist.UShortInput[joinMap.MeetingsToDisplay.JoinNumber]);
+            };
+        }
 
 		private void UpdateMeetingsList(IHasScheduleAwareness codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
@@ -785,22 +817,58 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 			_currentMeetings = codec.CodecSchedule.Meetings.Where(m => m.StartTime >= currentTime || m.EndTime >= currentTime).ToList();
 
+            if (_currentMeetings.Count == 0)
+            {
+                var emptyXSigByteArray = XSigHelpers.ClearOutputs();
+                var emptyXSigString = Encoding.GetEncoding(XSigEncoding)
+                    .GetString(emptyXSigByteArray, 0, emptyXSigByteArray.Length);
+
+                trilist.SetString(joinMap.Schedule.JoinNumber, emptyXSigString);
+                return;
+            }
+
 			var meetingsData = UpdateMeetingsListXSig(_currentMeetings);
 			trilist.SetString(joinMap.Schedule.JoinNumber, meetingsData);
 			trilist.SetUshort(joinMap.MeetingCount.JoinNumber, (ushort)_currentMeetings.Count);
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] Issue #868
+                trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
+                UpdateMeetingsListXSig(_currentMeetings);
+            };
 		}
+
+
+        // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+	    private int _meetingsToDisplay = 3;
+        // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+	    protected int MeetingsToDisplay
+	    {
+	        get { return _meetingsToDisplay; }
+	        set {
+                _meetingsToDisplay = (ushort) (value == 0 ? 3 : value);
+                MeetingsToDisplayFeedback.FireUpdate();
+	        }
+	    }
+
+        // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+        public IntFeedback MeetingsToDisplayFeedback { get; set; }
 
 		private string UpdateMeetingsListXSig(List<Meeting> meetings)
 		{
-			const int maxMeetings = 3;
+            // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+            //const int _meetingsToDisplay = 3;            
 			const int maxDigitals = 2;
 			const int maxStrings = 7;
 			const int offset = maxDigitals + maxStrings;
-			var digitalIndex = maxStrings * maxMeetings; //15
+			var digitalIndex = maxStrings * _meetingsToDisplay; //15
 			var stringIndex = 0;
 			var meetingIndex = 0;
 
-			var tokenArray = new XSigToken[maxMeetings * offset];
+			var tokenArray = new XSigToken[_meetingsToDisplay * offset];
 			/* 
 			 * Digitals
 			 * IsJoinable - 1
@@ -823,7 +891,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 				if (meeting.StartTime < currentTime && meeting.EndTime < currentTime) continue;
 
-				if (meetingIndex >= maxMeetings * offset)
+				if (meetingIndex >= _meetingsToDisplay * offset)
 				{
 					Debug.Console(2, this, "Max Meetings reached");
 					break;
@@ -848,10 +916,10 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 				stringIndex += maxStrings;
 			}
 
-			while (meetingIndex < maxMeetings * offset)
+			while (meetingIndex < _meetingsToDisplay * offset)
 			{
 				Debug.Console(2, this, "Clearing unused data. Meeting Index: {0} MaxMeetings * Offset: {1}",
-					meetingIndex, maxMeetings * offset);
+					meetingIndex, _meetingsToDisplay * offset);
 
 				//digitals
 				tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
@@ -901,6 +969,16 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 				trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
 			};
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] Issue #868
+                trilist.SetString(joinMap.DirectoryEntries.JoinNumber, "\xFC");
+                UpdateDirectoryXSig(codec.CurrentDirectoryResult,
+                    !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+            };
 		}
 
 		private void SelectDirectoryEntry(IHasDirectory codec, ushort i)
@@ -982,6 +1060,15 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 				trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
 			};
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] Issue #868
+                trilist.SetString(joinMap.CurrentCallData.JoinNumber, "\xFC");
+                UpdateCallStatusXSig();
+            };
 		}
 
 		private string UpdateCallStatusXSig()
@@ -1249,6 +1336,15 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 							trilist.UShortOutput[joinMap.CameraPresetSelect.JoinNumber].UShortValue, String.Empty);
 						trilist.PulseBool(joinMap.CameraPresetSave.JoinNumber, 3000);
 					});
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] Issue #868
+                trilist.SetString(joinMap.CameraPresetNames.JoinNumber, "\xFC");
+                SetCameraPresetNames(presetCodec.NearEndPresets);
+            };
 		}
 
 		private string SetCameraPresetNames(IEnumerable<CodecRoomPreset> presets)
