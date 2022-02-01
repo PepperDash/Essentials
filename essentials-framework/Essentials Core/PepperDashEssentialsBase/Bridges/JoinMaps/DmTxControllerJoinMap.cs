@@ -32,6 +32,10 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete CurrentInputResolution = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "DM TX Current Input Resolution", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
+        [JoinName("Name")]
+        public JoinDataComplete Name = new JoinDataComplete(new JoinData { JoinNumber = 2, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM TX Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
         [JoinName("VideoInput")]
         public JoinDataComplete VideoInput = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "DM TX Video Input Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });
@@ -42,7 +46,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("HdcpSupportCapability")]
         public JoinDataComplete HdcpSupportCapability = new JoinDataComplete(new JoinData { JoinNumber = 3, JoinSpan = 1 },
-            new JoinMetadata { Description = "DM TX HDCP Support Capability", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "DM TX HDCP Support Capability", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("Port1HdcpState")]
         public JoinDataComplete Port1HdcpState = new JoinDataComplete(new JoinData { JoinNumber = 4, JoinSpan = 1 },
