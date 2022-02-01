@@ -30,7 +30,7 @@ namespace PepperDash.Essentials.Core
         /// <summary>
         /// The list of rooms keys that can be combined
         /// </summary>
-        [JsonProperty("roomMap")]
+        [JsonProperty("roomKeys")]
         public List<string> RoomKeys {get; set;}
 
         /// <summary>
@@ -87,6 +87,9 @@ namespace PepperDash.Essentials.Core
         [JsonProperty("partitionStates")]
         public List<PartitionState> PartitionStates { get; set; }
 
+        /// <summary>
+        /// Determines which UI devices get mapped to which room in this scenario.  The Key should be the key of the UI device and the Value should be the key of the room to map to
+        /// </summary>
         [JsonProperty("uiMap")]
         public Dictionary<string, string> UiMap { get; set; }
 

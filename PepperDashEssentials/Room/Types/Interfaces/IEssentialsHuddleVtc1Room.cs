@@ -10,7 +10,9 @@ namespace PepperDash.Essentials
     public interface IEssentialsHuddleVtc1Room : IEssentialsRoom, IHasCurrentSourceInfoChange,
          IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback
     {
-        EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; }
+        EssentialsConferenceRoomPropertiesConfig PropertiesConfig { get; }
+
+        bool ExcludeFromGlobalFunctions { get; }
 
         void RunRouteAction(string routeKey);
 

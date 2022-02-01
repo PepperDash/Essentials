@@ -42,3 +42,6 @@ devjson:2 {"deviceKey":"display01Comm-com", "methodName":"SendText", "params": [
 
 devjson:10 {"deviceKey":"dmLink-ssh", "methodName":"Connect", "params": []} 
 
+devjson:2 {"deviceKey":"roomCombiner", "methodName":"SetRoomCombinationScenario", "params": ["combined"]} 
+
+devjson:2 {"deviceKey":"roomCombiner", "methodName":"SetRoomCombinationScenario", "params": ["divided"]} 
