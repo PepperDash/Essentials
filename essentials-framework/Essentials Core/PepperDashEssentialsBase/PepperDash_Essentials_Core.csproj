@@ -131,6 +131,7 @@
     <Compile Include="Bridges\JoinMaps\DmBladeChassisControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmChassisControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmpsAudioOutputControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmpsMicrophoneControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmpsRoutingControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmRmcControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmTxControllerJoinMap.cs" />
