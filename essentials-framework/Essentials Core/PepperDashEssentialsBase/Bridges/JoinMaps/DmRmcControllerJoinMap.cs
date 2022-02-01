@@ -28,6 +28,10 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete EdidSerialNumber = new JoinDataComplete(new JoinData { JoinNumber = 5, JoinSpan = 1 },
             new JoinMetadata { Description = "DM RMC EDID Serial Number", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
+        [JoinName("Name")]
+        public JoinDataComplete Name = new JoinDataComplete(new JoinData { JoinNumber = 6, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM RMC Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
         [JoinName("AudioVideoSource")]
         public JoinDataComplete AudioVideoSource = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "DM RMC Audio Video Source Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Analog });

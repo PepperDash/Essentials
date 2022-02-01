@@ -301,7 +301,7 @@ namespace PepperDash.Essentials.Core.Monitoring
                 p.Value.AggregatedProgramInfoFeedback.LinkInputSig(
                     trilist.StringInput[programSlotJoinStart + joinMap.AggregatedProgramInfo.JoinNumber]);
 
-                programSlotJoinStart = programSlotJoinStart + joinMap.ProgramOffsetJoin.JoinNumber;
+                programSlotJoinStart = programSlotJoinStart + joinMap.ProgramOffsetJoin.JoinSpan;
             }
         }
 
