@@ -45,7 +45,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinMetadata { Description = "Processor Last Boot", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 
         [JoinName("ProgramOffsetJoin")]
-        public JoinDataComplete ProgramOffsetJoin = new JoinDataComplete(new JoinData { JoinNumber = 5, JoinSpan = 1 },
+        public JoinDataComplete ProgramOffsetJoin = new JoinDataComplete(new JoinData { JoinNumber = 5, JoinSpan = 5 },
             new JoinMetadata { Description = "All Program Data is offset between slots by 5 - First Joins Start at 11", JoinCapabilities = eJoinCapabilities.None, JoinType = eJoinType.None });
 
         [JoinName("ProgramStart")]
