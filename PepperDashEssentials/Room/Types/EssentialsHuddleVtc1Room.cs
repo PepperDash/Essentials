@@ -101,7 +101,7 @@ namespace PepperDash.Essentials
             }
         }
 
-        public EssentialsConferenceRoomPropertiesConfig PropertiesConfig { get; private set; }
+        public EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; private set; }
 
 		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
 		public IBasicVolumeControls DefaultAudioDevice { get; private set; }
