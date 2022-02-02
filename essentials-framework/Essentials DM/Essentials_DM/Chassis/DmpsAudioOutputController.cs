@@ -411,10 +411,13 @@ namespace PepperDash.Essentials.DM
         public void SetVolumeScaled(ushort level)
         {
             Debug.Console(2, Debug.ErrorLogLevel.None, "Scaling DMPS volume:{0} level:{1} min:{2} max:{3}", Output.Name, level.ToString(), MinLevel.ToString(), MaxLevel.ToString());
-            VolumeLevelInput = (ushort)(level * (MaxLevel - MinLevel) / ushort.MaxValue + MinLevel);
-            if (EnableVolumeSend == true)
+            if (ushort.MaxValue + MinLevel != 0)
             {
-                Level.UShortValue = VolumeLevelInput;
+                VolumeLevelInput = (ushort)(level * (MaxLevel - MinLevel) / ushort.MaxValue + MinLevel);
+                if (EnableVolumeSend == true)
+                {
+                    Level.UShortValue = VolumeLevelInput;
+                }
             }
         }
 
@@ -422,7 +425,13 @@ namespace PepperDash.Essentials.DM
         {
             short signedLevel = (short)level;
             Debug.Console(2, Debug.ErrorLogLevel.None, "Scaling DMPS volume:{0} feedback:{1} min:{2} max:{3}", Output.Name, signedLevel.ToString(), MinLevel.ToString(), MaxLevel.ToString());
-            return (ushort)((signedLevel - MinLevel) * ushort.MaxValue / (MaxLevel - MinLevel));
+
+            if (MaxLevel - MinLevel != 0)
+            {
+                return (ushort)((signedLevel - MinLevel) * ushort.MaxValue / (MaxLevel - MinLevel));
+            }
+            else
+                return (ushort)MinLevel;
         }
 
         public void SendScaledVolume(bool pressRelease)
