@@ -19,7 +19,7 @@ env:
   RELEASE_BRANCH: main
 jobs:
   Build_Project:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
       # First we checkout the source repo
       - name: Checkout repo
