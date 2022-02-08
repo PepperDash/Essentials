@@ -2154,18 +2154,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    CrestronConsole.PrintLine("CiscoSparkCodec AutoAnswerEnabled << Get >>");
-                    if (CodecConfiguration == null) CrestronConsole.PrintLine("CiscoSparkCodec > CodecConfiguration == Null");
-                    if (CodecConfiguration.Configuration == null) CrestronConsole.PrintLine("CiscoSparkCodec > CodecConfiguration.Configuration == Null");
-                    if (CodecConfiguration.Configuration.Conference == null) CrestronConsole.PrintLine("CiscoSparkCodec > CodecConfiguration.Configuration.Conference == Null");
-                    if (CodecConfiguration.Configuration.Conference.AutoAnswer == null) CrestronConsole.PrintLine("CiscoSparkCodec > CodecConfiguration.Configuration.Conference.AutoAnswer == Null");
-                    if (CodecConfiguration.Configuration.Conference.AutoAnswer.Mode == null) CrestronConsole.PrintLine("CiscoSparkCodec > CodecConfiguration.Configuration.Conference.AutoAnswer.Mode == Null");
-                    if (CodecConfiguration.Configuration.Conference.AutoAnswer.Mode.Value == null) CrestronConsole.PrintLine("CiscoSparkCodec > CodecConfiguration.Configuration.Conference.AutoAnswer.Mode.Value == Null");
-                                        
-                    if (CodecConfiguration.Configuration.Conference.AutoAnswer.Mode.Value.ToLower() == "on")
-                        return true;
-                    else
-                        return false;
+                    if (CodecConfiguration.Configuration.Conference.AutoAnswer.Mode.Value == null) return false;
+                    return CodecConfiguration.Configuration.Conference.AutoAnswer.Mode.Value.ToLower() == "on";
                 }
             }
 

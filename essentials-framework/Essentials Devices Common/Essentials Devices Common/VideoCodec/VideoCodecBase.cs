@@ -1478,7 +1478,8 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             // Camera names
             for (uint i = 0; i < joinMap.CameraNamesFb.JoinSpan; i++)
             {
-                if (codec.Cameras[(int)i] != null)
+                //Check the count first
+                if (i < codec.Cameras.Count && codec.Cameras[(int)i] != null)
                 {
                     trilist.SetString(joinMap.CameraNamesFb.JoinNumber + i, codec.Cameras[(int)i].Name);
                 }
