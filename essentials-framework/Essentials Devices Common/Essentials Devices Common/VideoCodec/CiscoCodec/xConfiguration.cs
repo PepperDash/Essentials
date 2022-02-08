@@ -376,6 +376,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Delay Delay { get; set; }
             public Mode9 Mode { get; set; }
             public Mute2 Mute { get; set; }
+
+            public AutoAnswer()
+            {
+               Mode = new Mode9(); 
+               Delay = new Delay();
+               Mute = new Mute2();
+            }
         }
 
         public class Protocol
@@ -476,6 +483,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public MaxTotalTransmitCallRate MaxTotalTransmitCallRate { get; set; }
             public MaxTransmitCallRate MaxTransmitCallRate { get; set; }
             public MultiStream MultiStream { get; set; }
+
+            public Conference()
+            {
+                AutoAnswer = new AutoAnswer();
+            }
         }
 
         public class LoginName
@@ -1837,6 +1849,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Configuration()
             {
                 Audio = new Audio();
+                Conference = new Conference();
             }
         }
 
