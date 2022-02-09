@@ -909,7 +909,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                     if (!string.IsNullOrEmpty(call.Status.Value))
                                     {
                                         tempActiveCall.Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value);
-                                        tempActiveCall.IsOnHold = call.Status.OnHold;
+                                        tempActiveCall.IsOnHold = tempActiveCall.Status == eCodecCallStatus.OnHold;
 
                                         if (newStatus == eCodecCallStatus.Connected)
                                             GetCallHistory();

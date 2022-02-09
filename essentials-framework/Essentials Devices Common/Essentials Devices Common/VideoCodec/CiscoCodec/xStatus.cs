@@ -312,12 +312,33 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+        public class CallStatus : ValueProperty
+        {
+            string _Value;
+            public bool BoolValue { get; private set; }
+
+
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    // If the incoming value is "Active" it sets the BoolValue true, otherwise sets it false
+                    _Value = value;
+                    BoolValue = value == "Connected";
+                    OnValueChanged();
+                }
+            }
+        }
+
         public class Status2 : ValueProperty
         {
             string _Value;
             public bool BoolValue { get; private set; }
 
-            public bool OnHold { get; private set; }
 
             public string Value
             {
@@ -330,7 +351,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     // If the incoming value is "Active" it sets the BoolValue true, otherwise sets it false
                     _Value = value;
                     BoolValue = value == "Active";
-                    OnHold = value == "OnHold";
                     OnValueChanged();
                 }
             }
@@ -2094,13 +2114,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Protocol Protocol { get; set; }
             public ReceiveCallRate ReceiveCallRate { get; set; }
             public RemoteNumber RemoteNumber { get; set; }
-            public Status2 Status { get; set; }
+            public CallStatus Status { get; set; }
             public TransmitCallRate TransmitCallRate { get; set; }
 
             public Call()
             {
                 CallType = new CallType();
-                Status = new Status2();
+                Status = new CallStatus();
                 Duration = new Duration();
                 PlacedOnHold = new PlacedOnHold();
             }
