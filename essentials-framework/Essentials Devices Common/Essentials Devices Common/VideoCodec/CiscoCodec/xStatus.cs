@@ -596,6 +596,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
+                    if(string.IsNullOrEmpty(_Value))
+                        return false; 
+
                     return _Value.ToLower() == "localonly";
                 }
             }
@@ -604,6 +607,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
+                    if(string.IsNullOrEmpty(_Value))
+                        return false; 
+
                     return _Value.ToLower() == "localremote";
                 }
             }
