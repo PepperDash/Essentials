@@ -1218,9 +1218,13 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             {
                 for (int i = 0; i < joinMap.HoldCallsStart.JoinSpan; i++)
                 {
-                    trilist.SetSigFalseAction((uint)(joinMap.HoldCallsStart.JoinNumber + i), () =>
+                    var index = i;
+
+                    trilist.SetSigFalseAction((uint)(joinMap.HoldCallsStart.JoinNumber + index), () =>
                         {
-                            var call = ActiveCalls[i];
+                            if (index < 0 || index >= ActiveCalls.Count) return;
+
+                            var call = ActiveCalls[index];
                             if (call != null)
                             {
                                 holdCodec.HoldCall(call);
@@ -1231,9 +1235,11 @@ ScreenIndexIsPinnedTo: {8} (a{17})
                             }
                         });
 
-                    trilist.SetSigFalseAction((uint)(joinMap.ResumeCallsStart.JoinNumber + i), () =>
+                    trilist.SetSigFalseAction((uint)(joinMap.ResumeCallsStart.JoinNumber + index), () =>
                         {
-                            var call = ActiveCalls[i];
+                            if (index < 0 || index >= ActiveCalls.Count) return;
+
+                            var call = ActiveCalls[index];
                             if (call != null)
                             {
                                 holdCodec.ResumeCall(call);
