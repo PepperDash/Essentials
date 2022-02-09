@@ -2003,8 +2003,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         camera.SetCapabilites(cam.Capabilities.Options.Value);
                     }
 
-                    Cameras.Add(camera);
-                    DeviceManager.AddDevice(camera);
+                    Cameras.Add(camera);                    
                 }
             }
 
@@ -2012,13 +2011,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             var farEndCamera = new CiscoFarEndCamera(Key + "-cameraFar", "Far End", this);
             Cameras.Add(farEndCamera);
 
-            SelectedCameraFeedback = new StringFeedback(() => SelectedCamera.Key);
+            SelectedCameraFeedback = new StringFeedback(() => SelectedCamera.Key);            
 
-            SelectedCamera = Cameras[0]; ; // call the method to select the camera and ensure the feedbacks get updated.
-
-            ControllingFarEndCameraFeedback = new BoolFeedback(() => SelectedCamera is IAmFarEndCamera);
-
-            DeviceManager.AddDevice(farEndCamera);
+            ControllingFarEndCameraFeedback = new BoolFeedback(() => SelectedCamera is IAmFarEndCamera);            
 
             NearEndPresets = new List<CodecRoomPreset>(15);
 
@@ -2030,6 +2025,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 var label = string.Format("Far End Preset {0}", i);
                 FarEndRoomPresets.Add(new CodecRoomPreset(i, label, true, false));
             }
+
+            SelectedCamera = Cameras[0]; ; // call the method to select the camera and ensure the feedbacks get updated.
 
         }
 
