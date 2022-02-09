@@ -982,6 +982,8 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 		private void SelectDirectoryEntry(IHasDirectory codec, ushort i, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
+            if (i < 1 || i > codec.CurrentDirectoryResult.CurrentDirectoryResults.Count) return;
+
 			var entry = codec.CurrentDirectoryResult.CurrentDirectoryResults[i - 1];
 
 			if (entry is DirectoryFolder)
@@ -1047,10 +1049,12 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             const int offset = maxStrings;
             var stringIndex = 0;
             var arrayIndex = 0;
-            var tokenArray = new XSigToken[contact.ContactMethods.Count];
+            // Create a new token array and set the size to the number of methods times the total number of signals
+            var tokenArray = new XSigToken[maxMethods * offset];
+
+            Debug.Console(2, this, "Creating XSIG token array with size {0}", maxMethods * offset);
 
             // TODO: Add code to generate XSig data
-
             foreach (var method in contact.ContactMethods)
             {
                 if (arrayIndex >= maxMethods * offset)
@@ -1606,11 +1610,17 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             // Selected item action and feedback
             trilist.SetUShortSigAction(joinMap.SelectRecentCallItem.JoinNumber, (u) =>
                 {
+                    if (u == 0 || u > codec.CallHistory.RecentCalls.Count) 
+                    {
+                        Debug.Console(2, this, "Recent Call History index out of range");
+                        return;
+                    }
+
                     _selectedRecentCallItemIndex = (int)(u - 1);
-                    trilist.SetUshort(joinMap.SelectRecentCallItem.JoinNumber, u);
+                    trilist.SetUshort(joinMap.SelectRecentCallItem.JoinNumber, u);     
 
                     var _selectedRecentCallItem = codec.CallHistory.RecentCalls[_selectedRecentCallItemIndex];
-
+                    
                     if (_selectedRecentCallItem != null)
                     {
                         trilist.SetString(joinMap.SelectedRecentCallName.JoinNumber, _selectedRecentCallItem.Name);

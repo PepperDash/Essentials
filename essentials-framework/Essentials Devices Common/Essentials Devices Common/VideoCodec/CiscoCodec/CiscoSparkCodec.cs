@@ -1516,7 +1516,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 return;
             }
 
-            SendText(string.Format("xConfiguration Audio SoundsAndAlerts RingVolume: [0]", volume));
+            SendText(string.Format("xConfiguration Audio SoundsAndAlerts RingVolume: {0}", volume));
         }
 
         /// <summary>
