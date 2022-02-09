@@ -317,6 +317,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             string _Value;
             public bool BoolValue { get; private set; }
 
+            public bool OnHold { get; private set; }
+
             public string Value
             {
                 get
@@ -328,6 +330,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     // If the incoming value is "Active" it sets the BoolValue true, otherwise sets it false
                     _Value = value;
                     BoolValue = value == "Active";
+                    OnHold = value == "OnHold";
                     OnValueChanged();
                 }
             }
@@ -2099,6 +2102,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 CallType = new CallType();
                 Status = new Status2();
                 Duration = new Duration();
+                PlacedOnHold = new PlacedOnHold();
             }
         }
 

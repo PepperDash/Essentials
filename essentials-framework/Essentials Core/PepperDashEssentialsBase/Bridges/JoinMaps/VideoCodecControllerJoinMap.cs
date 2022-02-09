@@ -240,7 +240,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			new JoinMetadata
 			{
 				Description = "Speed Dial",
-				JoinCapabilities = eJoinCapabilities.ToSIMPL,
+				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Digital
 			});
 
@@ -940,7 +940,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             new JoinMetadata
             {
                 Description = "Pulse to remove the selected recent call item specified by the SelectRecentCallItem analog join",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
 
@@ -954,7 +954,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             new JoinMetadata
             {
                 Description = "Pulse to dial the selected recent call item specified by the SelectRecentCallItem analog join",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
 
@@ -1037,8 +1037,8 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             },
             new JoinMetadata
             {
-                Description = "Holds Call at specified index",
-                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                Description = "Holds Call at specified index. FB reported on Call Status XSIG",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
 

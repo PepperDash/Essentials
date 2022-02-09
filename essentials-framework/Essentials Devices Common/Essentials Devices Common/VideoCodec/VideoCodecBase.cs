@@ -1054,7 +1054,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
                 {
                     if (u < 1 || u > entryToDial.ContactMethods.Count) return;
 
-                    trilist.SetSigFalseAction(joinMap.DirectoryDialSelectedContactMethod.JoinNumber, () => Dial(entryToDial.ContactMethods[u].Number));
+                    trilist.SetSigFalseAction(joinMap.DirectoryDialSelectedContactMethod.JoinNumber, () => Dial(entryToDial.ContactMethods[u - 1].Number));
                 });
 
                 // Sets DirectoryDialSelectedLine join action to dial first contact method
@@ -1216,7 +1216,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             var holdCodec = this as IHasCallHold;
             if (holdCodec != null)
             {
-                for (int i = 0; i < joinMap.JoinCallStart.JoinSpan; i++)
+                for (int i = 0; i < joinMap.HoldCallsStart.JoinSpan; i++)
                 {
                     trilist.SetSigFalseAction((uint)(joinMap.HoldCallsStart.JoinNumber + i), () =>
                         {
@@ -1245,6 +1245,9 @@ ScreenIndexIsPinnedTo: {8} (a{17})
                         });
                 }
             }
+
+
+
 		}
 
 		private string UpdateCallStatusXSig()
