@@ -830,14 +830,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     if (conference.Presentation.LocalInstance.Count > 0)
                     {
                         if (!string.IsNullOrEmpty(conference.Presentation.LocalInstance[0].ghost))
+                        {
                             _presentationSource = 0;
+                            _presentationLocalOnly = false;
+                            _presentationLocalRemote = false;
+                        }
                         else if (conference.Presentation.LocalInstance[0].Source != null)
                         {
                             _presentationSource = conference.Presentation.LocalInstance[0].Source.IntValue;
+                            _presentationLocalOnly = conference.Presentation.LocalInstance.Any((i) => i.SendingMode.LocalOnly);
+                            _presentationLocalRemote = conference.Presentation.LocalInstance.Any((i) => i.SendingMode.LocalRemote);
                         }
-
-                        _presentationLocalOnly = conference.Presentation.LocalInstance.Any((i) => i.SendingMode.LocalOnly);
-                        _presentationLocalRemote = conference.Presentation.LocalInstance.Any((i) => i.SendingMode.LocalRemote);
 
                         PresentationSourceFeedback.FireUpdate();
                         PresentationSendingLocalOnlyFeedback.FireUpdate();
