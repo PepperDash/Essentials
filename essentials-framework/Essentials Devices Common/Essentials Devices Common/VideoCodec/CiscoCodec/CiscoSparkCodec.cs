@@ -649,10 +649,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             // Check for camera config info first
             if (_config.CameraInfo.Count > 0)
             {
+                Debug.Console(0, this, "Reading codec cameraInfo from config properties.");
                 SetUpCameras(_config.CameraInfo);
             }
             else
             {
+                Debug.Console(0, this, "No cameraInfo defined in video codec config.  Attempting to get camera info from codec status data");
                 try
                 {
                     var cameraInfo = new List<CameraInfo>();
@@ -663,6 +665,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         var info = new CameraInfo() { CameraNumber = id, Name = string.Format("{0} {1}", camera.Manufacturer, camera.Model), SourceId = camera.DetectedConnector.ConnectorId };
                         cameraInfo.Add(info);
                     }
+
+                    Debug.Console(0, this, "Successfully got cameraInfo for {0} cameras from codec.", cameraInfo.Count);
+
+                    SetUpCameras(cameraInfo);
                 }
                 catch (Exception ex)
                 {
@@ -670,10 +676,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 }
             }
 
-
-
-            // Fire the ready event
-            SetIsReady();
             //CommDebuggingIsOn = false;
 
             GetCallHistory();
@@ -683,6 +685,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             BookingsRefreshTimer = new CTimer(GetBookings, 900000,  900000);       // 15 minute timer to check for new booking info
             GetBookings(null);
+
+            // Fire the ready event
+            SetIsReady();
         }
 
         public void SetCommDebug(string s)
@@ -2003,6 +2008,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             SelectedCameraFeedback = new StringFeedback(() => SelectedCamera.Key);
 
+            SelectedCamera = Cameras[0]; ; // call the method to select the camera and ensure the feedbacks get updated.
+
             ControllingFarEndCameraFeedback = new BoolFeedback(() => SelectedCamera is IAmFarEndCamera);
 
             DeviceManager.AddDevice(farEndCamera);
@@ -2018,7 +2025,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 FarEndRoomPresets.Add(new CodecRoomPreset(i, label, true, false));
             }
 
-            SelectedCamera = Cameras[0]; ; // call the method to select the camera and ensure the feedbacks get updated.
         }
 
         #region IHasCodecCameras Members
