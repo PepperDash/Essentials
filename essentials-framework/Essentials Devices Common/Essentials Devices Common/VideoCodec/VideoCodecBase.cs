@@ -1100,12 +1100,6 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 					continue;
 				}
 
-                //if (isRoot && String.IsNullOrEmpty(entry.FolderId)) { continue; }
-                //else
-                //{
-                //    Debug.Console(2, this, "Skipping Entry");
-                //}
-
 				tokenArray[arrayIndex] = new XSigSerialToken(contactIndex, entry.Name);
 
 				contactIndex++;
