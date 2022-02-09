@@ -856,6 +856,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     // Check to see if the message contains /Status/Conference/Presentation/LocalInstance and extract source value 
                     var conference = tempCodecStatus.Status.Conference;
 
+                    if (conference.Presentation != null && conference.Presentation.LocalInstance == null)
+                    {
+                        // Handles an empty presentation object response
+                        return;   
+                    }
+
                     if (conference.Presentation.LocalInstance.Count > 0)
                     {
                         if (!string.IsNullOrEmpty(conference.Presentation.LocalInstance[0].ghost))
