@@ -1216,6 +1216,14 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             var holdCodec = this as IHasCallHold;
             if (holdCodec != null)
             {
+                trilist.SetSigFalseAction(joinMap.HoldAllCalls.JoinNumber, () =>
+                {
+                    foreach (var call in ActiveCalls)
+                    {
+                        holdCodec.HoldCall(call);
+                    }
+                });
+
                 for (int i = 0; i < joinMap.HoldCallsStart.JoinSpan; i++)
                 {
                     var index = i;

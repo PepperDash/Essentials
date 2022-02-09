@@ -1028,6 +1028,20 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+        [JoinName("HoldAllCalls")]
+        public JoinDataComplete HoldAllCalls = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 220,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Holds all calls",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
         [JoinName("HoldCallsStart")]
         public JoinDataComplete HoldCallsStart = new JoinDataComplete(
             new JoinData
