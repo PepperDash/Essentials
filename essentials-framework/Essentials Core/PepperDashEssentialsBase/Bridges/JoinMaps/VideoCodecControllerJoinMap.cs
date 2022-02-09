@@ -1358,6 +1358,20 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Analog
             });
 
+        [JoinName("RecentCallCount")]
+        public JoinDataComplete RecentCallCount = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 191,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Recent Call Count",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
 		#endregion
 
 

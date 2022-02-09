@@ -1685,6 +1685,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             trilist.ClearBoolSigAction(joinMap.RemoveSelectedRecentCallItem.JoinNumber);
             //
 
+            trilist.SetUshort(joinMap.RecentCallCount.JoinNumber, (ushort)codec.CallHistory.RecentCalls.Count);
 
             // Update the call history joins
             var maxItems = joinMap.RecentCallNamesStart.JoinSpan;
