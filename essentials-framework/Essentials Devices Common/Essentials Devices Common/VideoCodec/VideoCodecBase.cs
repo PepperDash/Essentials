@@ -411,7 +411,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				if (codec is IHasCameraAutoMode)
 				{
-					trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, true);
+					trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, SupportsCameraAutoMode);
 
 					(codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
 				}
