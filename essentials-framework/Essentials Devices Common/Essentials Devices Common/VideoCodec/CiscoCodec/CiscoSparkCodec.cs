@@ -456,8 +456,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.Video.Selfview.Mode.ValueChangedAction = SelfviewIsOnFeedback.FireUpdate;
             CodecStatus.Status.Video.Selfview.PIPPosition.ValueChangedAction = ComputeSelfviewPipStatus;
             CodecStatus.Status.Video.Layout.LayoutFamily.Local.ValueChangedAction = ComputeLocalLayout;
-            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = SharingContentIsOnFeedback.FireUpdate;
-            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = FarEndIsSharingContentFeedback.FireUpdate;
+            CodecStatus.Status.Conference.Presentation.Mode.ValueChangedAction = () =>
+            {
+                SharingContentIsOnFeedback.FireUpdate();
+                FarEndIsSharingContentFeedback.FireUpdate();
+            };
             CodecStatus.Status.Conference.DoNotDisturb.ValueChangedAction = DoNotDisturbModeIsOnFeedback.FireUpdate;
 
             CodecConfiguration.Configuration.Audio.SoundsAndAlerts.RingVolume.ValueChangedAction = RingtoneVolumeFeedback.FireUpdate;
