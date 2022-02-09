@@ -464,7 +464,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			new JoinMetadata
 			{
 				Description = "Go to Directory Root",
-				JoinCapabilities = eJoinCapabilities.ToSIMPL,
+				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Digital
 			});
 

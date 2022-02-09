@@ -590,7 +590,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CrestronConsole.AddNewConsoleCommand(GetPhonebook, "GetCodecPhonebook", "Triggers a refresh of the codec phonebook", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(GetBookings, "GetCodecBookings", "Triggers a refresh of the booking data for today", ConsoleAccessLevelEnum.AccessOperator);
 
+            PhonebookSyncState.InitialSyncCompleted += new EventHandler<EventArgs>(PhonebookSyncState_InitialSyncCompleted);
+
             return base.CustomActivate();
+        }
+
+        void PhonebookSyncState_InitialSyncCompleted(object sender, EventArgs e)
+        {
+            OnDirectoryResultReturned(DirectoryRoot);
         }
 
         #region Overrides of Device
@@ -1144,6 +1151,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             var handler = DirectoryResultReturned;
             if (handler != null)
             {
+                Debug.Console(2, this, "Directory result returned");
                 handler(this, new DirectoryEventArgs()
                 {
                     Directory = result,

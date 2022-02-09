@@ -937,9 +937,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 		private void LinkVideoCodecDirectoryToApi(IHasDirectory codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
 			codec.CurrentDirectoryResultIsNotDirectoryRoot.LinkComplementInputSig(
-				trilist.BooleanInput[joinMap.DirectoryIsRoot.JoinNumber]);
-
-			trilist.SetSigFalseAction(joinMap.DirectoryRoot.JoinNumber, codec.SetCurrentDirectoryToRoot);
+				trilist.BooleanInput[joinMap.DirectoryIsRoot.JoinNumber]);			
 
 			trilist.SetStringSigAction(joinMap.DirectorySearchString.JoinNumber, codec.SearchDirectory);
 
@@ -951,8 +949,25 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 			trilist.SetSigFalseAction(joinMap.DirectoryFolderBack.JoinNumber, codec.GetDirectoryParentFolderContents);
 
+		    if (codec.DirectoryRoot != null)
+		    {
+                trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)codec.DirectoryRoot.CurrentDirectoryResults.Count);
+
+                var clearBytes = XSigHelpers.ClearOutputs();
+
+                trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
+                    Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
+                var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot, !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+
+                Debug.Console(2, this, "Directory XSig Length: {0}", directoryXSig.Length);
+
+                trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
+		    }
+
 			codec.DirectoryResultReturned += (sender, args) =>
 			{
+                Debug.Console(2, this, "CiscoLinkToApi > DirectoryResultReturnedHandler");
+
 				trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)args.Directory.CurrentDirectoryResults.Count);
 
 				var clearBytes = XSigHelpers.ClearOutputs();
@@ -960,6 +975,8 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 				trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
 					Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
 				var directoryXSig = UpdateDirectoryXSig(args.Directory, !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+
+                Debug.Console(2, this, "Directory XSig Length: {0}", directoryXSig.Length);
 
 				trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
 			};
@@ -1068,9 +1085,13 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 			var contactIndex = 1;
 			var tokenArray = new XSigToken[directory.CurrentDirectoryResults.Count];
 
+            Debug.Console(2, this, "Is root {0} Directory Count: {1}", isRoot, directory.CurrentDirectoryResults.Count);
+
 			foreach (var entry in directory.CurrentDirectoryResults)
 			{
 				var arrayIndex = contactIndex - 1;
+
+                Debug.Console(2, this, "Entry Name: {0}, Folder ID: {1}", entry.Name, entry.FolderId);
 
 				if (entry is DirectoryFolder && entry.ParentFolderId == "root")
 				{
@@ -1081,7 +1102,11 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 					continue;
 				}
 
-				if (isRoot && String.IsNullOrEmpty(entry.FolderId)) continue;
+                //if (isRoot && String.IsNullOrEmpty(entry.FolderId)) { continue; }
+                //else
+                //{
+                //    Debug.Console(2, this, "Skipping Entry");
+                //}
 
 				tokenArray[arrayIndex] = new XSigSerialToken(contactIndex, entry.Name);
 
@@ -1628,20 +1653,31 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             // Update the call history joins
             var maxItems = joinMap.RecentCallNamesStart.JoinSpan;
 
-            uint i = 0;
-            foreach(var item in codec.CallHistory.RecentCalls)
+            // Create history
+            uint index = 0;          
+            for (uint i = 0; i < maxItems && i < codec.CallHistory.RecentCalls.Count; i++)
             {
-                trilist.SetString(joinMap.RecentCallNamesStart.JoinNumber + i, item.Name);
-                trilist.SetString(joinMap.RecentCallTimesStart.JoinNumber + i, item.StartTime.ToShortTimeString());
-                trilist.SetUshort(joinMap.RecentCallOccurrenceType.JoinNumber + i, (ushort)item.OccurrenceType);
-                i++;
+                trilist.SetString(joinMap.RecentCallNamesStart.JoinNumber + i, codec.CallHistory.RecentCalls[(int)i].Name);
+                trilist.SetString(joinMap.RecentCallTimesStart.JoinNumber + i, codec.CallHistory.RecentCalls[(int)i].StartTime.ToShortTimeString());
+                trilist.SetUshort(joinMap.RecentCallOccurrenceType.JoinNumber + i, (ushort)codec.CallHistory.RecentCalls[(int)i].OccurrenceType);
+                //i++;
+                index = i;
             }
+            
+            //foreach(var item in codec.CallHistory.RecentCalls)
+            //{
+            //    trilist.SetString(joinMap.RecentCallNamesStart.JoinNumber + i, item.Name);
+            //    trilist.SetString(joinMap.RecentCallTimesStart.JoinNumber + i, item.StartTime.ToShortTimeString());
+            //    trilist.SetUshort(joinMap.RecentCallOccurrenceType.JoinNumber + i, (ushort)item.OccurrenceType);
+            //    i++;
+            //}
 
-            for (uint index = i; i < maxItems; index++)
+            // Clears existing items 
+            for (uint j = index; j < maxItems; j++)
             {
-                trilist.SetString(joinMap.RecentCallNamesStart.JoinNumber + index, string.Empty);
-                trilist.SetString(joinMap.RecentCallTimesStart.JoinNumber + index, string.Empty);
-                trilist.SetUshort(joinMap.RecentCallOccurrenceType.JoinNumber + index, 0);
+                trilist.SetString(joinMap.RecentCallNamesStart.JoinNumber + j, string.Empty);
+                trilist.SetString(joinMap.RecentCallTimesStart.JoinNumber + j, string.Empty);
+                trilist.SetUshort(joinMap.RecentCallOccurrenceType.JoinNumber + j, 0);
             }
         }
 
