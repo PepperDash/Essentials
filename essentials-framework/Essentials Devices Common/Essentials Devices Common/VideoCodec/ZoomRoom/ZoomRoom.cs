@@ -1090,7 +1090,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/toll_free_callinLlist");
 							Thread.Sleep(100);
 
-							if (!_props.DisablePhonebookAutoDownload)
+							if (_props.DisablePhonebookAutoDownload)
 							{
 								SendText("zFeedback Register Op: ex Path: /Event/Phonebook/AddedContact");
 							}
