@@ -646,7 +646,31 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="e"></param>
         void SyncState_InitialSyncCompleted(object sender, EventArgs e)
         {
-            SetUpCameras(_config.CameraInfo);
+            // Check for camera config info first
+            if (_config.CameraInfo.Count > 0)
+            {
+                SetUpCameras(_config.CameraInfo);
+            }
+            else
+            {
+                try
+                {
+                    var cameraInfo = new List<CameraInfo>();
+
+                    foreach (var camera in CodecStatus.Status.Cameras.Camera)
+                    {
+                        var id = Convert.ToUInt16(camera.id);
+                        var info = new CameraInfo() { CameraNumber = id, Name = string.Format("{0} {1}", camera.Manufacturer, camera.Model), SourceId = camera.DetectedConnector.ConnectorId };
+                        cameraInfo.Add(info);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.Console(2, this, "Error generating camera info from codec status data: {0}", ex);
+                }
+            }
+
+
 
             // Fire the ready event
             SetIsReady();

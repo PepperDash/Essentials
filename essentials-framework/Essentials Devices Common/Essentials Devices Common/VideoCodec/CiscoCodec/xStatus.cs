@@ -262,11 +262,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
+        public class DectectedConnector
+        {
+            public string Value { get; set; }
+
+            public int ConnectorId
+            {
+                get
+                {
+                    return Convert.ToUInt16(Value);
+                }
+            }
+        }
+
         public class Camera
         {
             public string id { get; set; }
             public Capabilities Capabilities { get; set; }
             public Connected Connected { get; set; }
+            public DectectedConnector DetectedConnector { get; set; }
             public Flip Flip { get; set; }
             public HardwareID HardwareID { get; set; }
             public MacAddress MacAddress { get; set; }
