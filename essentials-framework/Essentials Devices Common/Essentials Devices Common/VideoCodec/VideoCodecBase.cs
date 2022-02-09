@@ -966,8 +966,6 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 			codec.DirectoryResultReturned += (sender, args) =>
 			{
-                Debug.Console(2, this, "CiscoLinkToApi > DirectoryResultReturnedHandler");
-
 				trilist.SetUshort(joinMap.DirectoryRowCount.JoinNumber, (ushort)args.Directory.CurrentDirectoryResults.Count);
 
 				var clearBytes = XSigHelpers.ClearOutputs();
@@ -1101,12 +1099,6 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
 					continue;
 				}
-
-                //if (isRoot && String.IsNullOrEmpty(entry.FolderId)) { continue; }
-                //else
-                //{
-                //    Debug.Console(2, this, "Skipping Entry");
-                //}
 
 				tokenArray[arrayIndex] = new XSigSerialToken(contactIndex, entry.Name);
 
