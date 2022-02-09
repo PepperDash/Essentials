@@ -980,51 +980,85 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 			};
 		}
 
+
+
 		private void SelectDirectoryEntry(IHasDirectory codec, ushort i, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
             if (i < 1 || i > codec.CurrentDirectoryResult.CurrentDirectoryResults.Count) return;
 
-			var entry = codec.CurrentDirectoryResult.CurrentDirectoryResults[i - 1];
+			_selectedDirectoryItem = codec.CurrentDirectoryResult.CurrentDirectoryResults[i - 1];
 
-			if (entry is DirectoryFolder)
+
+			if (_selectedDirectoryItem is DirectoryFolder)
 			{
-				codec.GetDirectoryFolderContents(entry.FolderId);
+				codec.GetDirectoryFolderContents(_selectedDirectoryItem.FolderId);
                 trilist.SetUshort(joinMap.SelectedContactMethodCount.JoinNumber, 0);
-				return;
+                trilist.SetString(joinMap.DirectorySelectedFolderName.JoinNumber, _selectedDirectoryItem.Name);
+                trilist.SetString(joinMap.DirectoryEntrySelectedName.JoinNumber, string.Empty);
+                trilist.ClearUShortSigAction(joinMap.SelectContactMethod.JoinNumber);
+                trilist.ClearBoolSigAction(joinMap.DirectoryDialSelectedLine.JoinNumber);
+                trilist.ClearBoolSigAction(joinMap.DirectoryDialSelectedContactMethod.JoinNumber);
+                return;
 			}
 
-            // Allow auto dial of selected line
+            // not a folder.  Clear this value
+            trilist.SetString(joinMap.DirectorySelectedFolderName.JoinNumber, string.Empty);
+
+            var selectedContact = _selectedDirectoryItem as DirectoryContact;
+            if (selectedContact != null)
+            {
+                trilist.SetString(joinMap.DirectoryEntrySelectedName.JoinNumber, selectedContact.Name);
+            
+            }
+
+            // Allow auto dial of selected line.  Always dials first contact method
             if (!trilist.GetBool(joinMap.DirectoryDisableAutoDialSelectedLine.JoinNumber))
             {
-			    var dialableEntry = entry as IInvitableContact;
+                var invitableEntry = _selectedDirectoryItem as IInvitableContact;
 
-			    if (dialableEntry != null)
-			    {
-				    Dial(dialableEntry);
-				    return;
-			    }
+                if (invitableEntry != null)
+                {
+                    Dial(invitableEntry);
+                    return;
+                }
 
-    			var entryToDial = entry as DirectoryContact;
+                var entryToDial = _selectedDirectoryItem as DirectoryContact;
 
-		        if (entryToDial == null) return;
+                trilist.SetString(joinMap.DirectoryEntrySelectedNumber.JoinNumber, selectedContact.ContactMethods[0].Number);
 
-			    Dial(entryToDial.ContactMethods[0].Number);
+                if (entryToDial == null) return;
+
+                Dial(entryToDial.ContactMethods[0].Number);
                 return;
             }
             else
             {
                 // If auto dial is disabled...
-    			var entryToDial = entry as DirectoryContact;
+                var entryToDial = _selectedDirectoryItem as DirectoryContact;
 
                 if (entryToDial == null)
                 {
+                    // Clear out values and actions from last selected item
                     trilist.SetUshort(joinMap.SelectedContactMethodCount.JoinNumber, 0);
+                    trilist.SetString(joinMap.DirectoryEntrySelectedName.JoinNumber, string.Empty);
+                    trilist.ClearUShortSigAction(joinMap.SelectContactMethod.JoinNumber);
+                    trilist.ClearBoolSigAction(joinMap.DirectoryDialSelectedLine.JoinNumber);
+                    trilist.ClearBoolSigAction(joinMap.DirectoryDialSelectedContactMethod.JoinNumber);
                     return;
                 }
 
-                trilist.SetSigFalseAction(joinMap.DirectoryDialSelectedLine.JoinNumber, () => Dial(entryToDial.ContactMethods[0].Number));
-
                 trilist.SetUshort(joinMap.SelectedContactMethodCount.JoinNumber, (ushort)entryToDial.ContactMethods.Count);
+
+                // Update the action to dial the selected contact method
+                trilist.SetUShortSigAction(joinMap.SelectContactMethod.JoinNumber, (u) =>
+                {
+                    if (u < 1 || u > entryToDial.ContactMethods.Count) return;
+
+                    trilist.SetSigFalseAction(joinMap.DirectoryDialSelectedContactMethod.JoinNumber, () => Dial(entryToDial.ContactMethods[u].Number));
+                });
+
+                // Sets DirectoryDialSelectedLine join action to dial first contact method
+                trilist.SetSigFalseAction(joinMap.DirectoryDialSelectedLine.JoinNumber, () => Dial(entryToDial.ContactMethods[0].Number));
 
                 var clearBytes = XSigHelpers.ClearOutputs();
 
@@ -1034,7 +1068,6 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 
                 trilist.SetString(joinMap.ContactMethods.JoinNumber, contactMethodsXSig);
             }
-
 		}
 
         /// <summary>
@@ -1599,6 +1632,7 @@ ScreenIndexIsPinnedTo: {8} (a{17})
         // Following fields only used for Bridging
         private int _selectedRecentCallItemIndex;
         private CodecCallHistory.CallHistoryEntry _selectedRecentCallItem;
+        private DirectoryItem _selectedDirectoryItem;
 
         private void LinkVideoCodecCallHistoryToApi(IHasCallHistory codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
         {

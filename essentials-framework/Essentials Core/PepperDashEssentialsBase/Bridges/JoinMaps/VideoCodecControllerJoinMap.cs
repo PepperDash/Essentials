@@ -510,6 +510,20 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
+        [JoinName("DirectoryDialSelectedContactMethod")]
+        public JoinDataComplete DirectoryDialSelectedContactMethod = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 108,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Pulse to dial the selected contact method",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
 		[JoinName("CameraTiltUp")]
 		public JoinDataComplete CameraTiltUp = new JoinDataComplete(
 			new JoinData
@@ -1228,6 +1242,20 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             new JoinMetadata
             {
                 Description = "Reports the number of contact methods for the selected contact",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
+        [JoinName("SelectContactMethod")]
+        public JoinDataComplete SelectContactMethod = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 103,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Selects a contact method by index",
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Analog
             });
