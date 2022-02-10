@@ -1270,7 +1270,8 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 		{
 			const int maxCalls = 8;
 			const int maxStrings = 6;
-			const int offset = 6;
+            const int maxDigitals = 2;
+			const int offset = maxStrings + maxDigitals;
 			var stringIndex = 0;
 			var digitalIndex = maxStrings * maxCalls;
 			var arrayIndex = 0;
@@ -1282,8 +1283,8 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 				if (arrayIndex >= maxCalls * offset)
 					break;
 				//digitals
-				tokenArray[arrayIndex] = new XSigDigitalToken(digitalIndex + 1, call.IsActiveCall);
-                tokenArray[arrayIndex + 1] = new XSigDigitalToken(digitalIndex + 2, call.IsOnHold);
+                tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, call.IsActiveCall);
+                tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, call.IsOnHold);
 
 				//serials
 				tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 1, call.Name ?? String.Empty);
@@ -1305,8 +1306,8 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 			while (digitalIndex < maxCalls)
 			{
 				//digitals
-				tokenArray[arrayIndex] = new XSigDigitalToken(digitalIndex + 1, false);
-                tokenArray[arrayIndex + 1] = new XSigDigitalToken(digitalIndex + 2, false);
+                tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
+                tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, false);
 
 
                 //serials
