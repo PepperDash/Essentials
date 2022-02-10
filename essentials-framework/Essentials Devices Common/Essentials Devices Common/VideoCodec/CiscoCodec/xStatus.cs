@@ -2122,7 +2122,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 CallType = new CallType();
                 Status = new CallStatus();
                 Duration = new Duration();
-                PlacedOnHold = new PlacedOnHold();
             }
         }
 
