@@ -1182,6 +1182,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
             catch (Exception ex)
             {
+                if (ex is Newtonsoft.Json.JsonReaderException)
+                {
+                    Debug.Console(1, this, "Received malformed response from codec. Unable to serialize.  Disconnecting and attmpting to recconnect");
+
+                    Communication.Disconnect();
+
+                    Initialize();
+                }
+
+
                 Debug.Console(1, this, "Error Deserializing feedback from codec: {0}", ex);
             }
         }

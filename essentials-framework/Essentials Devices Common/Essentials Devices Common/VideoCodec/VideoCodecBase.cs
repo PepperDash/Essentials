@@ -257,10 +257,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		/// </summary>
 		public virtual void ListCalls()
 		{
+            Debug.Console(1, this, "Active Calls:");
+
 			var sb = new StringBuilder();
 			foreach (var c in ActiveCalls)
 			{
-				sb.AppendFormat("{0} {1} -- {2} {3}\n", c.Id, c.Number, c.Name, c.Status);
+				sb.AppendFormat("id: {0} number: {1} -- name: {2} status: {3} onHold: {4}\r\n", c.Id, c.Number, c.Name, c.Status, c.IsOnHold);
 			}
 			Debug.Console(1, this, "\n{0}\n", sb.ToString());
 		}
