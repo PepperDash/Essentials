@@ -909,7 +909,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                     if (!string.IsNullOrEmpty(call.Status.Value))
                                     {
                                         tempActiveCall.Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value);
-                                        tempActiveCall.IsOnHold = tempActiveCall.Status == eCodecCallStatus.OnHold;
+                                        if (tempActiveCall.Status == eCodecCallStatus.OnHold)
+                                        {
+                                            tempActiveCall.IsOnHold = true;
+                                        }
 
                                         if (newStatus == eCodecCallStatus.Connected)
                                             GetCallHistory();
@@ -1186,7 +1189,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                 if (ex is Newtonsoft.Json.JsonReaderException)
                 {
-                    Debug.Console(1, this, "Received malformed response from codec. Unable to deserialize.  Disconnecting and attmpting to recconnect");
+                    Debug.Console(1, this, "Received malformed response from codec.");
 
                     //Communication.Disconnect();
 
