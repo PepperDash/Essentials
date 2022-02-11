@@ -102,6 +102,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			PhonebookSyncState = new CodecPhonebookSyncState(Key + "--PhonebookSync");
 
+            PhonebookSyncState.InitialSyncCompleted += (o, a) => ResubscribeForAddedContacts();
+
 			PortGather = new CommunicationGather(Communication, Delimiters) {IncludeDelimiter = true};
 			PortGather.LineReceived += Port_LineReceived;
 
@@ -1017,15 +1019,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             // Currently the feedback exclusions don't work when using the API in JSON response mode
             // But leave these here in case the API gets updated in the future 
             // These may work as of 5.9.4
-            if (_props.DisablePhonebookAutoDownload)
-            {
-                SendText("zFeedback Register Op: ex Path: /Event/Phonebook/AddedContact");
-            }
+
+            // In 5.9.4 we're getting sent an AddedContact message for every contact in the phonebook on connect, which is redunant and way too much data
+            // We want to exclude these messages right away until after we've retrieved the entire phonebook and then we can re-enable them
+            SendText("zFeedback Register Op: ex Path: /Event/Phonebook/AddedContact");
+            
             SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/callin_country_list");
             SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/callout_country_list");
             SendText("zFeedback Register Op: ex Path: /Event/InfoResult/Info/toll_free_callinLlist");
 
             SendText("zStatus SystemUnit");
+        }
+
+        /// <summary>
+        /// Removes the feedback exclusion for added contacts
+        /// </summary>
+        private void ResubscribeForAddedContacts()
+        {
+            SendText("zFeedback Register Op: in Path: /Event/Phonebook/AddedContact");             
         }
 
         /// <summary>
