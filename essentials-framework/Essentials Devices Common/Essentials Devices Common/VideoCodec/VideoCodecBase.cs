@@ -680,37 +680,37 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			{
 				if (meetingIndex >= maxParticipants * offset) break;
 
-                Debug.Console(2, this,
-@"Updating Participant on xsig:
-Name: {0} (s{9})
-AudioMute: {1} (d{10})
-VideoMute: {2} (d{11})
-CanMuteVideo: {3} (d{12})
-CanUMuteVideo: {4} (d{13})
-IsHost: {5} (d{14})
-HandIsRaised: {6} (d{15})
-IsPinned: {7} (d{16})
-ScreenIndexIsPinnedTo: {8} (a{17})
-",
- participant.Name,
- participant.AudioMuteFb,
- participant.VideoMuteFb,
- participant.CanMuteVideo,
- participant.CanUnmuteVideo,
- participant.IsHost,
- participant.HandIsRaisedFb,
- participant.IsPinnedFb,
- participant.ScreenIndexIsPinnedToFb,
- stringIndex + 1,
- digitalIndex + 1,
- digitalIndex + 2,
- digitalIndex + 3,
- digitalIndex + 4,
- digitalIndex + 5,
- digitalIndex + 6,
- digitalIndex + 7,
- analogIndex + 1
- );
+//                Debug.Console(2, this,
+//@"Updating Participant on xsig:
+//Name: {0} (s{9})
+//AudioMute: {1} (d{10})
+//VideoMute: {2} (d{11})
+//CanMuteVideo: {3} (d{12})
+//CanUMuteVideo: {4} (d{13})
+//IsHost: {5} (d{14})
+//HandIsRaised: {6} (d{15})
+//IsPinned: {7} (d{16})
+//ScreenIndexIsPinnedTo: {8} (a{17})
+//",
+// participant.Name,
+// participant.AudioMuteFb,
+// participant.VideoMuteFb,
+// participant.CanMuteVideo,
+// participant.CanUnmuteVideo,
+// participant.IsHost,
+// participant.HandIsRaisedFb,
+// participant.IsPinnedFb,
+// participant.ScreenIndexIsPinnedToFb,
+// stringIndex + 1,
+// digitalIndex + 1,
+// digitalIndex + 2,
+// digitalIndex + 3,
+// digitalIndex + 4,
+// digitalIndex + 5,
+// digitalIndex + 6,
+// digitalIndex + 7,
+// analogIndex + 1
+// );
 
 
 				//digitals
@@ -1160,7 +1160,9 @@ ScreenIndexIsPinnedTo: {8} (a{17})
             {
                 trilist.SetSigFalseAction((uint)(joinMap.EndCallStart.JoinNumber + i), () =>
                     {
-                        var call = ActiveCalls[i];
+                        var callIndex = i;
+
+                        var call = ActiveCalls[callIndex];
                         if (call != null)
                         {
                             EndCall(call);
@@ -1182,11 +1184,19 @@ ScreenIndexIsPinnedTo: {8} (a{17})
 				Debug.Console(1, this, "Call is incoming: {0}", args.CallItem.Direction == eCodecCallDirection.Incoming);
 				trilist.SetBool(joinMap.IncomingCall.JoinNumber, args.CallItem.Direction == eCodecCallDirection.Incoming && args.CallItem.Status == eCodecCallStatus.Ringing);
 
-				if (args.CallItem.Direction == eCodecCallDirection.Incoming)
-				{
-					trilist.SetSigFalseAction(joinMap.IncomingAnswer.JoinNumber, () => AcceptCall(args.CallItem));
-					trilist.SetSigFalseAction(joinMap.IncomingReject.JoinNumber, () => RejectCall(args.CallItem));
-				}
+                if (args.CallItem.Direction == eCodecCallDirection.Incoming)
+                {
+                    trilist.SetSigFalseAction(joinMap.IncomingAnswer.JoinNumber, () => AcceptCall(args.CallItem));
+                    trilist.SetSigFalseAction(joinMap.IncomingReject.JoinNumber, () => RejectCall(args.CallItem));
+                    trilist.SetString(joinMap.IncomingCallName.JoinNumber, args.CallItem.Name);
+                    trilist.SetString(joinMap.IncomingCallNumber.JoinNumber, args.CallItem.Number);
+                }
+                else
+                {
+                    trilist.SetString(joinMap.IncomingCallName.JoinNumber, string.Empty);
+                    trilist.SetString(joinMap.IncomingCallNumber.JoinNumber, string.Empty);
+                }
+
 
 				trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
 
