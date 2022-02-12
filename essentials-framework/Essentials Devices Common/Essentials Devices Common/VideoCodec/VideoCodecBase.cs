@@ -1158,9 +1158,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             //End a specific call, specified by index. Maximum 8 calls supported
             for (int i = 0; i < joinMap.EndCallStart.JoinSpan; i++)
             {
+                var callIndex = i;
+
                 trilist.SetSigFalseAction((uint)(joinMap.EndCallStart.JoinNumber + i), () =>
                     {
-                        var callIndex = i;
+
+                        if (callIndex < 0 || callIndex >= ActiveCalls.Count)
+                        {
+                            Debug.Console(2, this, "Cannot end call. No call found at index: {0}", callIndex);
+                            return;
+                        }
 
                         var call = ActiveCalls[callIndex];
                         if (call != null)

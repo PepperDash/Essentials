@@ -738,6 +738,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Assignment Assignment { get; set; }
             public Gateway Gateway { get; set; }
             public SubnetMask SubnetMask { get; set; }
+
+            public IPv4()
+            {
+                Address = new Address4();
+            }
         }
 
         public class Address5
@@ -889,6 +894,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public RemoteAccess RemoteAccess { get; set; }
             public Speed Speed { get; set; }
             public VLAN VLAN { get; set; }
+
+            public Network()
+            {
+                IPv4 = new IPv4();
+            }
         }
 
         public class Mode19
@@ -1850,6 +1860,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 Audio = new Audio();
                 Conference = new Conference();
+                Network = new List<Network>();
             }
         }
 

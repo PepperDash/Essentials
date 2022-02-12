@@ -270,7 +270,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    return Convert.ToUInt16(Value);
+                    if(!string.IsNullOrEmpty(Value))
+                    {
+                        return Convert.ToUInt16(Value);
+                    }
+                    else
+                        return -1;
                 }
             }
         }
@@ -289,6 +294,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Position Position { get; set; }
             public SerialNumber SerialNumber { get; set; }
             public SoftwareID SoftwareID { get; set; }
+
+            public Camera()
+            {
+                Manufacturer = new Manufacturer();
+                Model = new Model();
+                DetectedConnector = new DectectedConnector();
+            }
         }
 
         public class Availability : ValueProperty
@@ -957,6 +969,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Address4 Address { get; set; }
             public Gateway Gateway { get; set; }
             public SubnetMask SubnetMask { get; set; }
+
+            public IPv4()
+            {
+                Address = new Address4();
+            }
         }
 
         public class Address5
@@ -999,6 +1016,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public IPv4 IPv4 { get; set; }
             public IPv6 IPv6 { get; set; }
             public VLAN VLAN { get; set; }
+
+            public Network()
+            {
+                IPv4 = new IPv4();
+            }
         }
 
         public class CurrentAddress
@@ -2222,6 +2244,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 SystemUnit = new SystemUnit();
                 Video = new Video();
                 Conference = new Conference2();
+                Network = new List<Network>();
             }
         }
 

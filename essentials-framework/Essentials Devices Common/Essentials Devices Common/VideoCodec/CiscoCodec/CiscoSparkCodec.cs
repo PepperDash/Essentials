@@ -664,8 +664,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                     foreach (var camera in CodecStatus.Status.Cameras.Camera)
                     {
+                        Debug.Console(0, this,
+@"Camera id: {0}
+Name: {1}
+ConnectorID: {2}"
+, camera.id
+, camera.Manufacturer.Value
+, camera.Model.Value);
+
                         var id = Convert.ToUInt16(camera.id);
-                        var info = new CameraInfo() { CameraNumber = id, Name = string.Format("{0} {1}", camera.Manufacturer, camera.Model), SourceId = camera.DetectedConnector.ConnectorId };
+                        var info = new CameraInfo() { CameraNumber = id, Name = string.Format("{0} {1}", camera.Manufacturer.Value, camera.Model.Value), SourceId = camera.DetectedConnector.ConnectorId };
                         cameraInfo.Add(info);
                     }
 
@@ -1994,7 +2002,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 }
 
                 Cameras.Add(internalCamera);
-                DeviceManager.AddDevice(internalCamera);
+                //DeviceManager.AddDevice(internalCamera);
             }
             else
             {
@@ -2132,12 +2140,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    if (CodecConfiguration.Configuration.Network != null)   
+                    var address = string.Empty;
+                    if (CodecConfiguration.Configuration.Network.Count > 0)
                     {
-                        if (CodecConfiguration.Configuration.Network.Count > 0)
-                            return CodecConfiguration.Configuration.Network[0].IPv4.Address.Value;
+                        if(!string.IsNullOrEmpty(CodecConfiguration.Configuration.Network[0].IPv4.Address.Value))
+                            address = CodecConfiguration.Configuration.Network[0].IPv4.Address.Value;
                     }
-                    return string.Empty;
+                    
+                    if (string.IsNullOrEmpty(address) && CodecStatus.Status.Network.Count > 0)
+                    {
+                        if(!string.IsNullOrEmpty(CodecStatus.Status.Network[0].IPv4.Address.Value))
+                            address = CodecStatus.Status.Network[0].IPv4.Address.Value;
+                    }
+                    return address;
                 }
             }
             public override string E164Alias
