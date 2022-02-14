@@ -371,7 +371,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             _phonebookMode = props.PhonebookMode;
 
-            _syncState = new CodecSyncState(Key + "--Sync");
+            _syncState = new CodecSyncState(Key + "--Sync", this);
 
             PhonebookSyncState = new CodecPhonebookSyncState(Key + "--PhonebookSync");
 
@@ -547,7 +547,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="code">Mobile Control user code</param>
         private void DisplayUserCode(string code)
         {
-            SendText(string.Format("xcommand userinterface message alert display title:\"Mobile Control User Code:\" text:\"{0}\" duration: 30", code));
+            EnqueueCommand(string.Format("xcommand userinterface message alert display title:\"Mobile Control User Code:\" text:\"{0}\" duration: 30", code));
         }
 
         private void SendMcBrandingUrl(IMobileControlRoomBridge mcBridge)
@@ -559,17 +559,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             Debug.Console(1, this, "Sending url: {0}", mcBridge.QrCodeUrl);
 
-            SendText("xconfiguration userinterface custommessage: \"Scan the QR code with a mobile phone to get started\"");
-            SendText("xconfiguration userinterface osd halfwakemessage: \"Tap the touch panel or scan the QR code with a mobile phone to get started\"");
+            EnqueueCommand("xconfiguration userinterface custommessage: \"Scan the QR code with a mobile phone to get started\"");
+            EnqueueCommand("xconfiguration userinterface osd halfwakemessage: \"Tap the touch panel or scan the QR code with a mobile phone to get started\"");
 
             var checksum = !String.IsNullOrEmpty(mcBridge.QrCodeChecksum)
                 ? String.Format("checksum: {0} ", mcBridge.QrCodeChecksum)
                 : String.Empty;
 
-            SendText(String.Format(
+            EnqueueCommand(String.Format(
                 "xcommand userinterface branding fetch {1}type: branding url: {0}",
                 mcBridge.QrCodeUrl, checksum));
-            SendText(String.Format(
+            EnqueueCommand(String.Format(
                 "xcommand userinterface branding fetch {1}type: halfwakebranding url: {0}",
                 mcBridge.QrCodeUrl, checksum));
         }
@@ -578,9 +578,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             Debug.Console(1, this, "Sending url: {0}", _brandingUrl);
 
-            SendText(String.Format("xcommand userinterface branding fetch type: branding url: {0}",
+            EnqueueCommand(String.Format("xcommand userinterface branding fetch type: branding url: {0}",
                             _brandingUrl));
-            SendText(String.Format("xcommand userinterface branding fetch type: halfwakebranding url: {0}",
+            EnqueueCommand(String.Format("xcommand userinterface branding fetch type: halfwakebranding url: {0}",
                 _brandingUrl));
         }
         /// <summary>
@@ -769,6 +769,12 @@ ConnectorID: {2}"
                     Debug.Console(1, this, "RX: '{0}'", args.Text);
             }
 
+            if(args.Text.Contains("xCommand"))
+            {
+                Debug.Console(2, this, "Received command echo response.  Ignoring");
+                return;
+            }
+
             if (args.Text == "{" + Delimiter)        // Check for the beginning of a new JSON message
             {
                 _jsonFeedbackMessageIsIncoming = true;
@@ -813,6 +819,7 @@ ConnectorID: {2}"
                             if(_loginMessageReceivedTimer != null)
                                 _loginMessageReceivedTimer.Stop();
 
+                            SendText("echo off");
                             SendText("xPreferences outputmode json");
                             break;
                         }
@@ -829,12 +836,21 @@ ConnectorID: {2}"
                         }
                 }
             }
-			
-                
         }
 
         /// <summary>
-        /// Appends the delimiter and send the command to the codec
+        /// Enqueues a command to be sent to the codec.
+        /// </summary>
+        /// <param name="command"></param>
+        public void EnqueueCommand(string command)
+        {
+            _syncState.AddCommandToQueue(command + Delimiter);
+        }
+
+        /// <summary>
+        /// Appends the delimiter and send the command to the codec.
+        /// Should not be used for sending general commands to the codec.  Use EnqueueCommand instead.
+        /// Should be used to get initial Status and Configuration as well as set up Feedback Registration
         /// </summary>
         /// <param name="command"></param>
         public void SendText(string command)
@@ -1062,7 +1078,9 @@ ConnectorID: {2}"
                         _syncState.InitialStatusMessageReceived();
 
                         if (!_syncState.InitialConfigurationMessageWasReceived)
+                        {
                             SendText("xConfiguration");
+                        }
                     }
                 }
                 else if (response.IndexOf("\"Configuration\":{") > -1 || response.IndexOf("\"Configuration\": {") > -1)
@@ -1296,7 +1314,7 @@ ConnectorID: {2}"
 
         public void GetCallHistory()
         {
-            SendText("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
+            EnqueueCommand("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
         }
 
         /// <summary>
@@ -1315,7 +1333,7 @@ ConnectorID: {2}"
         {
             Debug.Console(1, this, "Retrieving Booking Info from Codec. Current Time: {0}", DateTime.Now.ToLocalTime());
 
-            SendText("xCommand Bookings List Days: 1 DayOffset: 0");
+            EnqueueCommand("xCommand Bookings List Days: 1 DayOffset: 0");
         }
 
         /// <summary>
@@ -1349,13 +1367,13 @@ ConnectorID: {2}"
         private void GetPhonebookFolders()
         {
             // Get Phonebook Folders (determine local/corporate from config, and set results limit)
-            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Folder", _phonebookMode));
+            EnqueueCommand(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Folder", _phonebookMode));
         }
 
         private void GetPhonebookContacts()
         {
             // Get Phonebook Folders (determine local/corporate from config, and set results limit)
-            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Contact Limit: {1}", _phonebookMode, _phonebookResultsLimit));
+            EnqueueCommand(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Contact Limit: {1}", _phonebookMode, _phonebookResultsLimit));
         }
 
         /// <summary>
@@ -1364,7 +1382,7 @@ ConnectorID: {2}"
         /// <param name="searchString"></param>
         public void SearchDirectory(string searchString)
         {
-            SendText(string.Format("xCommand Phonebook Search SearchString: \"{0}\" PhonebookType: {1} ContactType: Contact Limit: {2}", searchString, _phonebookMode, _phonebookResultsLimit));
+            EnqueueCommand(string.Format("xCommand Phonebook Search SearchString: \"{0}\" PhonebookType: {1} ContactType: Contact Limit: {2}", searchString, _phonebookMode, _phonebookResultsLimit));
         }
 
         /// <summary>
@@ -1373,7 +1391,7 @@ ConnectorID: {2}"
         /// <param name="folderId"></param>
         public void GetDirectoryFolderContents(string folderId)
         {
-            SendText(string.Format("xCommand Phonebook Search FolderId: {0} PhonebookType: {1} ContactType: Any Limit: {2}", folderId, _phonebookMode, _phonebookResultsLimit));
+            EnqueueCommand(string.Format("xCommand Phonebook Search FolderId: {0} PhonebookType: {1} ContactType: Any Limit: {2}", folderId, _phonebookMode, _phonebookResultsLimit));
         }
 
         /// <summary>
@@ -1444,7 +1462,7 @@ ConnectorID: {2}"
         /// <param name="number"></param>
         public override void Dial(string number)
         {
-         	SendText(string.Format("xCommand Dial Number: \"{0}\"", number));
+         	EnqueueCommand(string.Format("xCommand Dial Number: \"{0}\"", number));
         }
 
         /// <summary>
@@ -1469,43 +1487,43 @@ ConnectorID: {2}"
         /// <param name="meetingId"></param>
         public void Dial(string number, string protocol, string callRate, string callType, string meetingId)
         {
-            SendText(string.Format("xCommand Dial Number: \"{0}\" Protocol: {1} CallRate: {2} CallType: {3} BookingId: {4}", number, protocol, callRate, callType, meetingId));
+            EnqueueCommand(string.Format("xCommand Dial Number: \"{0}\" Protocol: {1} CallRate: {2} CallType: {3} BookingId: {4}", number, protocol, callRate, callType, meetingId));
         }
 
 
         public override void EndCall(CodecActiveCallItem activeCall)
         {
-            SendText(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
+            EnqueueCommand(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
         }
 
         public override void EndAllCalls()
         {
             foreach (CodecActiveCallItem activeCall in ActiveCalls)
             {
-                SendText(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
+                EnqueueCommand(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
             }
         }
 
         public override void AcceptCall(CodecActiveCallItem item)
         {
-            SendText("xCommand Call Accept");
+            EnqueueCommand("xCommand Call Accept");
         }
 
         public override void RejectCall(CodecActiveCallItem item)
         {
-            SendText("xCommand Call Reject");
+            EnqueueCommand("xCommand Call Reject");
         }
 
         #region IHasCallHold Members
 
         public void HoldCall(CodecActiveCallItem activeCall)
         {
-            SendText(string.Format("xCommand Call Hold CallId: {0}", activeCall.Id));
+            EnqueueCommand(string.Format("xCommand Call Hold CallId: {0}", activeCall.Id));
         }
 
         public void ResumeCall(CodecActiveCallItem activeCall)
         {
-            SendText(string.Format("xCommand Call Resume CallId: {0}", activeCall.Id));
+            EnqueueCommand(string.Format("xCommand Call Resume CallId: {0}", activeCall.Id));
         }
 
         #endregion
@@ -1514,7 +1532,7 @@ ConnectorID: {2}"
 
         public void JoinCall(CodecActiveCallItem activeCall)
         {
-            SendText(string.Format("xCommand Call Join CallId: {0}", activeCall.Id));
+            EnqueueCommand(string.Format("xCommand Call Join CallId: {0}", activeCall.Id));
         }
 
         public void JoinAllCalls()
@@ -1531,7 +1549,7 @@ ConnectorID: {2}"
 
             if (ids.Length > 0)
             {
-                SendText(string.Format("xCommand Call Join {0}", ids.ToString()));
+                EnqueueCommand(string.Format("xCommand Call Join {0}", ids.ToString()));
             }
         }
 
@@ -1543,7 +1561,7 @@ ConnectorID: {2}"
         /// <param name="s"></param>
         public override void SendDtmf(string s)
         {
-            SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
+            EnqueueCommand(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
         }
 
         /// <summary>
@@ -1553,7 +1571,7 @@ ConnectorID: {2}"
         /// <param name="activeCall"></param>
         public override void SendDtmf(string s, CodecActiveCallItem activeCall)
         {
-            SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", activeCall.Id, s));
+            EnqueueCommand(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", activeCall.Id, s));
         }
 
         public void SelectPresentationSource(int source)
@@ -1581,7 +1599,7 @@ ConnectorID: {2}"
                 return;
             }
 
-            SendText(string.Format("xConfiguration Audio SoundsAndAlerts RingVolume: {0}", volume));
+            EnqueueCommand(string.Format("xConfiguration Audio SoundsAndAlerts RingVolume: {0}", volume));
         }
 
         /// <summary>
@@ -1615,7 +1633,7 @@ ConnectorID: {2}"
                 sendingMode = "LocalOnly";
 
             if (_desiredPresentationSource > 0)
-                SendText(string.Format("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", _desiredPresentationSource, sendingMode));
+                EnqueueCommand(string.Format("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", _desiredPresentationSource, sendingMode));
         }
 
         /// <summary>
@@ -1625,39 +1643,39 @@ ConnectorID: {2}"
         {
             _desiredPresentationSource = 0;
 
-            SendText("xCommand Presentation Stop");
+            EnqueueCommand("xCommand Presentation Stop");
         }
 
 
 
         public override void PrivacyModeOn()
         {
-            SendText("xCommand Audio Microphones Mute");
+            EnqueueCommand("xCommand Audio Microphones Mute");
         }
 
         public override void PrivacyModeOff()
         {
-            SendText("xCommand Audio Microphones Unmute");
+            EnqueueCommand("xCommand Audio Microphones Unmute");
         }
 
         public override void PrivacyModeToggle()
         {
-            SendText("xCommand Audio Microphones ToggleMute");
+            EnqueueCommand("xCommand Audio Microphones ToggleMute");
         }
 
         public override void MuteOff()
         {
-            SendText("xCommand Audio Volume Unmute");
+            EnqueueCommand("xCommand Audio Volume Unmute");
         }
 
         public override void MuteOn()
         {
-            SendText("xCommand Audio Volume Mute");
+            EnqueueCommand("xCommand Audio Volume Mute");
         }
 
         public override void MuteToggle()
         {
-            SendText("xCommand Audio Volume ToggleMute");
+            EnqueueCommand("xCommand Audio Volume ToggleMute");
         }
 
         /// <summary>
@@ -1666,7 +1684,7 @@ ConnectorID: {2}"
         /// <param name="pressRelease"></param>
         public override void VolumeUp(bool pressRelease)
         {
-            SendText("xCommand Audio Volume Increase");
+            EnqueueCommand("xCommand Audio Volume Increase");
         }
 
         /// <summary>
@@ -1675,7 +1693,7 @@ ConnectorID: {2}"
         /// <param name="pressRelease"></param>
         public override void VolumeDown(bool pressRelease)
         {
-            SendText("xCommand Audio Volume Decrease");
+            EnqueueCommand("xCommand Audio Volume Decrease");
         }
 
         /// <summary>
@@ -1685,7 +1703,7 @@ ConnectorID: {2}"
         public override void SetVolume(ushort level)
         {
             var scaledLevel = CrestronEnvironment.ScaleWithLimits(level, 65535, 0, 100, 0); 
-            SendText(string.Format("xCommand Audio Volume Set Level: {0}", scaledLevel));
+            EnqueueCommand(string.Format("xCommand Audio Volume Set Level: {0}", scaledLevel));
         }
 
         /// <summary>
@@ -1693,7 +1711,7 @@ ConnectorID: {2}"
         /// </summary>
         public void VolumeSetToDefault()
         {
-            SendText("xCommand Audio Volume SetToDefault");
+            EnqueueCommand("xCommand Audio Volume SetToDefault");
         }
 
         /// <summary>
@@ -1701,7 +1719,7 @@ ConnectorID: {2}"
         /// </summary>
         public override void StandbyActivate()
         {
-            SendText("xCommand Standby Activate");
+            EnqueueCommand("xCommand Standby Activate");
         }
 
         /// <summary>
@@ -1709,7 +1727,7 @@ ConnectorID: {2}"
         /// </summary>
         public override void StandbyDeactivate()
         {
-            SendText("xCommand Standby Deactivate");
+            EnqueueCommand("xCommand Standby Deactivate");
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
@@ -1736,7 +1754,7 @@ ConnectorID: {2}"
         public void LinkCiscoCodecToApi(BasicTriList trilist, CiscoCodecJoinMap joinMap)
         {
             // Custom commands to codec
-            trilist.SetStringSigAction(joinMap.CommandToDevice.JoinNumber, (s) => this.SendText(s));
+            trilist.SetStringSigAction(joinMap.CommandToDevice.JoinNumber, (s) => this.EnqueueCommand(s));
 
 
             var dndCodec = this as IHasDoNotDisturbMode;
@@ -1780,7 +1798,7 @@ ConnectorID: {2}"
         /// </summary>
         public void Reboot()
         {
-            SendText("xCommand SystemUnit Boot Action: Restart");
+            EnqueueCommand("xCommand SystemUnit Boot Action: Restart");
         }
 
         /// <summary>
@@ -1806,7 +1824,7 @@ ConnectorID: {2}"
         /// </summary>
         public void SelfViewModeOn()
         {
-            SendText("xCommand Video Selfview Set Mode: On");
+            EnqueueCommand("xCommand Video Selfview Set Mode: On");
         }
 
         /// <summary>
@@ -1814,7 +1832,7 @@ ConnectorID: {2}"
         /// </summary>
         public void SelfViewModeOff()
         {
-            SendText("xCommand Video Selfview Set Mode: Off");
+            EnqueueCommand("xCommand Video Selfview Set Mode: Off");
         }
 
         /// <summary>
@@ -1829,7 +1847,7 @@ ConnectorID: {2}"
             else
                 mode = "On";
 
-            SendText(string.Format("xCommand Video Selfview Set Mode: {0}", mode));                    
+            EnqueueCommand(string.Format("xCommand Video Selfview Set Mode: {0}", mode));                    
         }
 
         /// <summary>
@@ -1838,7 +1856,7 @@ ConnectorID: {2}"
         /// <param name="position"></param>
         public void SelfviewPipPositionSet(CodecCommandWithLabel position)
         {
-            SendText(string.Format("xCommand Video Selfview Set Mode: On PIPPosition: {0}", position.Command));
+            EnqueueCommand(string.Format("xCommand Video Selfview Set Mode: On PIPPosition: {0}", position.Command));
         }
 
         /// <summary>
@@ -1863,7 +1881,7 @@ ConnectorID: {2}"
         /// <param name="layout"></param>
         public void LocalLayoutSet(CodecCommandWithLabel layout)
         {
-            SendText(string.Format("xCommand Video Layout LayoutFamily Set Target: local LayoutFamily: {0}", layout.Command));
+            EnqueueCommand(string.Format("xCommand Video Layout LayoutFamily Set Target: local LayoutFamily: {0}", layout.Command));
         }
 
         /// <summary>
@@ -1907,7 +1925,7 @@ ConnectorID: {2}"
 			else
 				_currentPresentationView = "Maximized";
 
-			SendText(string.Format("xCommand Video PresentationView Set View:  {0}", _currentPresentationView));
+			EnqueueCommand(string.Format("xCommand Video PresentationView Set View:  {0}", _currentPresentationView));
 			PresentationViewMaximizedFeedback.FireUpdate();
 		}
 
@@ -1935,7 +1953,7 @@ ConnectorID: {2}"
 
         public void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry)
         {
-            SendText(string.Format("xCommand CallHistory DeleteEntry CallHistoryId: {0} AcknowledgeConsecutiveDuplicates: True", entry.OccurrenceHistoryId));
+            EnqueueCommand(string.Format("xCommand CallHistory DeleteEntry CallHistoryId: {0} AcknowledgeConsecutiveDuplicates: True", entry.OccurrenceHistoryId));
         }
 
         #region IHasCameraSpeakerTrack
@@ -1944,11 +1962,11 @@ ConnectorID: {2}"
         {
             if (!CameraAutoModeIsOnFeedback.BoolValue)
             {
-                SendText("xCommand Cameras SpeakerTrack Activate");
+                EnqueueCommand("xCommand Cameras SpeakerTrack Activate");
             }
             else
             {
-                SendText("xCommand Cameras SpeakerTrack Deactivate");
+                EnqueueCommand("xCommand Cameras SpeakerTrack Deactivate");
             }
         }
 
@@ -1959,7 +1977,7 @@ ConnectorID: {2}"
                 CameraMuteOff();
             }
 
-            SendText("xCommand Cameras SpeakerTrack Activate");
+            EnqueueCommand("xCommand Cameras SpeakerTrack Activate");
         }
 
         public void CameraAutoModeOff()
@@ -1969,7 +1987,7 @@ ConnectorID: {2}"
                 CameraMuteOff();
             }
 
-            SendText("xCommand Cameras SpeakerTrack Deactivate");
+            EnqueueCommand("xCommand Cameras SpeakerTrack Deactivate");
         }
 
         #endregion
@@ -2106,7 +2124,7 @@ ConnectorID: {2}"
             var ciscoCam = camera as CiscoSparkCamera;
             if (ciscoCam != null)
             {
-                SendText(string.Format("xCommand Video Input SetMainVideoSource SourceId: {0}", ciscoCam.CameraId));
+                EnqueueCommand(string.Format("xCommand Video Input SetMainVideoSource SourceId: {0}", ciscoCam.CameraId));
             }
         }
 
@@ -2259,19 +2277,19 @@ ConnectorID: {2}"
             if (SelectedCamera is IAmFarEndCamera)
                 SelectFarEndPreset(preset);
             else
-                SendText(string.Format("xCommand RoomPreset Activate PresetId: {0}", preset));
+                EnqueueCommand(string.Format("xCommand RoomPreset Activate PresetId: {0}", preset));
         }
 
         public void CodecRoomPresetStore(int preset, string description)
         {
-            SendText(string.Format("xCommand RoomPreset Store PresetId: {0} Description: \"{1}\" Type: All", preset, description));
+            EnqueueCommand(string.Format("xCommand RoomPreset Store PresetId: {0} Description: \"{1}\" Type: All", preset, description));
         }
 
         #endregion
 
         public void SelectFarEndPreset(int preset)
         {
-            SendText(string.Format("xCommand Call FarEndControl RoomPreset Activate CallId: {0} PresetId: {1}", GetCallId(), preset));
+            EnqueueCommand(string.Format("xCommand Call FarEndControl RoomPreset Activate CallId: {0} PresetId: {1}", GetCallId(), preset));
         }
 
 
@@ -2308,7 +2326,7 @@ ConnectorID: {2}"
 			{
 				id = 3;
 			}
-			SendText(string.Format("xCommand UserInterface Presentation ExternalSource Add ConnectorId: {0} SourceIdentifier: \"{1}\" Name: \"{2}\" Type: {3}", id, key, name, type.ToString()));
+			EnqueueCommand(string.Format("xCommand UserInterface Presentation ExternalSource Add ConnectorId: {0} SourceIdentifier: \"{1}\" Name: \"{2}\" Type: {3}", id, key, name, type.ToString()));
 			// SendText(string.Format("xCommand UserInterface Presentation ExternalSource State Set SourceIdentifier: \"{0}\" State: Ready", key));
 			Debug.Console(2, this, "Adding ExternalSource {0} {1}", connectorId, name);
 
@@ -2322,14 +2340,14 @@ ConnectorID: {2}"
 		/// <param name="mode"></param>
 		public void SetExternalSourceState(string key, eExternalSourceMode mode)
 		{
-			SendText(string.Format("xCommand UserInterface Presentation ExternalSource State Set SourceIdentifier: \"{0}\" State: {1}", key, mode.ToString()));
+			EnqueueCommand(string.Format("xCommand UserInterface Presentation ExternalSource State Set SourceIdentifier: \"{0}\" State: {1}", key, mode.ToString()));
 		}
 		/// <summary>
 		/// Clears all external sources on the codec
 		/// </summary>
 		public void ClearExternalSources()
 		{
-			SendText("xCommand UserInterface Presentation ExternalSource RemoveAll");
+			EnqueueCommand("xCommand UserInterface Presentation ExternalSource RemoveAll");
 			
 		}
 
@@ -2338,7 +2356,7 @@ ConnectorID: {2}"
         /// </summary>
         public void SetSelectedSource(string key)
         {
-            SendText(string.Format("xCommand UserInterface Presentation ExternalSource Select SourceIdentifier: {0}", key));
+            EnqueueCommand(string.Format("xCommand UserInterface Presentation ExternalSource Select SourceIdentifier: {0}", key));
             _externalSourceChangeRequested = true;
         }
 
@@ -2377,7 +2395,7 @@ ConnectorID: {2}"
         /// </summary>
         public void CameraMuteOn()
         {
-            SendText("xCommand Video Input MainVideo Mute");
+            EnqueueCommand("xCommand Video Input MainVideo Mute");
         }
 
         /// <summary>
@@ -2385,7 +2403,7 @@ ConnectorID: {2}"
         /// </summary>
         public void CameraMuteOff()
         {
-            SendText("xCommand Video Input MainVideo Unmute");
+            EnqueueCommand("xCommand Video Input MainVideo Unmute");
         }
 
         /// <summary>
@@ -2405,12 +2423,12 @@ ConnectorID: {2}"
 
         public void ActivateDoNotDisturbMode()
         {
-            SendText("xCommand Conference DoNotDisturb Activate");
+            EnqueueCommand("xCommand Conference DoNotDisturb Activate");
         }
 
         public void DeactivateDoNotDisturbMode()
         {
-            SendText("xCommand Conference DoNotDisturb Deactivate");
+            EnqueueCommand("xCommand Conference DoNotDisturb Deactivate");
         }
 
         public void ToggleDoNotDisturbMode()
@@ -2435,7 +2453,7 @@ ConnectorID: {2}"
 
         public void HalfwakeActivate()
         {
-            SendText("xCommand Standby Halfwake");
+            EnqueueCommand("xCommand Standby Halfwake");
         }
 
         #endregion
@@ -2463,8 +2481,10 @@ ConnectorID: {2}"
     public class CodecSyncState : IKeyed
     {
         bool _InitialSyncComplete;
+        private readonly CiscoSparkCodec _parent;
 
         public event EventHandler<EventArgs> InitialSyncCompleted;
+        private readonly CrestronQueue<string> _commandQueue;
 
         public string Key { get; private set; }
 
@@ -2491,10 +2511,43 @@ ConnectorID: {2}"
 
         public bool FeedbackWasRegistered { get; private set; }
 
-        public CodecSyncState(string key)
+        public CodecSyncState(string key, CiscoSparkCodec parent)
         {
             Key = key;
+            _parent = parent;
+            _commandQueue = new CrestronQueue<string>(25);
             CodecDisconnected();
+
+
+            while (InitialSyncComplete && !_commandQueue.IsEmpty)
+            {
+                var query = _commandQueue.Dequeue();
+
+                _parent.SendText(query);
+            }
+        }
+
+        //public void StartSync()
+        //{
+        //    DequeueQueries();
+        //}
+
+        //private void DequeueQueries()
+        //{
+
+        //    while (!_commandQueue.IsEmpty)
+        //    {
+        //        var query = _commandQueue.Dequeue();
+
+        //        _parent.SendText(query);
+        //    }
+
+        //    InitialQueryMessagesSent();
+        //}
+
+        public void AddCommandToQueue(string query)
+        {
+            _commandQueue.Enqueue(query);
         }
 
         public void LoginMessageReceived()
@@ -2527,6 +2580,7 @@ ConnectorID: {2}"
 
         public void CodecDisconnected()
         {
+            _commandQueue.Clear();
             LoginMessageWasReceived = false;
             InitialConfigurationMessageWasReceived = false;
             InitialStatusMessageWasReceived = false;
@@ -2536,7 +2590,7 @@ ConnectorID: {2}"
 
         void CheckSyncStatus()
         {
-            if (LoginMessageWasReceived && InitialConfigurationMessageWasReceived && InitialStatusMessageWasReceived && FeedbackWasRegistered)
+            if (LoginMessageWasReceived  && InitialConfigurationMessageWasReceived && InitialStatusMessageWasReceived && FeedbackWasRegistered)
             {
                 InitialSyncComplete = true;
                 Debug.Console(1, this, "Initial Codec Sync Complete!");

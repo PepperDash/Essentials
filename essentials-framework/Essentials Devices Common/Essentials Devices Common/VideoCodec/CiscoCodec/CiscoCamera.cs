@@ -41,12 +41,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void PanLeft()
         {
-            ParentCodec.SendText(string.Format("xCommand Call FarEndControl Camera Move Value: Left CallId: {0}", CallId));           
+            ParentCodec.EnqueueCommand(string.Format("xCommand Call FarEndControl Camera Move Value: Left CallId: {0}", CallId));           
         }
 
         public void PanRight()
         {
-            ParentCodec.SendText(string.Format("xCommand Call FarEndControl Camera Move Value: Right CallId: {0}", CallId)); 
+            ParentCodec.EnqueueCommand(string.Format("xCommand Call FarEndControl Camera Move Value: Right CallId: {0}", CallId)); 
         }
 
         public void PanStop()
@@ -60,12 +60,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void TiltDown()
         {
-            ParentCodec.SendText(string.Format("xCommand Call FarEndControl Camera Move Value: Down CallId: {0}", CallId)); 
+            ParentCodec.EnqueueCommand(string.Format("xCommand Call FarEndControl Camera Move Value: Down CallId: {0}", CallId)); 
         }
 
         public void TiltUp()
         {
-            ParentCodec.SendText(string.Format("xCommand Call FarEndControl Camera Move Value: Up CallId: {0}", CallId)); 
+            ParentCodec.EnqueueCommand(string.Format("xCommand Call FarEndControl Camera Move Value: Up CallId: {0}", CallId)); 
         }
 
         public void TiltStop()
@@ -79,12 +79,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void ZoomIn()
         {
-            ParentCodec.SendText(string.Format("xCommand Call FarEndControl Camera Move Value: ZoomIn CallId: {0}", CallId)); 
+            ParentCodec.EnqueueCommand(string.Format("xCommand Call FarEndControl Camera Move Value: ZoomIn CallId: {0}", CallId)); 
         }
 
         public void ZoomOut()
         {
-            ParentCodec.SendText(string.Format("xCommand Call FarEndControl Camera Move Value: ZoomOut CallId: {0}", CallId)); 
+            ParentCodec.EnqueueCommand(string.Format("xCommand Call FarEndControl Camera Move Value: ZoomOut CallId: {0}", CallId)); 
         }
 
         public void ZoomStop()
@@ -97,7 +97,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         void Stop()
         {
-            ParentCodec.SendText(string.Format("xCommand Call FarEndControl Camera Stop CallId: {0}", CallId)); 
+            ParentCodec.EnqueueCommand(string.Format("xCommand Call FarEndControl Camera Stop CallId: {0}", CallId)); 
         }
 
         public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
@@ -202,7 +202,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (!isMoving)
             {
-                ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Pan: Left PanSpeed: {1}", CameraId, PanSpeed));
+                ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Pan: Left PanSpeed: {1}", CameraId, PanSpeed));
                 isPanning = true;
             }
         }
@@ -211,14 +211,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (!isMoving)
             {
-                ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Pan: Right PanSpeed: {1}", CameraId, PanSpeed));
+                ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Pan: Right PanSpeed: {1}", CameraId, PanSpeed));
                 isPanning = true;
             }
         }
 
         public void PanStop()
         {
-            ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Pan: Stop", CameraId));
+            ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Pan: Stop", CameraId));
             isPanning = false;
         }
 
@@ -232,7 +232,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (!isMoving)
             {
-                ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Tilt: Down TiltSpeed: {1}", CameraId, TiltSpeed));
+                ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Tilt: Down TiltSpeed: {1}", CameraId, TiltSpeed));
                 isTilting = true;
             }
         }
@@ -241,14 +241,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (!isMoving)
             {
-                ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Tilt: Up TiltSpeed: {1}", CameraId, TiltSpeed));
+                ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Tilt: Up TiltSpeed: {1}", CameraId, TiltSpeed));
                 isTilting = true;
             }
         }
 
         public void TiltStop()
         {
-            ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Tilt: Stop", CameraId));
+            ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Tilt: Stop", CameraId));
             isTilting = false;
         }
 
@@ -260,7 +260,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (!isMoving)
             {
-                ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Zoom: In ZoomSpeed: {1}", CameraId, ZoomSpeed));
+                ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Zoom: In ZoomSpeed: {1}", CameraId, ZoomSpeed));
                 isZooming = true;
             }
         }
@@ -269,14 +269,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (!isMoving)
             {            
-                ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Zoom: Out ZoomSpeed: {1}", CameraId, ZoomSpeed));
+                ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Zoom: Out ZoomSpeed: {1}", CameraId, ZoomSpeed));
                 isZooming = true;
             }
         }
 
         public void ZoomStop()
         {
-            ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Zoom: Stop", CameraId));
+            ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Zoom: Stop", CameraId));
             isZooming = false;
         }
 
@@ -288,7 +288,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (!isMoving)
             {            
-                ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Focus: Near", CameraId));
+                ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Focus: Near", CameraId));
                 isFocusing = true;
             }
         }
@@ -297,20 +297,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (!isMoving)
             {
-                ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Focus: Far", CameraId));
+                ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Focus: Far", CameraId));
                 isFocusing = true;
             }
         }
 
         public void FocusStop()
         {
-            ParentCodec.SendText(string.Format("xCommand Camera Ramp CameraId: {0} Focus: Stop", CameraId));
+            ParentCodec.EnqueueCommand(string.Format("xCommand Camera Ramp CameraId: {0} Focus: Stop", CameraId));
             isFocusing = false;
         }
 
         public void TriggerAutoFocus()
         {
-            ParentCodec.SendText(string.Format("xCommand Camera TriggerAutofocus CameraId: {0}", CameraId));
+            ParentCodec.EnqueueCommand(string.Format("xCommand Camera TriggerAutofocus CameraId: {0}", CameraId));
         }
 
         #endregion

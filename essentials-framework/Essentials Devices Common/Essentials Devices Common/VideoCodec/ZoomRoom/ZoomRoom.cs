@@ -3200,7 +3200,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			CheckSyncStatus();
 		}
 
-		public void InitialQueryMessagesSent()
+		private void InitialQueryMessagesSent()
 		{
 			InitialQueryMessagesWereSent = true;
 			Debug.Console(1, this, "Query Messages Sent.");
