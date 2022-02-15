@@ -61,6 +61,7 @@ namespace PepperDash.Essentials.DM
             Debug.Console(1, rmc, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             rmc.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = rmc.Name;
             if (rmc.VideoOutputResolutionFeedback != null)
                 rmc.VideoOutputResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentOutputResolution.JoinNumber]);
             if (rmc.EdidManufacturerFeedback != null)

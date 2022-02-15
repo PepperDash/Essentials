@@ -144,6 +144,7 @@
     <Compile Include="Room\Config\EssentialsRoomEmergencyConfig.cs" />
     <Compile Include="Room\Config\EssentialsTechRoomConfig.cs" />
     <Compile Include="Room\Emergency\EsentialsRoomEmergencyContactClosure.cs" />
+    <Compile Include="Room\Types\EssentialsCombinedHuddleVtc1Room.cs" />
     <Compile Include="Room\Types\EssentialsDualDisplayRoom.cs" />
     <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
     <Compile Include="Room\Types\EssentialsNDisplayRoomBase.cs" />

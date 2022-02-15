@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using PepperDash.Core;
+
 using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.Core
@@ -27,9 +29,9 @@ namespace PepperDash.Essentials.Core
 
         public BoolFeedback IsActiveFeedback { get; private set; }
 
-        List<DeviceActionWrapper> activationActions;
+        private List<DeviceActionWrapper> activationActions;
 
-        List<DeviceActionWrapper> deactivationActions;
+        private List<DeviceActionWrapper> deactivationActions;
 
         public RoomCombinationScenario(RoomCombinationScenarioConfig config)
         {
@@ -52,6 +54,8 @@ namespace PepperDash.Essentials.Core
 
         public void Activate()
         {
+            Debug.Console(1, "Activating Scenario: '{0}' with {1} action(s) defined", Name, activationActions.Count);   
+
             if (activationActions != null)
             {
                 foreach (var action in activationActions)
@@ -66,6 +70,8 @@ namespace PepperDash.Essentials.Core
 
         public void Deactivate()
         {
+            Debug.Console(1, "Deactivating Scenario: '{0}' with {1} action(s) defined", Name, deactivationActions.Count);
+
             if (deactivationActions != null)
             {
                 foreach (var action in deactivationActions)

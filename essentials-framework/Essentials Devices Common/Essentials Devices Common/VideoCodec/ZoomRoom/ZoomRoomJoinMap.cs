@@ -8,6 +8,126 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	{
 		#region Digital
 
+        // TODO [ ] Issue #868
+        [JoinName("ShowPasswordPrompt")]
+        public JoinDataComplete ShowPasswordPrompt = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 6,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "FB Indicates to show the password prompt",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("PasswordIncorrect")]
+        public JoinDataComplete PasswordIncorrect = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 7,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "FB Indicates the password entered is incorrect",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("PassowrdLoginFailed")]
+        public JoinDataComplete PasswordLoginFailed = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 8,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "FB Indicates the password entered is incorrect",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("WaitingForHost")]
+        public JoinDataComplete WaitingForHost = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 9,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "FB Indicates system is waiting for host",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("IsHost")]
+        public JoinDataComplete IsHost = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 10,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "FB Indicates system is the host",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("StartMeetingNow")]
+        public JoinDataComplete StartMeetingNow = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 25,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "FB Indicates the password prompt is active",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("ShareOnlyMeeting")]
+        public JoinDataComplete ShareOnlyMeeting = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 26,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Triggers a share only meeting, feedback indicates the current meeting is share only",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("StartNormalMeetingFromSharingOnlyMeeting")]
+        public JoinDataComplete StartNormalMeetingFromSharingOnlyMeeting = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 27,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Starts a normal meeting from a share only meeting",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
 		[JoinName("CanSwapContentWithThumbnail")]
 		public JoinDataComplete CanSwapContentWithThumbnail = new JoinDataComplete(
 			new JoinData
@@ -256,6 +376,81 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 
 		#region Serials
+
+        // TODO [ ] Issue #868
+        [JoinName("SubmitPassword")]
+        public JoinDataComplete SubmitPassword = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 6,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Submit password text",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("PasswordPromptMessage")]
+        public JoinDataComplete PasswordPromptMessage = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 6,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Password prompt message",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("MeetingInfoId")]
+        public JoinDataComplete MeetingInfoId = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 11,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Meeting info ID text feedback",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("MeetingInfoHostt")]
+        public JoinDataComplete MeetingInfoHost = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 12,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Meeting info Host text feedback",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        // TODO [ ] Issue #868
+        [JoinName("MeetingInfoPassword")]
+        public JoinDataComplete MeetingInfoPassword = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 13,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Meeting info Password text feedback",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
 
 		[JoinName("GetSetCurrentLayout")]
 		public JoinDataComplete GetSetCurrentLayout = new JoinDataComplete(

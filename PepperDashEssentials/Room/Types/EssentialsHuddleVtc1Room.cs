@@ -210,21 +210,29 @@ namespace PepperDash.Essentials
             {
                 PropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
                     (config.Properties.ToString());
-                DefaultDisplay = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
+                DefaultDisplay = DeviceManager.GetDeviceForKey((PropertiesConfig as EssentialsHuddleVtc1PropertiesConfig).DefaultDisplayKey) as IRoutingSinkWithSwitching;
 
                 VideoCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.VideoCodecKey) as
                     PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
-				
+
 
                 if (VideoCodec == null)
-                    throw new ArgumentNullException("codec cannot be null");
-				
+                {
+                    Debug.Console(0, Debug.ErrorLogLevel.Error, "No Video Codec set.  Please check 'videoCodecKey' property in room config");
+                    throw new ArgumentNullException("VideoCodec cannot be null");
+                }
+
                 AudioCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.AudioCodecKey) as
                     PepperDash.Essentials.Devices.Common.AudioCodec.AudioCodecBase;
                 if (AudioCodec == null)
                     Debug.Console(0, this, "No Audio Codec Found");
 
                 DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IBasicVolumeControls;
+                if (DefaultAudioDevice == null)
+                {
+                    Debug.Console(0, Debug.ErrorLogLevel.Error, "No Default Audio Device set.  Please check 'defaultAudioKey' property in room config");
+                    throw new ArgumentNullException("DefaultAudioDevice cannot be null");
+                }
 
                 InitializeRoom();
             }
@@ -326,6 +334,8 @@ namespace PepperDash.Essentials
 
                 CallTypeFeedback = new IntFeedback(() => 0);
 
+                SetupEnvironmentalControlDevices();
+
                 SetSourceListKey();
 
                 EnablePowerOnToLastSource = true;
@@ -335,6 +345,21 @@ namespace PepperDash.Essentials
                 Debug.Console(0, this, "Error Initializing Room: {0}", e);
             }
    		}
+
+        private void SetupEnvironmentalControlDevices()
+        {
+            if (PropertiesConfig.Environment != null)
+            {
+                if (PropertiesConfig.Environment.Enabled)
+                {
+                    foreach (var d in PropertiesConfig.Environment.DeviceKeys)
+                    {
+                        var envDevice = DeviceManager.GetDeviceForKey(d) as EssentialsDevice;
+                        EnvironmentalControlDevices.Add(envDevice);
+                    }
+                }
+            }
+        }
 
 
         private void SetSourceListKey()
@@ -419,6 +444,14 @@ namespace PepperDash.Essentials
         /// <returns></returns>
         public bool RunDefaultCallRoute()
         {
+            Debug.Console(2, this, "RunDefaultCallRoute() Currently Sharing Content: {0}", VideoCodec.SharingContentIsOnFeedback.BoolValue); 
+
+            if (VideoCodec.SharingContentIsOnFeedback.BoolValue)
+            {
+                Debug.Console(2, this, "Currently sharing content.  Ignoring request to run default call route.");
+                return false;
+            }
+
             RunRouteAction(DefaultCodecRouteString);
             return true;
         }

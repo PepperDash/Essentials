@@ -124,6 +124,8 @@
     <Compile Include="Cameras\CameraControl.cs" />
     <Compile Include="Display\PanasonicThDisplay.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasMeetingInfo.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasMeetingLock.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasMeetingRecording.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasParticipants.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasPresentationOnlyMeeting.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasSelfviewPosition.cs" />

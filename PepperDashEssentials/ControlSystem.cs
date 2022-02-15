@@ -506,8 +506,11 @@ namespace PepperDash.Essentials
                     {
                         DeviceManager.AddDevice(room);
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
-                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
+                        if (!(room is EssentialsCombinedHuddleVtc1Room))
+                        {
+                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
+                            DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
+                        }
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 

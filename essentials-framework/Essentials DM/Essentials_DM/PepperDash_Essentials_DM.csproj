@@ -93,6 +93,7 @@
   <ItemGroup>
     <Compile Include="AirMedia\AirMediaPropertiesConfig.cs" />
     <Compile Include="AirMedia\AirMediaController.cs" />
+    <Compile Include="Chassis\DmpsMicrophoneController.cs" />
     <Compile Include="Chassis\DmBladeChassisController.cs" />
     <Compile Include="Chassis\DmCardAudioOutput.cs" />
     <Compile Include="Chassis\DmChassisController.cs" />

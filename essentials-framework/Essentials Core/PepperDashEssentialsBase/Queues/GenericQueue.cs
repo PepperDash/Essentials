@@ -139,7 +139,8 @@ namespace PepperDash.Essentials.Core.Queues
             _queue = new CrestronQueue<IQueueMessage>(cap);
             _worker = new Thread(ProcessQueue, null, Thread.eThreadStartOptions.Running)
             {
-                Priority = priority
+                Priority = priority,
+                Name = _key
             };
 
             SetDelayValues(pacing);

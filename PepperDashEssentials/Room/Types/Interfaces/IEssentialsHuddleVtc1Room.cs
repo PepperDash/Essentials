@@ -12,6 +12,8 @@ namespace PepperDash.Essentials
     {
         EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; }
 
+        bool ExcludeFromGlobalFunctions { get; }
+
         void RunRouteAction(string routeKey);
 
         IHasScheduleAwareness ScheduleSource { get; }

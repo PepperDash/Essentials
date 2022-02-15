@@ -1147,6 +1147,21 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 
 		#region Analog
 
+        // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+        [JoinName("MeetingsToDisplay")]
+        public JoinDataComplete MeetingsToDisplay = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 40,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Set/FB the number of meetings to display via the bridge xsig; default: 3 meetings.",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
         [JoinName("SelectCall")]
         public JoinDataComplete SelectCall = new JoinDataComplete(
             new JoinData

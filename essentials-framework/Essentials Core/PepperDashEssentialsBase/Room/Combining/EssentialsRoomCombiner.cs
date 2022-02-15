@@ -54,13 +54,20 @@ namespace PepperDash.Essentials.Core
                 SetupPartitionStateProviders();
 
                 SetRooms();
+
+                if (isInAutoMode)
+                {
+                    DetermineRoomCombinationScenario();
+                }
+                else
+                {
+                    SetRoomCombinationScenario(_propertiesConfig.defaultScenarioKey);
+                }
             });
         }
 
         void CreateScenarios()
         {
-            RoomCombinationScenarios = new List<IRoomCombinationScenario>();
-
             foreach (var scenarioConfig in _propertiesConfig.Scenarios)
             {
                 var scenario = new RoomCombinationScenario(scenarioConfig);
@@ -160,12 +167,26 @@ namespace PepperDash.Essentials.Core
             {
                 return _currentScenario;
             }
-            set
+            private set
             {
                 if (value != _currentScenario)
                 {
+                    // Deactivate the old scenario first
+                    if (_currentScenario != null)
+                    {
+                        _currentScenario.Deactivate();
+                    }
+
                     _currentScenario = value;
-                    Debug.Console(1, this, "Current Scenario: {0}", _currentScenario.Name);
+
+                    // Activate the new scenario
+                    if (_currentScenario != null)
+                    {
+                        _currentScenario.Activate();
+
+                        Debug.Console(1, this, "Current Scenario: {0}", _currentScenario.Name);
+                    }
+
                     var handler = RoomCombinationScenarioChanged;
                     if (handler != null)
                     {
@@ -220,9 +241,11 @@ namespace PepperDash.Essentials.Core
             // Get the scenario
             var scenario = RoomCombinationScenarios.FirstOrDefault((s) => s.Key.Equals(scenarioKey));
 
+
             // Set the parition states from the scenario manually
             if (scenario != null)
             {
+                Debug.Console(0, this, "Manually setting scenario to '{0}'", scenario.Key);
                 foreach (var partitionState in scenario.PartitionStates)
                 {
                     var partition = Partitions.FirstOrDefault((p) => p.Key.Equals(partitionState.PartitionKey));
@@ -231,14 +254,24 @@ namespace PepperDash.Essentials.Core
                     {
                         if (partitionState.PartitionPresent)
                         {
+                            Debug.Console(0, this, "Manually setting state to Present for: '{0}'", partition.Key);
                             partition.SetPartitionStatePresent();
                         }
                         else
                         {
+                            Debug.Console(0, this, "Manually setting state to Not Present for: '{0}'", partition.Key);
                             partition.SetPartitionStateNotPresent();
                         }
                     }
+                    else
+                    {
+                        Debug.Console(1, this, "Unable to find partition with key: '{0}'", partitionState.PartitionKey);
+                    }
                 }
+            }
+            else
+            {
+                Debug.Console(1, this, "Unable to find scenario with key: '{0}'", scenarioKey);
             }
         }
 

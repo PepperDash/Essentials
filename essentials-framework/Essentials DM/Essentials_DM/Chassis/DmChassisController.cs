@@ -1901,6 +1901,8 @@ namespace PepperDash.Essentials.DM
             EnableAudioBreakawayFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableAudioBreakaway.JoinNumber]);
             EnableUsbBreakawayFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnableUsbBreakaway.JoinNumber]);
 
+            trilist.SetString(joinMap.NoRouteName.JoinNumber, NoRouteText);
+
             trilist.OnlineStatusChange += (o, a) =>
             {
                 if (!a.DeviceOnLine)
@@ -1912,6 +1914,8 @@ namespace PepperDash.Essentials.DM
                 EnableUsbBreakawayFeedback.FireUpdate();
                 SystemIdBusyFeedback.FireUpdate();
                 SystemIdFeebdack.FireUpdate();
+
+                trilist.SetString(joinMap.NoRouteName.JoinNumber, NoRouteText);
             };
         }
 

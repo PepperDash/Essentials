@@ -41,6 +41,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			SharingSourceFeedback = new StringFeedback(SharingSourceFeedbackFunc);
 			SharingContentIsOnFeedback = new BoolFeedback(SharingContentIsOnFeedbackFunc);
 
+            // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+            MeetingsToDisplayFeedback = new IntFeedback(() => MeetingsToDisplay);
+
 			InputPorts = new RoutingPortCollection<RoutingInputPort>();
 			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
@@ -305,8 +308,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		    trilist.OnlineStatusChange += (device, args) =>
 		    {
 		        if (!args.DeviceOnLine) return;
-
-		        trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
 		    };
 		}
 
@@ -425,7 +426,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				if (codec is IHasCameraAutoMode)
 				{
-					trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, true);
+					trilist.SetBool(joinMap.CameraSupportsAutoMode.JoinNumber, SupportsCameraAutoMode);
 
 					(codec as IHasCameraAutoMode).CameraAutoModeIsOnFeedback.FireUpdate();
 				}
@@ -598,6 +599,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                 UpdateParticipantsXSig(codec, trilist, joinMap);
 			};
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] Issue #868
+                trilist.SetString(joinMap.CurrentParticipants.JoinNumber, "\xFC");
+                UpdateParticipantsXSig(codec, trilist, joinMap);
+            };
 		}
 
         private void UpdateParticipantsXSig(IHasParticipants codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
@@ -829,7 +839,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 						UpdateMeetingsList(codec, trilist, joinMap);
 					}
 				};
-		}
+
+            // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+            trilist.SetUShortSigAction(joinMap.MeetingsToDisplay.JoinNumber, m => MeetingsToDisplay = m);
+            MeetingsToDisplayFeedback.LinkInputSig(trilist.UShortInput[joinMap.MeetingsToDisplay.JoinNumber]);
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] Issue #868
+                trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
+                UpdateMeetingsList(codec, trilist, joinMap);
+                // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+                MeetingsToDisplayFeedback.LinkInputSig(trilist.UShortInput[joinMap.MeetingsToDisplay.JoinNumber]);
+            };
+        }
 
 		private void UpdateMeetingsList(IHasScheduleAwareness codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
@@ -850,19 +875,45 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			var meetingsData = UpdateMeetingsListXSig(_currentMeetings);
 			trilist.SetString(joinMap.Schedule.JoinNumber, meetingsData);
 			trilist.SetUshort(joinMap.MeetingCount.JoinNumber, (ushort)_currentMeetings.Count);
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] Issue #868
+                trilist.SetString(joinMap.Schedule.JoinNumber, "\xFC");
+                UpdateMeetingsListXSig(_currentMeetings);
+            };
 		}
+
+
+        // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+	    private int _meetingsToDisplay = 3;
+        // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+	    protected int MeetingsToDisplay
+	    {
+	        get { return _meetingsToDisplay; }
+	        set {
+                _meetingsToDisplay = (ushort) (value == 0 ? 3 : value);
+                MeetingsToDisplayFeedback.FireUpdate();
+	        }
+	    }
+
+        // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+        public IntFeedback MeetingsToDisplayFeedback { get; set; }
 
 		private string UpdateMeetingsListXSig(List<Meeting> meetings)
 		{
-			const int maxMeetings = 3;
+            // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
+            //const int _meetingsToDisplay = 3;            
 			const int maxDigitals = 2;
 			const int maxStrings = 7;
 			const int offset = maxDigitals + maxStrings;
-			var digitalIndex = maxStrings * maxMeetings; //15
+			var digitalIndex = maxStrings * _meetingsToDisplay; //15
 			var stringIndex = 0;
 			var meetingIndex = 0;
 
-			var tokenArray = new XSigToken[maxMeetings * offset];
+			var tokenArray = new XSigToken[_meetingsToDisplay * offset];
 			/* 
 			 * Digitals
 			 * IsJoinable - 1
@@ -885,7 +936,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				if (meeting.StartTime < currentTime && meeting.EndTime < currentTime) continue;
 
-				if (meetingIndex >= maxMeetings * offset)
+				if (meetingIndex >= _meetingsToDisplay * offset)
 				{
 					Debug.Console(2, this, "Max Meetings reached");
 					break;
@@ -910,10 +961,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				stringIndex += maxStrings;
 			}
 
-			while (meetingIndex < maxMeetings * offset)
+			while (meetingIndex < _meetingsToDisplay * offset)
 			{
 				Debug.Console(2, this, "Clearing unused data. Meeting Index: {0} MaxMeetings * Offset: {1}",
-					meetingIndex, maxMeetings * offset);
+					meetingIndex, _meetingsToDisplay * offset);
 
 				//digitals
 				tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
@@ -980,6 +1031,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
 			};
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] Issue #868
+                trilist.SetString(joinMap.DirectoryEntries.JoinNumber, "\xFC");
+                UpdateDirectoryXSig(codec.CurrentDirectoryResult,
+                    !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+            };
 		}
 
 
@@ -1207,80 +1268,88 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
 
-                trilist.SetUshort(joinMap.ConnectedCallCount.JoinNumber, (ushort)ActiveCalls.Count);
+				trilist.SetUshort(joinMap.ConnectedCallCount.JoinNumber, (ushort)ActiveCalls.Count);
 			};
 
-            var joinCodec = this as IJoinCalls;
-            if (joinCodec != null)
-            {
-                trilist.SetSigFalseAction(joinMap.JoinAllCalls.JoinNumber, () => joinCodec.JoinAllCalls());
+			var joinCodec = this as IJoinCalls;
+			if (joinCodec != null)
+			{
+					trilist.SetSigFalseAction(joinMap.JoinAllCalls.JoinNumber, () => joinCodec.JoinAllCalls());
 
-                for (int i = 0; i < joinMap.JoinCallStart.JoinSpan; i++)
-                {
-                    trilist.SetSigFalseAction((uint)(joinMap.JoinCallStart.JoinNumber + i), () =>
-                        {
-                            var call = ActiveCalls[i];
-                            if (call != null)
-                            {
-                                joinCodec.JoinCall(call);
-                            } 
-                            else
-                            {
-                                Debug.Console(0, this, "[Join Call] Unable to find call at index '{0}'", i);
-                            }
-                        });
-                }
-            }
+					for (int i = 0; i < joinMap.JoinCallStart.JoinSpan; i++)
+					{
+							trilist.SetSigFalseAction((uint)(joinMap.JoinCallStart.JoinNumber + i), () =>
+									{
+											var call = ActiveCalls[i];
+											if (call != null)
+											{
+													joinCodec.JoinCall(call);
+											} 
+											else
+											{
+													Debug.Console(0, this, "[Join Call] Unable to find call at index '{0}'", i);
+											}
+									});
+					}
+			}
 
-            var holdCodec = this as IHasCallHold;
-            if (holdCodec != null)
-            {
-                trilist.SetSigFalseAction(joinMap.HoldAllCalls.JoinNumber, () =>
-                {
-                    foreach (var call in ActiveCalls)
-                    {
-                        holdCodec.HoldCall(call);
-                    }
-                });
+			var holdCodec = this as IHasCallHold;
+			if (holdCodec != null)
+			{
+					trilist.SetSigFalseAction(joinMap.HoldAllCalls.JoinNumber, () =>
+					{
+							foreach (var call in ActiveCalls)
+							{
+									holdCodec.HoldCall(call);
+							}
+					});
 
-                for (int i = 0; i < joinMap.HoldCallsStart.JoinSpan; i++)
-                {
-                    var index = i;
+					for (int i = 0; i < joinMap.HoldCallsStart.JoinSpan; i++)
+					{
+							var index = i;
 
-                    trilist.SetSigFalseAction((uint)(joinMap.HoldCallsStart.JoinNumber + index), () =>
-                        {
-                            if (index < 0 || index >= ActiveCalls.Count) return;
+							trilist.SetSigFalseAction((uint)(joinMap.HoldCallsStart.JoinNumber + index), () =>
+									{
+											if (index < 0 || index >= ActiveCalls.Count) return;
 
-                            var call = ActiveCalls[index];
-                            if (call != null)
-                            {
-                                holdCodec.HoldCall(call);
-                            } 
-                            else
-                            {
-                                Debug.Console(0, this, "[Hold Call] Unable to find call at index '{0}'", i);
-                            }
-                        });
+											var call = ActiveCalls[index];
+											if (call != null)
+											{
+													holdCodec.HoldCall(call);
+											} 
+											else
+											{
+													Debug.Console(0, this, "[Hold Call] Unable to find call at index '{0}'", i);
+											}
+									});
 
-                    trilist.SetSigFalseAction((uint)(joinMap.ResumeCallsStart.JoinNumber + index), () =>
-                        {
-                            if (index < 0 || index >= ActiveCalls.Count) return;
+							trilist.SetSigFalseAction((uint)(joinMap.ResumeCallsStart.JoinNumber + index), () =>
+									{
+											if (index < 0 || index >= ActiveCalls.Count) return;
 
-                            var call = ActiveCalls[index];
-                            if (call != null)
-                            {
-                                holdCodec.ResumeCall(call);
-                            } 
-                            else
-                            {
-                                Debug.Console(0, this, "[Resume Call] Unable to find call at index '{0}'", i);
-                            }
-                        });
-                }
-            }
+											var call = ActiveCalls[index];
+											if (call != null)
+											{
+													holdCodec.ResumeCall(call);
+											} 
+											else
+											{
+													Debug.Console(0, this, "[Resume Call] Unable to find call at index '{0}'", i);
+											}
+									});
+					}
+			}
 
 
 
+			trilist.OnlineStatusChange += (device, args) =>
+			{
+					if (!args.DeviceOnLine) return;
+
+					// TODO [ ] Issue #868
+					trilist.SetString(joinMap.CurrentCallData.JoinNumber, "\xFC");
+					UpdateCallStatusXSig();
+			};
 		}
 
 		private string UpdateCallStatusXSig()
@@ -1664,6 +1733,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 							trilist.UShortOutput[joinMap.CameraPresetSelect.JoinNumber].UShortValue, String.Empty);
 						trilist.PulseBool(joinMap.CameraPresetSave.JoinNumber, 3000);
 					});
+
+            trilist.OnlineStatusChange += (device, args) =>
+            {
+                if (!args.DeviceOnLine) return;
+
+                // TODO [ ] Issue #868
+                trilist.SetString(joinMap.CameraPresetNames.JoinNumber, "\xFC");
+                SetCameraPresetNames(presetCodec.NearEndPresets);
+            };
 		}
 
         // Following fields only used for Bridging

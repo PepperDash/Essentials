@@ -24,24 +24,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
     /// </summary>
     public class MeetingInfo
     {
-        [JsonProperty("id")]
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public string Id { get; private set; }
-        [JsonProperty("name")]
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
         public string Name { get; private set; }
-        [JsonProperty("host")]
+        [JsonProperty("host", NullValueHandling = NullValueHandling.Ignore)]
         public string Host { get; private set; }
-        [JsonProperty("password")]
+        [JsonProperty("password", NullValueHandling = NullValueHandling.Ignore)]
         public string Password { get; private set; }
-        [JsonProperty("shareStatus")]
+        [JsonProperty("shareStatus", NullValueHandling = NullValueHandling.Ignore)]
         public string ShareStatus { get; private set; }
-        [JsonProperty("isHost")]
+        [JsonProperty("isHost", NullValueHandling = NullValueHandling.Ignore)]
         public Boolean IsHost { get; private set; }
-        [JsonProperty("isSharingMeeting")]
+        [JsonProperty("isSharingMeeting", NullValueHandling = NullValueHandling.Ignore)]
         public Boolean IsSharingMeeting { get; private set; }
-        [JsonProperty("waitingForHost")]
+        [JsonProperty("waitingForHost", NullValueHandling = NullValueHandling.Ignore)]
         public Boolean WaitingForHost { get; private set; }
+        [JsonProperty("isLocked", NullValueHandling = NullValueHandling.Ignore)]
+        public Boolean IsLocked { get; private set; }
 
-        public MeetingInfo(string id, string name, string host, string password, string shareStatus, bool isHost, bool isSharingMeeting, bool waitingForHost)
+
+        public MeetingInfo(string id, string name, string host, string password, string shareStatus, bool isHost, bool isSharingMeeting, bool waitingForHost, bool isLocked)
         {
             Id = id;
             Name = name;
@@ -51,6 +54,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
             IsHost = isHost;
             IsSharingMeeting = isSharingMeeting;
             WaitingForHost = waitingForHost;
+            IsLocked = isLocked;
         }
     }
 
