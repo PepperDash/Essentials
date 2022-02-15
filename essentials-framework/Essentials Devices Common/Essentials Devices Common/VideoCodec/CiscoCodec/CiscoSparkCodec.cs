@@ -2529,12 +2529,9 @@ ConnectorID: {2}"
         {
             while (InitialSyncComplete)
             {
-                if (!_commandQueue.IsEmpty)
-                {
-                    var query = _commandQueue.Dequeue();
+                var query = _commandQueue.Dequeue();
 
-                    _parent.SendText(query);
-                }
+                _parent.SendText(query);
             }
         }
 
@@ -2596,7 +2593,11 @@ ConnectorID: {2}"
                 InitialSyncComplete = true;
                 Debug.Console(1, this, "Initial Codec Sync Complete!");
                 Debug.Console(1, this, "{0} Command queued. Processing now...", _commandQueue.Count);
-                ProcessQueuedCommands();
+
+                // Invoke a thread for the queue
+                CrestronInvoke.BeginInvoke((o) => { 
+                    ProcessQueuedCommands();
+                });
             }
             else
                 InitialSyncComplete = false;
