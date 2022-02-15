@@ -359,7 +359,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
             else
             {
-                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, "xStatus SystemUnit Software Version\r");
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, "xStatus SystemUnit Software Version\r\n");
             }
 
             if (props.Sharing != null)
@@ -662,6 +662,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 {
                     var cameraInfo = new List<CameraInfo>();
 
+                    Debug.Console(0, this, "Codec reports {0} cameras", CodecStatus.Status.Cameras.Camera.Count);
+
                     foreach (var camera in CodecStatus.Status.Cameras.Camera)
                     {
                         Debug.Console(0, this,
@@ -766,12 +768,12 @@ ConnectorID: {2}"
             if (CommDebuggingIsOn)
             {
                 if (!_jsonFeedbackMessageIsIncoming)
-                    Debug.Console(1, this, "RX: '{0}'", args.Text);
+                    Debug.Console(1, this, "RX: '{0}'", ComTextHelper.GetDebugText(args.Text));
             }
 
-            if(args.Text.Contains("xCommand"))
+            if(args.Text.ToLower().Contains("xcommand"))
             {
-                Debug.Console(2, this, "Received command echo response.  Ignoring");
+                Debug.Console(1, this, "Received command echo response.  Ignoring");
                 return;
             }
 
@@ -819,12 +821,17 @@ ConnectorID: {2}"
                             if(_loginMessageReceivedTimer != null)
                                 _loginMessageReceivedTimer.Stop();
 
-                            SendText("echo off");
+                            //SendText("echo off");
                             SendText("xPreferences outputmode json");
                             break;
                         }
                     case "xpreferences outputmode json":
                         {
+                            if (_syncState.JsonResponseModeSet)
+                                return;
+
+                            _syncState.JsonResponseModeMessageReceived();
+
                             if (!_syncState.InitialStatusMessageWasReceived)
                                 SendText("xStatus");
                             break;
@@ -844,7 +851,7 @@ ConnectorID: {2}"
         /// <param name="command"></param>
         public void EnqueueCommand(string command)
         {
-            _syncState.AddCommandToQueue(command + Delimiter);
+            _syncState.AddCommandToQueue(command);
         }
 
         /// <summary>
@@ -856,7 +863,7 @@ ConnectorID: {2}"
         public void SendText(string command)
         {
             if (CommDebuggingIsOn)
-                Debug.Console(1, this, "Sending: '{0}'", command);
+                Debug.Console(1, this, "Sending: '{0}'",  ComTextHelper.GetDebugText(command + Delimiter));
 
             Communication.SendText(command + Delimiter);
         }
@@ -2002,9 +2009,6 @@ ConnectorID: {2}"
 
             var camCount = CodecStatus.Status.Cameras.Camera.Count;
 
-            Debug.Console(0, this, "Codec reports {0} cameras", camCount);
-
-
             // Deal with the case of 1 or no reported cameras
             if (camCount <= 1)
             {
@@ -2505,6 +2509,8 @@ ConnectorID: {2}"
 
         public bool LoginMessageWasReceived { get; private set; }
 
+        public bool JsonResponseModeSet { get; private set; }
+
         public bool InitialStatusMessageWasReceived { get; private set; }
 
         public bool InitialConfigurationMessageWasReceived { get; private set; }
@@ -2515,35 +2521,22 @@ ConnectorID: {2}"
         {
             Key = key;
             _parent = parent;
-            _commandQueue = new CrestronQueue<string>(25);
+            _commandQueue = new CrestronQueue<string>(50);
             CodecDisconnected();
-
-
-            while (InitialSyncComplete && !_commandQueue.IsEmpty)
-            {
-                var query = _commandQueue.Dequeue();
-
-                _parent.SendText(query);
-            }
         }
 
-        //public void StartSync()
-        //{
-        //    DequeueQueries();
-        //}
+        private void ProcessQueuedCommands()
+        {
+            while (InitialSyncComplete)
+            {
+                if (!_commandQueue.IsEmpty)
+                {
+                    var query = _commandQueue.Dequeue();
 
-        //private void DequeueQueries()
-        //{
-
-        //    while (!_commandQueue.IsEmpty)
-        //    {
-        //        var query = _commandQueue.Dequeue();
-
-        //        _parent.SendText(query);
-        //    }
-
-        //    InitialQueryMessagesSent();
-        //}
+                    _parent.SendText(query);
+                }
+            }
+        }
 
         public void AddCommandToQueue(string query)
         {
@@ -2554,6 +2547,13 @@ ConnectorID: {2}"
         {
             LoginMessageWasReceived = true;
             Debug.Console(1, this, "Login Message Received.");
+            CheckSyncStatus();
+        }
+
+        public void JsonResponseModeMessageReceived()
+        {
+            JsonResponseModeSet = true;
+            Debug.Console(1, this, "Json Response Mode Message Received.");
             CheckSyncStatus();
         }
 
@@ -2582,6 +2582,7 @@ ConnectorID: {2}"
         {
             _commandQueue.Clear();
             LoginMessageWasReceived = false;
+            JsonResponseModeSet = false;
             InitialConfigurationMessageWasReceived = false;
             InitialStatusMessageWasReceived = false;
             FeedbackWasRegistered = false;
@@ -2590,10 +2591,12 @@ ConnectorID: {2}"
 
         void CheckSyncStatus()
         {
-            if (LoginMessageWasReceived  && InitialConfigurationMessageWasReceived && InitialStatusMessageWasReceived && FeedbackWasRegistered)
+            if (LoginMessageWasReceived && JsonResponseModeSet  && InitialConfigurationMessageWasReceived && InitialStatusMessageWasReceived && FeedbackWasRegistered)
             {
                 InitialSyncComplete = true;
                 Debug.Console(1, this, "Initial Codec Sync Complete!");
+                Debug.Console(1, this, "{0} Command queued. Processing now...", _commandQueue.Count);
+                ProcessQueuedCommands();
             }
             else
                 InitialSyncComplete = false;
