@@ -9,11 +9,39 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
     {
         #region Digital
 
+        [JoinName("PresentationLocalOnly")]
+        public JoinDataComplete PresentationLocalOnly = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 205,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Presentation Local Only Feedback",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("PresentationLocalRemote")]
+        public JoinDataComplete PresentationLocalRemote = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 206,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Presentation Local and Remote Feedback",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
         [JoinName("ActivateDoNotDisturbMode")]
         public JoinDataComplete ActivateDoNotDisturbMode = new JoinDataComplete(
             new JoinData
             {
-                JoinNumber = 221,
+                JoinNumber = 241,
                 JoinSpan = 1
             },
             new JoinMetadata
@@ -27,7 +55,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public JoinDataComplete DeactivateDoNotDisturbMode = new JoinDataComplete(
             new JoinData
             {
-                JoinNumber = 222,
+                JoinNumber = 242,
                 JoinSpan = 1
             },
             new JoinMetadata
@@ -41,7 +69,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public JoinDataComplete ToggleDoNotDisturbMode = new JoinDataComplete(
             new JoinData
             {
-                JoinNumber = 223,
+                JoinNumber = 243,
                 JoinSpan = 1
             },
             new JoinMetadata
@@ -55,7 +83,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public JoinDataComplete ActivateStandby = new JoinDataComplete(
             new JoinData
             {
-                JoinNumber = 226,
+                JoinNumber = 246,
                 JoinSpan = 1
             },
             new JoinMetadata
@@ -69,7 +97,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public JoinDataComplete DeactivateStandby = new JoinDataComplete(
             new JoinData
             {
-                JoinNumber = 227,
+                JoinNumber = 247,
                 JoinSpan = 1
             },
             new JoinMetadata
@@ -83,7 +111,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public JoinDataComplete ActivateHalfWakeMode = new JoinDataComplete(
             new JoinData
             {
-                JoinNumber = 228,
+                JoinNumber = 248,
                 JoinSpan = 1
             },
             new JoinMetadata
@@ -97,7 +125,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public JoinDataComplete EnteringStandbyMode = new JoinDataComplete(
             new JoinData
             {
-                JoinNumber = 229,
+                JoinNumber = 249,
                 JoinSpan = 1
             },
             new JoinMetadata
@@ -112,11 +140,54 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         #region Analog
 
+        [JoinName("RingtoneVolume")]
+        public JoinDataComplete RingtoneVolume = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 21,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Ringtone volume set/FB.  Valid values are 0 - 100 in increments of 5 (5, 10, 15, 20, etc.)",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
+        [JoinName("PresentationSource")]
+        public JoinDataComplete PresentationSource = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 201,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Presentation set/FB.  Valid values are 0 - 6 depending on the codec model.",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
 
         #endregion
 
 
         #region Serials
+
+        [JoinName("CommandToDevice")]
+        public JoinDataComplete CommandToDevice = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 5,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Sends a serial command to the device.  Do not include the delimiter, it will be added automatically.",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
 
 
         #endregion

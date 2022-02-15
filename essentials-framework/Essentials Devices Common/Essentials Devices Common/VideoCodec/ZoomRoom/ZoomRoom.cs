@@ -3560,7 +3560,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public bool LoginResponseWasReceived { get; private set; }
 
-        public bool FirstJsonResponseWasReceived { get; private set; }
+		public bool FirstJsonResponseWasReceived { get; private set; }
 
 		public bool InitialQueryMessagesWereSent { get; private set; }
 
@@ -3576,7 +3576,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public event EventHandler<EventArgs> InitialSyncCompleted;
 
-        public event EventHandler FirstJsonResponseReceived;
+		public event EventHandler FirstJsonResponseReceived;
 
 		public void StartSync()
 		{
@@ -3607,18 +3607,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			CheckSyncStatus();
 		}
 
-        public void ReceivedFirstJsonResponse()
-        {
-            FirstJsonResponseWasReceived = true;
-            Debug.Console(1, this, "First JSON Response Received.");
+		public void ReceivedFirstJsonResponse()
+		{
+				FirstJsonResponseWasReceived = true;
+				Debug.Console(1, this, "First JSON Response Received.");
 
-            var handler = FirstJsonResponseReceived;
-            if (handler != null)
-            {
-                handler(this, null);
-            }
-            CheckSyncStatus();
-        }
+				var handler = FirstJsonResponseReceived;
+				if (handler != null)
+				{
+						handler(this, null);
+				}
+				CheckSyncStatus();
+		}
 
 		public void InitialQueryMessagesSent()
 		{
@@ -3645,7 +3645,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			_syncQueries.Clear();
 			LoginResponseWasReceived = false;
-            FirstJsonResponseWasReceived = false;
+			FirstJsonResponseWasReceived = false;
 			InitialQueryMessagesWereSent = false;
 			LastQueryResponseWasReceived = false;
 			CamerasHaveBeenSetUp = false;
