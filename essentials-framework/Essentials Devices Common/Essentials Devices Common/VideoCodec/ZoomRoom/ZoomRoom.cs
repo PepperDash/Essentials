@@ -33,14 +33,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public uint DefaultMeetingDurationMin { get; private set; }
 
         /// <summary>
-        /// CR LF
+        /// CR LF CR LF Delimits an echoed response to a command
         /// </summary>
         private const string EchoDelimiter = "\x0D\x0A\x0D\x0A";
 
         private const string SendDelimiter = "\x0D";
 
         /// <summary>
-        /// CR LF } CR LF
+        /// CR LF } CR LF Delimits a JSON response
         /// </summary>
         private const string JsonDelimiter = "\x0D\x0A\x7D\x0D\x0A";
 
