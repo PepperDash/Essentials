@@ -400,10 +400,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				_currentDirectoryResult = value;
 
-				Debug.Console(2, this, "CurrentDirectoryResult Updated.  ResultsFolderId: {0}",
-					_currentDirectoryResult.ResultsFolderId);
-
-				CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+				Debug.Console(2, this, "CurrentDirectoryResult Updated.  ResultsFolderId: {0}  Contact Count: {1}",
+					_currentDirectoryResult.ResultsFolderId, _currentDirectoryResult.CurrentDirectoryResults.Count);
 
 				OnDirectoryResultReturned(_currentDirectoryResult);
 			}
@@ -1305,6 +1303,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								//  This result will always be the complete contents of the directory and never
 								//  A subset of the results via a search
 
+                                // Clear out any existing data
+                                Status.Phonebook = new zStatus.Phonebook();
+
 								JsonConvert.PopulateObject(responseObj.ToString(), Status.Phonebook);
 
 								var directoryResults =
@@ -1318,10 +1319,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 									PhonebookSyncState.SetNumberOfContacts(Status.Phonebook.Contacts.Count);
 								}
 
-								if (directoryResults.ResultsFolderId != "root")
-								{
-									directoryResults.ResultsFolderId = "root";
-								}
+								directoryResults.ResultsFolderId = "root";
 
 								DirectoryRoot = directoryResults;
 
@@ -2696,27 +2694,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			try
 			{
-				Debug.Console(2, this, "OnDirectoryResultReturned");
+				Debug.Console(2, this, "OnDirectoryResultReturned.  Result has {0} contacts", result.Contacts.Count);
 
-				var directoryResult = new CodecDirectory();
+                var directoryResult = result;
 
 				// If result is Root, create a copy and filter out contacts whose parent folder is not root
-				if (!CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
-				{
-					Debug.Console(2, this, "Filtering DirectoryRoot to remove contacts for display");
+                //if (!CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
+                //{
+                //    Debug.Console(2, this, "Filtering DirectoryRoot to remove contacts for display");
 
-					directoryResult.ResultsFolderId = result.ResultsFolderId;
-					directoryResult.AddFoldersToDirectory(result.Folders);
-					directoryResult.AddContactsToDirectory(
-						result.Contacts.Where((c) => c.ParentFolderId == result.ResultsFolderId).ToList());
-				}
-				else
-				{
-					directoryResult = result;
-				}
+                //    directoryResult.ResultsFolderId = result.ResultsFolderId;
+                //    directoryResult.AddFoldersToDirectory(result.Folders);
+                //    directoryResult.AddContactsToDirectory(
+                //        result.Contacts.Where((c) => c.ParentFolderId == result.ResultsFolderId).ToList());
+                //}
+                //else
+                //{
+                //    directoryResult = result;
+                //}
 
-				Debug.Console(2, this, "Updating directoryResult. IsOnRoot: {0}",
-					!CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+				Debug.Console(2, this, "Updating directoryResult. IsOnRoot: {0} Contact Count: {1}",
+					!CurrentDirectoryResultIsNotDirectoryRoot.BoolValue, directoryResult.Contacts.Count);
 
 				// This will return the latest results to all UIs.  Multiple indendent UI Directory browsing will require a different methodology
 				var handler = DirectoryResultReturned;
@@ -2728,6 +2726,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						DirectoryIsOnRoot = !CurrentDirectoryResultIsNotDirectoryRoot.BoolValue
 					});
 				}
+
+                CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
 			}
 			catch (Exception e)
 			{

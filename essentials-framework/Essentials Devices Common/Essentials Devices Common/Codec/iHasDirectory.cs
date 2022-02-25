@@ -65,8 +65,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     {
         /// <summary>
         /// Represents the contents of the directory
+        /// We don't want to serialize this for messages to MobileControl.  MC can combine Contacts and Folders to get the same data
         /// </summary>
-		[JsonProperty("directoryResults")]
+		[JsonIgnore]
         public List<DirectoryItem> CurrentDirectoryResults { get; private set; }
 
         [JsonProperty("contacts")]
