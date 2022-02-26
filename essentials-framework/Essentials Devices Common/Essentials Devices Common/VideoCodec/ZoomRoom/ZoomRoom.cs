@@ -342,6 +342,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				Debug.Console(1, this, "Selected Camera with key: '{0}'", camera.Key);
 				SelectedCamera = camera;
+
+                if (CameraIsMutedFeedback.BoolValue)
+                {
+                    CameraMuteOff();
+                }
 			}
 			else
 			{
