@@ -1844,6 +1844,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							}
 							case "video camera line":
 							{
+                                Status.Cameras.Clear();
+
 								JsonConvert.PopulateObject(responseObj.ToString(), Status.Cameras);
 
 								if (!_syncState.CamerasHaveBeenSetUp)
@@ -2763,14 +2765,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					continue;
 				}
 
-				var camera = new ZoomRoomCamera(cam.id, cam.Name, this);
+                var existingCam = Cameras.FirstOrDefault((c) => c.Key.Equals(cam.id));
 
-				Cameras.Add(camera);
+                if (existingCam == null)
+                {
+                    var camera = new ZoomRoomCamera(cam.id, cam.Name, this);
 
-				if (cam.Selected)
-				{
-					SelectedCamera = camera;
-				}
+                    Cameras.Add(camera);
+
+                    if (cam.Selected)
+                    {
+                        SelectedCamera = camera;
+                    }
+                }
 			}
 
 			if (IsInCall)
