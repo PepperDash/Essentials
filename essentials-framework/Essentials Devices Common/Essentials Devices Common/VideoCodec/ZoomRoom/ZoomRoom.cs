@@ -24,11 +24,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
 	public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
 		IRouting,
-		IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
+        IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMuteWithUnmuteReqeust, IHasCameraAutoMode,
 		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin,
 		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting, IHasMeetingInfo, IHasPresentationOnlyMeeting,
         IHasMeetingLock, IHasMeetingRecording
 	{
+        public event EventHandler VideoUnmuteRequested;
+
 		private const long MeetingRefreshTimer = 60000;
         public uint DefaultMeetingDurationMin { get; private set; }
 
@@ -1611,7 +1613,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							}
 							case "videounmuterequest":
 							{
-								// TODO: notify room of a request to unmute video
+                                var handler = VideoUnmuteRequested;
+
+                                if (handler != null)
+                                {
+                                    handler(this, null);
+                                }
+
 								break;
 							}
 							case "meetingneedspassword":
