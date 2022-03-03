@@ -24,23 +24,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
 	public class ZoomRoom : VideoCodecBase, IHasCodecSelfView, IHasDirectoryHistoryStack, ICommunicationMonitor,
 		IRouting,
-		IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMute, IHasCameraAutoMode,
+        IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMuteWithUnmuteReqeust, IHasCameraAutoMode,
 		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin,
 		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting, IHasMeetingInfo, IHasPresentationOnlyMeeting,
         IHasMeetingLock, IHasMeetingRecording
 	{
+        public event EventHandler VideoUnmuteRequested;
+
 		private const long MeetingRefreshTimer = 60000;
         public uint DefaultMeetingDurationMin { get; private set; }
 
         /// <summary>
-        /// CR LF
+        /// CR LF CR LF Delimits an echoed response to a command
         /// </summary>
         private const string EchoDelimiter = "\x0D\x0A\x0D\x0A";
 
         private const string SendDelimiter = "\x0D";
 
         /// <summary>
-        /// CR LF } CR LF
+        /// CR LF } CR LF Delimits a JSON response
         /// </summary>
         private const string JsonDelimiter = "\x0D\x0A\x7D\x0D\x0A";
 
@@ -342,6 +344,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				Debug.Console(1, this, "Selected Camera with key: '{0}'", camera.Key);
 				SelectedCamera = camera;
+
+                if (CameraIsMutedFeedback.BoolValue)
+                {
+                    CameraMuteOff();
+                }
 			}
 			else
 			{
@@ -400,10 +407,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				_currentDirectoryResult = value;
 
-				Debug.Console(2, this, "CurrentDirectoryResult Updated.  ResultsFolderId: {0}",
-					_currentDirectoryResult.ResultsFolderId);
-
-				CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+				Debug.Console(2, this, "CurrentDirectoryResult Updated.  ResultsFolderId: {0}  Contact Count: {1}",
+					_currentDirectoryResult.ResultsFolderId, _currentDirectoryResult.CurrentDirectoryResults.Count);
 
 				OnDirectoryResultReturned(_currentDirectoryResult);
 			}
@@ -1305,6 +1310,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								//  This result will always be the complete contents of the directory and never
 								//  A subset of the results via a search
 
+                                // Clear out any existing data
+                                Status.Phonebook = new zStatus.Phonebook();
+
 								JsonConvert.PopulateObject(responseObj.ToString(), Status.Phonebook);
 
 								var directoryResults =
@@ -1318,10 +1326,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 									PhonebookSyncState.SetNumberOfContacts(Status.Phonebook.Contacts.Count);
 								}
 
-								if (directoryResults.ResultsFolderId != "root")
-								{
-									directoryResults.ResultsFolderId = "root";
-								}
+								directoryResults.ResultsFolderId = "root";
 
 								DirectoryRoot = directoryResults;
 
@@ -1608,7 +1613,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							}
 							case "videounmuterequest":
 							{
-								// TODO: notify room of a request to unmute video
+                                var handler = VideoUnmuteRequested;
+
+                                if (handler != null)
+                                {
+                                    handler(this, null);
+                                }
+
 								break;
 							}
 							case "meetingneedspassword":
@@ -1841,6 +1852,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							}
 							case "video camera line":
 							{
+                                Status.Cameras.Clear();
+
 								JsonConvert.PopulateObject(responseObj.ToString(), Status.Cameras);
 
 								if (!_syncState.CamerasHaveBeenSetUp)
@@ -2696,27 +2709,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		{
 			try
 			{
-				Debug.Console(2, this, "OnDirectoryResultReturned");
+				Debug.Console(2, this, "OnDirectoryResultReturned.  Result has {0} contacts", result.Contacts.Count);
 
-				var directoryResult = new CodecDirectory();
+                var directoryResult = result;
 
 				// If result is Root, create a copy and filter out contacts whose parent folder is not root
-				if (!CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
-				{
-					Debug.Console(2, this, "Filtering DirectoryRoot to remove contacts for display");
+                //if (!CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
+                //{
+                //    Debug.Console(2, this, "Filtering DirectoryRoot to remove contacts for display");
 
-					directoryResult.ResultsFolderId = result.ResultsFolderId;
-					directoryResult.AddFoldersToDirectory(result.Folders);
-					directoryResult.AddContactsToDirectory(
-						result.Contacts.Where((c) => c.ParentFolderId == result.ResultsFolderId).ToList());
-				}
-				else
-				{
-					directoryResult = result;
-				}
+                //    directoryResult.ResultsFolderId = result.ResultsFolderId;
+                //    directoryResult.AddFoldersToDirectory(result.Folders);
+                //    directoryResult.AddContactsToDirectory(
+                //        result.Contacts.Where((c) => c.ParentFolderId == result.ResultsFolderId).ToList());
+                //}
+                //else
+                //{
+                //    directoryResult = result;
+                //}
 
-				Debug.Console(2, this, "Updating directoryResult. IsOnRoot: {0}",
-					!CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+				Debug.Console(2, this, "Updating directoryResult. IsOnRoot: {0} Contact Count: {1}",
+					!CurrentDirectoryResultIsNotDirectoryRoot.BoolValue, directoryResult.Contacts.Count);
 
 				// This will return the latest results to all UIs.  Multiple indendent UI Directory browsing will require a different methodology
 				var handler = DirectoryResultReturned;
@@ -2728,6 +2741,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						DirectoryIsOnRoot = !CurrentDirectoryResultIsNotDirectoryRoot.BoolValue
 					});
 				}
+
+                CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
 			}
 			catch (Exception e)
 			{
@@ -2758,14 +2773,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					continue;
 				}
 
-				var camera = new ZoomRoomCamera(cam.id, cam.Name, this);
+                var existingCam = Cameras.FirstOrDefault((c) => c.Key.Equals(cam.id));
 
-				Cameras.Add(camera);
+                if (existingCam == null)
+                {
+                    var camera = new ZoomRoomCamera(cam.id, cam.Name, this);
 
-				if (cam.Selected)
-				{
-					SelectedCamera = camera;
-				}
+                    Cameras.Add(camera);
+
+                    if (cam.Selected)
+                    {
+                        SelectedCamera = camera;
+                    }
+                }
 			}
 
 			if (IsInCall)

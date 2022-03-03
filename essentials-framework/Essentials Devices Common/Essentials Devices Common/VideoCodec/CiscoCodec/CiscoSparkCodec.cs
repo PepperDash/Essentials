@@ -359,7 +359,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
             else
             {
-                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, "xStatus SystemUnit Software Version\r\n");
+                var command = string.Format("xCommand Peripherals HeartBeat ID: {0}{1}", CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, Delimiter);
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, command);
             }
 
             if (props.Sharing != null)
