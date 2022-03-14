@@ -7,25 +7,53 @@ using Crestron.SimplSharp;
 namespace PepperDash.Essentials.Core
 {
 	/// <summary>
-	/// Defines minimal volume control methods
+	/// Defines minimal volume and mute control methods
 	/// </summary>
-	public interface IBasicVolumeControls
+    public interface IBasicVolumeControls : IBasicVolumeControl, IBasicMuteControl
 	{
-		void VolumeUp(bool pressRelease);
-		void VolumeDown(bool pressRelease);
-		void MuteToggle();
 	}
+
+    /// <summary>
+    /// Defines basic volume control methods
+    /// </summary>
+    public interface IBasicVolumeControl
+    {
+        void VolumeUp(bool pressRelease);
+        void VolumeDown(bool pressRelease);
+    }
+
+    /// <summary>
+    /// Defines volume control methods and properties with feedback
+    /// </summary>
+    public interface IBasicVolumeControlWithFeedback : IBasicVolumeControl
+    {
+        void SetVolume(ushort level);
+        IntFeedback VolumeLevelFeedback { get; }
+    }
+
+    /// <summary>
+    /// Defines basic mute control methods
+    /// </summary>
+    public interface IBasicMuteControl
+    {
+        void MuteToggle();
+    }
+
+    /// <summary>
+    /// Defines mute control methods and properties with feedback
+    /// </summary>
+    public interface IBasicMuteControlWithFeedback : IBasicMuteControl
+    {
+        BoolFeedback MuteFeedback { get; }
+        void MuteOn();
+        void MuteOff();
+    }
 
 	/// <summary>
 	/// Adds feedback and direct volume level set to IBasicVolumeControls
 	/// </summary>
-	public interface IBasicVolumeWithFeedback : IBasicVolumeControls
+    public interface IBasicVolumeWithFeedback : IBasicVolumeControlWithFeedback, IBasicMuteControlWithFeedback
 	{
-		void SetVolume(ushort level);
-		void MuteOn();
-		void MuteOff();
-		IntFeedback VolumeLevelFeedback { get; }
-		BoolFeedback MuteFeedback { get; }
 	}
 
     /// <summary>
