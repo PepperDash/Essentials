@@ -224,6 +224,7 @@
     <Compile Include="Feedbacks\IntFeedback.cs" />
     <Compile Include="Feedbacks\SerialFeedback.cs" />
     <Compile Include="Feedbacks\StringFeedback.cs" />
+    <Compile Include="File\FileIO.cs" />
     <Compile Include="Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
     <Compile Include="Fusion\FusionCustomPropertiesBridge.cs" />
     <Compile Include="Fusion\FusionEventHandlers.cs" />
