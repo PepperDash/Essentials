@@ -207,6 +207,27 @@ namespace PepperDash.Essentials.Core
 		}
 
         /// <summary>
+        /// Clears all actions on all sigs
+        /// </summary>
+        public static void ClearAllSigActions(this BasicTriList t1)
+        {
+            foreach (var sig in t1.BooleanOutput)
+            {
+                ClearSigAction(sig);
+            }
+
+            foreach (var sig in t1.UShortOutput)
+            {
+                ClearSigAction(sig);
+            }
+
+            foreach (var sig in t1.StringOutput)
+            {
+                ClearSigAction(sig);
+            }
+        }
+
+        /// <summary>
         /// Helper method to set the value of a bool Sig on TriList
         /// </summary>
         public static void SetBool(this BasicTriList tl, uint sigNum, bool value)

@@ -57,6 +57,11 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         void CameraMuteToggle();
     }
 
+    public interface IHasCameraMuteWithUnmuteReqeust : IHasCameraMute
+    {
+        event EventHandler VideoUnmuteRequested;
+    }
+
     public class CameraSelectedEventArgs : EventArgs
     {
         public CameraBase SelectedCamera { get; private set; }

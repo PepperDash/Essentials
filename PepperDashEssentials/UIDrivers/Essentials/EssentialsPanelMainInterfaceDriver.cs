@@ -11,7 +11,7 @@ namespace PepperDash.Essentials
 	/// <summary>
 	/// 
 	/// </summary>
-	public class EssentialsPanelMainInterfaceDriver : PanelDriverBase, IHasScreenSaverController
+	public class EssentialsPanelMainInterfaceDriver : PanelDriverBase, IHasScreenSaverController, IDisposable
 	{
         CTimer InactivityTimer;
 
@@ -68,6 +68,35 @@ namespace PepperDash.Essentials
                 }
             }
 		}
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            var avDriver = AvDriver as PanelDriverBase;
+            if (avDriver != null)
+            {
+                avDriver.Hide();
+            }
+            if (ScreenSaverController != null)
+            {
+                ScreenSaverController.Dispose();
+            }
+            if (HeaderDriver != null)
+            {
+                HeaderDriver.Hide();
+            }
+            if (EnvironmentDriver != null)
+            {
+                EnvironmentDriver.Hide();
+            }
+            if (CurrentChildDriver != null)
+            {
+                CurrentChildDriver.Hide();
+            }
+        }
+
+        #endregion
 
         void ExtenderTouchDetectionReservedSigs_DeviceExtenderSigChange(Crestron.SimplSharpPro.DeviceExtender currentDeviceExtender, Crestron.SimplSharpPro.SigEventArgs args)
         {
@@ -130,7 +159,7 @@ namespace PepperDash.Essentials
 			if(CurrentChildDriver != null)
 				CurrentChildDriver.BackButtonPressed();
 		}
-	}
+    }
 
     public interface IHasScreenSaverController
     {

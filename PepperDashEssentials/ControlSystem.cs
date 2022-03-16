@@ -28,6 +28,7 @@ namespace PepperDash.Essentials
         HttpLogoServer LogoServer;
 
         private CTimer _startTimer;
+        private CEvent _initializeEvent;
         private const long StartupTime = 500;
 
         public ControlSystem()
@@ -46,6 +47,24 @@ namespace PepperDash.Essentials
         public override void InitializeSystem()
         {
             _startTimer = new CTimer(StartSystem,StartupTime);
+
+
+            // If the control system is a DMPS type, we need to wait to exit this method until all devices have had time to activate
+            // to allow any HD-BaseT DM endpoints to register first.
+            if (Global.ControlSystemIsDmpsType)
+            {
+                Debug.Console(2, "******************* InitializeSystem() Entering **********************");
+
+                _initializeEvent = new CEvent();
+
+                DeviceManager.AllDevicesActivated += (o, a) =>
+                {
+                    _initializeEvent.Set();
+                    Debug.Console(2, "******************* InitializeSystem() Exiting **********************");
+                };
+
+                _initializeEvent.Wait(30000);
+            }
         }
 
         private void StartSystem(object obj)
@@ -361,9 +380,7 @@ namespace PepperDash.Essentials
                             if(propertiesConfig == null)
                                 propertiesConfig =  new DM.Config.DmpsRoutingPropertiesConfig();
 
-                            var dmpsRoutingController = DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig);
-
-                            DeviceManager.AddDevice(dmpsRoutingController);
+                            DeviceManager.AddDevice(DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig));
                         }
                         else if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
                         {
@@ -450,14 +467,13 @@ namespace PepperDash.Essentials
                 return;
             }
 
+            uint fusionIpId = 0xf1;
+
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
                 var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as IEssentialsRoom;
                 if (room != null)
                 {
-                    // default IPID
-                    uint fusionIpId = 0xf1;
-
                     // default to no join map key
                     string fusionJoinMapKey = string.Empty;
 
@@ -478,7 +494,7 @@ namespace PepperDash.Essentials
                     {
                         DeviceManager.AddDevice(room);
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
                         DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase(room, fusionIpId, fusionJoinMapKey));
 
 
@@ -490,8 +506,11 @@ namespace PepperDash.Essentials
                     {
                         DeviceManager.AddDevice(room);
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
+                        if (!(room is EssentialsCombinedHuddleVtc1Room))
+                        {
+                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
+                            DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
+                        }
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
@@ -502,7 +521,7 @@ namespace PepperDash.Essentials
                         DeviceManager.AddDevice(room);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice,
-                            "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion");
+                            "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
                         DeviceManager.AddDevice(new EssentialsTechRoomFusionSystemController((EssentialsTechRoom)room, fusionIpId, fusionJoinMapKey));
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
@@ -515,9 +534,13 @@ namespace PepperDash.Essentials
                         DeviceManager.AddDevice(room);
                     }
 
+                    fusionIpId += 1;
                 }
                 else
+                {
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Cannot create room from config, key '{0}' - Is this intentional?  This may be a valid configuration.", roomConfig.Key);
+                    
+                }
             }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");

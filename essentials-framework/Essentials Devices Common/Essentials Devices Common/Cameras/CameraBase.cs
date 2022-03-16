@@ -29,6 +29,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
     public abstract class CameraBase : ReconfigurableDevice, IRoutingOutputs
 	{
+        [JsonProperty("controlMode", NullValueHandling = NullValueHandling.Ignore)]
         public eCameraControlMode ControlMode { get; protected set; }
 
         #region IRoutingOutputs Members
@@ -37,6 +38,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #endregion
 
+        [JsonProperty("canPan", NullValueHandling = NullValueHandling.Ignore)]
         public bool CanPan
         {
             get
@@ -44,7 +46,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 return (Capabilities & eCameraCapabilities.Pan) == eCameraCapabilities.Pan;
             }
         }
-
+        [JsonProperty("canTilt", NullValueHandling = NullValueHandling.Ignore)]
         public bool CanTilt
         {
             get
@@ -52,7 +54,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 return (Capabilities & eCameraCapabilities.Tilt) == eCameraCapabilities.Tilt;
             }
         }
-
+        [JsonProperty("canZoom", NullValueHandling = NullValueHandling.Ignore)]
         public bool CanZoom
         {
             get
@@ -60,7 +62,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 return (Capabilities & eCameraCapabilities.Zoom) == eCameraCapabilities.Zoom;
             }
         }
-
+        [JsonProperty("canFocus", NullValueHandling = NullValueHandling.Ignore)]
         public bool CanFocus
         {
             get
@@ -216,20 +218,10 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 var presetsCamera = cameraDevice as IHasCameraPresets;
                 presetsCamera.PresetsListHasChanged += new EventHandler<EventArgs>((o, a) =>
                 {
-                    for (int i = 1; i <= joinMap.NumberOfPresets.JoinNumber; i++)
-                    {
-                        int tempNum = i - 1;
-
-                        string label = "";
-
-                        var preset = presetsCamera.Presets.FirstOrDefault(p => p.ID.Equals(i));
-
-                        if (preset != null)
-                            label = preset.Description;
-
-                        trilist.SetString((ushort) (joinMap.PresetLabelStart.JoinNumber + tempNum), label);
-                    }
+                    SendCameraPresetNamesToApi(presetsCamera, joinMap, trilist);
                 });
+
+                SendCameraPresetNamesToApi(presetsCamera, joinMap, trilist);
 
                 for (int i = 0; i < joinMap.NumberOfPresets.JoinNumber; i++)
                 {
@@ -246,9 +238,34 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                         presetsCamera.PresetStore(tempNum, label);
                     });
                 }
+                trilist.OnlineStatusChange += (sender, args) =>
+                {
+                    if (!args.DeviceOnLine)
+                    { return; }
+
+                    SendCameraPresetNamesToApi(presetsCamera, joinMap, trilist);
+                };
+
+            }
+        }
+        private void SendCameraPresetNamesToApi(IHasCameraPresets presetsCamera, CameraControllerJoinMap joinMap, BasicTriList trilist)
+        {
+            for (int i = 1; i <= joinMap.NumberOfPresets.JoinNumber; i++)
+            {
+                int tempNum = i - 1;
+
+                string label = "";
+
+                var preset = presetsCamera.Presets.FirstOrDefault(p => p.ID.Equals(i));
+
+                if (preset != null)
+                    label = preset.Description;
+
+                trilist.SetString((ushort)(joinMap.PresetLabelStart.JoinNumber + tempNum), label);
             }
         }
 	}
+
 
     public class CameraPreset : PresetBase
     {

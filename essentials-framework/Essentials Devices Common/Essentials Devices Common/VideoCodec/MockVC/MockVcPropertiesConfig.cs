@@ -18,5 +18,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         [JsonProperty("presets")]
         public List<CodecRoomPreset> Presets { get; set; }
+
+        public MockVcPropertiesConfig()
+        {
+            Favorites = new List<CodecActiveCallItem>();
+            Presets = new List<CodecRoomPreset>();
+        }
     }
 }

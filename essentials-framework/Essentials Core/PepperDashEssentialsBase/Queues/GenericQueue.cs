@@ -118,7 +118,7 @@ namespace PepperDash.Essentials.Core.Queues
         /// <param name="capacity"></param>
         public GenericQueue(string key, int pacing, Thread.eThreadPriority priority, int capacity)
             : this(key, priority, capacity, pacing)
-        {
+        {           
         }
 
         /// <summary>

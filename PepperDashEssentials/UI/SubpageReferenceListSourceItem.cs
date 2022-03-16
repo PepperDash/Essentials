@@ -14,6 +14,8 @@ namespace PepperDash.Essentials
     {
         public SourceListItem SourceItem { get; private set; }
 
+        private IHasCurrentSourceInfoChange _room;
+
         public SubpageReferenceListSourceItem(uint index, SubpageReferenceList owner,
             SourceListItem sourceItem, Action<bool> routeAction)
             : base(index, owner)
@@ -25,6 +27,7 @@ namespace PepperDash.Essentials
 
         public void RegisterForSourceChange(IHasCurrentSourceInfoChange room)
         {
+            _room = room;
             room.CurrentSourceChange -= room_CurrentSourceInfoChange;
             room.CurrentSourceChange += room_CurrentSourceInfoChange;
         }
@@ -44,6 +47,9 @@ namespace PepperDash.Essentials
         {
             Owner.BoolInputSig(Index, 1).UserObject = null;
             Owner.StringInputSig(Index, 1).StringValue = "";
+
+            if(_room != null)
+                _room.CurrentSourceChange -= room_CurrentSourceInfoChange;
         }
 
         /// <summary>

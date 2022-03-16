@@ -26,6 +26,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         void CodecRoomPresetSelect(int preset);
 
         void CodecRoomPresetStore(int preset, string description);
+
+        void SelectFarEndPreset(int preset);        
     }
 
     public static class RoomPresets

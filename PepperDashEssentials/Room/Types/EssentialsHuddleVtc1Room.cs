@@ -210,7 +210,7 @@ namespace PepperDash.Essentials
             {
                 PropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
                     (config.Properties.ToString());
-                DefaultDisplay = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
+                DefaultDisplay = DeviceManager.GetDeviceForKey((PropertiesConfig as EssentialsHuddleVtc1PropertiesConfig).DefaultDisplayKey) as IRoutingSinkWithSwitching;
 
                 VideoCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.VideoCodecKey) as
                     PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;

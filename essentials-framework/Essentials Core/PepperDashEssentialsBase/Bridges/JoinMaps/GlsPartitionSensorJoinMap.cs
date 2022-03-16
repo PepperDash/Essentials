@@ -5,6 +5,9 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 {
     public class GlsPartitionSensorJoinMap : JoinMapBaseAdvanced
     {
+
+        #region Digital
+
         [JoinName("IsOnline")]
         public JoinDataComplete IsOnline = new JoinDataComplete(
             new JoinData
@@ -19,20 +22,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinType = eJoinType.Digital
             });
 
-        [JoinName("Name")]
-        public JoinDataComplete Name = new JoinDataComplete(
-            new JoinData
-            {
-                JoinNumber = 1,
-                JoinSpan = 1
-            },
-            new JoinMetadata
-            {
-                Description = "Sensor Name",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
-                JoinType = eJoinType.Serial
-            });
-
+        
         [JoinName("Enable")]
         public JoinDataComplete Enable = new JoinDataComplete(
             new JoinData
@@ -101,7 +91,11 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 Description = "Sensor Decrease Sensitivity",
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
-            });
+            });        
+
+        #endregion
+
+        #region Analog
 
         [JoinName("Sensitivity")]
         public JoinDataComplete Sensitivity = new JoinDataComplete(
@@ -116,6 +110,28 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.Analog
             });
+
+        #endregion
+
+
+        #region Serial
+
+        [JoinName("Name")]
+        public JoinDataComplete Name = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 1,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Sensor Name",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        #endregion
+
 
         /// <summary>
         /// Constructor to use when instantiating this Join Map without inheriting from it

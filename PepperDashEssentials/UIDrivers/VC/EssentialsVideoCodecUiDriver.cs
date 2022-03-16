@@ -632,7 +632,6 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 VCControlsInterlock.StatusChanged += new EventHandler<StatusChangedEventArgs>(VCControlsInterlock_StatusChanged);
 
-
                 var codecOffCameras = Codec as IHasCameraOff;
 
                 var supportsCameraOffMode = Codec.SupportsCameraOff;
@@ -643,6 +642,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 if (codecAutoCameras != null && supportsAutoCameraMode)
                 {
+
                     CameraModeList.SetItemButtonAction(1,(b) => codecAutoCameras.CameraAutoModeOn());
                     TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 1 Visible"].BoolValue = true;
                     codecAutoCameras.CameraAutoModeIsOnFeedback.LinkInputSig(CameraModeList.SmartObject.BooleanInput["Item 1 Selected"]);
@@ -672,6 +672,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                             }
 
                         };
+
                 }
 
                 // Manual button always visible
@@ -683,6 +684,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
 
                 if (codecOffCameras != null && supportsCameraOffMode)
                 {
+
                     TriList.SmartObjects[UISmartObjectJoin.VCCameraMode].BooleanInput["Item 3 Visible"].BoolValue = true;
                     codecOffCameras.CameraIsOffFeedback.LinkInputSig(CameraModeList.SmartObject.BooleanInput["Item 3 Selected"]);
                     CameraModeList.SetItemButtonAction(3, (b) => codecOffCameras.CameraOff());
@@ -710,6 +712,7 @@ namespace PepperDash.Essentials.UIDrivers.VC
                             }
 
                         };
+
                 }
             }
 

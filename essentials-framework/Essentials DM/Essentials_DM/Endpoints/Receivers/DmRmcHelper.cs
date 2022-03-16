@@ -61,6 +61,7 @@ namespace PepperDash.Essentials.DM
             Debug.Console(1, rmc, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             rmc.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = rmc.Name;
             if (rmc.VideoOutputResolutionFeedback != null)
                 rmc.VideoOutputResolutionFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentOutputResolution.JoinNumber]);
             if (rmc.EdidManufacturerFeedback != null)
@@ -329,7 +330,14 @@ namespace PepperDash.Essentials.DM
 	        var parentDev = DeviceManager.GetDeviceForKey(pKey);
 	        if (parentDev is DmpsRoutingController)
 	        {
-	            return GetDmRmcControllerForDmps(key, name, typeName, parentDev as DmpsRoutingController, props.ParentOutputNumber);
+                if ((parentDev as DmpsRoutingController).Dmps4kType)
+                {
+                    return GetDmRmcControllerForDmps4k(key, name, typeName, parentDev as DmpsRoutingController, props.ParentOutputNumber);
+                }
+                else
+                {
+                    return GetDmRmcControllerForDmps(key, name, typeName, ipid, parentDev as DmpsRoutingController, props.ParentOutputNumber);
+                }
 	        }
 	        if (!(parentDev is IDmSwitch))
 	        {
@@ -395,25 +403,47 @@ namespace PepperDash.Essentials.DM
 	        return null;
 	    }
 
-	    private static CrestronGenericBaseDevice GetDmRmcControllerForDmps(string key, string name, string typeName,
+        private static CrestronGenericBaseDevice GetDmRmcControllerForDmps(string key, string name, string typeName,
+            uint ipid, DmpsRoutingController controller, uint num)
+        {
+            Func<string, string, uint, DMOutput, CrestronGenericBaseDevice> dmpsHandler;
+            if (ChassisDict.TryGetValue(typeName.ToLower(), out dmpsHandler))
+            {
+                var output = controller.Dmps.SwitcherOutputs[num] as DMOutput;
+
+                if (output != null)
+                {
+                    return dmpsHandler(key, name, ipid, output);
+                }
+                Debug.Console(0, Debug.ErrorLogLevel.Error,
+                    "Cannot attach DM-RMC of type '{0}' to output {1} on DMPS chassis. Output is not a DM Output.",
+                    typeName, num);
+                return null;
+            }
+
+            Debug.Console(0, Debug.ErrorLogLevel.Error, "Cannot create DM-RMC of type '{0}' to output {1} on DMPS chassis", typeName, num);
+            return null;
+        }
+
+	    private static CrestronGenericBaseDevice GetDmRmcControllerForDmps4k(string key, string name, string typeName,
 	        DmpsRoutingController controller, uint num)
 	    {
-	        Func<string, string, DMOutput, CrestronGenericBaseDevice> dmpsHandler;
-	        if (ChassisCpu3Dict.TryGetValue(typeName.ToLower(), out dmpsHandler))
+	        Func<string, string, DMOutput, CrestronGenericBaseDevice> dmps4kHandler;
+	        if (ChassisCpu3Dict.TryGetValue(typeName.ToLower(), out dmps4kHandler))
 	        {
 	            var output = controller.Dmps.SwitcherOutputs[num] as DMOutput;
 
 	            if (output != null)
 	            {
-	                return dmpsHandler(key, name, output);
+	                return dmps4kHandler(key, name, output);
 	            }
 	            Debug.Console(0, Debug.ErrorLogLevel.Error,
-	                "Cannot attach DM-RMC of type '{0}' to output {1} on DMPS chassis. Output is not a DM Output.",
+	                "Cannot attach DM-RMC of type '{0}' to output {1} on DMPS-4K chassis. Output is not a DM Output.",
 	                typeName, num);
 	            return null;
 	        }
 
-            Debug.Console(0, Debug.ErrorLogLevel.Error, "Cannot create DM-RMC of type '{0}' to output {1} on DMPS chassis", typeName, num);
+            Debug.Console(0, Debug.ErrorLogLevel.Error, "Cannot create DM-RMC of type '{0}' to output {1} on DMPS-4K chassis", typeName, num);
 	        return null;
 	    }
 
