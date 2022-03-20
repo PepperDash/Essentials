@@ -11,12 +11,12 @@ env:
   # Do not edit this, we're just creating it here
   VERSION: 0.0.0-buildtype-buildnumber
   # Defaults to debug for build type
-  BUILD_TYPE: Debug
+  BUILD_TYPE: Release
   # Defaults to master as the release branch.  Change as necessary
   RELEASE_BRANCH: main
 jobs:
   Build_Project:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
       # First we checkout the source repo
       - name: Checkout repo
