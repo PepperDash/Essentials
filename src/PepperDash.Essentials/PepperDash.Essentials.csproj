@@ -1,0 +1,233 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1BED5BA9-88C4-4365-9362-6F4B128071D3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PepperDash.Essentials</RootNamespace>
+    <AssemblyName>PepperDash.Essentials</AssemblyName>
+    <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92230};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PlatformFamilyName>WindowsCE</PlatformFamilyName>
+    <PlatformID>E2BECB1F-8C8C-41ba-B736-9BE7D946A398</PlatformID>
+    <OSVersion>5.0</OSVersion>
+    <DeployDirSuffix>SmartDeviceProject1</DeployDirSuffix>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <NativePlatformName>Windows CE</NativePlatformName>
+    <FormFactorID>
+    </FormFactorID>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Crestron.SimplSharpPro.DeviceSupport, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DeviceSupport.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.DM, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DM.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.EthernetCommunications, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.EthernetCommunications.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.Fusion, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Fusion.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.Remotes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Remotes.dll</HintPath>
+    </Reference>
+    <Reference Include="Crestron.SimplSharpPro.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="PepperDash_Core, Version=1.0.42.30563, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\PepperDashCore\lib\net35\PepperDash_Core.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpNewtonsoft, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpNewtonsoft.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpPro, Version=1.5.3.17, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpTimerEventInterface, Version=1.0.6197.20052, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpTimerEventInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Audio\EssentialsVolumeLevelConfig.cs" />
+    <Compile Include="Bridges\EiscBridge.cs" />
+    <Compile Include="Bridges\JoinMaps\AirMediaControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\AppleTvJoinMap.cs" />
+    <Compile Include="Bridges\BridgeFactory.cs" />
+    <Compile Include="Bridges\JoinMaps\C2nRthsControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\CameraControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DigitalLoggerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DisplayControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmBladeChassisControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmChassisControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmpsAudioOutputControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmpsRoutingControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmRmcControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmTxControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\GenericLightingJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\GenericRelayControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\GlsOccupancySensorBaseJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\HdMdxxxCEControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\IBasicCommunicationJoinMap.cs" />
+    <Compile Include="Bridges\IBridge.cs" />
+    <Compile Include="Bridges\JoinMaps\IDigitalInputJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\SetTopBoxControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\StatusSignControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\SystemMonitorJoinMap.cs" />
+    <Compile Include="Factory\DeviceFactory.cs" />
+    <Compile Include="Devices\Amplifier.cs" />
+    <Compile Include="ControlSystem.cs" />
+    <Compile Include="Fusion\EssentialsHuddleVtc1FusionController.cs" />
+    <Compile Include="Fusion\EssentialsTechRoomFusionSystemController.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Room\Config\EssentialsDualDisplayRoomPropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsNDisplayRoomPropertiesConfig.cs" />
+    <Compile Include="Room\Config\SimplRoomPropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsPresentationPropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsHuddleRoomPropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsHuddleVtc1PropertiesConfig.cs" />
+    <Compile Include="Room\Config\EssentialsRoomEmergencyConfig.cs" />
+    <Compile Include="Room\Config\EssentialsTechRoomConfig.cs" />
+    <Compile Include="Room\Emergency\EsentialsRoomEmergencyContactClosure.cs" />
+    <Compile Include="Room\Types\EssentialsCombinedHuddleVtc1Room.cs" />
+    <Compile Include="Room\Types\EssentialsDualDisplayRoom.cs" />
+    <Compile Include="Room\Types\EssentialsHuddleVtc1Room.cs" />
+    <Compile Include="Room\Types\EssentialsNDisplayRoomBase.cs" />
+    <Compile Include="Room\Config\EssentialsRoomConfig.cs" />
+    <Compile Include="Room\Types\EssentialsTechRoom.cs" />
+    <Compile Include="Room\Types\Interfaces\IEssentialsHuddleSpaceRoom.cs" />
+    <Compile Include="Room\Types\Interfaces\IEssentialsHuddleVtc1Room.cs" />
+    <Compile Include="UIDrivers\Environment Drivers\EssentialsEnvironmentDriver.cs" />
+    <Compile Include="UIDrivers\Environment Drivers\EssentialsLightingDriver.cs" />
+    <Compile Include="UIDrivers\Environment Drivers\EssentialsShadeDriver.cs" />
+    <Compile Include="UIDrivers\Essentials\EssentialsHeaderDriver.cs" />
+    <Compile Include="UIDrivers\JoinedSigInterlock.cs" />
+    <Compile Include="UIDrivers\ScreenSaverController.cs" />
+    <Compile Include="UIDrivers\SigInterlock.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddlePresentationUiDriver.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddle\EssentialsHuddleTechPageDriver.cs" />
+    <Compile Include="UI\HttpLogoServer.cs" />
+    <Compile Include="UI\SmartObjectHeaderButtonList.cs" />
+    <Compile Include="UI\SubpageReferenceListCallStagingItem.cs" />
+    <Compile Include="UIDrivers\VC\EssentialsVideoCodecUiDriver.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddleVTC\EssentialsHuddleVtc1PanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\SourceChangeArgs.cs" />
+    <Compile Include="UI\JoinConstants\UISmartObjectJoin.cs" />
+    <Compile Include="UI\JoinConstants\UIStringlJoin.cs" />
+    <Compile Include="UI\JoinConstants\UIUshortJoin.cs" />
+    <Compile Include="UIDrivers\DualDisplayRouting.cs" />
+    <Compile Include="UIDrivers\Essentials\EssentialsPresentationPanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalDriver.cs" />
+    <Compile Include="UIDrivers\Essentials\EssentialsPanelMainInterfaceDriver.cs" />
+    <Compile Include="UIDrivers\enums and base.cs" />
+    <Compile Include="UIDrivers\EssentialsHuddle\EssentialsHuddlePanelAvFunctionsDriver.cs" />
+    <Compile Include="UIDrivers\Page Drivers\SingleSubpageModalAndBackDriver.cs" />
+    <Compile Include="UIDrivers\SmartObjectRoomsList.cs" />
+    <Compile Include="UI\JoinConstants\UIBoolJoin.cs" />
+    <Compile Include="UI\DualDisplaySourceSRLController.cs" />
+    <Compile Include="UI\SubpageReferenceListActivityItem.cs" />
+    <Compile Include="Room\Types\EssentialsHuddleSpaceRoom.cs" />
+    <Compile Include="UI\EssentialsTouchpanelController.cs" />
+    <Compile Include="UI\SubpageReferenceListSourceItem.cs" />
+    <None Include="app.config" />
+    <EmbeddedResource Include="Example Configuration\EssentialsHuddleSpaceRoom\configurationFile-HuddleSpace-2-Source.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Example Configuration\EssentialsHuddleVtc1Room\configurationFile-mockVideoCodec_din-ap3_-_dm4x1.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Example Configuration\SIMPLBridging\configurationFile-dmps3300c-avRouting.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Example Configuration\SIMPLBridging\SIMPLBridgeExample_configurationFile.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <None Include="Properties\ControlSystem.cfg" />
+    <EmbeddedResource Include="SGD\PepperDash Essentials iPad.sgd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SGD\PepperDash Essentials TSW-560.sgd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SGD\PepperDash Essentials TSW-760.sgd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj">
+      <Project>{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}</Project>
+      <Name>PepperDash_Essentials_Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj">
+      <Project>{892B761C-E479-44CE-BD74-243E9214AF13}</Project>
+      <Name>Essentials Devices Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PepperDash.Essentials.Devices.DM\PepperDash.Essentials.Devices.Dm.csproj">
+      <Project>{9199CE8A-0C9F-4952-8672-3EED798B284F}</Project>
+      <Name>PepperDash_Essentials_DM</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>rem S# Pro preparation will execute after these operations</PostBuildEvent>
+  </PropertyGroup>
+</Project>
