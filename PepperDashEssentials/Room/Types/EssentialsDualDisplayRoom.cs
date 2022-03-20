@@ -207,7 +207,7 @@ namespace PepperDash.Essentials
 
                 DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IBasicVolumeControls;
 
-                Initialize();
+                InitializeRoom();
             }
             catch (Exception e)
             {
@@ -215,7 +215,7 @@ namespace PepperDash.Essentials
             }
         }
 
-        void Initialize()
+        void InitializeRoom()
         {
             if (DefaultAudioDevice is IBasicVolumeControls)
                 DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;
@@ -274,8 +274,21 @@ namespace PepperDash.Essentials
 
             CallTypeFeedback = new IntFeedback(() => 0);
 
-            SourceListKey = "default";
+            SetSourceListKey();
             EnablePowerOnToLastSource = true;
+        }
+
+        private void SetSourceListKey()
+        {
+            if (!string.IsNullOrEmpty(PropertiesConfig.SourceListKey))
+            {
+                SetSourceListKey(PropertiesConfig.SourceListKey);
+            }
+            else
+            {
+                SetSourceListKey(Key);
+            }
+
         }
 
         void InitializeDisplay(DisplayBase disp)
@@ -333,7 +346,6 @@ namespace PepperDash.Essentials
 
             this.LogoUrlLightBkgnd = PropertiesConfig.LogoLight.GetLogoUrlLight();
             this.LogoUrlDarkBkgnd = PropertiesConfig.LogoDark.GetLogoUrlDark();
-            this.SourceListKey = PropertiesConfig.SourceListKey;
             this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
             this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
 
@@ -633,9 +645,9 @@ namespace PepperDash.Essentials
         public static void AllRoomsOff()
         {
             var allRooms = DeviceManager.AllDevices.Where(d =>
-                d is EssentialsHuddleSpaceRoom && !(d as EssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
+                d is IEssentialsHuddleSpaceRoom && !(d as IEssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
             foreach (var room in allRooms)
-                (room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff", (room as EssentialsHuddleSpaceRoom).SourceListKey);
+                (room as IEssentialsHuddleSpaceRoom).RunRouteAction("roomOff", (room as IEssentialsHuddleSpaceRoom).SourceListKey);
         }
 
         #region IPrivacy Members

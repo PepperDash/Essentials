@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using System.Globalization;
 using Crestron.SimplSharp;
 using System.Collections.Generic;
 using Crestron.SimplSharp.CrestronIO;
@@ -25,6 +26,33 @@ namespace PepperDash.Essentials.Core
         public static Dictionary<short, EthernetAdapterInfo> EthernetAdapterInfoCollection { get; private set; }
 
 		public static LicenseManager LicenseManager { get; set; }
+
+        public static eCrestronSeries ProcessorSeries { get { return CrestronEnvironment.ProgramCompatibility; } }
+
+        // TODO: consider making this configurable later
+        public static IFormatProvider Culture = CultureInfo.CreateSpecificCulture("en-US");
+
+        /// <summary>
+        /// True when the processor type is a DMPS variant
+        /// </summary>
+        public static bool ControlSystemIsDmpsType
+        {
+            get
+            {
+                return ControlSystem.ControllerPrompt.ToLower().IndexOf("dmps") > -1;
+            }
+        }
+
+        /// <summary>
+        /// True when the processor type is a DMPS 4K variant
+        /// </summary>
+        public static bool ControlSystemIsDmps4kType
+        {
+            get
+            {
+                return ControlSystemIsDmpsType && ControlSystem.ControllerPrompt.ToLower().IndexOf("4k") > -1;
+            }
+        }
 
         /// <summary>
         /// The file path prefix to the folder containing configuration files

@@ -7,7 +7,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 
-namespace PepperDash_Essentials_Core.Devices
+namespace PepperDash.Essentials.Core.Devices
 {
     public class GenericIrController: EssentialsBridgeableDevice
     {

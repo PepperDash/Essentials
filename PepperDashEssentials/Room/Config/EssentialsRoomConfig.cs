@@ -22,37 +22,36 @@ namespace PepperDash.Essentials.Room.Config
 		public static Device GetRoomObject(DeviceConfig roomConfig)
 		{
 			var typeName = roomConfig.Type.ToLower();
+
 			if (typeName == "huddle")
 			{
-                var huddle = new EssentialsHuddleSpaceRoom(roomConfig);
-
-                return huddle;
+                return new EssentialsHuddleSpaceRoom(roomConfig);
 			}
-            else if (typeName == "huddlevtc1")
+		    if (typeName == "huddlevtc1")
+		    {
+		        return new EssentialsHuddleVtc1Room(roomConfig);
+		    }
+		    if (typeName == "ddvc01bridge")
+		    {
+		        return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
+		    }
+		    if (typeName == "dualdisplay")
+		    {
+		        return new EssentialsDualDisplayRoom(roomConfig);
+		    }
+            if (typeName == "combinedhuddlevtc1")
             {
-                var rm = new EssentialsHuddleVtc1Room(roomConfig);
-                
-                return rm;
-            }
-			else if (typeName == "ddvc01Bridge")
-			{
-				return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
-			}
-            else if (typeName == "dualdisplay")
-            {
-                var rm = new EssentialsDualDisplayRoom(roomConfig);
-
-                return rm;
+                return new EssentialsCombinedHuddleVtc1Room(roomConfig);
             }
 
-            return null;
+		    return typeName != "techroom" ? null : new EssentialsTechRoom(roomConfig);
 		}
 
         /// <summary>
         /// Gets and operating, standalone emergegncy object that can be plugged into a room.
         /// Returns null if there is no emergency defined
         /// </summary>
-        public static EssentialsRoomEmergencyBase GetEmergency(EssentialsRoomPropertiesConfig props, EssentialsRoomBase room)
+        public static EssentialsRoomEmergencyBase GetEmergency(EssentialsRoomPropertiesConfig props, IEssentialsRoom room)
         {
             // This emergency 
             var emergency = props.Emergency;
@@ -101,7 +100,7 @@ namespace PepperDash.Essentials.Room.Config
 			if (behaviour == "trackroomstate")
 			{
 				// Tie LED enable to room power state
-                var essRoom = room as EssentialsRoomBase;
+                var essRoom = room as IEssentialsRoom;
                 essRoom.OnFeedback.OutputChange += (o, a) =>
 				{
                     if (essRoom.OnFeedback.BoolValue)
@@ -152,6 +151,24 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("helpMessage")]
 		public string HelpMessage { get; set; }
 
+        /// <summary>
+        /// Read this value to get the help message.  It checks for the old and new config format.
+        /// </summary>
+        public string HelpMessageForDisplay
+        {
+            get
+            {
+                if(Help != null && !string.IsNullOrEmpty(Help.Message))
+                {
+                    return Help.Message;
+                }
+                else
+                {
+                    return HelpMessage; 
+                }
+            }
+        }
+
 		[JsonProperty("environment")]
 		public EssentialsEnvironmentPropertiesConfig Environment { get; set; }
 
@@ -182,8 +199,17 @@ namespace PepperDash.Essentials.Room.Config
 		[JsonProperty("volumes")]
 		public EssentialsRoomVolumesConfig Volumes { get; set; }
 
+        [JsonProperty("fusion")]
+        public EssentialsRoomFusionConfig Fusion { get; set; }
+
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
+
+        /// <summary>
+        /// Indicates if this room represents a combination of other rooms
+        /// </summary>
+        [JsonProperty("isRoomCombinationScenario")]
+        public bool IsRoomCombinationScenario { get; set; }
 
         public EssentialsRoomPropertiesConfig()
         {
@@ -198,9 +224,20 @@ namespace PepperDash.Essentials.Room.Config
         public string DefaultAudioKey { get; set; }
         [JsonProperty("sourceListKey")]
         public string SourceListKey { get; set; }
+        [JsonProperty("destinationListKey")]
+        public string DestinationListKey { get; set; }
         [JsonProperty("defaultSourceItem")]
         public string DefaultSourceItem { get; set; }
-
+        /// <summary>
+        /// Indicates if the room supports advanced sharing
+        /// </summary>
+        [JsonProperty("supportsAdvancedSharing")]
+        public bool SupportsAdvancedSharing { get; set; }
+        /// <summary>
+        /// Indicates if non-tech users can change the share mode
+        /// </summary>
+        [JsonProperty("userCanChangeShareMode")]
+        public bool UserCanChangeShareMode { get; set; }
     }
 
     public class EssentialsConferenceRoomPropertiesConfig : EssentialsAvRoomPropertiesConfig
@@ -224,6 +261,32 @@ namespace PepperDash.Essentials.Room.Config
         }
 
 	}
+
+    public class EssentialsRoomFusionConfig
+    {
+        public uint IpIdInt
+        {
+            get
+            {
+                try 
+                {
+                    return Convert.ToUInt32(IpId, 16);
+                }
+                catch (Exception)
+                {
+                    throw new FormatException(string.Format("ERROR:Unable to convert IP ID: {0} to hex.  Error:\n{1}", IpId));
+                }
+          
+            }
+        }
+
+        [JsonProperty("ipId")]
+        public string IpId { get; set; }
+
+        [JsonProperty("joinMapKey")]
+        public string JoinMapKey { get; set; }
+
+    }
 
     public class EssentialsRoomMicrophonePrivacyConfig
     {

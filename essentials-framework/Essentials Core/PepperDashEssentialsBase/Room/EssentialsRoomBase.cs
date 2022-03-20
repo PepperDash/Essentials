@@ -11,13 +11,17 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
     /// 
     /// </summary>
-    public abstract class EssentialsRoomBase : ReconfigurableDevice
+    public abstract class EssentialsRoomBase : ReconfigurableDevice, IEssentialsRoom
     {
+
+
         /// <summary>
         ///
         /// </summary>
@@ -34,6 +38,16 @@ namespace PepperDash.Essentials.Core
         public IOccupancyStatusProvider RoomOccupancy { get; private set; }
 
         public bool OccupancyStatusProviderIsRemote { get; private set; }
+
+        public List<EssentialsDevice> EnvironmentalControlDevices { get; protected set; }
+
+        public bool HasEnvironmentalControlDevices
+        {
+            get
+            {
+                return EnvironmentalControlDevices != null && EnvironmentalControlDevices.Count > 0;
+            }
+        }
 
         protected abstract Func<bool> IsWarmingFeedbackFunc { get; }
         protected abstract Func<bool> IsCoolingFeedbackFunc { get; }
@@ -53,17 +67,21 @@ namespace PepperDash.Essentials.Core
         /// </summary>
 		/// 
 		protected string _SourceListKey;
-        public virtual string SourceListKey {
+        public string SourceListKey {
 			get
 			{
 				return _SourceListKey;
 			}
-			set
+			private set
 			{
-				_SourceListKey = value; 
-
+                if (value != _SourceListKey)
+                {
+                    _SourceListKey = value;
+                }
 			}
 		}
+
+        protected const string _defaultSourceListKey = "default";
 
         /// <summary>
         /// Timer used for informing the UIs of a shutdown
@@ -115,6 +133,8 @@ namespace PepperDash.Essentials.Core
         public EssentialsRoomBase(DeviceConfig config)
             : base(config)
         {
+            EnvironmentalControlDevices = new List<EssentialsDevice>();
+
             // Setup the ShutdownPromptTimer
             ShutdownPromptTimer = new SecondsCountdownTimer(Key + "-offTimer");
             ShutdownPromptTimer.IsRunningFeedback.OutputChange += (o, a) =>
@@ -158,6 +178,22 @@ namespace PepperDash.Essentials.Core
             SetUpMobileControl();
 
             return base.CustomActivate();
+        }
+
+        /// <summary>
+        /// Sets the SourceListKey property to the passed in value or the default if no value passed in
+        /// </summary>
+        /// <param name="sourceListKey"></param>
+        protected void SetSourceListKey(string sourceListKey)
+        {
+            if (!string.IsNullOrEmpty(sourceListKey))
+            {
+                SourceListKey = sourceListKey;
+            }
+            else
+            {
+                sourceListKey = _defaultSourceListKey;
+            }
         }
 
         /// <summary>

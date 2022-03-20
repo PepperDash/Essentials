@@ -14,7 +14,7 @@ namespace PepperDash.Essentials.DM
 {
     [Description("Wrapper Class for DM-RMC-4K-Z-SCALER-C")]
     public class DmRmc4kZScalerCController : DmRmcControllerBase, IRmcRoutingWithFeedback,
-        IIROutputPorts, IComPorts, ICec
+        IIROutputPorts, IComPorts, ICec, IRelayPorts
     {
         private readonly DmRmc4kzScalerC _rmc;
 
@@ -168,5 +168,18 @@ namespace PepperDash.Essentials.DM
         }
         #endregion
 
+        #region Implementation of IRelayPorts
+
+        public CrestronCollection<Relay> RelayPorts
+        {
+            get { return _rmc.RelayPorts; }
+        }
+
+        public int NumberOfRelayPorts
+        {
+            get { return _rmc.NumberOfRelayPorts; }
+        }
+
+        #endregion
     }
 }

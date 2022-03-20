@@ -46,7 +46,7 @@ namespace PepperDash.Essentials.Core
             CrestronConsole.AddNewConsoleCommand(SimulateComReceiveOnDevice, "devsimreceive",
                 "Simulates incoming data on a com device", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s => SetDeviceStreamDebugging(s), "setdevicestreamdebug", "set comm debug [deviceKey] [off/rx/tx/both] ([minutes])", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(SetDeviceStreamDebugging, "setdevicestreamdebug", "set comm debug [deviceKey] [off/rx/tx/both] ([minutes])", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(s => DisableAllDeviceStreamDebugging(), "disableallstreamdebug", "disables stream debugging on all devices", ConsoleAccessLevelEnum.AccessOperator);
         }
 
@@ -60,6 +60,7 @@ namespace PepperDash.Essentials.Core
 		        DeviceCriticalSection.Enter();
                 AddDeviceEnabled = false;
 		        // PreActivate all devices
+                Debug.Console(0,"****PreActivation starting...****");
 		        foreach (var d in Devices.Values)
 		        {
 		            try
@@ -69,9 +70,12 @@ namespace PepperDash.Essentials.Core
 		            }
 		            catch (Exception e)
 		            {
-		                Debug.Console(0, d, "ERROR: Device PreActivation failure:\r{0}", e);
+                        Debug.Console(0, d, "ERROR: Device {1} PreActivation failure: {0}", e.Message, d.Key);
+                        Debug.Console(1, d, "Stack Trace: {0}", e.StackTrace);
 		            }
 		        }
+                Debug.Console(0, "****PreActivation complete****");
+		        Debug.Console(0, "****Activation starting...****");
 
 		        // Activate all devices
 		        foreach (var d in Devices.Values)
@@ -83,9 +87,13 @@ namespace PepperDash.Essentials.Core
 		            }
 		            catch (Exception e)
 		            {
-		                Debug.Console(0, d, "ERROR: Device Activation failure:\r{0}", e);
+                        Debug.Console(0, d, "ERROR: Device {1} Activation failure: {0}", e.Message, d.Key);
+                        Debug.Console(1, d, "Stack Trace: {0}", e.StackTrace);
 		            }
 		        }
+
+                Debug.Console(0, "****Activation complete****");
+                Debug.Console(0, "****PostActivation starting...****");
 
 		        // PostActivate all devices
 		        foreach (var d in Devices.Values)
@@ -97,9 +105,12 @@ namespace PepperDash.Essentials.Core
 		            }
 		            catch (Exception e)
 		            {
-		                Debug.Console(0, d, "ERROR: Device PostActivation failure:\r{0}", e);
+		                Debug.Console(0, d, "ERROR: Device {1} PostActivation failure: {0}", e.Message, d.Key);
+		                Debug.Console(1, d, "Stack Trace: {0}", e.StackTrace);
 		            }
 		        }
+
+                Debug.Console(0, "****PostActivation complete****");
 
                 OnAllDevicesActivated();
 		    }
@@ -360,9 +371,9 @@ namespace PepperDash.Essentials.Core
 	    {
 	        var device = GetDeviceForKey(s);
 
-	        if (device == null) return;
-	        var inputPorts = (device as IRoutingInputsOutputs).InputPorts;
-	        var outputPorts = (device as IRoutingInputsOutputs).OutputPorts;
+            if (device == null) return;
+            var inputPorts = ((device as IRoutingInputs) != null) ? (device as IRoutingInputs).InputPorts : null;
+            var outputPorts = ((device as IRoutingOutputs) != null) ? (device as IRoutingOutputs).OutputPorts : null;
 	        if (inputPorts != null)
 	        {
 	            Debug.Console(0, "Device {0} has {1} Input Ports:", s, inputPorts.Count);
@@ -387,6 +398,15 @@ namespace PepperDash.Essentials.Core
         /// <param name="s"></param>
         public static void SetDeviceStreamDebugging(string s)
         {
+            if (String.IsNullOrEmpty(s) || s.Contains("?"))
+            {
+                CrestronConsole.ConsoleCommandResponse(
+                    @"SETDEVICESTREAMDEBUG [{deviceKey}] [OFF |TX | RX | BOTH] [timeOutInMinutes]
+    {deviceKey} [OFF | TX | RX | BOTH] - Device to set stream debugging on, and which setting to use
+    timeOutInMinutes - Set timeout for stream debugging. Default is 30 minutes");
+                return;
+            }
+
             var args = s.Split(' ');
 
             var deviceKey = args[0];
@@ -426,7 +446,7 @@ namespace PepperDash.Essentials.Core
                     var min = Convert.ToUInt32(timeout);
 
                     device.StreamDebugging.SetDebuggingWithSpecificTimeout(debugSetting, min);
-                    Debug.Console(0, "Device: '{0}' debug level set to {1) for {2} minutes", deviceKey, debugSetting, min);
+                    Debug.Console(0, "Device: '{0}' debug level set to {1} for {2} minutes", deviceKey, debugSetting, min);
 
                 }
                 catch (Exception e)
@@ -437,7 +457,7 @@ namespace PepperDash.Essentials.Core
             else
             {
                 device.StreamDebugging.SetDebuggingWithDefaultTimeout(debugSetting);
-                Debug.Console(0, "Device: '{0}' debug level set to {1) for default time (30 minutes)", deviceKey, debugSetting);
+                Debug.Console(0, "Device: '{0}' debug level set to {1} for default time (30 minutes)", deviceKey, debugSetting);
             }
         }
 

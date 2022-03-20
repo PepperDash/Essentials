@@ -19,7 +19,7 @@ namespace PepperDash.Essentials.Devices.Common
 	public class AppleTV : EssentialsBridgeableDevice, IDPad, ITransport, IUiDisplayInfo, IRoutingOutputs
 	{
 		public IrOutputPortController IrPort { get; private set; }
-		public const string StandardDriverName = "Apple AppleTV-v2.ir";
+        public const string StandardDriverName = "Apple_AppleTV_4th_Gen_Essentials.ir";
 		public uint DisplayUiType { get { return DisplayUiConstants.TypeAppleTv; } }
 
 		public AppleTV(string key, string name, IrOutputPortController portCont)

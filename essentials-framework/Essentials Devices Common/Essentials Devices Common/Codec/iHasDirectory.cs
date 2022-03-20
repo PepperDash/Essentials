@@ -69,6 +69,24 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 		[JsonProperty("directoryResults")]
         public List<DirectoryItem> CurrentDirectoryResults { get; private set; }
 
+        [JsonProperty("contacts")]
+        public List<DirectoryItem> Contacts
+        {
+            get
+            {
+                return CurrentDirectoryResults.OfType<DirectoryContact>().Cast<DirectoryItem>().ToList();
+            }
+        }
+
+        [JsonProperty("folders")]
+        public List<DirectoryItem> Folders
+        {
+            get
+            {
+                return CurrentDirectoryResults.OfType<DirectoryFolder>().Cast<DirectoryItem>().ToList();
+            }
+        }
+
         /// <summary>
         /// Used to store the ID of the current folder for CurrentDirectoryResults
         /// </summary>
@@ -105,6 +123,15 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         }
 
         /// <summary>
+        /// Filters the CurrentDirectoryResults by the predicate
+        /// </summary>
+        /// <param name="predicate"></param>
+        public void FilterContacts(Func<DirectoryItem, bool> predicate)
+        {
+            CurrentDirectoryResults = CurrentDirectoryResults.Where(predicate).ToList();
+        }
+
+        /// <summary>
         /// Sorts the DirectoryResults list to display all folders alphabetically, then all contacts alphabetically
         /// </summary>
         private void SortDirectory()
@@ -135,7 +162,19 @@ namespace PepperDash.Essentials.Devices.Common.Codec
     /// </summary>
     public interface IInvitableContact
     {
+        bool IsInvitableContact { get; }
+    }
 
+    public class InvitableDirectoryContact : DirectoryContact, IInvitableContact
+    {
+        [JsonProperty("isInvitableContact")]
+        public bool IsInvitableContact
+        {
+            get
+            {
+                return this is IInvitableContact;
+            }
+        }
     }
 
 	/// <summary>
@@ -183,8 +222,6 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
 		[JsonProperty("title")]
         public string Title { get; set; }
-
-        
 
 		[JsonProperty("contactMethods")]
         public List<ContactMethod> ContactMethods { get; set; }

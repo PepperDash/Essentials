@@ -14,7 +14,7 @@
     <tags>crestron 3series 4series</tags>
     <repository type="git" url="https://github.com/PepperDash/Essentials"/>
     <dependencies>
-      <dependency id="PepperDashCore" version="[1.0.43, 1.1.0)"/>
+      <dependency id="PepperDashCore" version="[1.0.45, 2.0.0)"/>
     </dependencies>
   </metadata>
   <files>

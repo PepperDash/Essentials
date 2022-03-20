@@ -49,6 +49,16 @@ namespace PepperDash.Essentials
 		/// 1006
 		/// </summary>
 		public const uint CallEndAllConfirmVisible = 1006;
+        /// <summary>
+        /// 1007
+        /// </summary>
+        public const uint MeetingPasswordVisible = 1007;
+        /// <summary>
+        /// 1008
+        /// </summary>
+        public const uint MeetingLeavePress = 1008;
+
+
 
 
 
@@ -103,7 +113,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// 1202
         /// </summary>
-        public const uint VCStagingInactivePopoverVisible = 1202;
+        public const uint VCStagingInactivePopoverWithRecentsVisible = 1202;
         /// <summary>
         /// 
         /// </summary>
@@ -120,6 +130,11 @@ namespace PepperDash.Essentials
         /// 1206
         /// </summary>
         public const uint VCRecentsVisible = 1206;
+
+        /// <summary>
+        /// 1202
+        /// </summary>
+        public const uint VCStagingInactivePopoverWithoutRecentsVisible = 1207;
 
 		/// <summary>
 		/// 1208
@@ -148,6 +163,11 @@ namespace PepperDash.Essentials
         public const uint VCFavoriteVisibleStart = 1221;
         //									RANGE IN USE
         public const uint VCFavoriteVisibleEnd = 1225;
+
+        /// <summary>
+        /// 1230
+        /// </summary>
+        public const uint VCStagingMeetNowPress = 1230;
         /// <summary>
         /// 1231
         /// </summary>
@@ -243,6 +263,10 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint VCCameraSelectBarWithoutModeVisible = 1261;
 
+        /// <summary>
+        /// 1262
+        /// </summary>
+        public const uint VCCameraAutoModeIsOnFb = 1262;
 
         /// <summary>
         /// 1271
@@ -744,9 +768,9 @@ namespace PepperDash.Essentials
         /// </summary>
         public const uint SourceBackgroundOverlayClosePress = 15044;
         /// <summary>
-        /// 15045 - Visibility for the bar containing call navigation button list
+        /// 15045
         /// </summary>
-        public const uint CallStagingBarVisible = 15045;
+        public const uint ZoomRoomContentSharingVisible = 15045;
 		/// <summary>
 		/// 15046
 		/// </summary>
@@ -763,6 +787,10 @@ namespace PepperDash.Essentials
 		/// 15049
 		/// </summary>
 		public const uint NextMeetingModalVisible = 15049;
+        /// <summary>
+        /// 15050
+        /// </summary>
+        public const uint NextMeetingNotificationRibbonVisible = 15050;
         /// <summary>
         /// 15051
         /// </summary>
@@ -831,6 +859,11 @@ namespace PepperDash.Essentials
         /// 15067
         /// </summary>
         public const uint NotificationRibbonVisible = 15067;
+        /// <summary>
+        /// 15068
+        /// </summary>
+        public const uint HeaderMeetingInfoVisible = 15068;
+
         /// <summary>
         /// 15083 - Press for Call help desk on AC/VC
         /// </summary>
@@ -935,5 +968,24 @@ namespace PepperDash.Essentials
         /// 15214
         /// </summary>
         public const uint PinDialogDot4 = 15214;
+
+        //  Password Prompt Dialog **************************
+
+        /// <summary>
+        /// 15301
+        /// </summary>
+        public const uint PasswordPromptDialogVisible = 15301;
+        /// <summary>
+        /// 15302
+        /// </summary>
+        public const uint PasswordPromptTextPress = 15302;
+        /// <summary>
+        /// 15306
+        /// </summary>
+        public const uint PasswordPromptCancelPress = 15306;
+        /// <summary>
+        /// 15307
+        /// </summary>
+        public const uint PasswordPromptErrorVisible = 15307;
     }
 }

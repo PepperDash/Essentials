@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
+using PepperDash.Essentials.Devices.Common.VideoCodec.CiscoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
@@ -276,9 +277,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public SoftwareID SoftwareID { get; set; }
         }
 
-        public class Availability
+        public class Availability : ValueProperty
         {
-            public string Value { get; set; }
+            string _Value;
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    // If the incoming value is "Available" it sets the BoolValue true, otherwise sets it false
+                    _Value = value;
+                    BoolValue = value == "Available";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class Status2 : ValueProperty
@@ -310,6 +327,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public SpeakerTrack()
             {
                 Status = new Status2();
+                Availability = new Availability();
             }
         }
 
@@ -422,9 +440,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public CallId CallId { get; set; }
         }
 
-        public class DoNotDisturb
+        public class DoNotDisturb : ValueProperty
         {
-            public string Value { get; set; }
+            string _Value;
+
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "On" || value == "Active";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class Mode
@@ -582,6 +617,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Conference2()
             {
                 Presentation = new Presentation();
+                DoNotDisturb = new DoNotDisturb();
             }
         }
 
@@ -1362,14 +1398,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public class State : ValueProperty
         {
+            string _value;
+
             public bool BoolValue { get; private set; }
 
             public string Value // Valid values are Standby/EnteringStandby/Halfwake/Off
             {
+                get { return _value; }
                 set
                 {
+                    _value = value;
                     // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
-                    BoolValue = value == "On";
+                    BoolValue = value == "On" || value == "Standby";
                     OnValueChanged();
                 }
             }
@@ -1606,6 +1646,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
+        public class MainVideoMute : ValueProperty
+        {
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                set
+                {
+                    // If the incoming value is "On" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "On";
+                    OnValueChanged();
+                }
+            }
+           
+        }
+
         public class ConnectorId
         {
             public string Value { get; set; }
@@ -1662,7 +1718,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             public List<Connector> Connector { get; set; }
             public MainVideoSource MainVideoSource { get; set; }
+            public MainVideoMute MainVideoMute { get; set; }
             public List<Source> Source { get; set; }
+
+            public Input2()
+            {
+                MainVideoMute = new MainVideoMute();
+            }
         }
 
         public class Local : ValueProperty
@@ -1858,6 +1920,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 Selfview = new Selfview();
                 Layout = new Layout();
+                Input = new Input2();
             }
         }
 
@@ -2050,6 +2113,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Conference = new Conference2();
                 SystemUnit = new SystemUnit();
                 Video = new Video();
+                Conference = new Conference2();
             }
         }
 

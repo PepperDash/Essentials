@@ -123,7 +123,7 @@ namespace PepperDash.Essentials
         /// <param name="fileName"></param>
         static LoadedAssembly LoadAssembly(string filePath)
         {
-            Debug.Console(2, "Attempting to load {0}", filePath);
+            //Debug.Console(2, "Attempting to load {0}", filePath);
             var assembly = Assembly.LoadFrom(filePath);
             if (assembly != null)
             {
@@ -358,14 +358,27 @@ namespace PepperDash.Essentials
                 try
                 {
                     var assy = loadedAssembly.Assembly;
-                    var types = assy.GetTypes();
+                    CType[] types = {};
+                    try
+                    {
+                        types = assy.GetTypes();
+                    }
+                    catch (TypeLoadException e)
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Warning, "Unable to get types for assembly {0}: {1}",
+                            loadedAssembly.Name, e.Message);
+                        Debug.Console(2, e.StackTrace);
+                        continue;
+                    }
+
                     foreach (var type in types)
                     {
                         try
                         {
-                            if (typeof(IPluginDeviceFactory).IsAssignableFrom(type))
+                            if (typeof (IPluginDeviceFactory).IsAssignableFrom(type) && !type.IsAbstract)
                             {
-                                var plugin = (IPluginDeviceFactory)Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
+                                var plugin =
+                                    (IPluginDeviceFactory) Crestron.SimplSharp.Reflection.Activator.CreateInstance(type);
                                 LoadCustomPlugin(plugin, loadedAssembly);
                             }
                             else
@@ -378,10 +391,15 @@ namespace PepperDash.Essentials
                                 }
                             }
                         }
+                        catch (NotSupportedException e)
+                        {
+                            //this happens for dlls that aren't PD dlls, like ports of Mono classes into S#. Swallowing.
+                               
+                        }
                         catch (Exception e)
                         {
                             Debug.Console(2, "Load Plugin not found. {0}.{2} is not a plugin factory. Exception: {1}",
-                                loadedAssembly.Name, e, type.Name);
+                                loadedAssembly.Name, e.Message, type.Name);
                             continue;
                         }
 
@@ -389,7 +407,9 @@ namespace PepperDash.Essentials
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(2, "Error Loading Assembly: {0} Exception: {1} ", loadedAssembly.Name, e);
+                    Debug.Console(0, Debug.ErrorLogLevel.Warning, "Error Loading assembly {0}: {1}",
+                           loadedAssembly.Name, e.Message);
+                    Debug.Console(2, "{0}", e.StackTrace);
                     continue;
                 }
             }
@@ -402,13 +422,16 @@ namespace PepperDash.Essentials
         /// Loads a
         /// </summary>
         /// <param name="plugin"></param>
+        /// <param name="loadedAssembly"></param>
         static void LoadCustomPlugin(IPluginDeviceFactory plugin, LoadedAssembly loadedAssembly)
         {
             var passed = Global.IsRunningMinimumVersionOrHigher(plugin.MinimumEssentialsFrameworkVersion);
 
             if (!passed)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Error, "Plugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin", plugin.MinimumEssentialsFrameworkVersion);
+                Debug.Console(0, Debug.ErrorLogLevel.Error,
+                    "\r\n********************\r\n\tPlugin indicates minimum Essentials version {0}.  Dependency check failed.  Skipping Plugin {1}\r\n********************",
+                    plugin.MinimumEssentialsFrameworkVersion, loadedAssembly.Name);
                 return;
             }
             else

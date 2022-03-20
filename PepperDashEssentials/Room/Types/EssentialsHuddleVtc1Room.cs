@@ -13,13 +13,13 @@ using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 using PepperDash.Essentials.Devices.Common.AudioCodec;
-using PepperDash_Essentials_Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IHasCurrentSourceInfoChange,
-        IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback
-	{
+    public class EssentialsHuddleVtc1Room : EssentialsRoomBase, IEssentialsHuddleVtc1Room
+    {
+        private bool _codecExternalSourceChange;
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSourceChange;
 
@@ -50,20 +50,6 @@ namespace PepperDash.Essentials
         public BoolFeedback IsSharingFeedback { get; private set; }
 
         //************************
-
-		public override string SourceListKey
-		{
-			get
-			{
-				return _SourceListKey;
-			}
-			set
-			{
-				_SourceListKey = value;
-				SetCodecExternalSources();
-				
-			}
-		}
 
         protected override Func<bool> OnFeedbackFunc
         {
@@ -115,7 +101,7 @@ namespace PepperDash.Essentials
             }
         }
 
-        public EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; private set; }
+        public EssentialsConferenceRoomPropertiesConfig PropertiesConfig { get; private set; }
 
 		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
 		public IBasicVolumeControls DefaultAudioDevice { get; private set; }
@@ -192,10 +178,12 @@ namespace PepperDash.Essentials
 					handler(_CurrentSourceInfo, ChangeType.DidChange);
 
                 var vc = VideoCodec as IHasExternalSourceSwitching;
-                if (vc != null)
+                if (vc != null && !_codecExternalSourceChange)
                 {
                     vc.SetSelectedSource(CurrentSourceInfoKey);
                 }
+
+			    _codecExternalSourceChange = false;
 			}
 		}
 		SourceListItem _CurrentSourceInfo;
@@ -222,23 +210,31 @@ namespace PepperDash.Essentials
             {
                 PropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
                     (config.Properties.ToString());
-                DefaultDisplay = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultDisplayKey) as IRoutingSinkWithSwitching;
+                DefaultDisplay = DeviceManager.GetDeviceForKey((PropertiesConfig as EssentialsHuddleVtc1PropertiesConfig).DefaultDisplayKey) as IRoutingSinkWithSwitching;
 
                 VideoCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.VideoCodecKey) as
                     PepperDash.Essentials.Devices.Common.VideoCodec.VideoCodecBase;
-				
+
 
                 if (VideoCodec == null)
-                    throw new ArgumentNullException("codec cannot be null");
-				
+                {
+                    Debug.Console(0, Debug.ErrorLogLevel.Error, "No Video Codec set.  Please check 'videoCodecKey' property in room config");
+                    throw new ArgumentNullException("VideoCodec cannot be null");
+                }
+
                 AudioCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.AudioCodecKey) as
                     PepperDash.Essentials.Devices.Common.AudioCodec.AudioCodecBase;
                 if (AudioCodec == null)
                     Debug.Console(0, this, "No Audio Codec Found");
 
                 DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IBasicVolumeControls;
+                if (DefaultAudioDevice == null)
+                {
+                    Debug.Console(0, Debug.ErrorLogLevel.Error, "No Default Audio Device set.  Please check 'defaultAudioKey' property in room config");
+                    throw new ArgumentNullException("DefaultAudioDevice cannot be null");
+                }
 
-                Initialize();
+                InitializeRoom();
             }
             catch (Exception e)
             {
@@ -246,7 +242,7 @@ namespace PepperDash.Essentials
             }
         }
 
-        void Initialize()
+        void InitializeRoom()
 		{
             try
             {
@@ -338,7 +334,10 @@ namespace PepperDash.Essentials
 
                 CallTypeFeedback = new IntFeedback(() => 0);
 
-                SourceListKey = "default";
+                SetupEnvironmentalControlDevices();
+
+                SetSourceListKey();
+
                 EnablePowerOnToLastSource = true;
             }
             catch (Exception e)
@@ -346,6 +345,36 @@ namespace PepperDash.Essentials
                 Debug.Console(0, this, "Error Initializing Room: {0}", e);
             }
    		}
+
+        private void SetupEnvironmentalControlDevices()
+        {
+            if (PropertiesConfig.Environment != null)
+            {
+                if (PropertiesConfig.Environment.Enabled)
+                {
+                    foreach (var d in PropertiesConfig.Environment.DeviceKeys)
+                    {
+                        var envDevice = DeviceManager.GetDeviceForKey(d) as EssentialsDevice;
+                        EnvironmentalControlDevices.Add(envDevice);
+                    }
+                }
+            }
+        }
+
+
+        private void SetSourceListKey()
+        {
+            if (!string.IsNullOrEmpty(PropertiesConfig.SourceListKey))
+            {
+                SetSourceListKey(PropertiesConfig.SourceListKey);
+            }
+            else
+            {
+                SetSourceListKey(Key);
+            }
+
+			SetCodecExternalSources();
+        }
 
         protected override void CustomSetConfig(DeviceConfig config)
         {
@@ -370,12 +399,13 @@ namespace PepperDash.Essentials
             this.LogoUrlLightBkgnd = PropertiesConfig.LogoLight.GetLogoUrlLight();
             this.LogoUrlDarkBkgnd = PropertiesConfig.LogoDark.GetLogoUrlDark();
 
-            this.SourceListKey = PropertiesConfig.SourceListKey;
             this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
             this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
 			
             return base.CustomActivate();
         }
+
+        
 
         /// <summary>
         /// 
@@ -414,8 +444,22 @@ namespace PepperDash.Essentials
         /// <returns></returns>
         public bool RunDefaultCallRoute()
         {
+            Debug.Console(2, this, "RunDefaultCallRoute() Currently Sharing Content: {0}", VideoCodec.SharingContentIsOnFeedback.BoolValue); 
+
+            if (VideoCodec.SharingContentIsOnFeedback.BoolValue)
+            {
+                Debug.Console(2, this, "Currently sharing content.  Ignoring request to run default call route.");
+                return false;
+            }
+
             RunRouteAction(DefaultCodecRouteString);
             return true;
+        }
+
+        public void RunRouteActionCodec(string routeKey, string sourceListKey)
+        {
+            _codecExternalSourceChange = true;
+            RunRouteAction(routeKey, sourceListKey);
         }
 
         /// <summary>
@@ -443,7 +487,8 @@ namespace PepperDash.Essentials
             else
             {
                 Debug.Console(1, this, "sourceListKey present but not yet implemented");
-                throw new NotImplementedException();
+
+                RunRouteAction(routeKey, new Action(() => { }));
             }
         }
 
@@ -460,7 +505,11 @@ namespace PepperDash.Essentials
                 RunRouteAction(routeKey, successCallback);
             }
             else
-                throw new NotImplementedException();
+            {
+                Debug.Console(1, this, "sourceListKey present but not yet implemented");
+
+                RunRouteAction(routeKey, successCallback);
+            }
         }
 
 		/// <summary>
@@ -597,12 +646,21 @@ namespace PepperDash.Essentials
                         if (VideoCodec.UsageTracker.InUseTracker.InUseFeedback.BoolValue)
                         {
                             Debug.Console(1, this, "Video Codec in use, deactivating standby on codec");
+                            VideoCodec.StandbyDeactivate();
                         }
 
                         if (VideoCodec.StandbyIsOnFeedback.BoolValue)
                         {
                             VideoCodec.StandbyDeactivate();
                         }
+                        else
+                        {
+                            Debug.Console(1, this, "Video codec not in standby. No need to wake.");
+                        }
+                    }
+                    else
+                    {
+                        Debug.Console(1, this, "Room OnFeedback state: {0}", OnFeedback.BoolValue);
                     }
 
                     // report back when done
@@ -712,10 +770,10 @@ namespace PepperDash.Essentials
 		/// </summary>
 		public static void AllRoomsOff()
 		{
-			var allRooms = DeviceManager.AllDevices.Where(d => 
-				d is EssentialsHuddleSpaceRoom && !(d as EssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
+			var allRooms = DeviceManager.AllDevices.Where(d =>
+                d is IEssentialsRoom && !(d as IEssentialsHuddleSpaceRoom).ExcludeFromGlobalFunctions);
 			foreach (var room in allRooms)
-				(room as EssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
+                (room as IEssentialsHuddleSpaceRoom).RunRouteAction("roomOff");
 		}
 
 
@@ -738,7 +796,7 @@ namespace PepperDash.Essentials
                     x => x.DestinationKey == VideoCodec.Key && x.DestinationPort == videoCodecWithExternalSwitching.ExternalSourceInputPort).DestinationPort;
 
                 videoCodecWithExternalSwitching.ClearExternalSources();
-                videoCodecWithExternalSwitching.RunRouteAction = RunRouteAction;
+                videoCodecWithExternalSwitching.RunRouteAction = RunRouteActionCodec;
                 var srcList = ConfigReader.ConfigObject.SourceLists.SingleOrDefault(x => x.Key == SourceListKey).Value.OrderBy(kv => kv.Value.Order); ;
 
                 foreach (var kvp in srcList)

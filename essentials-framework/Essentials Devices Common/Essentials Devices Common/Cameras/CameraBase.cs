@@ -8,6 +8,8 @@ using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Devices.Common.Codec;
@@ -25,7 +27,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         Focus = 8
     }
 
-    public abstract class CameraBase : EssentialsDevice, IRoutingOutputs
+    public abstract class CameraBase : ReconfigurableDevice, IRoutingOutputs
 	{
         public eCameraControlMode ControlMode { get; protected set; }
 
@@ -70,12 +72,18 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
         // A bitmasked value to indicate the movement capabilites of this camera
         protected eCameraCapabilities Capabilities { get; set; }
 
-        protected CameraBase(string key, string name) :
-			base(key, name) 
-        {
-            OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
+		protected CameraBase(DeviceConfig config) : base(config)
+		{
+			OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
 
-            ControlMode = eCameraControlMode.Manual;
+			ControlMode = eCameraControlMode.Manual;
+
+		}
+
+        protected CameraBase(string key, string name) : 
+			this (new DeviceConfig{Name = name, Key = key})
+        {
+				
         }
 
         protected void LinkCameraToApi(CameraBase cameraDevice, BasicTriList trilist, uint joinStart, string joinMapKey,
@@ -208,20 +216,10 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 var presetsCamera = cameraDevice as IHasCameraPresets;
                 presetsCamera.PresetsListHasChanged += new EventHandler<EventArgs>((o, a) =>
                 {
-                    for (int i = 1; i <= joinMap.NumberOfPresets.JoinNumber; i++)
-                    {
-                        int tempNum = i - 1;
-
-                        string label = "";
-
-                        var preset = presetsCamera.Presets.FirstOrDefault(p => p.ID.Equals(i));
-
-                        if (preset != null)
-                            label = preset.Description;
-
-                        trilist.SetString((ushort) (joinMap.PresetLabelStart.JoinNumber + tempNum), label);
-                    }
+                    SendCameraPresetNamesToApi(presetsCamera, joinMap, trilist);
                 });
+
+                SendCameraPresetNamesToApi(presetsCamera, joinMap, trilist);
 
                 for (int i = 0; i < joinMap.NumberOfPresets.JoinNumber; i++)
                 {
@@ -238,9 +236,34 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                         presetsCamera.PresetStore(tempNum, label);
                     });
                 }
+                trilist.OnlineStatusChange += (sender, args) =>
+                {
+                    if (!args.DeviceOnLine)
+                    { return; }
+
+                    SendCameraPresetNamesToApi(presetsCamera, joinMap, trilist);
+                };
+
+            }
+        }
+        private void SendCameraPresetNamesToApi(IHasCameraPresets presetsCamera, CameraControllerJoinMap joinMap, BasicTriList trilist)
+        {
+            for (int i = 1; i <= joinMap.NumberOfPresets.JoinNumber; i++)
+            {
+                int tempNum = i - 1;
+
+                string label = "";
+
+                var preset = presetsCamera.Presets.FirstOrDefault(p => p.ID.Equals(i));
+
+                if (preset != null)
+                    label = preset.Description;
+
+                trilist.SetString((ushort)(joinMap.PresetLabelStart.JoinNumber + tempNum), label);
             }
         }
 	}
+
 
     public class CameraPreset : PresetBase
     {

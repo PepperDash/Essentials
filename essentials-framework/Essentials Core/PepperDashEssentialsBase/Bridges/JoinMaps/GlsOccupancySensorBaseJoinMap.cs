@@ -154,7 +154,7 @@ namespace PepperDash.Essentials.Core.Bridges
 
         [JoinName("PirSensitivityInVacantState")]
         public JoinDataComplete PirSensitivityInVacantState = new JoinDataComplete(new JoinData { JoinNumber = 8, JoinSpan = 1 },
-            new JoinMetadata { Description = "Occ Sensor Ultrasonic Sensitivity in Vacant State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
+            new JoinMetadata { Description = "Occ Sensor PIR Sensitivity in Vacant State", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Analog });
 
         [JoinName("Name")]
         public JoinDataComplete Name = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },

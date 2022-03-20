@@ -48,19 +48,19 @@
   <ItemGroup>
     <Reference Include="Crestron.SimplSharpPro.DeviceSupport, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DeviceSupport.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.DeviceSupport.dll</HintPath>
     </Reference>
     <Reference Include="Crestron.SimplSharpPro.Gateways, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Gateways.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Gateways.dll</HintPath>
     </Reference>
     <Reference Include="Crestron.SimplSharpPro.GeneralIO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.GeneralIO.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.GeneralIO.dll</HintPath>
     </Reference>
     <Reference Include="Crestron.SimplSharpPro.Lighting, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Lighting.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Lighting.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="PepperDash_Core, Version=1.0.42.30563, Culture=neutral, processorArchitecture=MSIL">
@@ -69,26 +69,26 @@
     </Reference>
     <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimplSharpNewtonsoft, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpNewtonsoft.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpNewtonsoft.dll</HintPath>
     </Reference>
     <Reference Include="SimplSharpPro, Version=1.5.3.17, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpPro.exe</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -108,6 +108,7 @@
     <Compile Include="Codec\eCodecCallStatus.cs" />
     <Compile Include="Codec\eMeetingPrivacy.cs" />
     <Compile Include="Codec\iCodecAudio.cs" />
+    <Compile Include="Codec\IHasDoNotDisturb.cs" />
     <Compile Include="Codec\IHasExternalSourceSwitching.cs" />
     <Compile Include="ImageProcessors\TVOneCorio.cs" />
     <Compile Include="ImageProcessors\TVOneCorioPropertiesConfig.cs" />
@@ -117,11 +118,19 @@
     <Compile Include="ImageProcessors\AnalogWay\AnalogWayLiveCorePropertiesConfig.cs" />
     <Compile Include="SoftCodec\BlueJeansPc.cs" />
     <Compile Include="VideoCodec\CiscoCodec\CiscoCamera.cs" />
+    <Compile Include="VideoCodec\CiscoCodec\CiscoCodecJoinMap.cs" />
     <Compile Include="VideoCodec\CiscoCodec\RoomPresets.cs" />
     <Compile Include="Cameras\CameraControl.cs" />
     <Compile Include="Display\PanasonicThDisplay.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasMeetingInfo.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasMeetingLock.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasMeetingRecording.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasParticipants.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasPresentationOnlyMeeting.cs" />
     <Compile Include="VideoCodec\Interfaces\IHasSelfviewPosition.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasSelfviewSize.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasStandbyMode.cs" />
+    <Compile Include="VideoCodec\Interfaces\IHasStartMeeting.cs" />
     <Compile Include="VideoCodec\Interfaces\iVideoCodecInfo.cs" />
     <Compile Include="Codec\iHasCallFavorites.cs" />
     <Compile Include="Codec\iHasCallHistory.cs" />
@@ -176,6 +185,7 @@
     <Compile Include="VideoCodec\ZoomRoom\ResponseObjects.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoom.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoomCamera.cs" />
+    <Compile Include="VideoCodec\ZoomRoom\ZoomRoomJoinMap.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoomPropertiesConfig.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>

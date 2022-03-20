@@ -12,11 +12,12 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Presets;
 using PepperDash.Essentials.Core.Routing;
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PepperDash.Essentials.Devices.Common
 {
     [Description("Wrapper class for an IR Set Top Box")]
-    public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IHasPowerControl
+    public class IRSetTopBoxBase : EssentialsBridgeableDevice, ISetTopBoxControls, IRoutingOutputs, IUsageTracking, IHasPowerControl, ITvPresetsProvider
 	{
 		public IrOutputPortController IrPort { get; private set; }
 
@@ -28,7 +29,7 @@ namespace PepperDash.Essentials.Devices.Common
         public bool HasDpad { get; set; }
         public bool HasNumeric { get; set; }
 
-        public DevicePresetsModel PresetsModel { get; private set; }
+        public DevicePresetsModel TvPresets { get; private set; }
 
 		public IRSetTopBoxBase(string key, string name, IrOutputPortController portCont,
             SetTopBoxPropertiesConfig props)
@@ -54,7 +55,7 @@ namespace PepperDash.Essentials.Devices.Common
 			KeypadAccessoryButton1Label = "-";
 
 			HasKeypadAccessoryButton2 = true;
-			KeypadAccessoryButton2Command = "NumericEnter";
+			KeypadAccessoryButton2Command = "KEYPAD_ENTER";
 			KeypadAccessoryButton2Label = "Enter";
 
 			AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyVideoOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
@@ -66,8 +67,8 @@ namespace PepperDash.Essentials.Devices.Common
 
 		public void LoadPresets(string filePath)
 		{
-			PresetsModel = new DevicePresetsModel(Key + "-presets", this, filePath);
-			DeviceManager.AddDevice(PresetsModel);
+			TvPresets = new DevicePresetsModel(Key + "-presets", this, filePath);
+			DeviceManager.AddDevice(TvPresets);
 		}
 
 
@@ -387,9 +388,16 @@ namespace PepperDash.Essentials.Devices.Common
             }
 
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.Console(0, "Linking to Display: {0}", Name);
+            Debug.Console(0, "Linking to SetTopBox: {0}", Name);
 
-            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = Name;
+            trilist.OnlineStatusChange += new OnlineStatusChangeEventHandler((o, a) =>
+            {
+                if (a.DeviceOnLine)
+                {
+                    trilist.StringInput[joinMap.Name.JoinNumber].StringValue = Name;
+                }
+            });
+
 
             var stbBase = this as ISetTopBoxControls;
             if (stbBase != null)

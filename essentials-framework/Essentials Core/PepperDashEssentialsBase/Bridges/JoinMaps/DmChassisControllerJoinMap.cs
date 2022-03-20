@@ -10,7 +10,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinMetadata
             {
                 Description = "DM Chassis enable audio breakaway routing",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
 
@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinMetadata
             {
                 Description = "DM Chassis enable USB breakaway routing",
-                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
 
@@ -76,6 +76,18 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete HdcpSupportCapability = new JoinDataComplete(new JoinData { JoinNumber = 1201, JoinSpan = 32 },
             new JoinMetadata { Description = "DM Chassis Input HDCP Support Capability", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Analog });
 
+        [JoinName("InputStreamCardState")]
+        public JoinDataComplete InputStreamCardState = new JoinDataComplete(new JoinData { JoinNumber = 1501, JoinSpan = 32 },
+            new JoinMetadata { Description = "DM Chassis Stream Input Start (1), Stop (2), Pause (3) with Feedback", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("OutputStreamCardState")]
+        public JoinDataComplete OutputStreamCardState = new JoinDataComplete(new JoinData { JoinNumber = 1601, JoinSpan = 32 },
+            new JoinMetadata { Description = "DM Chassis Stream Output Start (1), Stop (2), Pause (3) with Feedback", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Analog });
+
+        [JoinName("NoRouteName")]
+        public JoinDataComplete NoRouteName = new JoinDataComplete(new JoinData { JoinNumber = 100, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM Chassis Input Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
         [JoinName("InputNames")]
         public JoinDataComplete InputNames = new JoinDataComplete(new JoinData { JoinNumber = 101, JoinSpan = 32 },
             new JoinMetadata { Description = "DM Chassis Input Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
@@ -88,7 +100,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinDataComplete(new JoinData {JoinNumber = 501, JoinSpan = 200},
                 new JoinMetadata
                 {
-                    Description = "Video Input Name",
+                    Description = "DM Chassis Video Input Names",
                     JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                     JoinType = eJoinType.Serial
                 });
@@ -98,7 +110,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinDataComplete(new JoinData { JoinNumber = 701, JoinSpan = 200 },
             new JoinMetadata
             {
-                Description = "Video Input Name",
+                Description = "DM Chassis Audio Input Names",
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.Serial
             });
@@ -107,7 +119,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinDataComplete(new JoinData { JoinNumber = 901, JoinSpan = 200 },
             new JoinMetadata
             {
-                Description = "Video Input Name",
+                Description = "DM Chassis Video Output Names",
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.Serial
             });
@@ -116,7 +128,7 @@ namespace PepperDash.Essentials.Core.Bridges
             new JoinDataComplete(new JoinData { JoinNumber = 1101, JoinSpan = 200 },
             new JoinMetadata
             {
-                Description = "Video Input Name",
+                Description = "DM Chassis Audio Output Names",
                 JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
                 JoinType = eJoinType.Serial
             });

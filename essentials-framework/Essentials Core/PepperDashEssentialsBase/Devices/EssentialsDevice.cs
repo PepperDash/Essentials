@@ -19,13 +19,34 @@ namespace PepperDash.Essentials.Core
         protected EssentialsDevice(string key)
             : base(key)
         {
-
+            SubscribeToActivateComplete();
         }
 
         protected EssentialsDevice(string key, string name)
             : base(key, name)
         {
+            SubscribeToActivateComplete();
+        }
 
+        private void SubscribeToActivateComplete()
+        {
+            DeviceManager.AllDevicesActivated += DeviceManagerOnAllDevicesActivated;
+        }
+
+        private void DeviceManagerOnAllDevicesActivated(object sender, EventArgs eventArgs)
+        {
+            CrestronInvoke.BeginInvoke((o) =>
+            {
+                try
+                {
+                    Initialize();
+                }
+                catch (Exception ex)
+                {
+                    Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Exception initializing device: {0}", ex.Message);
+                    Debug.Console(1, this, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.StackTrace);
+                }
+            });
         }
     }
 
@@ -36,7 +57,7 @@ namespace PepperDash.Essentials.Core
 
         public DescriptionAttribute(string description)
         {
-            Debug.Console(2, "Setting Description: {0}", description);
+            //Debug.Console(2, "Setting Description: {0}", description);
             _Description = description;
         }
 
@@ -53,7 +74,7 @@ namespace PepperDash.Essentials.Core
 
         public ConfigSnippetAttribute(string configSnippet)
         {
-            Debug.Console(2, "Setting Config Snippet {0}", configSnippet);
+            //Debug.Console(2, "Setting Config Snippet {0}", configSnippet);
             _ConfigSnippet = configSnippet;
         }
 
@@ -82,7 +103,7 @@ namespace PepperDash.Essentials.Core
         {
             foreach (var typeName in TypeNames)
             {
-                Debug.Console(2, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
+                //Debug.Console(2, "Getting Description Attribute from class: '{0}'", typeof(T).FullName);
                 var descriptionAttribute = typeof(T).GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[];
                 string description = descriptionAttribute[0].Description;
                 var snippetAttribute = typeof(T).GetCustomAttributes(typeof(ConfigSnippetAttribute), true) as ConfigSnippetAttribute[];

@@ -56,6 +56,11 @@ namespace PepperDash.Essentials.Core
 
 	    private void RegisterAndConfigureComPort()
 	    {
+	        if (Port == null)
+	        {
+	            Debug.Console(0,this,Debug.ErrorLogLevel.Error, "Configured com Port for this device does not exist.");
+	            return;
+	        }
             if (Port.Parent is CrestronControlSystem)
             {
                 var result = Port.Register();
@@ -87,18 +92,20 @@ namespace PepperDash.Essentials.Core
 
         void OnDataReceived(string s)
         {
+
             var bytesHandler = BytesReceived;
             if (bytesHandler != null)
             {
                 var bytes = Encoding.GetEncoding(28591).GetBytes(s);
+				if (StreamDebugging.RxStreamDebuggingIsEnabled)
+					Debug.Console(0, this, "Received: '{0}'", ComTextHelper.GetEscapedText(bytes));
                 bytesHandler(this, new GenericCommMethodReceiveBytesArgs(bytes));
             }
             var textHandler = TextReceived;
             if (textHandler != null)
             {
-                if (StreamDebugging.RxStreamDebuggingIsEnabled)
-                    Debug.Console(0, this, "Recevied: '{0}'", s);
-
+				if (StreamDebugging.RxStreamDebuggingIsEnabled)
+					Debug.Console(0, this, "Received: '{0}'", s);
                 textHandler(this, new GenericCommMethodReceiveTextArgs(s));
             }
         }

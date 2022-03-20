@@ -16,13 +16,16 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.DM.Config;
 
-namespace PepperDash.Essentials.DM {
+namespace PepperDash.Essentials.DM
+{
     /// <summary>
     /// Builds a controller for basic DM-RMCs with Com and IR ports and no control functions
     /// 
     /// </summary>
     public class DmBladeChassisController : CrestronGenericBridgeableBaseDevice, IDmSwitch, IRoutingNumericWithFeedback
     {
+        private const string NonePortKey = "inputCard0--None";
+
         public DMChassisPropertiesConfig PropertiesConfig { get; set; }
 
         public Switch Chassis { get; private set; }
@@ -73,8 +76,10 @@ namespace PepperDash.Essentials.DM {
         /// Factory method to create a new chassis controller from config data. Limited to 8x8 right now
         /// </summary>
         public static DmBladeChassisController GetDmChassisController(string key, string name,
-            string type, DMChassisPropertiesConfig properties) {
-            try {
+            string type, DMChassisPropertiesConfig properties)
+        {
+            try
+            {
                 type = type.ToLower();
                 uint ipid = properties.Control.IpIdInt;
 
@@ -83,7 +88,8 @@ namespace PepperDash.Essentials.DM {
                 else if (type == "dmmd128x128") { chassis = new DmMd128x128(ipid, Global.ControlSystem); }
 
 
-                if (chassis == null) {
+                if (chassis == null)
+                {
                     return null;
                 }
 
@@ -91,11 +97,13 @@ namespace PepperDash.Essentials.DM {
                 // add the cards and port names
                 foreach (var kvp in properties.InputSlots)
                     controller.AddInputBlade(kvp.Value, kvp.Key);
-                foreach (var kvp in properties.OutputSlots) {
+                foreach (var kvp in properties.OutputSlots)
+                {
                     controller.AddOutputBlade(kvp.Value, kvp.Key);
                 }
 
-                foreach (var kvp in properties.VolumeControls) {
+                foreach (var kvp in properties.VolumeControls)
+                {
                     // get the card
                     // check it for an audio-compatible type
                     // make a something-something that will make it work
@@ -112,12 +120,17 @@ namespace PepperDash.Essentials.DM {
                     controller.AddVolumeControl(outNum, audio);
                 }
 
+                controller.InputPorts.Add(new RoutingInputPort(NonePortKey, eRoutingSignalType.Video,
+                    eRoutingPortConnectionType.None, null, controller));
+
+
                 controller.InputNames = properties.InputNames;
                 controller.OutputNames = properties.OutputNames;
                 controller.PropertiesConfig = properties;
                 return controller;
             }
-            catch (System.Exception e) {
+            catch (System.Exception e)
+            {
                 Debug.Console(0, "Error creating DM chassis:\r{0}", e);
             }
             return null;
@@ -131,7 +144,8 @@ namespace PepperDash.Essentials.DM {
         /// <param name="name"></param>
         /// <param name="chassis"></param>
         public DmBladeChassisController(string key, string name, BladeSwitch chassis)
-            : base(key, name, chassis) {
+            : base(key, name, chassis)
+        {
             Chassis = chassis;
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
@@ -155,68 +169,87 @@ namespace PepperDash.Essentials.DM {
             InputCardHdcpCapabilityFeedbacks = new Dictionary<uint, IntFeedback>();
             InputCardHdcpCapabilityTypes = new Dictionary<uint, eHdcpCapabilityType>();
 
-            for (uint x = 1; x <= Chassis.NumberOfOutputs; x++) {
+            for (uint x = 1; x <= Chassis.NumberOfOutputs; x++)
+            {
                 var tempX = x;
 
-                if (Chassis.Outputs[tempX] != null) {
-                    VideoOutputFeedbacks[tempX] = new IntFeedback(() => {
+                if (Chassis.Outputs[tempX] != null)
+                {
+                    VideoOutputFeedbacks[tempX] = new IntFeedback(() =>
+                    {
                         if (Chassis.Outputs[tempX].VideoOutFeedback != null) { return (ushort)Chassis.Outputs[tempX].VideoOutFeedback.Number; }
                         else { return 0; };
                     });
 
-                    OutputNameFeedbacks[tempX] = new StringFeedback(() => {
-                        if (Chassis.Outputs[tempX].NameFeedback != null) {
+                    OutputNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (Chassis.Outputs[tempX].NameFeedback != null)
+                        {
                             return Chassis.Outputs[tempX].NameFeedback.StringValue;
                         }
-                        else {
+                        else
+                        {
                             return "";
                         }
                     });
-                    OutputVideoRouteNameFeedbacks[tempX] = new StringFeedback(() => {
-                        if (Chassis.Outputs[tempX].VideoOutFeedback != null) {
+                    OutputVideoRouteNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (Chassis.Outputs[tempX].VideoOutFeedback != null)
+                        {
                             return Chassis.Outputs[tempX].VideoOutFeedback.NameFeedback.StringValue;
                         }
-                        else {
+                        else
+                        {
                             return "";
                         }
                     });
 
-                    OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => {
+                    OutputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() =>
+                    {
                         //if (Chassis.Outputs[tempX].Endpoint != null)
                         //    return Chassis.Outputs[tempX].Endpoint.IsOnline;
                         //else
-                            return Chassis.Outputs[tempX].EndpointOnlineFeedback;
+                        return Chassis.Outputs[tempX].EndpointOnlineFeedback;
                     });
                 }
 
-                if (Chassis.Inputs[tempX] != null) {
-                    UsbInputRoutedToFeebacks[tempX] = new IntFeedback(() => {
+                if (Chassis.Inputs[tempX] != null)
+                {
+                    UsbInputRoutedToFeebacks[tempX] = new IntFeedback(() =>
+                    {
                         if (Chassis.Inputs[tempX].USBRoutedToFeedback != null) { return (ushort)Chassis.Inputs[tempX].USBRoutedToFeedback.Number; }
                         else { return 0; };
                     });
-                    VideoInputSyncFeedbacks[tempX] = new BoolFeedback(() => {
+                    VideoInputSyncFeedbacks[tempX] = new BoolFeedback(() =>
+                    {
                         if (Chassis.Inputs[tempX].VideoDetectedFeedback != null)
                             return Chassis.Inputs[tempX].VideoDetectedFeedback.BoolValue;
                         else
                             return false;
                     });
-                    InputNameFeedbacks[tempX] = new StringFeedback(() => {
-                        if (Chassis.Inputs[tempX].NameFeedback != null) {
+                    InputNameFeedbacks[tempX] = new StringFeedback(() =>
+                    {
+                        if (Chassis.Inputs[tempX].NameFeedback != null)
+                        {
                             return Chassis.Inputs[tempX].NameFeedback.StringValue;
                         }
-                        else {
+                        else
+                        {
                             return "";
                         }
                     });
 
-                    InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() => {
+                    InputEndpointOnlineFeedbacks[tempX] = new BoolFeedback(() =>
+                    {
                         return Chassis.Inputs[tempX].EndpointOnlineFeedback;
                     });
 
-                    InputCardHdcpCapabilityFeedbacks[tempX] = new IntFeedback(() => {
+                    InputCardHdcpCapabilityFeedbacks[tempX] = new IntFeedback(() =>
+                    {
                         var inputCard = Chassis.Inputs[tempX];
 
-                        if (inputCard.Card is DmHdmi4kInputBladeCard) {
+                        if (inputCard.Card is DmHdmi4kInputBladeCard)
+                        {
                             InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
 
                             if ((inputCard.Card as DmHdmi4kInputBladeCard).Hdmi4kInput.HdcpSupportOnFeedback.BoolValue)
@@ -225,7 +258,8 @@ namespace PepperDash.Essentials.DM {
                                 return 0;
                         }
 
-                        if (inputCard.Card is DmC4kInputBladeCard) {
+                        if (inputCard.Card is DmC4kInputBladeCard)
+                        {
                             InputCardHdcpCapabilityTypes[tempX] = eHdcpCapabilityType.Hdcp2_2Support;
 
                             if ((inputCard.Card as DmC4kInputBladeCard).DmInput.HdcpCapabilityFeedback.Equals(eHdcpCapabilityType.HdcpSupportOff))
@@ -246,45 +280,56 @@ namespace PepperDash.Essentials.DM {
         /// </summary>
         /// <param name="type"></param>
         /// <param name="number"></param>
-        public void AddInputBlade(string type, uint number) {
+        public void AddInputBlade(string type, uint number)
+        {
             Debug.Console(2, this, "Adding input blade '{0}', slot {1}", type, number);
 
             type = type.ToLower();
 
-            if (type == "dmb4kihd") {
+            if (type == "dmb4kihd")
+            {
                 var inputBlade = new Dmb4kIHd(number, this.Chassis);
-                foreach (var item in inputBlade.Inputs) {
+                foreach (var item in inputBlade.Inputs)
+                {
                     var card = (item.Card as DmHdmi4kInputBladeCard).Hdmi4kInput;
                     var cecPort = card as ICec;
                     AddHdmiInBladePorts(item.Number, cecPort);
                 }
             }
 
-            else if (type == "dmb4kihddnt") {
+            else if (type == "dmb4kihddnt")
+            {
                 var inputBlade = new Dmb4kIHd(number, this.Chassis);
-                foreach (var item in inputBlade.Inputs) {
+                foreach (var item in inputBlade.Inputs)
+                {
                     var card = (item.Card as DmHdmi4kInputBladeCard).Hdmi4kInput;
                     var cecPort = card as ICec;
                     AddHdmiInBladePorts(item.Number, cecPort);
                 }
             }
 
-            else if (type == "dmb4kic") {
+            else if (type == "dmb4kic")
+            {
                 var inputBlade = new Dmb4kIC(number, this.Chassis);
-                foreach (var item in inputBlade.Inputs) {
+                foreach (var item in inputBlade.Inputs)
+                {
                     AddDmInBladePorts(item.Number);
                 }
             }
 
-            else if (type == "dmbis") {
+            else if (type == "dmbis")
+            {
                 var inputBlade = new DmbIS(number, this.Chassis);
-                foreach (var item in inputBlade.Inputs) {
+                foreach (var item in inputBlade.Inputs)
+                {
                     AddDmInMmFiberPorts(item.Number);
                 }
             }
-            else if (type == "dmbis2") {
+            else if (type == "dmbis2")
+            {
                 var inputBlade = new DmbIS2(number, this.Chassis);
-                foreach (var item in inputBlade.Inputs) {
+                foreach (var item in inputBlade.Inputs)
+                {
                     AddDmInSmFiberPorts(item.Number);
                 }
             }
@@ -301,19 +346,23 @@ namespace PepperDash.Essentials.DM {
         }
 
 
-        void AddHdmiInBladePorts(uint number, ICec cecPort) {
+        void AddHdmiInBladePorts(uint number, ICec cecPort)
+        {
             AddInputPortWithDebug(number, "hdmiIn", eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, cecPort);
         }
 
-        void AddDmInBladePorts(uint number) {
+        void AddDmInBladePorts(uint number)
+        {
             AddInputPortWithDebug(number, "dmCIn", eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat);
         }
 
-        void AddDmInMmFiberPorts(uint number) {
+        void AddDmInMmFiberPorts(uint number)
+        {
             AddInputPortWithDebug(number, "dmMmIn", eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber);
         }
 
-        void AddDmInSmFiberPorts(uint number) {
+        void AddDmInSmFiberPorts(uint number)
+        {
             AddInputPortWithDebug(number, "dmSmIn", eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber);
         }
 
@@ -322,79 +371,90 @@ namespace PepperDash.Essentials.DM {
         /// </summary>
         /// <param name="type"></param>
         /// <param name="number"></param>
-        public void AddOutputBlade(string type, uint number) {
+        public void AddOutputBlade(string type, uint number)
+        {
             type = type.ToLower();
 
             Debug.Console(2, this, "Adding output blade '{0}', slot {1}", type, number);
-            if (type == "dmb4kohd") {
+            if (type == "dmb4kohd")
+            {
                 var outputBlade = new Dmb4KOHD(number, Chassis);
-                foreach (var item in outputBlade.Outputs) {
+                foreach (var item in outputBlade.Outputs)
+                {
                     AddHdmiOutBladePorts(item.Number);
                 }
             }
 
-            else if (type == "dmb4kohddnt") {
+            else if (type == "dmb4kohddnt")
+            {
                 var outputBlade = new Dmb4KOHD(number, Chassis);
-                foreach (var item in outputBlade.Outputs) {
+                foreach (var item in outputBlade.Outputs)
+                {
                     AddHdmiOutBladePorts(item.Number);
                 }
             }
 
-            else if (type == "dmb4koc") {
+            else if (type == "dmb4koc")
+            {
                 var outputBlade = new Dmb4KOC(number, Chassis);
-                foreach (var item in outputBlade.Outputs) {
+                foreach (var item in outputBlade.Outputs)
+                {
                     AddDmOutBladePorts(item.Number);
                 }
             }
-            else if (type == "dmb4koc") {
+            else if (type == "dmb4koc")
+            {
                 var outputBlade = new Dmb4KOC(number, Chassis);
-                foreach (var item in outputBlade.Outputs) {
+                foreach (var item in outputBlade.Outputs)
+                {
                     AddDmOutBladePorts(item.Number);
                 }
             }
-            else if (type == "dmbos") {
+            else if (type == "dmbos")
+            {
                 var outputBlade = new DmbOS(number, Chassis);
-                foreach (var item in outputBlade.Outputs) {
+                foreach (var item in outputBlade.Outputs)
+                {
                     AddDmOutMmFiberBladePorts(item.Number);
                 }
             }
-            else if (type == "dmbos2") {
+            else if (type == "dmbos2")
+            {
                 var outputBlade = new DmbOS2(number, Chassis);
-                foreach (var item in outputBlade.Outputs) {
+                foreach (var item in outputBlade.Outputs)
+                {
                     AddDmOutSmFiberBladePorts(item.Number);
                 }
             }
         }
 
-        void AddHdmiOutBladePorts(uint number) {
-            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("hdmiOut{0}", number) , eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, number);
+        void AddHdmiOutBladePorts(uint number)
+        {
+            AddOutputPortWithDebug(number, "hdmiOut", eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, Chassis.Outputs[number]);
         }
 
-        void AddDmOutBladePorts(uint number) {
-            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("dmOut{0}", number), eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, number);
+        void AddDmOutBladePorts(uint number)
+        {
+            AddOutputPortWithDebug(number, "dmOut", eRoutingSignalType.Video, eRoutingPortConnectionType.DmCat, Chassis.Outputs[number]);
         }
 
-        void AddDmOutMmFiberBladePorts(uint number) {
-            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("dmOut{0}", number), eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber, number);
+        void AddDmOutMmFiberBladePorts(uint number)
+        {
+            AddOutputPortWithDebug(number, "dmMmOut", eRoutingSignalType.Video, eRoutingPortConnectionType.DmMmFiber, Chassis.Outputs[number]);
         }
 
-        void AddDmOutSmFiberBladePorts(uint number) {
-            AddOutputPortWithDebug(String.Format("outputBlade{0}", (number / 8 > 0 ? 1 : number / 8)), String.Format("dmOut{0}", number), eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber, number);
+        void AddDmOutSmFiberBladePorts(uint number)
+        {
+            AddOutputPortWithDebug(number, "dmSmOut", eRoutingSignalType.Video, eRoutingPortConnectionType.DmSmFiber, Chassis.Outputs[number]);
         }
 
 
         /// <summary>
         /// Adds InputPort
         /// </summary>
-        void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType) {
-            var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
-            Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
-            {
-                FeedbackMatchObject = Chassis.Inputs[cardNum]
-            };
-
-            InputPorts.Add(inputPort);
+        void AddInputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType)
+        {
+            AddInputPortWithDebug(cardNum, portName, sigType, portType, null);
         }
 
         /// <summary>
@@ -405,7 +465,7 @@ namespace PepperDash.Essentials.DM {
         {
             var portKey = string.Format("inputCard{0}--{1}", cardNum, portName);
             Debug.Console(2, this, "Adding input port '{0}'", portKey);
-            var inputPort = new RoutingInputPort(portKey, sigType, portType, cardNum, this)
+            var inputPort = new RoutingInputPort(portKey, sigType, portType, Chassis.Inputs[cardNum], this)
             {
                 FeedbackMatchObject = Chassis.Inputs[cardNum]
             };
@@ -417,23 +477,44 @@ namespace PepperDash.Essentials.DM {
         }
 
 
-        /// <summary>
-        /// Adds OutputPort
-        /// </summary>
-        void AddOutputPortWithDebug(string cardName, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, object selector) {
+        
+        /*void AddOutputPortWithDebug(string cardName, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, object selector) {
             var portKey = string.Format("{0}--{1}", cardName, portName);
             Debug.Console(2, this, "Adding output port '{0}'", portKey);
             OutputPorts.Add(new RoutingOutputPort(portKey, sigType, portType, selector, this)
             {
-                FeedbackMatchObject = Chassis.Outputs[(uint)selector]
+                FeedbackMatchObject = selector
             });
+        }*/
+
+        /// <summary>
+        /// Adds OutputPort
+        /// </summary>
+        void AddOutputPortWithDebug(uint cardNum, string portName, eRoutingSignalType sigType, eRoutingPortConnectionType portType, object selector)
+        {
+            try
+            {
+                var portKey = string.Format("outputCard{0}--{1}", cardNum, portName);
+                Debug.Console(2, this, "Adding output port '{0}'", portKey);
+                var outputPort = new RoutingOutputPort(portKey, sigType, portType, selector, this)
+                {
+                    FeedbackMatchObject = Chassis.Outputs[cardNum]
+                };
+                OutputPorts.Add(outputPort);
+            }
+            catch (Exception ex)
+            {
+                Debug.Console(0, this, "Exception : {0}", ex);
+            }
+
         }
 
 
         /// <summary>
         /// 
         /// </summary>
-        void AddVolumeControl(uint number, Audio.Output audio) {
+        void AddVolumeControl(uint number, Audio.Output audio)
+        {
             VolumeControls.Add(number, new DmCardAudioOutputController(audio));
         }
 
@@ -443,35 +524,43 @@ namespace PepperDash.Essentials.DM {
         //}
 
 
-        void Chassis_DMInputChange(Switch device, DMInputEventArgs args) {
+        void Chassis_DMInputChange(Switch device, DMInputEventArgs args)
+        {
 
-            switch (args.EventId) {
-                case DMInputEventIds.EndpointOnlineEventId: {
+            switch (args.EventId)
+            {
+                case DMInputEventIds.EndpointOnlineEventId:
+                    {
                         Debug.Console(2, this, "DM Input EndpointOnlineEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
                         InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
                         break;
                     }
-                case DMInputEventIds.OnlineFeedbackEventId: {
+                case DMInputEventIds.OnlineFeedbackEventId:
+                    {
                         Debug.Console(2, this, "DM Input OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
                         InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
                         break;
                     }
-                case DMInputEventIds.VideoDetectedEventId: {
+                case DMInputEventIds.VideoDetectedEventId:
+                    {
                         Debug.Console(2, this, "DM Input {0} VideoDetectedEventId", args.Number);
                         VideoInputSyncFeedbacks[args.Number].FireUpdate();
                         break;
                     }
-                case DMInputEventIds.InputNameEventId: {
+                case DMInputEventIds.InputNameEventId:
+                    {
                         Debug.Console(2, this, "DM Input {0} NameFeedbackEventId", args.Number);
                         InputNameFeedbacks[args.Number].FireUpdate();
                         break;
                     }
-                case DMInputEventIds.HdcpCapabilityFeedbackEventId: {
+                case DMInputEventIds.HdcpCapabilityFeedbackEventId:
+                    {
                         Debug.Console(2, this, "DM Input {0} HdcpCapabilityFeedbackEventId", args.Number);
                         InputCardHdcpCapabilityFeedbacks[args.Number].FireUpdate();
                         break;
                     }
-                default: {
+                default:
+                    {
                         Debug.Console(2, this, "DMInputChange fired for Input {0} with Unhandled EventId: {1}", args.Number, args.EventId);
                         break;
                     }
@@ -487,74 +576,74 @@ namespace PepperDash.Essentials.DM {
             switch (args.EventId)
             {
                 case DMOutputEventIds.VolumeEventId:
-                {
-                    if (VolumeControls.ContainsKey(output))
                     {
-                        VolumeControls[args.Number].VolumeEventFromChassis();
+                        if (VolumeControls.ContainsKey(output))
+                        {
+                            VolumeControls[args.Number].VolumeEventFromChassis();
+                        }
+                        break;
                     }
-                    break;
-                }
                 case DMOutputEventIds.EndpointOnlineEventId:
-                {
-                    Debug.Console(2, this,
-                        "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. EndpointOnlineFeedback State: {1}",
-                        args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
-                    if (Chassis.Outputs[output].Endpoint != null)
+                    {
                         Debug.Console(2, this,
-                            "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. Endpoint.IsOnline State: {1}",
-                            args.Number, Chassis.Outputs[output].Endpoint.IsOnline);
+                            "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. EndpointOnlineFeedback State: {1}",
+                            args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
+                        if (Chassis.Outputs[output].Endpoint != null)
+                            Debug.Console(2, this,
+                                "Output {0} DMOutputEventIds.EndpointOnlineEventId fired. Endpoint.IsOnline State: {1}",
+                                args.Number, Chassis.Outputs[output].Endpoint.IsOnline);
 
-                    OutputEndpointOnlineFeedbacks[output].FireUpdate();
-                    break;
-                }
+                        OutputEndpointOnlineFeedbacks[output].FireUpdate();
+                        break;
+                    }
                 case DMOutputEventIds.OnlineFeedbackEventId:
-                {
-                    Debug.Console(2, this, "Output {0} DMInputEventIds.OnlineFeedbackEventId fired. State: {1}",
-                        args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
-                    OutputEndpointOnlineFeedbacks[output].FireUpdate();
-                    break;
-                }
+                    {
+                        Debug.Console(2, this, "Output {0} DMInputEventIds.OnlineFeedbackEventId fired. State: {1}",
+                            args.Number, Chassis.Outputs[output].EndpointOnlineFeedback);
+                        OutputEndpointOnlineFeedbacks[output].FireUpdate();
+                        break;
+                    }
                 case DMOutputEventIds.VideoOutEventId:
-                {
-
-                    var inputNumber = Chassis.Outputs[output].VideoOutFeedback == null ? 0 : Chassis.Outputs[output].VideoOutFeedback.Number;
-
-                    Debug.Console(2, this, "DMSwitchAudioVideo:{0} Routed Input:{1} Output:{2}'", this.Name,
-                        inputNumber, output);
-
-                    if (VideoOutputFeedbacks.ContainsKey(output))
                     {
-                        var localInputPort = InputPorts.FirstOrDefault(p => (DMInput)p.FeedbackMatchObject == Chassis.Outputs[output].VideoOutFeedback);
-                        var localOutputPort =
-                            OutputPorts.FirstOrDefault(p => (DMOutput) p.FeedbackMatchObject == Chassis.Outputs[output]);
+
+                        var inputNumber = Chassis.Outputs[output].VideoOutFeedback == null ? 0 : Chassis.Outputs[output].VideoOutFeedback.Number;
+
+                        Debug.Console(2, this, "DMSwitchAudioVideo:{0} Routed Input:{1} Output:{2}'", this.Name,
+                            inputNumber, output);
+
+                        if (VideoOutputFeedbacks.ContainsKey(output))
+                        {
+                            var localInputPort = InputPorts.FirstOrDefault(p => (DMInput)p.FeedbackMatchObject == Chassis.Outputs[output].VideoOutFeedback);
+                            var localOutputPort =
+                                OutputPorts.FirstOrDefault(p => (DMOutput)p.FeedbackMatchObject == Chassis.Outputs[output]);
 
 
-                        VideoOutputFeedbacks[output].FireUpdate();
-                        OnSwitchChange(new RoutingNumericEventArgs(output,
-                            inputNumber,
-                            localOutputPort,
-                            localInputPort,
-                            eRoutingSignalType.AudioVideo));
+                            VideoOutputFeedbacks[output].FireUpdate();
+                            OnSwitchChange(new RoutingNumericEventArgs(output,
+                                inputNumber,
+                                localOutputPort,
+                                localInputPort,
+                                eRoutingSignalType.AudioVideo));
 
+                        }
+                        if (OutputVideoRouteNameFeedbacks.ContainsKey(output))
+                        {
+                            OutputVideoRouteNameFeedbacks[output].FireUpdate();
+                        }
+                        break;
                     }
-                    if (OutputVideoRouteNameFeedbacks.ContainsKey(output))
-                    {
-                        OutputVideoRouteNameFeedbacks[output].FireUpdate();
-                    }
-                    break;
-                }
                 case DMOutputEventIds.OutputNameEventId:
-                {
-                    Debug.Console(2, this, "DM Output {0} NameFeedbackEventId", output);
-                    OutputNameFeedbacks[output].FireUpdate();
-                    break;
-                }
+                    {
+                        Debug.Console(2, this, "DM Output {0} NameFeedbackEventId", output);
+                        OutputNameFeedbacks[output].FireUpdate();
+                        break;
+                    }
                 default:
-                {
-                    Debug.Console(2, this, "DMOutputChange fired for Output {0} with Unhandled EventId: {1}",
-                        args.Number, args.EventId);
-                    break;
-                }
+                    {
+                        Debug.Console(2, this, "DMOutputChange fired for Output {0} with Unhandled EventId: {1}",
+                            args.Number, args.EventId);
+                        break;
+                    }
             }
 
         }
@@ -564,18 +653,19 @@ namespace PepperDash.Essentials.DM {
         /// 
         /// </summary>
         /// <param name="pnt"></param>
-        void StartOffTimer(PortNumberType pnt) {
+        void StartOffTimer(PortNumberType pnt)
+        {
             if (RouteOffTimers.ContainsKey(pnt))
                 return;
-            RouteOffTimers[pnt] = new CTimer(o => {
-                ExecuteSwitch(0, pnt.Number, pnt.Type);
-            }, RouteOffTime);
+            RouteOffTimers[pnt] = new CTimer(o => ExecuteSwitch(null, pnt.Selector, pnt.Type), RouteOffTime);
         }
 
 
         // Send out sigs when coming online
-        void IsOnline_OutputChange(object sender, EventArgs e) {
-            if (IsOnline.BoolValue) {
+        void IsOnline_OutputChange(object sender, EventArgs e)
+        {
+            if (IsOnline.BoolValue)
+            {
                 Chassis.EnableUSBBreakaway.BoolValue = true;
 
                 if (InputNames != null)
@@ -589,18 +679,33 @@ namespace PepperDash.Essentials.DM {
 
         #region IRouting Members
 
-        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType sigType) {
+        public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType sigType)
+        {
             Debug.Console(2, this, "Making an awesome DM route from {0} to {1} {2}", inputSelector, outputSelector, sigType);
 
-            var input = Convert.ToUInt32(inputSelector); // Cast can sometimes fail
-            var output = Convert.ToUInt32(outputSelector);
+            var input = inputSelector as DMInput; // Cast can sometimes fail
+            var output = outputSelector as DMOutput;
+
+
+            if (output == null)
+            {
+                Debug.Console(0, this, Debug.ErrorLogLevel.Warning,
+                    "Unable to execute switch for inputSelector {0} to outputSelector {1}", inputSelector,
+                    outputSelector);
+                return;
+            }
+
             // Check to see if there's an off timer waiting on this and if so, cancel
             var key = new PortNumberType(output, sigType);
-            if (input == 0) {
+
+            if (input == null)
+            {
                 StartOffTimer(key);
             }
-            else {
-                if (RouteOffTimers.ContainsKey(key)) {
+            else
+            {
+                if (RouteOffTimers.ContainsKey(key))
+                {
                     Debug.Console(2, this, "{0} cancelling route off due to new source", output);
                     RouteOffTimers[key].Stop();
                     RouteOffTimers.Remove(key);
@@ -609,13 +714,13 @@ namespace PepperDash.Essentials.DM {
 
 
 
-            var inCard = input == 0 ? null : Chassis.Inputs[input];
-            var outCard = input == 0 ? null : Chassis.Outputs[output];
+            /*var inCard = input == 0 ? null : Chassis.Inputs[input];
+            var outCard = input == 0 ? null : Chassis.Outputs[output];*/
 
             // NOTE THAT BITWISE COMPARISONS - TO CATCH ALL ROUTING TYPES 
-            if ((sigType | eRoutingSignalType.Video) != eRoutingSignalType.Video) return;
+            if ((sigType & eRoutingSignalType.Video) != eRoutingSignalType.Video) return;
             Chassis.VideoEnter.BoolValue = true;
-            Chassis.Outputs[output].VideoOut = inCard;
+            output.VideoOut = input;
         }
 
         #endregion
@@ -624,7 +729,10 @@ namespace PepperDash.Essentials.DM {
 
         public void ExecuteNumericSwitch(ushort inputSelector, ushort outputSelector, eRoutingSignalType sigType)
         {
-            ExecuteSwitch(inputSelector, outputSelector, sigType);
+            var input = inputSelector == 0 ? null : Chassis.Inputs[inputSelector];
+            var output = Chassis.Outputs[outputSelector];
+
+            ExecuteSwitch(input, output, sigType);
         }
 
         #endregion
@@ -659,7 +767,7 @@ namespace PepperDash.Essentials.DM {
                 var ioSlotJoin = ioSlot - 1;
 
                 // Control
-                trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin, o => ExecuteSwitch(o, ioSlot, eRoutingSignalType.Video));
+                trilist.SetUShortSigAction(joinMap.OutputVideo.JoinNumber + ioSlotJoin, o => ExecuteNumericSwitch(o, (ushort)ioSlot, eRoutingSignalType.Video));
 
                 if (TxDictionary.ContainsKey(ioSlot))
                 {

@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 
+using PepperDash.Core;
+
+
 namespace PepperDash.Essentials.Core
 {
     /// <summary>
@@ -42,6 +45,14 @@ namespace PepperDash.Essentials.Core
     }
 
     /// <summary>
+    /// Simplified routing direct from source to destination
+    /// </summary>
+    public interface IRunDirectRouteAction
+    {
+        void RunDirectRoute(string sourceKey, string destinationKey);
+    }
+
+    /// <summary>
     /// For rooms that default presentation only routing
     /// </summary>
     public interface IRunDefaultPresentRoute
@@ -56,5 +67,15 @@ namespace PepperDash.Essentials.Core
     {
         bool RunDefaultCallRoute();
     }
-    
+
+    /// <summary>
+    /// Describes environmental controls available on a room such as lighting, shades, temperature, etc.
+    /// </summary>
+    public interface IEnvironmentalControls
+    {
+        List<EssentialsDevice> EnvironmentalControlDevices { get; }
+
+        bool HasEnvironmentalControlDevices { get; }
+    }
+
 }

@@ -12,6 +12,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.PageManagers;
+using PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces;
 using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Devices.Common.Codec;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
@@ -52,7 +53,7 @@ namespace PepperDash.Essentials
             CaretInterlock = new JoinedSigInterlock(TriList);
         }
 
-        void SetUpGear(IAVDriver avDriver, EssentialsRoomBase currentRoom)
+        void SetUpGear(IAVDriver avDriver, IEssentialsRoom currentRoom)
         {
             // Gear
             TriList.SetString(UIStringJoin.HeaderButtonIcon5, "Gear");
@@ -105,7 +106,7 @@ namespace PepperDash.Essentials
             {
                 string message = null;
                 var room = DeviceManager.GetDeviceForKey(Config.DefaultRoomKey)
-                    as EssentialsHuddleSpaceRoom;
+                    as IEssentialsHuddleSpaceRoom;
                 if (room != null)
                     message = room.PropertiesConfig.HelpMessage;
                 else
@@ -164,7 +165,7 @@ namespace PepperDash.Essentials
             CallCaretVisible = tempJoin + 10;
             TriList.SetSigFalseAction(tempJoin, () =>
                 {
-                    avDriver.ShowActiveCallsList();
+                    avDriver.ShowActiveCallsListOrMeetingInfo();
                     if(avDriver.CurrentRoom.InCallFeedback.BoolValue)
                         CaretInterlock.ShowInterlocked(CallCaretVisible);
                 });
@@ -191,26 +192,30 @@ namespace PepperDash.Essentials
                 return;
             }
 
+            var meetingInfoCodec = codec as IHasMeetingInfo;
+
             // Set mode of header button
-            if (!codec.IsInCall)
-            {
-                HeaderCallButtonIconSig.StringValue = "DND";
-                //HeaderCallButton.SetIcon(HeaderListButton.OnHook);
-            }
-            else if (codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
-                HeaderCallButtonIconSig.StringValue = "Misc-06_Dark";
-            //HeaderCallButton.SetIcon(HeaderListButton.Camera);
-            //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
-            else
-                HeaderCallButtonIconSig.StringValue = "Misc-09_Dark";
-            //HeaderCallButton.SetIcon(HeaderListButton.Phone);
-            //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
+            SetHeaderCallIcon(codec);
 
             // Set the call status text
+            Debug.Console(1, "Active Call Count: {0}", codec.ActiveCalls.Count);
+
             if (codec.ActiveCalls.Count > 0)
             {
-                if (codec.ActiveCalls.Count == 1)
+                if (codec.ActiveCalls.Count == 1 && meetingInfoCodec == null)
                     TriList.SetString(UIStringJoin.HeaderCallStatusLabel, "1 Active Call");
+                else if (codec.ActiveCalls.Count == 1 && meetingInfoCodec != null)
+                {
+                    var headerCallStatusLabel = meetingInfoCodec.MeetingInfo.IsSharingMeeting
+                        ? "Sharing-Only Meeting"
+                        : "Active Meeting";
+
+                    headerCallStatusLabel = meetingInfoCodec.MeetingInfo.WaitingForHost
+                        ? "Waiting For Host"
+                        : headerCallStatusLabel;
+
+                    TriList.SetString(UIStringJoin.HeaderCallStatusLabel, headerCallStatusLabel);
+                }
                 else if (codec.ActiveCalls.Count > 1)
                     TriList.SetString(UIStringJoin.HeaderCallStatusLabel, string.Format("{0} Active Calls", codec.ActiveCalls.Count));
             }
@@ -218,10 +223,31 @@ namespace PepperDash.Essentials
                 TriList.SetString(UIStringJoin.HeaderCallStatusLabel, "No Active Calls");
         }
 
+        private void SetHeaderCallIcon(VideoCodecBase codec)
+        {
+            if (!codec.IsInCall)
+            {
+                HeaderCallButtonIconSig.StringValue = "DND";
+                //HeaderCallButton.SetIcon(HeaderListButton.OnHook);
+            }
+            else if (codec.ActiveCalls.Any(c => c.Type == eCodecCallType.Video))
+            {
+                HeaderCallButtonIconSig.StringValue = "Misc-06_Dark";
+            }
+                //HeaderCallButton.SetIcon(HeaderListButton.Camera);
+                //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 2);
+            else
+            {
+                HeaderCallButtonIconSig.StringValue = "Misc-09_Dark";
+            }
+            //HeaderCallButton.SetIcon(HeaderListButton.Phone);
+            //TriList.SetUshort(UIUshortJoin.CallHeaderButtonMode, 1);
+        }
+
         /// <summary>
         /// Sets up Header Buttons for the EssentialsHuddleVtc1Room type
         /// </summary>
-        public void SetupHeaderButtons(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, EssentialsHuddleVtc1Room currentRoom)
+        public void SetupHeaderButtons(EssentialsHuddleVtc1PanelAvFunctionsDriver avDriver, IEssentialsHuddleVtc1Room currentRoom)
         {
             HeaderButtonsAreSetUp = false;
 
@@ -255,7 +281,7 @@ namespace PepperDash.Essentials
             TriList.SetSigFalseAction(UIBoolJoin.HeaderCallStatusLabelPress,
                 () =>
                 {
-                    avDriver.ShowActiveCallsList();
+                    avDriver.ShowActiveCallsListOrMeetingInfo();
                     if (avDriver.CurrentRoom.InCallFeedback.BoolValue)
                         CaretInterlock.ShowInterlocked(CallCaretVisible);
                 });
@@ -283,7 +309,7 @@ namespace PepperDash.Essentials
         /// <summary>
         /// Sets up Header Buttons for the EssentialsHuddleSpaceRoom type
         /// </summary>
-        public void SetupHeaderButtons(EssentialsHuddlePanelAvFunctionsDriver avDriver, EssentialsHuddleSpaceRoom currentRoom)
+        public void SetupHeaderButtons(EssentialsHuddlePanelAvFunctionsDriver avDriver, IEssentialsHuddleSpaceRoom currentRoom)
         {
             HeaderButtonsAreSetUp = false;
 
@@ -352,6 +378,8 @@ namespace PepperDash.Essentials
                 if (Parent.EnvironmentDriver != null && e.NewJoin == Parent.EnvironmentDriver.BackgroundSubpageJoin)
                     headerPopupShown = true;
                 else if (e.NewJoin == UIBoolJoin.HeaderActiveCallsListVisible)
+                    headerPopupShown = true;
+                else if (e.NewJoin == UIBoolJoin.HeaderMeetingInfoVisible)
                     headerPopupShown = true;
                 else if (e.NewJoin == UIBoolJoin.HelpPageVisible)
                     headerPopupShown = true;

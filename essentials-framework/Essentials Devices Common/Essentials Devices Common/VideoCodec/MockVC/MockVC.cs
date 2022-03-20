@@ -78,6 +78,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             SetupCameras();
 
+            CreateOsdSource();
+
             SetIsReady();
        }
 
@@ -117,6 +119,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         }
         bool _StandbyIsOn;
 
+        /// <summary>
+        /// Creates the fake OSD source, and connects it's AudioVideo output to the CodecOsdIn input
+        /// to enable routing 
+        /// </summary>
+        private void CreateOsdSource()
+        {
+            OsdSource = new DummyRoutingInputsDevice(Key + "[osd]");
+            DeviceManager.AddDevice(OsdSource);
+            var tl = new TieLine(OsdSource.AudioVideoOutputPort, CodecOsdIn);
+            TieLineCollection.Default.Add(tl);
+
+            //foreach(var input in Status.Video.
+        }
 
         /// <summary>
         /// Dials, yo!
@@ -139,7 +154,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         public override void Dial(Meeting meeting)
         {
-            throw new NotImplementedException();
+            Debug.Console(1, this, "Dial Meeting: {0}", meeting.Id);
+            var call = new CodecActiveCallItem() { Name = meeting.Title, Number = meeting.Id, Id = meeting.Id, Status = eCodecCallStatus.Dialing, Direction = eCodecCallDirection.Outgoing, Type = eCodecCallType.Video };
+            ActiveCalls.Add(call);
+            OnCallStatusChange(call);
+
+            //ActiveCallCountFeedback.FireUpdate();
+            // Simulate 2-second ring, then connecting, then connected
+            new CTimer(o =>
+            {
+                call.Type = eCodecCallType.Video;
+                SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connecting, call);
+                new CTimer(oo => SetNewCallStatusAndFireCallStatusChange(eCodecCallStatus.Connected, call), 1000);
+            }, 2000);
+
         }
 
         /// <summary>
@@ -396,12 +424,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				if (_CodecSchedule == null || _CodecSchedule.Meetings.Count == 0
 					|| _CodecSchedule.Meetings[_CodecSchedule.Meetings.Count - 1].StartTime < DateTime.Now)
 				{
-					_CodecSchedule = new CodecScheduleAwareness();
+					_CodecSchedule = new CodecScheduleAwareness(1000);
 					for (int i = 0; i < 5; i++)
 					{
 						var m = new Meeting();
-						m.StartTime = DateTime.Now.AddMinutes(3).AddHours(i);
-						m.EndTime = DateTime.Now.AddHours(i).AddMinutes(30);
+                        m.MinutesBeforeMeeting = 5;
+                        m.Id = i.ToString();
+                        m.Organizer = "Employee " + 1;
+						m.StartTime = DateTime.Now.AddMinutes(5).AddHours(i);
+						m.EndTime = DateTime.Now.AddHours(i).AddMinutes(50);
 						m.Title = "Meeting " + i;
                         m.Calls.Add(new Call() { Number = i + "meeting@fake.com"});
 						_CodecSchedule.Meetings.Add(m);
@@ -551,6 +582,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
         void SetupCameras()
         {
+            SupportsCameraAutoMode = true;
+
+            SupportsCameraOff = false;
+
             Cameras = new List<CameraBase>();
 
             var internalCamera = new MockVCCamera(Key + "-camera1", "Near End", this);
@@ -567,6 +602,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             CameraAutoModeIsOnFeedback = new BoolFeedback(() => _CameraAutoModeIsOn);
 
+            SupportsCameraAutoMode = true;
+
             CameraAutoModeIsOnFeedback.FireUpdate();
 
             DeviceManager.AddDevice(internalCamera);
@@ -574,7 +611,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             NearEndPresets = new List<CodecRoomPreset>(15); // Fix the capacity to emulate Cisco
 
-            NearEndPresets = PropertiesConfig.Presets;
+            if (PropertiesConfig.Presets != null && PropertiesConfig.Presets.Count > 0)
+            {
+                NearEndPresets = PropertiesConfig.Presets;
+            }
+            else
+            {
+                for (int i = 1; i <= NearEndPresets.Capacity; i++)
+                {
+                    var label = string.Format("Near End Preset {0}", i);
+                    NearEndPresets.Add(new CodecRoomPreset(i, label, true, false));
+                }
+            }
 
             FarEndRoomPresets = new List<CodecRoomPreset>(15); // Fix the capacity to emulate Cisco
 

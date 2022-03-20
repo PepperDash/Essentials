@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.Core
 		{
 			Communication = comm;
 			PortGather = new CommunicationGather(Communication, '\x0d');
-			PortGather.LineReceived += this.Port_LineReceived;
+			//PortGather.LineReceived += this.Port_LineReceived;
 			CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, props.CommunicationMonitorProperties);
 			LineEnding = props.LineEnding;
 		}
@@ -45,13 +45,6 @@ namespace PepperDash.Essentials.Core
 			CrestronConsole.AddNewConsoleCommand(SendLine, "send" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
 			CrestronConsole.AddNewConsoleCommand(s => Communication.Connect(), "con" + Key, "", ConsoleAccessLevelEnum.AccessOperator);
 			return true;
-		}
-
-		void Port_LineReceived(object dev, GenericCommMethodReceiveTextArgs args)
-		{
-			if (Debug.Level == 2)
-				Debug.Console(2, this, "RX: '{0}'", 
-					ShowHexResponse ? ComTextHelper.GetEscapedText(args.Text) : args.Text);
 		}
 
 		void SendLine(string s)

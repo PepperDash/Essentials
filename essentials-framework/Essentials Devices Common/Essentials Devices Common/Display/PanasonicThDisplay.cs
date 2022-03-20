@@ -290,7 +290,7 @@ namespace PepperDash.Essentials.Devices.Displays
 			//Send((string)selector);
 		}
 
-		void SetVolume(ushort level)
+		public void SetVolume(ushort level)
 		{
 			var levelString = string.Format("{0}{1:X3}\x03", VolumeLevelPartialCmd, level);
 			
@@ -315,11 +315,12 @@ namespace PepperDash.Essentials.Devices.Displays
 			Send(MuteOnCmd);
 		}
 
+        /*
 		void IBasicVolumeWithFeedback.SetVolume(ushort level)
 		{
 			SetVolume(level);
 		}
-
+        */
 		#endregion
 
 		#region IBasicVolumeControls Members

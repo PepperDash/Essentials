@@ -13,7 +13,7 @@ using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IHasCurrentSourceInfoChange, IRunRouteAction, IRunDefaultPresentRoute, IHasCurrentVolumeControls, IHasDefaultDisplay
+    public class EssentialsHuddleSpaceRoom : EssentialsRoomBase, IEssentialsHuddleSpaceRoom
 	{
 		public event EventHandler<VolumeDeviceChangeEventArgs> CurrentVolumeDeviceChange;
 		public event SourceInfoChangeHandler CurrentSourceChange;
@@ -156,7 +156,7 @@ namespace PepperDash.Essentials
 
                 DefaultAudioDevice = DeviceManager.GetDeviceForKey(PropertiesConfig.DefaultAudioKey) as IRoutingSinkWithSwitching;
 
-                Initialize();
+                InitializeRoom();
             }
             catch (Exception e)
             {
@@ -164,7 +164,7 @@ namespace PepperDash.Essentials
             }
         }
 
-		void Initialize()
+		void InitializeRoom()
 		{
             if (DefaultAudioDevice is IBasicVolumeControls)
                 DefaultVolumeControls = DefaultAudioDevice as IBasicVolumeControls;
@@ -201,10 +201,41 @@ namespace PepperDash.Essentials
                     IsCoolingDownFeedback.FireUpdate(); 
                 };
             }
+
+            SetupEnvironmentalControlDevices();
+
+            SetSourceListKey();
           
-			SourceListKey = "default";
 			EnablePowerOnToLastSource = true;
    		}
+
+        private void SetupEnvironmentalControlDevices()
+        {
+            if (PropertiesConfig.Environment != null)
+            {
+                if (PropertiesConfig.Environment.Enabled)
+                {
+                    foreach (var d in PropertiesConfig.Environment.DeviceKeys)
+                    {
+                        var envDevice = DeviceManager.GetDeviceForKey(d) as EssentialsDevice;
+                        EnvironmentalControlDevices.Add(envDevice);
+                    }
+                }
+            }
+        }
+
+        private void SetSourceListKey()
+        {
+            if (!string.IsNullOrEmpty(PropertiesConfig.SourceListKey))
+            {
+                SetSourceListKey(PropertiesConfig.SourceListKey);
+            }
+            else
+            {
+                SetSourceListKey(Key);
+            }
+
+        }
 
         protected override void CustomSetConfig(DeviceConfig config)
         {
@@ -256,7 +287,6 @@ namespace PepperDash.Essentials
 
             this.LogoUrlLightBkgnd = PropertiesConfig.LogoLight.GetLogoUrlLight();
             this.LogoUrlDarkBkgnd = PropertiesConfig.LogoDark.GetLogoUrlDark();
-            this.SourceListKey = PropertiesConfig.SourceListKey;
             this.DefaultSourceItem = PropertiesConfig.DefaultSourceItem;
             this.DefaultVolume = (ushort)(PropertiesConfig.Volumes.Master.Level * 65535 / 100);
 

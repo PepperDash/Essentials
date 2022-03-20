@@ -12,6 +12,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Fusion;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
@@ -27,6 +28,7 @@ namespace PepperDash.Essentials
         HttpLogoServer LogoServer;
 
         private CTimer _startTimer;
+        private CEvent _initializeEvent;
         private const long StartupTime = 500;
 
         public ControlSystem()
@@ -35,6 +37,7 @@ namespace PepperDash.Essentials
             Thread.MaxNumberOfUserThreads = 400;
             Global.ControlSystem = this;
             DeviceManager.Initialize(this);
+            SecretsManager.Initialize();
             SystemMonitor.ProgramInitialization.ProgramInitializationUnderUserControl = true;
         }
 
@@ -44,6 +47,24 @@ namespace PepperDash.Essentials
         public override void InitializeSystem()
         {
             _startTimer = new CTimer(StartSystem,StartupTime);
+
+
+            // If the control system is a DMPS type, we need to wait to exit this method until all devices have had time to activate
+            // to allow any HD-BaseT DM endpoints to register first.
+            if (Global.ControlSystemIsDmpsType)
+            {
+                Debug.Console(2, "******************* InitializeSystem() Entering **********************");
+
+                _initializeEvent = new CEvent();
+
+                DeviceManager.AllDevicesActivated += (o, a) =>
+                {
+                    _initializeEvent.Set();
+                    Debug.Console(2, "******************* InitializeSystem() Exiting **********************");
+                };
+
+                _initializeEvent.Wait(30000);
+            }
         }
 
         private void StartSystem(object obj)
@@ -52,7 +73,7 @@ namespace PepperDash.Essentials
 
             if (Debug.DoNotLoadOnNextBoot)
             {
-                CrestronConsole.AddNewConsoleCommand(s => GoWithLoad(), "go", "Loads configuration file",
+                CrestronConsole.AddNewConsoleCommand(s => CrestronInvoke.BeginInvoke((o) => GoWithLoad()), "go", "Loads configuration file",
                     ConsoleAccessLevelEnum.AccessOperator);
             }
 
@@ -70,7 +91,7 @@ namespace PepperDash.Essentials
             CrestronConsole.AddNewConsoleCommand(s =>
             {
                 foreach (var tl in TieLineCollection.Default)
-                    CrestronConsole.ConsoleCommandResponse("  {0}\r", tl);
+                    CrestronConsole.ConsoleCommandResponse("  {0}\r\n", tl);
             },
             "listtielines", "Prints out all tie lines", ConsoleAccessLevelEnum.AccessOperator);
 
@@ -84,8 +105,8 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
-                CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r" +
-                    "System URL:   {0}\r" +
+                CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r\n" +
+                    "System URL:   {0}\r\n" +
                     "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
             }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
 
@@ -129,29 +150,46 @@ namespace PepperDash.Essentials
 
                 if (CrestronEnvironment.DevicePlatform != eDevicePlatform.Server)   // Handles 3-series running Windows CE OS
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on 3-series Appliance", Global.AssemblyVersion);
+                    string userFolder;
+                    string nvramFolder;
+                    bool is4series = false;
+
+                    if (eCrestronSeries.Series4 == (Global.ProcessorSeries & eCrestronSeries.Series4)) // Handle 4-series
+                    {
+                        is4series = true;
+                        // Set path to user/
+                        userFolder = "user";
+                        nvramFolder = "nvram";
+                    }
+                    else
+                    {
+                        userFolder = "User";
+                        nvramFolder = "Nvram";
+                    }
+
+                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on {1} Appliance", Global.AssemblyVersion, is4series ? "4-series" : "3-series");
 
                     // Check if User/ProgramX exists
-                    if (Directory.Exists(Global.ApplicationDirectoryPathPrefix + dirSeparator + "User"
+                    if (Directory.Exists(Global.ApplicationDirectoryPathPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                     {
-                        Debug.Console(0, @"User/program{0} directory found", InitialParametersClass.ApplicationNumber);
-                        filePathPrefix = directoryPrefix + dirSeparator + "User"
+                        Debug.Console(0, @"{0}/program{1} directory found", userFolder, InitialParametersClass.ApplicationNumber);
+                        filePathPrefix = directoryPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
                     // Check if Nvram/Programx exists
-                    else if (Directory.Exists(directoryPrefix + dirSeparator + "Nvram"
+                    else if (Directory.Exists(directoryPrefix + dirSeparator + nvramFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber)))
                     {
-                        Debug.Console(0, @"Nvram/program{0} directory found", InitialParametersClass.ApplicationNumber);
-                        filePathPrefix = directoryPrefix + dirSeparator + "Nvram"
+                        Debug.Console(0, @"{0}/program{1} directory found", nvramFolder, InitialParametersClass.ApplicationNumber);
+                        filePathPrefix = directoryPrefix + dirSeparator + nvramFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
                     // If neither exists, set path to User/ProgramX
                     else
                     {
-                        Debug.Console(0, @"No previous directory found.  Using User/program{0}", InitialParametersClass.ApplicationNumber);
-                        filePathPrefix = directoryPrefix + dirSeparator + "User"
+                        Debug.Console(0, @"No previous directory found.  Using {0}/program{1}", userFolder, InitialParametersClass.ApplicationNumber);
+                        filePathPrefix = directoryPrefix + dirSeparator + userFolder
                         + dirSeparator + string.Format("program{0}", InitialParametersClass.ApplicationNumber) + dirSeparator;
                     }
                 }
@@ -322,7 +360,12 @@ namespace PepperDash.Essentials
                     // Skip this to prevent unnecessary warnings
                     if (devConf.Key == "processor")
                     {
-                        if (devConf.Type.ToLower() != Global.ControlSystem.ControllerPrompt.ToLower())
+                        var prompt = Global.ControlSystem.ControllerPrompt;
+
+                        var typeMatch = String.Equals(devConf.Type, prompt, StringComparison.OrdinalIgnoreCase) ||
+                                        String.Equals(devConf.Type, prompt.Replace("-", ""), StringComparison.OrdinalIgnoreCase);
+
+                        if (!typeMatch)
                             Debug.Console(0,
                                 "WARNING: Config file defines processor type as '{0}' but actual processor is '{1}'!  Some ports may not be available",
                                 devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
@@ -337,9 +380,7 @@ namespace PepperDash.Essentials
                             if(propertiesConfig == null)
                                 propertiesConfig =  new DM.Config.DmpsRoutingPropertiesConfig();
 
-                            var dmpsRoutingController = DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig);
-
-                            DeviceManager.AddDevice(dmpsRoutingController);
+                            DeviceManager.AddDevice(DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig));
                         }
                         else if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
                         {
@@ -377,11 +418,11 @@ namespace PepperDash.Essentials
 					if (newDev != null)
 						DeviceManager.AddDevice(newDev);
 					else
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "ERROR: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Cannot load unknown device type '{0}', key '{1}'.", devConf.Type, devConf.Key);
                 }
                 catch (Exception e)
                 {
-                    Debug.Console(0, Debug.ErrorLogLevel.Notice, "ERROR: Creating device {0}. Skipping device. \r{1}", devConf.Key, e);
+                    Debug.Console(0, Debug.ErrorLogLevel.Error, "ERROR: Creating device {0}. Skipping device. \r{1}", devConf.Key, e);
                 }
             }
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Devices Loaded.");
@@ -426,31 +467,64 @@ namespace PepperDash.Essentials
                 return;
             }
 
+            uint fusionIpId = 0xf1;
+
             foreach (var roomConfig in ConfigReader.ConfigObject.Rooms)
             {
-                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as EssentialsRoomBase;
+                var room = EssentialsRoomConfigHelper.GetRoomObject(roomConfig) as IEssentialsRoom;
                 if (room != null)
                 {
-                    if (room is EssentialsHuddleSpaceRoom)
+                    // default to no join map key
+                    string fusionJoinMapKey = string.Empty;
+
+                    if (room.Config.Properties["fusion"] != null)
+                    {
+                        Debug.Console(2, "Custom Fusion config found. Using custom values");
+
+                        var fusionConfig = room.Config.Properties["fusion"].ToObject<EssentialsRoomFusionConfig>();
+
+                        if (fusionConfig != null)
+                        {
+                            fusionIpId = fusionConfig.IpIdInt;
+                            fusionJoinMapKey = fusionConfig.JoinMapKey;
+                        }
+                    }
+
+                    if (room is IEssentialsHuddleSpaceRoom)
                     {
                         DeviceManager.AddDevice(room);
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase((EssentialsHuddleSpaceRoom)room, 0xf1));
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
+                        DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase(room, fusionIpId, fusionJoinMapKey));
 
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
 
                         CreateMobileControlBridge(room);
                     }
-                    else if (room is EssentialsHuddleVtc1Room)
+                    else if (room is IEssentialsHuddleVtc1Room)
                     {
                         DeviceManager.AddDevice(room);
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion");
-                        DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((EssentialsHuddleVtc1Room)room, 0xf1));
+                        if (!(room is EssentialsCombinedHuddleVtc1Room))
+                        {
+                            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleVtc1Room, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
+                            DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
+                        }
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
+
+                        CreateMobileControlBridge(room);
+                    }
+                    else if (room is EssentialsTechRoom)
+                    {
+                        DeviceManager.AddDevice(room);
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice,
+                            "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
+                        DeviceManager.AddDevice(new EssentialsTechRoomFusionSystemController((EssentialsTechRoom)room, fusionIpId, fusionJoinMapKey));
+
+                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
 
                         CreateMobileControlBridge(room);
                     }
@@ -460,22 +534,35 @@ namespace PepperDash.Essentials
                         DeviceManager.AddDevice(room);
                     }
 
+                    fusionIpId += 1;
                 }
                 else
+                {
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Notice: Cannot create room from config, key '{0}' - Is this intentional?  This may be a valid configuration.", roomConfig.Key);
+                    
+                }
             }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");
 
         }
 
-        private static void CreateMobileControlBridge(EssentialsRoomBase room)
+        private static void CreateMobileControlBridge(object room)
         {
             var mobileControl = GetMobileControlDevice();
 
             if (mobileControl == null) return;
 
-            mobileControl.CreateMobileControlRoomBridge(room, mobileControl);
+            var mobileControl3 = mobileControl as IMobileControl3;
+
+            if (mobileControl3 != null)
+            {
+                mobileControl3.CreateMobileControlRoomBridge(room as IEssentialsRoom, mobileControl);
+            }
+            else
+            {
+                mobileControl.CreateMobileControlRoomBridge(room as EssentialsRoomBase, mobileControl);
+            }
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Mobile Control Bridge Added...");
         }
@@ -556,7 +643,7 @@ namespace PepperDash.Essentials
                 return ((logoDark != null && logoDark == "system") ||
                         (logoLight != null && logoLight == "system") || (logo != null && logo == "system"));
             }
-            catch (Exception e)
+            catch
             {
                 Debug.Console(1, Debug.ErrorLogLevel.Notice, "Unable to find logo information in any room config");
                 return false;

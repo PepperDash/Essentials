@@ -315,16 +315,15 @@ namespace PepperDash.Essentials.DM
 
         void Tx_OnlineStatusChange(GenericBase currentDevice, OnlineOfflineEventArgs args)
         {
+
             var localVideoInputPort =
                 InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.VideoSourceFeedback);
             var localAudioInputPort =
                 InputPorts.FirstOrDefault(p => (eVst)p.Selector == Tx.AudioSourceFeedback);
 
-            ActiveVideoInputFeedback.FireUpdate();
-            VideoSourceNumericFeedback.FireUpdate();
-            AudioSourceNumericFeedback.FireUpdate();
             OnSwitchChange(new RoutingNumericEventArgs(1, VideoSourceNumericFeedback.UShortValue, OutputPorts.First(), localVideoInputPort, eRoutingSignalType.Video));
             OnSwitchChange(new RoutingNumericEventArgs(1, AudioSourceNumericFeedback.UShortValue, OutputPorts.First(), localAudioInputPort, eRoutingSignalType.Audio));
+            
         }
 
         void Tx_BaseEvent(GenericBase device, BaseEventArgs args)
