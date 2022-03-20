@@ -1,0 +1,219 @@
+name: 2.0.0 Main Build using Docker
+
+on:
+  release:
+    types:
+      - released
+    branches:
+      - main
+
+env:
+  # Do not edit this, we're just creating it here
+  VERSION: 0.0.0-buildtype-buildnumber
+  # Defaults to debug for build type
+  BUILD_TYPE: Debug
+  # Defaults to master as the release branch.  Change as necessary
+  RELEASE_BRANCH: main
+jobs:
+  Build_Project:
+    runs-on: windows-latest
+    steps:
+      # First we checkout the source repo
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      # Fetch all tags
+      - name: Fetch tags
+        run: git fetch --tags
+      # Generate the appropriate version number
+      - name: Set Version Number
+        shell: powershell
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: echo "VERSION=$($Env:TAG_NAME)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      # Use the version number to set the version of the assemblies
+      - name: Update AssemblyInfo.cs
+        shell: powershell
+        run: |
+          function Update-SourceVersion {
+          Param ([string]$Version)
+          #$fullVersion = $Version
+          $baseVersion = [regex]::Match($Version, "(\d+.\d+.\d+).*").captures.groups[1].value
+          $NewAssemblyVersion = 'AssemblyVersion("' + $baseVersion + '.*")'
+          Write-Output "AssemblyVersion = $NewAssemblyVersion"
+          $NewAssemblyInformationalVersion = 'AssemblyInformationalVersion("' + $Version + '")'
+          Write-Output "AssemblyInformationalVersion = $NewAssemblyInformationalVersion"
+          foreach ($o in $input) {
+              Write-output $o.FullName
+              $TmpFile = $o.FullName + ".tmp"
+              get-content $o.FullName |
+              ForEach-Object {
+                  $_ -replace 'AssemblyVersion\(".*"\)', $NewAssemblyVersion } |
+              ForEach-Object {
+                  $_ -replace 'AssemblyInformationalVersion\(".*"\)', $NewAssemblyInformationalVersion
+              }  > $TmpFile 
+              move-item $TmpFile $o.FullName -force
+            }
+          }
+          function Update-AllAssemblyInfoFiles ( $version ) {
+              foreach ($file in "AssemblyInfo.cs", "AssemblyInfo.vb" ) {
+                  get-childitem -Path $Env:GITHUB_WORKSPACE -recurse | Where-Object { $_.Name -eq $file } | Update-SourceVersion $version ;
+              }
+          }
+          # validate arguments
+          $r = [System.Text.RegularExpressions.Regex]::Match($Env:VERSION, "\d+\.\d+\.\d+.*");
+          if ($r.Success) {
+              Write-Output "Updating Assembly Version to $Env:VERSION ...";
+              Update-AllAssemblyInfoFiles $Env:VERSION;
+          }
+          else {
+              Write-Output " ";
+              Write-Output "Error: Input version $Env:VERSION does not match x.y.z format!"
+              Write-Output " ";
+              Write-Output "Unable to apply version to AssemblyInfo.cs files";
+          }
+      - name: restore Nuget Packages
+        run: nuget install .\packages.config -OutputDirectory .\packages -ExcludeVersion
+      # Set the SOLUTION_PATH
+      - name: Get SLN Path
+        shell: powershell
+        run: |
+          $solution_path = Get-ChildItem *.sln -recurse 
+          $solution_path = $solution_path.FullName
+          $solution_path = $solution_path -replace "(?:[^\\]*\\){4}", ""
+          Write-Output $solution_path
+          echo "SOLUTION_PATH=$($solution_path)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        # Set the SOLUTION_FILE
+      - name: Get SLN File
+        shell: powershell
+        run: |
+          $solution_file = Get-ChildItem .\*.sln -recurse -Path "$($Env:GITHUB_WORKSPACE)" 
+          echo "SOLUTION_FILE=$($solution_file.BaseName)"| Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      # Login to Docker
+      - name: Login to Docker
+        uses: azure/docker-login@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      # Build the solutions in the docker image
+      - name: Build Solution
+        shell: powershell
+        run: |
+          Invoke-Expression "docker run --rm --mount type=bind,source=""$($Env:GITHUB_WORKSPACE)"",target=""c:/project"" pepperdash/sspbuilder c:\cihelpers\vsidebuild.exe -Solution ""c:\project\$($Env:SOLUTION_PATH)"" -BuildSolutionConfiguration $($ENV:BUILD_TYPE)"
+      # Zip up the output files as needed
+      - name: Zip Build Output
+        shell: powershell
+        run: |
+          $destination = "$($Env:GITHUB_HOME)\output"
+          New-Item -ItemType Directory -Force -Path ($destination)
+          Get-ChildItem ($destination)
+          $exclusions = "packages"
+          # Trying to get any .json schema files (not currently working)
+          # Gets any files with the listed extensions.
+          Get-ChildItem -recurse -Path "$($Env:GITHUB_WORKSPACE)" -include "*.clz", "*.cpz", "*.cplz", "*.nuspec" | ForEach-Object {
+            $allowed = $true;
+            # Exclude any files in submodules
+            foreach ($exclude in $exclusions) {
+              if ((Split-Path $_.FullName -Parent).contains("$($exclude)")) {
+                $allowed = $false;
+                break;
+              }
+            }
+            if ($allowed) {
+              Write-Host "allowing $($_)"
+              $_;
+            }
+          } | Copy-Item -Destination ($destination) -Force
+          Write-Host "Getting matching files..."
+          # Get any files from the output folder that match the following extensions
+          Get-ChildItem -Path $destination | Where-Object {($_.Extension -eq ".clz") -or ($_.Extension -eq ".cpz" -or ($_.Extension -eq ".cplz"))} | ForEach-Object { 
+            # Replace the extensions with dll and xml and create an array 
+            $filenames = @($($_ -replace "cpz|clz|cplz", "dll"), $($_ -replace "cpz|clz|cplz", "xml"))
+            Write-Host "Filenames:"
+            Write-Host $filenames
+            if ($filenames.length -gt 0) {
+              # Attempt to get the files and return them to the output directory
+              Get-ChildItem -Recurse -Path "$($Env:GITHUB_WORKSPACE)" -include $filenames | Copy-Item -Destination ($destination) -Force
+            }
+          }
+          Get-ChildItem -Path $destination\*.cplz | Rename-Item -NewName { "$($_.BaseName)-$($Env:VERSION)$($_.Extension)" }
+          Compress-Archive -Path $destination -DestinationPath "$($Env:GITHUB_WORKSPACE)\$($Env:SOLUTION_FILE)-$($Env:VERSION).zip" -Force
+          Write-Host "Output Contents post Zip"
+          Get-ChildItem -Path $destination
+      # Write the version to a file to be consumed by the push jobs
+      - name: Write Version
+        run: Write-Output "$($Env:VERSION)" | Out-File -FilePath "$($Env:GITHUB_HOME)\output\version.txt"
+      # Upload output files
+      - name: Upload Build Output
+        uses: actions/upload-artifact@v1
+        with:
+          name: Build
+          path: ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
+      # Upload the Version file as an artifact
+      - name: Upload version.txt
+        uses: actions/upload-artifact@v1
+        with:
+          name: Version
+          path: ${{env.GITHUB_HOME}}\output\version.txt
+      # Upload the build package to the release
+      - name: Upload Release Package
+        id: upload_release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
+          asset_name: ${{ env.SOLUTION_FILE}}-${{ env.VERSION}}.zip
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  Push_Nuget_Package:
+    needs: Build_Project
+    runs-on: windows-latest
+    steps:
+      - name: Download Build Version Info
+        uses: actions/download-artifact@v1
+        with:
+          name: Version
+      - name: Set Version Number
+        shell: powershell
+        run: |
+          Get-ChildItem "./Version"
+          $version = Get-Content -Path ./Version/version.txt
+          Write-Host "Version: $version"
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Remove-Item -Path ./Version/version.txt
+          Remove-Item -Path ./Version
+      - name: Download Build output
+        uses: actions/download-artifact@v1
+        with:
+          name: Build
+          path: ./
+      - name: Unzip Build file
+        run: |
+          Get-ChildItem .\*.zip | Expand-Archive -DestinationPath .\
+          Remove-Item -Path .\*.zip
+      - name: Copy Files to root & delete output directory
+        run: |
+          Remove-Item -Path .\* -Include @("*.cpz","*.md","*.cplz","*.json","*.dll","*.clz")  
+          Get-ChildItem -Path .\output\* | Copy-Item -Destination .\
+          Remove-Item -Path .\output -Recurse
+      - name: Get nuget File
+        shell: powershell
+        run: |
+          $nuspec_file = Get-ChildItem *.nuspec -recurse 
+          echo "NUSPEC_FILE=$($nuspec_file.BaseName)"| Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Add nuget.exe
+        uses: nuget/setup-nuget@v1
+      - name: Add Github Packages source
+        run: nuget sources add -name github -source https://nuget.pkg.github.com/pepperdash/index.json -username Pepperdash -password ${{ secrets.GITHUB_TOKEN }}
+      # Pushes to nuget, not needed unless publishing publicly
+      - name: Add nuget.org API Key
+        run: nuget setApiKey ${{ secrets.NUGET_API_KEY }}
+      - name: Create nuget package
+        run: nuget pack "./${{ env.NUSPEC_FILE}}.nuspec" -version ${{ env.VERSION }}
+      - name: Publish nuget package to Github registry
+        run: nuget push **/*.nupkg -source github
+      # Pushes to nuget, not needed unless publishing publicly >> this pushes package to nuget.org
+      - name: Publish nuget package to nuget.org
+        run: nuget push **/*.nupkg -Source https://api.nuget.org/v3/index.json
