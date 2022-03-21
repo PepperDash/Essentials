@@ -211,15 +211,15 @@
   <ItemGroup>
     <ProjectReference Include="..\PepperDash.Essentials.Core\PepperDash.Essentials.Core.csproj">
       <Project>{A49AD6C8-FC0A-4CC0-9089-DFB4CF92D2B5}</Project>
-      <Name>PepperDash_Essentials_Core</Name>
+      <Name>PepperDash.Essentials.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\PepperDash.Essentials.Devices.Common\PepperDash.Essentials.Devices.Common.csproj">
       <Project>{892B761C-E479-44CE-BD74-243E9214AF13}</Project>
-      <Name>Essentials Devices Common</Name>
+      <Name>PepperDash.Essentials.Devices.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\PepperDash.Essentials.Devices.DM\PepperDash.Essentials.Devices.Dm.csproj">
       <Project>{9199CE8A-0C9F-4952-8672-3EED798B284F}</Project>
-      <Name>PepperDash_Essentials_DM</Name>
+      <Name>PepperDash.Essentials.Devices.Dm</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
