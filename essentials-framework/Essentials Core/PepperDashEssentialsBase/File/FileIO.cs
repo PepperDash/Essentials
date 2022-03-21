@@ -12,22 +12,7 @@ namespace PepperDash.Essentials.Core
 	{
 
 		static CCriticalSection fileLock = new CCriticalSection();
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="fileName"></param>
-		/// <returns></returns>
-		public static bool FileExsists(string fileName)
-		{
-			if (GetFile(fileName) == null)
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}
-		}
+
 		/// <summary>
 		/// Get the full file info from a path/filename, can include wildcards.
 		/// </summary>
@@ -69,7 +54,7 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
-		public static string GetDataFromFile(FileInfo file)
+		public static string ReadDataFromFile(FileInfo file)
 		{
 			try
 			{
