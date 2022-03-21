@@ -149,7 +149,7 @@ namespace PepperDash.Essentials.Core
 
 			var file = FileIO.GetFile("\\user\\*FileIOTest*");
 			
-			var readData = FileIO.GetDataFromFile(file);
+			var readData = FileIO.ReadDataFromFile(file);
 			Debug.Console(0, "Returned {0}", readData);
 			File.Delete(file.FullName);
 			if (testData == readData)
