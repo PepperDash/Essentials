@@ -9,6 +9,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.DeviceInfo;
+using PepperDash.Essentials.Core.Interfaces;
 using PepperDash.Essentials.DM.Config;
 using PepperDash.Essentials.Core.Config;
 

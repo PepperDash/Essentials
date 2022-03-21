@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Interfaces;
 using PepperDash.Essentials.Devices.Common.Cameras;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom

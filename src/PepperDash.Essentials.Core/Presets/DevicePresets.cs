@@ -8,6 +8,7 @@ using PepperDash.Core;
 
 //using SSMono.IO;
 using PepperDash.Core.WebApi.Presets;
+using PepperDash.Essentials.Core.Interfaces;
 
 namespace PepperDash.Essentials.Core.Presets
 {

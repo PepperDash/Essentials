@@ -1,25 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using PepperDash.Core;
 
-namespace PepperDash.Essentials.Core
+namespace PepperDash.Essentials.Core.Devices
 {
-    public interface IUsageTracking
-    {
-        UsageTracking UsageTracker { get; set; }
-    }
-
-    //public static class IUsageTrackingExtensions
-    //{
-    //    public static void EnableUsageTracker(this IUsageTracking device)
-    //    {
-    //        device.UsageTracker = new UsageTracking();
-    //    }
-    //}
-
     public class UsageTracking
     {
         public event EventHandler<DeviceUsageEventArgs> DeviceUsageEnded;
@@ -45,7 +28,7 @@ namespace PepperDash.Essentials.Core
 
         void  InUseFeedback_OutputChange(object sender, EventArgs e)
         {
- 	        if(InUseTracker.InUseFeedback.BoolValue)
+            if(InUseTracker.InUseFeedback.BoolValue)
             {
                 StartDeviceUsage();
             }
@@ -94,11 +77,5 @@ namespace PepperDash.Essentials.Core
                 Debug.Console(1, "Error ending device usage: {0}", e);
             }
         }
-    }
-
-    public class DeviceUsageEventArgs : EventArgs
-    {
-        public DateTime UsageEndTime { get; set; }
-        public int MinutesUsed { get; set; }
     }
 }

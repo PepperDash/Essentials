@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
 using PepperDash.Essentials.Core.Config;
 
-
-namespace PepperDash.Essentials.Core.Devices
+namespace PepperDash.Essentials.Core.Interfaces
 {
     public interface IReconfigurableDevice
     {

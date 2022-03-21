@@ -5,16 +5,11 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using PepperDash.Essentials.Core.Interfaces;
 
 namespace PepperDash.Essentials.Core
 {
-
-	public enum AudioChangeType
-	{
-		Mute, Volume
-	}
-
-	public class AudioChangeEventArgs
+    public class AudioChangeEventArgs
 	{
 		public AudioChangeType ChangeType { get; private set; }
 		public IBasicVolumeControls AudioDevice { get; private set; }

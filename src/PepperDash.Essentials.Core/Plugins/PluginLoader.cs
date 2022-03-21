@@ -58,6 +58,7 @@ namespace PepperDash.Essentials
 
             Debug.Console(2, "Found {0} Assemblies", assemblyFiles.Length);
 
+            //TODO update assembly names here
             foreach (var fi in assemblyFiles)
             {
                 string version = string.Empty;

@@ -11,6 +11,8 @@ using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Interfaces;
 using PepperDash.Essentials.Core.Routing;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Bridges;

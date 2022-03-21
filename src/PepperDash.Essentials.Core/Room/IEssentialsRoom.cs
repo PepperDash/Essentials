@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using PepperDash.Essentials.Core.Interfaces;
 using PepperDash.Essentials.Room.Config;
 using PepperDash.Essentials.Core.Devices;
 

@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Interfaces;
 using PepperDash.Essentials.Devices.Common.VideoCodec;
 
 namespace PepperDash.Essentials.Devices.Common.Cameras

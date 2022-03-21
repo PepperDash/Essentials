@@ -9,6 +9,7 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Core.Interfaces;
 
 namespace PepperDash.Essentials.Core.Devices
 {

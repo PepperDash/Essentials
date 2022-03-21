@@ -8,6 +8,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
+using PepperDash.Essentials.Core.Interfaces;
 using PepperDash.Essentials.Core.Shades;
 
 namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
@@ -87,7 +88,7 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
 
             if (portDevice != null)
             {
-                return (portDevice as ISwitchedOutputCollection).SwitchedOutputs[relayConfig.PortNumber];
+                return (portDevice as IHasSwitchedOutputs).SwitchedOutputs[relayConfig.PortNumber];
             }
             else
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Interfaces;
 using PepperDash.Essentials.Room.Config;
 
 

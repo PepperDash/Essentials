@@ -3,59 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
+using PepperDash.Essentials.Core.Interfaces;
 
 namespace PepperDash.Essentials.Core
 {
-	/// <summary>
-	/// Defines minimal volume and mute control methods
-	/// </summary>
-    public interface IBasicVolumeControls : IHasVolumeControl, IHasMuteControl
-	{
-	}
-
-    /// <summary>
-    /// Defines basic volume control methods
-    /// </summary>
-    public interface IHasVolumeControl
-    {
-        void VolumeUp(bool pressRelease);
-        void VolumeDown(bool pressRelease);
-    }
-
-    /// <summary>
-    /// Defines volume control methods and properties with feedback
-    /// </summary>
-    public interface IHasVolumeControlWithFeedback : IHasVolumeControl
-    {
-        void SetVolume(ushort level);
-        IntFeedback VolumeLevelFeedback { get; }
-    }
-
-    /// <summary>
-    /// Defines basic mute control methods
-    /// </summary>
-    public interface IHasMuteControl
-    {
-        void MuteToggle();
-    }
-
-    /// <summary>
-    /// Defines mute control methods and properties with feedback
-    /// </summary>
-    public interface IHasMuteControlWithFeedback : IHasMuteControl
-    {
-        BoolFeedback MuteFeedback { get; }
-        void MuteOn();
-        void MuteOff();
-    }
-
-	/// <summary>
-	/// Adds feedback and direct volume level set to IBasicVolumeControls
-	/// </summary>
-    public interface IBasicVolumeWithFeedback : IBasicVolumeControls, IHasVolumeControlWithFeedback, IHasMuteControlWithFeedback
-	{
-	}
-
     /// <summary>
     /// A class that implements this contains a reference to a current IBasicVolumeControls device.
     /// The class may have multiple IBasicVolumeControls.

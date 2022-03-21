@@ -1,5 +1,6 @@
 ﻿using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Interfaces;
 
 namespace PepperDash.Essentials.Core
 {

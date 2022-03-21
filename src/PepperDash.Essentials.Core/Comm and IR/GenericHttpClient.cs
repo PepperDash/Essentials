@@ -100,6 +100,7 @@ namespace PepperDash.Essentials.Core
 
 		#endregion
 	}
+
 	public class GenericHttpClientEventArgs : EventArgs
 	{
 		public string ResponseText { get; private set; }

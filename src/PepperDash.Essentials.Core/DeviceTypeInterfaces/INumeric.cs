@@ -33,13 +33,7 @@ namespace PepperDash.Essentials.Core
 		void KeypadAccessoryButton2(bool pressRelease);
 	}
 
-	public interface ISetTopBoxNumericKeypad : INumericKeypad
-	{
-		void Dash(bool pressRelease);
-		void KeypadEnter(bool pressRelease);
-	}
-
-	/// <summary>
+    /// <summary>
 	/// 
 	/// </summary>
 	public static class INumericExtensions

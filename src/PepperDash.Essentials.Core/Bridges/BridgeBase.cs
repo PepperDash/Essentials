@@ -12,6 +12,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
 
 //using PepperDash.Essentials.Devices.Common.Cameras;
+using PepperDash.Essentials.Core.Interfaces;
 
 namespace PepperDash.Essentials.Core.Bridges
 {

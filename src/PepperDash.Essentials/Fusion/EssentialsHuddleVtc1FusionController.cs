@@ -8,7 +8,9 @@ using Crestron.SimplSharpPro.Fusion;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core.Fusion;
+using PepperDash.Essentials.Core.Interfaces;
 
 namespace PepperDash.Essentials.Fusion
 {

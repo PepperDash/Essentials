@@ -11,6 +11,8 @@ using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Devices;
+using PepperDash.Essentials.Core.Interfaces;
 
 
 namespace PepperDash.Essentials.Core

@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using System.Text.RegularExpressions;
+using PepperDash.Essentials.Core.Interfaces;
 
 
 namespace PepperDash.Essentials.Devices.Common.DSP

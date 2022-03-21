@@ -11,6 +11,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
+using PepperDash.Essentials.Core.Interfaces;
 using PepperDash.Essentials.Core.SmartObjects;
 using PepperDash.Essentials.Core.Touchpanels.Keyboards;
 using PepperDash.Essentials.Devices.Common.Codec;

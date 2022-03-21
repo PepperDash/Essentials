@@ -11,10 +11,11 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
+using PepperDash.Essentials.Core.Interfaces;
 
 namespace PepperDash.Essentials.Devices.Common.Environment.Lighting
 {
-    public class Din8sw8Controller : EssentialsDevice, ISwitchedOutputCollection
+    public class Din8sw8Controller : EssentialsDevice, IHasSwitchedOutputs
     {
         // Need to figure out some sort of interface to make these switched outputs behave like processor relays so they can be used interchangably
 

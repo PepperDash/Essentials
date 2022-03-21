@@ -6,13 +6,14 @@ using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.CrestronIO;
+using PepperDash.Essentials.Core.Interfaces;
 
 namespace PepperDash.Essentials.Core.Devices
 {
     /// <summary>
     /// This wrapper class is meant to allow interfaces to be applied to any Crestron processor
     /// </summary>
-    public class CrestronProcessor : Device, ISwitchedOutputCollection
+    public class CrestronProcessor : Device, IHasSwitchedOutputs
     {
         public Dictionary<uint, ISwitchedOutput> SwitchedOutputs { get; private set; }
 

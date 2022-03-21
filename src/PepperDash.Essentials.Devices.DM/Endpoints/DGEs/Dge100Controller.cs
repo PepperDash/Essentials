@@ -17,6 +17,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core.DeviceInfo;
+using PepperDash.Essentials.Core.Interfaces;
 
 namespace PepperDash.Essentials.DM.Endpoints.DGEs
 {

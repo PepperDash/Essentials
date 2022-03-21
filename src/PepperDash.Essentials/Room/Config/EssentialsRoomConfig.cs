@@ -10,6 +10,7 @@ using PepperDash.Core;
 using PepperDash.Essentials;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
+using PepperDash.Essentials.Core.Interfaces;
 
 namespace PepperDash.Essentials.Room.Config
 {
