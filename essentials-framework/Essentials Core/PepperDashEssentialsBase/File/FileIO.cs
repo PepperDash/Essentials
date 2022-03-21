@@ -47,10 +47,28 @@ namespace PepperDash.Essentials.Core
 				return null;
 			}
 		}
-	
+
 
 		/// <summary>
-		/// Get the data from a fileName
+		/// Get the data from string path/filename
+		/// </summary>
+		/// <param name="fileName"></param>
+		/// <returns></returns>
+		public static string ReadDataFromFile(string fileName)
+		{
+			try
+			{
+				return ReadDataFromFile(GetFile(fileName));
+			}
+			catch (Exception e)
+			{
+				Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO read failed: \r{0}", e);
+				return "";
+			}
+		}
+
+		/// <summary>
+		/// Get the data with fileInfo object 
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
@@ -70,7 +88,7 @@ namespace PepperDash.Essentials.Core
 				}
 				else
 				{
-					Debug.Console(2, "File {0} Does not exsist", file.FullName);
+					Debug.Console(2, "File {0} does not exsist", file.FullName);
 					return "";
 				}
 				
@@ -127,9 +145,9 @@ namespace PepperDash.Essentials.Core
 		public static bool FileIoUnitTest()
 		{
 			var testData = "Testing FileIO";
-			FileIO.WriteDataToFile(testData, "\\USER\\FileIOTest.pdt");
+			FileIO.WriteDataToFile(testData, "\\user\\FileIOTest.pdt");
 
-			var file = FileIO.GetFile("\\USER\\*FileIOTest*");
+			var file = FileIO.GetFile("\\user\\*FileIOTest*");
 			
 			var readData = FileIO.GetDataFromFile(file);
 			Debug.Console(0, "Returned {0}", readData);
