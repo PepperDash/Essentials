@@ -113,13 +113,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				eRoutingSignalType.Audio | eRoutingSignalType.Video,
 				eRoutingPortConnectionType.Hdmi, new Action(StopSharing), this);
 
-			Output1 = new RoutingOutputPort(RoutingPortNames.AnyVideoOut,
+			Output1 = new RoutingOutputPort(RoutingPortNames.HdmiOut1,
 				eRoutingSignalType.Audio | eRoutingSignalType.Video,
 				eRoutingPortConnectionType.Hdmi, null, this);
 
-			Output2 = new RoutingOutputPort(RoutingPortNames.AnyVideoOut,
+			Output2 = new RoutingOutputPort(RoutingPortNames.HdmiOut2,
 				eRoutingSignalType.Video,
 				eRoutingPortConnectionType.DisplayPort, null, this);
+
+            Output3 = new RoutingOutputPort(RoutingPortNames.HdmiOut3,
+                eRoutingSignalType.Audio | eRoutingSignalType.Video,
+                eRoutingPortConnectionType.Hdmi, null, this);
 
 			SelfviewIsOnFeedback = new BoolFeedback(SelfViewIsOnFeedbackFunc);
 
@@ -301,6 +305,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		public RoutingInputPort CodecOsdIn { get; private set; }
 		public RoutingOutputPort Output1 { get; private set; }
 		public RoutingOutputPort Output2 { get; private set; }
+        public RoutingOutputPort Output3 { get; private set; }
 
 		#region ICommunicationMonitor Members
 
