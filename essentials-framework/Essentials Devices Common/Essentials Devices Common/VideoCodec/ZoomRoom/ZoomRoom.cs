@@ -170,6 +170,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             MeetingIsLockedFeedback = new BoolFeedback(() => Configuration.Call.Lock.Enable );
 
             MeetingIsRecordingFeedback = new BoolFeedback(() => Status.Call.CallRecordInfo.meetingIsBeingRecorded );
+
+            SetUpRouting();
 		}
 
 		public CommunicationGather PortGather { get; private set; }
@@ -489,8 +491,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		private void SyncState_InitialSyncCompleted(object sender, EventArgs e)
 		{
-			SetUpRouting();
-
 			SetIsReady();
 		}
 
