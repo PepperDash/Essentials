@@ -1408,23 +1408,27 @@ namespace PepperDash.Essentials.DM
             if ((sigType & eRoutingSignalType.UsbInput) == eRoutingSignalType.UsbInput)
             {
                 Debug.Console(2, this, "Executing USB Input switch.\r\n in:{0} output: {1}", inputSelector, outputSelector);
-                if (outputSelector > chassisSize)
+                if (inputSelector > chassisSize)
                 {
-                    uint outputIndex;
+                    uint inputIndex;
 
                     if (chassisSize == 8)
                     {
-                        outputIndex = (uint) inputSelector - 16;
+                        inputIndex = (uint) inputSelector - 16;
                     }
                     else
                     {
-                        outputIndex = inputSelector - chassisSize;
+                        inputIndex = inputSelector - chassisSize;
                     }
-                    dmCard = Chassis.Outputs[outputIndex];
+                    dmCard = Chassis.Outputs[inputIndex];
+                }
+                else if (inputSelector > 0)
+                {
+                    dmCard = Chassis.Inputs[inputSelector];
                 }
                 else
                 {
-                    dmCard = Chassis.Inputs[inputSelector];
+                    dmCard = null;
                 }
 
                 ExecuteSwitch(dmCard, Chassis.Inputs[outputSelector], sigType);
@@ -1455,13 +1459,16 @@ namespace PepperDash.Essentials.DM
 
                     dmCard = Chassis.Outputs[outputIndex];
                 }
-                else
+                else if (inputSelector > 0)
                 {
                     dmCard = Chassis.Inputs[inputSelector];
                 }
+                else
+                {
+                    dmCard = null;
+                }
                 Chassis.USBEnter.BoolValue = true;
-
-                Debug.Console(2, this, "Routing USB for input {0} to {1}", inputSelector, dmCard);
+                
                 ExecuteSwitch(dmCard, Chassis.Outputs[outputSelector], sigType);
                 return;
             }
