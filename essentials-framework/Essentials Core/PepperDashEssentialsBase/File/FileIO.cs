@@ -79,19 +79,27 @@ namespace PepperDash.Essentials.Core
 		{
 			try
 			{
-				DirectoryInfo dirInfo = new DirectoryInfo(file.Name);
-				Debug.Console(2, "FileIO Getting Data {0}", file.FullName);
-
-				if (File.Exists(file.FullName))
+				if (fileLock.TryEnter())
 				{
-					using (StreamReader r = new StreamReader(file.FullName))
+					DirectoryInfo dirInfo = new DirectoryInfo(file.Name);
+					Debug.Console(2, "FileIO Getting Data {0}", file.FullName);
+
+					if (File.Exists(file.FullName))
 					{
-						return r.ReadToEnd();
+						using (StreamReader r = new StreamReader(file.FullName))
+						{
+							return r.ReadToEnd();
+						}
+					}
+					else
+					{
+						Debug.Console(2, "File {0} does not exsist", file.FullName);
+						return "";
 					}
 				}
 				else
 				{
-					Debug.Console(2, "File {0} does not exsist", file.FullName);
+					Debug.Console(0, Debug.ErrorLogLevel.Error, "FileIO Unable to enter FileLock");
 					return "";
 				}
 				
@@ -100,6 +108,12 @@ namespace PepperDash.Essentials.Core
 			{
 				Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO read failed: \r{0}", e);
 				return "";
+			}
+			finally
+			{
+				if (fileLock != null && !fileLock.Disposed)
+					fileLock.Leave();
+
 			}
 		}
 
@@ -133,29 +147,42 @@ namespace PepperDash.Essentials.Core
 			string data;
 			try
 			{
-				DirectoryInfo dirInfo = new DirectoryInfo(file.Name);
-				Debug.Console(2, "FileIO Getting Data {0}", file.FullName);
-
-
-				if (File.Exists(file.FullName))
+				if (fileLock.TryEnter())
 				{
-					using (StreamReader r = new StreamReader(file.FullName))
+					DirectoryInfo dirInfo = new DirectoryInfo(file.Name);
+					Debug.Console(2, "FileIO Getting Data {0}", file.FullName);
+
+
+					if (File.Exists(file.FullName))
 					{
-						data = r.ReadToEnd();
+						using (StreamReader r = new StreamReader(file.FullName))
+						{
+							data = r.ReadToEnd();
+						}
 					}
+					else
+					{
+						Debug.Console(2, "File {0} Does not exsist", file.FullName);
+						data = "";
+					}
+					GotFileEvent.Invoke(null, new FileEventArgs(data));
 				}
 				else
 				{
-					Debug.Console(2, "File {0} Does not exsist", file.FullName);
-					data = "";
+					Debug.Console(0, Debug.ErrorLogLevel.Error, "FileIO Unable to enter FileLock");
 				}
-				GotFileEvent.Invoke(null, new FileEventArgs(data));
 
 			}
 			catch (Exception e)
 			{
 				Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO read failed: \r{0}", e);
 				data = "";
+			}
+			finally
+			{
+				if (fileLock != null && !fileLock.Disposed)
+					fileLock.Leave();
+
 			}
 
 
