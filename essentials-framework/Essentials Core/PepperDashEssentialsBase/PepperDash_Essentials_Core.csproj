@@ -219,11 +219,14 @@
     <Compile Include="Factory\IDeviceFactory.cs" />
     <Compile Include="Factory\ReadyEventArgs.cs" />
     <Compile Include="Feedbacks\BoolFeedback.cs" />
+    <Compile Include="Feedbacks\BoolWithFeedback.cs" />
     <Compile Include="Feedbacks\FeedbackCollection.cs" />
     <Compile Include="Feedbacks\FeedbackEventArgs.cs" />
     <Compile Include="Feedbacks\IntFeedback.cs" />
+    <Compile Include="Feedbacks\IntWithFeedback.cs" />
     <Compile Include="Feedbacks\SerialFeedback.cs" />
     <Compile Include="Feedbacks\StringFeedback.cs" />
+    <Compile Include="Feedbacks\StringWithFeedback.cs" />
     <Compile Include="Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
     <Compile Include="Fusion\FusionCustomPropertiesBridge.cs" />
     <Compile Include="Fusion\FusionEventHandlers.cs" />
