@@ -227,6 +227,7 @@
     <Compile Include="Feedbacks\SerialFeedback.cs" />
     <Compile Include="Feedbacks\StringFeedback.cs" />
     <Compile Include="Feedbacks\StringWithFeedback.cs" />
+    <Compile Include="File\FileIO.cs" />
     <Compile Include="Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
     <Compile Include="Fusion\FusionCustomPropertiesBridge.cs" />
     <Compile Include="Fusion\FusionEventHandlers.cs" />
@@ -388,6 +389,9 @@
       <Project>{E51D7C84-4906-486C-B2BA-EEB3B4E9731B}</Project>
       <Name>PepperDash_Essentials_Interfaces</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="NewFolder1\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>
