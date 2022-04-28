@@ -12,26 +12,32 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 {
     public class CodecActiveCallItem
     {
-		[JsonProperty("name")]
+		[JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
         public string Name { get; set; }
 
-		[JsonProperty("number")]
+        [JsonProperty("number", NullValueHandling = NullValueHandling.Ignore)]
         public string Number { get; set; }
 
-		[JsonProperty("type")]
+        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
 		[JsonConverter(typeof(StringEnumConverter))]
         public eCodecCallType Type { get; set; }
 
-		[JsonProperty("status")]
+        [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)]
 		[JsonConverter(typeof(StringEnumConverter))]
         public eCodecCallStatus Status { get; set; }
 
-		[JsonProperty("direction")]
+        [JsonProperty("direction", NullValueHandling = NullValueHandling.Ignore)]
 		[JsonConverter(typeof(StringEnumConverter))]
         public eCodecCallDirection Direction { get; set; }
 
-		[JsonProperty("id")]
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public string Id { get; set; }
+
+        [JsonProperty("isOnHold", NullValueHandling = NullValueHandling.Ignore)]
+        public bool IsOnHold { get; set; }
+
+        [JsonProperty("duration", NullValueHandling = NullValueHandling.Ignore)]
+        public TimeSpan Duration { get; set; }
 
         //public object CallMetaData { get; set; }
 
@@ -39,7 +45,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// Returns true when this call is any status other than 
         /// Unknown, Disconnected, Disconnecting
         /// </summary>
-		[JsonProperty("isActiveCall")]
+        [JsonProperty("isActiveCall", NullValueHandling = NullValueHandling.Ignore)]
         public bool IsActiveCall
         {
             get

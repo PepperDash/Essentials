@@ -16,10 +16,27 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// Used for monitoring comms that are IBasicCommunication. Will send a poll string and provide an event when
 	/// statuses change.
+    /// Default monitoring uses TextReceived event on Client.
 	/// </summary>
 	public class GenericCommunicationMonitor : StatusMonitorBase
 	{
 		public IBasicCommunication Client { get; private set; }
+
+        /// <summary>
+        /// Will monitor Client.BytesReceived if set to true.  Otherwise the default is to monitor Client.TextReceived
+        /// </summary>
+        public bool MonitorBytesReceived { get; private set; }
+
+        /// <summary>
+        /// Return true if the Client is ISocketStatus
+        /// </summary>
+        public bool IsSocket
+        {
+            get
+            {
+                return Client is ISocketStatus;
+            }
+        }
 
 		long PollTime;
 		CTimer PollTimer;
@@ -46,7 +63,19 @@ namespace PepperDash.Essentials.Core
 			Client = client;
 			PollTime = pollTime;
 			PollString = pollString;
+
+            if (IsSocket)
+            {
+                (Client as ISocketStatus).ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
+            }
 		}
+
+        public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, long pollTime,
+            long warningTime, long errorTime, string pollString, bool monitorBytesReceived) :
+            this(parent, client, pollTime, warningTime, errorTime, pollString)
+        {
+            SetMonitorBytesReceived(monitorBytesReceived);
+        }
 
         /// <summary>
         /// Poll is a provided action instead of string
@@ -69,6 +98,19 @@ namespace PepperDash.Essentials.Core
             Client = client;
             PollTime = pollTime;
             PollAction = pollAction;
+
+            if (IsSocket)
+            {
+                (Client as ISocketStatus).ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
+            }
+
+        }
+
+        public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, long pollTime,
+            long warningTime, long errorTime, Action pollAction, bool monitorBytesReceived) :
+            this(parent, client, pollTime, warningTime, errorTime, pollAction)
+        {
+            SetMonitorBytesReceived(monitorBytesReceived);
         }
 
 
@@ -79,22 +121,95 @@ namespace PepperDash.Essentials.Core
 			CommunicationMonitorConfig props) :
 			this(parent, client, props.PollInterval, props.TimeToWarning, props.TimeToError, props.PollString)
 		{
+            if (IsSocket)
+            {
+                (Client as ISocketStatus).ConnectionChange += new EventHandler<GenericSocketStatusChageEventArgs>(socket_ConnectionChange);
+            }
 		}
+
+        /// <summary>
+        /// Builds the monitor from a config object and takes a bool to specify whether to monitor BytesReceived
+        /// Default is to monitor TextReceived
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="client"></param>
+        /// <param name="props"></param>
+        /// <param name="monitorBytesReceived"></param>
+        public GenericCommunicationMonitor(IKeyed parent, IBasicCommunication client, CommunicationMonitorConfig props, bool monitorBytesReceived) :
+            this(parent, client, props.PollInterval, props.TimeToWarning, props.TimeToError, props.PollString)
+        {
+            SetMonitorBytesReceived(monitorBytesReceived);
+        }
+
+        void SetMonitorBytesReceived(bool monitorBytesReceived)
+        {
+            MonitorBytesReceived = monitorBytesReceived;
+        }
 
 		public override void Start()
 		{
-			Client.BytesReceived += Client_BytesReceived;
-			Poll();
-			PollTimer = new CTimer(o => Poll(), null, PollTime, PollTime);
+            if (MonitorBytesReceived) 
+            {
+			    Client.BytesReceived += Client_BytesReceived;
+            }
+            else
+            {
+                Client.TextReceived += Client_TextReceived;
+            }
+
+            if (!IsSocket)
+            {
+                BeginPolling();
+            }
 		}
+
+        void  socket_ConnectionChange(object sender, GenericSocketStatusChageEventArgs e)
+        {
+            if (!e.Client.IsConnected)
+            {
+                // Immediately stop polling and notify that device is offline
+                Stop();
+                Status = MonitorStatus.InError;
+                ResetErrorTimers();
+            }
+            else
+            {
+                // Start polling and set status to unknow and let poll result update the status to IsOk when a response is received
+                Status = MonitorStatus.StatusUnknown;
+                Start();
+                BeginPolling();
+            }
+        }
+
+        void BeginPolling()
+        {
+            Poll();
+            PollTimer = new CTimer(o => Poll(), null, PollTime, PollTime);
+        }
 
 		public override void Stop()
 		{
-			Client.BytesReceived -= this.Client_BytesReceived;
-			PollTimer.Stop();
-			PollTimer = null;
-			StopErrorTimers();
+            if(MonitorBytesReceived)
+            {
+			    Client.BytesReceived -= this.Client_BytesReceived;
+            }
+            else
+            {
+                Client.TextReceived -= Client_TextReceived;
+            }
+
+            if (PollTimer != null)
+            {
+                PollTimer.Stop();
+                PollTimer = null;
+                StopErrorTimers();
+            }
 		}
+
+        void  Client_TextReceived(object sender, GenericCommMethodReceiveTextArgs e)
+        {
+            DataReceived();
+        }
 
 		/// <summary>
 		/// Upon any receipt of data, set everything to ok!
@@ -103,10 +218,14 @@ namespace PepperDash.Essentials.Core
 		/// <param name="e"></param>
 		void Client_BytesReceived(object sender, GenericCommMethodReceiveBytesArgs e)
 		{
-			Status = MonitorStatus.IsOk;
-			ResetErrorTimers();
-			//
-		}
+            DataReceived();
+        }
+
+        void DataReceived()
+        {
+            Status = MonitorStatus.IsOk;
+            ResetErrorTimers();
+        }
 
 		void Poll()
 		{
@@ -122,19 +241,6 @@ namespace PepperDash.Essentials.Core
 			else
 			{
 				Debug.Console(2, this, "Comm not connected");
-			}
-		}
-
-		/// <summary>
-		/// When the client connects, and we're waiting for it, respond and disconect from event
-		/// </summary>
-		void OneTimeConnectHandler(object o, EventArgs a)
-		{
-			if (Client.IsConnected)
-			{
-				//Client.IsConnected -= OneTimeConnectHandler;
-				Debug.Console(2, this, "Comm connected");
-				Poll();
 			}
 		}
 	}

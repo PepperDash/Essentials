@@ -118,7 +118,7 @@ namespace PepperDash.Essentials.Core.Queues
         /// <param name="capacity"></param>
         public GenericQueue(string key, int pacing, Thread.eThreadPriority priority, int capacity)
             : this(key, priority, capacity, pacing)
-        {
+        {           
         }
 
         /// <summary>
@@ -139,7 +139,8 @@ namespace PepperDash.Essentials.Core.Queues
             _queue = new CrestronQueue<IQueueMessage>(cap);
             _worker = new Thread(ProcessQueue, null, Thread.eThreadStartOptions.Running)
             {
-                Priority = priority
+                Priority = priority,
+                Name = _key
             };
 
             SetDelayValues(pacing);

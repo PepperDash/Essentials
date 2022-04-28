@@ -50,8 +50,16 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         public uint PhonebookResultsLimit { get; set; }
 
         [JsonProperty("UiBranding")]
-        public BrandingLogoProperties UiBranding { get; set; }       
+        public BrandingLogoProperties UiBranding { get; set; }
 
+        [JsonProperty("cameraInfo")]
+        public List<CameraInfo> CameraInfo { get; set; }
+
+
+        public CiscoSparkCodecPropertiesConfig()
+        {
+            CameraInfo = new List<CameraInfo>();
+        }
     }
 
     public class SharingProperties
@@ -67,5 +75,15 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
         [JsonProperty("brandingUrl")]
         public string BrandingUrl { get; set; }
+    }
+
+    /// <summary>
+    /// Describes configuration information for the near end cameras
+    /// </summary>
+    public class CameraInfo
+    {
+        public int CameraNumber { get; set; }
+        public string Name { get; set; }
+        public int SourceId { get; set; }
     }
 }

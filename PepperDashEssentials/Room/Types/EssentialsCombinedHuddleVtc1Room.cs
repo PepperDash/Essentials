@@ -89,7 +89,7 @@ namespace PepperDash.Essentials
             }
         }
 
-        public EssentialsConferenceRoomPropertiesConfig PropertiesConfig { get; private set; }
+        public EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; private set; }
 
         private List<IRoutingSinkWithSwitching> Displays;
 
@@ -199,7 +199,7 @@ namespace PepperDash.Essentials
         {
             try
             {
-                PropertiesConfig = JsonConvert.DeserializeObject<EssentialsConferenceRoomPropertiesConfig>
+                PropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>
                     (config.Properties.ToString());
 
                 VideoCodec = DeviceManager.GetDeviceForKey(PropertiesConfig.VideoCodecKey) as
@@ -361,7 +361,7 @@ namespace PepperDash.Essentials
 
         protected override void CustomSetConfig(DeviceConfig config)
         {
-            var newPropertiesConfig = JsonConvert.DeserializeObject<EssentialsConferenceRoomPropertiesConfig>(config.Properties.ToString());
+            var newPropertiesConfig = JsonConvert.DeserializeObject<EssentialsHuddleVtc1PropertiesConfig>(config.Properties.ToString());
 
             if (newPropertiesConfig != null)
                 PropertiesConfig = newPropertiesConfig;

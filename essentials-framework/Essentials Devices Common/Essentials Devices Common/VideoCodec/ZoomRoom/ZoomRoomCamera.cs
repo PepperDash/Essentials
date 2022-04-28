@@ -7,6 +7,8 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Devices.Common.Cameras;
 
+using Newtonsoft.Json;
+
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 {
     public enum eZoomRoomCameraState
@@ -34,7 +36,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
     {
         protected ZoomRoom ParentCodec { get; private set; }
 
-        public int Id = 0;  // ID of near end selected camara is always 0
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+        public int? Id = 0;  // ID of near end selected camara is always 0
 
         private int ContinueTime = 10; // number of milliseconds between issuing continue commands
 

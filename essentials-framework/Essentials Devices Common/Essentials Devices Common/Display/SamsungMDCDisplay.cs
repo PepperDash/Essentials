@@ -99,7 +99,7 @@ namespace PepperDash.Essentials.Devices.Displays
             WarmupTime = 10000;
 			CooldownTime = 8000;
 
-            CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 2000, 120000, 300000, StatusGet);
+            CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 2000, 120000, 300000, StatusGet, true);
             DeviceManager.AddDevice(CommunicationMonitor);
 
             VolumeIncrementer = new ActionIncrementer(655, 0, 65535, 800, 80, 

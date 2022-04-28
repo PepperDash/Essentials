@@ -29,6 +29,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
     public abstract class CameraBase : ReconfigurableDevice, IRoutingOutputs
 	{
+        [JsonProperty("controlMode", NullValueHandling = NullValueHandling.Ignore)]
         public eCameraControlMode ControlMode { get; protected set; }
 
         #region IRoutingOutputs Members
@@ -37,6 +38,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
 
         #endregion
 
+        [JsonProperty("canPan", NullValueHandling = NullValueHandling.Ignore)]
         public bool CanPan
         {
             get
@@ -44,7 +46,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 return (Capabilities & eCameraCapabilities.Pan) == eCameraCapabilities.Pan;
             }
         }
-
+        [JsonProperty("canTilt", NullValueHandling = NullValueHandling.Ignore)]
         public bool CanTilt
         {
             get
@@ -52,7 +54,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 return (Capabilities & eCameraCapabilities.Tilt) == eCameraCapabilities.Tilt;
             }
         }
-
+        [JsonProperty("canZoom", NullValueHandling = NullValueHandling.Ignore)]
         public bool CanZoom
         {
             get
@@ -60,7 +62,7 @@ namespace PepperDash.Essentials.Devices.Common.Cameras
                 return (Capabilities & eCameraCapabilities.Zoom) == eCameraCapabilities.Zoom;
             }
         }
-
+        [JsonProperty("canFocus", NullValueHandling = NullValueHandling.Ignore)]
         public bool CanFocus
         {
             get
