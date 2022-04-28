@@ -99,13 +99,18 @@ namespace PepperDash.Essentials.Core.Lighting
             var sceneIndex = 0;
             foreach (var scene in lightingDevice.LightingScenes)
             {
-                trilist.SetSigTrueAction((uint)(joinMap.SelectSceneDirect.JoinNumber + sceneIndex), () => lightingDevice.SelectScene(lightingDevice.LightingScenes[sceneIndex]));
+                var index1 = sceneIndex;
+                trilist.SetSigTrueAction((uint)(joinMap.SelectSceneDirect.JoinNumber + sceneIndex), () =>
+                {
+                    var index = index1;
+                    Debug.Console(2, this, "LightingDevice: sceneIndex: {0} index: {1} > inside action", index1, index);
+                    lightingDevice.SelectScene(lightingDevice.LightingScenes[index]);
+                });
                 scene.IsActiveFeedback.LinkInputSig(trilist.BooleanInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + sceneIndex)]);
                 trilist.StringInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + sceneIndex)].StringValue = scene.Name;
                 trilist.BooleanInput[(uint)(joinMap.ButtonVisibility.JoinNumber + sceneIndex)].BoolValue = true;
                 sceneIndex++;
             }
-
             return joinMap;
         }
 
