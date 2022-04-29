@@ -6,9 +6,10 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core.Feedbacks
 {
-	public class BoolWithFeedback : BoolFeedback
+	public class BoolWithFeedback 
 	{
 		private bool _Value;
+		public BoolFeedback Feedback;
 		public bool Value
 		{
 			get
@@ -18,13 +19,13 @@ namespace PepperDash.Essentials.Core.Feedbacks
 			set
 			{
 				_Value = value;
-				this.FireUpdate();
+				Feedback.FireUpdate();
 			}
 		}
 		public BoolWithFeedback()
-			: base(() => Value)
+			
 		{
-
+			Feedback = new BoolFeedback(() => { return Value; });
 		}
 	}
 

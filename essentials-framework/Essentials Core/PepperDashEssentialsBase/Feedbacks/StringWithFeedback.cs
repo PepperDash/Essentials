@@ -6,9 +6,10 @@ using Crestron.SimplSharp;
 
 namespace PepperDash.Essentials.Core.Feedbacks
 {
-	public class StringWithFeedback : StringFeedback
+	public class StringWithFeedback 
 	{
 		private string _Value;
+		public StringFeedback Feedback;
 		public string Value
 		{
 			get
@@ -18,13 +19,13 @@ namespace PepperDash.Essentials.Core.Feedbacks
 			set
 			{
 				_Value = value;
-				this.FireUpdate();
+				Feedback.FireUpdate();
 			}
 		}
 		public StringWithFeedback()
-			: base(() => Value)
+			
 		{
-
+			Feedback = new StringFeedback(() => Value);
 		}
 	}
 }
