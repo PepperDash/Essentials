@@ -2434,29 +2434,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				});
 
 				layoutSizeCodec.SelfviewPipSizeFeedback.LinkInputSig(trilist.StringInput[joinMap.GetSetSelfviewPipSize.JoinNumber]);
-			}
-
-		    PasswordRequired += (device, args) =>
-		    {
-		        if (args.LoginAttemptCancelled)
-		        {
-		            trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, false);
-		            return;
-		        }
-
-		        if (!string.IsNullOrEmpty(args.Message))
-		        {
-		            trilist.SetString(joinMap.PasswordPromptMessage.JoinNumber, args.Message);
-		        }
-
-		        if (args.LoginAttemptFailed)
-		        {
-                    trilist.SetBool(joinMap.PasswordLoginFailed.JoinNumber, true);
-		            return;
-		        }                
-
-                trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, true);
-		    };
+			}		    
 
 		    MeetingInfoChanged += (device, args) =>
 		    {
