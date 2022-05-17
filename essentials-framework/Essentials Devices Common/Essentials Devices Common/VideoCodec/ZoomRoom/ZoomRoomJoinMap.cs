@@ -295,7 +295,77 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				Description = "Toggles the selfview pip size, (aka layout size)",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Digital
-			});		
+			});
+
+        [JoinName("StartRecording")]
+        public JoinDataComplete StartRecording = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 241,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Pulse to start the Meeting Recording.  FB high if meeting is currently recording",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("StopRecording")]
+        public JoinDataComplete StopRecording = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 242,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Pulse to stop the Meeting Recording.  FB high if meeting is currently NOT recording",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("RecordConsentPromptIsVisible")]
+        public JoinDataComplete RecordConsentPromptIsVisible = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 243,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "When high, indicates that the recording consent prompt is visible on the ZoomRoom UI",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("RecordingPromptAgree")]
+        public JoinDataComplete RecordingPromptAgree = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 244,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Pulse to agree to consent for meeting recording",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("RecordingPromptDisagree")]
+        public JoinDataComplete RecordingPromptDisagree = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 245,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Pulse to disagree to consent for meeting recording",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
 
         //[JoinName("ParticipantAudioMuteToggleStart")]
         //public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(

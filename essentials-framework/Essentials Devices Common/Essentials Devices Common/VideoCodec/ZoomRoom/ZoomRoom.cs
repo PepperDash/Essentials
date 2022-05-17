@@ -518,10 +518,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         private void HandleCallRecordInfoStateUpdate(object sender, PropertyChangedEventArgs a)
         {
-            //Debug.Console(2, this, "**************** Status.Call.CallRecordInfo.PropertyChanged.  PropertyName: {0} *********************************", a.PropertyName);
             if (a.PropertyName == "meetingIsBeingRecorded")
             {
-                //Debug.Console(2, this, "**************** Meeting Recording Info Updated.  Recording: {0} **********************************", Status.Call.CallRecordInfo.meetingIsBeingRecorded);
                 MeetingIsRecordingFeedback.FireUpdate();
 
                 var meetingInfo = new MeetingInfo(MeetingInfo.Id,
@@ -536,10 +534,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     MeetingIsRecordingFeedback.BoolValue);
                 MeetingInfo = meetingInfo;
             }
-            //else
-            //{
-            //    Debug.Console(2, this, "**************** Meeting Recording Info Updated.  PropertyName: {0} *********************************", a.PropertyName);
-            //}
         }
 
         private void HandleCallStateUpdate(object sender, PropertyChangedEventArgs a)
@@ -2374,6 +2368,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// <param name="joinMap"></param>
 		public void LinkZoomRoomToApi(BasicTriList trilist, ZoomRoomJoinMap joinMap)
 		{
+            var recordingCodec = this as IHasMeetingRecordingWithPrompt;
+            if (recordingCodec != null)
+            {
+                trilist.SetSigFalseAction(joinMap.StartRecording.JoinNumber, () => recordingCodec.StartRecording());
+                trilist.SetSigFalseAction(joinMap.StopRecording.JoinNumber, () => recordingCodec.StopRecording());
+
+                recordingCodec.MeetingIsRecordingFeedback.LinkInputSig(trilist.BooleanInput[joinMap.StartRecording.JoinNumber]);
+                recordingCodec.MeetingIsRecordingFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.StopRecording.JoinNumber]);
+
+                trilist.SetSigFalseAction(joinMap.RecordingPromptAgree.JoinNumber, () => recordingCodec.RecordingPromptAcknowledgement(true));
+                trilist.SetSigFalseAction(joinMap.RecordingPromptDisagree.JoinNumber, () => recordingCodec.RecordingPromptAcknowledgement(false));
+
+                recordingCodec.RecordConsentPromptIsVisible.LinkInputSig(trilist.BooleanInput[joinMap.RecordConsentPromptIsVisible.JoinNumber]);
+            }
+
 			var layoutsCodec = this as IHasZoomRoomLayouts;
 			if (layoutsCodec != null)
 			{
@@ -2825,6 +2834,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         public void SetParticipantAsHost(int userId)
         {
             SendText(string.Format("zCommand Call HostChange Id: {0}", userId));
+        }
+
+        public void AdmitParticipantFromWaitingRoom(int userId)
+        {
+            SendText(string.Format("zCommand Call Admit Participant Id: {0}", userId));
         }
 
 		#endregion
@@ -3437,7 +3451,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         #endregion
 
-        #region IHasMeetingRecording Members
+        #region IHasMeetingRecordingWithPrompt Members
 
         public BoolFeedback MeetingIsRecordingFeedback { get; private set; }
 
@@ -3445,14 +3459,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public BoolFeedback RecordConsentPromptIsVisible { get; private set; }
 
+        public void RecordingPromptAcknowledgement(bool agree)
+        {
+            SendText(string.Format("zCommand Agree Recording: {0}", agree ? "on" : "off"));
+        }
+
         public void StartRecording()
         {
-            SendText(string.Format("Command Call Record Enable: on"));
+            SendText(string.Format("zCommand Call Record Enable: on"));
         }
 
         public void StopRecording()
         {
-            SendText(string.Format("Command Call Record Enable: off"));
+            SendText(string.Format("zCommand Call Record Enable: off"));
         }
 
         public void ToggleRecording()
