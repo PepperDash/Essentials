@@ -15,4 +15,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         void StopRecording();
         void ToggleRecording();
     }
+
+    public interface IHasMeetingRecordingWithPrompt : IHasMeetingRecording
+    {
+        BoolFeedback RecordConsentPromptIsVisible { get; }
+    }
 }

@@ -27,7 +27,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMuteWithUnmuteReqeust, IHasCameraAutoMode,
 		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin,
 		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting, IHasMeetingInfo, IHasPresentationOnlyMeeting,
-        IHasMeetingLock, IHasMeetingRecording
+        IHasMeetingLock, IHasMeetingRecordingWithPrompt
 	{
         public event EventHandler VideoUnmuteRequested;
 
@@ -174,6 +174,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             MeetingIsLockedFeedback = new BoolFeedback(() => Configuration.Call.Lock.Enable );
 
             MeetingIsRecordingFeedback = new BoolFeedback(() => Status.Call.CallRecordInfo.meetingIsBeingRecorded );
+
+            RecordConsentPromptIsVisible = new BoolFeedback(() => _recordConsentPromptIsVisible);
 
             SetUpRouting();
 		}
@@ -499,19 +501,65 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			SetIsReady();
 		}
 
+        /// <summary>
+        /// Handles subscriptions to Status.Call and sub objects. Needs to be called whenever Status.Call is constructed
+        /// </summary>
 		private void SetUpCallFeedbackActions()
 		{
-		    Status.Call.Sharing.PropertyChanged += HandleSharingStateUpdate;
+            Status.Call.Sharing.PropertyChanged -= HandleSharingStateUpdate;
+            Status.Call.Sharing.PropertyChanged += HandleSharingStateUpdate;
 
-			Status.Call.PropertyChanged += (o, a) =>
-			{
-				if (a.PropertyName == "Info")
-				{
-					Debug.Console(1, this, "Updating Call Status");
-					UpdateCallStatus();
-				}
-			};
+            Status.Call.PropertyChanged -= HandleCallStateUpdate;
+            Status.Call.PropertyChanged += HandleCallStateUpdate;
+
+            Status.Call.CallRecordInfo.PropertyChanged -= HandleCallRecordInfoStateUpdate;
+            Status.Call.CallRecordInfo.PropertyChanged += HandleCallRecordInfoStateUpdate;
 		}
+
+        private void HandleCallRecordInfoStateUpdate(object sender, PropertyChangedEventArgs a)
+        {
+            //Debug.Console(2, this, "**************** Status.Call.CallRecordInfo.PropertyChanged.  PropertyName: {0} *********************************", a.PropertyName);
+            if (a.PropertyName == "meetingIsBeingRecorded")
+            {
+                //Debug.Console(2, this, "**************** Meeting Recording Info Updated.  Recording: {0} **********************************", Status.Call.CallRecordInfo.meetingIsBeingRecorded);
+                MeetingIsRecordingFeedback.FireUpdate();
+
+                var meetingInfo = new MeetingInfo(MeetingInfo.Id,
+                    MeetingInfo.Name,
+                    MeetingInfo.Host,
+                    MeetingInfo.Password,
+                    GetSharingStatus(),
+                    GetIsHostMyself(),
+                    MeetingInfo.IsSharingMeeting,
+                    MeetingInfo.WaitingForHost,
+                    MeetingIsLockedFeedback.BoolValue,
+                    MeetingIsRecordingFeedback.BoolValue);
+                MeetingInfo = meetingInfo;
+            }
+            //else
+            //{
+            //    Debug.Console(2, this, "**************** Meeting Recording Info Updated.  PropertyName: {0} *********************************", a.PropertyName);
+            //}
+        }
+
+        private void HandleCallStateUpdate(object sender, PropertyChangedEventArgs a)
+        {
+            switch (a.PropertyName)
+            {
+                case "Info":
+                    {
+                        Debug.Console(1, this, "Updating Call Status");
+                        UpdateCallStatus();
+                        break;
+                    }
+
+                case "Status":
+                    {
+                        UpdateCallStatus();
+                        break;
+                    }
+            }
+        }
 
 	    private void HandleSharingStateUpdate(object sender, PropertyChangedEventArgs a)
 	    {
@@ -530,19 +578,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 {
                     var sharingStatus = GetSharingStatus();
 
-                    MeetingInfo = new MeetingInfo("", "", "", "", sharingStatus, GetIsHostMyself(), true, false, MeetingIsLockedFeedback.BoolValue);
+                    MeetingInfo = new MeetingInfo("", "", "", "", sharingStatus, GetIsHostMyself(), true, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
                     return;
                 }
 
                 var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host != null ? Participants.Host.Name : "None",
-                    MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself(), MeetingInfo.IsSharingMeeting, MeetingInfo.WaitingForHost, MeetingIsLockedFeedback.BoolValue);
+                    MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself(), MeetingInfo.IsSharingMeeting, MeetingInfo.WaitingForHost, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
                 MeetingInfo = meetingInfo;
             }
             catch (Exception e)
             {
                 Debug.Console(1, this, "Error processing state property update. {0}", e.Message);
                 Debug.Console(2, this, e.StackTrace);
-                MeetingInfo = new MeetingInfo("", "", "", "", "None", false, false, false, MeetingIsLockedFeedback.BoolValue);
+                MeetingInfo = new MeetingInfo("", "", "", "", "None", false, false, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
             }
 	    }
 
@@ -551,6 +599,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// </summary>
 		private void SetUpFeedbackActions()
 		{
+            // Set these up initially.
+            SetUpCallFeedbackActions();
+
 			Configuration.Audio.Output.PropertyChanged += (o, a) =>
 			{
 				if (a.PropertyName == "Volume")
@@ -645,7 +696,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                 MeetingInfo.IsHost, 
                                 MeetingInfo.IsSharingMeeting, 
                                 MeetingInfo.WaitingForHost, 
-                                MeetingIsLockedFeedback.BoolValue
+                                MeetingIsLockedFeedback.BoolValue,
+                                MeetingIsRecordingFeedback.BoolValue
                             );
                     }
                 };
@@ -678,41 +730,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				}
 			};
 
-			Status.Call.Sharing.PropertyChanged += (o, a) =>
-			{
-				if (a.PropertyName == "State")
-				{
-					SharingContentIsOnFeedback.FireUpdate();
-					ReceivingContent.FireUpdate();
-				}
-			};
-
-			Status.Call.PropertyChanged += (o, a) =>
-			{
-                switch(a.PropertyName)
-                {
-                    case "Info":
-				{
-					Debug.Console(1, this, "Updating Call Status");
-					UpdateCallStatus();
-                    break;
-				}
-
-                case "Status":
-                    {
-                        UpdateCallStatus();
-                        break;
-                    }
-                    }
-			};
-
-            Status.Call.CallRecordInfo.PropertyChanged += (o, a) =>
-                {
-                    if (a.PropertyName == "meetingIsBeingRecorded")
-                    {
-                        MeetingIsRecordingFeedback.FireUpdate();
-                    }
-                };
 
 			Status.Sharing.PropertyChanged += (o, a) =>
 			{
@@ -744,7 +761,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                 GetIsHostMyself(), 
                                 MeetingInfo.IsSharingMeeting, 
                                 MeetingInfo.WaitingForHost, 
-                                MeetingIsLockedFeedback.BoolValue);
+                                MeetingIsLockedFeedback.BoolValue,
+                                MeetingIsRecordingFeedback.BoolValue);
                             MeetingInfo = meetingInfo;
                             break;
                         }
@@ -1441,7 +1459,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                     GetIsHostMyself(), 
                                     MeetingInfo.IsSharingMeeting, 
                                     MeetingInfo.WaitingForHost, 
-                                    MeetingIsLockedFeedback.BoolValue);
+                                    MeetingIsLockedFeedback.BoolValue,
+                                    MeetingIsRecordingFeedback.BoolValue);
                                 MeetingInfo = meetingInfo;
 
 								PrintCurrentCallParticipants();
@@ -1656,14 +1675,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							        if (MeetingInfo == null)
 							        {
 							            MeetingInfo = new MeetingInfo("Waiting For Host", "Waiting For Host", "Waiting For Host", "",
-                                            GetSharingStatus(), false, false, true, MeetingIsLockedFeedback.BoolValue);
+                                            GetSharingStatus(), false, false, true, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
 
                                         UpdateCallStatus();
 							            break;
 							        }
 
                                     MeetingInfo = new MeetingInfo("Waiting For Host", "Waiting For Host", "Waiting For Host", "",
-                                        GetSharingStatus(), false, false, true, MeetingIsLockedFeedback.BoolValue);
+                                        GetSharingStatus(), false, false, true, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
 
 							        UpdateCallStatus();
 
@@ -1673,12 +1692,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							    if (MeetingInfo == null)
 							    {
 							        MeetingInfo = new MeetingInfo("Waiting For Host", "Waiting For Host", "Waiting For Host", "",
-                                        GetSharingStatus(), false, false, false, MeetingIsLockedFeedback.BoolValue);
+                                        GetSharingStatus(), false, false, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
 							        break;
 							    }
 
 							    MeetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, MeetingInfo.Host, MeetingInfo.Password,
-                                    GetSharingStatus(), GetIsHostMyself(), false, false, MeetingIsLockedFeedback.BoolValue);
+                                    GetSharingStatus(), GetIsHostMyself(), false, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
 
 							    break;
 							}
@@ -1687,12 +1706,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 								// TODO: notify user that host has disabled unmuting video
 								break;
 							}
-							case "updatedcallrecordinfo":
+							case "updatecallrecordinfo":
 							{
 								JsonConvert.PopulateObject(responseObj.ToString(), Status.Call.CallRecordInfo);
 
 								break;
 							}
+                            case "recordingconsent":
+                            {
+                                _recordConsentPromptIsVisible = responseObj["isShow"].Value<bool>();
+                                RecordConsentPromptIsVisible.FireUpdate();
+                                break;
+                            }
 							case "phonecallstatus":
 							{
 								JsonConvert.PopulateObject(responseObj.ToString(), Status.PhoneCall);
@@ -1762,7 +1787,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 						        if (result.Success)
 						        {
-                                    MeetingInfo = new MeetingInfo("", "", "", "", "", true, true, MeetingInfo.WaitingForHost, MeetingIsLockedFeedback.BoolValue);
+                                    MeetingInfo = new MeetingInfo("", "", "", "", "", true, true, MeetingInfo.WaitingForHost, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
 						            break;
 						        }
 
@@ -1963,12 +1988,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				// If not crrently in a meeting, intialize the call object
 				if (callStatus != zStatus.eCallStatus.IN_MEETING && callStatus != zStatus.eCallStatus.CONNECTING_MEETING)
 				{
-                    //Debug.Console(1, this, "[UpdateCallStatus] Creating new Status.Call object");
 					Status.Call = new zStatus.Call {Status = callStatus};
+                    // Resubscribe to all property change events after Status.Call is reconstructed
+                    SetUpCallFeedbackActions();
 
 					OnCallStatusChange(new CodecActiveCallItem() {Status = eCodecCallStatus.Disconnected});
-
-					SetUpCallFeedbackActions();
 				}
 
 				if (ActiveCalls.Count == 0)
@@ -2108,7 +2132,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     GetIsHostMyself(),
                     !String.Equals(Status.Call.Info.meeting_type,"NORMAL"),
                     false,
-                    MeetingIsLockedFeedback.BoolValue
+                    MeetingIsLockedFeedback.BoolValue,
+                    MeetingIsRecordingFeedback.BoolValue
                     );
             }
             // TODO [ ] Issue #868
@@ -2120,6 +2145,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     string.Empty,
                     string.Empty,
                     string.Empty,
+                    false,
                     false,
                     false,
                     false,
@@ -3414,6 +3440,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         #region IHasMeetingRecording Members
 
         public BoolFeedback MeetingIsRecordingFeedback { get; private set; }
+
+        bool _recordConsentPromptIsVisible;
+
+        public BoolFeedback RecordConsentPromptIsVisible { get; private set; }
 
         public void StartRecording()
         {
