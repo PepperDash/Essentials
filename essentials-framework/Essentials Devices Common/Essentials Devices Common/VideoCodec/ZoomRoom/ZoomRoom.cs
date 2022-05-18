@@ -3461,7 +3461,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void RecordingPromptAcknowledgement(bool agree)
         {
-            SendText(string.Format("zCommand Agree Recording: {0}", agree ? "on" : "off"));
+            var command = string.Format("zCommand Agree Recording: {0}", agree ? "on" : "off");
+            //Debug.Console(2, this, "Sending agree: {0} {1}", agree, command);
+            SendText(command);
         }
 
         public void StartRecording()
