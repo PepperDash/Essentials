@@ -112,6 +112,11 @@ namespace PepperDash.Essentials.Core
 		public override void ExecuteSwitch(object selector)
 		{
 			Debug.Console(2, this, "ExecuteSwitch: {0}", selector);
+
+		    if (!_PowerIsOn)
+		    {
+		        PowerOn();
+		    }
 		}
 
 
