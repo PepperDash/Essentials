@@ -57,7 +57,10 @@ namespace PepperDash.Essentials
         /// 1008
         /// </summary>
         public const uint MeetingLeavePress = 1008;
-
+        /// <summary>
+        /// 1009
+        /// </summary>
+        public const uint RecordingConsentVisible = 1009;
 
 
 
@@ -987,5 +990,16 @@ namespace PepperDash.Essentials
         /// 15307
         /// </summary>
         public const uint PasswordPromptErrorVisible = 15307;
+
+        // Meeting Recording Consent Dialog
+
+        /// <summary>
+        /// 15311
+        /// </summary>
+        public const uint MeetingRecodingConsentAgree = 15311;
+        /// <summary>
+        /// 15312
+        /// </summary>
+        public const uint MeetingRecodingConsentDisgree = 15312;
     }
 }

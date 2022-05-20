@@ -215,10 +215,11 @@ namespace PepperDash.Essentials.UIDrivers.VC
                     StartSearchBackspaceRepeat, StopSearchBackspaceRepeat, SearchKeypadBackspacePress);
 
 
-                if (Codec is IPasswordPrompt)
-                {
-                    SetupPasswordPrompt();
-                }
+
+                SetupPasswordPrompt();
+
+
+                SetupMeetingRecordingConsentPrompt();
 
 
                 // If the codec is ready, then get the values we want, otherwise wait
@@ -1944,10 +1945,29 @@ namespace PepperDash.Essentials.UIDrivers.VC
         {
             var passwordPromptCodec = Codec as IPasswordPrompt;
 
+            if (passwordPromptCodec == null) return;
+
             passwordPromptCodec.PasswordRequired += new EventHandler<PasswordPromptEventArgs>(passwordPromptCodec_PasswordRequired);
 
             TriList.SetSigFalseAction(UIBoolJoin.PasswordPromptCancelPress, HidePasswordPrompt);
             TriList.SetSigFalseAction(UIBoolJoin.PasswordPromptTextPress, RevealKeyboard);
+        }
+
+        void SetupMeetingRecordingConsentPrompt()
+        {
+            var recordingCodec = Codec as IHasMeetingRecordingWithPrompt;
+
+            if (recordingCodec == null) return;
+
+            recordingCodec.RecordConsentPromptIsVisible.OutputChange += new EventHandler<FeedbackEventArgs>(RecordConsentPromptIsVisible_OutputChange);
+
+            TriList.SetSigFalseAction(UIBoolJoin.MeetingRecodingConsentAgree, () => recordingCodec.RecordingPromptAcknowledgement(true));
+            TriList.SetSigFalseAction(UIBoolJoin.MeetingRecodingConsentDisgree, () => recordingCodec.RecordingPromptAcknowledgement(false));
+        }
+
+        void RecordConsentPromptIsVisible_OutputChange(object sender, FeedbackEventArgs e)
+        {
+            TriList.SetBool(UIBoolJoin.RecordingConsentVisible, e.BoolValue);
         }
 
         void passwordPromptCodec_PasswordRequired(object sender, PasswordPromptEventArgs e)
