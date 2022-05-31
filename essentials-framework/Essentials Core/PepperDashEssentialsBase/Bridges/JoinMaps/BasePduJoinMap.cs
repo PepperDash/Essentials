@@ -2,7 +2,7 @@
 
 namespace PepperDash.Essentials.Core.Bridges
 {
-    public class BasePduJoinMap : JoinMapBaseAdvanced
+    public class PduJoinMapBase : JoinMapBaseAdvanced
     {
         [JoinName("Name")]
         public JoinDataComplete Name = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
@@ -24,9 +24,9 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete OutletEnabled = new JoinDataComplete(new JoinData { JoinNumber = 11, JoinSpan = 1 },
             new JoinMetadata { Description = "Outlet Enabled", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
 
-        [JoinName("OutletPowerReboot")]
-        public JoinDataComplete OutletPowerReboot = new JoinDataComplete(new JoinData { JoinNumber = 12, JoinSpan = 1 },
-            new JoinMetadata { Description = "Outlet Power Reboot", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+        [JoinName("OutletPowerCycle")]
+        public JoinDataComplete OutletPowerCycle = new JoinDataComplete(new JoinData { JoinNumber = 12, JoinSpan = 1 },
+            new JoinMetadata { Description = "Outlet Power Cycle", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
 
         [JoinName("OutletPowerOn")]
         public JoinDataComplete OutletPowerOn = new JoinDataComplete(new JoinData { JoinNumber = 13, JoinSpan = 1 },
@@ -42,8 +42,8 @@ namespace PepperDash.Essentials.Core.Bridges
         /// Constructor to use when instantiating this Join Map without inheriting from it
         /// </summary>
         /// <param name="joinStart">Join this join map will start at</param>
-        public BasePduJoinMap(uint joinStart)
-            :base(joinStart, typeof(BasePduJoinMap))
+        public PduJoinMapBase(uint joinStart)
+            :base(joinStart, typeof(PduJoinMapBase))
         {   
         }
 
@@ -52,7 +52,8 @@ namespace PepperDash.Essentials.Core.Bridges
         /// </summary>
         /// <param name="joinStart">Join this join map will start at</param>
         /// <param name="type">Type of the child join map</param>
-        public BasePduJoinMap(uint joinStart, Type type) : base(joinStart, type)
+        public PduJoinMapBase(uint joinStart, Type type)
+            : base(joinStart, type)
         {            
         }
     }
