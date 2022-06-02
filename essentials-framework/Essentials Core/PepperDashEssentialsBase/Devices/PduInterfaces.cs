@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Crestron.SimplSharp;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
@@ -28,12 +29,7 @@ namespace PepperDash_Essentials_Core.Devices
         /// <summary>
         /// Collection of IPduOutlets
         /// </summary>
-        Dictionary<int, IHasPowerCycle> PduOutlets { get; }
- 
-        /// <summary>
-        /// Count of PduOutlets
-        /// </summary>
-        int PduOutletsCount { get; }
+        ReadOnlyDictionary<int, IHasPowerCycle> PduOutlets { get; }
 
     }
 }
