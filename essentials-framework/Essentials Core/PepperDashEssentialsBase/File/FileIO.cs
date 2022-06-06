@@ -21,6 +21,8 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
+		/// 
+		
 		public static FileInfo[] GetFiles(string fileName)
 		{
 			DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fileName));
@@ -35,7 +37,7 @@ namespace PepperDash.Essentials.Core
 				return null;
 			}
 		}
-
+		
 		public static FileInfo GetFile(string fileName)
 		{
 			DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fileName));
@@ -81,7 +83,6 @@ namespace PepperDash.Essentials.Core
 			{
 				if (fileLock.TryEnter())
 				{
-					DirectoryInfo dirInfo = new DirectoryInfo(file.Name);
 					Debug.Console(2, "FileIO Getting Data {0}", file.FullName);
 
 					if (File.Exists(file.FullName))
