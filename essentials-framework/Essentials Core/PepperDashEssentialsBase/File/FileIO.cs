@@ -6,6 +6,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using PepperDash.Core;
 using Crestron.SimplSharpPro.CrestronThread;
+using Crestron.SimplSharp.Net.Http;
+using Crestron.SimplSharp.CrestronIO;
 
 namespace PepperDash.Essentials.Core
 {
@@ -124,11 +126,11 @@ namespace PepperDash.Essentials.Core
 		}
 
 
-		public static void ReadDataFromFileASync(string fileName)
+		public static void ReadDataFromFileASync(string fileName, GotFileEventHandler callback)
 		{
 			try
 			{
-				ReadDataFromFileASync(GetFile(fileName));
+				ReadDataFromFileASync(GetFile(fileName), callback);
 			}
 			catch (Exception e)
 			{
@@ -136,11 +138,13 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		public static void ReadDataFromFileASync(FileInfo file)
+
+
+		public static void ReadDataFromFileASync(FileInfo file, GotFileEventHandler callback)
 		{
 			try
 			{
-				CrestronInvoke.BeginInvoke(o => _ReadDataFromFileASync(file));
+				CrestronInvoke.BeginInvoke((o => _ReadDataFromFileASync(file, callback)));
 			}
 			catch (Exception e)
 			{
@@ -148,7 +152,7 @@ namespace PepperDash.Essentials.Core
 			}
 		}
 
-		private static void _ReadDataFromFileASync(FileInfo file)
+		private static void _ReadDataFromFileASync(FileInfo file, GotFileEventHandler callback)
 		{
 			string data;
 			try
@@ -171,7 +175,8 @@ namespace PepperDash.Essentials.Core
 						Debug.Console(2, "File {0} Does not exsist", file.FullName);
 						data = "";
 					}
-					GotFileEvent.Invoke(null, new FileEventArgs(data));
+					callback.Invoke(null, new FileEventArgs(data));
+					//callback.Invoke(null, new FileEventArgs(data));
 				}
 				else
 				{
@@ -312,6 +317,10 @@ namespace PepperDash.Essentials.Core
 	{
 		public FileEventArgs(string data) { Data = data; }
 		public string Data { get; private set; } // readonly
+
+	}
+	public enum ReadFileDispatchError
+	{
 
 	}
 }
