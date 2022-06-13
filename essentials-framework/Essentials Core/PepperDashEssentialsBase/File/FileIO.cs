@@ -15,12 +15,19 @@ namespace PepperDash.Essentials.Core
 		static CCriticalSection fileLock = new CCriticalSection();
 		public delegate void GotFileEventHandler(object sender, FileEventArgs e);
 		public static event GotFileEventHandler GotFileEvent;
-
+		private static Dictionary<string, CTimer> WriteTimers;
+		public const long WriteTimeout = 5000;
 		/// <summary>
 		/// Get the full file info from a path/filename, can include wildcards.
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
+		/// 
+		static FileIO() 
+		{
+			WriteTimers = new Dictionary<string, CTimer>();
+		}
+
 		public static FileInfo[] GetFiles(string fileName)
 		{
 			DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fileName));
@@ -35,7 +42,7 @@ namespace PepperDash.Essentials.Core
 				return null;
 			}
 		}
-
+		
 		public static FileInfo GetFile(string fileName)
 		{
 			DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fileName));
@@ -81,7 +88,6 @@ namespace PepperDash.Essentials.Core
 			{
 				if (fileLock.TryEnter())
 				{
-					DirectoryInfo dirInfo = new DirectoryInfo(file.Name);
 					Debug.Console(2, "FileIO Getting Data {0}", file.FullName);
 
 					if (File.Exists(file.FullName))
@@ -169,7 +175,8 @@ namespace PepperDash.Essentials.Core
 				}
 				else
 				{
-					Debug.Console(0, Debug.ErrorLogLevel.Error, "FileIO Unable to enter FileLock");
+					Debug.Console(0, Debug.ErrorLogLevel.Error, "FileIO Unable to enter FileLock retrying");
+
 				}
 
 			}
@@ -190,6 +197,41 @@ namespace PepperDash.Essentials.Core
 		}
 
 		/// <summary>
+		/// Resets (or starts) the write timer
+		/// </summary>
+		static void ResetTimer(string data, string filePath)
+		{
+			try
+			{
+				if (WriteTimers.ContainsKey(filePath))
+				{
+					WriteTimers[filePath].Stop();
+					WriteTimers[filePath] = null;
+					WriteTimers.Remove(filePath);
+				}
+				WriteTimers.Add(filePath, new CTimer((o) => 
+					{
+						Thread _WriteFileThread;
+						_WriteFileThread = new Thread((O) => _WriteFileMethod(data, filePath), null, Thread.eThreadStartOptions.CreateSuspended);
+						_WriteFileThread.Priority = Thread.eThreadPriority.LowestPriority;
+						_WriteFileThread.Start();
+						Debug.Console(0, Debug.ErrorLogLevel.Notice, "New WriteFile Thread");
+						WriteTimers.Remove(filePath);
+					}, WriteTimeout));
+
+				
+
+				Debug.Console(0, "FileIO write timer has been reset.");
+			}
+			catch (Exception e)
+			{
+				Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO ResetTimer failed: \r{0}", e);
+				data = "";
+			}
+		}
+
+
+		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="data"></param>
@@ -201,11 +243,7 @@ namespace PepperDash.Essentials.Core
 		/// <param name="filePath"></param>
 		public static void WriteDataToFile(string data, string filePath)
 		{
-			Thread _WriteFileThread;
-			_WriteFileThread = new Thread((O) => _WriteFileMethod(data, filePath), null, Thread.eThreadStartOptions.CreateSuspended);
-			_WriteFileThread.Priority = Thread.eThreadPriority.LowestPriority;
-			_WriteFileThread.Start();
-			Debug.Console(0, Debug.ErrorLogLevel.Notice, "New WriteFile Thread");
+			ResetTimer(data, filePath);
 
 		}
 
@@ -240,6 +278,7 @@ namespace PepperDash.Essentials.Core
 					fileLock.Leave();
 
 			}
+			Debug.Console(0, Debug.ErrorLogLevel.Notice, "File Written to	: '{0}'", filePath);
 			return null;
 
 		}
