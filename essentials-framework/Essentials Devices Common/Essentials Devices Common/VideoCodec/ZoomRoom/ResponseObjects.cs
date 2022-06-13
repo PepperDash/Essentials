@@ -31,10 +31,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		protected void NotifyPropertyChanged(string propertyName)
 		{
-			if (PropertyChanged != null)
-			{
-				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
+            var handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+            else
+            {
+                Debug.Console(2, "PropertyChanged event is NULL");
+            }
 		}
 
 		#endregion
@@ -778,12 +783,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 }
                 set
                 {
+                    //Debug.Console(2, "************************************setting value of meetingIsBeingRecorded to: {0}", value);
                     if (value != _meetingIsBeingRecorded)
                     {
                         _meetingIsBeingRecorded = value;
+                        //Debug.Console(2, "********************************set value of meetingIsBeingRecorded to: {0}", _meetingIsBeingRecorded);
                         NotifyPropertyChanged("meetingIsBeingRecorded");
                     }
                 }
+            }
+
+            public CallRecordInfo()
+            {
+                Debug.Console(2, Debug.ErrorLogLevel.Notice, "********************************************* CallRecordInfo() ******************************************");
             }
 		}
 	}
