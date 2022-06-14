@@ -100,6 +100,7 @@
     <Compile Include="Chassis\DmpsAudioOutputController.cs" />
     <Compile Include="Chassis\DmpsInternalVirtualDmTxController.cs" />
     <Compile Include="Chassis\DmpsRoutingController.cs" />
+    <Compile Include="Chassis\HdMd8xNController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEBridgeableController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
     <Compile Include="Config\InputPropertiesConfig.cs" />
