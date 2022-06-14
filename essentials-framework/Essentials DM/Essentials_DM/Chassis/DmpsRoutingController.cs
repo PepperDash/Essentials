@@ -481,69 +481,76 @@ namespace PepperDash.Essentials.DM
         {
             foreach (var card in Dmps.SwitcherOutputs)
             {
-                Debug.Console(1, this, "Output Card Type: {0}", card.CardInputOutputType);
-
-                var outputCard = card as DMOutput;
-
-                if (outputCard == null)
+                try
                 {
-                    Debug.Console(1, this, "Output card {0} is not a DMOutput", card.CardInputOutputType);
-                    continue;
-                }
+                    Debug.Console(1, this, "Output Card Type: {0}", card.CardInputOutputType);
 
-                Debug.Console(1, this, "Adding Output Card Number {0} Type: {1}", outputCard.Number, outputCard.CardInputOutputType.ToString());
-                VideoOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
-                {
-                    if (outputCard.VideoOutFeedback != null) { return (ushort)outputCard.VideoOutFeedback.Number; }
-                    return 0;
-                    ;
-                });
-                AudioOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
-                {
-                    try
+                    var outputCard = card as DMOutput;
+
+                    if (outputCard == null)
                     {
-                        if (outputCard.AudioOutFeedback != null)
-                        {
-                            return (ushort) outputCard.AudioOutFeedback.Number;
-                        }
+                        Debug.Console(1, this, "Output card {0} is not a DMOutput", card.CardInputOutputType);
+                        continue;
+                    }
+
+                    Debug.Console(1, this, "Adding Output Card Number {0} Type: {1}", outputCard.Number, outputCard.CardInputOutputType.ToString());
+                    VideoOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
+                    {
+                        if (outputCard.VideoOutFeedback != null) { return (ushort)outputCard.VideoOutFeedback.Number; }
                         return 0;
-                    }
-                    catch (NotSupportedException)
+                        ;
+                    });
+                    AudioOutputFeedbacks[outputCard.Number] = new IntFeedback(() =>
                     {
-                        return (ushort) outputCard.AudioOutSourceFeedback;
-                    }
-                });
+                        try
+                        {
+                            if (outputCard.AudioOutFeedback != null)
+                            {
+                                return (ushort)outputCard.AudioOutFeedback.Number;
+                            }
+                            return 0;
+                        }
+                        catch (NotSupportedException)
+                        {
+                            return (ushort)outputCard.AudioOutSourceFeedback;
+                        }
+                    });
 
-                OutputNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
+                    OutputNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
+                    {
+                        if (outputCard.NameFeedback != null && outputCard.NameFeedback != CrestronControlSystem.NullStringOutputSig && !string.IsNullOrEmpty(outputCard.NameFeedback.StringValue))
+                        {
+                            Debug.Console(2, this, "Output Card {0} Name: {1}", outputCard.Number, outputCard.NameFeedback.StringValue);
+                            return outputCard.NameFeedback.StringValue;
+                        }
+                        return "";
+                    });
+
+                    OutputVideoRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
+                    {
+                        if (outputCard.VideoOutFeedback != null && outputCard.VideoOutFeedback.NameFeedback != null)
+                        {
+                            return outputCard.VideoOutFeedback.NameFeedback.StringValue;
+                        }
+                        return NoRouteText;
+                    });
+                    OutputAudioRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
+                    {
+                        if (outputCard.AudioOutFeedback != null && outputCard.AudioOutFeedback.NameFeedback != null)
+                        {
+                            return outputCard.AudioOutFeedback.NameFeedback.StringValue;
+                        }
+                        return NoRouteText;
+                    });
+
+                    OutputEndpointOnlineFeedbacks[outputCard.Number] = new BoolFeedback(() => outputCard.EndpointOnlineFeedback);
+
+                    AddOutputCard(outputCard.Number, outputCard);
+                }
+                catch (Exception ex)
                 {
-                    if (outputCard.NameFeedback != null && outputCard.NameFeedback != CrestronControlSystem.NullStringOutputSig && !string.IsNullOrEmpty(outputCard.NameFeedback.StringValue))
-                    {
-                        Debug.Console(2, this, "Output Card {0} Name: {1}", outputCard.Number, outputCard.NameFeedback.StringValue);
-                        return outputCard.NameFeedback.StringValue;
-                    }
-                    return "";
-                });
-
-                OutputVideoRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
-                {
-                    if (outputCard.VideoOutFeedback != null && outputCard.VideoOutFeedback.NameFeedback != null)
-                    {
-                        return outputCard.VideoOutFeedback.NameFeedback.StringValue;
-                    }
-                    return NoRouteText;
-                });
-                OutputAudioRouteNameFeedbacks[outputCard.Number] = new StringFeedback(() =>
-                {
-                    if (outputCard.AudioOutFeedback != null && outputCard.AudioOutFeedback.NameFeedback != null)
-                    {
-                        return outputCard.AudioOutFeedback.NameFeedback.StringValue;
-                    }
-                    return NoRouteText;
-                });
-
-                OutputEndpointOnlineFeedbacks[outputCard.Number] = new BoolFeedback(() => outputCard.EndpointOnlineFeedback);
-
-                AddOutputCard(outputCard.Number, outputCard);
+                    Debug.LogError(Debug.ErrorLogLevel.Error, string.Format("DMPS Controller exception creating output card: {0}", ex));
+                }
             }
         }
 
@@ -697,6 +704,9 @@ namespace PepperDash.Essentials.DM
                 var cecPort = hdmiOutputCard.HdmiOutputPort;
 
                 AddHdmiOutputPort(number, cecPort);
+
+                var audioOutput = new DmpsAudioOutputController(string.Format("processor-digitalAudioOutput{0}", number), string.Format("Hdmi Audio Output {0}", number), outputCard as Card.Dmps3HdmiOutput);
+                DeviceManager.AddDevice(audioOutput);
             }
             else if (outputCard is Card.Dmps3HdmiOutputBackend)
             {
@@ -709,6 +719,9 @@ namespace PepperDash.Essentials.DM
             else if (outputCard is Card.Dmps3DmOutput)
             {
                 AddDmOutputPort(number);
+
+                var audioOutput = new DmpsAudioOutputController(string.Format("processor-digitalAudioOutput{0}", number), string.Format("Dm Audio Output {0}", number), outputCard as Card.Dmps3DmOutput);
+                DeviceManager.AddDevice(audioOutput);
             }
             else if (outputCard is Card.Dmps3DmOutputBackend)
             {
@@ -727,22 +740,22 @@ namespace PepperDash.Essentials.DM
                 switch (outputCard.CardInputOutputType)
                 {
                     case eCardInputOutputType.Dmps3Aux1Output:
-                    {
-                        AddAudioOnlyOutputPort(number, "Aux1");
+                        {
+                            AddAudioOnlyOutputPort(number, "Aux1");
 
-                        var aux1Output = new DmpsAudioOutputController(string.Format("processor-aux1AudioOutput"), "Program Audio Output", outputCard as Card.Dmps3Aux1Output);
+                            var aux1Output = new DmpsAudioOutputController(string.Format("processor-aux1AudioOutput"), "Program Audio Output", outputCard as Card.Dmps3Aux1Output);
 
-                        DeviceManager.AddDevice(aux1Output);
-                    }
+                            DeviceManager.AddDevice(aux1Output);
+                        }
                         break;
                     case eCardInputOutputType.Dmps3Aux2Output:
-                    {
-                        AddAudioOnlyOutputPort(number, "Aux2");
+                        {
+                            AddAudioOnlyOutputPort(number, "Aux2");
 
-                        var aux2Output = new DmpsAudioOutputController(string.Format("processor-aux2AudioOutput"), "Program Audio Output", outputCard as Card.Dmps3Aux2Output);
+                            var aux2Output = new DmpsAudioOutputController(string.Format("processor-aux2AudioOutput"), "Program Audio Output", outputCard as Card.Dmps3Aux2Output);
 
-                        DeviceManager.AddDevice(aux2Output);
-                    }
+                            DeviceManager.AddDevice(aux2Output);
+                        }
                         break;
                 }
             }
@@ -766,6 +779,10 @@ namespace PepperDash.Essentials.DM
             {
                 AddAudioOnlyOutputPort(number, "Dialer");
             }
+            else if (outputCard is Card.Dmps3AecOutput)
+            {
+                AddAudioOnlyOutputPort(number, "Aec");
+            }
             else if (outputCard is Card.Dmps3DigitalMixOutput)
             {
                 if (number == (uint)CrestronControlSystem.eDmps34K250COutputs.Mix1
@@ -776,10 +793,9 @@ namespace PepperDash.Essentials.DM
                     || number == (uint)CrestronControlSystem.eDmps34K300COutputs.Mix2
                     || number == (uint)CrestronControlSystem.eDmps34K350COutputs.Mix2)
                     AddAudioOnlyOutputPort(number, CrestronControlSystem.eDmps34K250COutputs.Mix2.ToString());
-            }
-            else if (outputCard is Card.Dmps3AecOutput)
-            {
-                AddAudioOnlyOutputPort(number, "Aec");
+
+                var audioOutput = new DmpsAudioOutputController(string.Format("processor-digitalAudioOutput{0}", number % 2 + 1), string.Format("Digital Audio Output {0}", number % 2 + 1), outputCard as Card.Dmps3DigitalMixOutput);
+                DeviceManager.AddDevice(audioOutput);
             }
             else
             {

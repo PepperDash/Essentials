@@ -33,36 +33,44 @@ namespace PepperDash.Essentials.DM
             : base(key, name)
         {
             OutputCard = card;
-
             OutputCard.BaseDevice.DMOutputChange += new DMOutputEventHandler(BaseDevice_DMOutputChange);
+
+            SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
+            MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
 
             if (card is Card.Dmps3ProgramOutput)
             {
-                MasterVolumeLevel = new DmpsAudioOutputWithMixer(card, eDmpsLevelType.Master, (card as Card.Dmps3ProgramOutput).OutputMixer);
-                SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
-                MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
+                var output = card as Card.Dmps3ProgramOutput;
+                MasterVolumeLevel = new DmpsAudioOutputWithMixerAndEq(card, eDmpsLevelType.Master, output.OutputMixer, output.OutputEqualizer);
                 Codec1VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec1);
                 Codec2VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec2);
             }
             else if (card is Card.Dmps3Aux1Output)
             {
-                MasterVolumeLevel = new DmpsAudioOutputWithMixer(card, eDmpsLevelType.Master, (card as Card.Dmps3Aux1Output).OutputMixer);
-                SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
-                MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
+                var output = card as Card.Dmps3Aux1Output;
+                MasterVolumeLevel = new DmpsAudioOutputWithMixerAndEq(card, eDmpsLevelType.Master, output.OutputMixer, output.OutputEqualizer);
                 Codec2VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec2);
             }
             else if (card is Card.Dmps3Aux2Output)
             {
-                MasterVolumeLevel = new DmpsAudioOutputWithMixer(card, eDmpsLevelType.Master, (card as Card.Dmps3Aux2Output).OutputMixer);
-                SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
-                MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
+                var output = card as Card.Dmps3Aux2Output;
+                MasterVolumeLevel = new DmpsAudioOutputWithMixerAndEq(card, eDmpsLevelType.Master, output.OutputMixer, output.OutputEqualizer);
                 Codec1VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec1);
             }
-            else //Digital Outputs
+            else if (card is Card.Dmps3DigitalMixOutput)
             {
-                MasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Master);
-                SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
-                MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
+                var output = card as Card.Dmps3DigitalMixOutput;
+                MasterVolumeLevel = new DmpsAudioOutputWithMixer(card, eDmpsLevelType.Master, output.OutputMixer);
+            }
+            else if (card is Card.Dmps3HdmiOutput)
+            {
+                var output = card as Card.Dmps3HdmiOutput;
+                MasterVolumeLevel = new DmpsAudioOutputWithMixer(card, eDmpsLevelType.Master, output.OutputMixer);
+            }
+            else if (card is Card.Dmps3DmOutput)
+            {
+                var output = card as Card.Dmps3DmOutput;
+                MasterVolumeLevel = new DmpsAudioOutputWithMixer(card, eDmpsLevelType.Master, output.OutputMixer);
             }
         }
 
@@ -185,6 +193,11 @@ namespace PepperDash.Essentials.DM
                 {
                     trilist.SetUShortSigAction(joinMap.MixerPresetRecall.JoinNumber, mixer.RecallPreset);
                 }
+                var eq = MasterVolumeLevel as DmpsAudioOutputWithMixerAndEq;
+                if (eq != null)
+                {
+                    trilist.SetUShortSigAction(joinMap.MixerEqPresetRecall.JoinNumber, eq.RecallEqPreset);
+                }
             }
 
             if (SourceVolumeLevel != null)
@@ -234,11 +247,27 @@ namespace PepperDash.Essentials.DM
         }
     }
 
+    public class DmpsAudioOutputWithMixerAndEq : DmpsAudioOutputWithMixer
+    {
+        private CrestronControlSystem.Dmps3OutputEqualizer Eq;
+        public DmpsAudioOutputWithMixerAndEq(Card.Dmps3OutputBase output, eDmpsLevelType type, CrestronControlSystem.Dmps3OutputMixer mixer, CrestronControlSystem.Dmps3OutputEqualizer eq)
+            : base(output, type, mixer)
+        {
+            Eq = eq;
+        }
+
+        public void RecallEqPreset(ushort preset)
+        {
+            Eq.PresetNumber.UShortValue = preset;
+            Eq.RecallPreset();
+        }
+    }
+
     public class DmpsAudioOutputWithMixer : DmpsAudioOutput
     {
-        CrestronControlSystem.Dmps3OutputMixerWithMonoAndStereo Mixer;
+        IDmps3OutputMixer Mixer;
 
-        public DmpsAudioOutputWithMixer(Card.Dmps3OutputBase output, eDmpsLevelType type, CrestronControlSystem.Dmps3OutputMixerWithMonoAndStereo mixer)
+        public DmpsAudioOutputWithMixer(Card.Dmps3OutputBase output, eDmpsLevelType type, IDmps3OutputMixer mixer)
             : base(output, type)
         {
             Mixer = mixer;
@@ -266,23 +295,47 @@ namespace PepperDash.Essentials.DM
 
         public void RecallPreset(ushort preset)
         {
-            Debug.Console(1, "DMPS Recalling Preset {0}", preset);
-            Mixer.PresetNumber.UShortValue = preset;
-            Mixer.RecallPreset();
+            if (Mixer is CrestronControlSystem.Dmps3OutputMixer)
+            {
+                var presetMixer = Mixer as CrestronControlSystem.Dmps3OutputMixer;
+                Debug.Console(1, "DMPS Recalling Preset {0}", preset);
+                presetMixer.PresetNumber.UShortValue = preset;
+                presetMixer.RecallPreset();
+
+                //Recall startup volume for main volume level as DMPS3(non-4K) presets don't affect the main volume
+                RecallStartupVolume();
+            }
+            else if (Mixer is CrestronControlSystem.Dmps3AttachableOutputMixer)
+            {
+                var presetMixer = Mixer as CrestronControlSystem.Dmps3AttachableOutputMixer;
+                Debug.Console(1, "DMPS Recalling Preset {0}", preset);
+                presetMixer.PresetNumber.UShortValue = preset;
+                presetMixer.RecallPreset();
+            }
+
+        }
+
+        public void RecallStartupVolume()
+        {
+            ushort startupVol = Mixer.StartupVolumeFeedback.UShortValue;
+            //Reset startup vol due to bug on DMPS3 where getting the value from above method clears the startup volume
+            Mixer.StartupVolume.UShortValue = startupVol;
+            Debug.Console(1, "DMPS Recalling {0} Startup Volume {1}", Output.Name, startupVol);
+            SetVolume(startupVol);
+            MuteOff();
         }
     }
 
     public class DmpsAudioOutput : IBasicVolumeWithFeedback
     {
-        Card.Dmps3OutputBase Output;
-        eDmpsLevelType Type;
-        UShortInputSig Level;
-
+        private UShortInputSig Level;
+        protected Card.Dmps3OutputBase Output;
         private bool EnableVolumeSend;
         private ushort VolumeLevelInput;
         protected short MinLevel { get; set; }
         protected short MaxLevel { get; set; }
 
+        public eDmpsLevelType Type { get; private set; }
         public BoolFeedback MuteFeedback { get; private set; }
         public IntFeedback VolumeLevelFeedback { get; private set; }
         public IntFeedback VolumeLevelScaledFeedback { get; private set; }
@@ -411,10 +464,13 @@ namespace PepperDash.Essentials.DM
         public void SetVolumeScaled(ushort level)
         {
             Debug.Console(2, Debug.ErrorLogLevel.None, "Scaling DMPS volume:{0} level:{1} min:{2} max:{3}", Output.Name, level.ToString(), MinLevel.ToString(), MaxLevel.ToString());
-            VolumeLevelInput = (ushort)(level * (MaxLevel - MinLevel) / ushort.MaxValue + MinLevel);
-            if (EnableVolumeSend == true)
+            if (ushort.MaxValue + MinLevel != 0)
             {
-                Level.UShortValue = VolumeLevelInput;
+                VolumeLevelInput = (ushort)(level * (MaxLevel - MinLevel) / ushort.MaxValue + MinLevel);
+                if (EnableVolumeSend == true)
+                {
+                    Level.UShortValue = VolumeLevelInput;
+                }
             }
         }
 
@@ -422,7 +478,13 @@ namespace PepperDash.Essentials.DM
         {
             short signedLevel = (short)level;
             Debug.Console(2, Debug.ErrorLogLevel.None, "Scaling DMPS volume:{0} feedback:{1} min:{2} max:{3}", Output.Name, signedLevel.ToString(), MinLevel.ToString(), MaxLevel.ToString());
-            return (ushort)((signedLevel - MinLevel) * ushort.MaxValue / (MaxLevel - MinLevel));
+
+            if (MaxLevel - MinLevel != 0)
+            {
+                return (ushort)((signedLevel - MinLevel) * ushort.MaxValue / (MaxLevel - MinLevel));
+            }
+            else
+                return (ushort)MinLevel;
         }
 
         public void SendScaledVolume(bool pressRelease)
