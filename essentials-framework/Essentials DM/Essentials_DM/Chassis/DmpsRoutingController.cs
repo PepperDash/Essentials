@@ -26,13 +26,10 @@ namespace PepperDash.Essentials.DM
         public CrestronControlSystem Dmps { get; set; }
         public ISystemControl SystemControl { get; private set; }
         public bool? EnableRouting { get; private set; }
-        
-        //Check if DMPS is a DMPS3-4K type for endpoint creation
-        public bool Dmps4kType { get; private set; }
 
         //IroutingNumericEvent
         public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
-        
+
         //Feedback for DMPS System Control
         public BoolFeedback SystemPowerOnFeedback { get; private set; }
         public BoolFeedback SystemPowerOffFeedback { get; private set; }
@@ -123,14 +120,13 @@ namespace PepperDash.Essentials.DM
         /// <param name="chassis"></param>
         public DmpsRoutingController(string key, string name, ISystemControl systemControl)
             : base(key, name)
-        {            
+        {
             Dmps = Global.ControlSystem;
-            
+
             switch (systemControl.SystemControlType)
             {
                 case eSystemControlType.Dmps34K150CSystemControl:
                     SystemControl = systemControl as Dmps34K150CSystemControl;
-                    Dmps4kType = true;
                     SystemPowerOnFeedback = new BoolFeedback(() => { return true; });
                     SystemPowerOffFeedback = new BoolFeedback(() => { return false; });
                     break;
@@ -139,13 +135,11 @@ namespace PepperDash.Essentials.DM
                 case eSystemControlType.Dmps34K300CSystemControl:
                 case eSystemControlType.Dmps34K350CSystemControl:
                     SystemControl = systemControl as Dmps34K300CSystemControl;
-                    Dmps4kType = true;
                     SystemPowerOnFeedback = new BoolFeedback(() => { return true; });
                     SystemPowerOffFeedback = new BoolFeedback(() => { return false; });
                     break;
                 default:
                     SystemControl = systemControl as Dmps3SystemControl;
-                    Dmps4kType = false;
                     SystemPowerOnFeedback = new BoolFeedback(() =>
                     {
                         return ((Dmps3SystemControl)SystemControl).SystemPowerOnFeedBack.BoolValue;
@@ -156,7 +150,7 @@ namespace PepperDash.Essentials.DM
                     });
                     break;
             }
-            Debug.Console(1, this, "DMPS Type = {0}, 4K Type = {1}", systemControl.SystemControlType, Dmps4kType);
+            Debug.Console(1, this, "DMPS Type = {0}, 4K Type = {1}", systemControl.SystemControlType, Global.ControlSystemIsDmps4kType);
 
             InputPorts = new RoutingPortCollection<RoutingInputPort>();
             OutputPorts = new RoutingPortCollection<RoutingOutputPort>();
@@ -406,7 +400,7 @@ namespace PepperDash.Essentials.DM
 
         private void LinkInputsToApi(BasicTriList trilist, DmpsRoutingControllerJoinMap joinMap)
         {
-            if (Dmps4kType)
+            if (Global.ControlSystemIsDmps4kType)
             {
                 //DMPS-4K audio inputs 1-5 are aux inputs
                 for (uint i = 1; i <= 5; i++)
@@ -427,12 +421,12 @@ namespace PepperDash.Essentials.DM
                         trilist.BooleanInput[joinMap.VideoSyncStatus.JoinNumber + ioSlotJoin]);
                 }
 
-                if (InputNameFeedbacks.ContainsKey(ioSlot) &&  InputNameFeedbacks[ioSlot] != null)
+                if (InputNameFeedbacks.ContainsKey(ioSlot) && InputNameFeedbacks[ioSlot] != null)
                 {
                     InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputNames.JoinNumber + ioSlotJoin]);
                     InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputVideoNames.JoinNumber + ioSlotJoin]);
 
-                    if (Dmps4kType)
+                    if (Global.ControlSystemIsDmps4kType)
                     {
                         //DMPS-4K Audio Inputs are offset by 5
                         InputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.InputAudioNames.JoinNumber + ioSlotJoin + 5]);
