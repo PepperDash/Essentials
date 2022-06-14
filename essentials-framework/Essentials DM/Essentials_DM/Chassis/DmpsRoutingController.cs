@@ -861,6 +861,7 @@ namespace PepperDash.Essentials.DM
 
         void Dmps_DMInputChange(Switch device, DMInputEventArgs args)
         {
+            Debug.Console(2, this, "DMInputChange Input: {0} EventId: {1}", args.Number, args.EventId.ToString());
             try
             {
                 switch (args.EventId)
@@ -868,6 +869,12 @@ namespace PepperDash.Essentials.DM
                     case (DMInputEventIds.OnlineFeedbackEventId):
                         {
                             Debug.Console(2, this, "DM Input OnlineFeedbackEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
+                            InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
+                            break;
+                        }
+                    case (DMInputEventIds.EndpointOnlineEventId):
+                        {
+                            Debug.Console(2, this, "DM Input EndpointOnlineEventId for input: {0}. State: {1}", args.Number, device.Inputs[args.Number].EndpointOnlineFeedback);
                             InputEndpointOnlineFeedbacks[args.Number].FireUpdate();
                             break;
                         }
@@ -912,6 +919,11 @@ namespace PepperDash.Essentials.DM
                 VolumeControls[args.Number].VolumeEventFromChassis();
             }
             else if (args.EventId == DMOutputEventIds.OnlineFeedbackEventId
+                && OutputEndpointOnlineFeedbacks.ContainsKey(output))
+            {
+                OutputEndpointOnlineFeedbacks[output].FireUpdate();
+            }
+            else if (args.EventId == DMOutputEventIds.EndpointOnlineEventId
                 && OutputEndpointOnlineFeedbacks.ContainsKey(output))
             {
                 OutputEndpointOnlineFeedbacks[output].FireUpdate();

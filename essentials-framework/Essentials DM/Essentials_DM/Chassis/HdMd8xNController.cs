@@ -323,7 +323,7 @@ namespace PepperDash.Essentials.DM.Chassis
 
 			IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
 
-            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = "DM Switcher";
+            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = this.Name;
 
 			for (uint i = 1; i <= _Chassis.NumberOfInputs; i++)
 			{

@@ -137,7 +137,7 @@ namespace PepperDash.Essentials.DM
         	try
 		    {
 			    // Must use different constructor for CPU3 or DMPS3-4K types. No IPID
-			    if (isCpu3 || Global.ControlSystemIsDmps4kType)
+			    if (isCpu3 || (parentDev is DmpsRoutingController && Global.ControlSystemIsDmps4kType))
 			    {
 				    if (typeName.StartsWith("dmtx200"))
 					    return new DmTx200Controller(key, name, new DmTx200C2G(dmInput));
@@ -145,7 +145,7 @@ namespace PepperDash.Essentials.DM
                         return new DmTx201CController(key, name, new DmTx201C(dmInput));
                     if (typeName.StartsWith("dmtx201s"))
                         return new DmTx201SController(key, name, new DmTx201S(dmInput));
-				    if (typeName.StartsWith("dmtx4k100"))
+				   if (typeName.StartsWith("dmtx4k100"))
                         return new DmTx4k100Controller(key, name, new DmTx4K100C1G(dmInput));
                     if (typeName.StartsWith("dmtx4kz100"))
                         return new DmTx4kz100Controller(key, name, new DmTx4kz100C1G(dmInput));
@@ -153,7 +153,7 @@ namespace PepperDash.Essentials.DM
                         return new DmTx4k202CController(key, name, new DmTx4k202C(dmInput));
 				    if (typeName.StartsWith("dmtx4kz202"))
                         return new DmTx4kz202CController(key, name, new DmTx4kz202C(dmInput));
-				    if (typeName.StartsWith("dmtx4k302"))
+                    if (typeName.StartsWith("dmtx4k302"))
                         return new DmTx4k302CController(key, name, new DmTx4k302C(dmInput));
 				    if (typeName.StartsWith("dmtx4kz302"))
                         return new DmTx4kz302CController(key, name, new DmTx4kz302C(dmInput));
@@ -228,6 +228,41 @@ namespace PepperDash.Essentials.DM
             }
 
             AddToFeedbackList(ActiveVideoInputFeedback);
+
+            var parentDev = DeviceManager.GetDeviceForKey(key);
+            var num = hardware.DMInput.Number;
+
+            //If Dmps4K, change online feedback to chassis, tx feedback does not work
+            if (parentDev is DmpsRoutingController && Global.ControlSystemIsDmps4kType)
+            {
+                var dmps = parentDev as DmpsRoutingController;
+                Debug.Console(0, "DM endpoint input {0} is for Dmps4k, changing online feedback to chassis", num);
+                IsOnline = dmps.InputEndpointOnlineFeedbacks[num];
+            }
+            //If Cpu3 Chassis, change online feedback to chassis, tx feedback does not work
+            else if (parentDev is DmChassisController)
+            {
+                var controller = parentDev as DmChassisController;
+                var chassis = controller.Chassis;
+
+                if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
+                    chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
+                    chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
+                    chassis is DmMd128x128 || chassis is DmMd64x64)
+                {
+                    Debug.Console(0, "DM endpoint output {0} is for Cpu3, changing online feedback to chassis", num);
+                    IsOnline = controller.InputEndpointOnlineFeedbacks[num];
+                }
+            }
+
+            IsOnline.OutputChange += (currentDevice, args) =>
+            {
+                foreach (var feedback in Feedbacks)
+                {
+                    if (feedback != null)
+                        feedback.FireUpdate();
+                }
+            };
 		}
 
 	    protected DmTxControllerBase(string key, string name, DmHDBasedTEndPoint hardware) : base(key, name, hardware)
