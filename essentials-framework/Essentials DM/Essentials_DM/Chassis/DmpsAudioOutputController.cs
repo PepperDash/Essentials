@@ -17,60 +17,89 @@ using PepperDash.Essentials.DM.Config;
 namespace PepperDash.Essentials.DM
 {
     /// <summary>
-    /// Exposes the volume levels for Program, Aux1 or Aux2 outputs on a DMPS3 chassis
+    /// Exposes the volume levels for Program, Aux1, Aux2, Codec1, Codec2, and Digital outputs on a DMPS3 chassis
     /// </summary>
     public class DmpsAudioOutputController : EssentialsBridgeableDevice
     {
-        Card.Dmps3OutputBase OutputCard;
-
         public DmpsAudioOutput MasterVolumeLevel { get; private set; }
         public DmpsAudioOutput SourceVolumeLevel { get; private set; }
         public DmpsAudioOutput MicsMasterVolumeLevel { get; private set; }
         public DmpsAudioOutput Codec1VolumeLevel { get; private set; }
         public DmpsAudioOutput Codec2VolumeLevel { get; private set; }
 
+        public DmpsAudioOutputController(string key, string name, DMOutput card, Card.Dmps3DmHdmiAudioOutput.Dmps3AudioOutputStream stream)
+            : base(key, name)
+        {
+            card.BaseDevice.DMOutputChange += new DMOutputEventHandler(BaseDevice_DMOutputChange);
+            var output = new Dmps3AudioOutputWithMixerBase(stream);
+            MasterVolumeLevel = new DmpsAudioOutputWithMixer(output, eDmpsLevelType.Master);
+            SourceVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Source);
+        }
+        public DmpsAudioOutputController(string key, string name, DMOutput card, Card.Dmps3DmHdmiAudioOutput.Dmps3DmHdmiOutputStream stream)
+            : base(key, name)
+        {
+            card.BaseDevice.DMOutputChange += new DMOutputEventHandler(BaseDevice_DMOutputChange);
+            var output = new Dmps3AudioOutputWithMixerBase(stream);
+            MasterVolumeLevel = new DmpsAudioOutputWithMixer(output, eDmpsLevelType.Master);
+            SourceVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Source);
+        }
+
         public DmpsAudioOutputController(string key, string name, Card.Dmps3OutputBase card)
             : base(key, name)
         {
-            OutputCard = card;
-            OutputCard.BaseDevice.DMOutputChange += new DMOutputEventHandler(BaseDevice_DMOutputChange);
-
-            SourceVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Source);
-            MicsMasterVolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.MicsMaster);
+            card.BaseDevice.DMOutputChange += new DMOutputEventHandler(BaseDevice_DMOutputChange);
 
             if (card is Card.Dmps3ProgramOutput)
             {
-                var output = card as Card.Dmps3ProgramOutput;
-                MasterVolumeLevel = new DmpsAudioOutputWithMixerAndEq(card, eDmpsLevelType.Master, output.OutputMixer, output.OutputEqualizer);
-                Codec1VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec1);
-                Codec2VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec2);
+                var programOutput = card as Card.Dmps3ProgramOutput;
+                var output = new Dmps3AudioOutputWithMixerBase(card, programOutput.OutputMixer);
+                MasterVolumeLevel = new DmpsAudioOutputWithMixerAndEq(output, eDmpsLevelType.Master, programOutput.OutputEqualizer);
+                SourceVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Source);
+                MicsMasterVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.MicsMaster);
+                Codec1VolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Codec1);
+                Codec2VolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Codec2);
             }
             else if (card is Card.Dmps3Aux1Output)
             {
-                var output = card as Card.Dmps3Aux1Output;
-                MasterVolumeLevel = new DmpsAudioOutputWithMixerAndEq(card, eDmpsLevelType.Master, output.OutputMixer, output.OutputEqualizer);
-                Codec2VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec2);
+                var auxOutput = card as Card.Dmps3Aux1Output;
+                var output = new Dmps3AudioOutputWithMixerBase(card, auxOutput.OutputMixer);
+                MasterVolumeLevel = new DmpsAudioOutputWithMixerAndEq(output, eDmpsLevelType.Master, auxOutput.OutputEqualizer);
+                SourceVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Source);
+                MicsMasterVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.MicsMaster);
+                Codec2VolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Codec2);
             }
             else if (card is Card.Dmps3Aux2Output)
             {
-                var output = card as Card.Dmps3Aux2Output;
-                MasterVolumeLevel = new DmpsAudioOutputWithMixerAndEq(card, eDmpsLevelType.Master, output.OutputMixer, output.OutputEqualizer);
-                Codec1VolumeLevel = new DmpsAudioOutput(card, eDmpsLevelType.Codec1);
+                var auxOutput = card as Card.Dmps3Aux2Output;
+                var output = new Dmps3AudioOutputWithMixerBase(card, auxOutput.OutputMixer);
+                MasterVolumeLevel = new DmpsAudioOutputWithMixerAndEq(output, eDmpsLevelType.Master, auxOutput.OutputEqualizer);
+                SourceVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Source);
+                MicsMasterVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.MicsMaster);
+                Codec1VolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Codec1);
             }
             else if (card is Card.Dmps3DigitalMixOutput)
             {
-                var output = card as Card.Dmps3DigitalMixOutput;
-                MasterVolumeLevel = new DmpsAudioOutputWithMixer(card, eDmpsLevelType.Master, output.OutputMixer);
+                var mixOutput = card as Card.Dmps3DigitalMixOutput;
+                var output = new Dmps3AudioOutputWithMixerBase(card, mixOutput.OutputMixer);
+                MasterVolumeLevel = new DmpsAudioOutputWithMixer(output, eDmpsLevelType.Master);
+                SourceVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Source);
+                MicsMasterVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.MicsMaster);
             }
             else if (card is Card.Dmps3HdmiOutput)
             {
-                var output = card as Card.Dmps3HdmiOutput;
-                MasterVolumeLevel = new DmpsAudioOutputWithMixer(card, eDmpsLevelType.Master, output.OutputMixer);
+                var hdmiOutput = card as Card.Dmps3HdmiOutput;
+                var output = new Dmps3AudioOutputWithMixerBase(card, hdmiOutput.OutputMixer);
+                MasterVolumeLevel = new DmpsAudioOutputWithMixer(output, eDmpsLevelType.Master);
+                SourceVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Source);
+                MicsMasterVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.MicsMaster);
             }
             else if (card is Card.Dmps3DmOutput)
             {
-                var output = card as Card.Dmps3DmOutput;
-                MasterVolumeLevel = new DmpsAudioOutputWithMixer(card, eDmpsLevelType.Master, output.OutputMixer);
+                var dmOutput = card as Card.Dmps3DmOutput;
+                var output = new Dmps3AudioOutputWithMixerBase(card, dmOutput.OutputMixer);
+                MasterVolumeLevel = new DmpsAudioOutputWithMixer(output, eDmpsLevelType.Master);
+                SourceVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.Source);
+                MicsMasterVolumeLevel = new DmpsAudioOutput(output, eDmpsLevelType.MicsMaster);
             }
         }
 
@@ -250,8 +279,8 @@ namespace PepperDash.Essentials.DM
     public class DmpsAudioOutputWithMixerAndEq : DmpsAudioOutputWithMixer
     {
         private CrestronControlSystem.Dmps3OutputEqualizer Eq;
-        public DmpsAudioOutputWithMixerAndEq(Card.Dmps3OutputBase output, eDmpsLevelType type, CrestronControlSystem.Dmps3OutputMixer mixer, CrestronControlSystem.Dmps3OutputEqualizer eq)
-            : base(output, type, mixer)
+        public DmpsAudioOutputWithMixerAndEq(Dmps3AudioOutputWithMixerBase output, eDmpsLevelType type, CrestronControlSystem.Dmps3OutputEqualizer eq)
+            : base(output, type)
         {
             Eq = eq;
         }
@@ -265,19 +294,19 @@ namespace PepperDash.Essentials.DM
 
     public class DmpsAudioOutputWithMixer : DmpsAudioOutput
     {
-        IDmps3OutputMixer Mixer;
+        Dmps3AudioOutputWithMixerBase Output;
 
-        public DmpsAudioOutputWithMixer(Card.Dmps3OutputBase output, eDmpsLevelType type, IDmps3OutputMixer mixer)
+        public DmpsAudioOutputWithMixer(Dmps3AudioOutputWithMixerBase output, eDmpsLevelType type)
             : base(output, type)
         {
-            Mixer = mixer;
+            Output = output;
             GetVolumeMax();
             GetVolumeMin();
         }
 
         public void GetVolumeMin()
         {
-            MinLevel = (short)Mixer.MinVolumeFeedback.UShortValue;
+            MinLevel = (short)Output.MinVolumeFeedback.UShortValue;
             if (VolumeLevelScaledFeedback != null)
             {
                 VolumeLevelScaledFeedback.FireUpdate();
@@ -286,7 +315,7 @@ namespace PepperDash.Essentials.DM
 
         public void GetVolumeMax()
         {
-            MaxLevel = (short)Mixer.MaxVolumeFeedback.UShortValue;
+            MaxLevel = (short)Output.MaxVolumeFeedback.UShortValue;
             if (VolumeLevelScaledFeedback != null)
             {
                 VolumeLevelScaledFeedback.FireUpdate();
@@ -295,32 +324,22 @@ namespace PepperDash.Essentials.DM
 
         public void RecallPreset(ushort preset)
         {
-            if (Mixer is CrestronControlSystem.Dmps3OutputMixer)
-            {
-                var presetMixer = Mixer as CrestronControlSystem.Dmps3OutputMixer;
-                Debug.Console(1, "DMPS Recalling Preset {0}", preset);
-                presetMixer.PresetNumber.UShortValue = preset;
-                presetMixer.RecallPreset();
+            Output.PresetNumber.UShortValue = preset;
+            Output.RecallPreset();
 
+            if (!Global.ControlSystemIsDmps4kType)
+            {
                 //Recall startup volume for main volume level as DMPS3(non-4K) presets don't affect the main volume
                 RecallStartupVolume();
             }
-            else if (Mixer is CrestronControlSystem.Dmps3AttachableOutputMixer)
-            {
-                var presetMixer = Mixer as CrestronControlSystem.Dmps3AttachableOutputMixer;
-                Debug.Console(1, "DMPS Recalling Preset {0}", preset);
-                presetMixer.PresetNumber.UShortValue = preset;
-                presetMixer.RecallPreset();
-            }
-
         }
 
         public void RecallStartupVolume()
         {
-            ushort startupVol = Mixer.StartupVolumeFeedback.UShortValue;
+            ushort startupVol = Output.StartupVolumeFeedback.UShortValue;
             //Reset startup vol due to bug on DMPS3 where getting the value from above method clears the startup volume
-            Mixer.StartupVolume.UShortValue = startupVol;
-            Debug.Console(1, "DMPS Recalling {0} Startup Volume {1}", Output.Name, startupVol);
+            Output.StartupVolume.UShortValue = startupVol;
+            Debug.Console(1, "DMPS Recalling Startup Volume {0}", startupVol);
             SetVolume(startupVol);
             MuteOff();
         }
@@ -329,7 +348,6 @@ namespace PepperDash.Essentials.DM
     public class DmpsAudioOutput : IBasicVolumeWithFeedback
     {
         private UShortInputSig Level;
-        protected Card.Dmps3OutputBase Output;
         private bool EnableVolumeSend;
         private ushort VolumeLevelInput;
         protected short MinLevel { get; set; }
@@ -345,9 +363,8 @@ namespace PepperDash.Essentials.DM
         Action<bool> VolumeUpAction;
         Action<bool> VolumeDownAction;
 
-        public DmpsAudioOutput(Card.Dmps3OutputBase output, eDmpsLevelType type)
+        public DmpsAudioOutput(Dmps3AudioOutputBase output, eDmpsLevelType type)
         {
-            Output = output;
             VolumeLevelInput = 0;
             EnableVolumeSend = false;
             Type = type;
@@ -359,47 +376,46 @@ namespace PepperDash.Essentials.DM
                 case eDmpsLevelType.Master:
                     {
                         Level = output.MasterVolume;
-
-                        MuteFeedback = new BoolFeedback(new Func<bool>(() => Output.MasterMuteOnFeedBack.BoolValue));
-                        VolumeLevelFeedback = new IntFeedback(new Func<int>(() => Output.MasterVolumeFeedBack.UShortValue));
-                        MuteOnAction = new Action(Output.MasterMuteOn);
-                        MuteOffAction = new Action(Output.MasterMuteOff);
-                        VolumeUpAction = new Action<bool>((b) => Output.MasterVolumeUp.BoolValue = b);
-                        VolumeDownAction = new Action<bool>((b) => Output.MasterVolumeDown.BoolValue = b);
+                        MuteFeedback = new BoolFeedback(new Func<bool>(() => output.MasterMuteOnFeedBack.BoolValue));
+                        VolumeLevelFeedback = new IntFeedback(new Func<int>(() => output.MasterVolumeFeedBack.UShortValue));
+                        MuteOnAction = new Action(output.MasterMuteOn);
+                        MuteOffAction = new Action(output.MasterMuteOff);
+                        VolumeUpAction = new Action<bool>((b) => output.MasterVolumeUp.BoolValue = b);
+                        VolumeDownAction = new Action<bool>((b) => output.MasterVolumeDown.BoolValue = b);
                         break;
                     }
                 case eDmpsLevelType.MicsMaster:
                     {
-                        Level = output.MicMasterLevel;
-
-                        MuteFeedback = new BoolFeedback(new Func<bool>(() => Output.MicMasterMuteOnFeedBack.BoolValue));
-                        VolumeLevelFeedback = new IntFeedback(new Func<int>(() => Output.MicMasterLevelFeedBack.UShortValue));
-                        MuteOnAction = new Action(Output.MicMasterMuteOn);
-                        MuteOffAction = new Action(Output.MicMasterMuteOff);
-                        VolumeUpAction = new Action<bool>((b) => Output.MicMasterLevelUp.BoolValue = b);
-                        VolumeDownAction = new Action<bool>((b) => Output.MicMasterLevelDown.BoolValue = b);
+                        if (output.Card is Card.Dmps3OutputBase)
+                        {
+                            var micOutput = output.Card as Card.Dmps3OutputBase;
+                            Level = micOutput.MicMasterLevel;
+                            MuteFeedback = new BoolFeedback(new Func<bool>(() => micOutput.MicMasterMuteOnFeedBack.BoolValue));
+                            VolumeLevelFeedback = new IntFeedback(new Func<int>(() => micOutput.MicMasterLevelFeedBack.UShortValue));
+                            MuteOnAction = new Action(micOutput.MicMasterMuteOn);
+                            MuteOffAction = new Action(micOutput.MicMasterMuteOff);
+                            VolumeUpAction = new Action<bool>((b) => micOutput.MicMasterLevelUp.BoolValue = b);
+                            VolumeDownAction = new Action<bool>((b) => micOutput.MicMasterLevelDown.BoolValue = b);
+                        }
                         break;
                     }
                 case eDmpsLevelType.Source:
                     {
                         Level = output.SourceLevel;
-
-                        MuteFeedback = new BoolFeedback(new Func<bool>(() => Output.SourceMuteOnFeedBack.BoolValue));
-                        VolumeLevelFeedback = new IntFeedback(new Func<int>(() => Output.SourceLevelFeedBack.UShortValue));
-                        MuteOnAction = new Action(Output.SourceMuteOn);
-                        MuteOffAction = new Action(Output.SourceMuteOff);
-                        VolumeUpAction = new Action<bool>((b) => Output.SourceLevelUp.BoolValue = b);
-                        VolumeDownAction = new Action<bool>((b) => Output.SourceLevelDown.BoolValue = b);
+                        MuteFeedback = new BoolFeedback(new Func<bool>(() => output.SourceMuteOnFeedBack.BoolValue));
+                        VolumeLevelFeedback = new IntFeedback(new Func<int>(() => output.SourceLevelFeedBack.UShortValue));
+                        MuteOnAction = new Action(output.SourceMuteOn);
+                        MuteOffAction = new Action(output.SourceMuteOff);
+                        VolumeUpAction = new Action<bool>((b) => output.SourceLevelUp.BoolValue = b);
+                        VolumeDownAction = new Action<bool>((b) => output.SourceLevelDown.BoolValue = b);
                         break;
                     }
                 case eDmpsLevelType.Codec1:
                     {
-                        var programOutput = output as Card.Dmps3ProgramOutput;
-
-                        if (programOutput != null)
+                        if (output.Card is Card.Dmps3ProgramOutput)
                         {
+                            var programOutput = output.Card as Card.Dmps3ProgramOutput;
                             Level = programOutput.Codec1Level;
-
                             MuteFeedback = new BoolFeedback(new Func<bool>(() => programOutput.CodecMute1OnFeedback.BoolValue));
                             VolumeLevelFeedback = new IntFeedback(new Func<int>(() => programOutput.Codec1LevelFeedback.UShortValue));
                             MuteOnAction = new Action(programOutput.Codec1MuteOn);
@@ -407,12 +423,10 @@ namespace PepperDash.Essentials.DM
                             VolumeUpAction = new Action<bool>((b) => programOutput.Codec1LevelUp.BoolValue = b);
                             VolumeDownAction = new Action<bool>((b) => programOutput.Codec1LevelDown.BoolValue = b);
                         }
-                        else
+                        else if (output.Card is Card.Dmps3Aux2Output)
                         {
-                            var auxOutput = output as Card.Dmps3Aux2Output;
-
+                            var auxOutput = output.Card as Card.Dmps3Aux2Output;
                             Level = auxOutput.Codec1Level;
-
                             MuteFeedback = new BoolFeedback(new Func<bool>(() => auxOutput.CodecMute1OnFeedback.BoolValue));
                             VolumeLevelFeedback = new IntFeedback(new Func<int>(() => auxOutput.Codec1LevelFeedback.UShortValue));
                             MuteOnAction = new Action(auxOutput.Codec1MuteOn);
@@ -424,12 +438,10 @@ namespace PepperDash.Essentials.DM
                     }
                 case eDmpsLevelType.Codec2:
                     {
-                        var programOutput = output as Card.Dmps3ProgramOutput;
-
-                        if (programOutput != null)
+                        if (output.Card is Card.Dmps3ProgramOutput)
                         {
+                            var programOutput = output.Card as Card.Dmps3ProgramOutput;
                             Level = programOutput.Codec2Level;
-
                             MuteFeedback = new BoolFeedback(new Func<bool>(() => programOutput.CodecMute1OnFeedback.BoolValue));
                             VolumeLevelFeedback = new IntFeedback(new Func<int>(() => programOutput.Codec2LevelFeedback.UShortValue));
                             MuteOnAction = new Action(programOutput.Codec2MuteOn);
@@ -437,12 +449,11 @@ namespace PepperDash.Essentials.DM
                             VolumeUpAction = new Action<bool>((b) => programOutput.Codec2LevelUp.BoolValue = b);
                             VolumeDownAction = new Action<bool>((b) => programOutput.Codec2LevelDown.BoolValue = b);
                         }
-                        else
+                        else if (output.Card is Card.Dmps3Aux1Output)
                         {
-                            var auxOutput = output as Card.Dmps3Aux1Output;
+                            var auxOutput = output.Card as Card.Dmps3Aux1Output;
 
                             Level = auxOutput.Codec2Level;
-
                             MuteFeedback = new BoolFeedback(new Func<bool>(() => auxOutput.CodecMute2OnFeedback.BoolValue));
                             VolumeLevelFeedback = new IntFeedback(new Func<int>(() => auxOutput.Codec2LevelFeedback.UShortValue));
                             MuteOnAction = new Action(auxOutput.Codec2MuteOn);
@@ -463,7 +474,6 @@ namespace PepperDash.Essentials.DM
 
         public void SetVolumeScaled(ushort level)
         {
-            Debug.Console(2, Debug.ErrorLogLevel.None, "Scaling DMPS volume:{0} level:{1} min:{2} max:{3}", Output.Name, level.ToString(), MinLevel.ToString(), MaxLevel.ToString());
             if (ushort.MaxValue + MinLevel != 0)
             {
                 VolumeLevelInput = (ushort)(level * (MaxLevel - MinLevel) / ushort.MaxValue + MinLevel);
@@ -477,7 +487,6 @@ namespace PepperDash.Essentials.DM
         public ushort ScaleVolumeFeedback(ushort level)
         {
             short signedLevel = (short)level;
-            Debug.Console(2, Debug.ErrorLogLevel.None, "Scaling DMPS volume:{0} feedback:{1} min:{2} max:{3}", Output.Name, signedLevel.ToString(), MinLevel.ToString(), MaxLevel.ToString());
 
             if (MaxLevel - MinLevel != 0)
             {
@@ -536,6 +545,150 @@ namespace PepperDash.Essentials.DM
         }
 
         #endregion
+    }
+
+    public class Dmps3AudioOutputWithMixerBase : Dmps3AudioOutputBase
+    {
+        public UShortOutputSig MinVolumeFeedback { get; private set; }
+        public UShortOutputSig MaxVolumeFeedback { get; private set; }
+        public UShortInputSig StartupVolume { get; private set; }
+        public UShortOutputSig StartupVolumeFeedback { get; private set; }
+        public UShortInputSig PresetNumber { get; private set; }
+
+        public Action RecallPreset { get; private set; }
+
+        public Dmps3AudioOutputWithMixerBase(Card.Dmps3OutputBase card, CrestronControlSystem.Dmps3OutputMixer mixer)
+            : base(card)
+        {
+            MinVolumeFeedback = mixer.MinVolumeFeedback;
+            MaxVolumeFeedback = mixer.MaxVolumeFeedback;
+            StartupVolume = mixer.StartupVolume;
+            StartupVolumeFeedback = mixer.StartupVolumeFeedback;
+            PresetNumber = mixer.PresetNumber;
+
+            RecallPreset = new Action(mixer.RecallPreset);
+        }
+
+        public Dmps3AudioOutputWithMixerBase(Card.Dmps3OutputBase card, CrestronControlSystem.Dmps3AttachableOutputMixer mixer)
+            : base(card)
+        {
+            MinVolumeFeedback = mixer.MinVolumeFeedback;
+            MaxVolumeFeedback = mixer.MaxVolumeFeedback;
+            StartupVolume = mixer.StartupVolume;
+            StartupVolumeFeedback = mixer.StartupVolumeFeedback;
+            PresetNumber = mixer.PresetNumber;
+
+            RecallPreset = new Action(mixer.RecallPreset);
+        }
+
+        public Dmps3AudioOutputWithMixerBase(Card.Dmps3DmHdmiAudioOutput.Dmps3AudioOutputStream stream)
+            : base(stream)
+        {
+            var mixer = stream.OutputMixer;
+            MinVolumeFeedback = mixer.MinVolumeFeedback;
+            MaxVolumeFeedback = mixer.MaxVolumeFeedback;
+            StartupVolume = mixer.StartupVolume;
+            StartupVolumeFeedback = mixer.StartupVolumeFeedback;
+            PresetNumber = stream.PresetNumber;
+            RecallPreset = new Action(stream.RecallPreset);
+        }
+
+        public Dmps3AudioOutputWithMixerBase(Card.Dmps3DmHdmiAudioOutput.Dmps3DmHdmiOutputStream stream)
+            : base(stream)
+        {
+            var mixer = stream.OutputMixer;
+            MinVolumeFeedback = mixer.MinVolumeFeedback;
+            MaxVolumeFeedback = mixer.MaxVolumeFeedback;
+            StartupVolume = mixer.StartupVolume;
+            StartupVolumeFeedback = mixer.StartupVolumeFeedback;
+            PresetNumber = stream.PresetNumber;
+            RecallPreset = new Action(stream.RecallPreset);
+        }
+    }
+    public class Dmps3AudioOutputBase
+    {
+        public DMOutput Card { get; private set; }
+        public BoolOutputSig MasterMuteOffFeedBack { get; private set; }
+        public BoolOutputSig MasterMuteOnFeedBack { get; private set; }
+        public UShortInputSig MasterVolume { get; private set; }
+        public UShortOutputSig MasterVolumeFeedBack { get; private set; }
+        public BoolInputSig MasterVolumeUp { get; private set; }
+        public BoolInputSig MasterVolumeDown { get; private set; }
+        public BoolOutputSig SourceMuteOffFeedBack { get; private set; }
+        public BoolOutputSig SourceMuteOnFeedBack { get; private set; }
+        public UShortInputSig SourceLevel { get; private set; }
+        public UShortOutputSig SourceLevelFeedBack { get; private set; }
+        public BoolInputSig SourceLevelUp { get; private set; }
+        public BoolInputSig SourceLevelDown { get; private set; }
+
+        public Action MasterMuteOff { get; private set; }
+        public Action MasterMuteOn { get; private set; }
+        public Action SourceMuteOff { get; private set; }
+        public Action SourceMuteOn { get; private set; }
+
+        public Dmps3AudioOutputBase(Card.Dmps3OutputBase card)
+        {
+            Card = card;
+            MasterMuteOffFeedBack = card.MasterMuteOffFeedBack;
+            MasterMuteOnFeedBack = card.MasterMuteOnFeedBack;
+            MasterVolume = card.MasterVolume;
+            MasterVolumeFeedBack = card.MasterVolumeFeedBack;
+            MasterVolumeUp = card.MasterVolumeUp;
+            MasterVolumeDown = card.MasterVolumeDown;
+            SourceMuteOffFeedBack = card.SourceMuteOffFeedBack;
+            SourceMuteOnFeedBack = card.SourceMuteOnFeedBack;
+            SourceLevel = card.SourceLevel;
+            SourceLevelFeedBack = card.SourceLevelFeedBack;
+            SourceLevelUp = card.SourceLevelUp;
+            SourceLevelDown = card.SourceLevelDown;
+
+            MasterMuteOff = new Action(card.MasterMuteOff);
+            MasterMuteOn = new Action(card.MasterMuteOn);
+            SourceMuteOff = new Action(card.SourceMuteOff);
+            SourceMuteOn = new Action(card.SourceMuteOn);
+        }
+
+        public Dmps3AudioOutputBase(Card.Dmps3DmHdmiAudioOutput.Dmps3AudioOutputStream stream)
+        {
+            MasterMuteOffFeedBack = stream.MasterMuteOffFeedBack;
+            MasterMuteOnFeedBack = stream.MasterMuteOnFeedBack;
+            MasterVolume = stream.MasterVolume;
+            MasterVolumeFeedBack = stream.MasterVolumeFeedBack;
+            MasterVolumeUp = stream.MasterVolumeUp;
+            MasterVolumeDown = stream.MasterVolumeDown;
+            SourceMuteOffFeedBack = stream.SourceMuteOffFeedBack;
+            SourceMuteOnFeedBack = stream.SourceMuteOnFeedBack;
+            SourceLevel = stream.SourceLevel;
+            SourceLevelFeedBack = stream.SourceLevelFeedBack;
+            SourceLevelUp = stream.SourceLevelUp;
+            SourceLevelDown = stream.SourceLevelDown;
+
+            MasterMuteOff = new Action(stream.MasterMuteOff);
+            MasterMuteOn = new Action(stream.MasterMuteOn);
+            SourceMuteOff = new Action(stream.SourceMuteOff);
+            SourceMuteOn = new Action(stream.SourceMuteOn);
+        }
+
+        public Dmps3AudioOutputBase(Card.Dmps3DmHdmiAudioOutput.Dmps3DmHdmiOutputStream stream)
+        {
+            MasterMuteOffFeedBack = stream.MasterMuteOffFeedBack;
+            MasterMuteOnFeedBack = stream.MasterMuteOnFeedBack;
+            MasterVolume = stream.MasterVolume;
+            MasterVolumeFeedBack = stream.MasterVolumeFeedBack;
+            MasterVolumeUp = stream.MasterVolumeUp;
+            MasterVolumeDown = stream.MasterVolumeDown;
+            SourceMuteOffFeedBack = stream.SourceMuteOffFeedBack;
+            SourceMuteOnFeedBack = stream.SourceMuteOnFeedBack;
+            SourceLevel = stream.SourceLevel;
+            SourceLevelFeedBack = stream.SourceLevelFeedBack;
+            SourceLevelUp = stream.SourceLevelUp;
+            SourceLevelDown = stream.SourceLevelDown;
+
+            MasterMuteOff = new Action(stream.MasterMuteOff);
+            MasterMuteOn = new Action(stream.MasterMuteOn);
+            SourceMuteOff = new Action(stream.SourceMuteOff);
+            SourceMuteOn = new Action(stream.SourceMuteOn);
+        }
     }
 
     public enum eDmpsLevelType

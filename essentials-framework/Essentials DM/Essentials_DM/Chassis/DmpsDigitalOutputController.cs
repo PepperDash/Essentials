@@ -15,7 +15,7 @@ namespace PepperDash.Essentials.DM
     /// <summary>
     /// 
     /// </summary>
-    public class DmpsDigitalOutputController : Device, IRoutingNumericWithFeedback, IHasFeedback
+    public class DmpsDigitalOutputController : Device, IRoutingNumeric, IHasFeedback
     {
         public Card.Dmps3OutputBase OutputCard { get; protected set; }
 
@@ -159,12 +159,6 @@ namespace PepperDash.Essentials.DM
                 }
             }
         }
-
-        #endregion
-
-        #region IRoutingFeedback Members
-
-        public event EventHandler<RoutingNumericEventArgs> NumericSwitchChange;
 
         #endregion
     }
