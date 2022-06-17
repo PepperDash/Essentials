@@ -1357,7 +1357,7 @@ namespace PepperDash.Essentials.DM
                 else if (inputSelector <= Dmps.SwitcherInputs.Count && outputSelector <= Dmps.SwitcherOutputs.Count)
                 {
                     var output = Dmps.SwitcherOutputs[outputSelector] as DMOutput;
-                    var input = Dmps.SwitcherInputs[inputSelector] as DMInput;
+                    var input = inputSelector == 0 ? null : Dmps.SwitcherInputs[inputSelector] as DMInput;
                     output.AudioOut = input;
                 }
             }
