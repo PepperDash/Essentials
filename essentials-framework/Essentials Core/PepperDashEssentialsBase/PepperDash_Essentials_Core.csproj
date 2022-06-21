@@ -123,6 +123,7 @@
     <Compile Include="Bridges\IBridge.cs" />
     <Compile Include="Bridges\JoinMaps\AirMediaControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\AppleTvJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\PduJoinMapBase.cs" />
     <Compile Include="Bridges\JoinMaps\C2nRthsControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\CameraControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\CenOdtOccupancySensorBaseJoinMap.cs" />
@@ -203,6 +204,7 @@
     <Compile Include="Devices\IReconfigurableDevice.cs" />
     <Compile Include="Devices\PC\InRoomPc.cs" />
     <Compile Include="Devices\PC\Laptop.cs" />
+    <Compile Include="Devices\PduInterfaces.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
     <Compile Include="DeviceTypeInterfaces\IPasswordPrompt.cs" />
