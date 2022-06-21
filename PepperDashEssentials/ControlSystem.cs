@@ -490,21 +490,17 @@ namespace PepperDash.Essentials
                         }
                     }
 
+                    AddRoomAndBuildMC(room);
+
                     if (room is IEssentialsHuddleSpaceRoom)
                     {
-                        DeviceManager.AddDevice(room);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is EssentialsHuddleSpaceRoom, attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
                         DeviceManager.AddDevice(new Core.Fusion.EssentialsHuddleSpaceFusionSystemControllerBase(room, fusionIpId, fusionJoinMapKey));
 
-
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
-
-                        CreateMobileControlBridge(room);
                     }
                     else if (room is IEssentialsHuddleVtc1Room)
                     {
-                        DeviceManager.AddDevice(room);
 
                         if (!(room is EssentialsCombinedHuddleVtc1Room))
                         {
@@ -512,28 +508,15 @@ namespace PepperDash.Essentials
                             DeviceManager.AddDevice(new EssentialsHuddleVtc1FusionController((IEssentialsHuddleVtc1Room)room, fusionIpId, fusionJoinMapKey));
                         }
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge...");
-
-                        CreateMobileControlBridge(room);
                     }
                     else if (room is EssentialsTechRoom)
                     {
-                        DeviceManager.AddDevice(room);
 
                         Debug.Console(0, Debug.ErrorLogLevel.Notice,
                             "Room is EssentialsTechRoom, Attempting to add to DeviceManager with Fusion with IP-ID {0:X2}", fusionIpId);
                         DeviceManager.AddDevice(new EssentialsTechRoomFusionSystemController((EssentialsTechRoom)room, fusionIpId, fusionJoinMapKey));
 
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
-
-                        CreateMobileControlBridge(room);
                     }
-                    else
-                    {
-                        Debug.Console(0, Debug.ErrorLogLevel.Notice, "Room is NOT EssentialsRoom, attempting to add to DeviceManager w/o Fusion");
-                        DeviceManager.AddDevice(room);
-                    }
-
                     fusionIpId += 1;
                 }
                 else
@@ -545,6 +528,15 @@ namespace PepperDash.Essentials
 
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "All Rooms Loaded.");
 
+        }
+
+        private static void AddRoomAndBuildMC(IEssentialsRoom room)
+        {
+            DeviceManager.AddDevice(room);
+
+            Debug.Console(0, Debug.ErrorLogLevel.Notice, "Attempting to build Mobile Control Bridge");
+
+            CreateMobileControlBridge(room);
         }
 
         private static void CreateMobileControlBridge(object room)
