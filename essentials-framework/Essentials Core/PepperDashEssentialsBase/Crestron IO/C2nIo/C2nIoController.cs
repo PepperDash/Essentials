@@ -66,7 +66,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
         #endregion
     }
 
-    public class C2NIoControllerFactory : EssentialsDeviceFactory<C2nRthsController>
+    public class C2NIoControllerFactory : EssentialsDeviceFactory<C2NIoController>
     {
         public C2NIoControllerFactory()
         {
