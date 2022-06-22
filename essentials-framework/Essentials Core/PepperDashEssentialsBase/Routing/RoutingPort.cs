@@ -25,7 +25,7 @@ namespace PepperDash.Essentials.Core
 			Type = type;
 			ConnectionType = connType;
 			Selector = selector;
-			IsInternal = IsInternal;
+			IsInternal = isInternal;
 		}
 	}
 
