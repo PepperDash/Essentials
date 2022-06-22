@@ -112,16 +112,46 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class RingVolume
+        public class RingVolume : ValueProperty
         {
             public string valueSpaceRef { get; set; }
-            public string Value { get; set; }
+
+            string _Value;
+
+            /// <summary>
+            /// Sets Value and triggers the action when set
+            /// </summary>
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    OnValueChanged();
+                }
+            }
+
+            public int Volume
+            {
+                get
+                {
+                    return Int32.Parse(_Value);
+                }
+            }
         }
 
         public class SoundsAndAlerts
         {
             public RingTone RingTone { get; set; }
             public RingVolume RingVolume { get; set; }
+
+            public SoundsAndAlerts()
+            {
+                RingVolume = new RingVolume();
+            }
         }
 
         public class Audio
@@ -131,6 +161,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Microphones Microphones { get; set; }
             public Output Output { get; set; }
             public SoundsAndAlerts SoundsAndAlerts { get; set; }
+
+
+            public Audio()
+            {
+                SoundsAndAlerts = new SoundsAndAlerts();
+            }
         }
 
         public class DefaultMode
@@ -340,6 +376,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Delay Delay { get; set; }
             public Mode9 Mode { get; set; }
             public Mute2 Mute { get; set; }
+
+            public AutoAnswer()
+            {
+               Mode = new Mode9(); 
+               Delay = new Delay();
+               Mute = new Mute2();
+            }
         }
 
         public class Protocol
@@ -440,6 +483,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public MaxTotalTransmitCallRate MaxTotalTransmitCallRate { get; set; }
             public MaxTransmitCallRate MaxTransmitCallRate { get; set; }
             public MultiStream MultiStream { get; set; }
+
+            public Conference()
+            {
+                AutoAnswer = new AutoAnswer();
+            }
         }
 
         public class LoginName
@@ -690,6 +738,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Assignment Assignment { get; set; }
             public Gateway Gateway { get; set; }
             public SubnetMask SubnetMask { get; set; }
+
+            public IPv4()
+            {
+                Address = new Address4();
+            }
         }
 
         public class Address5
@@ -841,6 +894,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public RemoteAccess RemoteAccess { get; set; }
             public Speed Speed { get; set; }
             public VLAN VLAN { get; set; }
+
+            public Network()
+            {
+                IPv4 = new IPv4();
+            }
         }
 
         public class Mode19
@@ -1797,11 +1855,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public UserInterface UserInterface { get; set; }
             public UserManagement UserManagement { get; set; }
             public Video2 Video { get; set; }
+
+            public Configuration()
+            {
+                Audio = new Audio();
+                Conference = new Conference();
+                Network = new List<Network>();
+            }
         }
 
         public class RootObject
         {
             public Configuration Configuration { get; set; }
+
+            public RootObject()
+            {
+                Configuration = new Configuration();
+            }   
         }
     }
 }

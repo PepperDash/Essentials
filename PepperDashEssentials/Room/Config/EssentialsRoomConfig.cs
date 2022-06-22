@@ -39,6 +39,10 @@ namespace PepperDash.Essentials.Room.Config
 		    {
 		        return new EssentialsDualDisplayRoom(roomConfig);
 		    }
+            if (typeName == "combinedhuddlevtc1")
+            {
+                return new EssentialsCombinedHuddleVtc1Room(roomConfig);
+            }
 
 		    return typeName != "techroom" ? null : new EssentialsTechRoom(roomConfig);
 		}
@@ -200,6 +204,12 @@ namespace PepperDash.Essentials.Room.Config
 
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
+
+        /// <summary>
+        /// Indicates if this room represents a combination of other rooms
+        /// </summary>
+        [JsonProperty("isRoomCombinationScenario")]
+        public bool IsRoomCombinationScenario { get; set; }
 
         public EssentialsRoomPropertiesConfig()
         {

@@ -4,6 +4,26 @@ namespace PepperDash.Essentials.Core.Bridges
 {
     public class DmpsRoutingControllerJoinMap : JoinMapBaseAdvanced
     {
+        [JoinName("EnableRouting")]
+        public JoinDataComplete EnableRouting = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata { Description = "DMPS Enable Audio and Video Routing", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("SystemPowerOn")]
+        public JoinDataComplete SystemPowerOn = new JoinDataComplete(new JoinData { JoinNumber = 12, JoinSpan = 1 },
+            new JoinMetadata { Description = "DMPS System Power On Get/Set", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("SystemPowerOff")]
+        public JoinDataComplete SystemPowerOff = new JoinDataComplete(new JoinData { JoinNumber = 13, JoinSpan = 1 },
+            new JoinMetadata { Description = "DMPS System Power Off Get/Set", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("FrontPanelLockOn")]
+        public JoinDataComplete FrontPanelLockOn = new JoinDataComplete(new JoinData { JoinNumber = 14, JoinSpan = 1 },
+            new JoinMetadata { Description = "DMPS Front Panel Lock On Get/Set", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
+        [JoinName("FrontPanelLockOff")]
+        public JoinDataComplete FrontPanelLockOff = new JoinDataComplete(new JoinData { JoinNumber = 15, JoinSpan = 1 },
+            new JoinMetadata { Description = "DMPS Front Panel Lock  Off Get/Set", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
+
         [JoinName("VideoSyncStatus")]
         public JoinDataComplete VideoSyncStatus = new JoinDataComplete(new JoinData { JoinNumber = 101, JoinSpan = 32 },
             new JoinMetadata { Description = "DM Input Video Sync", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Digital });
@@ -31,6 +51,44 @@ namespace PepperDash.Essentials.Core.Bridges
         [JoinName("OutputNames")]
         public JoinDataComplete OutputNames = new JoinDataComplete(new JoinData { JoinNumber = 301, JoinSpan = 32 },
             new JoinMetadata { Description = "DM Chassis Output Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
+        [JoinName("InputVideoNames")]
+        public JoinDataComplete InputVideoNames =
+            new JoinDataComplete(new JoinData { JoinNumber = 501, JoinSpan = 32 },
+            new JoinMetadata
+            {
+                Description = "Video Input Name",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("InputAudioNames")]
+        public JoinDataComplete InputAudioNames =
+            new JoinDataComplete(new JoinData { JoinNumber = 701, JoinSpan = 32 },
+            new JoinMetadata
+            {
+                Description = "Audio Input Name",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+        [JoinName("OutputVideoNames")]
+        public JoinDataComplete OutputVideoNames =
+            new JoinDataComplete(new JoinData { JoinNumber = 901, JoinSpan = 32 },
+            new JoinMetadata
+            {
+                Description = "Video Output Name",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+        [JoinName("OutputAudioNames")]
+        public JoinDataComplete OutputAudioNames =
+            new JoinDataComplete(new JoinData { JoinNumber = 1101, JoinSpan = 32 },
+            new JoinMetadata
+            {
+                Description = "Audio Output Name",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
 
         [JoinName("OutputCurrentVideoInputNames")]
         public JoinDataComplete OutputCurrentVideoInputNames = new JoinDataComplete(new JoinData { JoinNumber = 2001, JoinSpan = 32 },

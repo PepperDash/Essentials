@@ -131,6 +131,7 @@
     <Compile Include="Bridges\JoinMaps\DmBladeChassisControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmChassisControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmpsAudioOutputControllerJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\DmpsMicrophoneControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmpsRoutingControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmRmcControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\DmTxControllerJoinMap.cs" />
@@ -182,6 +183,7 @@
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\IDigitalInput.cs" />
     <Compile Include="Crestron IO\IOPortConfig.cs" />
+    <Compile Include="Crestron IO\Relay\CenIoRy104Controller.cs" />
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
     <Compile Include="Crestron IO\StatusSign\StatusSignController.cs" />
@@ -235,6 +237,9 @@
     <Compile Include="Interfaces\ILogStringsWithLevel.cs" />
     <Compile Include="Occupancy\GlsOccupancySensorPropertiesConfig.cs" />
     <Compile Include="Occupancy\GlsOirOccupancySensorController.cs" />
+    <Compile Include="PartitionSensor\EssentialsPartitionController.cs" />
+    <Compile Include="PartitionSensor\GlsPartitionSensorPropertiesConfig.cs" />
+    <Compile Include="PartitionSensor\IPartitionStateProvider.cs" />
     <Compile Include="Occupancy\OccupancyAggregatorConfig.cs" />
     <Compile Include="Queues\ComsMessage.cs" />
     <Compile Include="Queues\ProcessStringMessage.cs" />
@@ -290,6 +295,10 @@
     <Compile Include="Remotes\CrestronRemotePropertiesConfig.cs" />
     <Compile Include="Remotes\Hrxx0WirelessRemoteController.cs" />
     <Compile Include="Room\Behaviours\RoomOnToDefaultSourceWhenOccupied.cs" />
+    <Compile Include="Room\Combining\EssentialsRoomCombiner.cs" />
+    <Compile Include="Room\Combining\EssentialsRoomCombinerPropertiesConfig.cs" />
+    <Compile Include="Room\Combining\IEssentialsRoomCombiner.cs" />
+    <Compile Include="Room\Combining\RoomCombinationScenario.cs" />
     <Compile Include="Room\EssentialsRoomBase.cs" />
     <Compile Include="Room\Config\EssentialsRoomScheduledEventsConfig.cs" />
     <Compile Include="Room\IEssentialsRoom.cs" />

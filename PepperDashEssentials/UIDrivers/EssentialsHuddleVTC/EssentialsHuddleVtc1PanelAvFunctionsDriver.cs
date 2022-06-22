@@ -354,7 +354,7 @@ namespace PepperDash.Essentials
 
             TriList.SetSigFalseAction(UIBoolJoin.DisplayPowerTogglePress, () =>
             {
-                if (CurrentRoom != null && CurrentRoom.DefaultDisplay is IHasPowerControl)
+                if (CurrentRoom != null && CurrentRoom.DefaultDisplay != null && CurrentRoom.DefaultDisplay is IHasPowerControl)
                     (CurrentRoom.DefaultDisplay as IHasPowerControl).PowerToggle();
             });
 
@@ -493,10 +493,10 @@ namespace PepperDash.Essentials
 		    // and the LastMeetingDismissed != this meeting
 
 		    var lastMeetingDismissed = meetings.FirstOrDefault(m => m.Id == LastMeetingDismissedId);
-		    Debug.Console(0, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
-		        CurrentRoom.OnFeedback.BoolValue,
-		        LastMeetingDismissedId,
-		        lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToString("t", Global.Culture) : "");
+            //Debug.Console(0, "*#* Room on: {0}, lastMeetingDismissedId: {1} {2} *#*", 
+            //    CurrentRoom.OnFeedback.BoolValue,
+            //    LastMeetingDismissedId,
+            //    lastMeetingDismissed != null ? lastMeetingDismissed.StartTime.ToString("t", Global.Culture) : "");
 
 		    var meeting = meetings.LastOrDefault(m => m.Joinable);
 		    if (CurrentRoom.OnFeedback.BoolValue

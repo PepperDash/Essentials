@@ -24,6 +24,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         /// </summary>
         /// <param name="participant"></param>
         void SetParticipantAsHost(int userId);
+
+        /// <summary>
+        /// Admits a participant from the waiting room
+        /// </summary>
+        /// <param name="userId"></param>
+        void AdmitParticipantFromWaitingRoom(int userId);
 	}
 
 	/// <summary>
