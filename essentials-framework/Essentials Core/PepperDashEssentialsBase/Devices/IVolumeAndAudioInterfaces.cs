@@ -9,8 +9,11 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// Defines minimal volume and mute control methods
 	/// </summary>
-    public interface IBasicVolumeControls : IHasVolumeControl, IHasMuteControl
+    public interface IBasicVolumeControls 
 	{
+		void VolumeUp(bool pressRelease);
+		void VolumeDown(bool pressRelease);
+		void MuteToggle();
 	}
 
     /// <summary>
@@ -52,8 +55,13 @@ namespace PepperDash.Essentials.Core
 	/// <summary>
 	/// Adds feedback and direct volume level set to IBasicVolumeControls
 	/// </summary>
-    public interface IBasicVolumeWithFeedback : IBasicVolumeControls, IHasVolumeControlWithFeedback, IHasMuteControlWithFeedback
+    public interface IBasicVolumeWithFeedback : IBasicVolumeControls
 	{
+		BoolFeedback MuteFeedback { get; }
+        void MuteOn();
+        void MuteOff();
+		void SetVolume(ushort level);
+		IntFeedback VolumeLevelFeedback { get; }
 	}
 
     /// <summary>
