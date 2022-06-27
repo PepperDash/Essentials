@@ -386,7 +386,8 @@ namespace PepperDash.Essentials.DM
                     if (Dmps.SwitcherOutputs[ioSlot].CardInputOutputType == eCardInputOutputType.Dmps3DmOutput ||
                         Dmps.SwitcherOutputs[ioSlot].CardInputOutputType == eCardInputOutputType.Dmps3DmOutputBackend ||
                         Dmps.SwitcherOutputs[ioSlot].CardInputOutputType == eCardInputOutputType.Dmps3HdmiOutput ||
-                        Dmps.SwitcherOutputs[ioSlot].CardInputOutputType == eCardInputOutputType.Dmps3HdmiOutputBackend)
+                        Dmps.SwitcherOutputs[ioSlot].CardInputOutputType == eCardInputOutputType.Dmps3HdmiOutputBackend ||
+                        Dmps.SwitcherOutputs[ioSlot].CardInputOutputType == eCardInputOutputType.Dmps3DmHdmiAudioOutput)
                     {
                         OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputVideoNames.JoinNumber + ioSlotJoin]);
                         OutputNameFeedbacks[ioSlot].LinkInputSig(trilist.StringInput[joinMap.OutputNames.JoinNumber + ioSlotJoin]);

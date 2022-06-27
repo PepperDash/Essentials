@@ -327,7 +327,7 @@ namespace PepperDash.Essentials.DM
             Output.PresetNumber.UShortValue = preset;
             Output.RecallPreset();
 
-            if (!Global.ControlSystemIsDmps4kType)
+            if (!Global.ControlSystemIsDmps4k3xxType)
             {
                 //Recall startup volume for main volume level as DMPS3(non-4K) presets don't affect the main volume
                 RecallStartupVolume();
