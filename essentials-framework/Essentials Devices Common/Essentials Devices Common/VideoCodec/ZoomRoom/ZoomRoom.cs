@@ -2044,6 +2044,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                             OnCallStatusChange(newCall);
 						}
+                        else if (String.IsNullOrEmpty(Status.Call.Info.meeting_id) && !Status.NeedWaitForHost.Wait)
+                        {
+                            var newCall = new CodecActiveCallItem
+                            {
+                                Name = "",
+                                Number = "",
+                                Id = "",
+                                Status = newStatus,
+                                Type = eCodecCallType.Video,
+                            };
+
+                            if (!String.IsNullOrEmpty(_lastDialedMeetingNumber))
+                            {
+                                _lastDialedMeetingNumber = String.Empty;
+                            }
+
+                            ActiveCalls.Add(newCall);
+
+                            OnCallStatusChange(newCall);
+                        }
 					}
 				}
 				else

@@ -783,20 +783,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 }
                 set
                 {
-                    //Debug.Console(2, "************************************setting value of meetingIsBeingRecorded to: {0}", value);
                     if (value != _meetingIsBeingRecorded)
                     {
                         _meetingIsBeingRecorded = value;
-                        //Debug.Console(2, "********************************set value of meetingIsBeingRecorded to: {0}", _meetingIsBeingRecorded);
                         NotifyPropertyChanged("meetingIsBeingRecorded");
                     }
                 }
             }
 
-            public CallRecordInfo()
-            {
-                Debug.Console(2, Debug.ErrorLogLevel.Notice, "********************************************* CallRecordInfo() ******************************************");
-            }
 		}
 	}
 
