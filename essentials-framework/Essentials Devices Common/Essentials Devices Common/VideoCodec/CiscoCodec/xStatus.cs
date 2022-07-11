@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Devices.Common.VideoCodec.CiscoCodec;
+using PepperDash.Essentials.Core.Presets;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
@@ -2185,7 +2186,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        public class RoomPreset
+        public class RoomPreset : IConvertiblePreset
         {
             public string id { get; set; }
             public Defined Defined { get; set; }
@@ -2198,7 +2199,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Description = new Description2();
                 Type = new Type5();
             }
-        }
+
+            public PresetBase ReturnConvertedCodecPreset()
+            {
+                    try
+                    {
+                        var preset =  new CodecRoomPreset(UInt16.Parse(id), Description.Value, Defined.BoolValue, true);
+
+                        Debug.Console(2, "Preset ID {0} Converted from Cisco Codec Preset to Essentials Preset");
+
+                        return preset;
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Console(2, "Unable to convert preset: {0}. Error: {1}", id, e);
+                        return null;
+                    }            
+            }
+}
 
 
 
@@ -2222,7 +2240,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Proximity Proximity { get; set; }
             public RoomAnalytics RoomAnalytics { get; set; }
 
-            public List<RoomPreset> RoomPreset { get; set; }
+            public List<IConvertiblePreset> RoomPreset { get; set; }
 
             public SIP SIP { get; set; }
             public Security Security { get; set; }
@@ -2239,7 +2257,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Standby = new Standby();
                 Cameras = new Cameras();
                 RoomAnalytics = new RoomAnalytics();
-                RoomPreset = new List<RoomPreset>();
+                RoomPreset = new List<IConvertiblePreset>();
                 Conference = new Conference2();
                 SystemUnit = new SystemUnit();
                 Video = new Video();
