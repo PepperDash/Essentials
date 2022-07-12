@@ -27,9 +27,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     /// </summary>
     public interface IHasCodecLayoutsAvailable : IHasCodecLayouts
     {
-        StringFeedback AvailableLocalLayoutsFeedback { get; set; }
-        List<CodecCommandWithLabel> AvailableLocalLayouts { get; set; }
-        void LocalLayoutSet(string layoutId);
+        event EventHandler<AvailableLayoutChangedEventArgs> AvailableLayoutsChanged;
+
+        StringFeedback AvailableLocalLayoutsFeedback { get; }
+        List<CodecCommandWithLabel> AvailableLocalLayouts { get; }
+        void LocalLayoutSet(string layout);
+        void LocalLayoutSet(CodecCommandWithLabel layout);
+
+    }
+
+    public class AvailableLayoutChangedEventArgs : EventArgs
+    {
+        public List<CodecCommandWithLabel>  AvailableLayouts { get; set; }
     }
 
     /// <summary>
