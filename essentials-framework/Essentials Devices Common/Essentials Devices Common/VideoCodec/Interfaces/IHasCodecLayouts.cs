@@ -28,7 +28,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     public interface IHasCodecLayoutsAvailable : IHasCodecLayouts
     {
         StringFeedback AvailableLocalLayoutsFeedback { get; set; }
-        Dictionary<string, string> AvailableLocalLayouts { get; set; }
+        List<CodecCommandWithLabel> AvailableLocalLayouts { get; set; }
         void LocalLayoutSet(string layoutId);
     }
 
