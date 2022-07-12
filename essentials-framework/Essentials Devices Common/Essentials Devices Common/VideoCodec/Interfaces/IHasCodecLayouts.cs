@@ -27,6 +27,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     /// </summary>
     public interface IHasCodecLayoutsAvailable : IHasCodecLayouts
     {
+
         event EventHandler<AvailableLayoutChangedEventArgs> AvailableLayoutsChanged;
 
         StringFeedback AvailableLocalLayoutsFeedback { get; }
