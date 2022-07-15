@@ -36,21 +36,22 @@ namespace PepperDash.Essentials.Core
         public bool SetSecret(string key, object value)
         {
             var secret = value as string;
+            CrestronDataStore.CDS_ERROR returnCode;
+
             if (String.IsNullOrEmpty(secret))
             {
-                Debug.Console(2, this, "Unable to set secret for {0}:{1} - value is empty.", Key, key);
-                return false;
+                returnCode = CrestronDataStoreStatic.clearLocal(key);
+                if (returnCode == CrestronDataStore.CDS_ERROR.CDS_SUCCESS) return true;
             }
-            var setErrorCode = CrestronDataStoreStatic.SetLocalStringValue(key, secret);
-            switch (setErrorCode)
+
+            else  
             {
-                case CrestronDataStore.CDS_ERROR.CDS_SUCCESS:
-                    Debug.Console(1, this,"Secret Successfully Set for {0}:{1}", Key, key);
-                    return true;
-                default:
-                    Debug.Console(2, this, Debug.ErrorLogLevel.Notice, "Unable to set secret for {0}:{1} - {2}", Key, key, setErrorCode.ToString());
-                    return false;
+                returnCode = CrestronDataStoreStatic.SetLocalStringValue(key, secret);
+                if (returnCode == CrestronDataStore.CDS_ERROR.CDS_SUCCESS) return true;
             }
+
+            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Unable to set secret for {0}:{1} - {2}", Key, key, returnCode.ToString());
+            return false; 
         }
 
         /// <summary>
