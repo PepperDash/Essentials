@@ -4,6 +4,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 {
     public interface IConvertiblePreset
     {
-        PresetBase ReturnConvertedCodecPreset();
+        PresetBase ConvertCodecPreset();
     }
 }

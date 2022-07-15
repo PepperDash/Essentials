@@ -1073,7 +1073,7 @@ ConnectorID: {2}"
                         CodecStatus.Status.RoomPreset = existingRoomPresets;
 
                         // Generecise the list
-                        NearEndPresets = RoomPresets.GetGenericPresets(existingRoomPresets).Select(a =>(CodecRoomPreset)a).ToList();
+                        NearEndPresets = existingRoomPresets.GetGenericPresets<CodecRoomPreset>();
 
                         var handler = CodecRoomPresetsListHasChanged;
                         if (handler != null)

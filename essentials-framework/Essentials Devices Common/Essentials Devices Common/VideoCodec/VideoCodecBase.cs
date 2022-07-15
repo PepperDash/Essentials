@@ -2000,8 +2000,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     /// </summary>
     public class CodecCommandWithLabel
     {
-        public string Command { get; set; }
-        public string Label { get; set; }
+        public string Command { get; private set; }
+        public string Label { get; private set; }
 
         public CodecCommandWithLabel(string command, string label)
         {

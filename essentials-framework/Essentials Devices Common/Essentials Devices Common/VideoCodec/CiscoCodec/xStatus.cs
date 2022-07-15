@@ -2200,7 +2200,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Type = new Type5();
             }
 
-            public PresetBase ReturnConvertedCodecPreset()
+            public PresetBase ConvertCodecPreset()
             {
                     try
                     {
