@@ -338,7 +338,9 @@
     <Compile Include="Feedbacks\BoolFeedbackPulseExtender.cs" />
     <Compile Include="Routing\RoutingPortNames.cs" />
     <Compile Include="Routing\TieLineConfig.cs" />
-    <Compile Include="Secrets\CrestronSecretsProvider.cs" />
+    <Compile Include="Secrets\CrestronGlobalSecretsProvider.cs" />
+    <Compile Include="Secrets\CrestronLocalSecretsProvider.cs" />
+    <Compile Include="Secrets\CrestronSecret.cs" />
     <Compile Include="Secrets\Interfaces.cs" />
     <Compile Include="Secrets\SecretsManager.cs" />
     <Compile Include="Secrets\SecretsPropertiesConfig.cs" />
