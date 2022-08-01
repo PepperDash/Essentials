@@ -712,7 +712,8 @@ namespace PepperDash.Essentials
 			else if (route.DestinationKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
 				dest = DefaultDisplay;
 			else
-				dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSinkNoSwitching;
+				dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSink;
+            
 
 			if (dest == null)
 			{
