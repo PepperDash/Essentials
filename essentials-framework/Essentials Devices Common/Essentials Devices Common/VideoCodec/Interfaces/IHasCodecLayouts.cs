@@ -23,6 +23,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
     }
 
     /// <summary>
+    /// Defines the required elements for layout control with direct layout selection
+    /// </summary>
+    public interface IHasCodecLayoutsAvailable : IHasCodecLayouts
+    {
+
+        event EventHandler<AvailableLayoutChangedEventArgs> AvailableLayoutsChanged;
+
+        StringFeedback AvailableLocalLayoutsFeedback { get; }
+        List<CodecCommandWithLabel> AvailableLocalLayouts { get; }
+        void LocalLayoutSet(string layout);
+        void LocalLayoutSet(CodecCommandWithLabel layout);
+
+    }
+
+    public class AvailableLayoutChangedEventArgs : EventArgs
+    {
+        public List<CodecCommandWithLabel>  AvailableLayouts { get; set; }
+    }
+
+    /// <summary>
     /// Defines the requirements for Zoom Room layout control
     /// </summary>
     public interface IHasZoomRoomLayouts : IHasCodecLayouts
