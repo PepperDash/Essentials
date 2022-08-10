@@ -1180,31 +1180,39 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		private string UpdateDirectoryXSig(CodecDirectory directory, bool isRoot)
 		{
-			var contactIndex = 1;
-			var tokenArray = new XSigToken[directory.CurrentDirectoryResults.Count];
+			var xSigMaxIndex = 1023;
+			var tokenArray = new XSigToken[directory.CurrentDirectoryResults.Count > xSigMaxIndex
+				? xSigMaxIndex 
+				: directory.CurrentDirectoryResults.Count];
 
-            Debug.Console(2, this, "Is root {0} Directory Count: {1}", isRoot, directory.CurrentDirectoryResults.Count);
+            Debug.Console(2, this, "IsRoot: {0}, Directory Count: {1}, TokenArray.Length: {2}", isRoot, directory.CurrentDirectoryResults.Count, tokenArray.Length);
 
-			foreach (var entry in directory.CurrentDirectoryResults)
+			var contacts = directory.CurrentDirectoryResults.Count > xSigMaxIndex
+				? directory.CurrentDirectoryResults.Take(xSigMaxIndex)
+				: directory.CurrentDirectoryResults;
+
+			var counterIndex = 1;
+			foreach (var entry in contacts)
 			{
-				var arrayIndex = contactIndex - 1;
+				var arrayIndex = counterIndex - 1;
+				var entryIndex = counterIndex;
 
-                Debug.Console(2, this, "Entry Name: {0}, Folder ID: {1}", entry.Name, entry.FolderId);
+                Debug.Console(2, this, "Entry{2:0000} Name: {0}, Folder ID: {1}", entry.Name, entry.FolderId, entryIndex);
 
 				if (entry is DirectoryFolder && entry.ParentFolderId == "root")
 				{
-					tokenArray[arrayIndex] = new XSigSerialToken(contactIndex, String.Format("[+] {0}", entry.Name));
+					tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, String.Format("[+] {0}", entry.Name));
 
-					contactIndex++;
+					counterIndex++;
 
 					continue;
 				}
 
-				tokenArray[arrayIndex] = new XSigSerialToken(contactIndex, entry.Name);
+				tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, entry.Name);
 
-				contactIndex++;
+				counterIndex++;
 			}
-
+			
 			return GetXSigString(tokenArray);
 		}
 
