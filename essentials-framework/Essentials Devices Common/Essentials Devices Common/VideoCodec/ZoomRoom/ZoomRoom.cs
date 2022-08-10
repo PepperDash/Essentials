@@ -2729,6 +2729,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				Debug.Console(2, this, "OnDirectoryResultReturned.  Result has {0} contacts", result.Contacts.Count);
 
+				CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+
                 var directoryResult = result;
 				var directoryIsRoot = CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false;
 
@@ -2761,7 +2763,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					});
 				}
 
-                CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+                
 			}
 			catch (Exception e)
 			{

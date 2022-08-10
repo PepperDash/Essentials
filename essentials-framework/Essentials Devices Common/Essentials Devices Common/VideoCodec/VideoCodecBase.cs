@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharp.Ssh;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharp;
@@ -1010,7 +1011,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                 trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
                     Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
-                var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot, !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+                var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot, codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
 
                 Debug.Console(2, this, "Directory XSig Length: {0}", directoryXSig.Length);
 
@@ -1025,7 +1026,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
 					Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
-				var directoryXSig = UpdateDirectoryXSig(args.Directory, !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+				var directoryXSig = UpdateDirectoryXSig(args.Directory, codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
 
                 Debug.Console(2, this, "Directory XSig Length: {0}", directoryXSig.Length);
 
@@ -1036,10 +1037,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 if (!args.DeviceOnLine) return;
 
-                // TODO [ ] Issue #868
                 trilist.SetString(joinMap.DirectoryEntries.JoinNumber, "\xFC");
                 UpdateDirectoryXSig(codec.CurrentDirectoryResult,
-                    !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+                    codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
             };
 		}
 
@@ -1190,16 +1190,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			var contacts = directory.CurrentDirectoryResults.Count > xSigMaxIndex
 				? directory.CurrentDirectoryResults.Take(xSigMaxIndex)
 				: directory.CurrentDirectoryResults;
+			
+			var contactsToDisplay = isRoot
+				? contacts.Where(c => c.ParentFolderId == "root")
+				: contacts.Where(c => c.ParentFolderId != "root");
 
 			var counterIndex = 1;
-			foreach (var entry in contacts)
+			foreach (var entry in contactsToDisplay)
 			{
 				var arrayIndex = counterIndex - 1;
 				var entryIndex = counterIndex;
 
-                Debug.Console(2, this, "Entry{2:0000} Name: {0}, Folder ID: {1}", entry.Name, entry.FolderId, entryIndex);
+                Debug.Console(2, this, "Entry{2:0000} Name: {0}, Folder ID: {1}, Type: {3}, ParentFolderId: {4}", 
+					entry.Name, entry.FolderId, entryIndex, entry.GetType().GetCType().FullName, entry.ParentFolderId);
 
-				if (entry is DirectoryFolder && entry.ParentFolderId == "root")
+				if (entry is DirectoryFolder)
 				{
 					tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, String.Format("[+] {0}", entry.Name));
 
