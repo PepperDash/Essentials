@@ -398,6 +398,22 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+        [JoinName("DirectoryClearSelection")]
+        public JoinDataComplete DirectoryClearSelection = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 100,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Directory Search Busy FB",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+
+
 		[JoinName("DirectoryEntryIsContact")]
 		public JoinDataComplete DirectoryEntryIsContact = new JoinDataComplete(
 			new JoinData
@@ -1256,8 +1272,8 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Directory Select Row",
-				JoinCapabilities = eJoinCapabilities.FromSIMPL,
+				Description = "Directory Select Row and Feedback",
+				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Analog
 			});
 
