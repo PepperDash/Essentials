@@ -1273,9 +1273,10 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			new JoinMetadata
 			{
 				Description = "Directory Select Row and Feedback",
-				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Analog
 			});
+
 
         [JoinName("SelectedContactMethodCount")]
         public JoinDataComplete SelectedContactMethodCount = new JoinDataComplete(
@@ -1304,6 +1305,22 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Analog
             });
+
+        [JoinName("DirectorySelectRowFeedback")]
+        public JoinDataComplete DirectorySelectRowFeedback = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 104,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Directory Select Row and Feedback",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
+
 
 		[JoinName("CameraPresetSelect")]
 		public JoinDataComplete CameraPresetSelect = new JoinDataComplete(

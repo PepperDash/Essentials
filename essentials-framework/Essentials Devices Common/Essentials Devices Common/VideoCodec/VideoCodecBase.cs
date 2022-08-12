@@ -803,7 +803,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 			trilist.SetUShortSigAction(joinMap.MinutesBeforeMeetingStart.JoinNumber, (i) =>
 			{
-				codec.CodecSchedule.MeetingWarningMinutes = i;
+			    codec.CodecSchedule.MeetingWarningMinutes = i;
 			});
 
 			trilist.SetSigFalseAction(joinMap.DialMeeting1.JoinNumber, () =>
