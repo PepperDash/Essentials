@@ -92,50 +92,47 @@ namespace PepperDash.Essentials.Core.Lighting
 		    return LinkLightingToApi(lightingDevice, trilist, joinMap);
 	    }
 
-		protected GenericLightingJoinMap LinkLightingToApi(LightingBase lightingDevice, BasicTriList trilist, GenericLightingJoinMap joinMap)
-		{
+      protected GenericLightingJoinMap LinkLightingToApi(LightingBase lightingDevice, BasicTriList trilist, GenericLightingJoinMap joinMap)
+      {
+        Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
+        Debug.Console(0, "Linking to Lighting Type {0}", lightingDevice.GetType().Name.ToString());
 
-			Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+        // GenericLighitng Actions & FeedBack
+        trilist.SetUShortSigAction(joinMap.SelectScene.JoinNumber, u => lightingDevice.SelectScene(lightingDevice.LightingScenes[u]));
 
-			Debug.Console(0, "Linking to Lighting Type {0}", lightingDevice.GetType().Name.ToString());
+        var sceneIndex = 0;
+        foreach (var scene in lightingDevice.LightingScenes)
+        {
+          var index = sceneIndex;
 
-			// GenericLighitng Actions & FeedBack
-			trilist.SetUShortSigAction(joinMap.SelectScene.JoinNumber, u => lightingDevice.SelectScene(lightingDevice.LightingScenes[u]));
+          trilist.SetSigTrueAction((uint)(joinMap.SelectSceneDirect.JoinNumber + index), () => lightingDevice.SelectScene(lightingDevice.LightingScenes[index]));
+          scene.IsActiveFeedback.LinkInputSig(trilist.BooleanInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + index)]);
+          trilist.StringInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + index)].StringValue = scene.Name;
+          trilist.BooleanInput[(uint)(joinMap.ButtonVisibility.JoinNumber + index)].BoolValue = true;
 
-			var sceneIndex = 0;
-			foreach (var scene in lightingDevice.LightingScenes)
-			{
-				var index = sceneIndex;
+          sceneIndex++;
+        }
 
-				trilist.SetSigTrueAction((uint)(joinMap.SelectSceneDirect.JoinNumber + index), () => lightingDevice.SelectScene(lightingDevice.LightingScenes[index]));
-				scene.IsActiveFeedback.LinkInputSig(trilist.BooleanInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + index)]);
-				trilist.StringInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + index)].StringValue = scene.Name;
-				trilist.BooleanInput[(uint)(joinMap.ButtonVisibility.JoinNumber + index)].BoolValue = true;
+        trilist.OnlineStatusChange += (sender, args) =>
+        {
+          if (!args.DeviceOnLine) return;
 
-				sceneIndex++;
-			}
+          sceneIndex = 0;
+          foreach (var scene in lightingDevice.LightingScenes)
+          {
+            var index = sceneIndex;
 
-			trilist.OnlineStatusChange += (sender, args) =>
-			{
-				if (!args.DeviceOnLine) return;
+            trilist.StringInput[(uint) (joinMap.SelectSceneDirect.JoinNumber + index)].StringValue = scene.Name;
+            trilist.BooleanInput[(uint) (joinMap.ButtonVisibility.JoinNumber + index)].BoolValue = true;
+            scene.IsActiveFeedback.FireUpdate();
 
-				sceneIndex = 0;
-				foreach (var scene in lightingDevice.LightingScenes)
-				{
-					var index = sceneIndex;
+            sceneIndex++;
+          }
+        };
 
-					trilist.StringInput[(uint) (joinMap.SelectSceneDirect.JoinNumber + index)].StringValue = scene.Name;
-					trilist.BooleanInput[(uint) (joinMap.ButtonVisibility.JoinNumber + index)].BoolValue = true;
-					scene.IsActiveFeedback.FireUpdate();
-
-					sceneIndex++;
-				}
-			};
-
-			return joinMap;
-		}
-
+        return joinMap;
+      }
     }
 
     public class LightingScene

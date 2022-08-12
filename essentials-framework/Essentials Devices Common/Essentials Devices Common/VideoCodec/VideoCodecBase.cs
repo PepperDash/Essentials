@@ -371,6 +371,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				LinkVideoCodecCameraLayoutsToApi(codec as IHasCodecLayouts, trilist, joinMap);
 			}
 
+		    if (codec is IHasCodecLayoutsAvailable)
+		    {
+		        LinkVideoCodecAvailableLayoutsToApi(codec as IHasCodecLayoutsAvailable, trilist, joinMap);
+		    }
+
 			if (codec is IHasSelfviewPosition)
 			{
 				LinkVideoCodecSelfviewPositionToApi(codec as IHasSelfviewPosition, trilist, joinMap);
@@ -1484,6 +1489,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			codec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentLayoutStringFb.JoinNumber]);
 		}
 
+	    private void LinkVideoCodecAvailableLayoutsToApi(IHasCodecLayoutsAvailable codec, BasicTriList trilist,
+	        VideoCodecControllerJoinMap joinMap)
+	    {
+	        codec.AvailableLocalLayoutsFeedback.LinkInputSig(trilist.StringInput[joinMap.AvailableLayoutsFb.JoinNumber]);
+
+	        trilist.SetStringSigAction(joinMap.SelectLayout.JoinNumber, codec.LocalLayoutSet);
+	    }
+
 		private void LinkVideoCodecCameraModeToApi(IHasCameraAutoMode codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
 			trilist.SetSigFalseAction(joinMap.CameraModeAuto.JoinNumber, codec.CameraAutoModeOn);
@@ -1995,4 +2008,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			}
 		}
 	}
+    /// <summary>
+    /// Represents a codec command that might need to have a friendly label applied for UI feedback purposes
+    /// </summary>
+    public class CodecCommandWithLabel
+    {
+        public string Command { get; private set; }
+        public string Label { get; private set; }
+
+        public CodecCommandWithLabel(string command, string label)
+        {
+            Command = command;
+            Label = label;
+        }
+    }
+
 }

@@ -19,32 +19,41 @@ namespace PepperDash.Essentials.Room.Config
 		/// Returns a room object from this config data
 		/// </summary>
 		/// <returns></returns>
-		public static Device GetRoomObject(DeviceConfig roomConfig)
+		public static IKeyed GetRoomObject(DeviceConfig roomConfig)
 		{
 			var typeName = roomConfig.Type.ToLower();
 
-			if (typeName == "huddle")
-			{
-                return new EssentialsHuddleSpaceRoom(roomConfig);
-			}
-		    if (typeName == "huddlevtc1")
+		    switch (typeName)
 		    {
-		        return new EssentialsHuddleVtc1Room(roomConfig);
+		        case "huddle" : 
+		        {
+                    return new EssentialsHuddleSpaceRoom(roomConfig);
+		        }
+                case "huddlevtc1" :
+		        {
+                    return new EssentialsHuddleVtc1Room(roomConfig);
+		        }
+                case "ddvc01bridge" :
+		        {
+                    return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
+                }
+                case "dualdisplay" :
+		        {
+                    return new EssentialsDualDisplayRoom(roomConfig);
+		        }
+                case "combinedhuddlevtc1" :
+		        {
+                    return new EssentialsCombinedHuddleVtc1Room(roomConfig);
+		        }
+                case "techroom" :
+		        {
+                    return new EssentialsTechRoom(roomConfig);
+		        }
+                default :
+		        {
+		  		    return Core.DeviceFactory.GetDevice(roomConfig);
+		        }
 		    }
-		    if (typeName == "ddvc01bridge")
-		    {
-		        return new Device(roomConfig.Key, roomConfig.Name); // placeholder device that does nothing.
-		    }
-		    if (typeName == "dualdisplay")
-		    {
-		        return new EssentialsDualDisplayRoom(roomConfig);
-		    }
-            if (typeName == "combinedhuddlevtc1")
-            {
-                return new EssentialsCombinedHuddleVtc1Room(roomConfig);
-            }
-
-		    return typeName != "techroom" ? null : new EssentialsTechRoom(roomConfig);
 		}
 
         /// <summary>
