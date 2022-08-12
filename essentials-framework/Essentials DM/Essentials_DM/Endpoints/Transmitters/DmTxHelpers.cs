@@ -221,37 +221,39 @@ namespace PepperDash.Essentials.DM
 	    protected DmTxControllerBase(string key, string name, EndpointTransmitterBase hardware)
 			: base(key, name, hardware) 
 		{
-            // if wired to a chassis or DMPS, skip registration step in base class
-            if (hardware.DMInput != null || (Global.ControlSystemIsDmpsType && hardware.DMInput != null))
-            {
-                this.PreventRegistration = true;
-            }
-
             AddToFeedbackList(ActiveVideoInputFeedback);
 
-            var parentDev = DeviceManager.GetDeviceForKey(key);
-            var num = hardware.DMInput.Number;
-
-            //If Dmps4K, change online feedback to chassis, tx feedback does not work
-            if (parentDev is DmpsRoutingController && Global.ControlSystemIsDmps4kType)
+            // if wired to a chassis or DMPS, skip registration step in base class
+            if (hardware.DMInput != null)
             {
-                var dmps = parentDev as DmpsRoutingController;
-                Debug.Console(0, "DM endpoint input {0} is for Dmps4k, changing online feedback to chassis", num);
-                IsOnline = dmps.InputEndpointOnlineFeedbacks[num];
-            }
-            //If Cpu3 Chassis, change online feedback to chassis, tx feedback does not work
-            else if (parentDev is DmChassisController)
-            {
-                var controller = parentDev as DmChassisController;
-                var chassis = controller.Chassis;
+                this.PreventRegistration = true;
 
-                if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
-                    chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
-                    chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
-                    chassis is DmMd128x128 || chassis is DmMd64x64)
+                var parentDev = DeviceManager.GetDeviceForKey(key);
+                var num = hardware.DMInput.Number;
+
+                //If Dmps4K, change online feedback to chassis, tx feedback does not work
+                if (parentDev is DmpsRoutingController && Global.ControlSystemIsDmps4kType)
                 {
-                    Debug.Console(0, "DM endpoint output {0} is for Cpu3, changing online feedback to chassis", num);
-                    IsOnline = controller.InputEndpointOnlineFeedbacks[num];
+                    var dmps = parentDev as DmpsRoutingController;
+                    Debug.Console(0, "DM endpoint input {0} is for Dmps4k, changing online feedback to chassis", num);
+                    IsOnline.SetValueFunc(() => dmps.InputEndpointOnlineFeedbacks[num].BoolValue);
+                    dmps.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => IsOnline.FireUpdate();
+                }
+                //If Cpu3 Chassis, change online feedback to chassis, tx feedback does not work
+                else if (parentDev is DmChassisController)
+                {
+                    var controller = parentDev as DmChassisController;
+                    var chassis = controller.Chassis;
+
+                    if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
+                        chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
+                        chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
+                        chassis is DmMd128x128 || chassis is DmMd64x64)
+                    {
+                        Debug.Console(0, "DM endpoint output {0} is for Cpu3, changing online feedback to chassis", num);
+                        IsOnline.SetValueFunc(() => controller.InputEndpointOnlineFeedbacks[num].BoolValue);
+                        controller.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => IsOnline.FireUpdate();
+                    }
                 }
             }
 

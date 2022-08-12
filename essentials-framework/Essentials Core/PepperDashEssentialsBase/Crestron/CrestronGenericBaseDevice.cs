@@ -20,7 +20,7 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         public FeedbackCollection<Feedback> Feedbacks { get; private set; }
 
-		public BoolFeedback IsOnline { get; set; }
+		public BoolFeedback IsOnline { get; private set; }
 		public BoolFeedback IsRegistered { get; private set; }
 		public StringFeedback IpConnectionsText { get; private set; }
 
