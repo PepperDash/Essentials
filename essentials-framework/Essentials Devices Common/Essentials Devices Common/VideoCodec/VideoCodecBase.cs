@@ -463,10 +463,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 }
 
 				SharingContentIsOnFeedback.FireUpdate();
-
-				trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
-
-				trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
 			};
 		}
 
@@ -1042,9 +1038,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 if (!args.DeviceOnLine) return;
 
-                trilist.SetString(joinMap.DirectoryEntries.JoinNumber, "\xFC");
-                UpdateDirectoryXSig(codec.CurrentDirectoryResult,
-                    codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
+				// TODO [ ] #981
+				var clearBytes = XSigHelpers.ClearOutputs();
+				trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
+					Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
+				var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot, codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
+				trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
             };
 		}
 
@@ -1260,7 +1259,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     });
             }
 
-			trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
+			// TODO [ ] #983
+			//trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 
 			CallStatusChange += (sender, args) =>
 			{
@@ -1364,9 +1364,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			{
 					if (!args.DeviceOnLine) return;
 
-					// TODO [ ] Issue #868
+					// TODO [ ] #983
+					Debug.Console(0, this, "LinkVideoCodecCallControlsToApi: device is {0}, IsInCall {1}", args.DeviceOnLine ? "online" : "offline", IsInCall);
+					trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 					trilist.SetString(joinMap.CurrentCallData.JoinNumber, "\xFC");
-					UpdateCallStatusXSig();
+					trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
 			};
 		}
 
