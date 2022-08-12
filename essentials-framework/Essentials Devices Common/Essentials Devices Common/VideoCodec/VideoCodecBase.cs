@@ -1038,7 +1038,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 if (!args.DeviceOnLine) return;
 
-				// TODO [ ] #981
 				var clearBytes = XSigHelpers.ClearOutputs();
 				trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
 					Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
@@ -1259,8 +1258,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                     });
             }
 
-			// TODO [ ] #983
-			//trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
+			trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 
 			CallStatusChange += (sender, args) =>
 			{
