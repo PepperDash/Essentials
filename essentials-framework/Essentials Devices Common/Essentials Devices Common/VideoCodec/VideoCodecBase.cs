@@ -792,7 +792,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			trilist.SetSigFalseAction(joinMap.SourceShareStart.JoinNumber, StartSharing);
 			trilist.SetSigFalseAction(joinMap.SourceShareEnd.JoinNumber, StopSharing);
 
-			trilist.SetBoolSigAction(joinMap.SourceShareAutoStart.JoinNumber, (b) => AutoShareContentWhileInCall = b);
+			trilist.SetBoolSigAction(joinMap.SourceShareAutoStart.JoinNumber, b => AutoShareContentWhileInCall = b);
 		}
 
 		private List<Meeting> _currentMeetings = new List<Meeting>();
