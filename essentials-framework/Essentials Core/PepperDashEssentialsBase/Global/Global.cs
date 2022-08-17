@@ -125,6 +125,12 @@ namespace PepperDash.Essentials.Core
 
 	    public static bool IsRunningDevelopmentVersion(List<string> developmentVersions, string minimumVersion)
 	    {
+	        if (Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*").Groups[1].Value == "0")
+	        {
+                Debug.Console(2, "Running Local Build.  Bypassing Dependency Check.");
+                return true;
+	        }
+
 	        if (developmentVersions == null)
 	        {
 	            Debug.Console(0, 
