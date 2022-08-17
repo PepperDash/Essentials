@@ -792,7 +792,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			trilist.SetSigFalseAction(joinMap.SourceShareStart.JoinNumber, StartSharing);
 			trilist.SetSigFalseAction(joinMap.SourceShareEnd.JoinNumber, StopSharing);
 
-			trilist.SetBoolSigAction(joinMap.SourceShareAutoStart.JoinNumber, (b) => AutoShareContentWhileInCall = b);
+			trilist.SetBoolSigAction(joinMap.SourceShareAutoStart.JoinNumber, b => AutoShareContentWhileInCall = b);
 		}
 
 		private List<Meeting> _currentMeetings = new List<Meeting>();
@@ -803,7 +803,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 			trilist.SetUShortSigAction(joinMap.MinutesBeforeMeetingStart.JoinNumber, (i) =>
 			{
-				codec.CodecSchedule.MeetingWarningMinutes = i;
+			    codec.CodecSchedule.MeetingWarningMinutes = i;
 			});
 
 			trilist.SetSigFalseAction(joinMap.DialMeeting1.JoinNumber, () =>
@@ -1001,6 +1001,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 			trilist.SetUShortSigAction(joinMap.DirectorySelectRow.JoinNumber, (i) => SelectDirectoryEntry(codec, i, trilist, joinMap));
 
+		    trilist.SetBoolSigAction(joinMap.DirectoryClearSelection.JoinNumber,
+		        delegate { SelectDirectoryEntry(codec, 0, trilist, joinMap); });
+
             // Report feedback for number of contact methods for selected contact
 
 			trilist.SetSigFalseAction(joinMap.DirectoryRoot.JoinNumber, codec.SetCurrentDirectoryToRoot);
@@ -1049,13 +1052,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		}
 
 
-
 		private void SelectDirectoryEntry(IHasDirectory codec, ushort i, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
-            if (i < 1 || i > codec.CurrentDirectoryResult.CurrentDirectoryResults.Count) return;
+            if (i > codec.CurrentDirectoryResult.CurrentDirectoryResults.Count) return;
+		    _selectedDirectoryItem = i == 0 ? null : codec.CurrentDirectoryResult.CurrentDirectoryResults[i - 1];
 
-			_selectedDirectoryItem = codec.CurrentDirectoryResult.CurrentDirectoryResults[i - 1];
-
+            trilist.SetUshort(joinMap.DirectorySelectRow.JoinNumber, i);
 
 			if (_selectedDirectoryItem is DirectoryFolder)
 			{
@@ -1073,13 +1075,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             trilist.SetString(joinMap.DirectorySelectedFolderName.JoinNumber, string.Empty);
 
             var selectedContact = _selectedDirectoryItem as DirectoryContact;
-            if (selectedContact != null)
-            {
-                trilist.SetString(joinMap.DirectoryEntrySelectedName.JoinNumber, selectedContact.Name);
-            
-            }
 
-            // Allow auto dial of selected line.  Always dials first contact method
+		    trilist.SetString(joinMap.DirectoryEntrySelectedName.JoinNumber,
+		        selectedContact != null ? selectedContact.Name : string.Empty);
+
+		    // Allow auto dial of selected line.  Always dials first contact method
             if (!trilist.GetBool(joinMap.DirectoryDisableAutoDialSelectedLine.JoinNumber))
             {
                 var invitableEntry = _selectedDirectoryItem as IInvitableContact;
@@ -1092,12 +1092,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                 var entryToDial = _selectedDirectoryItem as DirectoryContact;
 
-                trilist.SetString(joinMap.DirectoryEntrySelectedNumber.JoinNumber, selectedContact.ContactMethods[0].Number);
+                trilist.SetString(joinMap.DirectoryEntrySelectedNumber.JoinNumber, 
+                    selectedContact != null ? selectedContact.ContactMethods[0].Number : string.Empty);
 
                 if (entryToDial == null) return;
 
                 Dial(entryToDial.ContactMethods[0].Number);
-                return;
             }
             else
             {

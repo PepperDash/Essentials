@@ -398,6 +398,22 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+        [JoinName("DirectoryClearSelection")]
+        public JoinDataComplete DirectoryClearSelection = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 100,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Directory Search Busy FB",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+
+
 		[JoinName("DirectoryEntryIsContact")]
 		public JoinDataComplete DirectoryEntryIsContact = new JoinDataComplete(
 			new JoinData
@@ -1256,10 +1272,11 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Directory Select Row",
+				Description = "Directory Select Row and Feedback",
 				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Analog
 			});
+
 
         [JoinName("SelectedContactMethodCount")]
         public JoinDataComplete SelectedContactMethodCount = new JoinDataComplete(
@@ -1288,6 +1305,22 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Analog
             });
+
+        [JoinName("DirectorySelectRowFeedback")]
+        public JoinDataComplete DirectorySelectRowFeedback = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 104,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Directory Select Row and Feedback",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
+
 
 		[JoinName("CameraPresetSelect")]
 		public JoinDataComplete CameraPresetSelect = new JoinDataComplete(
