@@ -425,9 +425,11 @@ namespace PepperDash.Essentials
         /// <param name="loadedAssembly"></param>
         static void LoadCustomPlugin(IPluginDeviceFactory plugin, LoadedAssembly loadedAssembly)
         {
-            var explicitPlugin = plugin as IPluginDeviceFactoryExplicit;
+            var developmentPlugin = plugin as IPluginDevelopmentDeviceFactory;
 
-            var passed = explicitPlugin != null ? Global.IsRunningExplicitVersion(explicitPlugin.ExplicitEssentialsFrameworkVersions) : Global.IsRunningMinimumVersionOrHigher(plugin.MinimumEssentialsFrameworkVersion);
+            var passed = developmentPlugin != null ? Global.IsRunningDevelopmentVersion
+                (developmentPlugin.DevelopmentEssentialsFrameworkVersions, developmentPlugin.MinimumEssentialsFrameworkVersion) 
+                : Global.IsRunningMinimumVersionOrHigher(plugin.MinimumEssentialsFrameworkVersion);
 
             if (!passed)
             {
