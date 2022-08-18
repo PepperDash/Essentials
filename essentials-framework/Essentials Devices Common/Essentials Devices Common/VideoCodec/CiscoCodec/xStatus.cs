@@ -2186,7 +2186,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        public class RoomPreset : IConvertiblePreset
+        public class RoomPreset : ConvertiblePreset
         {
             public string id { get; set; }
             public Defined Defined { get; set; }
@@ -2200,7 +2200,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Type = new Type5();
             }
 
-            public PresetBase ConvertCodecPreset()
+            public override PresetBase ConvertCodecPreset()
             {
                     try
                     {
@@ -2240,7 +2240,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Proximity Proximity { get; set; }
             public RoomAnalytics RoomAnalytics { get; set; }
 
-            public List<IConvertiblePreset> RoomPreset { get; set; }
+            public List<RoomPreset> RoomPreset { get; set; }
 
             public SIP SIP { get; set; }
             public Security Security { get; set; }
@@ -2257,7 +2257,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Standby = new Standby();
                 Cameras = new Cameras();
                 RoomAnalytics = new RoomAnalytics();
-                RoomPreset = new List<IConvertiblePreset>();
+                RoomPreset = new List<RoomPreset>();
                 Conference = new Conference2();
                 SystemUnit = new SystemUnit();
                 Video = new Video();

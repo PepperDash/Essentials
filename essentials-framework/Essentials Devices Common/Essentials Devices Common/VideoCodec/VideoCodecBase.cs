@@ -10,6 +10,7 @@ using PepperDash.Core;
 using PepperDash.Core.Intersystem;
 using PepperDash.Core.Intersystem.Tokens;
 using PepperDash.Core.WebApi.Presets;
+using Crestron.SimplSharp.Reflection;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
@@ -462,10 +463,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 }
 
 				SharingContentIsOnFeedback.FireUpdate();
-
-				trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
-
-				trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
 			};
 		}
 
@@ -1018,7 +1015,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
                 trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
                     Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
-                var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot, !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+                var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot, 
+                    codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
 
                 Debug.Console(2, this, "Directory XSig Length: {0}", directoryXSig.Length);
 
@@ -1033,8 +1031,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
 					Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
-				var directoryXSig = UpdateDirectoryXSig(args.Directory, !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
-
+                var directoryXSig = UpdateDirectoryXSig(args.Directory, 
+                    codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
                 Debug.Console(2, this, "Directory XSig Length: {0}", directoryXSig.Length);
 
 				trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
@@ -1044,10 +1042,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             {
                 if (!args.DeviceOnLine) return;
 
-                // TODO [ ] Issue #868
-                trilist.SetString(joinMap.DirectoryEntries.JoinNumber, "\xFC");
-                UpdateDirectoryXSig(codec.CurrentDirectoryResult,
-                    !codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue);
+                var clearBytes = XSigHelpers.ClearOutputs();
+                trilist.SetString(joinMap.DirectoryEntries.JoinNumber,
+                    Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length));
+                var directoryXSig = UpdateDirectoryXSig(codec.DirectoryRoot, codec.CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false);
+                trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
             };
 		}
 
@@ -1185,32 +1184,45 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 		private string UpdateDirectoryXSig(CodecDirectory directory, bool isRoot)
 		{
-			var contactIndex = 1;
-			var tokenArray = new XSigToken[directory.CurrentDirectoryResults.Count];
+            const int xSigMaxIndex = 1023;
+            var tokenArray = new XSigToken[directory.CurrentDirectoryResults.Count > xSigMaxIndex
+                ? xSigMaxIndex
+                : directory.CurrentDirectoryResults.Count];
 
-            Debug.Console(2, this, "Is root {0} Directory Count: {1}", isRoot, directory.CurrentDirectoryResults.Count);
+            Debug.Console(2, this, "IsRoot: {0}, Directory Count: {1}, TokenArray.Length: {2}", isRoot, directory.CurrentDirectoryResults.Count, tokenArray.Length);
 
-			foreach (var entry in directory.CurrentDirectoryResults)
-			{
-				var arrayIndex = contactIndex - 1;
+            var contacts = directory.CurrentDirectoryResults.Count > xSigMaxIndex
+                ? directory.CurrentDirectoryResults.Take(xSigMaxIndex)
+                : directory.CurrentDirectoryResults;
 
-                Debug.Console(2, this, "Entry Name: {0}, Folder ID: {1}", entry.Name, entry.FolderId);
+            var contactsToDisplay = isRoot
+                ? contacts.Where(c => c.ParentFolderId == "root")
+                : contacts.Where(c => c.ParentFolderId != "root");
 
-				if (entry is DirectoryFolder && entry.ParentFolderId == "root")
-				{
-					tokenArray[arrayIndex] = new XSigSerialToken(contactIndex, String.Format("[+] {0}", entry.Name));
+            var counterIndex = 1;
+            foreach (var entry in contactsToDisplay)
+            {
+                var arrayIndex = counterIndex - 1;
+                var entryIndex = counterIndex;
 
-					contactIndex++;
+                Debug.Console(2, this, "Entry{2:0000} Name: {0}, Folder ID: {1}, Type: {3}, ParentFolderId: {4}",
+                    entry.Name, entry.FolderId, entryIndex, entry.GetType().GetCType().FullName, entry.ParentFolderId);
 
-					continue;
-				}
+                if (entry is DirectoryFolder)
+                {
+                    tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, String.Format("[+] {0}", entry.Name));
 
-				tokenArray[arrayIndex] = new XSigSerialToken(contactIndex, entry.Name);
+                    counterIndex++;
 
-				contactIndex++;
-			}
+                    continue;
+                }
 
-			return GetXSigString(tokenArray);
+                tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, entry.Name);
+
+                counterIndex++;
+            }
+
+            return GetXSigString(tokenArray);
 		}
 
 		private void LinkVideoCodecCallControlsToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
