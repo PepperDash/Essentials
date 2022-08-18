@@ -2729,7 +2729,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				Debug.Console(2, this, "OnDirectoryResultReturned.  Result has {0} contacts", result.Contacts.Count);
 
+				CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+
                 var directoryResult = result;
+				var directoryIsRoot = CurrentDirectoryResultIsNotDirectoryRoot.BoolValue == false;
 
 				// If result is Root, create a copy and filter out contacts whose parent folder is not root
                 //if (!CurrentDirectoryResultIsNotDirectoryRoot.BoolValue)
@@ -2747,7 +2750,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 //}
 
 				Debug.Console(2, this, "Updating directoryResult. IsOnRoot: {0} Contact Count: {1}",
-					!CurrentDirectoryResultIsNotDirectoryRoot.BoolValue, directoryResult.Contacts.Count);
+					directoryIsRoot, directoryResult.Contacts.Count);
 
 				// This will return the latest results to all UIs.  Multiple indendent UI Directory browsing will require a different methodology
 				var handler = DirectoryResultReturned;
@@ -2756,11 +2759,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					handler(this, new DirectoryEventArgs
 					{
 						Directory = directoryResult,
-						DirectoryIsOnRoot = !CurrentDirectoryResultIsNotDirectoryRoot.BoolValue
+						DirectoryIsOnRoot = directoryIsRoot
 					});
 				}
 
-                CurrentDirectoryResultIsNotDirectoryRoot.FireUpdate();
+                
 			}
 			catch (Exception e)
 			{
