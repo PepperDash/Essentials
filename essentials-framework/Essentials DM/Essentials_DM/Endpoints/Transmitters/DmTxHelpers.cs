@@ -20,6 +20,63 @@ namespace PepperDash.Essentials.DM
 {
 	public class DmTxHelper
 	{
+
+        public static BasicDmTxControllerBase GetDmTxForChassisWithoutIpId(string key, string name, string typeName, DMInput dmInput)
+        {
+            if (typeName.StartsWith("dmtx200"))
+                return new DmTx200Controller(key, name, new DmTx200C2G(dmInput), true);
+            if (typeName.StartsWith("dmtx201c"))
+                return new DmTx201CController(key, name, new DmTx201C(dmInput), true);
+            if (typeName.StartsWith("dmtx201s"))
+                return new DmTx201SController(key, name, new DmTx201S(dmInput), true);
+            if (typeName.StartsWith("dmtx4k100"))
+                return new DmTx4k100Controller(key, name, new DmTx4K100C1G(dmInput));
+            if (typeName.StartsWith("dmtx4kz100"))
+                return new DmTx4kz100Controller(key, name, new DmTx4kz100C1G(dmInput));
+            if (typeName.StartsWith("dmtx4k202"))
+                return new DmTx4k202CController(key, name, new DmTx4k202C(dmInput), true);
+            if (typeName.StartsWith("dmtx4kz202"))
+                return new DmTx4kz202CController(key, name, new DmTx4kz202C(dmInput), true);
+            if (typeName.StartsWith("dmtx4k302"))
+                return new DmTx4k302CController(key, name, new DmTx4k302C(dmInput), true);
+            if (typeName.StartsWith("dmtx4kz302"))
+                return new DmTx4kz302CController(key, name, new DmTx4kz302C(dmInput), true);
+            if (typeName.StartsWith("dmtx401"))
+                return new DmTx401CController(key, name, new DmTx401C(dmInput), true);
+            if (typeName.StartsWith("hdbasettx"))
+                new HDBaseTTxController(key, name, new HDTx3CB(dmInput));
+
+            return null;
+        }
+
+        public static BasicDmTxControllerBase GetDmTxForChassisWithIpId(string key, string name, string typeName, uint ipid, DMInput dmInput)
+        {
+            if (typeName.StartsWith("dmtx200"))
+                return new DmTx200Controller(key, name, new DmTx200C2G(ipid, dmInput), true);
+            if (typeName.StartsWith("dmtx201c"))
+                return new DmTx201CController(key, name, new DmTx201C(ipid, dmInput), true);
+            if (typeName.StartsWith("dmtx201s"))
+                return new DmTx201SController(key, name, new DmTx201S(ipid, dmInput), true);
+            if (typeName.StartsWith("dmtx4k100"))
+                return new DmTx4k100Controller(key, name, new DmTx4K100C1G(ipid, dmInput));
+            if (typeName.StartsWith("dmtx4kz100"))
+                return new DmTx4kz100Controller(key, name, new DmTx4kz100C1G(ipid, dmInput));
+            if (typeName.StartsWith("dmtx4k202"))
+                return new DmTx4k202CController(key, name, new DmTx4k202C(ipid, dmInput), true);
+            if (typeName.StartsWith("dmtx4kz202"))
+                return new DmTx4kz202CController(key, name, new DmTx4kz202C(ipid, dmInput), true);
+            if (typeName.StartsWith("dmtx4k302"))
+                return new DmTx4k302CController(key, name, new DmTx4k302C(ipid, dmInput), true);
+            if (typeName.StartsWith("dmtx4kz302"))
+                return new DmTx4kz302CController(key, name, new DmTx4kz302C(ipid, dmInput), true);
+            if (typeName.StartsWith("dmtx401"))
+                return new DmTx401CController(key, name, new DmTx401C(ipid, dmInput), true);
+            if (typeName.StartsWith("hdbasettx"))
+                return new HDBaseTTxController(key, name, new HDTx3CB(ipid, dmInput));
+
+            return null;
+        }
+
 		/// <summary>
 		/// A factory method for various DmTxControllers
 		/// </summary>
@@ -27,7 +84,7 @@ namespace PepperDash.Essentials.DM
 		/// <param name="name"></param>
 		/// <param name="props"></param>
 		/// <returns></returns>
-    public static BasicDmTxControllerBase GetDmTxController(string key, string name, string typeName, DmTxPropertiesConfig props)
+        public static BasicDmTxControllerBase GetDmTxController(string key, string name, string typeName, DmTxPropertiesConfig props)
 		{
 			// switch on type name... later...
 
@@ -42,23 +99,21 @@ namespace PepperDash.Essentials.DM
 				try
 				{
                     if(typeName.StartsWith("dmtx200"))
-                        return new DmTx200Controller(key, name, new DmTx200C2G(ipid, Global.ControlSystem));
-                    if (typeName.StartsWith("dmtx4kz100"))
-                        return new DmTx4kz100Controller(key, name, new DmTx4kz100C1G(ipid, Global.ControlSystem));
+                        return new DmTx200Controller(key, name, new DmTx200C2G(ipid, Global.ControlSystem), false);
 					if (typeName.StartsWith("dmtx201c"))
-						return new DmTx201CController(key, name, new DmTx201C(ipid, Global.ControlSystem));
+						return new DmTx201CController(key, name, new DmTx201C(ipid, Global.ControlSystem), false);
                     if (typeName.StartsWith("dmtx201s"))
-                        return new DmTx201SController(key, name, new DmTx201S(ipid, Global.ControlSystem));
+                        return new DmTx201SController(key, name, new DmTx201S(ipid, Global.ControlSystem), false);
                     if (typeName.StartsWith("dmtx4k202"))
-                        return new DmTx4k202CController(key, name, new DmTx4k202C(ipid, Global.ControlSystem));
+                        return new DmTx4k202CController(key, name, new DmTx4k202C(ipid, Global.ControlSystem), false);
                     if (typeName.StartsWith("dmtx4kz202"))
-                        return new DmTx4kz202CController(key, name, new DmTx4kz202C(ipid, Global.ControlSystem));
+                        return new DmTx4kz202CController(key, name, new DmTx4kz202C(ipid, Global.ControlSystem), false);
                     if (typeName.StartsWith("dmtx4k302"))
-						return new DmTx4k302CController(key, name, new DmTx4k302C(ipid, Global.ControlSystem));
+                        return new DmTx4k302CController(key, name, new DmTx4k302C(ipid, Global.ControlSystem), false);
                     if (typeName.StartsWith("dmtx4kz302"))
-                        return new DmTx4kz302CController(key, name, new DmTx4kz302C(ipid, Global.ControlSystem));
+                        return new DmTx4kz302CController(key, name, new DmTx4kz302C(ipid, Global.ControlSystem), false);
 					if (typeName.StartsWith("dmtx401"))
-						return new DmTx401CController(key, name, new DmTx401C(ipid, Global.ControlSystem));
+                        return new DmTx401CController(key, name, new DmTx401C(ipid, Global.ControlSystem), false);
 					Debug.Console(0, "{1} WARNING: Cannot create DM-TX of type: '{0}'", typeName, key);
 				}
 				catch (Exception e)
@@ -70,12 +125,12 @@ namespace PepperDash.Essentials.DM
 
             var parentDev = DeviceManager.GetDeviceForKey(pKey);
             DMInput dmInput;
-            bool isCpu3 = false;
+            BasicDmTxControllerBase tx;
 
-		    if (parentDev is IDmSwitch)
+		    if (parentDev is DmChassisController)
             {
                 // Get the Crestron chassis and link stuff up
-			    var switchDev = (parentDev as IDmSwitch);
+			    var switchDev = (parentDev as DmChassisController);
 			    var chassis = switchDev.Chassis;
 
                 //Check that the input is within range of this chassis' possible inputs
@@ -90,15 +145,31 @@ namespace PepperDash.Essentials.DM
                 switchDev.TxDictionary.Add(num, key);
                 dmInput = chassis.Inputs[num];
 
-                //Determine if IpId is needed for this chassis type
-                if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
-                    chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
-                    chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
-                    chassis is DmMd128x128 || chassis is DmMd64x64)
-                {
-                    isCpu3 = true;
-                }
 
+                try
+                {
+                    //Determine if IpId is needed for this chassis type
+                    if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
+                        chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
+                        chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
+                        chassis is DmMd128x128 || chassis is DmMd64x64)
+                    {
+                        tx = GetDmTxForChassisWithoutIpId(key, name, typeName, dmInput);
+                        Debug.Console(0, "DM endpoint output {0} is for Cpu3, changing online feedback to chassis", num);
+                        tx.IsOnline.SetValueFunc(() => switchDev.InputEndpointOnlineFeedbacks[num].BoolValue);
+                        switchDev.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => tx.IsOnline.FireUpdate();
+                        return tx;
+                    }
+                    else
+                    {
+                        return GetDmTxForChassisWithIpId(key, name, typeName, ipid, dmInput);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(0, "[{0}] WARNING: Cannot create DM-TX device for chassis: {1}", key, e);
+                    return null;
+                }
             }
             else if(parentDev is DmpsRoutingController)
             {
@@ -126,6 +197,27 @@ namespace PepperDash.Essentials.DM
                     Debug.Console(0, "Cannot create DMPS device '{0}'. Input number '{1}' is not a DM input", key, num);
                     return null;
                 }
+
+                try
+                {
+                    if(Global.ControlSystemIsDmps4kType)
+                    {
+                        tx = GetDmTxForChassisWithoutIpId(key, name, typeName, dmInput);
+                        Debug.Console(0, "DM endpoint output {0} is for DMPS3-4K, changing online feedback to chassis", num);
+                        tx.IsOnline.SetValueFunc(() => dmpsDev.InputEndpointOnlineFeedbacks[num].BoolValue);
+                        dmpsDev.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => tx.IsOnline.FireUpdate();
+                        return tx;
+                    }
+                    else
+                    {
+                        return GetDmTxForChassisWithIpId(key, name, typeName, ipid, dmInput);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(0, "[{0}] WARNING: Cannot create DM-TX device for dmps: {1}", key, e);
+                    return null;
+                }                
             }
 
             else
@@ -133,67 +225,6 @@ namespace PepperDash.Essentials.DM
 			    Debug.Console(0, "Cannot create DM device '{0}'. '{1}' is not a processor, DM Chassis or DMPS.", key, pKey);
 			    return null;
 			}
-
-        	try
-		    {
-			    // Must use different constructor for CPU3 or DMPS3-4K types. No IPID
-			    if (isCpu3 || (parentDev is DmpsRoutingController && Global.ControlSystemIsDmps4kType))
-			    {
-				    if (typeName.StartsWith("dmtx200"))
-					    return new DmTx200Controller(key, name, new DmTx200C2G(dmInput));
-				    if (typeName.StartsWith("dmtx201c"))
-                        return new DmTx201CController(key, name, new DmTx201C(dmInput));
-                    if (typeName.StartsWith("dmtx201s"))
-                        return new DmTx201SController(key, name, new DmTx201S(dmInput));
-				   if (typeName.StartsWith("dmtx4k100"))
-                        return new DmTx4k100Controller(key, name, new DmTx4K100C1G(dmInput));
-                    if (typeName.StartsWith("dmtx4kz100"))
-                        return new DmTx4kz100Controller(key, name, new DmTx4kz100C1G(dmInput));
-				    if (typeName.StartsWith("dmtx4k202"))
-                        return new DmTx4k202CController(key, name, new DmTx4k202C(dmInput));
-				    if (typeName.StartsWith("dmtx4kz202"))
-                        return new DmTx4kz202CController(key, name, new DmTx4kz202C(dmInput));
-                    if (typeName.StartsWith("dmtx4k302"))
-                        return new DmTx4k302CController(key, name, new DmTx4k302C(dmInput));
-				    if (typeName.StartsWith("dmtx4kz302"))
-                        return new DmTx4kz302CController(key, name, new DmTx4kz302C(dmInput));
-				    if (typeName.StartsWith("dmtx401"))
-                        return new DmTx401CController(key, name, new DmTx401C(dmInput));
-                    if (typeName.StartsWith("hdbasettx"))
-                        return new HDBaseTTxController(key, name, new HDTx3CB(dmInput));
-                }
-			    else
-			    {
-				    if (typeName.StartsWith("dmtx200"))
-                        return new DmTx200Controller(key, name, new DmTx200C2G(ipid, dmInput));
-				    if (typeName.StartsWith("dmtx201c"))
-                        return new DmTx201CController(key, name, new DmTx201C(ipid, dmInput));
-                    if (typeName.StartsWith("dmtx201s"))
-                        return new DmTx201SController(key, name, new DmTx201S(ipid, dmInput));
-				    if (typeName.StartsWith("dmtx4k100"))
-                        return new DmTx4k100Controller(key, name, new DmTx4K100C1G(ipid, dmInput));
-                    if (typeName.StartsWith("dmtx4kz100"))
-                        return new DmTx4kz100Controller(key, name, new DmTx4kz100C1G(ipid, dmInput));
-				    if (typeName.StartsWith("dmtx4k202"))
-                        return new DmTx4k202CController(key, name, new DmTx4k202C(ipid, dmInput));
-				    if (typeName.StartsWith("dmtx4kz202"))
-                        return new DmTx4kz202CController(key, name, new DmTx4kz202C(ipid, dmInput));
-				    if (typeName.StartsWith("dmtx4k302"))
-                        return new DmTx4k302CController(key, name, new DmTx4k302C(ipid, dmInput));
-				    if (typeName.StartsWith("dmtx4kz302"))
-                        return new DmTx4kz302CController(key, name, new DmTx4kz302C(ipid, dmInput));
-				    if (typeName.StartsWith("dmtx401"))
-                        return new DmTx401CController(key, name, new DmTx401C(ipid, dmInput));
-                    if (typeName.StartsWith("hdbasettx"))
-                        return new HDBaseTTxController(key, name, new HDTx3CB(ipid, dmInput));
-                }
-		    }
-		    catch (Exception e)
-		    {
-			    Debug.Console(0, "[{0}] WARNING: Cannot create DM-TX device: {1}", key, e);
-		    }
-
-            return null;
 		}
 	}
 
@@ -222,40 +253,6 @@ namespace PepperDash.Essentials.DM
 			: base(key, name, hardware) 
 		{
             AddToFeedbackList(ActiveVideoInputFeedback);
-
-            // if wired to a chassis or DMPS, skip registration step in base class
-            if (hardware.DMInput != null)
-            {
-                this.PreventRegistration = true;
-
-                var parentDev = DeviceManager.GetDeviceForKey(key);
-                var num = hardware.DMInput.Number;
-
-                //If Dmps4K, change online feedback to chassis, tx feedback does not work
-                if (parentDev is DmpsRoutingController && Global.ControlSystemIsDmps4kType)
-                {
-                    var dmps = parentDev as DmpsRoutingController;
-                    Debug.Console(0, "DM endpoint input {0} is for Dmps4k, changing online feedback to chassis", num);
-                    IsOnline.SetValueFunc(() => dmps.InputEndpointOnlineFeedbacks[num].BoolValue);
-                    dmps.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => IsOnline.FireUpdate();
-                }
-                //If Cpu3 Chassis, change online feedback to chassis, tx feedback does not work
-                else if (parentDev is DmChassisController)
-                {
-                    var controller = parentDev as DmChassisController;
-                    var chassis = controller.Chassis;
-
-                    if (chassis is DmMd8x8Cpu3 || chassis is DmMd16x16Cpu3 ||
-                        chassis is DmMd32x32Cpu3 || chassis is DmMd8x8Cpu3rps ||
-                        chassis is DmMd16x16Cpu3rps || chassis is DmMd32x32Cpu3rps ||
-                        chassis is DmMd128x128 || chassis is DmMd64x64)
-                    {
-                        Debug.Console(0, "DM endpoint output {0} is for Cpu3, changing online feedback to chassis", num);
-                        IsOnline.SetValueFunc(() => controller.InputEndpointOnlineFeedbacks[num].BoolValue);
-                        controller.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => IsOnline.FireUpdate();
-                    }
-                }
-            }
 
             IsOnline.OutputChange += (currentDevice, args) =>
             {

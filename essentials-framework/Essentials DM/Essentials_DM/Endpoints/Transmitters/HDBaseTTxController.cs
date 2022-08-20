@@ -27,6 +27,8 @@ namespace PepperDash.Essentials.DM
         public HDBaseTTxController(string key, string name, HDTx3CB tx)
             : base(key, name, tx)
         {
+            PreventRegistration = true;
+
             HdmiIn = new RoutingInputPort(DmPortName.HdmiIn1, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, null, this) { Port = tx };
 
