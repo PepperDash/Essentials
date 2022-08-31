@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.Core
     /// Wrapper class for CEN-IO-IR-104 module
     /// </summary>
     [Description("Wrapper class for the CEN-IO-IR-104 module")]
-    public class CenIoIr104Controller : EssentialsDevice, IIROutputPorts
+    public class CenIoIr104Controller : CrestronGenericBaseDevice, IIROutputPorts
     {
 	    private readonly CenIoIr104 _ir104;
 
@@ -27,7 +27,7 @@ namespace PepperDash.Essentials.Core
 		/// <param name="name"></param>
 		/// <param name="ir104"></param>
         public CenIoIr104Controller(string key, string name, CenIoIr104 ir104)
-            : base(key, name)
+            : base(key, name, ir104)
         {
             _ir104 = ir104;
         }
@@ -78,7 +78,7 @@ namespace PepperDash.Essentials.Core
             var control = CommFactory.GetControlPropertiesConfig(dc);
 			if (control == null)
 			{
-				Debug.Console(1, "Factory failed to create a new CEN-IO-IR-104 Device");
+				Debug.Console(1, "Factory failed to create a new CEN-IO-IR-104 Device, control properties not found");
 				return null;
 			}
 
