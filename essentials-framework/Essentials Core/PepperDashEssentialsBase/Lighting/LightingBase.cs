@@ -70,50 +70,69 @@ namespace PepperDash.Essentials.Core.Lighting
             }
         }
 
-        protected GenericLightingJoinMap LinkLightingToApi(LightingBase lightingDevice, BasicTriList trilist, uint joinStart,
-            string joinMapKey, EiscApiAdvanced bridge)
+	    protected GenericLightingJoinMap LinkLightingToApi(LightingBase lightingDevice, BasicTriList trilist, uint joinStart,
+		    string joinMapKey, EiscApiAdvanced bridge)
+	    {
+			var joinMap = new GenericLightingJoinMap(joinStart);
+
+			var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+			if (!string.IsNullOrEmpty(joinMapSerialized))
+				joinMap = JsonConvert.DeserializeObject<GenericLightingJoinMap>(joinMapSerialized);
+
+			if (bridge != null)
+			{
+				bridge.AddJoinMap(Key, joinMap);
+			}
+			else
+			{
+				Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+			}
+
+		    return LinkLightingToApi(lightingDevice, trilist, joinMap);
+	    }
+
+      protected GenericLightingJoinMap LinkLightingToApi(LightingBase lightingDevice, BasicTriList trilist, GenericLightingJoinMap joinMap)
+      {
+        Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+
+        Debug.Console(0, "Linking to Lighting Type {0}", lightingDevice.GetType().Name.ToString());
+
+        // GenericLighitng Actions & FeedBack
+        trilist.SetUShortSigAction(joinMap.SelectScene.JoinNumber, u => lightingDevice.SelectScene(lightingDevice.LightingScenes[u]));
+
+        var sceneIndex = 0;
+        foreach (var scene in lightingDevice.LightingScenes)
         {
-            var joinMap = new GenericLightingJoinMap(joinStart);
+          var index = sceneIndex;
 
-            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+          trilist.SetSigTrueAction((uint)(joinMap.SelectSceneDirect.JoinNumber + index), () => lightingDevice.SelectScene(lightingDevice.LightingScenes[index]));
+          scene.IsActiveFeedback.LinkInputSig(trilist.BooleanInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + index)]);
+          trilist.StringInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + index)].StringValue = scene.Name;
+          trilist.BooleanInput[(uint)(joinMap.ButtonVisibility.JoinNumber + index)].BoolValue = true;
 
-            if (!string.IsNullOrEmpty(joinMapSerialized))
-                joinMap = JsonConvert.DeserializeObject<GenericLightingJoinMap>(joinMapSerialized);
-
-            if (bridge != null)
-            {
-                bridge.AddJoinMap(Key, joinMap);
-            }
-            else
-            {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
-            }
-
-            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-
-            Debug.Console(0, "Linking to Lighting Type {0}", lightingDevice.GetType().Name.ToString());
-
-            // GenericLighitng Actions & FeedBack
-            trilist.SetUShortSigAction(joinMap.SelectScene.JoinNumber, u => lightingDevice.SelectScene(lightingDevice.LightingScenes[u]));
-
-            var sceneIndex = 0;
-            foreach (var scene in lightingDevice.LightingScenes)
-            {
-                var index1 = sceneIndex;
-                trilist.SetSigTrueAction((uint)(joinMap.SelectSceneDirect.JoinNumber + sceneIndex), () =>
-                {
-                    var index = index1;
-                    Debug.Console(2, this, "LightingDevice: sceneIndex: {0} index: {1} > inside action", index1, index);
-                    lightingDevice.SelectScene(lightingDevice.LightingScenes[index]);
-                });
-                scene.IsActiveFeedback.LinkInputSig(trilist.BooleanInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + sceneIndex)]);
-                trilist.StringInput[(uint)(joinMap.SelectSceneDirect.JoinNumber + sceneIndex)].StringValue = scene.Name;
-                trilist.BooleanInput[(uint)(joinMap.ButtonVisibility.JoinNumber + sceneIndex)].BoolValue = true;
-                sceneIndex++;
-            }
-            return joinMap;
+          sceneIndex++;
         }
 
+        trilist.OnlineStatusChange += (sender, args) =>
+        {
+          if (!args.DeviceOnLine) return;
+
+          sceneIndex = 0;
+          foreach (var scene in lightingDevice.LightingScenes)
+          {
+            var index = sceneIndex;
+
+            trilist.StringInput[(uint) (joinMap.SelectSceneDirect.JoinNumber + index)].StringValue = scene.Name;
+            trilist.BooleanInput[(uint) (joinMap.ButtonVisibility.JoinNumber + index)].BoolValue = true;
+            scene.IsActiveFeedback.FireUpdate();
+
+            sceneIndex++;
+          }
+        };
+
+        return joinMap;
+      }
     }
 
     public class LightingScene
