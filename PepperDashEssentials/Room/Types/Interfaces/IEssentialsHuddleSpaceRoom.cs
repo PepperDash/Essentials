@@ -7,7 +7,7 @@ using PepperDash.Essentials.Room.Config;
 
 namespace PepperDash.Essentials
 {
-    public interface IEssentialsHuddleSpaceRoom : IEssentialsRoom, IHasCurrentSourceInfoChange, IRunRouteAction, IRunDefaultPresentRoute, IHasDefaultDisplay
+    public interface IEssentialsHuddleSpaceRoom : IEssentialsRoom, IHasCurrentSourceInfoChange, IRunRouteAction, IRunDefaultPresentRoute, IHasDefaultDisplay, IHasCurrentVolumeControls
     {
         bool ExcludeFromGlobalFunctions { get; }
 
