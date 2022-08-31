@@ -16,7 +16,7 @@ namespace PepperDash.Essentials.Core
     /// Wrapper class for CEN-IO-DIGIN-104 digital input module
     /// </summary>
     [Description("Wrapper class for the CEN-IO-DIGIN-104 diginal input module")]
-    public class CenIoDigIn104Controller : EssentialsDevice, IDigitalInputPorts
+    public class CenIoDigIn104Controller : CrestronGenericBaseDevice, IDigitalInputPorts
     {
         public CenIoDi104 Di104 { get; private set; }
 
@@ -53,9 +53,16 @@ namespace PepperDash.Essentials.Core
             Debug.Console(1, "Factory Attempting to create new CEN-DIGIN-104 Device");
 
             var control = CommFactory.GetControlPropertiesConfig(dc);
+	        if (control == null)
+	        {
+				Debug.Console(1, "Factory failed to create a new CEN-DIGIN-104 Device, control properties not found");
+				return null;
+	        }
             var ipid = control.IpIdInt;
+			if (ipid != 0) return new CenIoDigIn104Controller(dc.Key, dc.Name, new CenIoDi104(ipid, Global.ControlSystem));
 
-            return new CenIoDigIn104Controller(dc.Key, dc.Name, new Crestron.SimplSharpPro.GeneralIO.CenIoDi104(ipid, Global.ControlSystem));
+			Debug.Console(1, "Factory failed to create a new CEN-IO-IR-104 Device using IP-ID-{0}", ipid);
+			return null;
         }
     }
 

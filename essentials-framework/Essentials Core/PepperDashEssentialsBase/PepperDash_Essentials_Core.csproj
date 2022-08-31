@@ -183,6 +183,7 @@
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\IDigitalInput.cs" />
     <Compile Include="Crestron IO\IOPortConfig.cs" />
+    <Compile Include="Crestron IO\Ir\CenIoIr104Controller.cs" />
     <Compile Include="Crestron IO\Relay\CenIoRy104Controller.cs" />
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
