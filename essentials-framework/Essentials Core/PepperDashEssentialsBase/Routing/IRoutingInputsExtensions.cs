@@ -105,6 +105,17 @@ namespace PepperDash.Essentials.Core
 		/// <param name="destination"></param>
         public static void ReleaseRoute(this IRoutingSink destination)
 		{
+            RouteRequest existingRequest;
+
+            if (RouteRequests.TryGetValue(destination.Key, out existingRequest) && destination is IWarmingCooling)
+            {
+                var coolingDevice = destination as IWarmingCooling;
+
+                coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRequest.HandleCooldown;
+            }
+
+            RouteRequests.Remove(destination.Key);
+
 			var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination);
 			if (current != null)
 			{
