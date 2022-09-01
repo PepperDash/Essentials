@@ -58,22 +58,29 @@ namespace PepperDash.Essentials.Core
 
             //We already have a route request for this device, and it's a cooling device and is cooling
             if (RouteRequests.TryGetValue(destination.Key, out existingRouteRequest) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
-            {   
+            {                   
                 coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRouteRequest.HandleCooldown;
 
                 coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
 
                 RouteRequests[destination.Key] = routeRequest;
                 return;
-            }
+            }            
             
             //New Request
             if (coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
             {
+                coolingDevice.IsCoolingDownFeedback.OutputChange -= routeRequest.HandleCooldown;
+
                 coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
 
                 RouteRequests.Add(destination.Key, routeRequest);
                 return;
+            }
+
+            if (RouteRequests.ContainsKey(destination.Key) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == false)
+            {
+                RouteRequests.Remove(destination.Key);
             }
 
             destination.ReleaseRoute();
