@@ -91,10 +91,11 @@ namespace PepperDash.Essentials.DM
                 return new RoutingPortCollection<RoutingOutputPort> { DmOut, HdmiLoopOut };
             }
         }
-        public DmTx4kz302CController(string key, string name, DmTx4kz302C tx)
+        public DmTx4kz302CController(string key, string name, DmTx4kz302C tx, bool preventRegistration)
             : base(key, name, tx)
         {
             Tx = tx;
+            PreventRegistration = preventRegistration;
 
             HdmiIn1 = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn1,
                 eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.Hdmi1, this,

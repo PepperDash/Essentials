@@ -47,16 +47,23 @@ namespace PepperDash.Essentials.DM
         {
             get
             {
-                if (InputCard.VideoSourceFeedback != eDmps3InputVideoSource.Auto)
-                    return InputCard.VideoSourceFeedback;
-                else // auto
+                try
                 {
-                    if (InputCard.HdmiInputPort.SyncDetectedFeedback.BoolValue)
-                        return eDmps3InputVideoSource.Hdmi;
-                    else if (InputCard.VgaInputPort.SyncDetectedFeedback.BoolValue)
-                        return eDmps3InputVideoSource.Vga;
-                    else 
-                        return eDmps3InputVideoSource.Bnc;
+                    if (InputCard.VideoSourceFeedback != eDmps3InputVideoSource.Auto)
+                        return InputCard.VideoSourceFeedback;
+                    else // auto
+                    {
+                        if (InputCard.HdmiInputPort.SyncDetectedFeedback.BoolValue)
+                            return eDmps3InputVideoSource.Hdmi;
+                        else if (InputCard.VgaInputPort.SyncDetectedFeedback.BoolValue)
+                            return eDmps3InputVideoSource.Vga;
+                        else
+                            return eDmps3InputVideoSource.Bnc;
+                    }
+                }
+                catch
+                {
+                    return eDmps3InputVideoSource.Bnc;
                 }
             }
         }
