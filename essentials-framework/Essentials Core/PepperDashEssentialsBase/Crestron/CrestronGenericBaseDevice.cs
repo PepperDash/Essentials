@@ -73,11 +73,14 @@ namespace PepperDash.Essentials.Core
             {
                 //Debug.Console(1, this, "  Does not require registration. Skipping");
 
-                var response = Hardware.RegisterWithLogging(Key);
-                if (response != eDeviceRegistrationUnRegistrationResponse.Success)
+                if (Hardware.Registerable && !Hardware.Registered)
                 {
-                    //Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
-                    return false;
+                    var response = Hardware.RegisterWithLogging(Key);
+                    if (response != eDeviceRegistrationUnRegistrationResponse.Success)
+                    {
+                        //Debug.Console(0, this, "ERROR: Cannot register Crestron device: {0}", response);
+                        return false;
+                    }
                 }
 
                 IsRegistered.FireUpdate();
@@ -86,7 +89,10 @@ namespace PepperDash.Essentials.Core
             {
                 AddPostActivationAction(() =>
                     {
-                        var response = Hardware.RegisterWithLogging(Key);
+                        if (Hardware.Registerable && !Hardware.Registered)
+                        {
+                            var response = Hardware.RegisterWithLogging(Key);
+                        }
 
                         IsRegistered.FireUpdate();
                     });
