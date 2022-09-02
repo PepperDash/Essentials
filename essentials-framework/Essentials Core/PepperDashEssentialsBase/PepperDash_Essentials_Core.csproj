@@ -366,6 +366,7 @@
     <Compile Include="UI PageManagers\SinglePageManager.cs" />
     <Compile Include="UI PageManagers\PageManager.cs" />
     <Compile Include="UI PageManagers\SetTopBoxTwoPanelPageManager.cs" />
+    <Compile Include="UI\TouchpanelBase.cs" />
     <Compile Include="Utilities\ActionSequence.cs" />
     <Compile Include="VideoStatus\VideoStatusOutputs.cs" />
     <Compile Include="Crestron\CrestronGenericBaseDevice.cs" />
