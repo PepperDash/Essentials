@@ -11,10 +11,11 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.PageManagers;
+using PepperDash.Essentials.Core.UI;
 
 namespace PepperDash.Essentials
 {
-    public class EssentialsTouchpanelController : EssentialsDevice, IHasBasicTriListWithSmartObject
+    public class EssentialsTouchpanelController : TouchpanelBase
 	{
         private CrestronTouchpanelPropertiesConfig _propertiesConfig;
 
@@ -26,189 +27,29 @@ namespace PepperDash.Essentials
 
 		public EssentialsTouchpanelController(string key, string name, Tswx52ButtonVoiceControl tsw, 
 			string projectName, string sgdPath)
-			: base(key, name)
+			: base(key, name, tsw, sgdPath)
 		{
-			Panel = tsw;
-
-            if (!string.IsNullOrEmpty(sgdPath))
-                Panel.LoadSmartObjects(sgdPath);
-            else
-                Debug.Console(1, this, "No SGD file path defined");
-
-
-
-			tsw.SigChange += Panel_SigChange;
 		}
 
         public EssentialsTouchpanelController(string key, string name, Dge100 dge, string projectName, string sgdPath)
-            : base(key, name)
+            : base(key, name, dge, sgdPath)
         {
-            Panel = dge;
-
-            if (!string.IsNullOrEmpty(sgdPath))
-                Panel.LoadSmartObjects(sgdPath);
-            else
-                Debug.Console(1, this, "No SGD file path defined");
-
-            dge.SigChange += Panel_SigChange;
         }
 
 		/// <summary>
 		/// Config constructor
 		/// </summary>
 		public EssentialsTouchpanelController(string key, string name, string type, CrestronTouchpanelPropertiesConfig props, uint id)
-			: base(key, name)
+			: base(key, name, type, props, id)
 		{
-            _propertiesConfig = props;
-
-            Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "Creating touchpanel hardware...");
-			type = type.ToLower();
-			try
-			{
-                if (type == "crestronapp")
-                {
-                    var app = new CrestronApp(id, Global.ControlSystem);
-                    app.ParameterProjectName.Value = props.ProjectName;
-                    Panel = app;
-                }
-                else if (type == "xpanel")
-                    Panel = new XpanelForSmartGraphics(id, Global.ControlSystem);
-                else if (type == "tsw550")
-                    Panel = new Tsw550(id, Global.ControlSystem);
-                else if (type == "tsw552")
-                    Panel = new Tsw552(id, Global.ControlSystem);
-                else if (type == "tsw560")
-                    Panel = new Tsw560(id, Global.ControlSystem);
-                else if (type == "tsw750")
-                    Panel = new Tsw750(id, Global.ControlSystem);
-                else if (type == "tsw752")
-                    Panel = new Tsw752(id, Global.ControlSystem);
-                else if (type == "tsw760")
-                    Panel = new Tsw760(id, Global.ControlSystem);
-                else if (type == "tsw1050")
-                    Panel = new Tsw1050(id, Global.ControlSystem);
-                else if (type == "tsw1052")
-                    Panel = new Tsw1052(id, Global.ControlSystem);
-                else if (type == "tsw1060")
-                    Panel = new Tsw1060(id, Global.ControlSystem);
-                else if (type == "tsw570")
-                    Panel = new Tsw570(id, Global.ControlSystem);
-                else if (type == "tsw770")
-                    Panel = new Tsw770(id, Global.ControlSystem);
-                else if (type == "ts770")
-                    Panel = new Ts770(id, Global.ControlSystem);
-                else if (type == "tsw1070")
-                    Panel = new Tsw1070(id, Global.ControlSystem);
-                else if (type == "ts1070")
-                    Panel = new Ts1070(id, Global.ControlSystem);
-                else
-                {
-                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create TSW controller with type '{0}'", type);
-                    return;
-                }
-			}
-			catch (Exception e)
-			{
-                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create TSW base class. Panel will not function: {0}", e.Message);
-				return;				
-			}
-
-            // Reserved sigs
-            if (Panel is TswFt5ButtonSystem)
-            {
-                var tsw = Panel as TswFt5ButtonSystem;
-                tsw.ExtenderSystemReservedSigs.Use();
-                tsw.ExtenderSystemReservedSigs.DeviceExtenderSigChange
-                    += ExtenderSystemReservedSigs_DeviceExtenderSigChange;
-
-                tsw.ButtonStateChange += new ButtonEventHandler(Tsw_ButtonStateChange);
-
-            }
-
-            if (Panel.Register() != eDeviceRegistrationUnRegistrationResponse.Success)
-                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Registration failed. Continuing, but panel may not function: {0}", Panel.RegistrationFailureReason);
-
-            // Give up cleanly if SGD is not present.
-            var sgdName = Global.FilePathPrefix + "sgd" + Global.DirectorySeparator + props.SgdFile;
-            if (!File.Exists(sgdName))
-            {
-                Debug.Console(0, this, "Smart object file '{0}' not present in User folder. Looking for embedded file", sgdName);
-
-                sgdName = Global.ApplicationDirectoryPathPrefix + Global.DirectorySeparator + "SGD" + Global.DirectorySeparator + props.SgdFile;
-
-                if (!File.Exists(sgdName))
-                {
-                    Debug.Console(0, this, "Unable to find SGD file '{0}' in User sgd or application SGD folder. Exiting touchpanel load.", sgdName);
-                    return;
-                }
-            }
-
-            Panel.LoadSmartObjects(sgdName);
-            Panel.SigChange += Panel_SigChange;
-
-            AddPostActivationAction(() =>
-            {
-                // Check for IEssentialsRoomCombiner in DeviceManager and if found, subscribe to its event
-                var roomCombiner = DeviceManager.AllDevices.FirstOrDefault((d) => d is IEssentialsRoomCombiner) as IEssentialsRoomCombiner;
-
-                if (roomCombiner != null)
-                {
-                    // Subscribe to the even
-                    roomCombiner.RoomCombinationScenarioChanged += new EventHandler<EventArgs>(roomCombiner_RoomCombinationScenarioChanged);
-
-                    // Connect to the initial roomKey
-                    if (roomCombiner.CurrentScenario != null)
-                    {
-                        // Use the current scenario
-                        DetermineRoomKeyFromScenario(roomCombiner.CurrentScenario);
-                    }
-                    else
-                    {
-                        // Current Scenario not yet set.  Use default 
-                        SetupPanelDrivers(_propertiesConfig.DefaultRoomKey);
-                    }
-                }
-                else
-                {
-                    // No room combiner, use the default key
-                    SetupPanelDrivers(_propertiesConfig.DefaultRoomKey);
-                }
-            });
 		}
-
-        void roomCombiner_RoomCombinationScenarioChanged(object sender, EventArgs e)
-        {
-            var roomCombiner = sender as IEssentialsRoomCombiner;
-
-            DetermineRoomKeyFromScenario(roomCombiner.CurrentScenario);
-        }
-
-        /// <summary>
-        /// Determines the room key to use based on the scenario
-        /// </summary>
-        /// <param name="scenario"></param>
-        void DetermineRoomKeyFromScenario(IRoomCombinationScenario scenario)
-        {
-            string newRoomKey = null;
-
-            if (scenario.UiMap.ContainsKey(Key))
-            {
-                newRoomKey = scenario.UiMap[Key];
-            }
-            else if (scenario.UiMap.ContainsKey(_propertiesConfig.DefaultRoomKey))
-            {
-                newRoomKey = scenario.UiMap[_propertiesConfig.DefaultRoomKey];
-            }
-
-            SetupPanelDrivers(newRoomKey);
-        }
 
 
         /// <summary>
         /// Sets up drivers and links them to the room specified
         /// </summary>
         /// <param name="roomKey">key of room to link the drivers to</param>
-        void SetupPanelDrivers(string roomKey)
+        protected override void SetupPanelDrivers(string roomKey)
         {
             // Clear out any existing actions
             Panel.ClearAllSigActions();
@@ -338,13 +179,7 @@ namespace PepperDash.Essentials
 			driver.Show();
 		}
 
-		void HomePressed()
-		{
-			if (BacklightTransitionedOnTimer == null)
-				PanelDriver.BackButtonPressed();
-		}
-
-		void ExtenderSystemReservedSigs_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
+		protected override void ExtenderSystemReservedSigs_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args)
 		{
 			// If the sig is transitioning on, mark it in case it was home button that transitioned it
 			var blOnSig = (Panel as TswFt5ButtonSystem).ExtenderSystemReservedSigs.BacklightOnFeedback;
@@ -382,26 +217,6 @@ namespace PepperDash.Essentials
                 act(value);
             }
         }
-
-		void Panel_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
-		{
-			if (Debug.Level == 2)
-				Debug.Console(2, this, "Sig change: {0} {1}={2}", args.Sig.Type, args.Sig.Number, args.Sig.StringValue);
-			var uo = args.Sig.UserObject;
-			if (uo is Action<bool>)
-				(uo as Action<bool>)(args.Sig.BoolValue);
-			else if (uo is Action<ushort>)
-				(uo as Action<ushort>)(args.Sig.UShortValue);
-			else if (uo is Action<string>)
-				(uo as Action<string>)(args.Sig.StringValue);
-		}
-	
-		void Tsw_ButtonStateChange(GenericBase device, ButtonEventArgs args)
-		{
-			var uo = args.Button.UserObject;
-			if(uo is Action<bool>)
-				(uo as Action<bool>)(args.Button.State == eButtonState.Pressed);
-		}
 	}
 
     public class EssentialsTouchpanelControllerFactory : EssentialsDeviceFactory<EssentialsTouchpanelController>
