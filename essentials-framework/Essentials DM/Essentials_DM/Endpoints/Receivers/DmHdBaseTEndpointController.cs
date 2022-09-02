@@ -1,8 +1,10 @@
-﻿using Crestron.SimplSharp.Ssh;
+﻿using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM.Endpoints.Receivers;
-
+using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core;
+using PepperDash.Core;
+using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.DM
 {
@@ -26,6 +28,30 @@ namespace PepperDash.Essentials.DM
 
             InputPorts = new RoutingPortCollection<RoutingInputPort> {DmIn};
             OutputPorts = new RoutingPortCollection<RoutingOutputPort> {HDBaseTSink};
+        }
+
+        public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
+        {
+            var joinMap = new DmRmcControllerJoinMap(joinStart);
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<DmRmcControllerJoinMap>(joinMapSerialized);
+
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+            else
+            {
+                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+            }
+
+            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+
+            IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = this.Name;
         }
 
         #region IComPorts Members
