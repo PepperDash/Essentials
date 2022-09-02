@@ -18,21 +18,6 @@ namespace PepperDash.Essentials.Core.UI
         public BasicTriListWithSmartObject Panel { get; private set; }
 
         /// <summary>
-        /// Constructor for pre-created Panel. This constructor attempts to load the SGD file from the provided SGD path and subscribes to the 
-        /// `SigChange` event for the provided panel.
-        /// </summary>
-        /// <param name="key">Essentials Device Key</param>
-        /// <param name="name">Essentials Device Name</param>
-        /// <param name="tsw">Provided TSW Panel</param>
-        /// <param name="sgdPath">Path to SGD file</param>
-        protected TouchpanelBase(string key, string name, Tswx52ButtonVoiceControl tsw, string sgdPath)
-            :base(key, name)
-        {
-
-        }
-
-
-        /// <summary>
         /// Constructor for use with device Factory. A touch panel device will be created based on the provided IP-ID and the
         /// type of the panel. The SGD File path can be specified using the config property, or a default one located in the program directory if none
         /// is provided.
@@ -45,7 +30,9 @@ namespace PepperDash.Essentials.Core.UI
         protected TouchpanelBase(string key, string name, BasicTriListWithSmartObject panel, CrestronTouchpanelPropertiesConfig config)
             :base(key, name)
         {            
-            Panel = panel;            
+            Panel = panel;
+
+            Panel.SigChange += Panel_SigChange;
 
             if (Panel is TswFt5ButtonSystem)
             {
@@ -117,6 +104,14 @@ namespace PepperDash.Essentials.Core.UI
 
 
         /// <summary>
+        /// Event handler for System Extender Events
+        /// </summary>
+        /// <param name="currentDeviceExtender"></param>
+        /// <param name="args"></param>
+        protected abstract void ExtenderSystemReservedSigs_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args);
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="sender"></param>
@@ -167,7 +162,5 @@ namespace PepperDash.Essentials.Core.UI
 			if(uo is Action<bool>)
 				(uo as Action<bool>)(args.Button.State == eButtonState.Pressed);
 		}
-
-        protected abstract void ExtenderSystemReservedSigs_DeviceExtenderSigChange(DeviceExtender currentDeviceExtender, SigEventArgs args);
     }
 }
