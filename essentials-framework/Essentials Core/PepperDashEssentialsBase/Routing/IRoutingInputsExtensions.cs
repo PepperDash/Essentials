@@ -58,12 +58,15 @@ namespace PepperDash.Essentials.Core
 
             //We already have a route request for this device, and it's a cooling device and is cooling
             if (RouteRequests.TryGetValue(destination.Key, out existingRouteRequest) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
-            {                   
+            {     
                 coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRouteRequest.HandleCooldown;
 
                 coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
 
                 RouteRequests[destination.Key] = routeRequest;
+
+                Debug.Console(2, "******************************************************** Device: {0} is cooling down and already has a routing request stored.  Storing new route request to route to source key: {1}", destination.Key, routeRequest.Source.Key);
+
                 return;
             }            
             
@@ -75,12 +78,15 @@ namespace PepperDash.Essentials.Core
                 coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
 
                 RouteRequests.Add(destination.Key, routeRequest);
+
+                Debug.Console(2, "******************************************************** Device: {0} is cooling down.  Storing route request to route to source key: {1}", destination.Key, routeRequest.Source.Key);
                 return;
             }
 
             if (RouteRequests.ContainsKey(destination.Key) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == false)
             {
                 RouteRequests.Remove(destination.Key);
+                Debug.Console(2, "******************************************************** Device: {0} is NOT cooling down.  Removing stored route request and routing to source key: {1}", destination.Key, routeRequest.Source.Key);
             }
 
             destination.ReleaseRoute();
