@@ -28,49 +28,9 @@ namespace PepperDash.Essentials.Core.UI
         protected TouchpanelBase(string key, string name, Tswx52ButtonVoiceControl tsw, string sgdPath)
             :base(key, name)
         {
-            Panel = tsw;
 
-            //moving loading of SGD to preactivation action...should make creation quicker
-            AddPreActivationAction(() => {
-                if(!string.IsNullOrEmpty(sgdPath))
-                {
-                    Debug.Console(1, this, "Loading sgd file from {0}", sgdPath);
-                    Panel.LoadSmartObjects(sgdPath);
-                    return;
-                }
-
-                Debug.Console(1, this, "No SGD file path defined");
-            });
-
-            Panel.SigChange += Panel_SigChange;
         }
 
-        /// <summary>
-        /// Constructor for use with DGE panels. This constructor attempts to load the provided SGD file from the provided SGD path and subscribes to the
-        /// `SigChange` event for the provided DGE.
-        /// </summary>
-        /// <param name="key">Essentials Device Key</param>
-        /// <param name="name">Essentials Device Name</param>
-        /// <param name="dge">Provided DGE</param>        
-        /// <param name="sgdPath">Path to SGD file</param>
-        protected TouchpanelBase(string key, string name, Dge100 dge, string sgdPath):base(key, name)
-        {
-            Panel = dge;
-
-            AddPreActivationAction(() =>
-            {
-                if (!string.IsNullOrEmpty(sgdPath))
-                {
-                    Debug.Console(1, this, "Loading sgd file from {0}", sgdPath);
-                    Panel.LoadSmartObjects(sgdPath);
-                    return;
-                }
-
-                Debug.Console(1, this, "No SGD file path defined");
-            });
-
-            Panel.SigChange += Panel_SigChange;
-        }
 
         /// <summary>
         /// Constructor for use with device Factory. A touch panel device will be created based on the provided IP-ID and the
@@ -82,14 +42,10 @@ namespace PepperDash.Essentials.Core.UI
         /// <param name="type">Touchpanel Type to build</param>
         /// <param name="config">Touchpanel Configuration</param>
         /// <param name="id">IP-ID to use for touch panel</param>
-        protected TouchpanelBase(string key, string name, string type, CrestronTouchpanelPropertiesConfig config, uint id)
+        protected TouchpanelBase(string key, string name, BasicTriListWithSmartObject panel, CrestronTouchpanelPropertiesConfig config)
             :base(key, name)
-        {
-            var panel = GetPanelForType(type, id);
-            if(panel != null)
-            {
-                Panel = panel;
-            }
+        {            
+            Panel = panel;            
 
             if (Panel is TswFt5ButtonSystem)
             {
@@ -100,7 +56,8 @@ namespace PepperDash.Essentials.Core.UI
 
                 tsw.ButtonStateChange += Tsw_ButtonStateChange;
             }
-            
+
+            _config = config;            
 
             AddPreActivationAction(() => {
                 if (Panel.Register() != eDeviceRegistrationUnRegistrationResponse.Success)
@@ -112,7 +69,7 @@ namespace PepperDash.Essentials.Core.UI
                 {
                     Debug.Console(0, this, "Smart object file '{0}' not present in User folder. Looking for embedded file", sgdName);
 
-                    sgdName = Global.ApplicationDirectoryPathPrefix + Global.DirectorySeparator + "SGD" + Global.DirectorySeparator + config.SgdFile;
+                    sgdName = Global.ApplicationDirectoryPathPrefix + Global.DirectorySeparator + "SGD" + Global.DirectorySeparator + _config.SgdFile;
 
                     if (!File.Exists(sgdName))
                     {
@@ -189,60 +146,6 @@ namespace PepperDash.Essentials.Core.UI
             }
 
             SetupPanelDrivers(newRoomKey);
-        }
-
-        private BasicTriListWithSmartObject GetPanelForType(string type, uint id)
-        {
-            type = type.ToLower();
-			try
-			{
-                if (type == "crestronapp")
-                {
-                    var app = new CrestronApp(id, Global.ControlSystem);
-                    app.ParameterProjectName.Value = _config.ProjectName;
-                    return app;
-                }
-                else if (type == "xpanel")
-                    return new XpanelForSmartGraphics(id, Global.ControlSystem);
-                else if (type == "tsw550")
-                    return new Tsw550(id, Global.ControlSystem);
-                else if (type == "tsw552")
-                    return new Tsw552(id, Global.ControlSystem);
-                else if (type == "tsw560")
-                    return new Tsw560(id, Global.ControlSystem);
-                else if (type == "tsw750")
-                    return new Tsw750(id, Global.ControlSystem);
-                else if (type == "tsw752")
-                    return new Tsw752(id, Global.ControlSystem);
-                else if (type == "tsw760")
-                    return new Tsw760(id, Global.ControlSystem);
-                else if (type == "tsw1050")
-                    return new Tsw1050(id, Global.ControlSystem);
-                else if (type == "tsw1052")
-                    return new Tsw1052(id, Global.ControlSystem);
-                else if (type == "tsw1060")
-                    return new Tsw1060(id, Global.ControlSystem);
-                else if (type == "tsw570")
-                    return new Tsw570(id, Global.ControlSystem);
-                else if (type == "tsw770")
-                    return new Tsw770(id, Global.ControlSystem);
-                else if (type == "ts770")
-                    return new Ts770(id, Global.ControlSystem);
-                else if (type == "tsw1070")
-                    return new Tsw1070(id, Global.ControlSystem);
-                else if (type == "ts1070")
-                    return new Ts1070(id, Global.ControlSystem);
-                else
-                {
-                    Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create TSW controller with type '{0}'", type);
-                    return null;
-                }
-			}
-			catch (Exception e)
-			{
-                Debug.Console(0, this, Debug.ErrorLogLevel.Notice, "WARNING: Cannot create TSW base class. Panel will not function: {0}", e.Message);
-				return null;				
-			}
         }
 
         private void Panel_SigChange(object currentDevice, Crestron.SimplSharpPro.SigEventArgs args)
