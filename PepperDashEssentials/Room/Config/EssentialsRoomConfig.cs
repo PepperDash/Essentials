@@ -202,6 +202,9 @@ namespace PepperDash.Essentials.Room.Config
         [JsonProperty("fusion")]
         public EssentialsRoomFusionConfig Fusion { get; set; }
 
+        [JsonProperty("essentialsRoomUiBehaviorConfig", NullValueHandling=NullValueHandling.Ignore)]
+        public EssentialsRoomUiBehaviorConfig UiBehavior { get; set; }
+
 		[JsonProperty("zeroVolumeWhenSwtichingVolumeDevices")]
 		public bool ZeroVolumeWhenSwtichingVolumeDevices { get; set; }
 
@@ -217,6 +220,12 @@ namespace PepperDash.Essentials.Room.Config
             LogoDark = new EssentialsLogoPropertiesConfig();
         }
 	}
+
+    public class EssentialsRoomUiBehaviorConfig
+    {
+        [JsonProperty("disableActivityButtonsWhileWarmingCooling")]
+        public bool DisableActivityButtonsWhileWarmingCooling { get; set; }
+    }
 
     public class EssentialsAvRoomPropertiesConfig : EssentialsRoomPropertiesConfig
     {
