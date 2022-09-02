@@ -29,7 +29,14 @@ namespace PepperDash.Essentials.Core.UI
         /// <param name="id">IP-ID to use for touch panel</param>
         protected TouchpanelBase(string key, string name, BasicTriListWithSmartObject panel, CrestronTouchpanelPropertiesConfig config)
             :base(key, name)
-        {            
+        {
+
+            if (Panel == null)
+            {
+                Debug.Console(0, this, "Panel is not valid. Touchpanel class WILL NOT work correctly");
+                return;
+            }
+
             Panel = panel;
 
             Panel.SigChange += Panel_SigChange;

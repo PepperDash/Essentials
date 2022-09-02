@@ -219,6 +219,11 @@ namespace PepperDash.Essentials
 
             var panel = GetPanelForType(dc.Type, comm.IpIdInt, props.ProjectName);
 
+            if (panel == null)
+            {
+                Debug.Console(0, "Unable to create Touchpanel for type {0}. Touchpanel Controller WILL NOT function correctly", dc.Type);
+            }
+
             Debug.Console(1, "Factory Attempting to create new EssentialsTouchpanelController");
 
             var panelController = new EssentialsTouchpanelController(dc.Key, dc.Name, panel, props);
