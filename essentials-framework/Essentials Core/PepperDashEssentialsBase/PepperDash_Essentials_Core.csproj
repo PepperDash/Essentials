@@ -184,6 +184,7 @@
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\IDigitalInput.cs" />
     <Compile Include="Crestron IO\IOPortConfig.cs" />
+    <Compile Include="Crestron IO\Ir\CenIoIr104Controller.cs" />
     <Compile Include="Crestron IO\Relay\CenIoRy104Controller.cs" />
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
@@ -365,6 +366,7 @@
     <Compile Include="UI PageManagers\SinglePageManager.cs" />
     <Compile Include="UI PageManagers\PageManager.cs" />
     <Compile Include="UI PageManagers\SetTopBoxTwoPanelPageManager.cs" />
+    <Compile Include="UI\TouchpanelBase.cs" />
     <Compile Include="Utilities\ActionSequence.cs" />
     <Compile Include="VideoStatus\VideoStatusOutputs.cs" />
     <Compile Include="Crestron\CrestronGenericBaseDevice.cs" />

@@ -38,6 +38,9 @@ namespace PepperDash.Essentials.DM
 
         void Dmps_MicrophoneChange(MicrophoneBase mic, GenericEventArgs args)
         {
+            if (args.EventId == MicrophoneEventIds.VuFeedBackEventId)
+                return;
+
             Debug.Console(2, "Dmps Microphone Controller Index: {0} EventId: {1}", mic.ID, args.EventId.ToString());
 
             if(Mics.ContainsKey(mic.ID))
