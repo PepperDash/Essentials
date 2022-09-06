@@ -14,6 +14,7 @@ namespace PepperDash.Essentials.Core
 	public static class DeviceManager
 	{
         public static event EventHandler<EventArgs> AllDevicesActivated;
+        public static event EventHandler<EventArgs> AllDevicesRegistered;
 
 	    private static readonly CCriticalSection DeviceCriticalSection = new CCriticalSection();
 	    private static readonly CEvent AllowAddDevicesCEvent = new CEvent(false, true);
@@ -57,6 +58,8 @@ namespace PepperDash.Essentials.Core
 		{
 		    try
 		    {
+                OnAllDevicesRegistered();
+
 		        DeviceCriticalSection.Enter();
                 AddDeviceEnabled = false;
 		        // PreActivate all devices
@@ -123,6 +126,15 @@ namespace PepperDash.Essentials.Core
         private static void OnAllDevicesActivated()
         {
             var handler = AllDevicesActivated;
+            if (handler != null)
+            {
+                handler(null, new EventArgs());
+            }
+        }
+
+        private static void OnAllDevicesRegistered()
+        {
+            var handler = AllDevicesRegistered;
             if (handler != null)
             {
                 handler(null, new EventArgs());

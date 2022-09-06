@@ -11,12 +11,34 @@ using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core
 {
+    public class RouteRequest
+    {
+        public IRoutingSink Destination {get; set;}
+        public IRoutingOutputs Source {get; set;}
+        public eRoutingSignalType SignalType {get; set;}
+
+        public void HandleCooldown(object sender, FeedbackEventArgs args)
+        {
+            var coolingDevice = sender as IWarmingCooling;
+            
+            if(args.BoolValue == false)
+            {
+                Destination.ReleaseAndMakeRoute(Source, SignalType);
+                
+                if(sender == null) return;
+
+                coolingDevice.IsCoolingDownFeedback.OutputChange -= HandleCooldown;
+            }
+        }
+    }
+
 	/// <summary>
 	/// Extensions added to any IRoutingInputs classes to provide discovery-based routing
 	/// on those destinations.
 	/// </summary>
 	public static class IRoutingInputsExtensions
 	{
+        private static Dictionary<string, RouteRequest> RouteRequests = new Dictionary<string, RouteRequest>();
 		/// <summary>
 		/// Gets any existing RouteDescriptor for a destination, clears it using ReleaseRoute
 		/// and then attempts a new Route and if sucessful, stores that RouteDescriptor
@@ -24,15 +46,63 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		public static void ReleaseAndMakeRoute(this IRoutingSink destination, IRoutingOutputs source, eRoutingSignalType signalType)
 		{
-			destination.ReleaseRoute();
+            var routeRequest = new RouteRequest { 
+                        Destination = destination,
+                        Source = source,
+                        SignalType = signalType
+                    };
 
-			if (source == null) return;
-			var newRoute = destination.GetRouteToSource(source, signalType);
-			if (newRoute == null) return;
-			RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(newRoute);
-			Debug.Console(2, destination, "Executing full route");
-			newRoute.ExecuteRoutes();
+            var coolingDevice = destination as IWarmingCooling;
+
+            RouteRequest existingRouteRequest;
+
+            //We already have a route request for this device, and it's a cooling device and is cooling
+            if (RouteRequests.TryGetValue(destination.Key, out existingRouteRequest) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
+            {     
+                coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRouteRequest.HandleCooldown;
+
+                coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
+
+                RouteRequests[destination.Key] = routeRequest;
+
+                Debug.Console(2, "******************************************************** Device: {0} is cooling down and already has a routing request stored.  Storing new route request to route to source key: {1}", destination.Key, routeRequest.Source.Key);
+
+                return;
+            }            
+            
+            //New Request
+            if (coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == true)
+            {
+                coolingDevice.IsCoolingDownFeedback.OutputChange -= routeRequest.HandleCooldown;
+
+                coolingDevice.IsCoolingDownFeedback.OutputChange += routeRequest.HandleCooldown;
+
+                RouteRequests.Add(destination.Key, routeRequest);
+
+                Debug.Console(2, "******************************************************** Device: {0} is cooling down.  Storing route request to route to source key: {1}", destination.Key, routeRequest.Source.Key);
+                return;
+            }
+
+            if (RouteRequests.ContainsKey(destination.Key) && coolingDevice != null && coolingDevice.IsCoolingDownFeedback.BoolValue == false)
+            {
+                RouteRequests.Remove(destination.Key);
+                Debug.Console(2, "******************************************************** Device: {0} is NOT cooling down.  Removing stored route request and routing to source key: {1}", destination.Key, routeRequest.Source.Key);
+            }
+
+            destination.ReleaseRoute();
+
+			RunRouteRequest(routeRequest);
 		}
+
+        public static void RunRouteRequest(RouteRequest request)
+        {
+            if (request.Source == null) return;
+            var newRoute = request.Destination.GetRouteToSource(request.Source, request.SignalType);
+            if (newRoute == null) return;
+            RouteDescriptorCollection.DefaultCollection.AddRouteDescriptor(newRoute);
+            Debug.Console(2, request.Destination, "Executing full route");
+            newRoute.ExecuteRoutes();
+        }
 
 		/// <summary>
 		/// Will release the existing route on the destination, if it is found in 
@@ -41,6 +111,17 @@ namespace PepperDash.Essentials.Core
 		/// <param name="destination"></param>
         public static void ReleaseRoute(this IRoutingSink destination)
 		{
+            RouteRequest existingRequest;
+
+            if (RouteRequests.TryGetValue(destination.Key, out existingRequest) && destination is IWarmingCooling)
+            {
+                var coolingDevice = destination as IWarmingCooling;
+
+                coolingDevice.IsCoolingDownFeedback.OutputChange -= existingRequest.HandleCooldown;
+            }
+
+            RouteRequests.Remove(destination.Key);
+
 			var current = RouteDescriptorCollection.DefaultCollection.RemoveRouteDescriptor(destination);
 			if (current != null)
 			{

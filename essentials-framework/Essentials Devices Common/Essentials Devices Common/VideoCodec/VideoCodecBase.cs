@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharp.Ssh;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharp;
@@ -1248,6 +1249,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             }
 
             return GetXSigString(tokenArray);
+
 		}
 
 		private void LinkVideoCodecCallControlsToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
@@ -1388,9 +1390,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			{
 					if (!args.DeviceOnLine) return;
 
-					// TODO [ ] Issue #868
+					// TODO [ ] #983
+					Debug.Console(0, this, "LinkVideoCodecCallControlsToApi: device is {0}, IsInCall {1}", args.DeviceOnLine ? "online" : "offline", IsInCall);
+					trilist.SetBool(joinMap.HookState.JoinNumber, IsInCall);
 					trilist.SetString(joinMap.CurrentCallData.JoinNumber, "\xFC");
-					UpdateCallStatusXSig();
+					trilist.SetString(joinMap.CurrentCallData.JoinNumber, UpdateCallStatusXSig());
 			};
 		}
 
