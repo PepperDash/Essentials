@@ -53,14 +53,14 @@ namespace PepperDash.Essentials
             // to allow any HD-BaseT DM endpoints to register first.
             if (Global.ControlSystemIsDmpsType)
             {
-                Debug.Console(2, "******************* InitializeSystem() Entering **********************");
+                Debug.Console(1, "******************* InitializeSystem() Entering **********************");
 
                 _initializeEvent = new CEvent();
 
-                DeviceManager.AllDevicesActivated += (o, a) =>
+                DeviceManager.AllDevicesRegistered += (o, a) =>
                 {
                     _initializeEvent.Set();
-                    Debug.Console(2, "******************* InitializeSystem() Exiting **********************");
+                    Debug.Console(1, "******************* InitializeSystem() Exiting **********************");
                 };
 
                 _initializeEvent.Wait(30000);

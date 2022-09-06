@@ -100,10 +100,11 @@ namespace PepperDash.Essentials.DM
 		/// <param name="key"></param>
 		/// <param name="name"></param>
 		/// <param name="tx"></param>
-		public DmTx201CController(string key, string name, DmTx201C tx)
+        public DmTx201CController(string key, string name, DmTx201C tx, bool preventRegistration)
 			: base(key, name, tx)
 		{
 			Tx = tx;
+            PreventRegistration = preventRegistration;
 
             HdmiInput = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn,
                 eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi,

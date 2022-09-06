@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.CrestronDataStore;
 using Crestron.SimplSharpPro;
+using Crestron.SimplSharpPro.DM;
 
 using PepperDash.Core;
 using PepperDash.Essentials.License;
@@ -40,7 +41,14 @@ namespace PepperDash.Essentials.Core
         {
             get
             {
-                return ControlSystem.ControllerPrompt.ToLower().IndexOf("dmps") > -1;
+                if(ControlSystem.SystemControl != null)
+                {
+                    if(ControlSystem.SystemControl.SystemControlType > 0)
+                    {
+                        return true;
+                    }         
+                }
+                return false;
             }
         }
 
@@ -51,7 +59,39 @@ namespace PepperDash.Essentials.Core
         {
             get
             {
-                return ControlSystemIsDmpsType && ControlSystem.ControllerPrompt.ToLower().IndexOf("4k") > -1;
+                if(ControlSystem.SystemControl != null)
+                {
+                    if(ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K150CSystemControl ||
+                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K200CSystemControl ||
+                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K250CSystemControl ||
+                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K300CSystemControl ||
+                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K350CSystemControl)
+                    {
+                        return true;
+                    }         
+                }
+                return false;
+            }
+        }
+
+                /// <summary>
+        /// True when the processor type is a DMPS 4K 200/300/250/350 variant
+        /// </summary>
+        public static bool ControlSystemIsDmps4k3xxType
+        {
+            get
+            {
+                if(ControlSystem.SystemControl != null)
+                {
+                    if(ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K200CSystemControl ||
+                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K250CSystemControl ||
+                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K300CSystemControl ||
+                       ControlSystem.SystemControl.SystemControlType == eSystemControlType.Dmps34K350CSystemControl)
+                    {
+                        return true;
+                    }         
+                }
+                return false;
             }
         }
 

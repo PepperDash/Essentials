@@ -34,7 +34,7 @@ namespace PepperDash.Essentials.Core
 
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
-                Debug.Console(1, "Factory Attempting to create new C2N-RTHS Device");
+                Debug.Console(1, "Factory Attempting to create new DIN-CEN-CN2 Device");
 
                 var control = CommFactory.GetControlPropertiesConfig(dc);
                 var ipid = control.IpIdInt;
