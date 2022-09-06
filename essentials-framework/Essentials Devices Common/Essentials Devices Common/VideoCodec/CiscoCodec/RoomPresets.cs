@@ -32,12 +32,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         /// </summary>
         /// <param name="presets"></param>
         /// <returns></returns>
-        public static List<T> GetGenericPresets<T>(this List<IConvertiblePreset> presets)
+        public static List<TDestination> GetGenericPresets<TSource, TDestination>(this List<TSource> presets) where TSource : ConvertiblePreset where TDestination : PresetBase
         {
             return
                 presets.Select(preset => preset.ConvertCodecPreset())
                     .Where(newPreset => newPreset != null)
-                    .Cast<T>()
+                    .Cast<TDestination>()
                     .ToList();
         }
     }

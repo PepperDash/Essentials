@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using Crestron.SimplSharp;
@@ -161,6 +162,38 @@ namespace PepperDash.Essentials.Core
         {
             AssemblyVersion = assemblyVersion;
         }
+
+	    public static bool IsRunningDevelopmentVersion(List<string> developmentVersions, string minimumVersion)
+	    {
+	        if (Regex.Match(AssemblyVersion, @"^(\d*).(\d*).(\d*).*").Groups[1].Value == "0")
+	        {
+                Debug.Console(2, "Running Local Build.  Bypassing Dependency Check.");
+                return true;
+	        }
+
+	        if (developmentVersions == null)
+	        {
+	            Debug.Console(0, 
+                    "Development Plugin does not specify a list of versions.  Loading plugin may not work as expected.  Checking Minumum version");
+                return IsRunningMinimumVersionOrHigher(minimumVersion);
+	        }
+
+            Debug.Console(2, "Comparing running version '{0}' to minimum versions '{1}'", AssemblyVersion, developmentVersions);
+
+	        var versionMatch = developmentVersions.FirstOrDefault(x => x == AssemblyVersion);
+
+	        if (String.IsNullOrEmpty(versionMatch))
+	        {
+	            Debug.Console(0, "Essentials Build does not match any builds required for plugin load.  Bypassing Plugin Load.");
+	            return false;
+	        }
+
+            Debug.Console(2, "Essentials Build {0} matches list of development builds", AssemblyVersion);
+	        return IsRunningMinimumVersionOrHigher(minimumVersion);
+
+
+
+	    }
 
         /// <summary>
         /// Checks to see if the running version meets or exceed the minimum specified version.  For beta versions (0.xx.yy), will always return true.

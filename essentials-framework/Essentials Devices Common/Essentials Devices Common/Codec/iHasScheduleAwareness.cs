@@ -211,7 +211,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             get
             {
                 var joinable = StartTime.AddMinutes(-MinutesBeforeMeeting) <= DateTime.Now
-                    && DateTime.Now <= EndTime.AddMinutes(-5);
+                    && DateTime.Now <= EndTime.AddSeconds(-_joinableCooldownSeconds);
                 //Debug.Console(2, "Meeting Id: {0} joinable: {1}", Id, joinable);
                 return joinable;
             }
@@ -231,10 +231,22 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         [JsonIgnore]
         public eMeetingEventChangeType NotifiedChangeTypes { get; set; }
 
+        [JsonIgnore] private readonly int _joinableCooldownSeconds;
+
+
         public Meeting()
         {
             Calls = new List<Call>();
+            _joinableCooldownSeconds = 300;
         }
+
+        public Meeting(int joinableCooldownSeconds)
+        {
+            Calls = new List<Call>();
+            _joinableCooldownSeconds = joinableCooldownSeconds;
+        }
+
+
 
         #region Overrides of Object
 
