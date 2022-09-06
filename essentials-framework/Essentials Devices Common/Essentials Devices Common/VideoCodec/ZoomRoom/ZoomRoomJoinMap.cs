@@ -23,6 +23,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 JoinType = eJoinType.Digital
             });
 
+		[JoinName("CancelPasswordPrompt")]
+		public JoinDataComplete CancelPasswordPrompt = new JoinDataComplete(
+			new JoinData
+			{
+				JoinNumber = 7,
+				JoinSpan = 1
+			},
+			new JoinMetadata
+			{
+				Description = "cancels password prompt",
+				JoinCapabilities = eJoinCapabilities.FromSIMPL,
+				JoinType = eJoinType.Digital
+			});
+
         // TODO [ ] Issue #868
         [JoinName("PasswordIncorrect")]
         public JoinDataComplete PasswordIncorrect = new JoinDataComplete(

@@ -2495,6 +2495,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 
 			trilist.SetStringSigAction(joinMap.SubmitPassword.JoinNumber, SubmitPassword);
+			trilist.SetStringSigAction(joinMap.CancelPasswordPrompt.JoinNumber,
+				delegate { OnPasswordRequired(false, false, true, ""); });
 			PasswordRequired += (devices, args) =>
 			{
 				if (args.LoginAttemptCancelled)
