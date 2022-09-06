@@ -26,7 +26,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 	public enum eExternalSourceType {camera, desktop, document_camera, mediaplayer, PC, whiteboard, other}
 	public enum eExternalSourceMode {Ready, NotReady, Hidden, Error}
 
-    public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectoryClearSelection,
+    public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
         ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, 
         IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute, IHasDoNotDisturbMode,
@@ -492,11 +492,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			var tl = new TieLine(OsdSource.AudioVideoOutputPort, CodecOsdIn);
 			TieLineCollection.Default.Add(tl);
 		}
-
-        public void DirectoryClearSelection()
-        {
-            DirectoryClearSelectionBase();
-        }
 
         public void InitializeBranding(string roomKey)
         {

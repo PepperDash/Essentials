@@ -994,10 +994,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 	        return GetXSigString(tokenArray);
         }
 
-	    protected void DirectoryClearSelectionBase()
-	    {
-	        SelectDirectoryEntry(_directoryCodec, 0, _directoryTrilist, _directoryJoinmap);
-	    }
 
 		private void LinkVideoCodecDirectoryToApi(IHasDirectory codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
@@ -1009,16 +1005,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			trilist.SetUShortSigAction(joinMap.DirectorySelectRow.JoinNumber, (i) => SelectDirectoryEntry(codec, i, trilist, joinMap));
 
             //Special Change for protected directory clear
-		    _directoryCodec = codec as IHasDirectoryClearSelection;
 
-		    if (_directoryCodec != null)
-		    {
-		        _directoryTrilist = trilist;
-		        _directoryJoinmap = joinMap;
-		        trilist.SetBoolSigAction(joinMap.DirectoryClearSelection.JoinNumber, (b) =>  DirectoryClearSelectionBase());
-		    }
-
-
+            trilist.SetBoolSigAction(joinMap.DirectoryClearSelected.JoinNumber, (b) => SelectDirectoryEntry(_directoryCodec, 0, _directoryTrilist, _directoryJoinmap));
 
 		    // Report feedback for number of contact methods for selected contact
 

@@ -398,21 +398,6 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-        [JoinName("DirectoryClearSelection")]
-        public JoinDataComplete DirectoryClearSelection = new JoinDataComplete(
-            new JoinData
-            {
-                JoinNumber = 100,
-                JoinSpan = 1
-            },
-            new JoinMetadata
-            {
-                Description = "Directory Clear Entry Selection",
-                JoinCapabilities = eJoinCapabilities.FromSIMPL,
-                JoinType = eJoinType.Digital
-            });
-
-
 
 		[JoinName("DirectoryEntryIsContact")]
 		public JoinDataComplete DirectoryEntryIsContact = new JoinDataComplete(
@@ -539,6 +524,21 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
+
+        [JoinName("DirectoryClearSelected")]
+        public JoinDataComplete DirectoryClearSelected = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 110,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Clear Selected Entry and String from Search",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
 
 		[JoinName("CameraTiltUp")]
 		public JoinDataComplete CameraTiltUp = new JoinDataComplete(
