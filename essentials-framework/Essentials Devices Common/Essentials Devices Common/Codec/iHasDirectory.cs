@@ -49,6 +49,11 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; } 
     }
 
+    public interface IHasDirectoryClearSelection : IHasDirectory
+    {
+        void DirectoryClearSelection();
+    }
+
 	/// <summary>
 	/// 
 	/// </summary>
