@@ -3357,6 +3357,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         {
             Debug.Console(2, this, "Password Submitted: {0}", password);
             Dial(_lastDialedMeetingNumber, password);
+			OnPasswordRequired(false, false, true, "");		
         }
 
         void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
