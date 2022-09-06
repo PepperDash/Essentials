@@ -217,6 +217,7 @@
     <Compile Include="DeviceTypeInterfaces\IHasPhoneDialing.cs" />
     <Compile Include="DeviceTypeInterfaces\IMobileControl.cs" />
     <Compile Include="Extensions\JsonExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Factory\IDeviceFactory.cs" />
     <Compile Include="Factory\ReadyEventArgs.cs" />

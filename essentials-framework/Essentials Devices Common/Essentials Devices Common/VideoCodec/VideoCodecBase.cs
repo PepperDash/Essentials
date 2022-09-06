@@ -31,6 +31,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		private const int XSigEncoding = 28591;
         protected const int MaxParticipants = 50;
 		private readonly byte[] _clearBytes = XSigHelpers.ClearOutputs();
+
+	    private IHasDirectory _directoryCodec;
+	    private BasicTriList _directoryTrilist;
+	    private VideoCodecControllerJoinMap _directoryJoinmap;
+
+        protected string _timeFormatSpecifier;
+	    protected string _dateFormatSpecifier; 
+
+
 		protected VideoCodecBase(DeviceConfig config)
 			: base(config)
 		{
@@ -371,10 +380,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				LinkVideoCodecCameraLayoutsToApi(codec as IHasCodecLayouts, trilist, joinMap);
 			}
 
-		    if (codec is IHasCodecLayoutsAvailable)
-		    {
-		        LinkVideoCodecAvailableLayoutsToApi(codec as IHasCodecLayoutsAvailable, trilist, joinMap);
-		    }
 
 			if (codec is IHasSelfviewPosition)
 			{
@@ -692,37 +697,37 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			{
 				if (meetingIndex >= maxParticipants * offset) break;
 
-//                Debug.Console(2, this,
-//@"Updating Participant on xsig:
-//Name: {0} (s{9})
-//AudioMute: {1} (d{10})
-//VideoMute: {2} (d{11})
-//CanMuteVideo: {3} (d{12})
-//CanUMuteVideo: {4} (d{13})
-//IsHost: {5} (d{14})
-//HandIsRaised: {6} (d{15})
-//IsPinned: {7} (d{16})
-//ScreenIndexIsPinnedTo: {8} (a{17})
-//",
-// participant.Name,
-// participant.AudioMuteFb,
-// participant.VideoMuteFb,
-// participant.CanMuteVideo,
-// participant.CanUnmuteVideo,
-// participant.IsHost,
-// participant.HandIsRaisedFb,
-// participant.IsPinnedFb,
-// participant.ScreenIndexIsPinnedToFb,
-// stringIndex + 1,
-// digitalIndex + 1,
-// digitalIndex + 2,
-// digitalIndex + 3,
-// digitalIndex + 4,
-// digitalIndex + 5,
-// digitalIndex + 6,
-// digitalIndex + 7,
-// analogIndex + 1
-// );
+                //                Debug.Console(2, this,
+                //@"Updating Participant on xsig:
+                //Name: {0} (s{9})
+                //AudioMute: {1} (d{10})
+                //VideoMute: {2} (d{11})
+                //CanMuteVideo: {3} (d{12})
+                //CanUMuteVideo: {4} (d{13})
+                //IsHost: {5} (d{14})
+                //HandIsRaised: {6} (d{15})
+                //IsPinned: {7} (d{16})
+                //ScreenIndexIsPinnedTo: {8} (a{17})
+                //",
+                // participant.Name,
+                // participant.AudioMuteFb,
+                // participant.VideoMuteFb,
+                // participant.CanMuteVideo,
+                // participant.CanUnmuteVideo,
+                // participant.IsHost,
+                // participant.HandIsRaisedFb,
+                // participant.IsPinnedFb,
+                // participant.ScreenIndexIsPinnedToFb,
+                // stringIndex + 1,
+                // digitalIndex + 1,
+                // digitalIndex + 2,
+                // digitalIndex + 3,
+                // digitalIndex + 4,
+                // digitalIndex + 5,
+                // digitalIndex + 6,
+                // digitalIndex + 7,
+                // analogIndex + 1
+                // );
 
 
 				//digitals
@@ -792,7 +797,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			trilist.SetBoolSigAction(joinMap.SourceShareAutoStart.JoinNumber, b => AutoShareContentWhileInCall = b);
 		}
 
-		private List<Meeting> _currentMeetings = new List<Meeting>();
+        private List<Meeting> _currentMeetings = new List<Meeting>();
 
 		private void LinkVideoCodecScheduleToApi(IHasScheduleAwareness codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
@@ -904,90 +909,95 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
         // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
         public IntFeedback MeetingsToDisplayFeedback { get; set; }
 
-		private string UpdateMeetingsListXSig(List<Meeting> meetings)
-		{
+        private string UpdateMeetingsListXSig(List<Meeting> meetings)
+        {
             // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
             //const int _meetingsToDisplay = 3;            
-			const int maxDigitals = 2;
-			const int maxStrings = 7;
-			const int offset = maxDigitals + maxStrings;
-			var digitalIndex = maxStrings * _meetingsToDisplay; //15
-			var stringIndex = 0;
-			var meetingIndex = 0;
+	        const int maxDigitals = 2;
+	        const int maxStrings = 7;
+	        const int offset = maxDigitals + maxStrings;
+	        var digitalIndex = maxStrings * _meetingsToDisplay; //15
+	        var stringIndex = 0;
+	        var meetingIndex = 0;
 
-			var tokenArray = new XSigToken[_meetingsToDisplay * offset];
-			/* 
-			 * Digitals
-			 * IsJoinable - 1
-			 * IsDialable - 2
-			 * 
-			 * Serials
-			 * Organizer - 1
-			 * Title - 2
-			 * Start Date - 3
-			 * Start Time - 4
-			 * End Date - 5
-			 * End Time - 6
-			 * Id - 7
-			*/
+	        var tokenArray = new XSigToken[_meetingsToDisplay * offset];
+	        /* 
+	         * Digitals
+	         * IsJoinable - 1
+	         * IsDialable - 2
+	         * 
+	         * Serials
+	         * Organizer - 1
+	         * Title - 2
+	         * Start Date - 3
+	         * Start Time - 4
+	         * End Date - 5
+	         * End Time - 6
+	         * Id - 7
+	        */
+            
+
+	        foreach (var meeting in meetings)
+	        {
+		        var currentTime = DateTime.Now;
+
+		        if (meeting.StartTime < currentTime && meeting.EndTime < currentTime) continue;
+
+		        if (meetingIndex >= _meetingsToDisplay * offset)
+		        {
+			        Debug.Console(2, this, "Max Meetings reached");
+			        break;
+		        }
+
+		        //digitals
+		        tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, meeting.Joinable);
+		        tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, meeting.Id != "0");
+
+		        //serials
+		        tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, meeting.Organizer);
+		        tokenArray[stringIndex + 1] = new XSigSerialToken(stringIndex + 2, meeting.Title);
+                tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, meeting.StartTime.ToString(_dateFormatSpecifier.NullIfEmpty() ?? "d", Global.Culture));
+		        tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, meeting.StartTime.ToString(_timeFormatSpecifier.NullIfEmpty() ?? "t", Global.Culture));
+                tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, meeting.EndTime.ToString(_dateFormatSpecifier.NullIfEmpty() ?? "d", Global.Culture));
+                tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 6, meeting.EndTime.ToString(_timeFormatSpecifier.NullIfEmpty() ?? "t", Global.Culture));
+		        tokenArray[stringIndex + 6] = new XSigSerialToken(stringIndex + 7, meeting.Id);
 
 
-			foreach (var meeting in meetings)
-			{
-				var currentTime = DateTime.Now;
+		        digitalIndex += maxDigitals;
+		        meetingIndex += offset;
+		        stringIndex += maxStrings;
+	        }
 
-				if (meeting.StartTime < currentTime && meeting.EndTime < currentTime) continue;
+	        while (meetingIndex < _meetingsToDisplay * offset)
+	        {
+		        Debug.Console(2, this, "Clearing unused data. Meeting Index: {0} MaxMeetings * Offset: {1}",
+			        meetingIndex, _meetingsToDisplay * offset);
 
-				if (meetingIndex >= _meetingsToDisplay * offset)
-				{
-					Debug.Console(2, this, "Max Meetings reached");
-					break;
-				}
+		        //digitals
+		        tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
+		        tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, false);
 
-				//digitals
-				tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, meeting.Joinable);
-				tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, meeting.Id != "0");
+		        //serials
+		        tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, String.Empty);
+		        tokenArray[stringIndex + 1] = new XSigSerialToken(stringIndex + 2, String.Empty);
+		        tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, String.Empty);
+		        tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, String.Empty);
+		        tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, String.Empty);
+		        tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 6, String.Empty);
+		        tokenArray[stringIndex + 6] = new XSigSerialToken(stringIndex + 7, String.Empty);
 
-				//serials
-				tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, meeting.Organizer);
-				tokenArray[stringIndex + 1] = new XSigSerialToken(stringIndex + 2, meeting.Title);
-                tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, meeting.StartTime.ToString("t", Global.Culture));
-				tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, meeting.StartTime.ToString("t", Global.Culture));
-                tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, meeting.EndTime.ToString("t", Global.Culture));
-				tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 6, meeting.EndTime.ToString("t", Global.Culture));
-				tokenArray[stringIndex + 6] = new XSigSerialToken(stringIndex + 7, meeting.Id);
+		        digitalIndex += maxDigitals;
+		        meetingIndex += offset;
+		        stringIndex += maxStrings;
+	        }
 
+	        return GetXSigString(tokenArray);
+        }
 
-				digitalIndex += maxDigitals;
-				meetingIndex += offset;
-				stringIndex += maxStrings;
-			}
-
-			while (meetingIndex < _meetingsToDisplay * offset)
-			{
-				Debug.Console(2, this, "Clearing unused data. Meeting Index: {0} MaxMeetings * Offset: {1}",
-					meetingIndex, _meetingsToDisplay * offset);
-
-				//digitals
-				tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
-				tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, false);
-
-				//serials
-				tokenArray[stringIndex] = new XSigSerialToken(stringIndex + 1, String.Empty);
-				tokenArray[stringIndex + 1] = new XSigSerialToken(stringIndex + 2, String.Empty);
-				tokenArray[stringIndex + 2] = new XSigSerialToken(stringIndex + 3, String.Empty);
-				tokenArray[stringIndex + 3] = new XSigSerialToken(stringIndex + 4, String.Empty);
-				tokenArray[stringIndex + 4] = new XSigSerialToken(stringIndex + 5, String.Empty);
-				tokenArray[stringIndex + 5] = new XSigSerialToken(stringIndex + 6, String.Empty);
-				tokenArray[stringIndex + 6] = new XSigSerialToken(stringIndex + 7, String.Empty);
-
-				digitalIndex += maxDigitals;
-				meetingIndex += offset;
-				stringIndex += maxStrings;
-			}
-
-			return GetXSigString(tokenArray);
-		}
+	    protected void DirectoryClearSelectionBase()
+	    {
+	        SelectDirectoryEntry(_directoryCodec, 0, _directoryTrilist, _directoryJoinmap);
+	    }
 
 		private void LinkVideoCodecDirectoryToApi(IHasDirectory codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
@@ -998,10 +1008,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 			trilist.SetUShortSigAction(joinMap.DirectorySelectRow.JoinNumber, (i) => SelectDirectoryEntry(codec, i, trilist, joinMap));
 
-		    trilist.SetBoolSigAction(joinMap.DirectoryClearSelection.JoinNumber,
-		        delegate { SelectDirectoryEntry(codec, 0, trilist, joinMap); });
+            //Special Change for protected directory clear
+		    _directoryCodec = codec as IHasDirectoryClearSelection;
 
-            // Report feedback for number of contact methods for selected contact
+		    if (_directoryCodec != null)
+		    {
+		        _directoryTrilist = trilist;
+		        _directoryJoinmap = joinMap;
+		        trilist.SetBoolSigAction(joinMap.DirectoryClearSelection.JoinNumber, (b) =>  DirectoryClearSelectionBase());
+		    }
+
+
+		    // Report feedback for number of contact methods for selected contact
 
 			trilist.SetSigFalseAction(joinMap.DirectoryRoot.JoinNumber, codec.SetCurrentDirectoryToRoot);
 
@@ -1037,7 +1055,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				trilist.SetString(joinMap.DirectoryEntries.JoinNumber, directoryXSig);
 			};
-
+            
             trilist.OnlineStatusChange += (device, args) =>
             {
                 if (!args.DeviceOnLine) return;
@@ -1050,13 +1068,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             };
 		}
 
-
 		private void SelectDirectoryEntry(IHasDirectory codec, ushort i, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
             if (i > codec.CurrentDirectoryResult.CurrentDirectoryResults.Count) return;
 		    _selectedDirectoryItem = i == 0 ? null : codec.CurrentDirectoryResult.CurrentDirectoryResults[i - 1];
+            trilist.SetUshort(joinMap.DirectorySelectRowFeedback.JoinNumber, i);
 
-            trilist.SetUshort(joinMap.DirectorySelectRow.JoinNumber, i);
+            if (_selectedDirectoryItem == null) trilist.SetBool(joinMap.DirectoryEntryIsContact.JoinNumber, false);
+
 
 			if (_selectedDirectoryItem is DirectoryFolder)
 			{
@@ -1067,6 +1086,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 trilist.ClearUShortSigAction(joinMap.SelectContactMethod.JoinNumber);
                 trilist.ClearBoolSigAction(joinMap.DirectoryDialSelectedLine.JoinNumber);
                 trilist.ClearBoolSigAction(joinMap.DirectoryDialSelectedContactMethod.JoinNumber);
+			    trilist.SetBool(joinMap.DirectoryEntryIsContact.JoinNumber, false);
                 return;
 			}
 
@@ -1074,6 +1094,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             trilist.SetString(joinMap.DirectorySelectedFolderName.JoinNumber, string.Empty);
 
             var selectedContact = _selectedDirectoryItem as DirectoryContact;
+
+            if (selectedContact != null && selectedContact.ContactMethods.Count >= 1)
+		    {
+		        trilist.SetBool(joinMap.DirectoryEntryIsContact.JoinNumber, true);
+		    }
 
 		    trilist.SetString(joinMap.DirectoryEntrySelectedName.JoinNumber,
 		        selectedContact != null ? selectedContact.Name : string.Empty);
@@ -1487,14 +1512,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 			codec.LocalLayoutFeedback.LinkInputSig(trilist.StringInput[joinMap.CurrentLayoutStringFb.JoinNumber]);
 		}
-
-	    private void LinkVideoCodecAvailableLayoutsToApi(IHasCodecLayoutsAvailable codec, BasicTriList trilist,
-	        VideoCodecControllerJoinMap joinMap)
-	    {
-	        codec.AvailableLocalLayoutsFeedback.LinkInputSig(trilist.StringInput[joinMap.AvailableLayoutsFb.JoinNumber]);
-
-	        trilist.SetStringSigAction(joinMap.SelectLayout.JoinNumber, codec.LocalLayoutSet);
-	    }
 
 		private void LinkVideoCodecCameraModeToApi(IHasCameraAutoMode codec, BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
@@ -2021,5 +2038,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             Label = label;
         }
     }
+
+    
 
 }
