@@ -24,7 +24,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 	public enum eExternalSourceType {camera, desktop, document_camera, mediaplayer, PC, whiteboard, other}
-	public enum eExternalSourceMode {Ready, NotReady, Hidden, Error} 
+	public enum eExternalSourceMode {Ready, NotReady, Hidden, Error}
 
     public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
@@ -1023,7 +1023,7 @@ ConnectorID: {2}"
                     if (tempPresets.Count > 0)
                     {
                         // Create temporary list to store the existing items from the CiscoCodecStatus.RoomPreset collection
-                        var existingRoomPresets = new List<IConvertiblePreset>();
+                        var existingRoomPresets = new List<CiscoCodecStatus.RoomPreset>();
                         // Add the existing items to the temporary list
                         existingRoomPresets.AddRange(CodecStatus.Status.RoomPreset);
                         // Populate the CodecStatus object (this will append new values to the RoomPreset collection
@@ -1031,8 +1031,6 @@ ConnectorID: {2}"
 
                         var jResponse = JObject.Parse(response);
 
-                        List<CiscoCodecStatus.RoomPreset> convertedRoomPresets =
-                            existingRoomPresets.Select(a => (CiscoCodecStatus.RoomPreset) a).ToList();
 
                         IList<JToken> roomPresets = jResponse["Status"]["RoomPreset"].Children().ToList();
                         // Iterate the new items in this response agains the temporary list.  Overwrite any existing items and add new ones.
@@ -1041,7 +1039,7 @@ ConnectorID: {2}"
                             var preset = camPreset as CiscoCodecStatus.RoomPreset;
                             if (preset == null) continue;
                             // First fine the existing preset that matches the id
-                            var existingPreset = convertedRoomPresets.FirstOrDefault(p => p.id.Equals(preset.id));
+                            var existingPreset = existingRoomPresets.FirstOrDefault(p => p.id.Equals(preset.id));
                             if (existingPreset != null)
                             {
                                 Debug.Console(1, this, "Existing Room Preset with ID: {0} found. Updating.", existingPreset.id);
@@ -1073,7 +1071,7 @@ ConnectorID: {2}"
                         CodecStatus.Status.RoomPreset = existingRoomPresets;
 
                         // Generecise the list
-                        NearEndPresets = existingRoomPresets.GetGenericPresets<CodecRoomPreset>();
+                        NearEndPresets = existingRoomPresets.GetGenericPresets<CiscoCodecStatus.RoomPreset, CodecRoomPreset>();
 
                         var handler = CodecRoomPresetsListHasChanged;
                         if (handler != null)
