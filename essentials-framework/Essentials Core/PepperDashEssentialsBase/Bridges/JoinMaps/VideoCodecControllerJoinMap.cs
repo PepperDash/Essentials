@@ -407,7 +407,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
             },
             new JoinMetadata
             {
-                Description = "Directory Search Busy FB",
+                Description = "Directory Clear Entry Selection",
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });

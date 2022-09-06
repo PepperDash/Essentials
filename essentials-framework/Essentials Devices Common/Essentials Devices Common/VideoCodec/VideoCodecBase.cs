@@ -1207,50 +1207,48 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
             return GetXSigString(tokenArray);
         }
 
-		private string UpdateDirectoryXSig(CodecDirectory directory, bool isRoot)
-		{
-            const int xSigMaxIndex = 1023;
-            var tokenArray = new XSigToken[directory.CurrentDirectoryResults.Count > xSigMaxIndex
-                ? xSigMaxIndex
-                : directory.CurrentDirectoryResults.Count];
+	    private string UpdateDirectoryXSig(CodecDirectory directory, bool isRoot)
+	    {
+	        var xSigMaxIndex = 1023;
+	        var tokenArray = new XSigToken[directory.CurrentDirectoryResults.Count > xSigMaxIndex
+	            ? xSigMaxIndex
+	            : directory.CurrentDirectoryResults.Count];
 
-            Debug.Console(2, this, "IsRoot: {0}, Directory Count: {1}, TokenArray.Length: {2}", isRoot, directory.CurrentDirectoryResults.Count, tokenArray.Length);
+	        Debug.Console(2, this, "IsRoot: {0}, Directory Count: {1}, TokenArray.Length: {2}", isRoot,
+	            directory.CurrentDirectoryResults.Count, tokenArray.Length);
 
-            var contacts = directory.CurrentDirectoryResults.Count > xSigMaxIndex
-                ? directory.CurrentDirectoryResults.Take(xSigMaxIndex)
-                : directory.CurrentDirectoryResults;
+	        var contacts = directory.CurrentDirectoryResults.Count > xSigMaxIndex
+	            ? directory.CurrentDirectoryResults.Take(xSigMaxIndex)
+	            : directory.CurrentDirectoryResults;
 
-            var contactsToDisplay = isRoot
-                ? contacts.Where(c => c.ParentFolderId == "root")
-                : contacts.Where(c => c.ParentFolderId != "root");
+	        var counterIndex = 1;
+	        foreach (var entry in contacts)
+	        {
+	            var arrayIndex = counterIndex - 1;
+	            var entryIndex = counterIndex;
 
-            var counterIndex = 1;
-            foreach (var entry in contactsToDisplay)
-            {
-                var arrayIndex = counterIndex - 1;
-                var entryIndex = counterIndex;
+	            Debug.Console(2, this, "Entry{2:0000} Name: {0}, Folder ID: {1}", entry.Name, entry.FolderId, entryIndex);
 
-                Debug.Console(2, this, "Entry{2:0000} Name: {0}, Folder ID: {1}, Type: {3}, ParentFolderId: {4}",
-                    entry.Name, entry.FolderId, entryIndex, entry.GetType().GetCType().FullName, entry.ParentFolderId);
+	            if (entry is DirectoryFolder && entry.ParentFolderId == "root")
+	            {
+	                tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, String.Format("[+] {0}", entry.Name));
 
-                if (entry is DirectoryFolder)
-                {
-                    tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, String.Format("[+] {0}", entry.Name));
+	                counterIndex++;
+	                counterIndex++;
 
-                    counterIndex++;
+	                continue;
+	            }
 
-                    continue;
-                }
+	            tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, entry.Name);
 
-                tokenArray[arrayIndex] = new XSigSerialToken(entryIndex, entry.Name);
+	            counterIndex++;
+	        }
 
-                counterIndex++;
-            }
+	        return GetXSigString(tokenArray);
 
-            return GetXSigString(tokenArray);
-		}
+	    }
 
-		private void LinkVideoCodecCallControlsToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+	    private void LinkVideoCodecCallControlsToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
 			trilist.SetSigFalseAction(joinMap.ManualDial.JoinNumber,
 				() => Dial(trilist.StringOutput[joinMap.CurrentDialString.JoinNumber].StringValue));
