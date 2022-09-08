@@ -218,16 +218,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             {
                 return () =>
                     {
-                        Debug.Console(2, this, "PrivacyModeIsOnFeedbackFunc. IsInCall: {0} muteState: {1}", IsInCall, Configuration.Call.Microphone.Mute);
+                        //Debug.Console(2, this, "PrivacyModeIsOnFeedbackFunc. IsInCall: {0} muteState: {1}", IsInCall, Configuration.Call.Microphone.Mute);
                         if (IsInCall)
                         {
-                            Debug.Console(2, this, "reporting muteState: ", Configuration.Call.Microphone.Mute);
+                            //Debug.Console(2, this, "reporting muteState: ", Configuration.Call.Microphone.Mute);
                             return Configuration.Call.Microphone.Mute;
                         }
                         else
                         {
-                            Debug.Console(2, this, "muteState: true", IsInCall);
-                            return true;
+                            //Debug.Console(2, this, "muteState: true", IsInCall);
+                            return false;
                         }
                     };
             }
