@@ -49,6 +49,7 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         Stack<CodecDirectory> DirectoryBrowseHistoryStack { get; } 
     }
 
+
 	/// <summary>
 	/// 
 	/// </summary>

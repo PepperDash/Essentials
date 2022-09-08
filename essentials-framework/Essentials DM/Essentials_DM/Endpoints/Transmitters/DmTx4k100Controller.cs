@@ -6,6 +6,7 @@ using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
+using Newtonsoft.Json;
 
 namespace PepperDash.Essentials.DM
 {
@@ -19,14 +20,6 @@ namespace PepperDash.Essentials.DM
 
         public RoutingInputPort HdmiIn { get; private set; }
         public RoutingOutputPort DmOut { get; private set; }
-
-        //public IntFeedback VideoSourceNumericFeedback { get; protected set; }
-        //public IntFeedback AudioSourceNumericFeedback { get; protected set; }
-        //public IntFeedback HdmiIn1HdcpCapabilityFeedback { get; protected set; }
-        //public IntFeedback HdmiIn2HdcpCapabilityFeedback { get; protected set; }
-
-        //public override IntFeedback HdcpSupportAllFeedback { get; protected set; }
-        //public override ushort HdcpSupportCapability { get; protected set; }
 
         /// <summary>
         /// Helps get the "real" inputs, including when in Auto
@@ -70,11 +63,34 @@ namespace PepperDash.Essentials.DM
             HdmiIn.Port = Tx;
 
             PreventRegistration = true;
+
+            var parentDev = DeviceManager.GetDeviceForKey(key);
+            var num = tx.DMInputOutput.Number;
+            if (parentDev is DmpsRoutingController)
+            {
+                var dmps = parentDev as DmpsRoutingController;
+                IsOnline.SetValueFunc(() => dmps.InputEndpointOnlineFeedbacks[num].BoolValue);
+                dmps.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => IsOnline.FireUpdate();
+            }
+            else if (parentDev is DmChassisController)
+            {
+                var controller = parentDev as DmChassisController;
+                IsOnline.SetValueFunc(() => controller.InputEndpointOnlineFeedbacks[num].BoolValue);
+                controller.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => IsOnline.FireUpdate();
+            }
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            Debug.Console(1, this, "No properties to link. Skipping device {0}", Name);
+            var joinMap = new HDBaseTTxControllerJoinMap(joinStart);
+
+            var joinMapSerialized = JoinMapHelper.GetSerializedJoinMapForDevice(joinMapKey);
+
+            if (!string.IsNullOrEmpty(joinMapSerialized))
+                joinMap = JsonConvert.DeserializeObject<HDBaseTTxControllerJoinMap>(joinMapSerialized);
+
+            this.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
+            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = this.Name;
         }
 
         #region IIROutputPorts Members
