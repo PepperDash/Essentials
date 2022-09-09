@@ -214,7 +214,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		protected override Func<bool> PrivacyModeIsOnFeedbackFunc
 		{
-			get { return () => Configuration.Call.Microphone.Mute; }
+            get
+            {
+                return () =>
+                    {
+                        //Debug.Console(2, this, "PrivacyModeIsOnFeedbackFunc. IsInCall: {0} muteState: {1}", IsInCall, Configuration.Call.Microphone.Mute);
+                        if (IsInCall)
+                        {
+                            //Debug.Console(2, this, "reporting muteState: ", Configuration.Call.Microphone.Mute);
+                            return Configuration.Call.Microphone.Mute;
+                        }
+                        else
+                        {
+                            //Debug.Console(2, this, "muteState: true", IsInCall);
+                            return false;
+                        }
+                    };
+            }
 		}
 
 		protected override Func<bool> StandbyIsOnFeedbackFunc
