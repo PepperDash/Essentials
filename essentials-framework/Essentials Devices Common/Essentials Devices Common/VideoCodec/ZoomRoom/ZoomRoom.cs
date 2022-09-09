@@ -2511,6 +2511,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 
 			trilist.SetStringSigAction(joinMap.SubmitPassword.JoinNumber, SubmitPassword);
+			trilist.SetStringSigAction(joinMap.CancelPasswordPrompt.JoinNumber,
+				delegate { OnPasswordRequired(false, false, true, ""); });
 			PasswordRequired += (devices, args) =>
 			{
 				if (args.LoginAttemptCancelled)
@@ -3373,6 +3375,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         {
             Debug.Console(2, this, "Password Submitted: {0}", password);
             Dial(_lastDialedMeetingNumber, password);
+			OnPasswordRequired(false, false, true, "");		
         }
 
         void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
