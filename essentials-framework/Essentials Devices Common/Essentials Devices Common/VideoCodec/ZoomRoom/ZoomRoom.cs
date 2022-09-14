@@ -240,7 +240,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		protected override Func<string> SharingSourceFeedbackFunc
 		{
-			get { return () => Status.Sharing.dispState; }
+            get
+            {
+                return () =>
+                    {
+                        if (Status.Sharing.isAirHostClientConnected)
+                            return "Airplay";
+                        else if (Status.Sharing.isDirectPresentationConnected || Status.Sharing.isBlackMagicConnected)
+                            return "Laptop";
+                        else return "None";
+
+                    };
+            }
 		}
 
 		protected override Func<bool> SharingContentIsOnFeedbackFunc
@@ -743,15 +754,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			Status.Sharing.PropertyChanged += (o, a) =>
 			{
+                SharingSourceFeedback.FireUpdate();
 				switch (a.PropertyName)
 				{
-					case "dispState":
-						SharingSourceFeedback.FireUpdate();
-						break;
 					case "password":
 						break;
-                    case "isAirHostClientConnected":
-                    case "isDirectPresentationConnected":
                     case "isSharingBlackMagic":
                         {
                             Debug.Console(2, this, "Updating sharing status: {0}", a.PropertyName);
