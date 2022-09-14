@@ -22,6 +22,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 		void MinMaxLayoutToggle();
     }
 
+
     /// <summary>
     /// Defines the requirements for Zoom Room layout control
     /// </summary>

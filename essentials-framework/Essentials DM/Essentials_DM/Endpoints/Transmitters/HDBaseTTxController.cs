@@ -6,6 +6,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.DM.Endpoints.Transmitters;
+using Crestron.SimplSharpPro.DM;
 using Newtonsoft.Json;
 
 using PepperDash.Core;
@@ -18,7 +19,7 @@ namespace PepperDash.Essentials.DM
     /// Controller class for suitable for HDBaseT transmitters
     /// </summary>
     [Description("Wrapper Class for HDBaseT devices based on HDTx3CB class")]
-    public class HDBaseTTxController: BasicDmTxControllerBase, IRoutingInputsOutputs, IComPorts
+    public class HDBaseTTxController : BasicDmTxControllerBase, IRoutingInputsOutputs, IComPorts
     {
         public RoutingInputPort HdmiIn { get; private set; }
         public RoutingOutputPort DmOut { get; private set; }
@@ -26,6 +27,8 @@ namespace PepperDash.Essentials.DM
         public HDBaseTTxController(string key, string name, HDTx3CB tx)
             : base(key, name, tx)
         {
+            PreventRegistration = true;
+
             HdmiIn = new RoutingInputPort(DmPortName.HdmiIn1, eRoutingSignalType.Audio | eRoutingSignalType.Video,
                 eRoutingPortConnectionType.Hdmi, null, this) { Port = tx };
 
@@ -34,6 +37,21 @@ namespace PepperDash.Essentials.DM
 
             InputPorts = new RoutingPortCollection<RoutingInputPort> { HdmiIn };
             OutputPorts = new RoutingPortCollection<RoutingOutputPort> { DmOut };
+
+            var parentDev = DeviceManager.GetDeviceForKey(key);
+            var num = tx.DMInputOutput.Number;
+            if (parentDev is DmpsRoutingController)
+            {
+                var dmps = parentDev as DmpsRoutingController;
+                IsOnline.SetValueFunc(() => dmps.InputEndpointOnlineFeedbacks[num].BoolValue);
+                dmps.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => IsOnline.FireUpdate();
+            }
+            else if (parentDev is DmChassisController)
+            {
+                var controller = parentDev as DmChassisController;
+                IsOnline.SetValueFunc(() => controller.InputEndpointOnlineFeedbacks[num].BoolValue);
+                controller.InputEndpointOnlineFeedbacks[num].OutputChange += (o, a) => IsOnline.FireUpdate();
+            }
         }
 
         #region IRoutingInputs Members
@@ -79,7 +97,7 @@ namespace PepperDash.Essentials.DM
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             this.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
-
+            trilist.StringInput[joinMap.Name.JoinNumber].StringValue = this.Name;
         }
 
         #endregion
@@ -100,6 +118,10 @@ namespace PepperDash.Essentials.DM
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.Digital
             });
+
+        [JoinName("Name")]
+        public JoinDataComplete Name = new JoinDataComplete(new JoinData { JoinNumber = 6, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM Tx Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
 	
         /// <summary>
 		/// Plugin device BridgeJoinMap constructor

@@ -17,6 +17,10 @@ namespace PepperDash.Essentials.Core.Bridges
         public JoinDataComplete MixerPresetRecall = new JoinDataComplete(new JoinData { JoinNumber = 3, JoinSpan = 1 },
             new JoinMetadata { Description = "Mixer Preset Recall Set", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Analog });
 
+        [JoinName("MixerEqPresetRecall")]
+        public JoinDataComplete MixerEqPresetRecall = new JoinDataComplete(new JoinData { JoinNumber = 4, JoinSpan = 1 },
+            new JoinMetadata { Description = "Mixer Eq Preset Recall Set", JoinCapabilities = eJoinCapabilities.FromSIMPL, JoinType = eJoinType.Analog });
+
         [JoinName("MasterVolumeMuteOn")]
         public JoinDataComplete MasterVolumeMuteOn = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
             new JoinMetadata { Description = "Master Volume Mute On Set / Get", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.Digital });
