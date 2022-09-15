@@ -2509,17 +2509,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		    trilist.SetSigTrueAction(joinMap.ShareOnlyMeeting.JoinNumber, StartSharingOnlyMeeting);
             trilist.SetSigTrueAction(joinMap.StartNormalMeetingFromSharingOnlyMeeting.JoinNumber, StartNormalMeetingFromSharingOnlyMeeting);
 
-            // not sure if this would be needed here, should be handled by VideoCodecBase.cs LinkToApi methods
-            //DirectoryResultReturned += (device, args) =>
-            //{
-            //    // add logic here if necessary when event fires
-
-            //};
-
-
 			trilist.SetStringSigAction(joinMap.SubmitPassword.JoinNumber, SubmitPassword);
-			trilist.SetStringSigAction(joinMap.CancelPasswordPrompt.JoinNumber,
-				delegate { OnPasswordRequired(false, false, true, ""); });
+            //trilist.SetSigFalseAction(joinMap.CancelPasswordPrompt.JoinNumber, () =>
+            //    OnPasswordRequired(false, false, true, ""));
+
+            // Subscribe to call status to clear ShowPasswordPrompt when in meeting
+            this.CallStatusChange += (o, a) =>
+                {
+                    if (IsInCall)
+                    {
+                        trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, false);
+                    }
+
+                };
+
 			PasswordRequired += (devices, args) =>
 			{
 				if (args.LoginAttemptCancelled)
@@ -3382,7 +3385,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         {
             Debug.Console(2, this, "Password Submitted: {0}", password);
             Dial(_lastDialedMeetingNumber, password);
-			OnPasswordRequired(false, false, true, "");		
+            //OnPasswordRequired(false, false, true, "");		
         }
 
         void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
