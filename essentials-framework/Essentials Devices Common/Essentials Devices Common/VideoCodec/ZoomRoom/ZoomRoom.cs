@@ -2513,14 +2513,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             // Subscribe to call status to clear ShowPasswordPrompt when in meeting
             this.CallStatusChange += (o, a) =>
                 {
-                    if (IsInCall)
+                    if (a.CallItem.Status == eCodecCallStatus.Connected || a.CallItem.Status == eCodecCallStatus.Disconnected)
                     {
-                        trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, false);
+                        trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, false);
                     }
 
                 };
 
-            trilist.SetSigFalseAction(joinMap.CancelPasswordPrompt.JoinNumber, () => CancelPasswordPrompt());
+            trilist.SetSigFalseAction(joinMap.CancelJoinAttempt.JoinNumber, () => trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, false));
 
 			PasswordRequired += (devices, args) =>
 			{
@@ -2528,7 +2528,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 				if (args.LoginAttemptCancelled)
 				{
-					trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, false);
+					trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, false);
 					return;
 				}
 
@@ -2544,7 +2544,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				}
 
 				trilist.SetBool(joinMap.PasswordIncorrect.JoinNumber, args.LastAttemptWasIncorrect);
-				trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, true);
+				trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, true);
 			};
 
 			trilist.OnlineStatusChange += (device, args) =>

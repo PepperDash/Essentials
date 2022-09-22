@@ -8,8 +8,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	{
 		#region Digital
 
-        [JoinName("CancelPasswordPrompt")]
-        public JoinDataComplete CancelPasswordPrompt = new JoinDataComplete(
+        [JoinName("CancelJoinAttempt")]
+        public JoinDataComplete CancelJoinAttempt = new JoinDataComplete(
             new JoinData
             {
                 JoinNumber = 5,
@@ -22,8 +22,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 JoinType = eJoinType.Digital
             });
 
-        [JoinName("ShowPasswordPrompt")]
-        public JoinDataComplete ShowPasswordPrompt = new JoinDataComplete(
+        [JoinName("MeetingPasswordRequired")]
+        public JoinDataComplete MeetingPasswordRequired = new JoinDataComplete(
             new JoinData
             {
                 JoinNumber = 6,
