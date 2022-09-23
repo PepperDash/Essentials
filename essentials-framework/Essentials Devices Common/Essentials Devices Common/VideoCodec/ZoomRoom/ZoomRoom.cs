@@ -2520,7 +2520,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
                 };
 
-            trilist.SetSigFalseAction(joinMap.CancelJoinAttempt.JoinNumber, () => trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, false));
+            trilist.SetSigFalseAction(joinMap.CancelJoinAttempt.JoinNumber, () => {
+                trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, false);
+                EndAllCalls();
+            });
 
 			PasswordRequired += (devices, args) =>
 			{
