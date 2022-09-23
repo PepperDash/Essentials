@@ -804,35 +804,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				codec.CodecSchedule.MeetingWarningMinutes = i;
 			});
 
-			trilist.SetSigFalseAction(joinMap.DialMeeting1.JoinNumber, () =>
-			{
-				var mtg = 1;
-				var index = mtg - 1;
-				Debug.Console(1, this, "Meeting {0} Selected (EISC dig-o{1}) > _currentMeetings[{2}].Id: {3}, Title: {4}",
-					mtg, joinMap.DialMeeting1.JoinNumber, index, _currentMeetings[index].Id, _currentMeetings[index].Title);
-				if (_currentMeetings[index] != null)
-					Dial(_currentMeetings[index]);
-			});
-			
-			trilist.SetSigFalseAction(joinMap.DialMeeting2.JoinNumber, () =>
-			{
-				var mtg = 2;
-				var index = mtg - 1;
-				Debug.Console(1, this, "Meeting {0} Selected (EISC dig-o{1}) > _currentMeetings[{2}].Id: {3}, Title: {4}",
-					mtg, joinMap.DialMeeting2.JoinNumber, index, _currentMeetings[index].Id, _currentMeetings[index].Title);
-				if (_currentMeetings[index] != null)
-					Dial(_currentMeetings[index]);
-			});
-			
-			trilist.SetSigFalseAction(joinMap.DialMeeting3.JoinNumber, () =>
-			{
-				var mtg = 3;
-				var index = mtg - 1;
-				Debug.Console(1, this, "Meeting {0} Selected (EISC dig-o{1}) > _currentMeetings[{2}].Id: {3}, Title: {4}",
-					mtg, joinMap.DialMeeting3.JoinNumber, index, _currentMeetings[index].Id, _currentMeetings[index].Title);
-				if (_currentMeetings[index] != null)
-					Dial(_currentMeetings[index]);
-			});
+
+            for (uint i = 0; i < joinMap.DialMeetingStart.JoinSpan; i++)
+            {
+                Debug.Console(1, this, "Setting action to Dial Meeting {0} to digital join {1}", i + 1, joinMap.DialMeetingStart.JoinNumber + i);
+                var joinNumber = joinMap.DialMeetingStart.JoinNumber + i;
+                var mtg = i + 1;
+                var index = (int)i;
+
+                trilist.SetSigFalseAction(joinNumber, () =>
+                {
+                    Debug.Console(1, this, "Meeting {0} Selected (EISC dig-o{1}) > _currentMeetings[{2}].Id: {3}, Title: {4}",
+                        mtg, joinMap.DialMeetingStart.JoinNumber + i, index, _currentMeetings[index].Id, _currentMeetings[index].Title);
+                    if (_currentMeetings[index] != null)
+                        Dial(_currentMeetings[index]);
+                });
+            }
 
 			codec.CodecSchedule.MeetingsListHasChanged += (sender, args) => UpdateMeetingsList(codec, trilist, joinMap);
 			codec.CodecSchedule.MeetingEventChange += (sender, args) =>
@@ -843,7 +830,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 					}
 				};
 
-            // TODO [ ] hotfix/videocodecbase-max-meeting-xsig-set
             trilist.SetUShortSigAction(joinMap.MeetingsToDisplay.JoinNumber, m => MeetingsToDisplay = m);
             MeetingsToDisplayFeedback.LinkInputSig(trilist.UShortInput[joinMap.MeetingsToDisplay.JoinNumber]);
 
