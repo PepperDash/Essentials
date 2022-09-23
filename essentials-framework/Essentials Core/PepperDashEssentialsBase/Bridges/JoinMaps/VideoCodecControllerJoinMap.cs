@@ -776,44 +776,16 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("DialMeeting1")]
-		public JoinDataComplete DialMeeting1 = new JoinDataComplete(
+        [JoinName("DialMeetingStart")]
+		public JoinDataComplete DialMeetingStart = new JoinDataComplete(
 			new JoinData
 			{
 				JoinNumber = 161,
-				JoinSpan = 1
+				JoinSpan = 10
 			},
 			new JoinMetadata
 			{
-				Description = "Join first meeting",
-				JoinCapabilities = eJoinCapabilities.FromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		[JoinName("DialMeeting2")]
-		public JoinDataComplete DialMeeting2 = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 162,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Join second meeting",
-				JoinCapabilities = eJoinCapabilities.FromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		[JoinName("DialMeeting3")]
-		public JoinDataComplete DialMeeting3 = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 163,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Join third meeting",
+				Description = "Join meeting",
 				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Digital
 			});
