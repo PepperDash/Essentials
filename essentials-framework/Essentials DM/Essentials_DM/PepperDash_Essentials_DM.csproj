@@ -93,6 +93,7 @@
   <ItemGroup>
     <Compile Include="AirMedia\AirMediaPropertiesConfig.cs" />
     <Compile Include="AirMedia\AirMediaController.cs" />
+    <Compile Include="Chassis\DmpsDigitalOutputController.cs" />
     <Compile Include="Chassis\DmpsMicrophoneController.cs" />
     <Compile Include="Chassis\DmBladeChassisController.cs" />
     <Compile Include="Chassis\DmCardAudioOutput.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Chassis\DmpsAudioOutputController.cs" />
     <Compile Include="Chassis\DmpsInternalVirtualDmTxController.cs" />
     <Compile Include="Chassis\DmpsRoutingController.cs" />
+    <Compile Include="Chassis\HdMd8xNController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEBridgeableController.cs" />
     <Compile Include="Chassis\HdMdNxM4kEController.cs" />
     <Compile Include="Config\InputPropertiesConfig.cs" />

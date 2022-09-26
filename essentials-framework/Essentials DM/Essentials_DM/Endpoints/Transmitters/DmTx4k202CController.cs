@@ -96,10 +96,11 @@ namespace PepperDash.Essentials.DM
             }
         }
 
-        public DmTx4k202CController(string key, string name, DmTx4k202C tx)
+        public DmTx4k202CController(string key, string name, DmTx4k202C tx, bool preventRegistration)
             : base(key, name, tx)
         {
             Tx = tx;
+            PreventRegistration = preventRegistration;
 
             HdmiIn1 = new RoutingInputPortWithVideoStatuses(DmPortName.HdmiIn1,
                 eRoutingSignalType.Audio | eRoutingSignalType.Video, eRoutingPortConnectionType.Hdmi, eVst.Hdmi1, this,
