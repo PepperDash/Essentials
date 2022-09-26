@@ -434,9 +434,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			public bool supports_Web_Settings_Push { get; set; }
 		}
 
+        public enum eDisplayState
+        {
+            None,
+            Laptop,
+            IOS,
+        }
+
 		public class Sharing : NotifiableObject
 		{
-			private string _dispState;
+            private eDisplayState _dispState;
 			private string _password;
             private bool _isAirHostClientConnected;
             private bool _isSharingBlackMagic;
@@ -448,7 +455,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			/// Laptop client sharing key
 			/// </summary>
 			public string directPresentationSharingKey { get; set; }
-			public string dispState
+            public eDisplayState dispState
 			{
 				get
 				{
@@ -505,8 +512,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     }
                 }
             }
-
-
 
 			/// <summary>
 			/// IOS Airplay code
