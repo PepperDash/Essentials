@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using PepperDash.Core;
 
 
@@ -15,5 +16,10 @@ namespace PepperDash.Essentials.Core
 
     }
 
-
+    public interface IPluginDevelopmentDeviceFactory : IPluginDeviceFactory
+    {
+        List<string> DevelopmentEssentialsFrameworkVersions { get; }
+    }
 }
+
+

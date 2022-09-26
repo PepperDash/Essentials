@@ -123,6 +123,7 @@
     <Compile Include="Bridges\IBridge.cs" />
     <Compile Include="Bridges\JoinMaps\AirMediaControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\AppleTvJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\PduJoinMapBase.cs" />
     <Compile Include="Bridges\JoinMaps\C2nRthsControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\CameraControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\CenOdtOccupancySensorBaseJoinMap.cs" />
@@ -204,6 +205,7 @@
     <Compile Include="Devices\IReconfigurableDevice.cs" />
     <Compile Include="Devices\PC\InRoomPc.cs" />
     <Compile Include="Devices\PC\Laptop.cs" />
+    <Compile Include="Devices\PduInterfaces.cs" />
     <Compile Include="Devices\ReconfigurableDevice.cs" />
     <Compile Include="Devices\VolumeDeviceChangeEventArgs.cs" />
     <Compile Include="DeviceTypeInterfaces\IPasswordPrompt.cs" />
@@ -216,6 +218,7 @@
     <Compile Include="DeviceTypeInterfaces\IHasPhoneDialing.cs" />
     <Compile Include="DeviceTypeInterfaces\IMobileControl.cs" />
     <Compile Include="Extensions\JsonExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Factory\DeviceFactory.cs" />
     <Compile Include="Factory\IDeviceFactory.cs" />
     <Compile Include="Factory\ReadyEventArgs.cs" />
@@ -225,6 +228,7 @@
     <Compile Include="Feedbacks\IntFeedback.cs" />
     <Compile Include="Feedbacks\SerialFeedback.cs" />
     <Compile Include="Feedbacks\StringFeedback.cs" />
+    <Compile Include="File\FileIO.cs" />
     <Compile Include="Fusion\EssentialsHuddleSpaceFusionSystemControllerBase.cs" />
     <Compile Include="Fusion\FusionCustomPropertiesBridge.cs" />
     <Compile Include="Fusion\FusionEventHandlers.cs" />
@@ -336,7 +340,9 @@
     <Compile Include="Feedbacks\BoolFeedbackPulseExtender.cs" />
     <Compile Include="Routing\RoutingPortNames.cs" />
     <Compile Include="Routing\TieLineConfig.cs" />
-    <Compile Include="Secrets\CrestronSecretsProvider.cs" />
+    <Compile Include="Secrets\CrestronGlobalSecretsProvider.cs" />
+    <Compile Include="Secrets\CrestronLocalSecretsProvider.cs" />
+    <Compile Include="Secrets\CrestronSecret.cs" />
     <Compile Include="Secrets\Interfaces.cs" />
     <Compile Include="Secrets\SecretsManager.cs" />
     <Compile Include="Secrets\SecretsPropertiesConfig.cs" />
@@ -361,6 +367,7 @@
     <Compile Include="UI PageManagers\SinglePageManager.cs" />
     <Compile Include="UI PageManagers\PageManager.cs" />
     <Compile Include="UI PageManagers\SetTopBoxTwoPanelPageManager.cs" />
+    <Compile Include="UI\TouchpanelBase.cs" />
     <Compile Include="Utilities\ActionSequence.cs" />
     <Compile Include="VideoStatus\VideoStatusOutputs.cs" />
     <Compile Include="Crestron\CrestronGenericBaseDevice.cs" />
