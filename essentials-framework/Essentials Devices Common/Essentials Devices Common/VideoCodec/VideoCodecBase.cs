@@ -224,6 +224,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				handler(this, new CodecCallStatusItemChangeEventArgs(item));
 			}
 
+            PrivacyModeIsOnFeedback.FireUpdate();
+
 			if (AutoShareContentWhileInCall)
 			{
 				StartSharing();
