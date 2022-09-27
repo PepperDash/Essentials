@@ -27,7 +27,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         IHasScheduleAwareness, IHasCodecCameras, IHasParticipants, IHasCameraOff, IHasCameraMuteWithUnmuteReqeust, IHasCameraAutoMode,
 		IHasFarEndContentStatus, IHasSelfviewPosition, IHasPhoneDialing, IHasZoomRoomLayouts, IHasParticipantPinUnpin,
 		IHasParticipantAudioMute, IHasSelfviewSize, IPasswordPrompt, IHasStartMeeting, IHasMeetingInfo, IHasPresentationOnlyMeeting,
-        IHasMeetingLock, IHasMeetingRecordingWithPrompt
+        IHasMeetingLock, IHasMeetingRecordingWithPrompt, IZoomWirelessShareInstructions
 	{
         public event EventHandler VideoUnmuteRequested;
 
@@ -47,12 +47,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         private const string JsonDelimiter = "\x0D\x0A\x7D\x0D\x0A";
 
         private string[] Delimiters = new string[] { EchoDelimiter, JsonDelimiter, "OK\x0D\x0A", "end\x0D\x0A" };
-        //"echo off\x0D\x0A\x0A\x0D\x0A"
 		private readonly GenericQueue _receiveQueue;
-		//private readonly CrestronQueue<string> _receiveQueue;
-
-
-		//private readonly Thread _receiveThread;
 
 		private readonly ZoomRoomSyncState _syncState;
 		public bool CommDebuggingIsOn;
@@ -63,6 +58,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		private int _previousVolumeLevel;
 		private CameraBase _selectedCamera;
         private string _lastDialedMeetingNumber;
+
 
 		private readonly ZoomRoomPropertiesConfig _props;
 
@@ -214,7 +210,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		protected override Func<bool> PrivacyModeIsOnFeedbackFunc
 		{
-			get { return () => Configuration.Call.Microphone.Mute; }
+            get
+            {
+                return () =>
+                    {
+                        //Debug.Console(2, this, "PrivacyModeIsOnFeedbackFunc. IsInCall: {0} muteState: {1}", IsInCall, Configuration.Call.Microphone.Mute);
+                        if (IsInCall)
+                        {
+                            //Debug.Console(2, this, "reporting muteState: ", Configuration.Call.Microphone.Mute);
+                            return Configuration.Call.Microphone.Mute;
+                        }
+                        else
+                        {
+                            //Debug.Console(2, this, "muteState: true", IsInCall);
+                            return false;
+                        }
+                    };
+            }
 		}
 
 		protected override Func<bool> StandbyIsOnFeedbackFunc
@@ -224,7 +236,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		protected override Func<string> SharingSourceFeedbackFunc
 		{
-			get { return () => Status.Sharing.dispState; }
+            get
+            {
+                return () =>
+                    {
+                        if (Status.Sharing.isAirHostClientConnected)
+                            return "Airplay";
+                        else if (Status.Sharing.isDirectPresentationConnected || Status.Sharing.isBlackMagicConnected)
+                            return "Laptop";
+                        else return "None";
+
+                    };
+            }
 		}
 
 		protected override Func<bool> SharingContentIsOnFeedbackFunc
@@ -727,15 +750,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			Status.Sharing.PropertyChanged += (o, a) =>
 			{
+                OnShareInfoChanged(Status.Sharing);
+                SharingSourceFeedback.FireUpdate();
 				switch (a.PropertyName)
 				{
-					case "dispState":
-						SharingSourceFeedback.FireUpdate();
-						break;
 					case "password":
 						break;
-                    case "isAirHostClientConnected":
-                    case "isDirectPresentationConnected":
                     case "isSharingBlackMagic":
                         {
                             Debug.Console(2, this, "Updating sharing status: {0}", a.PropertyName);
@@ -2486,20 +2506,32 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		    trilist.SetSigTrueAction(joinMap.ShareOnlyMeeting.JoinNumber, StartSharingOnlyMeeting);
             trilist.SetSigTrueAction(joinMap.StartNormalMeetingFromSharingOnlyMeeting.JoinNumber, StartNormalMeetingFromSharingOnlyMeeting);
 
-            // not sure if this would be needed here, should be handled by VideoCodecBase.cs LinkToApi methods
-            //DirectoryResultReturned += (device, args) =>
-            //{
-            //    // add logic here if necessary when event fires
-
-            //};
-
-
 			trilist.SetStringSigAction(joinMap.SubmitPassword.JoinNumber, SubmitPassword);
+            //trilist.SetSigFalseAction(joinMap.CancelPasswordPrompt.JoinNumber, () =>
+            //    OnPasswordRequired(false, false, true, ""));
+
+            // Subscribe to call status to clear ShowPasswordPrompt when in meeting
+            this.CallStatusChange += (o, a) =>
+                {
+                    if (a.CallItem.Status == eCodecCallStatus.Connected || a.CallItem.Status == eCodecCallStatus.Disconnected)
+                    {
+                        trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, false);
+                    }
+
+                };
+
+            trilist.SetSigFalseAction(joinMap.CancelJoinAttempt.JoinNumber, () => {
+                trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, false);
+                EndAllCalls();
+            });
+
 			PasswordRequired += (devices, args) =>
 			{
+                Debug.Console(0, this, "***********************************PaswordRequired. Message: {0} Cancelled: {1} Last Incorrect: {2} Failed: {3}", args.Message, args.LoginAttemptCancelled, args.LastAttemptWasIncorrect, args.LoginAttemptFailed);
+
 				if (args.LoginAttemptCancelled)
 				{
-					trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, false);
+					trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, false);
 					return;
 				}
 
@@ -2515,7 +2547,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				}
 
 				trilist.SetBool(joinMap.PasswordIncorrect.JoinNumber, args.LastAttemptWasIncorrect);
-				trilist.SetBool(joinMap.ShowPasswordPrompt.JoinNumber, true);
+				trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, true);
 			};
 
 			trilist.OnlineStatusChange += (device, args) =>
@@ -2531,7 +2563,30 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				pinCodec.NumberOfScreensFeedback.FireUpdate();
 				layoutSizeCodec.SelfviewPipSizeFeedback.FireUpdate();
 			};
+
+            var wirelessInfoCodec = this as IZoomWirelessShareInstructions;
+            if (wirelessInfoCodec != null)
+            {
+                SetSharingStateJoins(Status.Sharing, trilist, joinMap);
+
+                wirelessInfoCodec.ShareInfoChanged += (o, a) =>
+                    {
+                        SetSharingStateJoins(a.SharingStatus, trilist, joinMap);
+                    };
+            }
 		}
+
+        void SetSharingStateJoins(zStatus.Sharing state, BasicTriList trilist, ZoomRoomJoinMap joinMap)
+        {
+            trilist.SetBool(joinMap.IsSharingAirplay.JoinNumber, state.isAirHostClientConnected);
+            trilist.SetBool(joinMap.IsSharingHdmi.JoinNumber, state.isBlackMagicConnected || state.isDirectPresentationConnected);
+            
+            trilist.SetString(joinMap.DisplayState.JoinNumber, state.dispState.ToString());
+            trilist.SetString(joinMap.AirplayShareCode.JoinNumber, state.password);
+            trilist.SetString(joinMap.LaptopShareKey.JoinNumber, state.directPresentationSharingKey);
+            trilist.SetString(joinMap.WifiName.JoinNumber, state.wifiName);
+            trilist.SetString(joinMap.ServerName.JoinNumber, state.serverName);
+        }
 
 		public override void ExecuteSwitch(object selector)
 		{
@@ -3357,6 +3412,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         {
             Debug.Console(2, this, "Password Submitted: {0}", password);
             Dial(_lastDialedMeetingNumber, password);
+            //OnPasswordRequired(false, false, true, "");		
+        }
+
+        public void CancelPasswordPrompt()
+        {
+            OnPasswordRequired(false, false, true, "Login Cancelled");
         }
 
         void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
@@ -3488,6 +3549,29 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             else
             {
                 StartRecording();
+            }
+        }
+
+        #endregion
+
+        #region IZoomWirelessShareInstructions Members
+
+        public event EventHandler<ShareInfoEventArgs> ShareInfoChanged;
+
+        public zStatus.Sharing SharingState
+        {
+            get
+            {
+                return Status.Sharing;
+            }
+        }
+
+        void OnShareInfoChanged(zStatus.Sharing status)
+        {
+            var handler = ShareInfoChanged;
+            if (handler != null)
+            {
+                handler(this, new ShareInfoEventArgs(status));
             }
         }
 

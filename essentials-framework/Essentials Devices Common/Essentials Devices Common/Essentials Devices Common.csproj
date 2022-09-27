@@ -185,6 +185,7 @@
     <Compile Include="VideoCodec\MockVC\MockVC.cs" />
     <Compile Include="VideoCodec\CiscoCodec\xStatus.cs" />
     <Compile Include="VideoCodec\VideoCodecBase.cs" />
+    <Compile Include="VideoCodec\ZoomRoom\IZoomWirelessShareInstructions.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ResponseObjects.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoom.cs" />
     <Compile Include="VideoCodec\ZoomRoom\ZoomRoomCamera.cs" />
