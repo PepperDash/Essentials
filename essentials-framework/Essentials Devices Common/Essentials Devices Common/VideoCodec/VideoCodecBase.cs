@@ -1382,7 +1382,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			var digitalIndex = maxStrings * maxCalls;
 			var arrayIndex = 0;
 
-			var tokenArray = new XSigToken[maxCalls * offset]; //set array size for number of calls * pieces of info
+		    if (ActiveCalls.Count == 0)
+		    {
+                var clearBytes = XSigHelpers.ClearOutputs();
+                return Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length);
+		    }
+
+            var tokenArray = new XSigToken[maxCalls * offset]; //set array size for number of calls * pieces of info
+
 
 			foreach (var call in ActiveCalls)
 			{
