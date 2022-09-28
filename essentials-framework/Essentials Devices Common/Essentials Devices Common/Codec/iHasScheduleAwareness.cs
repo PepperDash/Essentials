@@ -37,6 +37,9 @@ namespace PepperDash.Essentials.Devices.Common.Codec
 
         private int _meetingWarningMinutes = 5;
 
+        private bool _nullMeeting { get; set; }
+
+
         private Meeting _previousChangedMeeting;
 
         private eMeetingEventChangeType _previousChangeType = eMeetingEventChangeType.Unknown;
@@ -91,6 +94,23 @@ namespace PepperDash.Essentials.Devices.Common.Codec
         /// <param name="meeting"></param>
         private void OnMeetingChange(eMeetingEventChangeType changeType, Meeting meeting)
         {
+            if (meeting == null)
+            {
+                var message = _nullMeeting
+                    ? "*****************OnMeetingChange No meetings to update*****************"
+                    : "*****************OnMeetingChange No meetings present.  Clearing List*****************";
+                Debug.Console(2, message);
+                if (_nullMeeting) return;
+                _nullMeeting = true;
+                var handler = MeetingEventChange;
+                if (handler != null)
+                {
+                    handler(this, new MeetingEventArgs() { ChangeType = eMeetingEventChangeType.Unknown, Meeting = null });
+                }
+                return;
+
+            }
+            _nullMeeting = false;
             Debug.Console(2, "*****************OnMeetingChange.  id: {0} changeType: {1}**********************", meeting.Id, changeType);
             if (changeType != (changeType & meeting.NotifiedChangeTypes))
             {
@@ -119,6 +139,11 @@ namespace PepperDash.Essentials.Devices.Common.Codec
             //  Iterate the meeting list and check if any meeting need to do anything
 
             const double meetingTimeEpsilon = 0.05;
+            if (Meetings.Count < 1)
+            {
+                OnMeetingChange(eMeetingEventChangeType.Unknown, null);
+                return;
+            }
             foreach (var m in Meetings)
             {
                 var changeType = eMeetingEventChangeType.Unknown;

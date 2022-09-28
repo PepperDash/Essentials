@@ -831,6 +831,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			codec.CodecSchedule.MeetingsListHasChanged += (sender, args) => UpdateMeetingsList(codec, trilist, joinMap);
 			codec.CodecSchedule.MeetingEventChange += (sender, args) =>
 				{
+				    if (args.Meeting == null)
+				    {
+                        UpdateMeetingsList(codec, trilist, joinMap);
+                    }
 					if (args.ChangeType == eMeetingEventChangeType.MeetingStartWarning)
 					{
 						UpdateMeetingsList(codec, trilist, joinMap);
@@ -908,6 +912,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 	        var digitalIndex = maxStrings * _meetingsToDisplay; //15
 	        var stringIndex = 0;
 	        var meetingIndex = 0;
+
+            if (meetings.Count == 0)
+            {
+                var clearBytes = XSigHelpers.ClearOutputs();
+                return Encoding.GetEncoding(XSigEncoding).GetString(clearBytes, 0, clearBytes.Length);
+            }
 
 	        var tokenArray = new XSigToken[_meetingsToDisplay * offset];
 	        /* 
@@ -1290,28 +1300,28 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			};
 
 			var joinCodec = this as IJoinCalls;
-			if (joinCodec != null)
-			{
-					trilist.SetSigFalseAction(joinMap.JoinAllCalls.JoinNumber, () => joinCodec.JoinAllCalls());
+	        if (joinCodec != null)
+	        {
+	            trilist.SetSigFalseAction(joinMap.JoinAllCalls.JoinNumber, () => joinCodec.JoinAllCalls());
 
-					for (int i = 0; i < joinMap.JoinCallStart.JoinSpan; i++)
-					{
-							trilist.SetSigFalseAction((uint)(joinMap.JoinCallStart.JoinNumber + i), () =>
-									{
-											var call = ActiveCalls[i];
-											if (call != null)
-											{
-													joinCodec.JoinCall(call);
-											} 
-											else
-											{
-													Debug.Console(0, this, "[Join Call] Unable to find call at index '{0}'", i);
-											}
-									});
-					}
-			}
+	            for (int i = 0; i < joinMap.JoinCallStart.JoinSpan; i++)
+	            {
+	                trilist.SetSigFalseAction((uint) (joinMap.JoinCallStart.JoinNumber + i), () =>
+	                {
+	                    var call = ActiveCalls[i];
+	                    if (call != null)
+	                    {
+	                        joinCodec.JoinCall(call);
+	                    }
+	                    else
+	                    {
+	                        Debug.Console(0, this, "[Join Call] Unable to find call at index '{0}'", i);
+	                    }
+	                });
+	            }
+	        }
 
-			var holdCodec = this as IHasCallHold;
+	        var holdCodec = this as IHasCallHold;
 			if (holdCodec != null)
 			{
 					trilist.SetSigFalseAction(joinMap.HoldAllCalls.JoinNumber, () =>
