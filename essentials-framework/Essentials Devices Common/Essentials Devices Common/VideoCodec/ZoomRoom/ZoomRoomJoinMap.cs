@@ -373,6 +373,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 JoinType = eJoinType.Digital
             });
 
+        [JoinName("MeetingCanRecord")]
+        public JoinDataComplete MeetingCanRecord = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 246,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "When high, indicated that the current meeting can be recorded",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
 
         #region Sharing Status
 

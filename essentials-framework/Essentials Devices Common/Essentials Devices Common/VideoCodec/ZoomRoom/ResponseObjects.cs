@@ -793,10 +793,42 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		public class CallRecordInfo : NotifiableObject
 		{
             private bool _meetingIsBeingRecorded;
+            private bool _canRecord;
+            private bool _emailRequired;
 
-			public bool canRecord { get; set; }
-			public bool emailRequired { get; set; }
 			public bool amIRecording { get; set; }
+
+            public bool canRecord
+            {
+                get
+                {
+                    return _canRecord;
+                }
+                set
+                {
+                    if (value != _canRecord)
+                    {
+                        _canRecord = value;
+                        NotifyPropertyChanged("canRecord");
+                    }
+                }
+            }
+
+            public bool emailRequired
+            {
+                get
+                {
+                    return _emailRequired;
+                }
+                set
+                {
+                    if (value != _emailRequired)
+                    {
+                        _emailRequired = value;
+                        NotifyPropertyChanged("emailRequired");
+                    }
+                }
+            }
 
 			public bool meetingIsBeingRecorded 
             {
@@ -813,6 +845,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                         //Debug.Console(2, "********************************set value of meetingIsBeingRecorded to: {0}", _meetingIsBeingRecorded);
                         NotifyPropertyChanged("meetingIsBeingRecorded");
                     }
+                }
+            }
+
+            /// <summary>
+            /// Indicates if recording is allowed (when meeting capable and and email is not required to be entered by the user)
+            /// </summary>
+            public bool AllowRecord
+            {
+                get
+                {
+                    return canRecord && !emailRequired;
                 }
             }
 
