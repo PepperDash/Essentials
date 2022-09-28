@@ -810,8 +810,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				Debug.Console(1, this, "Status.Layout.PropertyChanged a.PropertyName: {0}", a.PropertyName);
 				switch (a.PropertyName.ToLower())
 				{
-					case "can_switch_speaker_view":
+					case "can_Switch_speaker_view":
 					case "can_switch_wall_view":
+                    case "can_switch_strip_view":
+                    case "video_type":
 					case "can_switch_share_on_all_screens":
 					{
 						ComputeAvailableLayouts();
@@ -827,7 +829,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						LayoutViewIsOnLastPageFeedback.FireUpdate();
 						break;
 					}
-                    case "can_Switch_Floating_Share_Content":
+                    case "can_switch_floating_share_content":
                     {
                         CanSwapContentWithThumbnailFeedback.FireUpdate();
                         break;
@@ -1559,7 +1561,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							{
 								JsonConvert.PopulateObject(responseObj.ToString(), Status.Call.Sharing);
 
-								SetLayout();
+								SetDefaultLayout();
 
 								break;
 							}
@@ -1935,7 +1937,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 		}
 
-		private void SetLayout()
+		private void SetDefaultLayout()
 		{
 			if (!_props.AutoDefaultLayouts) return;
 
@@ -1948,8 +1950,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 			else
 			{
-				SendText(String.Format("zconfiguration call layout style: {0}",
-					_props.DefaultCallLayout));
+                if (_props.DefaultCallLayout == (_props.DefaultCallLayout & AvailableLayouts))
+                {
+                    SendText(String.Format("zconfiguration call layout style: {0}",
+                        _props.DefaultCallLayout));
+                }
+                else
+                    Debug.Console(0, this, "Unable to set default Layout.  {0} not currently an available layout based on meeting state", _props.DefaultCallLayout);
 			}
 		}
 
@@ -2149,8 +2156,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     MeetingIsLockedFeedback.BoolValue,
                     MeetingIsRecordingFeedback.BoolValue
                     );
+
+                SetDefaultLayout();
             }
-            // TODO [ ] Issue #868
+
             else if (item.Status == eCodecCallStatus.Disconnected)
             {
                 MeetingInfo = new MeetingInfo(
@@ -2171,11 +2180,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			Debug.Console(1, this, "[OnCallStatusChange] Current Call Status: {0}",
 				Status.Call != null ? Status.Call.Status.ToString() : "no call");
-
-			if (_props.AutoDefaultLayouts)
-			{
-				SetLayout();
-			}
 		}
 
         private string GetSharingStatus()
@@ -3264,7 +3268,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			// There is no property that directly reports if strip mode is valid, but API stipulates
 			// that strip mode is available if the number of screens is 1
-			if (Status.NumberOfScreens.NumOfScreens == 1)
+			if (Status.NumberOfScreens.NumOfScreens == 1 || Status.Layout.can_Switch_Strip_View || Status.Layout.video_type.ToLower() == "strip")
 			{
 				availableLayouts |= zConfiguration.eLayoutStyle.Strip;
 			}
@@ -3279,10 +3283,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             var handler = LayoutInfoChanged;
             if (handler != null)
             {
+
+                var currentLayout = zConfiguration.eLayoutStyle.None;
+
+                currentLayout = (zConfiguration.eLayoutStyle)Enum.Parse(typeof(zConfiguration.eLayoutStyle), string.IsNullOrEmpty(LocalLayoutFeedback.StringValue) ? "None" : LocalLayoutFeedback.StringValue, true);            
+
                 handler(this, new LayoutInfoChangedEventArgs()
                 {
                     AvailableLayouts = AvailableLayouts,
-                    CurrentSelectedLayout = (zConfiguration.eLayoutStyle)Enum.Parse(typeof(zConfiguration.eLayoutStyle),string.IsNullOrEmpty(LocalLayoutFeedback.StringValue) ? "None" : LocalLayoutFeedback.StringValue , true),
+                    CurrentSelectedLayout = currentLayout,
                     LayoutViewIsOnFirstPage = LayoutViewIsOnFirstPageFeedback.BoolValue,
                     LayoutViewIsOnLastPage = LayoutViewIsOnLastPageFeedback.BoolValue,
                     CanSwapContentWithThumbnail = CanSwapContentWithThumbnailFeedback.BoolValue,
@@ -3413,11 +3422,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             Debug.Console(2, this, "Password Submitted: {0}", password);
             Dial(_lastDialedMeetingNumber, password);
             //OnPasswordRequired(false, false, true, "");		
-        }
-
-        public void CancelPasswordPrompt()
-        {
-            OnPasswordRequired(false, false, true, "Login Cancelled");
         }
 
         void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)

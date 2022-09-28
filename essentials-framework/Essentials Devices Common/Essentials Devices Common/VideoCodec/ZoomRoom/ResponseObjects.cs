@@ -627,6 +627,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			// backer variables
 			private bool _can_Switch_Speaker_View;
 			private bool _can_Switch_Wall_View;
+            private bool _can_Switch_Strip_View;
 			private bool _can_Switch_Share_On_All_Screens;
             private bool _can_Switch_Floating_Share_Content;
 			private bool _is_In_First_Page;
@@ -713,6 +714,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					}
 				}
 			}
+
+            [JsonProperty("can_Switch_Strip_View")]
+            public bool can_Switch_Strip_View
+            {
+                get
+                {
+                    return _can_Switch_Strip_View;
+                }
+                set
+                {
+                    if (value != _can_Switch_Strip_View)
+                    {
+                        _can_Switch_Strip_View = value;
+                        NotifyPropertyChanged("can_Switch_Strip_View");
+                    }
+                }
+            }
 
 			[JsonProperty("is_In_First_Page")]
 			public bool is_In_First_Page
