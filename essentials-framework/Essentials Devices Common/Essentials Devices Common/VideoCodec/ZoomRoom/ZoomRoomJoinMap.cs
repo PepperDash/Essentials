@@ -101,7 +101,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             },
             new JoinMetadata
             {
-                Description = "FB Indicates the password prompt is active",
+                Description = "Pulse to start an ad-hoc meeting with the default duration",
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
