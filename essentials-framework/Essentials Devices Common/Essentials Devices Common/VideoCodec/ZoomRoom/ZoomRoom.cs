@@ -252,7 +252,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		protected override Func<bool> SharingContentIsOnFeedbackFunc
 		{
-			get { return () => Status.Call.Sharing.IsSharing; }
+            get { return () => Status.Sharing.isAirHostClientConnected || Status.Sharing.isDirectPresentationConnected || Status.Sharing.isSharingBlackMagic; }
 		}
 
 		protected Func<bool> FarEndIsSharingContentFeedbackFunc
