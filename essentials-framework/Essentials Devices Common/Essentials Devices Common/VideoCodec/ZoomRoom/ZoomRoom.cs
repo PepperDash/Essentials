@@ -2401,7 +2401,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             var meetingInfoCodec = this as IHasMeetingInfo;
             if (meetingInfoCodec != null)
             {
-                trilist.SetBool(joinMap.MeetingCanRecord.JoinNumber, meetingInfoCodec.MeetingInfo.CanRecord);
+                if (meetingInfoCodec.MeetingInfo != null)
+                {
+                    trilist.SetBool(joinMap.MeetingCanRecord.JoinNumber, meetingInfoCodec.MeetingInfo.CanRecord);
+                }
 
                 meetingInfoCodec.MeetingInfoChanged += (o, a) =>
                     {
@@ -2528,8 +2531,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             trilist.SetSigFalseAction(joinMap.StartNormalMeetingFromSharingOnlyMeeting.JoinNumber, StartNormalMeetingFromSharingOnlyMeeting);
 
 			trilist.SetStringSigAction(joinMap.SubmitPassword.JoinNumber, SubmitPassword);
-            //trilist.SetSigFalseAction(joinMap.CancelPasswordPrompt.JoinNumber, () =>
-            //    OnPasswordRequired(false, false, true, ""));
 
             // Subscribe to call status to clear ShowPasswordPrompt when in meeting
             this.CallStatusChange += (o, a) =>
@@ -2588,7 +2589,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             var wirelessInfoCodec = this as IZoomWirelessShareInstructions;
             if (wirelessInfoCodec != null)
             {
-                SetSharingStateJoins(Status.Sharing, trilist, joinMap);
+                if (Status != null && Status.Sharing != null)
+                {
+                    SetSharingStateJoins(Status.Sharing, trilist, joinMap);
+                }
 
                 wirelessInfoCodec.ShareInfoChanged += (o, a) =>
                     {
@@ -3490,7 +3494,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	        StartSharingOnlyMeeting(displayMode, DefaultMeetingDurationMin, String.Empty);
 	    }
 
-	    public void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, ushort duration)
+	    public void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, uint duration)
 	    {
 	        StartSharingOnlyMeeting(displayMode, duration, String.Empty);
 	    }

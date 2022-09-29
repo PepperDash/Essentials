@@ -4,8 +4,8 @@
     {
         void StartSharingOnlyMeeting();
         void StartSharingOnlyMeeting(eSharingMeetingMode displayMode);
-        void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, ushort duration);
-        void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, ushort duration, string password);
+        void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, uint duration);
+        void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, uint duration, string password);
         void StartNormalMeetingFromSharingOnlyMeeting();
     }
 
