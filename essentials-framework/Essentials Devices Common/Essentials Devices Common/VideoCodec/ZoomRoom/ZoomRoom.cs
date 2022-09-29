@@ -3586,6 +3586,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         void OnShareInfoChanged(zStatus.Sharing status)
         {
+            Debug.Console(2, this,
+@"ShareInfoChanged:
+isSharingHDMI: {0}
+isSharingAirplay: {1}
+AirplayPassword: {2}
+OSD Display State: {3}
+",
+status.isSharingBlackMagic,
+status.isAirHostClientConnected,
+status.password,
+status.dispState);
+
             var handler = ShareInfoChanged;
             if (handler != null)
             {

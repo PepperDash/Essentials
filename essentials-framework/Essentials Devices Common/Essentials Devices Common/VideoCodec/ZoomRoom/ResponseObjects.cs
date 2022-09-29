@@ -448,6 +448,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             private bool _isAirHostClientConnected;
             private bool _isSharingBlackMagic;
             private bool _isDirectPresentationConnected;
+            private bool _isBlackMagicConnected;
 
 
 			public string directPresentationPairingCode { get; set; }
@@ -484,7 +485,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 }
             }
 
-			public bool isBlackMagicConnected { get; set; }
+			public bool isBlackMagicConnected
+            {
+                get { return _isBlackMagicConnected; }
+                set
+                {
+                    if (value != _isBlackMagicConnected)
+                    {
+                        _isBlackMagicConnected = value;
+                        NotifyPropertyChanged("isBlackMagicConnected");
+                    }
+                }
+            }
 			public bool isBlackMagicDataAvailable { get; set; }
 
 			public bool isDirectPresentationConnected
