@@ -3,9 +3,9 @@
     public interface IHasPresentationOnlyMeeting
     {
         void StartSharingOnlyMeeting();
-        void StartSharingOnlyMeeting(eSharingMeetingMode mode);
-        void StartSharingOnlyMeeting(eSharingMeetingMode mode, ushort duration);
-        void StartSharingOnlyMeeting(eSharingMeetingMode mode, ushort duration, string password);
+        void StartSharingOnlyMeeting(eSharingMeetingMode displayMode);
+        void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, ushort duration);
+        void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, ushort duration, string password);
         void StartNormalMeetingFromSharingOnlyMeeting();
     }
 

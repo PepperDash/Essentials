@@ -2250,6 +2250,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             }
         }
 
+        /// <summary>
+        /// Starts sharing HDMI source
+        /// </summary>
 		public override void StartSharing()
 		{
 			SendText("zCommand Call Sharing HDMI Start");
@@ -3482,19 +3485,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	        StartSharingOnlyMeeting(eSharingMeetingMode.None, 30, String.Empty);
 	    }
 
-	    public void StartSharingOnlyMeeting(eSharingMeetingMode mode)
+	    public void StartSharingOnlyMeeting(eSharingMeetingMode displayMode)
 	    {
-	        StartSharingOnlyMeeting(mode, 30, String.Empty);
+	        StartSharingOnlyMeeting(displayMode, DefaultMeetingDurationMin, String.Empty);
 	    }
 
-	    public void StartSharingOnlyMeeting(eSharingMeetingMode mode, ushort duration)
+	    public void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, ushort duration)
 	    {
-	        StartSharingOnlyMeeting(mode, duration, String.Empty);
+	        StartSharingOnlyMeeting(displayMode, duration, String.Empty);
 	    }
 
-	    public void StartSharingOnlyMeeting(eSharingMeetingMode mode, ushort duration, string password)
+	    public void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, uint duration, string password)
 	    {
-            SendText(String.Format("zCommand Dial Sharing Duration: {0} DisplayState: {1} Password: {2}", duration, mode, password));
+            SendText(String.Format("zCommand Dial Sharing Duration: {0} DisplayState: {1} Password: {2}", duration, displayMode, password));
 	    }
 
 	    public void StartNormalMeetingFromSharingOnlyMeeting()
