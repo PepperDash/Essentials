@@ -101,7 +101,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             },
             new JoinMetadata
             {
-                Description = "FB Indicates the password prompt is active",
+                Description = "Pulse to start an ad-hoc meeting with the default duration",
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
@@ -369,6 +369,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             new JoinMetadata
             {
                 Description = "Pulse to disagree to consent for meeting recording",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("MeetingCanRecord")]
+        public JoinDataComplete MeetingCanRecord = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 246,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "When high, indicated that the current meeting can be recorded",
                 JoinCapabilities = eJoinCapabilities.ToSIMPL,
                 JoinType = eJoinType.Digital
             });
