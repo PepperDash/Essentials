@@ -8,7 +8,8 @@ using PepperDash.Essentials.Devices.Common.AudioCodec;
 namespace PepperDash.Essentials
 {
     public interface IEssentialsHuddleVtc1Room : IEssentialsRoom, IHasCurrentSourceInfoChange,
-         IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback
+         IPrivacy, IHasCurrentVolumeControls, IRunRouteAction, IRunDefaultCallRoute, IHasVideoCodec, IHasAudioCodec, IHasDefaultDisplay, IHasInCallFeedback,
+        IRoomOccupancy, IEmergency, IMicrophonePrivacy
     {
         EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; }
 
