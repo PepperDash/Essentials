@@ -1407,9 +1407,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				arrayIndex += offset;
 				stringIndex += maxStrings;
-				digitalIndex++;
+                digitalIndex += maxDigitals;
 			}
-			while (digitalIndex < maxCalls)
+			while (digitalIndex < maxCalls * offset)
 			{
 				//digitals
                 tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
@@ -1426,7 +1426,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				arrayIndex += offset;
 				stringIndex += maxStrings;
-				digitalIndex++;
+				digitalIndex += maxDigitals;
 			}
 
 			return GetXSigString(tokenArray);
