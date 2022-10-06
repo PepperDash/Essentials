@@ -252,7 +252,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		protected override Func<bool> SharingContentIsOnFeedbackFunc
 		{
-			get { return () => Status.Call.Sharing.IsSharing; }
+            get { return () => Status.Sharing.isAirHostClientConnected || Status.Sharing.isDirectPresentationConnected || Status.Sharing.isSharingBlackMagic; }
 		}
 
 		protected Func<bool> FarEndIsSharingContentFeedbackFunc
@@ -529,6 +529,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
         /// </summary>
 		private void SetUpCallFeedbackActions()
 		{
+            Status.Sharing.PropertyChanged -= HandleSharingStateUpdate;
+            Status.Sharing.PropertyChanged += HandleSharingStateUpdate;
+
             Status.Call.Sharing.PropertyChanged -= HandleSharingStateUpdate;
             Status.Call.Sharing.PropertyChanged += HandleSharingStateUpdate;
 
@@ -541,7 +544,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         private void HandleCallRecordInfoStateUpdate(object sender, PropertyChangedEventArgs a)
         {
-            if (a.PropertyName == "meetingIsBeingRecorded")
+            if (a.PropertyName == "meetingIsBeingRecorded" || a.PropertyName == "emailRequired" || a.PropertyName == "canRecord")
             {
                 MeetingIsRecordingFeedback.FireUpdate();
 
@@ -554,7 +557,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     MeetingInfo.IsSharingMeeting,
                     MeetingInfo.WaitingForHost,
                     MeetingIsLockedFeedback.BoolValue,
-                    MeetingIsRecordingFeedback.BoolValue);
+                    MeetingIsRecordingFeedback.BoolValue, Status.Call.CallRecordInfo.AllowRecord);
                 MeetingInfo = meetingInfo;
             }
         }
@@ -580,10 +583,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 	    private void HandleSharingStateUpdate(object sender, PropertyChangedEventArgs a)
 	    {
-            if (a.PropertyName != "State")
-            {
-                return;
-            }
+            //if (a.PropertyName != "State")
+            //{
+            //    return;
+            //}
 
             SharingContentIsOnFeedback.FireUpdate();
             ReceivingContent.FireUpdate();
@@ -593,21 +596,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 // Update the share status of the meeting info
                 if (MeetingInfo == null)
                 {
-                    var sharingStatus = GetSharingStatus();
-
-                    MeetingInfo = new MeetingInfo("", "", "", "", sharingStatus, GetIsHostMyself(), true, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
+                    MeetingInfo = new MeetingInfo("", "", "", "", GetSharingStatus(), GetIsHostMyself(), true, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue, Status.Call.CallRecordInfo.AllowRecord);
                     return;
                 }
 
                 var meetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, Participants.Host != null ? Participants.Host.Name : "None",
-                    MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself(), MeetingInfo.IsSharingMeeting, MeetingInfo.WaitingForHost, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
+                    MeetingInfo.Password, GetSharingStatus(), GetIsHostMyself(), MeetingInfo.IsSharingMeeting, MeetingInfo.WaitingForHost, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue, Status.Call.CallRecordInfo.AllowRecord);
                 MeetingInfo = meetingInfo;
             }
             catch (Exception e)
             {
                 Debug.Console(1, this, "Error processing state property update. {0}", e.Message);
                 Debug.Console(2, this, e.StackTrace);
-                MeetingInfo = new MeetingInfo("", "", "", "", "None", false, false, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
+                MeetingInfo = new MeetingInfo("", "", "", "", "None", false, false, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue, false);
             }
 	    }
 
@@ -714,7 +715,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                 MeetingInfo.IsSharingMeeting, 
                                 MeetingInfo.WaitingForHost, 
                                 MeetingIsLockedFeedback.BoolValue,
-                                MeetingIsRecordingFeedback.BoolValue
+                                MeetingIsRecordingFeedback.BoolValue, Status.Call.CallRecordInfo.AllowRecord
                             );
                     }
                 };
@@ -776,7 +777,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                 MeetingInfo.IsSharingMeeting, 
                                 MeetingInfo.WaitingForHost, 
                                 MeetingIsLockedFeedback.BoolValue,
-                                MeetingIsRecordingFeedback.BoolValue);
+                                MeetingIsRecordingFeedback.BoolValue, Status.Call.CallRecordInfo.AllowRecord);
                             MeetingInfo = meetingInfo;
                             break;
                         }
@@ -810,8 +811,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				Debug.Console(1, this, "Status.Layout.PropertyChanged a.PropertyName: {0}", a.PropertyName);
 				switch (a.PropertyName.ToLower())
 				{
-					case "can_switch_speaker_view":
+					case "can_Switch_speaker_view":
 					case "can_switch_wall_view":
+                    case "can_switch_strip_view":
+                    case "video_type":
 					case "can_switch_share_on_all_screens":
 					{
 						ComputeAvailableLayouts();
@@ -827,7 +830,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						LayoutViewIsOnLastPageFeedback.FireUpdate();
 						break;
 					}
-                    case "can_Switch_Floating_Share_Content":
+                    case "can_switch_floating_share_content":
                     {
                         CanSwapContentWithThumbnailFeedback.FireUpdate();
                         break;
@@ -1468,13 +1471,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                                     MeetingInfo.Id, 
                                     MeetingInfo.Name, 
                                     Participants.Host.Name, 
-                                    MeetingInfo.Password, 
-                                    MeetingInfo.ShareStatus, 
+                                    MeetingInfo.Password,
+                                    GetSharingStatus(), 
                                     GetIsHostMyself(), 
                                     MeetingInfo.IsSharingMeeting, 
                                     MeetingInfo.WaitingForHost, 
                                     MeetingIsLockedFeedback.BoolValue,
-                                    MeetingIsRecordingFeedback.BoolValue);
+                                    MeetingIsRecordingFeedback.BoolValue,
+                                    Status.Call.CallRecordInfo.AllowRecord
+                                    );
                                 MeetingInfo = meetingInfo;
 
 								PrintCurrentCallParticipants();
@@ -1559,7 +1564,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							{
 								JsonConvert.PopulateObject(responseObj.ToString(), Status.Call.Sharing);
 
-								SetLayout();
+								SetDefaultLayout();
 
 								break;
 							}
@@ -1689,14 +1694,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							        if (MeetingInfo == null)
 							        {
 							            MeetingInfo = new MeetingInfo("Waiting For Host", "Waiting For Host", "Waiting For Host", "",
-                                            GetSharingStatus(), false, false, true, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
+                                            GetSharingStatus(), false, false, true, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue, Status.Call.CallRecordInfo.AllowRecord);
 
                                         UpdateCallStatus();
 							            break;
 							        }
 
                                     MeetingInfo = new MeetingInfo("Waiting For Host", "Waiting For Host", "Waiting For Host", "",
-                                        GetSharingStatus(), false, false, true, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
+                                        GetSharingStatus(), false, false, true, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue, Status.Call.CallRecordInfo.AllowRecord);
 
 							        UpdateCallStatus();
 
@@ -1706,12 +1711,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 							    if (MeetingInfo == null)
 							    {
 							        MeetingInfo = new MeetingInfo("Waiting For Host", "Waiting For Host", "Waiting For Host", "",
-                                        GetSharingStatus(), false, false, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
+                                        GetSharingStatus(), false, false, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue, Status.Call.CallRecordInfo.AllowRecord);
 							        break;
 							    }
 
 							    MeetingInfo = new MeetingInfo(MeetingInfo.Id, MeetingInfo.Name, MeetingInfo.Host, MeetingInfo.Password,
-                                    GetSharingStatus(), GetIsHostMyself(), false, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
+                                    GetSharingStatus(), GetIsHostMyself(), false, false, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue, Status.Call.CallRecordInfo.AllowRecord);
 
 							    break;
 							}
@@ -1801,7 +1806,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 						        if (result.Success)
 						        {
-                                    MeetingInfo = new MeetingInfo("", "", "", "", "", true, true, MeetingInfo.WaitingForHost, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue);
+                                    MeetingInfo = new MeetingInfo("", "", "", "", GetSharingStatus(), true, true, MeetingInfo.WaitingForHost, MeetingIsLockedFeedback.BoolValue, MeetingIsRecordingFeedback.BoolValue, Status.Call.CallRecordInfo.AllowRecord);
 						            break;
 						        }
 
@@ -1935,7 +1940,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 		}
 
-		private void SetLayout()
+		private void SetDefaultLayout()
 		{
 			if (!_props.AutoDefaultLayouts) return;
 
@@ -1948,8 +1953,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			}
 			else
 			{
-				SendText(String.Format("zconfiguration call layout style: {0}",
-					_props.DefaultCallLayout));
+                if (_props.DefaultCallLayout == (_props.DefaultCallLayout & AvailableLayouts))
+                {
+                    SendText(String.Format("zconfiguration call layout style: {0}",
+                        _props.DefaultCallLayout));
+                }
+                else
+                    Debug.Console(0, this, "Unable to set default Layout.  {0} not currently an available layout based on meeting state", _props.DefaultCallLayout);
 			}
 		}
 
@@ -2147,10 +2157,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     !String.Equals(Status.Call.Info.meeting_type,"NORMAL"),
                     false,
                     MeetingIsLockedFeedback.BoolValue,
-                    MeetingIsRecordingFeedback.BoolValue
+                    MeetingIsRecordingFeedback.BoolValue, Status.Call.CallRecordInfo.AllowRecord
                     );
+
+                SetDefaultLayout();
             }
-            // TODO [ ] Issue #868
+
             else if (item.Status == eCodecCallStatus.Disconnected)
             {
                 MeetingInfo = new MeetingInfo(
@@ -2163,7 +2175,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     false,
                     false,
                     false,
-                    false
+                    false, Status.Call.CallRecordInfo.AllowRecord
                     );
             }
 
@@ -2171,11 +2183,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			Debug.Console(1, this, "[OnCallStatusChange] Current Call Status: {0}",
 				Status.Call != null ? Status.Call.Status.ToString() : "no call");
-
-			if (_props.AutoDefaultLayouts)
-			{
-				SetLayout();
-			}
 		}
 
         private string GetSharingStatus()
@@ -2243,6 +2250,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             }
         }
 
+        /// <summary>
+        /// Starts sharing HDMI source
+        /// </summary>
 		public override void StartSharing()
 		{
 			SendText("zCommand Call Sharing HDMI Start");
@@ -2388,6 +2398,20 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// <param name="joinMap"></param>
 		public void LinkZoomRoomToApi(BasicTriList trilist, ZoomRoomJoinMap joinMap)
 		{
+            var meetingInfoCodec = this as IHasMeetingInfo;
+            if (meetingInfoCodec != null)
+            {
+                if (meetingInfoCodec.MeetingInfo != null)
+                {
+                    trilist.SetBool(joinMap.MeetingCanRecord.JoinNumber, meetingInfoCodec.MeetingInfo.CanRecord);
+                }
+
+                meetingInfoCodec.MeetingInfoChanged += (o, a) =>
+                    {
+                        trilist.SetBool(joinMap.MeetingCanRecord.JoinNumber, a.Info.CanRecord);
+                    };
+            }
+
             var recordingCodec = this as IHasMeetingRecordingWithPrompt;
             if (recordingCodec != null)
             {
@@ -2502,13 +2526,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 //trilist.SetString(joinMap.CurrentSource.JoinNumber, args.Info.ShareStatus);
 		    };
 
-		    trilist.SetSigTrueAction(joinMap.StartMeetingNow.JoinNumber, () => StartMeeting(0));
-		    trilist.SetSigTrueAction(joinMap.ShareOnlyMeeting.JoinNumber, StartSharingOnlyMeeting);
-            trilist.SetSigTrueAction(joinMap.StartNormalMeetingFromSharingOnlyMeeting.JoinNumber, StartNormalMeetingFromSharingOnlyMeeting);
+		    trilist.SetSigFalseAction(joinMap.StartMeetingNow.JoinNumber, () => StartMeeting(0));
+            trilist.SetSigFalseAction(joinMap.ShareOnlyMeeting.JoinNumber, StartSharingOnlyMeeting);
+            trilist.SetSigFalseAction(joinMap.StartNormalMeetingFromSharingOnlyMeeting.JoinNumber, StartNormalMeetingFromSharingOnlyMeeting);
 
 			trilist.SetStringSigAction(joinMap.SubmitPassword.JoinNumber, SubmitPassword);
-            //trilist.SetSigFalseAction(joinMap.CancelPasswordPrompt.JoinNumber, () =>
-            //    OnPasswordRequired(false, false, true, ""));
 
             // Subscribe to call status to clear ShowPasswordPrompt when in meeting
             this.CallStatusChange += (o, a) =>
@@ -2567,7 +2589,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             var wirelessInfoCodec = this as IZoomWirelessShareInstructions;
             if (wirelessInfoCodec != null)
             {
-                SetSharingStateJoins(Status.Sharing, trilist, joinMap);
+                if (Status != null && Status.Sharing != null)
+                {
+                    SetSharingStateJoins(Status.Sharing, trilist, joinMap);
+                }
 
                 wirelessInfoCodec.ShareInfoChanged += (o, a) =>
                     {
@@ -3264,7 +3289,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			// There is no property that directly reports if strip mode is valid, but API stipulates
 			// that strip mode is available if the number of screens is 1
-			if (Status.NumberOfScreens.NumOfScreens == 1)
+			if (Status.NumberOfScreens.NumOfScreens == 1 || Status.Layout.can_Switch_Strip_View || Status.Layout.video_type.ToLower() == "strip")
 			{
 				availableLayouts |= zConfiguration.eLayoutStyle.Strip;
 			}
@@ -3279,10 +3304,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             var handler = LayoutInfoChanged;
             if (handler != null)
             {
+
+                var currentLayout = zConfiguration.eLayoutStyle.None;
+
+                currentLayout = (zConfiguration.eLayoutStyle)Enum.Parse(typeof(zConfiguration.eLayoutStyle), string.IsNullOrEmpty(LocalLayoutFeedback.StringValue) ? "None" : LocalLayoutFeedback.StringValue, true);            
+
                 handler(this, new LayoutInfoChangedEventArgs()
                 {
                     AvailableLayouts = AvailableLayouts,
-                    CurrentSelectedLayout = (zConfiguration.eLayoutStyle)Enum.Parse(typeof(zConfiguration.eLayoutStyle),string.IsNullOrEmpty(LocalLayoutFeedback.StringValue) ? "None" : LocalLayoutFeedback.StringValue , true),
+                    CurrentSelectedLayout = currentLayout,
                     LayoutViewIsOnFirstPage = LayoutViewIsOnFirstPageFeedback.BoolValue,
                     LayoutViewIsOnLastPage = LayoutViewIsOnLastPageFeedback.BoolValue,
                     CanSwapContentWithThumbnail = CanSwapContentWithThumbnailFeedback.BoolValue,
@@ -3415,11 +3445,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             //OnPasswordRequired(false, false, true, "");		
         }
 
-        public void CancelPasswordPrompt()
-        {
-            OnPasswordRequired(false, false, true, "Login Cancelled");
-        }
-
         void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
         {
             var handler = PasswordRequired;
@@ -3464,19 +3489,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	        StartSharingOnlyMeeting(eSharingMeetingMode.None, 30, String.Empty);
 	    }
 
-	    public void StartSharingOnlyMeeting(eSharingMeetingMode mode)
+	    public void StartSharingOnlyMeeting(eSharingMeetingMode displayMode)
 	    {
-	        StartSharingOnlyMeeting(mode, 30, String.Empty);
+	        StartSharingOnlyMeeting(displayMode, DefaultMeetingDurationMin, String.Empty);
 	    }
 
-	    public void StartSharingOnlyMeeting(eSharingMeetingMode mode, ushort duration)
+	    public void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, uint duration)
 	    {
-	        StartSharingOnlyMeeting(mode, duration, String.Empty);
+	        StartSharingOnlyMeeting(displayMode, duration, String.Empty);
 	    }
 
-	    public void StartSharingOnlyMeeting(eSharingMeetingMode mode, ushort duration, string password)
+	    public void StartSharingOnlyMeeting(eSharingMeetingMode displayMode, uint duration, string password)
 	    {
-            SendText(String.Format("zCommand Dial Sharing Duration: {0} DisplayState: {1} Password: {2}", duration, mode, password));
+            SendText(String.Format("zCommand Dial Sharing Duration: {0} DisplayState: {1} Password: {2}", duration, displayMode, password));
 	    }
 
 	    public void StartNormalMeetingFromSharingOnlyMeeting()
@@ -3568,6 +3593,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         void OnShareInfoChanged(zStatus.Sharing status)
         {
+            Debug.Console(2, this,
+@"ShareInfoChanged:
+isSharingHDMI: {0}
+isSharingAirplay: {1}
+AirplayPassword: {2}
+OSD Display State: {3}
+",
+status.isSharingBlackMagic,
+status.isAirHostClientConnected,
+status.password,
+status.dispState);
+
             var handler = ShareInfoChanged;
             if (handler != null)
             {

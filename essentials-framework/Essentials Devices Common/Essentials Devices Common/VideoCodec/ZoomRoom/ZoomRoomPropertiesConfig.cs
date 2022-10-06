@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 
@@ -29,11 +30,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         /* This layout will be selected when Sharing starts (either from Far end or locally)*/
         [JsonProperty("defaultSharingLayout")]
-        public string DefaultSharingLayout { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public zConfiguration.eLayoutStyle DefaultSharingLayout { get; set; }
 
         //This layout will be selected when a call is connected and no content is being shared
         [JsonProperty("defaultCallLayout")]
-        public string DefaultCallLayout { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public zConfiguration.eLayoutStyle DefaultCallLayout { get; set; }
 
         [JsonProperty("minutesBeforeMeetingStart")]
         public int MinutesBeforeMeetingStart { get; set; }
