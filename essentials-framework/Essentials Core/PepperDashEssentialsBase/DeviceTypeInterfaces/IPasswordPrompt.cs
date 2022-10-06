@@ -21,11 +21,6 @@ namespace PepperDash.Essentials.Core
         /// </summary>
         /// <param name="password"></param>
         void SubmitPassword(string password);
-
-        /// <summary>
-        /// Cancels the password submission
-        /// </summary>
-        void CancelPasswordPrompt();
     }
 
     public class PasswordPromptEventArgs : EventArgs
