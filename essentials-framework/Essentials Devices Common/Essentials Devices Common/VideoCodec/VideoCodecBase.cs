@@ -1409,7 +1409,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 				stringIndex += maxStrings;
                 digitalIndex += maxDigitals;
 			}
-			while (digitalIndex < maxCalls * offset)
+            while (arrayIndex < maxCalls * offset)
 			{
 				//digitals
                 tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
