@@ -28,6 +28,7 @@ namespace PepperDash.Essentials.Devices.Common
         public bool HasDvr { get; set; }
         public bool HasDpad { get; set; }
         public bool HasNumeric { get; set; }
+        private bool _OverrideKeypadEnter;
 
         public DevicePresetsModel TvPresets { get; private set; }
 
@@ -56,7 +57,31 @@ namespace PepperDash.Essentials.Devices.Common
 
 			HasKeypadAccessoryButton2 = true;
 			KeypadAccessoryButton2Command = "KEYPAD_ENTER";
-			KeypadAccessoryButton2Label = "Enter";
+		    KeypadAccessoryButton2Label = "Enter";
+
+
+
+            if (props.AccessoryButton1Override != null)
+            {
+                KeypadAccessoryButton1Command = !String.IsNullOrEmpty(props.AccessoryButton1Override.Command)
+                    ? props.AccessoryButton1Override.Command
+                    : KeypadAccessoryButton1Command;
+                KeypadAccessoryButton1Label = !String.IsNullOrEmpty(props.AccessoryButton1Override.Label)
+                    ? props.AccessoryButton1Override.Label
+                    : KeypadAccessoryButton1Label;
+            }
+            if (props.AccessoryButton2Override != null)
+            {
+                KeypadAccessoryButton2Command = !String.IsNullOrEmpty(props.AccessoryButton2Override.Command)
+                    ? props.AccessoryButton2Override.Command
+                    : KeypadAccessoryButton2Command;
+                KeypadAccessoryButton2Label = !String.IsNullOrEmpty(props.AccessoryButton2Override.Label)
+                    ? props.AccessoryButton2Override.Label
+                    : KeypadAccessoryButton2Label;
+            }
+		    _OverrideKeypadEnter = props.UseStandardEnterForKeypad;
+
+
 
 			AnyVideoOut = new RoutingOutputPort(RoutingPortNames.AnyVideoOut, eRoutingSignalType.Audio | eRoutingSignalType.Video,
 				eRoutingPortConnectionType.Hdmi, null, this);
@@ -187,7 +212,7 @@ namespace PepperDash.Essentials.Devices.Common
 		/// </summary>
 		public string KeypadAccessoryButton1Label { get; set; }
 		
-
+        
 		/// <summary>
 		/// Defaults to "Dash"
 		/// </summary>
@@ -236,7 +261,12 @@ namespace PepperDash.Essentials.Devices.Common
 		/// </summary>
 		public void KeypadEnter(bool pressRelease)
 		{
-			IrPort.PressRelease("numericEnter", pressRelease);
+		    if (!_OverrideKeypadEnter)
+		    {
+		        IrPort.PressRelease("numericEnter", pressRelease);
+		        return;
+		    }
+            IrPort.PressRelease(IROutputStandardCommands.IROut_ENTER, pressRelease);
 		}
 
 		#endregion
