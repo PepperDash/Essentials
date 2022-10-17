@@ -1372,67 +1372,66 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 			};
 		}
 
-		private string UpdateCallStatusXSig()
-		{
-			const int maxCalls = 8;
-			const int maxStrings = 6;
+        private string UpdateCallStatusXSig()
+        {
+            const int maxCalls = 8;
+            const int maxStrings = 6;
             const int maxDigitals = 2;
-			const int offset = maxStrings + maxDigitals;
-			var stringIndex = 0;
-			var digitalIndex = maxStrings * maxCalls;
-			var arrayIndex = 0;
+            const int offset = maxStrings + maxDigitals;
+            var stringIndex = 0;
+            var digitalIndex = maxStrings * maxCalls;
+            var arrayIndex = 0;
 
-			var tokenArray = new XSigToken[maxCalls * offset]; //set array size for number of calls * pieces of info
+            var tokenArray = new XSigToken[maxCalls * offset]; //set array size for number of calls * pieces of info
 
-			foreach (var call in ActiveCalls)
-			{
-				if (arrayIndex >= maxCalls * offset)
-					break;
-				//digitals
+            foreach (var call in ActiveCalls)
+            {
+                if (arrayIndex >= maxCalls * offset)
+                    break;
+                //digitals
                 tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, call.IsActiveCall);
                 tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, call.IsOnHold);
 
-				//serials
-				tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 1, call.Name ?? String.Empty);
-				tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 2, call.Number ?? String.Empty);
-				tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 3, call.Direction.ToString());
-				tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 4, call.Type.ToString());
-				tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 5, call.Status.ToString());
-                if(call.Duration != null)
+                //serials
+                tokenArray[arrayIndex] = new XSigSerialToken(stringIndex + 1, call.Name ?? String.Empty);
+                tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 2, call.Number ?? String.Empty);
+                tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 3, call.Direction.ToString());
+                tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 4, call.Type.ToString());
+                tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 5, call.Status.ToString());
+                if (call.Duration != null)
                 {
                     // May need to verify correct string format here
                     var dur = string.Format("{0:c}", call.Duration);
-                    tokenArray[arrayIndex + 6] = new XSigSerialToken(stringIndex + 6, dur);
+                    tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 6, dur);
                 }
 
-				arrayIndex += offset;
-				stringIndex += maxStrings;
-				digitalIndex++;
-			}
-			while (digitalIndex < maxCalls)
-			{
-				//digitals
+                arrayIndex += offset;
+                stringIndex += maxStrings;
+                digitalIndex++;
+            }
+            while (digitalIndex < maxCalls)
+            {
+                //digitals
                 tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
                 tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, false);
 
 
                 //serials
-				tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 1, String.Empty);
-				tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 2, String.Empty);
-				tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 3, String.Empty);
-				tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 4, String.Empty);
-				tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 5, String.Empty);
-                tokenArray[arrayIndex + 6] = new XSigSerialToken(stringIndex + 6, String.Empty);
+                tokenArray[arrayIndex] = new XSigSerialToken(stringIndex + 1, String.Empty);
+                tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 2, String.Empty);
+                tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 3, String.Empty);
+                tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 4, String.Empty);
+                tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 5, String.Empty);
+                tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 6, String.Empty);
 
-				arrayIndex += offset;
-				stringIndex += maxStrings;
-				digitalIndex++;
-			}
+                arrayIndex += offset;
+                stringIndex += maxStrings;
+                digitalIndex++;
+            }
 
-			return GetXSigString(tokenArray);
-		}
-
-		private void LinkVideoCodecDtmfToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
+            return GetXSigString(tokenArray);
+        }
+        private void LinkVideoCodecDtmfToApi(BasicTriList trilist, VideoCodecControllerJoinMap joinMap)
 		{
             trilist.SetSigFalseAction(joinMap.Dtmf0.JoinNumber, () => SendDtmfAction("0", trilist, joinMap));
             trilist.SetSigFalseAction(joinMap.Dtmf1.JoinNumber, () => SendDtmfAction("1", trilist, joinMap));
