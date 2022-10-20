@@ -62,6 +62,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		private readonly ZoomRoomPropertiesConfig _props;
 
+		private bool _meetingPasswordRequired;
+
+		public void Poll(string pollString)
+		{
+			if(_meetingPasswordRequired) return;
+			
+			SendText(string.Format("{0}{1}", pollString, SendDelimiter));
+		}
+
 		public ZoomRoom(DeviceConfig config, IBasicCommunication comm)
 			: base(config)
 		{
@@ -75,13 +84,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			if (_props.CommunicationMonitorProperties != null)
 			{
-				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication,
-					_props.CommunicationMonitorProperties);
+				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, _props.CommunicationMonitorProperties.PollInterval, _props.CommunicationMonitorProperties.TimeToWarning, _props.CommunicationMonitorProperties.TimeToError,
+					() => Poll(_props.CommunicationMonitorProperties.PollString));
 			}
 			else
 			{
-				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000,
-					"zStatus SystemUnit" + SendDelimiter);
+				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, () => Poll("zStatus SystemUnit"));
 			}
 
 			DeviceManager.AddDevice(CommunicationMonitor);
@@ -1992,6 +2000,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// </summary>
 		private void GetBookings()
 		{
+			if (_meetingPasswordRequired) return;
+
 			SendText("zCommand Bookings List");
 		}
 
@@ -2179,6 +2189,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     );
             }
 
+			_meetingPasswordRequired = false;
             base.OnCallStatusChange(item);
 
 			Debug.Console(1, this, "[OnCallStatusChange] Current Call Status: {0}",
@@ -3450,6 +3461,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             var handler = PasswordRequired;
             if (handler != null)
             {
+				if(!loginFailed || !loginCancelled)
+					_meetingPasswordRequired = true;
+				
                 handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
             }
         }
