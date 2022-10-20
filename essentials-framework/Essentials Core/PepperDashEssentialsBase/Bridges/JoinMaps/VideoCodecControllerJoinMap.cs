@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using PepperDash.Essentials.Core;
 namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 {
@@ -398,6 +398,7 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
+
 		[JoinName("DirectoryEntryIsContact")]
 		public JoinDataComplete DirectoryEntryIsContact = new JoinDataComplete(
 			new JoinData
@@ -523,6 +524,21 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
+
+        [JoinName("DirectoryClearSelected")]
+        public JoinDataComplete DirectoryClearSelected = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 110,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Clear Selected Entry and String from Search",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
 
 		[JoinName("CameraTiltUp")]
 		public JoinDataComplete CameraTiltUp = new JoinDataComplete(
@@ -776,44 +792,16 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinType = eJoinType.Digital
 			});
 
-		[JoinName("DialMeeting1")]
-		public JoinDataComplete DialMeeting1 = new JoinDataComplete(
+        [JoinName("DialMeetingStart")]
+		public JoinDataComplete DialMeetingStart = new JoinDataComplete(
 			new JoinData
 			{
 				JoinNumber = 161,
-				JoinSpan = 1
+				JoinSpan = 10
 			},
 			new JoinMetadata
 			{
-				Description = "Join first meeting",
-				JoinCapabilities = eJoinCapabilities.FromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		[JoinName("DialMeeting2")]
-		public JoinDataComplete DialMeeting2 = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 162,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Join second meeting",
-				JoinCapabilities = eJoinCapabilities.FromSIMPL,
-				JoinType = eJoinType.Digital
-			});
-
-		[JoinName("DialMeeting3")]
-		public JoinDataComplete DialMeeting3 = new JoinDataComplete(
-			new JoinData
-			{
-				JoinNumber = 163,
-				JoinSpan = 1
-			},
-			new JoinMetadata
-			{
-				Description = "Join third meeting",
+				Description = "Join meeting",
 				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Digital
 			});
@@ -1256,10 +1244,11 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 			},
 			new JoinMetadata
 			{
-				Description = "Directory Select Row",
+				Description = "Directory Select Row and Feedback",
 				JoinCapabilities = eJoinCapabilities.FromSIMPL,
 				JoinType = eJoinType.Analog
 			});
+
 
         [JoinName("SelectedContactMethodCount")]
         public JoinDataComplete SelectedContactMethodCount = new JoinDataComplete(
@@ -1288,6 +1277,22 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Analog
             });
+
+        [JoinName("DirectorySelectRowFeedback")]
+        public JoinDataComplete DirectorySelectRowFeedback = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 104,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Directory Select Row and Feedback",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Analog
+            });
+
+
 
 		[JoinName("CameraPresetSelect")]
 		public JoinDataComplete CameraPresetSelect = new JoinDataComplete(
@@ -1575,6 +1580,36 @@ namespace PepperDash.Essentials.Core.Bridges.JoinMaps
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
 				JoinType = eJoinType.Serial
 			});
+
+        [JoinName("AvailableLayoutsFb")]
+        public JoinDataComplete AvailableLayoutsFb = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 142,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "xSig of all available layouts",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("SelectLayout")]
+        public JoinDataComplete SelectLayout = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 142,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Select Layout by string",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+
 
 		[JoinName("CurrentParticipants")]
 		public JoinDataComplete CurrentParticipants = new JoinDataComplete(
@@ -3013,6 +3048,35 @@ namespace PepperDash_Essentials_Core.Bridges.JoinMaps
 				JoinCapabilities = eJoinCapabilities.ToSIMPL,
 				JoinType = eJoinType.Serial
 			});
+
+        [JoinName("AvailableLayoutsFb")]
+        public JoinDataComplete AvailableLayoutsFb = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 142,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "xSig of all available layouts",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("SelectLayout")]
+        public JoinDataComplete SelectLayout = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 142,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Select Layout by string",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
 
 		[JoinName("CurrentParticipants")]
 		public JoinDataComplete CurrentParticipants = new JoinDataComplete(

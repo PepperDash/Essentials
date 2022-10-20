@@ -377,5 +377,70 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
             return meetings;
         }
+
+        public static List<Meeting> GetGenericMeetingsFromBookingResult(List<Booking> bookings, int joinableCooldownSeconds)
+        {
+            var meetings = new List<Meeting>();
+
+            if (Debug.Level > 0)
+            {
+                Debug.Console(1, "Meetings List:\n");
+            }
+
+            foreach (Booking b in bookings)
+            {
+                var meeting = new Meeting(joinableCooldownSeconds);
+
+                if (b.Id != null)
+                    meeting.Id = b.Id.Value;
+                if (b.Organizer != null)
+                    meeting.Organizer = string.Format("{0}, {1}", b.Organizer.LastName.Value, b.Organizer.FirstName.Value);
+                if (b.Title != null)
+                    meeting.Title = b.Title.Value;
+                if (b.Agenda != null)
+                    meeting.Agenda = b.Agenda.Value;
+                if (b.Time != null)
+                {
+                    meeting.StartTime = b.Time.StartTime.Value;
+                    meeting.EndTime = b.Time.EndTime.Value;
+                }
+                if (b.Privacy != null)
+                    meeting.Privacy = CodecCallPrivacy.ConvertToDirectionEnum(b.Privacy.Value);
+
+                //#warning Update this ConnectMode conversion after testing onsite.  Expected value is "OBTP", but in PD NYC Test scenarios, "Manual" is being returned for OBTP meetings
+                if (b.DialInfo.ConnectMode != null)
+                    if (b.DialInfo.ConnectMode.Value.ToLower() == "obtp" || b.DialInfo.ConnectMode.Value.ToLower() == "manual")
+                        meeting.IsOneButtonToPushMeeting = true;
+
+                if (b.DialInfo.Calls.Call != null)
+                {
+                    foreach (Call c in b.DialInfo.Calls.Call)
+                    {
+                        meeting.Calls.Add(new PepperDash.Essentials.Devices.Common.Codec.Call()
+                        {
+                            Number = c.Number.Value,
+                            Protocol = c.Protocol.Value,
+                            CallRate = c.CallRate.Value,
+                            CallType = c.CallType.Value
+                        });
+                    }
+                }
+
+
+                meetings.Add(meeting);
+
+                if (Debug.Level > 0)
+                {
+                    Debug.Console(1, "Title: {0}, ID: {1}, Organizer: {2}, Agenda: {3}", meeting.Title, meeting.Id, meeting.Organizer, meeting.Agenda);
+                    Debug.Console(1, "    Start Time: {0}, End Time: {1}, Duration: {2}", meeting.StartTime, meeting.EndTime, meeting.Duration);
+                    Debug.Console(1, "    Joinable: {0}\n", meeting.Joinable);
+                }
+            }
+
+            meetings.OrderBy(m => m.StartTime);
+
+            return meetings;
+        }
+
     }
 }

@@ -59,7 +59,7 @@ namespace PepperDash.Essentials.Core.Devices
         /// <summary>
         /// Used by the extending class to allow for any custom actions to be taken (tell the ConfigWriter to write config, etc)
         /// </summary>
-        /// <param name="Config"></param>
+        /// <param name="config"></param>
         protected virtual void CustomSetConfig(DeviceConfig config)
         {
             ConfigWriter.UpdateDeviceConfig(config);

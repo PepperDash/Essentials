@@ -144,7 +144,7 @@ namespace PepperDash.Essentials.Core
 		public UShortOutputSig GetUShortOutputSig(uint index, uint sigNum)
 		{
 			if (sigNum > UShortIncrement) return null;
-			return SRL.UShortOutput.FirstOrDefault(s => s.Name.Equals(GetBoolFeedbackSigName(index, sigNum)));
+            return SRL.UShortOutput.FirstOrDefault(s => s.Name.Equals(GetUShortOutputSigName(index, sigNum)));
 		}
 
 		/// <summary>
@@ -159,7 +159,7 @@ namespace PepperDash.Essentials.Core
 		public StringOutputSig GetStringOutputSig(uint index, uint sigNum)
 		{
 			if (sigNum > StringIncrement) return null;
-			return SRL.StringOutput.FirstOrDefault(s => s.Name.Equals(GetBoolFeedbackSigName(index, sigNum)));
+            return SRL.StringOutput.FirstOrDefault(s => s.Name.Equals(GetStringOutputSigName(index, sigNum)));
 		}
 
 		/// <summary>

@@ -308,7 +308,7 @@ namespace PepperDash.Essentials.Devices.Displays
 			//Send((string)selector);
 		}
 
-		void SetVolume(ushort level)
+		public void SetVolume(ushort level)
 		{
 			var levelString = string.Format("{0}{1:X4}\x03", VolumeLevelPartialCmd, level);
 			AppendChecksumAndSend(levelString);
@@ -333,10 +333,13 @@ namespace PepperDash.Essentials.Devices.Displays
 			Send(MuteOnCmd);
 		}
 
-		void IBasicVolumeWithFeedback.SetVolume(ushort level)
+
+        /*
+		public void IBasicVolumeWithFeedback.SetVolume(ushort level)
 		{
 			SetVolume(level);
 		}
+       */
 
 		#endregion
 
