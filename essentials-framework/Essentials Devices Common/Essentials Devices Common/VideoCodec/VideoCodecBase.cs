@@ -1393,11 +1393,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
                 tokenArray[digitalIndex + 1] = new XSigDigitalToken(digitalIndex + 2, call.IsOnHold);
 
 				//serials
-				tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 1, call.Name ?? String.Empty);
-				tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 2, call.Number ?? String.Empty);
-				tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 3, call.Direction.ToString());
-				tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 4, call.Type.ToString());
-				tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 5, call.Status.ToString());
+				tokenArray[arrayIndex] = new XSigSerialToken(stringIndex + 1, call.Name ?? String.Empty);
+				tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 2, call.Number ?? String.Empty);
+				tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 3, call.Direction.ToString());
+				tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 4, call.Type.ToString());
+				tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 5, call.Status.ToString());
                 if(call.Duration != null)
                 {
                     // May need to verify correct string format here
@@ -1407,9 +1407,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 				arrayIndex += offset;
 				stringIndex += maxStrings;
-				digitalIndex++;
+                digitalIndex += maxDigitals;
 			}
-			while (digitalIndex < maxCalls)
+            while (arrayIndex < maxCalls * offset)
 			{
 				//digitals
                 tokenArray[digitalIndex] = new XSigDigitalToken(digitalIndex + 1, false);
@@ -1417,16 +1417,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec
 
 
                 //serials
-				tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 1, String.Empty);
-				tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 2, String.Empty);
-				tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 3, String.Empty);
-				tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 4, String.Empty);
-				tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 5, String.Empty);
-                tokenArray[arrayIndex + 6] = new XSigSerialToken(stringIndex + 6, String.Empty);
+				tokenArray[arrayIndex] = new XSigSerialToken(stringIndex + 1, String.Empty);
+				tokenArray[arrayIndex + 1] = new XSigSerialToken(stringIndex + 2, String.Empty);
+				tokenArray[arrayIndex + 2] = new XSigSerialToken(stringIndex + 3, String.Empty);
+				tokenArray[arrayIndex + 3] = new XSigSerialToken(stringIndex + 4, String.Empty);
+				tokenArray[arrayIndex + 4] = new XSigSerialToken(stringIndex + 5, String.Empty);
+                tokenArray[arrayIndex + 5] = new XSigSerialToken(stringIndex + 6, String.Empty);
 
 				arrayIndex += offset;
 				stringIndex += maxStrings;
-				digitalIndex++;
+				digitalIndex += maxDigitals;
 			}
 
 			return GetXSigString(tokenArray);
