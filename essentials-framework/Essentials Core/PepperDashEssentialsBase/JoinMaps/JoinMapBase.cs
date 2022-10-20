@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using Crestron.SimplSharp.Reflection;
+using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharp;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Core.Config;
@@ -256,11 +259,63 @@ namespace PepperDash.Essentials.Core
             var analogs = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Analog) == eJoinType.Analog).ToDictionary(j => j.Key, j => j.Value);
             Debug.Console(2, "Found {0} Analog Joins", analogs.Count);
             PrintJoinList(GetSortedJoins(analogs));
-            
+
             Debug.Console(0, "Serials:");
             var serials = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Serial) == eJoinType.Serial).ToDictionary(j => j.Key, j => j.Value);
             Debug.Console(2, "Found {0} Serial Joins", serials.Count);
             PrintJoinList(GetSortedJoins(serials));
+
+        }
+        /// <summary>
+        /// Prints the join information to console
+        /// </summary>
+        public void MarkdownJoinMapInfo(string deviceKey, string bridgeKey)
+        {
+            var pluginType = GetType().Name;
+
+            Debug.Console(0, "{0}:\n", pluginType);
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine(String.Format("# {0}", GetType().Name));
+            sb.AppendLine(String.Format("Generated from '{0}' on bridge '{1}'", deviceKey, bridgeKey));
+            sb.AppendLine();
+            sb.AppendLine("## Digitals");
+            // Get the joins of each type and print them
+            var digitals = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Digital) == eJoinType.Digital).ToDictionary(j => j.Key, j => j.Value);
+            Debug.Console(2, "Found {0} Digital Joins", digitals.Count);
+            var digitalSb = AppendJoinList(GetSortedJoins(digitals));
+            digitalSb.AppendLine("## Analogs");
+            digitalSb.AppendLine();
+
+            Debug.Console(0, "Analogs:");
+            var analogs = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Analog) == eJoinType.Analog).ToDictionary(j => j.Key, j => j.Value);
+            Debug.Console(2, "Found {0} Analog Joins", analogs.Count);
+            var analogSb = AppendJoinList(GetSortedJoins(analogs));
+            analogSb.AppendLine("## Serials");
+            analogSb.AppendLine();
+
+            Debug.Console(0, "Serials:");
+            var serials = Joins.Where(j => (j.Value.Metadata.JoinType & eJoinType.Serial) == eJoinType.Serial).ToDictionary(j => j.Key, j => j.Value);
+            Debug.Console(2, "Found {0} Serial Joins", serials.Count);
+            var serialSb = AppendJoinList(GetSortedJoins(serials));
+
+            sb.EnsureCapacity(sb.Length + digitalSb.Length + analogSb.Length + serialSb.Length);
+            sb.Append(digitalSb).Append(analogSb).Append(serialSb);
+
+            WriteJoinmapMarkdown(sb, pluginType, bridgeKey, deviceKey);
+
+        }
+
+        private static void WriteJoinmapMarkdown(StringBuilder stringBuilder, string pluginType, string bridgeKey, string deviceKey)
+        {
+            var fileName = String.Format("{0}{1}{2}__{3}__{4}.md", Global.FilePathPrefix, "joinMaps/", pluginType, bridgeKey, deviceKey);
+
+            using (var sw = new StreamWriter(fileName))
+            {
+                sw.WriteLine(stringBuilder.ToString());
+                Debug.Console(0, "Joinmap Readme generated and written to {0}", fileName);
+            }
 
         }
 
@@ -291,6 +346,63 @@ namespace PepperDash.Essentials.Core
                         join.Value.Metadata.JoinType.ToString(),
                         join.Value.Metadata.JoinCapabilities.ToString());
             }
+        }
+
+        static StringBuilder AppendJoinList(List<KeyValuePair<string, JoinDataComplete>> joins)
+        {
+            var sb = new StringBuilder();
+            const string stringFormatter = "| {0} | {1} | {2} | {3} | {4} |";
+            const int joinNumberLen = 11;
+            const int joinSpanLen = 9;
+            const int typeLen = 19;
+            const int capabilitiesLen = 12;
+            var descriptionLen = (from @join in joins
+                                  select String.IsNullOrEmpty(@join.Value.AttributeName)
+                                      ? @join.Value.Metadata.Description
+                                      : @join.Value.AttributeName into description
+                                  select description.Length)
+                             .Concat(new[] { 11 }).Max();
+
+            var joinNumberHeader = String.Format("Join Number").PadRight(joinNumberLen, ' ');
+            var joinSpanHeader = String.Format("Join Span").PadRight(joinSpanLen, ' ');
+            var descriptionHeader = String.Format("Description").PadRight(descriptionLen, ' ');
+            var typeHeader = String.Format("Type").PadRight(typeLen, ' ');
+            var capabilitiesHeader = String.Format("Capabilities").PadRight(capabilitiesLen, ' ');
+            //build header
+            sb.AppendLine(String.Format(stringFormatter, 
+                joinNumberHeader, 
+                joinSpanHeader, 
+                descriptionHeader, 
+                typeHeader,
+                capabilitiesHeader));
+            //build table seperator
+            sb.AppendLine(String.Format(stringFormatter,
+                new String('-', joinNumberLen),
+                new String('-', joinSpanLen),
+                new String('-', descriptionLen),
+                new String('-', typeLen),
+                new String('-', capabilitiesLen)));
+
+            foreach (var join in joins)
+            {
+                var joinNumber = String.Format("{0}", join.Value.JoinNumber).PadRight(joinNumberLen, ' ');
+                var joinSpan = String.Format("{0}", join.Value.JoinSpan).PadRight(joinSpanLen);
+                var joinDescription = String.Format(String.IsNullOrEmpty(join.Value.AttributeName)
+                    ? join.Value.Metadata.Description
+                    : join.Value.AttributeName).PadRight(descriptionLen, ' ');
+                var joinType = String.Format("{0}", join.Value.Metadata.JoinType.ToString()).PadRight(typeLen, ' ');
+                var joinCapabilities =
+                    String.Format("{0}", join.Value.Metadata.JoinCapabilities.ToString()).PadRight(capabilitiesLen, ' ');
+
+                sb.AppendLine(String.Format("| {0} | {1} | {2} | {3} | {4} |",
+                    joinNumber,
+                    joinSpan,
+                    joinDescription,
+                    joinType,
+                    joinCapabilities));
+            }
+            sb.AppendLine();
+            return sb;
         }
 
         /// <summary>
