@@ -56,9 +56,9 @@ namespace PepperDash.Essentials.Devices.Common.Environment.Somfy
             PulseOutput(OpenRelay, RelayPulseTime);
         }
 
-        public override void StopOrPreset()
+        public override void Stop()
         {
-            Debug.Console(1, this, "Stopping or recalling preset on Shade: '{0}'", this.Name);
+            Debug.Console(1, this, "Stopping Shade: '{0}'", this.Name);
 
             PulseOutput(StopOrPresetRelay, RelayPulseTime);
         }
