@@ -217,10 +217,6 @@
       <Project>{892B761C-E479-44CE-BD74-243E9214AF13}</Project>
       <Name>Essentials Devices Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\essentials-framework\Essentials DM\Essentials_DM\PepperDash_Essentials_DM.csproj">
-      <Project>{9199CE8A-0C9F-4952-8672-3EED798B284F}</Project>
-      <Name>PepperDash_Essentials_DM</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

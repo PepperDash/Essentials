@@ -12,9 +12,6 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Essentials.Core.Fusion;
-using PepperDash.Essentials.Devices.Common;
-using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
 using PepperDash.Essentials.Room.Config;
 
@@ -222,7 +219,6 @@ namespace PepperDash.Essentials
 
                 new Core.DeviceFactory();
                 new Devices.Common.DeviceFactory();
-                new DM.DeviceFactory();
                 new DeviceFactory();
 
                 Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials load from configuration");
@@ -371,6 +367,8 @@ namespace PepperDash.Essentials
                                 devConf.Type.ToUpper(), Global.ControlSystem.ControllerPrompt.ToUpper());
 
                         // Check if the processor is a DMPS model
+                            //TODO[] This needs dealt with in the eventual plugin - 2.0 feature
+                        /*
                         if (this.ControllerPrompt.IndexOf("dmps", StringComparison.OrdinalIgnoreCase) > -1)
                         {
                             Debug.Console(2, "Adding DmpsRoutingController for {0} to Device Manager.", this.ControllerPrompt);
@@ -382,6 +380,7 @@ namespace PepperDash.Essentials
 
                             DeviceManager.AddDevice(DmpsRoutingController.GetDmpsRoutingController("processor-avRouting", this.ControllerPrompt, propertiesConfig));
                         }
+                         */
                         else if (this.ControllerPrompt.IndexOf("mpc3", StringComparison.OrdinalIgnoreCase) > -1)
                         {
                             Debug.Console(2, "MPC3 processor type detected.  Adding Mpc3TouchpanelController.");
