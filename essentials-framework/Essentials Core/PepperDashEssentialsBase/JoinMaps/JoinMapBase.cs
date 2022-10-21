@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -196,19 +198,6 @@ namespace PepperDash.Essentials.Core
 
         protected void AddJoins(Type type)
         {
-            // Add all the JoinDataComplete properties to the Joins Dictionary and pass in the offset 
-            //Joins = this.GetType()
-            //    .GetCType()
-            //    .GetFields(BindingFlags.Public | BindingFlags.Instance)
-            //    .Where(field => field.IsDefined(typeof(JoinNameAttribute), true))
-            //    .Select(field => (JoinDataComplete)field.GetValue(this))
-            //    .ToDictionary(join => join.GetNameAttribute(), join =>
-            //        {
-            //            join.SetJoinOffset(_joinOffset);
-            //            return join;
-            //        });
-
-            //type = this.GetType(); <- this wasn't working because 'this' was always the base class, never the derived class
             var fields =
                 type.GetCType()
                     .GetFields(BindingFlags.Public | BindingFlags.Instance)
@@ -222,7 +211,7 @@ namespace PepperDash.Essentials.Core
 
                 if (value == null)
                 {
-                    Debug.Console(0, "Unable to caset base class to {0}", type.Name);
+                    Debug.Console(0, "Unable to cast base class to {0}", type.Name);
                     continue;
                 }
 
@@ -356,25 +345,15 @@ namespace PepperDash.Essentials.Core
             const int joinSpanLen = 9;
             const int typeLen = 19;
             const int capabilitiesLen = 12;
-            var descriptionLen = (from @join in joins
-                                  select String.IsNullOrEmpty(@join.Value.AttributeName)
-                                      ? @join.Value.Metadata.Description
-                                      : @join.Value.AttributeName into description
-                                  select description.Length)
-                             .Concat(new[] { 11 }).Max();
+            var descriptionLen = (from @join in joins select @join.Value into j select j.Metadata.Description.Length).Concat(new[] {11}).Max();
 
-            var joinNumberHeader = String.Format("Join Number").PadRight(joinNumberLen, ' ');
-            var joinSpanHeader = String.Format("Join Span").PadRight(joinSpanLen, ' ');
-            var descriptionHeader = String.Format("Description").PadRight(descriptionLen, ' ');
-            var typeHeader = String.Format("Type").PadRight(typeLen, ' ');
-            var capabilitiesHeader = String.Format("Capabilities").PadRight(capabilitiesLen, ' ');
             //build header
             sb.AppendLine(String.Format(stringFormatter, 
-                joinNumberHeader, 
-                joinSpanHeader, 
-                descriptionHeader, 
-                typeHeader,
-                capabilitiesHeader));
+                String.Format("Join Number").PadRight(joinNumberLen, ' '), 
+                String.Format("Join Span").PadRight(joinSpanLen, ' '), 
+                String.Format("Description").PadRight(descriptionLen, ' '), 
+                String.Format("Type").PadRight(typeLen, ' '),
+                 String.Format("Capabilities").PadRight(capabilitiesLen, ' ')));
             //build table seperator
             sb.AppendLine(String.Format(stringFormatter,
                 new String('-', joinNumberLen),
@@ -385,21 +364,7 @@ namespace PepperDash.Essentials.Core
 
             foreach (var join in joins)
             {
-                var joinNumber = String.Format("{0}", join.Value.JoinNumber).PadRight(joinNumberLen, ' ');
-                var joinSpan = String.Format("{0}", join.Value.JoinSpan).PadRight(joinSpanLen);
-                var joinDescription = String.Format(String.IsNullOrEmpty(join.Value.AttributeName)
-                    ? join.Value.Metadata.Description
-                    : join.Value.AttributeName).PadRight(descriptionLen, ' ');
-                var joinType = String.Format("{0}", join.Value.Metadata.JoinType.ToString()).PadRight(typeLen, ' ');
-                var joinCapabilities =
-                    String.Format("{0}", join.Value.Metadata.JoinCapabilities.ToString()).PadRight(capabilitiesLen, ' ');
-
-                sb.AppendLine(String.Format("| {0} | {1} | {2} | {3} | {4} |",
-                    joinNumber,
-                    joinSpan,
-                    joinDescription,
-                    joinType,
-                    joinCapabilities));
+                sb.AppendLine(join.Value.GetMarkdownFormattedData(stringFormatter, descriptionLen));
             }
             sb.AppendLine();
             return sb;
@@ -570,6 +535,64 @@ namespace PepperDash.Essentials.Core
             _data = data;
             Metadata = metadata;
         }
+
+        public string GetMarkdownFormattedData(string stringFormatter, int descriptionLen)
+        {
+
+            //Fixed Width Headers
+            var joinNumberLen = String.Format("Join Number").Length;
+            var joinSpanLen = String.Format("Join Span").Length;
+            var typeLen = String.Format("AnalogDigitalSerial").Length;
+            var capabilitiesLen = String.Format("ToFromFusion").Length;
+
+            //Track which one failed, if it did
+            const string placeholder = "unknown";
+            var dataArray = new Dictionary<string, string>
+            {
+                {"joinNumber", placeholder.PadRight(joinNumberLen, ' ')},
+                {"joinSpan", placeholder.PadRight(joinSpanLen, ' ')},
+                {"description", placeholder.PadRight(descriptionLen, ' ')},
+                {"joinType", placeholder.PadRight(typeLen, ' ')},
+                {"capabilities", placeholder.PadRight(capabilitiesLen, ' ')}
+            };
+
+
+            try
+            {
+                dataArray["joinNumber"] = String.Format("{0}", JoinNumber.ToString(CultureInfo.InvariantCulture).ReplaceIfNullOrEmpty(placeholder)).PadRight(joinNumberLen, ' ');
+                dataArray["joinSpan"] = String.Format("{0}", JoinSpan.ToString(CultureInfo.InvariantCulture).ReplaceIfNullOrEmpty(placeholder)).PadRight(joinSpanLen, ' ');
+                dataArray["description"] = String.Format("{0}", Metadata.Description.ReplaceIfNullOrEmpty(placeholder)).PadRight(descriptionLen, ' ');
+                dataArray["joinType"] = String.Format("{0}", Metadata.JoinType.ToString().ReplaceIfNullOrEmpty(placeholder)).PadRight(typeLen, ' ');
+                dataArray["capabilities"] = String.Format("{0}", Metadata.JoinCapabilities.ToString().ReplaceIfNullOrEmpty(placeholder)).PadRight(capabilitiesLen, ' ');
+
+                return String.Format(stringFormatter,
+                    dataArray["joinNumber"],
+                    dataArray["joinSpan"],
+                    dataArray["description"],
+                    dataArray["joinType"],
+                    dataArray["capabilities"]);
+
+            }
+            catch (Exception e)
+            {
+                //Don't Throw - we don't want to kill the system if this falls over - it's not mission critical. Print the error, use placeholder data
+                var errorKey = string.Empty;
+                foreach (var item in dataArray)
+                {
+                    if (item.Value.TrimEnd() == placeholder) ;
+                    errorKey = item.Key;
+                    break;
+                }
+                Debug.Console(0, "Unable to decode join metadata {1}- {0}", e.Message, !String.IsNullOrEmpty(errorKey) ? (' ' + errorKey) : String.Empty);
+                return String.Format(stringFormatter,
+                    dataArray["joinNumber"],
+                    dataArray["joinSpan"],
+                    dataArray["description"],
+                    dataArray["joinType"],
+                    dataArray["capabilities"]);
+            }
+        }
+
 
         /// <summary>
         /// Sets the join offset value
