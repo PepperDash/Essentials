@@ -2578,11 +2578,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			PasswordRequired += (devices, args) =>
 			{
-                Debug.Console(0, this, "***********************************PaswordRequired. Message: {0} Cancelled: {1} Last Incorrect: {2} Failed: {3}", args.Message, args.LoginAttemptCancelled, args.LastAttemptWasIncorrect, args.LoginAttemptFailed);
+                Debug.Console(2, this, "***********************************PaswordRequired. Message: {0} Cancelled: {1} Last Incorrect: {2} Failed: {3}", args.Message, args.LoginAttemptCancelled, args.LastAttemptWasIncorrect, args.LoginAttemptFailed);
 
 				if (args.LoginAttemptCancelled)
 				{
 					trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, false);
+					_meetingPasswordRequired = false;
 					return;
 				}
 
@@ -2594,6 +2595,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				if (args.LoginAttemptFailed)
 				{
 					// login attempt failed
+					_meetingPasswordRequired = false;
 					return;
 				}
 
@@ -2818,16 +2820,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void LeaveMeeting()
         {
-            SendText("zCommand Call Leave");
+			if (_meetingPasswordRequired) _meetingPasswordRequired = false;
+			if (_waitingForUserToAcceptOrRejectIncomingCall) _waitingForUserToAcceptOrRejectIncomingCall = false;
+			
+			SendText("zCommand Call Leave");
         }
 
 		public override void EndCall(CodecActiveCallItem call)
 		{
+			if (_meetingPasswordRequired) _meetingPasswordRequired = false;
+			if (_waitingForUserToAcceptOrRejectIncomingCall) _waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText("zCommand Call Disconnect");
 		}
 
 		public override void EndAllCalls()
 		{
+			if (_meetingPasswordRequired) _meetingPasswordRequired = false;
+			if (_waitingForUserToAcceptOrRejectIncomingCall) _waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText("zCommand Call Disconnect");
 		}
 
@@ -3487,10 +3498,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             var handler = PasswordRequired;
             if (handler != null)
             {
-				if(!loginFailed || !loginCancelled)
-					_meetingPasswordRequired = true;
-				
-                handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
+	            _meetingPasswordRequired = !loginFailed || !loginCancelled;
+				Debug.Console(2, this, "Meeting Password Required: {0}", _meetingPasswordRequired);
+
+	            handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
             }
         }
 
