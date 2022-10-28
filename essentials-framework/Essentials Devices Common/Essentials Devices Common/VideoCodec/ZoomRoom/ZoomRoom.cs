@@ -3493,10 +3493,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
         {
+			_meetingPasswordRequired = !loginFailed || !loginCancelled;
+
             var handler = PasswordRequired;
             if (handler != null)
-            {
-	            _meetingPasswordRequired = !loginFailed || !loginCancelled;
+            {	            
 				Debug.Console(2, this, "Meeting Password Required: {0}", _meetingPasswordRequired);
 
 	            handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
