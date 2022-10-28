@@ -2583,7 +2583,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				if (args.LoginAttemptCancelled)
 				{
 					trilist.SetBool(joinMap.MeetingPasswordRequired.JoinNumber, false);
-					_meetingPasswordRequired = false;
 					return;
 				}
 
@@ -2595,7 +2594,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				if (args.LoginAttemptFailed)
 				{
 					// login attempt failed
-					_meetingPasswordRequired = false;
 					return;
 				}
 
@@ -2820,24 +2818,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void LeaveMeeting()
         {
-			if (_meetingPasswordRequired) _meetingPasswordRequired = false;
-			if (_waitingForUserToAcceptOrRejectIncomingCall) _waitingForUserToAcceptOrRejectIncomingCall = false;
-			
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText("zCommand Call Leave");
         }
 
 		public override void EndCall(CodecActiveCallItem call)
 		{
-			if (_meetingPasswordRequired) _meetingPasswordRequired = false;
-			if (_waitingForUserToAcceptOrRejectIncomingCall) _waitingForUserToAcceptOrRejectIncomingCall = false;
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
 
 			SendText("zCommand Call Disconnect");
 		}
 
 		public override void EndAllCalls()
 		{
-			if (_meetingPasswordRequired) _meetingPasswordRequired = false;
-			if (_waitingForUserToAcceptOrRejectIncomingCall) _waitingForUserToAcceptOrRejectIncomingCall = false;
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
 
 			SendText("zCommand Call Disconnect");
 		}
