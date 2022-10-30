@@ -147,13 +147,7 @@
     <Compile Include="Display\SamsungMDCDisplay.cs" />
     <Compile Include="Display\NecPaSeriesProjector.cs" />
     <Compile Include="Display\NECPSXMDisplay.cs" />
-    <Compile Include="DSP\BiampTesira\BiampTesiraForteDspLevel.cs" />
-    <Compile Include="DSP\BiampTesira\TesiraForteControlPoint.cs" />
-    <Compile Include="DSP\BiampTesira\TesiraForteMuteControl.cs" />
     <Compile Include="DSP\DspBase.cs" />
-    <Compile Include="DSP\BiampTesira\BiampTesiraForteDsp.cs" />
-    <Compile Include="DSP\BiampTesira\BiampTesiraFortePropertiesConfig.cs" />
-    <Compile Include="DSP\PolycomSoundStructure\SoundStructureBasics.cs" />
     <Compile Include="Environment\Crestron Lighting\Din8sw8.cs" />
     <Compile Include="Environment\Lutron\LutronQuantum.cs" />
     <Compile Include="Environment\Somfy\RelayControlledShade.cs" />

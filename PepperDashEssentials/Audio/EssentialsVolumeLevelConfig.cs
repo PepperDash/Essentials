@@ -34,6 +34,7 @@ namespace PepperDash.Essentials
         public string Label { get; set; }
         public int Level { get; set; }
 
+        /*
         /// <summary>
         /// Helper to get the device associated with key - one timer.
         /// </summary>
@@ -55,6 +56,7 @@ namespace PepperDash.Essentials
                 return null;
             }
 
+            /*
             // DSP format: deviceKey--levelName, biampTesira-1--master
             match = Regex.Match(DeviceKey, @"([-_\w]+)--(.+)");
             if (match.Success)
@@ -70,8 +72,11 @@ namespace PepperDash.Essentials
                 // No volume for some reason. We have failed as developers
                 return null;
             }
+            
 
             return null;
+         
         }
+         */
     }
 }
