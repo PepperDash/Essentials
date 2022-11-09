@@ -83,10 +83,10 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-            {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s);
-            }, "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(BridgeHelper.JoinmapMarkdown, "getjoinmapmarkdown"
+                , "generate markdown of map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(s => Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s), "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
@@ -103,12 +103,16 @@ namespace PepperDash.Essentials
                     (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-            {
-                CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r\n" +
-                    "System URL:   {0}\r\n" +
-                    "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
-            }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s => 
+                CrestronConsole.ConsoleCommandResponse(
+                "This system can be found at the following URLs:\r\n" +
+                "System URL:   {0}\r\n" +
+                "Template URL: {1}", 
+                ConfigReader.ConfigObject.SystemUrl, 
+                ConfigReader.ConfigObject.TemplateUrl), 
+                "portalinfo", 
+                "Shows portal URLS from configuration", 
+                ConsoleAccessLevelEnum.AccessOperator);
 
 
             CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
@@ -295,6 +299,10 @@ namespace PepperDash.Essentials
             var pluginDir = Global.FilePathPrefix + "plugins";
             if (!Directory.Exists(pluginDir))
                 Directory.Create(pluginDir);
+
+            var joinmapDir = Global.FilePathPrefix + "joinmaps";
+            if(!Directory.Exists(joinmapDir))
+                Directory.Create(joinmapDir);
 
 			return configExists;
 		}
