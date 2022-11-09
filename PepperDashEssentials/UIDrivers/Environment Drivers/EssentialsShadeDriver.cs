@@ -97,10 +97,10 @@ namespace PepperDash.Essentials
             {
                 TriList.SetSigFalseAction(ButtonPressJoinBase + 1, ShadeDevice.Open);
 
-                TriList.SetSigFalseAction(ButtonPressJoinBase + 2, (ShadeDevice as IShadesOpenCloseStop).StopOrPreset);
+                TriList.SetSigFalseAction(ButtonPressJoinBase + 2, (ShadeDevice as IShadesOpenCloseStop).Stop);
 
-                if(ShadeDevice is RelayControlledShade)
-                    TriList.SetString(StringJoinBase + 2, (ShadeDevice as RelayControlledShade).StopOrPresetButtonLabel);
+                if (ShadeDevice is IShadesOpenCloseStop)
+                    TriList.SetString(StringJoinBase + 2, "Stop");
                 
                 TriList.SetSigFalseAction(ButtonPressJoinBase + 3, ShadeDevice.Close);
             }
