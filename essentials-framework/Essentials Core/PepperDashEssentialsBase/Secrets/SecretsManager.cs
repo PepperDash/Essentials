@@ -148,6 +148,7 @@ namespace PepperDash.Essentials.Core
             {
                 Secrets.Add(key, provider);
                 Debug.Console(1, "Secrets provider '{0}' added to SecretsManager", key);
+                return;
             }
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to add Provider '{0}' to Secrets.  Provider with that key already exists", key );
         }
@@ -164,13 +165,13 @@ namespace PepperDash.Essentials.Core
             {
                 Secrets.Add(key, provider);
                 Debug.Console(1, "Secrets provider '{0}' added to SecretsManager", key);
-
+                return;
             }
             if (overwrite)
             {
                 Secrets.Add(key, provider);
                 Debug.Console(1, Debug.ErrorLogLevel.Notice, "Provider with the key '{0}' already exists in secrets.  Overwriting with new secrets provider.", key);
-
+                return;
             }
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to add Provider '{0}' to Secrets.  Provider with that key already exists", key);
         }
