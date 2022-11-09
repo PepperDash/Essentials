@@ -2578,7 +2578,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			PasswordRequired += (devices, args) =>
 			{
-                Debug.Console(0, this, "***********************************PaswordRequired. Message: {0} Cancelled: {1} Last Incorrect: {2} Failed: {3}", args.Message, args.LoginAttemptCancelled, args.LastAttemptWasIncorrect, args.LoginAttemptFailed);
+                Debug.Console(2, this, "***********************************PaswordRequired. Message: {0} Cancelled: {1} Last Incorrect: {2} Failed: {3}", args.Message, args.LoginAttemptCancelled, args.LastAttemptWasIncorrect, args.LoginAttemptFailed);
 
 				if (args.LoginAttemptCancelled)
 				{
@@ -2818,16 +2818,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void LeaveMeeting()
         {
-            SendText("zCommand Call Leave");
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
+
+			SendText("zCommand Call Leave");
         }
 
 		public override void EndCall(CodecActiveCallItem call)
 		{
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText("zCommand Call Disconnect");
 		}
 
 		public override void EndAllCalls()
 		{
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText("zCommand Call Disconnect");
 		}
 
@@ -3484,13 +3493,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
         {
+			_meetingPasswordRequired = !loginFailed || !loginCancelled;
+
             var handler = PasswordRequired;
             if (handler != null)
-            {
-				if(!loginFailed || !loginCancelled)
-					_meetingPasswordRequired = true;
-				
-                handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
+            {	            
+				Debug.Console(2, this, "Meeting Password Required: {0}", _meetingPasswordRequired);
+
+	            handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
             }
         }
 
