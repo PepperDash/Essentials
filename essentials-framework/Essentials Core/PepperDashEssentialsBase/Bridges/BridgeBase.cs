@@ -418,6 +418,12 @@ namespace PepperDash.Essentials.Core.Bridges
                 case "vceiscapiadv":
                 case "vceiscapiadvanced":
                 {
+                    if (string.IsNullOrEmpty(controlProperties.RoomId))
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to build VC-4 EISC Client for device {0}. Room ID is missing or empty", dc.Key);
+                        eisc = null;
+                        break;
+                    }
                     eisc = new VirtualControlEISCClient(controlProperties.IpIdInt, controlProperties.RoomId,
                         Global.ControlSystem);
                     break;
