@@ -394,35 +394,51 @@ namespace PepperDash.Essentials.Core.Bridges
 
             var controlProperties = CommFactory.GetControlPropertiesConfig(dc);
 
+            BasicTriList eisc;
+
             switch (dc.Type.ToLower())
             {
                 case "eiscapiadv":
                 case "eiscapiadvanced":
                 {
-                    var eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(controlProperties.IpIdInt,
+                    eisc = new ThreeSeriesTcpIpEthernetIntersystemCommunications(controlProperties.IpIdInt,
                         controlProperties.TcpSshProperties.Address, Global.ControlSystem);
-                    return new EiscApiAdvanced(dc, eisc);
+                    break;
                 }
                 case "eiscapiadvancedserver":
                 {
-                    var eisc = new EISCServer(controlProperties.IpIdInt, Global.ControlSystem);
-                    return new EiscApiAdvanced(dc, eisc);
+                    eisc = new EISCServer(controlProperties.IpIdInt, Global.ControlSystem);
+                    break;
                 }
                 case "eiscapiadvancedclient":
                 {
-                    var eisc = new EISCClient(controlProperties.IpIdInt, controlProperties.TcpSshProperties.Address, Global.ControlSystem);
-                    return new EiscApiAdvanced(dc, eisc);
+                    eisc = new EISCClient(controlProperties.IpIdInt, controlProperties.TcpSshProperties.Address, Global.ControlSystem);
+                    break;
                 }
                 case "vceiscapiadv":
                 case "vceiscapiadvanced":
                 {
-                    var eisc = new VirtualControlEISCClient(controlProperties.IpIdInt, InitialParametersClass.RoomId,
+                    if (string.IsNullOrEmpty(controlProperties.RoomId))
+                    {
+                        Debug.Console(0, Debug.ErrorLogLevel.Error, "Unable to build VC-4 EISC Client for device {0}. Room ID is missing or empty", dc.Key);
+                        eisc = null;
+                        break;
+                    }
+                    eisc = new VirtualControlEISCClient(controlProperties.IpIdInt, controlProperties.RoomId,
                         Global.ControlSystem);
-                    return new EiscApiAdvanced(dc, eisc);
+                    break;
                 }
                 default:
-                    return null;
+                    eisc = null;
+                    break;
             }
+
+            if (eisc == null)
+            {
+                return null;
+            }
+
+            return new EiscApiAdvanced(dc, eisc);
         }
     }
 
