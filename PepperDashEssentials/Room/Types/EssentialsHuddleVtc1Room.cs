@@ -745,6 +745,24 @@ namespace PepperDash.Essentials
         {
             //Implement this
         }
+
+        protected override bool AllowVacancyTimerToStart()
+        {
+            bool allowVideo = true;
+            bool allowAudio = true;
+
+            if (VideoCodec != null)
+            {
+                allowVideo = !VideoCodec.IsInCall;
+            }
+
+            if (AudioCodec != null)
+            {
+                allowAudio = !AudioCodec.IsInCall;
+            }
+
+            return allowVideo && allowAudio;
+        }
         
         /// <summary>
         /// Does what it says
