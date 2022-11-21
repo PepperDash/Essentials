@@ -361,10 +361,7 @@ namespace PepperDash.Essentials.Core
         /// Executes when RoomVacancyShutdownTimer expires.  Used to trigger specific room actions as needed.  Must nullify the timer object when executed
         /// </summary>
         /// <param name="o"></param>
-        public abstract void RoomVacatedForTimeoutPeriod(object o)
-        {
- 
-        }
+        public abstract void RoomVacatedForTimeoutPeriod(object o);
 
         /// <summary>
         /// Allow the vacancy event from an occupancy sensor to turn the room off.
