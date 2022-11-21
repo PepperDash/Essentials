@@ -753,13 +753,17 @@ namespace PepperDash.Essentials
 
             if (VideoCodec != null)
             {
+                Debug.Console(2,this, Debug.ErrorLogLevel.Notice, "Room {0} is in a video call. Not allowing auto power off", Key);
                 allowVideo = !VideoCodec.IsInCall;
             }
 
             if (AudioCodec != null)
             {
+                Debug.Console(2,this, Debug.ErrorLogLevel.Notice, "Room {0} is in an audio call. Not allowing auto power off", Key);
                 allowAudio = !AudioCodec.IsInCall;
             }
+
+            Debug.Console(2, this, "Room {0} allowing vacancy timer to start: {1}", Key, allowVideo && allowAudio);
 
             return allowVideo && allowAudio;
         }
