@@ -31,7 +31,7 @@ namespace PepperDash.Essentials.Core.UI
             :base(key, name)
         {
 
-            if (Panel == null)
+            if (panel == null)
             {
                 Debug.Console(0, this, "Panel is not valid. Touchpanel class WILL NOT work correctly");
                 return;
