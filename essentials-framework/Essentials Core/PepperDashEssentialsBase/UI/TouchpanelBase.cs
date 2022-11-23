@@ -71,6 +71,8 @@ namespace PepperDash.Essentials.Core.UI
                         return;
                     }
                 }
+
+                Panel.LoadSmartObjects(sgdName);
             });
 
             AddPostActivationAction(() =>
