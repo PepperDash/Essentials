@@ -46,6 +46,33 @@ namespace PepperDash.Essentials.Core.Bridges
                 bridge.PrintJoinMaps();
             }
         }
+        public static void JoinmapMarkdown(string command)
+        {
+            var targets = command.Split(' ');
+
+            var bridgeKey = targets[0].Trim();
+
+            var bridge = DeviceManager.GetDeviceForKey(bridgeKey) as EiscApiAdvanced;
+
+            if (bridge == null)
+            {
+                Debug.Console(0, "Unable to find advanced bridge with key: '{0}'", bridgeKey);
+                return;
+            }
+
+            if (targets.Length > 1)
+            {
+                var deviceKey = targets[1].Trim();
+
+                if (string.IsNullOrEmpty(deviceKey)) return;
+                bridge.MarkdownJoinMapForDevice(deviceKey, bridgeKey);
+            }
+            else
+            {
+                bridge.MarkdownForBridge(bridgeKey);
+
+            }
+        }
     }
 
 
@@ -227,6 +254,19 @@ namespace PepperDash.Essentials.Core.Bridges
                 joinMap.Value.PrintJoinMapInfo();
             }
         }
+        /// <summary>
+        /// Generates markdown for all join maps on this bridge
+        /// </summary>
+        public virtual void MarkdownForBridge(string bridgeKey)
+        {
+            Debug.Console(0, this, "Writing Joinmaps to files for EISC IPID: {0}", Eisc.ID.ToString("X"));
+
+            foreach (var joinMap in JoinMaps)
+            {
+                Debug.Console(0, "Generating markdown for device '{0}':", joinMap.Key);
+                joinMap.Value.MarkdownJoinMapInfo(joinMap.Key, bridgeKey);
+            }
+        }
 
         /// <summary>
         /// Prints the join map for a device by key
@@ -242,8 +282,25 @@ namespace PepperDash.Essentials.Core.Bridges
                 return;
             }
 
-            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key); 
+            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key);
             joinMap.PrintJoinMapInfo();
+        }
+        /// <summary>
+        /// Prints the join map for a device by key
+        /// </summary>
+        /// <param name="deviceKey"></param>
+        public void MarkdownJoinMapForDevice(string deviceKey, string bridgeKey)
+        {
+            var joinMap = JoinMaps[deviceKey];
+
+            if (joinMap == null)
+            {
+                Debug.Console(0, this, "Unable to find joinMap for device with key: '{0}'", deviceKey);
+                return;
+            }
+
+            Debug.Console(0, "Join map for device '{0}' on EISC '{1}':", deviceKey, Key);
+            joinMap.MarkdownJoinMapInfo(deviceKey, bridgeKey);
         }
 
         /// <summary>
