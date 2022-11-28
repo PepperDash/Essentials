@@ -199,6 +199,8 @@ namespace PepperDash.Essentials
                 }
                 else   // Handles Linux OS (Virtual Control)
                 {
+                    Debug.SetDebugLevel(2);
+
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", Global.AssemblyVersion);
 
                     // Set path to User/
