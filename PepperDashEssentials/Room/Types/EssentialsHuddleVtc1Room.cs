@@ -745,6 +745,28 @@ namespace PepperDash.Essentials
         {
             //Implement this
         }
+
+        protected override bool AllowVacancyTimerToStart()
+        {
+            bool allowVideo = true;
+            bool allowAudio = true;
+
+            if (VideoCodec != null)
+            {
+                Debug.Console(2,this, Debug.ErrorLogLevel.Notice, "Room {0} {1} in a video call", Key, VideoCodec.IsInCall ? "is" : "is not");
+                allowVideo = !VideoCodec.IsInCall;
+            }
+
+            if (AudioCodec != null)
+            {
+                Debug.Console(2,this, Debug.ErrorLogLevel.Notice, "Room {0} {1} in an audio call", Key, AudioCodec.IsInCall ? "is" : "is not");
+                allowAudio = !AudioCodec.IsInCall;
+            }
+
+            Debug.Console(2, this, "Room {0} allowing vacancy timer to start: {1}", Key, allowVideo && allowAudio);
+
+            return allowVideo && allowAudio;
+        }
         
         /// <summary>
         /// Does what it says
