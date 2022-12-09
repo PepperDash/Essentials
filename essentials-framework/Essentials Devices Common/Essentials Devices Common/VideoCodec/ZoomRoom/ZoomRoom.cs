@@ -376,26 +376,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void SelectCamera(string key)
 		{
-			if (Cameras == null)
-			{
-				return;
-			}
+            if (CameraIsMutedFeedback.BoolValue)
+            {
+                CameraMuteOff();
+            }
 
-			var camera = Cameras.FirstOrDefault(c => c.Key.IndexOf(key, StringComparison.OrdinalIgnoreCase) > -1);
-			if (camera != null)
-			{
-				Debug.Console(1, this, "Selected Camera with key: '{0}'", camera.Key);
-				SelectedCamera = camera;
-
-                if (CameraIsMutedFeedback.BoolValue)
-                {
-                    CameraMuteOff();
-                }
-			}
-			else
-			{
-				Debug.Console(1, this, "Unable to select camera with key: '{0}'", key);
-			}
+            SendText(string.Format("zConfiguration Video Camera selectedId: {0}", key));
 		}
 
 		public CameraBase FarEndCamera { get; private set; }
@@ -658,8 +644,27 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			{
 				if (a.PropertyName == "SelectedId")
 				{
-					SelectCamera(Configuration.Video.Camera.SelectedId);
-					// this will in turn fire the affected feedbacks
+                    if (Cameras == null)
+                    {
+                        return;
+                    }
+
+                    var camera = Cameras.FirstOrDefault(c => c.Key.IndexOf(Configuration.Video.Camera.SelectedId, StringComparison.OrdinalIgnoreCase) > -1);
+                    if (camera != null)
+                    {
+                        Debug.Console(1, this, "Camera selected with key: '{0}'", camera.Key);
+
+                        SelectedCamera = camera;
+
+                        if (CameraIsMutedFeedback.BoolValue)
+                        {
+                            CameraMuteOff();
+                        }
+                    }
+                    else
+                    {
+                        Debug.Console(1, this, "No camera found with key: '{0}'", Configuration.Video.Camera.SelectedId);
+                    }
 				}
 			};
 
