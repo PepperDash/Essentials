@@ -62,6 +62,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		private readonly ZoomRoomPropertiesConfig _props;
 
+		private bool _meetingPasswordRequired;
+
+        private bool _waitingForUserToAcceptOrRejectIncomingCall;
+
+		public void Poll(string pollString)
+		{
+			if(_meetingPasswordRequired || _waitingForUserToAcceptOrRejectIncomingCall) return;
+			
+			SendText(string.Format("{0}{1}", pollString, SendDelimiter));
+		}
+
 		public ZoomRoom(DeviceConfig config, IBasicCommunication comm)
 			: base(config)
 		{
@@ -75,13 +86,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			if (_props.CommunicationMonitorProperties != null)
 			{
-				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication,
-					_props.CommunicationMonitorProperties);
+				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, _props.CommunicationMonitorProperties.PollInterval, _props.CommunicationMonitorProperties.TimeToWarning, _props.CommunicationMonitorProperties.TimeToError,
+					() => Poll(_props.CommunicationMonitorProperties.PollString));
 			}
 			else
 			{
-				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000,
-					"zStatus SystemUnit" + SendDelimiter);
+				CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, () => Poll("zStatus SystemUnit"));
 			}
 
 			DeviceManager.AddDevice(CommunicationMonitor);
@@ -965,6 +975,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void SendText(string command)
 		{
+            if (_meetingPasswordRequired)
+            {
+                Debug.Console(2, this, "Blocking commands to ZoomRoom while waiting for user to enter meeting password");
+                return;
+            }
+
+            if (_waitingForUserToAcceptOrRejectIncomingCall)
+            {
+                Debug.Console(2, this, "Blocking commands to ZoomRoom while waiting for user to accept or reject incoming call");
+                return;
+            }
+
 			if (CommDebuggingIsOn)
 			{
 				Debug.Console(1, this, "Sending: '{0}'", command);
@@ -1589,6 +1611,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 										Id = incomingCall.callerJID
 									};
 
+                                    _waitingForUserToAcceptOrRejectIncomingCall = true;
+
 									ActiveCalls.Add(newCall);
 
 									OnCallStatusChange(newCall);
@@ -1614,6 +1638,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 										OnCallStatusChange(existingCall);
 									}
+
+                                    _waitingForUserToAcceptOrRejectIncomingCall = false;
 
 									UpdateCallStatus();
 								}
@@ -1997,6 +2023,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		/// </summary>
 		private void GetBookings()
 		{
+			if (_meetingPasswordRequired || _waitingForUserToAcceptOrRejectIncomingCall) return;
+
 			SendText("zCommand Bookings List");
 		}
 
@@ -2184,6 +2212,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     );
             }
 
+			_meetingPasswordRequired = false;
             base.OnCallStatusChange(item);
 
 			Debug.Console(1, this, "[OnCallStatusChange] Current Call Status: {0}",
@@ -2554,7 +2583,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 			PasswordRequired += (devices, args) =>
 			{
-                Debug.Console(0, this, "***********************************PaswordRequired. Message: {0} Cancelled: {1} Last Incorrect: {2} Failed: {3}", args.Message, args.LoginAttemptCancelled, args.LastAttemptWasIncorrect, args.LoginAttemptFailed);
+                Debug.Console(2, this, "***********************************PaswordRequired. Message: {0} Cancelled: {1} Last Incorrect: {2} Failed: {3}", args.Message, args.LoginAttemptCancelled, args.LastAttemptWasIncorrect, args.LoginAttemptFailed);
 
 				if (args.LoginAttemptCancelled)
 				{
@@ -2631,6 +2660,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void AcceptCall()
 		{
+            _waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			var incomingCall =
 				ActiveCalls.FirstOrDefault(
 					c => c.Status.Equals(eCodecCallStatus.Ringing) && c.Direction.Equals(eCodecCallDirection.Incoming));
@@ -2640,6 +2671,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public override void AcceptCall(CodecActiveCallItem call)
 		{
+            _waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText(string.Format("zCommand Call Accept callerJID: {0}", call.Id));
 
 			call.Status = eCodecCallStatus.Connected;
@@ -2651,6 +2684,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public void RejectCall()
 		{
+            _waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			var incomingCall =
 				ActiveCalls.FirstOrDefault(
 					c => c.Status.Equals(eCodecCallStatus.Ringing) && c.Direction.Equals(eCodecCallDirection.Incoming));
@@ -2660,6 +2695,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		public override void RejectCall(CodecActiveCallItem call)
 		{
+            _waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText(string.Format("zCommand Call Reject callerJID: {0}", call.Id));
 
 			call.Status = eCodecCallStatus.Disconnected;
@@ -2786,16 +2823,25 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void LeaveMeeting()
         {
-            SendText("zCommand Call Leave");
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
+
+			SendText("zCommand Call Leave");
         }
 
 		public override void EndCall(CodecActiveCallItem call)
 		{
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText("zCommand Call Disconnect");
 		}
 
 		public override void EndAllCalls()
 		{
+			_meetingPasswordRequired = false;
+			_waitingForUserToAcceptOrRejectIncomingCall = false;
+
 			SendText("zCommand Call Disconnect");
 		}
 
@@ -3445,17 +3491,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         public void SubmitPassword(string password)
         {
+            _meetingPasswordRequired = false;
             Debug.Console(2, this, "Password Submitted: {0}", password);
             Dial(_lastDialedMeetingNumber, password);
-            //OnPasswordRequired(false, false, true, "");		
         }
 
         void OnPasswordRequired(bool lastAttemptIncorrect, bool loginFailed, bool loginCancelled, string message)
         {
+			_meetingPasswordRequired = !loginFailed || !loginCancelled;
+
             var handler = PasswordRequired;
             if (handler != null)
-            {
-                handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
+            {	            
+				Debug.Console(2, this, "Meeting Password Required: {0}", _meetingPasswordRequired);
+
+	            handler(this, new PasswordPromptEventArgs(lastAttemptIncorrect, loginFailed, loginCancelled, message));
             }
         }
 
