@@ -49,7 +49,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new C2N-IO Device");
+            Debug.Console(1, "Factory Attempting to create new DinIo8 Device");
 
             return new DinIo8Controller(dc.Key, GetDinIo8Device, dc);
         }
