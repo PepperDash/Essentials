@@ -179,6 +179,7 @@
     <Compile Include="Crestron IO\Cards\InternalCardCageController.cs" />
     <Compile Include="Crestron IO\DinCenCn\DinCenCnController.cs" />
     <Compile Include="Crestron IO\DinCenCn\IHasCresnetBranches.cs" />
+    <Compile Include="Crestron IO\DinIo8\DinIo8Controller.cs" />
     <Compile Include="Crestron IO\Inputs\CenIoDigIn104Controller.cs" />
     <Compile Include="Crestron IO\Inputs\GenericDigitalInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />
