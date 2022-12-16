@@ -42,16 +42,17 @@ namespace PepperDash.Essentials.Core.CrestronIO
                 OutputPort = postActivationFunc(config);
 
                 OutputPort.Register();
-
-                OutputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalOutput);
-                if (config.DisablePullUpResistor)
-                    OutputPort.DisablePullUpResistor = true;
+                if (!OutputPort.SupportsDigitalOutput)
+                {
+                    Debug.Console(0, this, "Device does not support configuration as a Digital Output");
+                    return;
+                }
 
                 OutputPort.VersiportChange += OutputPort_VersiportChange;
 
 
 
-                Debug.Console(1, this, "Created GenericVersiportDigitalInputDevice on port '{0}'.  DisablePullUpResistor: '{1}'", config.PortNumber, OutputPort.DisablePullUpResistor);
+                Debug.Console(1, this, "Created GenericVersiportDigitalOutputDevice on port '{0}'.", config.PortNumber);
 
             });
 
