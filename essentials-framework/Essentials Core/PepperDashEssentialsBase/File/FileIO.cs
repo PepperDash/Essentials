@@ -21,35 +21,37 @@ namespace PepperDash.Essentials.Core
 		/// </summary>
 		/// <param name="fileName"></param>
 		/// <returns></returns>
-		public static FileInfo[] GetFiles(string fileName)
-		{
-			DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fileName));
-			var files = dirInfo.GetFiles(Path.GetFileName(fileName));
-			Debug.Console(0, "FileIO found: {0}, {1}", files.Count(), fileName);
-			if (files.Count() > 0)
-			{
-				return files;
-			}
-			else
-			{
-				return null;
-			}
-		}
+        public static FileInfo[] GetFiles(string fileName)
+        {
+            string fullFilePath = Global.FilePathPrefix + "/" + fileName;
+            DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
+            var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
+            Debug.Console(0, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
+            if (files.Count() > 0)
+            {
+                return files;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
-		public static FileInfo GetFile(string fileName)
-		{
-			DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fileName));
-			var files = dirInfo.GetFiles(Path.GetFileName(fileName));
-			Debug.Console(0, "FileIO found: {0}, {1}", files.Count(), fileName);
-			if (files.Count() > 0)
-			{
-				return files.FirstOrDefault();
-			}
-			else
-			{
-				return null;
-			}
-		}
+        public static FileInfo GetFile(string fileName)
+        {
+            string fullFilePath = Global.FilePathPrefix + "/" + fileName;
+            DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
+            var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
+            Debug.Console(0, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
+            if (files.Count() > 0)
+            {
+                return files.FirstOrDefault();
+            }
+            else
+            {
+                return null;
+            }
+        }
 
 
 		/// <summary>
@@ -202,7 +204,7 @@ namespace PepperDash.Essentials.Core
 		public static void WriteDataToFile(string data, string filePath)
 		{
 			Thread _WriteFileThread;
-			_WriteFileThread = new Thread((O) => _WriteFileMethod(data, filePath), null, Thread.eThreadStartOptions.CreateSuspended);
+            _WriteFileThread = new Thread((O) => _WriteFileMethod(data, Global.FilePathPrefix + "/" + filePath), null, Thread.eThreadStartOptions.CreateSuspended);
 			_WriteFileThread.Priority = Thread.eThreadPriority.LowestPriority;
 			_WriteFileThread.Start();
 			Debug.Console(0, Debug.ErrorLogLevel.Notice, "New WriteFile Thread");
@@ -217,7 +219,8 @@ namespace PepperDash.Essentials.Core
 			{
 				if (fileLock.TryEnter())
 				{
-					using (StreamWriter sw = new StreamWriter(filePath))
+
+                    using (StreamWriter sw = new StreamWriter(filePath))
 					{
 						sw.Write(data);
 						sw.Flush();
