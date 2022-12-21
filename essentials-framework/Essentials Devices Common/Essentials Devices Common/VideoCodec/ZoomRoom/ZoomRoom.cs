@@ -1382,22 +1382,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 								JsonConvert.PopulateObject(responseObj.ToString(), Status.Phonebook);
 
-								var directoryResults =
-									zStatus.Phonebook.ConvertZoomContactsToGeneric(Status.Phonebook.Contacts);
-
-								if (!PhonebookSyncState.InitialSyncComplete)
-								{
-									PhonebookSyncState.InitialPhonebookFoldersReceived();
-									PhonebookSyncState.PhonebookRootEntriesReceived();
-									PhonebookSyncState.SetPhonebookHasFolders(true);
-									PhonebookSyncState.SetNumberOfContacts(Status.Phonebook.Contacts.Count);
-								}
-
-								directoryResults.ResultsFolderId = "root";
-
-								DirectoryRoot = directoryResults;
-
-								CurrentDirectoryResult = directoryResults;
+                                UpdateDirectory();
 
 								break;
 							}
@@ -2250,6 +2235,26 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 Debug.Console(2, this, "{0}", e.StackTrace);
                 return sharingState;
             }
+        }
+
+        private void UpdateDirectory()
+        {
+            var directoryResults =
+                                    zStatus.Phonebook.ConvertZoomContactsToGeneric(Status.Phonebook.Contacts);
+
+            if (!PhonebookSyncState.InitialSyncComplete)
+            {
+                PhonebookSyncState.InitialPhonebookFoldersReceived();
+                PhonebookSyncState.PhonebookRootEntriesReceived();
+                PhonebookSyncState.SetPhonebookHasFolders(true);
+                PhonebookSyncState.SetNumberOfContacts(Status.Phonebook.Contacts.Count);
+            }
+
+            directoryResults.ResultsFolderId = "root";
+
+            DirectoryRoot = directoryResults;
+
+            CurrentDirectoryResult = directoryResults;
         }
 
         /// <summary>
