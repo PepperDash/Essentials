@@ -59,6 +59,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		private CameraBase _selectedCamera;
         private string _lastDialedMeetingNumber;
 
+        private CTimer contactsDebounceTimer;
+
 
 		private readonly ZoomRoomPropertiesConfig _props;
 
@@ -1511,35 +1513,36 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 						{
 							case "phonebook":
 							{
+                                zStatus.Contact contact = new zStatus.Contact();
+
 								if (responseObj["Updated Contact"] != null)
-								{
-									var updatedContact =
-										JsonConvert.DeserializeObject<zStatus.Contact>(
-											responseObj["Updated Contact"].ToString());
-
-									var existingContact =
-										Status.Phonebook.Contacts.FirstOrDefault(c => c.Jid.Equals(updatedContact.Jid));
-
-									if (existingContact != null)
-									{
-										// Update existing contact
-										JsonConvert.PopulateObject(responseObj["Updated Contact"].ToString(),
-											existingContact);
-									}
+								{                                    
+                                    contact = responseObj["Updated Contact"].ToObject<zStatus.Contact>();									
 								}
 								else if (responseObj["Added Contact"] != null)
 								{
-									var jToken = responseObj["Updated Contact"];
-									if (jToken != null)
-									{
-										var newContact =
-											JsonConvert.DeserializeObject<zStatus.Contact>(
-												jToken.ToString());
-
-										// Add a new contact
-										Status.Phonebook.Contacts.Add(newContact);
-									}
+									contact = responseObj["Added Contact"].ToObject<zStatus.Contact>();
 								}
+
+                                var existingContactIndex = Status.Phonebook.Contacts.FindIndex(c => c.Jid.Equals(contact.Jid));
+
+                                if (existingContactIndex > 0)
+                                {                                    
+                                    Status.Phonebook.Contacts[existingContactIndex] = contact;
+                                } 
+                                else 
+                                {                                    
+                                    Status.Phonebook.Contacts.Add(contact);
+                                }
+
+                                if(contactsDebounceTimer == null)
+                                {
+                                    contactsDebounceTimer = new CTimer(o => UpdateDirectory(), 2000);
+                                }
+                                else
+                                {
+                                    contactsDebounceTimer.Reset();
+                                }                                
 
 								break;
 							}
@@ -2239,8 +2242,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
         private void UpdateDirectory()
         {
-            var directoryResults =
-                                    zStatus.Phonebook.ConvertZoomContactsToGeneric(Status.Phonebook.Contacts);
+            Debug.Console(2, this, "Updating directory");
+            var directoryResults = zStatus.Phonebook.ConvertZoomContactsToGeneric(Status.Phonebook.Contacts);
 
             if (!PhonebookSyncState.InitialSyncComplete)
             {
@@ -2255,6 +2258,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             DirectoryRoot = directoryResults;
 
             CurrentDirectoryResult = directoryResults;
+
+            //
+            if (contactsDebounceTimer != null)
+            {
+                ClearContactDebounceTimer();
+            }
+        }
+
+        private void ClearContactDebounceTimer()
+        {
+            Debug.Console(2, this, "Clearing Timer");
+            if (!contactsDebounceTimer.Disposed && contactsDebounceTimer != null)
+            {
+                contactsDebounceTimer.Dispose();
+                contactsDebounceTimer = null;
+            }
         }
 
         /// <summary>
