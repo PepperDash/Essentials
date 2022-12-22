@@ -16,5 +16,9 @@ namespace PepperDash.Essentials.Core
         {
             return string.IsNullOrEmpty(s.Trim()) ? null : s;
         }
+        public static string ReplaceIfNullOrEmpty(this string s, string newString)
+        {
+            return string.IsNullOrEmpty(s) ? newString : s;
+        }
     }
 }
