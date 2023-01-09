@@ -23,7 +23,7 @@ namespace PepperDash.Essentials.Core
 		/// <returns></returns>
         public static FileInfo[] GetFiles(string fileName)
         {
-            string fullFilePath = Global.FilePathPrefix + "/" + fileName;
+            string fullFilePath = Global.FilePathPrefix + fileName;
             DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
             var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
             Debug.Console(0, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
@@ -39,7 +39,7 @@ namespace PepperDash.Essentials.Core
 
         public static FileInfo GetFile(string fileName)
         {
-            string fullFilePath = Global.FilePathPrefix + "/" + fileName;
+            string fullFilePath = Global.FilePathPrefix + fileName;
             DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(fullFilePath));
             var files = dirInfo.GetFiles(Path.GetFileName(fullFilePath));
             Debug.Console(0, "FileIO found: {0}, {1}", files.Count(), fullFilePath);
@@ -83,7 +83,7 @@ namespace PepperDash.Essentials.Core
 			{
 				if (fileLock.TryEnter())
 				{
-					DirectoryInfo dirInfo = new DirectoryInfo(file.Name);
+					DirectoryInfo dirInfo = new DirectoryInfo(file.DirectoryName);
 					Debug.Console(2, "FileIO Getting Data {0}", file.FullName);
 
 					if (File.Exists(file.FullName))
