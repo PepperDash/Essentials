@@ -123,6 +123,8 @@
     <Compile Include="Bridges\IBridge.cs" />
     <Compile Include="Bridges\JoinMaps\AirMediaControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\AppleTvJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\IAnalogInputJoinMap.cs" />
+    <Compile Include="Bridges\JoinMaps\IDigitalOutputJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\PduJoinMapBase.cs" />
     <Compile Include="Bridges\JoinMaps\C2nRthsControllerJoinMap.cs" />
     <Compile Include="Bridges\JoinMaps\CameraControllerJoinMap.cs" />
@@ -179,12 +181,17 @@
     <Compile Include="Crestron IO\Cards\InternalCardCageController.cs" />
     <Compile Include="Crestron IO\DinCenCn\DinCenCnController.cs" />
     <Compile Include="Crestron IO\DinCenCn\IHasCresnetBranches.cs" />
+    <Compile Include="Crestron IO\DinIo8\DinIo8Controller.cs" />
     <Compile Include="Crestron IO\Inputs\CenIoDigIn104Controller.cs" />
+    <Compile Include="Crestron IO\Inputs\GenericVersiportAnalogInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\GenericDigitalInputDevice.cs" />
     <Compile Include="Crestron IO\Inputs\GenericVersiportInputDevice.cs" />
+    <Compile Include="Crestron IO\Inputs\IAnalogInput.cs" />
     <Compile Include="Crestron IO\Inputs\IDigitalInput.cs" />
     <Compile Include="Crestron IO\IOPortConfig.cs" />
     <Compile Include="Crestron IO\Ir\CenIoIr104Controller.cs" />
+    <Compile Include="Crestron IO\Outputs\GenericVersiportOutputDevice.cs" />
+    <Compile Include="Crestron IO\Outputs\IDigitalOutput.cs" />
     <Compile Include="Crestron IO\Relay\CenIoRy104Controller.cs" />
     <Compile Include="Crestron IO\Relay\GenericRelayDevice.cs" />
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
