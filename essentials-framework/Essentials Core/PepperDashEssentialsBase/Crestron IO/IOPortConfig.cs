@@ -15,5 +15,7 @@ namespace PepperDash.Essentials.Core.CrestronIO
         public uint PortNumber { get; set; }
         [JsonProperty("disablePullUpResistor")]
         public bool DisablePullUpResistor { get; set; }
+        [JsonProperty("minimumChange")]
+        public int MinimumChange { get; set; }
     }
 }
