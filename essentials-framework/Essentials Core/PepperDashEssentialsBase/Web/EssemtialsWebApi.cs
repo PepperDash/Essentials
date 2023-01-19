@@ -2,13 +2,14 @@
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
 using PepperDash.Core;
+using PepperDash.Core.Web;
 using PepperDash.Essentials.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web
 {
 	public class EssemtialsWebApi : EssentialsDevice
 	{
-		private readonly GenericCwsBase _server;
+		private readonly WebApiServer _server;
 
 		private const string DefaultBasePath = "/api";
 
@@ -42,7 +43,7 @@ namespace PepperDash.Essentials.Core.Web
 
 			BasePath = string.IsNullOrEmpty(config.BasePath) ? DefaultBasePath : config.BasePath;
 
-			_server = new GenericCwsBase(Key, Name, BasePath);
+			_server = new WebApiServer(Key, Name, BasePath);
 		}
 
 		/// <summary>

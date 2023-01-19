@@ -1,9 +1,9 @@
 ﻿using Crestron.SimplSharp.WebScripting;
-using PepperDash.Core;
+using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
-	public class SetDeviceStreamDebugRequestHandler : CwsBaseHandler
+	public class SetDeviceStreamDebugRequestHandler : WebApiBaseRequestHandler
 	{
 		public SetDeviceStreamDebugRequestHandler()
 		{			
