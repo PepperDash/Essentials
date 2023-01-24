@@ -183,6 +183,8 @@ namespace PepperDash.Essentials.Core
         [JsonConverter(typeof(ComSpecJsonConverter))]
         public ComPort.ComPortSpec ComParams { get; set; }
 
+		public string RoomId { get; set; }
+
 		public string CresnetId { get; set; }
 
         /// <summary>

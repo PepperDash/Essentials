@@ -5,10 +5,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class SetDeviceStreamDebugRequestHandler : WebApiBaseRequestHandler
 	{
-		public SetDeviceStreamDebugRequestHandler()
-		{			
-		}
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>

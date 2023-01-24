@@ -5,10 +5,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class DisableAllStreamDebugRequestHandler : WebApiBaseRequestHandler
 	{
-		public DisableAllStreamDebugRequestHandler()
-		{
-		}
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>

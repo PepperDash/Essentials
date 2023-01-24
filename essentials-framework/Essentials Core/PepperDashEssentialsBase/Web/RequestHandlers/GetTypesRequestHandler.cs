@@ -5,10 +5,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class GetTypesRequestHandler : WebApiBaseRequestHandler
 	{
-		public GetTypesRequestHandler()
-		{
-		}
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>

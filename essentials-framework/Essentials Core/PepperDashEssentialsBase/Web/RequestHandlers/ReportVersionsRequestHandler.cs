@@ -5,10 +5,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class ReportVersionsRequestHandler : WebApiBaseRequestHandler
 	{
-		public ReportVersionsRequestHandler()
-		{
-		}
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>

@@ -5,10 +5,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class GetJoinMapRequestHandler : WebApiBaseRequestHandler
 	{
-		public GetJoinMapRequestHandler()
-		{
-		}
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>

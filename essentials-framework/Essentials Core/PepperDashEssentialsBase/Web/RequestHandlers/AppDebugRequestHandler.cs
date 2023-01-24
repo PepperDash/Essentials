@@ -5,10 +5,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class AppDebugRequestHandler : WebApiBaseRequestHandler
 	{
-		public AppDebugRequestHandler()
-		{			
-		}
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
