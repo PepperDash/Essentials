@@ -1,6 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.WebScripting;
+using Crestron.SimplSharpPro.Diagnostics;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PepperDash.Core;
 using PepperDash.Core.Web;
 using PepperDash.Essentials.Core.Web.RequestHandlers;
@@ -11,11 +16,17 @@ namespace PepperDash.Essentials.Core.Web
 	{
 		private readonly WebApiServer _server;
 
-		private const string DefaultBasePath = "/api";
+		///<example>
+		/// http(s)://{ipaddress}/cws/{basePath}
+		/// http(s)://{ipaddress}/VirtualControl/Rooms/{roomId}/cws/{basePath}
+		/// </example>
+		private readonly string _defaultBasePath =
+			CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance ? string.Format("/app{0:00}/api", InitialParametersClass.ApplicationNumber) : "/api";
 
+		// TODO [ ] Reset debug levels to proper value Trace = 0, Info = 1, Verbose = 2
 		private const int DebugTrace = 0;
-		private const int DebugInfo = 1;
-		private const int DebugVerbose = 2;
+		private const int DebugInfo = 0;
+		private const int DebugVerbose = 0;
 
 		/// <summary>
 		/// CWS base path
@@ -34,6 +45,16 @@ namespace PepperDash.Essentials.Core.Web
 		/// Constructor
 		/// </summary>
 		/// <param name="key"></param>
+		/// <param name="name"></param>		
+		public EssemtialsWebApi(string key, string name)
+			: this(key, name, null)
+		{
+		}
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="key"></param>
 		/// <param name="name"></param>
 		/// <param name="config"></param>
 		public EssemtialsWebApi(string key, string name, EssentialsWebApiPropertiesConfig config)
@@ -41,7 +62,10 @@ namespace PepperDash.Essentials.Core.Web
 		{
 			Key = key;
 
-			BasePath = string.IsNullOrEmpty(config.BasePath) ? DefaultBasePath : config.BasePath;
+			if (config == null)
+				BasePath = _defaultBasePath;
+			else
+				BasePath = string.IsNullOrEmpty(config.BasePath) ? _defaultBasePath : config.BasePath;
 
 			_server = new WebApiServer(Key, Name, BasePath);
 		}
@@ -116,9 +140,10 @@ namespace PepperDash.Essentials.Core.Web
 				}
 			};
 
-			foreach (var route in routes)
+			foreach (var route in routes.Where(route => route != null))
 			{
-				_server.AddRoute(route);
+				var r = route;
+				_server.AddRoute(r);
 			}
 
 			return base.CustomActivate();
@@ -145,17 +170,56 @@ namespace PepperDash.Essentials.Core.Web
 				if (response.Contains("OFF")) return;
 
 				var is4Series = eCrestronSeries.Series4 == (Global.ProcessorSeries & eCrestronSeries.Series4);
-				Debug.Console(DebugTrace, Debug.ErrorLogLevel.Notice, "Starting Essentials CWS on {0} Appliance", is4Series ? "4-series" : "3-series");
+				Debug.Console(DebugTrace, Debug.ErrorLogLevel.Notice, "Starting Essentials Web API on {0} Appliance", is4Series ? "4-series" : "3-series");
 
 				_server.Start();
+
+				GetPaths();
 
 				return;
 			}
 
 			// Automatically start CWS when running on a server (Linux OS, Virtual Control)
-			Debug.Console(DebugTrace, Debug.ErrorLogLevel.Notice, "Starting Essentials CWS on Virtual Control Server");
+			Debug.Console(DebugTrace, Debug.ErrorLogLevel.Notice, "Starting Essentials Web API on Virtual Control Server");
 
 			_server.Start();
+		}
+
+		/// <summary>
+		/// Print the available pahts
+		/// </summary>
+		/// <example>
+		/// http(s)://{ipaddress}/cws/{basePath}
+		/// http(s)://{ipaddress}/VirtualControl/Rooms/{roomId}/cws/{basePath}
+		/// </example>
+		public void GetPaths()
+		{
+			Debug.Console(DebugTrace, this, "{0}", new String('-', 50));
+
+			var currentIp = CrestronEthernetHelper.GetEthernetParameter(
+				CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_CURRENT_IP_ADDRESS, 0);
+			
+			var hostname = CrestronEthernetHelper.GetEthernetParameter(
+                    CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
+			
+			var path = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server 
+				? string.Format("http(s)://{0}/virtualcontrol/rooms/{1}/cws{2}", hostname, InitialParametersClass.RoomId, BasePath)
+				: string.Format("http(s)://{0}/cws{1}", currentIp, BasePath);
+			
+			Debug.Console(DebugTrace, this, "Server:{0}", path);
+
+			var routeCollection = _server.GetRouteCollection();
+			if (routeCollection == null)
+			{
+				Debug.Console(DebugTrace, this, "Server route collection is null");
+				return;
+			}
+			Debug.Console(DebugTrace, this, "Configured Routes:");
+			foreach (var route in routeCollection)
+			{
+				Debug.Console(DebugTrace, this, "{0}: {1}/{2}", route.Name, path, route.Url);
+			}
+			Debug.Console(DebugTrace, this, "{0}", new String('-', 50));
 		}
 	}
 }

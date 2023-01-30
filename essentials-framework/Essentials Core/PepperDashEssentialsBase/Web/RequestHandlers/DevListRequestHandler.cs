@@ -1,10 +1,20 @@
-﻿using Crestron.SimplSharp.WebScripting;
+﻿using System.Diagnostics;
+using System.Linq;
+using Crestron.SimplSharp.WebScripting;
+using Newtonsoft.Json;
+using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using Debug = PepperDash.Core.Debug;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class DevListRequestHandler : WebApiBaseRequestHandler
 	{
+		private const string Key = "DevListRequestHandler";
+		private const uint Trace = 0;
+		private const uint Info = 0;
+		private const uint Verbose = 0;
+
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -33,8 +43,31 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleGet(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			var allDevices = DeviceManager.AllDevices;
+			allDevices.Sort((a, b) => System.String.Compare(a.Key, b.Key, System.StringComparison.Ordinal));
+
+			var devices = allDevices.Select(device => new
+			{
+				Key = device.Key,
+				Name = device is IKeyName ? (device as IKeyName).Name : "---"
+
+			}).Cast<object>().ToList();
+
+			var js = JsonConvert.SerializeObject(devices, Formatting.Indented, new JsonSerializerSettings
+			{
+				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+				NullValueHandling = NullValueHandling.Ignore,
+				MissingMemberHandling = MissingMemberHandling.Ignore,
+				DefaultValueHandling = DefaultValueHandling.Ignore,
+				TypeNameHandling = TypeNameHandling.None
+			});
+			//Debug.Console(Verbose, "[{0}] HandleGet: \x0d\x0a{1}", Key.ToLower(), js);
+
+			context.Response.StatusCode = 200;
+			context.Response.StatusDescription = "OK";
+			context.Response.ContentType = "application/json";
+			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+			context.Response.Write(js, false);
 			context.Response.End();
 		}
 
