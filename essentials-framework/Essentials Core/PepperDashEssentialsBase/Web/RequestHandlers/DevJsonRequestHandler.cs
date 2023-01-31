@@ -1,10 +1,18 @@
-﻿using Crestron.SimplSharp.WebScripting;
+﻿using System;
+using System.Text;
+using Crestron.SimplSharp.WebScripting;
+using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class DevJsonRequestHandler : WebApiBaseRequestHandler
 	{
+		private const string Key = "DevJsonRequestHandler";
+		private const uint Trace = 0;
+		private const uint Info = 0;
+		private const uint Verbose = 0;
+
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -77,8 +85,17 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandlePost(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			if (context.Request.ContentLength < 0) return;
+
+			var bytes = new Byte[context.Request.ContentLength];
+			context.Request.InputStream.Read(bytes, 0, context.Request.ContentLength);
+			var data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+			Debug.Console(Info, "[{0}] Request data:\n{1}", Key.ToLower(), data);
+
+			DeviceJsonApi.DoDeviceActionWithJson(data);
+
+			context.Response.StatusCode = 200;
+			context.Response.StatusDescription = "OK";
 			context.Response.End();
 		}
 

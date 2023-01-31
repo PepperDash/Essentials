@@ -1,10 +1,8 @@
-﻿using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
-using Debug = PepperDash.Core.Debug;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {

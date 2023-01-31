@@ -77,8 +77,10 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandlePost(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			DeviceManager.DisableAllDeviceStreamDebugging();
+
+			context.Response.StatusCode = 200;
+			context.Response.StatusDescription = "OK";
 			context.Response.End();
 		}
 

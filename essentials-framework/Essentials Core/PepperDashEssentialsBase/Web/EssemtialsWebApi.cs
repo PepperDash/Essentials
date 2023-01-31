@@ -93,21 +93,31 @@ namespace PepperDash.Essentials.Core.Web
 					Name = "DevList",
 					RouteHandler = new DevListRequestHandler()
 				},
-				new HttpCwsRoute("devprops/{key}")
+				new HttpCwsRoute("devprops")
 				{
 					Name = "DevProps",
 					RouteHandler = new DevPropsRequestHandler()
 				},
+				//new HttpCwsRoute("devprops/{key}")
+				//{
+				//    Name = "DevProps",
+				//    RouteHandler = new DevPropsRequestHandler()
+				//},
 				new HttpCwsRoute("devjson")
 				{
 					Name = "DevJson",
 					RouteHandler = new DevJsonRequestHandler()
 				},
-				new HttpCwsRoute("setdevicestreamdebug/{deviceKey}/{state}")
+				new HttpCwsRoute("setdevicestreamdebug")
 				{
-					Name = "SetDeviceStreamDebug",
-					RouteHandler = new SetDeviceStreamDebugRequestHandler()
+				    Name = "SetDeviceStreamDebug",
+				    RouteHandler = new SetDeviceStreamDebugRequestHandler()
 				},
+				//new HttpCwsRoute("setdevicestreamdebug/{deviceKey}/{state}")
+				//{
+				//    Name = "SetDeviceStreamDebug",
+				//    RouteHandler = new SetDeviceStreamDebugRequestHandler()
+				//},
 				new HttpCwsRoute("disableallstreamdebug")
 				{
 					Name = "DisableAllStreamDebug",
