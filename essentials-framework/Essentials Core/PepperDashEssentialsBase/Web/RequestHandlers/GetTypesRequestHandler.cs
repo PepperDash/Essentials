@@ -1,10 +1,18 @@
-﻿using Crestron.SimplSharp.WebScripting;
+﻿using System.Linq;
+using Crestron.SimplSharp.WebScripting;
+using Newtonsoft.Json;
+using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class GetTypesRequestHandler : WebApiBaseRequestHandler
 	{
+		private const string Key = "GetTypesRequestHandler";
+		private const uint Trace = 0;
+		private const uint Info = 0;
+		private const uint Verbose = 0;
+
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -33,8 +41,37 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleGet(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			// TODO [ ] DeviceFactory.FactoryMethods dictionary is private and the method GetDeviceFactoryTypes has a return type void
+			// added new public method to return the DeviceFactory.FactoryMethod dictionary
+			var types = DeviceFactory.GetDeviceFactoryDictionary(null);
+			if (types == null)
+			{
+				Debug.Console(Verbose, "Get device factory dictionary failed");
+
+				context.Response.StatusCode = 400;
+				context.Response.StatusDescription = "Bad Request";
+				context.Response.End();
+
+				return;
+			}
+
+			types.OrderBy(t => t.Key);
+
+			var js = JsonConvert.SerializeObject(types, Formatting.Indented, new JsonSerializerSettings
+			{
+				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+				NullValueHandling = NullValueHandling.Ignore,
+				MissingMemberHandling = MissingMemberHandling.Ignore,
+				DefaultValueHandling = DefaultValueHandling.Ignore,
+				TypeNameHandling = TypeNameHandling.None
+			});
+			//Debug.Console(Verbose, "[{0}] HandleGet: \x0d\x0a{1}", Key.ToLower(), js);
+
+			context.Response.StatusCode = 200;
+			context.Response.StatusDescription = "OK";
+			context.Response.ContentType = "application/json";
+			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+			context.Response.Write(js, false);
 			context.Response.End();
 		}
 

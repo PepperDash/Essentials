@@ -128,25 +128,25 @@ namespace PepperDash.Essentials.Core.Web
 					Name = "ShowConfig",
 					RouteHandler = new ShowConfigRequestHandler()
 				},
-				new HttpCwsRoute("gettypes/all")
+				new HttpCwsRoute("gettypes")
 				{
-					Name = "GetTypesAll",
+					Name = "GetTypes",
 					RouteHandler = new GetTypesRequestHandler()
 				},
 				new HttpCwsRoute("gettypes/{filter}")
 				{
 					Name = "GetTypesByFilter",
-					RouteHandler = new GetTypesRequestHandler()
+					RouteHandler = new GetTypesByFilterRequestHandler()
 				},
-				new HttpCwsRoute("getjoinmap/{bridgeKey}/all")
+				new HttpCwsRoute("getjoinmap/{bridgeKey}")
 				{
-					Name = "GetJoinMapsByBridgeKey",
-					RouteHandler = new GetJoinMapRequestHandler()
+					Name = "GetJoinMapsForBridgeKey",
+					RouteHandler = new GetJoinMapForBridgeKeyRequestHandler()
 				},
 				new HttpCwsRoute("getjoinmap/{bridgeKey}/{deviceKey}")
 				{
-					Name = "GetJoinMapsForBridgeKeyFilteredByDeviceKey",
-					RouteHandler = new GetJoinMapRequestHandler()
+					Name = "GetJoinMapsForDeviceKey",
+					RouteHandler = new GetJoinMapForDeviceKeyRequestHandler()
 				}
 			};
 

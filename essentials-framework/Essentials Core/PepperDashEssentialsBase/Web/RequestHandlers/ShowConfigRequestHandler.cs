@@ -1,10 +1,17 @@
 ﻿using Crestron.SimplSharp.WebScripting;
+using Newtonsoft.Json;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Config;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class ShowConfigRequestHandler : WebApiBaseRequestHandler
 	{
+		private const string Key = "ShowConfigRequestHandler";
+		private const uint Trace = 0;
+		private const uint Info = 0;
+		private const uint Verbose = 0;
+
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -33,8 +40,13 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleGet(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			var config = JsonConvert.SerializeObject(ConfigReader.ConfigObject, Formatting.Indented);
+
+			context.Response.StatusCode = 200;
+			context.Response.StatusDescription = "OK";
+			context.Response.ContentType = "application/json";
+			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+			context.Response.Write(config, false);
 			context.Response.End();
 		}
 

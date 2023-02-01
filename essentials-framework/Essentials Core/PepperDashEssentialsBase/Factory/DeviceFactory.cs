@@ -204,5 +204,17 @@ namespace PepperDash.Essentials.Core
                     Description: {2}", type.Key, cType, description);
             }
         }
+
+		/// <summary>
+		/// Returns the device factory dictionary
+		/// </summary>
+		/// <param name="filter"></param>
+		/// <returns></returns>
+	    public static Dictionary<string, DeviceFactoryWrapper> GetDeviceFactoryDictionary(string filter)
+		{
+			return !string.IsNullOrEmpty(filter) 
+				? FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value) 
+				: FactoryMethods;
+		}
     }
 }

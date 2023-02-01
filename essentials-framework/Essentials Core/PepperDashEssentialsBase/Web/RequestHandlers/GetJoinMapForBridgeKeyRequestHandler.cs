@@ -1,10 +1,18 @@
 ﻿using Crestron.SimplSharp.WebScripting;
+using Newtonsoft.Json;
+using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
+using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
-	public class GetJoinMapRequestHandler : WebApiBaseRequestHandler
+	public class GetJoinMapForBridgeKeyRequestHandler : WebApiBaseRequestHandler
 	{
+		private const string Key = "GetJoinMapForBridgeKeyRequestHandler";
+		private const uint Trace = 0;
+		private const uint Info = 0;
+		private const uint Verbose = 0;
+
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -33,8 +41,68 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleGet(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			var routeData = context.Request.RouteData;
+			if (routeData == null)
+			{
+				context.Response.StatusCode = 400;
+				context.Response.StatusDescription = "Bad Request";
+				context.Response.End();
+
+				return;
+			}
+
+
+			var routeDataJson = JsonConvert.SerializeObject(routeData, Formatting.Indented);
+			Debug.Console(Verbose, "routeData:\n{0}", routeDataJson);
+
+
+			object bridgeObj;			
+			if (!routeData.Values.TryGetValue("bridgeKey", out bridgeObj))
+			{
+				Debug.Console(Verbose, "TryGetValue bridgeKey failed");
+
+				context.Response.StatusCode = 400;
+				context.Response.StatusDescription = "Bad Request";
+				context.Response.End();
+
+				return;
+			}
+
+			var bridge = DeviceManager.GetDeviceForKey(bridgeObj.ToString()) as EiscApiAdvanced;
+			if (bridge == null)
+			{
+				context.Response.StatusCode = 400;
+				context.Response.StatusDescription = "Bad Request";
+				context.Response.End();
+
+				return;
+			}
+
+			var joinMap = bridge.JoinMaps;
+			if (joinMap == null)
+			{
+				context.Response.StatusCode = 400;
+				context.Response.StatusDescription = "Bad Request";
+				context.Response.End();
+
+				return;
+			}
+
+			var js = JsonConvert.SerializeObject(joinMap, Formatting.Indented, new JsonSerializerSettings
+			{
+				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+				NullValueHandling = NullValueHandling.Ignore,
+				MissingMemberHandling = MissingMemberHandling.Ignore,
+				DefaultValueHandling = DefaultValueHandling.Ignore,
+				TypeNameHandling = TypeNameHandling.None
+			});
+			Debug.Console(Verbose, "[{0}] HandleGet: \x0d\x0a{1}", Key.ToLower(), js);
+
+			context.Response.StatusCode = 200;
+			context.Response.StatusDescription = "OK";
+			context.Response.ContentType = "application/json";
+			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+			context.Response.Write(js, false);
 			context.Response.End();
 		}
 

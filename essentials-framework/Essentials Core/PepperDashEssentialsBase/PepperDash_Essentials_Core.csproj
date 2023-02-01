@@ -198,6 +198,8 @@
     <Compile Include="Crestron IO\Relay\ISwitchedOutput.cs" />
     <Compile Include="Crestron IO\StatusSign\StatusSignController.cs" />
     <Compile Include="Web\RequestHandlers\AppDebugRequestHandler.cs" />
+    <Compile Include="Web\RequestHandlers\GetTypesByFilterRequestHandler.cs" />
+    <Compile Include="Web\RequestHandlers\GetJoinMapForDeviceKeyRequestHandler.cs" />
     <Compile Include="Web\RequestHandlers\DefaultRequestHandler.cs" />
     <Compile Include="Web\RequestHandlers\DevListRequestHandler.cs" />
     <Compile Include="Web\RequestHandlers\DevPropsRequestHandler.cs" />
@@ -206,7 +208,7 @@
     <Compile Include="Web\RequestHandlers\DisableAllStreamDebugRequestHandler.cs" />
     <Compile Include="Web\RequestHandlers\ShowConfigRequestHandler.cs" />
     <Compile Include="Web\RequestHandlers\GetTypesRequestHandler.cs" />
-    <Compile Include="Web\RequestHandlers\GetJoinMapRequestHandler.cs" />
+    <Compile Include="Web\RequestHandlers\GetJoinMapForBridgeKeyRequestHandler.cs" />
     <Compile Include="Web\EssemtialsWebApi.cs" />
     <Compile Include="Web\EssentialsWebApiFactory.cs" />
     <Compile Include="Web\EssentialsWebApiPropertiesConfig.cs" />

@@ -92,11 +92,20 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			var data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
 			Debug.Console(Info, "[{0}] Request data:\n{1}", Key.ToLower(), data);
 
-			DeviceJsonApi.DoDeviceActionWithJson(data);
+			try
+			{
+				DeviceJsonApi.DoDeviceActionWithJson(data);
 
-			context.Response.StatusCode = 200;
-			context.Response.StatusDescription = "OK";
-			context.Response.End();
+				context.Response.StatusCode = 200;
+				context.Response.StatusDescription = "OK";
+				context.Response.End();
+			}
+			catch (Exception ex)
+			{
+				context.Response.StatusCode = 400;
+				context.Response.StatusDescription = "Bad Request";
+				context.Response.End();
+			}
 		}
 
 		/// <summary>
