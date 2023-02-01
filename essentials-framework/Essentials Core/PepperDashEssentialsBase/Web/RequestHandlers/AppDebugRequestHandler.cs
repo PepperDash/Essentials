@@ -9,11 +9,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class AppDebugRequestHandler : WebApiBaseRequestHandler
 	{
-		private const string Key = "AppDebugRequestHandler";
-		private const uint Trace = 0;
-		private const uint Info = 1;
-		private const uint Verbose = 2;
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -42,10 +37,9 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleGet(HttpCwsContext context)
 		{
-			var o = new AppDebug();
-			o.Level = Debug.Level;
+			var appDebug = new AppDebug {Level = Debug.Level};
 
-			var body = JsonConvert.SerializeObject(o, Formatting.Indented);
+			var body = JsonConvert.SerializeObject(appDebug, Formatting.Indented);
 
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";
@@ -97,16 +91,14 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			var bytes = new Byte[context.Request.ContentLength];
 			context.Request.InputStream.Read(bytes, 0, context.Request.ContentLength);
 			var data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
-			//Debug.Console(Info, "[{0}] Request data:\n{1}", Key.ToLower(), data);
 
-			var o = new AppDebug();
-			var requestBody = JsonConvert.DeserializeAnonymousType(data, o);
+			var appDebug = new AppDebug();
+			var requestBody = JsonConvert.DeserializeAnonymousType(data, appDebug);
 			
 			Debug.SetDebugLevel(requestBody.Level);
 
-			o.Level = Debug.Level;
-
-			var responseBody = JsonConvert.SerializeObject(o, Formatting.Indented);
+			appDebug.Level = Debug.Level;
+			var responseBody = JsonConvert.SerializeObject(appDebug, Formatting.Indented);
 
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";

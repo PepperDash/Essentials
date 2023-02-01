@@ -79,7 +79,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var joinMap = bridge.JoinMaps.Select(j => GetJoinMapHelpers.MapJoinToObject(j)).ToList();			
+			var joinMap = bridge.JoinMaps.Select(j => EssentialsWebApiHelpers.MapJoinToObject(j)).ToList();			
 			if (joinMap == null)
 			{
 				context.Response.StatusCode = 400;

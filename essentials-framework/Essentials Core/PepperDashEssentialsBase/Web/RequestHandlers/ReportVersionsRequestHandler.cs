@@ -7,11 +7,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class ReportVersionsRequestHandler : WebApiBaseRequestHandler
 	{
-		private const string Key = "ReportVersionsRequestHandler";
-		private const uint Trace = 0;
-		private const uint Info = 1;
-		private const uint Verbose = 2;
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -40,11 +35,15 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleGet(HttpCwsContext context)
 		{
-			var assemblies = PluginLoader.LoadedAssemblies.Select(assembly => new
+			var loadAssemblies = PluginLoader.LoadedAssemblies;
+			if (loadAssemblies == null)
 			{
-				Name = assembly.Name,
-				Version = assembly.Version
-			}).Cast<object>().ToList();
+				context.Response.StatusCode = 404;
+				context.Response.StatusDescription = "Not Found";
+				context.Response.End();
+			}
+
+			var assemblies = loadAssemblies.Select(a => EssentialsWebApiHelpers.MapToAssemblyObject(a)).ToList();
 
 			var js = JsonConvert.SerializeObject(assemblies, Formatting.Indented, new JsonSerializerSettings
 			{
@@ -54,8 +53,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				DefaultValueHandling = DefaultValueHandling.Ignore,
 				TypeNameHandling = TypeNameHandling.None
 			});
-			//Debug.Console(Verbose, "[{0}] HandleGet: \x0d\x0a{1}", Key.ToLower(), js);
-
+			
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";
 			context.Response.ContentType = "application/json";

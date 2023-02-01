@@ -1,10 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace PepperDash.Essentials.Core.Web.RequestHandlers
+namespace PepperDash.Essentials.Core.Web
 {
-	public class GetJoinMapHelpers
+	public class EssentialsWebApiHelpers
 	{
+		public static object MapToAssemblyObject(LoadedAssembly assembly)
+		{
+			return new
+			{
+				Name = assembly.Name,
+				Version = assembly.Version
+			};
+		}
+
 		public static object MapJoinToObject(string key, JoinMapBaseAdvanced join)
 		{
 			var kp = new KeyValuePair<string, JoinMapBaseAdvanced>(key, join);

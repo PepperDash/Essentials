@@ -5,11 +5,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class DefaultRequestHandler : WebApiBaseRequestHandler
 	{
-		private const string Key = "DefaultRequestHandler";
-		private const uint Trace = 0;
-		private const uint Info = 1;
-		private const uint Verbose = 2;
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>

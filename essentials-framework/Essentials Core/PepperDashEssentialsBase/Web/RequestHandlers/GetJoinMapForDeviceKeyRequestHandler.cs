@@ -102,7 +102,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var joinMap = GetJoinMapHelpers.MapJoinToObject(deviceObj.ToString(), deviceJoinMap);
+			var joinMap = EssentialsWebApiHelpers.MapJoinToObject(deviceObj.ToString(), deviceJoinMap);
 			var js = JsonConvert.SerializeObject(joinMap, Formatting.Indented, new JsonSerializerSettings
 			{
 				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
