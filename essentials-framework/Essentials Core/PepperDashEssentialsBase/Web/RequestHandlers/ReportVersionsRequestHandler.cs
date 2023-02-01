@@ -38,9 +38,11 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			var loadAssemblies = PluginLoader.LoadedAssemblies;
 			if (loadAssemblies == null)
 			{
-				context.Response.StatusCode = 404;
-				context.Response.StatusDescription = "Not Found";
+				context.Response.StatusCode = 500;
+				context.Response.StatusDescription = "Internal Server Error";
 				context.Response.End();
+
+				return;
 			}
 
 			var assemblies = loadAssemblies.Select(a => EssentialsWebApiHelpers.MapToAssemblyObject(a)).ToList();
