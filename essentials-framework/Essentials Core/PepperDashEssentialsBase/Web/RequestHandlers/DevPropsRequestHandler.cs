@@ -9,11 +9,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class DevPropsRequestHandler : WebApiBaseRequestHandler
 	{
-		private const string Key = "DevPropsRequestHandler";
-		private const uint Trace = 0;
-		private const uint Info = 1;
-		private const uint Verbose = 2;
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -91,15 +86,12 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			var bytes = new Byte[context.Request.ContentLength];
 			context.Request.InputStream.Read(bytes, 0, context.Request.ContentLength);
 			var data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
-			//Debug.Console(Info, "[{0}] Request data:\n{1}", Key.ToLower(), data);
 
 			var o = new DeviceActionWrapper();
 			var body = JsonConvert.DeserializeAnonymousType(data, o);			
 			
 			if (string.IsNullOrEmpty(body.DeviceKey))
 			{
-				Debug.Console(Info, "[{0}] Request body is null or empty", Key.ToLower());
-
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";
 				context.Response.End();
@@ -108,6 +100,14 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			}
 
 			var deviceProps = DeviceJsonApi.GetProperties(body.DeviceKey);
+			if (deviceProps == null || deviceProps.ToLower().Contains("no device"))
+			{
+				context.Response.StatusCode = 404;
+				context.Response.StatusDescription = "Not Found";
+				context.Response.End();
+
+				return;
+			}
 
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";			
