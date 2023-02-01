@@ -198,6 +198,8 @@ namespace PepperDash.Essentials.Core.Web
 			Debug.Console(DebugTrace, Debug.ErrorLogLevel.Notice, "Starting Essentials Web API on Virtual Control Server");
 
 			_server.Start();
+
+			GetPaths();
 		}
 
 		/// <summary>
@@ -218,7 +220,7 @@ namespace PepperDash.Essentials.Core.Web
                     CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_HOSTNAME, 0);
 			
 			var path = CrestronEnvironment.DevicePlatform == eDevicePlatform.Server 
-				? string.Format("http(s)://{0}/virtualcontrol/rooms/{1}/cws{2}", hostname, InitialParametersClass.RoomId, BasePath)
+				? string.Format("http(s)://{0}/VirtualControl/Rooms/{1}/cws{2}", hostname, InitialParametersClass.RoomId, BasePath)
 				: string.Format("http(s)://{0}/cws{1}", currentIp, BasePath);
 			
 			Debug.Console(DebugTrace, this, "Server:{0}", path);
