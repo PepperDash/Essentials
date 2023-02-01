@@ -8,11 +8,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class DevListRequestHandler : WebApiBaseRequestHandler
 	{
-		private const string Key = "DevListRequestHandler";
-		private const uint Trace = 0;
-		private const uint Info = 1;
-		private const uint Verbose = 2;
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -42,24 +37,20 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		protected override void HandleGet(HttpCwsContext context)
 		{
 			var allDevices = DeviceManager.AllDevices;
+			if (allDevices == null)
+			{
+				context.Response.StatusCode = 404;
+				context.Response.StatusDescription = "Not Found";
+				context.Response.End();
+
+				return;
+			}
+
 			allDevices.Sort((a, b) => System.String.Compare(a.Key, b.Key, System.StringComparison.Ordinal));
 
-			var devices = allDevices.Select(device => new
-			{
-				Key = device.Key,
-				Name = device is IKeyName ? (device as IKeyName).Name : "---"
+			var deviceList = allDevices.Select(d => EssentialsWebApiHelpers.MapToDeviceListObject(d)).ToList();
 
-			}).Cast<object>().ToList();
-
-			var js = JsonConvert.SerializeObject(devices, Formatting.Indented, new JsonSerializerSettings
-			{
-				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-				NullValueHandling = NullValueHandling.Ignore,
-				MissingMemberHandling = MissingMemberHandling.Ignore,
-				DefaultValueHandling = DefaultValueHandling.Ignore,
-				TypeNameHandling = TypeNameHandling.None
-			});
-			//Debug.Console(Verbose, "[{0}] HandleGet: \x0d\x0a{1}", Key.ToLower(), js);
+			var js = JsonConvert.SerializeObject(deviceList, Formatting.Indented);			
 
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Web
 {
@@ -14,23 +15,34 @@ namespace PepperDash.Essentials.Core.Web
 			};
 		}
 
+		public static object MapToDeviceListObject(IKeyed device)
+		{
+			return new
+			{
+				Key = device.Key,
+				Name = (device is IKeyName)
+					? (device as IKeyName).Name
+					: "---"
+			};
+		}
+
 		public static object MapJoinToObject(string key, JoinMapBaseAdvanced join)
 		{
 			var kp = new KeyValuePair<string, JoinMapBaseAdvanced>(key, join);
 
 			return MapJoinToObject(kp);
 		}
-		
+
 		public static object MapJoinToObject(KeyValuePair<string, JoinMapBaseAdvanced> join)
 		{
 			return new
 			{
 				DeviceKey = join.Key,
-				Joins = join.Value.Joins.Select(j => MapJoinDatacompleteToObject(j))
+				Joins = join.Value.Joins.Select(j => MapJoinDataCompleteToObject(j))
 			};
 		}
 
-		public static object MapJoinDatacompleteToObject(KeyValuePair<string, JoinDataComplete> joinData)
+		public static object MapJoinDataCompleteToObject(KeyValuePair<string, JoinDataComplete> joinData)
 		{
 			return new
 			{
