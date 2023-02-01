@@ -10,8 +10,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 	{
 		private const string Key = "DevListRequestHandler";
 		private const uint Trace = 0;
-		private const uint Info = 0;
-		private const uint Verbose = 0;
+		private const uint Info = 1;
+		private const uint Verbose = 2;
 
 		/// <summary>
 		/// Handles CONNECT method requests

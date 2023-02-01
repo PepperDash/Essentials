@@ -212,9 +212,9 @@ namespace PepperDash.Essentials.Core
 		/// <returns></returns>
 	    public static Dictionary<string, DeviceFactoryWrapper> GetDeviceFactoryDictionary(string filter)
 		{
-			return !string.IsNullOrEmpty(filter) 
-				? FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value) 
-				: FactoryMethods;
+			return string.IsNullOrEmpty(filter) 
+				? FactoryMethods
+				: FactoryMethods.Where(k => k.Key.Contains(filter)).ToDictionary(k => k.Key, k => k.Value);
 		}
     }
 }

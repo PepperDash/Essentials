@@ -16,8 +16,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleConnect(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			context.Response.StatusCode = 418;
+			context.Response.StatusDescription = "I'm a teapot";
 			context.Response.End();
 		}
 
@@ -27,8 +27,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleDelete(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			context.Response.StatusCode = 418;
+			context.Response.StatusDescription = "I'm a teapot";
 			context.Response.End();
 		}
 
@@ -38,8 +38,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleGet(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			context.Response.StatusCode = 418;
+			context.Response.StatusDescription = "I'm a teapot";
 			context.Response.End();
 		}
 
@@ -49,8 +49,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleHead(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			context.Response.StatusCode = 418;
+			context.Response.StatusDescription = "I'm a teapot";
 			context.Response.End();
 		}
 
@@ -60,8 +60,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleOptions(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			context.Response.StatusCode = 418;
+			context.Response.StatusDescription = "I'm a teapot";
 			context.Response.End();
 		}
 
@@ -71,8 +71,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandlePatch(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			context.Response.StatusCode = 418;
+			context.Response.StatusDescription = "I'm a teapot";
 			context.Response.End();
 		}
 
@@ -82,8 +82,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandlePost(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			context.Response.StatusCode = 418;
+			context.Response.StatusDescription = "I'm a teapot";
 			context.Response.End();
 		}
 
@@ -93,8 +93,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandlePut(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			context.Response.StatusCode = 418;
+			context.Response.StatusDescription = "I'm a teapot";
 			context.Response.End();
 		}
 
@@ -104,8 +104,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandleTrace(HttpCwsContext context)
 		{
-			context.Response.StatusCode = 501;
-			context.Response.StatusDescription = "Not Implemented";
+			context.Response.StatusCode = 418;
+			context.Response.StatusDescription = "I'm a teapot";
 			context.Response.End();
 		}
 	}

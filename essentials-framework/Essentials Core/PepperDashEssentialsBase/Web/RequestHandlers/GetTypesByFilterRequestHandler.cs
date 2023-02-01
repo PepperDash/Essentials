@@ -1,8 +1,9 @@
-﻿using Crestron.SimplSharp.WebScripting;
+﻿using System;
+using System.Linq;
+using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
-using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
@@ -10,8 +11,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 	{
 		private const string Key = "GetTypesByFilterRequestHandler";
 		private const uint Trace = 0;
-		private const uint Info = 0;
-		private const uint Verbose = 0;
+		private const uint Info = 1;
+		private const uint Verbose = 2;
 
 		/// <summary>
 		/// Handles CONNECT method requests
@@ -51,10 +52,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-
 			var routeDataJson = JsonConvert.SerializeObject(routeData, Formatting.Indented);
-			Debug.Console(Verbose, "routeData:\n{0}", routeDataJson);
-
+			Debug.Console(Verbose, "[{0}] routeData:\n{1}", Key.ToLower(), routeDataJson);
 
 			object filterObj;
 			if (!routeData.Values.TryGetValue("filter", out filterObj))
@@ -68,11 +67,15 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var types = DeviceFactory.GetDeviceFactoryDictionary(filterObj.ToString());
+			var types = DeviceFactory.GetDeviceFactoryDictionary(filterObj.ToString()).Select(type => new
+			{
+				Type = type.Key,
+				Description = type.Value.Description,
+				CType = type.Value.CType == null ? "---" : type.Value.CType.ToString()
+			}).Cast<object>().ToList();
+
 			if (types == null)
 			{
-				Debug.Console(Verbose, "Get device type from dictionary failed");
-
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";
 				context.Response.End();
@@ -80,22 +83,28 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var js = JsonConvert.SerializeObject(types, Formatting.Indented, new JsonSerializerSettings
+			try
 			{
-				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-				NullValueHandling = NullValueHandling.Ignore,
-				MissingMemberHandling = MissingMemberHandling.Ignore,
-				DefaultValueHandling = DefaultValueHandling.Ignore,
-				TypeNameHandling = TypeNameHandling.None
-			});
-			Debug.Console(Verbose, "[{0}] HandleGet: \x0d\x0a{1}", Key.ToLower(), js);
+				var js = JsonConvert.SerializeObject(types, Formatting.Indented);
+				//Debug.Console(Verbose, "[{0}] HandleGet: \x0d\x0a{1}", Key.ToLower(), js);
 
-			context.Response.StatusCode = 200;
-			context.Response.StatusDescription = "OK";
-			context.Response.ContentType = "application/json";
-			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-			context.Response.Write(js, false);
-			context.Response.End();
+				context.Response.StatusCode = 200;
+				context.Response.StatusDescription = "OK";
+				context.Response.ContentType = "application/json";
+				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+				context.Response.Write(js, false);
+				context.Response.End();
+			}
+			catch (Exception ex)
+			{
+				Debug.Console(Info, "[{0}] HandleGet Exception Message: {1}", Key.ToLower(), ex.Message);
+				Debug.Console(Verbose, "[{0}] HandleGet Exception StackTrace: {1}", Key.ToLower(), ex.StackTrace);
+				if (ex.InnerException != null) Debug.Console(Verbose, "[{0}] HandleGet Exception InnerException: {1}", Key.ToLower(), ex.InnerException);
+
+				context.Response.StatusCode = 500;
+				context.Response.StatusDescription = "Internal Server Error";
+				context.Response.End();
+			}
 		}
 
 		/// <summary>
