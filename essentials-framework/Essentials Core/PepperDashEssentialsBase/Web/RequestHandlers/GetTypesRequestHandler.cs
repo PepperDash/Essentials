@@ -1,19 +1,12 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
-using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class GetTypesRequestHandler : WebApiBaseRequestHandler
 	{
-		private const string Key = "GetTypesRequestHandler";
-		private const uint Trace = 0;
-		private const uint Info = 1;
-		private const uint Verbose = 2;
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -52,47 +45,25 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var routeDataJson = JsonConvert.SerializeObject(routeData, Formatting.Indented);
-			Debug.Console(Verbose, "[{0}] routeData:\n{1}", Key.ToLower(), routeDataJson);
-
-			var types = DeviceFactory.GetDeviceFactoryDictionary(string.Empty).Select(type => new
+			var deviceFactory = DeviceFactory.GetDeviceFactoryDictionary(null);
+			if (deviceFactory == null)
 			{
-				Type = type.Key,
-				Description = type.Value.Description,
-				CType = type.Value.CType == null ? "---" : type.Value.CType.ToString()
-			}).Cast<object>().ToList();
-
-			if (types == null)
-			{
-				context.Response.StatusCode = 400;
-				context.Response.StatusDescription = "Bad Request";
+				context.Response.StatusCode = 404;
+				context.Response.StatusDescription = "Not Found";
 				context.Response.End();
 
 				return;
 			}
 
-			try
-			{
-				var js = JsonConvert.SerializeObject(types, Formatting.Indented);
-				//Debug.Console(Verbose, "[{0}] HandleGet: \x0d\x0a{1}", Key.ToLower(), js);
+			var deviceTypes = deviceFactory.Select(t => EssentialsWebApiHelpers.MapDeviceTypeToObject(t)).ToList();
+			var js = JsonConvert.SerializeObject(deviceTypes, Formatting.Indented);
 
-				context.Response.StatusCode = 200;
-				context.Response.StatusDescription = "OK";
-				context.Response.ContentType = "application/json";
-				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-				context.Response.Write(js, false);
-				context.Response.End();
-			}
-			catch (Exception ex)
-			{
-				Debug.Console(Info, "[{0}] HandleGet Exception Message: {1}", Key.ToLower(), ex.Message);
-				Debug.Console(Verbose, "[{0}] HandleGet Exception StackTrace: {1}", Key.ToLower(), ex.StackTrace);
-				if (ex.InnerException != null) Debug.Console(Verbose, "[{0}] HandleGet Exception InnerException: {1}", Key.ToLower(), ex.InnerException);
-
-				context.Response.StatusCode = 500;
-				context.Response.StatusDescription = "Internal Server Error";
-				context.Response.End();
-			}
+			context.Response.StatusCode = 200;
+			context.Response.StatusDescription = "OK";
+			context.Response.ContentType = "application/json";
+			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+			context.Response.Write(js, false);
+			context.Response.End();
 		}
 
 		/// <summary>

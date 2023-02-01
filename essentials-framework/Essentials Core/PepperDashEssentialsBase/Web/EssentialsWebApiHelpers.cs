@@ -54,5 +54,22 @@ namespace PepperDash.Essentials.Core.Web
 				JoinCapabilities = joinData.Value.Metadata.JoinCapabilities.ToString()
 			};
 		}
+
+		public static object MapDeviceTypeToObject(string key, DeviceFactoryWrapper device)
+		{
+			var kp = new KeyValuePair<string, DeviceFactoryWrapper>(key, device);
+
+			return MapDeviceTypeToObject(kp);
+		}
+
+		public static object MapDeviceTypeToObject(KeyValuePair<string, DeviceFactoryWrapper> device)
+		{
+			return new
+			{
+				Type = device.Key,
+				Description = device.Value.Description,
+				CType = device.Value.CType == null ? "---": device.Value.CType.ToString()
+			};
+		}
 	}
 }

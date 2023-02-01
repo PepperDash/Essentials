@@ -80,7 +80,14 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandlePost(HttpCwsContext context)
 		{
-			if (context.Request.ContentLength < 0) return;
+			if (context.Request.ContentLength < 0)
+			{
+				context.Response.StatusCode = 400;
+				context.Response.StatusDescription = "Bad Request";
+				context.Response.End();
+
+				return;
+			}
 
 			var bytes = new Byte[context.Request.ContentLength];
 			context.Request.InputStream.Read(bytes, 0, context.Request.ContentLength);
