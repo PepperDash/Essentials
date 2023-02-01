@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Crestron.SimplSharp.WebScripting;
+﻿using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
-using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Bridges;
 
@@ -10,11 +7,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class GetJoinMapForDeviceKeyRequestHandler : WebApiBaseRequestHandler
 	{
-		private const string Key = "GetJoinMapForDeviceKeyRequestHandler";
-		private const uint Trace = 0;
-		private const uint Info = 1;
-		private const uint Verbose = 2;
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -53,16 +45,9 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-
-			var routeDataJson = JsonConvert.SerializeObject(routeData, Formatting.Indented);
-			Debug.Console(Verbose, "routeData:\n{0}", routeDataJson);
-
-
 			object bridgeObj;
 			if (!routeData.Values.TryGetValue("bridgeKey", out bridgeObj))
 			{
-				Debug.Console(Verbose, "TryGetValue bridgeKey failed");
-
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";
 				context.Response.End();
@@ -73,8 +58,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			object deviceObj;
 			if (!routeData.Values.TryGetValue("deviceKey", out deviceObj))
 			{
-				Debug.Console(Verbose, "TryGetValue deviceKey failed");
-
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";
 				context.Response.End();
@@ -85,8 +68,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			var bridge = DeviceManager.GetDeviceForKey(bridgeObj.ToString()) as EiscApiAdvanced;
 			if (bridge == null)
 			{
-				context.Response.StatusCode = 400;
-				context.Response.StatusDescription = "Bad Request";
+				context.Response.StatusCode = 404;
+				context.Response.StatusDescription = "Not Found";
 				context.Response.End();
 
 				return;
@@ -95,8 +78,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			JoinMapBaseAdvanced deviceJoinMap;
 			if (!bridge.JoinMaps.TryGetValue(deviceObj.ToString(), out deviceJoinMap))
 			{
-				context.Response.StatusCode = 400;
-				context.Response.StatusDescription = "Bad Request";
+				context.Response.StatusCode = 500;
+				context.Response.StatusDescription = "Internal Server Error";
 				context.Response.End();
 
 				return;
@@ -111,8 +94,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				DefaultValueHandling = DefaultValueHandling.Ignore,
 				TypeNameHandling = TypeNameHandling.None
 			});
-			Debug.Console(Verbose, "[{0}] HandleGet: \x0d\x0a{1}", Key.ToLower(), js);
-
+			
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";
 			context.Response.ContentType = "application/json";

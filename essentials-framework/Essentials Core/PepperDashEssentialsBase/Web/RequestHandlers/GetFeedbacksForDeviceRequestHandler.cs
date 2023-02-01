@@ -1,20 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Linq;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
-using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class GetFeedbacksForDeviceRequestHandler : WebApiBaseRequestHandler
 	{
-		private const string Key = "GetFeedbacksForDeviceRequestHandler";
-		private const uint Trace = 0;
-		private const uint Info = 1;
-		private const uint Verbose = 2;
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -53,14 +45,9 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			//var routeDataJson = JsonConvert.SerializeObject(routeData, Formatting.Indented);
-			//Debug.Console(Verbose, "[{0}] routeData:\n{1}", Key.ToLower(), routeDataJson);
-
 			object deviceObj;
 			if (!routeData.Values.TryGetValue("deviceKey", out deviceObj))
 			{
-				Debug.Console(Verbose, "TryGetValue filter failed");
-
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";
 				context.Response.End();

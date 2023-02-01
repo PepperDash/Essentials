@@ -1,9 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
-using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 using PepperDash.Essentials.Core.Bridges;
 
@@ -11,11 +8,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class GetJoinMapForBridgeKeyRequestHandler : WebApiBaseRequestHandler
 	{
-		private const string Key = "GetJoinMapForBridgeKeyRequestHandler";
-		private const uint Trace = 0;
-		private const uint Info = 1;
-		private const uint Verbose = 2;
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -54,14 +46,9 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var routeDataJson = JsonConvert.SerializeObject(routeData, Formatting.Indented);
-			//Debug.Console(Verbose, "routeData:\n{0}", routeDataJson);
-
 			object bridgeObj;			
 			if (!routeData.Values.TryGetValue("bridgeKey", out bridgeObj))
 			{
-				Debug.Console(Verbose, "TryGetValue bridgeKey failed");
-
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";
 				context.Response.End();
@@ -82,15 +69,14 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			var joinMap = bridge.JoinMaps.Select(j => EssentialsWebApiHelpers.MapJoinToObject(j)).ToList();			
 			if (joinMap == null)
 			{
-				context.Response.StatusCode = 400;
-				context.Response.StatusDescription = "Bad Request";
+				context.Response.StatusCode = 404;
+				context.Response.StatusDescription = "Not Found";
 				context.Response.End();
 
 				return;
 			}
 
 			var js = JsonConvert.SerializeObject(joinMap, Formatting.Indented);
-			Debug.Console(Verbose, "[{0}] HandleGet: \x0d\x0a{1}", Key.ToLower(), js);
 
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";
