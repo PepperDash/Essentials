@@ -147,6 +147,11 @@ namespace PepperDash.Essentials.Core.Web
 				{
 					Name = "GetJoinMapsForDeviceKey",
 					RouteHandler = new GetJoinMapForDeviceKeyRequestHandler()
+				},
+				new HttpCwsRoute("feedbacks/{deviceKey}")
+				{
+					Name = "GetFeedbacksForDeviceKey",
+					RouteHandler = new GetFeedbacksForDeviceRequestHandler()
 				}
 			};
 

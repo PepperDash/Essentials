@@ -1,17 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
-using PepperDash.Essentials.Core.Bridges;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
-	public class GetJoinMapForBridgeKeyRequestHandler : WebApiBaseRequestHandler
+	public class GetFeedbacksForDeviceRequestHandler : WebApiBaseRequestHandler
 	{
-		private const string Key = "GetJoinMapForBridgeKeyRequestHandler";
+		private const string Key = "GetFeedbacksForDeviceRequestHandler";
 		private const uint Trace = 0;
 		private const uint Info = 1;
 		private const uint Verbose = 2;
@@ -54,13 +53,13 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var routeDataJson = JsonConvert.SerializeObject(routeData, Formatting.Indented);
-			//Debug.Console(Verbose, "routeData:\n{0}", routeDataJson);
+			//var routeDataJson = JsonConvert.SerializeObject(routeData, Formatting.Indented);
+			//Debug.Console(Verbose, "[{0}] routeData:\n{1}", Key.ToLower(), routeDataJson);
 
-			object bridgeObj;			
-			if (!routeData.Values.TryGetValue("bridgeKey", out bridgeObj))
+			object deviceObj;
+			if (!routeData.Values.TryGetValue("deviceKey", out deviceObj))
 			{
-				Debug.Console(Verbose, "TryGetValue bridgeKey failed");
+				Debug.Console(Verbose, "TryGetValue filter failed");
 
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";
@@ -69,34 +68,57 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var bridge = DeviceManager.GetDeviceForKey(bridgeObj.ToString()) as EiscApiAdvanced;
-			if (bridge == null)
+
+			var device = DeviceManager.GetDeviceForKey(deviceObj.ToString()) as IHasFeedback;
+			if (device == null)
 			{
-				context.Response.StatusCode = 400;
-				context.Response.StatusDescription = "Bad Request";
+				context.Response.StatusCode = 404;
+				context.Response.StatusDescription = "Not Found";
 				context.Response.End();
 
 				return;
 			}
 
-			var joinMap = bridge.JoinMaps.Select(j => GetJoinMapHelpers.MapJoinToObject(j)).ToList();			
-			if (joinMap == null)
+			var boolFeedback =
+				from feedback in device.Feedbacks.OfType<BoolFeedback>()
+				where !string.IsNullOrEmpty(feedback.Key)
+				select new
+				{
+					FeedbackKey = feedback.Key,
+					Value = feedback.BoolValue
+				};
+
+			var intFeedback =
+				from feedback in device.Feedbacks.OfType<IntFeedback>()
+				where !string.IsNullOrEmpty(feedback.Key)
+				select new
+				{
+					FeedbackKey = feedback.Key,
+					Value = feedback.IntValue
+				};
+
+			var stringFeedback = 
+				from feedback in device.Feedbacks.OfType<StringFeedback>()
+				where !string.IsNullOrEmpty(feedback.Key)
+				select new
+				{
+					FeedbackKey = feedback.Key,
+					Value = feedback.StringValue ?? string.Empty
+				};
+
+			var respnse = new
 			{
-				context.Response.StatusCode = 400;
-				context.Response.StatusDescription = "Bad Request";
-				context.Response.End();
+				BoolValues = boolFeedback,
+				IntValues = intFeedback,
+				SerialValues = stringFeedback
+			};
 
-				return;
-			}
-
-			var js = JsonConvert.SerializeObject(joinMap, Formatting.Indented);
-			Debug.Console(Verbose, "[{0}] HandleGet: \x0d\x0a{1}", Key.ToLower(), js);
-
+			var final = JsonConvert.SerializeObject(respnse, Formatting.Indented);
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";
 			context.Response.ContentType = "application/json";
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-			context.Response.Write(js, false);
+			context.Response.Write(final, false);
 			context.Response.End();
 		}
 
@@ -165,7 +187,5 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			context.Response.StatusDescription = "Not Implemented";
 			context.Response.End();
 		}
-
-		
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
 using PepperDash.Core;
@@ -100,15 +101,8 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
 				return;
 			}
-            
-			var joinMap = new Dictionary<string, JoinMapBaseAdvanced>
-			{
-				{
-					deviceObj.ToString(), 
-					deviceJoinMap
-				}
-			};
 
+			var joinMap = GetJoinMapHelpers.MapJoinToObject(deviceObj.ToString(), deviceJoinMap);
 			var js = JsonConvert.SerializeObject(joinMap, Formatting.Indented, new JsonSerializerSettings
 			{
 				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
