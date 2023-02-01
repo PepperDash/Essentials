@@ -47,14 +47,7 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 
 			var assemblies = loadAssemblies.Select(a => EssentialsWebApiHelpers.MapToAssemblyObject(a)).ToList();
 
-			var js = JsonConvert.SerializeObject(assemblies, Formatting.Indented, new JsonSerializerSettings
-			{
-				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-				NullValueHandling = NullValueHandling.Ignore,
-				MissingMemberHandling = MissingMemberHandling.Ignore,
-				DefaultValueHandling = DefaultValueHandling.Ignore,
-				TypeNameHandling = TypeNameHandling.None
-			});
+			var js = JsonConvert.SerializeObject(assemblies, Formatting.Indented);
 			
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";
