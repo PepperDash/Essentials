@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Text;
 using Crestron.SimplSharp.WebScripting;
 using Newtonsoft.Json;
+using PepperDash.Core;
 using PepperDash.Core.Web.RequestHandlers;
 
 namespace PepperDash.Essentials.Core.Web.RequestHandlers
@@ -89,24 +89,28 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var bytes = new Byte[context.Request.ContentLength];
-			context.Request.InputStream.Read(bytes, 0, context.Request.ContentLength);
-			var data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
-			
-			var o = new
+			var data = EssentialsWebApiHelpers.GetRequestBody(context.Request);
+			if (data == null)
 			{
-				DeviceKey = "",
-				Type = "",
-				Timeout = 15
-			};
+				context.Response.StatusCode = 500;
+				context.Response.StatusDescription = "Internal Server Error";
+				context.Response.End();
 
-			var body = JsonConvert.DeserializeAnonymousType(data, o);
+				return;
+			}
 
-			if (string.IsNullOrEmpty(body.DeviceKey) || string.IsNullOrEmpty(body.Type) 
-				|| !body.Type.ToLower().Contains("off")
-				|| !body.Type.ToLower().Contains("tx")
-				|| !body.Type.ToLower().Contains("rx")
-				|| !body.Type.ToLower().Contains("both"))
+			var config = new SetDeviceStreamDebugConfig();
+			var body = JsonConvert.DeserializeAnonymousType(data, config);
+			if (body == null)
+			{
+				context.Response.StatusCode = 500;
+				context.Response.StatusDescription = "Internal Server Error";
+				context.Response.End();
+
+				return;
+			}
+
+			if (string.IsNullOrEmpty(body.DeviceKey) || string.IsNullOrEmpty(body.Setting))
 			{
 				context.Response.StatusCode = 400;
 				context.Response.StatusDescription = "Bad Request";
@@ -115,11 +119,52 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			DeviceManager.SetDeviceStreamDebugging(string.Format("setdevicestreamdebug {0} {1} {2}", body.DeviceKey, body.Type, body.Timeout));
+			var device = DeviceManager.GetDeviceForKey(body.DeviceKey) as IStreamDebugging;
+			if (device == null)
+			{
+				context.Response.StatusCode = 404;
+				context.Response.StatusDescription = "Not Found";
+				context.Response.End();
 
-			context.Response.StatusCode = 200;
-			context.Response.StatusDescription = "OK";
-			context.Response.End();
+				return;
+			}
+			
+			eStreamDebuggingSetting debugSetting;
+			try
+			{
+				debugSetting = (eStreamDebuggingSetting) Enum.Parse(typeof (eStreamDebuggingSetting), body.Setting, true);				
+			}
+			catch (Exception ex)
+			{
+				context.Response.StatusCode = 500;
+				context.Response.StatusDescription = "Internal Server Error";
+				context.Response.End();
+
+				return;
+			}
+
+			try
+			{
+				var mins = Convert.ToUInt32(body.Timeout);
+				if (mins > 0)
+				{
+					device.StreamDebugging.SetDebuggingWithSpecificTimeout(debugSetting, mins);
+				}
+				else
+				{
+					device.StreamDebugging.SetDebuggingWithDefaultTimeout(debugSetting);
+				}
+
+				context.Response.StatusCode = 200;
+				context.Response.StatusDescription = "OK";
+				context.Response.End();
+			}
+			catch (Exception ex)
+			{
+				context.Response.StatusCode = 500;
+				context.Response.StatusDescription = "Internal Server Error";
+				context.Response.End();
+			}
 		}
 
 		/// <summary>
@@ -142,6 +187,26 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 			context.Response.StatusCode = 501;
 			context.Response.StatusDescription = "Not Implemented";
 			context.Response.End();
+		}
+	}
+
+
+	public class SetDeviceStreamDebugConfig
+	{
+		[JsonProperty("deviceKey", NullValueHandling = NullValueHandling.Include)]
+		public string DeviceKey { get; set; }
+
+		[JsonProperty("setting", NullValueHandling = NullValueHandling.Include)]
+		public string Setting { get; set; }
+
+		[JsonProperty("timeout")]
+		public int Timeout { get; set; }
+
+		public SetDeviceStreamDebugConfig()
+		{
+			DeviceKey = null;
+			Setting = null;
+			Timeout = 15;
 		}
 	}
 }

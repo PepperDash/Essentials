@@ -93,19 +93,20 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 					Value = feedback.StringValue ?? string.Empty
 				};
 
-			var respnse = new
+			var responseObj = new
 			{
 				BoolValues = boolFeedback,
 				IntValues = intFeedback,
 				SerialValues = stringFeedback
 			};
 
-			var final = JsonConvert.SerializeObject(respnse, Formatting.Indented);
+			var js = JsonConvert.SerializeObject(responseObj, Formatting.Indented);
+
 			context.Response.StatusCode = 200;
 			context.Response.StatusDescription = "OK";
 			context.Response.ContentType = "application/json";
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-			context.Response.Write(final, false);
+			context.Response.Write(js, false);
 			context.Response.End();
 		}
 

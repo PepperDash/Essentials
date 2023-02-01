@@ -1,11 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using Crestron.SimplSharp.WebScripting;
 using PepperDash.Core;
 
 namespace PepperDash.Essentials.Core.Web
 {
 	public class EssentialsWebApiHelpers
 	{
+		public static string GetRequestBody(HttpCwsRequest request)
+		{
+			var bytes = new Byte[request.ContentLength];
+
+			request.InputStream.Read(bytes, 0, request.ContentLength);
+
+			return Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+		}
+
 		public static object MapToAssemblyObject(LoadedAssembly assembly)
 		{
 			return new

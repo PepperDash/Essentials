@@ -95,9 +95,15 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 				return;
 			}
 
-			var bytes = new Byte[context.Request.ContentLength];
-			context.Request.InputStream.Read(bytes, 0, context.Request.ContentLength);
-			var data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+			var data = EssentialsWebApiHelpers.GetRequestBody(context.Request);
+			if (string.IsNullOrEmpty(data))
+			{
+				context.Response.StatusCode = 400;
+				context.Response.StatusDescription = "Bad Request";
+				context.Response.End();
+
+				return;
+			}
 
 			var appDebug = new AppDebug();
 			var requestBody = JsonConvert.DeserializeAnonymousType(data, appDebug);
