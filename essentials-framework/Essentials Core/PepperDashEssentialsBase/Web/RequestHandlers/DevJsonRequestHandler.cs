@@ -8,11 +8,6 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 {
 	public class DevJsonRequestHandler : WebApiBaseRequestHandler
 	{
-		private const string Key = "DevJsonRequestHandler";
-		private const uint Trace = 0;
-		private const uint Info = 1;
-		private const uint Verbose = 2;
-
 		/// <summary>
 		/// Handles CONNECT method requests
 		/// </summary>
@@ -85,12 +80,20 @@ namespace PepperDash.Essentials.Core.Web.RequestHandlers
 		/// <param name="context"></param>
 		protected override void HandlePost(HttpCwsContext context)
 		{
-			if (context.Request.ContentLength < 0) return;
+			if (context.Request.ContentLength < 0)
+			{
+				context.Response.StatusCode = 400;
+				context.Response.StatusDescription = "Bad Request";
+				context.Response.End();
+
+				return;
+			}
 
 			var bytes = new Byte[context.Request.ContentLength];
 			context.Request.InputStream.Read(bytes, 0, context.Request.ContentLength);
 			var data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
-			Debug.Console(Info, "[{0}] Request data:\n{1}", Key.ToLower(), data);
+			
+			//Debug.Console(0, "Request data:\n{0}", data);
 
 			try
 			{
