@@ -19,7 +19,7 @@ namespace PepperDash.Essentials
 {
     public class EssentialsTechRoom : EssentialsRoomBase, ITvPresetsProvider, IBridgeAdvanced, IRunDirectRouteAction
     {
-        private readonly EssentialsTechRoomConfig _config;
+        public EssentialsTechRoomConfig PropertiesConfig { get; private set; }
         private readonly Dictionary<string, TwoWayDisplayBase> _displays;
 
         private readonly DevicePresetsModel _tunerPresets;
@@ -57,16 +57,16 @@ namespace PepperDash.Essentials
 
         public EssentialsTechRoom(DeviceConfig config) : base(config)
         {
-            _config = config.Properties.ToObject<EssentialsTechRoomConfig>();
+            PropertiesConfig = config.Properties.ToObject<EssentialsTechRoomConfig>();
 
-            _tunerPresets = new DevicePresetsModel(String.Format("{0}-presets", config.Key), _config.PresetsFileName);
+            _tunerPresets = new DevicePresetsModel(String.Format("{0}-presets", config.Key), PropertiesConfig.PresetsFileName);
 
-            _tunerPresets.SetFileName(_config.PresetsFileName);
+            _tunerPresets.SetFileName(PropertiesConfig.PresetsFileName);
 
             _tunerPresets.PresetRecalled += TunerPresetsOnPresetRecalled;
 
-            _tuners = GetDevices<IRSetTopBoxBase>(_config.Tuners);
-            _displays = GetDevices<TwoWayDisplayBase>(_config.Displays);
+            _tuners = GetDevices<IRSetTopBoxBase>(PropertiesConfig.Tuners);
+            _displays = GetDevices<TwoWayDisplayBase>(PropertiesConfig.Displays);
 
             RoomPowerIsOnFeedback = new BoolFeedback(() => RoomPowerIsOn);
 
@@ -153,7 +153,7 @@ namespace PepperDash.Essentials
 
         private void CreateOrUpdateScheduledEvents()
         {
-            var eventsConfig = _config.ScheduledEvents;
+            var eventsConfig = PropertiesConfig.ScheduledEvents;
 
             GetOrCreateScheduleGroup();
 
@@ -207,21 +207,21 @@ namespace PepperDash.Essentials
         {
             //update config based on key of scheduleEvent
             GetOrCreateScheduleGroup();
-            var existingEventIndex = _config.ScheduledEvents.FindIndex((e) => e.Key == scheduledEvent.Key);
+            var existingEventIndex = PropertiesConfig.ScheduledEvents.FindIndex((e) => e.Key == scheduledEvent.Key);
 
             if (existingEventIndex < 0)
             {
-                _config.ScheduledEvents.Add(scheduledEvent);
+                PropertiesConfig.ScheduledEvents.Add(scheduledEvent);
             }
             else
             {
-                _config.ScheduledEvents[existingEventIndex] = scheduledEvent;
+                PropertiesConfig.ScheduledEvents[existingEventIndex] = scheduledEvent;
             }
 
             //create or update event based on config
             CreateOrUpdateSingleEvent(scheduledEvent);
             //save config
-            Config.Properties = JToken.FromObject(_config);
+            Config.Properties = JToken.FromObject(PropertiesConfig);
 
             CustomSetConfig(Config);
             //Fire Event
@@ -230,7 +230,7 @@ namespace PepperDash.Essentials
 
         public List<ScheduledEventConfig> GetScheduledEvents()
         {
-            return _config.ScheduledEvents ?? new List<ScheduledEventConfig>();
+            return PropertiesConfig.ScheduledEvents ?? new List<ScheduledEventConfig>();
         }
 
         private void OnScheduledEventUpdate()
@@ -242,14 +242,14 @@ namespace PepperDash.Essentials
                 return;
             }
 
-            handler(this, new ScheduledEventEventArgs {ScheduledEvents = _config.ScheduledEvents});
+            handler(this, new ScheduledEventEventArgs {ScheduledEvents = PropertiesConfig.ScheduledEvents});
         }
 
         public event EventHandler<ScheduledEventEventArgs> ScheduledEventsChanged;
 
         private void HandleScheduledEvent(ScheduledEvent schevent, ScheduledEventCommon.eCallbackReason type)
         {
-            var eventConfig = _config.ScheduledEvents.FirstOrDefault(e => e.Key == schevent.Name);
+            var eventConfig = PropertiesConfig.ScheduledEvents.FirstOrDefault(e => e.Key == schevent.Name);
 
             if (eventConfig == null)
             {
@@ -272,7 +272,7 @@ namespace PepperDash.Essentials
                 {
                     Debug.Console(2, this, 
 @"Attempting to run action:
-DeviceKey: {0}
+Key: {0}
 MethodName: {1}
 Params: {2}"
                     , a.DeviceKey, a.MethodName, a.Params);
@@ -286,11 +286,11 @@ Params: {2}"
         {
             Debug.Console(2, this, "Room Powering On");
 
-            var dummySource = DeviceManager.GetDeviceForKey(_config.DummySourceKey) as IRoutingOutputs;
+            var dummySource = DeviceManager.GetDeviceForKey(PropertiesConfig.DummySourceKey) as IRoutingOutputs;
 
             if (dummySource == null)
             {
-                Debug.Console(1, this, "Unable to get source with key: {0}", _config.DummySourceKey);
+                Debug.Console(1, this, "Unable to get source with key: {0}", PropertiesConfig.DummySourceKey);
                 return;
             }
 
@@ -376,12 +376,12 @@ Params: {2}"
                 bridge.AddJoinMap(Key, joinMap);
             }
 
-            if (_config.IsPrimary)
+            if (PropertiesConfig.IsPrimary)
             {
                 Debug.Console(1, this, "Linking Primary system Tuner Preset Mirroring");
-                if (_config.MirroredTuners != null && _config.MirroredTuners.Count > 0)
+                if (PropertiesConfig.MirroredTuners != null && PropertiesConfig.MirroredTuners.Count > 0)
                 {
-                    foreach (var tuner in _config.MirroredTuners)
+                    foreach (var tuner in PropertiesConfig.MirroredTuners)
                     {
                         var f = CurrentPresetsFeedbacks[tuner.Value];
 
@@ -423,9 +423,9 @@ Params: {2}"
             {
                 Debug.Console(1, this, "Linking Secondary system Tuner Preset Mirroring");
 
-                if (_config.MirroredTuners != null && _config.MirroredTuners.Count > 0)
+                if (PropertiesConfig.MirroredTuners != null && PropertiesConfig.MirroredTuners.Count > 0)
                 {
-                    foreach (var tuner in _config.MirroredTuners)
+                    foreach (var tuner in PropertiesConfig.MirroredTuners)
                     {
                         var t = _tuners[tuner.Value];
 

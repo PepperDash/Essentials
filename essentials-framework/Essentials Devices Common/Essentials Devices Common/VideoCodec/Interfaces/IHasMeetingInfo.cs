@@ -42,9 +42,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
         public Boolean WaitingForHost { get; private set; }
         [JsonProperty("isLocked", NullValueHandling = NullValueHandling.Ignore)]
         public Boolean IsLocked { get; private set; }
+        [JsonProperty("isRecording", NullValueHandling = NullValueHandling.Ignore)]
+        public Boolean IsRecording { get; private set; }
+        [JsonProperty("canRecord", NullValueHandling = NullValueHandling.Ignore)]
+        public Boolean CanRecord { get; private set; }
 
 
-        public MeetingInfo(string id, string name, string host, string password, string shareStatus, bool isHost, bool isSharingMeeting, bool waitingForHost, bool isLocked)
+        public MeetingInfo(string id, string name, string host, string password, string shareStatus, bool isHost, bool isSharingMeeting, bool waitingForHost, bool isLocked, bool isRecording, bool canRecord)
         {
             Id = id;
             Name = name;
@@ -55,6 +59,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Interfaces
             IsSharingMeeting = isSharingMeeting;
             WaitingForHost = waitingForHost;
             IsLocked = isLocked;
+            IsRecording = isRecording;
+            CanRecord = CanRecord;
         }
     }
 

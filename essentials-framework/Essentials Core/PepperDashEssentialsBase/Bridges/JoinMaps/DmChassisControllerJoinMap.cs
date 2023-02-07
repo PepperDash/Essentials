@@ -24,6 +24,10 @@ namespace PepperDash.Essentials.Core.Bridges
                 JoinType = eJoinType.Digital
             });
 
+        [JoinName("Name")]
+        public JoinDataComplete Name = new JoinDataComplete(new JoinData { JoinNumber = 1, JoinSpan = 1 },
+            new JoinMetadata { Description = "DM Chassis Name", JoinCapabilities = eJoinCapabilities.ToSIMPL, JoinType = eJoinType.Serial });
+
         [JoinName("SystemId")]
         public JoinDataComplete SystemId = new JoinDataComplete(new JoinData { JoinNumber = 10, JoinSpan = 1 },
             new JoinMetadata { Description = "DM Chassis SystemId Get/Set/Trigger/", JoinCapabilities = eJoinCapabilities.ToFromSIMPL, JoinType = eJoinType.DigitalAnalog });

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharp;
 using PepperDash.Core;
-
 
 namespace PepperDash.Essentials.Core
 {
@@ -16,18 +16,28 @@ namespace PepperDash.Essentials.Core
         public static void Initialize()
         {
 
-            AddSecretProvider("default", new CrestronSecretsProvider("default"));
+            AddSecretProvider("default", new CrestronLocalSecretsProvider("default"));
+
+            AddSecretProvider("CrestronGlobalSecrets", new CrestronGlobalSecretsProvider("CrestronGlobalSecrets"));
 
             CrestronConsole.AddNewConsoleCommand(SetSecretProcess, "setsecret",
-                "Adds secrets to secret provider",
+                "Adds secret to secrets provider",
                 ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(UpdateSecretProcess, "updatesecret",
-                "Updates secrets in secret provider",
+                "Updates secret in secrets provider",
                 ConsoleAccessLevelEnum.AccessAdministrator);
 
             CrestronConsole.AddNewConsoleCommand(DeleteSecretProcess, "deletesecret",
-                "Deletes secrets in secret provider",
+                "Deletes secret from secrest provider",
+                ConsoleAccessLevelEnum.AccessAdministrator);
+
+            CrestronConsole.AddNewConsoleCommand(ListProviders, "secretproviderlist",
+                "Return list of all valid secrets providers",
+                ConsoleAccessLevelEnum.AccessAdministrator);
+
+            CrestronConsole.AddNewConsoleCommand(GetProviderInfo, "secretproviderinfo",
+                "Return data about secrets provider",
                 ConsoleAccessLevelEnum.AccessAdministrator);
         }
 
@@ -54,6 +64,79 @@ namespace PepperDash.Essentials.Core
             return secret;
         }
 
+        public static void GetProviderInfo(string cmd)
+        {
+            string response;
+            var args = cmd.Split(' ');
+
+            if (cmd.Length == 0 || (args.Length == 1 && args[0] == "?"))
+            {
+                response = "Returns data about secrets provider.  Format 'secretproviderinfo <provider>'";
+                CrestronConsole.ConsoleCommandResponse(response);
+                return;
+
+            }
+
+            if (args.Length == 1)
+            {
+                var provider = GetSecretProviderByKey(args[0]);
+
+                if (provider == null)
+                {
+                    response = "Invalid secrets provider key";
+                    CrestronConsole.ConsoleCommandResponse(response);
+                    return;
+                }
+
+                response = String.Format("{0} : {1}", provider.Key, provider.Description);
+                CrestronConsole.ConsoleCommandResponse(response);
+                return;
+            }
+
+            response = "Improper number of arguments";
+            CrestronConsole.ConsoleCommandResponse(response);
+
+        }
+
+
+        /// <summary>
+        /// Console Command that returns all valid secrets in the essentials program.
+        /// </summary>
+        /// <param name="cmd"></param>
+        public static void ListProviders(string cmd)
+        {
+            var response = String.Empty;
+            var args = cmd.Split(' ');
+
+            if (cmd.Length == 0)
+            {
+                if (Secrets != null && Secrets.Count > 0)
+                {
+                    response = Secrets.Aggregate(response,
+                        (current, secretProvider) => current + (secretProvider.Key + "\n\r"));
+                }
+                else
+                {
+                    response = "No Secrets Providers Available";
+                }
+                CrestronConsole.ConsoleCommandResponse(response);
+                return;
+
+            }
+
+            if (args.Length == 1 && args[0] == "?")
+            {
+                response = "Reports all valid and preset Secret providers";
+                CrestronConsole.ConsoleCommandResponse(response);
+                return;
+            }
+
+
+            response = "Improper number of arguments";
+            CrestronConsole.ConsoleCommandResponse(response);
+
+        }
+
         /// <summary>
         /// Add secret provider to secrets dictionary
         /// </summary>
@@ -65,6 +148,7 @@ namespace PepperDash.Essentials.Core
             {
                 Secrets.Add(key, provider);
                 Debug.Console(1, "Secrets provider '{0}' added to SecretsManager", key);
+                return;
             }
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to add Provider '{0}' to Secrets.  Provider with that key already exists", key );
         }
@@ -81,13 +165,13 @@ namespace PepperDash.Essentials.Core
             {
                 Secrets.Add(key, provider);
                 Debug.Console(1, "Secrets provider '{0}' added to SecretsManager", key);
-
+                return;
             }
             if (overwrite)
             {
                 Secrets.Add(key, provider);
                 Debug.Console(1, Debug.ErrorLogLevel.Notice, "Provider with the key '{0}' already exists in secrets.  Overwriting with new secrets provider.", key);
-
+                return;
             }
             Debug.Console(0, Debug.ErrorLogLevel.Notice, "Unable to add Provider '{0}' to Secrets.  Provider with that key already exists", key);
         }
@@ -100,14 +184,14 @@ namespace PepperDash.Essentials.Core
             if (args.Length == 0)
             {
                 //some Instructional Text
-                response = "Adds secrets to secret provider. Format 'setsecret <provider> <secretKey> <secret>";
+                response = "Adds secrets to secret provider. Format 'setsecret <provider> <secretKey> <secret>'";
                 CrestronConsole.ConsoleCommandResponse(response);
                 return;
             }
 
             if (args.Length == 1 && args[0] == "?")
             {
-                response = "Adds secrets to secret provider. Format 'setsecret <provider> <secretKey> <secret>";
+                response = "Adds secrets to secret provider. Format 'setsecret <provider> <secretKey> <secret>'";
                 CrestronConsole.ConsoleCommandResponse(response);
                 return;
             }
@@ -134,23 +218,7 @@ namespace PepperDash.Essentials.Core
             var key = args[1];
             var secret = args[2];
 
-            if (provider.GetSecret(key) == null)
-            {
-
-                response = provider.SetSecret(key, secret)
-                    ? String.Format(
-                        "Secret successfully set for {0}:{1}",
-                        provider.Key, key)
-                    : String.Format(
-                        "Unable to set secret for {0}:{1}",
-                        provider.Key, key);                    
-                CrestronConsole.ConsoleCommandResponse(response);
-                return;
-            }
-            response =
-                String.Format(
-                    "Unable to set secret for {0}:{1} - Please use the 'UpdateSecret' command to modify it");
-            CrestronConsole.ConsoleCommandResponse(response);
+            CrestronConsole.ConsoleCommandResponse(SetSecret(provider, key, secret));
         }
 
         private static void UpdateSecretProcess(string cmd)
@@ -161,7 +229,7 @@ namespace PepperDash.Essentials.Core
             if (args.Length == 0)
             {
                 //some Instructional Text
-                response = "Updates secrets in secret provider. Format 'updatesecret <provider> <secretKey> <secret>";
+                response = "Updates secrets in secret provider. Format 'updatesecret <provider> <secretKey> <secret>'";
                 CrestronConsole.ConsoleCommandResponse(response);
                 return;
 
@@ -169,7 +237,7 @@ namespace PepperDash.Essentials.Core
 
             if (args.Length == 1 && args[0] == "?")
             {
-                response = "Updates secrets in secret provider. Format 'updatesecret <provider> <secretKey> <secret>";
+                response = "Updates secrets in secret provider. Format 'updatesecret <provider> <secretKey> <secret>'";
                 CrestronConsole.ConsoleCommandResponse(response);
                 return;
             }
@@ -198,23 +266,49 @@ namespace PepperDash.Essentials.Core
             var key = args[1];
             var secret = args[2];
 
-            if (provider.GetSecret(key) != null)
-            {
-                response = provider.SetSecret(key, secret)
-                    ? String.Format(
-                        "Secret successfully set for {0}:{1}",
-                        provider.Key, key)
-                    : String.Format(
-                        "Unable to set secret for {0}:{1}",
-                        provider.Key, key);
-                CrestronConsole.ConsoleCommandResponse(response);
-                return;
-            }
+            CrestronConsole.ConsoleCommandResponse(UpdateSecret(provider, key, secret));
 
-            response =
-                String.Format(
-                    "Unable to update secret for {0}:{1} - Please use the 'SetSecret' command to create a new secret");
-            CrestronConsole.ConsoleCommandResponse(response);
+        }
+
+        private static string UpdateSecret(ISecretProvider provider, string key, string secret)
+        {
+            var secretPresent = provider.TestSecret(key);
+
+            Debug.Console(2, provider, "SecretsProvider {0} {1} contain a secret entry for {2}", provider.Key, secretPresent ? "does" : "does not", key);
+
+            if (!secretPresent)
+                return
+                    String.Format(
+                        "Unable to update secret for {0}:{1} - Please use the 'SetSecret' command to modify it");
+            var response = provider.SetSecret(key, secret)
+                ? String.Format(
+                    "Secret successfully set for {0}:{1}",
+                    provider.Key, key)
+                : String.Format(
+                    "Unable to set secret for {0}:{1}",
+                    provider.Key, key);
+            return response;
+        }
+
+        private static string SetSecret(ISecretProvider provider, string key, string secret)
+        {
+            var secretPresent = provider.TestSecret(key);
+
+            Debug.Console(2, provider, "SecretsProvider {0} {1} contain a secret entry for {2}", provider.Key, secretPresent ? "does" : "does not", key);
+
+            if (secretPresent)
+                return
+                    String.Format(
+                        "Unable to set secret for {0}:{1} - Please use the 'UpdateSecret' command to modify it");
+            var response = provider.SetSecret(key, secret)
+                ? String.Format(
+                    "Secret successfully set for {0}:{1}",
+                    provider.Key, key)
+                : String.Format(
+                    "Unable to set secret for {0}:{1}",
+                    provider.Key, key);
+            return response;
+
         }
 
         private static void DeleteSecretProcess(string cmd)
@@ -225,14 +319,14 @@ namespace PepperDash.Essentials.Core
             if (args.Length == 0)
             {
                 //some Instructional Text
-                response = "Deletes secrets in secret provider. Format 'deletesecret <provider> <secretKey>";
+                response = "Deletes secrets in secret provider. Format 'deletesecret <provider> <secretKey>'";
                 CrestronConsole.ConsoleCommandResponse(response);
                 return;
 
             }
             if (args.Length == 1 && args[0] == "?")
             {
-                response = "Deletes secrets in secret provider. Format 'deletesecret <provider> <secretKey>";
+                response = "Deletes secrets in secret provider. Format 'deletesecret <provider> <secretKey>'";
                 CrestronConsole.ConsoleCommandResponse(response);
                 return;
             }

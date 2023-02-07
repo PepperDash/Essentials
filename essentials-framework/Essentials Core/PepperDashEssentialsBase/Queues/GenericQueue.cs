@@ -1,5 +1,6 @@
 ﻿using System;
 using Crestron.SimplSharp;
+using Crestron.SimplSharp.Reflection;
 using Crestron.SimplSharpPro.CrestronThread;
 using PepperDash.Core;
 
@@ -118,7 +119,7 @@ namespace PepperDash.Essentials.Core.Queues
         /// <param name="capacity"></param>
         public GenericQueue(string key, int pacing, Thread.eThreadPriority priority, int capacity)
             : this(key, priority, capacity, pacing)
-        {
+        {           
         }
 
         /// <summary>
@@ -139,7 +140,8 @@ namespace PepperDash.Essentials.Core.Queues
             _queue = new CrestronQueue<IQueueMessage>(cap);
             _worker = new Thread(ProcessQueue, null, Thread.eThreadStartOptions.Running)
             {
-                Priority = priority
+                Priority = priority,
+                Name = _key
             };
 
             SetDelayValues(pacing);
@@ -186,9 +188,20 @@ namespace PepperDash.Essentials.Core.Queues
                         if (_delayEnabled)
                             Thread.Sleep(_delayTime);
                     }
+                    catch (System.Threading.ThreadAbortException)
+                    {
+                        //swallowing this exception, as it should only happen on shut down
+                    }
                     catch (Exception ex)
                     {
-                        Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Caught an exception in the Queue {0}\r{1}\r{2}", ex.Message, ex.InnerException, ex.StackTrace);
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Caught an exception in the Queue: {1}:{0}", ex.Message, ex);
+                        Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.StackTrace);
+
+                        if (ex.InnerException != null)
+                        {
+                            Debug.Console(0, this, Debug.ErrorLogLevel.Error, "---\r\n{0}", ex.InnerException.Message);
+                            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.InnerException.StackTrace);
+                        }
                     }
                 }
                 else _waitHandle.Wait();
@@ -201,7 +214,7 @@ namespace PepperDash.Essentials.Core.Queues
         {
             if (Disposed)
             {
-                Debug.Console(1, this, "I've been disposed so you can't enqueue any messages.  Are you trying to dispatch a message while the program is stopping?");
+                Debug.Console(1, this, "Queue has been disposed. Enqueuing messages not allowed while program is stopping.");
                 return;
             }
 
@@ -445,7 +458,14 @@ namespace PepperDash_Essentials_Core.Queues
                     }
                     catch (Exception ex)
                     {
-                        Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Caught an exception in the Queue {0}\r{1}\r{2}", ex.Message, ex.InnerException, ex.StackTrace);
+                        Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Caught an exception in the Queue {0}", ex.Message);
+                        Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.StackTrace);
+
+                        if (ex.InnerException != null)
+                        {
+                            Debug.Console(0, this, Debug.ErrorLogLevel.Error, "Caught an exception in the Queue {0}", ex.InnerException.Message);
+                            Debug.Console(2, this, Debug.ErrorLogLevel.Error, "Stack Trace: {0}", ex.InnerException.StackTrace);
+                        }
                     }
                 }
                 else _waitHandle.Wait();

@@ -101,7 +101,7 @@ namespace PepperDash.Essentials
             }
         }
 
-        public EssentialsConferenceRoomPropertiesConfig PropertiesConfig { get; private set; }
+        public EssentialsHuddleVtc1PropertiesConfig PropertiesConfig { get; private set; }
 
 		public IRoutingSinkWithSwitching DefaultDisplay { get; private set; }
 		public IBasicVolumeControls DefaultAudioDevice { get; private set; }
@@ -708,11 +708,12 @@ namespace PepperDash.Essentials
 			IRoutingSink dest = null;
 
 			if (route.DestinationKey.Equals("$defaultaudio", StringComparison.OrdinalIgnoreCase))
-                dest = DefaultAudioDevice as IRoutingSinkNoSwitching;
+                dest = DefaultAudioDevice as IRoutingSink;
 			else if (route.DestinationKey.Equals("$defaultDisplay", StringComparison.OrdinalIgnoreCase))
 				dest = DefaultDisplay;
 			else
-				dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSinkNoSwitching;
+				dest = DeviceManager.GetDeviceForKey(route.DestinationKey) as IRoutingSink;
+            
 
 			if (dest == null)
 			{
@@ -743,6 +744,28 @@ namespace PepperDash.Essentials
         public override void RoomVacatedForTimeoutPeriod(object o)
         {
             //Implement this
+        }
+
+        protected override bool AllowVacancyTimerToStart()
+        {
+            bool allowVideo = true;
+            bool allowAudio = true;
+
+            if (VideoCodec != null)
+            {
+                Debug.Console(2,this, Debug.ErrorLogLevel.Notice, "Room {0} {1} in a video call", Key, VideoCodec.IsInCall ? "is" : "is not");
+                allowVideo = !VideoCodec.IsInCall;
+            }
+
+            if (AudioCodec != null)
+            {
+                Debug.Console(2,this, Debug.ErrorLogLevel.Notice, "Room {0} {1} in an audio call", Key, AudioCodec.IsInCall ? "is" : "is not");
+                allowAudio = !AudioCodec.IsInCall;
+            }
+
+            Debug.Console(2, this, "Room {0} allowing vacancy timer to start: {1}", Key, allowVideo && allowAudio);
+
+            return allowVideo && allowAudio;
         }
         
         /// <summary>

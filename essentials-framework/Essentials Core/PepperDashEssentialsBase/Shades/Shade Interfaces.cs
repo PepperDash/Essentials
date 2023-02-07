@@ -19,6 +19,7 @@ namespace PepperDash.Essentials.Core.Shades
     /// <summary>
     /// Requirements for a device that implements basic Open/Close shade control
     /// </summary>
+    [Obsolete("Please use IShadesOpenCloseStop instead")]
     public interface IShadesOpenClose
     {
         void Open();
@@ -28,15 +29,26 @@ namespace PepperDash.Essentials.Core.Shades
     /// <summary>
     /// Requirements for a device that implements basic Open/Close/Stop shade control (Uses 3 relays)
     /// </summary>
-    public interface IShadesOpenCloseStop : IShadesOpenClose
+    public interface IShadesOpenCloseStop
     {
-        void StopOrPreset();
+        void Open();
+        void Close();
+        void Stop();
+    }
+
+    public interface IShadesOpenClosePreset : IShadesOpenCloseStop
+    {
+        void RecallPreset(uint presetNumber);
+        void SavePreset(uint presetNumber);
         string StopOrPresetButtonLabel { get; }
+
+        event EventHandler PresetSaved;
     }
 
 	/// <summary>
 	/// Requirements for a shade that implements press/hold raise/lower functions
 	/// </summary>
+    [Obsolete("Please use IShadesOpenCloseStop instead")]
 	public interface IShadesRaiseLower
 	{
 		void Raise(bool state);
@@ -55,7 +67,7 @@ namespace PepperDash.Essentials.Core.Shades
 	/// <summary>
 	/// Requirements for a shade/scene that is open or closed
 	/// </summary>
-	public interface IShadesOpenClosedFeedback: IShadesOpenClose
+	public interface IShadesOpenClosedFeedback: IShadesOpenCloseStop
 	{
 		BoolFeedback ShadeIsOpenFeedback { get; }
 		BoolFeedback ShadeIsClosedFeedback { get; }
@@ -64,13 +76,14 @@ namespace PepperDash.Essentials.Core.Shades
 	/// <summary>
 	/// 
 	/// </summary>
-	public interface IShadesStop
+    [Obsolete("Please use IShadesOpenCloseStop instead")]
+    public interface IShadesStop
 	{
 		void Stop();
 	}
 
 	/// <summary>
-	/// 
+	/// Used to implement raise/stop/lower/stop from single button
 	/// </summary>
 	public interface IShadesStopOrMove
 	{
@@ -82,7 +95,7 @@ namespace PepperDash.Essentials.Core.Shades
 	/// <summary>
 	/// Basic feedback for shades/scene stopped
 	/// </summary>
-	public interface IShadesStopFeedback
+	public interface IShadesStopFeedback : IShadesOpenCloseStop
 	{
 		BoolFeedback IsStoppedFeedback { get; }
 	}	

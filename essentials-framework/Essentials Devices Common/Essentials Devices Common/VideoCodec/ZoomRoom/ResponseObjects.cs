@@ -31,10 +31,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 
 		protected void NotifyPropertyChanged(string propertyName)
 		{
-			if (PropertyChanged != null)
-			{
-				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
+            var handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+            else
+            {
+                Debug.Console(2, "PropertyChanged event is NULL");
+            }
 		}
 
 		#endregion
@@ -298,11 +303,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 					{
 						var contact = new InvitableDirectoryContact { Name = c.ScreenName, ContactId = c.Jid };
 
-                        contact.ContactMethods.Add(new ContactMethod() { Number = c.Jid, Device = eContactMethodDevice.Video, CallType = eContactMethodCallType.Video, ContactMethodId = c.Jid });
+                        contact.ContactMethods.Add(new ContactMethod()
+                        {
+	                        Number = c.Jid, 
+							Device = eContactMethodDevice.Video, 
+							CallType = eContactMethodCallType.Video, 
+							ContactMethodId = c.Jid
+                        });
 
 						if (folders.Count > 0)
 						{
-							contact.ParentFolderId = c.IsZoomRoom ? "rooms" : "contacts";
+							contact.ParentFolderId = c.IsZoomRoom
+								? roomFolder.FolderId // "rooms" 
+								: contactFolder.FolderId; // "contacts"
 						}
 
 						contacts.Add(contact);
@@ -429,13 +442,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			public bool supports_Web_Settings_Push { get; set; }
 		}
 
+        public enum eDisplayState
+        {
+            None,
+            Laptop,
+            IOS,
+        }
+
 		public class Sharing : NotifiableObject
 		{
-			private string _dispState;
+            private eDisplayState _dispState;
 			private string _password;
             private bool _isAirHostClientConnected;
             private bool _isSharingBlackMagic;
             private bool _isDirectPresentationConnected;
+            private bool _isBlackMagicConnected;
 
 
 			public string directPresentationPairingCode { get; set; }
@@ -443,7 +464,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			/// Laptop client sharing key
 			/// </summary>
 			public string directPresentationSharingKey { get; set; }
-			public string dispState
+            public eDisplayState dispState
 			{
 				get
 				{
@@ -472,7 +493,18 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 }
             }
 
-			public bool isBlackMagicConnected { get; set; }
+			public bool isBlackMagicConnected
+            {
+                get { return _isBlackMagicConnected; }
+                set
+                {
+                    if (value != _isBlackMagicConnected)
+                    {
+                        _isBlackMagicConnected = value;
+                        NotifyPropertyChanged("isBlackMagicConnected");
+                    }
+                }
+            }
 			public bool isBlackMagicDataAvailable { get; set; }
 
 			public bool isDirectPresentationConnected
@@ -500,8 +532,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                     }
                 }
             }
-
-
 
 			/// <summary>
 			/// IOS Airplay code
@@ -617,6 +647,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 			// backer variables
 			private bool _can_Switch_Speaker_View;
 			private bool _can_Switch_Wall_View;
+            private bool _can_Switch_Strip_View;
 			private bool _can_Switch_Share_On_All_Screens;
             private bool _can_Switch_Floating_Share_Content;
 			private bool _is_In_First_Page;
@@ -704,6 +735,23 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				}
 			}
 
+            [JsonProperty("can_Switch_Strip_View")]
+            public bool can_Switch_Strip_View
+            {
+                get
+                {
+                    return _can_Switch_Strip_View;
+                }
+                set
+                {
+                    if (value != _can_Switch_Strip_View)
+                    {
+                        _can_Switch_Strip_View = value;
+                        NotifyPropertyChanged("can_Switch_Strip_View");
+                    }
+                }
+            }
+
 			[JsonProperty("is_In_First_Page")]
 			public bool is_In_First_Page
 			{
@@ -765,10 +813,42 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 		public class CallRecordInfo : NotifiableObject
 		{
             private bool _meetingIsBeingRecorded;
+            private bool _canRecord;
+            private bool _emailRequired;
 
-			public bool canRecord { get; set; }
-			public bool emailRequired { get; set; }
 			public bool amIRecording { get; set; }
+
+            public bool canRecord
+            {
+                get
+                {
+                    return _canRecord;
+                }
+                set
+                {
+                    if (value != _canRecord)
+                    {
+                        _canRecord = value;
+                        NotifyPropertyChanged("canRecord");
+                    }
+                }
+            }
+
+            public bool emailRequired
+            {
+                get
+                {
+                    return _emailRequired;
+                }
+                set
+                {
+                    if (value != _emailRequired)
+                    {
+                        _emailRequired = value;
+                        NotifyPropertyChanged("emailRequired");
+                    }
+                }
+            }
 
 			public bool meetingIsBeingRecorded 
             {
@@ -778,12 +858,30 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 }
                 set
                 {
+                    //Debug.Console(2, "************************************setting value of meetingIsBeingRecorded to: {0}", value);
                     if (value != _meetingIsBeingRecorded)
                     {
                         _meetingIsBeingRecorded = value;
+                        //Debug.Console(2, "********************************set value of meetingIsBeingRecorded to: {0}", _meetingIsBeingRecorded);
                         NotifyPropertyChanged("meetingIsBeingRecorded");
                     }
                 }
+            }
+
+            /// <summary>
+            /// Indicates if recording is allowed (when meeting capable and and email is not required to be entered by the user)
+            /// </summary>
+            public bool AllowRecord
+            {
+                get
+                {
+                    return canRecord && !emailRequired;
+                }
+            }
+
+            public CallRecordInfo()
+            {
+                Debug.Console(2, Debug.ErrorLogLevel.Notice, "********************************************* CallRecordInfo() ******************************************");
             }
 		}
 	}

@@ -56,6 +56,9 @@ namespace PepperDash.Essentials.Room.Config
         [JsonProperty("mirroredTuners")]
         public Dictionary<uint, string> MirroredTuners { get; set; }
 
+        [JsonProperty("helpMessage")]
+        public string HelpMessage { get; set; }
+
         /// <summary>
         /// Indicates the room 
         /// </summary>

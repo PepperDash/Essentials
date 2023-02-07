@@ -13,6 +13,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Fusion;
+using PepperDash.Essentials.Core.Web;
 using PepperDash.Essentials.Devices.Common;
 using PepperDash.Essentials.DM;
 using PepperDash.Essentials.Fusion;
@@ -53,14 +54,14 @@ namespace PepperDash.Essentials
             // to allow any HD-BaseT DM endpoints to register first.
             if (Global.ControlSystemIsDmpsType)
             {
-                Debug.Console(2, "******************* InitializeSystem() Entering **********************");
+                Debug.Console(1, "******************* InitializeSystem() Entering **********************");
 
                 _initializeEvent = new CEvent();
 
-                DeviceManager.AllDevicesActivated += (o, a) =>
+                DeviceManager.AllDevicesRegistered += (o, a) =>
                 {
                     _initializeEvent.Set();
-                    Debug.Console(2, "******************* InitializeSystem() Exiting **********************");
+                    Debug.Console(1, "******************* InitializeSystem() Exiting **********************");
                 };
 
                 _initializeEvent.Wait(30000);
@@ -83,10 +84,10 @@ namespace PepperDash.Essentials
 
             CrestronConsole.AddNewConsoleCommand(BridgeHelper.PrintJoinMap, "getjoinmap", "map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-            {
-                Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s);
-            }, "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(BridgeHelper.JoinmapMarkdown, "getjoinmapmarkdown"
+                , "generate markdown of map(s) for bridge or device on bridge [brKey [devKey]]", ConsoleAccessLevelEnum.AccessOperator);
+
+            CrestronConsole.AddNewConsoleCommand(s => Debug.Console(0, Debug.ErrorLogLevel.Notice, "CONSOLE MESSAGE: {0}", s), "appdebugmessage", "Writes message to log", ConsoleAccessLevelEnum.AccessOperator);
 
             CrestronConsole.AddNewConsoleCommand(s =>
             {
@@ -103,12 +104,16 @@ namespace PepperDash.Essentials
                     (ConfigReader.ConfigObject, Newtonsoft.Json.Formatting.Indented));
             }, "showconfig", "Shows the current running merged config", ConsoleAccessLevelEnum.AccessOperator);
 
-            CrestronConsole.AddNewConsoleCommand(s =>
-            {
-                CrestronConsole.ConsoleCommandResponse("This system can be found at the following URLs:\r\n" +
-                    "System URL:   {0}\r\n" +
-                    "Template URL: {1}", ConfigReader.ConfigObject.SystemUrl, ConfigReader.ConfigObject.TemplateUrl);
-            }, "portalinfo", "Shows portal URLS from configuration", ConsoleAccessLevelEnum.AccessOperator);
+            CrestronConsole.AddNewConsoleCommand(s => 
+                CrestronConsole.ConsoleCommandResponse(
+                "This system can be found at the following URLs:\r\n" +
+                "System URL:   {0}\r\n" +
+                "Template URL: {1}", 
+                ConfigReader.ConfigObject.SystemUrl, 
+                ConfigReader.ConfigObject.TemplateUrl), 
+                "portalinfo", 
+                "Shows portal URLS from configuration", 
+                ConsoleAccessLevelEnum.AccessOperator);
 
 
             CrestronConsole.AddNewConsoleCommand(DeviceManager.GetRoutingPorts,
@@ -195,6 +200,8 @@ namespace PepperDash.Essentials
                 }
                 else   // Handles Linux OS (Virtual Control)
                 {
+                    Debug.SetDebugLevel(2);
+
                     Debug.Console(0, Debug.ErrorLogLevel.Notice, "Starting Essentials v{0} on Virtual Control Server", Global.AssemblyVersion);
 
                     // Set path to User/
@@ -296,6 +303,10 @@ namespace PepperDash.Essentials
             if (!Directory.Exists(pluginDir))
                 Directory.Create(pluginDir);
 
+            var joinmapDir = Global.FilePathPrefix + "joinmaps";
+            if(!Directory.Exists(joinmapDir))
+                Directory.Create(joinmapDir);
+
 			return configExists;
 		}
 
@@ -343,6 +354,7 @@ namespace PepperDash.Essentials
 
             // Build the processor wrapper class
             DeviceManager.AddDevice(new PepperDash.Essentials.Core.Devices.CrestronProcessor("processor"));
+			DeviceManager.AddDevice(new EssemtialsWebApi("essentialsWebApi","Essentials Web API"));
 
             // Add global System Monitor device
             if (CrestronEnvironment.DevicePlatform == eDevicePlatform.Appliance)

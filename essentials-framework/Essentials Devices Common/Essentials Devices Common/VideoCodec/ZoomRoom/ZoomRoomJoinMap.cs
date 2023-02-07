@@ -8,9 +8,22 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 	{
 		#region Digital
 
-        // TODO [ ] Issue #868
-        [JoinName("ShowPasswordPrompt")]
-        public JoinDataComplete ShowPasswordPrompt = new JoinDataComplete(
+        [JoinName("CancelJoinAttempt")]
+        public JoinDataComplete CancelJoinAttempt = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 5,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Pulse to hide the password prompt",
+                JoinCapabilities = eJoinCapabilities.FromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("MeetingPasswordRequired")]
+        public JoinDataComplete MeetingPasswordRequired = new JoinDataComplete(
             new JoinData
             {
                 JoinNumber = 6,
@@ -23,7 +36,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 JoinType = eJoinType.Digital
             });
 
-        // TODO [ ] Issue #868
         [JoinName("PasswordIncorrect")]
         public JoinDataComplete PasswordIncorrect = new JoinDataComplete(
             new JoinData
@@ -38,8 +50,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 JoinType = eJoinType.Digital
             });
 
-        // TODO [ ] Issue #868
-        [JoinName("PassowrdLoginFailed")]
+        [JoinName("PasswordLoginFailed")]
         public JoinDataComplete PasswordLoginFailed = new JoinDataComplete(
             new JoinData
             {
@@ -53,7 +64,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 JoinType = eJoinType.Digital
             });
 
-        // TODO [ ] Issue #868
         [JoinName("WaitingForHost")]
         public JoinDataComplete WaitingForHost = new JoinDataComplete(
             new JoinData
@@ -68,7 +78,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 JoinType = eJoinType.Digital
             });
 
-        // TODO [ ] Issue #868
         [JoinName("IsHost")]
         public JoinDataComplete IsHost = new JoinDataComplete(
             new JoinData
@@ -83,7 +92,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 JoinType = eJoinType.Digital
             });
 
-        // TODO [ ] Issue #868
         [JoinName("StartMeetingNow")]
         public JoinDataComplete StartMeetingNow = new JoinDataComplete(
             new JoinData
@@ -93,12 +101,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
             },
             new JoinMetadata
             {
-                Description = "FB Indicates the password prompt is active",
+                Description = "Pulse to start an ad-hoc meeting with the default duration",
                 JoinCapabilities = eJoinCapabilities.FromSIMPL,
                 JoinType = eJoinType.Digital
             });
 
-        // TODO [ ] Issue #868
         [JoinName("ShareOnlyMeeting")]
         public JoinDataComplete ShareOnlyMeeting = new JoinDataComplete(
             new JoinData
@@ -113,7 +120,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
                 JoinType = eJoinType.Digital
             });
 
-        // TODO [ ] Issue #868
         [JoinName("StartNormalMeetingFromSharingOnlyMeeting")]
         public JoinDataComplete StartNormalMeetingFromSharingOnlyMeeting = new JoinDataComplete(
             new JoinData
@@ -295,8 +301,126 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				Description = "Toggles the selfview pip size, (aka layout size)",
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.Digital
-			});		
+			});
 
+        [JoinName("StartRecording")]
+        public JoinDataComplete StartRecording = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 241,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Pulse to start the Meeting Recording.  FB high if meeting is currently recording",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("StopRecording")]
+        public JoinDataComplete StopRecording = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 242,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Pulse to stop the Meeting Recording.  FB high if meeting is currently NOT recording",
+                JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("RecordConsentPromptIsVisible")]
+        public JoinDataComplete RecordConsentPromptIsVisible = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 243,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "When high, indicates that the recording consent prompt is visible on the ZoomRoom UI",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("RecordingPromptAgree")]
+        public JoinDataComplete RecordingPromptAgree = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 244,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Pulse to agree to consent for meeting recording",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("RecordingPromptDisagree")]
+        public JoinDataComplete RecordingPromptDisagree = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 245,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Pulse to disagree to consent for meeting recording",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("MeetingCanRecord")]
+        public JoinDataComplete MeetingCanRecord = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 246,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "When high, indicated that the current meeting can be recorded",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+
+        #region Sharing Status
+
+        [JoinName("IsSharingAirplay")]
+        public JoinDataComplete IsSharingAirplay = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 250,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Indicates an Airplay source is sharing",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+        [JoinName("IsSharingHdmi")]
+        public JoinDataComplete IsSharingHdmi = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 251,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Indicates an HDMI source is sharing",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Digital
+            });
+
+
+
+        #endregion
         //[JoinName("ParticipantAudioMuteToggleStart")]
         //public JoinDataComplete ParticipantAudioMuteToggleStart = new JoinDataComplete(
         //    new JoinData
@@ -480,6 +604,92 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.ZoomRoom
 				JoinCapabilities = eJoinCapabilities.ToFromSIMPL,
 				JoinType = eJoinType.DigitalSerial
 			});
+
+        [JoinName("DisplayState")]
+        public JoinDataComplete DisplayState = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 250,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Reports the instructions the ZoomRoom is displaying on the monitor. <None | Laptop | IOS>",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("AirplayShareCode")]
+        public JoinDataComplete AirplayShareCode = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 251,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Reports the current code for Airplay Sharing.",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("LaptopShareKey")]
+        public JoinDataComplete LaptopShareKey = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 252,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "The alpha-only sharing key that users type into a laptop client to share with the Zoom Room.",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("LaptopSharePairingCode")]
+        public JoinDataComplete LaptopSharePairingCode = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 253,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "This is the paring code that is broadcast via an ultrasonic signal from the ZRC. It is different than the user-supplied paring code. The ZRC uses a Zoom-proprietary method of advertizing the ultrasonic pairing code, so it\'s not possible to advertize it using commonly available libraries.",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("WifiName")]
+        public JoinDataComplete WifiName = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 254,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Reports the Wifi SSID used by the ZoomRoom.",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+        [JoinName("ServerName")]
+        public JoinDataComplete ServerName = new JoinDataComplete(
+            new JoinData
+            {
+                JoinNumber = 255,
+                JoinSpan = 1
+            },
+            new JoinMetadata
+            {
+                Description = "Reports the namne of the the ZoomRoom.",
+                JoinCapabilities = eJoinCapabilities.ToSIMPL,
+                JoinType = eJoinType.Serial
+            });
+
+
 
 		#endregion
 

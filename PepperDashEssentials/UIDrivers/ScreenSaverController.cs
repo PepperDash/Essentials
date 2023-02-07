@@ -51,7 +51,7 @@ namespace PepperDash.Essentials
 
         public override void Show()
         {
-            Debug.Console(2, "Showing ScreenSaverController: {0:X2}", TriList.ID);
+            //Debug.Console(2, "Showing ScreenSaverController: {0:X2}", TriList.ID);
 
             if (_parent.AvDriver != null)
             {
@@ -67,11 +67,11 @@ namespace PepperDash.Essentials
 
         public override void Hide()
         {
-            Debug.Console(2, "Hiding ScreenSaverController: {0:X2}", TriList.ID);
+            //Debug.Console(2, "Hiding ScreenSaverController: {0:X2}", TriList.ID);
 
             if (PositionTimer != null)
             {
-                Debug.Console(2, "Stopping PositionTimer: {0:X2}", TriList.ID);
+                //Debug.Console(2, "Stopping PositionTimer: {0:X2}", TriList.ID);
                 PositionTimer.Stop();
                 PositionTimer.Dispose();
                 PositionTimer = null;
@@ -89,7 +89,7 @@ namespace PepperDash.Essentials
 
         void StartPositionTimer()
         {
-            Debug.Console(2,  "Starting Position Timer: {0:X2}", TriList.ID);
+            //Debug.Console(2,  "Starting Position Timer: {0:X2}", TriList.ID);
 
             if (PositionTimer == null)
             {
@@ -122,7 +122,7 @@ namespace PepperDash.Essentials
                 CurrentPositionIndex = 0;
             }
 
-            Debug.Console(2, "ScreenSaver Position Timer Expired: Setting new position: {0} ID: {1:X2}", CurrentPositionIndex, TriList.ID);
+            //Debug.Console(2, "ScreenSaver Position Timer Expired: Setting new position: {0} ID: {1:X2}", CurrentPositionIndex, TriList.ID);
         }
 
         //
@@ -134,7 +134,7 @@ namespace PepperDash.Essentials
 
         void ClearAllPositions()
         {
-            Debug.Console(2, "Hiding all screensaver positions: {0:X2}", TriList.ID);
+            //Debug.Console(2, "Hiding all screensaver positions: {0:X2}", TriList.ID);
 
             PositionInterlock.HideAndClear();
         }

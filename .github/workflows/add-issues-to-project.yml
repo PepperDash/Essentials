@@ -1,0 +1,37 @@
+name: Add bugs to bugs project
+
+on:
+  issues:
+    types:
+      - opened
+      - labeled
+      
+jobs:
+  check-secret:
+    runs-on: ubuntu-latest
+    outputs:
+      my-key: ${{ steps.my-key.outputs.defined }}
+    steps:
+        - id: my-key
+          if: "${{ env.MY_KEY != '' }}"
+          run: echo "::set-output name=defined::true"
+          env:
+              MY_KEY: ${{ secrets.PROJECT_URL }}
+  throw-error: 
+    name: Check
+    runs-on: ubuntu-latest
+    needs: [check-secret]
+    if: needs.check-secret.outputs.my-key != 'true'
+    steps:
+      - run: echo "The Project URL Repo Secret is empty"
+  add-to-project:
+    name: Add issue to project
+    runs-on: ubuntu-latest
+    needs: [check-secret]
+    if: needs.check-secret.outputs.my-key == 'true'
+    steps:
+      - uses: actions/add-to-project@main
+        with:
+          project-url: ${{ secrets.PROJECT_URL }}
+          github-token: ${{ secrets.GH_PROJECTS_PASSWORD }}
+

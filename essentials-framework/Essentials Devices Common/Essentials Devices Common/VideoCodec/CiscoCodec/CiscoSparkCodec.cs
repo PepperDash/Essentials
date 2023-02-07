@@ -24,12 +24,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
     enum eCommandType { SessionStart, SessionEnd, Command, GetStatus, GetConfiguration };
 	public enum eExternalSourceType {camera, desktop, document_camera, mediaplayer, PC, whiteboard, other}
-	public enum eExternalSourceMode {Ready, NotReady, Hidden, Error} 
+	public enum eExternalSourceMode {Ready, NotReady, Hidden, Error}
 
     public class CiscoSparkCodec : VideoCodecBase, IHasCallHistory, IHasCallFavorites, IHasDirectory,
         IHasScheduleAwareness, IOccupancyStatusProvider, IHasCodecLayouts, IHasCodecSelfView,
-        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute
+        ICommunicationMonitor, IRouting, IHasCodecCameras, IHasCameraAutoMode, IHasCodecRoomPresets, 
+        IHasExternalSourceSwitching, IHasBranding, IHasCameraOff, IHasCameraMute, IHasDoNotDisturbMode,
+        IHasHalfWakeMode, IHasCallHold, IJoinCalls
     {
+        private CiscoSparkCodecPropertiesConfig _config;
+
         private bool _externalSourceChangeRequested;
 
         public event EventHandler<DirectoryEventArgs> DirectoryResultReturned;
@@ -40,11 +44,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public StatusMonitorBase CommunicationMonitor { get; private set; }
 
-        private GenericQueue ReceiveQueue;
+        private GenericQueue _receiveQueue;
 
 		public BoolFeedback PresentationViewMaximizedFeedback { get; private set; }
 
-		string CurrentPresentationView;
+		private string _currentPresentationView;
 
         public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
@@ -62,9 +66,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public BoolFeedback FarEndIsSharingContentFeedback { get; private set; }
 
-        private CodecCommandWithLabel CurrentSelfviewPipPosition;
+        public IntFeedback RingtoneVolumeFeedback { get; private set; }
 
-        private CodecCommandWithLabel CurrentLocalLayout;
+        private CodecCommandWithLabel _currentSelfviewPipPosition;
+
+        private CodecCommandWithLabel _currentLocalLayout;
 
         /// <summary>
         /// List the available positions for the selfview PIP window
@@ -163,7 +169,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             get 
             {
-                return () => PresentationSourceKey;
+                return () => _presentationSourceKey;
             }
         }
 
@@ -227,7 +233,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             get
             {               
-                return () => CurrentSelfviewPipPosition.Label;
+                return () => _currentSelfviewPipPosition.Label;
             }
         }
 
@@ -235,7 +241,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             get
             {
-                return () => CurrentLocalLayout.Label;
+                return () => _currentLocalLayout.Label;
             }
         }
 
@@ -243,43 +249,58 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             get
             {
-                return () => CurrentLocalLayout.Label == "Prominent";
+                return () => _currentLocalLayout.Label == "Prominent";
             }
         }
 
 
-        private string CliFeedbackRegistrationExpression;
+        private string _cliFeedbackRegistrationExpression;
 
-        private CodecSyncState SyncState;
+        private CodecSyncState _syncState;
 
         public CodecPhonebookSyncState PhonebookSyncState { get; private set; }
 
-        private StringBuilder JsonMessage;
+        private StringBuilder _jsonMessage;
 
-        private bool JsonFeedbackMessageIsIncoming;
+        private bool _jsonFeedbackMessageIsIncoming;
 
         public bool CommDebuggingIsOn;
 
         string Delimiter = "\r\n";
 
+        public IntFeedback PresentationSourceFeedback { get; private set; }
+
+        public BoolFeedback PresentationSendingLocalOnlyFeedback { get; private set; }
+
+        public BoolFeedback PresentationSendingLocalRemoteFeedback { get; private set; }
+
         /// <summary>
         /// Used to track the current connector used for the presentation source
         /// </summary>
-        int PresentationSource;
+        private int _presentationSource;
 
-        string PresentationSourceKey;
+        /// <summary>
+        /// Used to track the connector that is desired to be the current presentation source (until the command is send)
+        /// </summary>
+        private int _desiredPresentationSource;
 
-        string PhonebookMode = "Local"; // Default to Local
+        private string _presentationSourceKey;
 
-        uint PhonebookResultsLimit = 255; // Could be set later by config.
+        private bool _presentationLocalOnly;
 
-        CTimer LoginMessageReceivedTimer;
-		CTimer RetryConnectionTimer;
+        private bool _presentationLocalRemote;
+
+        private string _phonebookMode = "Local"; // Default to Local
+
+        private uint _phonebookResultsLimit = 255; // Could be set later by config.
+
+        private CTimer _loginMessageReceivedTimer;
+        private CTimer _retryConnectionTimer;
 
         // **___________________________________________________________________**
         //  Timers to be moved to the global system timer at a later point....
-        CTimer BookingsRefreshTimer;
-        CTimer PhonebookRefreshTimer;
+        private CTimer BookingsRefreshTimer;
+        private CTimer PhonebookRefreshTimer;
         // **___________________________________________________________________**
 
         public RoutingInputPort CodecOsdIn { get; private set; }
@@ -295,14 +316,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             var props = JsonConvert.DeserializeObject<Codec.CiscoSparkCodecPropertiesConfig>(config.Properties.ToString());
 
+            _config = props;
+
             // Use the configured phonebook results limit if present
             if (props.PhonebookResultsLimit > 0)
             {
-                PhonebookResultsLimit = props.PhonebookResultsLimit;
+                _phonebookResultsLimit = props.PhonebookResultsLimit;
             }
 
             // The queue that will collect the repsonses in the order they are received
-            ReceiveQueue = new GenericQueue(this.Key + "-rxQueue", 25);
+            _receiveQueue = new GenericQueue(this.Key + "-rxQueue", 25);
 
             RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
             PeopleCountFeedback = new IntFeedback(PeopleCountFeedbackFunc);
@@ -316,7 +339,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CameraIsMutedFeedback = CameraIsOffFeedback;
             SupportsCameraOff = true;
 
-			PresentationViewMaximizedFeedback = new BoolFeedback(() => CurrentPresentationView == "Maximized");
+            DoNotDisturbModeIsOnFeedback = new BoolFeedback(() => CodecStatus.Status.Conference.DoNotDisturb.BoolValue);
+            HalfWakeModeIsOnFeedback = new BoolFeedback(() => CodecStatus.Status.Standby.State.Value.ToLower() == "halfwake");
+            EnteringStandbyModeFeedback = new BoolFeedback(() => CodecStatus.Status.Standby.State.Value.ToLower() == "enteringstandby");
+
+			PresentationViewMaximizedFeedback = new BoolFeedback(() => _currentPresentationView == "Maximized");
+
+            RingtoneVolumeFeedback = new IntFeedback(() => CodecConfiguration.Configuration.Audio.SoundsAndAlerts.RingVolume.Volume);
+
+            PresentationSourceFeedback = new IntFeedback(() => _presentationSource);
+            PresentationSendingLocalOnlyFeedback = new BoolFeedback(() => _presentationLocalOnly);
+            PresentationSendingLocalRemoteFeedback = new BoolFeedback(() => _presentationLocalRemote);
 
             Communication = comm;
 
@@ -326,7 +359,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
             else
             {
-                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, "xStatus SystemUnit Software Version\r");
+                var command = string.Format("xCommand Peripherals HeartBeat ID: {0}{1}", CrestronEthernetHelper.ETHERNET_PARAMETER_TO_GET.GET_MAC_ADDRESS, Delimiter);
+                CommunicationMonitor = new GenericCommunicationMonitor(this, Communication, 30000, 120000, 300000, command);
             }
 
             if (props.Sharing != null)
@@ -336,13 +370,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             DeviceManager.AddDevice(CommunicationMonitor);
 
-            PhonebookMode = props.PhonebookMode;
+            _phonebookMode = props.PhonebookMode;
 
-            SyncState = new CodecSyncState(Key + "--Sync");
+            _syncState = new CodecSyncState(Key + "--Sync", this);
 
             PhonebookSyncState = new CodecPhonebookSyncState(Key + "--PhonebookSync");
 
-            SyncState.InitialSyncCompleted += new EventHandler<EventArgs>(SyncState_InitialSyncCompleted);
+            _syncState.InitialSyncCompleted += new EventHandler<EventArgs>(SyncState_InitialSyncCompleted);
 
             PortGather = new CommunicationGather(Communication, Delimiter);
             PortGather.IncludeDelimiter = true;
@@ -388,9 +422,6 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			InputPorts.Add(HdmiIn2);
 			InputPorts.Add(HdmiIn3);
 			OutputPorts.Add(HdmiOut1);
-
-            SetUpCameras();
-
 			CreateOsdSource();
 
             ExternalSourceListEnabled = props.ExternalSourceListEnabled;
@@ -413,7 +444,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CodecStatus.Status.Audio.Volume.ValueChangedAction = VolumeLevelFeedback.FireUpdate;
             CodecStatus.Status.Audio.VolumeMute.ValueChangedAction = MuteFeedback.FireUpdate;
             CodecStatus.Status.Audio.Microphones.Mute.ValueChangedAction = PrivacyModeIsOnFeedback.FireUpdate;
-            CodecStatus.Status.Standby.State.ValueChangedAction = StandbyIsOnFeedback.FireUpdate;
+            CodecStatus.Status.Standby.State.ValueChangedAction = new Action(() =>
+                {
+                    StandbyIsOnFeedback.FireUpdate();
+                    HalfWakeModeIsOnFeedback.FireUpdate();
+                    EnteringStandbyModeFeedback.FireUpdate();
+                });
             CodecStatus.Status.RoomAnalytics.PeoplePresence.ValueChangedAction = RoomIsOccupiedFeedback.FireUpdate;
             CodecStatus.Status.RoomAnalytics.PeopleCount.Current.ValueChangedAction = PeopleCountFeedback.FireUpdate;
             CodecStatus.Status.Cameras.SpeakerTrack.Status.ValueChangedAction = CameraAutoModeIsOnFeedback.FireUpdate;
@@ -426,6 +462,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 SharingContentIsOnFeedback.FireUpdate();
                 FarEndIsSharingContentFeedback.FireUpdate();
             };
+            CodecStatus.Status.Conference.DoNotDisturb.ValueChangedAction = DoNotDisturbModeIsOnFeedback.FireUpdate;
+
+            CodecConfiguration.Configuration.Audio.SoundsAndAlerts.RingVolume.ValueChangedAction = RingtoneVolumeFeedback.FireUpdate;
 
             try
             {
@@ -509,7 +548,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="code">Mobile Control user code</param>
         private void DisplayUserCode(string code)
         {
-            SendText(string.Format("xcommand userinterface message alert display title:\"Mobile Control User Code:\" text:\"{0}\" duration: 30", code));
+            EnqueueCommand(string.Format("xcommand userinterface message alert display title:\"Mobile Control User Code:\" text:\"{0}\" duration: 30", code));
         }
 
         private void SendMcBrandingUrl(IMobileControlRoomBridge mcBridge)
@@ -521,17 +560,17 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             Debug.Console(1, this, "Sending url: {0}", mcBridge.QrCodeUrl);
 
-            SendText("xconfiguration userinterface custommessage: \"Scan the QR code with a mobile phone to get started\"");
-            SendText("xconfiguration userinterface osd halfwakemessage: \"Tap the touch panel or scan the QR code with a mobile phone to get started\"");
+            EnqueueCommand("xconfiguration userinterface custommessage: \"Scan the QR code with a mobile phone to get started\"");
+            EnqueueCommand("xconfiguration userinterface osd halfwakemessage: \"Tap the touch panel or scan the QR code with a mobile phone to get started\"");
 
             var checksum = !String.IsNullOrEmpty(mcBridge.QrCodeChecksum)
                 ? String.Format("checksum: {0} ", mcBridge.QrCodeChecksum)
                 : String.Empty;
 
-            SendText(String.Format(
+            EnqueueCommand(String.Format(
                 "xcommand userinterface branding fetch {1}type: branding url: {0}",
                 mcBridge.QrCodeUrl, checksum));
-            SendText(String.Format(
+            EnqueueCommand(String.Format(
                 "xcommand userinterface branding fetch {1}type: halfwakebranding url: {0}",
                 mcBridge.QrCodeUrl, checksum));
         }
@@ -540,9 +579,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             Debug.Console(1, this, "Sending url: {0}", _brandingUrl);
 
-            SendText(String.Format("xcommand userinterface branding fetch type: branding url: {0}",
+            EnqueueCommand(String.Format("xcommand userinterface branding fetch type: branding url: {0}",
                             _brandingUrl));
-            SendText(String.Format("xcommand userinterface branding fetch type: halfwakebranding url: {0}",
+            EnqueueCommand(String.Format("xcommand userinterface branding fetch type: halfwakebranding url: {0}",
                 _brandingUrl));
         }
         /// <summary>
@@ -555,7 +594,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             CrestronConsole.AddNewConsoleCommand(GetPhonebook, "GetCodecPhonebook", "Triggers a refresh of the codec phonebook", ConsoleAccessLevelEnum.AccessOperator);
             CrestronConsole.AddNewConsoleCommand(GetBookings, "GetCodecBookings", "Triggers a refresh of the booking data for today", ConsoleAccessLevelEnum.AccessOperator);
 
+            PhonebookSyncState.InitialSyncCompleted += new EventHandler<EventArgs>(PhonebookSyncState_InitialSyncCompleted);
+
             return base.CustomActivate();
+        }
+
+        void PhonebookSyncState_InitialSyncCompleted(object sender, EventArgs e)
+        {
+            OnDirectoryResultReturned(DirectoryRoot);
         }
 
         #region Overrides of Device
@@ -574,11 +620,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             const string prefix = "xFeedback register ";
 
-            CliFeedbackRegistrationExpression =
+            _cliFeedbackRegistrationExpression =
                 prefix + "/Configuration" + Delimiter +
                 prefix + "/Status/Audio" + Delimiter +
                 prefix + "/Status/Call" + Delimiter +
                 prefix + "/Status/Conference/Presentation" + Delimiter +
+                prefix + "/Status/Conference/DoNotDisturb" + Delimiter +
                 prefix + "/Status/Cameras/SpeakerTrack" + Delimiter +
                 prefix + "/Status/RoomAnalytics" + Delimiter +
                 prefix + "/Status/RoomPreset" + Delimiter +
@@ -587,10 +634,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 prefix + "/Status/Video/Layout" + Delimiter +
                 prefix + "/Status/Video/Input/MainVideoMute" + Delimiter +
                 prefix + "/Bookings" + Delimiter +
-                prefix + "/Event/CallDisconnect" + Delimiter +
                 prefix + "/Event/Bookings" + Delimiter +
                 prefix + "/Event/CameraPresetListUpdated" + Delimiter +
-                prefix + "/Event/UserInterface/Presentation/ExternalSource/Selected/SourceIdentifier" + Delimiter;
+                prefix + "/Event/UserInterface/Presentation/ExternalSource/Selected/SourceIdentifier" + Delimiter +
+                prefix + "/Event/CallDisconnect" + Delimiter; // Keep CallDisconnect last to detect when feedback registration completes correctly
+
         }
 
         #endregion
@@ -602,8 +650,46 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="e"></param>
         void SyncState_InitialSyncCompleted(object sender, EventArgs e)
         {
-            // Fire the ready event
-            SetIsReady();
+            // Check for camera config info first
+            if (_config.CameraInfo.Count > 0)
+            {
+                Debug.Console(0, this, "Reading codec cameraInfo from config properties.");
+                SetUpCameras(_config.CameraInfo);
+            }
+            else
+            {
+                Debug.Console(0, this, "No cameraInfo defined in video codec config.  Attempting to get camera info from codec status data");
+                try
+                {
+                    var cameraInfo = new List<CameraInfo>();
+
+                    Debug.Console(0, this, "Codec reports {0} cameras", CodecStatus.Status.Cameras.Camera.Count);
+
+                    foreach (var camera in CodecStatus.Status.Cameras.Camera)
+                    {
+                        Debug.Console(0, this,
+@"Camera id: {0}
+Name: {1}
+ConnectorID: {2}"
+, camera.id
+, camera.Manufacturer.Value
+, camera.Model.Value);
+
+                        var id = Convert.ToUInt16(camera.id);
+                        var info = new CameraInfo() { CameraNumber = id, Name = string.Format("{0} {1}", camera.Manufacturer.Value, camera.Model.Value), SourceId = camera.DetectedConnector.ConnectorId };
+                        cameraInfo.Add(info);
+                    }
+
+                    Debug.Console(0, this, "Successfully got cameraInfo for {0} cameras from codec.", cameraInfo.Count);
+
+                    SetUpCameras(cameraInfo);
+                }
+                catch (Exception ex)
+                {
+                    Debug.Console(2, this, "Error generating camera info from codec status data: {0}", ex);
+                }
+            }
+
             //CommDebuggingIsOn = false;
 
             GetCallHistory();
@@ -613,6 +699,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             BookingsRefreshTimer = new CTimer(GetBookings, 900000,  900000);       // 15 minute timer to check for new booking info
             GetBookings(null);
+
+            // Fire the ready event
+            SetIsReady();
         }
 
         public void SetCommDebug(string s)
@@ -634,12 +723,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			Debug.Console(1, this, "Socket status change {0}", e.Client.ClientStatus);
             if (e.Client.IsConnected)
             {
-                if(!SyncState.LoginMessageWasReceived)
-				    LoginMessageReceivedTimer = new CTimer(o => DisconnectClientAndReconnect(), 5000);
+                if(!_syncState.LoginMessageWasReceived)
+				    _loginMessageReceivedTimer = new CTimer(o => DisconnectClientAndReconnect(), 5000);
             }
             else
             {
-                SyncState.CodecDisconnected();
+                _syncState.CodecDisconnected();
                 PhonebookSyncState.CodecDisconnected();
 
                 if (PhonebookRefreshTimer != null)
@@ -662,7 +751,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
             Communication.Disconnect();
 
-			RetryConnectionTimer = new CTimer(o => Communication.Connect(), 2000);
+			_retryConnectionTimer = new CTimer(o => Communication.Connect(), 2000);
 
 			//CrestronEnvironment.Sleep(2000);
 
@@ -679,82 +768,103 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (CommDebuggingIsOn)
             {
-                if (!JsonFeedbackMessageIsIncoming)
-                    Debug.Console(1, this, "RX: '{0}'", args.Text);
+                if (!_jsonFeedbackMessageIsIncoming)
+                    Debug.Console(1, this, "RX: '{0}'", ComTextHelper.GetDebugText(args.Text));
+            }
+
+            if(args.Text.ToLower().Contains("xcommand"))
+            {
+                Debug.Console(1, this, "Received command echo response.  Ignoring");
+                return;
             }
 
             if (args.Text == "{" + Delimiter)        // Check for the beginning of a new JSON message
             {
-                JsonFeedbackMessageIsIncoming = true;
+                _jsonFeedbackMessageIsIncoming = true;
 
                 if (CommDebuggingIsOn)
                     Debug.Console(1, this, "Incoming JSON message...");
 
-                JsonMessage = new StringBuilder();
+                _jsonMessage = new StringBuilder();
             }
             else if (args.Text == "}" + Delimiter)  // Check for the end of a JSON message
             {
-                JsonFeedbackMessageIsIncoming = false;
+                _jsonFeedbackMessageIsIncoming = false;
 
-                JsonMessage.Append(args.Text);
+                _jsonMessage.Append(args.Text);
 
                 if (CommDebuggingIsOn)
-                    Debug.Console(1, this, "Complete JSON Received:\n{0}", JsonMessage.ToString());
+                    Debug.Console(1, this, "Complete JSON Received:\n{0}", _jsonMessage.ToString());
 
                 // Enqueue the complete message to be deserialized
 
-                ReceiveQueue.Enqueue(new ProcessStringMessage(JsonMessage.ToString(), DeserializeResponse));
+                _receiveQueue.Enqueue(new ProcessStringMessage(_jsonMessage.ToString(), DeserializeResponse));
 
                 return;
             }
 
-            if(JsonFeedbackMessageIsIncoming)
+            if(_jsonFeedbackMessageIsIncoming)
             {
-                JsonMessage.Append(args.Text);
+                _jsonMessage.Append(args.Text);
 
                 //Debug.Console(1, this, "Building JSON:\n{0}", JsonMessage.ToString());
                 return;
             }
 
-            if (!SyncState.InitialSyncComplete)
+            if (!_syncState.InitialSyncComplete)
             {
                 switch (args.Text.Trim().ToLower()) // remove the whitespace
                 {
                     case "*r login successful":
                         {
-                            SyncState.LoginMessageReceived();
+                            _syncState.LoginMessageReceived();
 
-                            if(LoginMessageReceivedTimer != null)
-                                LoginMessageReceivedTimer.Stop();
+                            if(_loginMessageReceivedTimer != null)
+                                _loginMessageReceivedTimer.Stop();
 
+                            //SendText("echo off");
                             SendText("xPreferences outputmode json");
                             break;
                         }
                     case "xpreferences outputmode json":
                         {
-                            if (!SyncState.InitialStatusMessageWasReceived)
+                            if (_syncState.JsonResponseModeSet)
+                                return;
+
+                            _syncState.JsonResponseModeMessageReceived();
+
+                            if (!_syncState.InitialStatusMessageWasReceived)
                                 SendText("xStatus");
                             break;
                         }
                     case "xfeedback register /event/calldisconnect":
                         {
-                            SyncState.FeedbackRegistered();
+                            _syncState.FeedbackRegistered();
                             break;
                         }
                 }
             }
-			
-                
         }
 
         /// <summary>
-        /// Appends the delimiter and send the command to the codec
+        /// Enqueues a command to be sent to the codec.
+        /// </summary>
+        /// <param name="command"></param>
+        public void EnqueueCommand(string command)
+        {
+            _syncState.AddCommandToQueue(command);
+        }
+
+        /// <summary>
+        /// Appends the delimiter and send the command to the codec.
+        /// Should not be used for sending general commands to the codec.  Use EnqueueCommand instead.
+        /// Should be used to get initial Status and Configuration as well as set up Feedback Registration
         /// </summary>
         /// <param name="command"></param>
         public void SendText(string command)
         {
             if (CommDebuggingIsOn)
-                Debug.Console(1, this, "Sending: '{0}'", command);
+                Debug.Console(1, this, "Sending: '{0}'",  ComTextHelper.GetDebugText(command + Delimiter));
 
             Communication.SendText(command + Delimiter);
         }
@@ -781,14 +891,35 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     // Check to see if the message contains /Status/Conference/Presentation/LocalInstance and extract source value 
                     var conference = tempCodecStatus.Status.Conference;
 
+                    if (conference.Presentation != null && conference.Presentation.LocalInstance == null)
+                    {
+                        // Handles an empty presentation object response
+                        return;   
+                    }
+
                     if (conference.Presentation.LocalInstance.Count > 0)
                     {
                         if (!string.IsNullOrEmpty(conference.Presentation.LocalInstance[0].ghost))
-                            PresentationSource = 0;
+                        {
+                            _presentationSource = 0;
+                            _presentationLocalOnly = false;
+                            _presentationLocalRemote = false;
+                        }
                         else if (conference.Presentation.LocalInstance[0].Source != null)
                         {
-                            PresentationSource = conference.Presentation.LocalInstance[0].Source.IntValue;
+                            _presentationSource = conference.Presentation.LocalInstance[0].Source.IntValue;
+
+                            // Check for any values in the SendingMode property
+                            if (conference.Presentation.LocalInstance.Any((i) => !string.IsNullOrEmpty(i.SendingMode.Value)))
+                            {
+                                _presentationLocalOnly = conference.Presentation.LocalInstance.Any((i) => i.SendingMode.LocalOnly);
+                                _presentationLocalRemote = conference.Presentation.LocalInstance.Any((i) => i.SendingMode.LocalRemote);
+                            }
                         }
+
+                        PresentationSourceFeedback.FireUpdate();
+                        PresentationSendingLocalOnlyFeedback.FireUpdate();
+                        PresentationSendingLocalRemoteFeedback.FireUpdate();
                     }
 
                     // Check to see if this is a call status message received after the initial status message
@@ -810,7 +941,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                     if (!string.IsNullOrEmpty(call.Status.Value))
                                     {
                                         tempActiveCall.Status = CodecCallStatus.ConvertToStatusEnum(call.Status.Value);
-
+                                        tempActiveCall.IsOnHold = tempActiveCall.Status == eCodecCallStatus.OnHold;
+   
                                         if (newStatus == eCodecCallStatus.Connected)
                                             GetCallHistory();
 
@@ -836,6 +968,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                         changeDetected = true;
                                     }
                                 }
+                                if(call.Duration != null)
+                                {
+                                    if(!string.IsNullOrEmpty(call.Duration.Value))
+                                    {
+                                        tempActiveCall.Duration = call.Duration.DurationValue;
+                                        changeDetected = true;
+                                    }
+                                }
+                                if(call.PlacedOnHold != null)
+                                {
+                                    tempActiveCall.IsOnHold = call.PlacedOnHold.BoolValue;
+                                    changeDetected = true;
+                                }
 
                                 if (changeDetected)
                                 {
@@ -854,7 +999,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                                     Name = call.DisplayName.Value,
                                     Number = call.RemoteNumber.Value,
                                     Type = CodecCallType.ConvertToTypeEnum(call.CallType.Value),
-                                    Direction = CodecCallDirection.ConvertToDirectionEnum(call.Direction.Value)
+                                    Direction = CodecCallDirection.ConvertToDirectionEnum(call.Direction.Value),
+                                    Duration = call.Duration.DurationValue,
+                                    IsOnHold = call.PlacedOnHold.BoolValue,
                                 };
 
                                 // Add it to the ActiveCalls List
@@ -876,18 +1023,21 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                     if (tempPresets.Count > 0)
                     {
                         // Create temporary list to store the existing items from the CiscoCodecStatus.RoomPreset collection
-                        List<CiscoCodecStatus.RoomPreset> existingRoomPresets = new List<CiscoCodecStatus.RoomPreset>();
+                        var existingRoomPresets = new List<CiscoCodecStatus.RoomPreset>();
                         // Add the existing items to the temporary list
                         existingRoomPresets.AddRange(CodecStatus.Status.RoomPreset);
                         // Populate the CodecStatus object (this will append new values to the RoomPreset collection
                         JsonConvert.PopulateObject(response, CodecStatus);
 
-                        JObject jResponse = JObject.Parse(response);
+                        var jResponse = JObject.Parse(response);
+
 
                         IList<JToken> roomPresets = jResponse["Status"]["RoomPreset"].Children().ToList();
                         // Iterate the new items in this response agains the temporary list.  Overwrite any existing items and add new ones.
-                        foreach (var preset in tempPresets)
+                        foreach (var camPreset in tempPresets)
                         {
+                            var preset = camPreset as CiscoCodecStatus.RoomPreset;
+                            if (preset == null) continue;
                             // First fine the existing preset that matches the id
                             var existingPreset = existingRoomPresets.FirstOrDefault(p => p.id.Equals(preset.id));
                             if (existingPreset != null)
@@ -921,7 +1071,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         CodecStatus.Status.RoomPreset = existingRoomPresets;
 
                         // Generecise the list
-                        NearEndPresets = RoomPresets.GetGenericPresets(CodecStatus.Status.RoomPreset);
+                        NearEndPresets = existingRoomPresets.GetGenericPresets<CiscoCodecStatus.RoomPreset, CodecRoomPreset>();
 
                         var handler = CodecRoomPresetsListHasChanged;
                         if (handler != null)
@@ -934,12 +1084,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                         JsonConvert.PopulateObject(response, CodecStatus);
                     }
 
-                    if (!SyncState.InitialStatusMessageWasReceived)
+                    if (!_syncState.InitialStatusMessageWasReceived)
                     {
-                        SyncState.InitialStatusMessageReceived();
+                        _syncState.InitialStatusMessageReceived();
 
-                        if (!SyncState.InitialConfigurationMessageWasReceived)
+                        if (!_syncState.InitialConfigurationMessageWasReceived)
+                        {
                             SendText("xConfiguration");
+                        }
                     }
                 }
                 else if (response.IndexOf("\"Configuration\":{") > -1 || response.IndexOf("\"Configuration\": {") > -1)
@@ -948,12 +1100,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
                     JsonConvert.PopulateObject(response, CodecConfiguration);
 
-                    if (!SyncState.InitialConfigurationMessageWasReceived)
+                    if (!_syncState.InitialConfigurationMessageWasReceived)
                     {
-                        SyncState.InitialConfigurationMessageReceived();
-                        if (!SyncState.FeedbackWasRegistered)
+                        _syncState.InitialConfigurationMessageReceived();
+                        if (!_syncState.FeedbackWasRegistered)
                         {
-                            SendText(CliFeedbackRegistrationExpression);
+                            SendText(_cliFeedbackRegistrationExpression);
                         }
                     }
 
@@ -1068,6 +1220,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             catch (Exception ex)
             {
                 Debug.Console(1, this, "Error Deserializing feedback from codec: {0}", ex);
+
+                if (ex is Newtonsoft.Json.JsonReaderException)
+                {
+                    Debug.Console(1, this, "Received malformed response from codec.");
+
+                    //Communication.Disconnect();
+
+                    //Initialize();
+                }
+
             }
         }
 
@@ -1083,6 +1245,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             var handler = DirectoryResultReturned;
             if (handler != null)
             {
+                Debug.Console(2, this, "Directory result returned");
                 handler(this, new DirectoryEventArgs()
                 {
                     Directory = result,
@@ -1126,7 +1289,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 		public override void ExecuteSwitch(object selector)
 		{
 			(selector as Action)();
-			PresentationSourceKey = selector.ToString();
+			_presentationSourceKey = selector.ToString();
 		}
 
 		/// <summary>
@@ -1136,7 +1299,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public void ExecuteSwitch(object inputSelector, object outputSelector, eRoutingSignalType signalType)
         {
 			ExecuteSwitch(inputSelector);
-            PresentationSourceKey = inputSelector.ToString();
+            _presentationSourceKey = inputSelector.ToString();
         }
 
 
@@ -1162,7 +1325,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void GetCallHistory()
         {
-            SendText("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
+            EnqueueCommand("xCommand CallHistory Recents Limit: 20 Order: OccurrenceTime");
         }
 
         /// <summary>
@@ -1181,7 +1344,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             Debug.Console(1, this, "Retrieving Booking Info from Codec. Current Time: {0}", DateTime.Now.ToLocalTime());
 
-            SendText("xCommand Bookings List Days: 1 DayOffset: 0");
+            EnqueueCommand("xCommand Bookings List Days: 1 DayOffset: 0");
         }
 
         /// <summary>
@@ -1215,13 +1378,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         private void GetPhonebookFolders()
         {
             // Get Phonebook Folders (determine local/corporate from config, and set results limit)
-            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Folder", PhonebookMode));
+            EnqueueCommand(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Folder", _phonebookMode));
         }
 
         private void GetPhonebookContacts()
         {
             // Get Phonebook Folders (determine local/corporate from config, and set results limit)
-            SendText(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Contact Limit: {1}", PhonebookMode, PhonebookResultsLimit));
+            EnqueueCommand(string.Format("xCommand Phonebook Search PhonebookType: {0} ContactType: Contact Limit: {1}", _phonebookMode, _phonebookResultsLimit));
         }
 
         /// <summary>
@@ -1230,7 +1393,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="searchString"></param>
         public void SearchDirectory(string searchString)
         {
-            SendText(string.Format("xCommand Phonebook Search SearchString: \"{0}\" PhonebookType: {1} ContactType: Contact Limit: {2}", searchString, PhonebookMode, PhonebookResultsLimit));
+            EnqueueCommand(string.Format("xCommand Phonebook Search SearchString: \"{0}\" PhonebookType: {1} ContactType: Contact Limit: {2}", searchString, _phonebookMode, _phonebookResultsLimit));
         }
 
         /// <summary>
@@ -1239,7 +1402,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="folderId"></param>
         public void GetDirectoryFolderContents(string folderId)
         {
-            SendText(string.Format("xCommand Phonebook Search FolderId: {0} PhonebookType: {1} ContactType: Any Limit: {2}", folderId, PhonebookMode, PhonebookResultsLimit));
+            EnqueueCommand(string.Format("xCommand Phonebook Search FolderId: {0} PhonebookType: {1} ContactType: Any Limit: {2}", folderId, _phonebookMode, _phonebookResultsLimit));
         }
 
         /// <summary>
@@ -1310,7 +1473,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="number"></param>
         public override void Dial(string number)
         {
-         	SendText(string.Format("xCommand Dial Number: \"{0}\"", number));
+         	EnqueueCommand(string.Format("xCommand Dial Number: \"{0}\"", number));
         }
 
         /// <summary>
@@ -1335,42 +1498,119 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="meetingId"></param>
         public void Dial(string number, string protocol, string callRate, string callType, string meetingId)
         {
-            SendText(string.Format("xCommand Dial Number: \"{0}\" Protocol: {1} CallRate: {2} CallType: {3} BookingId: {4}", number, protocol, callRate, callType, meetingId));
+            EnqueueCommand(string.Format("xCommand Dial Number: \"{0}\" Protocol: {1} CallRate: {2} CallType: {3} BookingId: {4}", number, protocol, callRate, callType, meetingId));
         }
- 
+
+
         public override void EndCall(CodecActiveCallItem activeCall)
         {
-            SendText(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
+            EnqueueCommand(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
         }
 
         public override void EndAllCalls()
         {
             foreach (CodecActiveCallItem activeCall in ActiveCalls)
             {
-                SendText(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
+                EnqueueCommand(string.Format("xCommand Call Disconnect CallId: {0}", activeCall.Id));
             }
         }
 
         public override void AcceptCall(CodecActiveCallItem item)
         {
-            SendText("xCommand Call Accept");
+            EnqueueCommand("xCommand Call Accept");
         }
 
         public override void RejectCall(CodecActiveCallItem item)
         {
-            SendText("xCommand Call Reject");
+            EnqueueCommand("xCommand Call Reject");
         }
 
+        #region IHasCallHold Members
+
+        public void HoldCall(CodecActiveCallItem activeCall)
+        {
+            EnqueueCommand(string.Format("xCommand Call Hold CallId: {0}", activeCall.Id));
+        }
+
+        public void ResumeCall(CodecActiveCallItem activeCall)
+        {
+            EnqueueCommand(string.Format("xCommand Call Resume CallId: {0}", activeCall.Id));
+        }
+
+        #endregion
+
+        #region IJoinCalls
+
+        public void JoinCall(CodecActiveCallItem activeCall)
+        {
+            EnqueueCommand(string.Format("xCommand Call Join CallId: {0}", activeCall.Id));
+        }
+
+        public void JoinAllCalls()
+        {
+            StringBuilder ids = new StringBuilder();
+
+            foreach (var call in ActiveCalls)
+            {
+                if (call.IsActiveCall)
+                {
+                    ids.Append(string.Format(" CallId: {0}", call.Id));
+                }
+            }
+
+            if (ids.Length > 0)
+            {
+                EnqueueCommand(string.Format("xCommand Call Join {0}", ids.ToString()));
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Sends tones to the last connected call
+        /// </summary>
+        /// <param name="s"></param>
         public override void SendDtmf(string s)
         {
-            SendText(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
+            EnqueueCommand(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", GetCallId(), s));
+        }
+
+        /// <summary>
+        /// Sends tones to a specific call
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="activeCall"></param>
+        public override void SendDtmf(string s, CodecActiveCallItem activeCall)
+        {
+            EnqueueCommand(string.Format("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", activeCall.Id, s));
         }
 
         public void SelectPresentationSource(int source)
         {
-            PresentationSource = source;
+            _desiredPresentationSource = source;
 
             StartSharing();
+        }
+
+        /// <summary>
+        /// Sets the ringtone volume level
+        /// </summary>
+        /// <param name="volume">level from 0 - 100 in increments of 5</param>
+        public void SetRingtoneVolume(int volume)
+        {
+            if (volume < 0 || volume > 100)
+            {
+                Debug.Console(0, this, "Cannot set ringtone volume to '{0}'. Value must be between 0 - 100", volume);
+                return;
+            }
+
+            if (volume % 5 != 0)
+            {
+                Debug.Console(0, this, "Cannot set ringtone volume to '{0}'. Value must be between 0 - 100 and a multiple of 5", volume);
+                return;
+            }
+
+            EnqueueCommand(string.Format("xConfiguration Audio SoundsAndAlerts RingVolume: {0}", volume));
         }
 
         /// <summary>
@@ -1389,6 +1629,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             SelectPresentationSource(3);
         }
 
+
+
         /// <summary>
         /// Starts presentation sharing
         /// </summary>
@@ -1401,8 +1643,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             else
                 sendingMode = "LocalOnly";
 
-            if(PresentationSource > 0)
-                SendText(string.Format("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", PresentationSource, sendingMode));
+            if (_desiredPresentationSource > 0)
+                EnqueueCommand(string.Format("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", _desiredPresentationSource, sendingMode));
         }
 
         /// <summary>
@@ -1410,39 +1652,41 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public override void StopSharing()
         {
-            PresentationSource = 0;
+            _desiredPresentationSource = 0;
 
-            SendText("xCommand Presentation Stop");
+            EnqueueCommand("xCommand Presentation Stop");
         }
+
+
 
         public override void PrivacyModeOn()
         {
-            SendText("xCommand Audio Microphones Mute");
+            EnqueueCommand("xCommand Audio Microphones Mute");
         }
 
         public override void PrivacyModeOff()
         {
-            SendText("xCommand Audio Microphones Unmute");
+            EnqueueCommand("xCommand Audio Microphones Unmute");
         }
 
         public override void PrivacyModeToggle()
         {
-            SendText("xCommand Audio Microphones ToggleMute");
+            EnqueueCommand("xCommand Audio Microphones ToggleMute");
         }
 
         public override void MuteOff()
         {
-            SendText("xCommand Audio Volume Unmute");
+            EnqueueCommand("xCommand Audio Volume Unmute");
         }
 
         public override void MuteOn()
         {
-            SendText("xCommand Audio Volume Mute");
+            EnqueueCommand("xCommand Audio Volume Mute");
         }
 
         public override void MuteToggle()
         {
-            SendText("xCommand Audio Volume ToggleMute");
+            EnqueueCommand("xCommand Audio Volume ToggleMute");
         }
 
         /// <summary>
@@ -1451,7 +1695,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="pressRelease"></param>
         public override void VolumeUp(bool pressRelease)
         {
-            SendText("xCommand Audio Volume Increase");
+            EnqueueCommand("xCommand Audio Volume Increase");
         }
 
         /// <summary>
@@ -1460,7 +1704,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="pressRelease"></param>
         public override void VolumeDown(bool pressRelease)
         {
-            SendText("xCommand Audio Volume Decrease");
+            EnqueueCommand("xCommand Audio Volume Decrease");
         }
 
         /// <summary>
@@ -1470,7 +1714,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         public override void SetVolume(ushort level)
         {
             var scaledLevel = CrestronEnvironment.ScaleWithLimits(level, 65535, 0, 100, 0); 
-            SendText(string.Format("xCommand Audio Volume Set Level: {0}", scaledLevel));
+            EnqueueCommand(string.Format("xCommand Audio Volume Set Level: {0}", scaledLevel));
         }
 
         /// <summary>
@@ -1478,7 +1722,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void VolumeSetToDefault()
         {
-            SendText("xCommand Audio Volume SetToDefault");
+            EnqueueCommand("xCommand Audio Volume SetToDefault");
         }
 
         /// <summary>
@@ -1486,7 +1730,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public override void StandbyActivate()
         {
-            SendText("xCommand Standby Activate");
+            EnqueueCommand("xCommand Standby Activate");
         }
 
         /// <summary>
@@ -1494,12 +1738,70 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public override void StandbyDeactivate()
         {
-            SendText("xCommand Standby Deactivate");
+            EnqueueCommand("xCommand Standby Deactivate");
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
+            var joinMap = new CiscoCodecJoinMap(joinStart);
+
+            var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
+
+            if (customJoins != null)
+            {
+                joinMap.SetCustomJoinData(customJoins);
+            }
+
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
+
             LinkVideoCodecToApi(this, trilist, joinStart, joinMapKey, bridge);
+
+            LinkCiscoCodecToApi(trilist, joinMap);
+        }
+
+        public void LinkCiscoCodecToApi(BasicTriList trilist, CiscoCodecJoinMap joinMap)
+        {
+            // Custom commands to codec
+            trilist.SetStringSigAction(joinMap.CommandToDevice.JoinNumber, (s) => this.EnqueueCommand(s));
+
+
+            var dndCodec = this as IHasDoNotDisturbMode;
+            if (dndCodec != null)
+            {
+                dndCodec.DoNotDisturbModeIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.ActivateDoNotDisturbMode.JoinNumber]);
+                dndCodec.DoNotDisturbModeIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.DeactivateDoNotDisturbMode.JoinNumber]);
+
+                trilist.SetSigFalseAction(joinMap.ActivateDoNotDisturbMode.JoinNumber, () => dndCodec.ActivateDoNotDisturbMode());
+                trilist.SetSigFalseAction(joinMap.DeactivateDoNotDisturbMode.JoinNumber, () => dndCodec.DeactivateDoNotDisturbMode());
+                trilist.SetSigFalseAction(joinMap.ToggleDoNotDisturbMode.JoinNumber, () => dndCodec.ToggleDoNotDisturbMode());
+            }
+
+            var halfwakeCodec = this as IHasHalfWakeMode;
+            if (halfwakeCodec != null)
+            {
+                halfwakeCodec.StandbyIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.ActivateStandby.JoinNumber]);
+                halfwakeCodec.StandbyIsOnFeedback.LinkComplementInputSig(trilist.BooleanInput[joinMap.DeactivateStandby.JoinNumber]);
+                halfwakeCodec.HalfWakeModeIsOnFeedback.LinkInputSig(trilist.BooleanInput[joinMap.ActivateHalfWakeMode.JoinNumber]);
+                halfwakeCodec.EnteringStandbyModeFeedback.LinkInputSig(trilist.BooleanInput[joinMap.EnteringStandbyMode.JoinNumber]);
+
+                trilist.SetSigFalseAction(joinMap.ActivateStandby.JoinNumber, () => halfwakeCodec.StandbyActivate());
+                trilist.SetSigFalseAction(joinMap.DeactivateStandby.JoinNumber, () => halfwakeCodec.StandbyDeactivate());
+                trilist.SetSigFalseAction(joinMap.ActivateHalfWakeMode.JoinNumber, () => halfwakeCodec.HalfwakeActivate());
+            }
+
+            // Ringtone volume
+            trilist.SetUShortSigAction(joinMap.RingtoneVolume.JoinNumber, (u) => SetRingtoneVolume(u));
+            RingtoneVolumeFeedback.LinkInputSig(trilist.UShortInput[joinMap.RingtoneVolume.JoinNumber]);
+
+            // Presentation Source
+            trilist.SetUShortSigAction(joinMap.PresentationSource.JoinNumber, (u) => SelectPresentationSource(u));
+            PresentationSourceFeedback.LinkInputSig(trilist.UShortInput[joinMap.PresentationSource.JoinNumber]);
+
+            PresentationSendingLocalOnlyFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PresentationLocalOnly.JoinNumber]);
+            PresentationSendingLocalRemoteFeedback.LinkInputSig(trilist.BooleanInput[joinMap.PresentationLocalRemote.JoinNumber]);
         }
 
         /// <summary>
@@ -1507,7 +1809,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void Reboot()
         {
-            SendText("xCommand SystemUnit Boot Action: Restart");
+            EnqueueCommand("xCommand SystemUnit Boot Action: Restart");
         }
 
         /// <summary>
@@ -1533,7 +1835,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SelfViewModeOn()
         {
-            SendText("xCommand Video Selfview Set Mode: On");
+            EnqueueCommand("xCommand Video Selfview Set Mode: On");
         }
 
         /// <summary>
@@ -1541,7 +1843,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SelfViewModeOff()
         {
-            SendText("xCommand Video Selfview Set Mode: Off");
+            EnqueueCommand("xCommand Video Selfview Set Mode: Off");
         }
 
         /// <summary>
@@ -1556,7 +1858,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             else
                 mode = "On";
 
-            SendText(string.Format("xCommand Video Selfview Set Mode: {0}", mode));                    
+            EnqueueCommand(string.Format("xCommand Video Selfview Set Mode: {0}", mode));                    
         }
 
         /// <summary>
@@ -1565,7 +1867,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="position"></param>
         public void SelfviewPipPositionSet(CodecCommandWithLabel position)
         {
-            SendText(string.Format("xCommand Video Selfview Set Mode: On PIPPosition: {0}", position.Command));
+            EnqueueCommand(string.Format("xCommand Video Selfview Set Mode: On PIPPosition: {0}", position.Command));
         }
 
         /// <summary>
@@ -1573,9 +1875,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SelfviewPipPositionToggle()
         {
-            if (CurrentSelfviewPipPosition != null)
+            if (_currentSelfviewPipPosition != null)
             {
-                var nextPipPositionIndex = SelfviewPipPositions.IndexOf(CurrentSelfviewPipPosition) + 1;
+                var nextPipPositionIndex = SelfviewPipPositions.IndexOf(_currentSelfviewPipPosition) + 1;
 
                 if (nextPipPositionIndex >= SelfviewPipPositions.Count) // Check if we need to loop back to the first item in the list
                     nextPipPositionIndex = 0;                  
@@ -1590,7 +1892,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <param name="layout"></param>
         public void LocalLayoutSet(CodecCommandWithLabel layout)
         {
-            SendText(string.Format("xCommand Video Layout LayoutFamily Set Target: local LayoutFamily: {0}", layout.Command));
+            EnqueueCommand(string.Format("xCommand Video Layout LayoutFamily Set Target: local LayoutFamily: {0}", layout.Command));
         }
 
         /// <summary>
@@ -1598,9 +1900,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void LocalLayoutToggle()
         {
-            if(CurrentLocalLayout != null)
+            if(_currentLocalLayout != null)
             {
-                var nextLocalLayoutIndex = LocalLayouts.IndexOf(CurrentLocalLayout) + 1;
+                var nextLocalLayoutIndex = LocalLayouts.IndexOf(_currentLocalLayout) + 1;
 
                 if (nextLocalLayoutIndex >= LocalLayouts.Count)  // Check if we need to loop back to the first item in the list
                     nextLocalLayoutIndex = 0;
@@ -1614,9 +1916,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void LocalLayoutToggleSingleProminent()
         {
-            if (CurrentLocalLayout != null)
+            if (_currentLocalLayout != null)
             {
-                if (CurrentLocalLayout.Label != "Prominent")
+                if (_currentLocalLayout.Label != "Prominent")
                     LocalLayoutSet(LocalLayouts.FirstOrDefault(l => l.Label.Equals("Prominent")));
                 else
                     LocalLayoutSet(LocalLayouts.FirstOrDefault(l => l.Label.Equals("Single")));
@@ -1630,11 +1932,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 		public void MinMaxLayoutToggle()
 		{
 			if (PresentationViewMaximizedFeedback.BoolValue)
-				CurrentPresentationView = "Minimized";
+				_currentPresentationView = "Minimized";
 			else
-				CurrentPresentationView = "Maximized";
+				_currentPresentationView = "Maximized";
 
-			SendText(string.Format("xCommand Video PresentationView Set View:  {0}", CurrentPresentationView));
+			EnqueueCommand(string.Format("xCommand Video PresentationView Set View:  {0}", _currentPresentationView));
 			PresentationViewMaximizedFeedback.FireUpdate();
 		}
 
@@ -1643,9 +1945,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         void ComputeSelfviewPipStatus()
         {
-            CurrentSelfviewPipPosition = SelfviewPipPositions.FirstOrDefault(p => p.Command.ToLower().Equals(CodecStatus.Status.Video.Selfview.PIPPosition.Value.ToLower()));
+            _currentSelfviewPipPosition = SelfviewPipPositions.FirstOrDefault(p => p.Command.ToLower().Equals(CodecStatus.Status.Video.Selfview.PIPPosition.Value.ToLower()));
 
-            if(CurrentSelfviewPipPosition != null)
+            if(_currentSelfviewPipPosition != null)
                 SelfviewIsOnFeedback.FireUpdate();
         }
 
@@ -1654,15 +1956,15 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         void ComputeLocalLayout()
         {
-            CurrentLocalLayout = LocalLayouts.FirstOrDefault(l => l.Command.ToLower().Equals(CodecStatus.Status.Video.Layout.LayoutFamily.Local.Value.ToLower()));
+            _currentLocalLayout = LocalLayouts.FirstOrDefault(l => l.Command.ToLower().Equals(CodecStatus.Status.Video.Layout.LayoutFamily.Local.Value.ToLower()));
 
-            if (CurrentLocalLayout != null)
+            if (_currentLocalLayout != null)
                 LocalLayoutFeedback.FireUpdate();
         }
 
         public void RemoveCallHistoryEntry(CodecCallHistory.CallHistoryEntry entry)
         {
-            SendText(string.Format("xCommand CallHistory DeleteEntry CallHistoryId: {0} AcknowledgeConsecutiveDuplicates: True", entry.OccurrenceHistoryId));
+            EnqueueCommand(string.Format("xCommand CallHistory DeleteEntry CallHistoryId: {0} AcknowledgeConsecutiveDuplicates: True", entry.OccurrenceHistoryId));
         }
 
         #region IHasCameraSpeakerTrack
@@ -1671,11 +1973,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         {
             if (!CameraAutoModeIsOnFeedback.BoolValue)
             {
-                SendText("xCommand Cameras SpeakerTrack Activate");
+                EnqueueCommand("xCommand Cameras SpeakerTrack Activate");
             }
             else
             {
-                SendText("xCommand Cameras SpeakerTrack Deactivate");
+                EnqueueCommand("xCommand Cameras SpeakerTrack Deactivate");
             }
         }
 
@@ -1686,7 +1988,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 CameraMuteOff();
             }
 
-            SendText("xCommand Cameras SpeakerTrack Activate");
+            EnqueueCommand("xCommand Cameras SpeakerTrack Activate");
         }
 
         public void CameraAutoModeOff()
@@ -1696,7 +1998,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 CameraMuteOff();
             }
 
-            SendText("xCommand Cameras SpeakerTrack Deactivate");
+            EnqueueCommand("xCommand Cameras SpeakerTrack Deactivate");
         }
 
         #endregion
@@ -1704,30 +2006,67 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// <summary>
         /// Builds the cameras List.  Could later be modified to build from config data
         /// </summary>
-        void SetUpCameras()
+        void SetUpCameras(List<CameraInfo> cameraInfo)
         {
             // Add the internal camera
             Cameras = new List<CameraBase>();
 
-            var internalCamera = new CiscoSparkCamera(Key + "-camera1", "Near End", this, 1);
+            var camCount = CodecStatus.Status.Cameras.Camera.Count;
 
-            if(CodecStatus.Status.Cameras.Camera.Count > 0)
-                internalCamera.SetCapabilites(CodecStatus.Status.Cameras.Camera[0].Capabilities.Options.Value);
+            // Deal with the case of 1 or no reported cameras
+            if (camCount <= 1)
+            {
+                var internalCamera = new CiscoSparkCamera(Key + "-camera1", "Near End", this, 1);
+
+                if (camCount > 0)
+                {
+                    // Try to get the capabilities from the codec
+                    if (CodecStatus.Status.Cameras.Camera[0] != null && CodecStatus.Status.Cameras.Camera[0].Capabilities != null)
+                    {
+                        internalCamera.SetCapabilites(CodecStatus.Status.Cameras.Camera[0].Capabilities.Options.Value);
+                    }
+                }
+
+                Cameras.Add(internalCamera);
+                //DeviceManager.AddDevice(internalCamera);
+            }
             else
-                // Somehow subscribe to the event on the Options.Value property and update when it changes.
+            {
+                // Setup all the cameras
+                for (int i = 0; i < camCount; i++)
+                {
+                    var cam = CodecStatus.Status.Cameras.Camera[i];
 
-            Cameras.Add(internalCamera);
+                    var id = (uint)i;
+                    var name = string.Format("Camera {0}", id);
+
+                    // Check for a config object that matches the camera number
+                    var camInfo = cameraInfo.FirstOrDefault(c => c.CameraNumber == i + 1);
+                    if (camInfo != null)
+                    {
+                        id = (uint)camInfo.SourceId;
+                        name = camInfo.Name;
+                    }
+
+                    var key = string.Format("{0}-camera{1}", Key, id);
+                    var camera = new CiscoSparkCamera(key, name, this, id);
+
+                    if (cam.Capabilities != null)
+                    {
+                        camera.SetCapabilites(cam.Capabilities.Options.Value);
+                    }
+
+                    Cameras.Add(camera);                    
+                }
+            }
 
             // Add the far end camera
             var farEndCamera = new CiscoFarEndCamera(Key + "-cameraFar", "Far End", this);
             Cameras.Add(farEndCamera);
 
-            SelectedCameraFeedback = new StringFeedback(() => SelectedCamera.Key);
+            SelectedCameraFeedback = new StringFeedback(() => SelectedCamera.Key);            
 
-            ControllingFarEndCameraFeedback = new BoolFeedback(() => SelectedCamera is IAmFarEndCamera);
-
-            DeviceManager.AddDevice(internalCamera);
-            DeviceManager.AddDevice(farEndCamera);
+            ControllingFarEndCameraFeedback = new BoolFeedback(() => SelectedCamera is IAmFarEndCamera);            
 
             NearEndPresets = new List<CodecRoomPreset>(15);
 
@@ -1740,7 +2079,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 FarEndRoomPresets.Add(new CodecRoomPreset(i, label, true, false));
             }
 
-            SelectedCamera = internalCamera; ; // call the method to select the camera and ensure the feedbacks get updated.
+            SelectedCamera = Cameras[0]; ; // call the method to select the camera and ensure the feedbacks get updated.
+
         }
 
         #region IHasCodecCameras Members
@@ -1788,6 +2128,12 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
             else
                 Debug.Console(2, this, "Unable to select camera with key: '{0}'", key);
+
+            var ciscoCam = camera as CiscoSparkCamera;
+            if (ciscoCam != null)
+            {
+                EnqueueCommand(string.Format("xCommand Video Input SetMainVideoSource SourceId: {0}", ciscoCam.CameraId));
+            }
         }
 
         public CameraBase FarEndCamera { get; private set; }
@@ -1820,12 +2166,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    if (CodecConfiguration.Configuration.Network != null)   
+                    var address = string.Empty;
+                    if (CodecConfiguration.Configuration.Network.Count > 0)
                     {
-                        if (CodecConfiguration.Configuration.Network.Count > 0)
-                            return CodecConfiguration.Configuration.Network[0].IPv4.Address.Value;
+                        if(!string.IsNullOrEmpty(CodecConfiguration.Configuration.Network[0].IPv4.Address.Value))
+                            address = CodecConfiguration.Configuration.Network[0].IPv4.Address.Value;
                     }
-                    return string.Empty;
+                    
+                    if (string.IsNullOrEmpty(address) && CodecStatus.Status.Network.Count > 0)
+                    {
+                        if(!string.IsNullOrEmpty(CodecStatus.Status.Network[0].IPv4.Address.Value))
+                            address = CodecStatus.Status.Network[0].IPv4.Address.Value;
+                    }
+                    return address;
                 }
             }
             public override string E164Alias
@@ -1905,10 +2258,8 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             {
                 get
                 {
-                    if (CodecConfiguration.Configuration.Conference.AutoAnswer.Mode.Value.ToLower() == "on")
-                        return true;
-                    else
-                        return false;
+                    if (CodecConfiguration.Configuration.Conference.AutoAnswer.Mode.Value == null) return false;
+                    return CodecConfiguration.Configuration.Conference.AutoAnswer.Mode.Value.ToLower() == "on";
                 }
             }
 
@@ -1934,19 +2285,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             if (SelectedCamera is IAmFarEndCamera)
                 SelectFarEndPreset(preset);
             else
-                SendText(string.Format("xCommand RoomPreset Activate PresetId: {0}", preset));
+                EnqueueCommand(string.Format("xCommand RoomPreset Activate PresetId: {0}", preset));
         }
 
         public void CodecRoomPresetStore(int preset, string description)
         {
-            SendText(string.Format("xCommand RoomPreset Store PresetId: {0} Description: \"{1}\" Type: All", preset, description));
+            EnqueueCommand(string.Format("xCommand RoomPreset Store PresetId: {0} Description: \"{1}\" Type: All", preset, description));
         }
 
         #endregion
 
         public void SelectFarEndPreset(int preset)
         {
-            SendText(string.Format("xCommand Call FarEndControl RoomPreset Activate CallId: {0} PresetId: {1}", GetCallId(), preset));
+            EnqueueCommand(string.Format("xCommand Call FarEndControl RoomPreset Activate CallId: {0} PresetId: {1}", GetCallId(), preset));
         }
 
 
@@ -1983,7 +2334,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 			{
 				id = 3;
 			}
-			SendText(string.Format("xCommand UserInterface Presentation ExternalSource Add ConnectorId: {0} SourceIdentifier: \"{1}\" Name: \"{2}\" Type: {3}", id, key, name, type.ToString()));
+			EnqueueCommand(string.Format("xCommand UserInterface Presentation ExternalSource Add ConnectorId: {0} SourceIdentifier: \"{1}\" Name: \"{2}\" Type: {3}", id, key, name, type.ToString()));
 			// SendText(string.Format("xCommand UserInterface Presentation ExternalSource State Set SourceIdentifier: \"{0}\" State: Ready", key));
 			Debug.Console(2, this, "Adding ExternalSource {0} {1}", connectorId, name);
 
@@ -1997,14 +2348,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 		/// <param name="mode"></param>
 		public void SetExternalSourceState(string key, eExternalSourceMode mode)
 		{
-			SendText(string.Format("xCommand UserInterface Presentation ExternalSource State Set SourceIdentifier: \"{0}\" State: {1}", key, mode.ToString()));
+			EnqueueCommand(string.Format("xCommand UserInterface Presentation ExternalSource State Set SourceIdentifier: \"{0}\" State: {1}", key, mode.ToString()));
 		}
 		/// <summary>
 		/// Clears all external sources on the codec
 		/// </summary>
 		public void ClearExternalSources()
 		{
-			SendText("xCommand UserInterface Presentation ExternalSource RemoveAll");
+			EnqueueCommand("xCommand UserInterface Presentation ExternalSource RemoveAll");
 			
 		}
 
@@ -2013,7 +2364,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void SetSelectedSource(string key)
         {
-            SendText(string.Format("xCommand UserInterface Presentation ExternalSource Select SourceIdentifier: {0}", key));
+            EnqueueCommand(string.Format("xCommand UserInterface Presentation ExternalSource Select SourceIdentifier: {0}", key));
             _externalSourceChangeRequested = true;
         }
 
@@ -2052,7 +2403,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void CameraMuteOn()
         {
-            SendText("xCommand Video Input MainVideo Mute");
+            EnqueueCommand("xCommand Video Input MainVideo Mute");
         }
 
         /// <summary>
@@ -2060,7 +2411,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
         /// </summary>
         public void CameraMuteOff()
         {
-            SendText("xCommand Video Input MainVideo Unmute");
+            EnqueueCommand("xCommand Video Input MainVideo Unmute");
         }
 
         /// <summary>
@@ -2073,23 +2424,50 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             else
                 CameraMuteOn();
         }
-    }
 
+        #region IHasDoNotDisturbMode Members
 
-	/// <summary>
-    /// Represents a codec command that might need to have a friendly label applied for UI feedback purposes
-    /// </summary>
-    public class CodecCommandWithLabel
-    {
-        public string Command { get; set; }
-        public string Label { get; set; }
+        public BoolFeedback DoNotDisturbModeIsOnFeedback { get; private set; }
 
-        public CodecCommandWithLabel(string command, string label)
+        public void ActivateDoNotDisturbMode()
         {
-            Command = command;
-            Label = label;
+            EnqueueCommand("xCommand Conference DoNotDisturb Activate");
         }
+
+        public void DeactivateDoNotDisturbMode()
+        {
+            EnqueueCommand("xCommand Conference DoNotDisturb Deactivate");
+        }
+
+        public void ToggleDoNotDisturbMode()
+        {
+            if (DoNotDisturbModeIsOnFeedback.BoolValue)
+            {
+                DeactivateDoNotDisturbMode();
+            }
+            else
+            {
+                ActivateDoNotDisturbMode();
+            }
+        }
+
+        #endregion
+
+        #region IHasHalfWakeMode Members
+
+        public BoolFeedback HalfWakeModeIsOnFeedback { get; private set; }
+
+        public BoolFeedback EnteringStandbyModeFeedback { get; private set; }
+
+        public void HalfwakeActivate()
+        {
+            EnqueueCommand("xCommand Standby Halfwake");
+        }
+
+        #endregion
     }
+
+
 
     /// <summary>
     /// Tracks the initial sycnronization state of the codec when making a connection
@@ -2097,8 +2475,10 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
     public class CodecSyncState : IKeyed
     {
         bool _InitialSyncComplete;
+        private readonly CiscoSparkCodec _parent;
 
         public event EventHandler<EventArgs> InitialSyncCompleted;
+        private readonly CrestronQueue<string> _commandQueue;
 
         public string Key { get; private set; }
 
@@ -2119,22 +2499,48 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public bool LoginMessageWasReceived { get; private set; }
 
+        public bool JsonResponseModeSet { get; private set; }
+
         public bool InitialStatusMessageWasReceived { get; private set; }
 
         public bool InitialConfigurationMessageWasReceived { get; private set; }
 
         public bool FeedbackWasRegistered { get; private set; }
 
-        public CodecSyncState(string key)
+        public CodecSyncState(string key, CiscoSparkCodec parent)
         {
             Key = key;
+            _parent = parent;
+            _commandQueue = new CrestronQueue<string>(50);
             CodecDisconnected();
+        }
+
+        private void ProcessQueuedCommands()
+        {
+            while (InitialSyncComplete)
+            {
+                var query = _commandQueue.Dequeue();
+
+                _parent.SendText(query);
+            }
+        }
+
+        public void AddCommandToQueue(string query)
+        {
+            _commandQueue.Enqueue(query);
         }
 
         public void LoginMessageReceived()
         {
             LoginMessageWasReceived = true;
             Debug.Console(1, this, "Login Message Received.");
+            CheckSyncStatus();
+        }
+
+        public void JsonResponseModeMessageReceived()
+        {
+            JsonResponseModeSet = true;
+            Debug.Console(1, this, "Json Response Mode Message Received.");
             CheckSyncStatus();
         }
 
@@ -2161,7 +2567,9 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         public void CodecDisconnected()
         {
+            _commandQueue.Clear();
             LoginMessageWasReceived = false;
+            JsonResponseModeSet = false;
             InitialConfigurationMessageWasReceived = false;
             InitialStatusMessageWasReceived = false;
             FeedbackWasRegistered = false;
@@ -2170,10 +2578,16 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 
         void CheckSyncStatus()
         {
-            if (LoginMessageWasReceived && InitialConfigurationMessageWasReceived && InitialStatusMessageWasReceived && FeedbackWasRegistered)
+            if (LoginMessageWasReceived && JsonResponseModeSet  && InitialConfigurationMessageWasReceived && InitialStatusMessageWasReceived && FeedbackWasRegistered)
             {
                 InitialSyncComplete = true;
                 Debug.Console(1, this, "Initial Codec Sync Complete!");
+                Debug.Console(1, this, "{0} Command queued. Processing now...", _commandQueue.Count);
+
+                // Invoke a thread for the queue
+                CrestronInvoke.BeginInvoke((o) => { 
+                    ProcessQueuedCommands();
+                });
             }
             else
                 InitialSyncComplete = false;
@@ -2195,4 +2609,5 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             return new VideoCodec.Cisco.CiscoSparkCodec(dc, comm);
         }
     }
+
 }

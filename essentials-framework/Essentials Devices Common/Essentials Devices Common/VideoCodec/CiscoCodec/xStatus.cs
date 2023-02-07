@@ -9,31 +9,32 @@ using Newtonsoft.Json.Linq;
 
 using PepperDash.Core;
 using PepperDash.Essentials.Devices.Common.VideoCodec.CiscoCodec;
+using PepperDash.Essentials.Core.Presets;
 
 namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
 {
+    // Helper Classes for Proerties
+    public abstract class ValueProperty
+    {
+        /// <summary>
+        /// Triggered when Value is set
+        /// </summary>
+        public Action ValueChangedAction { get; set; }
+
+        protected void OnValueChanged()
+        {
+            var a = ValueChangedAction;
+            if (a != null)
+                a();
+        }
+
+    }
+
 	/// <summary>
 	/// This class exists to capture serialized data sent back by a Cisco codec in JSON output mode
 	/// </summary>
     public class CiscoCodecStatus
     {
-        // Helper Classes for Proerties
-        public abstract class ValueProperty
-        {
-            /// <summary>
-            /// Triggered when Value is set
-            /// </summary>
-            public Action ValueChangedAction { get; set; }
-
-            protected void OnValueChanged()
-            {
-                var a = ValueChangedAction;
-                if (a != null)
-                    a();
-            }
-
-        }
-
 
         public class ConnectionStatus
         {
@@ -262,11 +263,30 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
+        public class DectectedConnector
+        {
+            public string Value { get; set; }
+
+            public int ConnectorId
+            {
+                get
+                {
+                    if(!string.IsNullOrEmpty(Value))
+                    {
+                        return Convert.ToUInt16(Value);
+                    }
+                    else
+                        return -1;
+                }
+            }
+        }
+
         public class Camera
         {
             public string id { get; set; }
             public Capabilities Capabilities { get; set; }
             public Connected Connected { get; set; }
+            public DectectedConnector DetectedConnector { get; set; }
             public Flip Flip { get; set; }
             public HardwareID HardwareID { get; set; }
             public MacAddress MacAddress { get; set; }
@@ -275,6 +295,13 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Position Position { get; set; }
             public SerialNumber SerialNumber { get; set; }
             public SoftwareID SoftwareID { get; set; }
+
+            public Camera()
+            {
+                Manufacturer = new Manufacturer();
+                Model = new Model();
+                DetectedConnector = new DectectedConnector();
+            }
         }
 
         public class Availability : ValueProperty
@@ -298,10 +325,33 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
+        public class CallStatus : ValueProperty
+        {
+            string _Value;
+            public bool BoolValue { get; private set; }
+
+
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    // If the incoming value is "Active" it sets the BoolValue true, otherwise sets it false
+                    _Value = value;
+                    BoolValue = value == "Connected";
+                    OnValueChanged();
+                }
+            }
+        }
+
         public class Status2 : ValueProperty
         {
             string _Value;
             public bool BoolValue { get; private set; }
+
 
             public string Value
             {
@@ -558,9 +608,47 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        public class SendingMode
+        public class SendingMode : ValueProperty
         {
-            public string Value { get; set; }
+            string _Value;
+
+            /// <summary>
+            /// Sets Value and triggers the action when set
+            /// </summary>
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    OnValueChanged();
+                }
+            }
+
+            public bool LocalOnly
+            {
+                get
+                {
+                    if(string.IsNullOrEmpty(_Value))
+                        return false; 
+
+                    return _Value.ToLower() == "localonly";
+                }
+            }
+
+            public bool LocalRemote
+            {
+                get
+                {
+                    if(string.IsNullOrEmpty(_Value))
+                        return false; 
+
+                    return _Value.ToLower() == "localremote";
+                }
+            }
         }
 
         public class LocalInstance
@@ -573,6 +661,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public LocalInstance()
             {
                 Source = new Source2();
+                SendingMode = new SendingMode();
             }
         }
 
@@ -881,6 +970,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Address4 Address { get; set; }
             public Gateway Gateway { get; set; }
             public SubnetMask SubnetMask { get; set; }
+
+            public IPv4()
+            {
+                Address = new Address4();
+            }
         }
 
         public class Address5
@@ -923,6 +1017,11 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public IPv4 IPv4 { get; set; }
             public IPv6 IPv6 { get; set; }
             public VLAN VLAN { get; set; }
+
+            public Network()
+            {
+                IPv4 = new IPv4();
+            }
         }
 
         public class CurrentAddress
@@ -1949,9 +2048,30 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class Duration
+        public class Duration : ValueProperty
         {
-            public string Value { get; set; }
+            private string _Value;
+
+            public string Value
+            {
+                get
+                {
+                    return _Value;
+                }
+                set
+                {
+                    _Value = value;
+                    OnValueChanged();
+                }
+            }
+
+            public TimeSpan DurationValue
+            {
+                get
+                {
+                    return new TimeSpan(0, 0, Int32.Parse(_Value));
+                }
+            }
         }
 
         public class FacilityServiceId
@@ -1964,9 +2084,19 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public string Value { get; set; }
         }
 
-        public class PlacedOnHold
+        public class PlacedOnHold : ValueProperty
         {
-            public string Value { get; set; }
+            public bool BoolValue { get; private set; }
+
+            public string Value
+            {
+                set
+                {
+                    // If the incoming value is "True" it sets the BoolValue true, otherwise sets it false
+                    BoolValue = value == "True";
+                    OnValueChanged();
+                }
+            }
         }
 
         public class Protocol
@@ -2007,13 +2137,14 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             public Protocol Protocol { get; set; }
             public ReceiveCallRate ReceiveCallRate { get; set; }
             public RemoteNumber RemoteNumber { get; set; }
-            public Status2 Status { get; set; }
+            public CallStatus Status { get; set; }
             public TransmitCallRate TransmitCallRate { get; set; }
 
             public Call()
             {
                 CallType = new CallType();
-                Status = new Status2();
+                Status = new CallStatus();
+                Duration = new Duration();
             }
         }
 
@@ -2055,7 +2186,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
             }
         }
 
-        public class RoomPreset
+        public class RoomPreset : ConvertiblePreset
         {
             public string id { get; set; }
             public Defined Defined { get; set; }
@@ -2068,7 +2199,24 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 Description = new Description2();
                 Type = new Type5();
             }
-        }
+
+            public override PresetBase ConvertCodecPreset()
+            {
+                    try
+                    {
+                        var preset =  new CodecRoomPreset(UInt16.Parse(id), Description.Value, Defined.BoolValue, true);
+
+                        Debug.Console(2, "Preset ID {0} Converted from Cisco Codec Preset to Essentials Preset");
+
+                        return preset;
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Console(2, "Unable to convert preset: {0}. Error: {1}", id, e);
+                        return null;
+                    }            
+            }
+}
 
 
 
@@ -2114,6 +2262,7 @@ namespace PepperDash.Essentials.Devices.Common.VideoCodec.Cisco
                 SystemUnit = new SystemUnit();
                 Video = new Video();
                 Conference = new Conference2();
+                Network = new List<Network>();
             }
         }
 

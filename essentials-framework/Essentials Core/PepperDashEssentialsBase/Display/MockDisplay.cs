@@ -32,9 +32,38 @@ namespace PepperDash.Essentials.Core
 		bool _IsWarmingUp;
 		bool _IsCoolingDown;
 
-		protected override Func<bool> PowerIsOnFeedbackFunc { get { return () => _PowerIsOn; } }
-		protected override Func<bool> IsCoolingDownFeedbackFunc { get { return () => _IsCoolingDown; } }
-		protected override Func<bool> IsWarmingUpFeedbackFunc { get { return () => _IsWarmingUp; } }
+        protected override Func<bool> PowerIsOnFeedbackFunc
+        {
+            get
+            {
+                return () =>
+                    {
+                        Debug.Console(2, this, "*************************************************** Display Power is {0}", _PowerIsOn ? "on" : "off");
+                        return _PowerIsOn;
+                    };
+        } }
+		protected override Func<bool> IsCoolingDownFeedbackFunc
+        {
+            get
+            {
+                return () =>
+                {
+                    Debug.Console(2, this, "*************************************************** {0}", _IsCoolingDown ? "Display is cooling down" : "Display has finished cooling down");
+                    return _IsCoolingDown;
+                };
+            }
+        }
+		protected override Func<bool> IsWarmingUpFeedbackFunc
+        {
+            get
+            {
+                return () =>
+                {
+                    Debug.Console(2, this, "*************************************************** {0}", _IsWarmingUp ? "Display is warming up" : "Display has finished warming up");
+                    return _IsWarmingUp;
+                };
+            }
+        }
         protected override Func<string> CurrentInputFeedbackFunc { get { return () => "Not Implemented"; } }
 
         int VolumeHeldRepeatInterval = 200;
@@ -61,7 +90,7 @@ namespace PepperDash.Essentials.Core
 			MuteFeedback = new BoolFeedback("MuteOn", () => _IsMuted);
 
             WarmupTime = 10000;
-            CooldownTime = 5000;
+            CooldownTime = 10000;
 		}
 
 		public override void PowerOn()
@@ -88,8 +117,6 @@ namespace PepperDash.Essentials.Core
 			if (PowerIsOnFeedback.BoolValue && !_IsWarmingUp && !_IsCoolingDown)
 			{
 				_IsCoolingDown = true;
-				_PowerIsOn = false;
-				PowerIsOnFeedback.InvokeFireUpdate();
 				IsCoolingDownFeedback.InvokeFireUpdate();
 				// Fake cool-down cycle
 				CooldownTimer = new CTimer(o =>
@@ -97,6 +124,8 @@ namespace PepperDash.Essentials.Core
 						Debug.Console(2, this, "Cooldown timer ending");
 						_IsCoolingDown = false;
 						IsCoolingDownFeedback.InvokeFireUpdate();
+                        _PowerIsOn = false;
+                        PowerIsOnFeedback.InvokeFireUpdate();
 					}, CooldownTime);
 			}
 		}		
@@ -112,6 +141,11 @@ namespace PepperDash.Essentials.Core
 		public override void ExecuteSwitch(object selector)
 		{
 			Debug.Console(2, this, "ExecuteSwitch: {0}", selector);
+
+		    if (!_PowerIsOn)
+		    {
+		        PowerOn();
+		    }
 		}
 
 

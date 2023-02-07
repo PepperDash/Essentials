@@ -39,7 +39,10 @@ namespace PepperDash.Essentials.Core.Config
             Name = dc.Name;
             Group = dc.Group;
             Type = dc.Type;
-            Properties = JToken.FromObject(dc.Properties);
+
+            Properties = JToken.Parse(dc.Properties.ToString());
+
+            //Properties = JToken.FromObject(dc.Properties);
         }
 
         public DeviceConfig() {}
