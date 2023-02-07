@@ -42,17 +42,18 @@ namespace PepperDash.Essentials.Core.CrestronIO
                 OutputPort = postActivationFunc(config);
 
                 OutputPort.Register();
+
+
                 if (!OutputPort.SupportsDigitalOutput)
                 {
                     Debug.Console(0, this, "Device does not support configuration as a Digital Output");
                     return;
                 }
 
+                OutputPort.SetVersiportConfiguration(eVersiportConfiguration.DigitalOutput);
+
+
                 OutputPort.VersiportChange += OutputPort_VersiportChange;
-
-
-
-                Debug.Console(1, this, "Created GenericVersiportDigitalOutputDevice on port '{0}'.", config.PortNumber);
 
             });
 
@@ -72,7 +73,18 @@ namespace PepperDash.Essentials.Core.CrestronIO
         /// <param name="state">value to set the output to</param>
         public void SetOutput(bool state)
         {
-            OutputPort.DigitalOut = state;
+                if (OutputPort.SupportsDigitalOutput)
+                {
+                    Debug.Console(0, this, "Passed the Check");
+
+                    OutputPort.DigitalOut = state;
+
+                }
+                else
+                {
+                    Debug.Console(0, this, "Versiport does not support Digital Output Mode");
+                }
+
         }
 
         #region Bridge Linking
@@ -115,40 +127,40 @@ namespace PepperDash.Essentials.Core.CrestronIO
 
         public static Versiport GetVersiportDigitalOutput(IOPortConfig dc)
         {
-         
-            IIOPorts ioPortDevice;
 
-            if (dc.PortDeviceKey.Equals("processor"))
-            {
-                if (!Global.ControlSystem.SupportsVersiport)
+                IIOPorts ioPortDevice;
+
+                if (dc.PortDeviceKey.Equals("processor"))
                 {
-                    Debug.Console(0, "GetVersiportDigitalOuptut: Processor does not support Versiports");
+                    if (!Global.ControlSystem.SupportsVersiport)
+                    {
+                        Debug.Console(0, "GetVersiportDigitalOuptut: Processor does not support Versiports");
+                        return null;
+                    }
+                    ioPortDevice = Global.ControlSystem;
+                }
+                else
+                {
+                    var ioPortDev = DeviceManager.GetDeviceForKey(dc.PortDeviceKey) as IIOPorts;
+                    if (ioPortDev == null)
+                    {
+                        Debug.Console(0, "GetVersiportDigitalOuptut: Device {0} is not a valid device", dc.PortDeviceKey);
+                        return null;
+                    }
+                    ioPortDevice = ioPortDev;
+                }
+                if (ioPortDevice == null)
+                {
+                    Debug.Console(0, "GetVersiportDigitalOuptut: Device '0' is not a valid IOPorts Device", dc.PortDeviceKey);
                     return null;
                 }
-                ioPortDevice = Global.ControlSystem;
-            }
-            else
-            {
-                var ioPortDev = DeviceManager.GetDeviceForKey(dc.PortDeviceKey) as IIOPorts;
-                if (ioPortDev == null)
+
+                if (dc.PortNumber > ioPortDevice.NumberOfVersiPorts)
                 {
-                    Debug.Console(0, "GetVersiportDigitalOuptut: Device {0} is not a valid device", dc.PortDeviceKey);
-                    return null;
+                    Debug.Console(0, "GetVersiportDigitalOuptut: Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
                 }
-                ioPortDevice = ioPortDev;
-            }
-            if (ioPortDevice == null)
-            {
-                Debug.Console(0, "GetVersiportDigitalOuptut: Device '0' is not a valid IIOPorts Device", dc.PortDeviceKey);
-                return null;
-            }
-
-            if (dc.PortNumber > ioPortDevice.NumberOfVersiPorts)
-            {
-                Debug.Console(0, "GetVersiportDigitalOuptut: Device {0} does not contain a port {1}", dc.PortDeviceKey, dc.PortNumber);
-            }
-
-            return ioPortDevice.VersiPorts[dc.PortNumber];
+                var port = ioPortDevice.VersiPorts[dc.PortNumber];
+                return port;
 
         }
     }
