@@ -579,7 +579,7 @@ namespace PepperDash.Essentials.Core
                 var errorKey = string.Empty;
                 foreach (var item in dataArray)
                 {
-                    if (item.Value.TrimEnd() == placeholder) ;
+                    if (item.Value.TrimEnd() == placeholder) continue;
                     errorKey = item.Key;
                     break;
                 }

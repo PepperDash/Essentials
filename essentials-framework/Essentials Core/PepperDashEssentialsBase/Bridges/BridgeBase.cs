@@ -109,7 +109,7 @@ namespace PepperDash.Essentials.Core.Bridges
     {
         public EiscApiPropertiesConfig PropertiesConfig { get; private set; }
 
-        protected Dictionary<string, JoinMapBaseAdvanced> JoinMaps { get; private set; }
+        public Dictionary<string, JoinMapBaseAdvanced> JoinMaps { get; private set; }
 
         public BasicTriList Eisc { get; private set; }
 
