@@ -87,5 +87,5 @@ jobs:
         run: | 
           nuget sources add -name github -source https://nuget.pkg.github.com/pepperdash/index.json -username Pepperdash -password ${{ secrets.GITHUB_TOKEN }}
           nuget setApiKey ${{ secrets.NUGET_API_KEY }}
-          nuget push ".\package\PepperDashCore.${{ steps.setVersion.outputs.version }}.nupkg" -Source github
-          nuget push ".\package\PepperDashCore.${{ steps.setVersion.outputs.version }}.nupkg" -Source https://api.nuget.org/v3/index.json
+          nuget push .\output\*.nupkg -Source github
+          nuget push .\output\*.nupkg -Source https://api.nuget.org/v3/index.json
