@@ -65,7 +65,7 @@ jobs:
         run: nuget restore .\$($Env:SOLUTION_FILE).sln
       # Build the solutions in the docker image
       - name: Build Solution        
-        run: msbuild .\$($Env:SOLUTION_FILE).sln /p:Platform="Any CPU" /p:Configuration="Debug" /p:Version="${{ steps.setVersion.outputs.version }}"
+        run: msbuild .\$($Env:SOLUTION_FILE).sln /p:Platform="Any CPU" /p:Configuration="Debug" /p:Version="${{ steps.setVersion.outputs.version }}" -m
       - name: Create tag for non-rc builds
         if: contains(steps.setVersion.outputs.version, 'alpha')
         run: |
@@ -83,9 +83,12 @@ jobs:
           generateReleaseNotes: true
           prerelease: ${{contains('debug', env.BUILD_TYPE)}}
           tag: ${{ steps.setVersion.outputs.version }}
-      - name: Publish to Nuget
+      - name: Setup Nuget
         run: | 
-          nuget sources add -name github -source https://nuget.pkg.github.com/pepperdash/index.json -username Pepperdash -password ${{ secrets.GITHUB_TOKEN }}
-          nuget setApiKey ${{ secrets.NUGET_API_KEY }}
-          nuget push .\output\*.nupkg -Source github
-          nuget push .\output\*.nupkg -Source https://api.nuget.org/v3/index.json
+          nuget sources add -name github -source https://nuget.pkg.github.com/pepperdash/index.json
+          nuget setApiKey ${{ secrets.GITHUB_TOKEN }} -Source github          
+          nuget setApiKey ${{ secrets.NUGET_API_KEY }} -Source https://api.nuget.org/v3/index.json          
+      - name: Publish to Nuget
+        run: nuget push .\output\*.nupkg -Source https://api.nuget.org/v3/index.json
+      - name: Public to Github Nuget
+        run: nuget push .\output\*.nupkg -Source github
