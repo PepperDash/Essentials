@@ -9,6 +9,7 @@
     <Product>PepperDash.Essentials.DM</Product>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <Title>PepperDash Essentials DM</Title>
+    <PackageId>$(AssemblyName)</PackageId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>

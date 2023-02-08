@@ -10,6 +10,7 @@
     <RootNamespace>PepperDash.Essentials.Devices.Common</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>PepperDash Essentials Devices Common</Title>
+    <PackageId>$(AssemblyName)</PackageId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>

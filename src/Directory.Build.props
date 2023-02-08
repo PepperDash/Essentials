@@ -7,7 +7,6 @@
     <RepositoryUrl>https://github.com/PepperDash/Essentials</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Crestron; 4series</PackageTags>
-    <PackageId>$(AssemblyName)</PackageId>
     <PackageOutputPath>../../output</PackageOutputPath>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
