@@ -1,0 +1,16 @@
+<Project>
+  <Target Name="Create CPLZ" AfterTargets="Build; Rebuild" Condition="$(ProjectType) == 'ProgramLibrary'">
+    <Message Text="Creating CPLZ"></Message>
+    <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PackageOutputPath)\$(TargetName).$(Version).cplz" />
+  </Target>
+  <Target Name="Clean CPLZ" AfterTargets="AfterClean" Condition="$(ProjectType) == 'ProgramLibrary'">
+    <Delete Files="$(PackageOutputPath)\$(TargetName).$(Version).cplz"/>
+  </Target>
+  <Target Name="Copy CPZ" AfterTargets="SimplSharpPostProcess" Condition="$(ProjectType) == 'Program'">
+    <Message Text="Copying CPZ"></Message>
+    <Copy SourceFiles="$(TargetDir)\$(TargetName).cpz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).cpz"/>
+  </Target>
+  <Target Name="Clean CPZ" AfterTargets="AfterClean" Condition="$(ProjectType) == 'Program'">
+    <Delete Files="$(PackageOutputPath)\$(TargetName).$(Version).cpz"/>
+  </Target>
+</Project>

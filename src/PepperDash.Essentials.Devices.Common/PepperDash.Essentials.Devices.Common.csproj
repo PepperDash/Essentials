@@ -1,5 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <ProjectType>ProgramLibrary</ProjectType>
+  </PropertyGroup>
+  <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -7,15 +10,6 @@
     <RootNamespace>PepperDash.Essentials.Devices.Common</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>PepperDash Essentials Devices Common</Title>
-    <Authors>PepperDash Technologies</Authors>
-    <Company>PepperDash Technologies</Company>
-    <Product>PepperDash Essentials</Product>
-    <Copyright>Copyright ©  2023</Copyright>    
-    <RepositoryUrl>https://github.com/PepperDash/Essentials</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>Crestron; 4series</PackageTags>
-    <PackageOutputPath>../../output</PackageOutputPath>    
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>

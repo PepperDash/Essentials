@@ -1,20 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <ProjectType>ProgramLibrary</ProjectType>
+  </PropertyGroup>
+  <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <Authors>PepperDash Technologies</Authors>
-    <PackageId>$(AssemblyName)</PackageId>
-    <PackageProjectUrl></PackageProjectUrl>
-    <PackageTags>crestron;4series;</PackageTags>
     <AssemblyName>PepperDash.Essentials.Core</AssemblyName>
     <RootNamespace>PepperDash.Essentials.Core</RootNamespace>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>PepperDash Essentials Core</Title>
-    <Product>PepperDash Essentials</Product>
-    <Copyright>Copyright ©  2023</Copyright>
-    <RepositoryUrl>https://github.com/PepperDash/Essentials</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>   
-    <PackageOutputPath>../../output</PackageOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
